@@ -284,13 +284,13 @@ public class ImportUITest extends JellyTestCase {
             
             JTableOperator table = cso.tabFiles();
             TableModel model = table.getModel();
-            String[] expected = {"genfiles.properties", "build-impl.xml", "Main.java", "manifest.mf", "src", "project.xml", PROJECT_NAME.toLowerCase(), "nbproject", "project.properties", "test", "build.xml"};
+            String[] expected = {"genfiles.properties", "lib", "build-impl.xml", "Main.java", "manifest.mf", "src", "project.xml", PROJECT_NAME.toLowerCase(), "nbproject", "project.properties", "test", "build.xml"};
             String[] actual = new String[model.getRowCount()];
             for (int i = 0; i < actual.length; i++) {
                 actual[i] = model.getValueAt(i, 0).toString();
             }
-            assertEquals("Incorrect count of records for addition!!!", 11, model.getRowCount());
-            assertEquals("Some records were omitted from addition", 11, TestKit.compareThem(expected, actual, false));
+            assertEquals("Incorrect count of records for addition!!!", 12, model.getRowCount());
+            assertEquals("Some records were omitted from addition", 12, TestKit.compareThem(expected, actual, false));
             //try to change commit actions
             cso.selectCommitAction("project.xml", "Add As Text");
             cso.selectCommitAction("project.xml", "Add As Binary");

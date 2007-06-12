@@ -16,9 +16,9 @@ import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.OutputOperator;
 import org.netbeans.jellytools.OutputTabOperator;
+import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
-import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.QueueTool;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.Operator;
@@ -26,7 +26,6 @@ import org.netbeans.jemmy.operators.Operator.DefaultStringComparator;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.test.subversion.operators.CheckoutWizardOperator;
 import org.netbeans.test.subversion.operators.RepositoryStepOperator;
-import org.netbeans.test.subversion.operators.VersioningOperator;
 import org.netbeans.test.subversion.operators.WorkDirStepOperator;
 import org.netbeans.test.subversion.utils.RepositoryMaintenance;
 import org.netbeans.test.subversion.utils.TestKit;
@@ -45,15 +44,15 @@ public class AnnotationsTest extends JellyTestCase {
     public File projectPath;
     public PrintStream stream;
     String os_name;
-    Operator.DefaultStringComparator comOperator; 
-    Operator.DefaultStringComparator oldOperator; 
+    Operator.DefaultStringComparator comOperator;
+    Operator.DefaultStringComparator oldOperator;
     
     /** Creates a new instance of AnnotationsTest */
     public AnnotationsTest(String name) {
         super(name);
     }
     
-    protected void setUp() throws Exception {        
+    protected void setUp() throws Exception {
         os_name = System.getProperty("os.name");
         //System.out.println(os_name);
         System.out.println("### "+getName()+" ###");
@@ -81,7 +80,7 @@ public class AnnotationsTest extends JellyTestCase {
     
     public void testShowAnnotations() throws Exception {
         //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 30000);
-        //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 30000);    
+        //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 30000);
         try {
             TestKit.closeProject(PROJECT_NAME);
             OutputOperator.invoke();
@@ -91,45 +90,43 @@ public class AnnotationsTest extends JellyTestCase {
             Operator.setDefaultStringComparator(comOperator);
             CheckoutWizardOperator co = CheckoutWizardOperator.invoke();
             Operator.setDefaultStringComparator(oldOperator);
-            RepositoryStepOperator rso = new RepositoryStepOperator();       
-
-            //create repository... 
+            RepositoryStepOperator rso = new RepositoryStepOperator();
+            
+            //create repository...
             File work = new File(TMP_PATH + File.separator + WORK_PATH + File.separator + "w" + System.currentTimeMillis());
             new File(TMP_PATH).mkdirs();
             work.mkdirs();
             RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + REPO_PATH));
             //RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + WORK_PATH));
-            RepositoryMaintenance.createRepository(TMP_PATH + File.separator + REPO_PATH);   
-            RepositoryMaintenance.loadRepositoryFromFile(TMP_PATH + File.separator + REPO_PATH, getDataDir().getCanonicalPath() + File.separator + "repo_dump");      
+            RepositoryMaintenance.createRepository(TMP_PATH + File.separator + REPO_PATH);
+            RepositoryMaintenance.loadRepositoryFromFile(TMP_PATH + File.separator + REPO_PATH, getDataDir().getCanonicalPath() + File.separator + "repo_dump");
             rso.setRepositoryURL(RepositoryStepOperator.ITEM_FILE + RepositoryMaintenance.changeFileSeparator(TMP_PATH + File.separator + REPO_PATH, false));
-
+            
             rso.next();
             WorkDirStepOperator wdso = new WorkDirStepOperator();
             wdso.setRepositoryFolder("trunk/" + PROJECT_NAME);
             wdso.setLocalFolder(work.getCanonicalPath());
             wdso.checkCheckoutContentOnly(false);
-
+            
             wdso.finish();
             OutputTabOperator oto = new OutputTabOperator("file:///tmp/repo");
             oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-//            oto.clear();            
+            //            oto.clear();
             //open project
             oto.waitText("Checking out... finished.");
             NbDialogOperator nbdialog = new NbDialogOperator("Checkout Completed");
             JButtonOperator open = new JButtonOperator(nbdialog, "Open Project");
             open.push();
-
-            ProjectSupport.waitScanFinished();
-            new QueueTool().waitEmpty(1000);
-            ProjectSupport.waitScanFinished();
-
+            
+            TestKit.waitForScanFinishedAndQueueEmpty();
+            
             oto = new OutputTabOperator("file:///tmp/repo");
             oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
             oto.clear();
-            Node node = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp|Main.java");    
+            Node node = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp|Main.java");
             node.performPopupAction("Subversion|Show Annotations");
             oto.waitText("Annotating... finished.");
-
+            
             stream.flush();
             stream.close();
         } catch (Exception e) {

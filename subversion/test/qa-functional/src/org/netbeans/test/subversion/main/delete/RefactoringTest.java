@@ -124,9 +124,7 @@ public class RefactoringTest extends JellyTestCase {
             JButtonOperator open = new JButtonOperator(nbdialog, "Open Project");
             open.push();
             
-            ProjectSupport.waitScanFinished();
-            new QueueTool().waitEmpty(1000);
-            ProjectSupport.waitScanFinished();
+            TestKit.waitForScanFinishedAndQueueEmpty();
             
             oto = new OutputTabOperator("file:///tmp/repo");
             oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);

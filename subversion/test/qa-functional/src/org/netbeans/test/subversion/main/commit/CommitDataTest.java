@@ -147,9 +147,7 @@ public class CommitDataTest extends JellyTestCase {
             JButtonOperator open = new JButtonOperator(nbdialog, "Open Project");
             open.push();
             
-            ProjectSupport.waitScanFinished();
-            new QueueTool().waitEmpty(1000);
-            ProjectSupport.waitScanFinished();
+            TestKit.waitForScanFinishedAndQueueEmpty();
             //Node projNode = new Node(new ProjectsTabOperator().tree(), "JavaApp");
             
             TestKit.createNewElement(PROJECT_NAME, "javaapp", "NewClass");
@@ -265,9 +263,7 @@ public class CommitDataTest extends JellyTestCase {
             JButtonOperator open = new JButtonOperator(nbdialog, "Open Project");
             open.push();
             
-            ProjectSupport.waitScanFinished();
-            new QueueTool().waitEmpty(1000);
-            ProjectSupport.waitScanFinished();
+            TestKit.waitForScanFinishedAndQueueEmpty();
             
             Node projNode = new Node(new ProjectsTabOperator().tree(), PROJECT_NAME);
             
@@ -386,9 +382,7 @@ public class CommitDataTest extends JellyTestCase {
             JButtonOperator open = new JButtonOperator(nbdialog, "Open Project");
             open.push();
             
-            ProjectSupport.waitScanFinished();
-            new QueueTool().waitEmpty(1000);
-            ProjectSupport.waitScanFinished();
+            TestKit.waitForScanFinishedAndQueueEmpty();
             
             //create various types of files
             String src = getDataDir().getCanonicalPath() + File.separator + "files" + File.separator;

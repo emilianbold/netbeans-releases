@@ -5,7 +5,7 @@
  *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
-
+ 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
@@ -59,7 +59,7 @@ public class CheckoutUITest extends JellyTestCase{
     public static final String PROJECT_NAME = "SVNApplication";
     public File projectPath;
     String os_name;
-    Operator.DefaultStringComparator comOperator; 
+    Operator.DefaultStringComparator comOperator;
     Operator.DefaultStringComparator oldOperator;
     
     /** Creates a new instance of CheckoutUITest */
@@ -67,7 +67,7 @@ public class CheckoutUITest extends JellyTestCase{
         super(name);
     }
     
-    protected void setUp() throws Exception {        
+    protected void setUp() throws Exception {
         os_name = System.getProperty("os.name");
         //System.out.println(os_name);
         System.out.println("### "+getName()+" ###");
@@ -91,16 +91,16 @@ public class CheckoutUITest extends JellyTestCase{
         NbTestSuite suite = new NbTestSuite();
         suite.addTest(new CheckoutUITest("testInvokeClose"));
         suite.addTest(new CheckoutUITest("testChangeAccessTypes"));
-        suite.addTest(new CheckoutUITest("testIncorrentUrl"));        
+        suite.addTest(new CheckoutUITest("testIncorrentUrl"));
         suite.addTest(new CheckoutUITest("testAvailableFields"));
-        suite.addTest(new CheckoutUITest("testRepositoryFolder"));        
+        suite.addTest(new CheckoutUITest("testRepositoryFolder"));
         return suite;
     }
     
     public void testInvokeClose() throws Exception {
         TestKit.showStatusLabels();
         OutputOperator oo = OutputOperator.invoke();
-        CheckoutWizardOperator co = CheckoutWizardOperator.invoke();   
+        CheckoutWizardOperator co = CheckoutWizardOperator.invoke();
         co.btCancel().pushNoBlock();
     }
     
@@ -174,8 +174,26 @@ public class CheckoutUITest extends JellyTestCase{
     }
     
     public void testAvailableFields() throws Exception {
-        //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
-        //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 3000);
+        long timeoutCO = JemmyProperties.getCurrentTimeout("ComponentOperator.WaitComponentTimeout");
+        try {
+            JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
+        } catch (Exception e) {
+            JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", timeoutCO);
+        }
+        
+        long timeoutDW = JemmyProperties.getCurrentTimeout("ComponentOperator.WaitComponentTimeout");
+        try {
+            JemmyProperties.setCurrentTimeout("DialogWaiter.WaitComponentTimeout", 3000);
+        } catch (Exception e) {
+            JemmyProperties.setCurrentTimeout("DialogWaiter.WaitComponentTimeout", timeoutDW);
+        }
+        
+        long timeoutRSO = JemmyProperties.getCurrentTimeout("RepositoryStepOperator.WaitComponentTimeout");
+        try {
+            JemmyProperties.setCurrentTimeout("RepositoryStepOperator.WaitComponentTimeout", 3000);
+        } catch (Exception e) {
+            JemmyProperties.setCurrentTimeout("RepositoryStepOperator.WaitComponentTimeout", timeoutRSO);
+        }
         
         comOperator = new Operator.DefaultStringComparator(true, true);
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
@@ -309,13 +327,15 @@ public class CheckoutUITest extends JellyTestCase{
             tee = (TimeoutExpiredException) e;
         }
         assertNotNull("Password should not be accessible for file:///!!!" ,tee);
-        
+        JemmyProperties.setCurrentTimeout("DialogWaiter.WaitComponentTimeout", timeoutDW);
+        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", timeoutCO);
+        JemmyProperties.setCurrentTimeout("RepositoryStepOperator.WaitDialogTimeout", timeoutRSO);
         co.btCancel().pushNoBlock();
     }
     
     public void testRepositoryFolder() throws Exception {
         //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
-        //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 3000);    
+        //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 3000);
         
         comOperator = new Operator.DefaultStringComparator(true, true);
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
@@ -323,12 +343,12 @@ public class CheckoutUITest extends JellyTestCase{
         CheckoutWizardOperator co = CheckoutWizardOperator.invoke();
         Operator.setDefaultStringComparator(oldOperator);
         RepositoryStepOperator rso = new RepositoryStepOperator();
-    
-        //create repository... 
+        
+        //create repository...
         new File(TMP_PATH).mkdirs();
         RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + REPO_PATH));
-        RepositoryMaintenance.createRepository(TMP_PATH + File.separator + REPO_PATH);   
-        RepositoryMaintenance.loadRepositoryFromFile(TMP_PATH + File.separator + REPO_PATH, getDataDir().getCanonicalPath() + File.separator + "repo_dump");      
+        RepositoryMaintenance.createRepository(TMP_PATH + File.separator + REPO_PATH);
+        RepositoryMaintenance.loadRepositoryFromFile(TMP_PATH + File.separator + REPO_PATH, getDataDir().getCanonicalPath() + File.separator + "repo_dump");
         rso.setRepositoryURL(RepositoryStepOperator.ITEM_FILE + RepositoryMaintenance.changeFileSeparator(TMP_PATH + File.separator + REPO_PATH, false));
         
         //next step
@@ -362,7 +382,7 @@ public class CheckoutUITest extends JellyTestCase{
     
     public void testStopProcess() throws Exception {
         //emmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
-        //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 3000);    
+        //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 3000);
         
         comOperator = new Operator.DefaultStringComparator(true, true);
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
@@ -370,12 +390,12 @@ public class CheckoutUITest extends JellyTestCase{
         CheckoutWizardOperator co = CheckoutWizardOperator.invoke();
         Operator.setDefaultStringComparator(oldOperator);
         RepositoryStepOperator rso = new RepositoryStepOperator();
-    
-        //create repository... 
+        
+        //create repository...
         new File(TMP_PATH).mkdirs();
         RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + REPO_PATH));
-        RepositoryMaintenance.createRepository(TMP_PATH + File.separator + REPO_PATH);   
-        RepositoryMaintenance.loadRepositoryFromFile(TMP_PATH + File.separator + REPO_PATH, getDataDir().getCanonicalPath() + File.separator + "repo_dump");      
+        RepositoryMaintenance.createRepository(TMP_PATH + File.separator + REPO_PATH);
+        RepositoryMaintenance.loadRepositoryFromFile(TMP_PATH + File.separator + REPO_PATH, getDataDir().getCanonicalPath() + File.separator + "repo_dump");
         rso.setRepositoryURL(RepositoryStepOperator.ITEM_FILE + RepositoryMaintenance.changeFileSeparator(TMP_PATH + File.separator + REPO_PATH, false));
         
         //next step

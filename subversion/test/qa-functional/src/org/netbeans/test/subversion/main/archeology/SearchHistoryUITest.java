@@ -31,6 +31,7 @@ import org.netbeans.test.subversion.utils.TestKit;
 import org.netbeans.junit.ide.ProjectSupport;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.EditorOperator;
+import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jemmy.QueueTool;
 import org.netbeans.jemmy.operators.Operator;
 import org.netbeans.jemmy.operators.Operator.DefaultStringComparator;
@@ -122,9 +123,7 @@ public class SearchHistoryUITest extends JellyTestCase{
             JButtonOperator open = new JButtonOperator(nbdialog, "Open Project");
             open.push();
 
-            ProjectSupport.waitScanFinished();
-            new QueueTool().waitEmpty(1000);
-            ProjectSupport.waitScanFinished();
+            TestKit.waitForScanFinishedAndQueueEmpty();
 
             oto = new OutputTabOperator("file:///tmp/repo");
             oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);

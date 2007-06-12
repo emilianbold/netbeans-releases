@@ -115,9 +115,7 @@ public class ExportDiffPatchTest extends JellyTestCase {
             JButtonOperator open = new JButtonOperator(nbdialog, "Open Project");
             open.push();
             
-            ProjectSupport.waitScanFinished();
-            new QueueTool().waitEmpty(1000);
-            ProjectSupport.waitScanFinished();
+            TestKit.waitForScanFinishedAndQueueEmpty();
             
             //modify, save file and invoke Diff
             oto = new OutputTabOperator("file:///tmp/repo");

@@ -115,9 +115,7 @@ public class CreateProjectVersionedDirTest extends JellyTestCase {
             JButtonOperator open = new JButtonOperator(nbdialog, "Open Project");
             open.push();
             
-            ProjectSupport.waitScanFinished();
-            new QueueTool().waitEmpty(1000);
-            ProjectSupport.waitScanFinished();
+            TestKit.waitForScanFinishedAndQueueEmpty();
             
             NewProjectWizardOperator npwo = NewProjectWizardOperator.invoke();
             npwo.selectCategory("General");
