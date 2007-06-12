@@ -75,7 +75,7 @@ Microsystems, Inc. All Rights Reserved.
    <testbag testattribs="validation,jv" executor="ide" name="testbag_visualdevelopment">
         <testset dir="qa-functional/src">
             <patternset>
-<!--                <include name="org/netbeans/qa/form/visualDevelopment/FormGenerateCodeTest.class"/> -->
+                <include name="org/netbeans/qa/form/visualDevelopment/FormGenerateCodeTest.class"/>
 <!-- issues <include name="org/netbeans/qa/form/visualDevelopment/MenuAndPopupMenuTest.class"/> -->
                 <include name="org/netbeans/qa/form/visualDevelopment/AddComponents_AWT.class"/>
                 <include name="org/netbeans/qa/form/visualDevelopment/AddComponents_SWING.class"/>
