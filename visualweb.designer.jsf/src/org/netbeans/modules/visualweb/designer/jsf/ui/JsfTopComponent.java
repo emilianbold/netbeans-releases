@@ -23,6 +23,7 @@ import java.util.prefs.PreferenceChangeListener;
 import org.netbeans.modules.visualweb.api.designer.DomProvider.DomPosition;
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.EventQueue;
 import java.awt.Point;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
@@ -661,20 +662,26 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
         // with its selection (see 6197251)
 //        OutlineTopComp.getInstance().contextChanged(context);
 
-        // Caret syncing needs to be delayed until we have updated the rendered dom!
-        //webform.getSelection().syncCaret();
-//        webform.getManager().syncSelection(true);
-//        webform.getSelection().syncSelection(true);
-        designer.syncSelection(true);
+        // XXX #106332 Bad architecture, there were changed beans instanes in the hierarchy,
+        // and at this moment the rendered doc is not regenerated.
+        EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                // Caret syncing needs to be delayed until we have updated the rendered dom!
+                //webform.getSelection().syncCaret();
+        //        webform.getManager().syncSelection(true);
+        //        webform.getSelection().syncSelection(true);
+                designer.syncSelection(true);
 
-//        if (SHOW_TRAY) {
-//            // XXX todo sync tray selection!
-//            refreshTray(hasTrayBeans(), null);
-//        }
+        //        if (SHOW_TRAY) {
+        //            // XXX todo sync tray selection!
+        //            refreshTray(hasTrayBeans(), null);
+        //        }
 
-        if (isShowing()) {
-            updateErrors();
-        }
+                if (isShowing()) {
+                    updateErrors();
+                }
+            }
+        });
     }
 
 //    public void beanContextActivated(DesignBean designBean) {

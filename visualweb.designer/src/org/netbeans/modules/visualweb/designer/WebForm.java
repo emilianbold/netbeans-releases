@@ -1576,7 +1576,7 @@ public class WebForm implements Designer {
 
         flushCaches();
 
-        DesignerPane pane = getPane();
+        final DesignerPane pane = getPane();
 
         // #106167 This seems to be redundant here (see designer/jsf/../DomSynchronizer#processRefresh,
         // and /../JsfTopComponent#modelChanged.
@@ -1590,12 +1590,18 @@ public class WebForm implements Designer {
 //            pane.getPaneUI().resetPageBox();
 //        }
 
-//        getSelection().updateSelection(); // trigger refresh in CSS viewer for example
-        getSelection().updateNodes();
+        // XXX #106332 Bad architecture, there were changed beans instanes in the hierarchy,
+        // and at this moment the rendered doc is not regenerated.
+        EventQueue.invokeLater(new Runnable() {
+            public void run() {
+        //        getSelection().updateSelection(); // trigger refresh in CSS viewer for example
+                getSelection().updateNodes();
 
-        if (pane != null) {
-            pane.repaint();
-        }
+                if (pane != null) {
+                    pane.repaint();
+                }
+            }
+        });
     }
     
 
