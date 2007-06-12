@@ -257,7 +257,7 @@ public class OptionsPanel extends JPanel {
             pCategories.setBorder (new LineBorder (iconViewBorder));
         }
         pCategories.setBackground (Color.white);
-        pCategories.add ("North", pCategories2);
+        pCategories.add ("Center", pCategories2);
         
         // layout
         setLayout (new BorderLayout (10, 10));
@@ -337,8 +337,8 @@ public class OptionsPanel extends JPanel {
 
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.anchor = GridBagConstraints.NORTHWEST;
-        gbc.fill = GridBagConstraints.VERTICAL;
-        gbc.weightx = 0.0;
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.weightx = 1.0;
         gbc.weighty = 1.0;
         gbc.gridx = index;
         gbc.gridy = 0;
