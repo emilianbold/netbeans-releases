@@ -21,6 +21,8 @@ package org.netbeans.modules.websvc.design.javamodel;
 
 import java.util.List;
 import javax.xml.soap.SOAPMessage;
+import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.modules.websvc.core.JaxWsUtils;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -30,15 +32,17 @@ import org.openide.filesystems.FileObject;
 public class MethodModel {
     
     private FileObject implementationClass;
-    private String operationName;
-    private String action;
+    String javaName;
+    String operationName;
+    String action;
     private ResultModel result;
     private List<ParamModel> params;
-    private boolean oneWay;
+    boolean oneWay;
     private JavadocModel javadoc;
     private List<FaultModel> faults;
     private SOAPMessage soapRequest;
     private SOAPMessage soapResponse;
+    private ElementHandle methodHandle; 
     
     /** Creates a new instance of MethodModel */
     MethodModel(FileObject implementationClass, String operationName) {
@@ -56,12 +60,26 @@ public class MethodModel {
     void setImplementationClass(FileObject impl){
         implementationClass = impl;
     }
+    
+    public ElementHandle getMethodHandle() {
+        return methodHandle;
+    }
+    
+   void setMethodHandle(ElementHandle methodHandle) {
+       this.methodHandle=methodHandle;
+   }
+    
+    
     public String getOperationName() {
         return operationName;
     }
     
-    void setOperationName(String operationName) {
-        this.operationName=operationName;
+    public void setOperationName(String operationName) {
+        if (this.operationName != operationName) {
+            JaxWsUtils.setWebMethodAttrValue(implementationClass, methodHandle, "operationName", operationName); //NOI18N
+            
+            this.operationName=operationName==null?javaName:operationName;
+        }
     }
 
     public ResultModel getResult() {
@@ -76,7 +94,7 @@ public class MethodModel {
         return action;
     }
 
-    void setAction(String action) {
+    public void setAction(String action) {
         this.action = action;
     }
 
@@ -92,7 +110,7 @@ public class MethodModel {
         return oneWay;
     }
 
-    void setOneWay(boolean oneWay) {
+    public void setOneWay(boolean oneWay) {
         this.oneWay = oneWay;
     }
 

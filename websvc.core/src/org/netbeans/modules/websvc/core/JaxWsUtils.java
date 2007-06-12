@@ -38,11 +38,13 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.TreeMaker;
@@ -748,14 +750,77 @@ public class JaxWsUtils {
                     }
                     
                     ModifiersTree newModifier = make.Modifiers(modif, newAnnotations);
+                    workingCopy.rewrite(modif, newModifier);
+                }
+            }
 
-                    ClassTree modifiedClass = make.Class( newModifier,
-                                classTree.getSimpleName(),
-                                classTree.getTypeParameters(),
-                                classTree.getExtendsClause(),
-                                (List<ExpressionTree>)classTree.getImplementsClause(),
-                                classTree.getMembers());
-                    workingCopy.rewrite(classTree, modifiedClass);
+            public void cancel() {
+            }
+        };
+        try {
+            javaSource.runModificationTask(modificationTask).commit();
+        } catch (IOException ex) {
+            ErrorManager.getDefault().notify(ex);
+        }
+    }
+    
+    public static void setWebMethodAttrValue(FileObject implClassFo, final ElementHandle method, final String attrName, final String attrValue) {
+        final JavaSource javaSource = JavaSource.forFileObject(implClassFo);
+        final CancellableTask<WorkingCopy> modificationTask = new CancellableTask<WorkingCopy>() {
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                GenerationUtils genUtils = GenerationUtils.newInstance(workingCopy);
+                if (genUtils != null) {
+                    TreeMaker make = workingCopy.getTreeMaker();
+                                 
+                    ExpressionTree attrExpr = 
+                            (attrValue == null?null:genUtils.createAnnotationArgument(attrName, attrValue));
+                    
+                    Element methodEl = method.resolve(workingCopy);
+                    MethodTree methodTree = (MethodTree) workingCopy.getTrees().getTree(methodEl);
+                    
+                    ModifiersTree modif = methodTree.getModifiers();
+                    List<? extends AnnotationTree> annotations = modif.getAnnotations();
+                    List<AnnotationTree> newAnnotations = new ArrayList<AnnotationTree>();
+                    
+                    for (AnnotationTree an:annotations) {
+                        IdentifierTree ident = (IdentifierTree) an.getAnnotationType();                    
+                        TreePath anTreePath = workingCopy.getTrees().getPath(workingCopy.getCompilationUnit(), ident);
+                        TypeElement anElement = (TypeElement)workingCopy.getTrees().getElement(anTreePath);
+                        if(anElement!=null && anElement.getQualifiedName().contentEquals("javax.jws.WebMethod")) { //NOI18N
+                            List<? extends ExpressionTree> expressions = an.getArguments();
+                            List<ExpressionTree> newExpressions = new ArrayList<ExpressionTree>();
+                            boolean found=false;
+                            for (ExpressionTree expr:expressions) {
+                                if (expr.getKind()==Kind.ASSIGNMENT) {
+                                    AssignmentTree as = (AssignmentTree)expr;
+                                    IdentifierTree id = (IdentifierTree)as.getVariable();
+                                    if (id.getName().contentEquals(attrName)) {
+                                        found=true;
+                                        if (attrExpr!=null) {
+                                            newExpressions.add(attrExpr);
+                                        }
+                                    } else {
+                                        newExpressions.add(expr);
+                                    }
+                                } else {
+                                    newExpressions.add(expr);
+                                }
+                            }
+                            if (!found) {
+                                newExpressions.add(attrExpr);
+                            }
+                            
+                            TypeElement webServiceEl = workingCopy.getElements().getTypeElement("javax.jws.WebMethod"); //NOI18N                            
+                            AnnotationTree webServiceAn = make.Annotation(make.QualIdent(webServiceEl), newExpressions);                            
+                            newAnnotations.add(webServiceAn);
+                        } else {
+                            newAnnotations.add(an);
+                        }
+                    }
+                    
+                    ModifiersTree newModifier = make.Modifiers(modif, newAnnotations);
+                    workingCopy.rewrite(modif, newModifier);
                 }
             }
 

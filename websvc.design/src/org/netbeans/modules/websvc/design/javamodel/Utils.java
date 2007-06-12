@@ -56,6 +56,7 @@ import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.Comment;
 import org.netbeans.api.java.source.Comment.Style;
 import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
@@ -194,6 +195,8 @@ public class Utils {
                     for (int i=0;i<methods.size();i++) {
                         MethodModel operation = new MethodModel();
                         operation.setImplementationClass(implClass);
+                        ElementHandle methodHandle = ElementHandle.create(methods.get(i));
+                        operation.setMethodHandle(methodHandle);
                         Utils.populateOperation(controller, methods.get(i), operation, serviceModel.getTargetNamespace());
                         operations.add(operation);
                     }
@@ -225,10 +228,10 @@ public class Utils {
                 Map<? extends ExecutableElement, ? extends AnnotationValue> expressions = anMirror.getElementValues();
                 for(ExecutableElement ex:expressions.keySet()) {
                     if (ex.getSimpleName().contentEquals("operationName")) { //NOI18N
-                        methodModel.setOperationName((String)expressions.get(ex).getValue());
+                        methodModel.operationName = (String)expressions.get(ex).getValue();
                         nameFound=true;
                     } else if (ex.getSimpleName().contentEquals("action")) { //NOI18N
-                        methodModel.setAction((String)expressions.get(ex).getValue());
+                        methodModel.action = (String)expressions.get(ex).getValue();
                     }
                 }
                 
@@ -245,10 +248,11 @@ public class Utils {
                     }
                 }
             } else if (controller.getTypes().isSameType(onewayAnotationEl.asType(), anMirror.getAnnotationType())) {
-                methodModel.setOneWay(true);
+                methodModel.oneWay = true;
             }
         }
-        if (!nameFound) methodModel.setOperationName(methodEl.getSimpleName().toString());
+        methodModel.javaName = methodEl.getSimpleName().toString();
+        if (!nameFound) methodModel.operationName = methodModel.javaName;
         
         
         // Return type
