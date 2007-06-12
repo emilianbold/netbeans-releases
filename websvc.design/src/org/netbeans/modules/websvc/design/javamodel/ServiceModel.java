@@ -25,6 +25,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.netbeans.modules.websvc.core.JaxWsUtils;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -40,7 +41,7 @@ public class ServiceModel {
     public static final int STATUS_OK=0;
     public static final int STATUS_NOT_SERVICE=1;
     public static final int STATUS_INCORRECT_SERVICE=2;
-
+    
     String serviceName;
     String portName;
     String name;
@@ -62,6 +63,8 @@ public class ServiceModel {
         populateModel();
     }
     
+    private boolean changeSource=true;
+    
     public static ServiceModel getServiceModel(FileObject implClass) {
         return new ServiceModel(implClass);
     }
@@ -74,15 +77,13 @@ public class ServiceModel {
         return name;
     }
 
-    void setName(String name) {
-        if (this.name==null) {
-            if (name!=null) {
-                this.name=name;
-                firePropertyChanged("name", null, name);
+    public void setName(String name) {
+        if (!this.name.equals(name)) {
+            if (changeSource) {
+                JaxWsUtils.setWebServiceAttrValue(implementationClass, "name", name); //NOI18N
             }
-        } else if (!this.name.equals(name)) {
             String oldName = this.name;
-            this.name = name;
+            this.name = name==null?implementationClass.getName():name;
             firePropertyChanged("name", oldName, name);
         }
     }
@@ -91,16 +92,14 @@ public class ServiceModel {
         return serviceName;
     }
 
-    void setServiceName(String serviceName) {
-        if (this.serviceName==null) {
-            if (serviceName!=null) {
-                this.serviceName=serviceName;
-                firePropertyChanged("serviceName", null, serviceName);
+    public void setServiceName(String serviceName) {
+        if (!this.serviceName.equals(serviceName)) {
+            if (changeSource) {
+                JaxWsUtils.setWebServiceAttrValue(implementationClass, "serviceName", serviceName); //NOI18N
             }
-        } else if (!this.serviceName.equals(serviceName)) {
             String oldName = this.serviceName;
-            this.serviceName = serviceName;
-            firePropertyChanged("serviceName", oldName, serviceName);
+            this.serviceName = serviceName==null?implementationClass.getName()+"Service":serviceName; //NOI18N
+            firePropertyChanged("serviceName", oldName, this.serviceName);
         }
     }
 
@@ -108,15 +107,13 @@ public class ServiceModel {
         return portName;
     }
 
-    void setPortName(String portName) {
-        if (this.portName==null) {
-            if (portName!=null) {
-                this.portName=portName;
-                firePropertyChanged("portName", null, portName);
+    public void setPortName(String portName) {
+        if (!this.portName.equals(portName)) {
+            if (changeSource) {
+                JaxWsUtils.setWebServiceAttrValue(implementationClass, "portName", portName); //NOI18N
             }
-        } else if (!this.portName.equals(portName)) {
             String oldName = this.portName;
-            this.portName = portName;
+            this.portName = portName==null?this.serviceName+"Port":portName; //NOI18N
             firePropertyChanged("portName", oldName, portName);
         }
     }
@@ -304,6 +301,7 @@ public class ServiceModel {
     
     /** package private due to test functionality */ 
     void mergeModel(ServiceModel model2) {
+        changeSource=false;
         setStatus(model2.status);
         setName(model2.name);
         setServiceName(model2.serviceName);
@@ -311,7 +309,8 @@ public class ServiceModel {
         setEndpointInterface(model2.endpointInterface);
         setWsdlLocation(model2.wsdlLocation);
         setTargetNamespace(model2.targetNamespace);
-        setOperations(model2.operations);        
+        setOperations(model2.operations);
+        changeSource=true;
     }
     
     /* probably not needed
