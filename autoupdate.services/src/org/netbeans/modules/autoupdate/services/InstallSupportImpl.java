@@ -80,6 +80,7 @@ public class InstallSupportImpl {
     public static final String DOWNLOAD_DIR = UPDATE_DIR + FILE_SEPARATOR + "download"; // NOI18N
     public static final String NBM_EXTENTSION = ".nbm";
     private Map<UpdateElementImpl, File> element2Clusters;
+    private boolean isGlobal;
     
     private static enum STEP {
         NOTSTARTED,
@@ -104,7 +105,8 @@ public class InstallSupportImpl {
         support = installSupport;
     }
     
-    public boolean doDownload (final ProgressHandle progress/*or null*/) throws OperationException {
+    public boolean doDownload (final ProgressHandle progress/*or null*/, boolean isGlobal) throws OperationException {
+        this.isGlobal = isGlobal;
         Callable<Boolean> downloadCallable = new Callable<Boolean>() {
             public Boolean call() throws Exception {
                 assert support.getContainer().listInvalid().isEmpty() : "Container contains no invalid OperationInfo, but " + support.getContainer().listInvalid();
@@ -265,7 +267,7 @@ public class InstallSupportImpl {
                     
                     // find target dir
                     UpdateElement installed = moduleImpl.getUpdateUnit ().getInstalled ();
-                    File targetCluster = getTargetCluster (installed, moduleImpl);
+                    File targetCluster = getTargetCluster (installed, moduleImpl, isGlobal);
                     
                     URL source = moduleImpl.getInstallInfo ().getDistribution ();
                     err.log (Level.FINE, "Source URL for " + moduleImpl.getCodeName () + " is " + source);
@@ -483,7 +485,7 @@ public class InstallSupportImpl {
         UpdateElement installed = toUpdateImpl.getUpdateUnit ().getInstalled ();
         
         // find target dir
-        File targetCluster = getTargetCluster (installed, toUpdateImpl);
+        File targetCluster = getTargetCluster (installed, toUpdateImpl, isGlobal);
         assert targetCluster != null : "Target cluster for " + toUpdateImpl + " must exist.";
         if (targetCluster == null) {
             targetCluster = InstallManager.getUserDir ();
@@ -540,7 +542,7 @@ public class InstallSupportImpl {
         String status = null;
         
         // find target dir
-        File targetCluster = getTargetCluster (installed, toUpdateImpl);
+        File targetCluster = getTargetCluster (installed, toUpdateImpl, isGlobal);
 
         File dest = getDestination (targetCluster, toUpdateImpl.getCodeName());
         assert dest.exists () : dest.getAbsolutePath();        
@@ -557,7 +559,7 @@ public class InstallSupportImpl {
     private File getDestination (ModuleUpdateElementImpl impl) {
         // find target dir
         UpdateElement installed = impl.getUpdateElement ().getUpdateUnit ().getInstalled ();
-        File targetCluster = getTargetCluster (installed, impl);
+        File targetCluster = getTargetCluster (installed, impl, isGlobal);
 
         URL source = impl.getInstallInfo().getDistribution();
         err.log (Level.FINE, "Source URL for " + impl.getCodeName () + " is " + source);
@@ -767,10 +769,10 @@ public class InstallSupportImpl {
         }
     };
 
-    private File getTargetCluster(UpdateElement installed, UpdateElementImpl update) {
+    private File getTargetCluster(UpdateElement installed, UpdateElementImpl update, boolean isGlobal) {
         File cluster = element2Clusters.get(update);
         if (cluster == null) {
-            cluster = InstallManager.findTargetDirectory (installed, update);
+            cluster = InstallManager.findTargetDirectory (installed, update, isGlobal);
             if (cluster != null) {
                 element2Clusters.put(update, cluster);
             }

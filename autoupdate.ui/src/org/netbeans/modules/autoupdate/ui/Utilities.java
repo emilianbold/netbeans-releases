@@ -61,6 +61,7 @@ public class Utilities {
     private static Logger logger = Logger.getLogger(Utilities.class.getName());
     private static Boolean isModulesOnly;
     private static String PLUGIN_MANAGER_MODULES_ONLY = "plugin_manager_modules_only";
+    private static String PLUGIN_MANAGER_SHARED_INSTALLATION = "plugin_manager_shared_installation";    
     public static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat ("yyyy/MM/dd"); // NOI18N
     
     static final String UNSORTED_CATEGORY = NbBundle.getMessage (Utilities.class, "Utilities_Unsorted_Category");
@@ -314,6 +315,14 @@ public class Utilities {
         } else {
             return new UpdateManager.TYPE []  { UpdateManager.TYPE.FEATURE, UpdateManager.TYPE.CUSTOM_HANDLED_COMPONENT };
         }
+    }
+    
+    public static boolean isGlobalInstallation() {
+        return getPreferences ().getBoolean (PLUGIN_MANAGER_SHARED_INSTALLATION, false);
+    }
+
+    public static void setGlobalInstallation(boolean isGlobal) {
+        getPreferences ().putBoolean (PLUGIN_MANAGER_SHARED_INSTALLATION, isGlobal);
     }
     
     public static boolean modulesOnly () {

@@ -44,6 +44,7 @@ import org.openide.util.NbBundle;
 import org.netbeans.api.autoupdate.OperationException;
 import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.modules.autoupdate.ui.NetworkProblemPanel;
+import org.netbeans.modules.autoupdate.ui.Utilities;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -137,7 +138,7 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
                     handle.setInitialDelay (0);
                     panel.waitAndSetProgressComponents (mainLabel, progressComponent, detailLabel);
 
-                    validator = support.doDownload (handle);
+                    validator = support.doDownload (handle, Utilities.isGlobalInstallation());
                     if (validator == null) return;
                     panel.waitAndSetProgressComponents (mainLabel, progressComponent, new JLabel (getBundle ("InstallStep_Done")));
                 } catch (OperationException ex) {

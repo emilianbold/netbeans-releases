@@ -26,12 +26,9 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.Module;
 import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.updater.UpdateTracking;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 
 /**
@@ -46,11 +43,11 @@ public class InstallManager {
     
     private static final Logger ERR = Logger.getLogger ("org.netbeans.modules.autoupdate.services.InstallManager");
     
-    static File findTargetDirectory (UpdateElement installed, UpdateElementImpl update) {
+    static File findTargetDirectory (UpdateElement installed, UpdateElementImpl update, boolean isGlobal) {
         File res = null;
         
         // global or local
-        if (update.getInstallInfo ().isGlobal () != null && update.getInstallInfo ().isGlobal ().booleanValue ()) {
+        if (isGlobal || (update.getInstallInfo ().isGlobal () != null && update.getInstallInfo ().isGlobal ().booleanValue ())) {
             // is global
             // new one or update?
             if (installed != null) {

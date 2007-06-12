@@ -30,8 +30,8 @@ public final class InstallSupport {
         impl = new InstallSupportImpl (this);
     }
     
-    public Validator doDownload (ProgressHandle progress/*or null*/) throws OperationException {
-        if (impl.doDownload (progress)) {
+    public Validator doDownload (ProgressHandle progress/*or null*/, boolean isGlobal) throws OperationException {
+        if (impl.doDownload (progress, isGlobal)) {
             return new Validator ();
         } else {
             return null;

@@ -90,6 +90,7 @@ public class SettingsTab extends javax.swing.JPanel {
         cbCheckPeriod.setSelectedIndex (getAutoUpdatePeriod ());
         cbModules.setSelected(Utilities.modulesOnly());
         cbPlugins.setSelected(!Utilities.modulesOnly());
+        cbGlobalInstall.setSelected(Utilities.isGlobalInstallation());
         getSettingsTableModel ().setPluginManager (manager);
         TableColumn activeColumn = table.getColumnModel ().getColumn (0);
         activeColumn.setMaxWidth (table.getTableHeader ().getHeaderRect (0).width);
@@ -162,7 +163,7 @@ public class SettingsTab extends javax.swing.JPanel {
         lPluginsView = new javax.swing.JLabel();
         cbPlugins = new javax.swing.JRadioButton();
         cbModules = new javax.swing.JRadioButton();
-        cbSharedInstall = new javax.swing.JCheckBox();
+        cbGlobalInstall = new javax.swing.JCheckBox();
         jSeparatorAdvanced = new javax.swing.JSeparator();
 
         lUpdateCenters.setLabelFor(spTab);
@@ -217,10 +218,14 @@ public class SettingsTab extends javax.swing.JPanel {
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(cbSharedInstall, org.openide.util.NbBundle.getMessage(SettingsTab.class, "SettingsTab.cbSharedInstall.text")); // NOI18N
-        cbSharedInstall.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        cbSharedInstall.setEnabled(false);
-        cbSharedInstall.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        org.openide.awt.Mnemonics.setLocalizedText(cbGlobalInstall, org.openide.util.NbBundle.getMessage(SettingsTab.class, "SettingsTab.cbSharedInstall.text")); // NOI18N
+        cbGlobalInstall.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        cbGlobalInstall.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        cbGlobalInstall.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cbGlobalInstallActionPerformed(evt);
+            }
+        });
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -230,7 +235,7 @@ public class SettingsTab extends javax.swing.JPanel {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
                         .add(24, 24, 24)
-                        .add(cbSharedInstall))
+                        .add(cbGlobalInstall))
                     .add(layout.createSequentialGroup()
                         .addContainerGap()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
@@ -296,10 +301,14 @@ public class SettingsTab extends javax.swing.JPanel {
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(cbModules)))
                 .add(21, 21, 21)
-                .add(cbSharedInstall)
+                .add(cbGlobalInstall)
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
+
+    private void cbGlobalInstallActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbGlobalInstallActionPerformed
+    Utilities.setGlobalInstallation(cbGlobalInstall.isSelected());
+}//GEN-LAST:event_cbGlobalInstallActionPerformed
 
 private void cbCheckPeriodActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbCheckPeriodActionPerformed
     setAutoUpdatePeriod (cbCheckPeriod.getSelectedIndex ());
@@ -569,9 +578,9 @@ private class Listener implements ListSelectionListener,  TableModelListener {
     private javax.swing.JButton addButton;
     private javax.swing.JButton bProxy;
     private javax.swing.JComboBox cbCheckPeriod;
+    private javax.swing.JCheckBox cbGlobalInstall;
     private javax.swing.JRadioButton cbModules;
     private javax.swing.JRadioButton cbPlugins;
-    private javax.swing.JCheckBox cbSharedInstall;
     private javax.swing.JSeparator jSeparatorAdvanced;
     private javax.swing.JSeparator jSeparatorConnection;
     private javax.swing.JLabel lCheckPeriod;
