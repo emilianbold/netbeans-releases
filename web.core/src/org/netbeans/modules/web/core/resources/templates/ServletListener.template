@@ -1,18 +1,16 @@
-/*
- * __NAME__.java
- *
- * Created on __DATE__, __TIME__
- */
- 
-package Templates.JSP_Servlet;
+<#assign licenseFirst = "/*">
+<#assign licensePrefix = " * ">
+<#assign licenseLast = " */">
+<#include "../Licenses/license-${project.license}.txt">
 
-/** 
- *
- * @author  __USER__
- * @version
- * 
+<#if package?? && package != "">
+package ${package};
+
+</#if>
+/**
  * Web application lifecycle listener.
+ * @author ${user}
  */
 
-public class ServletListener {
+public class ${name} {
 }

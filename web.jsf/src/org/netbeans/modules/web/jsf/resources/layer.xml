@@ -109,6 +109,7 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.resources.Bundle"/>
                 <attr name="templateCategory" stringvalue="web-types"/>
                 <attr name="template" boolvalue="true"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/jsf/resources/JSFManagedBean.html"/>
                 <attr name="templateWizardIterator" newvalue="org.netbeans.modules.web.jsf.wizards.ManagedBeanIterator"/>          
             </file>

@@ -1,10 +1,10 @@
-/*
- * __NAME__.java
- *
- * Created on __DATE__, __TIME__
- */
- 
-package Templates.JSP_Servlet;           
+<#assign licenseFirst = "/*">
+<#assign licensePrefix = " * ">
+<#assign licenseLast = " */">
+<#include "../Licenses/license-${project.license}.txt">
+
+<#if package?? && package != "">
+package ${package};
 
 import java.io.*;
 import java.net.*;
@@ -12,12 +12,13 @@ import java.net.*;
 import javax.servlet.*;
 import javax.servlet.http.*;
 
-/** 
+</#if>
+/**
  *
- * @author __USER__
- * @version 
+ * @author ${user}
  */
-public class Servlet extends HttpServlet {
+
+public class ${name} extends HttpServlet {
    
     /** 
     * Processes requests for both HTTP <code>GET</code> and <code>POST</code> methods.

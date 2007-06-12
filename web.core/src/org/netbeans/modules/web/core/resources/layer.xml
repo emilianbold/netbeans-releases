@@ -14,7 +14,7 @@ enclosed by brackets [] replaced by your own identifying information:
 "Portions Copyrighted [year] [name of copyright owner]"
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
@@ -70,6 +70,7 @@ Microsystems, Inc. All Rights Reserved.
       <!-- Servlet --> 
       <file name="Servlet.java" url="templates/Servlet.template">
           <attr name="template" boolvalue="true"/>
+          <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
           <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/Servlet.html"/>
           <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.web.wizards.ServletIterator.createServletIterator"/>
           <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle"/>
@@ -107,6 +108,7 @@ Microsystems, Inc. All Rights Reserved.
       <!-- Servlet Listener --> 
       <file name="ServletListener.java" url="templates/ServletListener.template">
           <attr name="template" boolvalue="true"/>
+          <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
           <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/ServletListener.html"/>
           <attr name="templateWizardIterator" newvalue="org.netbeans.modules.web.wizards.ListenerIterator"/>
           <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle"/>
@@ -126,6 +128,7 @@ Microsystems, Inc. All Rights Reserved.
       <!-- Filters --> 
       <file name="SimpleFilter.java" url="templates/SimpleFilter.template">
         <attr name="template" boolvalue="true"/>
+        <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
         <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/SimpleFilter.html"/>
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle"/>
         <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.web.wizards.ServletIterator.createFilterIterator"/>
@@ -135,6 +138,7 @@ Microsystems, Inc. All Rights Reserved.
       <!-- Tag Handlers --> 
       <file name="TagHandler.java" url="templates/SimpleTagHandler.template">
         <attr name="template" boolvalue="true"/>
+        <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
         <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/TagHandler.html"/>
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle"/>
         <attr name="templateWizardIterator" newvalue="org.netbeans.modules.web.wizards.TagHandlerIterator"/>

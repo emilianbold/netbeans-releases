@@ -1,10 +1,10 @@
-/*
- * __NAME__.java
- *
- * Created on __DATE__, __TIME__
- */
- 
-package Templates.JSP_Servlet;           
+<#assign licenseFirst = "/*">
+<#assign licensePrefix = " * ">
+<#assign licenseLast = " */">
+<#include "../Licenses/license-${project.license}.txt">
+
+<#if package?? && package != "">
+package ${package};
 
 import java.io.*;
 import java.net.*;
@@ -21,20 +21,20 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 
-/** 
+</#if>
+/**
  *
- * @author  __USER__
- * @version 
+ * @author ${user}
  */
 
-public class SimpleFilter implements Filter {
+public class ${name} implements Filter {
 
     // The filter configuration object we are associated with.  If
     // this value is null, this filter instance is not currently
     // configured. 
     private FilterConfig filterConfig = null;
 
-    public SimpleFilter() {
+    public ${name}() {
     } 
 
     private void doBeforeProcessing(ServletRequest request, ServletResponse response)
