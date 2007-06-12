@@ -26,10 +26,11 @@ import org.netbeans.modules.j2ee.deployment.devmodules.spi.*;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.*;
 import javax.enterprise.deploy.spi.TargetModuleID;
 import javax.enterprise.deploy.shared.ModuleType;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
 import java.util.*;
 import java.io.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.j2ee.deployment.config.*;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
 import org.openide.util.NbBundle;
@@ -256,7 +257,7 @@ public final class DeploymentTargetImpl implements DeploymentTarget {
                 f = FileUtil.toFile(getModule().getContentDirectory());
             }
         } catch (IOException ioe) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
+            Logger.getLogger("global").log(Level.INFO, null, ioe);
         }
         if (f == null) {
             fileName = getConfigSupportImpl().getDeploymentName();

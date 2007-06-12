@@ -35,9 +35,10 @@ import org.openide.loaders.*;
 import org.openide.util.Lookup;
 import org.openide.cookies.InstanceCookie;
 import org.openide.nodes.Node;
-import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import javax.enterprise.deploy.shared.ModuleType;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformFactory;
@@ -82,7 +83,7 @@ public class Server implements Node.Cookie {
             FileObject factoryinstance = fo.getFileObject("Factory.instance");
             if(factoryinstance == null) {
                 String msg = NbBundle.getMessage(Server.class, "MSG_NoFactoryInstanceClass", name);
-                ErrorManager.getDefault().log(ErrorManager.ERROR, msg);
+                Logger.getLogger("global").log(Level.SEVERE, msg);
                 factoryCls = null;
                 return;
             }
@@ -90,7 +91,7 @@ public class Server implements Node.Cookie {
             InstanceCookie cookie = (InstanceCookie) dobj.getCookie(InstanceCookie.class);
             if(cookie == null) {
                 String msg = NbBundle.getMessage(Server.class, "MSG_FactoryFailed", name, cookie);
-                ErrorManager.getDefault().log(ErrorManager.ERROR, msg);
+                Logger.getLogger("global").log(Level.SEVERE, msg);
                 factoryCls = null;
                 return;
             }
@@ -102,7 +103,7 @@ public class Server implements Node.Cookie {
             try {
                 factory = (DeploymentFactory) cookie.instanceCreate();
             } catch (Exception e) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                Logger.getLogger("global").log(Level.INFO, null, e);
             }
         }
         //System.out.println("Create plugin "+name+" in "+(System.currentTimeMillis() - t0));
@@ -153,7 +154,7 @@ public class Server implements Node.Cookie {
         try {
             return getFactory().handlesURI(uri);
         } catch (Exception e) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            Logger.getLogger("global").log(Level.INFO, null, e);
             return false;
         }
     }
@@ -203,7 +204,7 @@ public class Server implements Node.Cookie {
         RegistryNodeFactory nodeFact = (RegistryNodeFactory) lkp.lookup(RegistryNodeFactory.class);
         if (nodeFact == null) {
             String msg = NbBundle.getMessage(Server.class, "MSG_NoInstance", name, RegistryNodeFactory.class);
-            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, msg);
+            Logger.getLogger("global").log(Level.INFO, msg);
         }
         nodeProvider = new RegistryNodeProvider(nodeFact); //null is acceptable
         return nodeProvider;

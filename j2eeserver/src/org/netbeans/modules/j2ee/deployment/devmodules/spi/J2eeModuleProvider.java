@@ -41,10 +41,11 @@ import org.netbeans.modules.j2ee.deployment.plugins.api.ServerDebugInfo;
 import org.netbeans.modules.j2ee.deployment.common.api.SourceFileMap;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.VerifierSupport;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
 
 /** This object must be implemented by J2EE module support and an instance 
@@ -135,8 +136,7 @@ public abstract class J2eeModuleProvider {
             deployedDS = si.getDatasources();
         }
         else {
-            ErrorManager.getDefault().log(ErrorManager.WARNING, 
-                    "The server data sources cannot be retrieved because the server instance cannot be found.");
+            Logger.getLogger("global").log(Level.WARNING, "The server data sources cannot be retrieved because the server instance cannot be found.");
         }
         return deployedDS;
     }
@@ -200,7 +200,7 @@ public abstract class J2eeModuleProvider {
             //btw, ds existence in a project is verified directly in the deployment configuration
             ds = getConfigSupport().createDatasource(jndiName, url, username, password, driver);
         } catch (UnsupportedOperationException oue) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, oue);
+            Logger.getLogger("global").log(Level.INFO, null, oue);
         }
         
         return ds;
@@ -222,8 +222,8 @@ public abstract class J2eeModuleProvider {
             si.deployDatasources(moduleDS);
         }
         else {
-            ErrorManager.getDefault().log(ErrorManager.WARNING, 
-                    "The data sources cannot be deployed because the server instance cannot be found.");
+            Logger.getLogger("global").log(Level.WARNING,
+                                           "The data sources cannot be deployed because the server instance cannot be found.");
         }
     }
     

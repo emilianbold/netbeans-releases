@@ -20,9 +20,6 @@
 
 package org.netbeans.modules.j2ee.deployment.impl;
 
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfigurationFactory;
 import org.openide.filesystems.FileUtil;
 
@@ -34,13 +31,14 @@ import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.plugins.api.*;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.*;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
-import org.openide.ErrorManager;
 import org.netbeans.modules.j2ee.deployment.execution.DeploymentTarget;
 import org.openide.util.NbBundle;
 import org.openide.filesystems.FileObject;
 
 import java.util.*;
 import java.io.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.j2ee.deployment.execution.ModuleConfigurationProvider;
 import org.netbeans.modules.j2ee.deployment.impl.ui.ProgressUI;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
@@ -96,7 +94,7 @@ public class TargetServer {
             }
         
         } catch (IOException ioe) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
+            Logger.getLogger("global").log(Level.INFO, null, ioe);
         }
         
         J2eeModuleProvider.ConfigSupport configSupport = dtarget.getConfigSupport();
@@ -113,8 +111,7 @@ public class TargetServer {
     
     private boolean canFileDeploy(Target[] targetz, J2eeModule deployable) {
         if (targetz == null || targetz.length != 1) {
-            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, NbBundle.getMessage(
-            TargetServer.class, "MSG_MoreThanOneIncrementalTargets"));
+            Logger.getLogger("global").log(Level.INFO, NbBundle.getMessage(TargetServer.class, "MSG_MoreThanOneIncrementalTargets"));
             return false;
         }
         
@@ -126,8 +123,7 @@ public class TargetServer {
     
     private boolean canFileDeploy(TargetModule[] targetModules, J2eeModule deployable) {
         if (targetModules == null || targetModules.length != 1) {
-            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, NbBundle.getMessage(
-            TargetServer.class, "MSG_MoreThanOneIncrementalTargets"));
+            Logger.getLogger("global").log(Level.INFO, NbBundle.getMessage(TargetServer.class, "MSG_MoreThanOneIncrementalTargets"));
             return false;
         }
         
@@ -167,7 +163,7 @@ public class TargetServer {
         
         if (missing != null) {
             String msg = NbBundle.getMessage(ServerFileDistributor.class, "MSG_MissingServiceImplementations", missing);
-            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL,  msg);
+            Logger.getLogger("global").log(Level.INFO, msg);
             return false;
         }
         
@@ -306,7 +302,9 @@ public class TargetServer {
                 availablesMap.put(keyOf(ids[i]), ids[i]);
             }
         } catch (TargetException te) {
-            throw (IllegalArgumentException) ErrorManager.getDefault().annotate(new IllegalArgumentException(), te);
+            IllegalArgumentException illegalArgumentException = new IllegalArgumentException();
+            illegalArgumentException.initCause(te);
+            throw illegalArgumentException;
         }
         return availablesMap;
     }
@@ -383,7 +381,7 @@ public class TargetServer {
             application = FileUtil.toFile(archiveFO);
             return application;
         } catch (IOException ioe) {
-            ErrorManager.getDefault().log(ErrorManager.EXCEPTION, ioe.getMessage());
+            Logger.getLogger("global").log(Level.SEVERE, ioe.getMessage());
             return null;
         }
     }

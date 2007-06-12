@@ -18,7 +18,6 @@
  */
 
 package org.netbeans.modules.j2ee.deployment.impl.ui;
-import java.awt.Image;
 import org.openide.nodes.Node;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Sheet;
@@ -27,10 +26,8 @@ import javax.swing.Action;
 import java.util.List;
 import java.util.Arrays;
 import java.util.ArrayList;
-import org.openide.util.Utilities;
-import org.openide.util.actions.SystemAction;
 
-/*
+/**
  * A node to filter the original children and extending its action by
  * an extension node.
  *

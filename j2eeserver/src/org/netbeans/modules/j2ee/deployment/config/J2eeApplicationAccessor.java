@@ -19,10 +19,8 @@
 
 package org.netbeans.modules.j2ee.deployment.config;
 
-import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeApplication;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeApplicationImplementation;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.openide.util.Exceptions;
 
 /**

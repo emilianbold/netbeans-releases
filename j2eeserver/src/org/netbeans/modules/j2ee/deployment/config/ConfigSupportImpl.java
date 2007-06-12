@@ -29,6 +29,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.j2ee.dd.api.common.ComponentInterface;
 import org.netbeans.modules.j2ee.deployment.common.api.OriginalCMPMapping;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeApplication;
@@ -48,7 +50,6 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.config.MappingConfigurat
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfiguration;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfigurationFactory;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.EjbResourceConfiguration;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -124,7 +125,7 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
         try {
             return getDeploymentPlanFileForDistribution();
         } catch (Exception ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            Logger.getLogger("global").log(Level.INFO, null, ex);
         }
         return null;
     }
@@ -166,7 +167,7 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
                 return owner.getProjectDirectory().getName();
             
         } catch (IOException ioe) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,  ioe);
+            Logger.getLogger("global").log(Level.INFO, null, ioe);
         }
         return null;
     }
@@ -201,7 +202,7 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
      */
     public String getWebContextRoot() {
         if (!getProvider().getJ2eeModule().getModuleType().equals(J2eeModule.WAR)) {
-            ErrorManager.getDefault().log("getWebContextRoot called on other module type then WAR"); //NOI18N
+            Logger.getLogger("global").log(Level.INFO, "getWebContextRoot called on other module type then WAR"); //NOI18N
             return null;
         }
         if (server == null) {
@@ -218,7 +219,7 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
                 return contextRootConfiguration.getContextRoot();
             }
         } catch (ConfigurationException ce) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ce);
+            Logger.getLogger("global").log(Level.INFO, null, ce);
         }
         return null;
     }
@@ -228,7 +229,7 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
      */
     public void setWebContextRoot(String contextRoot) {
         if (!getProvider().getJ2eeModule().getModuleType().equals(J2eeModule.WAR)) {
-            ErrorManager.getDefault().log("setWebContextRoot called on other module type then WAR"); //NOI18N
+            Logger.getLogger("global").log(Level.INFO, "setWebContextRoot called on other module type then WAR"); //NOI18N
             return;
         }
         if (server == null) {
@@ -244,7 +245,7 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
                 contextRootConfiguration.setContextRoot(contextRoot);
             }
         } catch (ConfigurationException ce) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ce);
+            Logger.getLogger("global").log(Level.INFO, null, ce);
         }
     }
         
@@ -383,7 +384,7 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
                     try {
                         ds = datasourceConfiguration.createDatasource(jndiName, url, username, password, driver);
                     } catch (ConfigurationException ce) {
-                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ce);
+                        Logger.getLogger("global").log(Level.INFO, null, ce);
                     }
                 }
             }
@@ -509,8 +510,8 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
     public Set<MessageDestination> getServerMessageDestinations() throws ConfigurationException {
         ServerInstance si = ServerRegistry.getInstance().getServerInstance(provider.getServerInstanceID());
         if (si == null) {
-            ErrorManager.getDefault().log(ErrorManager.WARNING, 
-                    "The server data sources cannot be retrieved because the server instance cannot be found.");
+            Logger.getLogger("global").log(Level.WARNING,
+                                           "The server data sources cannot be retrieved because the server instance cannot be found.");
             return Collections.<MessageDestination>emptySet();
         }
         
@@ -714,7 +715,7 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
                 ModuleConfigurationFactory moduleConfigurationFactory = server.getModuleConfigurationFactory();
                 moduleConfiguration = moduleConfigurationFactory.create(j2eeModule);
             } catch (ConfigurationException ce) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ce);
+                Logger.getLogger("global").log(Level.INFO, null, ce);
                 return null;
             }
         }
@@ -808,7 +809,7 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
             try {
                 if (out != null) out.close();
             } catch(IOException ioe) {
-                ErrorManager.getDefault().log(ioe.toString());
+                Logger.getLogger("global").log(Level.INFO, ioe.toString());
             }
         }
     }

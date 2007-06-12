@@ -31,6 +31,7 @@ import org.openide.util.NbBundle;
 
 import java.util.*;
 import java.io.*;
+import java.util.logging.Level;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.InstanceListener;
 import org.netbeans.modules.j2ee.deployment.profiler.spi.Profiler;
 import org.openide.modules.InstalledFileLocator;
@@ -124,8 +125,8 @@ public final class ServerRegistry implements java.io.Serializable {
                 firePluginListeners(server,true);
             }
         } catch (Exception e) {
-            ErrorManager.getDefault().log(ErrorManager.WARNING, ("Plugin "+name+" installation failed")); //NOI18N
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            Logger.getLogger("global").log(Level.WARNING, "Plugin " + name + " installation failed"); //NOI18N
+            Logger.getLogger("global").log(Level.INFO, null, e);
         }
     }
     
@@ -276,7 +277,7 @@ public final class ServerRegistry implements java.io.Serializable {
             String displayName) throws InstanceCreationException {
         // should never have empty url; UI should have prevented this
         if (url == null || url.equals("")) { //NOI18N
-            ErrorManager.getDefault().log(NbBundle.getMessage(ServerRegistry.class, "MSG_EmptyUrl"));
+            Logger.getLogger("global").log(Level.INFO, NbBundle.getMessage(ServerRegistry.class, "MSG_EmptyUrl"));
             return;
         }
         
@@ -288,7 +289,7 @@ public final class ServerRegistry implements java.io.Serializable {
     
     private synchronized void writeInstanceToFile(String url, String username, String password) throws IOException {
         if (url == null) {
-            ErrorManager.getDefault().log(ErrorManager.ERROR, NbBundle.getMessage(ServerRegistry.class, "MSG_NullUrl"));
+            Logger.getLogger("global").log(Level.SEVERE, NbBundle.getMessage(ServerRegistry.class, "MSG_NullUrl"));
             return;
         }
         Repository rep = (Repository) Lookup.getDefault().lookup(Repository.class);
@@ -314,7 +315,7 @@ public final class ServerRegistry implements java.io.Serializable {
         try {
             instanceFO.delete();
         } catch (IOException ioe) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
+            Logger.getLogger("global").log(Level.INFO, null, ioe);
         }
     }
     
@@ -332,7 +333,7 @@ public final class ServerRegistry implements java.io.Serializable {
     private synchronized boolean addInstanceImpl(String url, String username, 
             String password, String displayName) {
         if (instancesMap().containsKey(url)) return false;
-        for(Iterator i = serversMap().values().iterator(); i.hasNext();) {
+        for (Iterator i = serversMap().values().iterator(); i.hasNext();) {
             Server server = (Server) i.next();
             try {
                 if(server.handlesUri(url)) {
@@ -352,14 +353,14 @@ public final class ServerRegistry implements java.io.Serializable {
                     } else {
                         removeInstanceFromFile(url);
                         instancesMap().remove(url);
-                    }                    	
+                    }
                 }
             } catch (Exception e) {
                 if (instancesMap().containsKey(url)) {
                     removeInstanceFromFile(url);
                     instancesMap().remove(url);
                 }
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                Logger.getLogger("global").log(Level.INFO, null, e);
             }
         }
         return false;
@@ -471,7 +472,7 @@ public final class ServerRegistry implements java.io.Serializable {
             if (fo != null)
                 fo.delete();
         } catch(Exception ioe) {
-            org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.WARNING, ioe);
+            Logger.getLogger("global").log(Level.WARNING, null, ioe);
         }
     }
 
@@ -511,7 +512,7 @@ public final class ServerRegistry implements java.io.Serializable {
                 }
             }
         } catch (Exception e) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            Logger.getLogger("global").log(Level.INFO, null, e);
         }
         return null;
     }
@@ -522,7 +523,7 @@ public final class ServerRegistry implements java.io.Serializable {
             if (propFile != null && propFile.exists())
                 prop.load(new FileInputStream(propFile));
         } catch (IOException ioe) {
-            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, ioe.toString());
+            Logger.getLogger("global").log(Level.INFO, ioe.toString());
         }
         return prop;
     }

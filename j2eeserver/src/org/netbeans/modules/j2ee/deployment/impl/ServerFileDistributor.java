@@ -20,7 +20,6 @@
 package org.netbeans.modules.j2ee.deployment.impl;
 
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileUtil;
 import java.io.*;
 import java.util.*;
@@ -33,7 +32,6 @@ import javax.enterprise.deploy.model.*;
 import javax.enterprise.deploy.spi.*;
 import javax.enterprise.deploy.shared.*;
 import org.openide.util.NbBundle;
-import org.openide.ErrorManager;
 import org.netbeans.modules.j2ee.deployment.execution.DeploymentTarget;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
 
@@ -184,7 +182,7 @@ public class ServerFileDistributor extends ServerProgress {
     private AppChanges _distribute(Iterator source, File destDir, TargetModuleID target, String moduleUrl, long lastDeployTime) throws IOException {
         AppChanges mc = createModuleChangeDescriptor(target);
         if (source == null) {
-            ErrorManager.getDefault().log(ErrorManager.ERROR, "There is no contents for "+target); //NOI18N
+            Logger.getLogger("global").log(Level.SEVERE, "There is no contents for " + target); //NOI18N
             throw new IOException(NbBundle.getMessage(ServerFileDistributor.class, "MSG_NoContents", target));
         }
         setStatusDistributeRunning(NbBundle.getMessage(

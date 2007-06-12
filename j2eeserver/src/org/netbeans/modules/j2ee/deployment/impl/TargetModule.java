@@ -23,11 +23,12 @@ import javax.enterprise.deploy.spi.Target;
 import javax.enterprise.deploy.spi.TargetModuleID;
 import javax.enterprise.deploy.spi.DeploymentManager;
 import javax.enterprise.deploy.shared.ModuleType;
-import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * @author  nn136682
@@ -121,7 +122,7 @@ public class TargetModule implements TargetModuleID, java.io.Serializable {
                     }
                 }
             } catch (Exception e) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                Logger.getLogger("global").log(Level.INFO, null, e);
             }
         }
     }

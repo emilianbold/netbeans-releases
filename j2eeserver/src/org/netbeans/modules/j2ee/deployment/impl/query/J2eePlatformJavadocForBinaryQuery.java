@@ -30,7 +30,6 @@ import java.util.HashMap;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import org.openide.ErrorManager;
 import org.openide.filesystems.URLMapper;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -43,6 +42,7 @@ import org.netbeans.modules.j2ee.deployment.common.api.J2eeLibraryTypeProvider;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl;
 import org.netbeans.spi.java.queries.JavadocForBinaryQueryImplementation;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
+import org.openide.util.Exceptions;
 import org.openide.util.WeakListeners;
 
 
@@ -171,7 +171,7 @@ public class J2eePlatformJavadocForBinaryQuery implements JavadocForBinaryQueryI
                     normalizedURL = fo.getURL();
                     this.normalizedURLCache.put (url, normalizedURL);
                 } catch (FileStateInvalidException e) {
-                    ErrorManager.getDefault().notify(e);
+                    Exceptions.printStackTrace(e);
                 }
             }
         }
@@ -209,7 +209,7 @@ public class J2eePlatformJavadocForBinaryQuery implements JavadocForBinaryQueryI
         try {
             return result == null ? rootURL : result.getURL();        
         } catch (FileStateInvalidException e) {
-            ErrorManager.getDefault().notify(e);
+            Exceptions.printStackTrace(e);
             return rootURL;
         }
     }

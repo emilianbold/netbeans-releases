@@ -26,9 +26,7 @@ import org.openide.nodes.Node;
 import java.util.List;
 import java.util.Arrays;
 import java.util.ArrayList;
-import java.util.Collections;
 import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 

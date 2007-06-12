@@ -24,7 +24,6 @@ import org.w3c.dom.DOMException;
 import org.w3c.dom.NodeList;
 
 import org.netbeans.spi.settings.DOMConvertor;
-import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 import org.openide.filesystems.*;
 
@@ -32,6 +31,8 @@ import java.util.List;
 import java.util.Collections;
 import java.util.ArrayList;
 import java.io.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * @author  nn136682
@@ -62,7 +63,7 @@ public class TargetModuleConverter extends DOMConvertor {
     protected Object readElement(org.w3c.dom.Element element) throws java.io.IOException, ClassNotFoundException {
         NodeList targetModuleElements =  element.getElementsByTagName(E_TARGET_MODULE);
         TargetModule[] targetModules = new TargetModule[targetModuleElements.getLength()];
-        for (int i=0; i<targetModules.length; i++) {
+        for (int i = 0; i < targetModules.length; i++) {
             Element te = (Element) targetModuleElements.item(i);
             String id = te.getAttribute(A_ID);
             String url = te.getAttribute(A_INSTANCE_URL);
@@ -77,9 +78,11 @@ public class TargetModuleConverter extends DOMConvertor {
             try {
                 targetModules[i] = new TargetModule(id, url, targetName, Long.parseLong(timestamp), contentDir, contextRoot);
             } catch (NumberFormatException nfe) {
-                throw (IOException) ErrorManager.getDefault().annotate(new IOException(), nfe);
+                IOException exc = new IOException();
+                exc.initCause(nfe);
+                throw exc;
             }
-        }
+            }
         return new TargetModule.List(targetModules);
     }
     
@@ -142,7 +145,7 @@ public class TargetModuleConverter extends DOMConvertor {
             return true;
             
         } catch(Exception ioe) {
-            org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.WARNING, ioe);
+            Logger.getLogger("global").log(Level.WARNING, null, ioe);
             return false;
         }
         finally {
@@ -150,7 +153,7 @@ public class TargetModuleConverter extends DOMConvertor {
             if (lock != null) lock.releaseLock();
             if (writer != null) writer.close();
             } catch (Exception e) {
-                org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.WARNING, e);
+                Logger.getLogger("global").log(Level.WARNING, null, e);
             }
         }
     }
@@ -174,11 +177,11 @@ public class TargetModuleConverter extends DOMConvertor {
             }
             return null;
         } catch(Exception ioe) {
-            org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.WARNING, ioe);
+            Logger.getLogger("global").log(Level.WARNING, null, ioe);
             return null;
         } finally {
             try {  if (reader != null) reader.close(); } catch(Exception e) {
-                ErrorManager.getDefault().notify(ErrorManager.WARNING, e);
+                Logger.getLogger("global").log(Level.WARNING, null, e);
             }
         }
     }
@@ -207,11 +210,11 @@ public class TargetModuleConverter extends DOMConvertor {
             }
             return Collections.EMPTY_LIST;
         } catch(Exception ioe) {
-            org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.WARNING, ioe);
+            Logger.getLogger("global").log(Level.WARNING, null, ioe);
             return Collections.EMPTY_LIST;
         } finally {
             try {  if (reader != null) reader.close(); } catch(Exception e) {
-                ErrorManager.getDefault().notify(ErrorManager.WARNING, e);
+                Logger.getLogger("global").log(Level.WARNING, null, e);
             }
         }
     }
@@ -232,11 +235,11 @@ public class TargetModuleConverter extends DOMConvertor {
             }
             return null;
         } catch(Exception ioe) {
-            org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.WARNING, ioe);
+            Logger.getLogger("global").log(Level.WARNING, null, ioe);
             return null;
         } finally {
             try {  if (lock != null) lock.releaseLock(); } catch(Exception e) {
-                ErrorManager.getDefault().notify(ErrorManager.WARNING, e);
+                Logger.getLogger("global").log(Level.WARNING, null, e);
             }
         }
     }

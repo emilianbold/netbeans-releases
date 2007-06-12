@@ -25,6 +25,8 @@ import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Iterator;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.j2ee.deployment.execution.DeploymentTarget;
 import org.netbeans.modules.j2ee.deployment.execution.ModuleConfigurationProvider;
 import javax.enterprise.deploy.spi.Target;
@@ -33,7 +35,6 @@ import javax.enterprise.deploy.shared.CommandType;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeApplication;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ServerProgress;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileUtil;
@@ -103,7 +104,7 @@ public class InitialServerFileDistributor extends ServerProgress {
             
         } catch (Exception e) {
             setStatusDistributeFailed(e.getMessage());
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            Logger.getLogger("global").log(Level.INFO, null, e);
             if (!inPlace && !cleanup (dir)) {
                 setStatusDistributeFailed ("Failed to cleanup the data after unsucesful distribution");
             }

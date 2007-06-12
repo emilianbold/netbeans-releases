@@ -18,7 +18,6 @@
  */
 package org.netbeans.modules.j2ee.deployment.devmodules.spi;
 
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;

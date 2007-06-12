@@ -24,6 +24,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
 import javax.enterprise.deploy.spi.Target;
 import javax.enterprise.deploy.spi.status.ProgressObject;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
@@ -36,7 +37,6 @@ import org.netbeans.modules.j2ee.deployment.impl.ui.*;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.JDBCDriverDeployer;
-import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 
 /**
@@ -136,7 +136,7 @@ if (System.getProperties().getProperty("resource-api-redesign") != null) {
             return deploymentTarget.getClientUrl(clientUrlPart);
         } catch (Exception ex) {            
             String msg = NbBundle.getMessage (Deployment.class, "MSG_DeployFailed", ex.getLocalizedMessage ());
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            java.util.logging.Logger.getLogger("global").log(Level.INFO, null, ex);
             throw new DeploymentException(msg, ex);
         } finally {
             if (progress != null) {
@@ -151,8 +151,8 @@ if (System.getProperties().getProperty("resource-api-redesign") != null) {
             si.deployMessageDestinations(jmp.getConfigSupport().getMessageDestinations());
         }
         else {
-            ErrorManager.getDefault().log(ErrorManager.WARNING, 
-                    "The message destinations cannot be deployed because the server instance cannot be found.");
+            java.util.logging.Logger.getLogger("global").log(Level.WARNING,
+                    "The message destinations cannot be deployed because the server instance cannot be found."); // NOI18N
         }
     }
     

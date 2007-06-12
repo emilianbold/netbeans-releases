@@ -22,7 +22,6 @@ package org.netbeans.modules.j2ee.deployment.devmodules.spi;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.Iterator;
-import org.netbeans.modules.j2ee.dd.api.common.RootInterface;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.openide.filesystems.FileObject;
 

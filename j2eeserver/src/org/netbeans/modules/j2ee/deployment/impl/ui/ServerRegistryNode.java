@@ -24,7 +24,6 @@
  */
 package org.netbeans.modules.j2ee.deployment.impl.ui;
 
-import java.awt.Image;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer;
 import org.openide.nodes.*;
 import org.openide.filesystems.*;
@@ -32,12 +31,12 @@ import org.openide.loaders.*;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.HelpCtx;
-import org.openide.ErrorManager;
 import org.netbeans.modules.j2ee.deployment.impl.ui.actions.*;
 import org.netbeans.modules.j2ee.deployment.impl.*;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.InstanceListener;
-import org.openide.util.Utilities;
 
 /**
  * The server registry node is a node representing the registry in global options.
@@ -163,7 +162,7 @@ implements ServerRegistry.PluginListener, InstanceListener {
             org.openide.util.Lookup l = new FolderLookup(df).getLookup();
             return (ServerRegistryNode) l.lookup(ServerRegistryNode.class);
         } catch (DataObjectNotFoundException e) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            Logger.getLogger("global").log(Level.INFO, null, e);
             return null;
         }
     }

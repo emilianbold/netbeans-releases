@@ -21,10 +21,6 @@ package org.netbeans.modules.j2ee.deployment.impl;
 
 import java.util.Collection;
 import java.util.Iterator;
-import javax.swing.SwingUtilities;
-import org.netbeans.modules.j2ee.deployment.impl.ui.ProgressUI;
-import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 
 
 /**

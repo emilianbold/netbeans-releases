@@ -38,11 +38,11 @@ import org.netbeans.modules.j2ee.deployment.common.api.J2eeLibraryTypeProvider;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.Exceptions;
 import org.openide.util.WeakListeners;
 
 
@@ -112,7 +112,7 @@ public class J2eePlatformSourceForBinaryQuery implements SourceForBinaryQueryImp
                     normalizedURL = fo.getURL();
                     this.normalizedURLCache.put (url, normalizedURL);
                 } catch (FileStateInvalidException e) {
-                    ErrorManager.getDefault().notify(e);
+                    Exceptions.printStackTrace(e);
                 }
             }
         }

@@ -23,10 +23,11 @@ import org.w3c.dom.Element;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.NodeList;
 import java.io.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.netbeans.spi.settings.DOMConvertor;
 
-import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 import org.openide.filesystems.*;
 
@@ -55,7 +56,7 @@ public class ServerStringConverter extends org.netbeans.spi.settings.DOMConverto
             return true;
             
         } catch(Exception ioe) {
-            org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.WARNING, ioe);
+            Logger.getLogger("global").log(Level.WARNING, null, ioe);
             return false;
         }
         finally {
@@ -63,7 +64,7 @@ public class ServerStringConverter extends org.netbeans.spi.settings.DOMConverto
             if (lock != null) lock.releaseLock();
             if (writer != null) writer.close();
             } catch (Exception e) {
-                org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.WARNING, e);
+                Logger.getLogger("global").log(Level.WARNING, null, e);
             }
         }
     }
@@ -82,11 +83,11 @@ public class ServerStringConverter extends org.netbeans.spi.settings.DOMConverto
             reader = new InputStreamReader(fo.getInputStream());
             return (ServerString) create().read(reader);
         } catch(Exception ioe) {
-            org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.WARNING, ioe);
+            Logger.getLogger("global").log(Level.WARNING, null, ioe);
             return null;
         } finally {
             try {  if (reader != null) reader.close(); } catch(Exception e) {
-                ErrorManager.getDefault().notify(ErrorManager.WARNING, e);
+                Logger.getLogger("global").log(Level.WARNING, null, e);
             }
         }
     }

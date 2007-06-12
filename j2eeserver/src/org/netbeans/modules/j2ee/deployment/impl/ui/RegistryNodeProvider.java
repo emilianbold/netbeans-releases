@@ -20,13 +20,13 @@
 package org.netbeans.modules.j2ee.deployment.impl.ui;
 
 import org.netbeans.modules.j2ee.deployment.impl.*;
-import org.openide.ErrorManager;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import javax.enterprise.deploy.spi.factories.DeploymentFactory;
 import javax.enterprise.deploy.spi.DeploymentManager;
 import javax.enterprise.deploy.spi.Target;
 import javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException;
+import org.openide.util.Exceptions;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.RegistryNodeFactory;
 
 
@@ -85,7 +85,7 @@ public class RegistryNodeProvider {
                     try {
                         return server.getDisconnectedDeploymentManager();
                     } catch (DeploymentManagerCreationException dmce) {
-                        ErrorManager.getDefault().notify(dmce);
+                        Exceptions.printStackTrace(dmce);
                     }
                 }
                 return null;
@@ -105,8 +105,8 @@ public class RegistryNodeProvider {
                     try {
                         return instance.isConnected() ? instance.getDeploymentManager()
                                                       : instance.getDisconnectedDeploymentManager();
-                    }  catch (DeploymentManagerCreationException dmce) {
-                        ErrorManager.getDefault().notify(dmce);
+                    } catch (DeploymentManagerCreationException dmce) {
+                        Exceptions.printStackTrace(dmce);
                     }
                 }
                 return null;
@@ -127,8 +127,8 @@ public class RegistryNodeProvider {
                     try {
                         return instance.isConnected() ? instance.getDeploymentManager()
                                                       : instance.getDisconnectedDeploymentManager();
-                    }  catch (DeploymentManagerCreationException dmce) {
-                        ErrorManager.getDefault().notify(dmce);
+                    } catch (DeploymentManagerCreationException dmce) {
+                        Exceptions.printStackTrace(dmce);
                     }
                 }
                 if (Target.class.isAssignableFrom(clazz))

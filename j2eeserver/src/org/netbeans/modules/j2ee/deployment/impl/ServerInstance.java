@@ -61,10 +61,10 @@ import org.netbeans.modules.j2ee.deployment.profiler.api.ProfilerServerSettings;
 import org.netbeans.modules.j2ee.deployment.profiler.api.ProfilerSupport;
 import org.netbeans.modules.j2ee.deployment.profiler.spi.Profiler;
 import org.openide.nodes.Node;
-import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.util.Exceptions;
 import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.InputOutput;
@@ -268,7 +268,7 @@ public class ServerInstance implements Node.Cookie, Comparable {
                 try {
                     j2eePlatformImpl = fact.getJ2eePlatformImpl(isConnected() ? getDeploymentManager() : getDisconnectedDeploymentManager());
                 }  catch (DeploymentManagerCreationException dmce) {
-                    ErrorManager.getDefault().notify(dmce);
+                    Exceptions.printStackTrace(dmce);
                 }
             }
         }
@@ -394,7 +394,7 @@ public class ServerInstance implements Node.Cookie, Comparable {
                                     try {
                                         _stop(serverTarget.getTarget(), progressUI);
                                     } catch (ServerException ex) {
-                                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                                        Logger.getLogger("global").log(Level.INFO, null, ex);
                                     }
                                 }
                             }
@@ -402,7 +402,7 @@ public class ServerInstance implements Node.Cookie, Comparable {
                                 try {
                                     _stop(progressUI);
                                 } catch (ServerException ex) {
-                                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                                    Logger.getLogger("global").log(Level.INFO, null, ex);
                                 }
                             }
                         } finally {
@@ -463,7 +463,7 @@ public class ServerInstance implements Node.Cookie, Comparable {
                 
                 targs = getDeploymentManager().getTargets();
             } catch(IllegalStateException e) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                Logger.getLogger("global").log(Level.INFO, null, e);
             }
             if(targs == null) {
                 targs = new Target[0];
@@ -518,7 +518,7 @@ public class ServerInstance implements Node.Cookie, Comparable {
         try {
             return server.getOptionalFactory().getAntDeploymentProvider(getDisconnectedDeploymentManager());
         } catch (DeploymentManagerCreationException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            Logger.getLogger("global").log(Level.INFO, null, ex);
             return null;
         }
     }
@@ -527,7 +527,7 @@ public class ServerInstance implements Node.Cookie, Comparable {
         try {
             return server.getOptionalFactory().getJDBCDriverDeployer(getDisconnectedDeploymentManager());
         } catch (DeploymentManagerCreationException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            Logger.getLogger("global").log(Level.INFO, null, ex);
             return null;
         }
     }
@@ -739,7 +739,7 @@ public class ServerInstance implements Node.Cookie, Comparable {
             Target t = _retrieveTarget(target);
             thisSDI = thisSS.getDebugInfo(t);
             if (thisSDI == null) {
-                ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "DebuggerInfo cannot be found for: " + this.toString());
+                Logger.getLogger("global").log(Level.INFO, "DebuggerInfo cannot be found for: " + this.toString());
                 return null;
             }
         }
@@ -779,7 +779,7 @@ public class ServerInstance implements Node.Cookie, Comparable {
         Target target = _retrieveTarget(null);
         ServerDebugInfo sdi = getServerDebugInfo(target);
         if (sdi == null) {
-            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "DebuggerInfo cannot be found for: " + this.toString());
+            Logger.getLogger("global").log(Level.INFO, "DebuggerInfo cannot be found for: " + this.toString());
             return false; // give user a chance to start server even if we don't know whether she will success
         }
         
@@ -1035,7 +1035,7 @@ public class ServerInstance implements Node.Cookie, Comparable {
             ui.start();
             start(ui);
         } catch (ServerException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            Logger.getLogger("global").log(Level.INFO, null, ex);
         } finally {
             ui.finish();
         }
@@ -1524,7 +1524,7 @@ public class ServerInstance implements Node.Cookie, Comparable {
         try {
            new RequestProcessor().post(test).waitFinished(timeout);
         } catch (InterruptedException ie) {
-            ErrorManager.getDefault().notify(ie);
+            Exceptions.printStackTrace(ie);
         } finally {
             return test.result();
         }
@@ -1611,12 +1611,12 @@ public class ServerInstance implements Node.Cookie, Comparable {
                 Target target = _retrieveTarget(null);
                 ServerDebugInfo sdi = getServerDebugInfo(target);
                 if (sdi == null) {
-                    ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "DebuggerInfo cannot be found for: " + ServerInstance.this);
+                    Logger.getLogger("global").log(Level.INFO, "DebuggerInfo cannot be found for: " + ServerInstance.this);
                     return; // give it up
                 }
                 AttachingDICookie attCookie = (AttachingDICookie)session.lookupFirst(null, AttachingDICookie.class);
                 if (attCookie == null) {
-                    ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "AttachingDICookie cannot be found for: " + ServerInstance.this);
+                    Logger.getLogger("global").log(Level.INFO, "AttachingDICookie cannot be found for: " + ServerInstance.this);
                     return; // give it up
                 }
                 if (ServerDebugInfo.TRANSPORT_SHMEM.equals(sdi.getTransport())) {

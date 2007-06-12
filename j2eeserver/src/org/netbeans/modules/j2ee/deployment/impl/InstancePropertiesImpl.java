@@ -30,7 +30,10 @@ import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 import java.beans.PropertyChangeEvent;
+import java.io.IOException;
+import java.util.logging.Logger;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.InstanceListener;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -88,9 +91,9 @@ public class InstancePropertiesImpl extends InstanceProperties implements Instan
             String oldValue = getProperty(propname);
             getFO().setAttribute(propname, value);
             firePropertyChange(new PropertyChangeEvent(this, propname, oldValue, value));
-        } catch (java.io.IOException ioe) {
-            throw (IllegalStateException) org.openide.ErrorManager.getDefault().annotate(
-            new IllegalStateException(NbBundle.getMessage(InstancePropertiesImpl.class, "MSG_InstanceNotExists", url)),ioe);
+        } catch (IOException ioe) {
+            String message = NbBundle.getMessage(InstancePropertiesImpl.class, "MSG_InstanceNotExists", url);
+            throw new IllegalStateException(Exceptions.attachLocalizedMessage(ioe, message));
         }
     }
     
