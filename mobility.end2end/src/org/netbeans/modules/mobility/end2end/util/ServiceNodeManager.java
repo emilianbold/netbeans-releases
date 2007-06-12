@@ -46,7 +46,7 @@ import java.util.Set;
 public class ServiceNodeManager {
 
     final static String DEFAULT_PACKAGE = "<default package>"; // NOI18N
-    final static String NODE_VALIDITY_ATTRIBUTE = "isValid"; //NOI18N
+    public final static String NODE_VALIDITY_ATTRIBUTE = "isValid"; //NOI18N
 
     private static ClassDataRegistry activeProfileRegistry;
 

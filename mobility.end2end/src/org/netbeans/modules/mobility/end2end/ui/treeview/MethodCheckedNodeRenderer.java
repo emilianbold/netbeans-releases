@@ -26,6 +26,7 @@ import javax.swing.tree.TreeCellRenderer;
 import java.awt.*;
 import java.awt.event.ItemListener;
 import java.beans.BeanInfo;
+import org.netbeans.modules.mobility.end2end.util.ServiceNodeManager;
 
 /**
  * User: suchys
@@ -97,6 +98,14 @@ public class MethodCheckedNodeRenderer implements TreeCellRenderer {
                 customRenderer.setState(state == null ? MethodCheckedTreeBeanView.UNSELECTED : state);
             }
             
+            // Strikeout the line
+            if( node.getValue( ServiceNodeManager.NODE_VALIDITY_ATTRIBUTE ) != null &&
+                    ((Boolean)node.getValue( ServiceNodeManager.NODE_VALIDITY_ATTRIBUTE )).booleanValue()) {
+                customRenderer.setText( "<html><s>" + node.getDisplayName() + "</s></html>");
+                customRenderer.setEnabled( false );
+            } else {
+                customRenderer.setEnabled( true );
+            }
             
             customRenderer.setIcon(new ImageIcon(node.getIcon(BeanInfo.ICON_COLOR_16x16)));
             return customRenderer;
@@ -168,6 +177,10 @@ public class MethodCheckedNodeRenderer implements TreeCellRenderer {
         public void setIcon(final Icon icon){
             //System.err.println(icon);
             jLabel1.setIcon(icon);
+        }
+        
+        public void setEnabled( final boolean enabled ) {
+            jCheckBox1.setEnabled( enabled );
         }
         
         public void addItemListener(final ItemListener itemListener) {
