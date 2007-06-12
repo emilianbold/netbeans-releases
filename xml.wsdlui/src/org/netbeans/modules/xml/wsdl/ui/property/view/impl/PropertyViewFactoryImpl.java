@@ -406,7 +406,7 @@ public class PropertyViewFactoryImpl extends PropertyViewFactory {
             Node.Property attrValueProperty;
             try {
                 attrValueProperty = new BaseAttributeProperty(new AnyElementPropertyAdapter(exElement, elementQName), String.class, "value");
-                attrValueProperty.setName(NbBundle.getMessage(ExtensibilityElementNode.class, "PROP_NAME_ANY_CONTENT"));
+                attrValueProperty.setName(NbBundle.getMessage(PropertyViewFactoryImpl.class, "PROP_NAME_ANY_CONTENT"));
                 propertySet.put(attrValueProperty);
             } catch (NoSuchMethodException e) {
                 ErrorManager.getDefault().notify(e);

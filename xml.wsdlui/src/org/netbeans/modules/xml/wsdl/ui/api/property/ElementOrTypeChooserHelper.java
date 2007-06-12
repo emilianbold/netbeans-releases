@@ -92,7 +92,7 @@ public class ElementOrTypeChooserHelper extends ChooserHelper<SchemaComponent>{
         }
         if (project != null) {
             projectsFolderNode = new FolderNode(new Children.Array()); 
-            projectsFolderNode.setDisplayName(NbBundle.getMessage(ElementOrTypeChooserPanel.class, "LBL_ByFile_DisplayName"));
+            projectsFolderNode.setDisplayName(NbBundle.getMessage(ElementOrTypeChooserHelper.class, "LBL_ByFile_DisplayName"));
             LogicalViewProvider viewProvider = project.getLookup().lookup(LogicalViewProvider.class);
 
 
