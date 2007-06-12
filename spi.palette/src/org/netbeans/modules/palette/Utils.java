@@ -35,6 +35,7 @@ import java.util.logging.Logger;
 import javax.swing.*;
 import org.netbeans.spi.palette.PaletteController;
 import org.netbeans.modules.palette.ui.PalettePanel;
+import org.netbeans.spi.palette.PaletteActions;
 
 import org.openide.*;
 import org.openide.loaders.DataObject;
@@ -145,8 +146,17 @@ public final class Utils {
     
     public static void resetPalette( final PaletteController controller, final Settings settings ) {
         Node rootNode = (Node)controller.getRoot().lookup( Node.class );
-        if( null != rootNode )
-            resetPalette( rootNode, controller, settings );
+        if( null != rootNode ) {
+            PaletteActions customActions = rootNode.getLookup().lookup( PaletteActions.class );
+            Action resetAction = customActions.getResetAction();
+            if( null != resetAction ) {
+                settings.reset();
+                resetAction.actionPerformed( new ActionEvent( controller, 0, "reset" ) ); //NOI18N
+                controller.refresh();
+            } else {
+                resetPalette( rootNode, controller, settings );
+            }
+        }
     }
     
     public static void resetPalette( Node rootNode, PaletteController controller, Settings settings ) {

@@ -19,14 +19,18 @@
 
 package org.netbeans.spi.palette;
 
+import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import junit.framework.TestCase;
 import org.netbeans.modules.palette.Category;
 import org.netbeans.modules.palette.Item;
 import org.netbeans.modules.palette.Model;
 import org.netbeans.modules.palette.Settings;
+import org.netbeans.modules.palette.Utils;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 
@@ -188,15 +192,12 @@ public class PaletteControllerTest extends TestCase {
     /**
      * Test of resetPalette method, of class org.netbeans.modules.palette.api.PaletteController.
      */
-    public void testResetPalette() {
-//        System.out.println("testResetPalette");
-//        
-//        PaletteController instance = null;
-//        
-//        instance.resetPalette();
-//        
-//        // TODO add your test code below by replacing the default call to fail.
-//        fail("The test case is empty.");
+    public void testCustomResetPalette() {
+        MyActions actions = new MyActions();
+        PaletteController myController = PaletteFactory.createPalette( DummyPalette.createPaletteRoot(), actions, null, null );
+        
+        Utils.resetPalette( myController, settings );
+        assertTrue( actions.customResetInvoked );
     }
 
     /**
@@ -325,6 +326,40 @@ public class PaletteControllerTest extends TestCase {
         
         public void setEnabled( boolean enable ) {
             this.isEnabled = enable;
+        }
+    }
+    
+    private static class MyActions extends PaletteActions {
+        
+        boolean customResetInvoked = false;
+
+        public Action[] getImportActions() {
+            return null;
+        }
+
+        public Action[] getCustomPaletteActions() {
+            return null;
+        }
+
+        public Action[] getCustomCategoryActions(Lookup category) {
+            return null;
+        }
+
+        public Action[] getCustomItemActions(Lookup item) {
+            return null;
+        }
+
+        public Action getPreferredAction(Lookup item) {
+            return null;
+        }
+
+        @Override
+        public Action getResetAction() {
+            return new AbstractAction() {
+                public void actionPerformed(ActionEvent arg0) {
+                    customResetInvoked = true;
+                }
+            };
         }
     }
 }

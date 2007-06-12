@@ -77,5 +77,18 @@ public abstract class PaletteActions {
      */
     public Action getRefreshAction() {
         return null;
-}
+    }
+    
+    /**
+     * An action that resets the palette content to its default state. The action can be 
+     * invoked by the user from palette's popup menu for from the Palette Manager window.
+     * The action properties (label, icon) are not displayed to the user, the Palette module
+     * provides its own.
+     * @return Custom reset action or null to use the default one that removes all user's 
+     * modifications to the XML layer files.
+     * @since 1.11
+     */
+    public Action getResetAction() {
+        return null;
+    }
 }
