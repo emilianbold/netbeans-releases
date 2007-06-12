@@ -39,7 +39,7 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
 
-    <testbag testattribs="jv" executor="ide" name="testbag_refactoring">
+    <testbag testattribs="almoststable" executor="ide" name="testbag_refactoring">
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="org/netbeans/qa/form/refactoring/RenameComponentVariableTest.class"/>
@@ -72,10 +72,10 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
     
-   <testbag testattribs="validation" executor="ide" name="testbag_visualdevelopment">
+   <testbag testattribs="validation,jv" executor="ide" name="testbag_visualdevelopment">
         <testset dir="qa-functional/src">
             <patternset>
-                <include name="org/netbeans/qa/form/visualDevelopment/FormGenerateCodeTest.class"/>
+<!--                <include name="org/netbeans/qa/form/visualDevelopment/FormGenerateCodeTest.class"/> -->
 <!-- issues <include name="org/netbeans/qa/form/visualDevelopment/MenuAndPopupMenuTest.class"/> -->
                 <include name="org/netbeans/qa/form/visualDevelopment/AddComponents_AWT.class"/>
                 <include name="org/netbeans/qa/form/visualDevelopment/AddComponents_SWING.class"/>
