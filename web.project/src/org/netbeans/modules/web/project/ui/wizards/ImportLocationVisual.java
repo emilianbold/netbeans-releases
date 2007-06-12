@@ -348,7 +348,7 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
         j2eeSpecComboBox = new javax.swing.JComboBox();
         jLabelContextPath = new javax.swing.JLabel();
         jTextFieldContextPath = new javax.swing.JTextField();
-        manageServersButton = new javax.swing.JButton();
+        addServerButton = new javax.swing.JButton();
         warningPlaceHolderPanel = new javax.swing.JPanel();
 
         setLayout(new java.awt.GridBagLayout());
@@ -597,10 +597,10 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
         jPanel1.add(jTextFieldContextPath, gridBagConstraints);
         jTextFieldContextPath.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ImportLocationVisual.class, "ACS_LBL_NWP1_ContextPath_A11YDesc")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(manageServersButton, org.openide.util.NbBundle.getMessage(ImportLocationVisual.class, "LBL_ManageServers")); // NOI18N
-        manageServersButton.addActionListener(new java.awt.event.ActionListener() {
+        org.openide.awt.Mnemonics.setLocalizedText(addServerButton, org.openide.util.NbBundle.getMessage(ImportLocationVisual.class, "LBL_AddServer")); // NOI18N
+        addServerButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                manageServersButtonActionPerformed(evt);
+                addServerButtonActionPerformed(evt);
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -608,9 +608,9 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
         gridBagConstraints.gridy = 0;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 5, 0);
-        jPanel1.add(manageServersButton, gridBagConstraints);
-        manageServersButton.getAccessibleContext().setAccessibleName(null);
-        manageServersButton.getAccessibleContext().setAccessibleDescription(null);
+        jPanel1.add(addServerButton, gridBagConstraints);
+        addServerButton.getAccessibleContext().setAccessibleName(null);
+        addServerButton.getAccessibleContext().setAccessibleDescription(null);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -642,20 +642,26 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
         setJ2eeVersionWarningPanel();
     }//GEN-LAST:event_j2eeSpecComboBoxActionPerformed
 
-    private void manageServersButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_manageServersButtonActionPerformed
+    private void addServerButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addServerButtonActionPerformed
         ServerInstanceWrapper serverInstanceWrapper = (ServerInstanceWrapper) serversModel.getSelectedItem();
-        String lastSelectedServerInstanceID = null;
+        String selectedServerInstanceID = null;
         if (serverInstanceWrapper != null) {
-            lastSelectedServerInstanceID = serverInstanceWrapper.getServerInstanceID();
+            selectedServerInstanceID = serverInstanceWrapper.getServerInstanceID();
         }
-        ServerManager.showCustomizer(lastSelectedServerInstanceID);
         String lastSelectedJ2eeSpecLevel = (String) j2eeSpecComboBox.getSelectedItem();
+        String newServerInstanceID = ServerManager.showAddServerInstanceWizard();
+        if (newServerInstanceID != null) {
+            selectedServerInstanceID = newServerInstanceID;
+            // clear the spec level selection
+            lastSelectedJ2eeSpecLevel = null;
+            j2eeSpecComboBox.setSelectedItem(null);
+        }
         // refresh the list of servers
-        initServers(lastSelectedServerInstanceID);
+        initServers(selectedServerInstanceID);
         if (lastSelectedJ2eeSpecLevel != null) {
             j2eeSpecComboBox.setSelectedItem(lastSelectedJ2eeSpecLevel);
         }
-    }//GEN-LAST:event_manageServersButtonActionPerformed
+}//GEN-LAST:event_addServerButtonActionPerformed
 
     private void serverInstanceComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_serverInstanceComboBoxActionPerformed
         String prevSelectedItem = (String) j2eeSpecComboBox.getSelectedItem();
@@ -738,6 +744,7 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
     }//GEN-LAST:event_jButtonSrcLocationActionPerformed
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton addServerButton;
     private javax.swing.JComboBox j2eeSpecComboBox;
     private javax.swing.JLabel j2eeSpecLabel;
     private javax.swing.JButton jButtonPrjLocation;
@@ -754,7 +761,6 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
     private javax.swing.JPanel jPanelOptions;
     private javax.swing.JSeparator jSeparator1;
     protected javax.swing.JTextField jTextFieldContextPath;
-    private javax.swing.JButton manageServersButton;
     public javax.swing.JTextField moduleLocationTextField;
     public javax.swing.JTextField projectLocationTextField;
     public javax.swing.JTextField projectNameTextField;

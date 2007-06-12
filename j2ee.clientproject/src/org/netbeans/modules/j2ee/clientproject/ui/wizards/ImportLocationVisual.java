@@ -145,7 +145,7 @@ public class ImportLocationVisual extends JPanel /*implements DocumentListener *
         addToAppLabel = new javax.swing.JLabel();
         addToAppComboBox = new javax.swing.JComboBox();
         warningPlaceHolderPanel = new javax.swing.JPanel();
-        manageServersButton = new javax.swing.JButton();
+        addServerButton = new javax.swing.JButton();
 
         setNextFocusableComponent(projectLocation);
         setLayout(new java.awt.GridBagLayout());
@@ -370,10 +370,10 @@ public class ImportLocationVisual extends JPanel /*implements DocumentListener *
         gridBagConstraints.weightx = 1.0;
         jPanel1.add(warningPlaceHolderPanel, gridBagConstraints);
 
-        org.openide.awt.Mnemonics.setLocalizedText(manageServersButton, org.openide.util.NbBundle.getMessage(ImportLocationVisual.class, "LBL_ManageServers")); // NOI18N
-        manageServersButton.addActionListener(new java.awt.event.ActionListener() {
+        org.openide.awt.Mnemonics.setLocalizedText(addServerButton, org.openide.util.NbBundle.getMessage(ImportLocationVisual.class, "LBL_AddServer")); // NOI18N
+        addServerButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                manageServersButtonActionPerformed(evt);
+                addServerButtonActionPerformed(evt);
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -381,9 +381,9 @@ public class ImportLocationVisual extends JPanel /*implements DocumentListener *
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 5, 0);
-        jPanel1.add(manageServersButton, gridBagConstraints);
-        manageServersButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ImportLocationVisual.class, "ASCN_ManageServers")); // NOI18N
-        manageServersButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ImportLocationVisual.class, "ASCD_ManageServers")); // NOI18N
+        jPanel1.add(addServerButton, gridBagConstraints);
+        addServerButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ImportLocationVisual.class, "ASCN_AddServer")); // NOI18N
+        addServerButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ImportLocationVisual.class, "ASCD_AddServer")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -400,20 +400,26 @@ public class ImportLocationVisual extends JPanel /*implements DocumentListener *
         getAccessibleContext().setAccessibleDescription(null);
     }// </editor-fold>//GEN-END:initComponents
 
-    private void manageServersButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_manageServersButtonActionPerformed
+    private void addServerButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addServerButtonActionPerformed
         ServerInstanceWrapper serverInstanceWrapper = (ServerInstanceWrapper) serversModel.getSelectedItem();
-        String lastSelectedServerInstanceID = null;
+        String selectedServerInstanceID = null;
         if (serverInstanceWrapper != null) {
-            lastSelectedServerInstanceID = serverInstanceWrapper.getServerInstanceID();
+            selectedServerInstanceID = serverInstanceWrapper.getServerInstanceID();
         }
-        ServerManager.showCustomizer(lastSelectedServerInstanceID);
         String lastSelectedJ2eeSpecLevel = (String) j2eeSpecComboBox.getSelectedItem();
+        String newServerInstanceID = ServerManager.showAddServerInstanceWizard();
+        if (newServerInstanceID != null) {
+            selectedServerInstanceID = newServerInstanceID;
+            // clear the spec level selection
+            lastSelectedJ2eeSpecLevel = null;
+            j2eeSpecComboBox.setSelectedItem(null);
+        }
         // refresh the list of servers
-        initServers(lastSelectedServerInstanceID);
+        initServers(selectedServerInstanceID);
         if (lastSelectedJ2eeSpecLevel != null) {
             j2eeSpecComboBox.setSelectedItem(lastSelectedJ2eeSpecLevel);
         }
-    }//GEN-LAST:event_manageServersButtonActionPerformed
+}//GEN-LAST:event_addServerButtonActionPerformed
 
     private void j2eeSpecComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_j2eeSpecComboBoxActionPerformed
         setJ2eeVersionWarningPanel();
@@ -504,6 +510,7 @@ public class ImportLocationVisual extends JPanel /*implements DocumentListener *
     }//GEN-LAST:event_browseProjectLocationActionPerformed
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton addServerButton;
     private javax.swing.JComboBox addToAppComboBox;
     private javax.swing.JLabel addToAppLabel;
     private javax.swing.JButton browseProjectFolder;
@@ -518,7 +525,6 @@ public class ImportLocationVisual extends JPanel /*implements DocumentListener *
     private javax.swing.JLabel jLabelSrcLocationDesc;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JSeparator jSeparator1;
-    private javax.swing.JButton manageServersButton;
     public javax.swing.JTextField projectFolder;
     public javax.swing.JTextField projectLocation;
     public javax.swing.JTextField projectName;

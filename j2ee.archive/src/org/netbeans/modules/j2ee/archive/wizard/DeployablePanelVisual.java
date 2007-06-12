@@ -74,6 +74,7 @@ class DeployablePanelVisual extends JPanel implements DocumentListener, ActionLi
      */
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
+
         projectNameLabel = new javax.swing.JLabel();
         projectNameTextField = new javax.swing.JTextField();
         projectLocationLabel = new javax.swing.JLabel();
@@ -86,16 +87,17 @@ class DeployablePanelVisual extends JPanel implements DocumentListener, ActionLi
         archiveLocationButton = new javax.swing.JButton();
         targetServerLabel = new javax.swing.JLabel();
         serverInstanceComboBox = new javax.swing.JComboBox();
-        manageServersButton = new javax.swing.JButton();
+        addServerButton = new javax.swing.JButton();
 
         projectNameLabel.setLabelFor(projectNameTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(projectNameLabel, java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/archive/wizard/Bundle").getString("projectName_TEXT"));
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/archive/wizard/Bundle"); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(projectNameLabel, bundle.getString("projectName_TEXT")); // NOI18N
 
         projectLocationLabel.setLabelFor(projectLocationTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(projectLocationLabel, java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/archive/wizard/Bundle").getString("projectLocation_TEXT"));
+        org.openide.awt.Mnemonics.setLocalizedText(projectLocationLabel, bundle.getString("projectLocation_TEXT")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(projectLocationButton, java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/archive/wizard/Bundle").getString("browse_TEXT"));
-        projectLocationButton.setActionCommand(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/archive/wizard/Bundle").getString("BROWSE"));
+        org.openide.awt.Mnemonics.setLocalizedText(projectLocationButton, bundle.getString("browse_TEXT")); // NOI18N
+        projectLocationButton.setActionCommand(bundle.getString("BROWSE")); // NOI18N
         projectLocationButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 projectLocationButtonActionPerformed(evt);
@@ -103,27 +105,27 @@ class DeployablePanelVisual extends JPanel implements DocumentListener, ActionLi
         });
 
         createdFolderLabel.setLabelFor(createdFolderTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(createdFolderLabel, java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/archive/wizard/Bundle").getString("projectFolder_TEXT"));
+        org.openide.awt.Mnemonics.setLocalizedText(createdFolderLabel, bundle.getString("projectFolder_TEXT")); // NOI18N
 
         createdFolderTextField.setEditable(false);
 
-        org.openide.awt.Mnemonics.setLocalizedText(archiveFileLabel, java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/archive/wizard/Bundle").getString("archiveFileLabel_TEXT"));
+        org.openide.awt.Mnemonics.setLocalizedText(archiveFileLabel, bundle.getString("archiveFileLabel_TEXT")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(archiveLocationButton, java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/archive/wizard/Bundle").getString("browse_TEXT"));
+        org.openide.awt.Mnemonics.setLocalizedText(archiveLocationButton, bundle.getString("browse_TEXT")); // NOI18N
         archiveLocationButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 archiveLocationButtonActionPerformed(evt);
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(targetServerLabel, java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/archive/wizard/Bundle").getString("targetServerLabel_TEXT"));
+        org.openide.awt.Mnemonics.setLocalizedText(targetServerLabel, bundle.getString("targetServerLabel_TEXT")); // NOI18N
 
         serverInstanceComboBox.setModel(JavaEePlatformUiSupport.createPlatformComboBoxModel(null));
 
-        org.openide.awt.Mnemonics.setLocalizedText(manageServersButton, java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/archive/wizard/Bundle").getString("LBL_ManageServers"));
-        manageServersButton.addActionListener(new java.awt.event.ActionListener() {
+        org.openide.awt.Mnemonics.setLocalizedText(addServerButton, bundle.getString("LBL_AddServer")); // NOI18N
+        addServerButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                manageServersButtonActionPerformed(evt);
+                addServerButtonActionPerformed(evt);
             }
         });
 
@@ -136,7 +138,7 @@ class DeployablePanelVisual extends JPanel implements DocumentListener, ActionLi
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(projectNameLabel)
-                            .add(projectLocationLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 106, Short.MAX_VALUE)
+                            .add(projectLocationLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 107, Short.MAX_VALUE)
                             .add(createdFolderLabel)
                             .add(archiveFileLabel))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED))
@@ -144,16 +146,16 @@ class DeployablePanelVisual extends JPanel implements DocumentListener, ActionLi
                         .add(targetServerLabel)
                         .add(33, 33, 33)))
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(serverInstanceComboBox, 0, 195, Short.MAX_VALUE)
-                    .add(createdFolderTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 195, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, projectNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 195, Short.MAX_VALUE)
-                    .add(projectLocationTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 195, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, archiveFileField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 195, Short.MAX_VALUE))
+                    .add(serverInstanceComboBox, 0, 196, Short.MAX_VALUE)
+                    .add(createdFolderTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 196, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, projectNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 196, Short.MAX_VALUE)
+                    .add(projectLocationTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 196, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, archiveFileField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 196, Short.MAX_VALUE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(projectLocationButton)
-                    .add(archiveLocationButton)
-                    .add(manageServersButton))
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                    .add(projectLocationButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(archiveLocationButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(addServerButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -180,20 +182,23 @@ class DeployablePanelVisual extends JPanel implements DocumentListener, ActionLi
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(targetServerLabel)
                     .add(serverInstanceComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(manageServersButton))
+                    .add(addServerButton))
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
     
-    private void manageServersButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_manageServersButtonActionPerformed
+    private void addServerButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addServerButtonActionPerformed
         Object serverInstanceWrapper =  serverInstanceComboBox.getSelectedItem();
-        String lastSelectedServerInstanceID = null;
+        String selectedServerInstanceID = null;
         if (serverInstanceWrapper != null) {
-            lastSelectedServerInstanceID = JavaEePlatformUiSupport.getServerInstanceID(serverInstanceWrapper);
+            selectedServerInstanceID = JavaEePlatformUiSupport.getServerInstanceID(serverInstanceWrapper);
         }
-        ServerManager.showCustomizer(lastSelectedServerInstanceID);
-        serverInstanceComboBox.setModel(JavaEePlatformUiSupport.createPlatformComboBoxModel(lastSelectedServerInstanceID));
-    }//GEN-LAST:event_manageServersButtonActionPerformed
+        String newServerInstanceID = ServerManager.showAddServerInstanceWizard();
+        if (newServerInstanceID != null) {
+            selectedServerInstanceID = newServerInstanceID;
+        }
+        serverInstanceComboBox.setModel(JavaEePlatformUiSupport.createPlatformComboBoxModel(selectedServerInstanceID));
+}//GEN-LAST:event_addServerButtonActionPerformed
     
     private void archiveLocationButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_archiveLocationButtonActionPerformed
         JFileChooser chooser = new JFileChooser();
@@ -252,12 +257,12 @@ class DeployablePanelVisual extends JPanel implements DocumentListener, ActionLi
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton addServerButton;
     private javax.swing.JTextField archiveFileField;
     private javax.swing.JLabel archiveFileLabel;
     private javax.swing.JButton archiveLocationButton;
     private javax.swing.JLabel createdFolderLabel;
     private javax.swing.JTextField createdFolderTextField;
-    private javax.swing.JButton manageServersButton;
     private javax.swing.JButton projectLocationButton;
     private javax.swing.JLabel projectLocationLabel;
     private javax.swing.JTextField projectLocationTextField;

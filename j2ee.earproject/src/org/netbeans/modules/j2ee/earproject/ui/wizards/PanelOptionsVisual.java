@@ -127,14 +127,12 @@ public class PanelOptionsVisual extends JPanel implements PropertyChangeListener
         serverAndVersionPanel = new javax.swing.JPanel();
         serverInstanceLabel = new javax.swing.JLabel();
         serverInstanceComboBox = new javax.swing.JComboBox();
-        manageServersButton = new javax.swing.JButton();
+        addServerButton = new javax.swing.JButton();
         j2eeSpecLabel = new javax.swing.JLabel();
         j2eeSpecComboBox = new javax.swing.JComboBox();
 
         setLayout(new java.awt.GridBagLayout());
 
-        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ASCN_ManageServers")); // NOI18N
-        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ASCD_ManageServers")); // NOI18N
         setAsMainCheckBox.setMnemonic(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "LBL_NWP1_SetAsMain_CheckBoxMnemonic").charAt(0));
         setAsMainCheckBox.setSelected(true);
         setAsMainCheckBox.setText(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "LBL_NWP1_SetAsMain_CheckBox")); // NOI18N
@@ -158,7 +156,6 @@ public class PanelOptionsVisual extends JPanel implements PropertyChangeListener
                 createEjbCheckBox_action(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -187,7 +184,6 @@ public class PanelOptionsVisual extends JPanel implements PropertyChangeListener
                 createWebAppCheckBox_action(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -209,7 +205,6 @@ public class PanelOptionsVisual extends JPanel implements PropertyChangeListener
         jTextFieldWebAppName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACSD_WebAppName")); // NOI18N
 
         warningPlaceHolderPanel.setLayout(new java.awt.BorderLayout());
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;
@@ -225,7 +220,6 @@ public class PanelOptionsVisual extends JPanel implements PropertyChangeListener
                 createCarCheckBox_action(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
@@ -285,7 +279,6 @@ public class PanelOptionsVisual extends JPanel implements PropertyChangeListener
                 serverInstanceComboBoxActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
@@ -296,21 +289,21 @@ public class PanelOptionsVisual extends JPanel implements PropertyChangeListener
         serverAndVersionPanel.add(serverInstanceComboBox, gridBagConstraints);
         serverInstanceComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACS_NWP1_Server_ComboBox_A11YDesc")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(manageServersButton, org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "LBL_ManageServers")); // NOI18N
-        manageServersButton.addActionListener(new java.awt.event.ActionListener() {
+        org.openide.awt.Mnemonics.setLocalizedText(addServerButton, org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "LBL_AddServer")); // NOI18N
+        addServerButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                manageServersButtonActionPerformed(evt);
+                addServerButtonActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 5, 5);
-        serverAndVersionPanel.add(manageServersButton, gridBagConstraints);
-        manageServersButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACSD_ManageButton")); // NOI18N
+        serverAndVersionPanel.add(addServerButton, gridBagConstraints);
+        addServerButton.getAccessibleContext().setAccessibleName("Add Server");
+        addServerButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACSD_ManageButton")); // NOI18N
 
         j2eeSpecLabel.setLabelFor(j2eeSpecComboBox);
         org.openide.awt.Mnemonics.setLocalizedText(j2eeSpecLabel, org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "LBL_NWP1_J2EESpecLevel_Label")); // NOI18N
@@ -327,7 +320,6 @@ public class PanelOptionsVisual extends JPanel implements PropertyChangeListener
                 j2eeSpecComboBoxActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -346,22 +338,30 @@ public class PanelOptionsVisual extends JPanel implements PropertyChangeListener
         gridBagConstraints.weightx = 1.0;
         add(serverAndVersionPanel, gridBagConstraints);
 
+        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ASCN_ManageServers")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ASCD_ManageServers")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
-    private void manageServersButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_manageServersButtonActionPerformed
+    private void addServerButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addServerButtonActionPerformed
         ServerInstanceWrapper serverInstanceWrapper = (ServerInstanceWrapper) serversModel.getSelectedItem();
-        String lastSelectedServerInstanceID = null;
+        String selectedServerInstanceID = null;
         if (serverInstanceWrapper != null) {
-            lastSelectedServerInstanceID = serverInstanceWrapper.getServerInstanceID();
+            selectedServerInstanceID = serverInstanceWrapper.getServerInstanceID();
         }
-        ServerManager.showCustomizer(lastSelectedServerInstanceID);
         String lastSelectedJ2eeSpecLevel = (String) j2eeSpecComboBox.getSelectedItem();
+        String newServerInstanceID = ServerManager.showAddServerInstanceWizard();
+        if (newServerInstanceID != null) {
+            selectedServerInstanceID = newServerInstanceID;
+            // clear the spec level selection
+            lastSelectedJ2eeSpecLevel = null;
+            j2eeSpecComboBox.setSelectedItem(null);
+        }
         // refresh the list of servers
-        initServers(lastSelectedServerInstanceID);
+        initServers(selectedServerInstanceID);
         if (lastSelectedJ2eeSpecLevel != null) {
             j2eeSpecComboBox.setSelectedItem(lastSelectedJ2eeSpecLevel);
         }
-    }//GEN-LAST:event_manageServersButtonActionPerformed
+}//GEN-LAST:event_addServerButtonActionPerformed
     
     private void createCarCheckBox_action(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_createCarCheckBox_action
         jTextFieldCarName.setEnabled(createCarCheckBox.isSelected());
@@ -542,6 +542,7 @@ public class PanelOptionsVisual extends JPanel implements PropertyChangeListener
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton addServerButton;
     private javax.swing.JCheckBox createCarCheckBox;
     private javax.swing.JCheckBox createEjbCheckBox;
     private javax.swing.JCheckBox createWARCheckBox;
@@ -552,7 +553,6 @@ public class PanelOptionsVisual extends JPanel implements PropertyChangeListener
     private javax.swing.JTextField jTextFieldWebAppName;
     private javax.swing.JLabel mainClassLabel;
     private javax.swing.JTextField mainClassTextField;
-    private javax.swing.JButton manageServersButton;
     private javax.swing.JPanel serverAndVersionPanel;
     private javax.swing.JComboBox serverInstanceComboBox;
     private javax.swing.JLabel serverInstanceLabel;

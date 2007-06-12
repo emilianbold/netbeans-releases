@@ -89,7 +89,7 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
         j2eeSpecComboBox = new javax.swing.JComboBox();
         jLabelContextPath = new javax.swing.JLabel();
         jTextFieldContextPath = new javax.swing.JTextField();
-        manageServersButton = new javax.swing.JButton();
+        addServerButton = new javax.swing.JButton();
         warningPlaceHolderPanel = new javax.swing.JPanel();
         setAsMainCheckBox = new javax.swing.JCheckBox();
 
@@ -195,10 +195,10 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
         jPanel1.add(jTextFieldContextPath, gridBagConstraints);
         jTextFieldContextPath.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACS_LBL_NWP1_ContextPath_A11YDesc")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(manageServersButton, org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "LBL_ManageServers")); // NOI18N
-        manageServersButton.addActionListener(new java.awt.event.ActionListener() {
+        org.openide.awt.Mnemonics.setLocalizedText(addServerButton, org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "LBL_AddServer")); // NOI18N
+        addServerButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                manageServersButtonActionPerformed(evt);
+                addServerButtonActionPerformed(evt);
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -206,9 +206,9 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
         gridBagConstraints.gridy = 0;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
-        jPanel1.add(manageServersButton, gridBagConstraints);
-        manageServersButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ASCN_ManageServers")); // NOI18N
-        manageServersButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ASCD_ManageServers")); // NOI18N
+        jPanel1.add(addServerButton, gridBagConstraints);
+        addServerButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ASCN_AddServer")); // NOI18N
+        addServerButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ASCD_AddServer")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
@@ -242,20 +242,26 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
         setAsMainCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACS_LBL_NWP1_SetAsMain_A11YDesc")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
-    private void manageServersButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_manageServersButtonActionPerformed
+    private void addServerButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addServerButtonActionPerformed
         ServerInstanceWrapper serverInstanceWrapper = (ServerInstanceWrapper) serversModel.getSelectedItem();
-        String lastSelectedServerInstanceID = null;
+        String selectedServerInstanceID = null;
         if (serverInstanceWrapper != null) {
-            lastSelectedServerInstanceID = serverInstanceWrapper.getServerInstanceID();
+            selectedServerInstanceID = serverInstanceWrapper.getServerInstanceID();
         }
-        ServerManager.showCustomizer(lastSelectedServerInstanceID);
         String lastSelectedJ2eeSpecLevel = (String) j2eeSpecComboBox.getSelectedItem();
+        String newServerInstanceID = ServerManager.showAddServerInstanceWizard();
+        if (newServerInstanceID != null) {
+            selectedServerInstanceID = newServerInstanceID;
+            // clear the spec level selection
+            lastSelectedJ2eeSpecLevel = null;
+            j2eeSpecComboBox.setSelectedItem(null);
+        }
         // refresh the list of servers
-        initServers(lastSelectedServerInstanceID);
+        initServers(selectedServerInstanceID);
         if (lastSelectedJ2eeSpecLevel != null) {
             j2eeSpecComboBox.setSelectedItem(lastSelectedJ2eeSpecLevel);
         }
-    }//GEN-LAST:event_manageServersButtonActionPerformed
+}//GEN-LAST:event_addServerButtonActionPerformed
 
     private void j2eeSpecComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_j2eeSpecComboBoxActionPerformed
         setJ2eeVersionWarningPanel();
@@ -335,6 +341,7 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton addServerButton;
     private javax.swing.JComboBox j2eeSpecComboBox;
     private javax.swing.JLabel j2eeSpecLabel;
     private javax.swing.JComboBox jComboBoxEnterprise;
@@ -342,7 +349,6 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
     private javax.swing.JLabel jLabelEnterprise;
     private javax.swing.JPanel jPanel1;
     protected javax.swing.JTextField jTextFieldContextPath;
-    private javax.swing.JButton manageServersButton;
     private javax.swing.JComboBox serverInstanceComboBox;
     private javax.swing.JLabel serverInstanceLabel;
     private javax.swing.JCheckBox setAsMainCheckBox;

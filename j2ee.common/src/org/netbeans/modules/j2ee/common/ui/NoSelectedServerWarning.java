@@ -215,17 +215,20 @@ public final class NoSelectedServerWarning extends JPanel {
     
     private void jButtonAddServerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonAddServerActionPerformed
         ServerListModel model = (ServerListModel) serverList.getModel();
-        String lastSelectedValue = (String) serverList.getSelectedValue();
+        String selectedValue = (String) serverList.getSelectedValue();
         boolean wasEmpty = (model.getSize() == 0);
-        ServerManager.showCustomizer((String) lastSelectedValue);
+        String newSelectedValue = ServerManager.showAddServerInstanceWizard();
+        if (newSelectedValue != null) {
+            selectedValue = newSelectedValue;
+        }
         model.refreshModel();
         boolean isEmpty = (model.getSize() == 0);
         if (wasEmpty != isEmpty) {
             jTextArea2.setVisible(isEmpty);
         }
-        if (lastSelectedValue != null && Deployment.getDefault().getJ2eePlatform(lastSelectedValue) != null) {
+        if (selectedValue != null) {
             // if the last selected server instance still exists, select it again
-            serverList.setSelectedValue(lastSelectedValue, true);
+            serverList.setSelectedValue(selectedValue, true);
         } else {
             serverList.clearSelection();
         }

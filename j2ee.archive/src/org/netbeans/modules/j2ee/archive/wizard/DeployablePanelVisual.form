@@ -2,7 +2,10 @@
 
 <Form version="1.3" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <AuxValues>
+    <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
+    <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
     <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_variablesLocal" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_variablesModifier" type="java.lang.Integer" value="2"/>
@@ -16,7 +19,7 @@
                   <Group type="102" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="projectNameLabel" min="-2" max="-2" attributes="0"/>
-                          <Component id="projectLocationLabel" pref="106" max="32767" attributes="1"/>
+                          <Component id="projectLocationLabel" pref="107" max="32767" attributes="1"/>
                           <Component id="createdFolderLabel" min="-2" max="-2" attributes="0"/>
                           <Component id="archiveFileLabel" min="-2" max="-2" attributes="0"/>
                       </Group>
@@ -28,17 +31,17 @@
                   </Group>
               </Group>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="serverInstanceComboBox" pref="195" max="32767" attributes="0"/>
-                  <Component id="createdFolderTextField" alignment="0" pref="195" max="32767" attributes="0"/>
-                  <Component id="projectNameTextField" alignment="1" pref="195" max="32767" attributes="0"/>
-                  <Component id="projectLocationTextField" alignment="0" pref="195" max="32767" attributes="0"/>
-                  <Component id="archiveFileField" alignment="1" pref="195" max="32767" attributes="0"/>
+                  <Component id="serverInstanceComboBox" pref="196" max="32767" attributes="0"/>
+                  <Component id="createdFolderTextField" alignment="0" pref="196" max="32767" attributes="0"/>
+                  <Component id="projectNameTextField" alignment="1" pref="196" max="32767" attributes="0"/>
+                  <Component id="projectLocationTextField" alignment="0" pref="196" max="32767" attributes="0"/>
+                  <Component id="archiveFileField" alignment="1" pref="196" max="32767" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="projectLocationButton" min="-2" max="-2" attributes="0"/>
-                  <Component id="archiveLocationButton" min="-2" max="-2" attributes="0"/>
-                  <Component id="manageServersButton" min="-2" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                  <Component id="projectLocationButton" alignment="0" max="32767" attributes="1"/>
+                  <Component id="archiveLocationButton" alignment="0" max="32767" attributes="1"/>
+                  <Component id="addServerButton" alignment="0" max="32767" attributes="1"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
@@ -72,7 +75,7 @@
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="targetServerLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="serverInstanceComboBox" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="manageServersButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="addServerButton" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="32767" attributes="0"/>
           </Group>
@@ -171,14 +174,14 @@
         </Property>
       </Properties>
     </Component>
-    <Component class="javax.swing.JButton" name="manageServersButton">
+    <Component class="javax.swing.JButton" name="addServerButton">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/j2ee/archive/wizard/Bundle.properties" key="LBL_ManageServers" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/j2ee/archive/wizard/Bundle.properties" key="LBL_AddServer" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
         </Property>
       </Properties>
       <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="manageServersButtonActionPerformed"/>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="addServerButtonActionPerformed"/>
       </Events>
     </Component>
   </SubComponents>
