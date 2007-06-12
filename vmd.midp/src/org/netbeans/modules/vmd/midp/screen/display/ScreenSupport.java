@@ -109,7 +109,7 @@ public final class ScreenSupport {
         if (text == null)
             return null;
         text = text.replace ("<", "&lt;"); // NOI18N
-        text = text.replace (">", "&lt;"); // NOI18N
+        text = text.replace (">", "&gt;"); // NOI18N
         text = text.replace ("&", "&amp;"); // NOI18N
         
         StringBuffer str = new StringBuffer();
@@ -128,7 +128,7 @@ public final class ScreenSupport {
         if (text == null)
             return null;
         text = text.replace ("<", "&lt;"); // NOI18N
-        text = text.replace (">", "&lt;"); // NOI18N
+        text = text.replace (">", "&gt;"); // NOI18N
         text = text.replace ("&", "&amp;"); // NOI18N
         
         StringBuffer str = new StringBuffer();
