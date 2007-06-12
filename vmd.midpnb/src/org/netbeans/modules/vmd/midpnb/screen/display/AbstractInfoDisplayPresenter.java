@@ -85,7 +85,7 @@ public class AbstractInfoDisplayPresenter extends DisplayableDisplayPresenter {
         }
         
         String text = MidpTypes.getString(getComponent().readProperty(AbstractInfoScreenCD.PROP_TEXT));
-        stringLabel.setText(ScreenSupport.wrapWithHtml(text));
+        stringLabel.setText(text);
 
         DesignComponent font = getComponent().readProperty(AbstractInfoScreenCD.PROP_TEXT_FONT).getComponent();
         stringLabel.setFont(ScreenSupport.getFont(deviceInfo, font));

@@ -19,12 +19,11 @@
  */
 package org.netbeans.modules.vmd.midp.screen.display;
 
-import java.awt.datatransfer.Transferable;
-import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayPresenter;
-import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfo;
-import org.netbeans.modules.vmd.api.screen.display.ScreenPropertyDescriptor;
-import org.netbeans.modules.vmd.api.model.presenters.actions.ActionsSupport;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
+import org.netbeans.modules.vmd.api.model.presenters.actions.ActionsSupport;
+import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfo;
+import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayPresenter;
+import org.netbeans.modules.vmd.api.screen.display.ScreenPropertyDescriptor;
 import org.netbeans.modules.vmd.midp.components.MidpValueSupport;
 import org.netbeans.modules.vmd.midp.components.items.ItemCD;
 import org.netbeans.modules.vmd.midp.screen.display.property.ScreenStringPropertyEditor;
@@ -32,9 +31,9 @@ import org.openide.util.Utilities;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.datatransfer.Transferable;
 import java.util.Collection;
 import java.util.Collections;
-import org.netbeans.modules.vmd.api.screen.display.ScreenMoveTransferable;
 
 /**
  * @author David Kaspar
@@ -112,7 +111,7 @@ public class ItemDisplayPresenter extends ScreenDisplayPresenter {
     
     public void reload(ScreenDeviceInfo deviceInfo) {
         String text = MidpValueSupport.getHumanReadableString(getComponent().readProperty(ItemCD.PROP_LABEL));
-        label.setText(ScreenSupport.wrapWithHtml(text));
+        label.setText(text);
     }
     
     public Shape getSelectionShape() {

@@ -52,7 +52,7 @@ public class TextFieldDisplayPresenter extends ItemDisplayPresenter {
         super.reload(deviceInfo);
         
         String text = MidpValueSupport.getHumanReadableString(getComponent().readProperty(TextFieldCD.PROP_TEXT));
-        label.setText(ScreenSupport.wrapWithHtml(text));
+        label.setText(text);
     }
 
     public Collection<ScreenPropertyDescriptor> getPropertyDescriptors () {

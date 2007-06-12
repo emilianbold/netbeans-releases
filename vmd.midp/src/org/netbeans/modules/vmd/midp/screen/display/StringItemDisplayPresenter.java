@@ -30,6 +30,7 @@ import org.netbeans.modules.vmd.midp.screen.display.property.ScreenStringPropert
 import javax.swing.*;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.awt.*;
 
 /**
  *
@@ -42,6 +43,7 @@ public class StringItemDisplayPresenter extends ItemDisplayPresenter {
     
     public StringItemDisplayPresenter() {
         label = new JLabel();
+        Color color = label.getForeground ();
         setContentComponent(label);
     }
     
@@ -50,10 +52,9 @@ public class StringItemDisplayPresenter extends ItemDisplayPresenter {
         
         String text = MidpValueSupport.getHumanReadableString(getComponent().readProperty(StringItemCD.PROP_TEXT));
         int appearanceMode = MidpTypes.getInteger(getComponent().readProperty(StringItemCD.PROP_APPEARANCE_MODE));
-        if (appearanceMode == ItemCD.VALUE_BUTTON) {
-            label.setBorder(BorderFactory.createRaisedBevelBorder());
-        }
-        label.setText(appearanceMode == ItemCD.VALUE_HYPERLINK ? ScreenSupport.wrapLinkWithHtml(text) : ScreenSupport.wrapWithHtml(text));
+        label.setBorder(appearanceMode == ItemCD.VALUE_BUTTON ? BorderFactory.createRaisedBevelBorder() : null);
+        label.setForeground (appearanceMode == ItemCD.VALUE_HYPERLINK ? Color.BLUE : UIManager.getDefaults ().getColor ("Label.foreground"));
+        label.setText(text);
     }
 
 

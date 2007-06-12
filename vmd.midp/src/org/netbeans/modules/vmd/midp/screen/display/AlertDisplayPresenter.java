@@ -19,19 +19,15 @@
 
 package org.netbeans.modules.vmd.midp.screen.display;
 
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfo;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.displayables.AlertCD;
 import org.netbeans.modules.vmd.midp.components.resources.ImageCD;
 import org.openide.util.Utilities;
+
+import javax.swing.*;
+import java.awt.*;
 
 /**
  *
@@ -71,7 +67,7 @@ public class AlertDisplayPresenter extends DisplayableDisplayPresenter {
         super.reload(deviceInfo);
         
         String text = MidpTypes.getString(getComponent().readProperty(AlertCD.PROP_STRING));
-        stringLabel.setText(ScreenSupport.wrapWithHtml(text));
+        stringLabel.setText(text);
         
         DesignComponent imageComponent = getComponent().readProperty(AlertCD.PROP_IMAGE).getComponent();
         String path = null;
@@ -80,7 +76,7 @@ public class AlertDisplayPresenter extends DisplayableDisplayPresenter {
         Icon icon = ScreenSupport.getIconFromImageComponent(imageComponent);
         if (icon != null) {
             imageLabel.setIcon(icon);
-        } else if (icon == null && path != null) {
+        } else if (path != null) {
             imageLabel.setIcon(ICON_BROKEN);
         } else {
             imageLabel.setIcon(null);

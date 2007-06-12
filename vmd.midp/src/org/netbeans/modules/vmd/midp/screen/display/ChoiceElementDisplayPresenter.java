@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.vmd.midp.screen.display;
 
-import java.awt.datatransfer.Transferable;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfo;
@@ -127,7 +126,7 @@ public class ChoiceElementDisplayPresenter extends ScreenDisplayPresenter {
         }
         
         String text = MidpValueSupport.getHumanReadableString(getComponent().readProperty(ChoiceElementCD.PROP_STRING));
-        label.setText(ScreenSupport.wrapWithHtml(text));
+        label.setText(text);
         
         DesignComponent font = getComponent().readProperty(ChoiceElementCD.PROP_FONT).getComponent();
         label.setFont(ScreenSupport.getFont(deviceInfo, font));

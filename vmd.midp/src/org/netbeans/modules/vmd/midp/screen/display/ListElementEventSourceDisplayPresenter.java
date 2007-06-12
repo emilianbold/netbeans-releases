@@ -37,15 +37,9 @@ import org.openide.util.Utilities;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.Transferable;
-import java.awt.datatransfer.UnsupportedFlavorException;
-import java.io.IOException;
-import java.lang.ref.WeakReference;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import org.netbeans.modules.vmd.api.model.common.DesignComponentDataFlavor;
 
 /**
  *
@@ -60,7 +54,6 @@ public class ListElementEventSourceDisplayPresenter extends ScreenDisplayPresent
     private JLabel state;
     private JLabel image;
     private JLabel label;
-    private Transferable transferable;
     
     public ListElementEventSourceDisplayPresenter() {
         view = new JPanel();
@@ -118,7 +111,7 @@ public class ListElementEventSourceDisplayPresenter extends ScreenDisplayPresent
             image.setIcon(null);
         
         String text = MidpValueSupport.getHumanReadableString(getComponent().readProperty(ListElementEventSourceCD.PROP_STRING));
-        label.setText(ScreenSupport.wrapWithHtml(text));
+        label.setText(text);
         
         DesignComponent font = getComponent().readProperty(ListElementEventSourceCD.PROP_FONT).getComponent();
         label.setFont(ScreenSupport.getFont(deviceInfo, font));

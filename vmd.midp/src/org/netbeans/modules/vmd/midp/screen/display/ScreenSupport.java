@@ -99,44 +99,6 @@ public final class ScreenSupport {
     }
     
     /**
-     * Wraps given text with html tags to be displayed in swing component,
-     * removes all exising tags in the text
-     *
-     * @param text to be wraped
-     * @return text
-     */
-    public static String wrapWithHtml(String text) {
-        if (text == null)
-            return null;
-        text = text.replace ("<", "&lt;"); // NOI18N
-        text = text.replace (">", "&gt;"); // NOI18N
-        text = text.replace ("&", "&amp;"); // NOI18N
-        
-        StringBuffer str = new StringBuffer();
-        str.append("<html>").append(text).append("</html>"); // NOI18N
-        return str.toString();
-    }
-    
-    /**
-     * Wraps given text with html tags and make a link to be displayed in swing component,
-     * removes all exising tags in the text
-     *
-     * @param text to be wraped
-     * @return text
-     */
-    public static String wrapLinkWithHtml(String text) {
-        if (text == null)
-            return null;
-        text = text.replace ("<", "&lt;"); // NOI18N
-        text = text.replace (">", "&gt;"); // NOI18N
-        text = text.replace ("&", "&amp;"); // NOI18N
-        
-        StringBuffer str = new StringBuffer();
-        str.append("<html><a href=''>").append (text).append ("</a></html>"); // NOI18N
-        return str.toString();
-    }
-    
-    /**
      * Loads icon using resourcePath property from given image design component
      *
      * @param imageComponent image design component
