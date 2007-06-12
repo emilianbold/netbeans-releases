@@ -20,37 +20,36 @@
 
 package org.netbeans.modules.vmd.screen.device;
 
-import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.UnsupportedFlavorException;
-import java.io.IOException;
 import org.netbeans.modules.vmd.api.io.PopupUtil;
+import org.netbeans.modules.vmd.api.model.ComponentProducer;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
-import org.netbeans.modules.vmd.api.model.ComponentProducer;
 import org.netbeans.modules.vmd.api.model.common.AcceptSupport;
+import org.netbeans.modules.vmd.api.model.common.DesignComponentDataFlavor;
 import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
 import org.netbeans.modules.vmd.api.model.presenters.actions.ActionsSupport;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayPresenter;
 import org.netbeans.modules.vmd.api.screen.display.ScreenPropertyDescriptor;
 import org.netbeans.modules.vmd.api.screen.display.injector.ScreenInjectorPresenter;
+import org.netbeans.modules.vmd.screen.MainPanel;
 import org.netbeans.modules.vmd.screen.ScreenAccessController;
 import org.netbeans.modules.vmd.screen.ScreenViewController;
-import org.netbeans.modules.vmd.screen.MainPanel;
 import org.openide.util.Utilities;
 
 import javax.swing.*;
 import javax.swing.border.BevelBorder;
 import java.awt.*;
+import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.dnd.*;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
+import java.awt.event.InputEvent;
+import java.io.IOException;
+import java.util.*;
 import java.util.List;
-import org.netbeans.modules.vmd.api.model.common.DesignComponentDataFlavor;
 
 /**
  * @author David Kaspar
@@ -79,7 +78,7 @@ public class TopPanel extends JPanel {
     public TopPanel(final DevicePanel devicePanel) {
         this.devicePanel = devicePanel;
         setOpaque(false);
-        dragSource = new DragSource().getDefaultDragSource();
+        dragSource = DragSource.getDefaultDragSource();
         dragSource.createDefaultDragGestureRecognizer(this, DnDConstants.ACTION_COPY_OR_MOVE,new DragGestureListener() {
             public void dragGestureRecognized(final DragGestureEvent dgEvent) {
                 devicePanel.getController().getDocument().getTransactionManager().readAccess(new Runnable() {
@@ -250,8 +249,19 @@ public class TopPanel extends JPanel {
         document.getTransactionManager().writeAccess(new Runnable() {
             public void run() {
                 DesignComponent component = devicePanel.getDesignComponentAt(e.getPoint());
-                // TODO - invert selection
-                document.setSelectedComponents(ScreenViewController.SCREEN_ID, component != null ? Collections.singleton(component) : Collections.<DesignComponent>emptySet());
+                if ((e.getModifiers () & InputEvent.CTRL_MASK) == InputEvent.CTRL_MASK) {
+                    if (component != null) {
+                        ArrayList<DesignComponent> list = new ArrayList<DesignComponent> (document.getSelectedComponents ());
+                        if (! list.remove (component))
+                            list.add (component);
+                        document.setSelectedComponents(ScreenViewController.SCREEN_ID, list);
+                    }
+                } else {
+                    if (component == null)
+                        document.setSelectedComponents(ScreenViewController.SCREEN_ID, Collections.<DesignComponent>emptySet());
+                    else if (! document.getSelectedComponents ().contains (component))
+                        document.setSelectedComponents(ScreenViewController.SCREEN_ID, Collections.singleton(component));
+                }
             }
         });
     }
@@ -270,8 +280,6 @@ public class TopPanel extends JPanel {
                     for (ScreenPropertyDescriptor property : properties) {
                         Point editorOrigin = devicePanel.calculateTranslation(property.getRelatedView());
                         Shape shape = property.getSelectionShape();
-                        if (editorOrigin == null)
-                            System.out.println();
                         if (shape.contains(new Point(point.x - editorOrigin.x, point.y - editorOrigin.y))) {
                             hoverShape = new SelectionShape(editorOrigin.x, editorOrigin.y, shape, Long.MIN_VALUE, false);
                             return;
