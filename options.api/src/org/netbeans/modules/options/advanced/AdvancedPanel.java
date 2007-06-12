@@ -86,12 +86,10 @@ public final class AdvancedPanel extends JPanel {
                 firePropertyChange (OptionsPanelController.PROP_HELP_CTX, null, null);
             }
         });
-        JScrollPane scrollPane = new JScrollPane (tabbedPanel);
-        scrollPane.getVerticalScrollBar ().setUnitIncrement (20);
         
         // define layout
         setLayout (new BorderLayout ());
-        add (scrollPane, BorderLayout.CENTER);
+        add (tabbedPanel, BorderLayout.CENTER);
         
         int preferredWith = 0;
         Iterator it = model.getCategories ().iterator ();
