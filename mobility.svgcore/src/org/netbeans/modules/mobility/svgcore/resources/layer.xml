@@ -18,8 +18,7 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="Panels">
             <folder name="image">
                 <folder name="svg+xml">
-                    <!--<file name="org-netbeans-modules-mobility-svgcore-navigator-SVGNavigatorPanel.instance"/>-->
-                    <file name="org-netbeans-modules-xml-text-navigator-XMLNavigatorPanel.instance"/>                    
+                    <file name="org-netbeans-modules-mobility-svgcore-navigator-SVGNavigatorPanel.instance"/>
                 </folder>
             </folder>
         </folder>
