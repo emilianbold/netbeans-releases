@@ -29,6 +29,7 @@ import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
+import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.net.URI;
@@ -48,6 +49,7 @@ import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.TreeMaker;
+import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ant.AntArtifact;
@@ -812,6 +814,76 @@ public class JaxWsUtils {
                             }
                             
                             TypeElement webServiceEl = workingCopy.getElements().getTypeElement("javax.jws.WebMethod"); //NOI18N                            
+                            AnnotationTree webServiceAn = make.Annotation(make.QualIdent(webServiceEl), newExpressions);                            
+                            newAnnotations.add(webServiceAn);
+                        } else {
+                            newAnnotations.add(an);
+                        }
+                    }
+                    
+                    ModifiersTree newModifier = make.Modifiers(modif, newAnnotations);
+                    workingCopy.rewrite(modif, newModifier);
+                }
+            }
+
+            public void cancel() {
+            }
+        };
+        try {
+            javaSource.runModificationTask(modificationTask).commit();
+        } catch (IOException ex) {
+            ErrorManager.getDefault().notify(ex);
+        }
+    }
+    
+    public static void setWebParamAttrValue(FileObject implClassFo, final TreePathHandle param, final String attrName, final String attrValue) {
+        final JavaSource javaSource = JavaSource.forFileObject(implClassFo);
+        final CancellableTask<WorkingCopy> modificationTask = new CancellableTask<WorkingCopy>() {
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                GenerationUtils genUtils = GenerationUtils.newInstance(workingCopy);
+                if (genUtils != null) {
+                    TreeMaker make = workingCopy.getTreeMaker();
+                                 
+                    ExpressionTree attrExpr = 
+                            (attrValue == null?null:genUtils.createAnnotationArgument(attrName, attrValue));
+                    
+                    Element paramEl = param.resolveElement(workingCopy);
+                    VariableTree paramTree = (VariableTree)workingCopy.getTrees().getTree(paramEl);
+                    
+                    ModifiersTree modif = paramTree.getModifiers();
+                    List<? extends AnnotationTree> annotations = modif.getAnnotations();
+                    List<AnnotationTree> newAnnotations = new ArrayList<AnnotationTree>();
+                    
+                    for (AnnotationTree an:annotations) {
+                        IdentifierTree ident = (IdentifierTree) an.getAnnotationType();                    
+                        TreePath anTreePath = workingCopy.getTrees().getPath(workingCopy.getCompilationUnit(), ident);
+                        TypeElement anElement = (TypeElement)workingCopy.getTrees().getElement(anTreePath);
+                        if(anElement!=null && anElement.getQualifiedName().contentEquals("javax.jws.WebParam")) { //NOI18N
+                            List<? extends ExpressionTree> expressions = an.getArguments();
+                            List<ExpressionTree> newExpressions = new ArrayList<ExpressionTree>();
+                            boolean found=false;
+                            for (ExpressionTree expr:expressions) {
+                                if (expr.getKind()==Kind.ASSIGNMENT) {
+                                    AssignmentTree as = (AssignmentTree)expr;
+                                    IdentifierTree id = (IdentifierTree)as.getVariable();
+                                    if (id.getName().contentEquals(attrName)) {
+                                        found=true;
+                                        if (attrExpr!=null) {
+                                            newExpressions.add(attrExpr);
+                                        }
+                                    } else {
+                                        newExpressions.add(expr);
+                                    }
+                                } else {
+                                    newExpressions.add(expr);
+                                }
+                            }
+                            if (!found) {
+                                newExpressions.add(attrExpr);
+                            }
+                            
+                            TypeElement webServiceEl = workingCopy.getElements().getTypeElement("javax.jws.WebParam"); //NOI18N                            
                             AnnotationTree webServiceAn = make.Annotation(make.QualIdent(webServiceEl), newExpressions);                            
                             newAnnotations.add(webServiceAn);
                         } else {

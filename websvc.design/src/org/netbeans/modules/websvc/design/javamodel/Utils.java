@@ -59,6 +59,7 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.TreeMaker;
+import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.websvc.design.util.SourceUtils;
 import org.openide.ErrorManager;
@@ -350,6 +351,9 @@ public class Utils {
         int i=0;
         for (VariableElement paramEl:paramElements) {
             ParamModel param = new ParamModel("arg"+String.valueOf(i++));
+            param.setImplementationClass(methodModel.getImplementationClass());
+            TreePathHandle paramHandle = TreePathHandle.create(paramEl, controller);
+            param.setParamHandle(paramHandle);
             populateParam(controller, paramEl, param);
             params.add(param);            
         }
@@ -377,7 +381,7 @@ public class Utils {
                 Map<? extends ExecutableElement, ? extends AnnotationValue> expressions = anMirror.getElementValues();
                 for(ExecutableElement ex:expressions.keySet()) {
                     if (ex.getSimpleName().contentEquals("name")) { //NOI18N
-                        paramModel.setName((String)expressions.get(ex).getValue());
+                        paramModel.name = (String)expressions.get(ex).getValue();
                     } else if (ex.getSimpleName().contentEquals("partName")) { //NOI18N
                         paramModel.setPartName((String)expressions.get(ex).getValue());
                     } else if (ex.getSimpleName().contentEquals("targetNamespace")) { //NOI18N
