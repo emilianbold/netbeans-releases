@@ -20,12 +20,16 @@
 package org.netbeans.modules.websvc.core;
 
 import com.sun.source.tree.AnnotationTree;
+import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
+import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
+import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
@@ -47,6 +51,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.common.Util;
+import org.netbeans.modules.j2ee.common.source.GenerationUtils;
 import org.netbeans.modules.j2ee.common.source.GenerationUtils;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
@@ -687,5 +692,80 @@ public class JaxWsUtils {
             }
         }
         return null;
+    }
+    
+    public static void setWebServiceAttrValue(FileObject implClassFo, final String attrName, final String attrValue) {
+        final JavaSource javaSource = JavaSource.forFileObject(implClassFo);
+        final CancellableTask<WorkingCopy> modificationTask = new CancellableTask<WorkingCopy>() {
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                GenerationUtils genUtils = GenerationUtils.newInstance(workingCopy);
+                if (genUtils!=null) {
+                    TreeMaker make = workingCopy.getTreeMaker();
+                    ClassTree classTree = genUtils.getClassTree();
+                    
+                    ExpressionTree attrExpr = 
+                            (attrValue==null?null:genUtils.createAnnotationArgument(attrName, attrValue));
+                    
+                    ModifiersTree modif = classTree.getModifiers();
+                    List<? extends AnnotationTree> annotations = modif.getAnnotations();
+                    List<AnnotationTree> newAnnotations = new ArrayList<AnnotationTree>();
+                    
+                    for (AnnotationTree an:annotations) {
+                        IdentifierTree ident = (IdentifierTree) an.getAnnotationType();                    
+                        TreePath anTreePath = workingCopy.getTrees().getPath(workingCopy.getCompilationUnit(), ident);
+                        TypeElement anElement = (TypeElement)workingCopy.getTrees().getElement(anTreePath);
+                        if(anElement!=null && anElement.getQualifiedName().contentEquals("javax.jws.WebService")) { //NOI18N
+                            List<? extends ExpressionTree> expressions = an.getArguments();
+                            List<ExpressionTree> newExpressions = new ArrayList<ExpressionTree>();
+                            boolean found=false;
+                            for (ExpressionTree expr:expressions) {
+                                if (expr.getKind()==Kind.ASSIGNMENT) {
+                                    AssignmentTree as = (AssignmentTree)expr;
+                                    IdentifierTree id = (IdentifierTree)as.getVariable();
+                                    if (id.getName().contentEquals(attrName)) {
+                                        found=true;
+                                        if (attrExpr!=null) {
+                                            newExpressions.add(attrExpr);
+                                        }
+                                    } else {
+                                        newExpressions.add(expr);
+                                    }
+                                } else {
+                                    newExpressions.add(expr);
+                                }
+                            }
+                            if (!found) {
+                                newExpressions.add(attrExpr);
+                            }
+                            
+                            TypeElement webServiceEl = workingCopy.getElements().getTypeElement("javax.jws.WebService"); //NOI18N                            
+                            AnnotationTree webServiceAn = make.Annotation(make.QualIdent(webServiceEl), newExpressions);                            
+                            newAnnotations.add(webServiceAn);
+                        } else {
+                            newAnnotations.add(an);
+                        }
+                    }
+                    
+                    ModifiersTree newModifier = make.Modifiers(modif, newAnnotations);
+
+                    ClassTree modifiedClass = make.Class( newModifier,
+                                classTree.getSimpleName(),
+                                classTree.getTypeParameters(),
+                                classTree.getExtendsClause(),
+                                (List<ExpressionTree>)classTree.getImplementsClause(),
+                                classTree.getMembers());
+                    workingCopy.rewrite(classTree, modifiedClass);
+                }
+            }
+
+            public void cancel() {
+            }
+        };
+        try {
+            javaSource.runModificationTask(modificationTask).commit();
+        } catch (IOException ex) {
+            ErrorManager.getDefault().notify(ex);
+        }
     }
 }
