@@ -24,33 +24,21 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import javax.swing.table.AbstractTableModel;
-import org.netbeans.modules.j2ee.common.method.MethodModel;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author  Martin Adamek
  */
-public final class ParametersPanel extends javax.swing.JPanel {
+public final class ExceptionsPanel extends javax.swing.JPanel {
     
-    private static final int COL_NAME_INDEX = 0;
-    private static final int COL_TYPE_INDEX = 1;
-    private static final int COL_FINAL_INDEX = 2;
+    private final ExceptionsTableModel tableModel;
     
-    private static final String[] columnNames = {
-        NbBundle.getMessage(ParametersPanel.class, "ParametersPanel.LBL_Name"),
-        NbBundle.getMessage(ParametersPanel.class, "ParametersPanel.LBL_Type"),
-        NbBundle.getMessage(ParametersPanel.class, "ParametersPanel.LBL_Final"),
-    };
-    
-    private final ParamsTableModel tableModel;
-
-    public ParametersPanel(List<MethodModel.Variable> parameters) {
+    public ExceptionsPanel(List<String> parameters) {
         initComponents();
-        tableModel = new ParamsTableModel(parameters);
+        tableModel = new ExceptionsTableModel(parameters);
         table.setModel(tableModel);
         table.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent e) {
@@ -62,18 +50,12 @@ public final class ParametersPanel extends javax.swing.JPanel {
                 updateButtons();
             }
         });
-//        tableModel.addTableModelListener(new TableModelListener() {
-//            public void tableChanged(TableModelEvent tableModelEvent) {
-//                System.out.println("### tableModelEvent " + tableModelEvent.getType());
-//                updateButtons();
-//            }
-//        });
     }
     
-    public List<MethodModel.Variable> getParameters() {
-        return tableModel.getParameters();
+    public List<String> getExceptions() {
+        return tableModel.getExceptions();
     }
-
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -154,7 +136,7 @@ public final class ParametersPanel extends javax.swing.JPanel {
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
-
+    
 private void removeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeButtonActionPerformed
     int selectedRow = table.getSelectedRow();
     if (selectedRow > -1) {
@@ -169,12 +151,11 @@ private void removeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
 
 private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
     int index = tableModel.addParameter();
-//    System.out.println("### INDEX: " + index + " from " + table.getRowCount());
     table.getSelectionModel().setSelectionInterval(index, index);
     updateButtons();
 }//GEN-LAST:event_addButtonActionPerformed
-    
-    
+
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addButton;
     private javax.swing.JButton downButton;
@@ -192,70 +173,52 @@ private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
     }
     
     // accessible for test
-    static class ParamsTableModel extends AbstractTableModel {
+    static class ExceptionsTableModel extends AbstractTableModel {
         
-        private final List<MethodModel.Variable> parameters;
+        private final List<String> exceptions;
         
-        public ParamsTableModel(List<MethodModel.Variable> parameters) {
-            this.parameters = new ArrayList<MethodModel.Variable>(parameters);
+        public ExceptionsTableModel(List<String> parameters) {
+            this.exceptions = new ArrayList<String>(parameters);
         }
         
-        public List<MethodModel.Variable> getParameters() {
-            return parameters;
+        public List<String> getExceptions() {
+            return exceptions;
         }
         
         public int addParameter() {
-            String name = generateUniqueName("parameter");
-            MethodModel.Variable parameter = MethodModel.Variable.create("java.lang.String", name, false);
-            int index = parameters.size();
-            parameters.add(parameter);
+            int index = exceptions.size();
+            exceptions.add(" "); // NOI18N
             fireTableRowsInserted(index, index);
             return index;
         }
         
         public void removeParameter(int index) {
-            parameters.remove(index);
+            exceptions.remove(index);
             fireTableRowsDeleted(index, index);
         }
         
         public int getRowCount() {
-            return parameters.size();
+            return exceptions.size();
         }
         
         public int getColumnCount() {
-            return 3;
+            return 1;
         }
         
         public Object getValueAt(int row, int column) {
-            Object result = null;
-            MethodModel.Variable parameter = parameters.get(row);
-            if (parameter != null) {
-                switch (column) {
-                    case COL_NAME_INDEX: result = parameter.getName(); break;
-                    case COL_TYPE_INDEX: result = parameter.getType(); break;
-                    case COL_FINAL_INDEX: result = parameter.getFinalModifier(); break;
-                    default:
-                }
-            }
-            return result;
+            return exceptions.get(row);
         }
         
         public String getColumnName(int column) {
-            return columnNames[column];
+            return NbBundle.getMessage(ParametersPanel.class, "ExceptionsPanel.LBL_Exception");
         }
-        
+
         public boolean isCellEditable(int row, int column) {
             return true;
         }
         
         public void setValueAt(Object aValue, int row, int column) {
-            MethodModel.Variable parameter = parameters.get(row);
-            MethodModel.Variable changedParameter = MethodModel.Variable.create(
-                    column == COL_TYPE_INDEX ? (String) aValue : parameter.getType(),
-                    column == COL_NAME_INDEX ? (String) aValue : parameter.getName(),
-                    column == COL_FINAL_INDEX ? (Boolean) aValue : parameter.getFinalModifier()
-                    );
-            parameters.set(row, changedParameter);
+            exceptions.set(row, (String) aValue);
             fireTableCellUpdated(row, column);
         }
         
@@ -266,36 +229,6 @@ private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
             return getValueAt(0, c).getClass();
         }
         
-        private String generateUniqueName(String name) {
-            List<Integer> numberSuffixes = new ArrayList<Integer>();
-            for (MethodModel.Variable variable : parameters) {
-                if (!name.equals(variable.getName()) && variable.getName().startsWith(name)) {
-                    String suffix = variable.getName().substring(name.length());
-                    if (isNumber(suffix)) {
-                        numberSuffixes.add(Integer.parseInt(suffix));
-                    }
-                }
-            }
-            Collections.sort(numberSuffixes);
-            String result = name;
-            if (numberSuffixes.size() > 0) {
-                int newSuffix = numberSuffixes.get(numberSuffixes.size() - 1) + 1;
-                result = name + newSuffix;
-            } else if (parameters.size() > 0) {
-                result = name + 1;
-            }
-            return result;
-        }
-        
-        private boolean isNumber(String value) {
-            for (char character : value.toCharArray()) {
-                if (!Character.isDigit(character)) {
-                  return false;
-                }
-            }
-          return true;//!value.trim().equals("");
-        }
-        
     }
-
+    
 }
