@@ -15,7 +15,6 @@ import java.io.FileReader;
 import java.io.PrintStream;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.ide.ProjectSupport;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.NbDialogOperator;
@@ -23,10 +22,10 @@ import org.netbeans.jellytools.OutputTabOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
-import org.netbeans.jemmy.JemmyProperties;
-import org.netbeans.jemmy.QueueTool;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
+import org.netbeans.jemmy.operators.Operator;
+import org.netbeans.jemmy.operators.Operator.DefaultStringComparator;
 import org.netbeans.test.subversion.operators.CheckoutWizardOperator;
 import org.netbeans.test.subversion.operators.RepositoryStepOperator;
 import org.netbeans.test.subversion.operators.VersioningOperator;
@@ -47,6 +46,8 @@ public class ExportDiffPatchTest extends JellyTestCase {
     public File projectPath;
     public PrintStream stream;
     String os_name;
+    Operator.DefaultStringComparator comOperator;
+    Operator.DefaultStringComparator oldOperator;
     
     /** Creates a new instance of ExportDiffPatchTest */
     public ExportDiffPatchTest(String name) {
@@ -139,9 +140,16 @@ public class ExportDiffPatchTest extends JellyTestCase {
             assertEquals("Wrong annotation of node - file status should be new!!!", TestKit.MODIFIED_STATUS, status);
             assertEquals("Wrong number of records in Versioning view!!!", 1, vo.tabFiles().getRowCount());
             
+            new ProjectsTabOperator().tree().clearSelection();
             node = new Node(new ProjectsTabOperator().tree(), PROJECT_NAME);
-            node.select();
-            node.performMenuActionNoBlock("Versioning|Export");
+            comOperator = new Operator.DefaultStringComparator(true, true);
+            oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
+            Operator.setDefaultStringComparator(comOperator);
+            node.performMenuActionNoBlock("Versioning|Export Diff Patch...");
+            Operator.setDefaultStringComparator(oldOperator);
+            
+            //node.select();
+            
             nbdialog = new NbDialogOperator("Export");
             JButtonOperator btn = new JButtonOperator(nbdialog, "Export");
             JTextFieldOperator tf = new JTextFieldOperator(nbdialog, 0);
