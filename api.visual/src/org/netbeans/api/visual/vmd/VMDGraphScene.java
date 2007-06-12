@@ -43,7 +43,6 @@ import org.netbeans.api.visual.widget.Widget;
  *
  * @author David Kaspar
  */
-// TODO - remove popup menu action
 public class VMDGraphScene extends GraphPinScene<String, String, String> {
 
     public static final String PIN_ID_DEFAULT_SUFFIX = "#default"; // NOI18N
