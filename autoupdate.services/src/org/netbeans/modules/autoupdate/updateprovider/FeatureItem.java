@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.autoupdate.updateprovider;
 
-import org.netbeans.modules.autoupdate.updateprovider.UpdateItemImpl;
 import java.util.Set;
 
 /**

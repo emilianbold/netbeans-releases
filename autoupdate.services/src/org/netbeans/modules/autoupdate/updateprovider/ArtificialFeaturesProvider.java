@@ -30,10 +30,7 @@ import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.Module;
-import org.netbeans.modules.autoupdate.updateprovider.FeatureItem;
-import org.netbeans.modules.autoupdate.updateprovider.InstalledModuleItem;
-import org.netbeans.modules.autoupdate.updateprovider.ModuleItem;
-import org.netbeans.modules.autoupdate.updateprovider.UpdateItemImpl;
+import org.netbeans.modules.autoupdate.services.FeatureUpdateElementImpl;
 import org.netbeans.modules.autoupdate.services.Utilities;
 import org.netbeans.spi.autoupdate.UpdateItem;
 import org.netbeans.spi.autoupdate.UpdateProvider;
@@ -128,7 +125,7 @@ public class ArtificialFeaturesProvider implements UpdateProvider {
         
         // make a feature for each one category
         for (String category : categoryToModules.keySet ()) {
-            FeatureItem featureItemImpl = createFeatureItem (category, categoryToModules.get (category));
+            FeatureItem featureItemImpl = createFeatureItem (category, categoryToModules.get (category), null);
             log.log (Level.FINE, "Create FeatureItem[" + category + ", " + featureItemImpl.getSpecificationVersion ().toString () +
                     "] containing modules " + featureItemImpl.getDependenciesToModules ());
             UpdateItem featureItem = Utilities.createUpdateItem (featureItemImpl);
@@ -142,21 +139,41 @@ public class ArtificialFeaturesProvider implements UpdateProvider {
         throw new UnsupportedOperationException("Not supported yet.");
     }
     
-    public static FeatureItem createFeatureItem (String codeName, Set<ModuleInfo> modules) {
+    public static FeatureItem createFeatureItem (String codeName, Set<ModuleInfo> modules, FeatureUpdateElementImpl original) {
         Set<String> containsModules = new HashSet<String> ();
-        String version = "";
-        String description = "";
+        String versionN = "";
+        String descriptionN = "";
         for (ModuleInfo info : modules) {
             containsModules.add (info.getCodeNameBase () + " = " + info.getImplementationVersion ());
             SpecificationVersion spec = info.getSpecificationVersion ();
-            version = addVersion (version, spec);
-            description += "<h5>" + info.getDisplayName () + "</h5>";
+            versionN = addVersion (versionN, spec);
+            descriptionN += "<h5>" + info.getDisplayName () + "</h5>";
             String desc = (String) info.getLocalizedAttribute ("OpenIDE-Module-Long-Description");
-            description += desc == null ? "" : desc; // NOI18N
+            descriptionN += desc == null ? "" : desc; // NOI18N
         }
+        
+        String description = original == null || original.getDescription () == null || original.getDescription ().length () == 0 ? descriptionN :
+            original.getDescription ();
 
-        return new FeatureItem (codeName, version, containsModules, codeName, description, null);
+        String displayName = original == null || original.getDisplayName () == null || original.getDisplayName ().length () == 0 ? codeName :
+            original.getDisplayName ();
+
+        String version = original == null || original.getSpecificationVersion() == null? versionN :
+            original.getSpecificationVersion ().toString ();
+
+        return new FeatureItem (codeName, version, containsModules, displayName, description, null);
     }
+    
+    // XXX: should be move somewhere into utils
+    public static String createVersion (Collection<ModuleInfo> modules) {
+        String version = "";
+        for (ModuleInfo info : modules) {
+            SpecificationVersion spec = info.getSpecificationVersion ();
+            version = addVersion (version, spec);
+        }
+        return version;
+    }
+
 
     private static String addVersion (String version, SpecificationVersion spec) {
         int [] addend1 = getDigitsInVersion (version);

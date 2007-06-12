@@ -32,8 +32,6 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
-import org.netbeans.modules.autoupdate.updateprovider.InstalledModuleItem;
-import org.netbeans.modules.autoupdate.updateprovider.UpdateItemImpl;
 import org.netbeans.modules.autoupdate.services.Utilities;
 import org.netbeans.spi.autoupdate.UpdateItem;
 import org.netbeans.spi.autoupdate.UpdateLicense;
@@ -91,8 +89,8 @@ public abstract class SimpleItem {
                     getAttribute (declaratingNode, CODE_NAME_BASE),
                     getAttribute (declaratingNode, SPECIFICATION_VERSION),
                     readDependencies (dependencies),
-                    getAttribute (declaratingNode, DESCRIPTION),
                     getAttribute (declaratingNode, DISPLAY_NAME),
+                    getAttribute (declaratingNode, DESCRIPTION),
                     category);
             
             // clean up declaratingNode
@@ -454,6 +452,10 @@ public abstract class SimpleItem {
     
     private static Set<String> readDependencies (String input) {
         Set<String> res = new HashSet<String> ();
+        assert input != null : "Each feature needs own modules.";
+        if (input == null) {
+            return res;
+        }
         StringTokenizer tokenizer = new StringTokenizer (input.trim (), ",");
         
         while (tokenizer.hasMoreTokens ()) {

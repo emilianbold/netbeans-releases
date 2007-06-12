@@ -28,12 +28,13 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.api.autoupdate.UpdateUnit;
 import org.netbeans.api.autoupdate.UpdateUnitProvider;
-import org.netbeans.modules.autoupdate.updateprovider.UpdateItemImpl;
+import org.netbeans.modules.autoupdate.updateprovider.ArtificialFeaturesProvider;
 import org.openide.modules.Dependency;
 import org.openide.modules.ModuleInfo;
 import org.openide.modules.SpecificationVersion;
@@ -58,7 +59,12 @@ public class FeatureUpdateElementImpl extends UpdateElementImpl {
     public FeatureUpdateElementImpl (FeatureItem item, String providerName) {
         super (item, providerName);
         codeName = item.getCodeName ();
-        specVersion = new SpecificationVersion (item.getSpecificationVersion ());
+        String itemSpec = item.getSpecificationVersion ();
+        if (itemSpec == null) {
+            getLogger ().log (Level.INFO, codeName + " has no specificationVersion.");
+        } else {
+            specVersion = new SpecificationVersion (itemSpec);
+        }
         installInfo = new InstallInfo (item);
         displayName = item.getDisplayName ();
         description = item.getDescription ();
@@ -78,6 +84,9 @@ public class FeatureUpdateElementImpl extends UpdateElementImpl {
     }
     
     public SpecificationVersion getSpecificationVersion () {
+        if (specVersion == null) {
+            specVersion = new SpecificationVersion (ArtificialFeaturesProvider.createVersion(getModuleInfos ()));
+        }
         return specVersion;
     }
     
@@ -212,6 +221,11 @@ public class FeatureUpdateElementImpl extends UpdateElementImpl {
             for (Dependency dep : deps) {
                 assert Dependency.TYPE_MODULE == dep.getType () : "Only Dependency.TYPE_MODULE supported, but " + dep;
                 String name = dep.getName ();
+                // trim release impl.
+                if (name.indexOf ('/') != -1) {
+                    int to = name.indexOf ('/');
+                    name = name.substring (0, to);
+                }
                 if (unit.getCodeName ().equals (name)) {
                     UpdateElement el = getMatchedUpdateElement (unit, dep);
                     if (el != null) {

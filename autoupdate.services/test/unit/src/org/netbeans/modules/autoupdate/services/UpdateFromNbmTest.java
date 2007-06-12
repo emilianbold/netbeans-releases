@@ -113,7 +113,7 @@ public class UpdateFromNbmTest extends OperationsTestImpl {
         InstallSupport support = oc.getSupport();
         assertNotNull(support);
         
-        InstallSupport.Validator v = support.doDownload(null);
+        InstallSupport.Validator v = support.doDownload(null, false);
         assertNotNull(v);
         InstallSupport.Installer i = support.doValidate(v, null);
         assertNotNull(i);

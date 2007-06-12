@@ -172,7 +172,7 @@ public abstract class OperationsTestImpl extends DefaultTestCase {
             InstallSupport support = container.getSupport ();
             assertNotNull (support);
             
-            InstallSupport.Validator v = support.doDownload (null);
+            InstallSupport.Validator v = support.doDownload (null, false);
             assertNotNull (v);
             InstallSupport.Installer i = support.doValidate (v, null);
             assertNotNull (i);
@@ -279,7 +279,7 @@ public abstract class OperationsTestImpl extends DefaultTestCase {
             InstallSupport support = container.getSupport ();
             assertNotNull (support);
             
-            InstallSupport.Validator v = support.doDownload (null);
+            InstallSupport.Validator v = support.doDownload (null, false);
             assertNotNull (v);
             InstallSupport.Installer i = support.doValidate (v, null);
             assertNotNull (i);
