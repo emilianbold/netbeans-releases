@@ -97,6 +97,9 @@ abstract class AbstractEntryWithSources extends AbstractEntry {
             Util.err.notify(ErrorManager.INFORMATIONAL, e);
             return new String[0];
         }
+        if (project == null) { // #106351
+            return new String[0];
+        }
         Element data = project.getPrimaryConfigurationData();
         Element moduleDependencies = Util.findElement(data,
             "module-dependencies", NbModuleProjectType.NAMESPACE_SHARED); // NOI18N
