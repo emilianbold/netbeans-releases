@@ -144,7 +144,7 @@
     <!-- LABEL_TEMPLATE -->
     <Component class="javax.swing.JLabel" name="_labelName_">
       <Properties>
-        <Property name="text" type="java.lang.String" value="_labelText_"/>
+        <Property name="text" type="java.lang.String" value="_labelText_:"/>
       </Properties>
     </Component><!-- LABEL_TEMPLATE -->
     <!-- FIELD_TEMPLATE -->
