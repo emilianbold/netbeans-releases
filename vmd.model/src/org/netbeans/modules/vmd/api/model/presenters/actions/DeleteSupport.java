@@ -24,7 +24,6 @@ import org.netbeans.modules.vmd.api.model.DesignDocument;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
-import org.netbeans.modules.vmd.api.model.presenters.actions.ConfirmDeletionPanel;
 
 /**
  * Support class for component deletion.
@@ -145,8 +144,7 @@ public final class DeleteSupport {
             for (DeletePresenter presenter : component.getPresenters (DeletePresenter.class))
                 presenter.delete ();
 
-        for (DesignComponent component : componentsToDelete)
-            document.deleteComponent (component);
+        document.deleteComponents (componentsToDelete);
     }
 
 }

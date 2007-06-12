@@ -149,7 +149,7 @@ public final class DesignDocument {
      * Sets a preferred component ID.
      * <p>
      * Warning: This method is for deserialization purpose only (IO module). Do not use it directly.
-     * @param preferredComponentID
+     * @param preferredComponentID the preferred component id
      * @return true if preferred component id was used
      */
     public boolean setPreferredComponentID (long preferredComponentID) {
@@ -236,6 +236,49 @@ public final class DesignDocument {
         }
 
         assert ! Debug.isComponentReferencedInRootTree (component) : "Component (" + component + ") is referenced still after deletion";
+    }
+
+    /**
+     * Removes components from the component tree and removes references to these components from all property values
+     * in all components in the document.
+     * <p>
+     * Note: It does not allows to remove the root component.
+     * @param components the components
+     */
+    public void deleteComponents (Collection<DesignComponent> components) {
+        assert transactionManager.isWriteAccess ();
+        for (DesignComponent component : components) {
+            assert component != null  &&  component != rootComponent;
+            assert component.getDocument () == this;
+        }
+
+        for (DesignComponent component : components)
+            component.removeFromParentComponent ();
+
+        HashSet<DesignComponent> selected = null;
+
+        for (DesignComponent component : components) {
+            Collection<DesignComponent> children = component.getComponents ();
+            if (children.size () > 0)
+                Debug.warning ("Children has to be deleted before deleting the component", component, children); // NOI18N
+
+            ComponentDescriptor descriptor = component.getComponentDescriptor ();
+            if (descriptor != null)
+                for (PropertyDescriptor property : descriptor.getPropertyDescriptors ())
+                    component.resetToDefault (property.getName ());
+
+            if (selectedComponents.contains (component)) {
+                if (selected == null)
+                    selected = new HashSet<DesignComponent> (selectedComponents);
+                selected.remove (component);
+            }
+        }
+
+        if (selected != null)
+            setSelectedComponents ("deleteComponent", selected); // NOI18N
+
+        for (DesignComponent component : components)
+            assert ! Debug.isComponentReferencedInRootTree (component) : "Component (" + component + ") is referenced still after deletion";
     }
 
     /**
