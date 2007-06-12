@@ -24,7 +24,6 @@ package org.netbeans.modules.j2ee.dd.api.ejb;
 //
 import org.netbeans.modules.j2ee.dd.api.common.CommonDDBean;
 import org.netbeans.modules.j2ee.dd.api.common.FindCapability;
-import org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException;
 
 public interface EnterpriseBeans extends CommonDDBean, FindCapability {
 

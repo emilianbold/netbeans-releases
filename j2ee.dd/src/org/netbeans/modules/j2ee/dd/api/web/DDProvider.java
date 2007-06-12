@@ -28,12 +28,12 @@ import java.util.HashMap;
 import org.netbeans.modules.j2ee.dd.impl.web.WebAppProxy;
 import org.netbeans.modules.j2ee.dd.impl.web.WebParseUtils;
 import org.netbeans.modules.j2ee.dd.impl.common.DDUtils;
-import org.openide.ErrorManager;
 import org.openide.filesystems.*;
 import org.xml.sax.*;
 import java.util.Map;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.Exceptions;
 
 /**
  * Provides access to Deployment Descriptor root ({@link org.netbeans.modules.j2ee.dd.api.web.WebApp} object)
@@ -198,7 +198,7 @@ public final class DDProvider {
             errorMap.remove(foUrl);
             musMap.remove(fo);
         } catch (FileStateInvalidException ex) {
-            ErrorManager.getDefault().notify(ex);
+            Exceptions.printStackTrace(ex);
         }
     }
     

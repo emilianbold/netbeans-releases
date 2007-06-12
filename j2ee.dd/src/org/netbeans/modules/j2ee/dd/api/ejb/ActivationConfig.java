@@ -25,7 +25,6 @@ package org.netbeans.modules.j2ee.dd.api.ejb;
 
 import org.netbeans.modules.j2ee.dd.api.common.CommonDDBean;
 import org.netbeans.modules.j2ee.dd.api.common.DescriptionInterface;
-import org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException;
 
 public interface ActivationConfig extends CommonDDBean, DescriptionInterface {
 

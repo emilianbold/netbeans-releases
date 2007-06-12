@@ -23,7 +23,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
-import java.math.BigDecimal;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
@@ -32,10 +31,10 @@ import org.netbeans.modules.j2ee.dd.impl.client.ClientParseUtils;
 import org.netbeans.modules.j2ee.dd.impl.client.AppClientProxy;
 import org.netbeans.modules.j2ee.dd.impl.common.DDUtils;
 import org.netbeans.modules.schema2beans.BaseBean;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
@@ -253,7 +252,7 @@ public final class DDProvider {
                     }
                 }
             } catch (IOException ex) {
-                ErrorManager.getDefault().notify(ex);
+                Exceptions.printStackTrace(ex);
             }
         }
         

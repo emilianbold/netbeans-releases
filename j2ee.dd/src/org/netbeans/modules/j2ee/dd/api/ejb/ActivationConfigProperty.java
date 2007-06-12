@@ -22,7 +22,6 @@ package org.netbeans.modules.j2ee.dd.api.ejb;
 //
 // This interface has all of the bean info accessor methods.
 //
-import org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException;
 
 public interface ActivationConfigProperty extends org.netbeans.modules.j2ee.dd.api.common.CommonDDBean {
 

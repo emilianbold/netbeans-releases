@@ -30,8 +30,8 @@ import org.netbeans.modules.j2ee.dd.spi.MetadataUnit;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.metadata.model.spi.MetadataModelImplementation;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -53,7 +53,7 @@ public class EjbJarMetadataModelImpl implements MetadataModelImplementation<EjbJ
             try {
                 ddRoot = DDProvider.getDefault().getDDRoot(ddFO);
             } catch (IOException ioe) {
-                ErrorManager.getDefault().notify(ioe);
+                Exceptions.printStackTrace(ioe);
             }
         }
         if (ddRoot != null && ddRoot.getVersion().doubleValue() < 3.0) {

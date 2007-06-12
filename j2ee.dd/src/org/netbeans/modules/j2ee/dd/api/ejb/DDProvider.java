@@ -34,7 +34,6 @@ import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.ErrorManager;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentType;
 import org.xml.sax.EntityResolver;
@@ -46,13 +45,10 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.BufferedInputStream;
 import java.io.InputStream;
-import java.math.BigDecimal;
 import java.util.Map;
 import java.util.HashMap;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.WeakHashMap;
+import org.openide.util.Exceptions;
 
 /**
  * Provides access to Deployment Descriptor root ({@link org.netbeans.modules.j2ee.dd.api.ejb.EjbJar} object)
@@ -332,7 +328,7 @@ public final class DDProvider {
                     }
                 }
             } catch (IOException ex) {
-                ErrorManager.getDefault().notify(ex);
+                Exceptions.printStackTrace(ex);
             }
         }
     }

@@ -68,7 +68,7 @@ import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.Annotatio
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.AnnotationParser;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.ArrayValueHandler;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.ParseResult;
-import org.openide.ErrorManager;
+import org.openide.util.Exceptions;
 
 public class SessionImpl implements Session {
     
@@ -593,7 +593,7 @@ public class SessionImpl implements Session {
                 return businessLocal[0];
             }
         } catch (VersionNotSupportedException ex) {
-            ErrorManager.getDefault().notify(ex);
+            Exceptions.printStackTrace(ex);
         }
         return null;
     }
@@ -606,7 +606,7 @@ public class SessionImpl implements Session {
                 return businessRemote[0];
             }
         } catch (VersionNotSupportedException ex) {
-            ErrorManager.getDefault().notify(ex);
+            Exceptions.printStackTrace(ex);
         }
         return null;
     }
