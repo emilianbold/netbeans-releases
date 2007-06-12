@@ -60,6 +60,41 @@ public class HideField extends AbstractHint {
     public Set<Kind> getTreeKinds() {
         return EnumSet.of(Kind.VARIABLE);
     }
+
+    protected List<Fix> computeFixes(CompilationInfo compilationInfo, TreePath treePath, Document doc, int[] bounds) {
+        Element el = compilationInfo.getTrees().getElement(treePath);
+        if (el == null || el.getKind() != ElementKind.FIELD) {
+            return null;
+        }
+        
+        Element hidden = null;
+        TypeElement te = (TypeElement)el.getEnclosingElement();
+        for (Element field : compilationInfo.getElements().getAllMembers(te)) {
+            if (compilationInfo.getElements().hides(el, field)) {
+                hidden = field;
+                break;
+            }
+        }
+        if (hidden == null) {
+            return null;
+        }
+        
+        int[] span = Utilities.findIdentifierSpan(
+            treePath,
+            compilationInfo.getCompilationUnit(),
+            compilationInfo.getTrees().getSourcePositions(),
+            doc
+        );
+        List<Fix> fixes = Collections.<Fix>singletonList(new FixImpl(
+            (span[1] + span[0]) / 2,
+            compilationInfo.getFileObject()
+        ));
+
+
+        bounds[0] = span[0];
+        bounds[1] = span[1];
+        return fixes;
+    }
     
     public List<ErrorDescription> run(CompilationInfo compilationInfo,
                                       TreePath treePath) {
@@ -69,37 +104,12 @@ public class HideField extends AbstractHint {
             if (doc == null) {
                 return null;
             }
-            
-            
-            
-            Element el = compilationInfo.getTrees().getElement(treePath);
-            if (el == null || el.getKind() != ElementKind.FIELD) {
+        
+            int[] span = new int[2];
+            List<Fix> fixes = computeFixes(compilationInfo, treePath, doc, span);
+            if (fixes == null) {
                 return null;
             }
-            
-            Element hidden = null;
-            TypeElement te = (TypeElement)el.getEnclosingElement();
-            for (Element field : compilationInfo.getElements().getAllMembers(te)) {
-                if (compilationInfo.getElements().hides(el, field)) {
-                    hidden = field;
-                    break;
-                }
-            }
-            if (hidden == null) {
-                return null;
-            } 
-
-            int[] span = Utilities.findIdentifierSpan(
-                treePath, 
-                compilationInfo.getCompilationUnit(), 
-                compilationInfo.getTrees().getSourcePositions(), 
-                doc
-            );
-            List<Fix> fixes = Collections.<Fix>singletonList(new FixImpl(
-                (span[1] + span[0]) / 2,
-                compilationInfo.getFileObject()
-            ));
-
 
             ErrorDescription ed = ErrorDescriptionFactory.createErrorDescription(
                 getSeverity().toEditorSeverity(),
@@ -145,7 +155,7 @@ public class HideField extends AbstractHint {
         return null;
     }    
 
-    private static final class FixImpl implements Fix, Runnable {
+    static final class FixImpl implements Fix, Runnable {
         private final int caret;
         private final FileObject file;
         
