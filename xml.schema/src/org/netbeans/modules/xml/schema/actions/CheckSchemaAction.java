@@ -25,6 +25,7 @@ import org.openide.util.actions.CookieAction;
 import org.netbeans.modules.xml.core.actions.*;
 
 import org.netbeans.api.xml.cookies.*;
+import org.openide.util.NbBundle;
 
 /**
  * Checks well-formess of XML file sending results to output window.
@@ -57,19 +58,19 @@ public class CheckSchemaAction extends CookieAction {
         
         for (int i = 0; i<nodes.length; i++) {
             Node node = nodes[i];
-            CheckXMLCookie cake = (CheckXMLCookie) node.getCookie(CheckXMLCookie.class);
+            CheckXMLCookie cake = node.getCookie(CheckXMLCookie.class);
             if (cake == null) continue;
             console.setNode(node); //??? how can console determine which editor to highlight
             cake.checkXML(console);
         }
         
-        console.message(Util.THIS.getString("MSG_XML_check_end"));
+        console.message(NbBundle.getMessage(CheckSchemaAction.class, "MSG_XML_check_end"));
         console.moveToFront(true);
     }
 
     /** Human presentable name. */
     public String getName() {
-        return Util.THIS.getString("NAME_Check_XML");
+        return NbBundle.getMessage(CheckSchemaAction.class, "NAME_Check_XML");
     }
 
     /** Do not slow by any icon. */

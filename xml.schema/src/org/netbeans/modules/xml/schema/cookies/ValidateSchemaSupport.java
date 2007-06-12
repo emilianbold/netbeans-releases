@@ -27,6 +27,7 @@ import org.xml.sax.*;
 import org.netbeans.spi.xml.cookies.*;
 import org.netbeans.api.xml.parsers.SAXEntityParser;
 import org.netbeans.api.xml.services.UserCatalog;
+import org.openide.util.NbBundle;
 import org.openide.xml.XMLUtil;
 import org.xml.sax.helpers.DefaultHandler;
 
@@ -172,7 +173,7 @@ public final class ValidateSchemaSupport extends ValidateXMLSupport {
                     throw new Stop(targetNS);
                 }
                 // no schema root element
-                throw new SAXException(Util.THIS.getString("MSG_missing_schema"));
+                throw new SAXException(NbBundle.getMessage(ValidateSchemaSupport.class, "MSG_missing_schema"));
             }
         }
         

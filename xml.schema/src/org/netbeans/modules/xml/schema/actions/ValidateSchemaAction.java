@@ -25,6 +25,7 @@ import org.openide.util.actions.CookieAction;
 import org.netbeans.modules.xml.core.actions.*;
 
 import org.netbeans.api.xml.cookies.*;
+import org.openide.util.NbBundle;
 
 /**
  * Validates XML Schema file sending results to output window.
@@ -58,23 +59,23 @@ public class ValidateSchemaAction extends CookieAction implements CollectXMLActi
         
         for (int i = 0; i<nodes.length; i++) {
             Node node = nodes[i];
-            ValidateXMLCookie cake = (ValidateXMLCookie) node.getCookie(ValidateXMLCookie.class);
+            ValidateXMLCookie cake = node.getCookie(ValidateXMLCookie.class);
             if (cake == null) continue;
             console.setNode(node); //??? how can console determine which editor to highlight
             allValid &= cake.validateXML(console);
         }
         
         if (allValid) {
-            console.message(Util.THIS.getString("MSG_Schema_valid_end"));
+            console.message(NbBundle.getMessage(ValidateSchemaAction.class, "MSG_Schema_valid_end"));
         } else {
-            console.message(Util.THIS.getString("MSG_Schema_invalid_end"));
+            console.message(NbBundle.getMessage(ValidateSchemaAction.class, "MSG_Schema_invalid_end"));
         }
         console.moveToFront(true);        
     }
 
     /** Human presentable name. */
     public String getName() {
-        return Util.THIS.getString("NAME_Validate_Schema");
+        return NbBundle.getMessage(ValidateSchemaAction.class, "NAME_Validate_Schema");
     }
 
     /** Do not slow by any icon. */
