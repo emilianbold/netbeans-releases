@@ -144,6 +144,7 @@ public class AddComponents_SWING extends JellyTestCase {
         log("All components from Swing Controls Palette : " + categoryName + " - were added to " + FILE_NAME);
         
         log("Try to save the form.");
+        new org.netbeans.jemmy.EventTool().waitNoEvent(500);        
         editAction.perform(formnode);
         Action saveAction;
         saveAction = new Action("File|Save", null);
