@@ -41,7 +41,6 @@ import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.api.jaxws.project.GeneratedFilesHelper;
-import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModel;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModelListener;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModeler;
@@ -60,7 +59,6 @@ import org.netbeans.modules.xml.schema.model.GlobalType;
 import org.netbeans.modules.xml.schema.model.LocalElement;
 import org.netbeans.modules.xml.schema.model.ReferenceableSchemaComponent;
 import org.netbeans.modules.xml.schema.model.Schema;
-import org.netbeans.modules.xml.schema.model.SchemaComponentFactory;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
 import org.netbeans.modules.xml.schema.model.SchemaModelFactory;
 import org.netbeans.modules.xml.schema.model.Sequence;
@@ -286,7 +284,7 @@ public class OperationGeneratorHelper {
                                 bindingOutput.addExtensibilityElement(soapBody);
                                 bOp.setBindingOutput(bindingOutput);
                             }
-                             binding.addBindingOperation(bOp);
+                            binding.addBindingOperation(bOp);
                         }
                     }
                 }
@@ -297,6 +295,73 @@ public class OperationGeneratorHelper {
         }
         
         return operation;
+    }
+    
+    
+    private PortType getPortType(WSDLModel wsdlModel, String portTypeName){
+        PortType pt = null;
+        Definitions definitions = wsdlModel.getDefinitions();
+        Collection<PortType> portTypes = definitions.getPortTypes();
+        for(PortType portType : portTypes){
+            if(portType.getName().equals(portTypeName)){
+                pt = portType;
+                break;
+            }
+        }
+        return pt;
+    }
+    
+    private Operation getOperation(WSDLModel wsdlModel, String portTypeName, String operationName){
+        Operation op = null;
+        PortType pt = getPortType(wsdlModel, portTypeName);
+        if(pt != null){
+            Collection<Operation> operations = pt.getOperations();
+            for(Operation operation : operations){
+                if(operation.getName().equals(operationName)){
+                    op = operation;
+                    break;
+                }
+            }
+        }
+        return op;
+    }
+    public void changeOperationName(WSDLModel wsdlModel, String portTypeName, String oldName, String newName){
+        Operation op = null;
+        try{
+            wsdlModel.startTransaction();
+            op = getOperation(wsdlModel, portTypeName, oldName);
+            if(op != null){
+                op.setName(newName);
+            }
+        }finally{
+            wsdlModel.endTransaction();
+        }
+    }
+    
+    public void changeParameterName(WSDLModel wsdlModel, String portTypeName, String operationName, String oldParamName, String newParamName){
+        Input input = null;
+        try{
+            wsdlModel.startTransaction();
+            Operation op = getOperation(wsdlModel, portTypeName, operationName);
+            if(op != null){
+                input = op.getInput();
+                if(input != null){
+                    NamedComponentReference<Message> messageref = input.getMessage();
+                    Message message = messageref.get();
+                    Collection<Part> parts = message.getParts();
+                    for(Part part : parts){
+                        if(part.getName().equals(oldParamName)){
+                            part.setName(newParamName);
+                            break;
+                        }
+                    }
+                }
+            }
+            
+        } finally{
+            wsdlModel.endTransaction();
+        }
+        
     }
     /** This method adds new operation to the wsdl file
      */
