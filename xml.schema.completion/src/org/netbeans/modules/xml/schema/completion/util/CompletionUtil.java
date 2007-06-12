@@ -351,7 +351,7 @@ public class CompletionUtil {
             if(!(element instanceof Element))
                 continue;
             Element e = (Element)element;
-            if(qname.getLocalPart().endsWith(e.getName()))
+            if(qname.getLocalPart().equals(e.getName()))
                 return element;
         }
         

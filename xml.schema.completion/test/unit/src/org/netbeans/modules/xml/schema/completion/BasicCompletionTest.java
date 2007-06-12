@@ -20,8 +20,6 @@ package org.netbeans.modules.xml.schema.completion;
 
 import java.util.List;
 import junit.framework.*;
-import javax.swing.text.Document;
-import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -158,5 +156,21 @@ public class BasicCompletionTest extends AbstractTestCase {
 //        String[] expectedResult = {"C:rootC1", "C:rootC1","B:rootB1", "B:rootB2", "A:rootA1",
 //            "A:rootA2", "A:rootA3", "A:rootA3", "A:A21", "A:A22"};
 //        assertResult(items, expectedResult);
+    }
+    
+    public void testChildren() throws Exception {
+        StringBuffer buffer = new StringBuffer();
+        buffer.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"); //offset=39
+        buffer.append("<ns0:component xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"); //offset=70
+        buffer.append("  xmlns:ns0=\"http://xml.netbeans.org/schema/newXMLSchema\"\n"); //offset=59
+        buffer.append("  xsi:schemaLocation=\"http://xml.netbeans.org/schema/newXMLSchema Test.xsd\">\n"); //offset=78
+        buffer.append("  <ns0:uninstallList>\n"); //offset 23
+        buffer.append("  <\n"); //offset 9
+        buffer.append("  </ns0:uninstallList>\n");
+        buffer.append("</ns0:component>\n");
+        setupCompletion(TEST_INSTANCE_DOCUMENT, buffer);
+        List<CompletionResultItem> items = query(278);
+        String[] expectedResult = {"ns0:uninstallSteps"};
+        assertResult(items, expectedResult);
     }
 }
