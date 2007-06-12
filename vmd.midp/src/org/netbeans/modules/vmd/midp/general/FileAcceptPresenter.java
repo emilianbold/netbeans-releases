@@ -74,17 +74,13 @@ public abstract class FileAcceptPresenter extends AbstractAcceptPresenter {
     public boolean isAcceptable(Transferable transferable) {
         assert (!extensionsMap.isEmpty());
         FileObject fileObject = getNodeFile(transferable);
-        System.out.println("File object " + fileObject);
-        System.out.println("Belongs to project "+belongsToProject(fileObject));
         if (fileObject == null && !belongsToProject(fileObject))
             return false;
         DesignDocument document = getComponent().getDocument();
         Map<FileObject, String> mapFile = MidpProjectSupport.getAllFilesForProjectByExt(document, extensionsMap.keySet());
         if (mapFile.get(fileObject) == null)
             return false;
-        
         TypeID typeID = getTypeForExtension(fileObject.getExt());
-        System.out.println(typeID);
         if (typeID != null)
             return true;
         return false;
@@ -112,7 +108,6 @@ public abstract class FileAcceptPresenter extends AbstractAcceptPresenter {
     protected boolean belongsToProject(FileObject fileObject) {
         DesignDocument document = getComponent().getDocument();
         Map<FileObject, String> fileMap = MidpProjectSupport.getAllFilesForProjectByExt(document, extensionsMap.keySet());
-        System.out.println("file map  "+fileMap.get(fileObject));
         if (fileMap.get(fileObject) != null)
             return true;
         

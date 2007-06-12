@@ -129,7 +129,9 @@ public final class MidpProjectSupport {
      * Returns a Map keyed by a FileObject matching the relative resource path
      * while the value is the FileObject representing the classpath root containing
      * the key FileObject.
+     * @param document 
      * @param relativeResourcePath as seen from a MIDlet prespective must start with
+     * @return 
      */
     public static Map<FileObject, FileObject> getFileObjectsForRelativeResourcePath(DesignDocument document, String relativeResourcePath) {
         assert (document != null);
@@ -139,7 +141,7 @@ public final class MidpProjectSupport {
             relativeResourcePath = relativeResourcePath.substring(1);
         }
         
-        Map<FileObject, FileObject> matches = new HashMap<FileObject, FileObject>();
+        Map<FileObject, FileObject> matches = new WeakHashMap<FileObject, FileObject>();
         
         DataObjectContext context = ProjectUtils.getDataObjectContextForDocument(document);
         // document is not leaded yet
@@ -195,6 +197,8 @@ public final class MidpProjectSupport {
     
     /**
      * Returns a Map of all images in the project keyed by FileObjects with their relative resource paths as values.
+     * @param document 
+     * @return 
      */
     public static Map<FileObject, String> getImagesForProject(DesignDocument document, boolean pngOnly) {
         String EXTENSION_JPEG = "jpeg"; // NOI18N
@@ -223,12 +227,14 @@ public final class MidpProjectSupport {
     /**
      * Returns a Map of all files matching any of the provided file edxtensions
      * keyed by FileObjects with their relative resource paths as values.
+     * @param document 
+     * @return 
      */
     public static Map<FileObject, String> getAllFilesForProjectByExt(DesignDocument document, Collection<String> fileExtensions) {
         assert (fileExtensions != null);
         assert (document != null);
         
-        Map<FileObject, String> matches = new HashMap<FileObject, String>();
+        Map<FileObject, String> matches = new WeakHashMap<FileObject, String>();
         
         DataObjectContext context = ProjectUtils.getDataObjectContextForDocument(document);
         DataObject dataObject = context.getDataObject();
@@ -264,13 +270,14 @@ public final class MidpProjectSupport {
     }
     
     /**
-     * Recurses directories looking for files with given extensions. Extensions must be in lowercase.
+     * Recurses directories looking for files with given extensions. Case insensitive
      */
     private static void extractFiles(FileObject root, FileObject current, final Map<FileObject, String> bank, Collection<String> imgFileExtensions) {
         if (current.isFolder()) {
             FileObject[] children = current.getChildren();
-            for (int i = 0; i < children.length; i++) {
-                extractFiles(root, children[i], bank, imgFileExtensions);
+            
+            for (FileObject fo : children) {
+                extractFiles(root, fo, bank, imgFileExtensions);
             }
         } else {
             String currentExt = current.getExt();
