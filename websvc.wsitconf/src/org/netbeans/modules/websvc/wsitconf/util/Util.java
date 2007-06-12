@@ -27,6 +27,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JLabel;
 import java.awt.Container;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -51,6 +53,8 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.security.Key;
 import java.security.KeyStore;
 import java.security.cert.Certificate;
@@ -74,6 +78,7 @@ import org.netbeans.modules.xml.wsdl.model.PortType;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponentFactory;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.xam.ModelSource;
+import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
@@ -542,6 +547,7 @@ public class Util {
         
         if (glassfish) {
             try {
+                refreshBuildScript(project);
                 copyKey(serverKeyStoreBundled, "xws-security-server", srcPasswd, srcPasswd, serverKeyStorePath, "xws-security-server", dstPasswd, false);
                 copyKey(serverKeyStoreBundled, "wssip", srcPasswd, srcPasswd, serverKeyStorePath, "wssip", dstPasswd, false);
                 copyKey(serverTrustStoreBundled, "certificate-authority", srcPasswd, srcPasswd, serverTrustStorePath, "xwss-certificate-authority", dstPasswd, true);
@@ -754,5 +760,170 @@ public class Util {
         ModelSource ms = model.getModelSource();
         return Utilities.getFileObject(ms);
     }
+
+    private static final String BUILD_SCRIPT = "/build.xml";       //NOI18N
+    private static final String BACKUP_EXT = ".bak";        //NOI18N
+    private static final String IMPORT_WSIT_DEPLOY_XML = "<import file=\"nbproject/wsit-deploy.xml\"/>";    //NOI18N
+    private static final String IMPORT_TAG = "<import"; //NOI18N
+    private static final String WSIT_DEPLOY_XML_PATH = "nbproject/wsit-deploy.xml"; //NOI18N
+    private static final String WSIT_DEPLOY_XSL = "org/netbeans/modules/websvc/wsitconf/resources/wsit-deploy.xsl";  //NOI18N
+    
+    public static void refreshBuildScript(Project p) {
+        String buildScript = FileUtil.toFile(p.getProjectDirectory()).getPath() + BUILD_SCRIPT;
         
+        BufferedReader reader = null;
+        BufferedWriter writer = null;
+        String line = null;
+        boolean added = false;
+        
+        // First check to see if our import statement has already been added.
+        try {
+            reader = new BufferedReader(new FileReader(buildScript));
+            while ((line = reader.readLine()) != null) {
+                if (line.indexOf(IMPORT_WSIT_DEPLOY_XML) != -1) {
+                    added = true;
+                    break;
+                }
+            }
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger("global").log(Level.INFO, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger("global").log(Level.INFO, null, ex);
+        } finally {
+            if (reader != null) {
+                try {
+                    reader.close();
+                } catch (IOException ex) {
+                    Logger.getLogger("global").log(Level.INFO, null, ex);
+                }
+            }
+        }
+        
+        // If our import statement has not been added, add it now.
+        if (!added) {
+            try {
+                // Rename the original to build.xml.bak
+                File backupBuildScript = new File(buildScript);
+                backupBuildScript.renameTo(new File(buildScript + BACKUP_EXT));
+                
+                reader = new BufferedReader(new FileReader(buildScript + BACKUP_EXT));
+                writer = new BufferedWriter(new FileWriter(buildScript));
+                added = false;
+                int index = 0;
+                
+                while ((line = reader.readLine()) != null) {
+                    if (!added && (index = line.indexOf(IMPORT_TAG)) != -1) {
+                        StringBuffer buf = new StringBuffer(line);
+                        buf = buf.replace(index, line.length(), IMPORT_WSIT_DEPLOY_XML);
+                        writer.write(buf.toString());
+                        writer.newLine();
+                        added = true;
+                    }
+                    
+                    writer.write(line);
+                    writer.newLine();
+                }
+            } catch (FileNotFoundException ex) {
+                Logger.getLogger("global").log(Level.INFO, null, ex);
+            } catch (IOException ex) {
+                Logger.getLogger("global").log(Level.INFO, null, ex);
+            } finally {
+                try {
+                    if (writer != null) {
+                        writer.flush();
+                        writer.close();
+                    }
+                    
+                    if (reader != null) {
+                        reader.close();
+                    }
+                } catch (IOException ex) {
+                    Logger.getLogger("global").log(Level.INFO, null, ex);
+                }
+            }
+        }
+        
+        // Now refresh the wsit-deploy.xml itself.
+        GeneratedFilesHelper genFilesHelper = new GeneratedFilesHelper(p.getProjectDirectory());
+        
+        try {
+            genFilesHelper.refreshBuildScript(
+                    WSIT_DEPLOY_XML_PATH,
+                    Util.class.getClassLoader().getResource(WSIT_DEPLOY_XSL),
+                    false);
+        } catch (IOException ex) {
+            Logger.getLogger("global").log(Level.INFO, null, ex);
+        }
+    }
+    
+    public static void unfillDefaults(Project p) {
+        String buildScript = FileUtil.toFile(p.getProjectDirectory()).getPath() + BUILD_SCRIPT;
+        
+        BufferedReader reader = null;
+        BufferedWriter writer = null;
+        String line = null;
+        boolean added = false;
+        
+        // First check to see if our import statement has already been added.
+        try {
+            reader = new BufferedReader(new FileReader(buildScript));
+            while ((line = reader.readLine()) != null) {
+                if (line.indexOf(IMPORT_WSIT_DEPLOY_XML) != -1) {
+                    added = true;
+                    break;
+                }
+            }
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger("global").log(Level.INFO, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger("global").log(Level.INFO, null, ex);
+        } finally {
+            if (reader != null) {
+                try {
+                    reader.close();
+                } catch (IOException ex) {
+                    Logger.getLogger("global").log(Level.INFO, null, ex);
+                }
+            }
+        }
+        
+        // If our import statement has not been added, add it now.
+        if (added) {
+            try {
+                // Rename the original to build.xml.bak
+                File backupBuildScript = new File(buildScript);
+                backupBuildScript.renameTo(new File(buildScript + BACKUP_EXT));
+                
+                reader = new BufferedReader(new FileReader(buildScript + BACKUP_EXT));
+                writer = new BufferedWriter(new FileWriter(buildScript));
+                added = false;
+                int index = 0;
+                
+                while ((line = reader.readLine()) != null) {
+                    if ((index = line.indexOf(IMPORT_WSIT_DEPLOY_XML)) == -1) {
+                        writer.write(line);
+                        writer.newLine();
+                    }
+                }
+            } catch (FileNotFoundException ex) {
+                Logger.getLogger("global").log(Level.INFO, null, ex);
+            } catch (IOException ex) {
+                Logger.getLogger("global").log(Level.INFO, null, ex);
+            } finally {
+                try {
+                    if (writer != null) {
+                        writer.flush();
+                        writer.close();
+                    }
+                    
+                    if (reader != null) {
+                        reader.close();
+                    }
+                } catch (IOException ex) {
+                    Logger.getLogger("global").log(Level.INFO, null, ex);
+                }
+            }
+        }
+    }
+    
 }

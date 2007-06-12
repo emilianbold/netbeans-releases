@@ -298,6 +298,7 @@ public class ServicePanel extends SectionInnerPanel {
                     ProfilesModelHelper.setServiceDefaults((String) profileCombo.getSelectedItem(), binding, project);
                 }
             } else {
+                Util.unfillDefaults(project);
                 SecurityPolicyModelHelper.disableSecurity(binding, true);
             }
         }
@@ -306,6 +307,8 @@ public class ServicePanel extends SectionInnerPanel {
             if (devDefaultsChBox.isSelected()) {
                 Util.fillDefaults(project);
                 ProfilesModelHelper.setServiceDefaults((String) profileCombo.getSelectedItem(), binding, project);
+            } else {
+                Util.unfillDefaults(project);
             }
         }
         
