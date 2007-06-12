@@ -22,8 +22,8 @@ package org.netbeans.modules.j2ee.ddloaders.client;
 import java.beans.*;
 import java.awt.Image;
 
-import org.openide.ErrorManager;
 import org.openide.loaders.UniFileLoader;
+import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 
 /** BeanInfo for config file loader.
@@ -34,7 +34,7 @@ public final class ClientDataLoaderBeanInfo extends SimpleBeanInfo {
         try {
             return new BeanInfo[] { Introspector.getBeanInfo (UniFileLoader.class) };
         } catch (IntrospectionException ie) {
-            ErrorManager.getDefault().notify(ie);
+            Exceptions.printStackTrace(ie);
             return null;
         }
     }

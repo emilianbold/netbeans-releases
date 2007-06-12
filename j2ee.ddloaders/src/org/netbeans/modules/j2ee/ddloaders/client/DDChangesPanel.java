@@ -29,7 +29,6 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.event.ListSelectionEvent;
 
 import org.openide.util.NbBundle;
-import org.openide.loaders.DataObject;
 import org.openide.filesystems.FileStateInvalidException;
 
 //import org.netbeans.modules.j2ee.ddloaders.ejb.DDChangeEvent;

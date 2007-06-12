@@ -20,7 +20,6 @@
 package org.netbeans.modules.j2ee.ddloaders.app;
 
 import java.io.IOException;
-import java.io.InputStream;
 import org.netbeans.modules.schema2beans.BaseBean;
 import org.netbeans.modules.j2ee.dd.api.common.CommonDDBean;
 import org.netbeans.modules.j2ee.dd.api.application.DDProvider;

@@ -30,7 +30,6 @@ import org.netbeans.modules.j2ee.dd.api.ejb.Method;
 import org.netbeans.modules.j2ee.dd.api.ejb.MethodPermission;
 import org.netbeans.modules.j2ee.dd.api.ejb.SecurityIdentity;
 import org.netbeans.modules.j2ee.ddloaders.multiview.ui.SecurityForm;
-import org.netbeans.modules.xml.multiview.ItemCheckBoxHelper;
 import org.netbeans.modules.xml.multiview.ItemEditorHelper;
 import org.netbeans.modules.xml.multiview.ItemOptionHelper;
 import org.netbeans.modules.xml.multiview.XmlMultiViewDataSynchronizer;

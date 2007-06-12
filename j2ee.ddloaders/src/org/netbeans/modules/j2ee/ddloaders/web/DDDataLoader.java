@@ -26,7 +26,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.UniFileLoader;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.DataObjectExistsException;
-import org.openide.util.actions.SystemAction;
 import org.openide.util.NbBundle;
 
 /** Recognizes deployment descriptors of web application (web.xml file).

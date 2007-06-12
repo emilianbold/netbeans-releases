@@ -21,7 +21,8 @@ package org.netbeans.modules.j2ee.ddloaders.web;
 
 import java.beans.*;
 import java.awt.Image;
-import org.openide.ErrorManager;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.openide.loaders.MultiFileLoader;
 import org.openide.util.Utilities;
@@ -36,7 +37,7 @@ public class DDDataLoaderBeanInfo extends SimpleBeanInfo {
         try {
             return new BeanInfo[] { Introspector.getBeanInfo (MultiFileLoader.class) };
         } catch (IntrospectionException ie) {
-            ErrorManager.getDefault ().notify (ErrorManager.EXCEPTION, ie);
+            Logger.getLogger("global").log(Level.WARNING, null, ie);
             return null;
         }
     }

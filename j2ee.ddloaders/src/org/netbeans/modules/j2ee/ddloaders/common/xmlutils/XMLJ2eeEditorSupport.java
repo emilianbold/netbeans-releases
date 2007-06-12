@@ -33,6 +33,8 @@ import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.EditorKit;
 import javax.swing.text.StyledDocument;
@@ -40,9 +42,7 @@ import javax.swing.text.StyledDocument;
 import org.netbeans.modules.xml.api.EncodingUtil;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
-import org.openide.awt.StatusDisplayer;
 import org.openide.awt.UndoRedo;
 import org.openide.cookies.CloseCookie;
 import org.openide.cookies.EditCookie;
@@ -54,6 +54,7 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.text.DataEditorSupport;
 import org.openide.text.NbDocument;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.CloneableOpenSupport;
@@ -252,7 +253,7 @@ public class XMLJ2eeEditorSupport extends DataEditorSupport
                     getDataObject().setModified (false);
 
                 } catch (BadLocationException lex) {
-                    ErrorManager.getDefault().notify(lex);
+                    Exceptions.printStackTrace(lex);
                 }
 
             } else { // NotifyDescriptor != YES_OPTION
@@ -279,7 +280,7 @@ public class XMLJ2eeEditorSupport extends DataEditorSupport
                 }
             }
         } catch (BadLocationException e){
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            Logger.getLogger("global").log(Level.INFO, null, e);
         }
         return value;
     }

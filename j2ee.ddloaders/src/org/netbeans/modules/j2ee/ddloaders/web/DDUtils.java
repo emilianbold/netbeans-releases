@@ -19,16 +19,10 @@
 
 package org.netbeans.modules.j2ee.ddloaders.web;
 
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
-import org.openide.filesystems.FileObject;
 
 import org.netbeans.modules.schema2beans.BaseBean;
 import org.netbeans.modules.j2ee.dd.api.common.CommonDDBean;
 import org.netbeans.modules.j2ee.dd.impl.web.WebAppProxy;
-import org.netbeans.modules.j2ee.dd.api.web.WebApp;
-import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import java.io.*;
 import org.xml.sax.*;
 //import java.util.*;

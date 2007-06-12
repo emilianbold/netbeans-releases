@@ -26,8 +26,6 @@ import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 
 import java.io.IOException;
-import java.util.List;
-import java.util.Iterator;
 
 /**
  * @author pfiala

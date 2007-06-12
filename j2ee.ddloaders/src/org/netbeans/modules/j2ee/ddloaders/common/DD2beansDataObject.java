@@ -29,6 +29,8 @@ import org.netbeans.modules.j2ee.ddloaders.common.xmlutils.XMLJ2eeUtils;
 import javax.swing.*;
 import javax.swing.text.Document;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /** Represents a DD2beansDataObject in the Repository.
  *
@@ -74,9 +76,9 @@ public abstract class DD2beansDataObject extends XMLJ2eeDataObject implements or
                             // this is necessary for correct undo behaviour
                             getEditorSupport().getUndo().discardAllEdits();
                         } catch (javax.swing.text.BadLocationException e) {
-                            org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, e);
+                            Logger.getLogger("global").log(Level.INFO, null, e);
                         } catch (IOException e) {
-                            org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, e);
+                            Logger.getLogger("global").log(Level.INFO, null, e);
                         } finally {
                             synchronized (generationTask) {
                                 numberOfStartedGens--;

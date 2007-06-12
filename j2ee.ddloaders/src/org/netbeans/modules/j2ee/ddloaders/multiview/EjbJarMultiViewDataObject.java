@@ -43,7 +43,6 @@ import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
 import org.netbeans.modules.xml.multiview.ToolBarMultiViewElement;
 import org.netbeans.spi.xml.cookies.DataObjectAdapters;
 import org.netbeans.spi.xml.cookies.ValidateXMLSupport;
-import org.openide.ErrorManager;
 import org.openide.cookies.ViewCookie;
 import org.openide.filesystems.*;
 import org.openide.loaders.DataFolder;
@@ -68,8 +67,11 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.awt.HtmlBrowser;
 import org.openide.loaders.MultiDataObject;
+import org.openide.util.Exceptions;
 
 /**
  * Represents a DD object in the Repository.
@@ -141,7 +143,7 @@ public class EjbJarMultiViewDataObject extends DDMultiViewDataObject
                         fs.removeFileChangeListener(this); //avoid being added multiple times
                         fs.addFileChangeListener(this);
                     } catch (FileStateInvalidException ex) {
-                        ErrorManager.getDefault().notify(ex);
+                        Exceptions.printStackTrace(ex);
                     }
                 }
             }
@@ -404,7 +406,7 @@ public class EjbJarMultiViewDataObject extends DDMultiViewDataObject
             try {
                 parseDocument();
             } catch (IOException ex) {
-                ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
+                Logger.getLogger("global").log(Level.INFO, null, ex);
             }
         }
         return ejbJar;

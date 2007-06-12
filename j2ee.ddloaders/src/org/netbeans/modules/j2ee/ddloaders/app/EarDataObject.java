@@ -24,6 +24,8 @@ import java.awt.Dialog;
 import java.awt.event.*;
 import java.io.*;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JButton;
 import javax.swing.event.ChangeListener;
 
@@ -35,7 +37,6 @@ import org.openide.util.HelpCtx;
 import org.openide.util.RequestProcessor;
 
 import org.xml.sax.*;
-import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 
 import org.netbeans.modules.j2ee.ddloaders.common.xmlutils.SAXParseError;
@@ -56,6 +57,7 @@ import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.j2ee.ddloaders.common.DD2beansDataObject;
+import org.openide.util.Exceptions;
 
 
 /** Represents a DD object in the Repository.
@@ -126,15 +128,18 @@ public class EarDataObject extends DD2beansDataObject
             SourceGroup[] groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
             for (int i = 0; i < groups.length; i++) {
                 org.netbeans.modules.j2ee.api.ejbjar.EjbJar ejbModule = org.netbeans.modules.j2ee.api.ejbjar.EjbJar.getEjbJar(groups[i].getRootFolder());
-                if ((ejbModule != null) && (ejbModule.getDeploymentDescriptor() != null)) {
+
+                if (ejbModule != null && ejbModule.getDeploymentDescriptor() != null) {
                     try {
-                        FileObject fo = groups [i].getRootFolder ();
-                        srcRootList.add (groups [i].getRootFolder ());
-                        FileSystem fs = fo.getFileSystem ();
-                        fs.removeFileChangeListener(this); //avoid being added multiple times
-                        fs.addFileChangeListener (this);
+                        FileObject fo = groups[i].getRootFolder();
+
+                        srcRootList.add(groups[i].getRootFolder());
+                        FileSystem fs = fo.getFileSystem();
+
+                        fs.removeFileChangeListener(this);
+                        fs.addFileChangeListener(this);
                     } catch (FileStateInvalidException ex) {
-                        ErrorManager.getDefault ().notify (ex);
+                        Exceptions.printStackTrace(ex);
                     }
                 }
             }
@@ -216,10 +221,10 @@ public class EarDataObject extends DD2beansDataObject
             return out.toString("UTF8"); //NOI18N
         }
         catch (IOException e) {
-            ErrorManager.getDefault ().notify(org.openide.ErrorManager.INFORMATIONAL, e);
+            Logger.getLogger("global").log(Level.INFO, null, e);
         }
         catch (IllegalStateException e){
-            ErrorManager.getDefault ().notify(org.openide.ErrorManager.INFORMATIONAL, e);
+            Logger.getLogger("global").log(Level.INFO, null, e);
 	}
 	return out.toString ();
     }

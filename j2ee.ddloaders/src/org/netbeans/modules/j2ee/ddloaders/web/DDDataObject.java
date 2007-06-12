@@ -25,6 +25,8 @@ import java.awt.event.*;
 import java.beans.*;
 import java.io.*;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JButton;
 import javax.swing.event.ChangeListener;
 
@@ -35,7 +37,6 @@ import org.openide.util.HelpCtx;
 import org.openide.util.RequestProcessor;
 
 import org.xml.sax.*;
-import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 
 import org.netbeans.modules.j2ee.ddloaders.web.event.*;
@@ -61,6 +62,7 @@ import org.netbeans.modules.j2ee.ddloaders.web.multiview.*;
 import org.netbeans.modules.j2ee.ddloaders.multiview.DDMultiViewDataObject;
 import org.netbeans.modules.xml.multiview.DesignMultiViewDesc;
 import org.netbeans.modules.xml.multiview.ToolBarMultiViewElement;
+import org.openide.util.Exceptions;
 
 /** Represents a DD object in the Repository.
  *
@@ -154,7 +156,7 @@ public class DDDataObject extends  DDMultiViewDataObject
             try {
                 webApp = createWebApp();
             } catch (IOException ex) {
-                ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
+                Logger.getLogger("global").log(Level.INFO, null, ex);
             }
         }
         return webApp;
@@ -594,7 +596,7 @@ public class DDDataObject extends  DDMultiViewDataObject
         try {
             writeModel(getWebApp());
         } catch (IOException e) {
-            ErrorManager.getDefault().notify(e);
+            Exceptions.printStackTrace(e);
         }
     }
 

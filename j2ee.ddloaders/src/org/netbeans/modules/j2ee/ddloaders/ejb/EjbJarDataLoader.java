@@ -28,7 +28,6 @@ import org.openide.loaders.UniFileLoader;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.DataObjectExistsException;
 
-import org.openide.util.actions.SystemAction;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.j2ee.ddloaders.multiview.*;
 

@@ -26,7 +26,6 @@ import org.netbeans.modules.j2ee.common.Transaction;
 import org.netbeans.modules.xml.multiview.XmlMultiViewDataObject;
 import org.netbeans.modules.xml.multiview.XmlMultiViewDataSynchronizer;
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileLock;
@@ -40,7 +39,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.Reader;
 import java.util.Date;
 import java.lang.ref.WeakReference;
-import org.openide.util.RequestProcessor;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.openide.util.Exceptions;
 
 /**
  * @author pfiala
@@ -119,7 +120,7 @@ public abstract class DDMultiViewDataObject extends XmlMultiViewDataObject
         try {
             return getModelSynchronizer().takeLock();
         } catch (IOException e) {
-            ErrorManager.getDefault().notify(e);
+            Exceptions.printStackTrace(e);
         }
         return null;
     }
@@ -151,9 +152,9 @@ public abstract class DDMultiViewDataObject extends XmlMultiViewDataObject
             out.close();
             return out.toString("UTF8"); //NOI18N
         } catch (IOException e) {
-            ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, e);
+            Logger.getLogger("global").log(Level.INFO, null, e);
         } catch (IllegalStateException e) {
-            ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, e);
+            Logger.getLogger("global").log(Level.INFO, null, e);
         }
         return out.toString ();
     }
@@ -233,7 +234,7 @@ public abstract class DDMultiViewDataObject extends XmlMultiViewDataObject
             try {
                 validateDocument();
             } catch (IOException e) {
-                ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, e);
+                Logger.getLogger("global").log(Level.WARNING, null, e);
             }
         }
 
@@ -243,7 +244,7 @@ public abstract class DDMultiViewDataObject extends XmlMultiViewDataObject
             try {
                 getDataCache().setData(lock, newDocument, modify);
             } catch (IOException e) {
-                ErrorManager.getDefault().notify(e);
+                Exceptions.printStackTrace(e);
             }
         }
 
@@ -255,7 +256,7 @@ public abstract class DDMultiViewDataObject extends XmlMultiViewDataObject
             try {
                 parseDocument();
             } catch (IOException e) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                Logger.getLogger("global").log(Level.INFO, null, e);
             }
         }
     }

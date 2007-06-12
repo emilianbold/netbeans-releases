@@ -19,15 +19,11 @@
 
 package org.netbeans.modules.j2ee.ddloaders.multiview;
 
-import org.netbeans.modules.j2ee.dd.api.ejb.MethodParams;
 import org.netbeans.modules.j2ee.dd.api.ejb.Query;
 import org.netbeans.modules.j2ee.dd.api.ejb.QueryMethod;
 
-import java.lang.reflect.Modifier;
-import java.util.Collection;
 import java.util.List;
 import java.util.LinkedList;
-import java.util.Iterator;
 
 /**
  * @author pfiala

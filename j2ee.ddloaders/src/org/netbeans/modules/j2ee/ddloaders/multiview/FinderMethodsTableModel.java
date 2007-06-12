@@ -19,8 +19,6 @@
 
 package org.netbeans.modules.j2ee.ddloaders.multiview;
 
-import org.netbeans.modules.j2ee.dd.api.ejb.Query;
-
 /**
  * @author pfiala
  */

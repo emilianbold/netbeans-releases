@@ -24,12 +24,13 @@ import org.openide.nodes.CookieSet;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.MultiFileLoader;
 import org.openide.loaders.XMLDataObject;
-import org.openide.ErrorManager;
 import org.openide.text.Line;
 import org.openide.windows.*;
 import org.openide.util.NbBundle;
 
 import java.io.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.xml.sax.*;
 import org.openide.xml.*;
 import org.netbeans.api.xml.cookies.CheckXMLCookie;
@@ -166,7 +167,7 @@ public abstract class XMLJ2eeDataObject extends XMLDataObject implements CookieS
             err=updateNode(prepareInputSource());
         }
         catch (Exception e) {
-            ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, e);
+            Logger.getLogger("global").log(Level.INFO, null, e);
             setDocumentValid(false);
             return;
         }

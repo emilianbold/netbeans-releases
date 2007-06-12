@@ -18,18 +18,8 @@
  */
 package org.netbeans.modules.j2ee.ddloaders.multiview;
 
-import org.netbeans.api.java.project.JavaProjectConstants;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
-import org.netbeans.modules.j2ee.dd.api.ejb.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.ejb.Ejb;
-import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
-import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
 import org.netbeans.modules.j2ee.ddloaders.multiview.ui.BrowseFolders;
-import org.netbeans.modules.j2ee.spi.ejbjar.support.J2eeProjectView;
-//import org.netbeans.modules.java.JavaDataObject;
 //import org.netbeans.modules.java.ui.nodes.SourceNodes;
 //import org.netbeans.modules.javacore.api.JavaModel;
 //import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
@@ -39,28 +29,13 @@ import org.netbeans.modules.j2ee.spi.ejbjar.support.J2eeProjectView;
 //import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.nodes.Node;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
-import org.openide.util.lookup.AbstractLookup;
-import org.openide.util.lookup.InstanceContent;
 
 import javax.swing.*;
 import java.awt.*;
-import java.beans.PropertyChangeListener;
-import java.io.IOException;
-import java.net.URL;
-import java.rmi.RemoteException;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Iterator;
 import org.netbeans.api.java.classpath.ClassPath;
 
 /**
