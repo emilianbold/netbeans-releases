@@ -56,7 +56,7 @@ public class WebServiceMetadataReader extends CommonBeanReader {
                 J2eeModule module = dc.getJ2eeModule();
                 if(module != null) {
                     if(J2eeModule.WAR.equals(module.getModuleType()) || J2eeModule.EJB.equals(module.getModuleType())) {
-                        result = readWebservicesMetadata(module.getDeploymentDescriptor(WebservicesMetadata.class));
+                        result = readWebservicesMetadata(module.getMetadataModel(WebservicesMetadata.class));
                     }
                 }
             }

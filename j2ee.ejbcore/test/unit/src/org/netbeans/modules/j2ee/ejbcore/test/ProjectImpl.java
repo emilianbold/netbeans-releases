@@ -197,10 +197,6 @@ public final class ProjectImpl implements Project {
             return null;
         }
 
-        public RootInterface getDeploymentDescriptor(String location) {
-            return null;
-        }
-
         public File getResourceDirectory() {
             return null;
         }
@@ -215,7 +211,7 @@ public final class ProjectImpl implements Project {
         public void removePropertyChangeListener(PropertyChangeListener listener) {
         }
 
-        public <T> MetadataModel<T> getDeploymentDescriptor(Class<T> type) {
+        public <T> MetadataModel<T> getMetadataModel(Class<T> type) {
             return null;
         }
         

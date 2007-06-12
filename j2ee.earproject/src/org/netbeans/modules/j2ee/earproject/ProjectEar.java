@@ -183,7 +183,7 @@ public final class ProjectEar extends J2eeApplicationProvider
     }
 
     // TODO MetadataModel: fix when the model is ready
-    public <T> MetadataModel<T> getDeploymentDescriptor(Class<T> type) {
+    public <T> MetadataModel<T> getMetadataModel(Class<T> type) {
         throw new NotImplementedException();
     }
 //    public RootInterface getDeploymentDescriptor (String location) {

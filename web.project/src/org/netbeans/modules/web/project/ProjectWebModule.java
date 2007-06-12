@@ -373,7 +373,7 @@ public final class ProjectWebModule extends J2eeModuleProvider
         return getFile ("build.web.dir"); //NOI18N
     }
     
-    public <T> MetadataModel<T> getDeploymentDescriptor(Class<T> type) {
+    public <T> MetadataModel<T> getMetadataModel(Class<T> type) {
         if (type == WebAppMetadata.class) {
             @SuppressWarnings("unchecked") // NOI18N
             MetadataModel<T> model = (MetadataModel<T>)getMetadataModel();

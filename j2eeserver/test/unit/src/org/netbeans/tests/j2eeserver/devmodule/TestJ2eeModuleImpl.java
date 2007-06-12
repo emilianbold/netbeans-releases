@@ -75,7 +75,7 @@ public class TestJ2eeModuleImpl implements J2eeModuleImplementation {
     }
     
     public void setUrl(String url) {
-        //noop
+        // noop
     }
 
     public File getResourceDirectory() {
@@ -102,7 +102,7 @@ public class TestJ2eeModuleImpl implements J2eeModuleImplementation {
         propertyChangeSupport.firePropertyChange(propertyName, oldValue, newValue);
     }
 
-    public <T> MetadataModel<T> getDeploymentDescriptor(Class<T> type) {
+    public <T> MetadataModel<T> getMetadataModel(Class<T> type) {
         if (type == WebAppMetadata.class) {
             return (MetadataModel<T>) webAppMetadata;
         } else {

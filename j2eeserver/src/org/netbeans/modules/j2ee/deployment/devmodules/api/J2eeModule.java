@@ -184,16 +184,9 @@ public class J2eeModule {
      * 
      * @throws NullPointerException if the <code>type</code> parameter is <code>null</code>.
      */
-    public <T> MetadataModel<T> getDeploymentDescriptor(Class<T> type) {
+    public <T> MetadataModel<T> getMetadataModel(Class<T> type) {
         Parameters.notNull("type", type); // NOI18N
-        return impl.getDeploymentDescriptor(type);
-    }
-    
-    /**
-     * TODO: this method will be removed, use {@link #getDeploymentDescriptor} instead
-     */
-    public RootInterface getDeploymentDescriptor(String location) {
-        throw new UnsupportedOperationException();
+        return impl.getMetadataModel(type);
     }
     
     /**

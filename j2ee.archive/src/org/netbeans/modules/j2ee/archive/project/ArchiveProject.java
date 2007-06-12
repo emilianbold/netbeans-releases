@@ -574,7 +574,7 @@ public class ArchiveProject implements org.netbeans.api.project.Project {
         }
         
         // TODO MetadataModel:
-        public <T> MetadataModel<T> getDeploymentDescriptor(Class<T> type) {
+        public <T> MetadataModel<T> getMetadataModel(Class<T> type) {
             throw new NotImplementedException();
         }
 // TODO MetadataModel:

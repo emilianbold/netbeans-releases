@@ -82,9 +82,9 @@ public class J2eeModuleTest extends NbTestCase {
     
     public void testGetDeploymentDescriptor() throws Exception {
         // check non-existing DDs
-        assertNull(j2eeModule.getDeploymentDescriptor(EjbJarMetadata.class));
+        assertNull(j2eeModule.getMetadataModel(EjbJarMetadata.class));
         
         // check existing DDs
-        assertNotNull(j2eeModule.getDeploymentDescriptor(WebAppMetadata.class));
+        assertNotNull(j2eeModule.getMetadataModel(WebAppMetadata.class));
     }
 }

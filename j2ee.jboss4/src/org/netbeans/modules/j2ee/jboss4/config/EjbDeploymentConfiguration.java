@@ -118,10 +118,11 @@ implements ModuleConfiguration, DatasourceConfiguration, DeploymentPlanConfigura
                 ErrorManager.getDefault().notify(donfe);
             }
         }
-        EjbJar ejbJar = (EjbJar) j2eeModule.getDeploymentDescriptor(J2eeModule.EJBJAR_XML);
-        if (ejbJar != null) {
-            ejbJar.addPropertyChangeListener(this);
-        }
+        // TODO: rewrite
+//        EjbJar ejbJar = (EjbJar) j2eeModule.getMetadataModel(J2eeModule.EJBJAR_XML);
+//        if (ejbJar != null) {
+//            ejbJar.addPropertyChangeListener(this);
+//        }
     }
     
     public Lookup getLookup() {
@@ -129,10 +130,10 @@ implements ModuleConfiguration, DatasourceConfiguration, DeploymentPlanConfigura
     }
     
     public void dispose() {
-        EjbJar ejbJar = (EjbJar) j2eeModule.getDeploymentDescriptor(J2eeModule.EJBJAR_XML);
-        if (ejbJar != null) {
-            ejbJar.removePropertyChangeListener(this);
-        }
+//        EjbJar ejbJar = (EjbJar) j2eeModule.getMetadataModel(J2eeModule.EJBJAR_XML);
+//        if (ejbJar != null) {
+//            ejbJar.removePropertyChangeListener(this);
+//        }
     }
 
     public boolean supportsCreateDatasource() {

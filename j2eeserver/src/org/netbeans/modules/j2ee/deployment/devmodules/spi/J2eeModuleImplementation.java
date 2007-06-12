@@ -95,7 +95,7 @@ public interface J2eeModuleImplementation {
      * @return metadata model of a deployment descriptor specified by the <code>type</code>
      *         parameter.
      */
-    <T> MetadataModel<T> getDeploymentDescriptor(Class<T> type);
+    <T> MetadataModel<T> getMetadataModel(Class<T> type);
     
     /**
      * Returns the module resource directory, or null if the module has no resource

@@ -114,7 +114,7 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>4</release-version>
-                        <specification-version>1.17.0.1</specification-version>
+                        <specification-version>1.29</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>

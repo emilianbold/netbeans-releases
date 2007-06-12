@@ -226,7 +226,7 @@ public final class AppClientProvider extends J2eeModuleProvider
 //        return null;
 //    }
     
-    public <T> MetadataModel<T> getDeploymentDescriptor(Class<T> type) {
+    public <T> MetadataModel<T> getMetadataModel(Class<T> type) {
         if (type == AppClientMetadata.class) {
             @SuppressWarnings("unchecked") // NOI18N
             MetadataModel<T> model = (MetadataModel<T>)getMetadataModel();

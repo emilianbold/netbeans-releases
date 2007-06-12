@@ -73,6 +73,7 @@ import org.netbeans.modules.websvc.wsitconf.api.WSITConfigProvider;
 import org.netbeans.modules.websvc.wsitconf.spi.SecurityCheckerRegistry;
 import org.openide.filesystems.FileLock;
 import org.openide.loaders.DataNode;
+import org.openide.util.NotImplementedException;
 import org.openide.windows.TopComponent;
 
 /**
@@ -1143,40 +1144,49 @@ public class J2eeProjectHelper {
     protected WebApp getWebApp() {
         //System.out.println(getProvider().getJ2eeModule().getDeploymentDescriptor(
         //        J2eeModule.WEB_XML).dumpBeanNode());
-        return (WebApp)getJ2eeModule().getDeploymentDescriptor(
-                J2eeModule.WEB_XML);
+	// TODO: this method has been replaced with getJ2eeModule().getMetadataModel
+        // return (WebApp)getJ2eeModule().getDeploymentDescriptor(
+        //        J2eeModule.WEB_XML);
+	throw new NotImplementedException();
     }
     
     protected AppClient getAppClient() {
-        return (AppClient)getJ2eeModule().getDeploymentDescriptor(
-                J2eeModule.CLIENT_XML);
+        // TODO: this method has been replaced with getJ2eeModule().getMetadataModel
+	// return (AppClient)getJ2eeModule().getDeploymentDescriptor(
+        //        J2eeModule.CLIENT_XML);
+        throw new NotImplementedException();
     }
     
     protected org.netbeans.modules.j2ee.dd.api.ejb.EjbJar getEjbJar() {
         //System.out.println(getProvider().getJ2eeModule().getDeploymentDescriptor(
         //        J2eeModule.EJBJAR_XML).dumpBeanNode());
-        return (org.netbeans.modules.j2ee.dd.api.ejb.EjbJar)
-        getJ2eeModule().getDeploymentDescriptor(
-                J2eeModule.EJBJAR_XML);
+        // TODO: this method has been replaced with getJ2eeModule().getMetadataModel
+	// return (org.netbeans.modules.j2ee.dd.api.ejb.EjbJar)
+        // getJ2eeModule().getDeploymentDescriptor(
+        //        J2eeModule.EJBJAR_XML);
+	throw new NotImplementedException();
     }
     
     protected org.netbeans.modules.j2ee.dd.api.webservices.Webservices getWebServicesXML() {
-        switch (getProjectType()) {
-            case WEB:
-                //System.out.println(getProvider().getJ2eeModule().getDeploymentDescriptor(
-                //        J2eeModule.WEBSERVICES_XML).dumpBeanNode());
-                return (org.netbeans.modules.j2ee.dd.api.webservices.Webservices)
-                getJ2eeModule().getDeploymentDescriptor(
-                        J2eeModule.WEBSERVICES_XML);
-            case EJB:
-                //System.out.println("dumping the bean node for webservices xml file ");
-                //getProvider().getJ2eeModule().getDeploymentDescriptor(
-                //        J2eeModule.EJBSERVICES_XML).dumpXml();
-                return (org.netbeans.modules.j2ee.dd.api.webservices.Webservices)
-                getJ2eeModule().getDeploymentDescriptor(
-                        J2eeModule.EJBSERVICES_XML);
-        }
-        return null;
+        // TODO: this method has been replaced with getJ2eeModule().getMetadataModel
+	// switch (getProjectType()) {
+        //    case WEB:
+        //        //System.out.println(getProvider().getJ2eeModule().getDeploymentDescriptor(
+        //        //        J2eeModule.WEBSERVICES_XML).dumpBeanNode());
+        //        return (org.netbeans.modules.j2ee.dd.api.webservices.Webservices)
+        //         getJ2eeModule().getDeploymentDescriptor(
+        //                J2eeModule.WEBSERVICES_XML);
+        //    case EJB:
+        //        //System.out.println("dumping the bean node for webservices xml file ");
+        //        //getProvider().getJ2eeModule().getDeploymentDescriptor(
+        //        //        J2eeModule.EJBSERVICES_XML).dumpXml();
+        //        return (org.netbeans.modules.j2ee.dd.api.webservices.Webservices)
+        //        getJ2eeModule().getDeploymentDescriptor(
+        //                J2eeModule.EJBSERVICES_XML);
+        //}
+        //return null;
+	throw new NotImplementedException();
+
     }
     
     protected J2eeModule getJ2eeModule() {

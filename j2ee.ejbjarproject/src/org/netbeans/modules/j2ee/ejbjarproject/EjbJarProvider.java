@@ -219,7 +219,7 @@ public final class EjbJarProvider extends J2eeModuleProvider
         return getFile(EjbJarProjectProperties.BUILD_CLASSES_DIR);
     }
     
-    public <T> MetadataModel<T> getDeploymentDescriptor(Class<T> type) {
+    public <T> MetadataModel<T> getMetadataModel(Class<T> type) {
         if (type == EjbJarMetadata.class) {
             @SuppressWarnings("unchecked") // NOI18N
             MetadataModel<T> model = (MetadataModel<T>)getMetadataModel();

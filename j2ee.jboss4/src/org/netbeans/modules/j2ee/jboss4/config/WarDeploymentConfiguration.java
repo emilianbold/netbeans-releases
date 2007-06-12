@@ -81,10 +81,11 @@ implements ModuleConfiguration, ContextRootConfiguration, DatasourceConfiguratio
                 ErrorManager.getDefault().notify(donfe);
             }
         }
-        WebApp webApp = (WebApp) j2eeModule.getDeploymentDescriptor(J2eeModule.WEB_XML);
-        if (webApp != null) {
-            webApp.addPropertyChangeListener(this);
-        }
+        // TODO: rewrite
+//        WebApp webApp = (WebApp) j2eeModule.getMetadataModel(J2eeModule.WEB_XML);
+//        if (webApp != null) {
+//            webApp.addPropertyChangeListener(this);
+//        }
     }
     
     public Lookup getLookup() {
@@ -93,10 +94,11 @@ implements ModuleConfiguration, ContextRootConfiguration, DatasourceConfiguratio
     
 
     public void dispose() {
-        WebApp webApp = (WebApp) j2eeModule.getDeploymentDescriptor(J2eeModule.WEB_XML);
-        if (webApp != null) {
-            webApp.removePropertyChangeListener(this);
-        }
+        // TODO: rewrite
+//        WebApp webApp = (WebApp) j2eeModule.getMetadataModel(J2eeModule.WEB_XML);
+//        if (webApp != null) {
+//            webApp.removePropertyChangeListener(this);
+//        }
     }
 
     public boolean supportsCreateDatasource() {

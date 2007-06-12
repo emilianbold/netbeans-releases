@@ -287,7 +287,7 @@ public class ProvidesJ2eeModule extends J2eeModuleProvider {
         }
         
         // TODO MetadataModel:
-        public <T> MetadataModel<T> getDeploymentDescriptor(Class<T> type) {
+        public <T> MetadataModel<T> getMetadataModel(Class<T> type) {
             throw new NotImplementedException();
         }
         

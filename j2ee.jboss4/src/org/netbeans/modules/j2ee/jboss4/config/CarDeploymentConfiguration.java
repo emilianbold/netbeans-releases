@@ -73,18 +73,20 @@ implements ModuleConfiguration, DatasourceConfiguration, DeploymentPlanConfigura
                 ErrorManager.getDefault().notify(donfe);
             }
         }
-        AppClient appClient = (AppClient) j2eeModule.getDeploymentDescriptor(J2eeModule.CLIENT_XML);
-        if (appClient != null) {
-            appClient.addPropertyChangeListener(this);
-        }
+        // TODO: rewrite
+//        AppClient appClient = (AppClient) j2eeModule.getMetadataModel(J2eeModule.CLIENT_XML);
+//        if (appClient != null) {
+//            appClient.addPropertyChangeListener(this);
+//        }
     }
     
 
     public void dispose() {
-        AppClient appClient = (AppClient) j2eeModule.getDeploymentDescriptor(J2eeModule.CLIENT_XML);
-        if (appClient != null) {
-            appClient.removePropertyChangeListener(this);
-        }
+        // TODO: rewrite
+//        AppClient appClient = (AppClient) j2eeModule.getMetadataModel(J2eeModule.CLIENT_XML);
+//        if (appClient != null) {
+//            appClient.removePropertyChangeListener(this);
+//        }
     }
     
     public Lookup getLookup() {

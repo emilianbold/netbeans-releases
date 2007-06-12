@@ -576,7 +576,7 @@ public class TomcatModuleConfigurationTest extends TestBase {
             return null;
         }
         
-        public <T> MetadataModel<T> getDeploymentDescriptor(Class<T> type) {
+        public <T> MetadataModel<T> getMetadataModel(Class<T> type) {
             return null;
         }
 

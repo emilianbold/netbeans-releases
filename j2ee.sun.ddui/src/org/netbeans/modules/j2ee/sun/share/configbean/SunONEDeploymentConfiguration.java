@@ -93,6 +93,7 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.util.NbBundle;
+import org.openide.util.NotImplementedException;
 import org.openide.util.RequestProcessor;
 import org.xml.sax.SAXException;
 
@@ -351,7 +352,7 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
     }
 
     public <T> MetadataModel<T> getMetadataModel(Class<T> type) {
-        return module.getDeploymentDescriptor(type);
+        return module.getMetadataModel(type);
     }
 
     public void updateResourceDir(File resourceDir) {
@@ -1329,26 +1330,27 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
     public WebAppRoot getWebAppRoot() {
         WebAppRoot war = null;
         
-        //DDBeanRoot root = dObj.getDDBeanRoot();
-        org.netbeans.modules.j2ee.dd.api.common.RootInterface root = 
-                module.getDeploymentDescriptor(J2eeModule.WEB_XML);
-        if(null != root) {
-            try {
-                ConfigurationStorage storage = getStorage();
-                if(storage != null) {
-                    DConfigBeanRoot dcbRoot = getDConfigBeanRoot(storage.getDDBeanRoot(module));
-                    if(dcbRoot instanceof WebAppRoot) {
-                        war = (WebAppRoot) dcbRoot;
-                    }
-                }
-            } catch (ConfigurationException ex) {
-                ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
-            }
-        } else {
-            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "DeployableObject with null DDBeanRoot!!!");
-        }
-        
-        return war;
+        throw new NotImplementedException();
+        // TODO: the code below needs to be rewritten to use the metadata model
+//        org.netbeans.modules.j2ee.dd.api.common.RootInterface root = 
+//                module.getDeploymentDescriptor(J2eeModule.WEB_XML);
+//        if(null != root) {
+//            try {
+//                ConfigurationStorage storage = getStorage();
+//                if(storage != null) {
+//                    DConfigBeanRoot dcbRoot = getDConfigBeanRoot(storage.getDDBeanRoot(module));
+//                    if(dcbRoot instanceof WebAppRoot) {
+//                        war = (WebAppRoot) dcbRoot;
+//                    }
+//                }
+//            } catch (ConfigurationException ex) {
+//                ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
+//            }
+//        } else {
+//            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "DeployableObject with null DDBeanRoot!!!");
+//        }
+//        
+//        return war;
     }
 
     /** If this module is a ejbjar, retrieve the EjbJarRoot bean for it.
