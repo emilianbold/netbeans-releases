@@ -27,6 +27,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.j2ee.dd.api.common.NameAlreadyUsedException;
 import org.netbeans.modules.j2ee.dd.api.common.PortComponentRef;
 import org.netbeans.modules.j2ee.dd.api.common.RootInterface;
@@ -46,7 +48,6 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.openide.ErrorManager;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
@@ -192,7 +193,7 @@ public class EjbJarWebServicesClientSupport implements WebServicesClientSupportI
             // TODO: first one API EjbJar from project is taken... this should be fixed
             return DDProvider.getDefault().getDDRoot(org.netbeans.modules.j2ee.api.ejbjar.EjbJar.getEjbJars(project)[0].getDeploymentDescriptor());
         } catch (java.io.IOException e) {
-            org.openide.ErrorManager.getDefault().log(e.getLocalizedMessage());
+            Logger.getLogger("global").log(Level.INFO, e.getLocalizedMessage());
         }
         return null;
     }
@@ -413,16 +414,16 @@ public class EjbJarWebServicesClientSupport implements WebServicesClientSupportI
 
             } catch (IOException ex) {
                 // Strange thing happen
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                Logger.getLogger("global").log(Level.INFO, null, ex);
             } catch (NameAlreadyUsedException ex) {
                 // Should never happen because we look for it by name first.
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                Logger.getLogger("global").log(Level.INFO, null, ex);
             } catch (URISyntaxException ex) {
                 // Programmer error - validation of input data should ensure this never happens.
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                Logger.getLogger("global").log(Level.INFO, null, ex);
             } catch (ClassNotFoundException ex) {
                 // Programmer error - mistyped object name.
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                Logger.getLogger("global").log(Level.INFO, null, ex);
             }
             
         }
@@ -513,8 +514,7 @@ public class EjbJarWebServicesClientSupport implements WebServicesClientSupportI
         } else if(create) {
             // Create was specified, but no META-INF was found, so how do we create it?
             // Expect an NPE if we return null for this case, but log it anyway.
-            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL,
-            NbBundle.getMessage(EjbJarWebServicesSupport.class, "MSG_MetaInfNotFoundForWsdlFolder"));
+            Logger.getLogger("global").log(Level.INFO, NbBundle.getMessage(EjbJarWebServicesSupport.class, "MSG_MetaInfNotFoundForWsdlFolder"));
         }
         
         return wsdlFolder;

@@ -56,10 +56,7 @@ import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.modules.j2ee.dd.spi.ejb.EjbJarMetadataModelFactory;
 import org.netbeans.modules.j2ee.dd.spi.webservices.WebservicesMetadataModelFactory;
 import org.netbeans.modules.j2ee.ejbjarproject.classpath.ClassPathProviderImpl;
-import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
-import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.websvc.spi.webservices.WebServicesConstants;
-import org.openide.util.WeakListeners;
 
 
 /** A ejb module implementation on top of project.
@@ -299,7 +296,7 @@ public final class EjbJarProvider extends J2eeModuleProvider
             String newVersion = (String) evt.getNewValue();
             getPropertyChangeSupport().firePropertyChange(J2eeModule.PROP_MODULE_VERSION, oldVersion, newVersion);
         } else if (evt.getPropertyName ().equals (EjbJarProjectProperties.J2EE_SERVER_INSTANCE)) {
-            Deployment d = Deployment.getDefault ();
+            Deployment d = Deployment.getDefault();
             String oldServerID = evt.getOldValue () == null ? null : d.getServerID ((String) evt.getOldValue ());
             String newServerID = evt.getNewValue () == null ? null : d.getServerID ((String) evt.getNewValue ());
             fireServerChange (oldServerID, newServerID);

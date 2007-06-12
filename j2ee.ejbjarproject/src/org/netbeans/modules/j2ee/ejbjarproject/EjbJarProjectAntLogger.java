@@ -21,13 +21,13 @@ package org.netbeans.modules.j2ee.ejbjarproject;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.regex.Pattern;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.tools.ant.module.spi.AntEvent;
 import org.apache.tools.ant.module.spi.AntLogger;
 import org.apache.tools.ant.module.spi.AntSession;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -58,7 +58,7 @@ public final class EjbJarProjectAntLogger extends AntLogger {
                 return proj instanceof EjbJarProject;
             }
         } catch (IOException e) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            Logger.getLogger("global").log(Level.INFO, null, e);
         }
         return false;
     }

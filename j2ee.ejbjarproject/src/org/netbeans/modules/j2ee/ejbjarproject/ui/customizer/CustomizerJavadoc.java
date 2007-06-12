@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.j2ee.ejbjarproject.ui.customizer;
 
-import javax.swing.JComponent;
 import javax.swing.JPanel;
 import org.openide.util.HelpCtx;
 

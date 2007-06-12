@@ -33,8 +33,6 @@ import javax.swing.event.ListDataListener;
 import javax.swing.table.AbstractTableModel;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.j2ee.ejbjarproject.classpath.ClassPathSupport;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 

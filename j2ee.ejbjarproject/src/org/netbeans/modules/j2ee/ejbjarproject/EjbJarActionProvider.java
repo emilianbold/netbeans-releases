@@ -25,26 +25,29 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.regex.Pattern;
 import org.apache.tools.ant.module.api.support.ActionUtils;
+import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.api.debugger.Session;
+import org.netbeans.api.debugger.jpda.AttachingDICookie;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
-import org.netbeans.spi.project.ActionProvider;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.util.NbBundle;
-import org.openide.util.Lookup;
-import org.netbeans.modules.j2ee.deployment.plugins.api.*;
-import org.netbeans.api.debugger.*;
-import org.netbeans.api.debugger.jpda.*;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.source.SourceUtils;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.*;
-import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.EjbJarProjectProperties;
-import org.netbeans.spi.project.support.ant.ReferenceHelper;
-import org.openide.*;
-
 import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.j2ee.deployment.plugins.api.ServerDebugInfo;
+import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.EjbJarProjectProperties;
+import org.netbeans.spi.project.ActionProvider;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.ReferenceHelper;
+import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
+
 
 /** Action provider of the Web project. This is the place where to do
  * strange things to Web actions. E.g. compile-single.
@@ -55,22 +58,22 @@ class EjbJarActionProvider implements ActionProvider {
     
     private static final String COMMAND_COMPILE = "compile"; //NOI18N
     private static final String COMMAND_VERIFY = "verify"; //NOI18N
-        
+    
     // Commands available from Web project
     private static final String[] supportedActions = {
-        COMMAND_BUILD, 
-        COMMAND_CLEAN, 
-        COMMAND_REBUILD, 
-        COMMAND_COMPILE_SINGLE, 
-        COMMAND_RUN, 
-        COMMAND_RUN_SINGLE, 
-        COMMAND_DEBUG, 
-        COMMAND_DEBUG_SINGLE, 
+        COMMAND_BUILD,
+        COMMAND_CLEAN,
+        COMMAND_REBUILD,
+        COMMAND_COMPILE_SINGLE,
+        COMMAND_RUN,
+        COMMAND_RUN_SINGLE,
+        COMMAND_DEBUG,
+        COMMAND_DEBUG_SINGLE,
         EjbProjectConstants.COMMAND_REDEPLOY,
-        JavaProjectConstants.COMMAND_JAVADOC, 
-        COMMAND_TEST, 
-        COMMAND_TEST_SINGLE, 
-        COMMAND_DEBUG_TEST_SINGLE, 
+        JavaProjectConstants.COMMAND_JAVADOC,
+        COMMAND_TEST,
+        COMMAND_TEST_SINGLE,
+        COMMAND_DEBUG_TEST_SINGLE,
         JavaProjectConstants.COMMAND_DEBUG_FIX,
         COMMAND_COMPILE,
         COMMAND_VERIFY,
@@ -86,7 +89,7 @@ class EjbJarActionProvider implements ActionProvider {
     // Ant project helper of the project
     private final AntProjectHelper antProjectHelper;
     private ReferenceHelper refHelper;
-        
+    
     /** Map from commands to ant targets */
     Map/*<String,String[]>*/ commands;
     
@@ -107,14 +110,14 @@ class EjbJarActionProvider implements ActionProvider {
         commands.put(JavaProjectConstants.COMMAND_DEBUG_FIX, new String[] {"debug-fix"}); // NOI18N
         commands.put(COMMAND_COMPILE, new String[] {"compile"}); // NOI18N
         commands.put(COMMAND_VERIFY, new String[] {"verify"}); // NOI18N
-
+        
         this.antProjectHelper = antProjectHelper;
         this.project = project;
         this.refHelper = refHelper;
     }
     
     private FileObject findBuildXml() {
-        return project.getProjectDirectory().getFileObject(project.getBuildXmlName ());
+        return project.getProjectDirectory().getFileObject(project.getBuildXmlName());
     }
     
     public String[] getSupportedActions() {
@@ -141,12 +144,12 @@ class EjbJarActionProvider implements ActionProvider {
             DefaultProjectOperations.performDefaultRenameOperation(project, null);
             return ;
         }
-
-        Runnable action = new Runnable () {
-            public void run () {
+        
+        Runnable action = new Runnable() {
+            public void run() {
                 Properties p = new Properties();
                 String[] targetNames;
-        
+                
                 targetNames = getTargetNames(command, context, p);
                 if (targetNames == null) {
                     return;
@@ -161,18 +164,16 @@ class EjbJarActionProvider implements ActionProvider {
                     FileObject buildFo = findBuildXml();
                     if (buildFo == null || !buildFo.isValid()) {
                         //The build.xml was deleted after the isActionEnabled was called
-  	                NotifyDescriptor nd = new NotifyDescriptor.Message(NbBundle.getMessage(EjbJarActionProvider.class,
+                        NotifyDescriptor nd = new NotifyDescriptor.Message(NbBundle.getMessage(EjbJarActionProvider.class,
                                 "LBL_No_Build_XML_Found"), NotifyDescriptor.WARNING_MESSAGE);
-  	                DialogDisplayer.getDefault().notify(nd);
-                    }
-                    else {
+                        DialogDisplayer.getDefault().notify(nd);
+                    } else {
                         ActionUtils.runTarget(buildFo, targetNames, p);
-  	            }                    
-                } 
-                catch (IOException e) {
-                    ErrorManager.getDefault().notify(e);
+                    }
+                } catch (IOException e) {
+                    Exceptions.printStackTrace(e);
                 }
-            }            
+            }
         };
         
         action.run();
@@ -201,7 +202,7 @@ class EjbJarActionProvider implements ActionProvider {
                         clazz = clazz.substring(0, clazz.length() - 5);
                     }
                     clazz = clazz.replace('/','.');
-
+                    
                     if (!SourceUtils.getMainClasses(file).isEmpty()) {
                         p.setProperty("run.class", clazz); // NOI18N
                         targetNames = (String[]) commands.get(COMMAND_RUN_SINGLE);
@@ -214,20 +215,20 @@ class EjbJarActionProvider implements ActionProvider {
                     return null;
                 }
             }
-        } else if (command.equals (COMMAND_RUN) || command.equals (EjbProjectConstants.COMMAND_REDEPLOY)) {
-            if (!isSelectedServer ()) {
+        } else if (command.equals(COMMAND_RUN) || command.equals(EjbProjectConstants.COMMAND_REDEPLOY)) {
+            if (!isSelectedServer()) {
                 return null;
             }
             if (isDebugged()) {
                 p.setProperty("is.debugged", "true");
             }
-            if (command.equals (EjbProjectConstants.COMMAND_REDEPLOY)) {
+            if (command.equals(EjbProjectConstants.COMMAND_REDEPLOY)) {
                 p.setProperty("forceRedeploy", "true"); //NOI18N
             } else {
                 p.setProperty("forceRedeploy", "false"); //NOI18N
             }
         //DEBUGGING PART
-        } else if (command.equals (COMMAND_DEBUG) || command.equals(COMMAND_DEBUG_SINGLE)) {
+        } else if (command.equals(COMMAND_DEBUG) || command.equals(COMMAND_DEBUG_SINGLE)) {
             FileObject[] javaFiles = findJavaSources(context);
             if (javaFiles != null && javaFiles.length == 1 && !SourceUtils.getMainClasses(javaFiles[0]).isEmpty()) {
                 FileObject javaFile = javaFiles[0];
@@ -289,8 +290,7 @@ class EjbJarActionProvider implements ActionProvider {
         } else if ( command.equals( COMMAND_TEST_SINGLE ) ) {
             FileObject[] files = findTestSourcesForSources(context);
             targetNames = setupTestSingle(p, files);
-        }
-        else if ( command.equals( COMMAND_DEBUG_TEST_SINGLE ) ) {
+        } else if ( command.equals( COMMAND_DEBUG_TEST_SINGLE ) ) {
             FileObject[] files = findTestSourcesForSources(context);
             targetNames = setupDebugTestSingle(p, files);
         } else {
@@ -338,23 +338,21 @@ class EjbJarActionProvider implements ActionProvider {
             }
             FileObject files[] = findJavaSources(context);
             return files != null && files.length == 1;
-        }
-        else if ( command.equals( COMMAND_TEST_SINGLE ) ) {
+        } else if ( command.equals( COMMAND_TEST_SINGLE ) ) {
             return findTestSourcesForSources(context) != null;
-        }
-        else if ( command.equals( COMMAND_DEBUG_TEST_SINGLE ) ) {
+        } else if ( command.equals( COMMAND_DEBUG_TEST_SINGLE ) ) {
             FileObject[] files = findTestSourcesForSources(context);
             return files != null && files.length == 1;
         } else if (command.equals(COMMAND_DEBUG_SINGLE)) {
             FileObject[] testFiles = findTestSources(context, false);
             FileObject[] javaFiles = findJavaSources(context);
-            return ((testFiles != null && testFiles.length == 1) || 
+            return ((testFiles != null && testFiles.length == 1) ||
                     (javaFiles != null && javaFiles.length == 1));
         } else {
             // other actions are global
             return true;
         }
-
+        
         
     }
     
@@ -363,7 +361,7 @@ class EjbJarActionProvider implements ActionProvider {
     private static final String SUBST = "Test.java"; // NOI18N
     private static final Pattern SRCDIRJAVA = Pattern.compile("\\.java$"); // NOI18N
     
-    /** Find selected java sources 
+    /** Find selected java sources
      */
     private FileObject[] findJavaSources(Lookup context) {
         FileObject[] srcPath = project.getSourceRoots().getRoots();
@@ -376,7 +374,7 @@ class EjbJarActionProvider implements ActionProvider {
         return null;
     }
     
-    private FileObject[] findSourcesAndPackages (Lookup context, FileObject srcDir) {
+    private FileObject[] findSourcesAndPackages(Lookup context, FileObject srcDir) {
         if (srcDir != null) {
             FileObject[] files = ActionUtils.findSelectedFiles(context, srcDir, null, true); // NOI18N
             //Check if files are either packages of java files
@@ -393,7 +391,7 @@ class EjbJarActionProvider implements ActionProvider {
         }
     }
     
-    private FileObject[] findSourcesAndPackages (Lookup context, FileObject[] srcRoots) {
+    private FileObject[] findSourcesAndPackages(Lookup context, FileObject[] srcRoots) {
         for (int i=0; i<srcRoots.length; i++) {
             FileObject[] result = findSourcesAndPackages(context, srcRoots[i]);
             if (result != null) {
@@ -415,7 +413,7 @@ class EjbJarActionProvider implements ActionProvider {
             }
         }
         if (checkInSrcDir && testSrcPath.length>0) {
-            FileObject[] files = findJavaSources (context);
+            FileObject[] files = findJavaSources(context);
             if (files != null) {
                 //Try to find the test under the test roots
                 FileObject srcRoot = getRoot(project.getSourceRoots().getRoots(),files[0]);
@@ -450,9 +448,9 @@ class EjbJarActionProvider implements ActionProvider {
             }
         }
         return null;
-    }      
+    }
     
-    private FileObject getRoot (FileObject[] roots, FileObject file) {
+    private FileObject getRoot(FileObject[] roots, FileObject file) {
         FileObject srcDir = null;
         for (int i=0; i< roots.length; i++) {
             if (FileUtil.isParentOf(roots[i],file) || roots[i].equals(file)) {
@@ -462,15 +460,15 @@ class EjbJarActionProvider implements ActionProvider {
         }
         return srcDir;
     }
-
+    
     private boolean isDebugged() {
         
         J2eeModuleProvider jmp = (J2eeModuleProvider)project.getLookup().lookup(J2eeModuleProvider.class);
-        ServerDebugInfo sdi = jmp.getServerDebugInfo ();
+        ServerDebugInfo sdi = jmp.getServerDebugInfo();
         if (sdi == null) {
             return false;
         }
-//        server.getServerInstance().getStartServer().getDebugInfo(null);
+        //        server.getServerInstance().getStartServer().getDebugInfo(null);
         Session[] sessions = DebuggerManager.getDebuggerManager().getSessions();
         
         for (int i=0; i < sessions.length; i++) {
@@ -496,8 +494,8 @@ class EjbJarActionProvider implements ActionProvider {
         return false;
     }
     
-    private boolean isSelectedServer () {
-        String instance = antProjectHelper.getStandardPropertyEvaluator ().getProperty (EjbJarProjectProperties.J2EE_SERVER_INSTANCE);
+    private boolean isSelectedServer() {
+        String instance = antProjectHelper.getStandardPropertyEvaluator().getProperty(EjbJarProjectProperties.J2EE_SERVER_INSTANCE);
         if (instance != null) {
             String id = Deployment.getDefault().getServerID(instance);
             if (id != null) {
@@ -507,7 +505,7 @@ class EjbJarActionProvider implements ActionProvider {
         
         // if there is some server instance of the type which was used
         // previously do not ask and use it
-        String serverType = antProjectHelper.getStandardPropertyEvaluator ().getProperty (EjbJarProjectProperties.J2EE_SERVER_TYPE);
+        String serverType = antProjectHelper.getStandardPropertyEvaluator().getProperty(EjbJarProjectProperties.J2EE_SERVER_TYPE);
         if (serverType != null) {
             String[] servInstIDs = Deployment.getDefault().getInstancesOfServer(serverType);
             if (servInstIDs.length > 0) {
@@ -515,7 +513,7 @@ class EjbJarActionProvider implements ActionProvider {
                 return true;
             }
         }
-
+        
         // no selected server => warning
         String msg = NbBundle.getMessage(EjbJarActionProvider.class, "MSG_No_Server_Selected"); //  NOI18N
         DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg, NotifyDescriptor.WARNING_MESSAGE));

@@ -34,7 +34,6 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 import org.openide.util.Mutex;
@@ -46,6 +45,7 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 
 
 /**
@@ -106,23 +106,21 @@ public class UpdateHelper {
      * @param path a relative URI in the project directory.
      * @param props a set of properties
      */
-    public void putProperties (final String path, final EditableProperties props) {
-        ProjectManager.mutex().writeAccess(
-            new Runnable () {
-                public void run() {
-                    if (isCurrent() || !AntProjectHelper.PROJECT_PROPERTIES_PATH.equals(path)) {  //Only project props should cause update
+    public void putProperties(final String path, final EditableProperties props) {
+        ProjectManager.mutex().writeAccess(new Runnable() {
+            public void run() {
+                if (isCurrent() || !AntProjectHelper.PROJECT_PROPERTIES_PATH.equals(path)) {  //Only project props should cause update
+                    helper.putProperties(path,props);
+                } else if (canUpdate()) {
+                    try {
+                        saveUpdate(props);
                         helper.putProperties(path,props);
-                    }
-                    else if (canUpdate()) {
-                        try {
-                            saveUpdate (props);
-                            helper.putProperties(path,props);
-                        } catch (IOException ioe) {
-                            ErrorManager.getDefault().notify (ioe);
-                        }
+                    } catch (IOException ioe) {
+                        Exceptions.printStackTrace(ioe);
                     }
                 }
-            });
+            }
+        });
     }
 
     /**
@@ -155,17 +153,17 @@ public class UpdateHelper {
      * @param shared if true, refers to <code>project.xml</code>, else refers to
      * <code>private.xml</code>
      */
-    public void putPrimaryConfigurationData (final Element element, final boolean shared) {
-        ProjectManager.mutex().writeAccess(new Runnable () {
-            public void run () {
+    public void putPrimaryConfigurationData(final Element element, final boolean shared) {
+        ProjectManager.mutex().writeAccess(new Runnable() {
+            public void run() {
                 if (!shared || isCurrent()) {
                     helper.putPrimaryConfigurationData(element, shared);
                 } else if (canUpdate()) {
                     try {
-                        saveUpdate (null);
+                        saveUpdate(null);
                         helper.putPrimaryConfigurationData(element, shared);
                     } catch (IOException ioe) {
-                        ErrorManager.getDefault().notify(ioe);
+                        Exceptions.printStackTrace(ioe);
                     }
                 }
             }
@@ -312,7 +310,7 @@ public class UpdateHelper {
                                     }
                                     if (root != null) {
                                         if (root.isData()) {
-                                            files.add(root); 
+                                            files.add(root);
                                         } else {
                                             dirs.add(root);
                                         }

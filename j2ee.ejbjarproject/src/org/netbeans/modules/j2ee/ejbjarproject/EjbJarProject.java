@@ -1,3 +1,4 @@
+
 /*
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
@@ -25,6 +26,8 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -75,7 +78,6 @@ import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.SourcesHelper;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -112,6 +114,7 @@ import org.netbeans.modules.websvc.spi.webservices.WebServicesSupportFactory;
 import org.netbeans.spi.project.support.LookupProviderSupport;
 import org.netbeans.spi.project.ui.support.UILookupMergerSupport;
 import org.openide.NotifyDescriptor;
+import org.openide.util.Exceptions;
 
 /**
  * Represents one ejb module project
@@ -233,7 +236,7 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                      try {
                          updateProjectXML ();
                      } catch (IOException ioe) {
-                         ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
+                         Logger.getLogger("global").log(Level.INFO, null, ioe);
                      }
                  }
              }
@@ -576,7 +579,7 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                             try {
                                 ProjectManager.getDefault().saveProject(EjbJarProject.this);
                             } catch (IOException e) {
-                                ErrorManager.getDefault().notify(e);
+                                Exceptions.printStackTrace(e);
                             }
                             return null;
                         }
@@ -610,7 +613,7 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                 classpathExtender.addArchiveFile(fo);
             }
             catch (IOException e) {
-                ErrorManager.getDefault().notify(e);
+                Exceptions.printStackTrace(e);
             }
         }
     }
@@ -654,9 +657,9 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                                 GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
                                 EjbJarProject.class.getResource("resources/build-impl.xsl")); // NOI18N
                         } catch (IOException e) {
-                            ErrorManager.getDefault().notify(e);
+                            Exceptions.printStackTrace(e);
                         } catch (IllegalStateException e) {
-                            ErrorManager.getDefault().notify(e);
+                            Exceptions.printStackTrace(e);
                         }
                     }
                 }
@@ -672,7 +675,7 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                     EjbJarProject.class.getResource("resources/build-impl.xsl"), // NOI18N
                     checkForProjectXmlModified);
             } catch (IOException e) {
-                ErrorManager.getDefault().notify(e);
+                Exceptions.printStackTrace(e);
             }
         }
     }
@@ -792,7 +795,7 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                     }
                 }
             } catch (IOException e) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                Logger.getLogger("global").log(Level.INFO, null, e);
             }
             
             // register project's classpaths to GlobalPathRegistry
@@ -851,7 +854,7 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                     try {
                         ProjectManager.getDefault().saveProject(EjbJarProject.this);
                     } catch (IOException e) {
-                        ErrorManager.getDefault().notify(e);
+                        Exceptions.printStackTrace(e);
                     }
                     return null;
                 }
@@ -883,7 +886,7 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
             try {
                 ProjectManager.getDefault().saveProject(EjbJarProject.this);
             } catch (IOException e) {
-                ErrorManager.getDefault().notify(e);
+                Exceptions.printStackTrace(e);
             }
             
             // unregister project's classpaths to GlobalPathRegistry

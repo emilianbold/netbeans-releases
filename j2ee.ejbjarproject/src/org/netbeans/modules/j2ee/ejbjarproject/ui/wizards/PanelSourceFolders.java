@@ -24,22 +24,19 @@ import java.beans.PropertyChangeEvent;
 import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
-import java.util.ArrayList;
 import java.util.Enumeration;
-import java.util.Iterator;
 import javax.swing.JFileChooser;
-import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -271,7 +268,7 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
                         fo.delete ();
                     }
                 } catch (IOException ioe) {
-                    ErrorManager.getDefault ().notify (ioe);
+                    Exceptions.printStackTrace(ioe);
                 }
             }
         }

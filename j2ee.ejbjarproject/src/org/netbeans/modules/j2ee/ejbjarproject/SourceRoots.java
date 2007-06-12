@@ -33,7 +33,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 import java.text.MessageFormat;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
@@ -50,6 +49,7 @@ import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.openide.util.Exceptions;
 
 /**
  * This class represents a project source roots. It is used to obtain roots as Ant properties, FileObject's
@@ -189,7 +189,7 @@ public final class SourceRoots {
                                 try {
                                     result.add(EjbJarProjectUtil.getRootURL(f,null));
                                 } catch (MalformedURLException e) {
-                                    ErrorManager.getDefault().notify(e);
+                                    Exceptions.printStackTrace(e);
                                 }
                             }
                         }
@@ -198,7 +198,7 @@ public final class SourceRoots {
                 }
                 return sourceRootURLs.toArray(new URL[sourceRootURLs.size()]);
             }
-        });                
+        });
     }
 
     /**

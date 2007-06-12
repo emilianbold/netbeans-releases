@@ -29,7 +29,6 @@ import javax.swing.JList;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.ListSelectionEvent;
 import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.EjbJarSourceRootsUi;
 import org.openide.filesystems.FileUtil;
 

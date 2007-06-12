@@ -29,7 +29,6 @@ import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.EjbJarProjectProper
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import java.net.URL;
 import java.net.MalformedURLException;
@@ -38,6 +37,7 @@ import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import java.util.Map;
 import java.util.HashMap;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 
 /**
  * Finds sources corresponding to binaries in a J2SE project.
@@ -121,7 +121,7 @@ public class CompiledSourceForBinaryQuery implements SourceForBinaryQueryImpleme
                 }
             }
         } catch (MalformedURLException malformedURL) {
-            ErrorManager.getDefault().notify(malformedURL);
+            Exceptions.printStackTrace(malformedURL);
         }
         return false;
     }

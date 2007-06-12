@@ -26,8 +26,9 @@ import org.netbeans.modules.websvc.api.jaxws.project.WSUtils;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Client;
 import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
 import org.netbeans.modules.websvc.spi.jaxws.client.ProjectJAXWSClientSupport;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
+
 
 /**
  *
@@ -80,7 +81,7 @@ public class EjbProjectJAXWSClientSupport extends ProjectJAXWSClientSupport/* im
                 FileObject xmlResorcesFo = getLocalWsdlFolderForClient(finalClientName,false);
                 if (xmlResorcesFo!=null) WSUtils.copyFiles(xmlResorcesFo, wsdlFolder);
             } catch (IOException ex) {
-                ErrorManager.getDefault().notify(ex);
+                Exceptions.printStackTrace(ex);
             }
         return finalClientName;
     }

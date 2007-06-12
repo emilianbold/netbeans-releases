@@ -35,6 +35,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -81,7 +83,6 @@ import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProject;
 import org.netbeans.modules.j2ee.spi.ejbjar.support.J2eeProjectView;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.netbeans.spi.project.ui.support.NodeFactorySupport;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileStatusEvent;
 import org.openide.filesystems.FileStatusListener;
@@ -327,9 +328,7 @@ public class EjbJarLogicalViewProvider implements LogicalViewProvider {
                     fs.addFileStatusListener(fsl);
                     fileSystemListeners.put(fs, fsl);
                 } catch (FileStateInvalidException e) {
-                    ErrorManager err = ErrorManager.getDefault();
-                    err.annotate(e, "Can not get " + fo + " filesystem, ignoring...");  // NO18N
-                    err.notify(ErrorManager.INFORMATIONAL, e);
+                    Exceptions.printStackTrace(Exceptions.attachLocalizedMessage(e, "Can not get " + fo + " filesystem, ignoring...")); // NO18N
                 }
             }
         }
@@ -342,7 +341,7 @@ public class EjbJarLogicalViewProvider implements LogicalViewProvider {
                     FileObject fo = (FileObject) files.iterator().next();
                     img = fo.getFileSystem ().getStatus ().annotateIcon (img, type, files);
                 } catch (FileStateInvalidException e) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                    Logger.getLogger("global").log(Level.INFO, null, e);
                 }
             }
 
@@ -357,7 +356,7 @@ public class EjbJarLogicalViewProvider implements LogicalViewProvider {
                     FileObject fo = (FileObject) files.iterator().next();
                     img = fo.getFileSystem ().getStatus ().annotateIcon (img, type, files);
                 } catch (FileStateInvalidException e) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                    Logger.getLogger("global").log(Level.INFO, null, e);
                 }
             }
 
@@ -513,7 +512,7 @@ public class EjbJarLogicalViewProvider implements LogicalViewProvider {
                 }
             } catch (DataObjectNotFoundException ex) {
                 // data folder for existing fileobject expected
-                ErrorManager.getDefault().notify(ex);
+                Exceptions.printStackTrace(ex);
             }
             
             actions.add(null);

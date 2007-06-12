@@ -19,8 +19,6 @@
 package org.netbeans.modules.j2ee.ejbjarproject.ui.logicalview.libraries;
 
 
-import java.io.File;
-import java.io.IOException;
 import java.net.URL;
 import java.util.Iterator;
 import java.util.List;
@@ -28,7 +26,6 @@ import java.util.ArrayList;
 import javax.swing.Action;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.openide.ErrorManager;
 import org.openide.actions.EditAction;
 import org.openide.actions.FindAction;
 import org.openide.loaders.DataObject;
@@ -43,15 +40,15 @@ import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 import org.netbeans.api.java.queries.JavadocForBinaryQuery;
-import org.netbeans.api.project.ProjectManager;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
-import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.modules.j2ee.ejbjarproject.UpdateHelper;
 import org.netbeans.modules.j2ee.ejbjarproject.classpath.ClassPathSupport;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.EjbJarProjectProperties;
+import org.openide.nodes.FilterNode.Children;
+import org.openide.util.Exceptions;
 
 
 /**
@@ -231,7 +228,7 @@ class ActionFilterNode extends FilterNode {
                 }
                 ShowJavadocAction.showJavaDoc(pageURL,relativeName.replace('/','.'));  //NOI18N
             } catch (FileStateInvalidException fsi) {
-                ErrorManager.getDefault().notify (fsi);
+                Exceptions.printStackTrace(fsi);
             }
         }
     }

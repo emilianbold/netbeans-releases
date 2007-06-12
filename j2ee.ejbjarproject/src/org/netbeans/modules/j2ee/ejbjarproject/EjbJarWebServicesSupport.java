@@ -25,6 +25,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.j2ee.metadata.ClassPathSupport;
 import org.netbeans.modules.websvc.api.client.WebServicesClientConstants;
@@ -45,7 +47,6 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.openide.ErrorManager;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
@@ -168,8 +169,7 @@ public class EjbJarWebServicesSupport implements WebServicesSupportImpl{
         }
         
         if (ejbJar == null) {
-            ErrorManager.getDefault().log(ErrorManager.USER,
-                    NbBundle.getMessage(EjbJarWebServicesSupport.class, "MSG_MissingMetadata"));
+            Logger.getLogger("global").log(Level.SEVERE, NbBundle.getMessage(EjbJarWebServicesSupport.class, "MSG_MissingMetadata"));
             return;
         }
         
@@ -719,7 +719,7 @@ public class EjbJarWebServicesSupport implements WebServicesSupportImpl{
             // TODO: first one API EjbJar from project is taken... this should be fixed
             return DDProvider.getDefault().getDDRoot(org.netbeans.modules.j2ee.api.ejbjar.EjbJar.getEjbJars(project)[0].getDeploymentDescriptor());
         } catch (java.io.IOException e) {
-            org.openide.ErrorManager.getDefault().log(e.getLocalizedMessage());
+            Logger.getLogger("global").log(Level.INFO, e.getLocalizedMessage());
         }
         return null;
     }
@@ -772,8 +772,7 @@ public class EjbJarWebServicesSupport implements WebServicesSupportImpl{
         } else if(create) {
             // Create was specified, but no META-INF was found, so how do we create it?
             // Expect an NPE if we return null for this case, but log it anyway.
-            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL,
-            NbBundle.getMessage(EjbJarWebServicesSupport.class, "MSG_MetaInfNotFoundForWsdlFolder"));
+            Logger.getLogger("global").log(Level.INFO, NbBundle.getMessage(EjbJarWebServicesSupport.class, "MSG_MetaInfNotFoundForWsdlFolder"));
         }
         
         return wsdlFolder;

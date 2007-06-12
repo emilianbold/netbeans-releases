@@ -21,18 +21,19 @@ package org.netbeans.modules.j2ee.ejbjarproject.queries;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.EjbJarProjectProperties;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.openide.ErrorManager;
-import org.openide.filesystems.FileUtil;
-import java.net.URL;
 import java.net.MalformedURLException;
+import java.net.URL;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.queries.JavadocForBinaryQuery;
+import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.EjbJarProjectProperties;
 import org.netbeans.spi.java.queries.JavadocForBinaryQueryImplementation;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
+import org.openide.util.Exceptions;
 import org.openide.util.WeakListeners;
+
 
 /**
  * Finds Javadoc (if it is built) corresponding to binaries in web project.
@@ -73,7 +74,7 @@ public class JavadocForBinaryQueryImpl implements JavadocForBinaryQueryImplement
                             this.result = new URL[] {url};
                         } catch (MalformedURLException e) {
                             this.result = new URL[0];
-                            ErrorManager.getDefault().notify(e);
+                            Exceptions.printStackTrace(e);
                         }
                     }
                     else {
@@ -124,7 +125,7 @@ public class JavadocForBinaryQueryImpl implements JavadocForBinaryQueryImplement
                         binaryRoot.toExternalForm().startsWith(url.toExternalForm());
             }
         } catch (MalformedURLException malformedURL) {
-            ErrorManager.getDefault().notify(malformedURL);
+            Exceptions.printStackTrace(malformedURL);
         }
         return false;
     }

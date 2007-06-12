@@ -32,6 +32,8 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 import java.util.Vector;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.ButtonModel;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultListModel;
@@ -43,20 +45,19 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.AntDeploymentHelper;
 import org.netbeans.modules.j2ee.ejbjarproject.SourceRoots;
 import org.netbeans.modules.j2ee.ejbjarproject.UpdateHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.MutexException;
 import org.openide.util.Mutex;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.support.ant.ui.StoreGroup;
 import org.netbeans.modules.j2ee.dd.api.ejb.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.ejbjarproject.classpath.ClassPathSupport;
@@ -67,6 +68,7 @@ import org.netbeans.modules.websvc.spi.webservices.WebServicesConstants;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.Exceptions;
 
 
 /** Helper class. Defines constants for properties. Knows the proper
@@ -322,10 +324,10 @@ public class EjbJarProjectProperties {
             ProjectManager.getDefault().saveProject(project);
         } 
         catch (MutexException e) {
-            ErrorManager.getDefault().notify((IOException)e.getException());
+            Exceptions.printStackTrace((IOException) e.getException());
         }
         catch ( IOException ex ) {
-            ErrorManager.getDefault().notify( ex );
+            Exceptions.printStackTrace(ex);
         }
     }
         
@@ -540,9 +542,8 @@ public class EjbJarProjectProperties {
                     helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProps);
                     helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProps);
                     ProjectManager.getDefault().saveProject(project);
-                }
-                catch (IOException e) {
-                    ErrorManager.getDefault().notify(e);
+                } catch (IOException e) {
+                    Exceptions.printStackTrace(e);
                 }
             }
         });
@@ -565,7 +566,7 @@ public class EjbJarProjectProperties {
         J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(newServInstID);
         if (j2eePlatform == null) {
             // probably missing server error
-            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "J2EE platform is null."); // NOI18N
+            Logger.getLogger("global").log(Level.INFO, "J2EE platform is null."); // NOI18N
             
             // update j2ee.server.type (throws NPE)
             //projectProps.setProperty(J2EE_SERVER_TYPE, Deployment.getDefault().getServerID(newServInstID));
@@ -637,7 +638,7 @@ public class EjbJarProjectProperties {
         try {
             AntDeploymentHelper.writeDeploymentScript(new File(projectFolder, ANT_DEPLOY_BUILD_SCRIPT), J2eeModule.EJB, newServInstID); // NOI18N
         } catch (IOException ioe) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
+            Logger.getLogger("global").log(Level.INFO, null, ioe);
         }
         File deployAntPropsFile = AntDeploymentHelper.getDeploymentPropertiesFile(newServInstID);
         if (deployAntPropsFile == null) {

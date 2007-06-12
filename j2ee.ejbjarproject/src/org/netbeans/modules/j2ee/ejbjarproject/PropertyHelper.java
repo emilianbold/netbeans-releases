@@ -23,7 +23,7 @@ import java.io.IOException;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.spi.project.support.ant.EditableProperties;
-import org.openide.ErrorManager;
+import org.openide.util.Exceptions;
 
 /**
  * A helper class to easily read and write properties.
@@ -92,7 +92,7 @@ public final class PropertyHelper {
             ProjectManager.getDefault().saveProject(project);
         }
         catch (IOException e) {
-            ErrorManager.getDefault().notify(e);
+            Exceptions.printStackTrace(e);
         }
     }
     

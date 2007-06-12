@@ -48,13 +48,13 @@ import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
-import org.openide.ErrorManager;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.openide.util.ChangeSupport;
+import org.openide.util.Exceptions;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 import org.openide.xml.XMLUtil;
@@ -180,7 +180,7 @@ class PlatformNode extends AbstractNode implements ChangeListener {
             //Todo: Should listen on returned classpath, but now the bootstrap libraries are read only
             FileObject[] roots = platform.getBootstrapLibraries().getRoots();
             List result = new ArrayList (roots.length);
-            for (int i=0; i<roots.length; i++) {
+            for (int i = 0; i < roots.length; i++) {
                 try {
                     FileObject file;
                     Icon icon;
@@ -199,7 +199,7 @@ class PlatformNode extends AbstractNode implements ChangeListener {
                         result.add (new LibrariesSourceGroup(roots[i],file.getNameExt(),icon, openedIcon));
                     }
                 } catch (FileStateInvalidException e) {
-                    ErrorManager.getDefault().notify(e);
+                    Exceptions.printStackTrace(e);
                 }
             }
             return result;

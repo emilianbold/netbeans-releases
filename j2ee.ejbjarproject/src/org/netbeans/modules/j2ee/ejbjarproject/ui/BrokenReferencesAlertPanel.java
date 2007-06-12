@@ -20,7 +20,6 @@
 package org.netbeans.modules.j2ee.ejbjarproject.ui;
 
 import javax.swing.JPanel;
-import javax.swing.event.ChangeListener;
 
 public class BrokenReferencesAlertPanel extends JPanel {
 

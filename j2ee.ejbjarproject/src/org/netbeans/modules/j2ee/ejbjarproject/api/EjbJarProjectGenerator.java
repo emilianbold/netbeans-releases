@@ -23,7 +23,8 @@ import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.charset.Charset;
-import java.util.Stack;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.project.JavaProjectConstants;
@@ -32,9 +33,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.ejbjarproject.*;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.netbeans.api.project.Project;
@@ -51,6 +50,7 @@ import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.EjbJarProjectProper
 import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.PlatformUiSupport;
 import org.netbeans.modules.websvc.spi.webservices.WebServicesConstants;
 import org.openide.modules.SpecificationVersion;
+import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
@@ -215,7 +215,7 @@ public class EjbJarProjectGenerator {
                 }
             });
         } catch (MutexException me ) {
-            ErrorManager.getDefault().notify(me);
+            Exceptions.printStackTrace(me);
         }
         // AB: fix for #53170: if j2eeLevel is 1.4 and ejb-jar.xml is version 2.0, we upgrade it to version 2.1
         FileObject ejbJarXml = FileUtil.toFileObject(configFilesBase).getFileObject("ejb-jar.xml"); // NOI18N
@@ -236,7 +236,7 @@ public class EjbJarProjectGenerator {
                 if (writeDD)
                     root.write(ejbJarXml);
             } catch (IOException e) {
-                ErrorManager.getDefault().notify(e);
+                Exceptions.printStackTrace(e);
             }
         }
         return h;
@@ -390,7 +390,8 @@ public class EjbJarProjectGenerator {
         // set j2ee.platform.classpath
         J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(serverInstanceID);
         if (!j2eePlatform.getSupportedSpecVersions(J2eeModule.EJB).contains(j2eeLevel)) {
-            ErrorManager.getDefault().log(ErrorManager.WARNING, "J2EE level:" + j2eeLevel + " not supported by server " + Deployment.getDefault().getServerInstanceDisplayName(serverInstanceID) + " for module type EJB");
+            Logger.getLogger("global").log(Level.WARNING,
+                    "J2EE level:" + j2eeLevel + " not supported by server " + Deployment.getDefault().getServerInstanceDisplayName(serverInstanceID) + " for module type EJB"); // NOI18N
         }
         String classpath = Utils.toClasspathString(j2eePlatform.getClasspathEntries());
         ep.setProperty(EjbJarProjectProperties.J2EE_PLATFORM_CLASSPATH, classpath);
@@ -408,7 +409,7 @@ public class EjbJarProjectGenerator {
             AntDeploymentHelper.writeDeploymentScript(new File(projectFolder, EjbJarProjectProperties.ANT_DEPLOY_BUILD_SCRIPT),
                     J2eeModule.EJB, serverInstanceID);
         } catch (IOException ioe) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
+            Logger.getLogger("global").log(Level.INFO, null, ioe);
         }
         File deployAntPropsFile = AntDeploymentHelper.getDeploymentPropertiesFile(serverInstanceID);
         if (deployAntPropsFile != null) {
@@ -442,7 +443,7 @@ public class EjbJarProjectGenerator {
                     helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
                     ProjectManager.getDefault().saveProject(ProjectManager.getDefault().findProject(helper.getProjectDirectory()));
                 } catch (IOException e) {
-                    ErrorManager.getDefault().notify(e);
+                    Exceptions.printStackTrace(e);
                 }
             }
         });

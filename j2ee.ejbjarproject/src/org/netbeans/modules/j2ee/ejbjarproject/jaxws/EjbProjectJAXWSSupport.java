@@ -25,13 +25,14 @@ import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.dd.api.webservices.WebservicesMetadata;
 import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProject;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
-import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
 import org.netbeans.modules.websvc.api.jaxws.project.WSUtils;
+import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.modules.websvc.jaxws.spi.ProjectJAXWSSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
+
 
 /**
  *
@@ -109,7 +110,7 @@ public class EjbProjectJAXWSSupport extends ProjectJAXWSSupport /*implements JAX
             try {
                 WSUtils.createJaxWsFileObject(project);
             } catch (IOException ex) {
-                ErrorManager.getDefault().notify(ex);
+                Exceptions.printStackTrace(ex);
             }
         }
         return super.addService(name, serviceImpl, wsdlUrl, serviceName, portName, packageName, isJsr109);
@@ -122,7 +123,7 @@ public class EjbProjectJAXWSSupport extends ProjectJAXWSSupport /*implements JAX
             try {
                 WSUtils.createJaxWsFileObject(project);
             } catch (IOException ex) {
-                ErrorManager.getDefault().notify(ex);
+                Exceptions.printStackTrace(ex);
             }
         }
         super.addService(serviceName, serviceImpl, isJsr109);

@@ -109,7 +109,7 @@ public class J2eePlatformUiSupport {
                         if (j2eePlatform.getSupportedModuleTypes().contains(J2eeModule.EJB)) {
                             J2eePlatformAdapter adapter = new J2eePlatformAdapter(j2eePlatform);
                             orderedNames.add(adapter);
-                        
+
                             if (selectedJ2eePlatform == null && !activeFound && initialJ2eePlatform != null) {
                                 if (serverInstanceIDs[i].equals(initialJ2eePlatform)) {
                                     selectedJ2eePlatform = adapter;

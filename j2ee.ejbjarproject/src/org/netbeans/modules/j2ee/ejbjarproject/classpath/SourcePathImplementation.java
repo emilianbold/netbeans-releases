@@ -35,12 +35,12 @@ import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 
@@ -267,7 +267,7 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
                         }
                         ret.add(ClassPathSupport.createResource(url));
                     } catch (MalformedURLException ex) {
-                            ErrorManager.getDefault ().notify (ex);
+                            Exceptions.printStackTrace(ex);
                     }                
                 }
             } 
@@ -319,7 +319,7 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
                                                new String[] {DIR_GEN_BINDINGS});                            
                         }
                     } catch (MalformedURLException ex) {
-                        ErrorManager.getDefault ().notify (ex);
+                        Exceptions.printStackTrace(ex);
                     }
                 }
                 this.resources = Collections.unmodifiableList(result);
