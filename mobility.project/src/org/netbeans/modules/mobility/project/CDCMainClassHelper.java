@@ -124,17 +124,20 @@ public class CDCMainClassHelper implements AntProjectListener, FileChangeListene
             public void run()
             {
                 final FileObject root = helper.getProjectDirectory().getFileObject(helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH).getProperty(DefaultPropertiesDescriptor.SRC_DIR));
-                final ClassPath path1 = ClassPath.getClassPath (root, ClassPath.SOURCE);        
-                final ClassPath path2 = ClassPath.getClassPath (root, ClassPath.COMPILE);
-                final ClassPath path  = org.netbeans.spi.java.classpath.support.ClassPathSupport.createProxyClassPath(new ClassPath[] { path1, path2 } );
-                FileObject o=path.findResource(str.replace('.','/')+".java");
-                if (lastMain != null)
-                    lastMain.removeFileChangeListener(CDCMainClassHelper.this);
-                if (o!=null)
+                if (root != null)
                 {
-                    o.addFileChangeListener(CDCMainClassHelper.this);                    
+                    final ClassPath path1 = ClassPath.getClassPath (root, ClassPath.SOURCE);        
+                    final ClassPath path2 = ClassPath.getClassPath (root, ClassPath.COMPILE);
+                    final ClassPath path  = org.netbeans.spi.java.classpath.support.ClassPathSupport.createProxyClassPath(new ClassPath[] { path1, path2 } );
+                    FileObject o=path.findResource(str.replace('.','/')+".java");
+                    if (lastMain != null)
+                        lastMain.removeFileChangeListener(CDCMainClassHelper.this);
+                    if (o!=null)
+                    {
+                        o.addFileChangeListener(CDCMainClassHelper.this);                    
+                    }
+                    lastMain=o;
                 }
-                lastMain=o;
             }
         });
     }
