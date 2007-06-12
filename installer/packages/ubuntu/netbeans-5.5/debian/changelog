@@ -3,6 +3,8 @@ netbeans5.5 (5.5.1-1) gutsy; urgency=low
   * Updated to NetBeans 5.5.1
   * Postinstall step for IDE package patches netbeans.conf with netbeans_jdkhome
     pointing to Sun JDK 6 or 5.
+  * [Daniel Holbach]
+    - debian/netbeans5.5.poinst: don't die, if no alternatives exist.
 
  -- Marek Slama <marek.slama@sun.com>  Mon, 4 Jun 2007 14:11:22 +0200
 
