@@ -29,6 +29,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
@@ -54,7 +55,7 @@ import javax.swing.text.JTextComponent;
  *
  * @author Soot Phengsy
  */
-public class FileCompletionPopup extends JPopupMenu {
+public class FileCompletionPopup extends JPopupMenu implements KeyListener {
     
     private JList list;
     private JTextField textField;
@@ -78,14 +79,7 @@ public class FileCompletionPopup extends JPopupMenu {
         list.addMouseListener(new MouseHandler());
         list.addMouseMotionListener(new MouseHandler());
         
-        textField.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0), "KeyDown");
-        textField.getActionMap().put("KeyDown", new KeyHandler(KeyEvent.VK_DOWN));
-        textField.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0), "KeyUp");
-        textField.getActionMap().put("KeyUp", new KeyHandler(KeyEvent.VK_UP));
-        textField.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "KeyEnter");
-        textField.getActionMap().put("KeyEnter", new KeyHandler(KeyEvent.VK_ENTER));
-        textField.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "KeyEscape");
-        textField.getActionMap().put("KeyEscape", new KeyHandler(KeyEvent.VK_ESCAPE));
+        textField.addKeyListener(this);
     }
      
     public void setDataList(Vector files) {
@@ -124,48 +118,6 @@ public class FileCompletionPopup extends JPopupMenu {
     private void ensureSelection () {
         if (list.getSelectedIndex() == -1 && (list.getModel().getSize() > 0)) {
             list.setSelectedIndex(0);
-        }
-    }
-    
-    private class KeyHandler extends AbstractAction {
-        final int code;
-        KeyHandler(int keyCode) {
-            this.code = keyCode;
-        }
-        
-        public void actionPerformed(ActionEvent e) {
-            if (isVisible()) {
-                if (code == KeyEvent.VK_DOWN) {
-                    setSelectNext();
-                } else if (code == KeyEvent.VK_UP) {
-                    setSelectPrevious();
-                } else if (code == KeyEvent.VK_ENTER) {
-                    File file = (File)list.getSelectedValue();
-                    if(file != null) { 
-                        if(file.equals(chooser.getCurrentDirectory())) {
-                            chooser.firePropertyChange(JFileChooser.DIRECTORY_CHANGED_PROPERTY, false, true);
-                        } else {
-                            chooser.setSelectedFiles(new File[] {file});
-                            chooser.setCurrentDirectory(file);
-                        }
-                    }
-                    setVisible(false);
-                    textField.requestFocus();
-                    if (file.isDirectory()) {
-                        try {
-                            Document doc = textField.getDocument();
-                            doc.insertString(doc.getLength(), File.separator, null);
-                        } catch (BadLocationException ex) {
-                            Logger.getLogger(getClass().getName()).log(
-                                    Level.FINE, "Cannot append directory separator.", ex);
-                        }
-                    }
-                        
-                } else if (code == KeyEvent.VK_ESCAPE) {
-                    setVisible(false);
-                    textField.requestFocus();
-                }
-            }
         }
     }
     
@@ -235,4 +187,74 @@ public class FileCompletionPopup extends JPopupMenu {
             return newEvent;
         }
     }
+
+    /****** implementation of KeyListener of fileNameTextField ******/
+    
+    public void keyPressed(KeyEvent e) {
+        if (!isVisible()) {
+            return;
+        }
+        
+        int code = e.getKeyCode();
+        switch (code) {
+        case KeyEvent.VK_DOWN:
+            setSelectNext();
+            e.consume();
+            break;
+        case KeyEvent.VK_UP:
+            setSelectPrevious();
+            e.consume();
+            break;
+        case KeyEvent.VK_ESCAPE:
+            setVisible(false);
+            textField.requestFocus();
+            e.consume();
+            break;
+        }
+        
+        if (isCompletionKey(code, textField)) {
+            File file = (File)list.getSelectedValue();
+            if(file != null) { 
+                if(file.equals(chooser.getCurrentDirectory())) {
+                    chooser.firePropertyChange(JFileChooser.DIRECTORY_CHANGED_PROPERTY, false, true);
+                } else {
+                    chooser.setSelectedFiles(new File[] {file});
+                    chooser.setCurrentDirectory(file);
+                }
+                if (file.isDirectory()) {
+                    try {
+                        Document doc = textField.getDocument();
+                        doc.insertString(doc.getLength(), File.separator, null);
+                    } catch (BadLocationException ex) {
+                        Logger.getLogger(getClass().getName()).log(
+                                Level.FINE, "Cannot append directory separator.", ex);
+                    }
+                }
+            }
+            setVisible(false);
+            textField.requestFocus();
+            e.consume();
+        }
+    }
+
+    public void keyReleased(KeyEvent e) {
+        // no operation
+    }
+    
+    public void keyTyped(KeyEvent e) {
+        // no operation
+    }
+    
+    private boolean isCompletionKey (int keyCode, JTextField textField) {
+        if (keyCode == KeyEvent.VK_ENTER || keyCode == KeyEvent.VK_TAB) {
+            return true;
+        }
+        if (keyCode == KeyEvent.VK_RIGHT && 
+                (textField.getCaretPosition() >= (textField.getDocument().getLength() - 1))) {
+            return true;
+        }
+        
+        return false;
+    }
+    
 }

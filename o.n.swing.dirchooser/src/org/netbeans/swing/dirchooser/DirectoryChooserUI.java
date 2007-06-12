@@ -66,6 +66,7 @@ import javax.swing.tree.TreeSelectionModel;
 import org.openide.awt.HtmlRenderer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 
@@ -367,8 +368,13 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
                     tree.clearSelection();
                 }
             }
-        }
-        );
+        });
+        
+        // disable TAB focus transfer, we need it for completion
+        Set<AWTKeyStroke> tKeys = filenameTextField.getFocusTraversalKeys(java.awt.KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS);
+        Set<AWTKeyStroke> newTKeys = new HashSet<AWTKeyStroke>(tKeys);
+        newTKeys.remove(AWTKeyStroke.getAWTKeyStroke(KeyEvent.VK_TAB, 0));
+        filenameTextField.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, newTKeys);
         
         fileAndFilterPanel.add(filenameTextField);
         fileAndFilterPanel.add(Box.createRigidArea(verticalStrut3));
@@ -615,6 +621,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
         tree.setCellRenderer(new DirectoryTreeRenderer());
         JScrollPane scrollBar = new JScrollPane(tree);
         scrollBar.setViewportView(tree);
+        //tree.setToolTipText(getBundle().getString(saveButtonText));
         
         return scrollBar;
     }
@@ -906,7 +913,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
     }
     
     private static ResourceBundle getBundle() {
-        return ResourceBundle.getBundle("org.netbeans.swing.dirchooser.Bundle");
+        return NbBundle.getBundle(DirectoryChooserUI.class);
     }
     
     private void updateTree(final File file) {
@@ -1791,19 +1798,28 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
     private class TextFieldKeyListener extends KeyAdapter {
         public void keyPressed(KeyEvent evt) {
             showPopupCompletion = true;
+            int keyCode = evt.getKeyCode();
             // #105801: completionPopup might not be ready when updateCompletions not called (empty text field)
-            if(completionPopup != null &&
-                    !completionPopup.isVisible() && (evt.getKeyCode() == KeyEvent.VK_ENTER)) {
-                File file = new File(filenameTextField.getText());
-                if(file.exists() && file.isDirectory()) {
-                    setSelected(new File[] {file});
-                    fileChooser.approveSelection();
+            if (completionPopup != null && !completionPopup.isVisible()) {
+                if (keyCode == KeyEvent.VK_ENTER) {
+                    File file = new File(filenameTextField.getText());
+                    if(file.exists() && file.isDirectory()) {
+                        setSelected(new File[] {file});
+                        fileChooser.approveSelection();
+                    }
                 }
+                
+                if ((keyCode == KeyEvent.VK_TAB || keyCode == KeyEvent.VK_DOWN) ||
+                    (keyCode == KeyEvent.VK_RIGHT && 
+                    (filenameTextField.getCaretPosition() >= (filenameTextField.getDocument().getLength() - 1)))) {
+                    updateCompletions();
+                }
+                
             }
             
             if(filenameTextField.isFocusOwner() && 
                     (completionPopup == null || !completionPopup.isVisible()) &&
-                    evt.getKeyCode() == KeyEvent.VK_ESCAPE) {
+                    keyCode == KeyEvent.VK_ESCAPE) {
                 fileChooser.cancelSelection();
             }
         }
