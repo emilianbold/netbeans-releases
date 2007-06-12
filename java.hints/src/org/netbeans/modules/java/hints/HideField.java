@@ -171,6 +171,7 @@ public class HideField extends AbstractHint {
                 if (arr == null) {
                     return;
                 }
+                arr[0].setCaretPosition(caret);
                 InstantRenamePerformer.invokeInstantRename(arr[0]);
             } catch (DataObjectNotFoundException ex) {
                 Exceptions.printStackTrace(ex);

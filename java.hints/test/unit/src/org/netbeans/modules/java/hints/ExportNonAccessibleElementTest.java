@@ -58,6 +58,15 @@ public class ExportNonAccessibleElementTest extends TreeRuleTestBase {
         );
     }
 
+    public void testNonPublicClass() throws Exception {
+        String before = "package test; class Te";
+        String after = "st extends Inner {" +
+            " private class Inner { }" +
+            "}";
+        
+        performAnalysisTest("test/Test.java", before + after, before.length());
+    }
+
     public void testMethodTakingNonPublicInnerClassNotInMethod() throws Exception {
         String before = "package test; public class Test extends Object {" +
             " public void";
@@ -92,7 +101,7 @@ public class ExportNonAccessibleElementTest extends TreeRuleTestBase {
         
         performAnalysisTest("test/Test.java", before + after, before.length());
     }
-    public void testOnFieldsAsWell() throws Exception {
+    public void testOnFieldsInPrivateClass() throws Exception {
         String before = "package test; class Test extends Object {" +
             " public Inner ";
         String after = "in;" +
@@ -100,8 +109,19 @@ public class ExportNonAccessibleElementTest extends TreeRuleTestBase {
             "}";
         
         String res = (before + after).replace("public ", "");
-        performFixTest("test/Test.java", before + after, before.length(), 
-            "0:55-0:57:verifier:Exporting non-public type through public API",
+        performAnalysisTest("test/Test.java", before + after, before.length());
+    }
+    public void testOnFieldsAsWell() throws Exception {
+        String first = "package test; public class Test extends ";
+        String before = "Object {" +
+            " public Inner ";
+        String after = "in;" +
+            " private class Inner { }" +
+            "}";
+        
+        String res = first + (before + after).replace("public ", "");
+        performFixTest("test/Test.java", first + before + after, (first + before).length(), 
+            "0:62-0:64:verifier:Exporting non-public type through public API",
             "FixExportNonAccessibleElement",
             res);
     }

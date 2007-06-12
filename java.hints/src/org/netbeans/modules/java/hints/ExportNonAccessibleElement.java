@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.prefs.Preferences;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ElementVisitor;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
@@ -102,9 +103,19 @@ implements ElementVisitor<Boolean,Void>, TypeVisitor<Boolean,Void> {
             Boolean b = e.accept(this, null);
             
             if (b) {
+                Element parent = e;
+                for (;;) {
+                    if (parent == null || parent.getKind() == ElementKind.PACKAGE) {
+                        break;
+                    }
+                    if (!parent.getModifiers().contains(Modifier.PUBLIC) && !parent.getModifiers().contains(Modifier.PROTECTED)) {
+                        return null;
+                    }
+                    parent = parent.getEnclosingElement();
+                }
 
                 List<Fix> fixes = Collections.<Fix>singletonList(new FixImpl(
-                    "MSG_ExportNonAccessibleElement", // NOI18N
+                    "MSG_ExportNonAccessibleElementMakeNonVisible", // NOI18N
                     TreePathHandle.create(e, compilationInfo), 
                     compilationInfo.getFileObject()
                 ));
@@ -350,6 +361,7 @@ implements ElementVisitor<Boolean,Void>, TypeVisitor<Boolean,Void> {
             return null;
         }
         
+        @Override
         public String toString() {
             return "FixExportNonAccessibleElement"; // NOI18N
         }
