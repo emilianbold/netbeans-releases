@@ -34,6 +34,8 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
 import java.io.File;
 import java.util.Vector;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.JFileChooser;
 import javax.swing.JList;
@@ -43,6 +45,8 @@ import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 
 /**
@@ -147,6 +151,16 @@ public class FileCompletionPopup extends JPopupMenu {
                     }
                     setVisible(false);
                     textField.requestFocus();
+                    if (file.isDirectory()) {
+                        try {
+                            Document doc = textField.getDocument();
+                            doc.insertString(doc.getLength(), File.separator, null);
+                        } catch (BadLocationException ex) {
+                            Logger.getLogger(getClass().getName()).log(
+                                    Level.FINE, "Cannot append directory separator.", ex);
+                        }
+                    }
+                        
                 } else if (code == KeyEvent.VK_ESCAPE) {
                     setVisible(false);
                     textField.requestFocus();
