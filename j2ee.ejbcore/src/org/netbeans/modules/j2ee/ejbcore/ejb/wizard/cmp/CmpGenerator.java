@@ -22,16 +22,15 @@ package org.netbeans.modules.j2ee.ejbcore.ejb.wizard.cmp;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Set;
-import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.aggregate.ProgressContributor;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.persistence.wizard.fromdb.PersistenceGenerator;
 import org.netbeans.modules.j2ee.persistence.wizard.fromdb.ProgressPanel;
 import org.netbeans.modules.j2ee.persistence.wizard.fromdb.RelatedCMPHelper;
 import org.netbeans.spi.project.ui.templates.support.Templates;
-import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 
 
 /**
@@ -51,7 +50,7 @@ public class CmpGenerator implements PersistenceGenerator {
         try {
             this.generator = new CmpFromDbGenerator(project, ejbModule.getDeploymentDescriptor());
         } catch (IOException ioe) {
-            ErrorManager.getDefault().notify(ioe);
+            Exceptions.printStackTrace(ioe);
         }
     }
     
@@ -87,7 +86,7 @@ public class CmpGenerator implements PersistenceGenerator {
         try {
             this.generator = new CmpFromDbGenerator(project, ejbModule.getDeploymentDescriptor());
         } catch (IOException ioe) {
-            ErrorManager.getDefault().notify(ioe);
+            Exceptions.printStackTrace(ioe);
         }
     }
     

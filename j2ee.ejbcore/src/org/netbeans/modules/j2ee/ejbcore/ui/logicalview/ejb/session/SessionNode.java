@@ -43,10 +43,10 @@ import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.shared.EjbViewContro
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action.AddActionGroup;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action.GoToSourceActionGroup;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
-import org.openide.ErrorManager;
 import org.openide.cookies.OpenCookie;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
@@ -78,7 +78,7 @@ public final class SessionNode extends AbstractNode implements OpenCookie {
                 }
             });
         } catch (IOException ioe) {
-            ErrorManager.getDefault().notify(ioe);
+            Exceptions.printStackTrace(ioe);
         }
         setName(ejbName + "");
         ejbViewController = new EjbViewController(ejbClass, ejbModule, project);
@@ -98,7 +98,7 @@ public final class SessionNode extends AbstractNode implements OpenCookie {
         try {
             instanceContent.add(ejbViewController.createEjbReference());
         } catch (IOException ioe) {
-            ErrorManager.getDefault().notify(ioe);
+            Exceptions.printStackTrace(ioe);
         }
     }
     

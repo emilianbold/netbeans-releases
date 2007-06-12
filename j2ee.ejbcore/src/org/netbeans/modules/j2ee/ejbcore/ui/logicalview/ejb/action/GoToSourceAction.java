@@ -21,9 +21,10 @@ package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action;
 
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.JMenuItem;
-import org.openide.ErrorManager;
 import org.openide.cookies.EditCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
@@ -75,7 +76,7 @@ public class GoToSourceAction extends AbstractAction implements Presenter.Popup 
         try {
             dob = DataObject.find(fileObject);
         } catch (DataObjectNotFoundException e) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            Logger.getLogger("global").log(Level.INFO, null, e);
             dob = null;
         }
         

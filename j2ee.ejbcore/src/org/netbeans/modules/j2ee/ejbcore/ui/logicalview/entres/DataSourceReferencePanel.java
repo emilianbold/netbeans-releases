@@ -43,7 +43,7 @@ import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.deployment.common.api.DatasourceAlreadyExistsException;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
-import org.openide.ErrorManager;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -432,13 +432,13 @@ public class DataSourceReferencePanel extends JPanel {
                     for (Object conflict : daee.getDatasources()) {
                         sb.append(conflict.toString() + "\n"); // NOI18N
                     }
-                    ErrorManager.getDefault().annotate(daee, NbBundle.getMessage(DatasourceUIHelper.class, "ERR_DsConflict", sb.toString()));
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, daee);
+                    String message = NbBundle.getMessage(DatasourceUIHelper.class, "ERR_DsConflict", sb.toString());
+                    Exceptions.printStackTrace(Exceptions.attachLocalizedMessage(daee, message));
                 } catch (ConfigurationException ce) {
-                    ErrorManager.getDefault().notify(ce);
+                    Exceptions.printStackTrace(ce);
                 }
             }
-
+            
             public boolean isEnabled() {
                 return password != null;
             }

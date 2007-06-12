@@ -37,10 +37,10 @@ import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
 import org.netbeans.modules.j2ee.dd.api.ejb.Query;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 
 //TODO: RETOUCHE modifications of model
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -82,7 +82,7 @@ public final class EntityMethodController extends AbstractMethodController {
                 }
             });
         } catch (IOException ioe) {
-            ErrorManager.getDefault().notify(ioe);
+            Exceptions.printStackTrace(ioe);
         }
         this.abstractSchemaName = results[IDX_ABSTRACT_SCHEMA_NAME];
         this.persistenceType = results[IDX_PERSISTENCE_TYPE];
@@ -274,7 +274,7 @@ public final class EntityMethodController extends AbstractMethodController {
         try {
             return new EntityGenerateFromIntfVisitor(ejbClass, model);
         } catch (IOException ioe) {
-            ErrorManager.getDefault().notify(ioe);
+            Exceptions.printStackTrace(ioe);
         }
         return null;
     }
@@ -324,7 +324,7 @@ public final class EntityMethodController extends AbstractMethodController {
         try {
             addMethodToClass(javaClass, method);
         } catch (IOException e) {
-            ErrorManager.getDefault().notify(e);
+            Exceptions.printStackTrace(e);
         }
 
         //TODO: RETOUCHE insert into specified position

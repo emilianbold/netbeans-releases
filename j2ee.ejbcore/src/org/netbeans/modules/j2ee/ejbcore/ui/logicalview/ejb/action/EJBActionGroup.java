@@ -33,9 +33,9 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.ejbcore._RetoucheUtil;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.EjbMethodController;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.util.ContextAwareAction;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -108,7 +108,7 @@ public class EJBActionGroup extends NodeAction implements Presenter.Popup {
                 className = elementHandle.getQualifiedName();
             }
         } catch (IOException ex) {
-            ErrorManager.getDefault().notify(ex);
+            Exceptions.printStackTrace(ex);
         }
         EjbMethodController ejbMethodController = null;
         if (className != null) {

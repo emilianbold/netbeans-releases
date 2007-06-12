@@ -20,6 +20,7 @@
 package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entres;
 
 import java.io.IOException;
+import java.util.logging.Logger;
 import javax.lang.model.element.TypeElement;
 import javax.swing.Action;
 import org.netbeans.api.java.source.ElementHandle;
@@ -30,9 +31,9 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.ejbcore._RetoucheUtil;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
@@ -53,7 +54,7 @@ public class CallEjbAction extends NodeAction {
             CallEjbDialog callEjbDialog = new CallEjbDialog();
             callEjbDialog.open(fileObject, elementHandle.getQualifiedName(), NbBundle.getMessage(CallEjbAction.class, "LBL_CallEjbAction")); //NOI18N
         } catch (IOException ioe) {
-            ErrorManager.getDefault().notify(ioe);
+            Exceptions.printStackTrace(ioe);
         }
     }
 
@@ -79,7 +80,7 @@ public class CallEjbAction extends NodeAction {
         try {
             elementHandle = _RetoucheUtil.getJavaClassFromNode(nodes[0]);
         } catch (IOException ioe) {
-            ErrorManager.getDefault().notify(ioe);
+            Exceptions.printStackTrace(ioe);
             return false;
         }
         if (elementHandle == null) {
@@ -104,7 +105,7 @@ public class CallEjbAction extends NodeAction {
         try {
             return !_RetoucheUtil.isInterface(srcFile, elementHandle);
         } catch (IOException ioe) {
-            ErrorManager.getDefault().notify(ioe);
+            Exceptions.printStackTrace(ioe);
         }
         return false;
     }

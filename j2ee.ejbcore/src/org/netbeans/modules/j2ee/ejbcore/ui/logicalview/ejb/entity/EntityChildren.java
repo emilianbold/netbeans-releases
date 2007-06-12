@@ -30,9 +30,9 @@ import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
 import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
-import org.openide.ErrorManager;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 
 
 /**
@@ -61,7 +61,7 @@ public final class EntityChildren extends Children.Keys<EntityChildren.KEY> impl
         try {
             updateKeys();
         } catch (IOException ioe) {
-            ErrorManager.getDefault().notify(ioe);
+            Exceptions.printStackTrace(ioe);
         }
         //TODO: RETOUCHE listening on model for logical view changes
 //        model.addPropertyChangeListener(this);
@@ -133,11 +133,12 @@ public final class EntityChildren extends Children.Keys<EntityChildren.KEY> impl
     public void propertyChange(PropertyChangeEvent propertyChangeEvent) {
         //TODO add code for detecting class name changes 
         SwingUtilities.invokeLater(new Runnable() {
+            
             public void run() {
                 try {
                     updateKeys();
                 } catch (IOException ioe) {
-                    ErrorManager.getDefault().notify(ioe);
+                    Exceptions.printStackTrace(ioe);
                 }
             }
         });

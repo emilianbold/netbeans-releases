@@ -24,8 +24,8 @@ import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action.AddCmpFieldAc
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action.AddFinderMethodStrategy;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action.AddSelectMethodStrategy;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entres.CallEjbDialog;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -37,7 +37,7 @@ public final class CallEjb {
         try {
             return new CallEjbDialog().open(fileObject, className, title);
         } catch (IOException ex) {
-            ErrorManager.getDefault().notify(ex);
+            Exceptions.printStackTrace(ex);
             return false;
         }
     }

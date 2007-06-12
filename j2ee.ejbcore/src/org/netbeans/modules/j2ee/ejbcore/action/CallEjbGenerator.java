@@ -43,8 +43,8 @@ import org.netbeans.modules.j2ee.ejbcore._RetoucheUtil;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entres.ServiceLocatorStrategy;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -72,7 +72,7 @@ public class CallEjbGenerator {
                 }
             });
         } catch (IOException ioe) {
-            ErrorManager.getDefault().notify(ioe);
+            Exceptions.printStackTrace(ioe);
         }
         this.ejbName = ejbNameArr[0];
         this.isSimplified = version == null ? true : (version.doubleValue() > 2.1);
@@ -97,7 +97,7 @@ public class CallEjbGenerator {
                     serviceLocatorName
                     );
         } catch (IOException ioe) {
-            ErrorManager.getDefault().notify(ioe);
+            Exceptions.printStackTrace(ioe);
         }
     }
     
@@ -124,7 +124,7 @@ public class CallEjbGenerator {
                         );
             }
         } catch (IOException ioe) {
-            ErrorManager.getDefault().notify(ioe);
+            Exceptions.printStackTrace(ioe);
         }
     }
 

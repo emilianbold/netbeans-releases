@@ -38,8 +38,8 @@ import org.netbeans.modules.j2ee.dd.api.ejb.EjbRelationshipRole;
 import org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans;
 import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
 import org.netbeans.modules.j2ee.dd.api.ejb.Relationships;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 
 /**
  * DTO helper class
@@ -74,7 +74,7 @@ public class DTOHelper {
                     Ejb.EJB_CLASS, classElm.getQualifiedName().toString());
         }catch(java.io.IOException ex) {
             // IO error while reading DD
-            ErrorManager.getDefault().notify(ex);
+            Exceptions.printStackTrace(ex);
         }
     }
     

@@ -46,8 +46,8 @@ import org.netbeans.modules.j2ee.common.source.AbstractTask;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -130,7 +130,7 @@ public class ServiceLocatorStrategy {
                         "(\"java:comp/env/" + jndiName + "\"" + otherParams + ")"; //NOI18N
             }
         } catch (IOException ioe) {
-            ErrorManager.getDefault().notify(ioe);
+            Exceptions.printStackTrace(ioe);
         }
         return initString;
     }

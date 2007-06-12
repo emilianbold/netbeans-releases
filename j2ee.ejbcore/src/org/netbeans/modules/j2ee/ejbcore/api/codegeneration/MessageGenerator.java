@@ -39,8 +39,8 @@ import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.ejbcore.EjbGenerationUtil;
 import org.netbeans.modules.j2ee.ejbcore.naming.EJBNameOptions;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 
 /**
  * Generator of MessageDriven EJBs for EJB 2.1 and 3.0
@@ -103,7 +103,7 @@ public final class MessageGenerator {
                 try {
                     generateEJB21Xml();
                 } catch (VersionNotSupportedException ex) {
-                    ErrorManager.getDefault().notify(ex);
+                    Exceptions.printStackTrace(ex);
                 }
             }
 
@@ -115,7 +115,7 @@ public final class MessageGenerator {
                         messageDestination.getName(),
                         messageDestination.getType());
             } catch (ConfigurationException ce) {
-                ErrorManager.getDefault().notify(ce);
+                Exceptions.printStackTrace(ce);
             }
         }
         return resultFileObject;

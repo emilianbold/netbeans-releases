@@ -28,9 +28,9 @@ import org.netbeans.modules.j2ee.common.method.MethodModel;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.EjbMethodController;
 import org.netbeans.modules.j2ee.ejbcore._RetoucheUtil;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.EntityMethodController;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -68,7 +68,7 @@ public class AddCmpFieldAction extends NodeAction {
                 return false;
             }
         } catch (IOException ioe) {
-            ErrorManager.getDefault().notify(ioe);
+            Exceptions.printStackTrace(ioe);
             return false;
         }
         FileObject fileObject = activatedNodes[0].getLookup().lookup(FileObject.class);
@@ -95,7 +95,7 @@ public class AddCmpFieldAction extends NodeAction {
                 addCmpField(emc, ddFile, field);
             }
         } catch (IOException ioe) {
-            ErrorManager.getDefault().notify(ioe);
+            Exceptions.printStackTrace(ioe);
         }
     }
 
@@ -105,7 +105,7 @@ public class AddCmpFieldAction extends NodeAction {
         try {
             return addCmpField(emc, ddFile, field);
         } catch (IOException ioe) {
-            ErrorManager.getDefault().notify(ioe);
+            Exceptions.printStackTrace(ioe);
         }
         return false;
     }

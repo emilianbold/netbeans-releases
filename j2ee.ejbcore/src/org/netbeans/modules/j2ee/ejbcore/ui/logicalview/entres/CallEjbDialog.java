@@ -23,6 +23,8 @@ import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Action;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -49,7 +51,6 @@ import org.netbeans.modules.j2ee.ejbcore._RetoucheUtil;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.AbstractNode;
@@ -151,7 +152,7 @@ public class CallEjbDialog {
             }
         }
         catch (ConfigurationException ce) {
-            ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ce);
+            Logger.getLogger("global").log(Level.WARNING, null, ce);
         }
 
         return true;

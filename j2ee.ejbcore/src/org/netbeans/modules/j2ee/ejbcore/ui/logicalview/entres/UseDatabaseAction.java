@@ -59,10 +59,10 @@ import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.NodeAction;
@@ -85,7 +85,7 @@ public class UseDatabaseAction extends NodeAction {
             ElementHandle<TypeElement> elementHandle = _RetoucheUtil.getJavaClassFromNode(nodes[0]);
             generate(fileObject, elementHandle);
         } catch (IOException ioe) {
-            ErrorManager.getDefault().notify(ioe);
+            Exceptions.printStackTrace(ioe);
         }
     }
     
@@ -159,16 +159,16 @@ public class UseDatabaseAction extends NodeAction {
         // fetch references & datasources asynchronously
         Collection<EventRequestProcessor.Action> asyncActions = new ArrayList<EventRequestProcessor.Action>(1);
         asyncActions.add(new AsynchronousAction() {
-
+            
             public void run(Context actionContext) {
                 String msg = NbBundle.getMessage(DatasourceUIHelper.class, "MSG_retrievingDS"); //NOI18N
                 actionContext.getProgress().progress(msg);
                 try {
                     populateDataSourceReferences(holder, j2eeModuleProvider, fileObject);
                 } catch (ConfigurationException ex) {
-                    ErrorManager.getDefault().notify(ex);
+                    Exceptions.printStackTrace(ex);
                 } catch (IOException ioe) {
-                    ErrorManager.getDefault().notify(ioe);
+                    Exceptions.printStackTrace(ioe);
                 }
             }
         });
@@ -297,7 +297,7 @@ public class UseDatabaseAction extends NodeAction {
             }, true);
             return elementHandle == null ? false : !isInterface[0];
         } catch (IOException ioe) {
-            ErrorManager.getDefault().notify(ioe);
+            Exceptions.printStackTrace(ioe);
         }
         return false;
     }

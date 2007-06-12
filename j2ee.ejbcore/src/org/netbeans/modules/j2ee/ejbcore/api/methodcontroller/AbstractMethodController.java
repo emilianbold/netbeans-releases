@@ -48,8 +48,8 @@ import org.netbeans.modules.j2ee.dd.api.ejb.EntityAndSession;
 import org.netbeans.modules.j2ee.ejbcore.Utils;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -90,7 +90,7 @@ public abstract class AbstractMethodController extends EjbMethodController {
                 }
             });
         } catch (IOException ioe) {
-            ErrorManager.getDefault().notify(ioe);
+            Exceptions.printStackTrace(ioe);
         }
         this.simplified = version == null ? true : (version.doubleValue() > 2.1);
         local = results[LOCAL];
@@ -129,14 +129,14 @@ public abstract class AbstractMethodController extends EjbMethodController {
             try {
                 addMethodToClass(component, clientView);
             } catch (IOException e) {
-                ErrorManager.getDefault().notify(e);
+                Exceptions.printStackTrace(e);
             }
 
         } else {
             try {
                 addMethodToClass(home, clientView);
             } catch (IOException e) {
-                ErrorManager.getDefault().notify(e);
+                Exceptions.printStackTrace(e);
             }
         }
         if (hasJavaImplementation(clientView)) {
@@ -146,7 +146,7 @@ public abstract class AbstractMethodController extends EjbMethodController {
                         addMethodToClass(ejbClass, me);
                     }
                 } catch (IOException e) {
-                    ErrorManager.getDefault().notify(e);
+                    Exceptions.printStackTrace(e);
                 }
             }
         }
@@ -196,7 +196,7 @@ public abstract class AbstractMethodController extends EjbMethodController {
         try {
             addMethodToClass(destinationInterface, method);
         } catch (IOException e) {
-            ErrorManager.getDefault().notify(e);
+            Exceptions.printStackTrace(e);
         }
 
     }
@@ -210,7 +210,7 @@ public abstract class AbstractMethodController extends EjbMethodController {
         try {
             addMethodToClass(ejbClass, method);
         } catch (IOException e) {
-            ErrorManager.getDefault().notify(e);
+            Exceptions.printStackTrace(e);
         }
 
     }
@@ -328,14 +328,14 @@ public abstract class AbstractMethodController extends EjbMethodController {
         try {
             beanInterfaces = getInterfaces(ejbClass);
         } catch (IOException ioe) {
-            ErrorManager.getDefault().notify(ioe);
+            Exceptions.printStackTrace(ioe);
         }
         // get method interfaces
         List<String> compInterfaces = new ArrayList<String>();
         try {
             compInterfaces = getInterfaces(compInterfaceName);
         } catch (IOException ioe) {
-            ErrorManager.getDefault().notify(ioe);
+            Exceptions.printStackTrace(ioe);
         }
         // look for common candidates
         compInterfaces.retainAll(beanInterfaces);
@@ -368,7 +368,7 @@ public abstract class AbstractMethodController extends EjbMethodController {
                 }
             }, true);
         } catch (IOException e) {
-            ErrorManager.getDefault().notify(e);
+            Exceptions.printStackTrace(e);
         }
         return result;
     }
@@ -421,7 +421,7 @@ public abstract class AbstractMethodController extends EjbMethodController {
                         try {
                             removeMethodFromClass(classMethodPair.getClassName(), classMethodPair.getMethodModel());
                         } catch (IOException e) {
-                            ErrorManager.getDefault().notify(e);
+                            Exceptions.printStackTrace(e);
                         }
 
                     }
@@ -430,7 +430,7 @@ public abstract class AbstractMethodController extends EjbMethodController {
             try {
                 removeMethodFromClass(getBeanClass(), interfaceMethod);
             } catch (IOException e) {
-                ErrorManager.getDefault().notify(e);
+                Exceptions.printStackTrace(e);
             }
 
         }
@@ -537,7 +537,7 @@ public abstract class AbstractMethodController extends EjbMethodController {
             removeMethodFromClass(clazz, methodCopy);
             createBeanMethod(methodCopy);
         } catch (IOException e) {
-            ErrorManager.getDefault().notify(e);
+            Exceptions.printStackTrace(e);
         }
 
     }
@@ -549,7 +549,7 @@ public abstract class AbstractMethodController extends EjbMethodController {
         try {
             return methodFindInClass(clazz, methodModel);
         } catch (IOException e) {
-            ErrorManager.getDefault().notify(e);
+            Exceptions.printStackTrace(e);
             return false;
         }
 

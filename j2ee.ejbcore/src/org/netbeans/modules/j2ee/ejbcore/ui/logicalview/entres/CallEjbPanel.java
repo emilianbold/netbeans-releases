@@ -55,11 +55,11 @@ import org.netbeans.modules.j2ee.ejbcore.Utils;
 import org.netbeans.modules.j2ee.ejbcore._RetoucheUtil;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeAcceptor;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 
@@ -134,15 +134,17 @@ public class CallEjbPanel extends javax.swing.JPanel {
         nodeDisplayPanel.addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent pce) {
                 Node[] nodes = nodeDisplayPanel.getSelectedNodes();
+                
                 if (nodes.length == 0) {
                     return;
                 }
                 EjbReference ejbReference = nodes[0].getLookup().lookup(EjbReference.class);
+                
                 if (ejbReference != null) {
                     try {
                         generateName(ejbReference, remoteRadioButton.isSelected(), nodes[0]);
                     } catch (IOException ioe) {
-                        ErrorManager.getDefault().notify(ioe);
+                        Exceptions.printStackTrace(ioe);
                     }
                 }
                 validateReferences();
@@ -464,7 +466,7 @@ public class CallEjbPanel extends javax.swing.JPanel {
             try {
                 elementHandle = _RetoucheUtil.getJavaClassFromNode(nodes[0]);
             } catch (IOException ioe) {
-                ErrorManager.getDefault().notify(ioe);
+                Exceptions.printStackTrace(ioe);
             }
             // non-EJB node is selected
             if (elementHandle == null) {
@@ -524,7 +526,7 @@ public class CallEjbPanel extends javax.swing.JPanel {
                     return false;
                 }
             } catch (IOException ioe) {
-                ErrorManager.getDefault().notify(ioe);
+                Exceptions.printStackTrace(ioe);
                 return false;
             }
             

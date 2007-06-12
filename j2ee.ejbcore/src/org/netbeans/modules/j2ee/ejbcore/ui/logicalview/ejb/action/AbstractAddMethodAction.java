@@ -27,10 +27,10 @@ import javax.swing.Action;
 import javax.swing.JMenuItem;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.j2ee.ejbcore._RetoucheUtil;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 import org.openide.util.ContextAwareAction;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.actions.Presenter;
 
@@ -76,7 +76,7 @@ public abstract class AbstractAddMethodAction extends AbstractAction implements 
                 }
             }
         } catch (IOException ex) {
-            ErrorManager.getDefault().notify(ex);
+            Exceptions.printStackTrace(ex);
         }
         return false;
     }
@@ -100,7 +100,7 @@ public abstract class AbstractAddMethodAction extends AbstractAction implements 
                 }
             }
         } catch (IOException ex) {
-            ErrorManager.getDefault().notify(ex);
+            Exceptions.printStackTrace(ex);
         }
     }
 

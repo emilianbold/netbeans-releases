@@ -53,11 +53,13 @@ import org.netbeans.modules.j2ee.dd.api.ejb.MethodPermission;
 import org.netbeans.modules.j2ee.dd.api.ejb.Relationships;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.ejbcore.Utils;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.util.Exceptions;
 
 /**
  * This class provides controller capabilities for ejb logical views. The nodes
@@ -92,7 +94,7 @@ public final class EjbViewController {
                 }
             });
         } catch (IOException ioe) {
-            ErrorManager.getDefault().notify(ioe);
+            Exceptions.printStackTrace(ioe);
         }
         return displayName;
     }
@@ -123,7 +125,7 @@ public final class EjbViewController {
                                 }
                             }
                         } catch (VersionNotSupportedException ex) {
-                            ErrorManager.getDefault().notify(ex);
+                            Exceptions.printStackTrace(ex);
                         }
                     }
                     beans.removeEjb(ejb);
@@ -171,7 +173,7 @@ public final class EjbViewController {
                 return DataObject.find(src);
             }
         } catch (DataObjectNotFoundException ex) {
-            ErrorManager.getDefault().notify(ex);
+            Exceptions.printStackTrace(ex);
         }
         return null;
     }
@@ -189,7 +191,7 @@ public final class EjbViewController {
             }, true);
             return result.get(0);
         } catch (IOException ex) {
-            ErrorManager.getDefault().notify(ex);
+            Exceptions.printStackTrace(ex);
             return null;
         }
     }
@@ -215,7 +217,7 @@ public final class EjbViewController {
                 }
             });
         } catch (IOException ioe) {
-            ErrorManager.getDefault().notify(ioe);
+            Exceptions.printStackTrace(ioe);
         }
         return result;
     }
@@ -237,7 +239,7 @@ public final class EjbViewController {
                 }
             });
         } catch (IOException ioe) {
-            ErrorManager.getDefault().notify(ioe);
+            Exceptions.printStackTrace(ioe);
         }
         return result;
     }
@@ -315,7 +317,7 @@ public final class EjbViewController {
                 }
             });
         } catch (IOException ioe) {
-            ErrorManager.getDefault().notify(ioe);
+            Exceptions.printStackTrace(ioe);
         }
         return beanFO;
     }
@@ -356,7 +358,7 @@ public final class EjbViewController {
             }
             
         } catch (IOException ioe) {
-            ErrorManager.getDefault().notify(ErrorManager.USER, ioe);
+            DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Exception(ioe));
         }
     }
     

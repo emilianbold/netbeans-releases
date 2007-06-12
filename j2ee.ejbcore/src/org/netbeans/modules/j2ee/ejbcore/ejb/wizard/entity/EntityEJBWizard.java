@@ -30,11 +30,11 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
 import org.netbeans.spi.project.ui.templates.support.Templates;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.ejbcore.Utils;
 import org.openide.WizardDescriptor;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 /**
  *
@@ -89,7 +89,7 @@ public final class EntityEJBWizard implements WizardDescriptor.InstantiatingIter
         try {
             result = entityGenerator.generate();
         } catch (IOException ex) {
-            ErrorManager.getDefault().notify(ex);
+            Exceptions.printStackTrace(ex);
         }
         return result == null ? Collections.<FileObject>emptySet() : Collections.singleton(result);
     }

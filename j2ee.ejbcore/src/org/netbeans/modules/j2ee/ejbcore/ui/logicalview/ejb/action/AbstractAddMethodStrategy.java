@@ -25,9 +25,9 @@ import org.netbeans.modules.j2ee.common.method.MethodCustomizer;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.MethodType;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.shared.MethodsNode;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
 
@@ -76,7 +76,7 @@ public abstract class AbstractAddMethodStrategy {
                 String ejbql = methodCustomizer.getEjbQL();
                 generateMethod(method, isOneReturn, publishToLocal, publishToRemote, ejbql, fileObject, className);
             } catch (IOException ioe) {
-                ErrorManager.getDefault().notify(ioe);
+                Exceptions.printStackTrace(ioe);
             }
         }
     }

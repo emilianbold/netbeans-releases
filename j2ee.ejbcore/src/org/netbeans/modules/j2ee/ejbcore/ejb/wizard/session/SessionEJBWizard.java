@@ -35,8 +35,8 @@ import org.openide.filesystems.FileObject;
 import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.ejbcore.Utils;
-import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -99,7 +99,7 @@ public final class SessionEJBWizard implements WizardDescriptor.InstantiatingIte
         try {
             result = sessionGenerator.generate();
         } catch (IOException ex) {
-            ErrorManager.getDefault().notify(ex);
+            Exceptions.printStackTrace(ex);
         }
         return result == null ? Collections.<FileObject>emptySet() : Collections.singleton(result);
     }
