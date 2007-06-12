@@ -86,6 +86,7 @@ public class FileCompletionPopup extends JPopupMenu {
      
     public void setDataList(Vector files) {
         list.setListData(files);
+        ensureSelection();
     }
     
     private void setSelectNext() {
@@ -112,7 +113,14 @@ public class FileCompletionPopup extends JPopupMenu {
         }
         setPreferredSize(new Dimension(source.getWidth(), source.getHeight() * 4));
         show(source,  x, y);
-        setVisible(true);
+        ensureSelection();
+    }
+    
+    // #106268: always have some item selected for better usability
+    private void ensureSelection () {
+        if (list.getSelectedIndex() == -1 && (list.getModel().getSize() > 0)) {
+            list.setSelectedIndex(0);
+        }
     }
     
     private class KeyHandler extends AbstractAction {
