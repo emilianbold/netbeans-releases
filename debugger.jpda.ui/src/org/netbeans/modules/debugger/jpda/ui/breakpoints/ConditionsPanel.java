@@ -24,6 +24,7 @@ import java.awt.Dimension;
 import org.netbeans.api.debugger.Breakpoint.HIT_COUNT_FILTERING_STYLE;
 
 import org.netbeans.modules.debugger.jpda.ui.FilteredKeymap;
+import org.netbeans.modules.debugger.jpda.ui.WatchPanel;
 
 import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
@@ -52,15 +53,11 @@ public class ConditionsPanel extends javax.swing.JPanel {
         classFilterCheckBoxActionPerformed(null);
         conditionCheckBoxActionPerformed(null);
         cbWhenHitCountActionPerformed(null);
-        tfCondition.setKeymap(new FilteredKeymap(tfCondition.getKeymap()));
         int preferredHeight = tfConditionFieldForUI.getPreferredSize().height;
         if (spCondition.getPreferredSize().height > preferredHeight) {
             preferredHeight = spCondition.getPreferredSize().height;
             tfConditionFieldForUI.setPreferredSize(new java.awt.Dimension(tfConditionFieldForUI.getPreferredSize().width, preferredHeight));
-        } else {
-            spCondition.setPreferredSize(tfConditionFieldForUI.getPreferredSize());
         }
-        spCondition.setMinimumSize(spCondition.getPreferredSize());
         tfHitCountFilter.setPreferredSize(
                 new Dimension(8*tfHitCountFilter.getFontMetrics(tfHitCountFilter.getFont()).charWidth('8'),
                               tfHitCountFilter.getPreferredSize().height));
@@ -275,7 +272,7 @@ public class ConditionsPanel extends javax.swing.JPanel {
         tfHitCountFilter = new javax.swing.JTextField();
         cbHitStyle = new javax.swing.JComboBox();
         cbWhenHitCount = new javax.swing.JCheckBox();
-        spCondition = new javax.swing.JScrollPane();
+        spCondition = null;
         tfCondition = new javax.swing.JEditorPane();
 
         setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(ConditionsPanel.class, "L_Conditions_Breakpoint_BorderTitle"))); // NOI18N
@@ -392,9 +389,8 @@ public class ConditionsPanel extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         add(panelHitCountFilter, gridBagConstraints);
 
-        spCondition.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        spCondition = WatchPanel.createScrollableLineEditor(tfCondition);
         spCondition.setToolTipText(org.openide.util.NbBundle.getMessage(ConditionsPanel.class, "ConditionsPanel.spCondition.toolTipText")); // NOI18N
-        spCondition.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
 
         tfCondition.setContentType("text/x-java");
         tfCondition.setToolTipText(org.openide.util.NbBundle.getMessage(ConditionsPanel.class, "ConditionsPanel.tfCondition.toolTipText")); // NOI18N

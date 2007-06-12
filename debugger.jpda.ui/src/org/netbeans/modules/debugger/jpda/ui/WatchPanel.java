@@ -13,15 +13,17 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.debugger.jpda.ui;
 
+import java.awt.AWTKeyStroke;
 import java.awt.Container;
 import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.FontMetrics;
+import java.awt.KeyboardFocusManager;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.event.KeyEvent;
@@ -134,8 +136,21 @@ public class WatchPanel {
                 
         editorPane.setBorder (
             new CompoundBorder (editorPane.getBorder (),
-            new EmptyBorder (2, 0, 2, 0))
+            new EmptyBorder (0, 0, 0, 0))
         );
+        
+        JTextField referenceTextField = new JTextField();
+        
+        int preferredHeight = referenceTextField.getPreferredSize().height;
+        if (sp.getPreferredSize().height < preferredHeight) {
+            sp.setPreferredSize(referenceTextField.getPreferredSize());
+        }
+        sp.setMinimumSize(sp.getPreferredSize());
+        
+        Set<AWTKeyStroke> tfkeys = referenceTextField.getFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS);
+        editorPane.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, tfkeys);
+        tfkeys = referenceTextField.getFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS);
+        editorPane.setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, tfkeys);
         return sp;
     }
 }
