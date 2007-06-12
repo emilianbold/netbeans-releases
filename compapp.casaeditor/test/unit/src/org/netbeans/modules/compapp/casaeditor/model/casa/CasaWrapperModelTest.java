@@ -504,12 +504,13 @@ public class CasaWrapperModelTest extends TestCase {
         System.out.println("addCasaPort");
         
         String componentName = "";
+        String componentType = "";
         int x = 0;
         int y = 0;
         CasaWrapperModel instance = null;
         
         CasaPort expResult = null;
-        CasaPort result = instance.addCasaPort(componentName, x, y);
+        CasaPort result = instance.addCasaPort(componentType, componentName, x, y);
         assertEquals(expResult, result);
         
         // TODO review the generated test code and remove the default call to fail.
