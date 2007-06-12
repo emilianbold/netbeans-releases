@@ -19,27 +19,16 @@
 
 package org.netbeans.modules.uml.project;
 
-import org.netbeans.modules.uml.core.metamodel.core.foundation.INamespace;
-import org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram;
-import org.netbeans.modules.uml.core.metamodel.diagrams.IDiagramKind;
-import org.netbeans.modules.uml.ui.support.ProductHelper;
-//import org.netbeans.modules.uml.roseimport.RoseImport;
-import org.netbeans.modules.uml.project.ui.common.JavaSourceRootsUI;
-import org.netbeans.modules.uml.project.ui.customizer.UMLProjectProperties;
-import org.netbeans.modules.uml.project.ui.wizards.NewUMLProjectWizardIterator;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.util.*;
+
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.ProjectGenerator;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import java.util.*;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.spi.project.ant.AntArtifactProvider;
@@ -47,6 +36,21 @@ import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
+
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+
+import org.netbeans.modules.uml.core.metamodel.core.foundation.INamespace;
+import org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram;
+import org.netbeans.modules.uml.core.metamodel.diagrams.IDiagramKind;
+import org.netbeans.modules.uml.ui.support.ProductHelper;
+import org.netbeans.modules.uml.project.ui.common.JavaSourceRootsUI;
+import org.netbeans.modules.uml.project.ui.customizer.UMLProjectProperties;
+import org.netbeans.modules.uml.project.ui.wizards.NewUMLProjectWizardIterator;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -304,58 +308,69 @@ public class UMLProjectGenerator
     }
 	
 	
-	// This method creates the project artifacts , project.xml, 
-	// project.proprties, private.properties etc.
-	private static AntProjectHelper createProject(
-		FileObject dirFO, 
-		String name,
-		String modelingMode, 
-		Project javaSrcProj, 
-		String[] javaSrcRootIds )
-		// String srcRoot, String testRoot, String mainClass,
-		// String manifestFile, boolean isLibrary)
-		throws IOException
-		
-	{
-		AntProjectHelper h = ProjectGenerator.createProject(
-			dirFO, UMLProjectType.TYPE);
-		
-		Element data = h.getPrimaryConfigurationData(true);
-		Document doc = data.getOwnerDocument();
-		
-		Element nameEl = doc.createElementNS(
-			UMLProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name"); // NOI18N
-		
-		nameEl.appendChild(doc.createTextNode(name));
-		data.appendChild(nameEl);
-		
-		Element minant = doc.createElementNS(
-			UMLProjectType.PROJECT_CONFIGURATION_NAMESPACE, 
-			"minimum-ant-version"); // NOI18N
-		
-		minant.appendChild(doc.createTextNode("1.6")); // NOI18N
-		data.appendChild(minant);
-		
-		// Manage the source roots stuff here
-		
-		// ep - the project.properties
-		EditableProperties ep = 
-			h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-		h.putPrimaryConfigurationData(data, true);
-		
-		// Initialize and store the project props
-		ep.setProperty(UMLProjectProperties.MODELING_MODE, modelingMode);
-		ep.setProperty(UMLProjectProperties.UML_PROJECT_ANT_ARTIFACT, name);
-		h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
-		
-		// Initialize the references to Java project
-		// It looks like we need to do the auxiliary config stuff
-		// after we have putProperties, otherwise the putProperties call
-		// overwrites everything.
-		setJavaProjectReferences(h, javaSrcProj, javaSrcRootIds);
-		
-		return h;
-	}
+    // This method creates the project artifacts , project.xml, 
+    // project.proprties, private.properties etc.
+    private static AntProjectHelper createProject(
+        FileObject dirFO, 
+        String name,
+        String modelingMode, 
+        Project javaSrcProj, 
+        String[] javaSrcRootIds )
+        // String srcRoot, String testRoot, String mainClass,
+        // String manifestFile, boolean isLibrary)
+        throws IOException
+
+    {
+        AntProjectHelper h = ProjectGenerator.createProject(
+                dirFO, UMLProjectType.TYPE);
+
+        Element data = h.getPrimaryConfigurationData(true);
+        Document doc = data.getOwnerDocument();
+
+        Element nameEl = doc.createElementNS(
+            UMLProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name"); // NOI18N
+
+        nameEl.appendChild(doc.createTextNode(name));
+        data.appendChild(nameEl);
+
+        Element minant = doc.createElementNS(
+            UMLProjectType.PROJECT_CONFIGURATION_NAMESPACE,
+            "minimum-ant-version"); // NOI18N
+
+        minant.appendChild(doc.createTextNode("1.6")); // NOI18N
+        data.appendChild(minant);
+
+        // Manage the source roots stuff here
+
+        // ep - the project.properties
+        EditableProperties ep = 
+            h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        h.putPrimaryConfigurationData(data, true);
+
+        // Initialize and store the project props
+        ep.setProperty(UMLProjectProperties.MODELING_MODE, modelingMode);
+        ep.setProperty(UMLProjectProperties.UML_PROJECT_ANT_ARTIFACT, name);
+
+// for now, just always default to Java code generation templates for
+// types of UML projects
+//        if (modelingMode.equals(NbBundle.getMessage(
+//            org.netbeans.modules.uml.project.ui.common.CommonUiSupport.class,
+//            "LBL_ProjectMode_Implementation"))) // NOI18N
+//        {
+            ep.setProperty(UMLProjectProperties.CODE_GEN_TEMPLATES, 
+                UMLProjectProperties.DEFAULT_JAVA_TEMPLATES);
+//        }
+
+        h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
+
+        // Initialize the references to Java project
+        // It looks like we need to do the auxiliary config stuff
+        // after we have putProperties, otherwise the putProperties call
+        // overwrites everything.
+        setJavaProjectReferences(h, javaSrcProj, javaSrcRootIds);
+
+        return h;
+    }
 	
 	
 	// This method is refactored as a independent method so that it 
