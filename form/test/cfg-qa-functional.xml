@@ -94,10 +94,14 @@ Microsystems, Inc. All Rights Reserved.
     <testbag testattribs="validation" executor="ide" name="testbag_undoredo">
         <testset dir="qa-functional/src">
             <patternset>
-<!--                <include name="org/netbeans/qa/form/undoredo/BaseTest.class"/> -->
+                <include name="org/netbeans/qa/form/undoredo/BaseTest.class"/> 
             </patternset>
         </testset>
     </testbag>
+
+
+<!-- Jana Maleckova -->
+   
 
    <testbag testattribs="validation" executor="ide" name="testbag_opentempl_defaultpack">
         <testset dir="qa-functional/src">
