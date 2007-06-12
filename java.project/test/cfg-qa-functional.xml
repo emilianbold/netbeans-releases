@@ -23,6 +23,7 @@ Microsystems, Inc. All Rights Reserved.
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="projects/**/*Test.class"/>
+                <exclude name="projects/LibrariesTest.class"/>
             </patternset>
         </testset>
     </testbag>
