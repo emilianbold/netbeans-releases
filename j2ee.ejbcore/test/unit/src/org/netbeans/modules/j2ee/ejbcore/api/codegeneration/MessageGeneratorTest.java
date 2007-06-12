@@ -70,7 +70,7 @@ public class MessageGeneratorTest extends TestBase {
         assertEquals("testGenerateJavaEE14.TestMDBQueueBean", messageDriven.getEjbClass());
         assertEquals("Container", messageDriven.getTransactionType());
         assertEquals("javax.jms.Queue", messageDriven.getMessageDestinationType());
-        assertEquals("TestMDBQueueBeanDestination", messageDriven.getMessageDestinationLink());
+        assertEquals("TestMDBQueue", messageDriven.getMessageDestinationLink());
         ActivationConfig activationConfig = messageDriven.getActivationConfig();
         assertEquals(2, activationConfig.getActivationConfigProperty().length);
         ActivationConfigProperty acProperty = activationConfig.getActivationConfigProperty()[0];
@@ -99,7 +99,7 @@ public class MessageGeneratorTest extends TestBase {
         assertEquals("testGenerateJavaEE14.TestMDBTopicBean", messageDriven.getEjbClass());
         assertEquals("Container", messageDriven.getTransactionType());
         assertEquals("javax.jms.Topic", messageDriven.getMessageDestinationType());
-        assertEquals("TestMDBTopicBeanDestination", messageDriven.getMessageDestinationLink());
+        assertEquals("TestMDBTopic", messageDriven.getMessageDestinationLink());
         activationConfig = messageDriven.getActivationConfig();
         assertEquals(5, activationConfig.getActivationConfigProperty().length);
         acProperty = activationConfig.getActivationConfigProperty()[0];
@@ -131,8 +131,8 @@ public class MessageGeneratorTest extends TestBase {
             messageDestinationNames.add(msgDest.getMessageDestinationName());
         }
         assertEquals(2, assemblyDescriptor.getMessageDestination().length);
-        assertTrue(messageDestinationNames.contains("TestMDBQueueBeanDestination"));
-        assertTrue(messageDestinationNames.contains("TestMDBTopicBeanDestination"));
+        assertTrue(messageDestinationNames.contains("TestMDBQueue"));
+        assertTrue(messageDestinationNames.contains("TestMDBTopic"));
     }
     
     public void testGenerateJavaEE50() throws IOException {

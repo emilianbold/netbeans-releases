@@ -182,13 +182,18 @@ public class CmpFromDbGenerator {
 //        if (pwm != null) {
 //            pwm.getConfigSupport().setCMPMappingInfo(mappings);
 //        }
-        //TODO: RETOUCHE need to write to ejb-jar.xml here?
         ejbJar.write(ddFileObject);
         if (pwm != null) {
             for (EntityClass entityClass : helper.getBeans()) {
                 if (helper.getTableSource().getType() == TableSource.Type.DATA_SOURCE) {
 		    try {
-			pwm.getConfigSupport().ensureResourceDefinedForEjb(entityClass.getClassName(), "entity", helper.getTableSource().getName()); //NOI18N
+                        Entity entity = findEntityForEjbClass(entityClass.getPackage() + '.' + entityClass.getClassName());
+                        pwm.getConfigSupport().bindDatasourceReferenceForEjb(
+                                entity.getEjbName(),
+                                EnterpriseBeans.ENTITY,
+                                helper.getTableSource().getName(),
+                                helper.getTableSource().getName()
+                                );
 		    } catch (ConfigurationException e) {
 			// TODO inform the user that the problem has occured
 		    }
