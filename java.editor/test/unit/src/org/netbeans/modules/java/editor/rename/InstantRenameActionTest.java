@@ -207,7 +207,7 @@ public class InstantRenameActionTest extends NbTestCase {
         
         doc.putProperty(Language.class, JavaTokenId.language());
         
-        return InstantRenameAction.computeChangePoints(SourceUtilsTestUtil.getCompilationInfo(JavaSource.forFileObject(source), Phase.RESOLVED), offset, wasResolved);
+        return InstantRenamePerformer.computeChangePoints(SourceUtilsTestUtil.getCompilationInfo(JavaSource.forFileObject(source), Phase.RESOLVED), offset, wasResolved);
     }
     
     private void writeIntoFile(FileObject file, String what) throws Exception {

@@ -18,13 +18,22 @@
  */
 package org.netbeans.modules.java.editor.rename;
 
+import com.sun.source.util.TreePath;
 import java.awt.Color;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.util.ElementFilter;
+import javax.swing.Action;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -33,17 +42,32 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
 import javax.swing.text.Position.Bias;
+import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.Coloring;
+import org.netbeans.editor.Utilities;
 import org.netbeans.lib.editor.codetemplates.SyncDocumentRegion;
 import org.netbeans.lib.editor.util.swing.MutablePositionRegion;
 import org.netbeans.lib.editor.util.swing.PositionRegion;
 import org.netbeans.modules.editor.highlights.spi.Highlight;
 import org.netbeans.modules.editor.highlights.spi.Highlighter;
+import org.netbeans.modules.java.editor.semantic.ColoringAttributes;
+import org.netbeans.modules.java.editor.semantic.FindLocalUsagesQuery;
+import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
+import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
+import org.openide.nodes.Node;
 import org.openide.text.NbDocument;
+import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
 
 /**
  *
@@ -108,6 +132,130 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
 	
 	return od.getPrimaryFile();
     }
+    
+    public static void invokeInstantRename(JTextComponent target) {
+        try {
+            final int caret = target.getCaretPosition();
+            String ident = Utilities.getIdentifier(Utilities.getDocument(target), caret);
+            
+            if (ident == null) {
+                Utilities.setStatusBoldText(target, "Cannot perform instant rename here.");
+                return;
+            }
+            
+            DataObject od = (DataObject) target.getDocument().getProperty(Document.StreamDescriptionProperty);
+            JavaSource js = JavaSource.forFileObject(od.getPrimaryFile());
+            final boolean[] wasResolved = new boolean[1];
+            final Set<Highlight>[] changePoints = new Set[1];
+            
+            js.runUserActionTask(new CancellableTask<CompilationController>() {
+                public void cancel() {
+                }
+                public void run(CompilationController controller) throws Exception {
+                    if (controller.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0)
+                        return;
+                    
+                    changePoints[0] = computeChangePoints(controller, caret, wasResolved);
+                }
+            }, true);
+            
+            if (wasResolved[0]) {
+                if (changePoints[0] != null) {
+                    doInstantRename(changePoints[0], target, caret, ident);
+                } else {
+                    doFullRename(od.getCookie(EditorCookie.class), od.getNodeDelegate());
+                }
+            } else {
+                Utilities.setStatusBoldText(target, "Cannot perform instant rename here.");
+            }
+        } catch (BadLocationException e) {
+            Exceptions.printStackTrace(e);
+        } catch (IOException ioe) {
+            Exceptions.printStackTrace(ioe);
+        }
+    }
+    private static void doFullRename(EditorCookie ec, Node n) {
+        
+        InstanceContent ic = new InstanceContent();
+        ic.add(ec);
+        ic.add(n);
+        Lookup actionContext = new AbstractLookup(ic);
+        
+        Action a = RefactoringActionsFactory.renameAction().createContextAwareInstance(actionContext);
+        a.actionPerformed(RefactoringActionsFactory.DEFAULT_EVENT);
+    }
+    
+    private static void doInstantRename(Set<Highlight> changePoints, JTextComponent target, int caret, String ident) throws BadLocationException {
+        InstantRenamePerformer.performInstantRename(target, changePoints, caret);
+    }
+    
+    static Set<Highlight> computeChangePoints(CompilationInfo info, final int caret, final boolean[] wasResolved) throws IOException {
+        TreePath path = info.getTreeUtilities().pathFor(caret);
+        Element el = info.getTrees().getElement(path);
+        
+        if (el == null) {
+            wasResolved[0] = false;
+            return null;
+        }
+        
+        //#89736: if the caret is not in the resolved element's name, no rename:
+        final Highlight name = org.netbeans.modules.java.editor.semantic.Utilities.createHighlight(info.getCompilationUnit(), info.getTrees().getSourcePositions(), info.getDocument(), path, EnumSet.of(ColoringAttributes.MARK_OCCURRENCES), null);
+        
+        info.getDocument().render(new Runnable() {
+            public void run() {
+                wasResolved[0] = name.getStart() <= caret && caret <= name.getEnd();
+            }
+        });
+        
+        if (!wasResolved[0])
+            return null;
+        
+        if (el.getKind() == ElementKind.CONSTRUCTOR) {
+            //for constructor, work over the enclosing class:
+            el = el.getEnclosingElement();
+        }
+        
+        if (allowInstantRename(el)) {
+            Set<Highlight> points = new HashSet<Highlight>(new FindLocalUsagesQuery().findUsages(el, info, info.getDocument()));
+            
+            if (el.getKind().isClass()) {
+                //rename also the constructors:
+                for (ExecutableElement c : ElementFilter.constructorsIn(el.getEnclosedElements())) {
+                    TreePath t = info.getTrees().getPath(c);
+                    
+                    if (t != null) {
+                        Highlight h = org.netbeans.modules.java.editor.semantic.Utilities.createHighlight(info.getCompilationUnit(), info.getTrees().getSourcePositions(), info.getDocument(), t, EnumSet.of(ColoringAttributes.MARK_OCCURRENCES), null);
+                        
+                        if (h != null) {
+                            points.add(h);
+                        }
+                    }
+                }
+            }
+            
+            return points;
+        }
+        
+        return null;
+    }
+    
+    private static boolean allowInstantRename(Element e) {
+        if (org.netbeans.modules.java.editor.semantic.Utilities.isPrivateElement(e)) {
+            return true;
+        }
+        
+        //#92160: check for local classes:
+        if (e.getKind() == ElementKind.CLASS) {//only classes can be local
+            Element enclosing = e.getEnclosingElement();
+            
+            return LOCAL_CLASS_PARENTS.contains(enclosing.getKind());
+        }
+        
+        return false;
+    }
+    
+    private static final Set<ElementKind> LOCAL_CLASS_PARENTS = EnumSet.of(ElementKind.CONSTRUCTOR, ElementKind.INSTANCE_INIT, ElementKind.METHOD, ElementKind.STATIC_INIT);
+    
     
     public static void performInstantRename(JTextComponent target, Set<Highlight> highlights, int caretOffset) throws BadLocationException {
 	new InstantRenamePerformer(target, highlights, caretOffset);
