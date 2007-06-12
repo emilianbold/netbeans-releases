@@ -106,15 +106,14 @@ public final class ScreenSupport {
      * @return text
      */
     public static String wrapWithHtml(String text) {
-        if (text == null) {
-            return text;
-        }
-        text = text.replaceAll("<.*>", ""); // NOI18N
+        if (text == null)
+            return null;
+        text = text.replace ("<", "&lt;"); // NOI18N
+        text = text.replace (">", "&lt;"); // NOI18N
+        text = text.replace ("&", "&amp;"); // NOI18N
         
         StringBuffer str = new StringBuffer();
-        str.append("<html>"); // NOI18N
-        str.append(text);
-        str.append("</html>"); // NOI18N
+        str.append("<html>").append(text).append("</html>"); // NOI18N
         return str.toString();
     }
     
@@ -126,17 +125,14 @@ public final class ScreenSupport {
      * @return text
      */
     public static String wrapLinkWithHtml(String text) {
-        if (text == null) {
-            return text;
-        }
-        text = text.replaceAll("<.*>", ""); // NOI18N
+        if (text == null)
+            return null;
+        text = text.replace ("<", "&lt;"); // NOI18N
+        text = text.replace (">", "&lt;"); // NOI18N
+        text = text.replace ("&", "&amp;"); // NOI18N
         
         StringBuffer str = new StringBuffer();
-        str.append("<html>"); // NOI18N
-        str.append("<a href='null'>"); // NOI18N
-        str.append(text);
-        str.append("</a"); // NOI18N
-        str.append("</html>"); // NOI18N
+        str.append("<html><a href=''>").append (text).append ("</a></html>"); // NOI18N
         return str.toString();
     }
     
