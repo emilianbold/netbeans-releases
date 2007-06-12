@@ -20,7 +20,8 @@
 package org.netbeans.modules.j2ee.ejbjar.project.ui;
 
 import java.awt.Image;
-import org.openide.ErrorManager;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.actions.FileSystemAction;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.Repository;
@@ -50,9 +51,9 @@ import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
+import org.openide.nodes.FilterNode.Children;
 
 /**
  * Node to represent the setup folder described in the blueprints.
@@ -61,8 +62,8 @@ import org.openide.util.lookup.Lookups;
  */
 public class ServerResourceNode extends FilterNode {
     
-    private static final ErrorManager LOGGER = ErrorManager.getDefault().getInstance(ServerResourceNode.class.getName());
-    private static final boolean LOG = LOGGER.isLoggable(ErrorManager.INFORMATIONAL);
+    private static final Logger LOGGER = Logger.getLogger(ServerResourceNode.class.getName());
+    private static final boolean LOG = LOGGER.isLoggable(Level.INFO);
     
     private static final Image RESOURCE_FILE_BADGE = Utilities.loadImage( "org/netbeans/modules/j2ee/ejbjar/project/ui/resourcesBadge.gif", true ); // NOI18N
     private static final String SETUP_DIR = "setup"; // NOI18N
@@ -80,7 +81,7 @@ public class ServerResourceNode extends FilterNode {
         super(getDataFolderNode(folderDo, project), getDataFolderNodeChildren(folderDo));
         projectDirectoryListener = new ProjectDirectoryListener();
         if (LOG) {
-            LOGGER.log(ErrorManager.INFORMATIONAL, "Adding file listener to " + project.getProjectDirectory()); // NOI18N
+            LOGGER.log(Level.INFO, "Adding file listener to " + project.getProjectDirectory()); // NOI18N
         }
         project.getProjectDirectory().addFileChangeListener(FileUtil.weakFileChangeListener(projectDirectoryListener, project.getProjectDirectory()));
         this.project = project;
@@ -132,11 +133,11 @@ public class ServerResourceNode extends FilterNode {
         
     private void refresh() {
         if (LOG) {
-            LOGGER.log(ErrorManager.INFORMATIONAL, "Refreshing"); // NOI18N
+            LOGGER.log(Level.INFO, "Refreshing"); // NOI18N
         }
         final DataFolder folderDo = getSetupDataFolder(project);
         if (LOG) {
-            LOGGER.log(ErrorManager.INFORMATIONAL, "The DataFolder is: " + folderDo); // NOI18N
+            LOGGER.log(Level.INFO, "The DataFolder is: " + folderDo); // NOI18N
         }
         // #64665: should not call FilterNode.changeOriginal() or Node.setChildren() 
         // under Children.MUTEX read access
@@ -146,7 +147,7 @@ public class ServerResourceNode extends FilterNode {
                 org.openide.nodes.Children children = getDataFolderNodeChildren(folderDo);
                 setChildren(children);
                 if (LOG) {
-                    LOGGER.log(ErrorManager.INFORMATIONAL, "Children count: " + children.getNodes(true).length); // NOI18N
+                    LOGGER.log(Level.INFO, "Children count: " + children.getNodes(true).length);
                 }
             }
         });
@@ -284,7 +285,7 @@ public class ServerResourceNode extends FilterNode {
                     DataObject imageDo = DataObject.find(imageFo);
                     return imageDo.getNodeDelegate();
                 } catch (DataObjectNotFoundException donfe) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, donfe);
+                    Logger.getLogger("global").log(Level.INFO, null, donfe);
                 }
             }
             return null;

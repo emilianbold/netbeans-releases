@@ -41,7 +41,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
-import org.openide.ErrorManager;
+import org.openide.util.Exceptions;
 
 /**
  * Ejbs contained within a module
@@ -66,7 +66,7 @@ public class EjbContainerChildren extends Children.Keys<EjbContainerChildren.Key
         try {
             updateKeys();
         } catch (IOException ioe) {
-            ErrorManager.getDefault().notify(ioe);
+            Exceptions.printStackTrace(ioe);
         }
         //TODO: RETOUCHE listening on model to propagate changes to logical view
 //        model.addPropertyChangeListener(this);
@@ -139,11 +139,12 @@ public class EjbContainerChildren extends Children.Keys<EjbContainerChildren.Key
 
     public void propertyChange(PropertyChangeEvent propertyChangeEvent) {
         SwingUtilities.invokeLater(new Runnable() {
+            
             public void run() {
                 try {
                     updateKeys();
                 } catch (IOException ioe) {
-                    ErrorManager.getDefault().notify(ioe);
+                    Exceptions.printStackTrace(ioe);
                 }
             }
         });

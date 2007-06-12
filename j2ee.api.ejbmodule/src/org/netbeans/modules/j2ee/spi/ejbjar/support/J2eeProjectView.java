@@ -20,6 +20,8 @@
 package org.netbeans.modules.j2ee.spi.ejbjar.support;
 
 import java.awt.Image;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -30,7 +32,6 @@ import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.spi.ejbjar.EjbNodesFactory;
 import org.netbeans.modules.j2ee.ejbjar.project.ui.EjbContainerNode;
 import org.netbeans.modules.j2ee.ejbjar.project.ui.ServerResourceNode;
-import org.openide.ErrorManager;
 import org.openide.actions.FindAction;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.ChangeableDataFilter;
@@ -71,7 +72,7 @@ public final class J2eeProjectView {
             factoryInstance = (EjbNodesFactory) Lookup.getDefault().lookup(EjbNodesFactory.class);
         }
         if (factoryInstance == null) {
-            ErrorManager.getDefault().log("No EjbNodesFactory instance available: Enterprise Beans nodes cannot be creater");
+            Logger.getLogger("global").log(Level.INFO, "No EjbNodesFactory instance available: Enterprise Beans nodes cannot be creater");
         }
         return factoryInstance;
     }

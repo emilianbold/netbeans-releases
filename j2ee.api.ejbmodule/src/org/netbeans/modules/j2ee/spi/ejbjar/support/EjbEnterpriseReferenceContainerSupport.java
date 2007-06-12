@@ -20,6 +20,8 @@
 package org.netbeans.modules.j2ee.spi.ejbjar.support;
 
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -27,16 +29,16 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.ant.AntArtifactQuery;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbReference;
+import org.netbeans.modules.j2ee.api.ejbjar.EnterpriseReferenceContainer;
+import org.netbeans.modules.j2ee.api.ejbjar.EnterpriseReferenceSupport;
+import org.netbeans.modules.j2ee.api.ejbjar.MessageDestinationReference;
+import org.netbeans.modules.j2ee.api.ejbjar.ResourceReference;
+import org.netbeans.modules.j2ee.dd.api.application.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.common.EjbLocalRef;
 import org.netbeans.modules.j2ee.dd.api.common.EjbRef;
 import org.netbeans.modules.j2ee.dd.api.common.MessageDestinationRef;
 import org.netbeans.modules.j2ee.dd.api.common.ResourceRef;
 import org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException;
-import org.netbeans.modules.j2ee.api.ejbjar.EnterpriseReferenceContainer;
-import org.netbeans.modules.j2ee.api.ejbjar.EnterpriseReferenceSupport;
-import org.netbeans.modules.j2ee.api.ejbjar.MessageDestinationReference;
-import org.netbeans.modules.j2ee.api.ejbjar.ResourceReference;
-import org.netbeans.modules.j2ee.dd.api.ejb.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.ejb.Ejb;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
@@ -44,8 +46,9 @@ import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.spi.java.project.classpath.ProjectClassPathExtender;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
+
 
 
 /** 
@@ -154,7 +157,7 @@ public final class EjbEnterpriseReferenceContainerSupport {
                             assert pcpe != null;
                             pcpe.addAntArtifact(moduleJarTarget, moduleJarTarget.getArtifactLocations()[0]);
                         } catch (IOException ioe) {
-                            ErrorManager.getDefault().notify(ioe);
+                            Exceptions.printStackTrace(ioe);
                         }
                     }
                     return refName;
@@ -253,7 +256,7 @@ public final class EjbEnterpriseReferenceContainerSupport {
                             }
                         }
                     } catch (VersionNotSupportedException ex) {
-                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                        Logger.getLogger("global").log(Level.INFO, null, ex);
                     }
                     
                     String destinationRefName = getUniqueName(
