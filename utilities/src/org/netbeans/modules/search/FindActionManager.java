@@ -132,29 +132,32 @@ final class FindActionManager implements PropertyChangeListener, Runnable {
         for (TopComponent tc : activatedOnWindows) {
             //System.out.println("     ** " + tc.getName());
             
-            Action origFindAction = null, currFindAction = null;
-            
             Object origFindActionRef = tc.getClientProperty(MAPPED_FIND_ACTION);
-            if (origFindActionRef instanceof Reference) {
-                Object origFindActionObj = ((Reference)origFindActionRef).get();
-                if (origFindActionObj instanceof Action) {
-                    origFindAction = (Action) origFindActionObj;
+
+            if (findActionKey != null) {
+                Action origFindAction = null, currFindAction = null;
+                
+                if (origFindActionRef instanceof Reference) {
+                    Object origFindActionObj = ((Reference)origFindActionRef).get();
+                    if (origFindActionObj instanceof Action) {
+                        origFindAction = (Action) origFindActionObj;
+                    }
                 }
-            }
-            
-            if (origFindAction != null) {
-                currFindAction = tc.getActionMap().get(findActionKey);
-            }
-            
-            if ((currFindAction != null) && (currFindAction == origFindAction)){
-                tc.getActionMap().put(findActionKey, null);
-                //System.out.println("         - successfully cleared");
-            } else {
-                //System.out.println("         - DID NOT MATCH");
-                ErrorManager.getDefault().log(
-                        ErrorManager.WARNING,
-                        "ActionMap mapping of FindAction changed" +     //NOI18N
-                                " for window " + tc.getName());         //NOI18N
+                
+                if (origFindAction != null) {
+                    currFindAction = tc.getActionMap().get(findActionKey);
+                }
+                
+                if ((currFindAction != null) && (currFindAction == origFindAction)){
+                    tc.getActionMap().put(findActionKey, null);
+                    //System.out.println("         - successfully cleared");
+                } else {
+                    //System.out.println("         - DID NOT MATCH");
+                    ErrorManager.getDefault().log(
+                            ErrorManager.WARNING,
+                            "ActionMap mapping of FindAction changed" +     //NOI18N
+                                    " for window " + tc.getName());         //NOI18N
+                }
             }
             
             if (origFindActionRef != null) {
@@ -195,17 +198,19 @@ final class FindActionManager implements PropertyChangeListener, Runnable {
         }
             
         Object key = getFindActionMapKey();
-        ActionMap actionMap = window.getActionMap();
+        if (key != null) {
+            ActionMap actionMap = window.getActionMap();
 
-        if ((actionMap.get(key) == null) && activatedOnWindows.add(window)) {
-            //System.out.println("Utilities: Registered window " + window.getName());
-            
-            Action a = findAction.createContextAwareInstance(window.getLookup(),
-                                                             true);
+            if ((actionMap.get(key) == null) && activatedOnWindows.add(window)) {
+                //System.out.println("Utilities: Registered window " + window.getName());
+                
+                Action a = findAction.createContextAwareInstance(window.getLookup(),
+                                                                 true);
 
-            actionMap.put(key, a);
-            window.putClientProperty(MAPPED_FIND_ACTION,
-                                     new WeakReference<Action>(a));
+                actionMap.put(key, a);
+                window.putClientProperty(MAPPED_FIND_ACTION,
+                                         new WeakReference<Action>(a));
+            }
         }
     }
     
@@ -220,11 +225,11 @@ final class FindActionManager implements PropertyChangeListener, Runnable {
      */
     private Object getFindActionMapKey() {
         if (findActionMapKey == null) {
-            SharedClassObject findAction = 
+            FindAction systemFindAction = 
                     SharedClassObject.findObject(FindAction.class);
-            assert findAction != null;
-            
-            findActionMapKey = ((FindAction) findAction).getActionMapKey();
+            if (systemFindAction != null) {
+                findActionMapKey = systemFindAction.getActionMapKey();
+            }
         }
         return findActionMapKey;
     }
