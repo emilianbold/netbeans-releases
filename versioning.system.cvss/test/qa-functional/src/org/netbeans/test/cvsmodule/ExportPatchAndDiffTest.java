@@ -49,6 +49,7 @@ import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.QueueTool;
 import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JButtonOperator;
+import org.netbeans.jemmy.operators.JMenuOperator;
 import org.netbeans.jemmy.operators.JProgressBarOperator;
 import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
@@ -171,26 +172,23 @@ public class ExportPatchAndDiffTest extends JellyTestCase {
         oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
         new ProjectsTabOperator().tree().clearSelection();
         Node nodeClass = new Node(new SourcePackagesNode(projectName), pathToMain);
-        oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
-        comOperator = new Operator.DefaultStringComparator(true, true);
-        
+    
         nodeClass.performPopupAction("Open");
         EditorOperator eo = new EditorOperator("Main.java");
         eo.insert("// EXPORT PATCH", 5, 1);
         eo.save();
-        //nodeClass.performMenuActionNoBlock("Versioning|CVS|Export");
-        //Operator.setDefaultStringComparator(comOperator);
-        new ProjectsTabOperator().tree().clearSelection();
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            
-        }   
+        
         nodeClass = new Node(new SourcePackagesNode(projectName), pathToMain);
-        nodeClass.select();
-        nodeClass.performMenuActionNoBlock("Versioning|Export \"Main.java\" Diff Patch...");
+        //nodeClass.select();
+        comOperator = new Operator.DefaultStringComparator(true, true);
+        oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
+        Operator.setDefaultStringComparator(comOperator);
+        nodeClass.performMenuActionNoBlock("Versioning|Export Diff Patch...");
+        Operator.setDefaultStringComparator(oldOperator);
+        
         //Operator.setDefaultStringComparator(oldOperator);
         NbDialogOperator dialog = new NbDialogOperator("Export");
+
         JTextFieldOperator tf = new JTextFieldOperator(dialog, 0);
         String patchFile = "/tmp/patch" + System.currentTimeMillis() + ".patch";
         File file = new File(patchFile);
@@ -220,6 +218,7 @@ public class ExportPatchAndDiffTest extends JellyTestCase {
         br.close();
         assertTrue("Diff Patch file is empty!", generated);
         System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", "");
+
     }
     public void testDiffFile() throws Exception {
         //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 18000);
