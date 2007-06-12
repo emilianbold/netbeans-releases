@@ -21,6 +21,7 @@ package org.netbeans.modules.vmd.midp.components.general;
 import org.netbeans.modules.vmd.api.codegen.CodeNamePresenter;
 import org.netbeans.modules.vmd.api.flow.FlowScenePresenter;
 import org.netbeans.modules.vmd.api.flow.visual.FlowDescriptor;
+import org.netbeans.modules.vmd.api.inspector.InspectorFolderComponentPresenter;
 import org.netbeans.modules.vmd.api.inspector.InspectorOrderingController;
 import org.netbeans.modules.vmd.api.inspector.InspectorOrderingPresenter;
 import org.netbeans.modules.vmd.api.inspector.InspectorPositionPresenter;
@@ -30,6 +31,7 @@ import org.netbeans.modules.vmd.api.model.common.AcceptSupport;
 import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter;
 import org.netbeans.modules.vmd.api.model.presenters.actions.DeletePresenter;
 import org.netbeans.modules.vmd.api.properties.DefaultPropertiesPresenter;
+import org.netbeans.modules.vmd.api.palette.PaletteSupport;
 import org.netbeans.modules.vmd.midp.codegen.InstanceNameResolver;
 import org.netbeans.modules.vmd.midp.components.MidpDocumentSupport;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
@@ -38,11 +40,13 @@ import org.netbeans.modules.vmd.midp.components.categories.*;
 import org.netbeans.modules.vmd.midp.inspector.controllers.RootPC;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertiesCategories;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorVersion;
+import org.netbeans.spi.palette.PaletteController;
+import org.openide.util.Lookup;
 
 import java.awt.datatransfer.Transferable;
+import java.awt.event.InputEvent;
 import java.util.Arrays;
 import java.util.List;
-import org.netbeans.modules.vmd.api.inspector.InspectorFolderComponentPresenter;
 
 /**
  * @author David Kaspar
@@ -105,7 +109,7 @@ public final class RootCD extends ComponentDescriptor {
             InspectorPositionPresenter.create(new RootPC()),
             InspectorOrderingPresenter.create(creatOrderingControllers()),
             // flow
-            FlowScenePresenter.create (new RootAcceptBehavior ()),
+            FlowScenePresenter.create (new RootActionBehavior ()),
             // code
             RootCode.createInitializePresenter (),
             CodeNamePresenter.fixed ("initialize", "exitMIDlet"),
@@ -121,7 +125,7 @@ public final class RootCD extends ComponentDescriptor {
         );
     }
 
-    private static class RootAcceptBehavior implements FlowDescriptor.AcceptActionBehavior {
+    private static class RootActionBehavior implements FlowDescriptor.AcceptActionBehaviour, FlowDescriptor.SelectActionBehaviour {
 
         public boolean isAcceptable (FlowDescriptor descriptor, Transferable transferable) {
             DesignComponent categoryComponent = MidpDocumentSupport.getCategoryComponent (descriptor.getRepresentedComponent ().getDocument (), DisplayablesCategoryCD.TYPEID);
@@ -143,6 +147,26 @@ public final class RootCD extends ComponentDescriptor {
                 ComponentProducer.Result result = AcceptSupport.accept (categoryComponent, transferable);
                 AcceptSupport.selectComponentProducerResult (result);
             }
+        }
+
+        public boolean select (FlowDescriptor descriptor, int modifiers) {
+            DesignDocument document = descriptor.getRepresentedComponent ().getDocument ();
+            PaletteController controller = PaletteSupport.getPaletteController (document);
+            Lookup category = controller.getSelectedCategory ();
+            Lookup item = controller.getSelectedItem ();
+            boolean ret = false;
+
+            if (item != null) {
+                Transferable transferable = PaletteSupport.createTransferable (document, item);
+                if (isAcceptable (descriptor, transferable)) {
+                    accept (descriptor, transferable);
+                    ret = true;
+                }
+            }
+
+            if ((modifiers & InputEvent.SHIFT_MASK) != InputEvent.SHIFT_MASK)
+                controller.clearSelection ();
+            return ret;
         }
 
     }

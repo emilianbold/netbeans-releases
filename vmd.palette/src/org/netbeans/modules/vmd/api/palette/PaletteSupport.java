@@ -20,6 +20,14 @@
 
 package org.netbeans.modules.vmd.api.palette;
 
+import org.netbeans.modules.vmd.api.model.DesignDocument;
+import org.netbeans.modules.vmd.palette.PaletteMap;
+import org.netbeans.spi.palette.PaletteController;
+import org.openide.util.Lookup;
+import org.openide.util.datatransfer.ExTransferable;
+
+import java.awt.datatransfer.Transferable;
+
 /**
  * @author David Kaspar
  */
@@ -28,6 +36,16 @@ public final class PaletteSupport {
     public static final String VIEW_TAG_NO_PALETTE = "no-palette"; // NOI18N
 
     private PaletteSupport () {
+    }
+
+    public static PaletteController getPaletteController (DesignDocument document) {
+        return PaletteMap.getInstance ().getPaletteKitForProjectType (document.getDocumentInterface ().getProjectType ()).getPaletteController ();
+    }
+
+    public static Transferable createTransferable (DesignDocument document, Lookup item) {
+        ExTransferable transferable = ExTransferable.create (ExTransferable.EMPTY);
+        PaletteMap.getInstance ().getPaletteKitForProjectType (document.getDocumentInterface ().getProjectType ()).getDndHandler ().customize (transferable, item);
+        return transferable;
     }
 
 }

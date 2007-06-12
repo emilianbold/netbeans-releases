@@ -22,6 +22,7 @@ import org.netbeans.api.visual.action.*;
 import org.netbeans.api.visual.anchor.Anchor;
 import org.netbeans.api.visual.graph.GraphPinScene;
 import org.netbeans.api.visual.graph.layout.GridGraphLayout;
+import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.layout.SceneLayout;
 import org.netbeans.api.visual.model.ObjectSceneEvent;
 import org.netbeans.api.visual.model.ObjectSceneEventType;
@@ -36,6 +37,7 @@ import org.netbeans.modules.vmd.api.flow.FlowScenePresenter;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.presenters.actions.ActionsSupport;
+import org.netbeans.modules.vmd.api.palette.PaletteSupport;
 import org.netbeans.modules.vmd.flow.FlowViewController;
 import org.openide.actions.RedoAction;
 import org.openide.actions.UndoAction;
@@ -85,6 +87,7 @@ public final class FlowScene extends GraphPinScene<FlowNodeDescriptor, FlowEdgeD
     private WidgetAction renameAction;
     private WidgetAction popupMenuAction;
     private WidgetAction editAction;
+    private WidgetAction sceneSelectAction;
 
     private Router edgeRouter;
 
@@ -124,24 +127,22 @@ public final class FlowScene extends GraphPinScene<FlowNodeDescriptor, FlowEdgeD
         moveControlPointAction = ActionFactory.createOrthogonalMoveControlPointAction ();
         renameAction = ActionFactory.createInplaceEditorAction (new FlowRenameEditor ());
         editAction = ActionFactory.createEditAction (new FlowEditProvider ());
+        popupMenuAction = ActionFactory.createPopupMenuAction (new FlowPopupMenuProvider ());
+        sceneSelectAction = new FlowSceneSelectAction ();
 
         edgeRouter = RouterFactory.createOrthogonalSearchRouter (mainLayer, connectionLayer);
 
         getActions ().addAction (ActionFactory.createZoomAction ());
         getActions ().addAction (ActionFactory.createPanAction ());
+        getActions ().addAction (sceneSelectAction);
         getActions ().addAction (createSelectAction ());
         getActions ().addAction (createAcceptAction ());
-        popupMenuAction = ActionFactory.createPopupMenuAction (new FlowPopupMenuProvider ());
         getActions ().addAction (popupMenuAction);
         getActions ().addAction (ActionFactory.createRectangularSelectAction (this, backgroundLayer));
         getActions ().addAction (ActionFactory.createCycleObjectSceneFocusAction ());
 
         graphLayout = new GridGraphLayout<FlowNodeDescriptor, FlowEdgeDescriptor> ().setChecker (true);
-        sceneLayout = new SceneLayout(this) { // TODO - use LayoutFactory.createSceneGraphLayout
-            protected void performLayout () {
-                graphLayout.layoutGraph (FlowScene.this);
-            }
-        };
+        sceneLayout = LayoutFactory.createSceneGraphLayout (this, graphLayout);
 
         addObjectSceneListener (new FlowObjectSceneListener (), ObjectSceneEventType.OBJECT_SELECTION_CHANGED);
     }
@@ -403,7 +404,6 @@ public final class FlowScene extends GraphPinScene<FlowNodeDescriptor, FlowEdgeD
         return (FlowBadgeDescriptor.BadgeBehaviour) pinBadgeUIregistry.get (pinBadge).getBehaviour ();
     }
 
-    @SuppressWarnings("unchecked")
     private <T extends FlowDescriptor.Decorator> T getAbstractDecorator (FlowDescriptor descriptor, Class<T> clazz) {
         if (descriptor == null)
             return null;
@@ -423,7 +423,6 @@ public final class FlowScene extends GraphPinScene<FlowNodeDescriptor, FlowEdgeD
         return clazz.isInstance (decorator) ? (T) decorator : null;
     }
 
-    @SuppressWarnings ("unchecked")
     private <T extends FlowDescriptor.Behaviour> T getAbstractBehaviour (FlowDescriptor descriptor, Class<T> clazz) {
         if (descriptor == null)
             return null;
@@ -562,14 +561,18 @@ public final class FlowScene extends GraphPinScene<FlowNodeDescriptor, FlowEdgeD
                         FlowDescriptor rootDescriptor = new FlowDescriptor (rootComponent, "accept") {}; // NOI18N
                         Collection<? extends FlowScenePresenter> presenters = rootComponent.getPresenters (FlowScenePresenter.class);
                         for (FlowScenePresenter presenter : presenters) {
-                            if (presenter.getActionBehavior ().isAcceptable (rootDescriptor, transferable)) {
-                                ret[0] = ConnectorState.ACCEPT;
-                                break;
+                            FlowDescriptor.Behaviour behavior = presenter.getBehavior ();
+                            if (behavior instanceof FlowDescriptor.AcceptActionBehaviour) {
+                                FlowDescriptor.AcceptActionBehaviour acceptBehaviour = (FlowDescriptor.AcceptActionBehaviour) behavior;
+                                if (acceptBehaviour.isAcceptable (rootDescriptor, transferable)) {
+                                    ret[0] = ConnectorState.ACCEPT;
+                                    break;
+                                }
                             }
                         }
                     } else {
                         FlowDescriptor descriptor = (FlowDescriptor) findObject (widget);
-                        FlowDescriptor.AcceptActionBehavior behaviour = getAbstractBehaviour (descriptor, FlowDescriptor.AcceptActionBehavior.class);
+                        FlowDescriptor.AcceptActionBehaviour behaviour = getAbstractBehaviour (descriptor, FlowDescriptor.AcceptActionBehaviour.class);
                         if (behaviour != null)
                             if (behaviour.isAcceptable (descriptor, transferable))
                                 ret[0] = ConnectorState.ACCEPT;
@@ -589,18 +592,53 @@ public final class FlowScene extends GraphPinScene<FlowNodeDescriptor, FlowEdgeD
                         FlowDescriptor rootDescriptor = new FlowDescriptor(rootComponent, "accept") {}; // NOI18N
                         Collection<? extends FlowScenePresenter> presenters = rootComponent.getPresenters (FlowScenePresenter.class);
                         for (FlowScenePresenter presenter : presenters) {
-                            if (presenter.getActionBehavior ().isAcceptable (rootDescriptor, transferable))
-                                presenter.getActionBehavior ().accept (rootDescriptor, transferable);
+                            FlowDescriptor.Behaviour behavior = presenter.getBehavior ();
+                            if (behavior instanceof FlowDescriptor.AcceptActionBehaviour) {
+                                FlowDescriptor.AcceptActionBehaviour acceptBehaviour = (FlowDescriptor.AcceptActionBehaviour) behavior;
+                                if (acceptBehaviour.isAcceptable (rootDescriptor, transferable))
+                                    acceptBehaviour.accept (rootDescriptor, transferable);
+                            }
                         }
                     } else {
                         FlowDescriptor descriptor = (FlowDescriptor) findObject (widget);
-                        FlowDescriptor.AcceptActionBehavior behaviour = getAbstractBehaviour (descriptor, FlowDescriptor.AcceptActionBehavior.class);
+                        FlowDescriptor.AcceptActionBehaviour behaviour = getAbstractBehaviour (descriptor, FlowDescriptor.AcceptActionBehaviour.class);
                         if (behaviour != null)
                             behaviour.accept (descriptor, transferable);
                     }
                 }
             });
             preferredNodeLocationMap.put (eventID, widget.convertLocalToScene (point));
+            PaletteSupport.getPaletteController (document).clearSelection ();
+        }
+
+    }
+
+    private class FlowSceneSelectAction extends WidgetAction.Adapter {
+
+        public State mousePressed (final Widget widget, final WidgetMouseEvent event) {
+            final boolean[] ret = new boolean[] { false };
+            long eventID = document.getTransactionManager ().writeAccess (new Runnable() {
+                public void run () {
+                    if (widget == FlowScene.this) {
+                        DesignComponent rootComponent = document.getRootComponent ();
+                        FlowDescriptor rootDescriptor = new FlowDescriptor(rootComponent, "select") {}; // NOI18N
+                        Collection<? extends FlowScenePresenter> presenters = rootComponent.getPresenters (FlowScenePresenter.class);
+                        for (FlowScenePresenter presenter : presenters) {
+                            FlowDescriptor.Behaviour behavior = presenter.getBehavior ();
+                            if (behavior instanceof FlowDescriptor.SelectActionBehaviour) {
+                                FlowDescriptor.SelectActionBehaviour selectBehaviour = (FlowDescriptor.SelectActionBehaviour) behavior;
+                                if (selectBehaviour.select (rootDescriptor, event.getModifiers ())) {
+                                    ret[0] = true;
+                                    return;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            preferredNodeLocationMap.put (eventID, widget.convertLocalToScene (event.getPoint ()));
+            
+            return ret[0] ? State.CONSUMED : State.REJECTED;
         }
 
     }

@@ -23,7 +23,6 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.vmd.api.io.ProjectUtils;
 import org.netbeans.modules.vmd.api.model.*;
 import org.netbeans.modules.vmd.api.model.common.ActiveDocumentSupport;
-import org.netbeans.spi.palette.PaletteController;
 import org.openide.filesystems.*;
 import org.openide.util.Lookup;
 
@@ -112,16 +111,16 @@ public final class PaletteMap implements ActiveDocumentSupport.Listener, FileCha
         //kit.refreshPalette();
     }
     
-    public synchronized PaletteController getPaletteControllerForProjectType(String projectType) {
+    public synchronized PaletteKit getPaletteKitForProjectType(String projectType) {
         WeakReference<PaletteKit> reference = kitMap.get(projectType);
         PaletteKit kit = reference != null ? reference.get() : null;
         if (kit == null) {
             kit = new PaletteKit(projectType);
             kitMap.put(projectType, new WeakReference<PaletteKit> (kit));
         }
-        return kit.getPaletteController();
+        return kit;
     }
-    
+
     void checkValidity(String projectType, Lookup lookup) {
         WeakReference<PaletteKit> kitReference = kitMap.get(projectType);
         PaletteKit kit = kitReference != null ? kitReference.get() : null;

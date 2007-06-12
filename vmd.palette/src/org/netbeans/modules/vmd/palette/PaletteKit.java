@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.vmd.palette;
 
-import java.awt.event.ActionEvent;
 import org.netbeans.modules.vmd.api.model.ComponentProducer;
 import org.netbeans.modules.vmd.api.model.Debug;
 import org.netbeans.modules.vmd.api.model.DescriptorRegistry;
@@ -33,7 +32,9 @@ import org.openide.loaders.DataFolder;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.util.datatransfer.ExTransferable;
+
 import javax.swing.*;
+import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.*;
@@ -45,6 +46,7 @@ public class PaletteKit implements Runnable {
     
     private DesignDocument activeDocument;
     private PaletteController paletteController;
+    private DNDHandler dndHandler;
     
     private Map<String, PaletteItemDataNode> nodesMap;
     private boolean isValidationRunning;
@@ -52,7 +54,7 @@ public class PaletteKit implements Runnable {
     
     private DataFolder rootFolder;
     private FileSystem fs;
-    
+
     public PaletteKit(final String projectType) {
         this.fs = Repository.getDefault().getDefaultFileSystem();
         
@@ -70,8 +72,9 @@ public class PaletteKit implements Runnable {
             }
             rootFolder = DataFolder.findFolder(rootFolderFO);
             rootFolder.getPrimaryFile().setAttribute("itemWidth", "120"); // NOI18N
-            
-            paletteController = PaletteFactory.createPalette(rootFolderPath, new Actions(), new Filter(), new DNDHandler());
+
+            dndHandler = new DNDHandler ();
+            paletteController = PaletteFactory.createPalette(rootFolderPath, new Actions(), new Filter(), dndHandler);
         } catch (IOException ex) {
             throw Debug.error(ex);
         }
@@ -101,10 +104,14 @@ public class PaletteKit implements Runnable {
         }
     }
     
-    PaletteController getPaletteController() {
+    public PaletteController getPaletteController() {
         return paletteController;
     }
-    
+
+    public DragAndDropHandler getDndHandler () {
+        return dndHandler;
+    }
+
     void refreshPalette() {
         if (paletteController == null) {
             return;
@@ -113,7 +120,7 @@ public class PaletteKit implements Runnable {
     }
     
     private void updateCore(List<ComponentProducer> producers, String projectType) {
-        Collection<PaletteProvider> providers = Lookup.getDefault().lookup(new Lookup.Template(PaletteProvider.class)).allInstances();
+        Collection<? extends PaletteProvider> providers = Lookup.getDefault().lookupAll(PaletteProvider.class);
         for (PaletteProvider provider : providers) {
             assert provider != null;
             provider.initPaletteCategories(projectType, rootFolder);
@@ -354,12 +361,15 @@ public class PaletteKit implements Runnable {
     private class DNDHandler extends DragAndDropHandler {
         public void customize(final ExTransferable t, Lookup item) {
             DesignDocument doc = activeDocument;
-            if (doc == null) {
+            if (doc == null  ||  item == null)
                 return;
-            }
+
             String projectID = doc.getDocumentInterface().getProjectID();
             String projectType = doc.getDocumentInterface().getProjectType();
-            final String producerID = item.lookup(PaletteItemDataObject.class).getProducerID();
+            PaletteItemDataObject itemDataObject = item.lookup (PaletteItemDataObject.class);
+            if (itemDataObject == null)
+                return;
+            final String producerID = itemDataObject.getProducerID();
             
             final DescriptorRegistry registry = DescriptorRegistry.getDescriptorRegistry(projectType, projectID);
             registry.readAccess(new Runnable() {
@@ -380,7 +390,6 @@ public class PaletteKit implements Runnable {
                     DefaultDataFlavor dataFlavor = new DefaultDataFlavor(p);
                     t.put(new ExTransferable.Single(dataFlavor) {
                         protected Object getData() {
-                            paletteController.clearSelection();
                             return p.getProducerID();
                         }
                     });

@@ -26,18 +26,18 @@ import org.netbeans.modules.vmd.api.flow.visual.FlowDescriptor;
  */
 public final class FlowScenePresenter extends Presenter {
 
-    private FlowDescriptor.AcceptActionBehavior actionBehavior;
+    private FlowDescriptor.Behaviour behavior;
 
-    private FlowScenePresenter (FlowDescriptor.AcceptActionBehavior actionBehavior) {
-        this.actionBehavior = actionBehavior;
+    private FlowScenePresenter (FlowDescriptor.Behaviour behavior) {
+        this.behavior = behavior;
     }
 
-    public FlowDescriptor.AcceptActionBehavior getActionBehavior () {
-        return actionBehavior;
+    public FlowDescriptor.Behaviour getBehavior () {
+        return behavior;
     }
 
-    public static FlowScenePresenter create (FlowDescriptor.AcceptActionBehavior actionBehavior) {
-        return new FlowScenePresenter (actionBehavior);
+    public static FlowScenePresenter create (FlowDescriptor.Behaviour behavior) {
+        return new FlowScenePresenter (behavior);
     }
 
 }

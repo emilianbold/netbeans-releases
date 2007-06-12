@@ -76,11 +76,17 @@ public abstract class FlowDescriptor {
 
     }
 
-    public interface AcceptActionBehavior extends Behaviour {
+    public interface AcceptActionBehaviour extends Behaviour {
 
         boolean isAcceptable (FlowDescriptor descriptor, Transferable transferable);
 
         void accept (FlowDescriptor descriptor, Transferable transferable);
+
+    }
+
+    public interface SelectActionBehaviour extends Behaviour {
+
+        boolean select (FlowDescriptor descriptor, int modifiers);
 
     }
 

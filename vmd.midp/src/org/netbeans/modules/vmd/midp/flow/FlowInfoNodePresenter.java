@@ -35,7 +35,6 @@ import org.netbeans.modules.vmd.api.model.common.AcceptSupport;
 import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter;
 import org.netbeans.modules.vmd.api.model.presenters.actions.ActionsPresenter;
 import org.netbeans.modules.vmd.api.screen.actions.DesignerEditAction;
-import org.netbeans.modules.vmd.midp.components.MidpDocumentSupport;
 
 import javax.swing.*;
 import java.awt.datatransfer.Transferable;
@@ -82,7 +81,7 @@ public final class FlowInfoNodePresenter extends FlowNodePresenter {
         return ctrl;
     }
 
-    private class InfoNodeDecoratorBehaviour implements FlowNodeDescriptor.NodeDecorator, FlowNodeDescriptor.NodeBehaviour, FlowDescriptor.AcceptActionBehavior, FlowDescriptor.RenameActionBehaviour, FlowDescriptor.EditActionBehaviour {
+    private class InfoNodeDecoratorBehaviour implements FlowNodeDescriptor.NodeDecorator, FlowNodeDescriptor.NodeBehaviour, FlowDescriptor.AcceptActionBehaviour, FlowDescriptor.RenameActionBehaviour, FlowDescriptor.EditActionBehaviour {
 
         public Widget createWidget (FlowNodeDescriptor descriptor, FlowScene scene) {
             VMDNodeWidget widget = new VMDNodeWidget (scene);

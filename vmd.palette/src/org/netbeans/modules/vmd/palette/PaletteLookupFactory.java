@@ -34,7 +34,7 @@ public class PaletteLookupFactory implements DataEditorViewLookupFactory {
 
     public Collection<? extends Object> getLookupObjects(DataObjectContext context, DataEditorView view) {
         if (view.canShowSideWindows ()  &&  view.getKind () == DataEditorView.Kind.MODEL  &&  ! view.getTags ().contains (PaletteSupport.VIEW_TAG_NO_PALETTE)) {
-            return Collections.singleton(PaletteMap.getInstance().getPaletteControllerForProjectType(context.getProjectType()));
+            return Collections.singleton(PaletteMap.getInstance().getPaletteKitForProjectType(context.getProjectType()).getPaletteController ());
         } else {
             return null;
         }
