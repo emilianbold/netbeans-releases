@@ -20,14 +20,19 @@ package org.netbeans.modules.versioning.system.cvss.ui.actions.update;
 
 import org.openide.explorer.view.NodeTableModel;
 import org.openide.util.NbBundle;
+import org.openide.util.actions.SystemAction;
 import org.openide.nodes.Node;
 import org.openide.nodes.PropertySupport;
 import org.openide.ErrorManager;
 import org.openide.windows.TopComponent;
 import org.openide.awt.MouseUtils;
+import org.openide.awt.Mnemonics;
 import org.netbeans.modules.versioning.system.cvss.ui.syncview.OpenInEditorAction;
+import org.netbeans.modules.versioning.system.cvss.ui.actions.diff.ResolveConflictsAction;
+import org.netbeans.modules.versioning.system.cvss.Annotator;
 import org.netbeans.modules.versioning.util.TableSorter;
 import org.netbeans.modules.versioning.util.FilePathCellRenderer;
+import org.netbeans.modules.versioning.util.SystemActionBridge;
 
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.AncestorListener;
@@ -38,8 +43,10 @@ import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.event.MouseListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
+import java.awt.event.KeyEvent;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Point;
 import java.util.*;
 import java.lang.reflect.InvocationTargetException;
 
@@ -116,6 +123,13 @@ class UpdateResultsTable implements MouseListener, ListSelectionListener, Ancest
         table.getAccessibleContext().setAccessibleName(NbBundle.getMessage(UpdateResultsTable.class, "ACSN_UpdateResults")); // NOI18N
         table.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(UpdateResultsTable.class, "ACSD_UpdateResults")); // NOI18N
         setColumns(new String [] { UpdateResultNode.COLUMN_NAME_NAME, UpdateResultNode.COLUMN_NAME_STATUS, UpdateResultNode.COLUMN_NAME_PATH });
+        table.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT ).put(
+                KeyStroke.getKeyStroke(KeyEvent.VK_F10, KeyEvent.SHIFT_DOWN_MASK ), "org.openide.actions.PopupAction");
+        table.getActionMap().put("org.openide.actions.PopupAction", new AbstractAction() {
+            public void actionPerformed(ActionEvent e) {
+                showPopup(org.netbeans.modules.versioning.util.Utils.getPositionForPopup(table));
+            }
+        });
     }
 
     void setDefaultColumnSizes() {
@@ -213,9 +227,15 @@ class UpdateResultsTable implements MouseListener, ListSelectionListener, Ancest
     }
 
     public void mousePressed(MouseEvent e) {
+        if (e.isPopupTrigger()) {
+            showPopup(e);
+        }
     }
 
     public void mouseReleased(MouseEvent e) {
+        if (e.isPopupTrigger()) {
+            showPopup(e);
+        }
     }
 
     public void mouseClicked(MouseEvent e) {
@@ -231,6 +251,45 @@ class UpdateResultsTable implements MouseListener, ListSelectionListener, Ancest
         }
     }
 
+    private void showPopup(MouseEvent e) {
+        int row = table.rowAtPoint(e.getPoint());
+        if (row != -1) {
+            boolean makeRowSelected = true;
+            int [] selectedrows = table.getSelectedRows();
+            for (int i = 0; i < selectedrows.length; i++) {
+                if (row == selectedrows[i]) {
+                    makeRowSelected = false;
+                    break;
+                }
+            }
+            if (makeRowSelected) {
+                table.getSelectionModel().setSelectionInterval(row, row);
+            }
+        }
+        showPopup(e.getPoint());
+    }
+    
+    private void showPopup(Point p) {
+        JPopupMenu menu = getPopup();
+        menu.show(table, p.x, p.y);
+    }
+
+    private JPopupMenu getPopup() {
+        JPopupMenu menu = new JPopupMenu();
+        JMenuItem item;
+        
+        item = menu.add(new OpenInEditorAction());
+        Mnemonics.setLocalizedText(item, item.getText());
+        item = menu.add(new SystemActionBridge(SystemAction.get(ResolveConflictsAction.class), actionString("CTL_PopupMenuItem_ResolveConflicts"))); // NOI18N
+        Mnemonics.setLocalizedText(item, item.getText());
+        return menu;
+    }
+    
+    private String actionString(String key) {
+        ResourceBundle actionsLoc = NbBundle.getBundle(Annotator.class);
+        return actionsLoc.getString(key);
+    }    
+    
     public void valueChanged(ListSelectionEvent e) {
         List<Node> selectedNodes = new ArrayList<Node>();
         ListSelectionModel selectionModel = table.getSelectionModel();
