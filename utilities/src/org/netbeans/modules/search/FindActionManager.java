@@ -220,11 +220,11 @@ final class FindActionManager implements PropertyChangeListener, Runnable {
      */
     private Object getFindActionMapKey() {
         if (findActionMapKey == null) {
-            SharedClassObject findAction = 
+            FindAction systemFindAction = 
                     SharedClassObject.findObject(FindAction.class, true);
-            assert findAction != null;
+            assert systemFindAction != null;
 
-            findActionMapKey = ((FindAction) findAction).getActionMapKey();
+            findActionMapKey = systemFindAction.getActionMapKey();
         }
         return findActionMapKey;
     }
