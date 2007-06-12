@@ -43,12 +43,12 @@
             <DimensionLayout dim="0">
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="0" attributes="0">
-                      <EmptySpace max="-2" attributes="0"/>
+                      <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="detailPanel" alignment="0" max="32767" attributes="0"/>
-                          <Component id="infoLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="infoLabel" alignment="0" pref="452" max="32767" attributes="0"/>
                           <Group type="102" alignment="0" attributes="0">
                               <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="displayExpressionLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                                   <Component id="expressionLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                                   <Component id="sourceLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                               </Group>
@@ -60,15 +60,12 @@
                                       <Component id="importDataButton" min="-2" max="-2" attributes="0"/>
                                   </Group>
                                   <Component id="treeCombo" alignment="0" pref="355" max="32767" attributes="0"/>
+                                  <Component id="treeCombo2" alignment="0" pref="355" max="32767" attributes="0"/>
                               </Group>
                           </Group>
-                          <Group type="102" alignment="0" attributes="0">
-                              <Component id="displayExpressionLabel" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="treeCombo2" pref="355" max="32767" attributes="0"/>
-                          </Group>
+                          <Component id="detailPanel" alignment="0" max="32767" attributes="0"/>
                       </Group>
-                      <EmptySpace max="-2" attributes="0"/>
+                      <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -93,9 +90,9 @@
                           <Component id="displayExpressionLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="treeCombo2" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace max="-2" attributes="0"/>
+                      <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Component id="detailPanel" max="32767" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
+                      <EmptySpace min="-2" max="-2" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>

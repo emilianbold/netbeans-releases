@@ -614,10 +614,10 @@ public class BindingCustomizer extends JPanel {
             .add(bindingPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .add(bindingPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(detailPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(infoLabel)
+                    .add(infoLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 452, Short.MAX_VALUE)
                     .add(bindingPanelLayout.createSequentialGroup()
                         .add(bindingPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(displayExpressionLabel)
                             .add(expressionLabel)
                             .add(sourceLabel))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -626,12 +626,10 @@ public class BindingCustomizer extends JPanel {
                                 .add(sourceCombo, 0, 204, Short.MAX_VALUE)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(importDataButton))
-                            .add(treeCombo, 0, 355, Short.MAX_VALUE)))
-                    .add(bindingPanelLayout.createSequentialGroup()
-                        .add(displayExpressionLabel)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(treeCombo2, 0, 355, Short.MAX_VALUE)))
-                .addContainerGap())
+                            .add(treeCombo, 0, 355, Short.MAX_VALUE)
+                            .add(treeCombo2, 0, 355, Short.MAX_VALUE)))
+                    .add(detailPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .add(10, 10, 10))
         );
         bindingPanelLayout.setVerticalGroup(
             bindingPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -890,14 +888,14 @@ public class BindingCustomizer extends JPanel {
             else if (evt.getSource() == treeCombo) {
                 BindingCustomizer.this.treeComboActionPerformed(evt);
             }
+            else if (evt.getSource() == importDataButton) {
+                BindingCustomizer.this.importDataButtonActionPerformed(evt);
+            }
             else if (evt.getSource() == nullValueCheckBox) {
                 BindingCustomizer.this.nullValueCheckBoxActionPerformed(evt);
             }
             else if (evt.getSource() == incompletePathValueCheckBox) {
                 BindingCustomizer.this.incompletePathValueCheckBoxActionPerformed(evt);
-            }
-            else if (evt.getSource() == importDataButton) {
-                BindingCustomizer.this.importDataButtonActionPerformed(evt);
             }
         }
     }// </editor-fold>//GEN-END:initComponents
