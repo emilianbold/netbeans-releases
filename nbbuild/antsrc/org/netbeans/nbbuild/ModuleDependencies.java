@@ -19,20 +19,39 @@
 
 package org.netbeans.nbbuild;
 
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileWriter;
 import java.io.IOException;
-import java.util.*;
+import java.io.InputStream;
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.StringTokenizer;
+import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import java.util.jar.Manifest;
 import org.apache.tools.ant.BuildException;
+import org.apache.tools.ant.DirectoryScanner;
+import org.apache.tools.ant.Project;
+import org.apache.tools.ant.Task;
+import org.apache.tools.ant.types.EnumeratedAttribute;
+import org.apache.tools.ant.types.FileSet;
 
 /** This task implements the module dependencies verification proposal
  * that is described at
  * http://openide.netbeans.org/proposals/arch/clusters.html#verify-solution
- *
- *
  */
-public class ModuleDependencies extends org.apache.tools.ant.Task {
+public class ModuleDependencies extends Task {
     private List<Input> inputs = new ArrayList<Input>();
     private List<Output> outputs = new ArrayList<Output>();
     private Set<ModuleInfo> modules;
@@ -41,13 +60,13 @@ public class ModuleDependencies extends org.apache.tools.ant.Task {
     public ModuleDependencies () {
     }
     
-    public Input createInput () throws org.apache.tools.ant.BuildException {
+    public Input createInput() throws BuildException {
         Input input = new Input ();
         inputs.add (input);
         return input;
     }
     
-    public Output createOutput () throws org.apache.tools.ant.BuildException {
+    public Output createOutput() throws BuildException {
         Output output = new Output ();
         outputs.add (output);
         return output;
@@ -59,9 +78,7 @@ public class ModuleDependencies extends org.apache.tools.ant.Task {
         try {
             readModuleInfo ();
 
-            Iterator it = outputs.iterator ();
-            while (it.hasNext ()) {
-                Output o = (Output)it.next ();
+            for (Output o : outputs) {
                 if (o.type == null) throw new BuildException ("<output> needs attribute type");
                 if (o.file == null) throw new BuildException ("<output> needs attribute file");
                 
@@ -117,29 +134,28 @@ public class ModuleDependencies extends org.apache.tools.ant.Task {
     private void readModuleInfo () throws IOException {
         modules = new TreeSet<ModuleInfo>();
         
-        class Comp implements java.util.Comparator<File> {
+        class Comp implements Comparator<File> {
             public int compare (File f1, File f2) {
                 return f1.getName ().compareTo (f2.getName ());
             }
         }
         external = new TreeSet<File>(new Comp ());
         
-        Iterator<Input> it = inputs.iterator (); 
-        if (!it.hasNext ()) throw new BuildException ("At least one <input> tag is needed");
-        while (it.hasNext ()) {
-            Input input = it.next ();
+        if (inputs.isEmpty()) {
+            throw new BuildException ("At least one <input> tag is needed");
+        }
+        for (Input input : inputs) {
             if (input.jars == null) throw new BuildException ("<input> needs a subelement <jars>");
             if (input.name == null) throw new BuildException ("<input> needs attribute name");
             
-            org.apache.tools.ant.Project p = getProject ();
-            org.apache.tools.ant.DirectoryScanner scan = input.jars.getDirectoryScanner (p);
-            String[] arr = scan.getIncludedFiles ();
-            for (int i = 0; i < arr.length; i++) {
-                File f = new File (scan.getBasedir (), arr[i]);
+            Project p = getProject();
+            DirectoryScanner scan = input.jars.getDirectoryScanner(p);
+            for (String incl : scan.getIncludedFiles()) {
+                File f = new File(scan.getBasedir(), incl);
                 getProject ().log ("Processing " + f, getProject ().MSG_VERBOSE);
                 JarFile file = new JarFile (f);
                 
-                java.util.jar.Manifest manifest = file.getManifest ();
+                Manifest manifest = file.getManifest();
                 if (manifest == null) {
                     // process only manifest files
                     external.add (f);
@@ -169,7 +185,7 @@ public class ModuleDependencies extends org.apache.tools.ant.Task {
                         majorVersion = -1;
                     } else {
                         codebasename = module.substring (0, slash);
-                        majorVersion = Integer.valueOf (module.substring (slash + 1)).intValue ();
+                        majorVersion = Integer.valueOf(module.substring(slash + 1));
                     }
                     m = new ModuleInfo (input.name, f, codebasename);
                     m.majorVersion = majorVersion;
@@ -274,9 +290,7 @@ public class ModuleDependencies extends org.apache.tools.ant.Task {
         
         PrintWriter w = new PrintWriter(new FileWriter(output));
         if (justPublic) {
-            Iterator it = packages.iterator();
-            while (it.hasNext()) {
-                String out = (String)it.next();
+            for (String out : packages) {
                 w.println(out.replace('/', '.'));
             }
         } else {
@@ -288,19 +302,15 @@ public class ModuleDependencies extends org.apache.tools.ant.Task {
                 }
             }
             
-            Iterator<Map.Entry<ModuleInfo,TreeSet<String>>> it = friendExports.entrySet().iterator();
-            while (it.hasNext()) {
-                Map.Entry<ModuleInfo,TreeSet<String>> entry = it.next();
+            for (Map.Entry<ModuleInfo,TreeSet<String>> entry : friendExports.entrySet()) {
                 ModuleInfo info = entry.getKey();
                 if (info.friends == null) {
                     continue;
                 }
-                log("Friends for " + info.getName(), org.apache.tools.ant.Project.MSG_DEBUG);
-                Iterator iterFrnd = info.friends.iterator();
+                log("Friends for " + info.getName(), Project.MSG_DEBUG);
                 int cntFriends = 0;
                 boolean printed = false;
-                while(iterFrnd.hasNext()) {
-                    String n = (String)iterFrnd.next();
+                for (String n : info.friends) {
                     ModuleInfo friend = findModuleInfo(n);
                     if (justInterCluster && friend != null && friend.group.equals(info.group)) {
                         continue;
@@ -326,10 +336,7 @@ public class ModuleDependencies extends org.apache.tools.ant.Task {
                 }
                 
                 if (cntFriends > 0) {
-                    Set<String> pkgs = entry.getValue();
-                    Iterator iterPkgs = pkgs.iterator();
-                    while (iterPkgs.hasNext()) {
-                        String out = (String)iterPkgs.next();
+                    for (String out : entry.getValue()) {
                         w.print("  PACKAGE ");
                         w.println(out.replace('/', '.'));
                     }
@@ -400,9 +407,7 @@ public class ModuleDependencies extends org.apache.tools.ant.Task {
 
     private void generateListOfModules (File output) throws BuildException, IOException {
         PrintWriter w = new PrintWriter (new FileWriter (output));
-        Iterator it = modules.iterator ();
-        while (it.hasNext ()) {
-            ModuleInfo m = (ModuleInfo)it.next ();
+        for (ModuleInfo m : modules) {
             w.print ("MODULE ");
             w.print (m.getName ());
             w.println ();
@@ -412,12 +417,8 @@ public class ModuleDependencies extends org.apache.tools.ant.Task {
     
     private void generateExternalLibraries (File output) throws BuildException, IOException {
         PrintWriter w = new PrintWriter (new FileWriter (output));
-        Iterator it = external.iterator ();
-        
         String SPACES = "                                                     ";
-        while (it.hasNext ()) {
-            File f = (File)it.next ();
-            
+        for (File f : external) {
             java.security.MessageDigest dig;
             
             try {
@@ -443,8 +444,8 @@ public class ModuleDependencies extends org.apache.tools.ant.Task {
             String size = SPACES + f.length ();
             w.print (size.substring (size.length () - 15));
             w.print (" ");
-            for (int i = 0; i < res.length; i++) {
-                String hex = "00" + Integer.toHexString (res[i]);
+            for (byte b : res) {
+                String hex = "00" + Integer.toHexString(b);
                 w.print (hex.substring (hex.length () - 2));
             }
             w.println ();
@@ -455,39 +456,27 @@ public class ModuleDependencies extends org.apache.tools.ant.Task {
     private void generateSharedPackages (File output) throws BuildException, IOException {
         TreeMap<String,List<ModuleInfo>> packages = new TreeMap<String,List<ModuleInfo>>();
         
-        {
-            Iterator<ModuleInfo> it = modules.iterator ();
-            while (it.hasNext ()) {
-                ModuleInfo m = it.next ();
-
-                HashSet<String> pkgs = new HashSet<String>();
-                iterateSharedPackages (m.file, pkgs);
-
-                Iterator j = pkgs.iterator ();
-                while (j.hasNext ()) {
-                    String s = (String)j.next ();
-                    List<ModuleInfo> l = packages.get(s);
-                    if (l == null) {
-                        l = new ArrayList<ModuleInfo>();
-                        packages.put(s, l);
-                    }
-                    l.add (m);
+        for (ModuleInfo m : modules) {
+            HashSet<String> pkgs = new HashSet<String>();
+            iterateSharedPackages(m.file, pkgs);
+            for (String s : pkgs) {
+                List<ModuleInfo> l = packages.get(s);
+                if (l == null) {
+                    l = new ArrayList<ModuleInfo>();
+                    packages.put(s, l);
                 }
+                l.add(m);
             }
         }
         
         PrintWriter w = new PrintWriter (new FileWriter (output));
-        Iterator it = packages.entrySet ().iterator ();
-        while (it.hasNext ()) {
-            Map.Entry entry = (Map.Entry)it.next ();
-            String out = (String)entry.getKey ();
-            List cnt = (List)entry.getValue ();
+        for (Map.Entry<String,List<ModuleInfo>> entry : packages.entrySet()) {
+            String out = entry.getKey();
+            List<ModuleInfo> cnt = entry.getValue();
             if (cnt.size() > 1) {
                 w.println (out.replace ('/', '.'));
                 log("Package " + out + " is shared between:", org.apache.tools.ant.Project.MSG_VERBOSE);
-                Iterator j = cnt.iterator ();
-                while (j.hasNext ()) {
-                    ModuleInfo m = (ModuleInfo)j.next ();
+                for (ModuleInfo m : cnt) {
                     log ("   " + m.codebasename, org.apache.tools.ant.Project.MSG_VERBOSE);
                 }
             }
@@ -513,7 +502,7 @@ public class ModuleDependencies extends org.apache.tools.ant.Task {
             log("Found package " + pkg + " in " + f, getProject().MSG_DEBUG);
         }
         
-        java.util.jar.Manifest m = file.getManifest ();
+        Manifest m = file.getManifest();
         if (m != null) {
             String value = m.getMainAttributes ().getValue ("Class-Path");
             if (value != null) {
@@ -532,14 +521,9 @@ public class ModuleDependencies extends org.apache.tools.ant.Task {
     
     private void generateDependencies (File output, boolean implementationOnly) throws BuildException, IOException {
         PrintWriter w = new PrintWriter (new FileWriter (output));
-        Iterator it = modules.iterator ();
-        while (it.hasNext ()) {
-            ModuleInfo m = (ModuleInfo)it.next ();
-
+        for (ModuleInfo m : modules) {
             boolean first = true;
-            Iterator deps = m.depends.iterator ();
-            while (deps.hasNext ()) {
-                Dependency d = (Dependency)deps.next ();
+            for (Dependency d : m.depends) {
                 String print = "  REQUIRES ";
                 if (d.exact && d.compare != null) {
                     // ok, impl deps
@@ -558,7 +542,7 @@ public class ModuleDependencies extends org.apache.tools.ant.Task {
                 if (d.isSpecial ()) {
                     w.print (d.getName ());
                 } else {
-                    ModuleInfo theModuleOneIsDependingOn = findModuleInfo (d);
+                    ModuleInfo theModuleOneIsDependingOn = findModuleInfo(d, m);
                     w.print (theModuleOneIsDependingOn.getName ());
                 }
                 w.println ();
@@ -571,32 +555,21 @@ public class ModuleDependencies extends org.apache.tools.ant.Task {
         PrintWriter w = new PrintWriter (new FileWriter (output));
         
         TreeMap<String, Set<Dependency>> groups = new TreeMap<String, Set<Dependency>>();
-        {
-            Iterator<ModuleInfo> it = modules.iterator ();
-
-            while (it.hasNext ()) {
-                ModuleInfo m = it.next ();
-                Set<Dependency> l = groups.get (m.group);
-                if (l == null) {
-                    l = new TreeSet<Dependency>();
-                    groups.put (m.group, l);
-                }
-
-                l.addAll(m.depends);
+        for (ModuleInfo m : modules) {
+            Set<Dependency> l = groups.get(m.group);
+            if (l == null) {
+                l = new TreeSet<Dependency>();
+                groups.put(m.group, l);
             }
+            l.addAll(m.depends);
         }
 
-        Iterator it = groups.entrySet ().iterator ();
-        while (it.hasNext ()) {
-            Map.Entry e = (Map.Entry)it.next ();
-            String groupName = (String)e.getKey ();
-            Set depends = (Set)e.getValue ();
+        for (Map.Entry<String,Set<Dependency>> e : groups.entrySet()) {
+            String groupName = e.getKey();
+            Set<Dependency> depends = e.getValue();
             
             boolean first = true;
-            Iterator deps = depends.iterator ();
-            while (deps.hasNext ()) {
-                Dependency d = (Dependency)deps.next ();
-
+            for (Dependency d : depends) {
                 String print = "  REQUIRES ";
                 if (d.exact && d.compare != null) {
                     // ok, impl deps
@@ -611,7 +584,7 @@ public class ModuleDependencies extends org.apache.tools.ant.Task {
                     continue;
                 }
                 // dependencies within one group are not important
-                ModuleInfo ref = findModuleInfo (d);
+                ModuleInfo ref = findModuleInfo(d, null);
                 if (groupName.equals (ref.group)) {
                     continue;
                 }
@@ -632,23 +605,19 @@ public class ModuleDependencies extends org.apache.tools.ant.Task {
     
     /** For a given dependency finds the module that this dependency refers to.
      */
-    private ModuleInfo findModuleInfo (Dependency dep) throws BuildException {
-        Iterator it = modules.iterator ();
-        while (it.hasNext ()) {
-            ModuleInfo info = (ModuleInfo)it.next ();
+    private ModuleInfo findModuleInfo(Dependency dep, ModuleInfo referrer) throws BuildException {
+        for (ModuleInfo info : modules) {
             if (dep.isDependingOn (info)) {
                 return info;
             }
         }
         
-        throw new BuildException ("Cannot find module that satisfies dependency: " + dep);
+        throw new BuildException ("Cannot find module that satisfies dependency: " + dep + (referrer != null ? " from: " + referrer : ""));
     }
     /** For a given codebasename finds module that we depend on
      */
     private ModuleInfo findModuleInfo (String cnb) throws BuildException {
-        Iterator it = modules.iterator ();
-        while (it.hasNext ()) {
-            ModuleInfo info = (ModuleInfo)it.next ();
+        for (ModuleInfo info : modules) {
             if (info.codebasename.equals(cnb)) {
                 return info;
             }
@@ -685,12 +654,12 @@ public class ModuleDependencies extends org.apache.tools.ant.Task {
     }
     
     public static final class Input extends Object {
-        public org.apache.tools.ant.types.FileSet jars;
+        public FileSet jars;
         public String name;
         
-        public org.apache.tools.ant.types.FileSet createJars () {
+        public FileSet createJars() {
             if (jars != null) throw new BuildException ();
-            jars = new org.apache.tools.ant.types.FileSet ();
+            jars = new FileSet();
             return jars;
         }
         
@@ -701,7 +670,7 @@ public class ModuleDependencies extends org.apache.tools.ant.Task {
     
     public static final class Output extends Object {
         public OutputType type;
-        public java.io.File file;
+        public File file;
         
         public void setType (OutputType type) {
             this.type = type;
@@ -712,7 +681,7 @@ public class ModuleDependencies extends org.apache.tools.ant.Task {
         }
     }
     
-    public static final class OutputType extends org.apache.tools.ant.types.EnumeratedAttribute {
+    public static final class OutputType extends EnumeratedAttribute {
         public String[] getValues () {
             return new String[] { 
                 "public-packages",
@@ -729,12 +698,12 @@ public class ModuleDependencies extends org.apache.tools.ant.Task {
         }
     }
     
-    private static final class ModuleInfo extends Object implements Comparable {
+    private static final class ModuleInfo extends Object implements Comparable<ModuleInfo> {
         public final String group;
         public final File file;
         public final String codebasename;
         public String publicPackages;
-	public Set/*String*/ friends;
+	public Set<String> friends;
         public int majorVersion;
         public String specificationVersion;
         public String implementationVersion;
@@ -747,14 +716,13 @@ public class ModuleDependencies extends org.apache.tools.ant.Task {
             this.codebasename = a;
         }
 
-        public int compareTo (Object o) {
-            ModuleInfo m = (ModuleInfo)o;
+        public int compareTo(ModuleInfo m) {
             return codebasename.compareTo (m.codebasename);
         }
 
         public boolean equals (Object obj) {
             if (obj instanceof ModuleInfo) {
-                return compareTo (obj) == 0;
+                return codebasename.equals(((ModuleInfo) obj).codebasename);
             }
             return false;
         }
@@ -776,7 +744,7 @@ public class ModuleDependencies extends org.apache.tools.ant.Task {
         }
     } // end of ModuleInfo
     
-    private static final class Dependency extends Object implements Comparable {
+    private static final class Dependency extends Object implements Comparable<Dependency> {
         public static final int PROVIDES = 1;
         public static final int REQUIRES = 2;
         
@@ -801,25 +769,24 @@ public class ModuleDependencies extends org.apache.tools.ant.Task {
                 String major = token.substring (slash + 1);
                 int range = major.indexOf ('-');
                 if (range == -1) {
-                    this.majorVersionFrom = Integer.valueOf (major).intValue ();
+                    this.majorVersionFrom = Integer.valueOf(major);
                     this.majorVersionTo = majorVersionFrom;
                 } else {
-                    this.majorVersionFrom = Integer.valueOf (major.substring (0, range)).intValue ();
-                    this.majorVersionTo = Integer.valueOf (major.substring (range + 1)).intValue ();
+                    this.majorVersionFrom = Integer.valueOf(major.substring(0, range));
+                    this.majorVersionTo = Integer.valueOf(major.substring(range + 1));
                 }
             }
             this.type = type;
             this.exact = exact;
             this.compare = compare;
         }
-        public int compareTo (Object o) {
-            Dependency m = (Dependency)o;
+        public int compareTo(Dependency m) {
             return token.compareTo (m.token);
         }
 
         public boolean equals (Object obj) {
             if (obj instanceof Dependency) {
-                return compareTo (obj) == 0;
+                return token.equals(((Dependency) obj).token);
             }
             return false;
         }
@@ -838,12 +805,11 @@ public class ModuleDependencies extends org.apache.tools.ant.Task {
         
         public boolean isDependingOn (ModuleInfo info) {
             if (info.codebasename.equals (token)) {
-                return majorVersionFrom <= info.majorVersion && info.majorVersion <= majorVersionTo;
+                return (majorVersionFrom == -1 || majorVersionFrom <= info.majorVersion) &&
+                        (majorVersionTo == -1 || info.majorVersion <= majorVersionTo);
             } 
             
-            Iterator it = info.provides.iterator ();
-            while (it.hasNext ()) {
-                Dependency d = (Dependency)it.next ();
+            for (Dependency d : info.provides) {
                 if (d.equals (this)) {
                     return true;
                 }
