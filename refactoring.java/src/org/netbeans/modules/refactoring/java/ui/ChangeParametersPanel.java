@@ -23,6 +23,7 @@ import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
+import java.text.MessageFormat;
 import java.util.*;
 import java.util.Set;
 import java.util.Set;
@@ -35,6 +36,7 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.refactoring.java.RetoucheUtils;
+import org.netbeans.modules.refactoring.java.plugins.LocalVarScanner;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -347,9 +349,21 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
         acceptEditedValue(); 
         int[] selectedRows = paramTable.getSelectedRows();
         ListSelectionModel selectionModel = paramTable.getSelectionModel();
-        for (int i = 0; i < selectedRows.length; ++i)
-            model.removeRow(selectedRows[i] - i);
-        selectionModel.clearSelection();
+        for (int i = 0; i < selectedRows.length; ++i) {
+            boolean b = ((Boolean) ((Vector) model.getDataVector().get(selectedRows[i] - i)).get(4)).booleanValue();
+            if (!b) {
+                String title = getString("LBL_ChangeParsCannotDeleteTitle");
+                String mes = MessageFormat.format(getString("LBL_ChangeParsCannotDelete"),((Vector) model.getDataVector().get(selectedRows[i] - i)).get(0));
+                int a = new JOptionPane().showConfirmDialog(this, mes, title, JOptionPane.YES_NO_OPTION);
+                if (a==JOptionPane.YES_OPTION) {
+                    model.removeRow(selectedRows[i] - i);
+                    selectionModel.clearSelection();
+                }
+            } else {
+                model.removeRow(selectedRows[i] - i);
+                selectionModel.clearSelection();
+            }
+        }
     }//GEN-LAST:event_removeButtonActionPerformed
 
     private void moveDownButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_moveDownButtonActionPerformed
@@ -466,9 +480,9 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
             for (VariableElement par:currentMethod.getParameters()) {
                 TypeMirror desc = par.asType();
                 String typeRepresentation = getTypeStringRepresentation(desc);
-                //TODO:
-                //Boolean removable = Boolean.valueOf(par.getReferences().isEmpty());
-                Boolean removable = Boolean.TRUE;
+                LocalVarScanner scan = new LocalVarScanner(info, null);
+                scan.scan(SourceUtils.pathFor(info, method), par);
+                Boolean removable = !scan.hasRefernces();
                 if (model.getRowCount()<=originalIndex) {
                     Object[] parRep = new Object[] { par.toString(), typeRepresentation, "", new Integer(originalIndex), removable };
                     model.addRow(parRep);
@@ -631,7 +645,7 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
         }
         
         public boolean isRemovable(int row) {
-            return ((Boolean) ((Vector) getDataVector().get(row)).get(4)).booleanValue();
+            return true;//((Boolean) ((Vector) getDataVector().get(row)).get(4)).booleanValue();
         }
         
         public Class getColumnClass(int c) {

@@ -40,7 +40,7 @@ public class LocalVarScanner extends TreePathScanner<Boolean, Element> {
 
     @Override
     public Boolean visitVariable(VariableTree variable, Element element) {
-        if (variable.getName().toString().equals(newName)) {
+        if (newName!=null && variable.getName().toString().equals(newName)) {
             result= true;
         }
         return super.visitVariable(variable, element);
@@ -48,9 +48,17 @@ public class LocalVarScanner extends TreePathScanner<Boolean, Element> {
     @Override
     public Boolean visitIdentifier(IdentifierTree node, Element p) {
         Element current = info.getTrees().getElement(getCurrentPath());
-        if (current.getKind().isField() && node.getName().toString().equals(newName)) {
+        if (newName==null) {
+            if (current !=null && current.equals(p)) {
+                result = true;
+            }
+        } else if (current.getKind().isField() && node.getName().toString().equals(newName)) {
             result = true;
         }
         return super.visitIdentifier(node, p);
+    }
+    
+    public boolean hasRefernces() {
+        return result;
     }
 }

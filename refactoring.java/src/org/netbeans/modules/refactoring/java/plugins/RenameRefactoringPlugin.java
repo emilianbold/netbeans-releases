@@ -682,7 +682,7 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
         Element var = info.getTrees().getElement(tp);
         lookup.scan(scopeBlok, var);
 
-        if (lookup.result)
+        if (lookup.hasRefernces())
             return new MessageFormat(getString("ERR_LocVariableClash")).format(
                 new Object[] {newName}
             );
