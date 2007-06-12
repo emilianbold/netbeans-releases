@@ -61,7 +61,7 @@ public class ParametersTableModel implements TableModel{
     public boolean isCellEditable(int rowIndex, int columnIndex) {
         switch(columnIndex) {
         case 0:
-            return false;
+            return true;
         case 1:
             return false;
         default:
@@ -87,7 +87,9 @@ public class ParametersTableModel implements TableModel{
         if (rowIndex>=0 && rowIndex<getRowCount()) {
             switch(columnIndex) {
             case 0:
-                throw new IllegalArgumentException("");
+                //validate aValue
+                //method.getParams().get(rowIndex).setName(aValue);
+                break;
             case 1:
                 throw new IllegalArgumentException("");
             default:
