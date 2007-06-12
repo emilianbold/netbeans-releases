@@ -27,7 +27,8 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.StringTokenizer;
-import org.openide.ErrorManager;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.util.Utilities;
 
 /**
@@ -84,22 +85,22 @@ public class Asenv {
                 line = bReader.readLine(); 
             } 
         } catch (FileNotFoundException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,ex);
+            Logger.getLogger(Asenv.class.getName()).log(Level.INFO,null,ex);
         } catch (IOException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,ex);
+            Logger.getLogger(Asenv.class.getName()).log(Level.INFO,null,ex);
         } finally {
             if (null != bReader) {
                 try {
                     bReader.close();
                 } catch (IOException ioe) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,ioe);
+                    Logger.getLogger(Asenv.class.getName()).log(Level.INFO,null,ioe);
                 }
             }
             if (null != fReader) {
                 try {
                     fReader.close();
                 } catch (IOException ioe) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,ioe);
+                    Logger.getLogger(Asenv.class.getName()).log(Level.INFO,null,ioe);
                 }
             }
         }
