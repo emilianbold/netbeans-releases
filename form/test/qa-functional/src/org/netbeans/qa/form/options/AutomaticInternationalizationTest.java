@@ -33,7 +33,7 @@ import org.netbeans.qa.form.ExtJellyTestCase;
 import java.util.*;
 
 /**
- * Automatic insternationalization test
+ * Automatic internationalization test
  *
  * @author Jiri Vagner
  */
@@ -85,7 +85,7 @@ public class AutomaticInternationalizationTest extends ExtJellyTestCase {
         
         options.selectOption("Editing|GUI Builder"); // NOI18N
 
-        Property property = new Property(options.getPropertySheet("Editing|GUI Builder"), "Automatic Internationalization"); // NOI18N
+        Property property = new Property(options.getPropertySheet("Editing|GUI Builder"), "Automatic Resource Management"); // NOI18N
         property.setValue(String.valueOf( enabled ? "On" : "Off"));
         options.close();
         waitAMoment();        
