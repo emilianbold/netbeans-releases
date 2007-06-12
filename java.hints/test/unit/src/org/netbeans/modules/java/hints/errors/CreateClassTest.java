@@ -68,7 +68,7 @@ public class CreateClassTest extends ErrorHintsTestBase {
                        "package test; public class Test {public static void test() {Test.NonExisting x;}}",
                        94 - 25,
                        "CreateInnerClass:test.Test.NonExisting:[private, static]:CLASS",
-                       "package test; public class Test { private static class NonExisting { public NonExisting() { } } public static void test() {Test.NonExisting x;}}");
+                       "package test; public class Test {public static void test() {Test.NonExisting x;} private static class NonExisting { public NonExisting() { } } }");
     }
     
     public void testCreateInnerClassForNewClass() throws Exception {
@@ -80,7 +80,7 @@ public class CreateClassTest extends ErrorHintsTestBase {
                        "package test; public class Test {public static void test() {new Test.NonExisting(1);}}",
                        100 - 25,
                        "CreateInnerClass:test.Test.NonExisting:[private, static]:CLASS",
-                       "package test; public class Test { private static class NonExisting { public NonExisting(int i) { } } public static void test() {new Test.NonExisting(1);}}");
+                       "package test; public class Test {public static void test() {new Test.NonExisting(1);} private static class NonExisting { public NonExisting(int i) { } } }");
     }
     
     public void testCreateClassTypeParameter() throws Exception {
@@ -96,7 +96,7 @@ public class CreateClassTest extends ErrorHintsTestBase {
                        "package test; public class Test {public static class X implements Test.NonExisting {}}",
                        119 - 43,
                        "CreateInnerClass:test.Test.NonExisting:[private, static]:INTERFACE",
-                       "package test; public class Test { private static interface NonExisting { } public static class X implements Test.NonExisting {}}");
+                       "package test; public class Test {public static class X implements Test.NonExisting {} private static interface NonExisting { } }");
     }
     
     public void testPerformCreateForExtends() throws Exception {
