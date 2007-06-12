@@ -23,10 +23,11 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.enterprise.deploy.spi.DeploymentManager;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.AntDeploymentProvider;
 import org.netbeans.modules.j2ee.sun.ide.dm.SunDeploymentManager;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
 
 /**
@@ -58,7 +59,7 @@ public class AntDeploymentProviderImpl implements AntDeploymentProvider {
             try {
                 dm.storeAntDeploymentProperties(file, true);
             } catch (IOException ioe) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
+                Logger.getLogger(AntDeploymentProviderImpl.class.getName()).log(Level.INFO, null,ioe);      //NOI18N
             }
         }
         return file;
