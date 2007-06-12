@@ -50,7 +50,7 @@ import javax.swing.text.JTextComponent;
  *
  * @author Soot Phengsy
  */
-public class FileCompletionPopup extends JPopupMenu{
+public class FileCompletionPopup extends JPopupMenu {
     
     private JList list;
     private JTextField textField;

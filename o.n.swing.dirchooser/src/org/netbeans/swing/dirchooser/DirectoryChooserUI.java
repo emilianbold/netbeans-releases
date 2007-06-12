@@ -1801,7 +1801,9 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
                 }
             }
             
-            if(filenameTextField.isFocusOwner() && evt.getKeyCode() == KeyEvent.VK_ESCAPE) {
+            if(filenameTextField.isFocusOwner() && 
+                    (completionPopup == null || !completionPopup.isVisible()) &&
+                    evt.getKeyCode() == KeyEvent.VK_ESCAPE) {
                 fileChooser.cancelSelection();
             }
         }
