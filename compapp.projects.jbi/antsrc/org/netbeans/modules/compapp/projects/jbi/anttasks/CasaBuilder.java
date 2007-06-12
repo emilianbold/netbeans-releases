@@ -1920,12 +1920,15 @@ public class CasaBuilder implements JbiConstants, CasaConstants {
                                 interfaceNS = suJbiDocument.getDocumentElement().getAttribute("xmlns:"+prefix);
                                 interfaceName = interfaceName.substring(idx+1);
                             }
-                            
-                            Endpoint endpoint = new Endpoint(endpointName,
-                                    new QName(serviceNS, serviceName),
-                                    new QName(interfaceNS, interfaceName),
-                                    e.getLocalName().equals("consumes"));
-                            suEndpointList.add(endpoint);
+
+                            // 06/05/07, T. Li skip extension elements.
+                            if ((interfaceName != null) && (interfaceName.length() > 0)) {
+                                Endpoint endpoint = new Endpoint(endpointName,
+                                        new QName(serviceNS, serviceName),
+                                        new QName(interfaceNS, interfaceName),
+                                        e.getLocalName().equals("consumes"));
+                                suEndpointList.add(endpoint);
+                            }
                         }
                     }
                 }

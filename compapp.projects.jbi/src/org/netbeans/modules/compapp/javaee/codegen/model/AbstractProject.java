@@ -100,7 +100,16 @@ public class AbstractProject implements JavaEEProject{
     
     // resources related
     private static final String RES_XML_ENTRY = "META-INF/sun-resources.xml"; //NOI18N
-    
+
+    // 06/04/07, JavaEE SE endpoint mapping
+    private static final String MAPPING_PREFIX = "javaee_" ;     // No I18N
+    private static final String MAPPING_EXT = "javaee_ext" ;     // No I18N
+    private static final String MAPPING_NS = "http://javaee.serviceengine.sun.com/endpoint/naming/extension" ;     // No I18N
+    private static final String MAPPING_ELEMS = "ept-mappings" ;     // No I18N
+    private static final String MAPPING_ELEM = "ept-mapping" ;     // No I18N
+    private static final String MAPPING_JAVA_ELEM = "java-ept" ;     // No I18N
+    private static final String MAPPING_WSDL_ELEM = "wsdl-ept" ;     // No I18N
+
     private static Logger logger = Logger.getLogger(AbstractProject.class.getName());
     
     public AbstractProject(String nJarPath) {
@@ -398,13 +407,14 @@ public class AbstractProject implements JavaEEProject{
             String prefix = null;
             
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            // factory.setNamespaceAware(true);
             DocumentBuilder builder = factory.newDocumentBuilder();
             Document document = builder.newDocument();
-            
+
             Element elemJbi = (Element) document.createElement(ELEM_JBI);
             Element elemSvcs = null;
             Element elemConsumesProvides = null;
-            
+
             elemJbi.setAttribute("xmlns", JBI_DEFAULT_NS); // No I18N
             String nsPrefix = null;
             itr = ns.entrySet().iterator();
@@ -413,13 +423,17 @@ public class AbstractProject implements JavaEEProject{
                 nsPrefix = "xmlns:" + (String) entry.getValue(); // No I18N
                 elemJbi.setAttribute(nsPrefix, (String)entry.getKey());
             }
+            elemJbi.setAttribute("xmlns:"+MAPPING_EXT, MAPPING_NS);
             elemJbi.setAttribute("version", JBI_VERSION); // No I18N
             document.appendChild(elemJbi);
             
             elemSvcs = document.createElement(ELEM_SERVICES);
             elemSvcs.setAttribute("binding-component", "false"); // No I18N
             elemJbi.appendChild(elemSvcs);
-            
+
+            // Element elemMappings = document.createElementNS(MAPPING_NS, MAPPING_ELEMS); // No I18N
+            Element elemMappings = document.createElement(MAPPING_EXT+":"+MAPPING_ELEMS); // No I18N
+
             itrEpts = epts.iterator();
             // Order is important for schematically valid jbi.xml file.
             // Provider should come before consumers
@@ -428,13 +442,29 @@ public class AbstractProject implements JavaEEProject{
                 if (!excludedEpts.contains(ept)){
                     if (ept.getEndPointType().equals(Endpoint.EndPointType.Provider)){
                         elemConsumesProvides = document.createElement("provides"); // No I18N
-                        elemConsumesProvides.setAttribute("endpoint-name", ept.getEndPointName());  // No I18N
+                        elemConsumesProvides.setAttribute("endpoint-name", MAPPING_PREFIX + ept.getEndPointName());  // No I18N
                         prefix = ns.get(ept.getInterfaceName().getNamespaceURI());
                         elemConsumesProvides.setAttribute("interface-name", prefix + ":" + ept.getInterfaceName().getLocalPart()); // No I18N
-                        
+
+                        Element elemMapping = document.createElement(MAPPING_EXT+":"+ MAPPING_ELEM); // No I18N
+                        Element elemJavaEpt = document.createElement(MAPPING_EXT+":"+ MAPPING_JAVA_ELEM); // No I18N
+                        Element elemWsdlEpt = document.createElement(MAPPING_EXT+":"+ MAPPING_WSDL_ELEM); // No I18N
+                        elemJavaEpt.setAttribute("endpoint-name", MAPPING_PREFIX + ept.getEndPointName());  // No I18N
+                        elemWsdlEpt.setAttribute("endpoint-name", ept.getEndPointName());  // No I18N
+                        elemJavaEpt.setAttribute("interface-name", prefix + ":" + ept.getInterfaceName().getLocalPart()); // No I18N
+                        elemWsdlEpt.setAttribute("interface-name", prefix + ":" + ept.getInterfaceName().getLocalPart()); // No I18N
+
                         prefix = ns.get(ept.getServiceName().getNamespaceURI());
                         elemConsumesProvides.setAttribute("service-name", prefix + ":" + ept.getServiceName().getLocalPart()); // No I18N
                         elemSvcs.appendChild(elemConsumesProvides);
+
+                        elemJavaEpt.setAttribute("service-name", prefix + ":" + ept.getServiceName().getLocalPart()); // No I18N
+                        elemWsdlEpt.setAttribute("service-name", prefix + ":" + ept.getServiceName().getLocalPart()); // No I18N
+                        elemJavaEpt.setAttribute("type", "provider");  // No I18N
+                        elemWsdlEpt.setAttribute("type", "provider");  // No I18N
+                        elemMapping.appendChild(elemJavaEpt);
+                        elemMapping.appendChild(elemWsdlEpt);
+                        elemMappings.appendChild(elemMapping);
                     }
                 }
             }
@@ -444,17 +474,34 @@ public class AbstractProject implements JavaEEProject{
                 ept = itrEpts.next();
                 if (!excludedEpts.contains(ept)){                    
                     if (ept.getEndPointType().equals(Endpoint.EndPointType.Consumer)){
-                        elemConsumesProvides = document.createElement("consumes"); // No I18N                        
-                        elemConsumesProvides.setAttribute("endpoint-name", ept.getEndPointName());  // No I18N
+                        elemConsumesProvides = document.createElement("consumes"); // No I18N
+                        elemConsumesProvides.setAttribute("endpoint-name", MAPPING_PREFIX + ept.getEndPointName());  // No I18N
                         prefix = ns.get(ept.getInterfaceName().getNamespaceURI());
                         elemConsumesProvides.setAttribute("interface-name", prefix + ":" + ept.getInterfaceName().getLocalPart()); // No I18N
-                        
+
+                        Element elemMapping = document.createElement(MAPPING_EXT+":"+ MAPPING_ELEM); // No I18N
+                        Element elemJavaEpt = document.createElement(MAPPING_EXT+":"+ MAPPING_JAVA_ELEM); // No I18N
+                        Element elemWsdlEpt = document.createElement(MAPPING_EXT+":"+ MAPPING_WSDL_ELEM); // No I18N
+                        elemJavaEpt.setAttribute("endpoint-name", MAPPING_PREFIX + ept.getEndPointName());  // No I18N
+                        elemWsdlEpt.setAttribute("endpoint-name", ept.getEndPointName());  // No I18N
+                        elemJavaEpt.setAttribute("interface-name", prefix + ":" + ept.getInterfaceName().getLocalPart()); // No I18N
+                        elemWsdlEpt.setAttribute("interface-name", prefix + ":" + ept.getInterfaceName().getLocalPart()); // No I18N
+
                         prefix = ns.get(ept.getServiceName().getNamespaceURI());
                         elemConsumesProvides.setAttribute("service-name", prefix + ":" + ept.getServiceName().getLocalPart()); // No I18N
                         elemSvcs.appendChild(elemConsumesProvides);
+
+                        elemJavaEpt.setAttribute("service-name", prefix + ":" + ept.getServiceName().getLocalPart()); // No I18N
+                        elemWsdlEpt.setAttribute("service-name", prefix + ":" + ept.getServiceName().getLocalPart()); // No I18N
+                        elemJavaEpt.setAttribute("type", "consumer");  // No I18N
+                        elemWsdlEpt.setAttribute("type", "consumer");  // No I18N
+                        elemMapping.appendChild(elemJavaEpt);
+                        elemMapping.appendChild(elemWsdlEpt);
+                        elemMappings.appendChild(elemMapping);
                     }
                 }
             }
+            elemSvcs.appendChild(elemMappings);
 
             TransformerFactory tFactory = TransformerFactory.newInstance();
             Transformer transformer = tFactory.newTransformer();
