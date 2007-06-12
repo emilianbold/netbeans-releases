@@ -28,8 +28,6 @@ import javax.swing.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import org.netbeans.modules.vmd.api.model.presenters.actions.DeletePresenter;
-import org.netbeans.modules.vmd.api.model.presenters.actions.DeleteSupport;
 
 /**
  * @author David Kaspar
@@ -73,6 +71,9 @@ class ConfirmDeletionPanel extends javax.swing.JPanel {
             model.addElement ("<html>" + name);
         panel.dependent.setModel (model);
 
+        panel.jLabel3.setVisible (model.size () > 0);
+        panel.jScrollPane2.setVisible (model.size () > 0);
+
         NotifyDescriptor descriptor = new NotifyDescriptor.Confirmation (panel, NotifyDescriptor.YES_NO_OPTION);
         descriptor.setTitle (NbBundle.getMessage (ConfirmDeletionPanel.class, "TITLE_DeleteDialog")); // NOI18N
 
@@ -93,8 +94,8 @@ class ConfirmDeletionPanel extends javax.swing.JPanel {
         javax.swing.JScrollPane jScrollPane1 = new javax.swing.JScrollPane();
         selected = new javax.swing.JList();
         javax.swing.JLabel jLabel2 = new javax.swing.JLabel();
-        javax.swing.JLabel jLabel3 = new javax.swing.JLabel();
-        javax.swing.JScrollPane jScrollPane2 = new javax.swing.JScrollPane();
+        jLabel3 = new javax.swing.JLabel();
+        jScrollPane2 = new javax.swing.JScrollPane();
         dependent = new javax.swing.JList();
 
         setLayout(new java.awt.GridBagLayout());
@@ -104,7 +105,7 @@ class ConfirmDeletionPanel extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         add(jLabel1, gridBagConstraints);
-        jLabel1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ConfirmDeletionPanel.class, "jLabel1.AccessibleContext.accessibleName")); // NOI18N
+        jLabel1.getAccessibleContext().setAccessibleName(null);
 
         jScrollPane1.setViewportView(selected);
 
@@ -148,6 +149,8 @@ class ConfirmDeletionPanel extends javax.swing.JPanel {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JList dependent;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JList selected;
     // End of variables declaration//GEN-END:variables
     private static boolean isSilent (DesignComponent component) {
