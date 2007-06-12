@@ -349,7 +349,7 @@ public class MasterPanel implements WizardDescriptor.Panel {
     private void tableComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tableComboActionPerformed
         J2EEUtils.DBColumnInfo table = getTable();
         DatabaseConnection connection = getConnection();
-        Connection con = ((connection == null) || !table.isValid()) ? null : connection.getJDBCConnection();
+        Connection con = ((connection == null) || (table == null) || !table.isValid()) ? null : connection.getJDBCConnection();
         try {
             DefaultListModel model = (DefaultListModel)availableList.getModel();
             model.clear();
