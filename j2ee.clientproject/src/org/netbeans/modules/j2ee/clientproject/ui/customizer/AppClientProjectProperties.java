@@ -685,7 +685,7 @@ public class AppClientProjectProperties {
                     helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProps);
                     ProjectManager.getDefault().saveProject(project);
                 } catch (IOException e) {
-                    Logger.getLogger("global").notify();
+                    Exceptions.printStackTrace(e);
                 }
             }
         });
