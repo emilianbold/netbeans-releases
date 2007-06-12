@@ -23,78 +23,45 @@
  * Created on July 25, 2005, 10:28 AM
  */
 package org.netbeans.modules.mobility.end2end.multiview;
-import java.awt.Color;
-import java.awt.GridBagConstraints;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.lang.reflect.Modifier;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-import javax.swing.JComponent;
-import javax.swing.border.LineBorder;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
-//import org.netbeans.jmi.javamodel.Element;
-//import org.netbeans.jmi.javamodel.Feature;
-//import org.netbeans.jmi.javamodel.JavaClass;
-//import org.netbeans.jmi.javamodel.Method;
-//import org.netbeans.jmi.javamodel.Parameter;
-//import org.netbeans.jmi.javamodel.UnresolvedClass;
 import org.netbeans.modules.mobility.end2end.E2EDataObject;
-import org.netbeans.modules.mobility.end2end.classdata.AbstractService;
-import org.netbeans.modules.mobility.end2end.classdata.ClassData;
-import org.netbeans.modules.mobility.end2end.classdata.ClassService;
-import org.netbeans.modules.mobility.end2end.classdata.OperationData;
-import org.netbeans.modules.mobility.end2end.classdata.PortData;
-import org.netbeans.modules.mobility.end2end.classdata.TypeData;
-import org.netbeans.modules.mobility.end2end.classdata.WSDLService;
+import org.netbeans.modules.mobility.end2end.classdata.*;
 import org.netbeans.modules.mobility.end2end.client.config.Configuration;
 import org.netbeans.modules.mobility.end2end.ui.treeview.MethodCheckedTreeBeanView;
 import org.netbeans.modules.mobility.end2end.util.ServiceNodeManager;
 import org.netbeans.modules.mobility.end2end.util.Util;
 import org.netbeans.modules.mobility.end2end.util.WebServiceNodeManager;
-//import org.netbeans.modules.java.ui.nodes.SourceNodes;
 import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientView;
-//import org.netbeans.modules.javacore.api.JavaModel;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Client;
-//import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
-import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModel;
-import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModeler;
-import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModelerFactory;
-import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlOperation;
-import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlParameter;
-import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlService;
+import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.*;
 import org.netbeans.modules.websvc.api.registry.WebServicesRegistryView;
-//import org.netbeans.modules.websvc.core.PortInformation;
-//import org.netbeans.modules.websvc.core.ServiceInformation;
 import org.netbeans.modules.xml.multiview.Error;
 import org.netbeans.modules.xml.multiview.ui.SectionInnerPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionView;
-import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
-import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
-import org.openide.nodes.Node;
-import org.openide.nodes.NodeNotFoundException;
-import org.openide.nodes.NodeOp;
+import org.openide.nodes.*;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
+import javax.swing.*;
+import javax.swing.border.LineBorder;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import java.awt.*;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
+import java.util.List;
+
 
 /**
  *
- * @author  Michal Skvor
+ * @author  Michal Skvor, Bohemius
  */
 public class ServicesPanel extends SectionInnerPanel implements ExplorerManager.Provider, PropertyChangeListener {
     
@@ -357,34 +324,33 @@ public class ServicesPanel extends SectionInnerPanel implements ExplorerManager.
     }
     
     private void setSelectedMethods() {
-        //todo should distinguish between WS and classes
         if( !wsdl ) {
-//            final AbstractService classService = configuration.getServices().get(0);
-//            final List<ClassData> classes = classService.getData();
-//            if (classes == null) return;
-//            final Error error = new Error( Error.TYPE_WARNING, Error.MISSING_VALUE_MESSAGE,
-//                                    NbBundle.getMessage( ServicesPanel.class, "ERR_ServiceMethodNotFound" ), this );
-//            for ( final ClassData classData : classes ) {
-//                final String className = classData.getClassName();
-//                final String pkgName = classData.getPackageName();
-//                final List<OperationData> methods = classData.getOperations();
-//                for ( final OperationData methodData : methods ) {
-//                    final String methodName = methodData.getName();
-//                    try {
-//                        checkedTreeView.setState(
-//                                NodeOp.findPath(rootNode, new String[]{pkgName, className, methodName}), true );
-//                        checkedTreeView.expandNode(
-//                                NodeOp.findPath(rootNode, new String[]{pkgName, className }));
-//                    } catch (NodeNotFoundException ex) {
-//                        //System.err.println(" SETTING ERROR OUTPUT");
-//                        final SectionView sectionView = getSectionView();
-//                        if (sectionView != null){
-//                            sectionView.getErrorPanel().setError( error );
-//                        }
-//                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-//                    }
-//                }
-//            }
+            final AbstractService classService = configuration.getServices().get(0);
+            final List<ClassData> classes = classService.getData();
+            if (classes == null) return;
+            final Error error = new Error( Error.TYPE_WARNING, Error.MISSING_VALUE_MESSAGE,
+                                    NbBundle.getMessage( ServicesPanel.class, "ERR_ServiceMethodNotFound" ), this );
+            for ( final ClassData classData : classes ) {
+                final String className = classData.getClassName();
+                final String pkgName = classData.getPackageName();
+                final List<OperationData> methods = classData.getOperations();
+                for ( final OperationData methodData : methods ) {
+                    final String methodName = methodData.getName();
+                    try {
+                        checkedTreeView.setState(
+                                NodeOp.findPath(rootNode, new String[]{pkgName, className, methodName}), true );
+                        checkedTreeView.expandNode(
+                                NodeOp.findPath(rootNode, new String[]{pkgName, className }));
+                    } catch ( NodeNotFoundException ex) {
+                        //System.err.println(" SETTING ERROR OUTPUT");
+                        final SectionView sectionView = getSectionView();
+                        if (sectionView != null){
+                            sectionView.getErrorPanel().setError( error );
+                        }
+                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                    }
+                }
+            }
         } else {            
 //            //assert dataObject.getConfiguration().getServices().length == 1;
             final WSDLService wsdlService = (WSDLService)configuration.getServices().get(0); //TODO we are assuming only one service
@@ -418,52 +384,48 @@ public class ServicesPanel extends SectionInnerPanel implements ExplorerManager.
     
     public void getSelectedMethods() {
 //        //todo should distinguish between WS and classes
-        if (!wsdl){
-//            final List<ClassData> classData = new ArrayList<ClassData>();
-//            final Node packageNodes[] = rootNode.getChildren().getNodes();
-//            
-//            JavaModel.getJavaRepository().beginTrans(false);
-//            try{
-//                for ( Node pkNode : packageNodes ) {    
-//                    final Node classNodes[] = pkNode.getChildren().getNodes();
-//                    for ( Node clNode : classNodes ) {    
-//                        final Node methodNodes[] = clNode.getChildren().getNodes();
-//                        final List<OperationData> methodData = new ArrayList<OperationData>();
-//                        for ( Node node : methodNodes ) {
-//                            if( checkedTreeView.getState( node ).equals( MethodCheckedTreeBeanView.SELECTED )) {
-//                                final Method methodElement = (Method)node.getLookup().lookup(Element.class);
-//                                final List<Parameter> params = methodElement.getParameters();
-//                                final List<TypeData> newParams = new ArrayList<TypeData>(params.size());
-//                                for ( final Parameter param : params ) {
-//                                    //have a list of parameters for each method
-//                                    final TypeData td = new TypeData(  param.getName(), param.getType().getName());
-//                                    newParams.add( td );
-//                                }
-//                                final OperationData md = new OperationData( methodElement.getName());
-//                                md.setReturnType( methodElement.getType().getName());
-//                                md.setParameterTypes( newParams );
-//                                methodData.add( md );
-//                            }
-//                        }
-//                        if (methodData.size() != 0){
-//                            final String classFQN = ((JavaClass)clNode.getLookup().lookup(Element.class)).getName();
-//                            //System.err.println(" - FQN: " + classFQN );
-//                            final ClassData cd = new ClassData( classFQN );
-//                            cd.setOperations( methodData );
-//                            classData.add( cd );
-//                        }
-//                    }
-//                }
-//                final ClassService classService = (ClassService)configuration.getServices().get(0);
-//                classService.setData( classData );
-//                final List<AbstractService> services = new ArrayList<AbstractService>();
-//                services.add(classService);
-//                configuration.setServices( services );
-//            } catch( Exception ex){
-//                ErrorManager.getDefault().notify(ex);
-//            } finally {
-//                JavaModel.getJavaRepository().endTrans();
-//            }
+        if (!wsdl) {
+            final List<ClassData> classData = new ArrayList<ClassData>();
+            final Node packageNodes[] = rootNode.getChildren().getNodes();
+
+               for ( Node pkNode : packageNodes ) {
+                    final Node classNodes[] = pkNode.getChildren().getNodes();
+                    for ( Node clNode : classNodes ) {
+                        final Node methodNodes[] = clNode.getChildren().getNodes();
+                        final List<OperationData> methodData = new ArrayList<OperationData>();
+                        for ( Node node : methodNodes ) {
+                            if( checkedTreeView.getState( node ).equals( MethodCheckedTreeBeanView.SELECTED )) {
+                                final org.netbeans.modules.mobility.e2e.classdata.MethodData mthData = (
+                                        org.netbeans.modules.mobility.e2e.classdata.MethodData) node.getLookup().lookup(org.netbeans.modules.mobility.e2e.classdata.MethodData.class);
+                                final List<org.netbeans.modules.mobility.e2e.classdata.MethodParameter> params = mthData.getParameters();
+                                final List<TypeData> newParams = new ArrayList<TypeData>(params.size());
+                                for ( final org.netbeans.modules.mobility.e2e.classdata.MethodParameter param : params ) {
+                                    //have a list of parameters for each method
+                                    final TypeData td = new TypeData( param.getName(), param.getType().getName());
+                                    newParams.add( td );
+                                }
+                                final OperationData od = new OperationData( mthData.getName());
+                                od.setReturnType( mthData.getReturnType().getName());
+                                od.setParameterTypes( newParams );
+                                methodData.add( od );
+                            }
+                        }
+                        if (methodData.size() != 0){
+                            final String classFQN = ((org.netbeans.modules.mobility.e2e.classdata.ClassData)
+                                clNode.getLookup().lookup(org.netbeans.modules.mobility.e2e.classdata.ClassData.class)).getFullyQualifiedName();
+
+                            final ClassData cd = new ClassData( classFQN );
+                            cd.setOperations( methodData );
+                            classData.add( cd );
+                        }
+                    }
+                }
+                final ClassService classService = (ClassService)configuration.getServices().get(0);
+                classService.setData( classData );
+                final List<AbstractService> services = new ArrayList<AbstractService>();
+                services.add(classService);
+                configuration.setServices( services );
+
         } else { //we are wsdl
             final List<AbstractService> servicesData = new ArrayList<AbstractService>();
             final Node serviceNodes[] = rootNode.getChildren().getNodes();

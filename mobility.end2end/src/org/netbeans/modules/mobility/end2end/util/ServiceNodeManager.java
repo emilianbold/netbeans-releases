@@ -37,6 +37,7 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Utilities;
+import org.openide.util.lookup.Lookups;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -107,7 +108,7 @@ public class ServiceNodeManager {
         int i = 0;
 
         for ( ClassData clsData : classes ) {
-            nodes[i] = new ClassDataNode( clsData.getName(), createMethodNodes( clsData.getMethods() ) );
+            nodes[i] = new ClassDataNode( clsData.getName(), createMethodNodes( clsData.getMethods() ), clsData );
             int nOfInvalidMethods=0;
             for (Node node: nodes[i].getChildren().getNodes()) {
                 Boolean isValid=(Boolean) node.getValue( NODE_VALIDITY_ATTRIBUTE);
@@ -150,7 +151,7 @@ public class ServiceNodeManager {
                     nodeText.append( ")" );
                 j++;
             }
-            nodes[i] = new MethodDataNode( mthData.getName(), nodeText.toString() );
+            nodes[i] = new MethodDataNode( mthData.getName(), nodeText.toString() , mthData);
             nodes[i].setValue(NODE_VALIDITY_ATTRIBUTE,Boolean.valueOf( isValid));
             i++;
         }
@@ -189,8 +190,8 @@ public class ServiceNodeManager {
 
         final Image CLASS_BADGE = Utilities.loadImage( "org/netbeans/spi/java/project/support/ui/packageBadge.gif" );
 
-        protected ClassDataNode( String className, Children children ) {
-            super( children );
+        protected ClassDataNode( String className, Children children, ClassData clsData ) {
+            super( children , Lookups.singleton( clsData));
 
             setName( className );
             setDisplayName( className );
@@ -234,8 +235,8 @@ public class ServiceNodeManager {
 
         final Image METHOD_BADGE = Utilities.loadImage( "org/netbeans/spi/java/project/support/ui/packageBadge.gif" ); //NOI18N
 
-        protected MethodDataNode( String methodName, String methodDescription ) {
-            super( Children.LEAF );
+        protected MethodDataNode( String methodName, String methodDescription, MethodData mthData ) {
+            super( Children.LEAF , Lookups.singleton( mthData));
 
             setName( methodName );
             setDisplayName( methodDescription );
