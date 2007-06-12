@@ -200,6 +200,9 @@ private static ServiceModelTest DEFAULT_LOOKUP = null;
             model.setServiceName("addService");
             model.setName("add");
             model.setPortName("addPort");
+            model.getOperations().get(0).setOperationName("sum");
+            model.getOperations().get(1).setOperationName("echo");
+            
             String res1 = copyFileToString(FileUtil.toFile(sourceFileObject));
             System.out.println("Changed AddNumbers.java:");
             System.out.println(".....................................");
@@ -208,6 +211,8 @@ private static ServiceModelTest DEFAULT_LOOKUP = null;
             model.setServiceName(null);
             model.setPortName(null);
             model.setName(null);
+            model.getOperations().get(0).setOperationName(null);
+            model.getOperations().get(1).setOperationName("echo-operation");
             String res2 = copyFileToString(FileUtil.toFile(sourceFileObject));
             System.out.println("Original AddNumbers.java:");
             System.out.println(".....................................");

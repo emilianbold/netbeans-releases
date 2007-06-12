@@ -29,7 +29,7 @@ public class AddNumbers {
      * @param y second number
      * @return SUM of 2 numbers
      */    
-    @WebMethod
+    @WebMethod()
     @WebResult(name="sum", targetNamespace = "http://www.netbeans.org/sum")
     public int add(@WebParam(name = "x", targetNamespace = "http://www.netbeans.org/sum/x")
                    int x,
