@@ -67,6 +67,7 @@ import org.netbeans.modules.visualweb.api.designer.cssengine.CssValue;
 import org.netbeans.modules.visualweb.designer.jsf.GridHandler;
 import org.netbeans.modules.visualweb.designer.jsf.JsfDesignerPreferences;
 import org.netbeans.spi.navigator.NavigatorLookupHint;
+import org.netbeans.spi.navigator.NavigatorLookupPanelsPolicy;
 import org.netbeans.spi.palette.PaletteController;
 import org.openide.ErrorManager;
 import org.openide.explorer.ExplorerUtils;
@@ -80,7 +81,6 @@ import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 import org.openide.windows.TopComponent;
-import org.openide.windows.WindowManager;
 
 import org.netbeans.modules.visualweb.designer.jsf.JsfForm;
 import org.netbeans.modules.visualweb.designer.jsf.JsfSupportUtilities;
@@ -113,6 +113,8 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
 //    static final boolean SHOW_TRAY = (System.getProperty("rave.showTray") != null); // NOI18N
 
     private static final NavigatorLookupHint NAVIGATOR_HINT = new DesignerNavigatorLookupHint();
+    
+    private static final NavigatorLookupPanelsPolicy NAVIGATOR_LOOKUP_PANELS_POLICY = new DesignerNavigatorLookupPanelsPolicy();
 
 
 //    // XXX Get rid of this suspicious impl.
@@ -2605,6 +2607,9 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
             objects.add(jspDataObject);
             
             objects.add(jsfTopComponent.NAVIGATOR_HINT);
+            
+            // Also add the policy to show only panels according to the provided hints.
+            objects.add(jsfTopComponent.NAVIGATOR_LOOKUP_PANELS_POLICY);
   
             PaletteController paletteController = jsfTopComponent.getJsfForm().getPaletteController();
             if (paletteController == null) {
@@ -2633,4 +2638,13 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
     private static Logger getLogger() {
         return Logger.getLogger(JsfTopComponent.class.getName());
     }
+    
+    
+    private static class DesignerNavigatorLookupPanelsPolicy implements NavigatorLookupPanelsPolicy {
+
+        public int getPanelsPolicy() {
+            return NavigatorLookupPanelsPolicy.LOOKUP_HINTS_ONLY;
+        }
+        
+    } // DesignerNavigatorLooupPanelPolicy
 }
