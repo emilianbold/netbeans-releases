@@ -57,6 +57,7 @@ import org.netbeans.modules.j2ee.dd.api.web.WelcomeFileList;
 import org.netbeans.modules.j2ee.dd.impl.common.annotation.CommonAnnotationHelper;
 import org.netbeans.modules.j2ee.dd.spi.MetadataUnit;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.JavaContextListener;
 import org.openide.filesystems.FileObject;
 import org.xml.sax.SAXParseException;
 
@@ -64,10 +65,12 @@ import org.xml.sax.SAXParseException;
  *
  * @author Andrei Badea
  */
-public class WebAppImpl implements WebApp {
+public class WebAppImpl implements WebApp, JavaContextListener {
 
     private final AnnotationModelHelper helper;
     private WebApp ddRoot;
+
+    // transient, set to null in javaContextLeft()
     private ResourceRef[] resourceRefs;
     private ResourceEnvRef[] resourceEnvRefs = null;
     private EnvEntry[] envEntries = null;
@@ -75,6 +78,14 @@ public class WebAppImpl implements WebApp {
 
     public WebAppImpl(AnnotationModelHelper helper) {
         this.helper = helper;
+        helper.addJavaContextListener(this);
+    }
+
+    public void javaContextLeft() {
+        resourceRefs = null;
+        resourceEnvRefs = null;
+        envEntries = null;
+        messageDestinationRefs = null;
     }
 
     void ensureRoot(MetadataUnit metadataUnit) throws IOException {
