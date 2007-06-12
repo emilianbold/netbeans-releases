@@ -1321,14 +1321,8 @@ public class PropertySheet extends JPanel {
             ) {
                 //XXX SHOULD NOT BE FIRED TO NODELISTENERS
                 Node n = (Node) evt.getSource();
-
-                /*                fallbackTitle = n.getDisplayName();
-                                fallbackDescription = n.getShortDescription();
-                                if (infoPanel != null) {
-                                    table.fireChange();
-                                    infoPanel.getBottomComponent().repaint();
-                                }
-                                */
+                String description = (String) n.getValue("nodeDescription"); //NOI18N
+                psheet.setDescription(n.getDisplayName(), (description == null) ? n.getShortDescription() : description);
             }
              /*else {
               if (evt.getPropertyName() == null) {
