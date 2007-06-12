@@ -39,6 +39,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JSeparator;
@@ -86,7 +88,6 @@ import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
-import org.openide.ErrorManager;
 import org.openide.actions.FindAction;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
@@ -106,6 +107,7 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -241,8 +243,8 @@ public class AppClientLogicalViewProvider implements LogicalViewProvider {
             return (javaSource != null && new SpecificationVersion(javaSource).compareTo(platformVersion)>0)
             || (javaTarget != null && new SpecificationVersion(javaTarget).compareTo(platformVersion)>0);
         } catch (NumberFormatException nfe) {
-            ErrorManager.getDefault().log("Invalid javac.source: "+javaSource+" or javac.target: "+javaTarget+" of project:"
-                    +this.project.getProjectDirectory().getPath());
+            Logger.getLogger("global").log(Level.INFO,
+                    "Invalid javac.source: " + javaSource + " or javac.target: " + javaTarget + " of project:" + this.project.getProjectDirectory().getPath()); // NOI18N
             return true;
         }
     }
@@ -361,9 +363,7 @@ public class AppClientLogicalViewProvider implements LogicalViewProvider {
                     fs.addFileStatusListener(fsl);
                     fileSystemListeners.put(fs, fsl);
                 } catch (FileStateInvalidException e) {
-                    ErrorManager err = ErrorManager.getDefault();
-                    err.annotate(e, ErrorManager.UNKNOWN, "Cannot get " + fo + " filesystem, ignoring...", null, null, null); // NOI18N
-                    err.notify(ErrorManager.INFORMATIONAL, e);
+                    Logger.getLogger("global").log(Level.INFO, null, Exceptions.attachMessage(e, "Cannot get " + fo + " filesystem, ignoring...")); // NOI18N
                 }
             }
         }
@@ -387,7 +387,7 @@ public class AppClientLogicalViewProvider implements LogicalViewProvider {
                     FileObject fo = (FileObject) files.iterator().next();
                     img = fo.getFileSystem().getStatus().annotateIcon(img, type, files);
                 } catch (FileStateInvalidException e) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                    Logger.getLogger("global").log(Level.INFO, null, e);
                 }
             }
             
@@ -409,7 +409,7 @@ public class AppClientLogicalViewProvider implements LogicalViewProvider {
                     FileObject fo = (FileObject) files.iterator().next();
                     img = fo.getFileSystem().getStatus().annotateIcon(img, type, files);
                 } catch (FileStateInvalidException e) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                    Logger.getLogger("global").log(Level.INFO, null, e);
                 }
             }
             
@@ -552,7 +552,7 @@ public class AppClientLogicalViewProvider implements LogicalViewProvider {
                 }
             } catch (DataObjectNotFoundException ex) {
                 // data folder for existing fileobject expected
-                ErrorManager.getDefault().notify(ex);
+                Exceptions.printStackTrace(ex);
             }
             
             actions.add(null);
@@ -613,7 +613,7 @@ public class AppClientLogicalViewProvider implements LogicalViewProvider {
                     BrokenReferencesSupport.showCustomizer(helper.getAntProjectHelper(), resolver, getBreakableProperties(), new String[] {AppClientProjectProperties.JAVA_PLATFORM});
                     run();
                 } catch (IOException ioe) {
-                    ErrorManager.getDefault().notify(ioe);
+                    Exceptions.printStackTrace(ioe);
                 }
             }
             
@@ -768,7 +768,7 @@ public class AppClientLogicalViewProvider implements LogicalViewProvider {
                     wsdlFolder = wsClientSupportImpl.getWsdlFolder(false);
                 }
             } catch (IOException ex) {
-                ErrorManager.getDefault().notify(ex);
+                Exceptions.printStackTrace(ex);
             }
             if (wsdlFolder != null) {
                 wsdlFolder.addFileChangeListener(wsdlListener);

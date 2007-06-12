@@ -21,7 +21,6 @@ package org.netbeans.modules.j2ee.clientproject.queries;
 import java.io.File;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -40,6 +39,7 @@ import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.modules.j2ee.clientproject.SourceRoots;
 import org.netbeans.modules.j2ee.clientproject.ui.customizer.AppClientProjectProperties;
+import org.openide.util.Exceptions;
 
 /**
  * Finds sources corresponding to binaries in a J2SE project.
@@ -103,7 +103,7 @@ public class CompiledSourceForBinaryQuery implements SourceForBinaryQueryImpleme
                 }
             }
         } catch (MalformedURLException malformedURL) {
-            ErrorManager.getDefault().notify(malformedURL);
+            Exceptions.printStackTrace(malformedURL);
         }
         return false;
     }

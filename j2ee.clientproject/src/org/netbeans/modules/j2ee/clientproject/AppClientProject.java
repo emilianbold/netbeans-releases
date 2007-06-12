@@ -28,6 +28,8 @@ import java.net.URI;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -87,7 +89,6 @@ import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
 import org.netbeans.spi.project.ui.support.UILookupMergerSupport;
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
@@ -97,6 +98,7 @@ import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
@@ -372,9 +374,8 @@ public final class AppClientProject implements Project, AntProjectListener, File
         if (fo.getParent ().equals (libFolder)) {
             try {
                 classpathExtender.addArchiveFile(fo);
-            }
-            catch (IOException e) {
-                ErrorManager.getDefault().notify(e);
+            } catch (IOException e) {
+                Exceptions.printStackTrace(e);
             }
         }
     }
@@ -393,7 +394,7 @@ public final class AppClientProject implements Project, AntProjectListener, File
                             try {
                                 ProjectManager.getDefault().saveProject(AppClientProject.this);
                             } catch (IOException e) {
-                                ErrorManager.getDefault().notify(e);
+                                Exceptions.printStackTrace(e);
                             }
                             return null;
                         }
@@ -461,9 +462,9 @@ public final class AppClientProject implements Project, AntProjectListener, File
                                 GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
                                 AppClientProject.class.getResource("resources/build-impl.xsl")); // NOI18N
                         } catch (IOException e) {
-                            ErrorManager.getDefault().notify(e);
+                            Exceptions.printStackTrace(e);
                         } catch (IllegalStateException e) {
-                            ErrorManager.getDefault().notify(e);
+                            Exceptions.printStackTrace(e);
                         }
                     }
                 }
@@ -480,7 +481,7 @@ public final class AppClientProject implements Project, AntProjectListener, File
                     AppClientProject.class.getResource("resources/build-impl.xsl"), // NOI18N
                     false);
             } catch (IOException e) {
-                ErrorManager.getDefault().notify(e);
+                Exceptions.printStackTrace(e);
             }
         }
     }
@@ -615,7 +616,7 @@ public final class AppClientProject implements Project, AntProjectListener, File
                     }
                 }
             } catch (IOException e) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                Logger.getLogger("global").log(Level.INFO, null, e);
             }
 
             
@@ -651,11 +652,11 @@ public final class AppClientProject implements Project, AntProjectListener, File
                     ep = updateHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
                     String earBuildDir = ep.getProperty(AppClientProjectProperties.BUILD_EAR_CLASSES_DIR);
                     if (null != earBuildDir) {
-                        // there is an BUILD_EAR_CLASSES_DIR property... we may 
+                        // there is an BUILD_EAR_CLASSES_DIR property... we may
                         //  need to change its value
                         String buildDir = ep.getProperty(AppClientProjectProperties.BUILD_CLASSES_DIR);
                         if (null != buildDir) {
-                            // there is a value that we may need to change the 
+                            // there is a value that we may need to change the
                             // BUILD_EAR_CLASSES_DIR property value to match.
                             if (!buildDir.equals(earBuildDir)) {
                                 // the values do not match... update the property and save it
@@ -682,13 +683,13 @@ public final class AppClientProject implements Project, AntProjectListener, File
                     try {
                         ProjectManager.getDefault().saveProject(AppClientProject.this);
                     } catch (IOException e) {
-                        ErrorManager.getDefault().notify(e);
+                        Exceptions.printStackTrace(e);
                     }
                     return null;
                 }
             });
             AppClientLogicalViewProvider physicalViewProvider = (AppClientLogicalViewProvider)
-            AppClientProject.this.getLookup().lookup(AppClientLogicalViewProvider.class);
+                    AppClientProject.this.getLookup().lookup(AppClientLogicalViewProvider.class);
             if (physicalViewProvider != null &&  physicalViewProvider.hasBrokenLinks()) {
                 BrokenReferencesSupport.showAlert();
             }
@@ -707,7 +708,7 @@ public final class AppClientProject implements Project, AntProjectListener, File
             try {
                 ProjectManager.getDefault().saveProject(AppClientProject.this);
             } catch (IOException e) {
-                ErrorManager.getDefault().notify(e);
+                Exceptions.printStackTrace(e);
             }
             
             // unregister project's classpaths to GlobalPathRegistry

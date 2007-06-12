@@ -25,7 +25,6 @@ import org.netbeans.modules.j2ee.api.ejbjar.Car;
 import org.netbeans.modules.j2ee.spi.ejbjar.CarProvider;
 import org.netbeans.modules.j2ee.spi.ejbjar.CarsInProject;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 
 public class ProjectAppClientProvider implements CarProvider, CarsInProject {
     

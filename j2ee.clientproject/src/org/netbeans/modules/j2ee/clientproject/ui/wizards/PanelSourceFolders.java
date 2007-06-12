@@ -33,12 +33,12 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -259,7 +259,7 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
     }
     
     private void deleteClassFiles (File[] folders) {
-        for (int i=0; i<folders.length; i++) {
+        for (int i = 0; i < folders.length; i++) {
             FileObject folder = FileUtil.toFileObject(folders[i]);
             Enumeration en = folder.getData (true);
             while (en.hasMoreElements ()) {
@@ -267,11 +267,11 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
                 assert obj instanceof FileObject : "Instance of FileObject: " + obj;
                 FileObject fo = (FileObject) obj;
                 try {
-                    if ("class".equals (fo.getExt ())) { // NOI18N
+                    if ("class".equals(fo.getExt ())) { // NOI18N
                         fo.delete ();
                     }
                 } catch (IOException ioe) {
-                    ErrorManager.getDefault ().notify (ioe);
+                    Exceptions.printStackTrace(ioe);
                 }
             }
         }

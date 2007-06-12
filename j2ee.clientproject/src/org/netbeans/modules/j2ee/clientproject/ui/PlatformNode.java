@@ -32,6 +32,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -49,12 +51,12 @@ import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
-import org.openide.ErrorManager;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.java.project.support.ui.PackageView;
+import org.openide.util.Exceptions;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 import org.openide.xml.XMLUtil;
@@ -180,7 +182,7 @@ class PlatformNode extends AbstractNode implements ChangeListener {
             //Todo: Should listen on returned classpath, but now the bootstrap libraries are read only
             FileObject[] roots = platform.getBootstrapLibraries().getRoots();
             List<LibrariesSourceGroup> result = new ArrayList<LibrariesSourceGroup>(roots.length);
-            for (int i=0; i<roots.length; i++) {
+            for (int i = 0; i < roots.length; i++) {
                 try {
                     FileObject file;
                     Icon icon;
@@ -199,7 +201,7 @@ class PlatformNode extends AbstractNode implements ChangeListener {
                         result.add (new LibrariesSourceGroup(roots[i],file.getNameExt(),icon, openedIcon));
                     }
                 } catch (FileStateInvalidException e) {
-                    ErrorManager.getDefault().notify(e);
+                    Exceptions.printStackTrace(e);
                 }
             }
             return result;
@@ -232,13 +234,13 @@ class PlatformNode extends AbstractNode implements ChangeListener {
                     platformCache = null;
                 }                                
                 //Issue: #57840: Broken platform 'default_platform'
-                if (ErrorManager.getDefault().isLoggable(ErrorManager.INFORMATIONAL) && platformCache == null) {
+                if (Logger.getLogger("global").isLoggable(Level.INFO) && platformCache == null) {
                     StringBuffer message = new StringBuffer ("RequestedPlatform: "+platformSystemName+" not found.\nInstalled Platforms:\n");    //NOI18N
                     JavaPlatform[] platforms = JavaPlatformManager.getDefault().getInstalledPlatforms();
                     for (int i=0; i<platforms.length; i++) {
                         message.append ("Name: "+platforms[i].getProperties().get("platform.ant.name")+" Broken: "+ (platforms[i].getInstallFolders().size() == 0) + "\n");  //NOI18N
                     }
-                    ErrorManager.getDefault().log (ErrorManager.INFORMATIONAL, message.toString());
+                    Logger.getLogger("global").log(Level.INFO, message.toString());
                 }
             }            
             return platformCache;

@@ -19,7 +19,10 @@
 
 package org.netbeans.modules.j2ee.clientproject;
 
+
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.source.CompilationController;
@@ -51,8 +54,8 @@ import org.netbeans.spi.java.project.classpath.ProjectClassPathExtender;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -238,10 +241,10 @@ public class JarContainerImpl implements EnterpriseReferenceContainer {
                 AntArtifact target = getAntArtifact(ejbReference);
                 cpExtender.addAntArtifact(target, target.getArtifactLocations()[0].normalize());
             } catch (IOException ioe) {
-                ErrorManager.getDefault().notify(ioe);
+                Exceptions.printStackTrace(ioe);
             }
         } else {
-            ErrorManager.getDefault().log("WebProjectClassPathExtender not found in the project lookup of project: "+webProject.getProjectDirectory().getPath());    //NOI18N
+            Logger.getLogger("global").log(Level.INFO, "WebProjectClassPathExtender not found in the project lookup of project: " + webProject.getProjectDirectory().getPath());    //NOI18N
         }
         
         writeDD(referencingFile, referencingClass);

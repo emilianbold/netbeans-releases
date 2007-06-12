@@ -29,12 +29,12 @@ import org.netbeans.modules.j2ee.clientproject.ui.customizer.AppClientProjectPro
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.Mutex.Action;
 
 /**
@@ -72,7 +72,7 @@ public class AppClientProjectClassPathExtenderTest extends NbTestCase {
                     sync.await();
                     synchronized (privateLock) {}
                 } catch (InterruptedException ex) {
-                    ErrorManager.getDefault().notify(ex);
+                    Exceptions.printStackTrace(ex);
                 }
             }
         };
@@ -93,7 +93,7 @@ public class AppClientProjectClassPathExtenderTest extends NbTestCase {
                             }
                         });
                     } catch (InterruptedException ex) {
-                        ErrorManager.getDefault().notify(ex);
+                        Exceptions.printStackTrace(ex);
                     }
                 }
             }

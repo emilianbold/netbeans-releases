@@ -40,7 +40,6 @@ import javax.swing.ImageIcon;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.j2ee.clientproject.classpath.ClassPathSupport;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -63,6 +62,7 @@ import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.modules.j2ee.clientproject.UpdateHelper;
 import org.netbeans.modules.j2ee.clientproject.ui.customizer.AppClientProjectProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
+import org.openide.util.Exceptions;
 
 
 
@@ -213,7 +213,7 @@ class ProjectNode extends AbstractNode {
                 }
                 urls.addAll(Arrays.asList(JavadocForBinaryQuery.findJavadoc(artifactURL).getRoots()));                
             } catch (MalformedURLException mue) {
-                ErrorManager.getDefault().notify (mue);                
+                Exceptions.printStackTrace(mue);                
             }                                    
             return urls;
         }

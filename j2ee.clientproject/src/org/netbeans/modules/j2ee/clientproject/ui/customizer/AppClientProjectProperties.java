@@ -31,6 +31,8 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 import java.util.Vector;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.ButtonModel;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultListModel;
@@ -63,12 +65,12 @@ import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.support.ant.ui.StoreGroup;
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.modules.SpecificationVersion;
+import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
@@ -390,10 +392,10 @@ public class AppClientProjectProperties {
             }
         } 
         catch (MutexException e) {
-            ErrorManager.getDefault().notify((IOException)e.getException());
+            Exceptions.printStackTrace((IOException) e.getException());
         }
         catch ( IOException ex ) {
-            ErrorManager.getDefault().notify( ex );
+            Exceptions.printStackTrace(ex);
         }
     }
     
@@ -682,13 +684,12 @@ public class AppClientProjectProperties {
                     helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProps);
                     helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProps);
                     ProjectManager.getDefault().saveProject(project);
-                }
-                catch (IOException e) {
-                    ErrorManager.getDefault().notify();
+                } catch (IOException e) {
+                    Logger.getLogger("global").notify();
                 }
             }
         });
-    }    
+    }
     
     private static void setNewServerInstanceValue(String newServInstID, Project project, EditableProperties projectProps, EditableProperties privateProps) {
         // update j2ee.platform.classpath
@@ -702,7 +703,7 @@ public class AppClientProjectProperties {
         J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(newServInstID);
         if (j2eePlatform == null) {
             // probably missing server error
-            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "J2EE platform is null."); // NOI18N
+            Logger.getLogger("global").log(Level.INFO, "J2EE platform is null."); // NOI18N
             
             // update j2ee.server.type (throws NPE)
             //projectProps.setProperty(J2EE_SERVER_TYPE, Deployment.getDefault().getServerID(newServInstID));
@@ -774,7 +775,7 @@ public class AppClientProjectProperties {
         try {
             AntDeploymentHelper.writeDeploymentScript(new File(projectFolder, ANT_DEPLOY_BUILD_SCRIPT), J2eeModule.CLIENT, newServInstID); // NOI18N
         } catch (IOException ioe) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
+            Logger.getLogger("global").log(Level.INFO, null, ioe);
         }
         File antDeployPropsFile = AntDeploymentHelper.getDeploymentPropertiesFile(newServInstID);
         if (antDeployPropsFile == null) {

@@ -41,6 +41,8 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.Icon;
@@ -50,7 +52,6 @@ import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
@@ -84,6 +85,7 @@ import org.netbeans.modules.j2ee.clientproject.classpath.AppClientProjectClassPa
 import org.netbeans.modules.j2ee.clientproject.ui.customizer.AntArtifactChooser;
 import org.netbeans.modules.j2ee.clientproject.ui.customizer.AppClientClassPathUi;
 import org.netbeans.modules.j2ee.clientproject.ui.customizer.LibrariesChooser;
+import org.openide.util.Exceptions;
 
 
 
@@ -446,7 +448,7 @@ final class LibrariesNode extends AbstractNode {
                     return new LibrariesSourceGroup (root,displayName,icon,openedIcon);
                 }
             } catch (MalformedURLException e) {
-                ErrorManager.getDefault().notify(e);
+                Exceptions.printStackTrace(e);
             }
             return null;
         }        
@@ -577,11 +579,11 @@ final class LibrariesNode extends AbstractNode {
                 try {
                     cpExtender.addAntArtifacts(classPathId, artifactItems, includedLibrariesElement );                    
                 } catch (IOException ioe) {
-                    ErrorManager.getDefault().notify(ioe);
+                    Exceptions.printStackTrace(ioe);
                 }
             }
             else {
-                ErrorManager.getDefault().log ("AppClientProjectClassPathExtender not found in the project lookup of project: "+project.getProjectDirectory().getPath());    //NOI18N
+                Logger.getLogger("global").log(Level.INFO, "AppClientProjectClassPathExtender not found in the project lookup of project: " + project.getProjectDirectory().getPath());    //NOI18N
             }
         }
     }
@@ -626,11 +628,11 @@ final class LibrariesNode extends AbstractNode {
                 try {
                     cpExtender.addLibraries(classPathId, libraries, includedLibrariesElement);
                 } catch (IOException ioe) {
-                    ErrorManager.getDefault().notify(ioe);
+                    Exceptions.printStackTrace(ioe);
                 }
             }
             else {
-                ErrorManager.getDefault().log ("EjbJarProjectClassPathExtender not found in the project lookup of project: "+project.getProjectDirectory().getPath());    //NOI18N
+                Logger.getLogger("global").log(Level.INFO, "EjbJarProjectClassPathExtender not found in the project lookup of project: " + project.getProjectDirectory().getPath());    //NOI18N
             }
         }
     }
@@ -687,11 +689,11 @@ final class LibrariesNode extends AbstractNode {
                     fileObjects.toArray(fileObjectArray);
                     cpExtender.addArchiveFiles(classPathId, fileObjectArray, includedLibrariesElement);                    
                 } catch (IOException ioe) {
-                    ErrorManager.getDefault().notify(ioe);
+                    Exceptions.printStackTrace(ioe);
                 }
             }
             else {
-                ErrorManager.getDefault().log ("EjbJarProjectClassPathExtender not found in the project lookup of project: "+project.getProjectDirectory().getPath());    //NOI18N
+                Logger.getLogger("global").log(Level.INFO, "EjbJarProjectClassPathExtender not found in the project lookup of project: " + project.getProjectDirectory().getPath());    //NOI18N
             }
         }
 
@@ -714,7 +716,7 @@ final class LibrariesNode extends AbstractNode {
             try {
                 return FileUtil.isArchiveFile(f.toURI().toURL());
             } catch (MalformedURLException mue) {
-                ErrorManager.getDefault().notify(mue);
+                Exceptions.printStackTrace(mue);
                 return false;
             }
         }

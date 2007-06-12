@@ -29,6 +29,8 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.DefaultListModel;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
@@ -40,7 +42,6 @@ import org.netbeans.api.project.ant.AntArtifactQuery;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.netbeans.modules.j2ee.clientproject.ui.FoldersListSettings;
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -150,7 +151,7 @@ public class AntArtifactChooser extends JPanel implements PropertyChangeListener
                 return ProjectManager.getDefault().findProject(fo);
             }
         } catch (IOException e) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            Logger.getLogger("global").log(Level.INFO, null, e);
             // Return null
         }
         

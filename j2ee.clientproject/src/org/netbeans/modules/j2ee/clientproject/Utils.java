@@ -20,13 +20,7 @@
 package org.netbeans.modules.j2ee.clientproject;
 
 import java.io.File;
-import java.io.IOException;
 import javax.swing.JComponent;
-import org.netbeans.modules.j2ee.api.ejbjar.Car;
-import org.netbeans.modules.j2ee.clientproject.ui.customizer.AppClientProjectProperties;
-import org.netbeans.modules.j2ee.dd.api.client.AppClient;
-import org.netbeans.modules.j2ee.dd.api.client.DDProvider;
-import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
 
 /**

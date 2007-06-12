@@ -28,6 +28,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.AbstractListModel;
 import javax.swing.ComboBoxModel;
 import javax.swing.JButton;
@@ -42,7 +44,6 @@ import org.netbeans.modules.j2ee.clientproject.AppClientProjectType;
 import org.netbeans.modules.j2ee.clientproject.UpdateHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlRenderer;
 import org.openide.modules.SpecificationVersion;
@@ -465,7 +466,7 @@ public class PlatformUiSupport {
                     this.selectedSourceLevel = new SpecificationVersion (initialValue);
                 } catch (NumberFormatException nfe) {
                     // If the javac.source has invalid value, do not preselect and log it.  
-                    ErrorManager.getDefault().log("Invalid javac.source: " + initialValue);
+                    Logger.getLogger("global").log(Level.INFO, "Invalid javac.source: " + initialValue);
                 }
             }
         }

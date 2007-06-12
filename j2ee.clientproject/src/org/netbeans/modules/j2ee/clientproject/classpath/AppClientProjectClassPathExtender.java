@@ -28,7 +28,6 @@ import java.util.Iterator;
 import java.util.List;
 import org.netbeans.modules.j2ee.clientproject.ui.customizer.AppClientProjectProperties;
 import org.netbeans.spi.java.project.classpath.ProjectClassPathExtender;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Mutex;
@@ -43,6 +42,7 @@ import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.modules.j2ee.clientproject.UpdateHelper;
 import org.netbeans.modules.j2ee.clientproject.ui.customizer.AntArtifactChooser;
+import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
 public class AppClientProjectClassPathExtender implements ProjectClassPathExtender, PropertyChangeListener {
@@ -158,8 +158,9 @@ public class AppClientProjectClassPathExtender implements ProjectClassPathExtend
                 throw (IOException) e;
             }
             else {
-                Exception t = new IOException ();
-                throw (IOException) ErrorManager.getDefault().annotate(t,e);
+                IOException t = new IOException();
+                t.initCause(e);
+                throw t;
             }
         }
     }
@@ -206,8 +207,9 @@ public class AppClientProjectClassPathExtender implements ProjectClassPathExtend
                 throw (IOException) e;
             }
             else {
-                Exception t = new IOException ();
-                throw (IOException) ErrorManager.getDefault().annotate(t,e);
+                IOException t = new IOException();
+                t.initCause(e);
+                throw t;
             }
         }
     }
@@ -293,8 +295,9 @@ public class AppClientProjectClassPathExtender implements ProjectClassPathExtend
                 throw (IOException) e;
             }
             else {
-                Exception t = new IOException ();
-                throw (IOException) ErrorManager.getDefault().annotate(t,e);
+                IOException t = new IOException();
+                t.initCause(e);
+                throw t;
             }
         }
     }
@@ -371,18 +374,18 @@ public class AppClientProjectClassPathExtender implements ProjectClassPathExtend
             public void run() {
                 ProjectManager.mutex().writeAccess(new Runnable() {
                     public void run() {
-                        EditableProperties props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);    //Reread the properties, PathParser changes them
+                        EditableProperties props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);    //Reread the properties, PathParser changes them
                         //update lib references in private properties
                         EditableProperties privateProps = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
                         List<ClassPathSupport.Item> wmLibs = cs.itemsList(props.getProperty(AppClientProjectProperties.JAVAC_CLASSPATH),  ClassPathSupport.ELEMENT_INCLUDED_LIBRARIES);
                         cs.encodeToStrings(wmLibs.iterator(), ClassPathSupport.ELEMENT_INCLUDED_LIBRARIES);
                         AppClientProjectProperties.storeLibrariesLocations(wmLibs.iterator(), privateProps);
                         helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProps);
-
+                        
                         try {
                             ProjectManager.getDefault().saveProject(project);
                         } catch (IOException e) {
-                            ErrorManager.getDefault().notify(e);
+                            Exceptions.printStackTrace(e);
                         }
                     }
                 });

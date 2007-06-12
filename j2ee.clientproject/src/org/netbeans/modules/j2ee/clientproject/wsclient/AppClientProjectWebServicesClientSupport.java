@@ -31,6 +31,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ui.OpenProjects;
@@ -38,7 +40,7 @@ import org.netbeans.modules.j2ee.clientproject.AppClientProject;
 import org.netbeans.modules.j2ee.clientproject.AppClientProjectType;
 import org.netbeans.modules.j2ee.clientproject.AppClientProvider;
 import org.netbeans.modules.j2ee.clientproject.ui.customizer.AppClientProjectProperties;
-import org.netbeans.modules.j2ee.dd.api.client.DDProvider;
+import org.netbeans.modules.j2ee.dd.api.application.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.common.NameAlreadyUsedException;
 import org.netbeans.modules.j2ee.dd.api.common.PortComponentRef;
 import org.netbeans.modules.j2ee.dd.api.common.RootInterface;
@@ -52,7 +54,6 @@ import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -738,16 +739,16 @@ public class AppClientProjectWebServicesClientSupport implements WebServicesClie
 
             } catch (IOException ex) {
                 // Strange thing happen
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                Logger.getLogger("global").log(Level.INFO, null, ex);
             } catch (NameAlreadyUsedException ex) {
                 // Should never happen because we look for it by name first.
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                Logger.getLogger("global").log(Level.INFO, null, ex);
             } catch (URISyntaxException ex) {
                 // Programmer error - validation of input data should ensure this never happens.
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                Logger.getLogger("global").log(Level.INFO, null, ex);
             } catch (ClassNotFoundException ex) {
                 // Programmer error - mistyped object name.
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                Logger.getLogger("global").log(Level.INFO, null, ex);
             }
             
         }

@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.j2ee.clientproject;
 
+
 import java.awt.Dialog;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
@@ -29,6 +30,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import javax.swing.JButton;
 import javax.swing.event.ChangeEvent;
@@ -58,11 +61,11 @@ import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.MouseUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -196,7 +199,7 @@ class AppClientActionProvider implements ActionProvider {
             public void run() {
                 Properties p = new Properties();
                 String[] targetNames;
-                
+
                 targetNames = getTargetNames(command, context, p);
                 if (targetNames == null) {
                     return;
@@ -218,7 +221,7 @@ class AppClientActionProvider implements ActionProvider {
                         ActionUtils.runTarget(buildFo, targetNames, p);
                     }
                 } catch (IOException e) {
-                    ErrorManager.getDefault().notify(e);
+                    Exceptions.printStackTrace(e);
                 }
             }
         };
@@ -318,7 +321,7 @@ class AppClientActionProvider implements ActionProvider {
                         return null;
                     }
                 } catch (IOException ioe) {
-                    ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "Error while saving project: " + ioe);
+                    Logger.getLogger("global").log(Level.INFO, "Error while saving project: " + ioe);
                 }
             }
             

@@ -19,16 +19,16 @@
 
 package org.netbeans.modules.j2ee.clientproject.wsclient;
 
+
 import java.io.IOException;
 import org.netbeans.modules.j2ee.api.ejbjar.Car;
 import org.netbeans.modules.j2ee.clientproject.AppClientProject;
 import org.netbeans.modules.websvc.api.jaxws.project.WSUtils;
-import org.netbeans.modules.websvc.api.jaxws.project.config.Client;
-import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
+import org.netbeans.modules.websvc.api.jaxws.project.config.*;
 import org.netbeans.modules.websvc.spi.jaxws.client.ProjectJAXWSClientSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -85,7 +85,7 @@ public class AppClientProjectJAXWSClientSupport extends ProjectJAXWSClientSuppor
                 FileObject xmlResorcesFo = getLocalWsdlFolderForClient(finalClientName,false);
                 if (xmlResorcesFo!=null) WSUtils.copyFiles(xmlResorcesFo, wsdlFolder);
             } catch (IOException ex) {
-                ErrorManager.getDefault().notify(ex);
+                Exceptions.printStackTrace(ex);
             }
         return finalClientName;
     }

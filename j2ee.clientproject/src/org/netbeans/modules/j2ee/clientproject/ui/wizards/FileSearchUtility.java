@@ -30,8 +30,9 @@ import java.util.Collection;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.j2ee.clientproject.AppClientProvider;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
@@ -97,7 +98,7 @@ final class FileSearchUtility {
                 }
             }
         } catch (FileStateInvalidException fsie) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, fsie);
+            Logger.getLogger("global").log(Level.INFO, null, fsie);
         }
         if (foundRoots.size() == 0) {
             return null;
@@ -123,7 +124,7 @@ final class FileSearchUtility {
                 }
             }
         } catch (FileStateInvalidException fsie) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, fsie);
+            Logger.getLogger("global").log(Level.INFO, null, fsie);
         }
         return null;
     }
@@ -162,7 +163,7 @@ final class FileSearchUtility {
                 }
             }
         } catch (IOException ioe) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
+            Logger.getLogger("global").log(Level.INFO, null, ioe);
         } finally {
             try {
                 if (r != null) {

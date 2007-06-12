@@ -24,7 +24,6 @@ import java.awt.GridBagLayout;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
-import org.netbeans.modules.j2ee.clientproject.ui.customizer.CustomizerProviderImpl;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 

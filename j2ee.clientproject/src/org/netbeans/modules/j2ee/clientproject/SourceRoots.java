@@ -34,7 +34,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 import java.text.MessageFormat;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.WeakListeners;
@@ -51,6 +50,7 @@ import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.openide.util.Exceptions;
 
 /**
  * This class represents a project source roots. It is used to obtain roots as Ant properties, FileObject's
@@ -176,8 +176,8 @@ public final class SourceRoots {
      * @return an array of URL
      */
     public URL[] getRootURLs() {
-        return (URL[]) ProjectManager.mutex().readAccess(new Mutex.Action () {
-            public Object run () {
+        return (URL[]) ProjectManager.mutex().readAccess(new Mutex.Action() {
+            public Object run() {
                 synchronized (this) {
                     //Local caching
                     if (sourceRootURLs == null) {
@@ -187,14 +187,14 @@ public final class SourceRoots {
                             String prop = evaluator.getProperty(srcProps[i]);
                             if (prop != null) {
                                 File f = helper.getAntProjectHelper().resolveFile(prop);
-                                try {                                    
+                                try {
                                     URL url = f.toURI().toURL();
                                     if (!f.exists()) {
                                         url = new URL(url.toExternalForm() + "/"); // NOI18N
                                     }
                                     result.add(url);
                                 } catch (MalformedURLException e) {
-                                    ErrorManager.getDefault().notify(e);
+                                    Exceptions.printStackTrace(e);
                                 }
                             }
                         }
@@ -203,7 +203,7 @@ public final class SourceRoots {
                 }
                 return sourceRootURLs.toArray(new URL[sourceRootURLs.size()]);
             }
-        });                
+        });
     }
 
     /**

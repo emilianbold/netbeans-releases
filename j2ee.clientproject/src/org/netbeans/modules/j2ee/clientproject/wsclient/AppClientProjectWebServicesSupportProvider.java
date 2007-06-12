@@ -23,7 +23,6 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.clientproject.AppClientProject;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 
 import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
 import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientSupport;

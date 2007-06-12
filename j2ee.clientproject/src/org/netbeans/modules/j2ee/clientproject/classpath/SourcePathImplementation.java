@@ -33,10 +33,7 @@ import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.modules.j2ee.clientproject.SourceRoots;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
-import org.openide.ErrorManager;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
-import org.openide.util.Utilities;
+import org.openide.util.Exceptions;
 
 
 /**
@@ -117,7 +114,7 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
                             result.add(ClassPathSupport.createResource(url));
                         }
                     } catch (MalformedURLException ex) {
-                        ErrorManager.getDefault ().notify (ex);
+                        Exceptions.printStackTrace(ex);
                     }
                 }
                 this.resources = Collections.unmodifiableList(result);

@@ -24,6 +24,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -40,7 +42,6 @@ import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
@@ -195,7 +196,7 @@ public class AppClientProjectOperations implements DeleteOperationImplementation
                         appClient.setDisplayName(newName);
                         appClient.write(ddFO);
                     } catch (IOException ioe) {
-                        ErrorManager.getDefault().notify(ErrorManager.WARNING, ioe);
+                        Logger.getLogger("global").log(Level.WARNING, null, ioe);
                     }
                 }
             }

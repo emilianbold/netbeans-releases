@@ -37,10 +37,10 @@ import org.netbeans.modules.j2ee.clientproject.api.AppClientProjectGenerator;
 import org.netbeans.modules.j2ee.clientproject.ui.FoldersListSettings;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
-import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -101,7 +101,7 @@ public class NewAppClientProjectWizardIterator implements WizardDescriptor.Progr
                 // Returning FileObject of main class, will be called its preferred action
                 resultSet.add(mainClassFo);
             } catch (Exception x) {
-                ErrorManager.getDefault().notify(x);
+                Exceptions.printStackTrace(x);
             }
         }
         FileObject dir = FileUtil.toFileObject(dirF);

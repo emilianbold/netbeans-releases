@@ -70,7 +70,6 @@ import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
-import org.openide.util.NotImplementedException;
 
 /**
  * @author jungi
