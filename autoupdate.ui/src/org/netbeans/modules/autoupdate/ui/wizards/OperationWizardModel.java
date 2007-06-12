@@ -135,10 +135,11 @@ public abstract class OperationWizardModel {
     @SuppressWarnings("unchecked")
     private List<OperationInfo> getStandardInfos () {
         List<OperationInfo> infos = new ArrayList<OperationInfo> ();
-        infos.addAll (getBaseContainer ().listAll ());
         if (OperationType.LOCAL_DOWNLOAD == getOperation ()) {
             infos.addAll (Containers.forAvailableNbms ().listAll ());
             infos.addAll (Containers.forUpdateNbms ().listAll ());
+        } else {
+            infos.addAll (getBaseContainer ().listAll ());
         }
         return infos;
     }
@@ -204,7 +205,7 @@ public abstract class OperationWizardModel {
         switch (getOperation ()) {
         case LOCAL_DOWNLOAD :
             if (Containers.forUpdateNbms ().listAll ().isEmpty ()) {
-            Mnemonics.setLocalizedText (getOriginalNext (wd), getBundle ("InstallUnitWizardModel_Buttons_Install"));
+                Mnemonics.setLocalizedText (getOriginalNext (wd), getBundle ("InstallUnitWizardModel_Buttons_Install"));
             } else {
                 Mnemonics.setLocalizedText (getOriginalNext (wd), getBundle ("InstallUnitWizardModel_Buttons_Update"));
             }

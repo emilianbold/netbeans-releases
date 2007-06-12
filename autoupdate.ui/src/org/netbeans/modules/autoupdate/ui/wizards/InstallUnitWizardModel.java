@@ -39,6 +39,7 @@ public class InstallUnitWizardModel extends OperationWizardModel {
     private OperationType doOperation;
     private static Set<String> approvedLicences = new HashSet<String> ();
     private InstallSupport support;
+    private InstallSupport additionallySupport = null;
     
     /** Creates a new instance of InstallUnitWizardModel */
     public InstallUnitWizardModel (OperationType doOperation) {
@@ -62,11 +63,15 @@ public class InstallUnitWizardModel extends OperationWizardModel {
             support = Containers.forUpdate ().getSupport ();
             break;
         case LOCAL_DOWNLOAD :
+            OperationContainer<InstallSupport> additionallyContainer;
             if (Containers.forUpdateNbms ().listAll ().isEmpty ()) {
                 c = Containers.forAvailableNbms ();
+                additionallyContainer = Containers.forUpdateNbms ();
             } else {
                 c = Containers.forUpdateNbms ();
+                additionallyContainer = Containers.forAvailableNbms ();
             }
+            additionallySupport = additionallyContainer.getSupport ();
             support = c.getSupport ();
             break;
         }
@@ -94,6 +99,10 @@ public class InstallUnitWizardModel extends OperationWizardModel {
         return support;
     }
     
+    public InstallSupport getAdditionallyInstallSupport () {
+        return additionallySupport;
+    }
+    
     public void setInstaller (Installer i) {
         installer = i;
     }
@@ -104,7 +113,6 @@ public class InstallUnitWizardModel extends OperationWizardModel {
     
     @Override
     public void doCleanup () throws OperationException {
-        super.doCleanup ();
         if (getBaseContainer ().getSupport () instanceof InstallSupport) {
             if (OperationType.LOCAL_DOWNLOAD == getOperation ()) {
                 InstallSupport asupp = Containers.forAvailableNbms ().getSupport ();
@@ -115,6 +123,8 @@ public class InstallUnitWizardModel extends OperationWizardModel {
                 if (usupp != null) {
                     usupp.doCancel ();
                 }
+                Containers.forAvailableNbms ().removeAll ();
+                Containers.forUpdateNbms ().removeAll ();
             } else {
                 InstallSupport isupp = (InstallSupport) getBaseContainer ().getSupport ();
                 if (isupp != null) {
@@ -131,6 +141,7 @@ public class InstallUnitWizardModel extends OperationWizardModel {
         if (osupp != null) {
             osupp.doCancel ();
         }
+        super.doCleanup ();
     }
 
 }

@@ -560,6 +560,10 @@ public class InstallSupportImpl {
         // find target dir
         UpdateElement installed = impl.getUpdateElement ().getUpdateUnit ().getInstalled ();
         File targetCluster = getTargetCluster (installed, impl, isGlobal);
+        
+        if (targetCluster == null) {
+            return null;
+        }
 
         URL source = impl.getInstallInfo().getDistribution();
         err.log (Level.FINE, "Source URL for " + impl.getCodeName () + " is " + source);
