@@ -69,11 +69,11 @@ public class RequestProcessorUtilities implements IRequestProcessorUtilities
     /* (non-Javadoc)
      * @see org.netbeans.modules.uml.core.roundtripframework.requestprocessors.javarpccomponent.IRequestProcessorUtilities#getBooleanPreferenceValue(java.lang.String)
      */
-    public boolean getBooleanPreferenceValue(String prefName)
+    public boolean getBooleanPreferenceValue(String prefName, boolean defValue)
     {
         //kris richards - changing to NbPreferences. This was setup to return false
         //if something went wrong. Mimicing that behavior.
-        return NbPreferences.forModule(RequestProcessorUtilities.class).getBoolean (prefName, false) ;
+        return NbPreferences.forModule(RequestProcessorUtilities.class).getBoolean (prefName, defValue) ;
     }
 
     /* (non-Javadoc)
@@ -163,9 +163,9 @@ public class RequestProcessorUtilities implements IRequestProcessorUtilities
     /* (non-Javadoc)
      * @see org.netbeans.modules.uml.core.roundtripframework.requestprocessors.javarpccomponent.IRequestProcessorUtilities#getPreferenceValue(java.lang.String)
      */
-    public String getPreferenceValue(String prefName)
+    public String getPreferenceValue(String prefName, String def)
     {
-        return NbPreferences.forModule (RequestProcessorUtilities.class).get (prefName, null) ;
+        return NbPreferences.forModule (RequestProcessorUtilities.class).get (prefName, def) ;
     }
 
     /* (non-Javadoc)

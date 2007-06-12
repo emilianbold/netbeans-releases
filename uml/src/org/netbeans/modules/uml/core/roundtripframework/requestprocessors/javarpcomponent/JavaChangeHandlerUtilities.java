@@ -360,7 +360,7 @@ public class JavaChangeHandlerUtilities
      */
     public String attributePrefix()
     {
-        return getPreferenceValue("UML_ATTRIBUTE_PREFIX");
+        return getPreferenceValue("UML_ATTRIBUTE_PREFIX", "m");
     }
 
     /* (non-Javadoc)
@@ -368,7 +368,7 @@ public class JavaChangeHandlerUtilities
      */
     public boolean autoNameNavigableEndPreference()
     {
-        return getBooleanPreferenceValue("UML_SET_NAVIGABLE_END_ROLE_NAME");
+        return getBooleanPreferenceValue("UML_SET_NAVIGABLE_END_ROLE_NAME", true);
     }
 
     /* (non-Javadoc)
@@ -1587,7 +1587,7 @@ public class JavaChangeHandlerUtilities
 
     public boolean createConstructorPreference()
     {
-        return getBooleanPreferenceValue("UML_ADD_CTORS");
+        return getBooleanPreferenceValue("UML_ADD_CTORS", true);
     }
 
     public void createDestructor(IClassifier pClass)
@@ -1648,7 +1648,7 @@ public class JavaChangeHandlerUtilities
     
     public boolean createDestructorPreference ()
     {
-       return getBooleanPreferenceValue ( "UML_ADD_DTORS" );
+       return getBooleanPreferenceValue ( "UML_ADD_DTORS", false );
     }
     
     public ETList<IOperation> getDestructors(IClassifier  pClass)
@@ -1806,7 +1806,7 @@ public class JavaChangeHandlerUtilities
 
     public boolean createAccessorPreference()
     {
-        return getBooleanPreferenceValue("UML_ADD_ACCESSORS");
+        return getBooleanPreferenceValue("UML_ADD_ACCESSORS", true);
     }
 
     public IDependency createRealization(
@@ -4067,7 +4067,7 @@ public class JavaChangeHandlerUtilities
 
     public boolean capAttributeNameInAccessor()
     {
-        return getBooleanPreferenceValue("UML_CAP_ON_ACCESSORS");
+        return getBooleanPreferenceValue("UML_CAP_ON_ACCESSORS", true);
     }
 
     public String capAttributeName(String attrName)

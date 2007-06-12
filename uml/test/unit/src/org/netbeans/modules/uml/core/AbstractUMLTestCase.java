@@ -22,7 +22,8 @@ import org.netbeans.modules.uml.core.workspacemanagement.IWSProject;
 import org.netbeans.modules.uml.core.workspacemanagement.IWorkspace;
 import org.netbeans.modules.uml.core.workspacemanagement.WorkspaceManagementException;
 import org.netbeans.modules.uml.ui.products.ad.applicationcore.ADProduct;
-import org.netbeans.modules.uml.ui.support.ProductHelper;import org.openide.util.NbPreferences;
+import org.netbeans.modules.uml.ui.support.ProductHelper;
+import org.openide.util.NbPreferences;
 /**
  * Test case that needs an active namespace (workspace, project) to work in.
  * 

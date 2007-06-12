@@ -21,6 +21,7 @@ package org.netbeans.modules.uml.propertysupport.options.panels;
 
 import java.util.prefs.Preferences;
 import javax.swing.JComboBox;
+import org.netbeans.modules.uml.util.DummyCorePreference;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 
@@ -267,7 +268,7 @@ public class JavaPlatformOptionsPanel extends javax.swing.JPanel {
      */
     public void load() {
         
-        Preferences prefs = NbPreferences.forModule(JavaPlatformOptionsPanel.class) ;
+        Preferences prefs = NbPreferences.forModule(DummyCorePreference.class) ;
         
         if (prefs.getBoolean("UML_CAP_ON_ACCESSORS", true)) {// NOI18N
             this.capitalizeCB.setSelected(true);
@@ -320,7 +321,7 @@ public class JavaPlatformOptionsPanel extends javax.swing.JPanel {
     
     public void store() {
         
-        Preferences prefs = NbPreferences.forModule(JavaPlatformOptionsPanel.class) ;
+        Preferences prefs = NbPreferences.forModule(DummyCorePreference.class) ;
         
         prefs.putBoolean("UML_CAP_ON_ACCESSORS", this.capitalizeCB.isSelected());
         prefs.putBoolean("UML_USE_GENERICS_DEFAULT", this.collectionsUseGenCB.isSelected());

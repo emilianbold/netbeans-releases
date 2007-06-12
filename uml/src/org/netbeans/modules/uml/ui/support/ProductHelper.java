@@ -162,29 +162,29 @@ public class ProductHelper
       return ui != null ? ui.getWindowHandle() : null;      
    }
 
-	/** Gets the preference value using IPreferenceManager2 */
-	public static String getPreferenceValue(String path, String name )
-	{
-      String retVal = "";
-      
-      IPreferenceManager2 manager = getPreferenceManager();
-      if(manager != null)
-      {
-         retVal = manager.getPreferenceValue(path, name);
-      }
-      
-		return retVal;
-	}
+   /** Gets the preference value using IPreferenceManager2 */
+   public static String getPreferenceValue(String path, String name ) {
 
-	/** Sets the preference value using IPreferenceManager2 */
-	public static void setPreferenceValue(String path, String name, String value )
-	{
-      IPreferenceManager2 manager = getPreferenceManager();
-      if(manager != null)
-      {
-         manager.setPreferenceValue(path, name, value);
-      }
-	}
+       throw new UnsupportedOperationException ("path="+path+"::name="+name) ;
+//       String retVal = "";
+//       
+//       IPreferenceManager2 manager = getPreferenceManager();
+//       if(manager != null) {
+//           retVal = manager.getPreferenceValue(path, name);
+//       }
+//       
+//       return retVal;
+   }
+   
+   /** Sets the preference value using IPreferenceManager2 */
+   public static void setPreferenceValue(String path, String name, String value ) {
+       
+              throw new UnsupportedOperationException ("path="+path+"::name="+name+"::value="+value) ;
+//       IPreferenceManager2 manager = getPreferenceManager();
+//       if(manager != null) {
+//           manager.setPreferenceValue(path, name, value);
+//       }
+   }
 
 	/// Gets the IPreferenceManager2
 	public static IPreferenceManager2 getPreferenceManager()

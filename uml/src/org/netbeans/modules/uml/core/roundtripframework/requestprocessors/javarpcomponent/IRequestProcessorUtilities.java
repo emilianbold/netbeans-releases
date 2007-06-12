@@ -38,8 +38,8 @@ public interface IRequestProcessorUtilities
 {
     public String getRelationType(IRelationProxy pRelation);
 
-    public boolean getBooleanPreferenceValue(String prefName);
-    public String getPreferenceValue (String prefName);
+    public boolean getBooleanPreferenceValue(String prefName, boolean def);
+    public String getPreferenceValue (String prefName, String def);
 
     public IPreferenceManager2 getPreferenceManager();
     public ICoreMessenger getMessenger();
