@@ -67,7 +67,9 @@ public class JavaCodegen implements ICodeGenerator
         
 	boolean genMarkers = Boolean.valueOf(
             props.getProperty("generateMarkers", "true")).booleanValue();
-        
+
+        int errorsCount = 0;
+
         int total = elements.size();
         
         task.start(total);
@@ -123,7 +125,7 @@ public class JavaCodegen implements ICodeGenerator
 
 	    task.log(task.TERSE, classifier.getElementType() + " " // NOI18N
 		     + classifier.getFullyQualifiedName(false) + " ... ", false);
-            
+
 	    try 
 	    {	    	    
 		ClassInfo clinfo = new ClassInfo(classifier);
@@ -131,8 +133,8 @@ public class JavaCodegen implements ICodeGenerator
 		// skip inner class/interface/enumeration elements
 		// as they are taken care of by their outer class code gen
 		if (clinfo.getOuterClass() != null)
-		    return;
-		
+		    continue;
+		            
 		clinfo.setMethodsAndMembers(classifier);
 		clinfo.setExportSourceFolderName(targetFolderName);
 		clinfo.setComment(classifier.getDocumentation());
@@ -251,6 +253,7 @@ public class JavaCodegen implements ICodeGenerator
 		if (domainTemplates == null || domainTemplates.size() == 0)
 		{
 		    task.log(task.TERSE, getBundleMessage("MSG_ErrorNoTemplatesDefinedForElement")); // NOI18N
+		    errorsCount++;
 		    continue;
 		} else {
 		    task.log(task.TERSE, ""); // NOI18N
@@ -331,6 +334,7 @@ public class JavaCodegen implements ICodeGenerator
 			    } catch (IOException ex) {
 				task.log(task.TERSE, getBundleMessage("MSG_ErrorWhileSourceCodeMerging") // NOI18N
 				    + ex.getMessage());
+				errorsCount++;
 				ex.printStackTrace();
 			    }
 
@@ -365,7 +369,8 @@ public class JavaCodegen implements ICodeGenerator
 			else 
 			{
 			    // TBD - couldn't create the package directory for some reason
-			    task.log(task.TERSE, getBundleMessage("MSG_ErrorCreatingPackageDir")); // NOI18N
+			    task.log(task.TERSE, getBundleMessage("MSG_ErrorCreatingPackageDir")); // NOI18N				errorsCount++;
+
 			    ;			
 			}
 		    }
@@ -374,6 +379,7 @@ public class JavaCodegen implements ICodeGenerator
 		    {
 			task.log(task.TERSE, getBundleMessage("MSG_ErrorWhileSourceCodeGenerating") // NOI18N
 				 + e.getMessage());
+			errorsCount++;
 			e.printStackTrace();		
 		    }
 		}
@@ -383,8 +389,13 @@ public class JavaCodegen implements ICodeGenerator
 	    {
 		task.log(task.TERSE, getBundleMessage("MSG_ErrorWhileProcessingElement") // NOI18N
                     + e.getMessage());
+		errorsCount++;
 		e.printStackTrace();		
 	    }
+	}
+	System.out.println("errorsCount="+errorsCount);
+	if (errorsCount > 0) {	    
+	    task.fail();
 	}
     }
     
