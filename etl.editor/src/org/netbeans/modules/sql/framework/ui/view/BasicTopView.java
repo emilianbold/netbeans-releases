@@ -69,6 +69,7 @@ import org.netbeans.modules.sql.framework.ui.view.property.TargetTableProperties
 import com.sun.sql.framework.exception.BaseException;
 import com.sun.sql.framework.utils.Logger;
 import org.netbeans.modules.etl.ui.view.ETLOutputWindowTopComponent;
+import org.netbeans.modules.sql.framework.model.SQLJoinOperator;
 
 /**
  * Main view of SQL Framework
@@ -550,7 +551,9 @@ public abstract class BasicTopView extends JPanel implements IGraphViewContainer
             } else if (table.getObjectType() == SQLConstants.SOURCE_TABLE) {
                 dataView = new DataOutputPanel.SourceQuery((SourceTable) table, def);
             } else if(table.getObjectType() == SQLConstants.JOIN_VIEW) {
-                dataView = new DataOutputPanel.JoinQuery((SQLJoinView) table, def);
+                dataView = new DataOutputPanel.JoinViewQuery((SQLJoinView) table, def);
+            } else if(table.getObjectType() == SQLConstants.JOIN) {
+                dataView = new DataOutputPanel.JoinOperatorQuery((SQLJoinOperator) table, def);
             }
             
             outputDataViewMap.put(table.getId(), dataView);

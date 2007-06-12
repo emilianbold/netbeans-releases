@@ -17,12 +17,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Properties;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-import org.openide.NotifyDescriptor.Message;
+
 import org.openide.nodes.BeanNode;
 import org.openide.util.NbBundle;
 
@@ -75,6 +72,26 @@ public class AxionDBConfiguration {
             String drv = prop.getProperty(PROP_DRIVER_LOC);
             if(drv != null)
                 return drv;
+        } else {
+            // Check for mashup driver under soa cluster.
+            String nbHomeDir = System.getProperty("netbeans.home") + File.separator +
+                    ".." + File.separator + "soa1" + File.separator + "modules"
+                    + File.separator + "ext" + File.separator + "etl"
+                    + File.separator + "mashupdb.zip";
+            File driver = new File(nbHomeDir);
+            if(!driver.exists()) {
+                
+                // check for mashup driver under extra cluster.
+                nbHomeDir = System.getProperty("netbeans.home") + File.separator
+                        + ".." + File.separator + "extra" + File.separator + "modules"
+                        + File.separator + "ext" + File.separator + "etl"
+                        + File.separator + "mashupdb.zip";
+                driver = new File(nbHomeDir);
+                if(!driver.exists()) {
+                    nbHomeDir = "";
+                }
+                return nbHomeDir;
+            }
         }
         return "";
     }
@@ -121,7 +138,8 @@ public class AxionDBConfiguration {
             }
             return prop.getProperty(PROP_DB_LOC);
         }
-        return "";
+        return System.getProperty("netbeans.user")
+                + File.separator + "MashupDatabases" + File.separator;        
     }
     
     /**
@@ -181,8 +199,10 @@ public class AxionDBConfiguration {
             driver = new File(nbHomeDir);
             if(!driver.exists()) {
                 nbHomeDir = "";
+            } else {
+                nbHomeDir = driver.getAbsolutePath();
             }
-        }        
+        }
         String DEFAULT_DB_LOCATION = System.getProperty("netbeans.user")
                 + File.separator + "MashupDatabases" + File.separator;
         nbUsrDir = nbUsrDir + File.separator + "config" + File.separator +
