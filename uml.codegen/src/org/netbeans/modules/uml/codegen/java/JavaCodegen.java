@@ -393,7 +393,6 @@ public class JavaCodegen implements ICodeGenerator
 		e.printStackTrace();		
 	    }
 	}
-	System.out.println("errorsCount="+errorsCount);
 	if (errorsCount > 0) {	    
 	    task.fail();
 	}
