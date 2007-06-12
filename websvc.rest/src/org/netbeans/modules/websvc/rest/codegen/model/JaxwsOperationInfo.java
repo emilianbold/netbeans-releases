@@ -72,13 +72,10 @@ public class JaxwsOperationInfo {
         int iEnd = wsdlURL.indexOf('/', iStart);
         String pakName = wsdlURL.substring(iStart, iEnd);
         String[] segments = pakName.split("\\.");
-        StringBuilder sb = new StringBuilder(pakName.length());
-        
-        for (int i=segments.length-1; i>-1; i--) {
-            sb.append(segments[i]);
-            sb.append('.');
-        }
-        return sb.substring(0, sb.length()-1);
+        StringBuilder sb = new StringBuilder(segments[segments.length-1]);
+        sb.append('.');
+        sb.append(segments[segments.length-2]);
+        return sb.toString();
     }
 
     public String getServiceName() {
@@ -147,7 +144,7 @@ public class JaxwsOperationInfo {
     
     public void setupWebServiceClient() {
         if (getServiceClient() == null) {
-            support.addServiceClient(serviceName, wsdlUrl, derivePackageName(wsdlUrl), true);
+            support.addServiceClient(serviceName, wsdlUrl, derivePackageName(wsdlUrl), true); // TODO null package name cause NPE
         }
     }
     
