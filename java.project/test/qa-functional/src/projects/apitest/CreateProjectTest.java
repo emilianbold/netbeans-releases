@@ -107,6 +107,9 @@ public class CreateProjectTest extends JellyTestCase {
     }
     
     public void testCloseProject_API_2() throws Exception {
+        File f = new File(getWorkDir(), projName2);
+        assertTrue("File is folder",f.isDirectory());
+        Utilities.openProject(f);
         assertTrue(Utilities.closeProject(projName2));
     }
 
