@@ -380,7 +380,7 @@ public class Utils {
                     } else if (ex.getSimpleName().contentEquals("targetNamespace")) { //NOI18N
                         paramModel.setTargetNamespace((String)expressions.get(ex).getValue());
                     } else if (ex.getSimpleName().contentEquals("mode")) { //NOI18N
-                        paramModel.setMode((Mode)expressions.get(ex).getValue());
+                        paramModel.setMode(Mode.valueOf(expressions.get(ex).getValue().toString()));
                     }
                 }
             }
