@@ -15,6 +15,7 @@ import java.io.FileInputStream;
 import java.io.IOException; 
 import java.io.InputStream;
 import java.io.StringWriter;
+import java.lang.AssertionError;
 import java.util.ArrayList;
 import java.util.List;
 import javax.jws.WebParam.Mode;
@@ -197,27 +198,6 @@ private static ServiceModelTest DEFAULT_LOOKUP = null;
                 
                 i++;
             }
-            model.setServiceName("addService");
-            model.setName("add");
-            model.setPortName("addPort");
-            model.getOperations().get(0).setOperationName("sum");
-            model.getOperations().get(1).setOperationName("echo");
-            
-            String res1 = copyFileToString(FileUtil.toFile(sourceFileObject));
-            System.out.println("Changed AddNumbers.java:");
-            System.out.println(".....................................");
-            System.out.println(res1);
-            System.out.println(".....................................");
-            model.setServiceName(null);
-            model.setPortName(null);
-            model.setName(null);
-            model.getOperations().get(0).setOperationName(null);
-            model.getOperations().get(1).setOperationName("echo-operation");
-            String res2 = copyFileToString(FileUtil.toFile(sourceFileObject));
-            System.out.println("Original AddNumbers.java:");
-            System.out.println(".....................................");
-            System.out.println("res = "+res2);
-            System.out.println(".....................................");
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -345,6 +325,154 @@ private static ServiceModelTest DEFAULT_LOOKUP = null;
         }        
     }
     
+    public void testServiceModel2() {
+        FileObject sourceFileObject = dataDir.getFileObject("add/AddNumbers.java");
+        
+        try {
+            
+            String orgFile = copyFileToString(FileUtil.toFile(sourceFileObject));
+            // compare model values
+            ServiceModel model = ServiceModel.getServiceModel(sourceFileObject);
+ 
+            model.setServiceName("addService");
+            model.setName("add");
+            model.setPortName("addPort");
+            
+            String res1 = copyFileToString(FileUtil.toFile(sourceFileObject));
+//            System.out.println("Changed AddNumbers.java:");
+//            System.out.println(".....................................");
+//            System.out.println(res1);
+//            System.out.println(".....................................");
+            model.setServiceName(null);
+            model.setPortName(null);
+            model.setName(null);
+            
+            String res2 = copyFileToString(FileUtil.toFile(sourceFileObject));
+//            System.out.println("Original AddNumbers.java:");
+//            System.out.println(".....................................");
+//            System.out.println("res = "+res2);
+//            System.out.println(".....................................");
+            
+            assertEquals(orgFile, res2);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            throw new AssertionError(ex);
+        }        
+    }
+    
+    public void testServiceModelSetter() {
+        FileObject sourceFileObject = dataDir.getFileObject("generator/ServiceSetterTestService.java");
+        
+        try {
+            
+            String org = copyFileToString(FileUtil.toFile(sourceFileObject));
+            
+            System.out.println("Original ServiceSetterTestService.java:");
+            System.out.println(".....................................");
+            System.out.println(org);
+            System.out.println(".....................................");
+            
+            ServiceModel model = ServiceModel.getServiceModel(sourceFileObject);
+ 
+            model.setServiceName("EmptyService");
+            
+            String res = copyFileToString(FileUtil.toFile(sourceFileObject));
+            System.out.println("Changed ServiceSetterTestService.java:");
+            System.out.println(".....................................");
+            System.out.println(res);
+            System.out.println(".....................................");
+            
+            model.setServiceName(null);
+            
+            String res1 = copyFileToString(FileUtil.toFile(sourceFileObject));
+            
+            assertEquals(org, res1);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            throw new AssertionError(ex);
+        }        
+    }
+    
+    public void testMethodModelSetter() {
+        FileObject sourceFileObject = dataDir.getFileObject("generator/MethodSetterTestService.java");
+        
+        try {
+                        
+            ServiceModel model = ServiceModel.getServiceModel(sourceFileObject);
+ 
+            String org = copyFileToString(FileUtil.toFile(sourceFileObject));
+            System.out.println("Original MethodSetterTestService.java:");
+            System.out.println(".....................................");
+            System.out.println(org);
+            System.out.println(".....................................");
+            
+            model.getOperations().get(0).setOperationName("hello");
+            
+            String res = copyFileToString(FileUtil.toFile(sourceFileObject));
+            System.out.println("Changed MethodSetterTestService.java:");
+            System.out.println(".....................................");
+            System.out.println(res);
+            System.out.println(".....................................");
+
+            
+            
+            model.getOperations().get(0).setOperationName(null);
+            
+            String res1 = copyFileToString(FileUtil.toFile(sourceFileObject));
+            assertEquals(org, res1);
+            
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            throw new AssertionError(ex);
+        }        
+    }
+    
+    public void testParamModelSetter() {
+        FileObject sourceFileObject = dataDir.getFileObject("generator/ParamSetterTestService.java");
+        
+        try {
+            ServiceModel model = ServiceModel.getServiceModel(sourceFileObject);
+
+            String org = copyFileToString(FileUtil.toFile(sourceFileObject));
+            System.out.println("Original ParamSetterTestService.java:");
+            System.out.println(".....................................");
+            System.out.println(org);
+            System.out.println(".....................................");
+            
+            model.getOperations().get(0).getParams().get(0).setName("name");
+            
+            String res = copyFileToString(FileUtil.toFile(sourceFileObject));
+            System.out.println("Changed ParamSetterTestService.java:");
+            System.out.println(".....................................");
+            System.out.println(res);
+            System.out.println(".....................................");
+
+            model.getOperations().get(0).getParams().get(0).setName(null);
+            
+            String res1 = copyFileToString(FileUtil.toFile(sourceFileObject));
+            assertEquals(org, res1);
+            
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            throw new AssertionError(ex);
+        }        
+    }
+    
+        /**
+     * Returns a string which contains the contents of a file.
+     *
+     * @param f the file to be read
+     * @return the contents of the file(s).
+     */
+    public final static String copyFileToString (java.io.File f) throws IOException {
+        int s = (int)f.length ();
+        byte[] data = new byte[s];
+        int len = new FileInputStream (f).read (data);
+        if (len != s)
+            throw new IOException("truncated file");
+        return new String (data);
+    }
+    
     private String getFormatedDocument(SOAPMessage message) {
         try {;
             TransformerFactory transformerFactory = TransformerFactory.newInstance();
@@ -366,21 +494,6 @@ private static ServiceModelTest DEFAULT_LOOKUP = null;
             ex.printStackTrace();
             return null;
         }
-    }
-    
-        /**
-     * Returns a string which contains the contents of a file.
-     *
-     * @param f the file to be read
-     * @return the contents of the file(s).
-     */
-    public final static String copyFileToString (java.io.File f) throws IOException {
-        int s = (int)f.length ();
-        byte[] data = new byte[s];
-        int len = new FileInputStream (f).read (data);
-        if (len != s)
-            throw new IOException("truncated file");
-        return new String (data);
     }
 
 }
