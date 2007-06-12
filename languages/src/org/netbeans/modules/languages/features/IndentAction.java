@@ -100,12 +100,16 @@ public class IndentAction extends InsertBreakAction {
                     if (ni == 2)
                         indent -= 4;
                 }
-                start = NbDocument.findLineOffset ((StyledDocument) doc, ln + 1);
                 try {
-                    end = NbDocument.findLineOffset ((StyledDocument) doc, ln + 2);
-                    line = doc.getText (start, end - start);
+                    start = NbDocument.findLineOffset ((StyledDocument) doc, ln + 1);
+                    try {
+                        end = NbDocument.findLineOffset ((StyledDocument) doc, ln + 2);
+                        line = doc.getText (start, end - start);
+                    } catch (IndexOutOfBoundsException ex) {
+                        line = doc.getText (start, doc.getLength () - start);
+                    }
                 } catch (IndexOutOfBoundsException ex) {
-                    line = doc.getText (start, doc.getLength () - start);
+                    line = null;
                 }
                 indent (doc, caret.getDot (), indent);
                 if ( line != null && 
