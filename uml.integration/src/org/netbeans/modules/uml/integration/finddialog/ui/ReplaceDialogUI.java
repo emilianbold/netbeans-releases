@@ -30,7 +30,6 @@ import javax.swing.JCheckBox;
 import javax.swing.JButton;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
-import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -45,6 +44,7 @@ import org.netbeans.modules.uml.integration.finddialog.DefaultFindDialogResource
 import org.netbeans.modules.uml.integration.finddialog.FindController;
 import org.netbeans.modules.uml.integration.finddialog.FindResults;
 import org.netbeans.modules.uml.integration.finddialog.FindUtilities;
+import org.netbeans.modules.uml.propertysupport.options.panels.ShowMeDialogsListPanel;
 import org.netbeans.modules.uml.ui.support.ProductHelper;
 import org.netbeans.modules.uml.ui.swing.commondialogs.JCenterDialog;
 import org.netbeans.modules.uml.ui.swing.commondialogs.SwingErrorDialog;
@@ -723,7 +723,7 @@ public class ReplaceDialogUI extends JCenterDialog
         Object obj = evt.getSource();
         if (obj instanceof JCheckBox)
         {
-            Preferences prefs = NbPreferences.forModule (ReplaceDialogUI.class) ;
+            Preferences prefs = NbPreferences.forModule (ShowMeDialogsListPanel.class) ;
             JCheckBox box = (JCheckBox)obj;
             boolean checkboxState = box.isSelected();
             if (checkboxState)

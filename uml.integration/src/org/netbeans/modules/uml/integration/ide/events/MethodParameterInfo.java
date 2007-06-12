@@ -22,22 +22,15 @@ package org.netbeans.modules.uml.integration.ide.events;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 
-import org.netbeans.modules.uml.common.Util;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IMultiplicity;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IMultiplicityRange;
-import org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement;
-import org.netbeans.modules.uml.core.metamodel.core.foundation.IPackage;
-import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.Classifier;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IBehavioralFeature;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IClassifier;
-import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IOperation;
-import org.netbeans.modules.uml.core.support.umlsupport.StringUtilities;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
-import org.netbeans.modules.uml.integration.ide.Preferences;
 import org.netbeans.modules.uml.integration.ide.UMLSupport;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IParameter;
 import org.netbeans.modules.uml.integration.ide.JavaClassUtils;
-import org.netbeans.modules.uml.ui.support.ProductHelper;
+import org.netbeans.modules.uml.util.DummyCorePreference;
 import org.openide.util.NbPreferences;
 
 /**
@@ -314,7 +307,7 @@ public class MethodParameterInfo implements Cloneable
         // TODO: conover - eventually, use the atribute level property
         // instead of this global preference
         //kris richards - made change to nbpreferences
-        return NbPreferences.forModule(MethodParameterInfo.class).getBoolean("UML_USE_GENERICS_DEFAULT", true); // NOI18N
+        return NbPreferences.forModule(DummyCorePreference.class).getBoolean("UML_USE_GENERICS_DEFAULT", true); // NOI18N
     }
     
     public IParameter getParameterElement()

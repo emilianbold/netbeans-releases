@@ -23,16 +23,12 @@ package org.netbeans.modules.uml.ui.support.finddialog;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Font;
-import java.util.prefs.Preferences;
 
-import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
 import javax.swing.JList;
 import javax.swing.JTable;
 
-import org.netbeans.modules.uml.common.generics.ETPairT;
-import org.netbeans.modules.uml.core.support.umlsupport.ProductRetriever;
 import org.netbeans.modules.uml.core.support.umlsupport.StringUtilities;
 import org.netbeans.modules.uml.core.support.umlutils.ETArrayList;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
@@ -41,21 +37,16 @@ import org.netbeans.modules.uml.core.workspacemanagement.IWorkspace;
 import org.netbeans.modules.uml.ui.support.ProductHelper;
 import org.netbeans.modules.uml.ui.support.UserSettings;
 import org.netbeans.modules.uml.ui.support.applicationmanager.IProductProjectManager;
-import org.netbeans.modules.uml.ui.support.commonresources.CommonResourceManager;
 import org.netbeans.modules.uml.ui.swing.finddialog.FindTableModel;
 
 import javax.swing.DefaultListModel; 
 import javax.swing.text.Position;
 
-import org.netbeans.modules.uml.core.coreapplication.IPreferenceManager2;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
-import org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IProxyDiagram;
 import org.netbeans.modules.uml.core.metamodel.structure.IProject;
 import org.netbeans.modules.uml.core.preferenceframework.IPreferenceAccessor;
 import org.netbeans.modules.uml.core.preferenceframework.PreferenceAccessor;
-import org.netbeans.modules.uml.core.preferenceframework.PreferenceManager;
-import org.openide.util.NbPreferences;
 
 public class FindUtilities
 {

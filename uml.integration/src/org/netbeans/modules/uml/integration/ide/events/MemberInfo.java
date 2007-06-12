@@ -46,8 +46,7 @@ import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.ITypedElement;
 import org.netbeans.modules.uml.core.metamodel.structure.IProject;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
-import org.netbeans.modules.uml.integration.ide.Preferences;
-import org.netbeans.modules.uml.ui.support.ProductHelper;
+import org.netbeans.modules.uml.util.DummyCorePreference;
 import org.openide.util.NbPreferences;
 
 /**
@@ -379,7 +378,7 @@ public class MemberInfo extends ElementInfo
         // TODO: conover - change this to use attribute level property
         // rather than the global preference
         //kris richards - made change to nbpreferences
-        return NbPreferences.forModule(MemberInfo.class).get("UML_COLLECTION_OVERRIDE_DEFAULT", "java.util.ArrayList"); // NOI18N
+        return NbPreferences.forModule(DummyCorePreference.class).get("UML_COLLECTION_OVERRIDE_DEFAULT", "java.util.ArrayList"); // NOI18N
     }
 
     public boolean isCollectionType() 
@@ -401,7 +400,7 @@ public class MemberInfo extends ElementInfo
         // TODO: conover - eventually, use the atribute level property
         // instead of this global preference
         //kris richards - made change to nbpreferences
-        return NbPreferences.forModule(MemberInfo.class).getBoolean("UML_USE_GENERICS_DEFAULT", true); // NOI18N
+        return NbPreferences.forModule(DummyCorePreference.class).getBoolean("UML_USE_GENERICS_DEFAULT", true); // NOI18N
         
     }
 

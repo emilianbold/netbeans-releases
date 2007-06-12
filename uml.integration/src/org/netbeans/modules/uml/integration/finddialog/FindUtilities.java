@@ -29,13 +29,11 @@ import javax.swing.JTable;
 import org.netbeans.modules.uml.core.support.umlsupport.StringUtilities;
 import org.netbeans.modules.uml.core.support.umlutils.ETArrayList;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
-import org.netbeans.modules.uml.ui.support.ProductHelper;
 import org.netbeans.modules.uml.ui.support.UserSettings;
 
 import javax.swing.DefaultListModel;
 import javax.swing.text.Position;
 
-import org.netbeans.modules.uml.core.coreapplication.IPreferenceManager2;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IProxyDiagram;
 import org.netbeans.modules.uml.core.metamodel.structure.IProject;
@@ -46,9 +44,7 @@ import org.netbeans.modules.uml.project.ProjectUtil;
 import org.netbeans.modules.uml.project.UMLProject;
 import org.netbeans.modules.uml.project.UMLProjectHelper;
 import java.util.ArrayList;
-import java.util.prefs.Preferences;
 import org.netbeans.api.project.Project;
-import org.openide.util.NbPreferences;
 
 public class FindUtilities
 {

@@ -26,8 +26,8 @@ import org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IProxyDiagram;
 import org.netbeans.modules.uml.core.support.umlsupport.ProductRetriever;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
-import org.netbeans.modules.uml.ui.support.ProductHelper;
 import org.netbeans.modules.uml.ui.support.applicationmanager.IProduct;
+import org.netbeans.modules.uml.util.DummyCorePreference;
 import org.openide.cookies.EditCookie;
 import org.openide.cookies.ViewCookie;
 import org.openide.cookies.OpenCookie;
@@ -35,7 +35,6 @@ import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObjectExistsException;
-import org.openide.loaders.FileEntry;
 import org.openide.loaders.MultiDataObject;
 import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node;
@@ -153,7 +152,7 @@ public class DiagramDataObject extends MultiDataObject
         {
             //open previously opened diagrams on project loading
             //kris richards - changed to NbPreference
-            if (NbPreferences.forModule(DiagramDataObject.class).getBoolean("UML_Open_Project_Diagrams", true))
+            if (NbPreferences.forModule(DummyCorePreference.class).getBoolean("UML_Open_Project_Diagrams", true))
                 open() ;
             
         }

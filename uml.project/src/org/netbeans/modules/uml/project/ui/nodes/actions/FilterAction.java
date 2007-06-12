@@ -157,8 +157,13 @@ public class FilterAction extends CookieAction
         
         //Kris Richards - This is a "show me dialog" preference. Need to get the 
         // preference value for the propertysupport module.
-        boolean on = NbPreferences.forModule (ShowMeDialogsListPanel.class).getBoolean ("UML_ShowMe_Dont_Show_Filter_Warning_Dialog", true);
-        if (! on) return true ;
+        String showMe = NbPreferences.forModule(ShowMeDialogsListPanel.class).get("UML_ShowMe_Dont_Show_Filter_Warning_Dialog", "PSK_ASK");
+        
+        if (showMe.equals("PSK_ALWAYS"))
+            return true ;
+        else if (showMe.equals("PSK_NEVER"))
+            return false ;
+        
         
         int result = 0;
         boolean userClickedYes = true;

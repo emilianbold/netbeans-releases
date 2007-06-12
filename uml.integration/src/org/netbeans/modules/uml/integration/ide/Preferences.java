@@ -35,6 +35,7 @@ import java.util.Iterator;
 import org.netbeans.modules.uml.core.coreapplication.IPreferenceManager2;
 import org.netbeans.modules.uml.core.support.umlsupport.Log;
 import org.netbeans.modules.uml.core.support.umlutils.IPropertyElement;
+import org.netbeans.modules.uml.util.DummyCorePreference;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 
@@ -213,7 +214,7 @@ public class Preferences {
         try {
             clearCache();
 
-            java.util.prefs.Preferences prefs = NbPreferences.forModule (Preferences.class) ;
+            java.util.prefs.Preferences prefs = NbPreferences.forModule (DummyCorePreference.class) ;
             
             reconnectLinks = prefs.getBoolean(RECONNECT_LINKS, true);
             promptSaveWorkspace = true;
@@ -377,7 +378,7 @@ public class Preferences {
     {
         //kris richards - changing to use NbPreferences
         //preferenceCache.remove(USE_GENERICS_DEFAULT);
-	return NbPreferences.forModule(Preferences.class).getBoolean("UML_USE_GENERICS_DEFAULT",true);
+	return NbPreferences.forModule(DummyCorePreference.class).getBoolean("UML_USE_GENERICS_DEFAULT",true);
     }
 
 

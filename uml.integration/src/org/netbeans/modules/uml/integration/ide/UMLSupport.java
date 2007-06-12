@@ -25,22 +25,12 @@
  */
 package org.netbeans.modules.uml.integration.ide;
 
-import java.io.File;
-import java.util.Collection;
 import java.util.ResourceBundle;
 import java.util.StringTokenizer;
 
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
-//import org.netbeans.jmi.javamodel.JavaClass;
 //import org.netbeans.jmi.javamodel.Resource;
 //import org.netbeans.modules.javacore.api.JavaModel;
 import org.netbeans.modules.uml.common.Util;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
-//import org.openide.src.ClassElement;
 
 import org.netbeans.modules.uml.core.IApplication;
 import org.netbeans.modules.uml.core.coreapplication.CoreProductManager;
@@ -59,10 +49,7 @@ import org.netbeans.modules.uml.integration.ide.listeners.IAttributeChangeListen
 import org.netbeans.modules.uml.integration.ide.listeners.IClassChangeListener;
 import org.netbeans.modules.uml.integration.ide.listeners.IEnumLiteralChangeListener;
 import org.netbeans.modules.uml.integration.ide.listeners.IOperationChangeListener;
-import org.netbeans.modules.uml.integration.netbeans.NBFileUtils;
-import org.netbeans.modules.uml.project.UMLProjectHelper;
-//import org.netbeans.modules.uml.project.ui.java.UMLJavaAssociationUtil;
-import org.openide.util.NbBundle;
+import org.netbeans.modules.uml.util.DummyCorePreference;
 import org.openide.util.NbPreferences;
 
 
@@ -263,7 +250,7 @@ public class UMLSupport
     public String getCollectionOverride()
     {
         //kris richards - made change to nbpreferences
-        return NbPreferences.forModule(UMLSupport.class).get("UML_COLLECTION_OVERRIDE_DEFAULT", "java.util.ArrayList"); // NOI18N
+        return NbPreferences.forModule(DummyCorePreference.class).get("UML_COLLECTION_OVERRIDE_DEFAULT", "java.util.ArrayList"); // NOI18N
     }
     
     public IApplication getApplication()
@@ -518,7 +505,7 @@ public class UMLSupport
     public static boolean getUseGenericsDefault()
     {
         //kris richards - made change to nbpreferences
-        return NbPreferences.forModule(UMLSupport.class).getBoolean("UML_USE_GENERICS_DEFAULT", false); // NOI18N
+        return NbPreferences.forModule(DummyCorePreference.class).getBoolean("UML_USE_GENERICS_DEFAULT", false); // NOI18N
     }
     
     
