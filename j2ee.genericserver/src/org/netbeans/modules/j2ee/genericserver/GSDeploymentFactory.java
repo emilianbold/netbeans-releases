@@ -19,11 +19,12 @@
 
 package org.netbeans.modules.j2ee.genericserver;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.enterprise.deploy.shared.factories.DeploymentFactoryManager;
 import javax.enterprise.deploy.spi.DeploymentManager;
 import javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException;
 import javax.enterprise.deploy.spi.factories.DeploymentFactory;
-import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 
 /**
@@ -36,11 +37,13 @@ public class GSDeploymentFactory implements DeploymentFactory {
     
     private static DeploymentFactory instance;
     
-    private static ErrorManager err = ErrorManager.getDefault().getInstance("org.netbeans.modules.j2ee.genericserver");  // NOI18N
+    private static Logger err = Logger.getLogger("org.netbeans.modules.j2ee.genericserver");  // NOI18N
     
     public static synchronized DeploymentFactory create() {
         if (instance == null) {
-            if (err.isLoggable(ErrorManager.INFORMATIONAL)) err.log("Creating Generic Server Factory"); // NOI18N
+            if (err.isLoggable(Level.INFO)) {
+                err.log(Level.INFO, "Creating Generic Server Factory"); // NOI18N
+            }
             instance = new GSDeploymentFactory();
             DeploymentFactoryManager.getInstance().registerDeploymentFactory(instance);
         }
