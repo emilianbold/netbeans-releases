@@ -89,7 +89,7 @@ fi
 ###################################################################
 
 cd $TRUNK_CB_DIRNAME
-bash pack-all-componets.sh
+bash pack-all-components.sh
 ERROR_CODE=$?
 
 if [ $ERROR_CODE != 0 ]; then

@@ -24,7 +24,7 @@ fi
 ###################################################################
 
 cd $TRUNK_NIGHTLY_DIRNAME
-bash checkout-all-componets.sh
+bash checkout-all-components.sh
 ERROR_CODE=$?
 
 if [ $ERROR_CODE != 0 ]; then
@@ -54,7 +54,7 @@ fi
 ###################################################################
 
 cd $TRUNK_NIGHTLY_DIRNAME
-bash pack-all-componets.sh
+bash pack-all-components.sh
 ERROR_CODE=$?
 
 if [ $ERROR_CODE != 0 ]; then
