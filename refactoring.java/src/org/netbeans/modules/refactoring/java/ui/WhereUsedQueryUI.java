@@ -48,11 +48,11 @@ public class WhereUsedQueryUI implements RefactoringUI {
     private ElementKind kind;
     private AbstractRefactoring delegate;
 
-    public WhereUsedQueryUI(TreePathHandle jmiObject, CompilationInfo info) {
-        this.query = new WhereUsedQuery(Lookups.singleton(jmiObject));
-        this.query.getContext().add(RetoucheUtils.getClasspathInfoFor(jmiObject));
-        this.element = jmiObject;
-        Element el = jmiObject.resolveElement(info);
+    public WhereUsedQueryUI(TreePathHandle handle, CompilationInfo info) {
+        this.query = new WhereUsedQuery(Lookups.singleton(handle));
+        this.query.getContext().add(info.getClasspathInfo());
+        this.element = handle;
+        Element el = handle.resolveElement(info);
         name = UiUtils.getHeader(el, info, UiUtils.PrintPart.NAME);
         kind = el.getKind();
     }
@@ -82,6 +82,9 @@ public class WhereUsedQueryUI implements RefactoringUI {
 
     public org.netbeans.modules.refactoring.api.Problem setParameters() {
         query.putValue(query.SEARCH_IN_COMMENTS,panel.isSearchInComments());
+        if (panel.getScope()==WhereUsedPanel.Scope.ALL) {
+            query.getContext().add(RetoucheUtils.getClasspathInfoFor(element));
+        }
         if (kind == ElementKind.METHOD) {
             setForMethod();
             return query.checkParameters();
