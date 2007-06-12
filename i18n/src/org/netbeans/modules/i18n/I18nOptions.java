@@ -48,10 +48,6 @@ import org.openide.util.NbPreferences;
 public class I18nOptions {
     private static final I18nOptions INSTANCE = new I18nOptions();
 
-    /** Property name for advanced wizard. 
-     * Indicates wheter I18N Wizard has to show panel with genaration field values for java sources. */
-    public static final String PROP_ADVANCED_WIZARD = "advancedWizard"; // NOI18N
-    
     /** Property name for init java code.
      * Format for code which initializes generated resource bundle field in java source. */
     public static final String PROP_INIT_JAVA_CODE = "initJavaCode"; // NOI18N
@@ -94,18 +90,6 @@ public class I18nOptions {
     /** Implements superclass abstract method. */
     public String displayName() {
         return I18nUtil.getBundle().getString("LBL_Internationalization");
-    }
-
-    /** Getter for init advanced wizard property. */
-    public boolean isAdvancedWizard() {
-        // Lazy init.
-        return getPreferences().getBoolean(PROP_ADVANCED_WIZARD,false);
-    }
-
-    /** Setter for init advanced wizard property. */
-    public void setAdvancedWizard(boolean generateField) {
-        // Stores in class-wide state and fires property changes if needed:
-        getPreferences().putBoolean(PROP_ADVANCED_WIZARD,generateField);
     }
     
     /** Getter for init java code property. */

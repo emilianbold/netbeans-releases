@@ -602,10 +602,7 @@ final class HardStringWizardPanel extends JPanel {
             
             Integer index;
             
-            if(I18nUtil.getOptions().isAdvancedWizard())
-                index = new Integer(3);
-            else
-                index = new Integer(2);
+            index = new Integer(3);
             
             panel.putClientProperty("WizardPanel_contentSelectedIndex", index); // NOI18N
             panel.setName(NbBundle.getBundle(HardStringWizardPanel.class).getString("TXT_ModifyStrings"));

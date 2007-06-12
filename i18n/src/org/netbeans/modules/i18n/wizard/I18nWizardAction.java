@@ -106,10 +106,7 @@ public class I18nWizardAction extends NodeAction {
         
         panels.add(new SourceWizardPanel.Panel());
         panels.add(new ResourceWizardPanel.Panel());
-        
-        if(I18nUtil.getOptions().isAdvancedWizard())
-            panels.add(new AdditionalWizardPanel.Panel());
-        
+        panels.add(new AdditionalWizardPanel.Panel());
         panels.add(new HardStringWizardPanel.Panel());
         
         return new WizardDescriptor.ArrayIterator((WizardDescriptor.Panel[])
@@ -127,10 +124,7 @@ public class I18nWizardAction extends NodeAction {
         ArrayList contents = new ArrayList(4);
         contents.add(Util.getString("TXT_SelectSourcesHelp"));
         contents.add(Util.getString("TXT_SelectResourceHelp"));
-        
-        if(I18nUtil.getOptions().isAdvancedWizard())
-            contents.add(Util.getString("TXT_AdditionalHelp"));
-        
+        contents.add(Util.getString("TXT_AdditionalHelp"));
         contents.add(Util.getString("TXT_FoundStringsHelp"));
         
         wizardDesc.putProperty(

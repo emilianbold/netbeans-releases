@@ -53,49 +53,18 @@ public class I18nOptionsBeanInfo extends SimpleBeanInfo {
     /** Overrides superclass method. */
     public PropertyDescriptor[] getPropertyDescriptors() {
         try {
-            PropertyDescriptor advWizardPD    = new PropertyDescriptor(I18nOptions.PROP_ADVANCED_WIZARD, I18nOptions.class);
-            PropertyDescriptor initCodePD     = new PropertyDescriptor(I18nOptions.PROP_INIT_JAVA_CODE, I18nOptions.class);
-            PropertyDescriptor replaceCodePD  = new PropertyDescriptor(I18nOptions.PROP_REPLACE_JAVA_CODE, I18nOptions.class);
-            PropertyDescriptor regExpPD       = new PropertyDescriptor(I18nOptions.PROP_REGULAR_EXPRESSION, I18nOptions.class);
-            PropertyDescriptor i18nRegExpPD   = new PropertyDescriptor(I18nOptions.PROP_I18N_REGULAR_EXPRESSION, I18nOptions.class);
             PropertyDescriptor replaceValuePD = new PropertyDescriptor(I18nOptions.PROP_REPLACE_RESOURCE_VALUE, I18nOptions.class);
-            PropertyDescriptor lastResPD      = new PropertyDescriptor(I18nOptions.PROP_LAST_RESOURCE2, I18nOptions.class);
 
-            // Set expert flags.
-            initCodePD.setExpert(true);
-            replaceCodePD.setExpert(true);
-            regExpPD.setExpert(true);
-            i18nRegExpPD.setExpert(true);
-
-            // Set last resource property as hidden.
-            lastResPD.setHidden(true);
-            
             ResourceBundle bundle = NbBundle.getBundle(I18nOptionsBeanInfo.class);
             
             // Set display names.
-            advWizardPD.setDisplayName(bundle.getString("TXT_AdvancedWizard"));
-            initCodePD.setDisplayName(bundle.getString("TXT_InitCodeFormat"));
-            replaceCodePD.setDisplayName(bundle.getString("TXT_ReplaceCodeFormat"));
-            regExpPD.setDisplayName(bundle.getString("TXT_RegularExpression"));
             replaceValuePD.setDisplayName(bundle.getString("TXT_ReplaceResourceValue"));
-            i18nRegExpPD.setDisplayName(bundle.getString("TXT_I18nRegularExpression"));
 
             // Set short descriptions.
-            advWizardPD.setShortDescription(bundle.getString("TXT_AdvancedWizardDesc"));
-            initCodePD.setShortDescription(bundle.getString("TXT_InitCodeFormatDesc"));
-            replaceCodePD.setShortDescription(bundle.getString("TXT_ReplaceCodeFormatDesc"));
-            regExpPD.setShortDescription(bundle.getString("TXT_RegularExpressionDesc"));
             replaceValuePD.setShortDescription(bundle.getString("TXT_ReplaceResourceValueDesc"));
-            i18nRegExpPD.setShortDescription(bundle.getString("TXT_I18nRegularExpressionDesc"));
-            
-            // Set property editors.
-            initCodePD.setPropertyEditorClass(HelpStringCustomEditor.InitCodeEditor.class);
-            replaceCodePD.setPropertyEditorClass(HelpStringCustomEditor.ReplaceCodeEditor.class); 
-            regExpPD.setPropertyEditorClass(HelpStringCustomEditor.RegExpEditor.class);
-            i18nRegExpPD.setPropertyEditorClass(HelpStringCustomEditor.I18nRegExpEditor.class);
             
             return new PropertyDescriptor[] {
-                advWizardPD, initCodePD, replaceCodePD, regExpPD, i18nRegExpPD, replaceValuePD, lastResPD
+                replaceValuePD,
             };
         } catch(IntrospectionException ie) {
             return null;
