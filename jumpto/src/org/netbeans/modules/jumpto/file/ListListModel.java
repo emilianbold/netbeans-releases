@@ -43,7 +43,7 @@ class ListListModel<T> implements ListModel {
     public ListListModel( List<? extends T> list, Object last ) {
         this.list = list;
         this.last = last;
-        System.out.println("Creating with last " + last);
+        // System.out.println("Creating with last " + last);
     }
     
     // List implementataion ------------------------------------------------

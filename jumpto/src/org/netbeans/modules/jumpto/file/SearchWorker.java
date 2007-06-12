@@ -61,14 +61,14 @@ class SearchWorker implements Runnable {
         
    
     public synchronized void cancel() {        
-        System.out.println("Worker CANCELED " + prefix);
+        // System.out.println("Worker CANCELED " + prefix);
         isCanceled = true;        
     }
 
     private long filesScanned;
         
     public void run() {        
-        System.out.println(" WORKER Started " + prefix);
+        // System.out.println(" WORKER Started " + prefix);
         
         Project pp = panel.getPreferedProject();
         
@@ -101,7 +101,7 @@ class SearchWorker implements Runnable {
             
         }
         panel.getSearch().workerFinished();
-        System.out.println("SEARCH TIME : " + ( System.currentTimeMillis() - time ) + " FILES SCANNED " + filesScanned);
+        // System.out.println("SEARCH TIME : " + ( System.currentTimeMillis() - time ) + " FILES SCANNED " + filesScanned);
     }
     
     private List<FileDescription> doSearch( Project p, boolean ignore ) {
