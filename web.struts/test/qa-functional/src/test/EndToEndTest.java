@@ -139,6 +139,7 @@ public class EndToEndTest extends JellyTestCase {
                 (JTextField)new JLabelOperator(frameworkStep, "Application Resource:").getLabelFor()
                 ).setText("com.mycompany.eshop.struts.ApplicationResource");
         frameworkStep.btFinish().pushNoBlock();
+        frameworkStep.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 60000);
         frameworkStep.waitClosed();
         // Opening Projects
         String openingProjectsTitle = Bundle.getString(
@@ -146,8 +147,9 @@ public class EndToEndTest extends JellyTestCase {
                 "LBL_Opening_Projects_Progress");
         try {
             // wait at most 60 second until progress dialog dismiss
-            JemmyProperties.setCurrentTimeout("ComponentOperator.WaitStateTimeout", 60000);
-            new NbDialogOperator(openingProjectsTitle).waitClosed();
+            NbDialogOperator openingOper = new NbDialogOperator(openingProjectsTitle);
+            frameworkStep.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 60000);
+            openingOper.waitClosed();
         } catch (TimeoutExpiredException e) {
             // ignore when progress dialog was closed before we started to wait for it
         }
