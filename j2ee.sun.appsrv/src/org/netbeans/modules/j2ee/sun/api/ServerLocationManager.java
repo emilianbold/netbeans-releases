@@ -30,6 +30,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Collections;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.openide.modules.InstalledFileLocator;
 import javax.enterprise.deploy.spi.factories.DeploymentFactory;
@@ -207,8 +209,7 @@ public class ServerLocationManager  {
                 data.serverOnlyClassLoader = new ExtendedClassLoader();
                 updatePluginLoader(platformLocation, data.serverOnlyClassLoader);
 	    } catch (Exception ex2) {
-		org.openide.ErrorManager.getDefault().notify(ex2);
-		System.out.println(ex2);
+		Logger.getLogger(ServerLocationManager.class.getName()).log(Level.FINER,null,ex2);     // NOI18N
 	    }}
 	
 	return data.cachedClassLoader;
