@@ -74,16 +74,5 @@ Microsystems, Inc. All Rights Reserved.
             </xml-rule>
         </resolver>
     </file>
-
-    <!-- Legacy code templates, called abbreviations -->
-    <file>
-        <ext name="xml"/>
-        <resolver mime="text/x-nbeditor-legacy-abbreviations">
-            <xml-rule>
-                <element name="abbrevs"/>
-            </xml-rule>
-        </resolver>
-    </file>
-
     
 </MIME-resolver>
