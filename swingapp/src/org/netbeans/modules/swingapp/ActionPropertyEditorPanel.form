@@ -25,10 +25,10 @@
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="jTabbedPane1" pref="382" max="32767" attributes="0"/>
-                  <Component id="jPanel5" pref="382" max="32767" attributes="0"/>
-                  <Component id="jPanel4" pref="382" max="32767" attributes="1"/>
-                  <Component id="jPanel1" alignment="0" pref="382" max="32767" attributes="1"/>
+                  <Component id="jTabbedPane1" pref="367" max="32767" attributes="0"/>
+                  <Component id="jPanel5" pref="367" max="32767" attributes="0"/>
+                  <Component id="jPanel4" pref="367" max="32767" attributes="1"/>
+                  <Component id="jPanel1" alignment="0" pref="367" max="32767" attributes="1"/>
                   <Component id="jPanel6" alignment="0" min="-2" pref="143" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
@@ -38,7 +38,7 @@
     <DimensionLayout dim="1">
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" attributes="0">
-              <EmptySpace min="-2" pref="20" max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="jPanel6" min="-2" max="-2" attributes="0"/>
                   <Component id="actionToEdit" min="-2" max="-2" attributes="0"/>
@@ -63,12 +63,12 @@
                       <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
                       <Component id="jLabel17" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <Group type="102" alignment="0" attributes="0">
-                      <EmptySpace min="-2" max="-2" attributes="0"/>
-                      <Component id="jTabbedPane1" max="32767" attributes="0"/>
+                  <Group type="102" attributes="0">
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="jTabbedPane1" pref="409" max="32767" attributes="0"/>
                   </Group>
               </Group>
-              <EmptySpace min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -107,8 +107,8 @@
                               <EmptySpace min="-2" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Component id="jPanel7" max="32767" attributes="0"/>
-                                  <Component id="tooltipField" alignment="0" pref="236" max="32767" attributes="2"/>
-                                  <Component id="textField" alignment="0" pref="236" max="32767" attributes="2"/>
+                                  <Component id="tooltipField" alignment="0" pref="221" max="32767" attributes="2"/>
+                                  <Component id="textField" alignment="0" pref="221" max="32767" attributes="2"/>
                               </Group>
                               <EmptySpace min="-2" max="-2" attributes="0"/>
                           </Group>
@@ -125,7 +125,7 @@
                                       <Component id="iconButtonSmall" min="-2" max="-2" attributes="1"/>
                                   </Group>
                               </Group>
-                              <EmptySpace pref="82" max="32767" attributes="0"/>
+                              <EmptySpace pref="67" max="32767" attributes="0"/>
                               <Group type="103" groupAlignment="1" attributes="0">
                                   <Component id="setIconButtonSmall" min="-2" max="-2" attributes="0"/>
                                   <Component id="setIconButtonLarge" min="-2" max="-2" attributes="0"/>
@@ -268,7 +268,7 @@
                               <Group type="102" attributes="0">
                                   <Group type="103" groupAlignment="0" attributes="0">
                                       <Component id="controlCheckbox" min="-2" max="-2" attributes="0"/>
-                                      <Component id="altCheckbox" alignment="1" pref="60" max="32767" attributes="1"/>
+                                      <Component id="altCheckbox" alignment="1" pref="45" max="32767" attributes="1"/>
                                   </Group>
                                   <EmptySpace type="separate" max="-2" attributes="0"/>
                                   <Group type="103" groupAlignment="0" attributes="0">
@@ -278,7 +278,7 @@
                                   <EmptySpace max="-2" attributes="0"/>
                               </Group>
                               <Group type="102" alignment="0" attributes="0">
-                                  <Component id="acceleratorText" pref="64" max="32767" attributes="3"/>
+                                  <Component id="acceleratorText" pref="49" max="32767" attributes="3"/>
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Component id="jLabel13" min="-2" max="-2" attributes="0"/>
                                   <EmptySpace max="-2" attributes="0"/>
@@ -436,19 +436,24 @@
             <DimensionLayout dim="0">
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" attributes="0">
-                      <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Group type="102" alignment="0" attributes="0">
+                          <Group type="102" attributes="0">
+                              <EmptySpace max="-2" attributes="0"/>
                               <Component id="jLabel8" min="-2" max="-2" attributes="0"/>
                               <EmptySpace min="-2" pref="36" max="-2" attributes="0"/>
-                              <Component id="enabledTextfield" pref="176" max="32767" attributes="1"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="selectedCombo" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="enabledTextfield" alignment="0" pref="161" max="32767" attributes="1"/>
+                                  <Component id="enabledCombo" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="selectedTextfield" alignment="0" pref="161" max="32767" attributes="1"/>
+                              </Group>
                           </Group>
                           <Group type="102" alignment="0" attributes="0">
+                              <EmptySpace min="20" pref="20" max="20" attributes="0"/>
                               <Component id="jLabel11" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace min="-2" pref="33" max="-2" attributes="0"/>
-                              <Component id="selectedTextfield" pref="176" max="32767" attributes="1"/>
                           </Group>
-                          <Group type="102" alignment="0" attributes="0">
+                          <Group type="102" alignment="1" attributes="0">
+                              <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Component id="jLabel3" min="-2" max="-2" attributes="0"/>
                                   <Component id="jLabel6" alignment="0" min="-2" max="-2" attributes="0"/>
@@ -457,8 +462,8 @@
                               <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Component id="blockingType" alignment="0" min="-2" pref="128" max="-2" attributes="0"/>
-                                  <Component id="blockingDialogText" pref="176" max="32767" attributes="0"/>
-                                  <Component id="blockingDialogTitle" alignment="0" pref="176" max="32767" attributes="1"/>
+                                  <Component id="blockingDialogTitle" alignment="0" pref="161" max="32767" attributes="1"/>
+                                  <Component id="blockingDialogText" alignment="0" pref="161" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                       </Group>
@@ -471,15 +476,19 @@
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="3" attributes="0">
-                          <Component id="enabledTextfield" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="jLabel8" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="enabledCombo" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
+                      <Component id="enabledTextfield" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="3" attributes="0">
-                          <Component id="selectedTextfield" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="jLabel11" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="selectedCombo" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace min="-2" pref="26" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="selectedTextfield" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace type="separate" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="3" attributes="0">
                           <Component id="jLabel1" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="blockingType" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -494,7 +503,7 @@
                           <Component id="jLabel6" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="blockingDialogText" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace pref="211" max="32767" attributes="0"/>
+                      <EmptySpace pref="118" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -571,6 +580,30 @@
                   <ResourceString bundle="org/netbeans/modules/swingapp/Bundle.properties" key="blockingDialogText.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
                 <Property name="enabled" type="boolean" value="false"/>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JComboBox" name="enabledCombo">
+              <Properties>
+                <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
+                  <StringArray count="4">
+                    <StringItem index="0" value="Item 1"/>
+                    <StringItem index="1" value="Item 2"/>
+                    <StringItem index="2" value="Item 3"/>
+                    <StringItem index="3" value="Item 4"/>
+                  </StringArray>
+                </Property>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JComboBox" name="selectedCombo">
+              <Properties>
+                <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
+                  <StringArray count="4">
+                    <StringItem index="0" value="Item 1"/>
+                    <StringItem index="1" value="Item 2"/>
+                    <StringItem index="2" value="Item 3"/>
+                    <StringItem index="3" value="Item 4"/>
+                  </StringArray>
+                </Property>
               </Properties>
             </Component>
           </SubComponents>

@@ -1157,6 +1157,30 @@ public class ActionManager {
         }
     }
     
+    static List<String> findBooleanProperties(FileObject fo) {
+        try {
+            return (List<String>)new ClassTask(fo) {
+                Object run(CompilationController controller, ClassTree classTree, TypeElement classElement) {
+                    List<String> props = new java.util.ArrayList<String>();
+                    // loop through the methods in this class
+                    for(ExecutableElement el : ElementFilter.methodsIn(classElement.getEnclosedElements())) {
+                        if(el.getModifiers().contains(Modifier.PUBLIC)) {
+                            if(TypeKind.BOOLEAN.equals(el.getReturnType().getKind())) {
+                                String name = el.getSimpleName().toString();
+                                if(name.startsWith("is")) {
+                                    props.add(name.substring(2,3).toLowerCase()+name.substring(3));//el.getSimpleName().toString().substring(3));
+                                }
+                            }
+                        }
+                    }
+                    return props;
+                }
+            }.execute();
+        } catch (Exception ex) {
+            return new ArrayList<String>();
+        }
+    }
+    
     static void initActionFromSource(final ProxyAction action, FileObject sourceFile) {
         try {
             new ActionMethodTask(sourceFile, action.getId()) {
