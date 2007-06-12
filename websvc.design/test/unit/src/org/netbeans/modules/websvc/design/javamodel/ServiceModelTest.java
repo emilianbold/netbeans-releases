@@ -11,6 +11,7 @@ package org.netbeans.modules.websvc.design.javamodel;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.FileInputStream;
 import java.io.IOException; 
 import java.io.InputStream;
 import java.io.StringWriter;
@@ -151,7 +152,7 @@ private static ServiceModelTest DEFAULT_LOOKUP = null;
     public void testServiceModel () throws IOException {
         FileObject sourceFileObject = dataDir.getFileObject("add/AddNumbers.java");
         assertNotNull(sourceFileObject);
-        
+            String res = copyFileToString(FileUtil.toFile(sourceFileObject));
         try {
             // compare model values
             ServiceModel model = ServiceModel.getServiceModel(sourceFileObject);
@@ -195,7 +196,23 @@ private static ServiceModelTest DEFAULT_LOOKUP = null;
                 }
                 
                 i++;
-            }            
+            }
+            model.setServiceName("addService");
+            model.setName("add");
+            model.setPortName("addPort");
+            String res1 = copyFileToString(FileUtil.toFile(sourceFileObject));
+            System.out.println("Changed AddNumbers.java:");
+            System.out.println(".....................................");
+            System.out.println(res1);
+            System.out.println(".....................................");
+            model.setServiceName(null);
+            model.setPortName(null);
+            model.setName(null);
+            String res2 = copyFileToString(FileUtil.toFile(sourceFileObject));
+            System.out.println("Original AddNumbers.java:");
+            System.out.println(".....................................");
+            System.out.println("res = "+res2);
+            System.out.println(".....................................");
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -244,10 +261,10 @@ private static ServiceModelTest DEFAULT_LOOKUP = null;
                 System.out.println("");
                 System.out.println("------------------");
             }
-            
         } catch (Exception ex) {
             ex.printStackTrace();
         }
+        
     }
 
     
@@ -344,6 +361,21 @@ private static ServiceModelTest DEFAULT_LOOKUP = null;
             ex.printStackTrace();
             return null;
         }
+    }
+    
+        /**
+     * Returns a string which contains the contents of a file.
+     *
+     * @param f the file to be read
+     * @return the contents of the file(s).
+     */
+    public final static String copyFileToString (java.io.File f) throws IOException {
+        int s = (int)f.length ();
+        byte[] data = new byte[s];
+        int len = new FileInputStream (f).read (data);
+        if (len != s)
+            throw new IOException("truncated file");
+        return new String (data);
     }
 
 }
