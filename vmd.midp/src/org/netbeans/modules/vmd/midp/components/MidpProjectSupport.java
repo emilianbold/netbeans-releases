@@ -300,7 +300,8 @@ public final class MidpProjectSupport {
     private static List<ClassPath> getClassPath(Project project, FileObject fileObject) {
         ArrayList<ClassPath> classPathList = new ArrayList<ClassPath>();
         ClassPathProvider cpp = project.getLookup().lookup(ClassPathProvider.class);
-        classPathList.add(cpp.findClassPath(fileObject, ClassPath.BOOT));
+        //Removed because of low performance
+        //classPathList.add(cpp.findClassPath(fileObject, ClassPath.BOOT));
         classPathList.add(cpp.findClassPath(fileObject, ClassPath.COMPILE));
         classPathList.add(cpp.findClassPath(fileObject, ClassPath.SOURCE));
         return classPathList;

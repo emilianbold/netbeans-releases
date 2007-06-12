@@ -20,10 +20,14 @@
 package org.netbeans.modules.vmd.midp.propertyeditors;
 
 import java.awt.Dimension;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.util.ArrayList;
 import java.util.Collection;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
@@ -51,30 +55,32 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
     
     private CustomEditor customEditor;
     private JRadioButton radioButton;
-    private int dependance;
-    
+    private int dependence;
+    private String comment;
     private long componentID;
     
-    private PropertyEditorString(int dependance) {
+    public PropertyEditorString(String comment, int dependence) {
         super();
-        this.dependance = dependance;
+        this.comment = comment;
+        this.dependence = dependence;
         initComponents();
         
         Collection<PropertyEditorElement> elements = new ArrayList<PropertyEditorElement>(1);
         elements.add(this);
         initElements(elements);
+        
     }
     
     public static final PropertyEditorString createInstance() {
-        return new PropertyEditorString(DEPENDENCE_NONE);
+        return new PropertyEditorString(null, DEPENDENCE_NONE);
     }
     
-    public static final PropertyEditorString createInstance(int dependance) {
-        return new PropertyEditorString(dependance);
+    public static final PropertyEditorString createInstance(int dependence) {
+        return new PropertyEditorString(null, dependence);
     }
     
     public static final PropertyEditorString createInstanceReadOnly() {
-        return new PropertyEditorString(DEPENDENCE_NONE) {
+        return new PropertyEditorString(null, DEPENDENCE_NONE) {
             public boolean canWrite() {
                 return false;
             }
@@ -84,7 +90,7 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
     private void initComponents() {
         radioButton = new JRadioButton();
         Mnemonics.setLocalizedText(radioButton, NbBundle.getMessage(PropertyEditorString.class, "LBL_STRING_STR")); // NOI18N
-        customEditor = new CustomEditor();
+        customEditor = new CustomEditor(comment);
     }
     
     public void init(DesignComponent component) {
@@ -141,7 +147,7 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
         
         final DesignDocument document = ActiveDocumentSupport.getDefault().getActiveDocument();
         if (document != null) {
-            switch (dependance) {
+            switch (dependence) {
             case DEPENDENCE_TEXT_BOX:
                 document.getTransactionManager().writeAccess( new Runnable() {
                     public void run() {
@@ -175,22 +181,53 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
     }
     
     private class CustomEditor {
+        private JPanel panel;
         private JEditorPane editorPane;
         private JScrollPane scrollPane;
+        private JLabel label;
+        private GridBagConstraints gridBagConstraints;
         
-        public CustomEditor() {
+        public CustomEditor(String comment) {
+            if (comment != null)
+                this.label = new JLabel(comment);
             initComponents();
         }
         
         private void initComponents() {
+            panel = new JPanel(new GridBagLayout());
             editorPane = new JEditorPane();
             scrollPane = new JScrollPane();
             scrollPane.setViewportView(editorPane);
             scrollPane.setPreferredSize(new Dimension(400, 100));
+            panel.add(scrollPane);
+            
+            panel.add(scrollPane, new GridBagConstraints());
+            
+            gridBagConstraints = new GridBagConstraints();
+            gridBagConstraints.gridx = 0;
+            gridBagConstraints.gridy = 0;
+            gridBagConstraints.fill = GridBagConstraints.BOTH;
+            gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
+            gridBagConstraints.weightx = 1.0;
+            gridBagConstraints.weighty = 1.0;
+            panel.add(scrollPane, gridBagConstraints);
+            if (label == null)
+                return;
+            panel.add(label);
+            gridBagConstraints = new GridBagConstraints();
+            gridBagConstraints.gridx = 0;
+            gridBagConstraints.gridy = 1;
+            gridBagConstraints.fill = GridBagConstraints.BOTH;
+            gridBagConstraints.ipadx = 1;
+            gridBagConstraints.ipady = 10;
+            gridBagConstraints.anchor = GridBagConstraints.WEST;
+            gridBagConstraints.weightx = 1.0;
+            gridBagConstraints.weighty = 1.0;
+            panel.add(label, gridBagConstraints);
         }
         
         public JComponent getComponent() {
-            return scrollPane;
+            return panel;
         }
         
         public void setText(String text) {

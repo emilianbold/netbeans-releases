@@ -54,6 +54,7 @@ import org.netbeans.modules.vmd.midp.propertyeditors.PropertiesCategories;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorString;
 import org.netbeans.modules.vmd.midp.screen.display.DisplayableDisplayPresenter;
 import org.netbeans.modules.vmd.midpnb.codegen.MidpCustomCodePresenterSupport;
+import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 
@@ -91,7 +92,7 @@ public final class FileBrowserCD extends ComponentDescriptor {
     private static DefaultPropertiesPresenter createPropertiesPresenter() {
        return new DefaultPropertiesPresenter(DesignEventFilterResolver.THIS_COMPONENT)
                .addPropertiesCategory(PropertiesCategories.CATEGORY_PROPERTIES) 
-                   .addProperty("Filter", PropertyEditorString.createInstance(), PROP_FILTER); 
+                   .addProperty("Filter","File filter", new PropertyEditorString(NbBundle.getMessage(FileBrowserCD.class, "PROPERTY_EDITOR_COMMENT"),PropertyEditorString.DEPENDENCE_NONE), PROP_FILTER); //NOI18N
     }
      
     private Presenter createSetterPresenter () {
