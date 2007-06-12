@@ -37,13 +37,13 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.filechooser.FileFilter;
 import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.NbBundle;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
+import org.openide.util.Exceptions;
 
 /**
  * This class is copy from j2seplatform
@@ -335,7 +335,7 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
                     addFiles (new File[] {selectedFile});
                 }
             } catch (MalformedURLException mue) {
-                ErrorManager.getDefault().notify(mue);
+                Exceptions.printStackTrace(mue);
             }
         }
     }//GEN-LAST:event_addResource
@@ -378,19 +378,18 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
             URL url = f.toURI().toURL();
             if (FileUtil.isArchiveFile(url)) {
                 url = FileUtil.getArchiveRoot(url);
-            }
-            else if (!url.toExternalForm().endsWith("/")){
+            } else if (!url.toExternalForm().endsWith("/")){
                 try {
                     url = new URL (url.toExternalForm()+"/");
                 } catch (MalformedURLException mue) {
-                    ErrorManager.getDefault().notify(mue);
+                    Exceptions.printStackTrace(mue);
                 }
             }
             if (this.volumeType.equals(PersistenceLibrarySupport.VOLUME_TYPE_JAVADOC)
                 && !PersistenceLibrarySupport.isValidLibraryJavadocRoot (url)) {
                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
                     NbBundle.getMessage(J2SEVolumeCustomizer.class,"TXT_InvalidJavadocRoot", f.getPath()),
-                    NotifyDescriptor.ERROR_MESSAGE));
+                                                                                 NotifyDescriptor.ERROR_MESSAGE));
                 continue;
             }
             this.model.addResource(url);

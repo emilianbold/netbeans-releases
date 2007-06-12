@@ -21,11 +21,8 @@ package org.netbeans.modules.j2ee.persistence.wizard.fromdb;
 
 import java.awt.Component;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -34,7 +31,6 @@ import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.progress.aggregate.AggregateProgressFactory;
-import org.netbeans.api.progress.aggregate.AggregateProgressHandle;
 import org.netbeans.api.progress.aggregate.ProgressContributor;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -44,14 +40,12 @@ import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlExcep
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -233,14 +227,13 @@ public class RelatedCMPWizard extends WizardDescriptor.ArrayIterator<WizardDescr
         final JComponent progressComponent = ProgressHandleFactory.createProgressComponent(handle);
         
         final Runnable r = new Runnable() {
+
             public void run() {
                 try {
                     createBeans(wiz, progressContributor);
                 } catch (IOException ioe) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
-                    NotifyDescriptor nd =
-                            new NotifyDescriptor.Message(ioe.getLocalizedMessage(),
-                            NotifyDescriptor.ERROR_MESSAGE);
+                    Logger.getLogger("global").log(Level.INFO, null, ioe);
+                    NotifyDescriptor nd = new NotifyDescriptor.Message(ioe.getLocalizedMessage(), NotifyDescriptor.ERROR_MESSAGE);
                     DialogDisplayer.getDefault().notify(nd);
                 } finally {
                     generator.uninit();

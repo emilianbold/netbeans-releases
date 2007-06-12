@@ -1,6 +1,8 @@
 package org.netbeans.modules.j2ee.persistence.wizard.dao;
 
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.ComboBoxModel;
 import javax.swing.JPanel;
 import javax.swing.event.ChangeListener;
@@ -15,7 +17,6 @@ import org.netbeans.modules.j2ee.persistence.wizard.fromdb.SourceGroupSupport;
 import org.netbeans.modules.j2ee.persistence.wizard.fromdb.SourceGroupUISupport;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.spi.project.ui.templates.support.Templates;
-import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.ChangeSupport;
@@ -97,7 +98,7 @@ public final class EjbFacadeVisualPanel2 extends JPanel implements DocumentListe
         try {
             Templates.setTargetFolder(settings, SourceGroupSupport.getFolderForPackage(getLocationValue(), getPackage()));
         } catch (IOException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            Logger.getLogger("global").log(Level.INFO, null, ex);
         }
     }
 

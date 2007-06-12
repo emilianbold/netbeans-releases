@@ -29,9 +29,10 @@ import java.util.Comparator;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.WeakHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.api.explorer.MetaDataListener;
-import org.openide.ErrorManager;
 
 /**
  * Provides metadata information for a database connection.
@@ -170,7 +171,7 @@ public class DBMetaDataProvider {
                     schema.refresh();
                 }
             } catch (SQLException e) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                Logger.getLogger("global").log(Level.INFO, null, e);
             }
         }
 

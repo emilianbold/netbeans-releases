@@ -21,7 +21,6 @@ package org.netbeans.modules.j2ee.persistence.wizard.fromdb;
 
 import java.io.IOException;
 import java.util.Set;
-import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.aggregate.ProgressContributor;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;

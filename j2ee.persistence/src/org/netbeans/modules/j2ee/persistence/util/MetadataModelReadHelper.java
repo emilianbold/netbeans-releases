@@ -21,7 +21,6 @@ package org.netbeans.modules.j2ee.persistence.util;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;

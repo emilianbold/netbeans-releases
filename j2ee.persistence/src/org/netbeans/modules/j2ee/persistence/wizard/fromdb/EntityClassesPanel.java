@@ -43,11 +43,11 @@ import org.netbeans.modules.j2ee.persistence.wizard.library.PersistenceLibrarySu
 import org.netbeans.modules.j2ee.persistence.wizard.unit.PersistenceUnitWizardPanel.TableGeneration;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.spi.project.ui.templates.support.Templates;
-import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
 import org.openide.util.ChangeSupport;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -159,7 +159,7 @@ public class EntityClassesPanel extends javax.swing.JPanel {
             }
             selectedTables.ensureUniqueClassNames();
         } catch (IOException e) {
-            ErrorManager.getDefault().notify(e);
+            Exceptions.printStackTrace(e);
         }
 
         TableUISupport.connectClassNames(classNamesTable, selectedTables);
@@ -241,7 +241,7 @@ public class EntityClassesPanel extends javax.swing.JPanel {
             try {
                 selectedTables.setTargetFolder(getLocationValue(), getPackageName());
             } catch (IOException e) {
-                ErrorManager.getDefault().notify(e);
+                Exceptions.printStackTrace(e);
             }
         }
     }

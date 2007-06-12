@@ -30,7 +30,7 @@ import org.netbeans.modules.dbschema.SchemaElement;
 import org.netbeans.modules.dbschema.TableElement;
 import org.netbeans.modules.dbschema.jdbcimpl.ConnectionProvider;
 import org.netbeans.modules.dbschema.jdbcimpl.SchemaElementImpl;
-import org.openide.ErrorManager;
+import org.openide.util.Exceptions;
 
 /**
  * 
@@ -79,7 +79,7 @@ public class Schema {
             try {
                 schemaElementImpl.setName(DBIdentifier.create("foo")); // XXX set a proper name
             } catch (DBException e) {
-                ErrorManager.getDefault().notify(e);
+                Exceptions.printStackTrace(e);
             }
             schemaElement = new SchemaElement(schemaElementImpl);
             synchronized (this) {

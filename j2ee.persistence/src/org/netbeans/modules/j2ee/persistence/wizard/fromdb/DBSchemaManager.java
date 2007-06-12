@@ -28,6 +28,8 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
@@ -39,7 +41,6 @@ import org.netbeans.modules.dbschema.jdbcimpl.ConnectionProvider;
 import org.netbeans.modules.dbschema.jdbcimpl.SchemaElementImpl;
 import org.netbeans.modules.dbschema.util.NameUtil;
 import org.netbeans.modules.j2ee.persistence.util.EventRequestProcessor;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -109,15 +110,15 @@ public class DBSchemaManager {
         });
 
         actions.add(new EventRequestProcessor.CancellableAction() {
-
+            
             private SchemaElementImpl schemaElementImpl;
             private boolean cancelled;
-
+            
             public void run(final EventRequestProcessor.Context actionContext) {
                 actionContext.getProgress().progress(NbBundle.getMessage(DBSchemaManager.class, "LBL_RetrievingSchema"));
-
+                
                 oldDBConn = dbconn;
-
+                
                 ConnectionProvider connectionProvider = null;
                 try {
                     connectionProvider = new ConnectionProvider(conn, dbconn.getDriverClass());
@@ -126,27 +127,27 @@ public class DBSchemaManager {
                     exception = e;
                     return;
                 }
-
+                
                 synchronized (this) {
                     if (cancelled) {
                         return;
                     }
                     schemaElementImpl = new SchemaElementImpl(connectionProvider);
                 }
-
+                
                 try {
                     schemaElementImpl.setName(DBIdentifier.create("dbschema")); // NOI18N
                 } catch (DBException e) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                    Logger.getLogger("global").log(Level.INFO, null, e);
                     return;
                 }
                 schemaElement = new SchemaElement(schemaElementImpl);
-
+                
                 schemaElementImpl.addPropertyChangeListener(new PropertyChangeListener() {
                     public void propertyChange(PropertyChangeEvent event) {
                         String propertyName = event.getPropertyName();
                         String message = null;
-
+                        
                         if ("totalCount".equals(propertyName)) { // NOI18N
                             int workunits = ((Integer)event.getNewValue()).intValue();
                             actionContext.getProgress().switchToDeterminate(workunits);
@@ -162,24 +163,24 @@ public class DBSchemaManager {
                         } else if ("FKv".equals(propertyName)) { // NOI18N
                             message = NbBundle.getMessage(DBSchemaManager.class, "LBL_RetrievingViewKeys", event.getNewValue());
                         }
-
+                        
                         if (message != null) {
                             actionContext.getProgress().progress(message);
                         }
                     }
                 });
-
+                
                 schemaElementImpl.initTables(connectionProvider);
             }
-
+            
             public boolean getRunInEventThread() {
                 return false;
             }
-
+            
             public boolean isEnabled() {
                 return conn != null;
             }
-
+            
             public boolean cancel() {
                 synchronized (this) {
                     cancelled = true;

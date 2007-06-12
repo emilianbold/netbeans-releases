@@ -38,6 +38,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.queries.UnitTestForSourceQuery;
@@ -59,10 +61,10 @@ import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.java.project.classpath.ProjectClassPathExtender;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -217,12 +219,8 @@ public class Util {
             FileObject sourceRoot = URLMapper.findFileObject(urls[i]);
             if (sourceRoot != null) {
                 result.add(sourceRoot);
-            } else {
-                int severity = ErrorManager.INFORMATIONAL;
-                if (ErrorManager.getDefault().isNotifiable(severity)) {
-                    ErrorManager.getDefault().notify(severity, new IllegalStateException(
-                            "No FileObject found for the following URL: " + urls[i])); //NOI18N
-                }
+            } else if (Logger.getLogger("global").isLoggable(Level.INFO)) {
+                Logger.getLogger("global").log(Level.INFO, null, new IllegalStateException("No FileObject found for the following URL: " + urls[i]));
             }
         }
         return result;
@@ -487,7 +485,7 @@ public class Util {
             try {
                 pcpe.addLibrary(library);
             } catch (IOException ex) {
-                ErrorManager.getDefault().notify(ex);
+                Exceptions.printStackTrace(ex);
             }
         }
     }

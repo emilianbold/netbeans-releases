@@ -23,6 +23,8 @@ import java.awt.Image;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.modules.j2ee.persistence.dd.PersistenceMetadata;
@@ -30,7 +32,6 @@ import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.Persistenc
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.netbeans.api.xml.cookies.CheckXMLCookie;
 import org.netbeans.api.xml.cookies.ValidateXMLCookie;
 import org.netbeans.modules.schema2beans.Schema2BeansException;
@@ -47,6 +48,7 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -98,7 +100,7 @@ public class PUDataObject extends XmlMultiViewDataObject {
             try {
                 edit.saveDocument();
             } catch (IOException ex) {
-                ErrorManager.getDefault().notify(ex);
+                Exceptions.printStackTrace(ex);
             }
         }
     }
@@ -112,7 +114,7 @@ public class PUDataObject extends XmlMultiViewDataObject {
             try {
                 persistence = getPersistence();
             } catch (RuntimeException ex) { // must catch RTE (thrown by schema2beans when document is not valid)
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                Logger.getLogger("global").log(Level.INFO, null, ex);
                 return false;
             }
         } else {
@@ -122,14 +124,14 @@ public class PUDataObject extends XmlMultiViewDataObject {
                 try {
                     newPersistence = Persistence.createGraph(is, true);
                 } catch (RuntimeException ex) { // must catch RTE (thrown by schema2beans when document is not valid)
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                    Logger.getLogger("global").log(Level.INFO, null, ex);
                     return false;
                 }
                 if (newPersistence!=null) {
                     persistence.merge(newPersistence, org.netbeans.modules.schema2beans.BaseBean.MERGE_UPDATE);
                 }
             } catch (IOException ioe){
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
+                Logger.getLogger("global").log(Level.INFO, null, ioe);
                 return false;
             }
         }
@@ -188,7 +190,7 @@ public class PUDataObject extends XmlMultiViewDataObject {
             try {
                 persistence = PersistenceMetadata.getDefault().getRoot(getPrimaryFile());
             } catch (IOException ex) {
-                ErrorManager.getDefault().notify(ex);
+                Exceptions.printStackTrace(ex);
             }
         }
         assert persistence != null;
@@ -351,9 +353,9 @@ public class PUDataObject extends XmlMultiViewDataObject {
                 out.close();
                 getDataCache().setData(lock, out.toString(), modify);
             } catch (IOException e) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                Logger.getLogger("global").log(Level.INFO, null, e);
             } catch (Schema2BeansException e) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                Logger.getLogger("global").log(Level.INFO, null, e);
             } finally {
                 if (lock != null){
                     lock.releaseLock();

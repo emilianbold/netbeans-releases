@@ -20,10 +20,10 @@
 package org.netbeans.modules.j2ee.persistence.action;
 
 import java.io.IOException;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.NodeAction;
@@ -50,7 +50,7 @@ public final class UseEntityManagerAction extends NodeAction {
         try {
             emGenerator.generate(options);
         } catch (IOException ex) {
-            ErrorManager.getDefault().notify(ex);
+            Exceptions.printStackTrace(ex);
         }
     }
     

@@ -27,6 +27,8 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.AbstractListModel;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -48,10 +50,10 @@ import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.Persistenc
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
 import org.netbeans.spi.project.ui.templates.support.Templates;
-import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.ChangeSupport;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -468,7 +470,7 @@ public class PersistenceClientEntitySelectionVisual extends javax.swing.JPanel {
                             break;
                         }
                     } catch (IOException ex) {
-                        ErrorManager.getDefault().notify(ex);
+                        Exceptions.printStackTrace(ex);
                     }
                 }
             }
@@ -534,7 +536,7 @@ public class PersistenceClientEntitySelectionVisual extends javax.swing.JPanel {
                     String packageName = text.length() > simpleName.length() ? text.substring(0, text.length() - simpleName.length() -1 ) : "<default package>";
                     text =  simpleName + " (" +  packageName + ")";
                 } else {
-                    ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "Entity:" + value + " returns null from getClass2(); see IZ 80024"); //NOI18N
+                    Logger.getLogger("global").log(Level.INFO, "Entity:" + value + " returns null from getClass2(); see IZ 80024"); //NOI18N
                 }
             }
             if (text == null) {

@@ -35,14 +35,13 @@ import org.netbeans.modules.j2ee.persistence.spi.provider.PersistenceProviderSup
 import org.netbeans.modules.j2ee.persistence.spi.server.ServerStatusProvider;
 import org.netbeans.modules.j2ee.persistence.unit.*;
 import org.netbeans.modules.j2ee.persistence.wizard.Util;
-import org.openide.ErrorManager;
-import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.Exceptions;
 import org.openide.util.Parameters;
 
 /**
@@ -512,7 +511,7 @@ public class ProviderUtil {
         try {
             dataObject = DataObject.find(fo);
         } catch (DataObjectNotFoundException ex) {
-            ErrorManager.getDefault().notify(ex);
+            Exceptions.printStackTrace(ex);
         }
         if (!(dataObject instanceof PUDataObject)){
             throw new InvalidPersistenceXmlException(FileUtil.getFileDisplayName(fo));
@@ -559,12 +558,12 @@ public class ProviderUtil {
                         dd[0] = FileUtil.copyFile(Repository.getDefault().getDefaultFileSystem().findResource(
                                 "org-netbeans-modules-j2ee-persistence/persistence-1.0.xml"), persistenceLocation, "persistence"); //NOI18N
                     } catch (IOException ex) {
-                        ErrorManager.getDefault().notify(ex);
+                        Exceptions.printStackTrace(ex);
                     }
                 }
             });
         } catch (IOException ex) {
-            ErrorManager.getDefault().notify(ex);
+            Exceptions.printStackTrace(ex);
         }
         return dd[0];
     }
