@@ -23,6 +23,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -39,6 +40,35 @@ public class RefactoringUtil {
     private static final String JAVA_MIME_TYPE = "text/x-java"; //NO18N
     
     private RefactoringUtil() {
+    }
+    
+    /**
+     * Sets the given <code>toAdd</code> as the following problem for
+     * the given <code>existing</code> problem.
+     *
+     * @param toAdd the problem to add, may be null.
+     * @param existing the problem whose following problem should be set, may be null.
+     *
+     * @return the existing problem with its following problem
+     * set to the given problem or null if both of the params
+     * were null.
+     *
+     */
+    public static Problem addToEnd(Problem toAdd, Problem existing){
+        if (existing == null){
+            return toAdd;
+        }
+        if (toAdd == null){
+            return existing;
+        }
+        
+        Problem tail = existing;
+        while(tail.getNext() != null){
+            tail = tail.getNext();
+        }
+        tail.setNext(toAdd);
+        
+        return tail;
     }
     
     // copied from o.n.m.java.refactoring.RetoucheUtils

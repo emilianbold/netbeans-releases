@@ -19,6 +19,8 @@ package org.netbeans.modules.web.refactoring;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import javax.lang.model.element.Element;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.source.CancellableTask;
@@ -39,18 +41,17 @@ import org.netbeans.modules.web.refactoring.rename.WebXmlMove;
 import org.netbeans.modules.web.refactoring.rename.WebXmlPackageRename;
 import org.netbeans.modules.web.refactoring.rename.WebXmlRename;
 import org.netbeans.modules.web.refactoring.safedelete.WebXmlSafeDelete;
+import org.netbeans.modules.web.refactoring.whereused.TldWhereUsed;
 import org.netbeans.modules.web.refactoring.whereused.WebXmlWhereUsed;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
 /**
- * A refactoring plugin for Web related refactorings.
+ * A refactoring factory for Web related refactorings.
  *
  * @author Erno Mononen
  */
 public class WebRefactoringFactory implements RefactoringPluginFactory{
-    
-    private static final String JAVA_MIME_TYPE = "text/x-java"; //NO18N
     
     public WebRefactoringFactory() {
     }
@@ -72,25 +73,29 @@ public class WebRefactoringFactory implements RefactoringPluginFactory{
         FileObject ddFile = WebModule.getWebModule(sourceFO).getDeploymentDescriptor();
         WebApp webApp = getWebApp(ddFile);
         String clazz = resolveClass(handle);
+
+        List<WebRefactoring> refactorings = new ArrayList<WebRefactoring>();
         
         if (refactoring instanceof RenameRefactoring){
             RenameRefactoring rename = (RenameRefactoring) refactoring;
             if (javaPackage){
-                return new WebXmlPackageRename(ddFile, webApp, sourceFO, rename);
+                refactorings.add(new WebXmlPackageRename(ddFile, webApp, sourceFO, rename));
+            } else {
+            refactorings.add(new WebXmlRename(clazz, rename, webApp, ddFile));
             }
-            return new WebXmlRename(clazz, rename, webApp, ddFile);
         } if (refactoring instanceof SafeDeleteRefactoring){
             SafeDeleteRefactoring safeDelete = (SafeDeleteRefactoring) refactoring;
-            return new WebXmlSafeDelete(ddFile, webApp, clazz, safeDelete);
+            refactorings.add(new WebXmlSafeDelete(ddFile, webApp, clazz, safeDelete));
         } if (refactoring instanceof WhereUsedQuery){
             WhereUsedQuery whereUsedQuery = (WhereUsedQuery) refactoring;
-            return new WebXmlWhereUsed(ddFile, webApp, clazz, whereUsedQuery);
+            refactorings.add(new WebXmlWhereUsed(ddFile, webApp, clazz, whereUsedQuery));
+            refactorings.add(new TldWhereUsed(clazz,sourceFO, whereUsedQuery));
         } if (refactoring instanceof MoveRefactoring){
             MoveRefactoring move = (MoveRefactoring) refactoring;
-            return new WebXmlMove(ddFile, webApp, clazz, move);
+            refactorings.add(new WebXmlMove(ddFile, webApp, clazz, move));
         }
         
-        return null;
+        return refactorings.isEmpty() ? null : new WebRefactoringPlugin(refactorings);
     }
     
     private WebApp getWebApp(FileObject ddFile){

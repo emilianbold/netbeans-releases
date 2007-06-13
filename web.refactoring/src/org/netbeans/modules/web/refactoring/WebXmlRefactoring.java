@@ -26,7 +26,6 @@ import org.netbeans.modules.j2ee.dd.api.web.Listener;
 import org.netbeans.modules.j2ee.dd.api.web.Servlet;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.refactoring.api.Problem;
-import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
 import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.text.PositionBounds;
@@ -39,7 +38,7 @@ import org.openide.util.NbBundle;
  *
  * @author Erno Mononen
  */
-public abstract class WebXmlRefactoring implements RefactoringPlugin{
+public abstract class WebXmlRefactoring implements WebRefactoring{
     
     protected final WebApp webModel;
     protected final FileObject webDD;
@@ -55,18 +54,6 @@ public abstract class WebXmlRefactoring implements RefactoringPlugin{
         }
         return null;
         
-    }
-    
-    public Problem checkParameters() {
-        return null;
-    }
-    
-    public Problem fastCheckParameters() {
-        return null;
-    }
-    
-    public void cancelRequest() {
-        //
     }
     
     protected List<Servlet> getServlets(String clazz){
