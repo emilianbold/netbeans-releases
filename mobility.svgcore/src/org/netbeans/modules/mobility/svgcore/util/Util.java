@@ -66,7 +66,6 @@ public class Util {
     // * <br> no Exception is thrown but warning dialog is displayed.
     // * @param fo SVG file to be lunched in external editor
     // 
-/*    
     public static void launchExternalEditor(final FileObject fo){
         assert fo != null : "File object is null";
         final InputOutput io = IOProvider.getDefault().getIO(NbBundle.getMessage(Util.class, "LBL_EditedSvgFile", fo.getName()), false); //NOI18N
@@ -102,7 +101,7 @@ public class Util {
             }
         }, io);
     }
-*/
+
     /**
      * Loads SVG image from the FileObject
      * @param fo from which to create SVG image
