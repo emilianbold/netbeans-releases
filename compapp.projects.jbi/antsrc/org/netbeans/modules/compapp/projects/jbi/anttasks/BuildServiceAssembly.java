@@ -54,7 +54,6 @@ import org.netbeans.modules.xml.wsdl.model.Port;
 import org.netbeans.modules.xml.wsdl.model.Service;
 import org.netbeans.modules.xml.wsdl.model.Definitions;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
@@ -89,8 +88,6 @@ public class BuildServiceAssembly extends Task {
     
     // private boolean jbiRouting = true;
     private String serviceUnitsDirLoc;
-    private String srcDirLoc;
-    private String confDirLoc;
     private String jbiasaDirLoc;
     
     private boolean saInternalRouting = true;
@@ -161,24 +158,20 @@ public class BuildServiceAssembly extends Task {
                 return;
             }
             
-            String projPath = p.getProperty("basedir") + File.separator;
-            String asiFileLoc = projPath + confDir + File.separator + "AssemblyInformation.xml";
-            // USE BCI.xml
-            String bciFileLoc = projPath + confDir + File.separator + "BindingComponentInformation.xml";
-            srcDirLoc = projPath + "src";
-            serviceUnitsDirLoc = srcDirLoc + File.separator + "jbiServiceUnits";
-            confDirLoc = srcDirLoc + File.separator + "conf";
-            jbiasaDirLoc = srcDirLoc + File.separator + "jbiasa";
+            String projPath = p.getProperty("basedir") + File.separator;            
+            String srcDirLoc = projPath + "src" + File.separator;
+            String confDirLoc = srcDirLoc + "conf" + File.separator;
+            
+            serviceUnitsDirLoc = srcDirLoc + "jbiServiceUnits";            
+            jbiasaDirLoc = srcDirLoc + "jbiasa";
+            
             String catalogDirLoc = serviceUnitsDirLoc
                     + File.separator + "META-INF"
                     + File.separator + "catalogData";
             
-            //
             // String mapFileLoc = projPath + confDir + File.separator + "portmap.xml";
-            String connectionsFileLoc = projPath + confDir + File.separator + "connections.xml";
+            String connectionsFileLoc = confDirLoc + "connections.xml";
             String buildDir = projPath + p.getProperty(JbiProjectProperties.BUILD_DIR);
-            
-            String casaFileLoc = confDirLoc + File.separator + getCASAFileName();
             
             // create confDir if needed..
             File buildMetaInfDir = new File(buildDir + "/META-INF");
@@ -194,17 +187,20 @@ public class BuildServiceAssembly extends Task {
             mRepo = new wsdlRepository(p);
             
             String jbiFileLoc = buildDir + "/META-INF/jbi.xml";
-            String genericBCJarFileLoc = buildDir + "/BCDeployment.jar";
-            
+            String genericBCJarFileLoc = buildDir + "/BCDeployment.jar";            
             
             File bDir = new File(buildDir);
             if (!bDir.exists()) {
                 bDir.mkdirs();
             }
             
-            // getting all the bc names into bcNameList
-            loadBindingComponentInfo(bciFileLoc);
+            // Get all the bc names into bcNameList.
+            // Use ComponentInformation.xml instead of BindingComponentInformatino.xml
+            // to get all the binding components!
+            String ciFileLoc = confDirLoc + "ComponentInformation.xml";
+            loadBindingComponentInfo(ciFileLoc);
             
+            String asiFileLoc = confDirLoc + "AssemblyInformation.xml";
             loadAssemblyInfo(asiFileLoc);
             
             // generate the SE jar file list
@@ -245,6 +241,7 @@ public class BuildServiceAssembly extends Task {
             Map<String, List[]> bcConnections = ResloveConnections(mRepo, cc);
             
             // todo: 02/08/07 need to merge Casa Connections in...
+            String casaFileLoc = confDirLoc + getCASAFileName();
             CasaBuilder casaBuilder = new CasaBuilder(project, mRepo, this, casaFileLoc);
             casaBuilder.mergeCasaConnection(cc, bcConnections);
             
@@ -255,7 +252,7 @@ public class BuildServiceAssembly extends Task {
             
             // Generate SA jbi.xml,
             generateServiceAssemblyDescriptor(
-                    cc, bcConnections, connectionsFileLoc);
+                    cc, bcConnections, connectionsFileLoc, jbiFileLoc);
             
             // Todo: 08/22/06 merge catalogs
             MergeSeJarCatalogs(catalogDirLoc);
@@ -269,7 +266,7 @@ public class BuildServiceAssembly extends Task {
                 List<Connection>[] clist = bcConnections.get(bcName);
                 String bcJarName = null;
                 for (int k = 0; k < suJarNames.size(); k++) {
-                    String name = (String) suJarNames.get(k);
+                    String name = suJarNames.get(k);
                     if (name.indexOf(bcName) != -1) {
                         // Use the name defined in ASI.xml
                         bcJarName = buildDir + "/" + name;
@@ -294,8 +291,6 @@ public class BuildServiceAssembly extends Task {
             }
             
             Document casaDocument = casaBuilder.createCasaDocument(jbiDocument);  
-            
-            XmlUtil.writeToFile(jbiFileLoc, jbiDocument);
             XmlUtil.writeToFile(casaFileLoc, casaDocument);
             
         } catch (Exception e) {
@@ -451,13 +446,12 @@ public class BuildServiceAssembly extends Task {
     }
     
     /**
-     * Generates service assembly descriptor document (based on the ASI.xml
-     * document).
+     * Generates service assembly jbi.xml (based on the ASI.xml document).
      */
     private void generateServiceAssemblyDescriptor(ConnectionContainer cc,
             Map<String, List[]> bcs, 
-            String conFileLoc) {
-        
+            String conFileLoc,
+            String jbiFileLoc) {        
         try {
             CreateSAConnections dd = new CreateSAConnections();
             dd.buildDOMTree(cc, mRepo, getProject());
@@ -485,7 +479,16 @@ public class BuildServiceAssembly extends Task {
                 // 2. add connections
                 sa.appendChild(dd.createConnections(cc, jbiDocument));
                 
+                // normalize the document
                 sa.normalize();
+                NodeList children = sa.getChildNodes();
+                for (int i = children.getLength() - 1; i >= 0; i--) {
+                    Node child = children.item(i);
+                    String nodeValue = child.getNodeValue();
+                    if (nodeValue != null && nodeValue.trim().length() == 0) {
+                        sa.removeChild(child);
+                    }
+                }
             }
             
             // 3. update namespaces
@@ -500,6 +503,8 @@ public class BuildServiceAssembly extends Task {
                     }
                 }
             }
+                        
+            XmlUtil.writeToFile(jbiFileLoc, jbiDocument);
         } catch (Exception e) {
             e.printStackTrace();
             log(" Build SA Descriptor Failed: " + e.toString());
@@ -518,7 +523,7 @@ public class BuildServiceAssembly extends Task {
         // loop thru the Pt connections
         for (String pt : ptConnectionMap.keySet()) {
             PtConnection ptConnection = ptConnectionMap.get(pt);
-            if (showLog) {
+                if (showLog) {
                 log(ptConnection.dump());
             }
             
@@ -710,31 +715,36 @@ public class BuildServiceAssembly extends Task {
     }
     
     /**
-     * Loads binding component names from BindingComponentInformation.xml.
+     * Loads binding component names from ComponentInformation.xml.
      *
-     * @param bciFileLoc    file location for BindingComponentInformation.xml
+     * @param ciFileLoc    file location for ComponentInformation.xml
      */
-    private void loadBindingComponentInfo(String bciFileLoc) {
+    private void loadBindingComponentInfo(String ciFileLoc) {
         try {
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             factory.setValidating(false);
             
-            Document bciDocument =
-                    factory.newDocumentBuilder().parse(new File(bciFileLoc));
-            NodeList bcNameNodeList = bciDocument.getElementsByTagName("name");
+            Document document =
+                    factory.newDocumentBuilder().parse(new File(ciFileLoc));
+            NodeList compInfoNodeList = document.getElementsByTagName("component-info");
             
             bcNameList = new ArrayList<String>();
-            for (int i = 0, isize = bcNameNodeList.getLength(); i < isize; i++) {
-                Node bcNameNode = bcNameNodeList.item(i);
-                String bcName = bcNameNode.getFirstChild().getNodeValue();
-                bcNameList.add(bcName);
+            for (int i = 0, isize = compInfoNodeList.getLength(); i < isize; i++) {
+                Element compInfo = (Element) compInfoNodeList.item(i);
+                Element typeElement = (Element) compInfo.getElementsByTagName("type").item(0);                
+                String compType = typeElement.getFirstChild().getNodeValue();
+                if (compType.equalsIgnoreCase("binding")) {
+                    Element nameElement = (Element) compInfo.getElementsByTagName("name").item(0);
+                    String compName = nameElement.getFirstChild().getNodeValue();
+                    bcNameList.add(compName);
+                }
             }
         } catch (IOException e) {
-            log("IOException: A parsing error occurred; the xml input is not valid: " + bciFileLoc);
+            log("IOException: A parsing error occurred; the xml input is not valid: " + ciFileLoc);
         } catch (SAXException e) {
-            log("SAXException: A parsing error occurred; the xml input is not valid: " + bciFileLoc);
+            log("SAXException: A parsing error occurred; the xml input is not valid: " + ciFileLoc);
         } catch (ParserConfigurationException e) {
-            log("ParserConfigurationException: A parsing error occurred; the xml input is not valid: " + bciFileLoc);
+            log("ParserConfigurationException: A parsing error occurred; the xml input is not valid: " + ciFileLoc);
         }
     }
     

@@ -241,8 +241,10 @@ public class CasaBuilder implements JbiConstants, CasaConstants {
             Element casaSU = bcNamespace2NameMap.values().contains(componentID) ?
                 createBCSUFromJbiElement(jbiSU) :
                 createSESUFromJbiElement(jbiSU);
-            
-            casaSUs.appendChild(casaSU);
+
+            if (casaSU != null) {
+                casaSUs.appendChild(casaSU);
+            }
         }
                 
         if (oldCasaDocument != null) {
@@ -434,6 +436,12 @@ public class CasaBuilder implements JbiConstants, CasaConstants {
         Element seSU = newCasaDocument.createElement(CASA_SERVICE_ENGINE_SERVICE_UNIT_ELEM_NAME);
         String suName = getJBIServiceUnitName(jbiSU);
 
+        List<Endpoint> suEndpointList = su2Endpoints.get(suName); 
+        if (suEndpointList == null || suEndpointList.size() == 0) {
+            log("ERROR: Invalid service unit name in service assembly jbi.xml: " + suName);
+            return null;
+        }
+        
         Element identification = (Element) jbiSU.getElementsByTagName(JBI_IDENTIFICATION_ELEM_NAME).item(0);
         String name = ((Element) identification.getElementsByTagName(JBI_NAME_ELEM_NAME).item(0)).
                 getFirstChild().getNodeValue();
@@ -457,21 +465,15 @@ public class CasaBuilder implements JbiConstants, CasaConstants {
         seSU.setAttribute(CASA_COMPONENT_NAME_ATTR_NAME, componentName);
         seSU.setAttribute(CASA_DESCRIPTION_ATTR_NAME, description);
         seSU.setAttribute(CASA_ARTIFACTS_ZIP_ATTR_NAME, artifactsZip);
-
-        List<Endpoint> suEndpointList = su2Endpoints.get(suName); 
-        if (suEndpointList == null) {
-            log("ERROR: Invalid service unit name: " + suName);
-        } else {
-            for (Endpoint endpoint : suEndpointList) {
-                Element endpointRef = endpoint.isConsumes() ?
-                    (Element) newCasaDocument.createElement(CASA_CONSUMES_ELEM_NAME) :
-                    (Element) newCasaDocument.createElement(CASA_PROVIDES_ELEM_NAME);
-                String endpointID = getNewEndpointID(endpoint);
-                endpointRef.setAttribute(CASA_ENDPOINT_ATTR_NAME, endpointID);
-                seSU.appendChild(endpointRef);
-            }
+        
+        for (Endpoint endpoint : suEndpointList) {
+            Element endpointRef = endpoint.isConsumes() ?
+                (Element) newCasaDocument.createElement(CASA_CONSUMES_ELEM_NAME) :
+                (Element) newCasaDocument.createElement(CASA_PROVIDES_ELEM_NAME);
+            String endpointID = getNewEndpointID(endpoint);
+            endpointRef.setAttribute(CASA_ENDPOINT_ATTR_NAME, endpointID);
+            seSU.appendChild(endpointRef);
         }
-
         return seSU;
     }
 
@@ -1707,11 +1709,13 @@ public class CasaBuilder implements JbiConstants, CasaConstants {
             String suName = getJBIServiceUnitName(jbiSU);
             List<Endpoint> suEndpoints = loadSUEndpoints(suName);
             su2Endpoints.put(suName, suEndpoints);
-            for (Endpoint suEndpoint : suEndpoints) {
-                if (!newConnectedEndpoints.contains(suEndpoint)) {
-                    newConnectedEndpoints.add(suEndpoint);
+            if (suEndpoints != null) {
+                for (Endpoint suEndpoint : suEndpoints) {
+                    if (!newConnectedEndpoints.contains(suEndpoint)) {
+                        newConnectedEndpoints.add(suEndpoint);
+                    }
                 }
-            }
+            } 
         }
         
         // 6. Compute newCasaEndpoints: 
