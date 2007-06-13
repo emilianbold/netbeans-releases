@@ -1468,6 +1468,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <taskdef name="deps" classname="org.netbeans.nbbuild.ModuleDependencies" classpath="nbantext.jar"/>
     
     <deps>
+      <!-- XXX this is ridiculous; task ought to figure out clusters from project properties! -->
       <input name="platform" >
         <jars dir="${netbeans.dest.dir}" >
           <include name="${nb.cluster.platform.dir}/**/*.jar" />
@@ -1501,6 +1502,46 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
       <input name="harness" >
         <jars dir="${netbeans.dest.dir}" >
           <include name="${nb.cluster.harness.dir}/**/*.jar" />
+        </jars>
+      </input>
+      <input name="mobility">
+        <jars dir="${netbeans.dest.dir}">
+          <include name="${nb.cluster.mobility.dir}/**/*.jar"/>
+        </jars>
+      </input>
+      <input name="profiler">
+        <jars dir="${netbeans.dest.dir}">
+          <include name="${nb.cluster.profiler.dir}/**/*.jar"/>
+        </jars>
+      </input>
+      <input name="ruby">
+        <jars dir="${netbeans.dest.dir}">
+          <include name="${nb.cluster.ruby.dir}/**/*.jar"/>
+        </jars>
+      </input>
+      <input name="soa">
+        <jars dir="${netbeans.dest.dir}">
+          <include name="${nb.cluster.soa.dir}/**/*.jar"/>
+        </jars>
+      </input>
+      <input name="uml">
+        <jars dir="${netbeans.dest.dir}">
+          <include name="${nb.cluster.uml.dir}/**/*.jar"/>
+        </jars>
+      </input>
+      <input name="visualweb">
+        <jars dir="${netbeans.dest.dir}">
+          <include name="${nb.cluster.visualweb.dir}/**/*.jar"/>
+        </jars>
+      </input>
+      <input name="xml">
+        <jars dir="${netbeans.dest.dir}">
+          <include name="${nb.cluster.xml.dir}/**/*.jar"/>
+        </jars>
+      </input>
+      <input name="cnd">
+        <jars dir="${netbeans.dest.dir}">
+          <include name="${nb.cluster.cnd.dir}/**/*.jar"/>
         </jars>
       </input>
       
@@ -1891,6 +1932,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
   
     <property name="check-file-layout-root" location="${netbeans.dest.dir}" />
     <fileset id="check-file-layout" dir="${check-file-layout-root}" casesensitive="yes" >
+        <!-- XXX can't we just exclude the handful of things we do not care about? -->
         <include name="platform*/**" />
         <include name="ide*/**" />
         <include name="java*/**" />
@@ -1898,6 +1940,14 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
         <include name="enterprise*/**" />
         <include name="nb*/**" />
         <include name="harness*/**" />
+        <include name="profiler*/"/>
+        <include name="uml*/"/>
+        <include name="visualweb*/"/>
+        <include name="ruby*/"/>
+        <include name="mobility*/"/>
+        <include name="soa*/"/>
+        <include name="xml*/"/>
+        <include name="cnd*/"/>
         <exclude name="*.built"/>
     </fileset>
     
