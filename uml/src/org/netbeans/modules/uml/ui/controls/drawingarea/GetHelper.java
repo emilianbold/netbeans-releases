@@ -1481,24 +1481,26 @@ public class GetHelper
     */
    public static void clearClipboard(ADGraphWindow pCurrentEditor)
    {
-      TSEGraphManager pGraphManager = pCurrentEditor.getGraphManager();
-      TSEGraphWindow pGraphEditor = pCurrentEditor;
-      TSEGraph pGraph = pCurrentEditor.getGraph();
-
-      if (pGraphManager != null && pGraphEditor != null && pGraph != null)
-      {
-         TSCutCopyPasteControl pPasteControl = pGraphEditor.getCutCopyPasteControl();
-
-         if (pPasteControl != null)
-         {
-            pPasteControl.reset();
-
-            // This added code is similar to what that C++ code is doing.
-            // We are not sure that the code below is necessary, but its working as is.
-                        
-            //pPasteControl.copy(pGraphManager, new ArrayList(), new ArrayList(), new ArrayList(), new ArrayList(), new ArrayList());
-         }
-      }
+       if (pCurrentEditor == null)
+           return;
+       TSEGraphManager pGraphManager = pCurrentEditor.getGraphManager();
+       TSEGraphWindow pGraphEditor = pCurrentEditor;
+       TSEGraph pGraph = pCurrentEditor.getGraph();
+       
+       if (pGraphManager != null && pGraphEditor != null && pGraph != null)
+       {
+           TSCutCopyPasteControl pPasteControl = pGraphEditor.getCutCopyPasteControl();
+           
+           if (pPasteControl != null)
+           {
+               pPasteControl.reset();
+               
+               // This added code is similar to what that C++ code is doing.
+               // We are not sure that the code below is necessary, but its working as is.
+               
+               //pPasteControl.copy(pGraphManager, new ArrayList(), new ArrayList(), new ArrayList(), new ArrayList(), new ArrayList());
+           }
+       }
    }
 
    /**
