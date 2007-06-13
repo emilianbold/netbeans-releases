@@ -69,7 +69,8 @@ Microsystems, Inc. All Rights Reserved.
     </copy>   
     -->
 
-    <copy file="external/travel.zip" tofile="release/modules/ext/travel.zip" /> 
+    <mkdir dir="${cluster}/modules/ext"/>
+    <copy file="external/travel.zip" tofile="${cluster}/modules/ext/travel.zip" /> 
   </target>
 
   <target name="compile" depends="fake-jdbc-40,projectized-common.compile"/>
@@ -96,10 +97,4 @@ Microsystems, Inc. All Rights Reserved.
     <javac srcdir="${fake-jdbc-40.src}" destdir="${fake-jdbc-40.build}"/>
   </target>
 
-    <target name="clean" depends="projectized-common.clean">
-             <delete dir="release/modules"/>
-    </target>
-
-
 </project>
-
