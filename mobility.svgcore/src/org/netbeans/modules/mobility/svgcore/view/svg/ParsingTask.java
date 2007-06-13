@@ -20,6 +20,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Font;
 import java.io.IOException;
+import java.io.StringBufferInputStream;
 import javax.microedition.m2g.SVGImage;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
@@ -41,7 +42,6 @@ import org.xml.sax.SAXParseException;
  * @author Pavel Benes
  */
 final class ParsingTask extends Thread { 
-    private final SVGDataObject       dObj;
     private final JPanel              panel;
     private final JTextArea           textArea;
     private final SVGViewTopComponent svgView;
@@ -49,7 +49,6 @@ final class ParsingTask extends Thread {
     //private final String              svgElementText;
 
     public ParsingTask(SVGDataObject dObj, SVGViewTopComponent svgView) throws Exception {
-        this.dObj = dObj;
         this.svgView = svgView;
         panel = new JPanel();
         panel.setLayout(new BorderLayout());
@@ -76,9 +75,9 @@ final class ParsingTask extends Thread {
     //TODO use alternative to StringBufferInputStream
     @SuppressWarnings({"deprecation"})
     public void run() {
-        java.io.StringBufferInputStream in;
+        StringBufferInputStream in;
         try {
-            in = new java.io.StringBufferInputStream(text);
+            in = new StringBufferInputStream(text);
             try {           
                 final SVGImage svgImage = (SVGImage) PerseusController.createImage( in);
 //                final SVGImage svgImage = (SVGImage) PerseusController.createImage( in, svgElementText);

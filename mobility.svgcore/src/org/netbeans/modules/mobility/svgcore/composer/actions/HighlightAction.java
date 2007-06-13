@@ -63,7 +63,10 @@ public class HighlightAction extends AbstractComposerAction {
     }
     
     private String getTooltipText() {
-        if (getScreenManager().getShowTooltip()) {
+        String text = "";
+        int [] path = m_highlighted.getActualSelection();
+        
+        if (getScreenManager().getShowTooltip() && path != null) {
             SVGLocatableElement elem = m_highlighted.getSVGElement();
             
             String prefix = getPerseusController().getSVGDocument().toPrefix( 
@@ -83,11 +86,11 @@ public class HighlightAction extends AbstractComposerAction {
             }
             
             sb.append(getDataObject().getModel().describeElement(
-                      m_highlighted.getActualSelection(), false, true, "<br>")); //NOI18N
+                      path, false, true, "<br>")); //NOI18N
             sb.append("</html>"); //NOI18N
             return sb.toString();
-        } else {
-            return "";    
         }
+        
+        return text;    
     }
 }

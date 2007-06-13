@@ -24,6 +24,7 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 import org.netbeans.modules.editor.structure.api.DocumentElement;
 import org.netbeans.modules.mobility.svgcore.SVGDataObject;
+import org.netbeans.modules.mobility.svgcore.model.SVGFileModel;
 
 /**
  *
@@ -61,6 +62,10 @@ public class SVGNavigatorTree extends JTree {
 
     public DefaultTreeModel getTreeModel() {
         return treeModel;
+    }
+    
+    public SVGDataObject getDataObject() {
+        return this.dObj;
     }
     
     public void filterChanged() {
@@ -137,14 +142,8 @@ public class SVGNavigatorTree extends JTree {
             }
         }
 
-        if (showAnimationsOnly) {
-            String tagName = docElem.getName();
-            if ( !"animate".equals(tagName) &&
-                 !"animateMotion".equals(tagName) &&
-                 !"animateTransform".equals(tagName) &&
-                 !"animateColor".equals(tagName)) {
-                return false;
-            }
+        if (showAnimationsOnly && !SVGFileModel.isAnimation(docElem)) {
+            return false;
         }
 
         return true;

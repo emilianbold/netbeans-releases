@@ -192,6 +192,9 @@ public class SVGObject {
         wrapper.appendChild(m_elem);
         // HACK - restore element ids
         setNullIds(m_elem, false);
+        if (m_elem instanceof PatchedElement) {
+            wrapper.setPath( ((PatchedElement)m_elem).getPath());
+        }
         parent.appendChild(wrapper);
         wrapper.setWrapper(true);
         m_elem = wrapper;

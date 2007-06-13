@@ -39,6 +39,8 @@ public class SVGFileModel {
     protected static final String XML_TAG       = "tag";
     protected static final String XML_EMPTY_TAG = "empty_tag";
     protected static final String XML_ERROR_TAG = "error";
+    protected static String [] ANIMATION_TAGS = { "animate", "animateTransform", "animateMotion", "animateColor"};
+    
     
     public interface ModelListener {
         public void modelChanged( int [] path);
@@ -328,8 +330,8 @@ public class SVGFileModel {
     }
     
     static boolean isTagElement(DocumentElement elem) {
-        return elem.getType().equals(XML_TAG) ||
-               elem.getType().equals(XML_EMPTY_TAG);
+        return elem != null && (elem.getType().equals(XML_TAG) ||
+               elem.getType().equals(XML_EMPTY_TAG));
     }
 
     static boolean isError(DocumentElement elem) {
@@ -362,8 +364,8 @@ public class SVGFileModel {
     }
     
     public int [] getIndexedPath( DocumentElement de) {
-        assert de.getDocumentModel() == model;
         assert isTagElement(de);
+        assert de.getDocumentModel() == model;
         
         int [] path = null;
         
@@ -672,5 +674,16 @@ public class SVGFileModel {
         }
         
         return sb.toString();
-    }        
+    }   
+    
+    public static boolean isAnimation(DocumentElement elem) {
+        String tagName = elem.getName();        
+        
+        for (int i = 0; i < ANIMATION_TAGS.length; i++) {
+            if (ANIMATION_TAGS[i].equals(tagName)) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

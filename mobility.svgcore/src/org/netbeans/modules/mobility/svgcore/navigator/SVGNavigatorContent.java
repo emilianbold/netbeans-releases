@@ -16,6 +16,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -44,7 +45,9 @@ import org.netbeans.modules.editor.structure.api.DocumentElement;
 import org.netbeans.modules.mobility.svgcore.SVGDataObject;
 import org.netbeans.modules.mobility.svgcore.model.SVGFileModel;
 import org.netbeans.modules.mobility.svgcore.view.source.SVGSourceMultiViewElement;
+import org.netbeans.modules.mobility.svgcore.view.svg.AnimationCookie;
 import org.netbeans.modules.mobility.svgcore.view.svg.SelectionCookie;
+import org.openide.nodes.Node.Cookie;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -71,7 +74,6 @@ public class SVGNavigatorContent extends JPanel {
         return navigatorContentInstance;
     }
     
-    private JPanel active = null;
     private final JPanel emptyPanel;    
     private final JLabel msgLabel;    
     private SVGDataObject peerDO = null;
@@ -103,7 +105,10 @@ public class SVGNavigatorContent extends JPanel {
                     return;
                 }                
 */                
-                final JPanel cachedPanel;
+                //TODO fix bug in caching; DocumentElement instances comes from
+                //different document
+                final JPanel cachedPanel = null;
+                /*
                 WeakReference panelWR = (WeakReference)uiCache.get(d);
                 if(panelWR != null) {
                     NavigatorContentPanel cp = (NavigatorContentPanel)panelWR.get();
@@ -123,7 +128,7 @@ public class SVGNavigatorContent extends JPanel {
                         cachedPanel = null;
                 } else
                     cachedPanel = null;
-
+*/
                 JPanel panel = null;
                 if(cachedPanel == null) {
                     try {
@@ -215,8 +220,7 @@ public class SVGNavigatorContent extends JPanel {
                       ex.printStackTrace();
                 }                                 
             }
-        };
-       
+        };       
         
         public NavigatorContentPanel(SVGDataObject doj) throws Exception {
             this.doj = doj;
@@ -276,13 +280,40 @@ public class SVGNavigatorContent extends JPanel {
                       
             //add popup menu mouse listener
             MouseListener pmml = new MouseAdapter() {
-                public void mousePressed(MouseEvent e) {
+                public void mousePressed(final MouseEvent e) {
                     if(e.getClickCount() == 1 && e.getModifiers() == MouseEvent.BUTTON3_MASK) {
                         //show popup
                         JPopupMenu pm = new JPopupMenu();
+                        
+                        final AnimationCookie animCookie = (AnimationCookie) getCookie(AnimationCookie.class);
+                        final DocumentElement de         = getElementAt(e.getX(), e.getY());
+                        
+                        if (animCookie != null && de != null && 
+                            SVGFileModel.isAnimation(de)) {
+                            JMenuItem animStart = new JMenuItem("Start animation");
+                            animStart.addActionListener(new ActionListener() {
+                                public void actionPerformed(ActionEvent evt) {
+                                    animCookie.startAnimation(NavigatorContentPanel.this.doj, de);
+                                }
+                            });
+
+                            pm.add(animStart);
+
+                            JMenuItem animStop = new JMenuItem("Stop animation");
+                            animStop.addActionListener(new java.awt.event.ActionListener() {
+                                public void actionPerformed(ActionEvent evt) {
+                                    animCookie.stopAnimation(NavigatorContentPanel.this.doj, de);
+                                }
+                            });
+
+                            pm.add(animStop);
+                        }
+                        
                         JMenuItem[] items = new FilterActions(filters).createMenuItems();
                         //add filter actions
-                        for(int i = 0; i < items.length; i++) pm.add(items[i]);
+                        for(int i = 0; i < items.length; i++) {
+                            pm.add(items[i]);
+                        }
                         pm.pack();
                         pm.show(tree, e.getX(), e.getY());
                     }
@@ -321,6 +352,28 @@ public class SVGNavigatorContent extends JPanel {
             
             doj.getModel().addModelListener(modelListener);
         }        
+
+        protected Cookie getCookie(Class clazz) {
+            Cookie       cookie = null;;
+            TopComponent tc     = NavigatorContentPanel.this.doj.getMTVC();
+
+            if ( tc != null) {
+                cookie = (Cookie) tc.getLookup().lookup(clazz);
+            }
+            return cookie;
+        }
+
+        protected DocumentElement getElementAt( int x, int y) {
+            DocumentElement de     = null;
+            int             selRow = tree.getRowForLocation(x, y);
+            
+            if(selRow != -1) {
+                TreePath         selPath = tree.getPathForLocation(x, y);
+                SVGNavigatorNode tna     = (SVGNavigatorNode)selPath.getLastPathComponent();                       
+                de = tna.getDocumentElement();
+            }
+            return de;
+        }
         
         /** Creates filter descriptions and filters itself */
         private FiltersManager createFilters() {

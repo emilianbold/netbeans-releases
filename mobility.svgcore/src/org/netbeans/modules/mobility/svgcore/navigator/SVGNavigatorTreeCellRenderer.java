@@ -28,6 +28,7 @@ import javax.swing.JTree;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.TreeCellRenderer;
 import org.netbeans.modules.editor.structure.api.DocumentElement;
+import org.netbeans.modules.mobility.svgcore.model.SVGFileModel;
 import org.openide.awt.HtmlRenderer;
 import org.openide.util.Utilities;
 
@@ -44,14 +45,21 @@ class SVGNavigatorTreeCellRenderer extends DefaultTreeCellRenderer {
     private static final String DOCTYPE_16  = "org/netbeans/modules/xml/text/navigator/resources/doc_type.png";
     private static final String CDATA_16    = "org/netbeans/modules/xml/text/navigator/resources/cdata.png";    
     private static final String ERROR_16    = "org/netbeans/modules/xml/text/navigator/resources/badge_error.png";
+    private static final String ANIMATE_16  = "org/netbeans/modules/mobility/svgcore/resources/badge_animate.png";
     
     private final Image  ERROR_IMAGE   = Utilities.loadImage(ERROR_16, true);   
+    private final Image  ANIMATE_IMAGE = Utilities.loadImage(ANIMATE_16, true);   
     private final Icon[] TAG_GRAY_ICON = new Icon[]{getImageIcon(TAG_GRAY_16, false), getImageIcon(TAG_GRAY_16, true)};
     private final Icon[] TAG_ICON      = new Icon[]{getImageIcon(TAG_16, false), getImageIcon(TAG_16, true)};
     private final Icon[] PI_ICON       = new Icon[]{getImageIcon(PI_16, false), getImageIcon(PI_16, true)};
     private final Icon[] DOCTYPE_ICON  = new Icon[]{getImageIcon(DOCTYPE_16, false), getImageIcon(DOCTYPE_16, true)};
     private final Icon[] CDATA_ICON    = new Icon[]{getImageIcon(CDATA_16, false), getImageIcon(CDATA_16, true)};
-     
+
+    private final Icon[] ANIMATE_TAG_ICON = new Icon[]{
+        new ImageIcon(Utilities.mergeImages( Utilities.loadImage(TAG_16), ANIMATE_IMAGE, 5, 3)),
+        TAG_ICON[1]
+    };
+    
     private final HtmlRenderer.Renderer renderer;
     
     public SVGNavigatorTreeCellRenderer() {
@@ -78,7 +86,11 @@ class SVGNavigatorTreeCellRenderer extends DefaultTreeCellRenderer {
             //normal icons
             if(de.getType().equals(SVGNavigatorNode.XML_TAG)
             || de.getType().equals(SVGNavigatorNode.XML_EMPTY_TAG)) {
-                setIcon(TAG_ICON, containsError);
+                if (SVGFileModel.isAnimation(de)) {
+                    setIcon(ANIMATE_TAG_ICON, containsError);
+                } else {
+                    setIcon(TAG_ICON, containsError);
+                }
             } else if(de.getType().equals(SVGNavigatorNode.XML_PI)) {
                 setIcon(PI_ICON, containsError);
             } else if(de.getType().equals(SVGNavigatorNode.XML_DOCTYPE)) {

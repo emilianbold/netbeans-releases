@@ -16,9 +16,7 @@ package org.netbeans.modules.mobility.svgcore.view.source;
 import java.io.IOException;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
-import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.editor.structure.api.DocumentElement;
-import org.netbeans.modules.editor.structure.api.DocumentModelException;
 import org.netbeans.modules.mobility.svgcore.SVGDataObject;
 import org.netbeans.modules.mobility.svgcore.view.svg.SelectionCookie;
 import org.netbeans.modules.xml.multiview.XmlMultiViewElement;
@@ -28,7 +26,6 @@ import org.openide.cookies.EditCookie;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.util.Lookup;
-import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 import org.openide.windows.TopComponent;
@@ -53,11 +50,13 @@ public class SVGSourceMultiViewElement extends XmlMultiViewElement {
             PaletteController pc = SVGXMLPaletteFactory.getPalette();
 
             return new ProxyLookup(new org.openide.util.Lookup[] {
+                
                 dObj.getNodeDelegate().getLookup(),
-                Lookups.singleton(pc),
-                Lookups.singleton( new SelectionCookie() {
-                    public void updateSelection(SVGDataObject doj, DocumentElement elem, boolean doubleClick) {
-                        selectElement(doj, elem, doubleClick);
+                Lookups.singleton(pc),Lookups.singleton( new SelectionCookie() {
+                    public void updateSelection(SVGDataObject doj, DocumentElement de, boolean doubleClick) {
+                        if (de != null) {
+                            selectElement(doj, de, doubleClick);
+                        }
                     }
                 })
             });
@@ -78,7 +77,7 @@ public class SVGSourceMultiViewElement extends XmlMultiViewElement {
         dObj.setLastOpenView(index);
     }
     
-    public static void selectElement( final SVGDataObject svgDoj, final DocumentElement elem, final boolean requestFocus) {
+    public static void selectElement( final SVGDataObject svgDoj, final DocumentElement de, final boolean requestFocus) {
         openFileInEditor(svgDoj);
 
         SwingUtilities.invokeLater( new Runnable() {
@@ -91,10 +90,10 @@ public class SVGSourceMultiViewElement extends XmlMultiViewElement {
                         JEditorPane [] opened = ed.getOpenedPanes();
                         if ( opened != null && opened.length > 0) {
                             final JEditorPane  pane = opened[0];
-                            int position = svgDoj.getModel().getElementStartOffset(elem);
-                            if ( position != -1) {
-                                pane.setSelectionStart(position);
-                                pane.setSelectionEnd(position);
+                            int startOffset = de.getStartOffset();
+                            if ( startOffset != -1) {
+                                pane.setSelectionStart(startOffset);
+                                pane.setSelectionEnd(startOffset);
                             }
 
                             if ( requestFocus) {

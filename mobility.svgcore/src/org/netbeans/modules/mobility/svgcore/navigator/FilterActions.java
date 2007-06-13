@@ -17,12 +17,8 @@ import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.AbstractAction;
-import javax.swing.Action;
 import javax.swing.JCheckBoxMenuItem;
-import javax.swing.JMenu;
 import javax.swing.JMenuItem;
-import org.openide.util.NbBundle;
-import org.openide.util.actions.Presenter;
 
 /** Popup submenu consisting of boolean state filters
  *
@@ -62,6 +58,4 @@ public final class FilterActions extends AbstractAction {
         }
         return (JMenuItem[])menuItems.toArray(new JMenuItem[]{});
     }
-    
-    
 }

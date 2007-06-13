@@ -52,6 +52,16 @@ public final class PatchedAnimateTransform extends Animate implements PatchedEle
         }
     }
     
+    private int [] m_path;
+    
+    public void setPath(int [] path) {
+        m_path = path;
+    }
+    
+    public int [] getPath() {
+        return m_path;
+    }
+    
     /**
      * Builds a new Animate element that belongs to the given
      * document. This <code>Animate</code> will belong 

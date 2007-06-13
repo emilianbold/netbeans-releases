@@ -16,6 +16,7 @@ import org.netbeans.modules.editor.structure.api.DocumentElement;
 import org.netbeans.modules.mobility.svgcore.SVGDataObject;
 import org.openide.nodes.Node;
 
-public interface SelectionCookie extends Node.Cookie {
-    public void updateSelection(SVGDataObject doj, DocumentElement elem, boolean doubleClick);
+public interface AnimationCookie extends Node.Cookie {
+    public void startAnimation(SVGDataObject doj, DocumentElement elem);
+    public void stopAnimation(SVGDataObject doj, DocumentElement elem);
 }    

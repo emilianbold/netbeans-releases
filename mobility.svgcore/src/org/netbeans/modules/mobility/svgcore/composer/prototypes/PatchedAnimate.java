@@ -19,19 +19,18 @@ import com.sun.perseus.model.Animate;
 import com.sun.perseus.model.DocumentNode;
 import com.sun.perseus.model.ElementNode;
 import org.netbeans.modules.mobility.svgcore.composer.SVGObject;
-import org.netbeans.modules.mobility.svgcore.composer.SceneManager;
-import org.w3c.dom.svg.SVGLocatableElement;
 
 /**
  *
  * @author Pavel Benes
  */
 public final class PatchedAnimate extends Animate implements PatchedElement {
-    private String m_idBackup    = null;
+    private String m_idBackup = null;
     
     public PatchedAnimate(final DocumentNode ownerDocument) {
         super(ownerDocument);
     }
+    
     public PatchedAnimate(final DocumentNode ownerDocument, String tag) {
         super(ownerDocument, tag);
     }
@@ -51,6 +50,16 @@ public final class PatchedAnimate extends Animate implements PatchedElement {
         } else {
             id = m_idBackup;
         }
+    }
+
+    private int [] m_path;
+    
+    public void setPath(int [] path) {
+        m_path = path;
+    }
+    
+    public int [] getPath() {
+        return m_path;
     }
     
     public ElementNode newInstance(final DocumentNode doc) {

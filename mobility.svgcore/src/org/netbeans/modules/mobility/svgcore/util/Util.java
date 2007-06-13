@@ -21,26 +21,38 @@
 
 package org.netbeans.modules.mobility.svgcore.util;
 
+import com.sun.perseus.model.ElementNode;
+import com.sun.perseus.model.ModelNode;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.EventListener;
+import java.util.Hashtable;
 import java.util.zip.GZIPInputStream;
 import javax.microedition.m2g.SVGImage;
 import javax.microedition.m2g.ScalableImage;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.mobility.svgcore.options.SvgcoreSettings;
+import org.netbeans.spi.xml.cookies.DataObjectAdapters;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.execution.ExecutionEngine;
 import org.openide.execution.NbProcessDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
+import org.openide.xml.XMLUtil;
+import org.w3c.dom.Document;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 /**
  * Utility class for derived SVG support components. It provides external editor lunching facility and SVG image loading
@@ -54,6 +66,7 @@ public class Util {
     // * <br> no Exception is thrown but warning dialog is displayed.
     // * @param fo SVG file to be lunched in external editor
     // 
+/*    
     public static void launchExternalEditor(final FileObject fo){
         assert fo != null : "File object is null";
         final InputOutput io = IOProvider.getDefault().getIO(NbBundle.getMessage(Util.class, "LBL_EditedSvgFile", fo.getName()), false); //NOI18N
@@ -89,7 +102,7 @@ public class Util {
             }
         }, io);
     }
-
+*/
     /**
      * Loads SVG image from the FileObject
      * @param fo from which to create SVG image
@@ -97,7 +110,7 @@ public class Util {
      * @return SVGImage created SVG image
      * @throws IOException if loading failed
      */
-    
+/*    
     public static SVGImage createSVGImage (FileObject fo, boolean showProgress) throws IOException {
         assert fo != null : "File object is null";
         if (!showProgress){
@@ -106,10 +119,11 @@ public class Util {
             return loadImageWithProgress(fo);
         }
     }
-
+*/
+    /*
     public static SVGImage createSVGImage (InputStream in) throws IOException {
         return (SVGImage) ScalableImage.createImage(in, null);
-    }
+    }*/
     
     /**
      * Loads SVG image from the FileObject in other thread
@@ -141,12 +155,13 @@ public class Util {
         });
     }
 */    
-    
+    /*
     private static SVGImage loadImage(String url) throws IOException {
         return (SVGImage) ScalableImage.createImage(url, null);
     }
+     **/
     
-    
+    /*
     private static SVGImage loadImageWithProgress(FileObject fo) throws IOException {
         ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(Util.class, "MSG_Loading", fo.getNameExt()));
         handle.start(200);
@@ -181,7 +196,7 @@ public class Util {
             }
         }        
     } 
- 
+    */
 
 /*            
     public static interface SVGImageLoadedListener extends EventListener {
@@ -192,7 +207,7 @@ public class Util {
         // 
         public void svgImageLoaded(SVGImage image, Exception e);
     }
-*/    
+    
             
     private static class ProgressInputStream extends BufferedInputStream {
         private ProgressHandle handle;
@@ -235,7 +250,7 @@ public class Util {
             handle.progress((int)current);  
         }
     }
- 
+*/  
             
     /*
     public static Document createXMLDOM(DataObject doj) throws IOException, SAXException {

@@ -65,7 +65,7 @@ class SVGNavigatorNode implements TreeNode, DocumentElementListener {
         this.parent   = parent;
         this.nodeVisibility = nodeVisibility;
     }   
-    
+        
     public java.util.Enumeration<SVGNavigatorNode> children() {
         checkChildrenAdapters();
         return Collections.enumeration(children);

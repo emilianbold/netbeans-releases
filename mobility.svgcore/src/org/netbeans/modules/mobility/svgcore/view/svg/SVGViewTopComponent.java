@@ -29,6 +29,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
@@ -54,6 +56,7 @@ import javax.swing.border.Border;
 import javax.microedition.m2g.SVGImage;
 import javax.swing.CellRendererPane;
 import javax.swing.JComboBox;
+import javax.swing.JFileChooser;
 import javax.swing.JToggleButton;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -68,6 +71,7 @@ import org.openide.loaders.DataObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -86,6 +90,9 @@ import org.netbeans.modules.mobility.svgcore.composer.PerseusController;
 import org.netbeans.modules.mobility.svgcore.composer.SceneManager;
 import org.netbeans.modules.mobility.svgcore.composer.ScreenManager;
 import org.netbeans.modules.mobility.svgcore.model.SVGFileModel;
+import org.netbeans.modules.mobility.svgcore.navigator.SVGNavigatorContent;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.w3c.dom.svg.SVGLocatableElement;
 
 /**
@@ -171,7 +178,39 @@ final public class SVGViewTopComponent extends CloneableTopComponent {
                 updateAnimationActions();
             }
     };            
-           
+
+    private AbstractSVGAction       insertGraphicsAction = 
+        new AbstractSVGAction("animate_stop.png", "HINT_InsertGraphics", "LBL_InsertGraphics", false) {
+            public void actionPerformed(ActionEvent e) {
+                JFileChooser chooser = new JFileChooser();
+                chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+                int r = chooser.showDialog(
+                        SwingUtilities.getWindowAncestor(SVGViewTopComponent.this),
+                        NbBundle.getMessage(SVGViewTopComponent.class, "LBL_CHOOSE_SVG_FILE"));
+                if (r == JFileChooser.APPROVE_OPTION) {
+                    File file = chooser.getSelectedFile();
+                    if (!file.isFile()) {
+                        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                                NbBundle.getMessage(SVGViewTopComponent.class, "ERROR_NotSVGFile", file),
+                                NotifyDescriptor.Message.WARNING_MESSAGE
+                                ));
+                        return;
+                    } else {
+                        try {
+                            m_sceneMgr.getPerseusController().mergeImage(file);
+                        } catch (Exception ex) {
+                            Exceptions.printStackTrace(ex);                        
+                        }
+                        repaintAll();
+                    }
+                }
+            }
+
+        public boolean isEnabled() {
+            return true;
+        }            
+    };            
+    
     public SVGViewTopComponent() {    
         super();
     } 
@@ -185,29 +224,51 @@ final public class SVGViewTopComponent extends CloneableTopComponent {
         return m_sceneMgr.getPerseusController();
     }
     
+    private class SVGCookie implements SelectionCookie, AnimationCookie {
+
+        public void startAnimation(final SVGDataObject doj, final DocumentElement elem) {
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    System.out.println("Starting animation");
+                    startAnimationAction.actionPerformed(null);
+                    int [] path = doj.getModel().getIndexedPath(elem);
+                    m_sceneMgr.getPerseusController().startAnimation(path);
+                }
+            });
+        }
+
+        public void stopAnimation(final SVGDataObject doj, final DocumentElement elem) {
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    System.out.println("Stopping animation");
+                    int [] path = doj.getModel().getIndexedPath(elem);
+                    m_sceneMgr.getPerseusController().stopAnimation(path);
+                }
+            });
+        }
+
+        public void updateSelection(final SVGDataObject doj, final DocumentElement de, boolean doubleClick) {
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    System.out.println("Updating selection");
+                    int [] path = doj.getModel().getIndexedPath(de);
+                    m_sceneMgr.setSelection(path);
+                }
+            });
+        }        
+    }
+    
     public synchronized Lookup getLookup() {
         if (lookup == null) {
             Lookup elementLookup = new AbstractLookup(content);
         
-            SelectionCookie cookie = new SelectionCookie() {
-                public void updateSelection(final SVGDataObject doj, final DocumentElement elem, boolean doubleClick) {
-                    SwingUtilities.invokeLater(new Runnable() {
-                        public void run() {
-                            System.out.println("Updating selection");
-                            int [] path = doj.getModel().getIndexedPath(elem);
-                            m_sceneMgr.setSelection(path);
-                        }
-                    });
-                }
-            };
-
             lookup = Lookups.fixed( new Object[]{ 
                 new FilterNode( svgDataObject.getNodeDelegate(), 
                                 null, 
                                 new ProxyLookup(new Lookup[]{new SVGElementNode(elementLookup).getLookup(),
                                                              svgDataObject.getNodeDelegate().getLookup()
                                                              })),
-                cookie
+                new SVGCookie()
             });
         }
         
@@ -332,9 +393,10 @@ final public class SVGViewTopComponent extends CloneableTopComponent {
     
     private void removeSvgPanel(){
         assert SwingUtilities.isEventDispatchThread() : "Not in AWT event dispach thread";  //NOI18N
-//        if (svgImage != null){
-//            content.remove(svgImage);
-//        }
+        if (m_img != null){
+            content.remove(m_img);
+            m_img = null;
+        }
         
         basePanel.removeAll();
             //TODO
@@ -655,10 +717,13 @@ final public class SVGViewTopComponent extends CloneableTopComponent {
             ex.printStackTrace();
         }
     }        
+
+    private SVGImage m_img;
     
     void showImage(SVGImage img) {
         assert SwingUtilities.isEventDispatchThread() : "Not in AWT event dispach thread";  //NOI18N
         basePanel.removeAll();
+        m_img = img;
         content.add(img);
         
         m_sceneMgr = new SceneManager(this.svgDataObject, content);
@@ -671,6 +736,8 @@ final public class SVGViewTopComponent extends CloneableTopComponent {
             SystemAction.get(SaveAsImageAction.class),
             SystemAction.get(SaveAnimationAsImageAction.class),
             SystemAction.get(SaveElementAsImage.class),
+            null,
+            insertGraphicsAction,
             null,
             zoomToFitAction,
             zoomInAction,

@@ -59,6 +59,16 @@ public final class PatchedGroup extends Group implements PatchedElement {
         return m_isWrapper;
     }
     
+    private int [] m_path;
+    
+    public void setPath(int [] path) {
+        m_path = path;
+    }
+    
+    public int [] getPath() {
+        return m_path;
+    }
+        
     public ElementNode newInstance(final DocumentNode doc) {
         return new PatchedGroup(doc);
     }    

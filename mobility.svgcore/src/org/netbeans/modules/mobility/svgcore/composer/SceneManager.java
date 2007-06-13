@@ -32,6 +32,7 @@ import org.netbeans.modules.mobility.svgcore.composer.actions.TranslateActionFac
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.InstanceContent;
+import org.w3c.dom.svg.SVGAnimationElement;
 
 /**
  *
@@ -56,7 +57,7 @@ public class SceneManager {
         m_inputControlMgr   = new InputControlManager(this);
         
         // used later for creation of selection events
-        m_selectActionFactory = new SelectActionFactory(this);        
+        m_selectActionFactory = new SelectActionFactory(this); 
     }
 
     public void initialize(SVGImage svgImage) {
