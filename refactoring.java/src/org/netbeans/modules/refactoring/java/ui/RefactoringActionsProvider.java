@@ -56,6 +56,7 @@ import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
 import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -368,7 +369,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                     return false;
                 }
                 if (dob instanceof DataFolder) {
-                    if (fo.equals(dob.getPrimaryFile()))
+                    if (FileUtil.getRelativePath(dob.getPrimaryFile(), fo)!=null)
                         return false;
                     folders.add((DataFolder)dob);
                 } else if (RetoucheUtils.isJavaFile(dob.getPrimaryFile())) {
