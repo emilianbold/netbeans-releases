@@ -34,7 +34,7 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -208,7 +208,7 @@ public class JsfTableCustomizer extends javax.swing.JPanel implements DocumentLi
         try {
             validClassName = empty.isSelected() || JsfFormCustomizer.classExists(classTextField);
         } catch (IOException ioe) {
-            ErrorManager.getDefault().notify(ioe);
+            Exceptions.printStackTrace(ioe);
         }
         descriptor.setValid(hasModuleJsf && validClassName);
         errorField.setText(hasModuleJsf ? 

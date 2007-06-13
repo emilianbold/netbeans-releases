@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Position.Bias;
@@ -34,13 +35,13 @@ import org.netbeans.modules.web.jsf.api.facesmodel.Converter;
 import org.netbeans.modules.web.jsf.editor.JSFEditorUtilities;
 import org.netbeans.modules.web.jsf.api.facesmodel.FacesConfig;
 import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.PositionBounds;
 import org.openide.text.PositionRef;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -101,9 +102,7 @@ public class Occurrences {
                     }
                 }
             } catch (DataObjectNotFoundException ex) {
-                java.util.logging.Logger.getLogger("global").log(java.util.logging.Level.SEVERE,
-                        ex.getMessage(),
-                        ex);
+                LOGGER.log(Level.SEVERE, ex.getMessage(), ex);
             }
             return null;
         }
@@ -198,11 +197,9 @@ public class Occurrences {
                 int offset = offsets[0] + text.indexOf(oldValue);
                 position =  createPosition(offset, offset + oldValue.length());
             } catch (BadLocationException ex) {
-                ErrorManager.getDefault().notify(ex);
+                Exceptions.printStackTrace(ex);
             } catch (DataObjectNotFoundException ex) {
-                java.util.logging.Logger.getLogger("global").log(java.util.logging.Level.SEVERE,
-                        ex.getMessage(),
-                        ex);
+                LOGGER.log(Level.SEVERE, ex.getMessage(), ex);
             }
             return position;
         };
@@ -215,9 +212,7 @@ public class Occurrences {
                 int [] offsets = JSFEditorUtilities.getManagedBeanDefinition(document, bean.getManagedBeanName());
                 position =  createPosition(offsets[0], offsets[1]);
             } catch (DataObjectNotFoundException ex) {
-                java.util.logging.Logger.getLogger("global").log(java.util.logging.Level.SEVERE,
-                        ex.getMessage(),
-                        ex);
+                LOGGER.log(Level.SEVERE, ex.getMessage(), ex);
             }
             return position;
         };
@@ -302,11 +297,9 @@ public class Occurrences {
                 int offset = offsets[0] + text.indexOf(oldValue);
                 position =  createPosition(offset, offset + oldValue.length());
             } catch (BadLocationException ex) {
-                ErrorManager.getDefault().notify(ex);
+                Exceptions.printStackTrace(ex);
             } catch (DataObjectNotFoundException ex) {
-                java.util.logging.Logger.getLogger("global").log(java.util.logging.Level.SEVERE,
-                        ex.getMessage(),
-                        ex);
+                LOGGER.log(java.util.logging.Level.SEVERE, ex.getMessage(), ex);
             }
             return position;
         };
@@ -319,9 +312,7 @@ public class Occurrences {
                 int [] offsets = JSFEditorUtilities.getConverterDefinition(document, converter.getConverterForClass());
                 position =  createPosition(offsets[0], offsets[1]);
             } catch (DataObjectNotFoundException ex) {
-                java.util.logging.Logger.getLogger("global").log(java.util.logging.Level.SEVERE,
-                        ex.getMessage(),
-                        ex);
+                LOGGER.log(java.util.logging.Level.SEVERE, ex.getMessage(), ex);
             }
             return position;
         };
@@ -406,11 +397,9 @@ public class Occurrences {
                 int offset = offsets[0] + text.indexOf(oldValue);
                 position =  createPosition(offset, offset + oldValue.length());
             } catch (BadLocationException ex) {
-                ErrorManager.getDefault().notify(ex);
+                Exceptions.printStackTrace(ex);
             } catch (DataObjectNotFoundException ex) {
-                java.util.logging.Logger.getLogger("global").log(java.util.logging.Level.SEVERE,
-                        ex.getMessage(),
-                        ex);
+                LOGGER.log(Level.SEVERE, ex.getMessage(), ex);
             }
             return position;
         };
@@ -423,9 +412,7 @@ public class Occurrences {
                 int [] offsets = JSFEditorUtilities.getConverterDefinition(document, converter.getConverterForClass());
                 position =  createPosition(offsets[0], offsets[1]);
             } catch (DataObjectNotFoundException ex) {
-                java.util.logging.Logger.getLogger("global").log(java.util.logging.Level.SEVERE,
-                        ex.getMessage(),
-                        ex);
+                LOGGER.log(Level.SEVERE, ex.getMessage(), ex);
             }
             return position;
         };

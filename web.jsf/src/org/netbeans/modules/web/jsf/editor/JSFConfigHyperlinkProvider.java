@@ -42,12 +42,12 @@ import org.netbeans.modules.j2ee.common.source.AbstractTask;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.JSFConfigDataObject;
 //import org.netbeans.modules.web.jsf.JSFConfigUtilities;
-import org.openide.ErrorManager;
 import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -171,7 +171,7 @@ public class JSFConfigHyperlinkProvider implements HyperlinkProvider {
             
         } 
         catch (BadLocationException e) {
-            ErrorManager.getDefault().notify(e);
+            Exceptions.printStackTrace(e);
         }
         return null;
     }
@@ -243,7 +243,7 @@ public class JSFConfigHyperlinkProvider implements HyperlinkProvider {
                 dobj = DataObject.find(fObj);
             }
             catch (DataObjectNotFoundException e){
-               ErrorManager.getDefault().notify(e);
+               Exceptions.printStackTrace(e);
                return; 
             }
             if (dobj != null){

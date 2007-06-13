@@ -19,17 +19,11 @@
 
 package org.netbeans.modules.web.jsf.wizards;
 
-import java.awt.Component;
 import java.io.IOException;
-import java.util.Collections;
-import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.event.ChangeListener;
-import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.j2ee.common.DelegatingWizardDescriptorPanel;
 //TODO: RETOUCHE
 //import org.netbeans.modules.j2ee.persistence.dd.orm.model_1_0.Entity;
@@ -38,14 +32,8 @@ import org.netbeans.modules.j2ee.common.DelegatingWizardDescriptorPanel;
 //import org.netbeans.modules.j2ee.persistence.unit.PUDataObject;
 //import org.netbeans.modules.j2ee.persistence.wizard.PersistenceClientEntitySelection;
 //import org.netbeans.modules.j2ee.persistence.wizard.Util;
-import org.netbeans.modules.web.api.webmodule.WebModule;
-import org.netbeans.modules.web.jsf.JSFConfigUtilities;
-import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
-import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataFolder;
 import org.openide.loaders.TemplateWizard;
-import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**

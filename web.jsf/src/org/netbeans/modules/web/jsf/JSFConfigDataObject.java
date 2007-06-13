@@ -21,9 +21,9 @@ package org.netbeans.modules.web.jsf;
 
 import java.io.IOException;
 import java.io.InputStream;
-import org.netbeans.editor.BaseDocument;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.web.jsf.api.facesmodel.FacesConfig;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.MultiDataObject;
@@ -163,7 +163,7 @@ public class JSFConfigDataObject extends MultiDataObject
             error = updateNode(prepareInputSource());
         }
         catch (Exception e) {
-            ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, e);
+            Logger.getLogger("global").log(Level.INFO, null, e);
             setDocumentValid(false);
             return;
         }

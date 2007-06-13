@@ -36,7 +36,6 @@ import org.netbeans.modules.j2ee.dd.api.web.*;
 import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
 import org.netbeans.modules.web.jsf.wizards.JSFConfigurationPanel;
 import org.openide.DialogDescriptor;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
@@ -50,6 +49,7 @@ import org.netbeans.spi.java.project.classpath.ProjectClassPathExtender;
 import org.netbeans.modules.web.spi.webmodule.WebFrameworkProvider;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.spi.webmodule.FrameworkConfigurationPanel;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -107,7 +107,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                                         JSFUtils.createJSFUserLibrary(installFolder, libraryVersion);
                                         jsfLib = JSFUtils.getJSFLibrary(libraryVersion);
                                     } catch (IOException e){
-                                        ErrorManager.getDefault().notify(e);
+                                        Exceptions.printStackTrace(e);
                                     }
                                 }
                             }
@@ -133,9 +133,9 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
             fileSystem.runAtomicAction(new CreateFacesConfig(webModule, isMyFaces));
             result.add(webModule.getDocumentBase().getFileObject("welcomeJSF", "jsp"));
         } catch (FileNotFoundException exc) {
-            ErrorManager.getDefault().notify(exc);
+            Exceptions.printStackTrace(exc);
         } catch (IOException exc) {
-            ErrorManager.getDefault().notify(exc);
+            Exceptions.printStackTrace(exc);
         }
         return result;
     }
@@ -291,7 +291,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                     
                     
                 } catch (ClassNotFoundException cnfe){
-                    ErrorManager.getDefault().notify(cnfe);
+                    Exceptions.printStackTrace(cnfe);
                 }
             }
             

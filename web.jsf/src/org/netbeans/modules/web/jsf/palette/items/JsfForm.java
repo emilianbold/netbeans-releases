@@ -25,6 +25,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
@@ -52,7 +54,6 @@ import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.JSFConfigUtilities;
 import org.netbeans.modules.web.jsf.palette.JSFPaletteUtilities;
 import org.netbeans.modules.web.jsf.wizards.JSFClientGenerator;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.text.ActiveEditorDrop;
@@ -302,7 +303,7 @@ public final class JsfForm implements ActiveEditorDrop {
                 }
             }
             if (!accessTypeDetected) {
-                ErrorManager.getDefault().log(ErrorManager.WARNING, "Failed to detect correct access type for class:" + typeElement.getQualifiedName());
+                Logger.getLogger("global").log(Level.WARNING, "Failed to detect correct access type for class:" + typeElement.getQualifiedName()); // NOI18N
             }
             typeElement = (TypeElement) typeElement.getEnclosingElement();
         }
@@ -318,7 +319,7 @@ public final class JsfForm implements ActiveEditorDrop {
                 return variableElement;
             }
         }
-        ErrorManager.getDefault().log(ErrorManager.WARNING, "Cannot detect the field associated with property: " + guessFieldName);
+        Logger.getLogger("global").log(Level.WARNING, "Cannot detect the field associated with property: " + guessFieldName);
         return null;
     }
 
@@ -451,7 +452,7 @@ public final class JsfForm implements ActiveEditorDrop {
                             stringBuffer.append("<f:param name=\"relatedId\" value=\"#{" + variable + "." + idProperty + "}\"/>\n");
                             stringBuffer.append("</h:commandLink>\n <br>\n <br>\n");
                         } else {
-                            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "cannot find referenced class: " + method.getReturnType());
+                            Logger.getLogger("global").log(Level.INFO, "cannot find referenced class: " + method.getReturnType()); // NOI18N
                         }
                     }
                 }
@@ -472,7 +473,7 @@ public final class JsfForm implements ActiveEditorDrop {
                 }
             }
         }
-        ErrorManager.getDefault().log(ErrorManager.WARNING, "Cannot find ID getter in class: " + typeElement.getQualifiedName());
+        Logger.getLogger("global").log(Level.WARNING, "Cannot find ID getter in class: " + typeElement.getQualifiedName());
         return null;
     }
     

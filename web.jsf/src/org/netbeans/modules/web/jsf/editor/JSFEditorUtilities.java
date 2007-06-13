@@ -28,11 +28,11 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.TokenItem;
 import org.netbeans.editor.ext.ExtSyntaxSupport;
 import org.netbeans.modules.schema2beans.BaseBean;
-import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.text.CloneableEditorSupport;
+import org.openide.util.Exceptions;
 import org.openide.util.Task;
 
 /**
@@ -85,7 +85,7 @@ public class JSFEditorUtilities {
             }
         } 
         catch (BadLocationException e) {
-            ErrorManager.getDefault().notify(e);
+            Exceptions.printStackTrace(e);
         }
         return null;
     }
@@ -140,7 +140,7 @@ public class JSFEditorUtilities {
                 offset = text.indexOf(ruleName, offset+ruleName.length());
             }
         } catch (BadLocationException e) {
-            ErrorManager.getDefault().notify(e);
+            Exceptions.printStackTrace(e);
         } 
         return new int []{-1,-1};
     }
@@ -196,7 +196,7 @@ public class JSFEditorUtilities {
             }
             
         } catch (BadLocationException e) {
-            ErrorManager.getDefault().notify(e);
+            Exceptions.printStackTrace(e);
         } 
         return new int []{-1,-1};
     }
@@ -245,7 +245,7 @@ public class JSFEditorUtilities {
                     possition = writeString(doc, sBean, token.getOffset());    
             }
         } catch (BadLocationException ex) {
-            ErrorManager.getDefault().notify(ex);
+            Exceptions.printStackTrace(ex);
         }
         return possition;
     }
@@ -267,7 +267,7 @@ public class JSFEditorUtilities {
             formatLength = doc.getFormatter().reformat(doc, offset, offset + text.length()-1);
         }
         catch(BadLocationException ex){
-            ErrorManager.getDefault().notify(ex);
+            Exceptions.printStackTrace(ex);
         }
         finally {
             doc.atomicUnlock();
@@ -323,7 +323,7 @@ public class JSFEditorUtilities {
             }
         }
         catch (BadLocationException e) {
-            ErrorManager.getDefault().notify(e);
+            Exceptions.printStackTrace(e);
         } 
         return new int []{-1,-1};
     }

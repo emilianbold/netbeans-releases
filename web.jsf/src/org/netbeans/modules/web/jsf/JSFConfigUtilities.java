@@ -34,10 +34,10 @@ import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
 import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
 import org.netbeans.modules.web.jsf.api.facesmodel.FacesConfig;
 import org.netbeans.modules.web.jsf.api.facesmodel.NavigationRule;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -121,7 +121,7 @@ public class JSFConfigUtilities {
                 if (param != null)
                     value =   "true".equals(param.getParamValue().trim()); //NOI18N
             } catch (java.io.IOException e) {
-                ErrorManager.getDefault().notify(e);
+                Exceptions.printStackTrace(e);
             }
         }
         return value;
@@ -138,7 +138,7 @@ public class JSFConfigUtilities {
                 if (param != null)
                     value = "true".equals(param.getParamValue().trim());
             } catch (java.io.IOException e) {
-                ErrorManager.getDefault().notify(e);
+                Exceptions.printStackTrace(e);
             }
         }
         return value;
@@ -163,7 +163,7 @@ public class JSFConfigUtilities {
                 if (webApp != null)
                     param = (InitParam)webApp.findBeanByName("InitParam", "ParamName", "javax.faces.CONFIG_FILES"); //NOI18N
             } catch (java.io.IOException e) {
-                ErrorManager.getDefault().notify(e);
+                Exceptions.printStackTrace(e);
             }
             
             if (param != null){

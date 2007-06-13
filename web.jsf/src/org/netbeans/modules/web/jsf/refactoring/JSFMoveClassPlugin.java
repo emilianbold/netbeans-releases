@@ -19,7 +19,7 @@
 
 package org.netbeans.modules.web.jsf.refactoring;
 
-import org.openide.ErrorManager;
+import java.util.logging.Logger;
 
 //TODO: RETOUCHE refactoring
 /**
@@ -31,8 +31,8 @@ public class JSFMoveClassPlugin /*implements RefactoringPlugin*/{
     /** This one is important creature - makes sure that cycles between plugins won't appear */
     private static ThreadLocal semafor = new ThreadLocal();
     
-    private static final ErrorManager err =
-            ErrorManager.getDefault().getInstance("org.netbeans.modules.web.jsf.refactoring");   // NOI18N
+    private static final Logger err =
+            Logger.getLogger("org.netbeans.modules.web.jsf.refactoring");   // NOI18N
     
 //    private final MoveClassRefactoring refactoring;
 //    

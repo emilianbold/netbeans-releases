@@ -12,7 +12,6 @@ package org.netbeans.modules.web.jsf;
 import java.awt.BorderLayout;
 import javax.swing.JComponent;
 import org.netbeans.modules.web.jsf.api.editor.JSFConfigEditorContext;
-import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;

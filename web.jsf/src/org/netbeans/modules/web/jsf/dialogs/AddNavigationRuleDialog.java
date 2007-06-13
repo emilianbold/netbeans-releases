@@ -26,7 +26,7 @@ import org.netbeans.modules.web.jsf.JSFConfigUtilities;
 import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
 import org.netbeans.modules.web.jsf.api.facesmodel.FacesConfig;
 import org.netbeans.modules.web.jsf.api.facesmodel.NavigationRule;
-import org.openide.ErrorManager;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -169,7 +169,7 @@ public class AddNavigationRuleDialog extends javax.swing.JPanel implements Valid
                 jTextFieldFromView.setText(res);
             }
         } catch (java.io.IOException ex) {
-            ErrorManager.getDefault().notify(ex);
+            Exceptions.printStackTrace(ex);
         }
     }//GEN-LAST:event_jButtonBrowseActionPerformed
     

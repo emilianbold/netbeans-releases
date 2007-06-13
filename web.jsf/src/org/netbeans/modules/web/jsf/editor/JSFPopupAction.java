@@ -42,7 +42,7 @@ import org.netbeans.modules.web.jsf.api.facesmodel.FacesConfig;
 import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean;
 import org.netbeans.modules.web.jsf.api.facesmodel.NavigationRule;
 import org.netbeans.modules.web.jsf.api.facesmodel.NavigationCase;
-import org.openide.ErrorManager;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.Presenter;
@@ -172,7 +172,7 @@ public final class JSFPopupAction extends SystemAction implements Presenter.Popu
                     facesConfig.getModel().sync();
                     target.setCaretPosition(rule.findPosition());
                 } catch (java.io.IOException ex) {
-                    ErrorManager.getDefault().notify(ex);
+                    Exceptions.printStackTrace(ex);
                 }
             }
         }
@@ -235,7 +235,7 @@ public final class JSFPopupAction extends SystemAction implements Presenter.Popu
                     else
                         target.setCaretPosition(nCase.findPosition());
                 } catch (java.io.IOException ex) {
-                    ErrorManager.getDefault().notify(ex);
+                    Exceptions.printStackTrace(ex);
                 }
             }
         }

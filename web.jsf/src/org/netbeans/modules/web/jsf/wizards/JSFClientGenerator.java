@@ -33,6 +33,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
@@ -75,12 +77,12 @@ import org.netbeans.modules.web.jsf.api.facesmodel.NavigationCase;
 import org.netbeans.modules.web.jsf.api.facesmodel.NavigationRule;
 import org.netbeans.modules.web.jsf.palette.items.JsfForm;
 import org.netbeans.modules.web.jsf.palette.items.JsfTable;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 
 /**
@@ -284,7 +286,7 @@ public class JSFClientGenerator {
             doc.getFormatter().reformat(doc, 0, doc.getLength());
             listSb.replace(0, listSb.length(), doc.getText(0, doc.getLength()));
         } catch (BadLocationException e) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            Logger.getLogger("global").log(Level.INFO, null, e);
         }
         
         final String listText = listSb.toString();
@@ -369,7 +371,7 @@ public class JSFClientGenerator {
             doc.getFormatter().reformat(doc, 0, doc.getLength());
             newSb.replace(0, newSb.length(), doc.getText(0, doc.getLength()));
         } catch (BadLocationException e) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            Logger.getLogger("global").log(Level.INFO, null, e);
         }
         final String newText = newSb.toString();
 
@@ -415,7 +417,7 @@ public class JSFClientGenerator {
             doc.getFormatter().reformat(doc, 0, doc.getLength());
             editSb.replace(0, editSb.length(), doc.getText(0, doc.getLength()));
         } catch (BadLocationException e) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            Logger.getLogger("global").log(Level.INFO, null, e);
         }
 
         final String editText = editSb.toString();
@@ -463,7 +465,7 @@ public class JSFClientGenerator {
             doc.getFormatter().reformat(doc, 0, doc.getLength());
             detailSb.replace(0, detailSb.length(), doc.getText(0, doc.getLength()));
         } catch (BadLocationException e) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            Logger.getLogger("global").log(Level.INFO, null, e);
         }
 
         final String detailText = detailSb.toString();
@@ -558,7 +560,7 @@ public class JSFClientGenerator {
                 //TODO: RETOUCHE correct write to JSF model?
                 model.endTransaction();
             } catch (IOException ioex) {
-                ErrorManager.getDefault().notify(ioex);
+                Exceptions.printStackTrace(ioex);
             }
         }
     }

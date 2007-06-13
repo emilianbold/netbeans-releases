@@ -22,6 +22,8 @@ package org.netbeans.modules.web.jsf;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -34,7 +36,6 @@ import org.netbeans.modules.web.jsf.api.editor.JSFConfigEditorContext;
 import org.netbeans.modules.xml.api.EncodingUtil;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.UndoRedo;
 import org.openide.filesystems.FileLock;
@@ -212,7 +213,7 @@ public class JSFConfigEditorSupport extends DataEditorSupport
                     if(nd.getValue() != NotifyDescriptor.YES_OPTION) return;
                 }
             } catch (javax.swing.text.BadLocationException e){
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                Logger.getLogger("global").log(Level.INFO, null, e);
             }
             super.saveDocument();
             //moved from Env.save()
@@ -260,7 +261,7 @@ public class JSFConfigEditorSupport extends DataEditorSupport
                 //moved from Env.save()
                 getDataObject().setModified(false);
             } catch (javax.swing.text.BadLocationException e){
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                Logger.getLogger("global").log(Level.INFO, null, e);
             }
         }
     }

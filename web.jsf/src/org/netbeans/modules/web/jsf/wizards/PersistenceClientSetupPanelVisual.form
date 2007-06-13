@@ -7,7 +7,10 @@
     </Property>
   </Properties>
   <AuxValues>
+    <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
     <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_variablesLocal" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_variablesModifier" type="java.lang.Integer" value="2"/>
@@ -18,12 +21,12 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
               <Component id="jLabel4" min="-2" max="-2" attributes="0"/>
-              <EmptySpace pref="321" max="32767" attributes="0"/>
+              <EmptySpace pref="325" max="32767" attributes="0"/>
           </Group>
           <Group type="102" alignment="0" attributes="0">
               <Component id="jLabel2" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="jsfFolder" pref="335" max="32767" attributes="1"/>
+              <Component id="jsfFolder" pref="353" max="32767" attributes="1"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="browseFolderButton" min="-2" max="-2" attributes="1"/>
           </Group>
@@ -35,9 +38,9 @@
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="locationComboBox" alignment="1" pref="462" max="32767" attributes="1"/>
-                  <Component id="projectTextField" alignment="0" pref="462" max="32767" attributes="1"/>
-                  <Component id="packageComboBox" alignment="0" pref="462" max="32767" attributes="0"/>
+                  <Component id="locationComboBox" alignment="1" pref="497" max="32767" attributes="1"/>
+                  <Component id="projectTextField" alignment="0" pref="497" max="32767" attributes="1"/>
+                  <Component id="packageComboBox" alignment="0" pref="497" max="32767" attributes="0"/>
               </Group>
           </Group>
           <Group type="102" alignment="0" attributes="0">

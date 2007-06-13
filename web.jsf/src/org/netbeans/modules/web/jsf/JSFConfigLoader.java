@@ -25,8 +25,6 @@ import org.openide.actions.*;
 import org.openide.filesystems.*;
 import org.openide.loaders.*;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.SystemAction;
-//import org.netbeans.modules.struts.actions.SAXParseErrorAction;
 
 /**
  *

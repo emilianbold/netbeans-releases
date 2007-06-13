@@ -15,7 +15,6 @@ import java.util.Collections;
 import org.netbeans.core.spi.multiview.MultiViewDescription;
 import org.netbeans.modules.web.jsf.api.editor.JSFConfigEditorContext;
 import org.netbeans.modules.web.jsf.api.editor.JSFConfigEditorViewFactory;
-import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 
 /**

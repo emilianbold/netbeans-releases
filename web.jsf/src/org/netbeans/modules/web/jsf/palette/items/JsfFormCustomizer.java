@@ -18,6 +18,7 @@
  */
 
 package org.netbeans.modules.web.jsf.palette.items;
+
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -33,7 +34,7 @@ import org.netbeans.modules.j2ee.common.source.AbstractTask;
 import org.openide.DialogDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -261,7 +262,7 @@ public final class JsfFormCustomizer extends javax.swing.JPanel implements Docum
         try {
             validClassName = empty.isSelected() || classExists(classTextField);
         } catch (IOException ioe) {
-            ErrorManager.getDefault().notify(ioe);
+            Exceptions.printStackTrace(ioe);
         }
         descriptor.setValid(hasModuleJsf && validClassName);
         errorField.setText(hasModuleJsf ? 
