@@ -26,6 +26,9 @@ Microsystems, Inc. All Rights Reserved.
         <javac srcdir="release/sources" target="1.1" source="1.3" destdir="build/absolutelayoutclasses"/>
         <mkdir dir="${cluster}/modules/ext"/>
         <jar jarfile="${cluster}/modules/ext/AbsoluteLayout.jar">
+            <manifest>
+                <attribute name="NetBeans-Own-Library" value="true"/>
+            </manifest>
             <fileset dir="build/absolutelayoutclasses"/>
         </jar>
     </target>
