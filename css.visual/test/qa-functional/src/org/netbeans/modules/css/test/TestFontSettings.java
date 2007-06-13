@@ -18,11 +18,8 @@
  */
 package org.netbeans.modules.css.test;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import javax.swing.JComboBox;
-import javax.swing.JList;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JListOperator;
@@ -41,7 +38,6 @@ public class TestFontSettings extends CSSTest{
     }
     
     public void testSetFontFamily() throws Exception{
-        System.out.println("running testSetFont");
         openFile(newFileName);
         FontPaneOperator fontOper = initializeFontChanging();
         int familiesCount = getSize(fontOper.fontFamilies());
@@ -87,7 +83,6 @@ public class TestFontSettings extends CSSTest{
     }
     
     public void testChangeFontFamily(){
-        System.out.println("running testChangeFontFamily");
         FontPaneOperator fontOper = initializeFontChanging();
         JListOperator fontFamilies = fontOper.fontFamilies();
         int familiesCount = getSize(fontFamilies);
@@ -101,7 +96,6 @@ public class TestFontSettings extends CSSTest{
     }
     
     public void testChangeFontSize(){
-        System.out.println("running testChangeFontSize");
         FontPaneOperator fontOper = initializeFontChanging();
         JListOperator fontSizes = fontOper.fontSizes();
         fontSizes.selectItem("12");
@@ -120,25 +114,21 @@ public class TestFontSettings extends CSSTest{
     }
     
     public void testChangeFontWeight(){
-        System.out.println("running testChangeFontWeight");
         FontPaneOperator fontOper = initializeFontChanging();
         checkAtrribute("font-weight", fontOper.fontWeight());
     }
     
     public void testChangeFontStyle(){
-        System.out.println("running testChangeFontStyle");
         FontPaneOperator fontOper = initializeFontChanging();
         checkAtrribute("font-style", fontOper.fontStyle());
     }
     
     public void testChangeFontVariant(){
-        System.out.println("running testChangeFontVariant");
         FontPaneOperator fontOper = initializeFontChanging();
         checkAtrribute("font-variant", fontOper.fontVariant());
     }
     
     public void testChangeFontColor(){
-        System.out.println("running testChangeFontColor");
         FontPaneOperator fontOper = initializeFontChanging();
         JComboBoxOperator operator = fontOper.fontColor();
         int size = getSize(operator);
@@ -153,7 +143,6 @@ public class TestFontSettings extends CSSTest{
     }
     
     public void testDecoration(){
-        System.out.println("running testUnderline");
         FontPaneOperator fontOper = initializeFontChanging();
         fontOper.overline(true);
         waitUpdate();
@@ -174,33 +163,7 @@ public class TestFontSettings extends CSSTest{
         assertFalse(getRootRuleText().contains("line-through"));
         assertFalse(getRootRuleText().contains("overline"));
     }
-    
-    private void checkAtrribute(String attributeName, JComboBoxOperator operator) {
-        int size = getSize(operator);
-        assertFalse("SOME ITEMS", size == 0);
-        //--------INSERT ONCE--------//
-        operator.selectItem(new Random().nextInt(size-1)+1);
-        waitUpdate();
-        String selected = operator.getSelectedItem().toString();
-        assertTrue("INSERTING", getRootRuleText().contains(attributeName + ": " + selected));
-        //--------  UPDATE   --------//
-        operator.selectItem(new Random().nextInt(size-1)+1);
-        waitUpdate();
-        selected = operator.getSelectedItem().toString();
-        assertTrue("UPDATING", getRootRuleText().contains(attributeName + ": "+selected));
-        //-------- REMOVE -----------//
-        operator.selectItem(0);//<NOT SET>
-        waitUpdate();
-        assertFalse("REMOVING", getRootRuleText().contains(attributeName));
-    }
-    
-    private String getRootRuleText(){
-        String content = new EditorOperator(newFileName).getText();
-        String root = content.substring(content.indexOf("root"));
-        String rule = root.substring(root.indexOf('{'), root.indexOf('}'));
-        return rule;
-    }
-    
+           
     private FontPaneOperator initializeFontChanging(){
         EditorOperator eop = new EditorOperator(newFileName);
         eop.setVisible(true);
@@ -218,33 +181,5 @@ public class TestFontSettings extends CSSTest{
         assertEquals("ITEMS ADDED", order, getSize(fontOperator.selected()));
         assertEquals("ADDED ITEM", selectedItem, getItems(fontOperator.selected()).get(order-1));
     }
-    
-    private List<String> getItems(JComboBoxOperator boxOperator){
-        JComboBox box = (JComboBox) boxOperator.getSource();
-        int boxSize = box.getItemCount();
-        List<String> result = new ArrayList<String>(boxSize);
-        for(int i = 0;i < boxSize; i++){
-            result.add(box.getModel().getElementAt(i).toString());
-        }
-        return result;
-    }
-    
-    private List<String> getItems(JListOperator listOperator){
-        JList jList = (JList) listOperator.getSource();
-        int listOperatorSize = getSize(listOperator);
-        List<String> result = new ArrayList<String>(listOperatorSize);
-        for (int i=0; i <listOperatorSize ;i++){
-            result.add(jList.getModel().getElementAt(i).toString());
-        }
-        return result;
-    }
-    
-    private int getSize(JListOperator listOperator){
-        return ((JList)listOperator.getSource()).getModel().getSize();
-    }
-    
-    private int getSize(JComboBoxOperator listOperator){
-        return ((JComboBox)listOperator.getSource()).getModel().getSize();
-    }
-    
+        
 }

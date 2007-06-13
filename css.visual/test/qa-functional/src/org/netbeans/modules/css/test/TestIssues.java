@@ -36,7 +36,6 @@ public class TestIssues extends CSSTest {
     }
     
     public void test105562(){/*move end bracket, 105574 end semicolon should be added*/
-        System.out.println("running test105562");
         String insertion = "h2{font-size: 10px}\n";
         EditorOperator eop = openFile(newFileName);
         eop.setCaretPositionToLine(1);
@@ -57,7 +56,6 @@ public class TestIssues extends CSSTest {
     }     
     
     public void test105568(){
-        System.out.println("running test105568");
         String insertion = "h1{\ntext-decoration    : overline;\n}";
         EditorOperator eop = openFile(newFileName);
         eop.setCaretPositionToLine(1);
@@ -67,6 +65,7 @@ public class TestIssues extends CSSTest {
         waitUpdate();
         FontPaneOperator fontPane = (FontPaneOperator) styleOper.setPane(FONT);
         assertTrue(fontPane.isOverline());
+        eop.closeDiscardAll();
     }
     
 }

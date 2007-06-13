@@ -67,7 +67,6 @@ public class TestBasic extends CSSTest{
     }
     
     public void testAddRule() throws Exception{
-        System.out.println("running testAddRule");
         EditorOperator eop = new EditorOperator(newFileName);
         eop.setCaretPositionToLine(rootRuleLineNumber);
         AbstractButtonOperator abo = eop.getToolbarButton(createRuleAction);
@@ -89,7 +88,6 @@ public class TestBasic extends CSSTest{
     }
     
     public void testNavigator() throws Exception{
-        System.out.println("running testNavigator");
         String navigatorTestFile = "navigatorTest.css";
         openFile(newFileName);
         NavigatorOperator navigatorOperator = NavigatorOperator.invokeNavigator();

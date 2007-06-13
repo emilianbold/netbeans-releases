@@ -19,6 +19,8 @@
 package org.netbeans.modules.css.test.operator;
 
 import java.awt.Component;
+import javax.swing.JComboBox;
+import javax.swing.JTextField;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.TopComponentOperator;
@@ -28,8 +30,11 @@ import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JColorChooserOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
+import org.netbeans.jemmy.operators.JFileChooserOperator;
+import org.netbeans.jemmy.operators.JLabelOperator;
 import org.netbeans.jemmy.operators.JListOperator;
 import org.netbeans.jemmy.operators.JTabbedPaneOperator;
+import org.netbeans.jemmy.operators.JTextFieldOperator;
 import static org.netbeans.modules.css.test.operator.StyleBuilderOperator.Panes.*;
 
 /**Keeps methods to access style builder component.
@@ -66,6 +71,8 @@ public class StyleBuilderOperator extends TopComponentOperator{
         switch (panes){
         case FONT:
             return new FontPaneOperator(this);
+        case BACKGROUND:
+            return new BackgroundPaneOperator(this);
         }
         return null;
     }
@@ -100,6 +107,16 @@ public class StyleBuilderOperator extends TopComponentOperator{
     //-------ABSTRACT PANEOPERATOR---------//
     public abstract class CSSPaneOperator{
         protected TopComponentOperator topComp;
+
+        protected Component getComponentByAN(String accessibleName){
+            for (Component component : topComp.getComponents()) {
+                if (component instanceof JComboBox){
+                    if (component.getAccessibleContext().getAccessibleName().equals(accessibleName))
+                        return component;
+                }
+            }
+            return null;
+        }
     }
     
     //-------FONT----------------//
@@ -144,7 +161,7 @@ public class StyleBuilderOperator extends TopComponentOperator{
         public void overline(boolean b){
             changeSelection(b, new JCheckBoxOperator(topComp, Bundle.getString(uiBundle, "FONT_OVERLINE")));
         }
-
+        
         public void underline(boolean b){
             changeSelection(b, new JCheckBoxOperator(topComp, Bundle.getString(uiBundle, "FONT_UNDERLINE")));
         }
@@ -152,11 +169,11 @@ public class StyleBuilderOperator extends TopComponentOperator{
         public void strikethrough(boolean b){
             changeSelection(b, new JCheckBoxOperator(topComp, Bundle.getString(uiBundle, "FONT_STRIKETHROUGH")));
         }
-
+        
         public void noDecoration(boolean b){
             changeSelection(b, new JCheckBoxOperator(topComp, Bundle.getString(uiBundle, "NO_DECORATION_1")));
         }
-
+        
         public boolean isOverline(){
             return new JCheckBoxOperator(topComp, Bundle.getString(uiBundle, "FONT_OVERLINE")).isSelected();
         }
@@ -177,8 +194,69 @@ public class StyleBuilderOperator extends TopComponentOperator{
     }
     
     //-------BACKGROUND----------//
-    
-    
+    public class BackgroundPaneOperator extends CSSPaneOperator{
+        private final String backgroundColorTitle = 
+                Bundle.getString(uiBundle, "BACKGROUND_COLOR");
+        private final String backgroundImage = 
+                Bundle.getString(uiBundle, "BACKGROUND_IMAGE");
+        private final String tile = 
+                Bundle.getString(uiBundle, "BACKGROUNDTILE");
+        private final String scroll = 
+                Bundle.getString(uiBundle, "BACKGROUND_SCROLL");
+        private final String hPosition = 
+                Bundle.getString(uiBundle, "BG_HORIZONTAL_POS");
+        private final String vPosition = 
+                Bundle.getString(uiBundle, "BG_VERTICAL_POS");
+        private final String vPositionUnitAN = 
+                Bundle.getString(uiBundle, "HORIZPOS_UNIT_COMBO_ACCESSIBLE_NAME");
+        private final String hPositionUnitAN = 
+                Bundle.getString(uiBundle, "VERTPOS_UNIT_COMBO_ACCESSIBLE_NAME");
+        
+        public BackgroundPaneOperator(TopComponentOperator _topComp){
+            topComp = _topComp;
+        }
+        
+//        public ColorSelectionField getColor(){
+//            Component comp = new JLabelOperator(topComp, backgroundColorTitle).getLabelFor();
+//            return (ColorSelectionField) comp;
+//        }
+        
+        public JTextFieldOperator getImage(){
+            Component comp = new JLabelOperator(topComp, backgroundImage).getLabelFor();
+            return new JTextFieldOperator((JTextField)comp);
+        }
+        
+        public JFileChooserOperator getImageDialog(){
+            new JButtonOperator(topComp, 1).pushNoBlock();
+            return new JFileChooserOperator();
+        }
+        
+        public JComboBoxOperator getTile(){
+            Component comp = new JLabelOperator(topComp, tile).getLabelFor();
+            return new JComboBoxOperator((JComboBox)comp);
+        }
+        
+        public JComboBoxOperator getScroll(){
+            Component comp = new JLabelOperator(topComp, scroll).getLabelFor();
+            return new JComboBoxOperator((JComboBox)comp);
+        }
+        
+        public JComboBoxOperator getHPosition(){
+            Component comp = new JLabelOperator(topComp, hPosition).getLabelFor();
+            return new JComboBoxOperator((JComboBox)comp);
+        }
+        public JComboBoxOperator getHPositionUnits(){
+            return new JComboBoxOperator((JComboBox)getComponentByAN(hPositionUnitAN));
+        }
+        
+        public JComboBoxOperator getVPositionOperator(){
+            Component comp = new JLabelOperator(topComp, vPosition).getLabelFor();
+            return new JComboBoxOperator((JComboBox)comp);
+        }
+        public JComboBoxOperator getVPositionUnits(){
+            return new JComboBoxOperator((JComboBox)getComponentByAN(vPositionUnitAN));
+        }
+    }
     //---------------------------//
     public class EditFontOperator extends NbDialogOperator{
         public EditFontOperator(){
