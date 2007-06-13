@@ -26,8 +26,6 @@ import java.util.HashSet;
 import org.netbeans.core.api.multiview.MultiViewHandler;
 import org.netbeans.core.api.multiview.MultiViewPerspective;
 import org.netbeans.core.api.multiview.MultiViews;
-import org.netbeans.modules.print.spi.PrintProvider;
-import org.netbeans.modules.print.spi.PrintProviderCookie;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.validation.ShowCookie;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
@@ -35,12 +33,9 @@ import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.dom.DocumentComponent;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
-import org.netbeans.modules.xml.xam.ui.cookies.GetComponentCookie;
 import org.netbeans.modules.xml.xam.ui.cookies.ViewComponentCookie;
 import org.netbeans.modules.xml.xam.ui.cookies.ViewComponentCookie.View;
-import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
-import org.openide.util.Lookup;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
@@ -52,8 +47,8 @@ import org.openide.windows.WindowManager;
  * @author Ajit Bhate
  * @author Nathan Fiedler
  */
-public class WSDLMultiViewSupport implements ViewComponentCookie, ShowCookie,
-        PrintProviderCookie {
+public class WSDLMultiViewSupport implements ViewComponentCookie, ShowCookie {
+        //PrintProviderCookie {
     /** The data object */
     private WSDLDataObject dobj;
     /** Set of components that are shown in the Partner (design) view. */
@@ -209,33 +204,33 @@ public class WSDLMultiViewSupport implements ViewComponentCookie, ShowCookie,
         }
     }
 
-    public PrintProvider getPrintProvider() {
-        TopComponent tc = WindowManager.getDefault().getRegistry().getActivated();
-        MultiViewHandler mvh = MultiViews.findMultiViewHandler(tc);
-
-        if (mvh == null) {
-            return null;
-        }
-
-        MultiViewPerspective mvp = mvh.getSelectedPerspective();
-        if (mvp.preferredID().equals(WSDLTreeViewMultiViewDesc.PREFERRED_ID)) {
-            return null;
-        } else if (mvp.preferredID().equals(WSDLDesignMultiViewDesc.PREFERRED_ID)) {
-            Lookup lookup = tc.getLookup();
-            DataObject dataObject = lookup.lookup(DataObject.class);
-            if (dataObject == this.dobj) {
-                PrintProviderCookie cookie = lookup.lookup(
-                        PrintProviderCookie.class);
-                // Avoid looping forever by ensuring we find a provider that
-                // is not ourselves.
-                if (cookie != null && cookie != this) {
-                    return cookie.getPrintProvider();
-                }
-            }
-        }
-        
-        return null;
-    }
+//    public PrintProvider getPrintProvider() {
+//        TopComponent tc = WindowManager.getDefault().getRegistry().getActivated();
+//        MultiViewHandler mvh = MultiViews.findMultiViewHandler(tc);
+//
+//        if (mvh == null) {
+//            return null;
+//        }
+//
+//        MultiViewPerspective mvp = mvh.getSelectedPerspective();
+//        if (mvp.preferredID().equals(WSDLTreeViewMultiViewDesc.PREFERRED_ID)) {
+//            return null;
+//        } else if (mvp.preferredID().equals(WSDLDesignMultiViewDesc.PREFERRED_ID)) {
+//            Lookup lookup = tc.getLookup();
+//            DataObject dataObject = lookup.lookup(DataObject.class);
+//            if (dataObject == this.dobj) {
+//                PrintProviderCookie cookie = lookup.lookup(
+//                        PrintProviderCookie.class);
+//                // Avoid looping forever by ensuring we find a provider that
+//                // is not ourselves.
+//                if (cookie != null && cookie != this) {
+//                    return cookie.getPrintProvider();
+//                }
+//            }
+//        }
+//        
+//        return null;
+//    }
 
     /**
      * Finds the preferredID of active multiview element. If activated

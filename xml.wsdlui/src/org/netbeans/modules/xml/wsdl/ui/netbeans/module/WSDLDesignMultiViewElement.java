@@ -48,9 +48,6 @@ import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
 import org.netbeans.core.spi.multiview.MultiViewFactory;
-import org.netbeans.modules.print.api.PrintManagerAccess;
-import org.netbeans.modules.print.spi.PrintProvider;
-import org.netbeans.modules.print.spi.PrintProviderCookie;
 import org.netbeans.modules.xml.validation.ShowCookie;
 import org.netbeans.modules.xml.validation.ValidateAction;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
@@ -146,7 +143,7 @@ public class WSDLDesignMultiViewElement extends TopComponent
                 // The Show Cookie in lookup to show the component
                 showCookie,
                 // Provides the PrintProvider for printing
-                new DesignViewPrintProvider(),
+                //new DesignViewPrintProvider(),
                 // Component palette for the partner view.
                 WSDLPaletteFactory.getPalette(),
                 // This is unusal, not sure why this is here.
@@ -286,8 +283,8 @@ public class WSDLDesignMultiViewElement extends TopComponent
         		graphComponent.addToolbarActions(mToolbar);
 
         		// vlv: print
-        		mToolbar.addSeparator();
-        		mToolbar.add(PrintManagerAccess.getManager().getPreviewAction());
+/*        		mToolbar.addSeparator();
+        		mToolbar.add(PrintManagerAccess.getManager().getPreviewAction());*/
 
         		mToolbar.addSeparator();
         		mToolbar.add(new ValidateAction(model));
@@ -351,7 +348,7 @@ public class WSDLDesignMultiViewElement extends TopComponent
      * Provides the PrintProvider which allows us to print the design view
      * to a printer using the Print API.
      */
-    private class DesignViewPrintProvider implements PrintProviderCookie {
+    /*private class DesignViewPrintProvider implements PrintProviderCookie {
 
         public PrintProvider getPrintProvider() {
             return new PrintProvider.Component() {
@@ -368,5 +365,5 @@ public class WSDLDesignMultiViewElement extends TopComponent
                 }
             };
         }
-    }
+    }*/
 }
