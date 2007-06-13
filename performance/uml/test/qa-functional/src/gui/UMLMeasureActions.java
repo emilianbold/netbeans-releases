@@ -31,12 +31,15 @@ public class UMLMeasureActions  {
 
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
-            
+             
         suite.addTest(new OpenUMLProject("measureTime", "Open UML Project"));
         suite.addTest(new ReverseEngineering("measureTime", "Reverse Engineering"));
         suite.addTest(new OpenUMLDiagram("measureTime", "Open UML Diagram"));
         suite.addTest(new CreateEmptyDiagram("measureTime", "Create Empty UML Diagram"));
         suite.addTest(new SelectingMultipleNodes("measureTime", "Selecting Multiple Nodes"));
+        suite.addTest(new MultipleNodeContextMenu("measureTime", "Multiple Node Context Menu"));
+        suite.addTest(new CreateClassDiagramFromMultipleNodes("measureTime", "Create Class Diagram From Multiple Nodes")); 
+        suite.addTest(new CreateSequenceDiagramFromMultipleNodes("measureTime", "Create Sequence Diagram From Multiple Nodes"));
         return suite;
     }
     
