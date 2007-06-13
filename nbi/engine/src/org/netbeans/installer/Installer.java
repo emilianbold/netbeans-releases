@@ -161,7 +161,7 @@ public class Installer implements FinishHandler {
     public void cancel() {
         // shut down everything that needs it
         // exit with the cancel error code
-        cleanupAndExit(CANCEL_ERRORCODE);
+        exitNormally(CANCEL_ERRORCODE);
     }
     
     /**
@@ -172,8 +172,7 @@ public class Installer implements FinishHandler {
      * @see #criticalExit()
      */
     public void finish() {
-        Wizard.getInstance().close();
-        cleanupAndExit(NORMAL_ERRORCODE);
+        exitNormally(NORMAL_ERRORCODE);
     }
     
     /**
@@ -185,15 +184,26 @@ public class Installer implements FinishHandler {
      */
     public void criticalExit() {
         // exit immediately, as the system is apparently in a crashed state
-        cleanupAndExit(CRITICAL_ERRORCODE);
+        exitImmediately(CRITICAL_ERRORCODE);
     }
     
     // private //////////////////////////////////////////////////////////////////////
-    private void cleanupAndExit(int errorCode) {
-        
-        DownloadManager.instance.terminate();
+    private void exitNormally(int errorCode) {
+        Wizard.getInstance().close();
+        DownloadManager.getInstance().terminate();
         SystemUtils.deleteFilesOnExit();
-        System.exit(errorCode);
+        
+        exitImmediately(errorCode);
+    }
+    
+    private void exitImmediately(int errorCode) {
+        if (Boolean.getBoolean(DONT_USE_SYSTEM_EXIT_PROPERTY)) {
+            System.getProperties().put(
+                    EXIT_CODE_PROPERTY, 
+                    new Integer(errorCode));
+        } else {
+            System.exit(errorCode);
+        }
     }
     
     private void dumpSystemInfo() {
@@ -639,5 +649,10 @@ public class Installer implements FinishHandler {
     
     public static final String IGNORE_LOCK_FILE_PROPERTY =
             "nbi.ignore.lock.file";
-   
+    
+    public static final String DONT_USE_SYSTEM_EXIT_PROPERTY = 
+            "nbi.dont.use.system.exit";
+    
+    public static final String EXIT_CODE_PROPERTY = 
+            "nbi.exit.code";
 }
