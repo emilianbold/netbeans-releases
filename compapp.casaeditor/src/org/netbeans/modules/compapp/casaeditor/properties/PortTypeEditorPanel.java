@@ -15,6 +15,7 @@ import org.netbeans.modules.xml.wsdl.model.PortType;
  */
 public class PortTypeEditorPanel extends javax.swing.JPanel {
     
+    List<PortType> mPortTypes;
     /** Creates new form PortTypeEditorPanel */
     public PortTypeEditorPanel(PortType portType, List<PortType> portTypes) {
         initComponents();
@@ -22,15 +23,20 @@ public class PortTypeEditorPanel extends javax.swing.JPanel {
     }
     
     public void initialize(PortType portType, List<PortType> portTypes) {
+        mPortTypes = portTypes;
         mPortTypeComboBox.removeAllItems();
-        mPortTypeComboBox.setModel(new javax.swing.DefaultComboBoxModel(portTypes.toArray()));
+
+        for(PortType pt : portTypes) {
+            mPortTypeComboBox.addItem(pt.getName());
+        }
+        //mPortTypeComboBox.setModel(new javax.swing.DefaultComboBoxModel(portTypes.toArray()));
         if(portType != null) {
-            mPortTypeComboBox.setSelectedItem(portType);
+            mPortTypeComboBox.setSelectedItem(portType.getName());
         }
     }
     
     public PortType getCurrentSelection() {
-        return (PortType) mPortTypeComboBox.getSelectedItem();
+        return mPortTypes.get(mPortTypeComboBox.getSelectedIndex());
     }
     
     /** This method is called from within the constructor to

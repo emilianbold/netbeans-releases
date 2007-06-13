@@ -18,9 +18,16 @@ package org.netbeans.modules.compapp.casaeditor.properties;
 
 import java.beans.PropertyEditor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Set;
+import javax.xml.namespace.QName;
+import org.netbeans.modules.compapp.casaeditor.Constants;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaComponent;
+import org.netbeans.modules.compapp.casaeditor.model.casa.CasaEndpointRef;
+import org.netbeans.modules.compapp.casaeditor.model.casa.CasaPort;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel;
 import org.netbeans.modules.compapp.casaeditor.nodes.CasaNode;
+//import org.netbeans.modules.xml.wsdl.model.impl.PortTypeImpl;
+import org.netbeans.modules.xml.wsdl.model.PortType;
 import org.openide.util.NbBundle;
 
 /**
@@ -42,15 +49,41 @@ public class PortTypeProperty extends BaseCasaProperty {
 
     @Override
     public boolean canWrite() {
-        return false;
+        return true;
     }
 
     public Object getValue() throws IllegalAccessException, InvocationTargetException {
-        return "Implement";
+        CasaComponent component = getComponent();
+        if(component instanceof CasaPort) {
+            return getModel().getCasaPortType((CasaPort) component).getName();
+        } else {
+            return Constants.EMPTY_STRING;
+        }
+
     }
 
     public void setValue(Object val) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-        //throw new UnsupportedOperationException("Not supported yet.");
+        CasaComponent component = getComponent();
+        if (component instanceof CasaPort) {
+            if(val != null && val instanceof PortType) {
+                PortType pt = (PortType) val;
+                Set<QName> qnames = pt.getModel().getQNames();
+                for(QName interfaceQName : qnames) {
+                    if (interfaceQName.getNamespaceURI().equals( pt.getModel().getDefinitions().getTargetNamespace()) &&
+                        interfaceQName.getLocalPart().equals(pt.getName())) {
+                        CasaPort casaPort = (CasaPort) component;
+                        CasaEndpointRef endPointRef = casaPort.getConsumes();
+                        if (endPointRef == null) {
+                            endPointRef = casaPort.getProvides();
+                        }
+                        if(endPointRef != null) {
+                            getModel().setEndpointInterfaceQName(endPointRef, interfaceQName);                        
+                        }
+                        break;
+                    }
+                }
+            }
+        } 
     }
 
     public PropertyEditor getPropertyEditor() {

@@ -63,7 +63,9 @@ public class PortTypeEditor extends PropertyEditorSupport{
     }
     
     public String getAsText() {
-        return mPortType == null ? EMPTY : mPortType.getName();
+        //return mPortType == null ? EMPTY : mPortType.getName();
+        Object value = super.getValue();
+        return value == null ? EMPTY : super.getAsText();
     }
 
     public void setAsText(String s) {
