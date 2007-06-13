@@ -731,8 +731,13 @@ public class Installer extends ModuleInstall {
             msg = null;
         }
         private URL getUnknownHostExceptionURL() {
-            String resource = NbBundle.getMessage(Installer.class, "URL_UnknownHostException");
-            return getClass().getResource(resource);
+            try {
+                URL resource = new URL("nbresloc:/org/netbeans/modules/uihandler/UnknownHostException.html"); // NOI18N
+                return resource;
+            } catch (MalformedURLException ex) {
+                LOG.log(Level.SEVERE, ex.getMessage(), ex);
+            }
+            return getClass().getResource("UnknownHostException.html"); // NOI18N
         }
         
         public void run() {
@@ -908,8 +913,12 @@ public class Installer extends ModuleInstall {
                 reportPanel.setSummary(t.toString());
             }
             browser = new HtmlBrowser();
-            String resource = NbBundle.getMessage(Installer.class, "URL_Connecting"); // NOI18N
-            browser.setURL(Installer.class.getResource("Connecting.html")); // NOI18N
+            try {
+                URL resource = new URL("nbresloc:/org/netbeans/modules/uihandler/Connecting.html"); // NOI18N
+                browser.setURL(resource); // NOI18N
+            } catch (MalformedURLException ex) {
+                LOG.log(Level.SEVERE, ex.getMessage(), ex);
+            }
             browser.setEnableLocation(false);
             browser.setEnableHome(false);
             browser.setStatusLineVisible(false);
