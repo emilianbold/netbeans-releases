@@ -25,4 +25,12 @@
             <!--<attr name="WarningsProvider.instance/TodoProvider.instance" boolvalue="true"/> -->
         </folder>
     </folder>
+    
+    <folder name="OptionsDialog">
+        <folder name="Advanced">
+            <file name="ToDo.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.tasklist.todo.settings.ToDoOptions"/>
+            </file>
+        </folder>
+   </folder>
 </filesystem>

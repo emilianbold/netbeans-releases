@@ -19,6 +19,8 @@
 
 package org.netbeans.modules.tasklist.todo;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -34,6 +36,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import org.netbeans.api.queries.FileEncodingQuery;
+import org.netbeans.modules.tasklist.todo.settings.Settings;
 import org.netbeans.spi.tasklist.FileTaskScanner;
 import org.netbeans.spi.tasklist.Task;
 import org.openide.filesystems.FileObject;
@@ -45,7 +48,7 @@ import org.openide.util.NbBundle;
  * @author Tor Norbye
  * @author Trond Norbye
  */
-public class TodoTaskScanner extends FileTaskScanner {
+public class TodoTaskScanner extends FileTaskScanner implements PropertyChangeListener {
     
     private static final String GROUP_NAME = "nb-tasklist-todo"; //NOI18N
     
@@ -55,10 +58,9 @@ public class TodoTaskScanner extends FileTaskScanner {
     /** 
      * Creates a new instance of TodoTaskProvider 
      * 
-     * TODO add user options
      */
     TodoTaskScanner( String displayName, String description ) {
-        super( displayName, description, null ); //NOI18N
+        super( displayName, description, "Advanced" ); //NOI18N
     }
     
     public static TodoTaskScanner create() {
@@ -335,9 +337,24 @@ public class TodoTaskScanner extends FileTaskScanner {
     }
 
     public void attach( Callback callback ) {
+        if( null == callback && null != this.callback ) {
+            regexp = null;
+            Settings.getDefault().removePropertyChangeListener( this );
+        } else if( null != callback && null == this.callback ) {
+            Settings.getDefault().addPropertyChangeListener( this );
+        }
         this.callback = callback;
     }
 
+    public void propertyChange( PropertyChangeEvent e ) {
+        if( Settings.PROP_PATTERN_LIST.equals( e.getPropertyName() )
+         || Settings.PROP_SCAN_COMMENTS_ONLY.equals( e.getPropertyName() ) ) {
+            regexp = null;
+            if( null != callback )
+                callback.refreshAll();
+        }
+    }
+    
     @Override
     public void notifyPrepare() {
         getScanRegexp();
