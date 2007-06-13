@@ -59,7 +59,7 @@ public class ServletMetadataReader implements MetadataModelAction<WebAppMetadata
             for(Servlet servlet: servlets) {
                 String servletName = servlet.getServletName();
                 if(Utils.notEmpty(servletName)) {
-                    Map<String, String> servletMap = new HashMap<String, String>();
+                    Map<String, Object> servletMap = new HashMap<String, Object>();
                     data.put(servletName, servletMap);
                     servletMap.put(DDBinding.PROP_NAME, servletName);
 

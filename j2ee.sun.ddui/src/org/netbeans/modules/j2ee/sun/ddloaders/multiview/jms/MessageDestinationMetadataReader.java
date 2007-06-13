@@ -64,7 +64,7 @@ public class MessageDestinationMetadataReader extends CommonBeanReader {
                     if(result == null) {
                         result = new HashMap<String, Object>();
                     }
-                    Map<String, String> msgDestMap = new HashMap<String, String>();
+                    Map<String, Object> msgDestMap = new HashMap<String, Object>();
                     result.put(msgDestName, msgDestMap);
                     msgDestMap.put(DDBinding.PROP_NAME, msgDestName);
                 }

@@ -27,6 +27,7 @@ import org.netbeans.modules.j2ee.sun.dd.api.ejb.Ejb;
 import org.netbeans.modules.j2ee.sun.dd.api.web.SunWebApp;
 import org.netbeans.modules.xml.multiview.SectionNode;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
+import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 
 
@@ -128,7 +129,7 @@ public class EjbRefGroupNode extends NamedBeanGroupNode {
     // ------------------------------------------------------------------------
     @Override 
     protected CommonBeanReader getAnnotationReader() {
-        return new EjbRefMetadataReader();
+        return new EjbRefMetadataReader(getParentNodeName());
     }
     
     // ------------------------------------------------------------------------

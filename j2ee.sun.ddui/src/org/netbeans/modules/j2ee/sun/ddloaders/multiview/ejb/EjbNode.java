@@ -26,6 +26,7 @@ import org.netbeans.modules.j2ee.sun.ddloaders.multiview.common.NamedBeanNode;
 import org.netbeans.modules.j2ee.sun.ddloaders.multiview.common.ResourceRefGroupNode;
 import org.netbeans.modules.j2ee.sun.ddloaders.multiview.common.ResourceEnvRefGroupNode;
 import org.netbeans.modules.j2ee.sun.ddloaders.multiview.common.ServiceRefGroupNode;
+import org.netbeans.modules.j2ee.sun.ddloaders.multiview.jms.MessageDestinationRefGroupNode;
 import org.netbeans.modules.j2ee.sun.share.configbean.customizers.ejbmodule.EjbPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeInnerPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
@@ -46,6 +47,7 @@ public class EjbNode extends NamedBeanNode {
         addChild(new ResourceRefGroupNode(sectionNodeView, ejb, version));                
         addChild(new ResourceEnvRefGroupNode(sectionNodeView, ejb, version));
         addChild(new ServiceRefGroupNode(sectionNodeView, ejb, version));
+        addChild(new MessageDestinationRefGroupNode(sectionNodeView, ejb, version));
     }
 
     protected SectionNodeInnerPanel createNodeInnerPanel() {

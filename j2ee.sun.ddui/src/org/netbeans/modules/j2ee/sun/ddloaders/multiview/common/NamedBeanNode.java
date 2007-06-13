@@ -34,6 +34,7 @@ import org.netbeans.modules.xml.multiview.ui.SectionNodeInnerPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionNodePanel;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
 import org.openide.ErrorManager;
+import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 
@@ -55,7 +56,7 @@ public abstract class NamedBeanNode extends BaseSectionNode {
     
     protected NamedBeanNode(final SectionNodeView sectionNodeView, final DDBinding binding, 
             final String beanNameProperty, final String beanTitle, final String iconBase, final ASDDVersion version) {
-        super(sectionNodeView, binding.getSunBean(), version, beanTitle, iconBase);
+        super(sectionNodeView, new Children.Array(), binding.getSunBean(), version, beanTitle, iconBase);
         
         this.binding = binding;
         this.beanNameProperty = beanNameProperty;

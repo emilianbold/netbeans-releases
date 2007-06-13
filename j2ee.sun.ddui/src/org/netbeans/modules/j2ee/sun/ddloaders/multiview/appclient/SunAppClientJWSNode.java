@@ -33,7 +33,7 @@ import org.openide.util.NbBundle;
 public class SunAppClientJWSNode extends BaseSectionNode {
 
     SunAppClientJWSNode(SectionNodeView sectionNodeView, SunApplicationClient sunAppClient, final ASDDVersion version) {
-        super(sectionNodeView, true, sunAppClient, version,
+        super(sectionNodeView, sunAppClient, version,
                 NbBundle.getMessage(SunAppClientJWSNode.class, "LBL_JWSHeader"), 
                 ICON_BASE_MISC_NODE);
         setExpanded(true);

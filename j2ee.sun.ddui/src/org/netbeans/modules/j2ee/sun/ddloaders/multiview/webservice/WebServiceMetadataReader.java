@@ -83,7 +83,7 @@ public class WebServiceMetadataReader extends CommonBeanReader {
                     if(result == null) {
                         result = new HashMap<String, Object>();
                     }
-                    Map<String, String> webServiceDescMap = new HashMap<String, String>();
+                    Map<String, Object> webServiceDescMap = new HashMap<String, Object>();
                     result.put(webServiceDescName, webServiceDescMap);
                     webServiceDescMap.put(DDBinding.PROP_NAME, webServiceDescName);
                     

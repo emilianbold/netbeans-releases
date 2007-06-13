@@ -128,7 +128,7 @@ public class ResourceEnvRefGroupNode extends NamedBeanGroupNode {
     // ------------------------------------------------------------------------
     @Override 
     protected CommonBeanReader getAnnotationReader() {
-        return new ResourceEnvRefMetadataReader();
+        return new ResourceEnvRefMetadataReader(getParentNodeName());
     }
     
     // ------------------------------------------------------------------------

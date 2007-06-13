@@ -20,12 +20,16 @@ package org.netbeans.modules.j2ee.sun.ddloaders.multiview.common;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.WeakHashMap;
 import org.netbeans.modules.j2ee.dd.api.client.AppClientMetadata;
 import org.netbeans.modules.j2ee.dd.api.common.CommonDDBean;
+import org.netbeans.modules.j2ee.dd.api.ejb.Ejb;
+import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
+import org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans;
 import org.netbeans.modules.j2ee.dd.api.web.WebAppMetadata;
 import org.netbeans.modules.j2ee.dd.api.webservices.WebservicesMetadata;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
@@ -55,7 +59,7 @@ public abstract class CommonBeanReader
         
         try {
             commonDD = normalizeParent(commonDD);
-            // Need to call getValues() here, not getValue(), but it's not exposed by ddapi :(
+            // Need to call getValues() here, but it's not exposed by ddapi :(
 //            Object value = (commonDD != null) ? commonDD.getValues(propertyName) : null;
             Object value = (commonDD != null) ? getChild(commonDD, propertyName) : null;
             if(value != null && value.getClass().isArray() && value instanceof CommonDDBean []) {
@@ -109,6 +113,37 @@ public abstract class CommonBeanReader
         return oldParent;
     }
     
+    /** Used by derived classes to locate a parent ejb by it's name, if one
+     *  exists and we're reading /ejb-jar.
+     */ 
+    protected CommonDDBean findEjbByName(EjbJar ejbJar, String ejbName) {
+        CommonDDBean match = null;
+        EnterpriseBeans eb = ejbJar.getEnterpriseBeans();
+        if(eb != null) {
+            match = findEjbByName(eb.getSession(), ejbName);
+            if(match == null) {
+                match = findEjbByName(eb.getMessageDriven(), ejbName);
+            }
+            if(match == null) {
+                match = findEjbByName(eb.getEntity(), ejbName);
+            }
+        }
+        return match;
+    }
+    
+    protected CommonDDBean findEjbByName(Ejb [] ejbs, String ejbName) {
+        CommonDDBean match = null;
+        if(ejbs != null) {
+            for(Ejb ejb: ejbs) {
+                if(ejbName.equals(ejb.getEjbName())) {
+                    match = ejb;
+                    break;
+                }
+            }
+        }
+        return match;
+    }
+    
     /** Entry points to generate map from annotation metadata
      */
     public Map<String, Object> readWebAppMetadata(MetadataModel<WebAppMetadata> model) 
@@ -155,8 +190,6 @@ public abstract class CommonBeanReader
 
         public Map<String, Object> run(EjbJarMetadata metadata) throws Exception {
             // TODO how to read named beans from named ejbs... 
-            // TODO how to read security-roles from assembly-descriptor
-            // TODO how to read message-destination from enterprise-beans
             CommonDDBean newParent = normalizeParent(metadata.getRoot());
             return genCommonProperties(newParent);
         }
@@ -176,9 +209,11 @@ public abstract class CommonBeanReader
         
         public Map<String, Object> genCommonProperties(CommonDDBean parentDD) {
             Map<String, Object> result = null;
-            Object value = getChild(parentDD, propertyName);
-            if(value != null && value.getClass().isArray() && value instanceof CommonDDBean []) {
-                result = genProperties((CommonDDBean []) value);
+            if(parentDD != null) {
+                Object value = getChild(parentDD, propertyName);
+                if(value != null && value.getClass().isArray() && value instanceof CommonDDBean []) {
+                    result = genProperties((CommonDDBean []) value);
+                }
             }
             return result;
         }
@@ -203,6 +238,13 @@ public abstract class CommonBeanReader
 //                System.out.println("Using cached method " + getter.getName() + " on " + beanClass.getName());
             }
             result = getter.invoke(bean);
+        } catch(InvocationTargetException ex) {
+            if(ex.getCause() instanceof UnsupportedOperationException) {
+                ErrorManager.getDefault().log(ErrorManager.WARNING, 
+                        "!!!" + bean.getClass().getName() + ".get" + propertyName + " is not supported by metamodel yet.");
+            } else {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            }
         } catch(Exception ex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         }

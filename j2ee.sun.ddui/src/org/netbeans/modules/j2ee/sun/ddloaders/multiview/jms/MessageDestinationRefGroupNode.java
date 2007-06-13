@@ -21,7 +21,6 @@ package org.netbeans.modules.j2ee.sun.ddloaders.multiview.jms;
 
 import org.netbeans.modules.j2ee.sun.dd.api.ASDDVersion;
 import org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean;
-import org.netbeans.modules.j2ee.sun.dd.api.RootInterface;
 import org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException;
 import org.netbeans.modules.j2ee.sun.dd.api.client.SunApplicationClient;
 import org.netbeans.modules.j2ee.sun.dd.api.common.MessageDestinationRef;
@@ -41,16 +40,16 @@ import org.openide.util.NbBundle;
  */
 public class MessageDestinationRefGroupNode extends NamedBeanGroupNode {
 
-    public MessageDestinationRefGroupNode(SectionNodeView sectionNodeView, RootInterface rootDD, ASDDVersion version) {
-        super(sectionNodeView, rootDD, MessageDestinationRef.MESSAGE_DESTINATION_REF_NAME, 
-                NbBundle.getMessage(MessageDestinationGroupNode.class, "LBL_MessageDestinationRefGroupHeader"), // NOI18N
+    public MessageDestinationRefGroupNode(SectionNodeView sectionNodeView, CommonDDBean commonDD, ASDDVersion version) {
+        super(sectionNodeView, commonDD, MessageDestinationRef.MESSAGE_DESTINATION_REF_NAME, 
+                NbBundle.getMessage(MessageDestinationRefGroupNode.class, "LBL_MessageDestinationRefGroupHeader"), // NOI18N
                 ICON_BASE_MESSAGE_DESTINATION_NODE, version);
         
-        enableAddAction(NbBundle.getMessage(MessageDestinationGroupNode.class, "LBL_AddMessageDestinationRef")); // NOI18N
+        enableAddAction(NbBundle.getMessage(MessageDestinationRefGroupNode.class, "LBL_AddMessageDestinationRef")); // NOI18N
     }
 
     protected SectionNode createNode(DDBinding binding) {
-        return new MessageDestinationNode(getSectionNodeView(), binding, version);
+        return new MessageDestinationRefNode(getSectionNodeView(), binding, version);
     }
 
     protected CommonDDBean [] getBeansFromModel() {
@@ -86,7 +85,7 @@ public class MessageDestinationRefGroupNode extends NamedBeanGroupNode {
             if(commonDD instanceof SunWebApp) {
                 ((SunWebApp) commonDD).addMessageDestinationRef(newMsgDestRef);
             } else if(commonDD instanceof Ejb) {
-                ((Ejb) newBean).addMessageDestinationRef(newMsgDestRef);
+                ((Ejb) commonDD).addMessageDestinationRef(newMsgDestRef);
             } else if(commonDD instanceof SunApplicationClient) {
                 ((SunApplicationClient) commonDD).addMessageDestinationRef(newMsgDestRef);
             }
@@ -105,7 +104,7 @@ public class MessageDestinationRefGroupNode extends NamedBeanGroupNode {
             if(commonDD instanceof SunWebApp) {
                 ((SunWebApp) commonDD).removeMessageDestinationRef(msgDestRef);
             } else if(commonDD instanceof Ejb) {
-                ((Ejb) bean).removeMessageDestinationRef(msgDestRef);
+                ((Ejb) commonDD).removeMessageDestinationRef(msgDestRef);
             } else if(commonDD instanceof SunApplicationClient) {
                 ((SunApplicationClient) commonDD).removeMessageDestinationRef(msgDestRef);
             }
@@ -119,7 +118,7 @@ public class MessageDestinationRefGroupNode extends NamedBeanGroupNode {
     // ------------------------------------------------------------------------
     @Override 
     protected CommonBeanReader getAnnotationReader() {
-        return new MessageDestinationMetadataReader();
+        return new MessageDestinationRefMetadataReader(getParentNodeName());
     }
     
     // ------------------------------------------------------------------------

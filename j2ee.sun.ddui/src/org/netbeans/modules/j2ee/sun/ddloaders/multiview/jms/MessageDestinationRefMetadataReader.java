@@ -16,12 +16,13 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-package org.netbeans.modules.j2ee.sun.ddloaders.multiview.common;
+package org.netbeans.modules.j2ee.sun.ddloaders.multiview.jms;
 
+import org.netbeans.modules.j2ee.sun.ddloaders.multiview.common.*;
 import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.modules.j2ee.dd.api.common.CommonDDBean;
-import org.netbeans.modules.j2ee.dd.api.common.SecurityRole;
+import org.netbeans.modules.j2ee.dd.api.common.MessageDestinationRef;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
 import org.netbeans.modules.j2ee.sun.ddloaders.Utils;
 
@@ -30,41 +31,48 @@ import org.netbeans.modules.j2ee.sun.ddloaders.Utils;
  *
  * @author Peter Williams
  */
-public class SecurityRoleMetadataReader extends CommonBeanReader {
+public class MessageDestinationRefMetadataReader extends CommonBeanReader {
 
-    public SecurityRoleMetadataReader() {
-        super(DDBinding.PROP_SECURITY_ROLE);
+    private String parentName;
+    
+    public MessageDestinationRefMetadataReader(final String parentName) {
+        super(DDBinding.PROP_MSGDEST_REF);
+        this.parentName = parentName;
     }
     
     /** For normalizing data structures within /ejb-jar graph.
-     *    /ejb-jar -> /ejb-jar/assembly-descriptor
+     *    /ejb-jar -> -> /ejb-jar/enterprise-beans/session[ejb-name="xxx"]
+     * (finds message-driven and entity as well)
+     * 
+     * TODO This mechanism will probably need optimization and caching to perform
+     * for larger files.
      */
     @Override
     protected CommonDDBean normalizeParent(CommonDDBean parent) {
-        if(parent instanceof EjbJar) {
-            parent = ((EjbJar) parent).getSingleAssemblyDescriptor();
+        if(parentName != null && parent instanceof EjbJar) {
+            parent = findEjbByName((EjbJar) parent, parentName);
         }
         return parent;
     }
     
-    /** Maps interesting fields from security-role descriptor to a multi-level property map.
+    /** Maps interesting fields from ejb-ref descriptor to a multi-level property map.
      * 
      * @return Map<String, Object> where Object is either a String value or nested map
      *  with the same structure (and thus ad infinitum)
      */
     public Map<String, Object> genProperties(CommonDDBean [] beans) {
         Map<String, Object> result = null;
-        if(beans instanceof SecurityRole []) {
-            SecurityRole [] roles = (SecurityRole []) beans;
-            for(SecurityRole securityRole: roles) {
-                String securityRoleName = securityRole.getRoleName();
-                if(Utils.notEmpty(securityRoleName)) {
+        if(beans instanceof MessageDestinationRef []) {
+            MessageDestinationRef [] msgDestRefs = (MessageDestinationRef []) beans;
+            for(MessageDestinationRef msgDestRef: msgDestRefs) {
+                String msgDestRefName = msgDestRef.getMessageDestinationRefName();
+                if(Utils.notEmpty(msgDestRefName)) {
                     if(result == null) {
                         result = new HashMap<String, Object>();
                     }
-                    Map<String, Object> securityRoleMap = new HashMap<String, Object>();
-                    result.put(securityRoleName, securityRoleMap);
-                    securityRoleMap.put(DDBinding.PROP_NAME, securityRoleName);
+                    Map<String, Object> msgDestRefMap = new HashMap<String, Object>();
+                    result.put(msgDestRefName, msgDestRefMap);
+                    msgDestRefMap.put(DDBinding.PROP_NAME, msgDestRefName);
                 }
             }
         }

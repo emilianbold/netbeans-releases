@@ -132,7 +132,7 @@ public class ServiceRefGroupNode extends NamedBeanGroupNode {
     // ------------------------------------------------------------------------
     @Override 
     protected CommonBeanReader getAnnotationReader() {
-        return new ServiceRefMetadataReader();
+        return new ServiceRefMetadataReader(getParentNodeName());
     }
     
     // ------------------------------------------------------------------------

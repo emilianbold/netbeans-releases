@@ -128,7 +128,7 @@ public class ResourceRefGroupNode extends NamedBeanGroupNode {
     // ------------------------------------------------------------------------
     @Override 
     protected CommonBeanReader getAnnotationReader() {
-        return new ResourceRefMetadataReader();
+        return new ResourceRefMetadataReader(getParentNodeName());
     }
     
     // ------------------------------------------------------------------------

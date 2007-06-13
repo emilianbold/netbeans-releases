@@ -33,7 +33,7 @@ import org.openide.util.NbBundle;
 public class SunWebClassLoaderNode extends BaseSectionNode {
 
     SunWebClassLoaderNode(SectionNodeView sectionNodeView, SunWebApp sunWebApp, final ASDDVersion version) {
-        super(sectionNodeView, true, sunWebApp, version,
+        super(sectionNodeView, sunWebApp, version,
                 NbBundle.getMessage(SunWebDetailsNode.class, "LBL_ClassLoaderHeader"), 
                 ICON_BASE_MISC_NODE);
         this.helpProvider = true;

@@ -33,7 +33,7 @@ import org.openide.util.NbBundle;
 public class SunEjbJarDetailsNode extends BaseSectionNode {
 
     SunEjbJarDetailsNode(SectionNodeView sectionNodeView, SunEjbJar sunEjbJar, final ASDDVersion version) {
-        super(sectionNodeView, true, sunEjbJar, version,
+        super(sectionNodeView, sunEjbJar, version,
                 NbBundle.getMessage(SunEjbJarDetailsNode.class, "LBL_ModuleDetailsHeader"), 
                 ICON_BASE_MISC_NODE);
         this.helpProvider = true;

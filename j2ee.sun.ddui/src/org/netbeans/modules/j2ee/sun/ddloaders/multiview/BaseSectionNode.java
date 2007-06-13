@@ -64,15 +64,15 @@ public class BaseSectionNode extends SectionNode {
     protected final ASDDVersion version;
     
     
-    public BaseSectionNode(SectionNodeView sectionNodeView, boolean isLeaf, Object key, 
+    public BaseSectionNode(SectionNodeView sectionNodeView, Children children, Object key, 
             final ASDDVersion version, String title, String iconBase) {
-        super(sectionNodeView, isLeaf ? Children.LEAF : new Children.Array(), key, title, iconBase);
+        super(sectionNodeView, children, key, title, iconBase);
         this.version = version;
         
     }
 
     public BaseSectionNode(SectionNodeView sectionNodeView, Object key, final ASDDVersion version, String title, String iconBase) {
-        this(sectionNodeView, false, key, version, title, iconBase);
+        this(sectionNodeView, Children.LEAF, key, version, title, iconBase);
     }
     
     @Override

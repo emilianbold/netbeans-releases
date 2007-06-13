@@ -22,6 +22,7 @@ import org.netbeans.modules.j2ee.sun.dd.api.client.SunApplicationClient;
 import org.netbeans.modules.j2ee.sun.dd.api.web.SunWebApp;
 import org.netbeans.modules.j2ee.sun.ddloaders.SunDescriptorDataObject;
 import org.netbeans.modules.j2ee.sun.ddloaders.multiview.DDSectionNodeView;
+import org.netbeans.modules.j2ee.sun.ddloaders.multiview.jms.MessageDestinationRefGroupNode;
 import org.netbeans.modules.xml.multiview.SectionNode;
 
 
@@ -40,7 +41,8 @@ public class EnvironmentView extends DDSectionNodeView {
         SectionNode [] children = new SectionNode [] { 
             new EjbRefGroupNode(this, rootDD, version),
             new ResourceRefGroupNode(this, rootDD, version),
-            new ResourceEnvRefGroupNode(this, rootDD, version)
+            new ResourceEnvRefGroupNode(this, rootDD, version),
+            new MessageDestinationRefGroupNode(this, rootDD, version)
         };
        
         setChildren(children);

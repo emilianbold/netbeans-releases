@@ -63,7 +63,7 @@ public class EjbMetadataReader implements MetadataModelAction<EjbJarMetadata, Ma
                 for(Session session: sessionBeans) {
                     String ejbName = session.getEjbName();
                     if(Utils.notEmpty(ejbName)) {
-                        Map<String, String> sessionMap = new HashMap<String, String>();
+                        Map<String, Object> sessionMap = new HashMap<String, Object>();
                         data.put(ejbName, sessionMap);
                         sessionMap.put(DDBinding.PROP_NAME, ejbName);
                         
@@ -79,7 +79,7 @@ public class EjbMetadataReader implements MetadataModelAction<EjbJarMetadata, Ma
                 for(MessageDriven message: messageBeans) {
                     String ejbName = message.getEjbName();
                     if(Utils.notEmpty(ejbName)) {
-                        Map<String, String> messageMap = new HashMap<String, String>();
+                        Map<String, Object> messageMap = new HashMap<String, Object>();
                         data.put(ejbName, messageMap);
                         messageMap.put(DDBinding.PROP_NAME, ejbName);
                         

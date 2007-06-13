@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.modules.j2ee.dd.api.common.CommonDDBean;
 import org.netbeans.modules.j2ee.dd.api.common.EjbRef;
+import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
 import org.netbeans.modules.j2ee.sun.ddloaders.Utils;
 
 
@@ -31,8 +32,26 @@ import org.netbeans.modules.j2ee.sun.ddloaders.Utils;
  */
 public class EjbRefMetadataReader extends CommonBeanReader {
 
-    public EjbRefMetadataReader() {
+    private String parentName;
+    
+    public EjbRefMetadataReader(final String parentName) {
         super(DDBinding.PROP_EJB_REF);
+        this.parentName = parentName;
+    }
+    
+    /** For normalizing data structures within /ejb-jar graph.
+     *    /ejb-jar -> -> /ejb-jar/enterprise-beans/session[ejb-name="xxx"]
+     * (finds message-driven and entity as well)
+     * 
+     * TODO This mechanism will probably need optimization and caching to perform
+     * for larger files.
+     */
+    @Override
+    protected CommonDDBean normalizeParent(CommonDDBean parent) {
+        if(parentName != null && parent instanceof EjbJar) {
+            parent = findEjbByName((EjbJar) parent, parentName);
+        }
+        return parent;
     }
     
     /** Maps interesting fields from ejb-ref descriptor to a multi-level property map.
@@ -50,7 +69,7 @@ public class EjbRefMetadataReader extends CommonBeanReader {
                     if(result == null) {
                         result = new HashMap<String, Object>();
                     }
-                    Map<String, String> ejbRefMap = new HashMap<String, String>();
+                    Map<String, Object> ejbRefMap = new HashMap<String, Object>();
                     result.put(ejbRefName, ejbRefMap);
                     ejbRefMap.put(DDBinding.PROP_NAME, ejbRefName);
                 }
