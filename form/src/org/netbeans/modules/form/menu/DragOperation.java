@@ -22,11 +22,13 @@ import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Insets;
 import java.awt.Point;
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
 import javax.swing.JLayeredPane;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JRadioButtonMenuItem;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.form.HandleLayer;
 import org.netbeans.modules.form.MetaComponentCreator;
@@ -96,10 +98,21 @@ class DragOperation {
         
         JMenuItem dragComponent = null;
         dragComponent = new JMenuItem();
+        if(item instanceof JMenu) { dragComponent = new JMenu(); }
+        if(item instanceof JCheckBoxMenuItem) { 
+            dragComponent = new JCheckBoxMenuItem(); 
+            ((JCheckBoxMenuItem)dragComponent).setSelected(true);
+        }
+        if(item instanceof JRadioButtonMenuItem) { 
+            dragComponent = new JRadioButtonMenuItem(); 
+            ((JRadioButtonMenuItem)dragComponent).setSelected(true);
+        }
         if(item != null) {
             dragComponent.setText(item.getText());
             dragComponent.setIcon(item.getIcon());
-            dragComponent.setAccelerator(item.getAccelerator());
+            if(! (item instanceof JMenu)) {
+                dragComponent.setAccelerator(item.getAccelerator());
+            }
         } else {
             dragComponent.setText("a new menu item");
         }
@@ -143,7 +156,7 @@ class DragOperation {
             // if dragging a JMenu over an open spot in the menu bar
             if(rad != null && JMenuBar.class.isAssignableFrom(rad.getBeanClass()) && JMenu.class.isAssignableFrom(dragComponent.getClass())) {
                 p("over the menu bar");
-                showMenuBarDropTarget(rad);
+                showMenuBarDropTarget(rad, pt);
                 targetComponent = (JComponent) menuEditLayer.formDesigner.getComponent(rad);
             }
             
@@ -153,7 +166,7 @@ class DragOperation {
                 targetComponent = (JComponent) menuEditLayer.formDesigner.getComponent(rad);
                 menuEditLayer.openMenu(rad, targetComponent);
                 if(JMenu.class.isAssignableFrom(dragComponent.getClass())) {
-                    showMenuBarDropTarget(rad);
+                    showMenuBarDropTarget(rad, pt);
                 }
                 return;
             }
@@ -189,8 +202,8 @@ class DragOperation {
         }
     }
     
-    private void showMenuBarDropTarget(RADComponent comp) {
-        menuEditLayer.setDrawMenuBarNewComponentTarget(comp);
+    private void showMenuBarDropTarget(RADComponent comp, Point pt) {
+        menuEditLayer.setDrawMenuBarNewComponentTarget(comp, pt);
         menuEditLayer.repaint();
     }
     
@@ -213,7 +226,7 @@ class DragOperation {
         if(dragComponent == null) return;
         p("ending an operation at: " + pt);
         menuEditLayer.layers.remove(dragComponent);
-        menuEditLayer.setDrawMenuBarNewComponentTarget(null);
+        menuEditLayer.setDrawMenuBarNewComponentTarget(null, null);
         
         p("op = " + op);
         switch (op) {
@@ -221,6 +234,8 @@ class DragOperation {
         case INTER_MENU_DRAG: completeInterMenuDrag(pt); break ;
         }
         
+        payloadComponent = null;
+        targetComponent = null;
         menuEditLayer.repaint();
         
     }
@@ -248,6 +263,7 @@ class DragOperation {
     
     private void completeInterMenuDrag(Point pt) {
         p("complete inter menu drag: target comp = " + targetComponent);
+        p("================\n\n\n\n==========\n\n========");
         if(targetComponent == null) return;
         targetComponent.setBorder(MenuEditLayer.UNSELECTED_BORDER);
         
@@ -263,24 +279,41 @@ class DragOperation {
         
         if(tcomp instanceof JMenu) {
             JMenu menu = (JMenu) tcomp;
+            
+            // conver to target menu's coords.
+            Point pt2 = SwingUtilities.convertPoint(menuEditLayer.glassLayer, pt, menu);
+            
+            // if dragging a jmenu onto a toplevel jmenu
+            if(menu.getParent() instanceof JMenuBar && payloadComponent instanceof JMenu) {
+                p("dropping into a toplevel menu");
+                if(pt2.x < 15) {  // if on the left edge
+                    p("doing a left drop");
+                    menuEditLayer.moveRadComponentToBefore(payloadComponent, menu);
+                    return;
+                } else if (pt2.x > menu.getWidth()-15) {  // if on the right edge
+                    p("doing a right drop");
+                    //menuEditLayer.moveRadComponentToAfter(payloadComponent, menu);
+                    p("not doing a right drop yet");
+                    return;
+                } else {  // else must be in the center so just add to the menu instead of next to
+                    menuEditLayer.moveRadComponentInto(payloadComponent, menu);
+                    p("doing a center drop");
+                    return;
+                }
+            }
             p("on a jmenu. could be in or above");
-            Point pt2 = SwingUtilities.convertPoint(menuEditLayer.glassLayer, pt, tcomp);
             p("converted point = " + pt2);
             if(pt2.x > menu.getWidth()-30) {
-                p("doing in menu drop");
+                p("doing 'in' menu drop");
                 menuEditLayer.moveRadComponentInto(payloadComponent, menu);
             } else {
                 p("doing above menu drop");
                 menuEditLayer.moveRadComponentToBefore(payloadComponent, targetComponent);
             }
-            payloadComponent = null;
-            targetComponent = null;
             return;
         }
         
         menuEditLayer.moveRadComponentToBefore(payloadComponent, targetComponent);
-        payloadComponent = null;
-        targetComponent = null;
     }
     
     private void completePickAndPlopFromPalette(Point pt) {
