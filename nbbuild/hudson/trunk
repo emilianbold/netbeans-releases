@@ -65,6 +65,7 @@ for c in platform ide java apisupport harness enterprise profiler uml visualweb 
 done
 find * | egrep -v "$expat" | zip -q $DIST/zip/moduleclusters/$BASENAME-nb6.0-etc.zip -@ || exit
 
+cd ../..
 generated=nbbuild/build/generated
 rm -rf $generated
 ant -f nbbuild/build.xml generate-golden-files generate-files-layout || exit
