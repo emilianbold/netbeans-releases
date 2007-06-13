@@ -1875,8 +1875,6 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
             
             if (path != null) {
                 
-                Rectangle label = tree.getRowBounds(row);
-                
                 DirectoryNode node = (DirectoryNode) path.getLastPathComponent();
                 newFolderAction.setEnabled(canWrite(node.getFile()));
                 
@@ -1888,20 +1886,10 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
                         fileChooser.approveSelection();
                     } else {
                         fileCache = new Vector<File>();
-                        setSelected((File[])fileCache.toArray(new File[fileCache.size()]));
+                        setSelected(fileCache.toArray(new java.io.File[fileCache.size()]));
                         changeTreeDirectory(node.getFile());
                     }
                     
-                } else if (SwingUtilities.isRightMouseButton(e) && e.getClickCount() == 1) {
-                    ((DirectoryTreeModel) tree.getModel()).nodeChanged(node);
-                    if(!fileChooser.getFileSystemView().isFileSystem(node.getFile())) {
-                        return;
-                    }
-                    
-                    if(label.contains(p)) {
-                        popupMenu.show(tree, x, y);
-                        tree.requestFocusInWindow();
-                    }
                 }
                 
                 ((DirectoryTreeModel) tree.getModel()).nodeChanged(node);
@@ -1910,6 +1898,40 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
                     tree.repaint();
                 }
             }
+        }
+
+        @Override
+        public void mousePressed(MouseEvent e) {
+            handlePopupMenu(e);
+        }
+
+        @Override
+        public void mouseReleased(MouseEvent e) {
+            handlePopupMenu(e);
+        }
+        
+        private void handlePopupMenu (MouseEvent e) {
+            if (!e.isPopupTrigger()) {
+                return;
+            }
+            final JTree tree = (JTree) e.getSource();
+            Point p = e.getPoint();
+            int x = e.getX();
+            int y = e.getY();
+            int row = tree.getRowForLocation(x, y);
+            TreePath path = tree.getPathForRow(row);
+            
+            if (path != null) {
+                DirectoryNode node = (DirectoryNode) path.getLastPathComponent();
+                ((DirectoryTreeModel) tree.getModel()).nodeChanged(node);
+                if(!fileChooser.getFileSystemView().isFileSystem(node.getFile())) {
+                    return;
+                }
+
+                tree.setSelectionPath(path);
+                popupMenu.show(tree, x, y);
+                tree.requestFocusInWindow();
+            }            
         }
         
         private void changeTreeDirectory(File dir) {
