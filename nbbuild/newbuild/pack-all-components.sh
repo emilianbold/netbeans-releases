@@ -68,7 +68,7 @@ rm -rf apisupport*
 pack_component $DIST $BASENAME java "java*"
 rm -rf java*
 
-pack_component $DIST $BASENAME cnd "cnd*"
-rm -rf cnd*
+#pack_component $DIST $BASENAME cnd "cnd*"
+#rm -rf cnd*
 
 pack_component $DIST $BASENAME nb6.0-etc "*"
