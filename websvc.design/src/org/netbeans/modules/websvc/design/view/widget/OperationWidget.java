@@ -31,6 +31,7 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.xml.soap.SOAPMessage;
 import org.netbeans.api.visual.action.ActionFactory;
+import org.netbeans.api.visual.action.TextFieldInplaceEditor;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.model.ObjectScene;
 import org.netbeans.api.visual.widget.LabelWidget;
@@ -117,6 +118,22 @@ public class OperationWidget extends AbstractTitledWidget {
             image = IMAGE_NOTIFICATION;
         }
         headerLabelWidget = new ImageLabelWidget(getScene(), image, operation.getOperationName());
+        final LabelWidget nameWidget = headerLabelWidget.getLabelWidget();
+        nameWidget.getActions().addAction(ActionFactory.createInplaceEditorAction(
+                new TextFieldInplaceEditor(){
+            public boolean isEnabled(Widget widget) {
+                return true;
+            }
+            
+            public String getText(Widget widget) {
+                return nameWidget.getLabel();
+            }
+            
+            public void setText(Widget widget, String text) {
+                operation.setOperationName(text);
+                nameWidget.setLabel(text);
+            }
+        }));
         headerLabelWidget.setToolTipText(typeOfOperation);
         getHeaderWidget().addChild(headerLabelWidget);
 

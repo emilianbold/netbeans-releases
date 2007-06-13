@@ -116,6 +116,10 @@ public class ImageLabelWidget extends Widget {
         }
     }
     
+    public LabelWidget getLabelWidget() {
+        return labelWidget;
+    }
+
     public void setImage(Image image) {
         if(image==null) {
             if (imageWidget!=null) {

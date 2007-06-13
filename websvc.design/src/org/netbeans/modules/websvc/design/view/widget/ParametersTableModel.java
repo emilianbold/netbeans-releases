@@ -88,7 +88,7 @@ public class ParametersTableModel implements TableModel{
             switch(columnIndex) {
             case 0:
                 //validate aValue
-                //method.getParams().get(rowIndex).setName(aValue);
+                method.getParams().get(rowIndex).setName(aValue);
                 break;
             case 1:
                 throw new IllegalArgumentException("");
