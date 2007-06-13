@@ -70,7 +70,7 @@ DISPLAY="${TEMP_DISPLAY}"
 export DISPLAY
 
 # Setup Application Server
-if [ ! -d ${J2EE_HOME}/domains/domain1 ]; then
+if [ -d ${J2EE_HOME}/domains/domain1 ]; then
     cd ${J2EE_HOME}
     
     ant -f setup.xml -Dinstance.port=28080
