@@ -10,7 +10,7 @@ pack_component()
     base_name=$2
     component=$3
     filter=$4
-    zip -q -r $dist/zip/$base_name-$component.zip $filter
+    zip -q -r $dist/$base_name-$component.zip $filter
 #    gtar cvzf $dist/targz/$base_name-$component.tar.gz $filter
 #    gtar cvjf $dist/tarbz2/$base_name-$component.tar.bz2 $filter
 }
@@ -23,52 +23,59 @@ pack_component()
 
 cd $NB_ALL/nbbuild
 
+#Pack the distrubutions
+find netbeans | egrep -v "netbeans/(extra|testtools)" | zip -q $DIST/zip/$BASENAME-full.zip -@
+find netbeans | egrep -v "netbeans/(extra|testtools|mobility|enterprise|visualweb|uml|ruby|cnd|soa)" | zip -q $DIST/zip/$BASENAME-basic.zip -@
+find netbeans | egrep -v "netbeans/(extra|testtools|uml|ruby|cnd|soa)" | zip -q $DIST/zip/$BASENAME-standard.zip -@
+
+mkdir $DIST/zip/moduleclusters
+
 #Pack all the NetBeans
 pack_component $DIST $BASENAME all-in-one netbeans
 
 cd $NB_ALL/nbbuild/netbeans
 
 #Continue with individual component
-pack_component $DIST $BASENAME uml "uml*"
+pack_component $DIST/zip/moduleclusters $BASENAME uml "uml*"
 rm -rf uml*
 
-pack_component $DIST $BASENAME visualweb "visualweb*"
+pack_component $DIST/zip/moduleclusters $BASENAME visualweb "visualweb*"
 rm -rf visualweb*
 
-pack_component $DIST $BASENAME ruby "ruby*"
+pack_component $DIST/zip/moduleclusters $BASENAME ruby "ruby*"
 rm -rf ruby*
 
-pack_component $DIST $BASENAME profiler "profiler*"
+pack_component $DIST/zip/moduleclusters $BASENAME profiler "profiler*"
 rm -rf profiler*
 
-pack_component $DIST $BASENAME platform "platform*"
+pack_component $DIST/zip/moduleclusters $BASENAME platform "platform*"
 rm -rf platform*
 
-pack_component $DIST $BASENAME mobility "mobility*"
+pack_component $DIST/zip/moduleclusters $BASENAME mobility "mobility*"
 rm -rf mobility*
 
-pack_component $DIST $BASENAME ide "ide*"
+pack_component $DIST/zip/moduleclusters $BASENAME ide "ide*"
 rm -rf ide*
 
-pack_component $DIST $BASENAME xml "xml*"
+pack_component $DIST/zip/moduleclusters $BASENAME xml "xml*"
 rm -rf xml*
 
-pack_component $DIST $BASENAME harness "harness*"
+pack_component $DIST/zip/moduleclusters $BASENAME harness "harness*"
 rm -rf harness*
 
-pack_component $DIST $BASENAME enterprise "enterprise*"
+pack_component $DIST/zip/moduleclusters $BASENAME enterprise "enterprise*"
 rm -rf enterprise*
 
-pack_component $DIST $BASENAME soa "soa*"
+pack_component $DIST/zip/moduleclusters $BASENAME soa "soa*"
 rm -rf soa*
 
-pack_component $DIST $BASENAME apisupport "apisupport*"
+pack_component $DIST/zip/moduleclusters $BASENAME apisupport "apisupport*"
 rm -rf apisupport*
 
-pack_component $DIST $BASENAME java "java*"
+pack_component $DIST/zip/moduleclusters $BASENAME java "java*"
 rm -rf java*
 
-#pack_component $DIST $BASENAME cnd "cnd*"
+#pack_component $DIST/zip/moduleclusters $BASENAME cnd "cnd*"
 #rm -rf cnd*
 
-pack_component $DIST $BASENAME nb6.0-etc "*"
+pack_component $DIST/zip/moduleclusters $BASENAME nb6.0-etc "*"

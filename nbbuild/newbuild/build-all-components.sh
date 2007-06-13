@@ -20,7 +20,7 @@ if [ $ERROR_CODE != 0 ]; then
     echo "ERROR: $ERROR_CODE - Can't build all source package"
 #    exit $ERROR_CODE;
 else
-    mv nbbuild/build/*-src-* $DIST/zip
+    mv nbbuild/build/*-src-* $DIST/zip/$BASENAME-src.zip
 fi
 
 ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f nbbuild/build.xml -Dmerge.dependent.modules=false -Dcluster.name=nb.cluster.platform build-source
@@ -30,7 +30,7 @@ if [ $ERROR_CODE != 0 ]; then
     echo "ERROR: $ERROR_CODE - Can't build basic platform source package"
 #    exit $ERROR_CODE;
 else
-    mv nbbuild/build/*-src-* $DIST/zip
+    mv nbbuild/build/*-src-* $DIST/zip/$BASENAME-platform-src.zip
 fi
 
 #Build the NB IDE first - no validation tests!

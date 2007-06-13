@@ -17,3 +17,6 @@ if [ $ERROR_CODE != 0 ]; then
     echo "ERROR: $ERROR_CODE - NBI installers build failed"
     exit $ERROR_CODE;
 fi
+
+mv $DIST/installers/* $DIST
+rmdir $DIST/installers
