@@ -516,7 +516,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
         Object oldT = currentThread;
         currentThread = (JPDAThreadImpl) thread;
         if (thread != oldT)
-            pcs.firePropertyChange (PROP_CURRENT_THREAD, oldT, currentThread);
+            firePropertyChange (PROP_CURRENT_THREAD, oldT, currentThread);
         updateCurrentCallStackFrame (thread);
     }
 
@@ -540,7 +540,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
     public void setCurrentCallStackFrame (CallStackFrame callStackFrame) {
         CallStackFrame old = setCurrentCallStackFrameNoFire(callStackFrame);
         if (old == callStackFrame) return ;
-        pcs.firePropertyChange (
+        firePropertyChange (
             PROP_CURRENT_CALL_STACK_FRAME,
             old,
             callStackFrame
@@ -1260,12 +1260,13 @@ public class JPDADebuggerImpl extends JPDADebugger {
             firePropertyChange(evt);
         }
     }
-
+    
     /**
      * Fires property change.
      */
     private void firePropertyChange (String name, Object o, Object n) {
         pcs.firePropertyChange (name, o, n);
+        //System.err.println("ALL Change listeners count = "+pcs.getPropertyChangeListeners().length);
     }
 
     /**
@@ -1273,6 +1274,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
      */
     private void firePropertyChange (PropertyChangeEvent evt) {
         pcs.firePropertyChange (evt);
+        //System.err.println("ALL Change listeners count = "+pcs.getPropertyChangeListeners().length);
     }
 
     private SourcePath engineContext;

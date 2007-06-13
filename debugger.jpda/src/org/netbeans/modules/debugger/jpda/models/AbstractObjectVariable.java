@@ -72,7 +72,7 @@ class AbstractObjectVariable extends AbstractVariable implements ObjectVariable 
         String id
     ) {
         super(debugger, value, id);
-        debugger.addPropertyChangeListener(JPDADebugger.PROP_STATE,
+        debugger.addPropertyChangeListener(
                 WeakListeners.propertyChange(stateChangeListener, debugger));
     }
 
