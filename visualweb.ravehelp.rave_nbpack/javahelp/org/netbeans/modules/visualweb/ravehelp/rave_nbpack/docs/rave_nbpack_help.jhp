@@ -7,7 +7,7 @@
 
 <helenProject version="1.0">
     <documents>
-		<directory title="C:/!MySunProjects/Rave/cvstree/visualweb/visualweb/ravehelp/rave_nbpack/javahelp/org/netbeans/modules/visualweb/ravehelp/rave_nbpack/docs">
+		<directory title="/Users/james/VisWebCVS/visualweb/ravehelp/rave_nbpack/javahelp/org/netbeans/modules/visualweb/ravehelp/rave_nbpack/docs">
 			<directory title="a11y">
 				<directory title="CVS">
 					<file title="Entries"/>
@@ -93,14 +93,12 @@
 					</directory>
 					<file title="add_table_to_form.html"/>
 					<file title="add_table_to_page.html"/>
-					<file title="add_web_service.html"/>
 					<file title="bind_data_to_comp.html"/>
 					<file title="binding_data_2_list_component.html"/>
 					<file title="binding_data_2_table_component.html"/>
 					<file title="configure_jdbc_driver.html"/>
 					<file title="create_sql_query.html"/>
 					<file title="data_quickref.html"/>
-					<file title="del_web_service.html"/>
 					<file title="delete_database_svr_type.html"/>
 					<file title="delete_jdbc_driver.html"/>
 					<file title="delete_table.html"/>

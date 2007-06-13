@@ -134,10 +134,6 @@
 					<tocitem text="Java DB Database Tasks: Quick Reference" target="projrave_connect_data_howtodata_howtoconnectdata" />
 				</tocitem>
 			</tocitem>
-			<tocitem text="Web Services">
-				<tocitem text="Adding a Web Service Client" target="projrave_connect_data_howtodata_add_web_service" />
-				<tocitem text="Deleting a Web Service Client" target="projrave_connect_data_howtodata_del_web_service" />
-			</tocitem>
 		</tocitem>
 		<tocitem text="Creating Multiple Pages" expand="false">
 			<tocitem text="About Multiple Pages and Navigation" target="projrave_multiple_forms_aboutmultiforms" />
