@@ -41,7 +41,7 @@ import java.awt.*;
 public final class SceneAnimator {
 
     private static final long TIME_PERIOD = 500;
-    private static final long SLEEP = 10;
+    private static final int SLEEP = 16;
 
     private Scene scene;
 
@@ -57,7 +57,7 @@ public final class SceneAnimator {
 
     /**
      * Creates a scene animator.
-     * @param scene
+     * @param scene the scene
      */
     public SceneAnimator (Scene scene) {
         this.scene = scene;
@@ -259,17 +259,11 @@ public final class SceneAnimator {
                 ErrorManager.getDefault ().notify (e);
             }
 
-            try {
-                Thread.sleep (SLEEP);
-            } catch (InterruptedException e) {
-                ErrorManager.getDefault ().notify (e);
-            }
-
             synchronized (animators) {
                 cache = null;
                 taskAlive = animators.size () > 0;
                 if (taskAlive)
-                    RequestProcessor.getDefault ().post (task);
+                    RequestProcessor.getDefault ().post (task, SLEEP);
             }
         }
 
