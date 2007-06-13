@@ -23,6 +23,7 @@ package org.netbeans.installer.wizard.components.sequences;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.netbeans.installer.wizard.components.actions.CacheEngineAction;
 import org.netbeans.installer.wizard.components.panels.netbeans.NbPostInstallSummaryPanel;
 import org.netbeans.installer.wizard.components.panels.netbeans.NbPreInstallSummaryPanel;
 import org.netbeans.installer.product.components.Product;
@@ -57,6 +58,7 @@ public class MainSequence extends WizardSequence {
     private InstallAction installAction;
     private NbPostInstallSummaryPanel nbPostInstallSummaryPanel;
     private PreCreateBundleSummaryPanel preCreateBundleSummaryPanel;
+    private CacheEngineAction cacheEngineAction;    
     private CreateBundleAction createBundleAction;
     private CreateNativeLauncherAction createNativeLauncherAction;
     private PostCreateBundleSummaryPanel postCreateBundleSummaryPanel;
@@ -72,6 +74,7 @@ public class MainSequence extends WizardSequence {
         installAction = new InstallAction();
         nbPostInstallSummaryPanel = new NbPostInstallSummaryPanel();
         preCreateBundleSummaryPanel = new PreCreateBundleSummaryPanel();
+        cacheEngineAction = new CacheEngineAction();      
         createBundleAction = new CreateBundleAction();
         createNativeLauncherAction = new CreateNativeLauncherAction();
         postCreateBundleSummaryPanel = new PostCreateBundleSummaryPanel();
@@ -121,6 +124,7 @@ public class MainSequence extends WizardSequence {
             }
             
             if (toInstall.size() > 0) {
+                addChild(cacheEngineAction);
                 addChild(downloadInstallationDataAction);
                 addChild(installAction);
             }
@@ -131,6 +135,7 @@ public class MainSequence extends WizardSequence {
             addChild(preCreateBundleSummaryPanel);
             addChild(downloadConfigurationLogicAction);
             addChild(downloadInstallationDataAction);
+            addChild(cacheEngineAction);
             addChild(createBundleAction);
             addChild(createNativeLauncherAction);
             addChild(postCreateBundleSummaryPanel);
