@@ -83,6 +83,7 @@ public final class ProjectWebModule extends J2eeModuleProvider
     private long notificationTimeout = 0; // used to suppress repeating the same messages
     
     private MetadataModel<WebAppMetadata> webAppMetadataModel;
+    private MetadataModel<WebAppMetadata> webAppAnnMetadataModel;
     private MetadataModel<WebservicesMetadata> webservicesMetadataModel;
     
     private PropertyChangeSupport propertyChangeSupport;
@@ -376,7 +377,7 @@ public final class ProjectWebModule extends J2eeModuleProvider
     public <T> MetadataModel<T> getMetadataModel(Class<T> type) {
         if (type == WebAppMetadata.class) {
             @SuppressWarnings("unchecked") // NOI18N
-            MetadataModel<T> model = (MetadataModel<T>)getMetadataModel();
+            MetadataModel<T> model = (MetadataModel<T>)getAnnotationMetadataModel();
             return model;
         } else if (type == WebservicesMetadata.class) {
             @SuppressWarnings("unchecked") // NOI18N
@@ -396,9 +397,31 @@ public final class ProjectWebModule extends J2eeModuleProvider
                 cpProvider.getProjectSourcesClassPath(ClassPath.SOURCE),
                 // XXX: add listening on deplymentDescriptor
                 ddFile);
-            webAppMetadataModel = WebAppMetadataModelFactory.createMetadataModel(metadataUnit);
+            webAppMetadataModel = WebAppMetadataModelFactory.createMetadataModel(metadataUnit, true);
         }
         return webAppMetadataModel;
+    }
+    
+    /**
+     * The server plugin needs all models to be either merged on annotation-based. 
+     * Currently only the web model does a bit of merging, other models don't. So
+     * for web we actually need two models (one for the server plugins and another
+     * for everyone else). Temporary solution until merging is implemented
+     * in all models.
+     */
+    public synchronized MetadataModel<WebAppMetadata> getAnnotationMetadataModel() {
+        if (webAppAnnMetadataModel == null) {
+            FileObject ddFO = getDeploymentDescriptor();
+            File ddFile = ddFO != null ? FileUtil.toFile(ddFO) : null;
+            MetadataUnit metadataUnit = MetadataUnit.create(
+                cpProvider.getProjectSourcesClassPath(ClassPath.BOOT),
+                cpProvider.getProjectSourcesClassPath(ClassPath.COMPILE),
+                cpProvider.getProjectSourcesClassPath(ClassPath.SOURCE),
+                // XXX: add listening on deplymentDescriptor
+                ddFile);
+            webAppAnnMetadataModel = WebAppMetadataModelFactory.createMetadataModel(metadataUnit, false);
+        }
+        return webAppAnnMetadataModel;
     }
     
     public synchronized MetadataModel<WebservicesMetadata> getWebservicesMetadataModel() {

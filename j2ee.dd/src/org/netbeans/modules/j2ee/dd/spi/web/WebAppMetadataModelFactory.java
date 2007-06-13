@@ -33,7 +33,7 @@ public class WebAppMetadataModelFactory {
 
     private WebAppMetadataModelFactory() {}
 
-    public static MetadataModel<WebAppMetadata> createMetadataModel(MetadataUnit metadataUnit) {
-        return MetadataModelFactory.createMetadataModel(WebAppMetadataModelImpl.create(metadataUnit));
+    public static MetadataModel<WebAppMetadata> createMetadataModel(MetadataUnit metadataUnit, boolean merge) {
+        return MetadataModelFactory.createMetadataModel(WebAppMetadataModelImpl.create(metadataUnit, merge));
     }
 }
