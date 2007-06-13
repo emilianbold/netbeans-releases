@@ -12,13 +12,16 @@ MKDIR=mkdir
 CP=cp
 CCADMIN=CCadmin
 RANLIB=ranlib
-CC=gcc
-CCC=g++
-CXX=g++
-FC=g77
+CC=gcc.exe
+CCC=g++.exe
+CXX=g++.exe
+FC=
 
 # Include project Makefile
 include Makefile_windows.mk
+
+# Object Directory
+OBJECTDIR=build/Default/Cygwin-Windows
 
 # Object Files
 OBJECTFILES=
@@ -38,16 +41,14 @@ LDLIBSOPTIONS=
 
 # Build Targets
 .build-conf: 
-	cd .;\
-	make -f Makefile testinst
+	cd . && make -f Makefile testinst
 
 # Subprojects
 .build-subprojects:
 
 # Clean Targets
 .clean-conf:
-	cd .;\
-	make -f Makefile clean
+	cd . && make -f Makefile clean
 
 # Subprojects
 .clean-subprojects:
