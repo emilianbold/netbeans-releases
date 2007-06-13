@@ -383,7 +383,7 @@ public class JaxWsNode extends AbstractNode implements JaxWsWsdlCookie, JaxWsTes
                                                                         serviceName, 
                                                                         name);
                         if (!foundWsAnnotation) {
-                            TypeElement wsProviderElement = controller.getElements().getTypeElement("javax.jws.WebServiceProvider"); //NOI18N
+                            TypeElement wsProviderElement = controller.getElements().getTypeElement("javax.xml.ws.WebServiceProvider"); //NOI18N
                             List<? extends AnnotationMirror> annotations = srcUtils.getTypeElement().getAnnotationMirrors();
                             for (AnnotationMirror anMirror : annotations) {
                                 if (controller.getTypes().isSameType(wsProviderElement.asType(), anMirror.getAnnotationType())) {
