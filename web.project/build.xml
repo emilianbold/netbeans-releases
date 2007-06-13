@@ -34,6 +34,9 @@ Microsystems, Inc. All Rights Reserved.
         </copy>
         <mkdir dir="${cluster}/ant/extra"/>
         <jar jarfile="${cluster}/ant/extra/copyfiles.jar" compress="false">
+            <manifest>
+                <attribute name="NetBeans-Own-Library" value="true"/>
+            </manifest>
             <fileset dir="build/antclasses"/>
         </jar>
         <copy todir="${cluster}/ant/sources">
