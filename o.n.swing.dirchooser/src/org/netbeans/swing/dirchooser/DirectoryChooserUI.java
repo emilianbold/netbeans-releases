@@ -77,14 +77,13 @@ import org.openide.util.Utilities;
  */
 public class DirectoryChooserUI extends BasicFileChooserUI {
     
-    private static final Dimension horizontalStrut = new Dimension(10, 1);
     private static final Dimension horizontalStrut1 = new Dimension(25, 1);
     private static final Dimension verticalStrut1  = new Dimension(1, 4);
     private static final Dimension verticalStrut2  = new Dimension(1, 6);
     private static final Dimension verticalStrut3  = new Dimension(1, 8);
     private static Dimension PREF_SIZE = new Dimension(425, 245);
     private static Dimension MIN_SIZE = new Dimension(425, 245);
-    private static Dimension TREE_PREF_SIZE = new Dimension(350, 138);
+    private static Dimension TREE_PREF_SIZE = new Dimension(380, 230);
     private static final int ACCESSORY_WIDTH = 250;
     
     private JPanel centerPanel;
@@ -341,7 +340,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
         fileAndFilterPanel.add(Box.createRigidArea(verticalStrut3));
         fileAndFilterPanel.setLayout(new BoxLayout(fileAndFilterPanel, BoxLayout.Y_AXIS));
         
-        filenameTextField = new JTextField(35) {
+        filenameTextField = new JTextField(24) {
             public Dimension getMaximumSize() {
                 return new Dimension(Short.MAX_VALUE, super.getPreferredSize().height);
             }
