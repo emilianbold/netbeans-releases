@@ -22,7 +22,11 @@ package org.netbeans.modules.j2ee.dd.impl.web.annotation;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.TypeElement;
 import org.netbeans.modules.j2ee.dd.api.common.CommonDDBean;
 import org.netbeans.modules.j2ee.dd.api.common.EjbLocalRef;
 import org.netbeans.modules.j2ee.dd.api.common.EjbRef;
@@ -35,6 +39,7 @@ import org.netbeans.modules.j2ee.dd.api.common.NameAlreadyUsedException;
 import org.netbeans.modules.j2ee.dd.api.common.ResourceEnvRef;
 import org.netbeans.modules.j2ee.dd.api.common.ResourceRef;
 import org.netbeans.modules.j2ee.dd.api.common.RootInterface;
+import org.netbeans.modules.j2ee.dd.api.common.RunAs;
 import org.netbeans.modules.j2ee.dd.api.common.SecurityRole;
 import org.netbeans.modules.j2ee.dd.api.common.ServiceRef;
 import org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException;
@@ -58,6 +63,7 @@ import org.netbeans.modules.j2ee.dd.impl.common.annotation.CommonAnnotationHelpe
 import org.netbeans.modules.j2ee.dd.spi.MetadataUnit;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.JavaContextListener;
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.TypeAnnotationHandler;
 import org.openide.filesystems.FileObject;
 import org.xml.sax.SAXParseException;
 
@@ -76,6 +82,7 @@ public class WebAppImpl implements WebApp, JavaContextListener {
     private ResourceEnvRef[] resourceEnvRefs = null;
     private EnvEntry[] envEntries = null;
     private MessageDestinationRef[] messageDestinationRefs = null;
+    private Servlet[] servlets = null;
 
     public WebAppImpl(AnnotationModelHelper helper, boolean merge) {
         this.helper = helper;
@@ -88,6 +95,7 @@ public class WebAppImpl implements WebApp, JavaContextListener {
         resourceEnvRefs = null;
         envEntries = null;
         messageDestinationRefs = null;
+        servlets = null;
     }
 
     void ensureRoot(MetadataUnit metadataUnit) throws IOException {
@@ -136,6 +144,26 @@ public class WebAppImpl implements WebApp, JavaContextListener {
         }
         messageDestinationRefs = CommonAnnotationHelper.getMessageDestinationRefs(helper);
     }
+    
+    private void initServlets() {
+        if (servlets != null) {
+            return;
+        }
+        assert ddRoot != null;
+        final List<Servlet> servletList = new ArrayList<Servlet>();
+        helper.getAnnotationScanner().findAnnotatedTypes("javax.annotation.security.RunAs", new TypeAnnotationHandler() { // NOI18N
+            public void typeAnnotation(TypeElement type, AnnotationMirror annotation) {
+                for (Servlet servlet : ddRoot.getServlet()) {
+                    if (type.getQualifiedName().contentEquals(servlet.getServletClass())) {
+                        RunAs runAs = new RunAsImpl(helper, annotation);
+                        servletList.add(new ServletImpl(servlet.getServletName(), servlet.getServletClass(), runAs));
+                    }
+                }
+            }
+        });
+        servlets = servletList.toArray(new Servlet[servletList.size()]);
+    }
+    
     public WebApp clone() {
         // no other model supports clone
         throw new UnsupportedOperationException("This operation is not implemented yet.");
@@ -330,6 +358,10 @@ public class WebAppImpl implements WebApp, JavaContextListener {
         if (merge && ddRoot != null) {
             return ddRoot.getServlet(index);
         }
+        if (!merge && ddRoot != null) {
+            initServlets();
+            return servlets[index];
+        }
         return null;
     }
 
@@ -341,12 +373,20 @@ public class WebAppImpl implements WebApp, JavaContextListener {
         if (merge && ddRoot != null) {
             return ddRoot.getServlet();
         }
+        if (!merge && ddRoot != null) {
+            initServlets();
+            return servlets;
+        }
         return new Servlet[0];
     }
 
     public int sizeServlet() {
         if (merge && ddRoot != null) {
             return ddRoot.sizeServlet();
+        }
+        if (!merge && ddRoot != null) {
+            initServlets();
+            return servlets.length;
         }
         return 0;
     }
