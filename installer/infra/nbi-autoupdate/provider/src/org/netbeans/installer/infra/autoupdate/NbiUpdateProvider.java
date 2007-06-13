@@ -2,11 +2,7 @@ package org.netbeans.installer.infra.autoupdate;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -140,6 +136,7 @@ public class NbiUpdateProvider implements UpdateProvider {
             logger.log(Level.FINE,
                     "Building the list of update items"); // NOI18N
             
+            updateItems = new HashMap<String, UpdateItem>();
             for (Product product: products) {
                 final String codename =
                         product.getUid() + "-" + product.getVersion();
@@ -156,7 +153,8 @@ public class NbiUpdateProvider implements UpdateProvider {
                     updateItem = UpdateItem.createInstalledNativeComponent(
                             codename, // codename
                             product.getVersion().toString(), // version
-                            new HashSet<String>(), // dependencides
+//                            new HashSet<String>(), // dependencides
+                            null, // dependencies
                             product.getDisplayName(), // display name
                             product.getDescription(), // description
                             new NbiCustomUninstaller(product)); // custom uninstaller
@@ -165,7 +163,8 @@ public class NbiUpdateProvider implements UpdateProvider {
                             codename, // codename
                             product.getVersion().toString(), // version
                             Long.toString(product.getDownloadSize()), // size
-                            new HashSet<String>(), // dependencides
+//                            new HashSet<String>(), // dependencides
+                            null, // dependencies
                             product.getDisplayName(), // display name
                             product.getDescription(), // description
                             true, // needs restart
@@ -195,6 +194,10 @@ public class NbiUpdateProvider implements UpdateProvider {
     
     public String getDisplayName() {
         return NbBundle.getMessage(NbiUpdateProvider.class, DISPLAY_NAME_KEY);
+    }
+    
+    public String getDescription() {
+        return NbBundle.getMessage(NbiUpdateProvider.class, DESCRIPTION_KEY);
     }
     
     public Map<String, UpdateItem> getUpdateItems() throws IOException {
@@ -238,6 +241,9 @@ public class NbiUpdateProvider implements UpdateProvider {
     
     private static final String DISPLAY_NAME_KEY =
             "NUP.display.name"; // NOI18N
+    
+    private static final String DESCRIPTION_KEY =
+            "NUP.description"; // NOI18N
     
     private static final String LOCAL_DIRECTORY_PROPERTY =
             "nbi.local.directory"; // NOI18N
