@@ -21,6 +21,11 @@ package org.netbeans.modules.languages.features;
 
 import java.util.Map;
 import java.util.WeakHashMap;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import javax.swing.text.Document;
+
 import org.netbeans.api.languages.ASTItem;
 import org.netbeans.api.languages.ASTPath;
 import org.netbeans.api.languages.ParserManager.State;
@@ -29,16 +34,11 @@ import org.netbeans.api.languages.SyntaxContext;
 import org.netbeans.api.languages.SyntaxContext;
 import org.netbeans.api.languages.ASTNode;
 import org.netbeans.api.languages.SyntaxContext;
+import org.netbeans.api.languages.LanguageDefinitionNotFoundException;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.languages.Feature;
 import org.netbeans.modules.languages.Language;
 import org.netbeans.modules.languages.LanguagesManager;
-
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import javax.swing.text.Document;
-import org.netbeans.api.languages.LanguageDefinitionNotFoundException;
 import org.netbeans.modules.languages.EditorParser;
 
 
@@ -62,11 +62,16 @@ public class DatabaseManager implements ParserManagerListener {
 
     public void parsed (State state, ASTNode root) {
         if (root == null) return;
-        DatabaseContext rootContext = new DatabaseContext (null, null, root.getOffset (), root.getEndOffset ());
+        astNodeToDatabaseContext.put (root, parse (root, doc));
+        //S ystem.out.println (rootContext.getAsText ());
+    }
+
+    static DatabaseContext parse (ASTNode ast, Document doc) {
+        DatabaseContext rootContext = new DatabaseContext (null, null, ast.getOffset (), ast.getEndOffset ());
         List<ASTItem> path = new ArrayList<ASTItem> ();
-        path.add (root);
+        path.add (ast);
         List<DatabaseItem> unresolvedUsages = new ArrayList<DatabaseItem> ();
-        process (path, rootContext, unresolvedUsages);
+        process (path, rootContext, unresolvedUsages, doc);
         Iterator<DatabaseItem> it2 = unresolvedUsages.iterator ();
         while (it2.hasNext ()) {
             DatabaseUsage usage = (DatabaseUsage) it2.next ();
@@ -78,11 +83,15 @@ public class DatabaseManager implements ParserManagerListener {
                 usage.setDatabaseDefinition (definition);
             }
         }
-        astNodeToDatabaseContext.put (root, rootContext);
-        //S ystem.out.println (rootContext.getAsText ());
+        return rootContext;
     }
     
-    private void process (List<ASTItem> path, DatabaseContext context, List<DatabaseItem> unresolvedUsages) {
+    private static void process (
+        List<ASTItem> path, 
+        DatabaseContext context, 
+        List<DatabaseItem> unresolvedUsages,
+        Document doc
+    ) {
         ASTItem last = path.get (path.size () - 1);
         Iterator<ASTItem> it = last.getChildren ().iterator ();
         while (it.hasNext ()) {
@@ -115,7 +124,7 @@ public class DatabaseManager implements ParserManagerListener {
                     String type = (String) feature.getValue ("type");
                     DatabaseContext newContext = new DatabaseContext (context, type, item.getOffset (), item.getEndOffset ());
                     context.addContext (item, newContext);
-                    process (path, newContext, unresolvedUsages);
+                    process (path, newContext, unresolvedUsages, doc);
                     path.remove (path.size () - 1);
                     continue;
                 }
@@ -136,7 +145,7 @@ public class DatabaseManager implements ParserManagerListener {
                 }
             } catch (LanguageDefinitionNotFoundException ex) {
             }
-            process (path, context, unresolvedUsages);
+            process (path, context, unresolvedUsages, doc);
             path.remove (path.size () - 1);
         }
     }

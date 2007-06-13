@@ -19,6 +19,19 @@
 
 package org.netbeans.modules.languages.features;
 
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+import java.awt.Color;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
+import javax.swing.text.StyledDocument;
+import javax.swing.JEditorPane;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.StyleConstants;
+
 import org.netbeans.api.languages.ASTPath;
 import org.netbeans.api.languages.Highlighting;
 import org.netbeans.api.languages.Highlighting.Highlight;
@@ -42,15 +55,10 @@ import org.netbeans.modules.languages.Feature;
 import org.netbeans.modules.languages.Language;
 import org.netbeans.modules.languages.LanguagesManager;
 import org.netbeans.modules.languages.ParserManagerImpl;
-import java.awt.Color;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionListener;
-import javax.swing.JEditorPane;
-import javax.swing.text.AttributeSet;
-import javax.swing.text.SimpleAttributeSet;
-import javax.swing.text.StyleConstants;
+
+import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
+import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.text.Line;
 import org.openide.text.NbDocument;
@@ -157,7 +165,6 @@ MouseListener {
                     );
                     runnable = new Runnable () {
                         public void run () {
-                            Thread.dumpStack();
                             DatabaseDefinition definition = ((DatabaseUsage) item).getDefinition ();
                             int definitionOffset = definition.getOffset ();
                             DataObject dobj = NbEditorUtilities.getDataObject (doc);
@@ -168,6 +175,36 @@ MouseListener {
                             line.show (Line.SHOW_GOTO, column);
                         }
                     };
+                }
+                if (item == null) {
+                    FileObject fileObject = NbEditorUtilities.getFileObject (doc);
+                    String name = ((ASTToken) path.getLeaf ()).getIdentifier ();
+                    Map<FileObject,List<DatabaseDefinition>> map = Index.getGlobalItem (fileObject, name);
+                    if (!map.isEmpty ()) {
+                        final FileObject fo = map.keySet ().iterator ().next ();
+                        final DatabaseDefinition definition = map.get (fo).iterator ().next ();
+                        highlight = Highlighting.getHighlighting (doc).highlight (
+                            path.getLeaf (),
+                            getHyperlinkAS ()
+                        );
+                        runnable = new Runnable () {
+                            public void run () {
+                                int definitionOffset = definition.getOffset ();
+                                try {
+                                    DataObject dobj = DataObject.find (fo);
+                                    EditorCookie ec = (EditorCookie) dobj.getCookie (EditorCookie.class);
+                                    StyledDocument doc2 = ec.openDocument ();
+                                    LineCookie lc = (LineCookie) dobj.getCookie (LineCookie.class);
+                                    Line.Set lineSet = lc.getLineSet ();
+                                    Line line = lineSet.getCurrent (NbDocument.findLineNumber (doc2, definitionOffset));
+                                    int column = NbDocument.findLineColumn (doc2, definitionOffset);
+                                    line.show (Line.SHOW_GOTO, column);
+                                } catch (IOException ex) {
+                                    ex.printStackTrace ();
+                                }
+                            }
+                        };
+                    }
                 }
             }
         } catch (ParseException ex) {

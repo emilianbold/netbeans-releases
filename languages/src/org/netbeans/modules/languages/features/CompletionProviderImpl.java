@@ -21,7 +21,14 @@ package org.netbeans.modules.languages.features;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.Iterator;
+import java.util.List;
+import javax.swing.text.JTextComponent;
 import javax.swing.text.Document;
+
 import org.netbeans.api.languages.ASTItem;
 import org.netbeans.api.languages.CompletionItem.Type;
 import org.netbeans.api.languages.ParseException;
@@ -33,6 +40,7 @@ import org.netbeans.api.languages.ASTToken;
 import org.netbeans.api.languages.SyntaxContext;
 import org.netbeans.api.languages.ASTNode;
 import org.netbeans.api.languages.ParseException;
+import org.netbeans.api.languages.LanguageDefinitionNotFoundException;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
@@ -51,12 +59,9 @@ import org.netbeans.spi.editor.completion.CompletionProvider;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
 import org.netbeans.spi.editor.completion.CompletionTask;
 import org.netbeans.spi.project.ActionProvider;
+
 import org.openide.ErrorManager;
 import org.openide.ErrorManager;
-import java.util.Iterator;
-import javax.swing.text.JTextComponent;
-import java.util.List;
-import org.netbeans.api.languages.LanguageDefinitionNotFoundException;
 import org.openide.filesystems.FileObject;
 
 
@@ -126,6 +131,9 @@ public class CompletionProviderImpl implements CompletionProvider {
         r.waitFinished ();
         return r.getList ();
     }
+    
+    
+    // innerclasses ............................................................
     
     private static class CompletionTaskImpl implements CompletionTask {
         
@@ -378,42 +386,46 @@ public class CompletionProviderImpl implements CompletionProvider {
             DatabaseContext context = DatabaseManager.getRoot (node);
             List<DatabaseDefinition> definitions = context.getAllVisibleDefinitions (offset);
             String start = token.getIdentifier ().substring (0, offset - tokenOffset).trim ();
+            Set<String> names = new HashSet<String> ();
             Iterator<DatabaseDefinition> it = definitions.iterator ();
             while (it.hasNext ()) {
                 DatabaseDefinition definition =  it.next ();
-                Type type = null;
-                if ("local".equals (definition.getType ()))
-                    type = Type.LOCAL;
-                else
-                if ("parameter".equals (definition.getType ()))
-                    type = Type.PARAMETER;
-                else
-                if ("field".equals (definition.getType ()))
-                    type = Type.FIELD;
-                else
-                if ("method".equals (definition.getType ()))
-                    type = Type.METHOD;
-                CompletionSupport cs = new CompletionSupport (new org.netbeans.api.languages.CompletionItem (
-                    definition.getName (),
-                    null,
-                    getDocumentName (),
-                    type,
-                    100
-                ));
+                names.add (definition.getName ());
+                CompletionSupport cs = createCompletionItem (definition, getFileName ());
                 items.add (cs);
                 if (definition.getName ().startsWith (start))
                     resultSet.addItem (cs);
             }
+            Map<FileObject,List<DatabaseDefinition>> globals = Index.getGlobalItems (fileObject);
+            Iterator<FileObject> it1 = globals.keySet ().iterator ();
+            while (it1.hasNext()) {
+                FileObject fileObject =  it1.next();
+                List<DatabaseDefinition> l = globals.get (fileObject);
+                Iterator<DatabaseDefinition> it2 = l.iterator ();
+                while (it2.hasNext()) {
+                    DatabaseDefinition definition =  it2.next();
+                    if (names.contains (definition.getName ())) continue;
+                    CompletionSupport cs = createCompletionItem (definition, fileObject.getNameExt ());
+                    items.add (cs);
+                    if (definition.getName ().startsWith (start))
+                        resultSet.addItem (cs);
+                }
+
+            }
         }
         
-        private String getDocumentName () {
-            String name = (String) doc.getProperty ("title");
-            if (name == null) return null;
-            int i = name.lastIndexOf (File.separatorChar);
-            if (i > 0)
-                return name.substring (i + 1);
-            return name;
-        }        
+        private String fileName;
+        
+        private String getFileName () {
+            if (fileName == null) {
+                fileName = (String) doc.getProperty ("title");
+                if (fileName == null) return null;
+                int i = fileName.lastIndexOf (File.separatorChar);
+                if (i > 0)
+                    fileName = fileName.substring (i + 1);
+            }
+            return fileName;
+        }
 
         private void addTags (Feature feature, String start, Context context, Result resultSet) {
             int j = 1;
@@ -488,6 +500,28 @@ public class CompletionProviderImpl implements CompletionProvider {
             if (!text.startsWith (start))
                 return;
             resultSet.addItem (item);
+        }
+
+        private static CompletionSupport createCompletionItem (DatabaseDefinition definition, String fileName) {
+            Type type = null;
+            if ("local".equals (definition.getType ()))
+                type = Type.LOCAL;
+            else
+            if ("parameter".equals (definition.getType ()))
+                type = Type.PARAMETER;
+            else
+            if ("field".equals (definition.getType ()))
+                type = Type.FIELD;
+            else
+            if ("method".equals (definition.getType ()))
+                type = Type.METHOD;
+            return new CompletionSupport (new org.netbeans.api.languages.CompletionItem (
+                definition.getName (),
+                null,
+                fileName,
+                type,
+                100
+            ));
         }
     }
     
