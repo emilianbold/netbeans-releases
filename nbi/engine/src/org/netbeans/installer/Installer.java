@@ -20,38 +20,22 @@
 
 package org.netbeans.installer;
 
-import java.awt.HeadlessException;
-import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
-import java.net.URLDecoder;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.Properties;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import java.util.jar.JarEntry;
-import java.util.jar.JarOutputStream;
-import java.util.jar.Manifest;
 import org.netbeans.installer.downloader.DownloadManager;
 import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.utils.DateUtils;
-import org.netbeans.installer.utils.ResourceUtils;
-import org.netbeans.installer.utils.StreamUtils;
-import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.SystemUtils;
-import org.netbeans.installer.utils.exceptions.InitializationException;
-import org.netbeans.installer.utils.exceptions.XMLException;
 import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.UiUtils;
-import org.netbeans.installer.utils.XMLUtils;
-import org.netbeans.installer.utils.exceptions.DownloadException;
 import org.netbeans.installer.utils.helper.EngineResources;
-import org.netbeans.installer.utils.helper.ErrorLevel;
 import org.netbeans.installer.utils.helper.ExecutionMode;
 import org.netbeans.installer.utils.helper.FinishHandler;
 import org.netbeans.installer.utils.helper.UiMode;
@@ -75,7 +59,7 @@ public class Installer implements FinishHandler {
      * @param arguments The command line arguments
      */
     public static void main(String[] arguments) {
-        new Installer(arguments).start();
+        new Installer(arguments).start();                
     }
     
     /////////////////////////////////////////////////////////////////////////////////
@@ -100,8 +84,6 @@ public class Installer implements FinishHandler {
     // Instance
     private File localDirectory =
             new File(DEFAULT_LOCAL_DIRECTORY_PATH).getAbsoluteFile();
-    
-    private File cachedEngine;
     
     // Constructor //////////////////////////////////////////////////////////////////
     /**
@@ -156,8 +138,6 @@ public class Installer implements FinishHandler {
         wizard.getContext().put(registry);
         
         createInstallerLockFile();
-        
-        cacheEngineLocally();
         
         LogManager.unindent();
         LogManager.log("... finished initializing the installer engine");
@@ -580,11 +560,10 @@ public class Installer implements FinishHandler {
                     LOCAL_DIRECTORY_PATH_PROPERTY)).getAbsoluteFile();
         } else {
             localDirectory = new File(DEFAULT_LOCAL_DIRECTORY_PATH).getAbsoluteFile();
-            
-            LogManager.log("... custom local directory was not specified, using the default");
-            LogManager.log("... local directory: " + localDirectory);
+            System.setProperty(LOCAL_DIRECTORY_PATH_PROPERTY, DEFAULT_LOCAL_DIRECTORY_PATH);
+            LogManager.log("... custom local directory was not specified, using the default");            
         }
-        
+        LogManager.log("... local directory: " + localDirectory);
         if (!localDirectory.exists()) {
             if (!localDirectory.mkdirs()) {
                 ErrorManager.notifyCritical("Cannot create local directory: " + localDirectory);
@@ -601,144 +580,6 @@ public class Installer implements FinishHandler {
         LogManager.log("... finished initializing local directory");
     }
     
-    private void cacheEngineJar() throws IOException, DownloadException {
-        LogManager.log("... starting copying engine content to the new jar file");
-        String [] entries = StreamUtils.readStream(
-                ResourceUtils.getResource(EngineResources.ENGINE_CONTENTS_LIST)).
-                toString().split(StringUtils.NEW_LINE_PATTERN);
-        
-        File dest = getCacheExpectedFile();
-        
-        JarOutputStream jos = null;
-        
-        try {
-            Manifest mf = new Manifest(new ByteArrayInputStream(
-                    DEFAULT_INSTALLER_MANIFEST.getBytes()));
-            dest.getParentFile().mkdirs();
-            jos = new JarOutputStream(new FileOutputStream(dest),mf);
-            LogManager.log("... total entries : " + entries.length);
-            for(int i=0;i<entries.length;i++) {
-                String name = entries[i];
-                if(name.length() > 0) {
-                    String dataDir = EngineResources.DATA_DIRECTORY +
-                            StringUtils.FORWARD_SLASH;
-                    if(!name.startsWith(dataDir) || // all except "data/""
-                            name.equals(dataDir) || // "data/"
-                            name.equals(EngineResources.ENGINE_PROPERTIES)) { // "data/engine.properties"
-                        jos.putNextEntry(new JarEntry(name));
-                        if(!name.endsWith(StringUtils.FORWARD_SLASH)) {
-                            StreamUtils.transferData(ResourceUtils.getResource(name), jos);
-                        }
-                    }
-                }
-            }
-            LogManager.log("... adding content list and some other stuff");
-            
-            jos.putNextEntry(new JarEntry(EngineResources.DATA_DIRECTORY + StringUtils.FORWARD_SLASH +
-                    "registry.xml"));
-            
-            XMLUtils.saveXMLDocument(
-                    Registry.getInstance().getEmptyRegistryDocument(),
-                    jos);
-            
-            jos.putNextEntry(new JarEntry(EngineResources.ENGINE_CONTENTS_LIST));
-            jos.write(StringUtils.asString(entries, SystemUtils.getLineSeparator()).getBytes());
-        } catch (XMLException ex) {
-            throw new IOException(ex.toString());
-        } finally {
-            if(jos!=null) {
-                try {
-                    jos.close();
-                } catch (IOException ex) {
-                    LogManager.log(ex);
-                }
-                
-            }
-        }
-        
-        cachedEngine = (!dest.exists()) ? null : dest;
-        
-        LogManager.log("NBI Engine jar file = [" +
-                cachedEngine + "], exist = " +
-                ((cachedEngine==null) ? false : cachedEngine.exists()));
-    }
-    
-    private File getCacheExpectedFile() {
-        return new File(localDirectory, "nbi-engine.jar");
-    }
-    
-    private void cacheEngineLocally() {
-        LogManager.logIndent("cache engine data locally to run uninstall in the future");
-        
-        String filePrefix = "file:";
-        String httpPrefix = "http://";
-        String jarSep = "!/";
-        
-        try {
-            String installerResource = Installer.class.getName().replace(".","/") + ".class";
-            URL url = this.getClass().getClassLoader().getResource(installerResource);
-            if(url == null) {
-                throw new IOException("No main Installer class in the engine");
-            }
-            
-            LogManager.log(ErrorLevel.DEBUG, "NBI Engine URL for Installer.Class = " + url);
-            LogManager.log(ErrorLevel.DEBUG, "URL Path = " + url.getPath());
-            
-            boolean needCache = true;
-            
-            if("jar".equals(url.getProtocol())) {
-                LogManager.log("... running engine as a .jar file");
-                // we run engine from jar, not from .class
-                String path = url.getPath();
-                String jarLocation;
-                
-                if (path.startsWith(filePrefix)) {
-                    LogManager.log("... classloader says that jar file is on the disk");
-                    if (path.indexOf(jarSep) != -1) {
-                        jarLocation = path.substring(filePrefix.length(),
-                                path.indexOf(jarSep + installerResource));
-                        jarLocation = URLDecoder.decode(jarLocation, StringUtils.ENCODING_UTF8);
-                        File jarfile = new File(jarLocation);
-                        LogManager.log("... checking if it runs from cached engine");
-                        if(jarfile.getAbsolutePath().equals(
-                                getCacheExpectedFile().getAbsolutePath())) {
-                            needCache = false; // we already run cached version
-                            cachedEngine = jarfile;
-                        }
-                        LogManager.log("... " + !needCache);
-                    } else {
-                        throw new IOException("JAR path " + path +
-                                " doesn`t contaion jar-separator " + jarSep);
-                    }
-                } else if (path.startsWith(httpPrefix)) {
-                    LogManager.log("... classloader says that jar file is on remote server");
-                }
-            } else {
-                // a quick hack to allow caching engine when run from the IDE (i.e.
-                // as a .class) - probably to be removed later. Or maybe not...
-                LogManager.log("... running engine as a .class file");
-            }
-            
-            if (needCache) {
-                try {
-                    cacheEngineJar();
-                } catch (DownloadException ex) {
-                    LogManager.log("Can`t load engine jar content list");
-                    LogManager.log(ex);
-                    throw new IOException(ex.toString());
-                }
-            }
-            
-            System.setProperty(
-                    EngineResources.LOCAL_ENGINE_PATH_PROPERTY,
-                    cachedEngine.getAbsolutePath());
-            
-        } catch (IOException ex) {
-            ErrorManager.notifyCritical("can`t cache installer engine", ex);
-        }
-        
-        LogManager.logUnindent("... finished caching engine data");
-    }
     
     private void createInstallerLockFile()  {
         LogManager.logIndent("creating lock file");
@@ -798,9 +639,5 @@ public class Installer implements FinishHandler {
     
     public static final String IGNORE_LOCK_FILE_PROPERTY =
             "nbi.ignore.lock.file";
-    
-    private static final String DEFAULT_INSTALLER_MANIFEST =
-            "Manifest-Version: 1.0" + SystemUtils.getLineSeparator() +
-            "Main-Class: " + Installer.class.getName() + SystemUtils.getLineSeparator() +
-            "Class-Path: " + SystemUtils.getLineSeparator();
+   
 }

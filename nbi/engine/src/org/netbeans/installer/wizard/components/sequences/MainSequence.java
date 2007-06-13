@@ -28,6 +28,7 @@ import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.helper.ExecutionMode;
 import org.netbeans.installer.wizard.components.WizardSequence;
+import org.netbeans.installer.wizard.components.actions.CacheEngineAction;
 import org.netbeans.installer.wizard.components.actions.CreateBundleAction;
 import org.netbeans.installer.wizard.components.actions.CreateNativeLauncherAction;
 import org.netbeans.installer.wizard.components.actions.DownloadConfigurationLogicAction;
@@ -53,6 +54,7 @@ public class MainSequence extends WizardSequence {
     private InstallAction installAction;
     private PostInstallSummaryPanel postInstallSummaryPanel;
     private PreCreateBundleSummaryPanel preCreateBundleSummaryPanel;
+    private CacheEngineAction cacheEngineAction;
     private CreateBundleAction createBundleAction;
     private CreateNativeLauncherAction createNativeLauncherAction;
     private PostCreateBundleSummaryPanel postCreateBundleSummaryPanel;
@@ -68,7 +70,8 @@ public class MainSequence extends WizardSequence {
         installAction = new InstallAction();
         postInstallSummaryPanel = new PostInstallSummaryPanel();
         preCreateBundleSummaryPanel = new PreCreateBundleSummaryPanel();
-        createBundleAction = new CreateBundleAction();
+        cacheEngineAction = new CacheEngineAction();
+        createBundleAction = new CreateBundleAction();        
         createNativeLauncherAction = new CreateNativeLauncherAction();
         postCreateBundleSummaryPanel = new PostCreateBundleSummaryPanel();
         
@@ -112,6 +115,7 @@ public class MainSequence extends WizardSequence {
             }
             
             if (toInstall.size() > 0) {
+                addChild(cacheEngineAction);
                 addChild(downloadInstallationDataAction);
                 addChild(installAction);
             }
@@ -122,6 +126,7 @@ public class MainSequence extends WizardSequence {
             addChild(preCreateBundleSummaryPanel);
             addChild(downloadConfigurationLogicAction);
             addChild(downloadInstallationDataAction);
+            addChild(cacheEngineAction);
             addChild(createBundleAction);
             addChild(createNativeLauncherAction);
             addChild(postCreateBundleSummaryPanel);
