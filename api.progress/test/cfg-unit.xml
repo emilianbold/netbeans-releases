@@ -32,10 +32,10 @@ Microsystems, Inc. All Rights Reserved.
 <mconfig name="core/progress">
 
 
-    <testbag testattribs="stable" executor="ide" name="testbag_2" resultsprocessor="unit">
+    <testbag testattribs="stable" executor="code" name="testbag_2" resultsprocessor="unit">
         <testset dir="unit/src">
             <patternset>
-                <include name="org/netbeans/progress/*Test.class"/>
+                <include name="**/*Test.class"/>
             </patternset>
         </testset>
     </testbag>
