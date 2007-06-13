@@ -91,6 +91,8 @@ public class Constants {
     
     public static final String URI_PARAM_ANNOTATION = "UriParam";       //NOI18N
     
+    public static final String QUERY_PARAM_ANNOTATION = "QueryParam";       //NOI18N
+
     public static final String HTTP_METHOD_ANNOTATION = "HttpMethod";   //NOI18N
     
     public static final String PRODUCE_MIME_ANNOTATION = "ProduceMime"; //NOI18N

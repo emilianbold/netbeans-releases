@@ -21,7 +21,7 @@ package org.netbeans.modules.websvc.rest.codegen.model;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -31,8 +31,10 @@ import org.netbeans.modules.websvc.api.jaxws.project.config.Client;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModel;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModelerFactory;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlOperation;
+import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlParameter;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlService;
+import org.netbeans.modules.websvc.rest.codegen.Constants;
 import org.openide.filesystems.FileUtil;
 
 /**
@@ -163,7 +165,7 @@ public class JaxwsOperationInfo {
     
     public String getOutputJAXBClass() {
         initWsdlModelInfo();
-        return operation.getReturnTypeName();
+        return getOutputType();
     }
 
     public WsdlPort getPort() {
@@ -179,5 +181,59 @@ public class JaxwsOperationInfo {
     public WsdlService getService() {
         initWsdlModelInfo();
         return service;
+    }
+
+    //TODO maybe parse SEI class (using Retouche) for @WebParam.Mode annotation
+    public List<WsdlParameter> getOutputParameters() {
+        ArrayList<WsdlParameter> params = new ArrayList<WsdlParameter>();
+        for (WsdlParameter p : getOperation().getParameters()) {
+            if (p.isHolder()) {
+                params.add(p);
+            }
+        }
+        return params;
+    }
+
+    //TODO maybe parse SEI class (using Retouche) for @WebParam.Mode annotation
+    public String getOutputType() {
+        String outputType = getOperation().getReturnTypeName();
+        if (Constants.VOID.equals(outputType)) {
+            for (WsdlParameter p : getOperation().getParameters()) {
+                if (p.isHolder()) {
+                    outputType = p.getTypeName();
+                    int iLT = outputType.indexOf('<');
+                    int iGT = outputType.indexOf('>');
+                    if (iLT > 0 || iGT > 0) {
+                        outputType = outputType.substring(iLT+1, iGT).trim();
+                    }
+                    break;
+                }
+            }
+        }
+        return outputType;
+    }
+
+    //TODO maybe parse SEI class (using Retouche) for @WebParam.Mode annotation
+    public String[] getInputParameterNames() {
+        ArrayList<String> names = new ArrayList<String>();
+        for (WsdlParameter p : getOperation().getParameters()) {
+            if (! p.isHolder()) {
+                names.add(p.getName());
+            }
+        }
+
+        return names.toArray(new String[names.size()]);
+    }
+
+    //TODO maybe parse SEI class (using Retouche) for @WebParam.Mode annotation
+    public String[] getInputParameterTypes() {
+        ArrayList<String> types = new ArrayList<String>();
+        for (WsdlParameter p : getOperation().getParameters()) {
+            if (! p.isHolder()) {
+                types.add(p.getTypeName());
+            }
+        }
+
+        return types.toArray(new String[types.size()]);
     }
 }

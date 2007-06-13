@@ -49,10 +49,12 @@ public class GenericResourceBean {
     
     public static final HttpMethodType[] STAND_ALONE_METHODS = HttpMethodType.values();
     
-    private String name;
+    private final String name;
     private String packageName;
 
-    private String uriTemplate;
+    private final String uriTemplate;
+    private String[] queryParams;
+    private String[] queryParamTypes;
     private String[] mimeTypes;
     private String[] representationTypes;
     private Set<HttpMethodType> methodTypes;
@@ -60,7 +62,7 @@ public class GenericResourceBean {
    public GenericResourceBean(String name, String packageName, String uriTemplate) {
          this(name, packageName, uriTemplate, supportedMimeTypes, HttpMethodType.values());
    }
-   
+
    public GenericResourceBean(String name, String packageName, String uriTemplate, 
             String[] mediaTypes, HttpMethodType[] methodTypes) {
         this(name, packageName, uriTemplate, mediaTypes, null, methodTypes);
@@ -99,10 +101,6 @@ public class GenericResourceBean {
 
     public String getUriTemplate() {
         return uriTemplate;
-    }
-
-    public void setUriTemplate(String uriTemplate) {
-        this.uriTemplate = uriTemplate;
     }
 
     public String[] getMimeTypes() {
@@ -151,4 +149,27 @@ public class GenericResourceBean {
         return getPackageName() + "." + getName();
     }
 
+    public String[] getQueryParams() {
+        return queryParams;
+    }
+
+    public String[] getQueryParamTypes() {
+        return queryParamTypes;
+    }
+
+    public void setQueryParams(String[] queryParams, String[] types) {
+        this.queryParams = queryParams;
+        if (types == null) {
+            queryParamTypes = new String[queryParams.length];
+            for (int i=0; i< queryParams.length; i++) {
+                queryParamTypes[i] = String.class.getName();
+            }
+        } else {
+            if (types.length != queryParams.length) {
+                throw new IllegalArgumentException("Unmatched arrays of parameter names and types");
+            }
+            this.queryParamTypes = types;
+        }
+    }
+   
 }
