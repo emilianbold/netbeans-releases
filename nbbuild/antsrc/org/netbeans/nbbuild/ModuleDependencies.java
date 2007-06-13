@@ -247,11 +247,16 @@ public class ModuleDependencies extends Task {
             // JavaHelp or in-IDE Ant task surely built by us.
             return true;
         }
-        if (jar.getName().matches("designtimeext\\.jar|jruby\\.jar")) { // XXX hardcoded for now
+        String name = jar.getName();
+        if (name.matches("designtime.*\\.jar|jruby\\.jar|graphlib\\.jar")) { // XXX hardcoded for now
             return true;
         }
-        if (jar.getName().endsWith("_nb.jar")) {
+        if (name.endsWith("_nb.jar") && !name.equals("resolver-1_1_nb.jar")) {
             // Branding.
+            return true;
+        }
+        if (name.startsWith("org-netbeans-") || name.startsWith("nb_")) {
+            // Clearly ours.
             return true;
         }
         return false;
