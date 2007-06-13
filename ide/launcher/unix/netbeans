@@ -13,7 +13,7 @@
 # "Portions Copyrighted [year] [name of copyright owner]"
 #
 # The Original Software is NetBeans. The Initial Developer of the Original
-# Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+# Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 # Microsystems, Inc. All Rights Reserved.
 
 #
@@ -92,6 +92,41 @@ netbeans_clusters=`readClusters | absolutize_paths | tr '\012' ':'`
 
 if [ ! -z "$netbeans_extraclusters" ] ; then
     netbeans_clusters="$netbeans_clusters:$netbeans_extraclusters"
+fi
+
+heap_size () {
+    mem=128
+    case "`uname`" in
+        Linux*)
+        mem=`cat /proc/meminfo | grep MemTotal | tr -d [:space:][:alpha:]:`
+        mem=`expr $mem / 4096`
+        ;;
+    SunOS*)
+        mem=`/usr/sbin/prtconf | grep Memory | tr -dc '[:digit:]'`
+        mem=`expr $mem / 4`
+        ;;
+    Darwin*)
+        mem=`sysctl hw.physmem | tr -d [:alpha:][:space:].:`
+        mem=`expr $mem / 4194304`
+        ;;
+        *) 
+        ;;
+    esac
+    if [ $mem -gt 512 ] ; then
+        mem=512
+    elif [ $mem -lt 96 ] ; then
+        mem=96
+    fi
+    max_heap_size=$mem
+    return 0
+}
+
+
+if grep -v -- "-J-Xmx" >/dev/null <<EOF ; then
+${netbeans_default_options}
+EOF
+        heap_size
+	netbeans_default_options="-J-Xmx${max_heap_size}m ${netbeans_default_options}"
 fi
 
 launchNbexec() {
