@@ -32,7 +32,7 @@ import javax.swing.Action;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.SourceUtils;
-import org.netbeans.api.java.source.UiUtils;
+import org.netbeans.api.java.source.ui.ElementIcons;
 import org.netbeans.modules.java.navigation.ElementNode.Description;
 import org.netbeans.modules.java.navigation.actions.OpenAction;
 import org.openide.filesystems.FileObject;
@@ -65,7 +65,7 @@ public class ElementNode extends AbstractNode {
     
     @Override
     public Image getIcon(int type) {
-         return description.kind == null ? super.getIcon(type) : Utilities.icon2Image(UiUtils.getElementIcon(description.kind, description.modifiers));
+         return description.kind == null ? super.getIcon(type) : Utilities.icon2Image(ElementIcons.getElementIcon(description.kind, description.modifiers));
     }
 
     @Override

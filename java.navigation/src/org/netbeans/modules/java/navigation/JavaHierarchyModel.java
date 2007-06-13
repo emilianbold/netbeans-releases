@@ -48,7 +48,8 @@ import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.SourceUtils;
-import org.netbeans.api.java.source.UiUtils;
+import org.netbeans.api.java.source.ui.ElementIcons;
+import org.netbeans.api.java.source.ui.ElementOpen;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
@@ -235,7 +236,7 @@ public final class JavaHierarchyModel extends DefaultTreeModel {
             this.modifiers = element.getModifiers();
 
             setName(element.getSimpleName().toString());
-            setIcon(UiUtils.getElementIcon(element.getKind(),
+            setIcon(ElementIcons.getElementIcon(element.getKind(),
                     element.getModifiers()));
             setLabel(Utils.format(element));
             setToolTip(Utils.format(element, true));
@@ -396,7 +397,7 @@ public final class JavaHierarchyModel extends DefaultTreeModel {
                 return;
             }
 
-            UiUtils.open(fileObject, elementHandle);
+            ElementOpen.open(fileObject, elementHandle);
         }
     }
 

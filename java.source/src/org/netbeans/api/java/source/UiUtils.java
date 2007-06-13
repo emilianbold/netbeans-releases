@@ -51,6 +51,7 @@ import org.openide.text.NbDocument;
  *
  * @author Jan Lahoda
  */
+@Deprecated
 public final class  UiUtils {    
     
     private UiUtils() {}
@@ -58,6 +59,7 @@ public final class  UiUtils {
     /** Gets correct icon for given ElementKind.
      *@param modifiers Can be null for empty modifiers collection
      */
+    @Deprecated
     public static Icon getElementIcon( ElementKind elementKind, Collection<Modifier> modifiers ) {
         return Icons.getElementIcon(elementKind, modifiers);
     }
@@ -77,6 +79,7 @@ public final class  UiUtils {
      * @return true if and only if the declaration was correctly opened,
      *                false otherwise
      */
+    @Deprecated
     public static boolean open(final ClasspathInfo cpInfo, final Element el) {
 	Object[] openInfo = getOpenInfo (cpInfo, el);
 	if (openInfo != null) {
@@ -87,6 +90,7 @@ public final class  UiUtils {
 	return false;
     }
     
+    @Deprecated
     public static boolean open(final FileObject toSearch, final ElementHandle<? extends Element> toOpen) {
         if (toSearch == null || toOpen == null) {
             throw new IllegalArgumentException("null not supported");
@@ -118,6 +122,7 @@ public final class  UiUtils {
         return veryPretty.getVariableHeader(tree, s);
     }
     
+    @Deprecated
     public static final class PrintPart {
         private PrintPart() {}
         public static final String ANNOTATIONS = "%annotations"; //NOI18N
@@ -135,6 +140,7 @@ public final class  UiUtils {
      * example of formatString:
      * "method " + PrintPart.NAME + PrintPart.PARAMETERS + " has return type " + PrintPart.TYPE
      */
+    @Deprecated
     public static String getHeader(TreePath treePath, CompilationInfo info, String formatString) {
         assert info != null;
         assert treePath != null;
@@ -148,6 +154,7 @@ public final class  UiUtils {
      * example of formatString:
      * "method " + PrintPart.NAME + PrintPart.PARAMETERS + " has return type " + PrintPart.TYPE
      */
+    @Deprecated
     public static String getHeader(Element element, CompilationInfo info, String formatString) {
         assert element != null;
         assert info != null;
@@ -200,6 +207,7 @@ public final class  UiUtils {
     
     /** Computes dostance between strings
      */
+    @Deprecated
     public static int getDistance(String s, String t) {
         int d[][]; // matrix
         int n; // length of s

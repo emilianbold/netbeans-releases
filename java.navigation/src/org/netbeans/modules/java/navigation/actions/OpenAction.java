@@ -27,7 +27,7 @@ package org.netbeans.modules.java.navigation.actions;
 import java.awt.Toolkit;
 import javax.lang.model.element.Element;
 import org.netbeans.api.java.source.ElementHandle;
-import org.netbeans.api.java.source.UiUtils;
+import org.netbeans.api.java.source.ui.ElementOpen;
 import org.openide.awt.*;
 import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.*;
@@ -69,7 +69,7 @@ public final class OpenAction extends AbstractAction {
                         NbBundle.getMessage(OpenAction.class, "MSG_NoSource", displayName) );  //NOI18N
             }
         } else {
-            UiUtils.open(fileObject, elementHandle);
+            ElementOpen.open(fileObject, elementHandle);
         }
         // find source
 //        boolean isSourceAvailable = false;

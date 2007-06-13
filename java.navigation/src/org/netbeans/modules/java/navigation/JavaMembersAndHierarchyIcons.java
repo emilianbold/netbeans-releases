@@ -19,7 +19,7 @@
 
 package org.netbeans.modules.java.navigation;
 
-import org.netbeans.api.java.source.UiUtils;
+import org.netbeans.api.java.source.ui.ElementIcons;
 import org.openide.util.Utilities;
 import java.util.EnumSet;
 import javax.lang.model.element.ElementKind;
@@ -47,25 +47,25 @@ final class JavaMembersAndHierarchyIcons {
     public static final Icon FQN_ICON = new ImageIcon(Utilities.loadImage(
                 "org/netbeans/modules/java/navigation/resources/fqn.gif")); // NOI18N
     
-    public static final Icon CLASS_ICON = UiUtils.getElementIcon(ElementKind.CLASS,
+    public static final Icon CLASS_ICON = ElementIcons.getElementIcon(ElementKind.CLASS,
             EnumSet.of(Modifier.PUBLIC));
-    public static final Icon INNER_CLASS_ICON = UiUtils.getElementIcon(ElementKind.CLASS,
+    public static final Icon INNER_CLASS_ICON = ElementIcons.getElementIcon(ElementKind.CLASS,
             EnumSet.of(Modifier.PUBLIC));
     
-    public static final Icon INTERFACE_ICON = UiUtils.getElementIcon(ElementKind.INTERFACE,
+    public static final Icon INTERFACE_ICON = ElementIcons.getElementIcon(ElementKind.INTERFACE,
             EnumSet.of(Modifier.PUBLIC));
-    public static final Icon INNER_INTERFACE_ICON = UiUtils.getElementIcon(ElementKind.INTERFACE,
+    public static final Icon INNER_INTERFACE_ICON = ElementIcons.getElementIcon(ElementKind.INTERFACE,
             EnumSet.of(Modifier.PUBLIC));
 
-    public static final Icon CONSTRUCTOR_ICON = UiUtils.getElementIcon(ElementKind.CONSTRUCTOR,
+    public static final Icon CONSTRUCTOR_ICON = ElementIcons.getElementIcon(ElementKind.CONSTRUCTOR,
             EnumSet.of(Modifier.PUBLIC));
-    public static final Icon METHOD_ICON = UiUtils.getElementIcon(ElementKind.METHOD,
+    public static final Icon METHOD_ICON = ElementIcons.getElementIcon(ElementKind.METHOD,
             EnumSet.of(Modifier.PUBLIC));
-    public static final Icon FIELD_ICON = UiUtils.getElementIcon(ElementKind.FIELD,
+    public static final Icon FIELD_ICON = ElementIcons.getElementIcon(ElementKind.FIELD,
             EnumSet.of(Modifier.PUBLIC));
-    public static final Icon ENUM_ICON = UiUtils.getElementIcon(ElementKind.ENUM,
+    public static final Icon ENUM_ICON = ElementIcons.getElementIcon(ElementKind.ENUM,
             EnumSet.of(Modifier.PUBLIC));
-    public static final Icon ENUM_CONSTANTS_ICON = UiUtils.getElementIcon(ElementKind.ENUM_CONSTANT,
+    public static final Icon ENUM_CONSTANTS_ICON = ElementIcons.getElementIcon(ElementKind.ENUM_CONSTANT,
             EnumSet.of(Modifier.PUBLIC));
     public static final Icon PACKAGE_ICON = new ImageIcon(Utilities.loadImage(
                 "org/netbeans/modules/java/navigation/resources/package.gif")); // NOI18N

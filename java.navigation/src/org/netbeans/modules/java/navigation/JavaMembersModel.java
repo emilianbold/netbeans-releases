@@ -27,7 +27,8 @@ import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.SourceUtils;
-import org.netbeans.api.java.source.UiUtils;
+import org.netbeans.api.java.source.ui.ElementIcons;
+import org.netbeans.api.java.source.ui.ElementOpen;
 import org.openide.ErrorManager;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
@@ -221,7 +222,7 @@ public final class JavaMembersModel extends DefaultTreeModel {
             } else {
                 setName(element.getSimpleName().toString());
             }
-            setIcon(UiUtils.getElementIcon(element.getKind(),
+            setIcon(ElementIcons.getElementIcon(element.getKind(),
                     element.getModifiers()));
             setLabel(Utils.format(element));
             setToolTip(Utils.format(element, true));
@@ -336,7 +337,7 @@ public final class JavaMembersModel extends DefaultTreeModel {
                 return;
             }
 
-            UiUtils.open(fileObject, elementHandle);
+            ElementOpen.open(fileObject, elementHandle);
         }
     }
 
