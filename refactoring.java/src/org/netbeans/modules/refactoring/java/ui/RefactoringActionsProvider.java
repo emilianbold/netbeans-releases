@@ -90,6 +90,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                         return null;
                     if (selected.getKind() == ElementKind.CONSTRUCTOR) {
                         selected = selected.getEnclosingElement();
+                        selectedElement = TreePathHandle.create(SourceUtils.pathFor(info, selected), info);
                     } 
                     if (selected.getKind() == ElementKind.PACKAGE) {
                         NonRecursiveFolder folder = new NonRecursiveFolder() {
