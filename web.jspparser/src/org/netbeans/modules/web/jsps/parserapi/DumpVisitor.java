@@ -19,8 +19,9 @@
 
 package org.netbeans.modules.web.jsps.parserapi;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.servlet.jsp.JspException;
-import org.openide.ErrorManager;
 import org.xml.sax.Attributes;
 
 class DumpVisitor extends Node.Visitor {
@@ -262,7 +263,7 @@ class DumpVisitor extends Node.Visitor {
 	    n.accept(dv);
             return dv.getString();
 	} catch (JspException e) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            Logger.getLogger("global").log(Level.INFO, null, e);
             return e.getMessage();
 	}
     }
@@ -273,7 +274,7 @@ class DumpVisitor extends Node.Visitor {
 	    page.visit(dv);
             return dv.getString();
 	} catch (JspException e) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            Logger.getLogger("global").log(Level.INFO, null, e);
             return e.getMessage();
 	}
     }

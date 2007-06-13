@@ -21,12 +21,14 @@ package org.netbeans.modules.web.jsps.parserapi;
 
 import java.util.*;
 
-import org.openide.ErrorManager;
+import java.util.logging.Level;
+
+//import org.apache.jasper.Constants;
+import java.util.logging.Logger;
 
 //import org.apache.jasper.Constants;
 import javax.servlet.jsp.JspException;
 import javax.servlet.jsp.PageContext;
-import javax.servlet.jsp.el.FunctionMapper;
 import javax.servlet.jsp.tagext.TagInfo;
 import javax.servlet.jsp.tagext.TagFileInfo;
 import javax.servlet.jsp.tagext.FunctionInfo;
@@ -793,10 +795,10 @@ public abstract class PageInfo {
             return f.get(info);
         }
         catch (NoSuchFieldException e) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            Logger.getLogger("global").log(Level.INFO, null, e);
         }
         catch (IllegalAccessException e) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            Logger.getLogger("global").log(Level.INFO, null, e);
         }
         return null;
     }

@@ -20,7 +20,6 @@
 package org.netbeans.modules.web.jsps.parserapi;
 
 import java.util.*;
-import java.io.CharArrayWriter;
 import javax.servlet.jsp.tagext.*;
 import javax.servlet.jsp.JspException;
 import org.xml.sax.Attributes;

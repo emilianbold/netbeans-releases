@@ -26,7 +26,6 @@ import java.net.URLClassLoader;
 import java.util.Map;
 
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
 
 import org.netbeans.modules.web.jspparser.ContextUtil;
 

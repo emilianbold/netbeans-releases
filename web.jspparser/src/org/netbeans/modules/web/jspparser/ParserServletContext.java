@@ -19,13 +19,8 @@
 
 package org.netbeans.modules.web.jspparser;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.InputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.PrintWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Enumeration;
@@ -34,22 +29,20 @@ import java.util.Hashtable;
 import java.util.Set;
 import java.util.Vector;
 import java.net.URL;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.Servlet;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
-import javax.swing.text.EditorKit;
-import javax.swing.text.StyledDocument;
 
 import org.openide.filesystems.FileObject;
 
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.NbBundle;
 
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
-import org.openide.text.CloneableEditorSupport;
 
 /**
  * Simple <code>ServletContext</code> implementation without
@@ -301,7 +294,7 @@ public class ParserServletContext implements ServletContext {
                 return url.openStream();
             }
         } catch (Throwable t) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, t);
+            Logger.getLogger("global").log(Level.INFO, null, t);
             return (null);
         }
 
@@ -403,7 +396,7 @@ public class ParserServletContext implements ServletContext {
      */
     public void log(String message) {
 
-        ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, message);
+        Logger.getLogger("global").log(Level.INFO, message);
 
     }
 
@@ -431,8 +424,8 @@ public class ParserServletContext implements ServletContext {
      */
     public void log(String message, Throwable exception) {
 
-        ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, message);
-        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exception);
+        Logger.getLogger("global").log(Level.INFO, message);
+        Logger.getLogger("global").log(Level.INFO, null, exception);
         
     }
 

@@ -23,9 +23,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.StringTokenizer;
 
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 
 /** Static utilities related to web context stuff - relative paths, relative objects etc.

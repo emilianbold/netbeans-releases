@@ -31,10 +31,10 @@ import java.security.CodeSource;
 import java.security.PermissionCollection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
-import org.netbeans.modules.web.jsps.parserapi.JspParserAPI.JspOpenInfo;
 
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.NbBundle;
@@ -81,11 +81,11 @@ public class JspParserImpl implements JspParserAPI {
                 
                 webAppParserImplConstructor = cl.getDeclaredConstructor(new Class[] {WebModule.class});
             } catch (NoSuchMethodException e) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                Logger.getLogger("global").log(Level.INFO, null, e);
             } catch (MalformedURLException e) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                Logger.getLogger("global").log(Level.INFO, null, e);
             } catch (ClassNotFoundException e) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                Logger.getLogger("global").log(Level.INFO, null, e);
             }
         }
     }
@@ -174,13 +174,13 @@ public class JspParserImpl implements JspParserAPI {
             initReflection();
             return (WebAppParseProxy)webAppParserImplConstructor.newInstance(new Object[] {wm});
         } catch (IllegalAccessException e) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            Logger.getLogger("global").log(Level.INFO, null, e);
             e.printStackTrace();
         } catch (InstantiationException e) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            Logger.getLogger("global").log(Level.INFO, null, e);
             e.printStackTrace();
         } catch (InvocationTargetException e) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            Logger.getLogger("global").log(Level.INFO, null, e);
             e.printStackTrace();
         }
         return null;
