@@ -2,17 +2,17 @@
  * The contents of this file are subject to the terms of the Common Development and
  * Distribution License (the License). You may not use this file except in compliance
  * with the License.
- * 
+ *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html or
  * http://www.netbeans.org/cddl.txt.
- * 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file and
  * include the License file at http://www.netbeans.org/cddl.txt. If applicable, add
  * the following below the CDDL Header, with the fields enclosed by brackets []
  * replaced by your own identifying information:
- * 
+ *
  *     "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original Software
  * is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun Microsystems, Inc. All
  * Rights Reserved.
@@ -122,7 +122,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         /////////////////////////////////////////////////////////////////////////////
         //try {
         //    progress.setDetail(getString("CL.install.irrelevant.files")); // NOI18N
-        //    
+        //
         //    SystemUtils.removeIrrelevantFiles(binSubdir);
         //    SystemUtils.removeIrrelevantFiles(etcSubdir);
         //    SystemUtils.removeIrrelevantFiles(platformCluster);
@@ -185,15 +185,15 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             
             NetBeansUtils.updateNetBeansHome(installLocation);
             
-            final long xmx = NetBeansUtils.getJvmMemorySize(
-                    installLocation, 
-                    NetBeansUtils.MEMORY_XMX);
-            if (xmx < REQUIRED_XMX_VALUE) {
-                NetBeansUtils.setJvmMemorySize(
-                        installLocation,
-                        NetBeansUtils.MEMORY_XMX,
-                        REQUIRED_XMX_VALUE);
-            }
+            // final long xmx = NetBeansUtils.getJvmMemorySize(
+            //         installLocation,
+            //         NetBeansUtils.MEMORY_XMX);
+            // if (xmx < REQUIRED_XMX_VALUE) {
+            //     NetBeansUtils.setJvmMemorySize(
+            //            installLocation,
+            //             NetBeansUtils.MEMORY_XMX,
+            //            REQUIRED_XMX_VALUE);
+            // }
         } catch (IOException e) {
             throw new InstallationException(
                     getString("CL.install.error.netbeans.conf"), // NOI18N
@@ -272,7 +272,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     public List<WizardComponent> getWizardComponents() {
         return wizardComponents;
     }
-
+    
     @Override
     public String getSystemDisplayName() {
         return getString("CL.system.display.name");
@@ -406,6 +406,6 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     public static final String JVM_OPTION_NAME =
             "-Dcom.sun.aas.installRoot"; // NOI18N
     
-    public static final long REQUIRED_XMX_VALUE = 
+    public static final long REQUIRED_XMX_VALUE =
             192 * NetBeansUtils.M;
 }
