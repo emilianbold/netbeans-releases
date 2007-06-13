@@ -43,7 +43,6 @@ import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.openide.ErrorManager;
 import org.openide.cookies.EditCookie;
 import org.openide.cookies.OpenCookie;
-import org.openide.explorer.ExplorerManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.URLMapper;
@@ -53,7 +52,6 @@ import org.openide.nodes.Node;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
-import org.openide.windows.CloneableTopComponent;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 import org.openide.xml.XMLUtil;
@@ -120,13 +118,10 @@ public class ProjectUtilities {
             List<Project> listOfProjects = Arrays.asList(projects);
             Set<DataObject> openFiles = new HashSet<DataObject>();
             final Set<TopComponent> tc2close = new HashSet<TopComponent>();
-            for (TopComponent tc : WindowManager.getDefault().getRegistry().getOpened()) {
+            WindowManager wm = WindowManager.getDefault();
+            for (TopComponent tc : wm.getRegistry().getOpened()) {
                 //#84546 - this condituon should allow us to close just editor related TCs that are in any imaginable mode.
-                if (! (tc instanceof CloneableTopComponent)) {
-                    continue;
-                }
-                // #57621: check if the closed top component isn't instance of ExplorerManager.Provider e.g. Projects/Files tab, if yes then do skip this loop
-                if (tc instanceof ExplorerManager.Provider) {
+                if (!wm.isOpenedEditorTopComponent(tc)) {
                     continue;
                 }
                 DataObject dobj = tc.getLookup().lookup(DataObject.class);

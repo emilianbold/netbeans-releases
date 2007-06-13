@@ -72,7 +72,7 @@ public class ProjectUtilitiesTest extends NbTestCase {
 
     protected void setUp () throws Exception {
         super.setUp ();
-        MockServices.setServices(TestSupport.TestProjectFactory.class);
+        MockServices.setServices(TestSupport.TestProjectFactory.class, ProjectUtilitiesDummyWindowManager.class);
                                 
         clearWorkDir ();
         
