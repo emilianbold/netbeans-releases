@@ -240,6 +240,7 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="ServiceLocator.java/CachingServiceLocator.java" boolvalue="true"/>
             <file name="CachingServiceLocator.java" url="CachingServiceLocator.template">
                 <attr name="template" boolvalue="true"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="instantiatingIterator" newvalue="org.netbeans.modules.j2ee.ejbcore.patterns.ServiceLocatorWizard"/>
                 <attr name="templateCategory" stringvalue="j2ee-types"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/ejbcore/resources/CachingServiceLocator.html"/>
@@ -257,6 +258,7 @@ Microsystems, Inc. All Rights Reserved.
             
             <file name="ServiceLocator.java" url="ServiceLocator.template">
                 <attr name="template" boolvalue="true"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="instantiatingIterator" newvalue="org.netbeans.modules.j2ee.ejbcore.patterns.ServiceLocatorWizard"/>
                 <attr name="templateCategory" stringvalue="j2ee-types"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/ejbcore/resources/ServiceLocator.html"/>

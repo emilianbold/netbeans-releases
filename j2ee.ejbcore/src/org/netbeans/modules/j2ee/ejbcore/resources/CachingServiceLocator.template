@@ -1,9 +1,10 @@
-/*
- * __NAME__.java
- *
- * Created on __DATE__, __TIME__
- */
-package servicelocator.web;
+<#assign licenseFirst = "/*">
+<#assign licensePrefix = " * ">
+<#assign licenseLast = " */">
+<#include "../Licenses/license-${project.license}.txt">
+
+<#if package?? && package != "">
+package ${package};
 
 import java.util.HashMap;
 import java.util.Map;
@@ -20,32 +21,32 @@ import javax.rmi.PortableRemoteObject;
 import javax.sql.DataSource;
 import javax.mail.Session;
 
-/** 
+</#if>
+/**
  *
- * @author __USER__
- * @version 
+ * @author ${user}
  */
-public class __NAME__ {
+public class ${name} {
     
     private InitialContext ic;
     private Map cache;
     
-    private static __NAME__ me;
+    private static ${name} me;
     
     static {
         try {
-            me = new __NAME__();
+            me = new ${name}();
         } catch(NamingException se) {
             throw new RuntimeException(se);
         }
     }
     
-    private __NAME__() throws NamingException  {
+    private ${name}() throws NamingException  {
         ic = new InitialContext();
         cache = Collections.synchronizedMap(new HashMap());
     }
     
-    public static __NAME__ getInstance() {
+    public static ${name} getInstance() {
         return me;
     }
 

@@ -1,10 +1,10 @@
-/*
- * __NAME__.java
- *
- * Created on __DATE__, __TIME__
- */
-package servicelocator.ejb;
+<#assign licenseFirst = "/*">
+<#assign licensePrefix = " * ">
+<#assign licenseLast = " */">
+<#include "../Licenses/license-${project.license}.txt">
 
+<#if package?? && package != "">
+package ${package};
 
 import java.net.URL;
 
@@ -18,16 +18,16 @@ import javax.rmi.PortableRemoteObject;
 import javax.sql.DataSource;
 import javax.mail.Session;
 
-/** 
+</#if>
+/**
  *
- * @author __USER__
- * @version 
+ * @author ${user}
  */
-public class __NAME__ {
+public class ${name} {
     
     private InitialContext ic;
     
-    public __NAME__() {
+    public ${name}() {
         try {
             ic = new InitialContext();
         } catch (NamingException ne) {

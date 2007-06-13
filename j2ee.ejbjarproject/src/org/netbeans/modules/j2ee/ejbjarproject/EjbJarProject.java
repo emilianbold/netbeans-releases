@@ -335,7 +335,8 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                 new EjbProjectJAXWSVersionProvider(helper),
                 UILookupMergerSupport.createPrivilegedTemplatesMerger(),
                 UILookupMergerSupport.createRecommendedTemplatesMerger(),
-                LookupProviderSupport.createSourcesMerger()
+                LookupProviderSupport.createSourcesMerger(),
+                new EjbJarTemplateAttributesProvider(helper),
                 // TODO: AB: maybe add "this" to the lookup. You should not cast a Project to EjbJarProject, but use the lookup instead.
             });
             return LookupProviderSupport.createCompositeLookup(base, "Projects/org-netbeans-modules-j2ee-ejbjarproject/Lookup"); //NOI18N
