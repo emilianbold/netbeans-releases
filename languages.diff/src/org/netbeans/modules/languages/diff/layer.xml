@@ -29,9 +29,17 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="Editors">
         <folder name="text">
             <folder name="x-diff">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.languages.diff.Bundle"/>
                 <file name="language.nbs" url="Diff.nbs">
                     <attr name="icon" stringvalue="org/netbeans/modules/languages/diff/diff.gif"/>
                 </file>
+            </folder>
+        </folder>
+    </folder>
+    <folder name="OptionsDialog">
+        <folder name="PreviewExamples">
+            <folder name="text">
+                <file name="x-diff" url="DiffExample.diff"/>
             </folder>
         </folder>
     </folder>

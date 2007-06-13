@@ -29,7 +29,25 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="Editors">
         <folder name="text">
             <folder name="bat">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.languages.bat.Bundle"/>
                 <file name="language.nbs" url="Bat.nbs"/>
+            </folder>
+        </folder>
+    </folder>
+    <folder name="Templates">
+        <folder name="Other">
+            <file name="EmptyBatFile.bat" url="EmptyBatFile.bat">
+                <attr name="template" boolvalue="true" />
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.languages.bat.Bundle"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/languages/bat/EmptyBatFileDescription.html"/>
+                <attr name="templateCategory" stringvalue="simple-files"/>
+            </file>            
+        </folder>
+    </folder>
+    <folder name="OptionsDialog">
+        <folder name="PreviewExamples">
+            <folder name="text">
+                <file name="bat" url="BatExample.bat"/>
             </folder>
         </folder>
     </folder>
