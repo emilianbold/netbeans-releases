@@ -175,11 +175,21 @@ public abstract class ETNodeDrawEngine extends ETDrawEngine implements INodeDraw
    private void getPreferences() {
        
        Preferences prefs = NbPreferences.forModule(ETNodeDrawEngine.class) ;
+       Properties props = this.getProperties() ;
        
-       this.getProperties().setProperty(PSK_SHOWSTEREOTYPEICONS, prefs.get("UML_Show_Stereotype_Icons", "PSK_YES"));
-       this.getProperties().setProperty(PSK_SHOWEMPTYLISTS, prefs.get("UML_Display_Empty_Lists", "PSK_YES"));
+       if (prefs.getBoolean("UML_Show_Stereotype_Icons", true))
+           props.setProperty(PSK_SHOWSTEREOTYPEICONS, "PSK_YES");
+       else
+           props.setProperty(PSK_SHOWSTEREOTYPEICONS, "PSK_NO");
+       
+       if (prefs.getBoolean("UML_Display_Empty_Lists", true))
+           props.setProperty(PSK_SHOWEMPTYLISTS, "PSK_YES");
+       else 
+           props.setProperty(PSK_SHOWEMPTYLISTS, "PSK_NO");
+       
        this.getProperties().setProperty(PSK_DISPLAYCOMPARTMENTTITLE, prefs.get("UML_Display_Compartment_Titles", "PSK_ALWAYS"));
        this.getProperties().setProperty(PSK_AUTORESIZE, prefs.get("UML_Automatically_Size_Elements", "PSK_RESIZE_ASNEEDED"));
+       
        this.getProperties().setProperty(PSK_SHOWEDITTOOLTIP, "PSK_YES");
    }
 
