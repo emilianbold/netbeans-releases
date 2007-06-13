@@ -54,14 +54,15 @@ public class Midp1CompliantAnalyzer implements Analyzer {
 
     public JComponent createVisualRepresentation () {
         JList list = new JList (new DefaultListModel ());
-        list.setPreferredSize(new java.awt.Dimension(400, 150));
-        return list;
+        JScrollPane scrollPane = new JScrollPane (list);
+        scrollPane.setPreferredSize(new java.awt.Dimension(400, 150));
+        return scrollPane;
     }
 
     public void update (JComponent visualRepresentation, final DesignDocument document) {
         if (visualRepresentation == null  ||  document == null)
             return;
-        final JList list = (JList) visualRepresentation;
+        final JList list = (JList) ((JScrollPane) visualRepresentation).getViewport ().getView ();
         list.removeAll ();
 
         document.getTransactionManager ().readAccess (new Runnable() {
