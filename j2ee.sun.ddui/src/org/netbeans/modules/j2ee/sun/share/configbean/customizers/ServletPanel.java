@@ -113,6 +113,7 @@ public class ServletPanel extends SectionNodeInnerPanel {
         jTxtClassName = new javax.swing.JTextField();
         jLblEndpointHelp = new javax.swing.JLabel();
 
+        setOpaque(false);
         setLayout(new java.awt.GridBagLayout());
 
         jPnlServlet.setOpaque(false);
