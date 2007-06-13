@@ -136,6 +136,7 @@ public class ProjectBuiltQuery {
             FileObjectStatusChangeListener(FileBuiltQuery.Status status, String fileObjectPath) {
                 this.fileObjectPath = fileObjectPath;
                 this.status = status;
+                this.status.addChangeListener(this);
             }
             
             public void stateChanged(ChangeEvent e) {
@@ -143,7 +144,7 @@ public class ProjectBuiltQuery {
                 if (status != null) {
                     synchronized(StatusImpl.this) {
                         if (fileObjectBuiltStatusMap == null) {
-                            status.removeChangeListener(this);
+                            dispose();
                         } else {
                             fileObjectBuiltStatusMap.put(fileObjectPath, status.isBuilt());
                             update();
@@ -190,11 +191,9 @@ public class ProjectBuiltQuery {
                             FileBuiltQuery.Status status = FileBuiltQuery.getStatus(fileObject);
                             if (status != null) {
                                 String fileObjectPath = fileObject.getPath();
-                                FileObjectStatusChangeListener fileObjectStatusChangeListener = new FileObjectStatusChangeListener(status, fileObjectPath);
-                                status.addChangeListener(fileObjectStatusChangeListener);
                                 synchronized(this) {
                                     fileObjectBuiltStatusMap.put(fileObjectPath, status.isBuilt());
-                                    fileObjectStatusChangeListenerMap.put(fileObjectPath, fileObjectStatusChangeListener);
+                                    fileObjectStatusChangeListenerMap.put(fileObjectPath, new FileObjectStatusChangeListener(status, fileObjectPath));
                                 }
                             }
                         }
@@ -271,10 +270,8 @@ public class ProjectBuiltQuery {
                 if (status != null) {
                     String fileObjectPath = fileObject.getPath();
                     synchronized(this) {
-                        FileObjectStatusChangeListener fileObjectStatusChangeListener = new FileObjectStatusChangeListener(status, fileObjectPath);
                         fileObjectBuiltStatusMap.put(fileObjectPath, status.isBuilt());
-                        status.addChangeListener(fileObjectStatusChangeListener);
-                        fileObjectStatusChangeListenerMap.put(fileObjectPath, fileObjectStatusChangeListener);
+                        fileObjectStatusChangeListenerMap.put(fileObjectPath, new FileObjectStatusChangeListener(status, fileObjectPath));
                     }
                     update();
                 }
@@ -286,7 +283,13 @@ public class ProjectBuiltQuery {
             Project owner = FileOwnerQuery.getOwner(fileObject);
             if (owner == project) {
                 synchronized (this) {
-                    fileObjectBuiltStatusMap.remove(fileObject.getPath());
+                    String fileObjectPath = fileObject.getPath();
+					fileObjectBuiltStatusMap.remove(fileObjectPath);
+					FileObjectStatusChangeListener fileObjectStatusChangeListener = 
+						fileObjectStatusChangeListenerMap.remove(fileObjectPath);
+					if (fileObjectStatusChangeListener != null) {
+						fileObjectStatusChangeListener.dispose();
+					}
                 }
                 update();
             }
@@ -301,17 +304,20 @@ public class ProjectBuiltQuery {
             Project owner = FileOwnerQuery.getOwner(fileObject);
             if (owner == project) {
                 String ext = fe.getExt();                
-                String fileObjectPathBeforeRename = fileObject.getParent() + "/" + fe.getName() + (ext.length() == 0 ? ext : "." + ext);
+                String fileObjectPathBeforeRename = 
+                	fileObject.getParent().getPath() + "/" + fe.getName() + (ext.length() == 0 ? ext : "." + ext);
                 FileBuiltQuery.Status status = FileBuiltQuery.getStatus(fileObject);
                 String fileObjectPath = fileObject.getPath();
                 synchronized (this) {
                     fileObjectBuiltStatusMap.remove(fileObjectPathBeforeRename);
-                    fileObjectStatusChangeListenerMap.remove(fileObjectPathBeforeRename);
+                    FileObjectStatusChangeListener fileObjectStatusChangeListener =
+                    	fileObjectStatusChangeListenerMap.remove(fileObjectPathBeforeRename);
+                    if (fileObjectStatusChangeListener != null) {
+						fileObjectStatusChangeListener.dispose();
+					}
                     if (status != null) {
-                        FileObjectStatusChangeListener fileObjectStatusChangeListener = new FileObjectStatusChangeListener(status, fileObjectPath);
                         fileObjectBuiltStatusMap.put(fileObjectPath, status.isBuilt());
-                        status.addChangeListener(fileObjectStatusChangeListener);
-                        fileObjectStatusChangeListenerMap.put(fileObjectPath, fileObjectStatusChangeListener);
+                        fileObjectStatusChangeListenerMap.put(fileObjectPath, new FileObjectStatusChangeListener(status, fileObjectPath));
                     }
                 }
                 update();
