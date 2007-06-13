@@ -18,6 +18,9 @@
         <mkdir dir="${cluster}/modules/ext" />
         <jar jarfile="${cluster}/modules/ext/updater.jar"
              compress="${build.package.compress}">
+            <manifest>
+                <attribute name="NetBeans-Own-Library" value="true"/>
+            </manifest>
             <fileset dir="build/updaterclasses"/>
         </jar>
     </target>
