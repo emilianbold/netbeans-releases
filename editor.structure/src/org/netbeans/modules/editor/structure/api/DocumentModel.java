@@ -108,7 +108,7 @@ public final class DocumentModel {
     
     //after each document change update of the model is postponed for following timeout.
     //if another document change happens in the time interval the update is postponed again.
-    private static int MODEL_UPDATE_TIMEOUT = 500; //milliseconds
+    private static int MODEL_UPDATE_TIMEOUT = 2000; //milliseconds
     
     //a Document instance which the model is build upon.
     private BaseDocument doc;
