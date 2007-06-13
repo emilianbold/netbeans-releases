@@ -113,6 +113,7 @@ Microsystems, Inc. All Rights Reserved.
 
     <!-- Run unit tests from binary distribution. -->
    <target name="run-unit-test-dist" if="xtest.distexec">
+        <property name="extra.test.libs" location="${test.dist.dir}/extralibs"/>
         <property file="test.properties"/>
         <validatepath path="${test.unit.run.cp}"/>
         <!-- convert properties from test-unit-sys-prop.* to xtest.userdata|  -->
@@ -120,21 +121,37 @@ Microsystems, Inc. All Rights Reserved.
         <copy file="test.properties" tofile="${temp.properties.path}"/>
         <replace file="${temp.properties.path}" token="test-unit-sys-prop." value="xtest.userdata|"/>
         <property file="${temp.properties.path}"/>
+        <path id="test.unit.run.cp.merged">
+            <pathelement path="${test.unit.run.cp}"/>
+            <pathelement path="${extra.test.libs.dir}"/>
+        </path>
+        
+        <property name="test.unit.run.cp.merged" refid="test.unit.run.cp.merged"/>
+        <validatepath path="${test.unit.run.cp.merged}"/>
+        
         <executeTests pluginname="jvm">
             <classpath>
-                <pathelement path="${test.unit.run.cp}"/>
+                <pathelement path="${test.unit.run.cp.merged}"/>
             </classpath>
         </executeTests>
     </target>
+
     
     <!-- Run unit tests from module - no binary distribution. -->
     <target name="run-unit-test-nodist" unless="xtest.distexec" depends="init-parse-project-xml">
         <property file="${test.dist.dir}/unit/${cluster.dir}/${code.name.base.dashes}/test.properties"/>
         <!-- If property test.unit.run.cp not defined in test.properties, set it from test.unit.run.cp path id. -->
         <property name="test.unit.run.cp" refid="test.unit.run.cp"/>
+ 
+      <path id="test.unit.run.cp.merged">
+            <pathelement path="${test.unit.run.cp}"/>
+            <pathelement path="${cp.extra}"/>
+            <pathelement path="${test.unit.cp.extra}"/>
+        </path>
+        <property name="test.unit.run.cp.merged" refid="test.unit.run.cp.merged"/>
         <executeTests pluginname="jvm">
             <classpath>
-                <pathelement path="${test.unit.run.cp}"/>
+                <pathelement path="${test.unit.run.cp.merged}"/> 
             </classpath>
         </executeTests>
     </target>
