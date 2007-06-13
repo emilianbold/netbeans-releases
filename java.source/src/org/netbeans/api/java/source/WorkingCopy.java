@@ -21,8 +21,10 @@ package org.netbeans.api.java.source;
 
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
 import com.sun.tools.javac.api.JavacTaskImpl;
 import com.sun.tools.javac.code.Source;
+import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.util.Context;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -48,6 +50,7 @@ import org.netbeans.modules.java.source.engine.DefaultApplicationContext;
 import org.netbeans.modules.java.source.engine.ReattributionException;
 import org.netbeans.modules.java.source.engine.SourceReader;
 import org.netbeans.modules.java.source.engine.SourceRewriter;
+import org.netbeans.modules.java.source.pretty.VeryPretty;
 import org.netbeans.modules.java.source.save.Commit;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
@@ -167,6 +170,12 @@ public class WorkingCopy extends CompilationController {
     public synchronized void rewrite(Tree oldTree, Tree newTree) {
         if (changes == null)
             throw new IllegalStateException("Cannot call rewrite before toPhase.");
+        
+        if (oldTree == null && Kind.COMPILATION_UNIT == newTree.getKind()) {
+            // todo (#pf): hacky stuff - has to be moved to commit() call
+            createCompilationUnit((JCTree.JCCompilationUnit) newTree);
+            return;
+        }
         if (oldTree == null || newTree == null)
             throw new IllegalArgumentException("Null values are not allowed.");
         
@@ -208,6 +217,29 @@ public class WorkingCopy extends CompilationController {
         }
     }
     
+    private void createCompilationUnit(JCTree.JCCompilationUnit unitTree) {
+            VeryPretty printer = new VeryPretty(getContext());
+            CompilationUnitTree cut = unitTree;
+            printer.print(unitTree);
+            Writer w = null;
+            try {
+                cut.getSourceFile().openOutputStream();
+                 w = cut.getSourceFile().openWriter();
+                w.append(printer.toString());
+            } catch (IOException e) {
+                Logger.getLogger(WorkingCopy.class.getName()).log(Level.SEVERE, e.getMessage(), e);
+            } finally {
+                if (w != null) {
+                    try {
+                        w.close();
+                    } catch (IOException e) {
+                        Logger.getLogger(WorkingCopy.class.getName()).log(Level.SEVERE, e.getMessage(), e);
+                    }
+                }
+            }
+            return;
+    }
+            
     // Innerclasses ------------------------------------------------------------
 
     private class WorkingCopyContext extends DefaultApplicationContext {

@@ -31,6 +31,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
+import java.io.StringReader;
 import java.io.Writer;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -43,12 +44,18 @@ import java.util.zip.ZipFile;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.NestingKind;
 import javax.tools.JavaFileObject;
+import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.java.ClassDataLoader;
 import org.netbeans.modules.java.JavaDataLoader;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
+import org.netbeans.modules.java.source.JavaFileFilterQuery;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.Repository;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -148,6 +155,19 @@ public class FileObjects {
         assert root != null;
         String[] pkgNamePair = getFolderAndBaseName(getRelativePath(root,file),File.separatorChar);
         return new RegularFileObject( file, convertFolder2Package(pkgNamePair[0], File.separatorChar), pkgNamePair[1], filter, encoding);
+    }
+    
+    public static JavaFileObject templateFileObject (final FileObject root, final String path, String name) {
+        assert root != null;
+        assert path != null;        
+        JavaFileFilterImplementation filter = JavaFileFilterQuery.getFilter(root);
+        Charset encoding = FileEncodingQuery.getEncoding(root);
+        File rootFile = FileUtil.toFile(root);
+        if (rootFile == null) {
+            throw new IllegalArgumentException ();
+        }
+        File file = FileUtil.normalizeFile(new File (new File (rootFile, path.replace('/', File.separatorChar)), name));        //NOI18N
+        return new NewFromTemplateFileObject (file, convertFolder2Package(path), name, filter, encoding);
     }
     
     /**
@@ -527,7 +547,7 @@ public class FileObjects {
         
         private URI uriCache;
         private final JavaFileFilterImplementation filter;
-        private Charset encoding;
+        private final Charset encoding;
 
 	public RegularFileObject(final File f, final String packageName, final String baseName, final JavaFileFilterImplementation filter, Charset encoding) {
             super (f, packageName, baseName);
@@ -548,7 +568,6 @@ public class FileObjects {
 	}
 
 	public Writer openWriter() throws IOException {
-	    //FIX: consider using encoding here
             if (encoding != null) {
                 return new OutputStreamWriter(new FileOutputStream(f), encoding);
             } else {
@@ -625,7 +644,68 @@ public class FileObjects {
 	    return f.hashCode();
 	}
         
-    }    
+    }
+    
+    
+    private static class NewFromTemplateFileObject extends RegularFileObject {
+        
+        public NewFromTemplateFileObject (File f, String packageName, String baseName, JavaFileFilterImplementation filter, Charset encoding) {
+            super (f,packageName,baseName, filter, encoding);
+        }
+        
+        @Override
+        public InputStream openInputStream () throws IOException {
+            if (f.exists()) {
+                return super.openInputStream();
+            }
+            return new ByteArrayInputStream (new byte[0]);
+        }
+        
+        @Override
+        public Reader openReader (boolean b) throws IOException {
+            if (f.exists()) {
+                return super.openReader(b);
+            }
+            return new StringReader ("");   //NOI18N
+        }
+        
+        @Override
+        public OutputStream openOutputStream () throws IOException {
+            if (!f.exists()) {
+                create ();
+            }
+            return super.openOutputStream();
+        }
+        
+        @Override 
+        public Writer openWriter () throws IOException {
+            if (!f.exists()) {
+                create ();
+            }
+            return super.openWriter();
+        }
+        
+        @Override
+        public CharSequence getCharContent (boolean ignoreEncodingErrors) throws IOException {
+            if (f.exists()) {
+                return super.getCharContent(ignoreEncodingErrors);
+            }
+            return "";                      //NOI18N
+        }
+        
+        private void create() throws IOException {
+            File parent = f.getParentFile();
+            FileObject parentFo = FileUtil.createFolder(parent);
+            assert parentFo != null;
+            DataFolder target = DataFolder.findFolder(parentFo);
+            FileSystem dfs = Repository.getDefault().getDefaultFileSystem();
+            FileObject template = dfs.findResource("Templates/Classes/Empty.java");     //NOI18N
+            DataObject templateDobj = DataObject.find(template);
+            String simpleName = FileObjects.stripExtension(f.getName());
+            DataObject newDobj = templateDobj.createFromTemplate(target, simpleName);
+            assert newDobj != null;
+        }
+    }
 
     /** A subclass of FileObject representing zip entries.
      * XXX: What happens when the archive is deleted or rebuilt?

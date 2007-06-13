@@ -19,6 +19,9 @@
 package org.netbeans.api.java.source;
 
 import com.sun.source.tree.*;
+import java.io.File;
+import org.netbeans.modules.java.source.parsing.FileObjects;
+import org.openide.filesystems.FileObject;
 import static com.sun.source.tree.Tree.*;
 
 import com.sun.source.util.SourcePositions;
@@ -290,6 +293,24 @@ public final class TreeMaker {
         return delegate.CompilationUnit(packageName, imports, typeDeclarations, sourceFile);
     }
      
+    
+    /**
+     * Creates a new CompilationUnitTree.
+     * @param sourceRoot         a source root under which the new file is created
+     * @param path               a relative path to file separated by '/'
+     * @param imports            a list of import statements.
+     * @param typeDeclarations   a list of type (class, interface or enum) declarations.
+     * @see com.sun.source.tree.CompilationUnitTree
+     */
+    public CompilationUnitTree CompilationUnit(FileObject sourceRoot,
+                                        String path,
+                                        List<? extends ImportTree> imports,
+                                        List<? extends Tree> typeDeclarations) {
+        String[] nameComponent = FileObjects.getFolderAndBaseName(path,'/');        //NOI18N
+        JavaFileObject sourceFile = FileObjects.templateFileObject(sourceRoot, nameComponent[0], nameComponent[1]);
+        return delegate.CompilationUnit(Identifier(nameComponent[0]), imports, typeDeclarations, sourceFile);
+    }    
+    
     /**
      * Creates a new CompoundAssignmentTree.
      *
