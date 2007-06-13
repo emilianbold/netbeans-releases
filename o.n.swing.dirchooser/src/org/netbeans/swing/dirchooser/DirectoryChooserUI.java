@@ -52,6 +52,8 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.border.EmptyBorder;
+import javax.swing.event.CellEditorListener;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.TreeExpansionEvent;
@@ -59,6 +61,7 @@ import javax.swing.plaf.ActionMapUIResource;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.UIResource;
 import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreeCellEditor;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeCellRenderer;
 import javax.swing.tree.TreeNode;
@@ -135,8 +138,6 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
     private DirectoryTreeModel model;
     
     private DirectoryNode newFolderNode;
-    
-    private TreePath editingPath;
     
     private JComponent treeViewPanel;
     
@@ -604,8 +605,9 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
         TreeKeyHandler keyHandler = new TreeKeyHandler();
         tree.addKeyListener(keyHandler);
         tree.addFocusListener(keyHandler);
-        tree.addMouseListener(createTreeHandlerListener(fileChooser));
-        tree.addTreeSelectionListener(createTreeSelectionListener(fileChooser));
+        DirectoryHandler dirHandler = createDirectoryHandler(fileChooser);
+        tree.addMouseListener(dirHandler);
+        tree.addTreeSelectionListener(dirHandler);
         
         if(fileChooser.isMultiSelectionEnabled()) {
             tree.getSelectionModel().setSelectionMode(TreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION);
@@ -613,7 +615,9 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
             tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
         }
         
-        tree.setCellEditor(new DirectoryCellEditor(tree, fileChooser, new JTextField()));
+        TreeCellEditor tce = new DirectoryCellEditor(tree, fileChooser, new JTextField());
+        tree.setCellEditor(tce);
+        tce.addCellEditorListener(dirHandler);
         tree.setCellRenderer(new DirectoryTreeRenderer());
         JScrollPane scrollBar = new JScrollPane(tree);
         scrollBar.setViewportView(tree);
@@ -1254,7 +1258,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
                     fireApproveButtonMnemonicChanged(e);
                 } else if(s.equals(JFileChooser.CONTROL_BUTTONS_ARE_SHOWN_CHANGED_PROPERTY)) {
                     fireControlButtonsChanged(e);
-                } else if (s == "FileChooser.useShellFolder") {
+                } else if (s.equals("FileChooser.useShellFolder")) {
                     updateUseShellFolder();
                     fireDirectoryChanged(e);
                 } else if (s.equals("componentOrientation")) {
@@ -1356,11 +1360,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
         changeDirectory = true;
     }
     
-    protected MouseListener createTreeHandlerListener(JFileChooser chooser) {
-        return new DirectoryHandler(chooser);
-    }
-    
-    public TreeSelectionListener createTreeSelectionListener(JFileChooser chooser) {
+    private DirectoryHandler createDirectoryHandler(JFileChooser chooser) {
         return new DirectoryHandler(chooser);
     }
     
@@ -1390,7 +1390,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
     
     private void applyEdit(DirectoryNode node) {
         TreeNode[] nodes = model.getPathToRoot(node);
-        editingPath = new TreePath(nodes);
+        TreePath editingPath = new TreePath(nodes);
         tree.setEditable(true);
         tree.makeVisible(editingPath);
         tree.scrollPathToVisible(editingPath);
@@ -1530,6 +1530,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
         }
         
         // #89393: GTK needs name to render cell renderer "natively"
+        @Override
         public String getName() {
             String name = super.getName();
             return name == null ? "ComboBox.renderer" : name;  // NOI18N
@@ -1598,7 +1599,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
             int pathCount = path.size();
             // Insert chain at appropriate place in vector
             for (int i = 0; i < pathCount; i++) {
-                f = (File)path.get(i);
+                f = path.get(i);
                 if (directories.contains(f)) {
                     int topIndex = directories.indexOf(f);
                     for (int j = i-1; j >= 0; j--) {
@@ -1614,12 +1615,12 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
         private void calculateDepths() {
             depths = new int[directories.size()];
             for (int i = 0; i < depths.length; i++) {
-                File dir = (File)directories.get(i);
+                File dir = directories.get(i);
                 File parent = dir.getParentFile();
                 depths[i] = 0;
                 if (parent != null) {
                     for (int j = i-1; j >= 0; j--) {
-                        if (parent.equals((File)directories.get(j))) {
+                        if (parent.equals(directories.get(j))) {
                             depths[i] = depths[j] + 1;
                             break;
                         }
@@ -1821,14 +1822,14 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
         }
     }
     
-    private class DirectoryHandler extends MouseAdapter implements TreeSelectionListener{
+    private class DirectoryHandler extends MouseAdapter implements TreeSelectionListener, CellEditorListener {
         private JFileChooser fileChooser;
-        private Vector<File> fileCache;
         
         public DirectoryHandler(JFileChooser fileChooser) {
             this.fileChooser = fileChooser;
-            fileCache = new Vector<File>();
         }
+        
+        /************ imple of TreeSelectionListener *******/
         
         public void valueChanged(TreeSelectionEvent e) {
             showPopupCompletion = false;
@@ -1865,6 +1866,8 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
             return files.toArray(new File[files.size()]);
         }
         
+        /********* impl of MouseListener ***********/
+        
         public void mouseClicked(MouseEvent e) {
             final JTree tree = (JTree) e.getSource();
             Point p = e.getPoint();
@@ -1885,8 +1888,6 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
                     } else if (node.getFile().isFile() && !node.getFile().getPath().endsWith(".lnk")){
                         fileChooser.approveSelection();
                     } else {
-                        fileCache = new Vector<File>();
-                        setSelected(fileCache.toArray(new java.io.File[fileCache.size()]));
                         changeTreeDirectory(node.getFile());
                     }
                     
@@ -1930,7 +1931,6 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
 
                 tree.setSelectionPath(path);
                 popupMenu.show(tree, x, y);
-                tree.requestFocusInWindow();
             }            
         }
         
@@ -1944,6 +1944,20 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
                 }
             }
             fileChooser.setCurrentDirectory(dir);
+        }
+        
+        /********** implementation of CellEditorListener ****************/
+
+        /** Refresh filename text field after rename */
+        public void editingStopped(ChangeEvent e) {
+            DirectoryNode node = (DirectoryNode) tree.getLastSelectedPathComponent();
+            if (node != null) {
+                setFileName(getStringOfFileName(node.getFile()));
+            }
+        }
+
+        public void editingCanceled(ChangeEvent e) {
+            // no operation
         }
     }
     
