@@ -35,8 +35,11 @@
 
 	<mapID target="wsdlui_creating" url="wsdl_editor_creating.html"/>
 	<mapID target="wsdlui_creating_existing" url="wsdl_editor_creating_existing.html"/>
-	<mapID target="wsdlui_validation" url="wsdl_editor_validation.html"/>
 	<mapID target="wsdlui_ncname" url="wsdl_editor_ncname.html"/>
+	<mapID target="binding_subtype_FTP" url="binding_subtype_FTP.html"/>
+	<mapID target="binding_subtype_HTTP" url="binding_subtype_HTTP.html"/>
+	<mapID target="binding_subtype_SOAP" url="binding_subtype_SOAP.html"/>
+	<mapID target="wsdlui_validation" url="wsdl_editor_validation.html"/>
 
 	<mapID target="org.netbeans.modules.xml.wsdl.ui.netbeans.module.WSDLColumnsView" url="wsdl_editor.html"/>
 	<mapID target="org.netbeans.modules.xml.wsdl.ui.netbeans.module.WSDLTreeViewMultiViewDesc" url="wsdl_editor_views.html"/>
