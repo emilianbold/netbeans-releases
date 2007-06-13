@@ -42,8 +42,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
-import org.openide.util.WeakListeners;
-
 
 /**
  * Implementation of a single classpath that is derived from one Ant property.
@@ -57,171 +55,6 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
     private SourceRoots sourceRoots;
     private AntProjectHelper projectHelper;
     private FileChangeListener fcl = null;
-
-    /**
-     * Thread to check newly created source root for each File/Folder create event. 
-     **/
-    private static class SourceRootScannerThread extends Thread {
-        SourcePathImplementation spi = null;
-        FileChangeListener fcl = null;
-        List<List<String>> paths = null;
-        FileObject parent = null;
-        FileObject child = null;
-        List<String> listenerAddedDirs = new ArrayList<String>();
-        
-        public SourceRootScannerThread(SourcePathImplementation s, 
-                                FileChangeListener origFcl, 
-                                List<List<String>> pths,
-                                FileObject parent, 
-                                FileObject child){
-            this.spi = s;
-            this.fcl = origFcl;
-            this.paths = pths;
-            this.parent = parent;
-            this.child = child;   
-        }
-
-        private void firePropertyChange(){
-            synchronized (spi){
-                spi.resources = null;
-            }
-            spi.propertyChange(new PropertyChangeEvent(this, 
-                                    PathResourceImplementation.PROP_ROOTS, 
-                                    "0", "1")); // No I18N
-            
-        }
-        
-        private void addListeners(List<String> path, int cIndx){
-            int size = path.size();
-            FileObject currParent = this.parent;
-            FileObject curr = this.child;
-            String relDir = null;
-            FileChangeListener weakFcl = null;
-            for (int i=cIndx; i < size; i++){
-                curr = currParent.getFileObject(path.get(i));
-                if ((curr != null) && (curr.isFolder())){
-                    relDir = FileUtil.getRelativePath(this.parent, curr);
-                    if (! this.listenerAddedDirs.contains(relDir)){
-                        this.listenerAddedDirs.add(relDir);
-                        weakFcl = WeakListeners.create(FileChangeListener.class,   
-                                                       this.fcl, curr);
-                        curr.addFileChangeListener(weakFcl);                        
-                    }
-                    
-                    if (i == (size -1)){
-                        if (curr.getChildren().length > 0){
-                            firePropertyChange();
-                        }
-                        break;
-                    }
-
-                    currParent = curr;
-                } else {
-                    break;
-                }
-            }
-        }
-        
-        @Override
-        public void run() {
-            Iterator<List<String>> itr = paths.iterator();
-            List<String> path = null;
-            int cIndx = -1;
-            int pIndx = -1;
-            boolean lastElem = false;
-
-            while(itr.hasNext()){
-                path = itr.next();
-                cIndx = path.indexOf(child.getName());
-                pIndx = path.indexOf(parent.getName());
-
-                lastElem = ((pIndx + 1) == path.size()) ? true: false ;
-                
-                if (lastElem){
-                    if (cIndx == -1){
-                        firePropertyChange();                                            
-                    }
-                } else{
-                    if ((cIndx != -1) && (pIndx == (cIndx - 1))){
-                        // Add listener and fire change event if leaf directory 
-                        // is created.
-                        addListeners(path, cIndx);
-                    }
-                }                
-            }
-        }    
-    }
-    
-    private class AddOnGeneratedSourceRootListener extends FileChangeAdapter {
-        // Path is relative to project root, starting with project specific
-        // build directory.
-        private List<List<String>> paths = Collections.synchronizedList(
-                                        new ArrayList<List<String>>());
-        private FileObject projRoot;
-        
-        AddOnGeneratedSourceRootListener(FileObject pr, String bd, String[] addOnPaths){
-            this.projRoot = pr;  
-            StringTokenizer stk = null;
-            List<String> pathElems = null;
-            for (String path : addOnPaths){
-                stk = new StringTokenizer(path, "/"); // No I18N
-                pathElems = new ArrayList<String>();
-                pathElems.add(bd);
-                while(stk.hasMoreTokens()){
-                    pathElems.add(stk.nextToken());
-                }
-                this.paths.add(pathElems);                
-            }
-        }
-                
-        /**
-         * Listen to all the folders from ProjectRoot, build  upto any existing
-         * addons dirs.
-         **/
-        public synchronized void listenToProjRoot(){
-            List<String> dirsAdded = new ArrayList<String>();
-            String relativePath = null;
-            FileObject fo = this.projRoot;
-            FileChangeListener weakFcl = WeakListeners.create(
-                                            FileChangeListener.class, this, fo);
-            fo.addFileChangeListener(weakFcl);  
-            FileObject parent = null;
-            FileObject child = null;
-            for (List<String> path: paths){
-                parent = fo;
-                for(String pathElem: path){
-                    child = parent.getFileObject(pathElem);
-                    if (child != null){
-                        relativePath = FileUtil.getRelativePath(fo, child);                        
-                        if (!dirsAdded.contains(relativePath)){
-                            dirsAdded.add(relativePath);
-                            weakFcl = WeakListeners.create(
-                                    FileChangeListener.class,   
-                                    this, child);
-                            child.addFileChangeListener(weakFcl);
-                            parent = child;                            
-                        }
-                    } else {
-                        // No need to check further down.
-                        break;
-                    }
-                }
-            }
-        }
-        
-        @Override
-        public void fileFolderCreated(FileEvent fe) {
-            synchronized (this){
-                SourceRootScannerThread thread = new SourceRootScannerThread(
-                        SourcePathImplementation.this,
-                        this,
-                        this.paths,
-                        (FileObject)fe.getSource(),
-                        fe.getFile());
-                SourcePathImplementation.REQ_PROCESSOR.post(thread);
-            }
-        }                
-    }
     
     /**
      * Construct the implementation.
@@ -234,24 +67,20 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
         this.sourceRoots.addPropertyChangeListener (this);
     }
 
-    private synchronized void createAddOnGenSrcRootsListener(String buildDir,
-                                                     String[] paths){
+    private synchronized void createAddOnGenSrcRootsListener(String buildDir, String[] paths){
         if (this.fcl == null){
             // Need to keep reference to fcl.
             // See JavaDoc for org.openide.util.WeakListeners
             FileObject prjFo = this.projectHelper.getProjectDirectory();                        
-            this.fcl = new AddOnGeneratedSourceRootListener(prjFo, 
-                                                           buildDir, 
-                                                           paths);
+            this.fcl = new AddOnGeneratedSourceRootListener(prjFo, buildDir, 
+                    paths);
             ((AddOnGeneratedSourceRootListener)this.fcl).listenToProjRoot();            
         }
     }
     
-    private List<PathResourceImplementation> getAddOnGeneratedSrcRoots(
-                                                            String buildDir, 
-                                                            String[] paths){
+    private List<PathResourceImplementation> getAddOnGeneratedSrcRoots(String buildDir, String[] paths){
         List<PathResourceImplementation> ret = 
-                                    new ArrayList<PathResourceImplementation>();
+                new ArrayList<PathResourceImplementation>();
         
         File buidDirFile = projectHelper.resolveFile(buildDir);
         for (String path: paths){
@@ -274,7 +103,14 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
         }
         return ret;
     }
-        
+
+    private void invalidate() {
+        synchronized (this) {
+            this.resources = null;
+        }
+        this.support.firePropertyChange (PROP_RESOURCES,null,null);        
+    } 
+    
     public List /*<PathResourceImplementation>*/ getResources() {
         synchronized (this) {
             if (this.resources != null) {
@@ -313,10 +149,10 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
                             
                             // generated/addons/<subDirs>
                             result.addAll(getAddOnGeneratedSrcRoots(buildDir, 
-                                            new String[] {DIR_GEN_BINDINGS}));
+                                    new String[] {DIR_GEN_BINDINGS}));
                             // Listen for any new Source root creation.
                             createAddOnGenSrcRootsListener(buildDir, 
-                                               new String[] {DIR_GEN_BINDINGS});                            
+                                    new String[] {DIR_GEN_BINDINGS});                            
                         }
                     } catch (MalformedURLException ex) {
                         Exceptions.printStackTrace(ex);
@@ -339,11 +175,162 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
 
     public void propertyChange(PropertyChangeEvent evt) {
         if (SourceRoots.PROP_ROOTS.equals (evt.getPropertyName())) {
-            synchronized (this) {
-                this.resources = null;
-            }
-            this.support.firePropertyChange (PROP_RESOURCES,null,null);
+            invalidate();
         }
     }
 
+    /**
+     * Thread/task to check newly created source root for each File/Folder create event. 
+     **/
+    private static class SourceRootScannerTask implements Runnable {
+        SourcePathImplementation spi = null;
+        FileChangeListener fcl = null;
+        List<List<String>> paths = null;
+        FileObject parent = null;
+        FileObject child = null;
+        List<String> listenerAddedDirs = new ArrayList<String>();
+        
+        public SourceRootScannerTask(SourcePathImplementation s, 
+                FileChangeListener origFcl, List<List<String>> pths, 
+                FileObject parent, FileObject child){
+            this.spi = s;
+            this.fcl = origFcl;
+            this.paths = pths;
+            this.parent = parent;
+            this.child = child;   
+        }
+
+        private void firePropertyChange(){
+            spi.invalidate();
+        }
+        
+        private void addListeners(List<String> path, int cIndx){
+            int size = path.size();
+            FileObject currParent = this.parent;
+            FileObject curr = this.child;
+            String relDir = null;
+            FileChangeListener weakFcl = null;
+            for (int i=cIndx; i < size; i++){
+                curr = currParent.getFileObject(path.get(i));
+                if ((curr != null) && (curr.isFolder())){
+                    relDir = FileUtil.getRelativePath(this.parent, curr);
+                    if (! this.listenerAddedDirs.contains(relDir)){
+                        this.listenerAddedDirs.add(relDir);
+                        weakFcl = FileUtil.weakFileChangeListener(
+                                this.fcl, curr);
+                        curr.addFileChangeListener(weakFcl);                        
+                    }
+                    
+                    if (i == (size -1)){
+                        if (curr.getChildren().length > 0){
+                            firePropertyChange();
+                        }
+                        break;
+                    }
+
+                    currParent = curr;
+                } else {
+                    break;
+                }
+            }
+        }
+        
+        public void run() {
+            Iterator<List<String>> itr = paths.iterator();
+            List<String> path = null;
+            int cIndx = -1;
+            int pIndx = -1;
+            boolean lastElem = false;
+
+            while(itr.hasNext()){
+                path = itr.next();
+                cIndx = path.indexOf(child.getName());
+                pIndx = path.indexOf(parent.getName());
+
+                lastElem = ((pIndx + 1) == path.size()) ? true: false ;
+                
+                if (lastElem){
+                    if (cIndx == -1){
+                        firePropertyChange();                                            
+                    }
+                } else{
+                    if ((cIndx != -1) && (pIndx == (cIndx - 1))){
+                        // Add listener and fire change event if leaf directory 
+                        // is created.
+                        addListeners(path, cIndx);
+                    }
+                }                
+            }
+        }    
+    }
+    
+    private class AddOnGeneratedSourceRootListener extends FileChangeAdapter {
+        // Path is relative to project root, starting with project specific
+        // build directory.
+        private List<List<String>> paths = 
+                Collections.synchronizedList(new ArrayList<List<String>>());
+        private FileObject projRoot;
+        
+        AddOnGeneratedSourceRootListener(FileObject pr, String bd, String[] addOnPaths){
+            this.projRoot = pr;  
+            StringTokenizer stk = null;
+            List<String> pathElems = null;
+            for (String path : addOnPaths){
+                stk = new StringTokenizer(path, "/"); // No I18N
+                pathElems = new ArrayList<String>();
+                pathElems.add(bd);
+                while(stk.hasMoreTokens()){
+                    pathElems.add(stk.nextToken());
+                }
+                this.paths.add(pathElems);                
+            }
+        }
+                
+        /**
+         * Listen to all the folders from ProjectRoot, build  upto any existing
+         * addons dirs.
+         **/
+        public synchronized void listenToProjRoot(){
+            List<String> dirsAdded = new ArrayList<String>();
+            String relativePath = null;
+            FileObject fo = this.projRoot;
+            FileChangeListener weakFcl = 
+                    FileUtil.weakFileChangeListener(this, fo);
+            fo.addFileChangeListener(weakFcl);  
+            FileObject parent = null;
+            FileObject child = null;
+            for (List<String> path: paths){
+                parent = fo;
+                for(String pathElem: path){
+                    child = parent.getFileObject(pathElem);
+                    if (child != null){
+                        relativePath = FileUtil.getRelativePath(fo, child);                        
+                        if (!dirsAdded.contains(relativePath)){
+                            dirsAdded.add(relativePath);
+                            weakFcl = FileUtil.weakFileChangeListener(
+                                    this, child);
+                            child.addFileChangeListener(weakFcl);
+                            parent = child;                            
+                        }
+                    } else {
+                        // No need to check further down.
+                        break;
+                    }
+                }
+            }
+        }
+        
+        @Override
+        public void fileFolderCreated(FileEvent fe) {
+            synchronized (this){
+                SourceRootScannerTask task = new SourceRootScannerTask(
+                        SourcePathImplementation.this,
+                        this,
+                        this.paths,
+                        (FileObject)fe.getSource(),
+                        fe.getFile());
+                SourcePathImplementation.REQ_PROCESSOR.post(task);
+            }
+        }                
+    }    
 }
