@@ -24,6 +24,7 @@ import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.Tree.Kind;
@@ -785,11 +786,14 @@ public class JaxWsUtils {
                     List<? extends AnnotationTree> annotations = modif.getAnnotations();
                     List<AnnotationTree> newAnnotations = new ArrayList<AnnotationTree>();
                     
+                    boolean foundWebMethodAn = false;
+                    
                     for (AnnotationTree an:annotations) {
                         IdentifierTree ident = (IdentifierTree) an.getAnnotationType();                    
                         TreePath anTreePath = workingCopy.getTrees().getPath(workingCopy.getCompilationUnit(), ident);
                         TypeElement anElement = (TypeElement)workingCopy.getTrees().getElement(anTreePath);
                         if(anElement!=null && anElement.getQualifiedName().contentEquals("javax.jws.WebMethod")) { //NOI18N
+                            foundWebMethodAn=true;
                             List<? extends ExpressionTree> expressions = an.getArguments();
                             List<ExpressionTree> newExpressions = new ArrayList<ExpressionTree>();
                             boolean found=false;
@@ -812,13 +816,21 @@ public class JaxWsUtils {
                             if (!found) {
                                 newExpressions.add(attrExpr);
                             }
-                            
-                            TypeElement webServiceEl = workingCopy.getElements().getTypeElement("javax.jws.WebMethod"); //NOI18N                            
-                            AnnotationTree webServiceAn = make.Annotation(make.QualIdent(webServiceEl), newExpressions);                            
-                            newAnnotations.add(webServiceAn);
+
+                            TypeElement webMethodEl = workingCopy.getElements().getTypeElement("javax.jws.WebMethod"); //NOI18N                            
+                            AnnotationTree webMethodAn = make.Annotation(make.QualIdent(webMethodEl), newExpressions);                            
+                            newAnnotations.add(webMethodAn);
                         } else {
                             newAnnotations.add(an);
                         }
+                    }
+                    
+                    if (!foundWebMethodAn && attrExpr!=null) {
+                        TypeElement webMethodEl = workingCopy.getElements().getTypeElement("javax.jws.WebMethod"); //NOI18N 
+                        AnnotationTree webMethodAn = make.Annotation(
+                                                     make.QualIdent(webMethodEl),
+                                                     Collections.<ExpressionTree>singletonList(attrExpr));
+                        newAnnotations.add(webMethodAn);
                     }
                     
                     ModifiersTree newModifier = make.Modifiers(modif, newAnnotations);
@@ -855,11 +867,14 @@ public class JaxWsUtils {
                     List<? extends AnnotationTree> annotations = modif.getAnnotations();
                     List<AnnotationTree> newAnnotations = new ArrayList<AnnotationTree>();
                     
-                    for (AnnotationTree an:annotations) {
-                        IdentifierTree ident = (IdentifierTree) an.getAnnotationType();                    
+                    boolean foundWebParamAn = false;
+                    
+                    for (AnnotationTree an:annotations) {                            
+                        IdentifierTree ident = (IdentifierTree) an.getAnnotationType();                            
                         TreePath anTreePath = workingCopy.getTrees().getPath(workingCopy.getCompilationUnit(), ident);
                         TypeElement anElement = (TypeElement)workingCopy.getTrees().getElement(anTreePath);
                         if(anElement!=null && anElement.getQualifiedName().contentEquals("javax.jws.WebParam")) { //NOI18N
+                            foundWebParamAn = true;
                             List<? extends ExpressionTree> expressions = an.getArguments();
                             List<ExpressionTree> newExpressions = new ArrayList<ExpressionTree>();
                             boolean found=false;
@@ -882,14 +897,23 @@ public class JaxWsUtils {
                             if (!found) {
                                 newExpressions.add(attrExpr);
                             }
-                            
-                            TypeElement webServiceEl = workingCopy.getElements().getTypeElement("javax.jws.WebParam"); //NOI18N                            
-                            AnnotationTree webServiceAn = make.Annotation(make.QualIdent(webServiceEl), newExpressions);                            
-                            newAnnotations.add(webServiceAn);
+
+                            TypeElement webParamEl = workingCopy.getElements().getTypeElement("javax.jws.WebParam"); //NOI18N                            
+                            AnnotationTree webParamAn = make.Annotation(make.QualIdent(webParamEl), newExpressions);                            
+                            newAnnotations.add(webParamAn);
                         } else {
                             newAnnotations.add(an);
                         }
                     }
+                    
+                    if (!foundWebParamAn && attrExpr!=null) {
+                        TypeElement webParamEl = workingCopy.getElements().getTypeElement("javax.jws.WebParam"); //NOI18N                       
+                        AnnotationTree webParamAn = make.Annotation(
+                                                    make.QualIdent(webParamEl),
+                                                    Collections.<ExpressionTree>singletonList(attrExpr));
+                        newAnnotations.add(webParamAn);
+                    }                   
+                    
                     
                     ModifiersTree newModifier = make.Modifiers(modif, newAnnotations);
                     workingCopy.rewrite(modif, newModifier);
