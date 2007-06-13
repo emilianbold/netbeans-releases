@@ -23,11 +23,12 @@ import java.util.Hashtable;
 import javax.swing.text.Document;
 import java.net.URLClassLoader;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.openide.filesystems.FileObject;
 
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
-import org.openide.ErrorManager;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
@@ -80,16 +81,16 @@ public abstract class JspContextInfo {
                         }
                     }
                 } catch (DataObjectNotFoundException ex) {
-                    ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
+                    Logger.getLogger("global").log(Level.WARNING, null, ex);
                 } catch (java.io.IOException ex) {
-                    ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
+                    Logger.getLogger("global").log(Level.WARNING, null, ex);
                 } catch (java.lang.ClassNotFoundException ex){
-                    ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
+                    Logger.getLogger("global").log(Level.WARNING, null, ex);
                 }
             }
             if (instance == null) {
-                ErrorManager.getDefault().notify(ErrorManager.EXCEPTION,
-                        new Exception(NbBundle.getBundle(JspContextInfo.class).getString("EXC_JspContextInfoNotInstalled")));
+                Logger.getLogger("global").log(Level.WARNING, null,
+                                               new Exception(NbBundle.getBundle(JspContextInfo.class).getString("EXC_JspContextInfoNotInstalled")));
             }
         }
         return instance;

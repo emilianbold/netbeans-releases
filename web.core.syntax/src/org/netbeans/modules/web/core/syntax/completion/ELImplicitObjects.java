@@ -19,16 +19,9 @@
 
 package org.netbeans.modules.web.core.syntax.completion;
 
-import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
-import org.netbeans.api.java.classpath.ClassPath;
-//import org.netbeans.jmi.javamodel.JavaClass;
 //import org.netbeans.jmi.javamodel.Method;
-import org.netbeans.modules.editor.NbEditorUtilities;
-import org.netbeans.modules.web.core.syntax.JspSyntaxSupport;
-import org.openide.loaders.DataObject;
 
 /**
  *

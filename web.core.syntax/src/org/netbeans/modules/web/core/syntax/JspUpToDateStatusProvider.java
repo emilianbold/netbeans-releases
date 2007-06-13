@@ -24,7 +24,6 @@ import java.beans.PropertyChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
-import org.netbeans.editor.Utilities;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.web.core.syntax.spi.JSPColoringData;
 import org.netbeans.spi.editor.errorstripe.UpToDateStatus;

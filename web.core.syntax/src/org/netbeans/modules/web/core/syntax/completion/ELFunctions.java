@@ -24,12 +24,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.servlet.jsp.tagext.FunctionInfo;
 import javax.servlet.jsp.tagext.TagLibraryInfo;
 import org.netbeans.modules.web.core.syntax.JspSyntaxSupport;
 import org.netbeans.modules.web.core.syntax.JspUtils;
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
-import org.openide.ErrorManager;
 
 /**
  *
@@ -137,7 +138,7 @@ public class ELFunctions {
             if(msg == null) {
                 fis.add(fi);
             } else {
-                ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, msg);
+                Logger.getLogger("global").log(Level.INFO, msg);
             }
         }
         return (FunctionInfo[])fis.toArray(new FunctionInfo[]{});

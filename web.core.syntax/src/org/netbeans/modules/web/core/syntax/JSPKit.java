@@ -21,7 +21,6 @@ package org.netbeans.modules.web.core.syntax;
 
 
 import java.util.Map;
-import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.editor.ext.html.parser.SyntaxParser;
 import org.netbeans.modules.html.editor.coloring.EmbeddingUpdater;
@@ -31,30 +30,27 @@ import org.netbeans.modules.web.core.syntax.deprecated.ELDrawLayerFactory;
 import org.netbeans.modules.web.core.syntax.formatting.JspFormatter;
 import java.awt.event.ActionEvent;
 import java.beans.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.JMenu;
 import javax.swing.text.*;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.java.lexer.JavaTokenId;
-import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseAction;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.DrawLayer;
-import org.netbeans.editor.DrawLayerFactory;
 import org.netbeans.editor.Syntax;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.Completion;
 import org.netbeans.editor.ext.ExtEditorUI;
 import org.netbeans.editor.ext.ExtSyntaxSupport;
 import org.netbeans.editor.ext.java.JavaSyntax;
-import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.web.core.syntax.folding.JspFoldTypes;
 import org.netbeans.spi.jsp.lexer.JspParseData;
 import org.netbeans.spi.lexer.TokenHierarchyControl;
-import org.openide.ErrorManager;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
@@ -77,9 +73,7 @@ import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.editor.BaseKit.InsertBreakAction;
 import org.netbeans.editor.ext.ExtKit.ExtDefaultKeyTypedAction;
 import org.netbeans.editor.ext.ExtKit.ExtDeleteCharAction;
-import org.netbeans.modules.editor.NbEditorKit;
 import org.netbeans.modules.editor.NbEditorKit.GenerateFoldPopupAction;
-import org.netbeans.spi.lexer.LanguageEmbedding;
 
 /**
  * Editor kit implementation for JSP content type
@@ -399,7 +393,7 @@ public class JSPKit extends LanguagesEditorKit implements org.openide.util.HelpC
                         }
                     } catch (java.lang.ClassNotFoundException e){
                         kit = null;
-                        ErrorManager.getDefault().notify(ErrorManager.WARNING, e);
+                        Logger.getLogger("global").log(Level.WARNING, null, e);
                     }
                     
                     if (kit == null) {

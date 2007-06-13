@@ -19,10 +19,11 @@
 
 package org.netbeans.modules.web.core.syntax.deprecated;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.web.core.syntax.*;
 import org.netbeans.editor.Syntax;
 import org.netbeans.editor.TokenID;
-import org.openide.ErrorManager;
 
 /**
 * Syntax class for JSP tags. It is not meant to be used by itself, but as one of syntaxes with
@@ -692,10 +693,7 @@ public class JspTagSyntax extends Syntax {
                 case ISA_END_JSP:
                     return JspTagTokenContext.TEXT;
                 default:
-                    ErrorManager.getDefault ().notify (
-                        ErrorManager.INFORMATIONAL, 
-                        new Exception("Unhandled state : " + getStateName(state))   // NOI18N
-                    );
+                    Logger.getLogger("global").log(Level.INFO, null, new Exception("Unhandled state : " + getStateName(state)));
             }
         }
 

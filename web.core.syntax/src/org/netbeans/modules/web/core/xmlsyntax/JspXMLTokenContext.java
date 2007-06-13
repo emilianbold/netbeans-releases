@@ -19,13 +19,14 @@
 
 package org.netbeans.modules.web.core.xmlsyntax;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.editor.BaseTokenID;
 import org.netbeans.editor.TokenContext;
 import org.netbeans.editor.TokenContextPath;
 
 import org.netbeans.modules.xml.text.api.XMLDefaultTokenContext;
 
-import org.openide.ErrorManager;
 
 /**
 * Token context for JSP pages with XML content.
@@ -59,7 +60,7 @@ public class JspXMLTokenContext extends TokenContext {
         try {
             addDeclaredTokenIDs();
         } catch (Exception e) {
-            ErrorManager.getDefault ().notify(ErrorManager.INFORMATIONAL, e);
+            Logger.getLogger("global").log(Level.INFO, null, e);
         }
 
     }

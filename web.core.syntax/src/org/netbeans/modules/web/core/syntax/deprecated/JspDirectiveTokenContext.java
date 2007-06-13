@@ -19,11 +19,12 @@
 
 package org.netbeans.modules.web.core.syntax.deprecated;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.editor.BaseTokenCategory;
 import org.netbeans.editor.TokenCategory;
 import org.netbeans.editor.TokenContextPath;
 import org.netbeans.editor.BaseTokenID;
-import org.openide.ErrorManager;
 
 /**
 * Syntax Token Context class for JSP directives. Tokens from this token context
@@ -68,7 +69,7 @@ public class JspDirectiveTokenContext extends JspTagTokenContext {
         try {
             addDeclaredTokenIDs();
         } catch (Exception e) {
-            ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, e);
+            Logger.getLogger("global").log(Level.INFO, null, e);
         }
 
     }

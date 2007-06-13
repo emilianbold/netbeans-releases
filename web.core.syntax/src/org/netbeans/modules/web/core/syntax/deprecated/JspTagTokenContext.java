@@ -19,11 +19,12 @@
 
 package org.netbeans.modules.web.core.syntax.deprecated;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.editor.TokenCategory;
 import org.netbeans.editor.TokenContext;
 import org.netbeans.editor.TokenContextPath;
 import org.netbeans.editor.BaseTokenID;
-import org.openide.ErrorManager;
 
 /**
 * Syntax class for JSP tags. It is not meant to be used by itself, but as one of syntaxes with
@@ -82,7 +83,7 @@ public class JspTagTokenContext extends TokenContext {
         try {
             addDeclaredTokenIDs();
         } catch (Exception e) {
-            ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, e);
+            Logger.getLogger("global").log(Level.INFO, null, e);
         }
 
     }

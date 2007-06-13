@@ -26,7 +26,6 @@ package org.netbeans.modules.web.core.syntax;
 
 
 import org.netbeans.api.jsp.lexer.JspTokenId;
-import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.ext.ExtSyntaxSupport;

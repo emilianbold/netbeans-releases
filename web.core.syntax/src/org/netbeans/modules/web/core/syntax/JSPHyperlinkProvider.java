@@ -37,7 +37,6 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.UiUtils;
@@ -52,13 +51,13 @@ import org.netbeans.lib.editor.hyperlink.spi.HyperlinkProvider;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.el.lexer.api.ELTokenId;
 import org.netbeans.modules.web.core.syntax.completion.ELExpression;
-import org.openide.ErrorManager;
 import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.EditCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -175,7 +174,7 @@ public class JSPHyperlinkProvider implements HyperlinkProvider {
             return (getTagFile(tokenSequence, jspSup) != null);
             
         } catch (BadLocationException e) {
-            ErrorManager.getDefault().notify(e);
+            Exceptions.printStackTrace(e);
             return false;
         }
     }
@@ -346,7 +345,7 @@ public class JSPHyperlinkProvider implements HyperlinkProvider {
                 
             }
         } catch (BadLocationException e) {
-            ErrorManager.getDefault().notify(e);
+            Exceptions.printStackTrace(e);
         }
     }
     
@@ -411,7 +410,7 @@ public class JSPHyperlinkProvider implements HyperlinkProvider {
             try{
                 dobj = DataObject.find(fObj);
             } catch (DataObjectNotFoundException e){
-                ErrorManager.getDefault().notify(e);
+                Exceptions.printStackTrace(e);
                 return;
             }
             if (dobj != null){

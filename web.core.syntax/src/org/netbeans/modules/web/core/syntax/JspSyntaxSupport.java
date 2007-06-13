@@ -22,6 +22,8 @@ package org.netbeans.modules.web.core.syntax;
 import java.io.File;
 import java.util.*;
 import java.net.URL;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.EditorKit;
 import javax.swing.JEditorPane;
@@ -36,7 +38,6 @@ import org.netbeans.modules.web.core.syntax.deprecated.JspDirectiveTokenContext;
 import org.netbeans.modules.web.core.syntax.deprecated.JspMultiTokenContext;
 import org.netbeans.modules.web.core.syntax.deprecated.JspTagTokenContext;
 import org.openide.filesystems.FileObject;
-import org.openide.ErrorManager;
 import org.openide.loaders.DataObject;
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
 import org.netbeans.modules.web.jsps.parserapi.PageInfo;
@@ -58,8 +59,8 @@ import org.openide.text.CloneableEditorSupport;
 public class JspSyntaxSupport extends ExtSyntaxSupport {
     
     /** ErrorManager shared by whole module (package) for logging */
-    static final ErrorManager err =
-            ErrorManager.getDefault().getInstance("org.netbeans.modules.web.jspsyntax"); // NOI18N
+    static final Logger err =
+            Logger.getLogger("org.netbeans.modules.web.jspsyntax"); // NOI18N
     
     /* Constants for various contexts in the text from the point of
     view of JSP completion.*/
@@ -153,7 +154,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
             PageInfo pi = pre.getPageInfo();
             if(pi == null) {
                 //report error but do not break the entire CC
-                ErrorManager.getDefault().notify(ErrorManager.WARNING, new NullPointerException("PageInfo obtained from JspParserAPI.ParseResult is null!"));
+                err.log(Level.WARNING, null, new NullPointerException("PageInfo obtained from JspParserAPI.ParseResult is null!"));
                 return null;
             }
             List<String> imports = pi.getImports();
@@ -308,7 +309,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
         
         if(tcp.contains(HTMLTokenContext.contextPath)) {
             //we are in content language
-            if (err.isLoggable(ErrorManager.INFORMATIONAL)) err.log("CONTENTL_COMPLETION_CONTEXT");   // NOI18N
+            if (err.isLoggable(Level.INFO)) err.log(Level.INFO, "CONTENTL_COMPLETION_CONTEXT");   // NOI18N
             ExtSyntaxSupport support = getContentLanguageSyntaxSupport();
             if (support != null) {
                 return support.checkCompletion( target, typedText, visible );
@@ -346,7 +347,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
                 
                 if(tracking.getImage().startsWith("<%")) {
                     //we are in a directive
-                    if (err.isLoggable(ErrorManager.INFORMATIONAL)) err.log("DIRECTIVE_COMPLETION_CONTEXT");   // NOI18N
+                    if (err.isLoggable(Level.INFO)) err.log(Level.INFO, "DIRECTIVE_COMPLETION_CONTEXT");   // NOI18N
                     
                     //open completion also in such a case: <%=|
                     if( !visible && first == '=' && tracking.getImage().equals("<%")) return COMPLETION_POPUP;
@@ -357,20 +358,20 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
                 }
                 if(tracking.getImage().equals("<")) {
                     //we are in a tag
-                    if (err.isLoggable(ErrorManager.INFORMATIONAL)) err.log("TAG_COMPLETION_CONTEXT");   // NOI18N
+                    if (err.isLoggable(Level.INFO)) err.log(Level.INFO, "TAG_COMPLETION_CONTEXT");   // NOI18N
                     if( !visible && first == ' ' || first == ':' ) return COMPLETION_POPUP;
                     if( visible && first == '>' ) return COMPLETION_HIDE;
                     return visible ? COMPLETION_POST_REFRESH : COMPLETION_CANCEL;
                 }
                 if(tracking.getImage().equals("</")) {
                     //we are in an end tag
-                    if (err.isLoggable(ErrorManager.INFORMATIONAL)) err.log("ENDTAG_COMPLETION_CONTEXT" );   // NOI18N
+                    if (err.isLoggable(Level.INFO)) err.log(Level.INFO, "ENDTAG_COMPLETION_CONTEXT");   // NOI18N
                     if( visible && first == '>' ) return COMPLETION_HIDE;
                     return visible ? COMPLETION_POST_REFRESH : COMPLETION_CANCEL;
                 }
                 //test whether we are still in the tag context
                 if(!tracking.getTokenContextPath().contains(JspTagTokenContext.contextPath)) {
-                    if (err.isLoggable(ErrorManager.INFORMATIONAL)) err.log("We are out of jsp tag without finding any tag start token!");
+                    if (err.isLoggable(Level.INFO)) err.log(Level.INFO, "We are out of jsp tag without finding any tag start token!");
                     break;
                 }
                 
@@ -692,7 +693,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
                     urll = FileUtil.getArchiveRoot(urll);
                     url = urll.toString();
                 } catch (java.net.MalformedURLException e){
-                    ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, e);
+                    err.log(Level.WARNING, null, e);
                     // nothing to do
                 }
             }
@@ -723,7 +724,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
                     helpMap.put("http://java.sun.com/jsf/html", url + "h/");
                     helpMap.put("http://java.sun.com/jsf/core", url + "f/");
                 } catch (java.net.MalformedURLException e){
-                    ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, e);
+                    err.log(Level.WARNING, null, e);
                     // nothing to do
                 }
             }
@@ -749,7 +750,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
                     helpMap.put("http://struts.apache.org/tags-tiles", url + "tiles/");
                     helpMap.put("/WEB-INF/struts-tiles.tld", url + "tiles/");
                 } catch (java.net.MalformedURLException e){
-                    ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, e);
+                    err.log(Level.WARNING, null, e);
                     // nothing to do
                 }
             }
@@ -771,7 +772,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
                     urll = FileUtil.getArchiveRoot(urll);
                     url = urll.toString();
                 } catch (java.net.MalformedURLException e){
-                    err.notify(ErrorManager.EXCEPTION, e);
+                    err.log(Level.WARNING, null, e);
                     // nothing to do
                 }
             }

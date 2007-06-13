@@ -24,7 +24,6 @@ import java.awt.font.TextAttribute;
 import java.util.Map;
 import java.util.HashMap;
 import java.text.AttributedString;
-import java.util.ArrayList;
 import javax.swing.*;
 
 /**

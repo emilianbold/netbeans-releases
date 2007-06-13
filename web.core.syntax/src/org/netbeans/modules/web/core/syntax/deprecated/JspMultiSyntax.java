@@ -19,11 +19,12 @@
 
 package org.netbeans.modules.web.core.syntax.deprecated;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.web.core.syntax.deprecated.JspTagSyntax;
 import org.netbeans.modules.web.core.syntax.*;
 import org.netbeans.modules.web.core.syntax.deprecated.ELSyntax;
 import org.netbeans.editor.TokenContextPath;
-import org.openide.ErrorManager;
 import org.netbeans.editor.Syntax;
 import org.netbeans.editor.TokenID;
 import org.netbeans.editor.ext.html.HTMLTokenContext;
@@ -254,7 +255,7 @@ public class JspMultiSyntax extends Syntax {
                                 state = ISI_HOST_JAVA_LT;
                                 break;
                             default:  
-                                ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, new Exception("bad hostsyntax analyzer"));  // NOI18N
+                                Logger.getLogger("global").log(Level.INFO, null, new Exception("bad hostsyntax analyzer"));  // NOI18N
                         } // switch (actChar)
                         break;
 
@@ -264,7 +265,7 @@ public class JspMultiSyntax extends Syntax {
                                 state = ISI_HOST_JAVA_LT_PC;
                                 break;
                             default:  
-                                ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, new Exception("bad hostsyntax analyzer"));  // NOI18N
+                                Logger.getLogger("global").log(Level.INFO, null, new Exception("bad hostsyntax analyzer"));  // NOI18N
                         } // switch (actChar)
                         break;
 
@@ -308,7 +309,7 @@ public class JspMultiSyntax extends Syntax {
                                 state = ISI_HOST_EL_D;
                                 break;
                             default:  
-                                ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, new Exception("bad hostsyntax analyzer"));  // NOI18N
+                                Logger.getLogger("global").log(Level.INFO, null, new Exception("bad hostsyntax analyzer"));  // NOI18N
                         } // switch (actChar)
                         break;
 
@@ -320,7 +321,7 @@ public class JspMultiSyntax extends Syntax {
                                 tokenContextPath = JspMultiTokenContext.elContextPath;
                                 return ELTokenContext.EL_DELIM;
                             default:  
-                                ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, new Exception("bad hostsyntax analyzer"));  // NOI18N
+                                Logger.getLogger("global").log(Level.INFO, null, new Exception("bad hostsyntax analyzer"));  // NOI18N
                         } // switch (actChar)
                         break;
 
@@ -341,7 +342,7 @@ public class JspMultiSyntax extends Syntax {
                                 state = ISI_JSPTAG_JAVA_LT;
                                 break;
                             default:  
-                                ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, new Exception("bad hostsyntax analyzer"));  // NOI18N
+                                Logger.getLogger("global").log(Level.INFO, null, new Exception("bad hostsyntax analyzer"));  // NOI18N
                         } // switch (actChar)
                         break;
 
@@ -351,7 +352,7 @@ public class JspMultiSyntax extends Syntax {
                                 state = ISI_JSPTAG_JAVA_LT_PC;
                                 break;
                             default:  
-                                ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, new Exception("bad hostsyntax analyzer"));  // NOI18N
+                                Logger.getLogger("global").log(Level.INFO, null, new Exception("bad hostsyntax analyzer"));  // NOI18N
                         } // switch (actChar)
                         break;
 
@@ -399,7 +400,7 @@ public class JspMultiSyntax extends Syntax {
                                 state = ISI_JSPTAG_EL_D;
                                 break;
                             default:  
-                                ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, new Exception("bad hostsyntax analyzer"));  // NOI18N
+                                Logger.getLogger("global").log(Level.INFO, null, new Exception("bad hostsyntax analyzer"));  // NOI18N
                         } // switch (actChar)
                         break;
 
@@ -411,7 +412,7 @@ public class JspMultiSyntax extends Syntax {
                                 tokenContextPath = JspMultiTokenContext.elContextPath;
                                 return ELTokenContext.EL_DELIM;
                             default:  
-                                ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, new Exception("bad hostsyntax analyzer"));  // NOI18N
+                                Logger.getLogger("global").log(Level.INFO, null, new Exception("bad hostsyntax analyzer"));  // NOI18N
                         } // switch (actChar)
                         break;
 
@@ -433,7 +434,7 @@ public class JspMultiSyntax extends Syntax {
                                 state = ISI_JAVA1_PC;
                                 break;
                             default:  
-                                ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, new Exception("bad hostsyntax analyzer"));  // NOI18N
+                                Logger.getLogger("global").log(Level.INFO, null, new Exception("bad hostsyntax analyzer"));  // NOI18N
                         } // switch (actChar)
                         break;                  
             
@@ -447,7 +448,7 @@ public class JspMultiSyntax extends Syntax {
                                 tokenContextPath = JspMultiTokenContext.jspTagContextPath;
                                 return JspTagTokenContext.SYMBOL2;
                             default:  
-                                ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, new Exception("bad hostsyntax analyzer"));  // NOI18N
+                                Logger.getLogger("global").log(Level.INFO, null, new Exception("bad hostsyntax analyzer"));  // NOI18N
                         }
           
                     case ISI_JAVA1_JUMP:
@@ -464,7 +465,7 @@ public class JspMultiSyntax extends Syntax {
                                 state = ISI_JAVA2_PC;
                                 break;
                             default:  
-                                ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, new Exception("bad hostsyntax analyzer"));  // NOI18N
+                                Logger.getLogger("global").log(Level.INFO, null, new Exception("bad hostsyntax analyzer"));  // NOI18N
                         } // switch (actChar)
                         break;                  
             
@@ -479,7 +480,7 @@ public class JspMultiSyntax extends Syntax {
                                 tokenContextPath = JspMultiTokenContext.jspTagContextPath;
                                 return JspTagTokenContext.SYMBOL2;
                             default:  
-                                ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, new Exception("bad hostsyntax analyzer"));  // NOI18N
+                                Logger.getLogger("global").log(Level.INFO, null, new Exception("bad hostsyntax analyzer"));  // NOI18N
                         }
           
                     case ISI_JAVA2_JUMP:
@@ -500,7 +501,7 @@ public class JspMultiSyntax extends Syntax {
                                 tokenContextPath = JspMultiTokenContext.elContextPath;
                                 return ELTokenContext.EL_DELIM;
                             default:  
-                                ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, new Exception("bad hostsyntax analyzer"));  // NOI18N
+                                Logger.getLogger("global").log(Level.INFO, null, new Exception("bad hostsyntax analyzer"));  // NOI18N
                         } // switch (actChar)
                         break;                  
             
@@ -522,7 +523,7 @@ public class JspMultiSyntax extends Syntax {
                                 tokenContextPath = JspMultiTokenContext.elContextPath;
                                 return ELTokenContext.EL_DELIM;
                             default:  
-                                ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, new Exception("bad hostsyntax analyzer"));  // NOI18N
+                                Logger.getLogger("global").log(Level.INFO, null, new Exception("bad hostsyntax analyzer"));  // NOI18N
                         } // switch (actChar)
                         break;                  
             
@@ -1302,7 +1303,7 @@ System.out.println("returnuju (16.5) " + firstTokenID + " at " + offset);
                 
                 //</editor-fold>
             default:  
-                ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, new Exception("bad nestmode"));  // NOI18N
+                Logger.getLogger("global").log(Level.INFO, null, new Exception("bad nestmode"));  // NOI18N
                 tokenContextPath = JspMultiTokenContext.contextPath;
                 return JspMultiTokenContext.ERROR; // !!! don't know what to return
         }
@@ -1591,7 +1592,7 @@ System.out.println("returnuju (16.5) " + firstTokenID + " at " + offset);
             case HOST_BS:
                 return DELIMCHECK_PART;
             default:
-                ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, new Exception("invalid state"));  // NOI18N
+                Logger.getLogger("global").log(Level.INFO, null, new Exception("invalid state"));  // NOI18N
                 return DELIMCHECK_NO;
         }
     }
@@ -1757,7 +1758,7 @@ System.out.println("returnuju (16.5) " + firstTokenID + " at " + offset);
                 //is scanned by this method (tokenOffset = endOffset - 1) 
                 return DELIMCHECK_NO; 
             default:
-                ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, new Exception("invalid state " + delimState));  // NOI18N
+                Logger.getLogger("global").log(Level.INFO, null, new Exception("invalid state " + delimState));  // NOI18N
                 return DELIMCHECK_NO;
         }
     }
@@ -1814,7 +1815,7 @@ System.out.println("returnuju (16.5) " + firstTokenID + " at " + offset);
 //System.out.println("found end of Java at " + possibleBeginning);
                                     return possibleBeginning;
                             }
-                            ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, new Exception("bad nestMode"));  // NOI18N
+                            Logger.getLogger("global").log(Level.INFO, null, new Exception("bad nestMode"));  // NOI18N
                             //break; - not reached
                         case '%':
                             if (offset >= firstTokenEnd)
@@ -1839,7 +1840,7 @@ System.out.println("returnuju (16.5) " + firstTokenID + " at " + offset);
             case JAVA_PC:
                 return DELIMCHECK_PART;
             default:
-                ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, new Exception("invalid state"));  // NOI18N
+                Logger.getLogger("global").log(Level.INFO, null, new Exception("invalid state"));  // NOI18N
                 return DELIMCHECK_NO;
         }
     }
@@ -1884,7 +1885,8 @@ System.out.println("returnuju (16.5) " + firstTokenID + " at " + offset);
 //System.out.println("found end of EL at " + possibleBeginning);
                                     return possibleBeginning;
                             }
-                            ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, new Exception("bad nestMode"));  // NOI18N
+                            Logger.getLogger("global").log(Level.INFO, null,
+                                                           new Exception("bad nestMode"));  // NOI18N
                             break;
                         default:  
                             if (offset >= firstTokenEnd)
@@ -1902,7 +1904,7 @@ System.out.println("returnuju (16.5) " + firstTokenID + " at " + offset);
             case EL_INIT: 
                 return DELIMCHECK_NO;
             default:
-                ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, new Exception("invalid state"));  // NOI18N
+                Logger.getLogger("global").log(Level.INFO, null, new Exception("invalid state"));  // NOI18N
                 return DELIMCHECK_NO;
         }
     }

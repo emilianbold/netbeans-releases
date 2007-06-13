@@ -19,10 +19,11 @@
 
 package org.netbeans.modules.web.core.syntax.deprecated;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.editor.TokenContext;
 import org.netbeans.editor.TokenContextPath;
 import org.netbeans.editor.ext.java.JavaTokenContext;
-import org.openide.ErrorManager;
 
 /**
  * Fake token contexts for JSP scriptlets, declarations and expressions
@@ -52,7 +53,7 @@ public class JspJavaFakeTokenContext {
             try {
                 addDeclaredTokenIDs();
             } catch (Exception e) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                Logger.getLogger("global").log(Level.INFO, null, e);
             }
             
         }
@@ -77,7 +78,7 @@ public class JspJavaFakeTokenContext {
             try {
                 addDeclaredTokenIDs();
             } catch (Exception e) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                Logger.getLogger("global").log(Level.INFO, null, e);
             }
             
         }
@@ -102,7 +103,7 @@ public class JspJavaFakeTokenContext {
             try {
                 addDeclaredTokenIDs();
             } catch (Exception e) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                Logger.getLogger("global").log(Level.INFO, null, e);
             }
             
         }
