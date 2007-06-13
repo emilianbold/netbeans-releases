@@ -82,7 +82,6 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
     private static final Dimension verticalStrut1  = new Dimension(1, 4);
     private static final Dimension verticalStrut2  = new Dimension(1, 6);
     private static final Dimension verticalStrut3  = new Dimension(1, 8);
-    private static final Insets wrapIt = new Insets(0,0,0,0);
     private static Dimension PREF_SIZE = new Dimension(425, 245);
     private static Dimension MIN_SIZE = new Dimension(425, 245);
     private static Dimension TREE_PREF_SIZE = new Dimension(350, 138);
@@ -549,7 +548,6 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
         upFolderButton.getAccessibleContext().setAccessibleName(upFolderAccessibleName);
         upFolderButton.setAlignmentX(JComponent.RIGHT_ALIGNMENT);
         upFolderButton.setAlignmentY(JComponent.CENTER_ALIGNMENT);
-        upFolderButton.setMargin(wrapIt);
         
         if(useShellFolder) {
             upFolderButton.setFocusPainted(false);
@@ -573,7 +571,6 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
         newFolderButton.setToolTipText(newFolderToolTipText);
         newFolderButton.setAlignmentX(JComponent.RIGHT_ALIGNMENT);
         newFolderButton.setAlignmentY(JComponent.CENTER_ALIGNMENT);
-        newFolderButton.setMargin(wrapIt);
         
         if(useShellFolder) {
             newFolderButton.setFocusPainted(false);
