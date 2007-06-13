@@ -57,6 +57,7 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="Templates">
         <folder name="Project">
             <attr name="Standard/J2ME" boolvalue="true"/>
+            <attr name="J2ME/UML" boolvalue="true"/>
             <attr name="Web/J2ME" boolvalue="true"/>
             <attr name="J2EE/J2ME" boolvalue="true"/>
             <attr name="J2ME/Samples" boolvalue="true"/>
