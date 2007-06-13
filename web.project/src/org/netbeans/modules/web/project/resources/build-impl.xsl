@@ -745,8 +745,13 @@ introduced by support for multiple source roots. -jglick
                 </copy>
             </target>
             
+            <target name="-do-ws-compile">
+                <xsl:if test="/p:project/p:configuration/webproject3:data/webproject3:web-service-clients/webproject3:web-service-client">
+                    <xsl:attribute name="depends">web-service-client-compile</xsl:attribute>
+                </xsl:if>
+            </target>
             <target name="-do-compile">
-                <xsl:attribute name="depends">init, deps-jar, -pre-pre-compile, -pre-compile, -rest-pre-compile, -copy-manifest, -copy-persistence-xml, -copy-webdir, library-inclusion-in-archive,library-inclusion-in-manifest<xsl:if test="/p:project/p:configuration/webproject3:data/webproject3:web-service-clients/webproject3:web-service-client">,web-service-client-compile</xsl:if></xsl:attribute>
+                <xsl:attribute name="depends">init, deps-jar, -pre-pre-compile, -pre-compile, -copy-manifest, -copy-persistence-xml, -copy-webdir, library-inclusion-in-archive,library-inclusion-in-manifest,-do-ws-compile,-rest-pre-compile</xsl:attribute>
                 <xsl:attribute name="if">have.sources</xsl:attribute>
                 
                 <webproject2:javac destdir="${{build.classes.dir.real}}"/>

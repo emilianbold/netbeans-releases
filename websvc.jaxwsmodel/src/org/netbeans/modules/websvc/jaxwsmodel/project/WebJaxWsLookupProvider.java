@@ -241,7 +241,7 @@ public class WebJaxWsLookupProvider implements LookupProvider {
             //adding dependencies
             if (clientsLength>0) {
                 extension.addDependency("-pre-pre-compile", "wsimport-client-generate"); //NOI18N
-                extension.addDependency("-do-compile", "wsimport-client-compile"); //NOI18N
+                extension.addDependency("-do-ws-compile", "wsimport-client-compile"); //NOI18N
                 extension.addDependency("-do-compile-single", "wsimport-client-compile"); //NOI18N
             }
             if (fromWsdlServicesLength>0) {
@@ -285,12 +285,12 @@ public class WebJaxWsLookupProvider implements LookupProvider {
         boolean needToSave = false;
         if (clientsLength > 0) {
             extension.addDependency("-pre-pre-compile", "wsimport-client-generate"); //NOI18N
-            extension.addDependency("-do-compile", "wsimport-client-compile"); //NOI18N
+            extension.addDependency("-do-ws-compile", "wsimport-client-compile"); //NOI18N
             extension.addDependency("-do-compile-single", "wsimport-client-compile"); //NOI18N
             needToSave = true;
         } else if (!extensionCreated && clientsLength == 0) {
             extension.removeDependency("-pre-pre-compile", "wsimport-client-generate"); //NOI18N
-            extension.removeDependency("-do-compile", "wsimport-client-compile"); //NOI18N
+            extension.removeDependency("-do-ws-compile", "wsimport-client-compile"); //NOI18N
             extension.removeDependency("-do-compile-single", "wsimport-client-compile"); //NOI18N
             needToSave = true;
         }
