@@ -28,7 +28,8 @@ import java.util.Collection;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.StringTokenizer;
-import org.openide.ErrorManager;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
@@ -141,7 +142,7 @@ public final class FileSearchUtility {
                 }
             }
         } catch (FileStateInvalidException fsie) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, fsie);
+            Logger.getLogger("global").log(Level.INFO, null, fsie);
         }
         if (foundRoots.size() == 0) {
             FileObject webInf = guessWebInf(dir);
@@ -197,7 +198,7 @@ public final class FileSearchUtility {
                 }
             }
         } catch (java.io.IOException ioe) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
+            Logger.getLogger("global").log(Level.INFO, null, ioe);
         } finally {
             try { if (r != null) { r.close(); }} catch (java.io.IOException ioe) { ; // ignore this 
             }

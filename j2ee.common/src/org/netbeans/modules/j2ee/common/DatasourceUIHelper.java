@@ -36,6 +36,8 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.AbstractListModel;
 import javax.swing.ComboBoxEditor;
 import javax.swing.DefaultListCellRenderer;
@@ -53,7 +55,7 @@ import org.netbeans.modules.j2ee.deployment.common.api.DatasourceAlreadyExistsEx
 import org.netbeans.modules.j2ee.common.EventRequestProcessor.Action;
 import org.netbeans.modules.j2ee.common.EventRequestProcessor.AsynchronousAction;
 import org.netbeans.modules.j2ee.common.EventRequestProcessor.Context;
-import org.openide.ErrorManager;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -402,8 +404,9 @@ public final class DatasourceUIHelper {
                         for (Object conflict : daee.getDatasources()) {
                             sb.append(conflict.toString() + "\n"); // NOI18N
                         }
-                        ErrorManager.getDefault().annotate(daee, NbBundle.getMessage(DatasourceUIHelper.class, "ERR_DsConflict", sb.toString()));
-                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, daee);
+                        
+                        String message = NbBundle.getMessage(DatasourceUIHelper.class, "ERR_DsConflict", sb.toString());
+                        Logger.getLogger("global").log(Level.INFO, message, Exceptions.attachLocalizedMessage(daee, message));
                     } catch (ConfigurationException ce) {
                         // TODO: provide a feedback to the user
                     }

@@ -38,6 +38,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.queries.UnitTestForSourceQuery;
@@ -50,7 +52,6 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.java.queries.SourceLevelQueryImplementation;
-import org.openide.ErrorManager;
 
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
@@ -165,10 +166,8 @@ public class Util {
             if (sourceRoot != null) {
                 result.add(sourceRoot);
             } else {
-                int severity = ErrorManager.INFORMATIONAL;
-                if (ErrorManager.getDefault().isNotifiable(severity)) {
-                    ErrorManager.getDefault().notify(severity, new IllegalStateException(
-                            "No FileObject found for the following URL: " + urls[i])); //NOI18N
+                if (Logger.getLogger("global").isLoggable(Level.INFO)) {
+                    Logger.getLogger("global").log(Level.INFO, null, new IllegalStateException("No FileObject found for the following URL: " + urls[i]));
                 }
             }
         }
