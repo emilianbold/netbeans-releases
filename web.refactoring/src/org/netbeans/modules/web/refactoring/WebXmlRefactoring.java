@@ -28,6 +28,8 @@ import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.PositionBounds;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -151,6 +153,12 @@ public abstract class WebXmlRefactoring implements WebRefactoring{
         }
         
         public PositionBounds getPosition() {
+            try {
+                //XXX: does not work correctly when a class is specified more than once in web.xml
+                return new PositionBoundsResolver(DataObject.find(webDD),getName()).getPositionBounds();
+            } catch (DataObjectNotFoundException ex) {
+                Exceptions.printStackTrace(ex);
+            }
             return null;
         }
         
@@ -163,6 +171,8 @@ public abstract class WebXmlRefactoring implements WebRefactoring{
             undo();
             writeDD();
         }
+        
+        protected abstract String getName();
         
         protected abstract void undo();
     }

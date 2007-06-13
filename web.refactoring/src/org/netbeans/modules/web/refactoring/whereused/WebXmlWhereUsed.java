@@ -103,6 +103,10 @@ public class WebXmlWhereUsed extends WebXmlRefactoring{
             Object[] args = new Object [] {clazz};
             return MessageFormat.format(NbBundle.getMessage(WebXmlWhereUsed.class, bundleKey), args);
         }
+
+        protected String getName() {
+            return clazz;
+        }
         
     }
 }

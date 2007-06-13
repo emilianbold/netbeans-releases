@@ -127,6 +127,12 @@ abstract class BaseWebXmlRename extends WebXmlRefactoring{
             this.newName = newName;
             this.oldName = oldName;
         }
+
+        protected String getName() {
+            return oldName;
+        }
+        
+        
     }
     
     private static class ServletRenameElement extends WebRenameElement{

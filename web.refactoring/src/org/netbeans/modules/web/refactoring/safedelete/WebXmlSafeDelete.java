@@ -116,6 +116,10 @@ public class WebXmlSafeDelete extends WebXmlRefactoring{
         protected void undo() {
             webApp.addServlet(servlet);
         }
+
+        protected String getName() {
+            return servlet.getServletClass();
+        }
     }
 
     private static class ServletMappingRemoveElement extends WebRefactoringElement{
@@ -139,6 +143,10 @@ public class WebXmlSafeDelete extends WebXmlRefactoring{
         protected void undo() {
             webApp.addServletMapping(mapping);
         }
+
+        protected String getName() {
+            return mapping.getServletName();
+        }
     }
 
     private static class FilterRemoveElement extends WebRefactoringElement{
@@ -161,6 +169,10 @@ public class WebXmlSafeDelete extends WebXmlRefactoring{
         
         protected void undo() {
             webApp.addFilter(filter);
+        }
+
+        protected String getName() {
+            return filter.getFilterClass();
         }
     }
 
@@ -186,6 +198,10 @@ public class WebXmlSafeDelete extends WebXmlRefactoring{
         protected void undo() {
             webApp.addFilterMapping(mapping);
         }
+
+        protected String getName() {
+            return null;
+        }
     }
 
     private static class ListenerRemoveElement extends WebRefactoringElement{
@@ -209,6 +225,10 @@ public class WebXmlSafeDelete extends WebXmlRefactoring{
         @Override
         protected void undo() {
             webApp.addListener(listener);
+        }
+
+        protected String getName() {
+            return null;
         }
     }
     

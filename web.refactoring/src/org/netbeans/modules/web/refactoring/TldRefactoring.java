@@ -20,7 +20,10 @@ import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
 import org.netbeans.modules.web.taglib.model.Taglib;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.PositionBounds;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 /**
@@ -62,6 +65,12 @@ public abstract class TldRefactoring implements WebRefactoring{
         }
         
         public PositionBounds getPosition() {
+            try {
+                //XXX: does not work correctly when a class is specified more than once in one tld file
+                return new PositionBoundsResolver(DataObject.find(tldFile), clazz).getPositionBounds();
+            } catch (DataObjectNotFoundException ex) {
+                Exceptions.printStackTrace(ex);
+            }
             return null;
         }
         
