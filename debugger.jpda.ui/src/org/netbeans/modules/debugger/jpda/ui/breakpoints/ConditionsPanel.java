@@ -135,6 +135,7 @@ public class ConditionsPanel extends javax.swing.JPanel {
             cbWhenHitCount.setSelected(false);
             tfHitCountFilter.setText("");
         }
+        cbWhenHitCountActionPerformed(null);
     }
     
     public void setupConditionPaneContext(DataObject dobj) {

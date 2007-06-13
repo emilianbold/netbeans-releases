@@ -193,7 +193,6 @@
         </Property>
       </Properties>
       <AuxValues>
-        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="null"/>
         <AuxValue name="JavaCodeGenerator_InitCodePre" type="java.lang.String" value="spCondition = WatchPanel.createScrollableLineEditor(tfCondition);"/>
         <AuxValue name="autoScrollPane" type="java.lang.Boolean" value="true"/>
       </AuxValues>
