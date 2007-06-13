@@ -698,7 +698,9 @@ public class JaxWsUtils {
         }
         return null;
     }
-    
+    /** Setter for WebService annotation attribute, e.g. serviceName = "HelloService"
+     * 
+     */
     public static void setWebServiceAttrValue(FileObject implClassFo, final String attrName, final String attrValue) {
         final JavaSource javaSource = JavaSource.forFileObject(implClassFo);
         final CancellableTask<WorkingCopy> modificationTask = new CancellableTask<WorkingCopy>() {
@@ -723,24 +725,20 @@ public class JaxWsUtils {
                         if(anElement!=null && anElement.getQualifiedName().contentEquals("javax.jws.WebService")) { //NOI18N
                             List<? extends ExpressionTree> expressions = an.getArguments();
                             List<ExpressionTree> newExpressions = new ArrayList<ExpressionTree>();
-                            boolean found=false;
+                            boolean attrFound=false;
                             for (ExpressionTree expr:expressions) {
-                                if (expr.getKind()==Kind.ASSIGNMENT) {
-                                    AssignmentTree as = (AssignmentTree)expr;
-                                    IdentifierTree id = (IdentifierTree)as.getVariable();
-                                    if (id.getName().contentEquals(attrName)) {
-                                        found=true;
-                                        if (attrExpr!=null) {
-                                            newExpressions.add(attrExpr);
-                                        }
-                                    } else {
-                                        newExpressions.add(expr);
+                                AssignmentTree as = (AssignmentTree)expr;
+                                IdentifierTree id = (IdentifierTree)as.getVariable();
+                                if (id.getName().contentEquals(attrName)) {
+                                    attrFound=true;
+                                    if (attrExpr!=null) {
+                                        newExpressions.add(attrExpr);
                                     }
                                 } else {
                                     newExpressions.add(expr);
                                 }
                             }
-                            if (!found) {
+                            if (!attrFound) {
                                 newExpressions.add(attrExpr);
                             }
                             
@@ -766,7 +764,10 @@ public class JaxWsUtils {
             ErrorManager.getDefault().notify(ex);
         }
     }
-    
+ 
+    /** Setter for WebMethod annotation attribute, e.g. operationName = "HelloOperation"
+     * 
+     */    
     public static void setWebMethodAttrValue(FileObject implClassFo, final ElementHandle method, final String attrName, final String attrValue) {
         final JavaSource javaSource = JavaSource.forFileObject(implClassFo);
         final CancellableTask<WorkingCopy> modificationTask = new CancellableTask<WorkingCopy>() {
@@ -796,24 +797,20 @@ public class JaxWsUtils {
                             foundWebMethodAn=true;
                             List<? extends ExpressionTree> expressions = an.getArguments();
                             List<ExpressionTree> newExpressions = new ArrayList<ExpressionTree>();
-                            boolean found=false;
+                            boolean attrFound=false;
                             for (ExpressionTree expr:expressions) {
-                                if (expr.getKind()==Kind.ASSIGNMENT) {
-                                    AssignmentTree as = (AssignmentTree)expr;
-                                    IdentifierTree id = (IdentifierTree)as.getVariable();
-                                    if (id.getName().contentEquals(attrName)) {
-                                        found=true;
-                                        if (attrExpr!=null) {
-                                            newExpressions.add(attrExpr);
-                                        }
-                                    } else {
-                                        newExpressions.add(expr);
+                                AssignmentTree as = (AssignmentTree)expr;
+                                IdentifierTree id = (IdentifierTree)as.getVariable();
+                                if (id.getName().contentEquals(attrName)) {
+                                    attrFound=true;
+                                    if (attrExpr!=null) {
+                                        newExpressions.add(attrExpr);
                                     }
                                 } else {
                                     newExpressions.add(expr);
                                 }
                             }
-                            if (!found) {
+                            if (!attrFound) {
                                 newExpressions.add(attrExpr);
                             }
 
@@ -848,6 +845,9 @@ public class JaxWsUtils {
         }
     }
     
+    /** Setter for WebParam annotation attribute, e.g. name = "x"
+     * 
+     */    
     public static void setWebParamAttrValue(FileObject implClassFo, final TreePathHandle param, final String attrName, final String attrValue) {
         final JavaSource javaSource = JavaSource.forFileObject(implClassFo);
         final CancellableTask<WorkingCopy> modificationTask = new CancellableTask<WorkingCopy>() {
@@ -877,24 +877,20 @@ public class JaxWsUtils {
                             foundWebParamAn = true;
                             List<? extends ExpressionTree> expressions = an.getArguments();
                             List<ExpressionTree> newExpressions = new ArrayList<ExpressionTree>();
-                            boolean found=false;
+                            boolean attrFound=false;
                             for (ExpressionTree expr:expressions) {
-                                if (expr.getKind()==Kind.ASSIGNMENT) {
-                                    AssignmentTree as = (AssignmentTree)expr;
-                                    IdentifierTree id = (IdentifierTree)as.getVariable();
-                                    if (id.getName().contentEquals(attrName)) {
-                                        found=true;
-                                        if (attrExpr!=null) {
-                                            newExpressions.add(attrExpr);
-                                        }
-                                    } else {
-                                        newExpressions.add(expr);
+                                AssignmentTree as = (AssignmentTree)expr;
+                                IdentifierTree id = (IdentifierTree)as.getVariable();
+                                if (id.getName().contentEquals(attrName)) {
+                                    attrFound=true;
+                                    if (attrExpr!=null) {
+                                        newExpressions.add(attrExpr);
                                     }
                                 } else {
                                     newExpressions.add(expr);
                                 }
                             }
-                            if (!found) {
+                            if (!attrFound) {
                                 newExpressions.add(attrExpr);
                             }
 
