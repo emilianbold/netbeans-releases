@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.core.output2;
@@ -580,9 +580,11 @@ public class WrappedTextView extends View {
                 column = lineLength-1;
             }
 
-            return wraps > 0 ?
+            int result = wraps > 0 ?
                 Math.min(od.getLineEnd(logicalLine) - 1, lineStart + (ln[1] * charsPerLine) + column)
                 : lineStart + column;
+            result = Math.min (od.getLength(), result);
+            return result;
 /*            System.err.println ("ViewToModel " + ix + "," + iy + " = " + result + " physical ln " + physicalLine +
                     " logical ln " + logicalLine + " on wrap line " + ln[1] + " of " + wraps + " charsPerLine " +
                     charsPerLine + " column " + column + " line length " + lineLength);
