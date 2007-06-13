@@ -90,11 +90,11 @@ final class SvgcorePanel extends javax.swing.JPanel {
     }//GEN-LAST:event_jButtonBrowseActionPerformed
     
     void load() {
-        pathTextField.setText(SvgcoreSettings.getExternalEditorPath());
+        pathTextField.setText(SvgcoreSettings.getDefault().getExternalEditorPath());
     }
     
     void store() {
-        SvgcoreSettings.setExternalEditorPath(pathTextField.getText());
+        SvgcoreSettings.getDefault().setExternalEditorPath(pathTextField.getText());
     }
     
     boolean valid() {

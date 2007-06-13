@@ -59,7 +59,7 @@ public class Util {
         final InputOutput io = IOProvider.getDefault().getIO(NbBundle.getMessage(Util.class, "LBL_EditedSvgFile", fo.getName()), false); //NOI18N
         ExecutionEngine.getDefault().execute(NbBundle.getMessage(Util.class, "LBL_SvgEditor"), new Runnable() { //NOI18N
             public void run() {
-                String path = SvgcoreSettings.getExternalEditorPath();
+                String path = SvgcoreSettings.getDefault().getExternalEditorPath();
                 if (path == null || path.length() == 0 || !new File(path).exists()){
                     if (path == null || path.length() == 0){
                         DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
