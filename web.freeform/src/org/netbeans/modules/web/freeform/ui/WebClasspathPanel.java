@@ -33,8 +33,8 @@ import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -394,7 +394,7 @@ public class WebClasspathPanel extends javax.swing.JPanel implements HelpCtx.Pro
             try {
                 return FileUtil.isArchiveFile(f.toURI().toURL());
             } catch (MalformedURLException mue) {
-                ErrorManager.getDefault().notify(mue);
+                Exceptions.printStackTrace(mue);
                 return false;
             }
         }

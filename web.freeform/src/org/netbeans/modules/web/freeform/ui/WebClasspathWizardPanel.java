@@ -20,23 +20,14 @@
 package org.netbeans.modules.web.freeform.ui;
 
 import java.awt.Component;
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.InputStreamReader;
-import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.ant.freeform.spi.support.NewFreeformProjectSupport;
-import org.netbeans.modules.java.freeform.spi.support.NewJavaFreeformProjectSupport;
-import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
