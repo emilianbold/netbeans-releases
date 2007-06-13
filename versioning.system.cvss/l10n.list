@@ -1,0 +1,4 @@
+# javacvs/cvsmodule
+read global
+${l10n-module}/src/org/netbeans/modules/versioning/system/cvss/ui/selectors/*.gif
+${l10n-module}/src/org/netbeans/modules/versioning/system/cvss/ui/selectors/*.png

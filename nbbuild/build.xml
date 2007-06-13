@@ -947,28 +947,12 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <mkdir dir="tmp"/>
     <property name="nbroot" location=".."/>
     <l10n topdirs="${nbroot}" modules="${fixedmodules},${modules}"
-          localizablefile="l10n.list" generatedfile="l10n.list.translated"
-          distdir="${l10n.dist.dir}" changedfile="l10n.list.changed"
-          builddir="tmp" buildnumber="${buildnumber}"
-          excludepattern="**/ja/,**/*_ja.*"/>
-    <delete dir="tmp"/>
-  </target>
-
-  <target name="l10n-kit-101067" depends="bootstrap,init-module-list,set-buildnumber,init-tasks" description="Builds the L10N kit using l10n.list of new scope (see issue 101067)">
-    <taskdef name="l10n101067" classname="org.netbeans.nbbuild.L10nTask101067"
-             classpath="nbantext.jar"/>
-    <delete dir="${l10n.dist.dir}"/>
-    <mkdir dir="${l10n.dist.dir}"/>
-    <delete dir="l10n-tmp"/>
-    <mkdir dir="l10n-tmp"/>
-    <property name="nbroot" location=".."/>
-    <l10n101067 topdirs="${nbroot}" modules="${fixedmodules},${modules}"
-                localizablefile="l10n-101067.list" generatedfile="l10n-101067.translated"
-                distdir="${l10n.dist.dir}" changedfile="l10n-101067.changed"
+                localizablefile="l10n.list" generatedfile="l10n.list.translated"
+                distdir="${l10n.dist.dir}" changedfile="l10n.list.changed"
                 globalfile="l10n-global.list"
-                builddir="l10n-tmp" buildnumber="${buildnumber}"
+                builddir="tmp" buildnumber="${buildnumber}"
                 excludepattern="**/ja/,**/*_ja.*"/>
-    <delete dir="l10n-tmp"/>
+    <delete dir="tmp"/>
   </target>
 
   <target name="clean-external">

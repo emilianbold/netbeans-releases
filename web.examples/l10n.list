@@ -1,0 +1,3 @@
+# web/examples
+read global
+${l10n-module}/src/org/netbeans/modules/web/examples/descriptions/*.html

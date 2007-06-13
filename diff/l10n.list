@@ -1,2 +1,4 @@
-diff/src/**/Bundle*.properties
-diff/src/**/*.gif
+# diff
+read global
+${l10n-module}/src/org/netbeans/modules/**/builtin/visualizer/*.gif
+${l10n-module}/src/org/netbeans/modules/diff/*.gif

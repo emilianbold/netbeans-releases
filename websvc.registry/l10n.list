@@ -1,0 +1,3 @@
+# websvc/registry
+read global
+${l10n-module}/extsrc/**/Bundle.properties 

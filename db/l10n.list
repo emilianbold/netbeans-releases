@@ -1,27 +1,3 @@
-db/libsrc/**/Bundle*.properties
-exclude db/libsrc/**/Bundle_noi18n.properties
-db/src/**/Bundle*.properties
-exclude db/src/**/Bundle_noi18n.properties
-db/core/src/**/Bundle*.properties
-db/core/src/org/netbeans/modules/db/sql/loader/resources/*.png
-db/dbapi/src/**/Bundle*.properties
-db/derby/src/**/Bundle*.properties
-db/javahelp/org/netbeans/modules/db/docs/**/*.html
-db/javahelp/org/netbeans/modules/db/docs/**/*.hs
-db/javahelp/org/netbeans/modules/db/docs/**/*.jhm
-db/javahelp/org/netbeans/modules/db/docs/**/*.xml
-db/javahelp/org/netbeans/modules/db/docs/**/*.css
-db/javahelp/org/netbeans/modules/db/docs/**/*.gif
-db/javahelp/org/netbeans/modules/db/docs/**/*.png
-db/model/src/**/Bundle*.properties
-exclude db/model/src/**/Bundle_noi18n.properties
-db/model/src/**/*.html
-db/model/javahelp/**/*.html
-db/model/javahelp/**/*.hs
-db/model/javahelp/**/*.jhm
-db/model/javahelp/**/*.xml
-db/model/javahelp/**/*.css
-db/model/javahelp/**/*.gif
-db/sqleditor/src/**/Bundle*.properties
-db/sqleditor/src/org/netbeans/modules/db/sql/editor/resources/*.gif
-db/sqleditor/src/org/netbeans/modules/db/sql/editor/resources/*.png
+# apisupport/samples
+read global
+${l10n-module}/libsrc/**/Bundle.properties 

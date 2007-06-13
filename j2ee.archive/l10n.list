@@ -1,0 +1,3 @@
+# j2ee/archiveproject
+read global
+${l10n-module}/src/org/netbeans/modules/j2ee/archive/wizard/*.html 

@@ -1,8 +1,3 @@
-monitor/src/org/netbeans/modules/web/monitor/**/Bundle.properties
-monitor/serversrc/org/netbeans/modules/web/monitor/**/Bundle.properties
-monitor/javahelp/org/netbeans/modules/web/monitor/docs/**/*.html
-monitor/javahelp/org/netbeans/modules/web/monitor/docs/**/*.hs
-monitor/javahelp/org/netbeans/modules/web/monitor/docs/**/*.xml
-monitor/javahelp/org/netbeans/modules/web/monitor/docs/**/*.jhm
-monitor/javahelp/org/netbeans/modules/web/monitor/docs/**/*.css
-monitor/javahelp/org/netbeans/modules/web/monitor/docs/**/*.gif
+# monitor
+read global
+${l10n-module}/serversrc/**/Bundle*.properties

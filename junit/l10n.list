@@ -1,3 +1,3 @@
-junit/src/**/Bundle*.properties
-junit/src/**/*.html
-junit/src/**/*.gif
+# junit
+read global
+${l10n-module}/src/org/netbeans/modules/junit/output/res/*.gif

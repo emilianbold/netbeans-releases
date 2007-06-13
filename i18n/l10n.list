@@ -1,7 +1,3 @@
-i18n/src/**/Bundle*.properties
-i18n/src/**/*.html
-i18n/src/**/*.gif
-exclude i18n/src/org/netbeans/modules/i18n/wizard/package.html
-i18n/form/src/**/Bundle*.properties
-i18n/form/src/**/*.html
-i18n/form/src/**/*.gif
+# diff
+read global
+${l10n-module}/src/org/netbeans/modules/i18n/*.gif
