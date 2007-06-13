@@ -110,7 +110,7 @@ public class Util {
      * @return SVGImage created SVG image
      * @throws IOException if loading failed
      */
-/*    
+    
     public static SVGImage createSVGImage (FileObject fo, boolean showProgress) throws IOException {
         assert fo != null : "File object is null";
         if (!showProgress){
@@ -119,7 +119,7 @@ public class Util {
             return loadImageWithProgress(fo);
         }
     }
-*/
+
     /*
     public static SVGImage createSVGImage (InputStream in) throws IOException {
         return (SVGImage) ScalableImage.createImage(in, null);
@@ -155,13 +155,13 @@ public class Util {
         });
     }
 */    
-    /*
+    
     private static SVGImage loadImage(String url) throws IOException {
         return (SVGImage) ScalableImage.createImage(url, null);
     }
-     **/
     
-    /*
+    
+    
     private static SVGImage loadImageWithProgress(FileObject fo) throws IOException {
         ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(Util.class, "MSG_Loading", fo.getNameExt()));
         handle.start(200);
@@ -196,9 +196,9 @@ public class Util {
             }
         }        
     } 
-    */
+    
 
-/*            
+            
     public static interface SVGImageLoadedListener extends EventListener {
         ///**
         // * Notify about loaded SVG image or report Exception if loading failed
@@ -250,7 +250,7 @@ public class Util {
             handle.progress((int)current);  
         }
     }
-*/  
+  
             
     /*
     public static Document createXMLDOM(DataObject doj) throws IOException, SAXException {
