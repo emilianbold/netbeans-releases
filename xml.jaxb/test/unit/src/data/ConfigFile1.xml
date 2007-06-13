@@ -7,10 +7,10 @@
     <schema type="-xmlschema" name="schema1" package="ABC">
         <xjc-options>        
             <xjc-option name="nv" value="false"/>
-            <xjc-option name="readOnly=" value="false"/>
+            <xjc-option name="readOnly" value="false"/>
             <xjc-option name="npa" value="false"/>
             <xjc-option name="verbose" value="false"/>
-            <xjc-option name="quite" value="false"/>
+            <xjc-option name="quite" value="true"/>
         </xjc-options>
         <schema-sources>
             <schema-source location="src\META-INF\jaxb\XmlQosPmUtilSchema.xsd"

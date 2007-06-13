@@ -11,7 +11,7 @@
 <mkdir dir="build\classes" xmlns:s="http://xml.netbeans.org/schema/JAXBWizConfig"/>
 <xjc package="ABC" destdir="build\generated\jaxb">
 <schema file="src\META-INF\jaxb\XmlQosPmUtilSchema.xsd"/>
-<arg value="-xmlschema"/>
+<arg value="-xmlschema"/><arg value="quite"/>
 </xjc>
 <xjc package="ggg" destdir="build\generated\jaxb">
 <schema file="src\META-INF\jaxb\XmlQosPmUtilSchema.xsd"/>
