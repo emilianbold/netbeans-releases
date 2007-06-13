@@ -218,7 +218,7 @@ public class ScenePanel extends JPanel implements SceneListener,
 		}
 	}
 
-	private void drawLayers(Graphics g) {
+	void drawLayers(Graphics g) {
 		for (int i = this.scene.getLayerCount() - 1; i >= 0; i--) {
 			Layer layer = (Layer) this.scene.getLayerAt(i);
 			if (this.scene.isLayerVisible(layer)) {

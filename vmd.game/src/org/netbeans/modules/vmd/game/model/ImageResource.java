@@ -348,7 +348,7 @@ public class ImageResource {
 		return staticTileGrid;
 	}
 	
-	void paint(int index, Graphics2D g, int x, int y, int tileWidth, int tileHeight, boolean zeroBasedIndex) {
+	public void paint(int index, Graphics2D g, int x, int y, int tileWidth, int tileHeight, boolean zeroBasedIndex) {
 		this.paint(index, g, x, y, tileWidth, tileHeight, tileWidth, tileHeight, zeroBasedIndex);
 	}
 	void paint(int index, Graphics2D g, int x, int y, int tileWidth, int tileHeight, int scaledWidth, int scaledHeight, boolean zeroBasedIndex) {

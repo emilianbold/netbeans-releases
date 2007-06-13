@@ -33,11 +33,15 @@ import javax.swing.AbstractAction;
 import javax.swing.JComponent;
 import javax.swing.event.EventListenerList;
 import org.netbeans.modules.vmd.game.dialog.RenameTiledLayerDialog;
-import org.netbeans.modules.vmd.game.preview.TiledLayerPreview;
+import org.netbeans.modules.vmd.game.editor.tiledlayer.TiledLayerNavigator;
+import org.netbeans.modules.vmd.game.editor.tiledlayer.TiledLayerPreviewPanel;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 
 public class TiledLayer extends Layer {
+
+    private TiledLayerPreviewPanel preview;
+    private TiledLayerNavigator navigator;
 
 	public static final boolean DEBUG = false;
 
@@ -414,9 +418,23 @@ public class TiledLayer extends Layer {
 	}
 		
 	public JComponent getPreview() {
-		return new TiledLayerPreview(this);
+		if (this.preview == null) {
+            return this.preview = new TiledLayerPreviewPanel(this);
+        }
+		return this.preview;
 	}
 
+	public JComponent getNavigator() {
+		/*
+		if (this.navigator == null) {
+            return this.navigator = new TiledLayerNavigator(this);
+        }
+		return this.navigator;
+		 */
+		
+		return this.getPreview();
+	}
+	
 	public void paint(Graphics2D g) {
 
 		//only paint the tiles inside the clip

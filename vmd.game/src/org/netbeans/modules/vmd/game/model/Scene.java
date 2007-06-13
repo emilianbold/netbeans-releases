@@ -39,6 +39,7 @@ import javax.swing.event.EventListenerList;
 import org.netbeans.modules.vmd.game.dialog.RenameSceneDialog;
 import org.netbeans.modules.vmd.game.editor.scene.SceneEditor;
 import org.netbeans.modules.vmd.game.editor.scene.SceneLayerNavigator;
+import org.netbeans.modules.vmd.game.editor.scene.ScenePreviewPanel;
 import org.netbeans.modules.vmd.game.nbdialog.SpriteDialog;
 import org.netbeans.modules.vmd.game.nbdialog.TiledLayerDialog;
 import org.openide.DialogDescriptor;
@@ -60,7 +61,9 @@ public class Scene implements GlobalRepositoryListener, PropertyChangeListener, 
 	private ArrayList<Layer> layers = new ArrayList<Layer>();
 	private HashMap<Layer, LayerInfo> layerInfos = new HashMap<Layer, LayerInfo>();
 	private String name;
+	
 	private SceneLayerNavigator navigator;
+    private ScenePreviewPanel preview;
 	
 	private Rectangle allLayersBounds = new Rectangle();
 	private SceneEditor editor;
@@ -590,9 +593,18 @@ public class Scene implements GlobalRepositoryListener, PropertyChangeListener, 
     }
 
 	//-----Previewable
-	//XXX
 	public JComponent getPreview() {
-		return null;
+		if (this.preview == null) {
+            return this.preview = new ScenePreviewPanel(this);
+        }
+		return this.preview;
+	}
+
+	public JComponent getNavigator() {
+		if (this.navigator == null) {
+            return this.navigator = new SceneLayerNavigator(this);
+        }
+		return this.navigator;
 	}
 
 	public void paint(Graphics2D g, int x, int y) {
@@ -605,11 +617,5 @@ public class Scene implements GlobalRepositoryListener, PropertyChangeListener, 
     public int getHeight() {
 		return 0;
     }
-	
-	public JComponent getNavigator() {
-		if (this.navigator == null)
-			return this.navigator = new SceneLayerNavigator(this);
-		return this.navigator;
-	}
 
 }

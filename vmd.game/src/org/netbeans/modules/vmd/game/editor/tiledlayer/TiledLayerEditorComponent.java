@@ -257,7 +257,7 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 		return ret;
 	}
 	
-	private void paintCells(Graphics2D g) {
+	void paintCells(Graphics2D g) {
 		Rectangle rect = g.getClipBounds();
 		if (DEBUG) System.out.println("Paint cell: " + rect);
 		Position topLeft = this.getCellAtPoint(rect.getLocation());
@@ -287,7 +287,6 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 	
 	private void paintCellContents(Graphics2D g, Position cell) {
 		Tile tile = this.tiledLayer.getTileAt(cell.getRow(), cell.getCol());
-		//if (DEBUG) System.out.println("Paint contents of cell: " + rect);
 		Rectangle rect = this.getCellArea(cell);
 		int x = rect.x + CELL_BORDER_WIDTH;
 		int y = rect.y + CELL_BORDER_WIDTH;
