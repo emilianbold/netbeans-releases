@@ -36,15 +36,4 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
     </folder>
       
-    <folder name="UI">
-      <folder name="Services">
-        <folder name="Editing">
-          <!-- I18N Settings -->
-          <file name="org-netbeans-modules-i18n-I18nOptionsNode.instance">
-              <attr name="instanceCreate" methodvalue="org.netbeans.modules.i18n.I18nOptions.createViewNode"/>
-          </file>          
-        </folder> <!-- Editing -->
-      </folder> <!-- Services -->
-    </folder> <!-- UI -->
-
 </filesystem>
