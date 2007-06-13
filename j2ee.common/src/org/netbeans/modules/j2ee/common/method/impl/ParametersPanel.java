@@ -26,7 +26,10 @@ import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import javax.swing.DefaultCellEditor;
+import javax.swing.JComboBox;
 import javax.swing.table.AbstractTableModel;
+import javax.swing.table.TableColumn;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
 import org.openide.util.NbBundle;
 
@@ -50,8 +53,18 @@ public final class ParametersPanel extends javax.swing.JPanel {
 
     public ParametersPanel(List<MethodModel.Variable> parameters) {
         initComponents();
+        
         tableModel = new ParamsTableModel(parameters);
         table.setModel(tableModel);
+        
+        JComboBox typeCombo = new JComboBox();
+        
+        ReturnTypeUIHelper.connect(typeCombo);
+        TableColumn typeTableColumn = table.getColumnModel().getColumn(COL_TYPE_INDEX);
+        typeTableColumn.setCellEditor(new DefaultCellEditor(typeCombo));
+        
+        table.setRowHeight(typeCombo.getPreferredSize().height);
+        
         table.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent e) {
                 updateButtons();
@@ -62,12 +75,6 @@ public final class ParametersPanel extends javax.swing.JPanel {
                 updateButtons();
             }
         });
-//        tableModel.addTableModelListener(new TableModelListener() {
-//            public void tableChanged(TableModelEvent tableModelEvent) {
-//                System.out.println("### tableModelEvent " + tableModelEvent.getType());
-//                updateButtons();
-//            }
-//        });
     }
     
     public List<MethodModel.Variable> getParameters() {
@@ -169,7 +176,6 @@ private void removeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
 
 private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
     int index = tableModel.addParameter();
-//    System.out.println("### INDEX: " + index + " from " + table.getRowCount());
     table.getSelectionModel().setSelectionInterval(index, index);
     updateButtons();
 }//GEN-LAST:event_addButtonActionPerformed
@@ -251,7 +257,7 @@ private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
         public void setValueAt(Object aValue, int row, int column) {
             MethodModel.Variable parameter = parameters.get(row);
             MethodModel.Variable changedParameter = MethodModel.Variable.create(
-                    column == COL_TYPE_INDEX ? (String) aValue : parameter.getType(),
+                    column == COL_TYPE_INDEX ? (aValue instanceof String ? (String) aValue : "Object") : parameter.getType(),
                     column == COL_NAME_INDEX ? (String) aValue : parameter.getName(),
                     column == COL_FINAL_INDEX ? (Boolean) aValue : parameter.getFinalModifier()
                     );

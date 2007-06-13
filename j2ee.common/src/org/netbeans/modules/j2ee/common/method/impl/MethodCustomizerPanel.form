@@ -4,6 +4,8 @@
   <NonVisualComponents>
     <Component class="javax.swing.ButtonGroup" name="finderCardinalityButtonGroup">
     </Component>
+    <Component class="javax.swing.ButtonGroup" name="interfaceButtonGroup">
+    </Component>
   </NonVisualComponents>
   <AuxValues>
     <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="0"/>
@@ -18,30 +20,25 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Group type="102" attributes="0">
+          <Group type="102" alignment="0" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="exceptionAndParameterPane" alignment="1" pref="424" max="32767" attributes="0"/>
+                  <Component id="exceptionAndParameterPane" alignment="1" pref="469" max="32767" attributes="0"/>
+                  <Component id="ejbqlPanel" alignment="0" max="32767" attributes="0"/>
+                  <Component id="errorTextField" alignment="0" pref="469" max="32767" attributes="0"/>
+                  <Component id="cardinalityPanel" alignment="1" max="32767" attributes="0"/>
+                  <Component id="interfacesPanel" alignment="1" max="32767" attributes="0"/>
                   <Group type="102" alignment="0" attributes="0">
-                      <Component id="methodLabel" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Component id="methodSeparator" pref="365" max="32767" attributes="0"/>
-                  </Group>
-                  <Group type="102" alignment="1" attributes="0">
                       <Group type="103" groupAlignment="1" attributes="0">
                           <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
                           <Component id="returnTypeLabel" alignment="1" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="nameTextField" alignment="0" pref="335" max="32767" attributes="0"/>
-                          <Component id="returnTypeTextField" alignment="0" pref="335" max="32767" attributes="0"/>
+                          <Component id="returnTypeTextField" pref="380" max="32767" attributes="0"/>
+                          <Component id="nameTextField" alignment="0" pref="380" max="32767" attributes="0"/>
                       </Group>
                   </Group>
-                  <Component id="ejbqlPanel" alignment="0" max="32767" attributes="0"/>
-                  <Component id="cardinalityPanel" alignment="0" max="32767" attributes="0"/>
-                  <Component id="interfacesPanel" alignment="0" max="32767" attributes="0"/>
-                  <Component id="errorTextField" alignment="0" pref="424" max="32767" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
@@ -50,12 +47,7 @@
     <DimensionLayout dim="1">
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" attributes="0">
-              <EmptySpace min="-2" max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="1" attributes="0">
-                  <Component id="methodLabel" min="-2" max="-2" attributes="0"/>
-                  <Component id="methodSeparator" min="-2" pref="10" max="-2" attributes="0"/>
-              </Group>
-              <EmptySpace min="-2" max="-2" attributes="0"/>
+              <EmptySpace min="-2" pref="26" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="nameTextField" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="jLabel1" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -65,11 +57,11 @@
                   <Component id="returnTypeLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="returnTypeTextField" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace min="-2" max="-2" attributes="0"/>
-              <Component id="exceptionAndParameterPane" pref="149" max="32767" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace type="separate" min="-2" max="-2" attributes="0"/>
+              <Component id="exceptionAndParameterPane" pref="201" max="32767" attributes="0"/>
+              <EmptySpace type="unrelated" min="-2" max="-2" attributes="0"/>
               <Component id="interfacesPanel" min="-2" max="-2" attributes="0"/>
-              <EmptySpace min="-2" max="-2" attributes="0"/>
+              <EmptySpace type="unrelated" min="-2" max="-2" attributes="0"/>
               <Component id="cardinalityPanel" min="-2" max="-2" attributes="0"/>
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Component id="ejbqlPanel" max="32767" attributes="0"/>
@@ -160,15 +152,6 @@
         </Property>
       </Properties>
     </Component>
-    <Component class="javax.swing.JLabel" name="methodLabel">
-      <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/j2ee/common/method/impl/Bundle.properties" key="MethodCustomizerPanel.methodLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JSeparator" name="methodSeparator">
-    </Component>
     <Container class="javax.swing.JPanel" name="interfacesPanel">
 
       <Layout>
@@ -176,23 +159,23 @@
           <Group type="103" groupAlignment="0" attributes="0">
               <Group type="102" alignment="0" attributes="0">
                   <Component id="interfaceLabel" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace min="-2" pref="24" max="-2" attributes="0"/>
-                  <Component id="remoteCheckBox" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace max="-2" attributes="0"/>
-                  <Component id="localCheckBox" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace pref="174" max="32767" attributes="0"/>
+                  <EmptySpace type="separate" max="-2" attributes="0"/>
+                  <Component id="localRadio" min="-2" max="-2" attributes="0"/>
+                  <EmptySpace type="separate" max="-2" attributes="0"/>
+                  <Component id="remoteRadio" min="-2" max="-2" attributes="0"/>
+                  <EmptySpace type="separate" max="-2" attributes="0"/>
+                  <Component id="bothRadio" min="-2" max="-2" attributes="0"/>
+                  <EmptySpace pref="139" max="32767" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
         <DimensionLayout dim="1">
           <Group type="103" groupAlignment="0" attributes="0">
-              <Group type="102" alignment="0" attributes="0">
-                  <EmptySpace pref="18" max="32767" attributes="0"/>
-                  <Group type="103" groupAlignment="3" attributes="0">
-                      <Component id="interfaceLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                      <Component id="remoteCheckBox" alignment="3" min="-2" max="-2" attributes="0"/>
-                      <Component id="localCheckBox" alignment="3" min="-2" max="-2" attributes="0"/>
-                  </Group>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="interfaceLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="localRadio" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="remoteRadio" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="bothRadio" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
@@ -205,21 +188,34 @@
             </Property>
           </Properties>
         </Component>
-        <Component class="javax.swing.JCheckBox" name="remoteCheckBox">
+        <Component class="javax.swing.JRadioButton" name="localRadio">
           <Properties>
-            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/netbeans/modules/j2ee/common/method/impl/Bundle.properties" key="MethodCustomizerPanel.remoteCheckBox.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
+              <ComponentRef name="interfaceButtonGroup"/>
             </Property>
+            <Property name="text" type="java.lang.String" value="Local"/>
             <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
               <Insets value="[0, 0, 0, 0]"/>
             </Property>
           </Properties>
         </Component>
-        <Component class="javax.swing.JCheckBox" name="localCheckBox">
+        <Component class="javax.swing.JRadioButton" name="remoteRadio">
           <Properties>
-            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/netbeans/modules/j2ee/common/method/impl/Bundle.properties" key="MethodCustomizerPanel.localCheckBox.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
+              <ComponentRef name="interfaceButtonGroup"/>
             </Property>
+            <Property name="text" type="java.lang.String" value="Remote"/>
+            <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
+              <Insets value="[0, 0, 0, 0]"/>
+            </Property>
+          </Properties>
+        </Component>
+        <Component class="javax.swing.JRadioButton" name="bothRadio">
+          <Properties>
+            <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
+              <ComponentRef name="interfaceButtonGroup"/>
+            </Property>
+            <Property name="text" type="java.lang.String" value="Both"/>
             <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
               <Insets value="[0, 0, 0, 0]"/>
             </Property>
@@ -234,23 +230,20 @@
           <Group type="103" groupAlignment="0" attributes="0">
               <Group type="102" alignment="0" attributes="0">
                   <Component id="cardinalityLabel" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace max="-2" attributes="0"/>
+                  <EmptySpace type="separate" max="-2" attributes="0"/>
                   <Component id="oneRadioButton" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace max="-2" attributes="0"/>
+                  <EmptySpace type="separate" max="-2" attributes="0"/>
                   <Component id="manyRadioButton" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace pref="203" max="32767" attributes="0"/>
+                  <EmptySpace pref="216" max="32767" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
         <DimensionLayout dim="1">
           <Group type="103" groupAlignment="0" attributes="0">
-              <Group type="102" alignment="0" attributes="0">
-                  <EmptySpace pref="18" max="32767" attributes="0"/>
-                  <Group type="103" groupAlignment="3" attributes="0">
-                      <Component id="cardinalityLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                      <Component id="oneRadioButton" alignment="3" min="-2" max="-2" attributes="0"/>
-                      <Component id="manyRadioButton" alignment="3" min="-2" max="-2" attributes="0"/>
-                  </Group>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="cardinalityLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="oneRadioButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="manyRadioButton" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
@@ -298,9 +291,9 @@
           <Group type="103" groupAlignment="0" attributes="0">
               <Group type="102" alignment="0" attributes="0">
                   <Component id="ejbqlLabel" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace pref="385" max="32767" attributes="0"/>
+                  <EmptySpace pref="430" max="32767" attributes="0"/>
               </Group>
-              <Component id="ejbqlScrollPane" alignment="0" pref="424" max="32767" attributes="0"/>
+              <Component id="ejbqlScrollPane" alignment="0" pref="469" max="32767" attributes="0"/>
           </Group>
         </DimensionLayout>
         <DimensionLayout dim="1">
@@ -309,7 +302,7 @@
                   <EmptySpace max="-2" attributes="0"/>
                   <Component id="ejbqlLabel" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
-                  <Component id="ejbqlScrollPane" pref="115" max="32767" attributes="0"/>
+                  <Component id="ejbqlScrollPane" pref="88" max="32767" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
