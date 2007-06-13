@@ -313,7 +313,9 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         
         if (introduceMethod != null) {
             fixes.add(introduceMethod);
-            fixesMap.put(IntroduceKind.CREATE_METHOD, introduceMethod);
+            if (fixesMap != null) {
+                fixesMap.put(IntroduceKind.CREATE_METHOD, introduceMethod);
+            }
         }
         
         if (!fixes.isEmpty()) {
