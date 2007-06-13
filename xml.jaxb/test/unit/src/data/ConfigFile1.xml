@@ -32,6 +32,7 @@
             <xjc-option name="npa" value="false"/>
             <xjc-option name="verbose" value="false"/>
             <xjc-option name="quite" value="false"/>            
+            <xjc-option name="extension" value="true"/>            
         </xjc-options> 
         <schema-sources>
             <schema-source location="src\META-INF\jaxb\XmlQosPmUtilSchema.xsd"
