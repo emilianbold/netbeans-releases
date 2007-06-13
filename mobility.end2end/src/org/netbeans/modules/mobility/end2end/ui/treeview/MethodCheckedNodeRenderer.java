@@ -100,7 +100,7 @@ public class MethodCheckedNodeRenderer implements TreeCellRenderer {
             
             // Strikeout the line
             if( node.getValue( ServiceNodeManager.NODE_VALIDITY_ATTRIBUTE ) != null &&
-                    ((Boolean)node.getValue( ServiceNodeManager.NODE_VALIDITY_ATTRIBUTE )).booleanValue()) {
+                    !((Boolean)node.getValue( ServiceNodeManager.NODE_VALIDITY_ATTRIBUTE )).booleanValue()) {
                 customRenderer.setText( "<html><s>" + node.getDisplayName() + "</s></html>");
                 customRenderer.setEnabled( false );
             } else {
