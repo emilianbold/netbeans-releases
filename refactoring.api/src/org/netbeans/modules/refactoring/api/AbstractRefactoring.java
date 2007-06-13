@@ -33,6 +33,7 @@ import org.netbeans.modules.refactoring.spi.ProgressProvider;
 import org.netbeans.modules.refactoring.spi.ReadOnlyFilesHandler;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
 import org.netbeans.modules.refactoring.spi.RefactoringPluginFactory;
+import org.netbeans.modules.refactoring.spi.impl.Util;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -40,6 +41,7 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Lookup;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
+import org.openide.util.NbBundle;
 import org.openide.util.lookup.InstanceContent;
 
 
@@ -170,8 +172,14 @@ public abstract class AbstractRefactoring {
         if (p != null && p.isFatal())
             return p;
         
-        p = pluginsPrepare(p, session);
-        
+        try {
+            p = pluginsPrepare(p, session);
+        } catch (RuntimeException ex) {
+            Throwable cause = ex.getCause();
+            if (cause!=null && cause.getClass().getName().equals("org.netbeans.api.java.source.JavaSource$InsufficientMemoryException")) {
+                return new Problem(true, NbBundle.getMessage(Util.class, "ERR_OutOfMemory"));
+            }
+        }
         return p;
     }
     
