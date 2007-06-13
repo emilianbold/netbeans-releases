@@ -34,30 +34,6 @@
             <file name="GoogleMapResource.java" url="/org/netbeans/modules/websvc/rest/codegen/resources/GoogleMapResource.template"/>
             <file name="GoogleMapRefConverter.java" url="/org/netbeans/modules/websvc/rest/codegen/resources/GoogleMapRefConverter.template"/>
         </folder>
-    </folder>
-    
-    <folder name="Editors">
-        <folder name="text">
-            <folder name="x-java">                
-                <file name="PaletteFactory.instance">                    
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.websvc.rest.component.palette.RestPaletteFactory.createPalette"/>
-                    <attr name="instanceOf" stringvalue="org.netbeans.spi.palette.PaletteController"/>
-                </file>
-            </folder>
-        </folder>
     </folder>   
-    
-    <folder name="RestPalette">
-        <folder name="Google">
-            <attr name="SystemFileSystem.localizingBundle" 
-                stringvalue="org.netbeans.modules.websvc.rest.component.palette.Bundle"/>
-            <file name="googlemap.xml" url="/org/netbeans/modules/websvc/rest/component/palette/googlemap.xml" />
-        </folder>
-        <folder name="Component">
-            <attr name="SystemFileSystem.localizingBundle" 
-                stringvalue="org.netbeans.modules.websvc.rest.component.palette.Bundle"/>
-            <file name="component.xml" url="/org/netbeans/modules/websvc/rest/component/palette/component.xml" />
-        </folder>
-    </folder>    
     
 </filesystem>
