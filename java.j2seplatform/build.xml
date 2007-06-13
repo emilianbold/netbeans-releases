@@ -26,6 +26,9 @@ Microsystems, Inc. All Rights Reserved.
         <javac srcdir="probesrc" destdir="build/probe/classes" source="1.3" debug="true" deprecation="true" target="1.1"/>
         <mkdir dir="${cluster}/modules/ext"/>
         <jar jarfile="${cluster}/modules/ext/org-netbeans-modules-java-j2seplatform-probe.jar">
+            <manifest>
+                <attribute name="NetBeans-Own-Library" value="true"/>
+            </manifest>
             <fileset dir="build/probe/classes"/>
         </jar>
     </target>
