@@ -24,6 +24,7 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
             <attr name="J2EE/UML" boolvalue="true"/>
             <attr name="UML/APISupport" boolvalue="true"/>
             <attr name="UML/Samples" boolvalue="true"/>
+            <attr name="UML/SOA" boolvalue="true"/>
             <folder name="UML">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.project.ui.wizards.Bundle"/>
                 <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/uml/project/ui/resources/emptyProject.html"/>
