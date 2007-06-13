@@ -48,6 +48,8 @@ import org.netbeans.jemmy.Waiter;
 import org.netbeans.jemmy.Waiter;
 import org.netbeans.jemmy.operators.ContainerOperator;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
+import org.netbeans.jemmy.operators.JComboBoxOperator;
+import org.netbeans.jemmy.operators.JDialogOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.ide.ProjectSupport;
@@ -113,6 +115,14 @@ public class JSPDebuggingOverallTest extends JellyTestCase {
         for(int i=0;i<projects.length;i++) {
             ProjectSupport.openProject(new File(getDataDir(), projects[i]));
         }
+        // check missing target server dialog is shown    
+        // "Open Project"
+        String openProjectTitle = Bundle.getString("org.netbeans.modules.j2ee.common.ui.Bundle", "MSG_Broken_Server_Title");
+        boolean needToSetServer = false;
+        if(JDialogOperator.findJDialog(openProjectTitle, true, true) != null) {
+            new NbDialogOperator(openProjectTitle).close();
+            needToSetServer = true;
+        }
         // Set as Main Project
         String setAsMainProjectItem = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.actions.Bundle", "LBL_SetAsMainProjectAction_Name");
         new Action(null, setAsMainProjectItem).perform(new ProjectsTabOperator().getProjectRootNode(SAMPLE_WEB_PROJECT_NAME));
@@ -126,6 +136,10 @@ public class JSPDebuggingOverallTest extends JellyTestCase {
         new Node(new JTreeOperator(propertiesDialogOper), "Run").select();
         String displayBrowserLabel = Bundle.getStringTrimmed("org.netbeans.modules.web.project.ui.customizer.Bundle", "LBL_CustomizeRun_DisplayBrowser_JCheckBox");
         new JCheckBoxOperator(propertiesDialogOper, displayBrowserLabel).setSelected(false);
+        if(needToSetServer) {
+            // set default server
+            new JComboBoxOperator(propertiesDialogOper).setSelectedIndex(0);
+        }
         // confirm properties dialog
         propertiesDialogOper.ok();
     }
