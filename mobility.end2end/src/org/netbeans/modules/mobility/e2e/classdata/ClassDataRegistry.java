@@ -166,6 +166,12 @@ public class ClassDataRegistry {
         return Collections.unmodifiableSet( basePackages );
     }
 
+    public boolean isRegisteredType(ClassData clsData) {
+        if ( baseClasses==null)
+            updateClassDataTree();
+        return this.registeredTypes.contains( clsData );
+    }
+
     /**
      * Returns set of all classes present in a specified package
      *
@@ -174,6 +180,8 @@ public class ClassDataRegistry {
      */
 
     public Set<ClassData> getClassesForPackage(String packageName) {
+        if ( basePackages == null )
+            updateClassDataTree();
         HashSet<ClassData> result=new HashSet<ClassData>();
 
         Set<String> fqClassNames=this.baseClasses.keySet();
@@ -250,6 +258,8 @@ public class ClassDataRegistry {
      * @return
      */
     public Set<ClassData> getRegisteredTypes() {
+        if ( baseClasses==null)
+            updateClassDataTree();
         return Collections.unmodifiableSet( registeredTypes );
     }
 
@@ -259,6 +269,8 @@ public class ClassDataRegistry {
      * @return Set of return ClassData types
      */
     public Set<ClassData> getReturnTypes() {
+        if ( baseClasses == null )
+            updateClassDataTree();
         return Collections.unmodifiableSet( returnTypes );
     }
 
@@ -268,10 +280,14 @@ public class ClassDataRegistry {
      * @return Set of parameter ClassData types
      */
     public Set<ClassData> getParameterTypes() {
+        if ( baseClasses == null)
+            updateClassDataTree();
         return Collections.unmodifiableSet( parameterTypes );
     }
 
     public int getRegisteredTypeId( ClassData type ) {
+        if ( baseClasses==null)
+            updateClassDataTree();
         return idMapping.get( type );
     }
 

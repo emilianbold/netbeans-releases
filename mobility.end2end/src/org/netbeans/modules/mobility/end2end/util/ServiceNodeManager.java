@@ -136,24 +136,24 @@ public class ServiceNodeManager {
 
         for ( MethodData mthData : methods ) {
             // check if the method return type is supported by any serializer available in this registry
-            if ( activeProfileRegistry.getTypeSerializer( mthData.getReturnType())==null)
+            if ( !activeProfileRegistry.isRegisteredType( mthData.getReturnType()))
                 isValid=false;
             StringBuffer nodeText = new StringBuffer( mthData.getReturnType().getName()+" "+mthData.getName() + "(" );
             int j = 0;
             for ( MethodParameter mthParam : mthData.getParameters() ) {
                 // check whether or not the param. type is supported by any serializer available in this registry
-                if (activeProfileRegistry.getTypeSerializer( mthParam.getType())==null)
+                if (!activeProfileRegistry.isRegisteredType( mthParam.getType()))
                     isValid=false;
                 nodeText.append( mthParam.getType().getName() + " " + mthParam.getName() );
                 if ( j < mthData.getParameters().size() - 1 )
                     nodeText.append( "," );
-                else
-                    nodeText.append( ")" );
                 j++;
             }
+            nodeText.append( ")" );
             nodes[i] = new MethodDataNode( mthData.getName(), nodeText.toString() , mthData);
             nodes[i].setValue(NODE_VALIDITY_ATTRIBUTE,Boolean.valueOf( isValid));
             i++;
+            isValid=true;
         }
 
         result.add( nodes );
