@@ -23,27 +23,17 @@
 
 package org.netbeans.modules.visualweb.dataconnectivity;
 
-import org.netbeans.modules.visualweb.dataconnectivity.model.JdbcDriverInfoManager;
-import org.netbeans.modules.visualweb.dataconnectivity.model.XmlUtil;
 import org.netbeans.modules.visualweb.dataconnectivity.project.datasource.ProjectDataSourceTracker;
 import org.netbeans.modules.visualweb.dataconnectivity.explorer.ideDb.BundledDatabaseHelper;
 import org.netbeans.modules.visualweb.dataconnectivity.utils.DbPortUtilities;
-import org.netbeans.modules.visualweb.dataconnectivity.utils.SampleDatabaseCreator;
 import org.netbeans.modules.visualweb.dataconnectivity.naming.DesignTimeInitialContextFactory;
 import java.beans.Introspector;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.modules.visualweb.dataconnectivity.datasource.CurrentProject;
-import org.netbeans.modules.visualweb.dataconnectivity.model.OpenProjectDetector;
 import org.netbeans.modules.visualweb.dataconnectivity.naming.DatabaseSettingsImporter;
 import org.netbeans.modules.visualweb.dataconnectivity.naming.DerbyWaiter;
 import org.openide.modules.InstalledFileLocator;
@@ -149,7 +139,6 @@ public class DataconnectivityModuleInstaller extends ModuleInstall {
         WindowManager.getDefault().invokeWhenUIReady(new Runnable() {
             public void run() {
                 // code to be invoked when system UI is ready
-                new OpenProjectDetector().notifyProjectOpened();
                 CurrentProject.getInstance().setup();
                 
                 // Dataconnectivity implementation to support Project migration of previous releases projects
