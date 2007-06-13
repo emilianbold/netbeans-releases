@@ -167,7 +167,7 @@ public class ModuleDependencies extends Task {
                 
                 if (module == null) {
                     // skip this one
-                    if (manifest.getMainAttributes ().getValue ("NetBeans-Own-Library") == null && !incl.matches("/docs/|/ant/nblib/")) {
+                    if (manifest.getMainAttributes ().getValue ("NetBeans-Own-Library") == null && !incl.matches(".*(/docs/|/ant/nblib/).*")) {
                         external.add (f);
                     }
                     continue;
