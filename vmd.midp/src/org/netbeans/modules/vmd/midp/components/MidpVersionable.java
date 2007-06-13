@@ -18,10 +18,7 @@
  */
 package org.netbeans.modules.vmd.midp.components;
 
-import org.netbeans.modules.vmd.api.model.Versionable;
-import org.netbeans.modules.vmd.api.model.DesignDocument;
-import org.netbeans.modules.vmd.api.model.DesignComponent;
-import org.netbeans.modules.vmd.api.model.PropertyValue;
+import org.netbeans.modules.vmd.api.model.*;
 import org.netbeans.modules.vmd.midp.components.general.RootCD;
 
 /**
@@ -30,6 +27,11 @@ import org.netbeans.modules.vmd.midp.components.general.RootCD;
 public final class MidpVersionable {
 
     public static final Versionable MIDP = new Versionable() {
+
+        public boolean isCompatibleWith (Versionable versionable) {
+            return versionable == MIDP  ||  versionable == MIDP_1  ||  versionable == MIDP_2;
+        }
+
         public boolean isAvailable (DesignDocument document) {
             if (document == null)
                 return false;
@@ -40,9 +42,15 @@ public final class MidpVersionable {
             String string = MidpTypes.getString (version);
             return string != null  &&  string.startsWith ("MIDP");
         }
+
     };
 
     public static final Versionable MIDP_1 = new Versionable() {
+
+        public boolean isCompatibleWith (Versionable versionable) {
+            return versionable == MIDP  ||  versionable == MIDP_1;
+        }
+
         public boolean isAvailable (DesignDocument document) {
             if (document == null)
                 return false;
@@ -53,9 +61,15 @@ public final class MidpVersionable {
             String string = MidpTypes.getString (version);
             return "MIDP-1.0".equals (string);
         }
+
     };
 
     public static final Versionable MIDP_2 = new Versionable () {
+
+        public boolean isCompatibleWith (Versionable versionable) {
+            return versionable == MIDP  ||  versionable == MIDP_2;
+        }
+
         public boolean isAvailable (DesignDocument document) {
             if (document == null)
                 return false;
@@ -66,6 +80,7 @@ public final class MidpVersionable {
             String string = MidpTypes.getString (version);
             return "MIDP-2.0".equals (string);
         }
+
     };
 
 }

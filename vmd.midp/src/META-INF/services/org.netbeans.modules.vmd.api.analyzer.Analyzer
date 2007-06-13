@@ -1,2 +1,3 @@
 org.netbeans.modules.vmd.midp.analyzer.CommandsAnalyzer
 org.netbeans.modules.vmd.midp.analyzer.ResourcesAnalyzer
+org.netbeans.modules.vmd.midp.analyzer.Midp1CompliantAnalyzer

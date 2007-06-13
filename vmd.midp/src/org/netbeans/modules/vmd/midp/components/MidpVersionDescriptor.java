@@ -27,11 +27,39 @@ import java.util.Set;
 /**
  * @author David Kaspar
  */
-public final class MidpVersionDescriptor implements VersionDescriptor {
+public abstract class MidpVersionDescriptor implements VersionDescriptor {
 
-    public static final VersionDescriptor FOREVER = new MidpVersionDescriptor (); // TODO
-    public static final VersionDescriptor MIDP = new MidpVersionDescriptor (); // TODO
-    public static final VersionDescriptor MIDP_2 = new MidpVersionDescriptor (); // TODO
+    public static final VersionDescriptor FOREVER = new MidpVersionDescriptor () {
+
+        public boolean isCompatibleWith (VersionDescriptor descriptor) {
+            return true;
+        }
+
+    };
+
+    public static final VersionDescriptor MIDP = new MidpVersionDescriptor () {
+
+        public boolean isCompatibleWith (VersionDescriptor descriptor) {
+            return descriptor == MIDP  ||  descriptor == MIDP_1  ||  descriptor == MIDP_2;
+        }
+
+    };
+
+    public static final VersionDescriptor MIDP_1 = new MidpVersionDescriptor () {
+
+        public boolean isCompatibleWith (VersionDescriptor descriptor) {
+            return descriptor == MIDP  ||  descriptor == MIDP_1;
+        }
+
+    };
+
+    public static final VersionDescriptor MIDP_2 = new MidpVersionDescriptor () {
+
+        public boolean isCompatibleWith (VersionDescriptor descriptor) {
+            return descriptor == MIDP  ||  descriptor == MIDP_2;
+        }
+
+    };
 
     private MidpVersionDescriptor () {
     }

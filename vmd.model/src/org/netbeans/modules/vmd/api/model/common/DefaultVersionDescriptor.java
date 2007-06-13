@@ -33,6 +33,11 @@ import java.util.*;
 public abstract class DefaultVersionDescriptor implements VersionDescriptor {
 
     private static final VersionDescriptor FOREVER_COMPATIBLE = new VersionDescriptor() {
+
+        public boolean isCompatibleWith (VersionDescriptor descriptor) {
+            return true;
+        }
+
         public boolean isCompatibleWith (Collection<String> abilities) {
             return true;
         }
