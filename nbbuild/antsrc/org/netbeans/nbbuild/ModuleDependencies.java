@@ -167,7 +167,7 @@ public class ModuleDependencies extends Task {
                 
                 if (module == null) {
                     // skip this one
-                    if (manifest.getMainAttributes ().getValue ("NetBeans-Own-Library") == null && !incl.matches(".*(/docs/|/ant/nblib/).*")) {
+                    if (!isBuiltFromSource(f, manifest)) {
                         external.add (f);
                     }
                     continue;
@@ -237,7 +237,25 @@ public class ModuleDependencies extends Task {
             }
         }
     }
-    
+
+    private boolean isBuiltFromSource(File jar, Manifest manifest) {
+        if (manifest.getMainAttributes().getValue("NetBeans-Own-Library") != null) {
+            // Special marker can be added to any JAR to skip over it.
+            return true;
+        }
+        if (jar.getAbsolutePath().matches(".*(/docs/|/ant/nblib/).*")) {
+            // JavaHelp or in-IDE Ant task surely built by us.
+            return true;
+        }
+        if (jar.getName().matches("designtimeext\\.jar|jruby\\.jar")) { // XXX hardcoded for now
+            return true;
+        }
+        if (jar.getName().endsWith("_nb.jar")) {
+            // Branding.
+            return true;
+        }
+        return false;
+    }
     
     private void generatePublicPackages(File output, boolean justPublic, boolean justInterCluster) throws BuildException, IOException {
         TreeSet<String> packages = new TreeSet<String>();
