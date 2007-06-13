@@ -554,7 +554,24 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
         }
         
         topPanel.add(upFolderButton);
-        topPanel.add(Box.createRigidArea(new Dimension(5, 0)));
+        topPanel.add(Box.createRigidArea(new Dimension(2, 0)));
+        
+        // no home on Win platform
+        if (!Utilities.isWindows()) {
+            JButton homeButton = new JButton(getGoHomeAction());
+            Icon homeIcon = null;
+            if (!isMac) {
+                homeIcon = UIManager.getIcon("FileChooser.homeFolderIcon");
+            }
+            if (isMac || homeIcon == null) {
+                homeIcon = new ImageIcon(Utilities.loadImage("org/netbeans/swing/dirchooser/resources/homeIcon.gif"));
+            }
+            homeButton.setIcon(homeIcon);
+            homeButton.setText(null);
+
+            topPanel.add(homeButton);
+        }
+        
         newFolderButton = new JButton(newFolderAction);
         newFolderButton.setText(null);
         // fixed bug #97049
@@ -577,6 +594,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
         }
         
         topPanel.add(newFolderButton);
+        topPanel.add(Box.createRigidArea(new Dimension(2, 0)));
         
         JPanel panel = new JPanel();
         panel.setLayout(new BorderLayout());
