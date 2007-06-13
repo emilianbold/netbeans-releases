@@ -33,6 +33,7 @@ import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.dnd.DnDConstants;
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.modules.vmd.api.io.ActiveViewSupport;
@@ -129,6 +130,7 @@ final class InspectorFolderNode extends AbstractNode {
                 public void run() {
                     component = new WeakReference<DesignComponent>(document.getComponentByUID(componentID));
                     transferable = new NodeTransferable(component.get());
+                    //createPasteTypes(transferable, new ArrayList());
                 }
             });
         }
@@ -136,21 +138,27 @@ final class InspectorFolderNode extends AbstractNode {
     }
     
     protected void createPasteTypes(Transferable t, java.util.List s) {
+        System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> CreatePasteType" + this);
+        super.createPasteTypes(t, s);
         PasteType paste = getDropType(t, DnDConstants.ACTION_COPY, -1 );
         if( null != paste )
             s.add( paste );
     }
     
     public PasteType getDropType(final Transferable t, final int action, int index) {
-        final Node dropNode = NodeTransfer.node( t, DnDConstants.ACTION_COPY_OR_MOVE);
-        if (!(dropNode instanceof InspectorFolderNode))
+        DesignComponent transComponent = null;
+        if (t.isDataFlavorSupported(DesignComponentDataFlavor.DESIGN_COMPONENT_DATA_FLAVOR) == false)
             return null;
-        
-        final InspectorFolderNode ifn = ((InspectorFolderNode) dropNode);
-        ifn.getComponent().getDocument().getTransactionManager().readAccess(new Runnable() {
+        try {
+            transComponent = (DesignComponent) t.getTransferData(DesignComponentDataFlavor.DESIGN_COMPONENT_DATA_FLAVOR);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        if (transComponent == null)
+            return null;
+        final DesignComponent ifnc = transComponent;
+        ifnc.getDocument().getTransactionManager().readAccess(new Runnable() {
             public void run() {
-                
-                final DesignComponent ifnc = ifn.getComponent();
                 Map<AbstractAcceptPresenter, ComponentProducer> presentersMap = new HashMap<AbstractAcceptPresenter,ComponentProducer>();
                 if (component == null)
                     return;
@@ -160,6 +168,8 @@ final class InspectorFolderNode extends AbstractNode {
                 }
                 for (final AbstractAcceptPresenter presenter : presentersMap.keySet()) {
                     final Transferable trans = new NodeTransferable(ifnc);
+                    System.out.println(presenter);
+                    System.out.println(presenter.isAcceptable(trans));
                     if (presenter.getKind() == AbstractAcceptPresenter.Kind.TRANSFERABLE &&  presenter.isAcceptable(trans)) {
                         pasteType = new PasteType() {
                             public Transferable paste() throws IOException {
@@ -188,9 +198,26 @@ final class InspectorFolderNode extends AbstractNode {
     public boolean canCut() {
         return true;
     }
+
+    @Override
+    public boolean canCopy() {
+        return true;
+    }
+    
+    @Override
+    public Transferable clipboardCopy() throws IOException {
+        return transferable;
+    }
+
+    @Override
+    public Transferable clipboardCut() throws IOException {
+        return transferable;
+    }
+    
+    
     
     public boolean canDestroy() {
-        return false;
+        return true;
     }
     
     DesignComponent getComponent() {
@@ -214,20 +241,20 @@ final class InspectorFolderNode extends AbstractNode {
     
     private class NodeTransferable implements Transferable {
         
-        private DesignComponentDataFlavor dataFlavor;
         private WeakReference<DesignComponent> component;
         
         public NodeTransferable(DesignComponent component) {
             assert (component != null);
-            dataFlavor = new DesignComponentDataFlavor(component);
             this.component = new WeakReference<DesignComponent>(component);
         }
         
         public DataFlavor[] getTransferDataFlavors() {
-            return new DataFlavor[]{dataFlavor};
+            return new DataFlavor[]{DesignComponentDataFlavor.DESIGN_COMPONENT_DATA_FLAVOR};
         }
         
         public boolean isDataFlavorSupported(DataFlavor flavor) {
+            if (flavor == DesignComponentDataFlavor.DESIGN_COMPONENT_DATA_FLAVOR)
+                return true;
             return false;
         }
         

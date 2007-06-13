@@ -123,5 +123,9 @@ public class ItemDisplayPresenter extends ScreenDisplayPresenter {
                 new ScreenPropertyDescriptor (getComponent (), label, new ScreenStringPropertyEditor (ItemCD.PROP_LABEL))
         );
     }
- 
+
+    public boolean isDraggable() {
+        return true;
+    }
+    
 }

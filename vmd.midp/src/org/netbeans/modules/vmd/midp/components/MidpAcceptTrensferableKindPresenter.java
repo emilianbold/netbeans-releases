@@ -65,8 +65,7 @@ public class MidpAcceptTrensferableKindPresenter extends AbstractAcceptPresenter
     private Map<TypeID, String> typesMap;
     private DesignComponent component;
     private String propertyName;
-    private DataFlavor dataFlavor;
-    
+   
     public MidpAcceptTrensferableKindPresenter() {
         super(AbstractAcceptPresenter.Kind.TRANSFERABLE);
         typesMap = new HashMap<TypeID, String>();
@@ -85,14 +84,10 @@ public class MidpAcceptTrensferableKindPresenter extends AbstractAcceptPresenter
     public boolean isAcceptable(Transferable transferable) {
         if (typesMap.values().isEmpty())
             throw new IllegalArgumentException("No types to check. Use addNewType method to add types to check"); //NOI18N
-        if (dataFlavor == null) {
-            assert (getComponent() != null);
-            dataFlavor = new DesignComponentDataFlavor(getComponent());
-        }
         try {
-            if (!(transferable.getTransferData(dataFlavor) instanceof DesignComponent))
+            if (!(transferable.getTransferData(DesignComponentDataFlavor.DESIGN_COMPONENT_DATA_FLAVOR) instanceof DesignComponent))
                 return false;
-            component = (DesignComponent) transferable.getTransferData(dataFlavor);
+            component = (DesignComponent) transferable.getTransferData(DesignComponentDataFlavor.DESIGN_COMPONENT_DATA_FLAVOR);
             if (typesMap.containsKey(component.getType())) {
                 propertyName = typesMap.get(component.getType());
                 return true;

@@ -115,7 +115,8 @@ public final class ScreenSupport {
         DesignDocument document = imageComponent.getDocument();
         
         Map<FileObject, FileObject> fileMap = MidpProjectSupport.getFileObjectsForRelativeResourcePath(document, imagePath);
-        
+        if (fileMap ==  null || fileMap.keySet().size() == 0)
+            return null;
         FileObject imageFileObject = fileMap.keySet().iterator().next();
         if (imageFileObject != null) {
             return resolveImageForRoot(imageFileObject, imagePath);

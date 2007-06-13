@@ -201,28 +201,26 @@ public class ResourceItemPanel extends JLabel implements MouseListener {
     }
     
     private class ScreenTransferable implements Transferable {
-        private DataFlavor dataFlavor;
         private DesignComponent component;
         
         public ScreenTransferable(DesignComponent component) {
-            dataFlavor = new DesignComponentDataFlavor(component);
             this.component = component;
         }
         
         public DataFlavor[] getTransferDataFlavors() {
-            return new DataFlavor[]{dataFlavor};
+            return new DataFlavor[]{DesignComponentDataFlavor.DESIGN_COMPONENT_DATA_FLAVOR};
         }
         
         public boolean isDataFlavorSupported(DataFlavor flavor) {
-            boolean result = false;
-            if (dataFlavor.equals(flavor)) {
-                result = true;
-            }
-            return result;
+            if (flavor == DesignComponentDataFlavor.DESIGN_COMPONENT_DATA_FLAVOR) 
+                return  true;
+            return false;
         }
         
         public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException, IOException {
-            return component;
+            if (flavor == DesignComponentDataFlavor.DESIGN_COMPONENT_DATA_FLAVOR)
+                return component;
+            return null;
         }
     }
     

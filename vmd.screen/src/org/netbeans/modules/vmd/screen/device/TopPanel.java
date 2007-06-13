@@ -51,6 +51,7 @@ import java.io.IOException;
 import java.util.*;
 import java.util.List;
 
+
 /**
  * @author David Kaspar
  */
@@ -61,6 +62,7 @@ public class TopPanel extends JPanel {
     
     //    private static final Color COLOR_HOVER_FILL = new Color (0xB9, 0xDF, 0xC0, 128);
     private static final Color COLOR_HOVER_DRAW = MainPanel.HOVER_COLOR;
+    private static final Color COLOR_HOVER_DRAW_DND = Color.GREEN;
     
     private static final Stroke STROKE = new BasicStroke(2.0f);
     
@@ -74,6 +76,7 @@ public class TopPanel extends JPanel {
     private SelectionShape hoverShape = null;
     private DragSource dragSource;
     private DesignComponent dragedComponent;
+    private boolean innerDragingInProgress;
     
     public TopPanel(final DevicePanel devicePanel) {
         this.devicePanel = devicePanel;
@@ -84,7 +87,13 @@ public class TopPanel extends JPanel {
                 devicePanel.getController().getDocument().getTransactionManager().readAccess(new Runnable() {
                     public void run() {
                         dragedComponent = devicePanel.getDesignComponentAt(dgEvent.getDragOrigin());
+                        ScreenDisplayPresenter presenter = dragedComponent.getPresenter(ScreenDisplayPresenter.class);
+                        if (presenter == null || presenter.isDraggable() == false) {
+                            innerDragingInProgress = false;
+                            return;
+                        }
                         dragSource.startDrag(dgEvent, null, new InnerTransferable(dragedComponent), null);
+                        innerDragingInProgress = true;
                     }
                 });
             }
@@ -137,7 +146,8 @@ public class TopPanel extends JPanel {
             }
         });
         
-        setDropTarget(new DropTarget(this, new DropTargetListener() {
+        setDropTarget(new DropTarget(this,new DropTargetListener() {
+            
             public void dragEnter(DropTargetDragEvent dtde) {
                 if (isAcceptable(dtde.getLocation(), dtde.getTransferable()))
                     dtde.acceptDrag(DnDConstants.ACTION_COPY_OR_MOVE);
@@ -145,8 +155,12 @@ public class TopPanel extends JPanel {
                     dtde.rejectDrag();
             }
             
-            public void dragOver(DropTargetDragEvent dtde) {
-                hover(dtde.getLocation());
+            public void dragOver(final DropTargetDragEvent dtde) {
+                if (innerDragingInProgress)
+                    hoverDnD(dtde.getLocation());
+                else
+                    hover(dtde.getLocation());
+                
                 if (isAcceptable(dtde.getLocation(), dtde.getTransferable()))
                     dtde.acceptDrag(DnDConstants.ACTION_COPY_OR_MOVE);
                 else
@@ -161,6 +175,7 @@ public class TopPanel extends JPanel {
             }
             
             public void dragExit(DropTargetEvent dte) {
+                innerDragingInProgress = false;
             }
             
             public void drop(DropTargetDropEvent dtde) {
@@ -170,6 +185,7 @@ public class TopPanel extends JPanel {
                 } else {
                     dtde.rejectDrop();
                 }
+                innerDragingInProgress = false;
             }
         }));
     }
@@ -194,7 +210,10 @@ public class TopPanel extends JPanel {
             gr.translate(hoverShape.x, hoverShape.y);
             //            gr.setColor (COLOR_HOVER_FILL);
             //            gr.fill (hoverShape.shape);
-            gr.setColor(COLOR_HOVER_DRAW);
+            if (innerDragingInProgress)
+                gr.setColor(COLOR_HOVER_DRAW_DND);
+            else 
+                gr.setColor(COLOR_HOVER_DRAW);
             gr.draw(hoverShape.shape);
             gr.translate(- hoverShape.x, - hoverShape.y);
         }
@@ -249,17 +268,17 @@ public class TopPanel extends JPanel {
         document.getTransactionManager().writeAccess(new Runnable() {
             public void run() {
                 DesignComponent component = devicePanel.getDesignComponentAt(e.getPoint());
-                if ((e.getModifiers () & InputEvent.CTRL_MASK) == InputEvent.CTRL_MASK) {
+                if ((e.getModifiers() & InputEvent.CTRL_MASK) == InputEvent.CTRL_MASK) {
                     if (component != null) {
-                        ArrayList<DesignComponent> list = new ArrayList<DesignComponent> (document.getSelectedComponents ());
-                        if (! list.remove (component))
-                            list.add (component);
+                        ArrayList<DesignComponent> list = new ArrayList<DesignComponent> (document.getSelectedComponents());
+                        if (! list.remove(component))
+                            list.add(component);
                         document.setSelectedComponents(ScreenViewController.SCREEN_ID, list);
                     }
                 } else {
                     if (component == null)
                         document.setSelectedComponents(ScreenViewController.SCREEN_ID, Collections.<DesignComponent>emptySet());
-                    else if (! document.getSelectedComponents ().contains (component))
+                    else if (! document.getSelectedComponents().contains(component))
                         document.setSelectedComponents(ScreenViewController.SCREEN_ID, Collections.singleton(component));
                 }
             }
@@ -284,6 +303,26 @@ public class TopPanel extends JPanel {
                             hoverShape = new SelectionShape(editorOrigin.x, editorOrigin.y, shape, Long.MIN_VALUE, false);
                             return;
                         }
+                    }
+                    hoverShape = null;
+                }
+            });
+            repaint();
+    }
+    
+    public void hoverDnD(final Point point) {
+        lastHoverPoint = point != null ? point : null;
+        final DesignDocument document = devicePanel.getController().getDocument();
+        if (lastHoverPoint != null  &&  document != null)
+            document.getTransactionManager().writeAccess(new Runnable() {
+                public void run() {
+                    DesignComponent component = devicePanel.getDesignComponentAt(lastHoverPoint);
+                    ScreenDisplayPresenter presenter = component != null ? component.getPresenter(ScreenDisplayPresenter.class) : null;
+                    Point editorOrigin = devicePanel.calculateTranslation(presenter.getView());
+                    Shape shape = presenter.getSelectionShape();
+                    if (shape.contains(new Point(point.x - editorOrigin.x, point.y - editorOrigin.y))) {
+                        hoverShape = new SelectionShape(editorOrigin.x, editorOrigin.y, shape, Long.MIN_VALUE, false);
+                        return;
                     }
                     hoverShape = null;
                 }
@@ -377,7 +416,7 @@ public class TopPanel extends JPanel {
             pane.add(view, new GridBagConstraints(GridBagConstraints.REMAINDER, 0, 1, 1, 1.0, 0.0, GridBagConstraints.NORTHWEST, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 6));
         
         Point screen = getLocationOnScreen();
-        PopupUtil.showPopup(pane, "Actions", screen.x + x, screen.y + y, true);
+        PopupUtil.showPopup(pane, "Actions", screen.x + x, screen.y + y, true); //NOI18N
     }
     
     private void editProperty(final MouseEvent e) {
@@ -431,7 +470,6 @@ public class TopPanel extends JPanel {
             this.componentID = componentID;
             this.enableInjector = enableInjector;
         }
-        
     }
     
     private class InnerTransferable implements Transferable {
@@ -443,17 +481,20 @@ public class TopPanel extends JPanel {
         }
         
         public DataFlavor[] getTransferDataFlavors() {
-            return new DataFlavor[]{new DesignComponentDataFlavor(comnponent)};
+            return new DataFlavor[]{DesignComponentDataFlavor.DESIGN_COMPONENT_DATA_FLAVOR};
         }
         
         public boolean isDataFlavorSupported(DataFlavor flavor) {
+            if (flavor instanceof DesignComponentDataFlavor)
+                return true;
             return false;
         }
         
         public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException, IOException {
-            return comnponent;
+            if (flavor instanceof DesignComponentDataFlavor)
+                return comnponent;
+            return null;
         }
         
     }
-    
 }
