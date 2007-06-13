@@ -43,6 +43,10 @@ public class AssemblyDescriptorImpl implements AssemblyDescriptor {
     public SecurityRole[] getSecurityRole() {
         return CommonAnnotationHelper.getSecurityRoles(helper);
     }
+    
+    public MessageDestination[] getMessageDestination() throws VersionNotSupportedException {
+        return new MessageDestination[0];
+    }
 
     // <editor-fold defaultstate="collapsed" desc="Not implemented methods">
 
@@ -151,10 +155,6 @@ public class AssemblyDescriptorImpl implements AssemblyDescriptor {
     }
 
     public ExcludeList newExcludeList() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public MessageDestination[] getMessageDestination() throws VersionNotSupportedException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
