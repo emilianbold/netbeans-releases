@@ -144,19 +144,15 @@ public class BuildServiceAssembly extends Task {
         JarFile genericBCJar = null;
         try {
             MigrationHelper.migrateCasaWSDL(jbiasaDirLoc, getProjectName());
-            
+                        
             Project p = this.getProject();
-            
-            String javaeeJars = p.getProperty(JbiProjectProperties.JBI_JAVAEE_JARS);
-            String jars = p.getProperty((JbiProjectProperties.JBI_CONTENT_ADDITIONAL));
-            if (jars == null) {
-                return;
-            }
-            
             String confDir = p.getProperty((JbiProjectProperties.META_INF));
             if ((confDir == null) || (confDir.length() < 1)) {
                 return;
             }
+            
+            String javaeeJars = p.getProperty(JbiProjectProperties.JBI_JAVAEE_JARS);
+            String jars = p.getProperty((JbiProjectProperties.JBI_CONTENT_ADDITIONAL));
             
             String projPath = p.getProperty("basedir") + File.separator;            
             String srcDirLoc = projPath + "src" + File.separator;
