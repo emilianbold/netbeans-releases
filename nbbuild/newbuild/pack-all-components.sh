@@ -31,7 +31,7 @@ find netbeans | egrep -v "netbeans/(extra|testtools|uml|ruby|cnd|soa)" | zip -q 
 mkdir $DIST/zip/moduleclusters
 
 #Pack all the NetBeans
-pack_component $DIST $BASENAME all-in-one netbeans
+pack_component $DIST/zip/moduleclusters $BASENAME all-in-one netbeans
 
 cd $NB_ALL/nbbuild/netbeans
 
