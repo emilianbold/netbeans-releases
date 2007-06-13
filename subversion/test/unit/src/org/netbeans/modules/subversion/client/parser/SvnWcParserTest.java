@@ -19,34 +19,11 @@
 package org.netbeans.modules.subversion.client.parser;
 
 import junit.framework.*;
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileFilter;
-import java.io.FilenameFilter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.Reader;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.Properties;
-import java.util.Set;
-import org.netbeans.api.diff.Difference;
-import org.netbeans.spi.diff.DiffProvider;
-import org.openide.util.Lookup;
-import org.openide.xml.XMLUtil;
 import org.tigris.subversion.svnclientadapter.ISVNStatus;
 import org.tigris.subversion.svnclientadapter.SVNNodeKind;
 import org.tigris.subversion.svnclientadapter.SVNStatusKind;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
-import org.xml.sax.Attributes;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
-import org.xml.sax.XMLReader;
-import org.xml.sax.helpers.DefaultHandler;
 
 /**
  *
@@ -683,17 +660,17 @@ public class SvnWcParserTest extends TestCase {
         ISVNStatus parsedStatus = svnWcParser.getSingleStatus(myFile);
         assertFalse(parsedStatus.isCopied());
         assertNull(parsedStatus.getUrlCopiedFrom());
-        assertEquals("svn://gonzo/testRepos/trunk/testApp/src/testapp/Main.java", parsedStatus.getUrl().toString());
+        assertEquals("file:///data/subversion/trunk/testapp/Main.java", parsedStatus.getUrl().toString());
         assertEquals(SVNStatusKind.NORMAL, parsedStatus.getTextStatus());
-        assertEquals(11, parsedStatus.getRevision().getNumber());
+        assertEquals(289, parsedStatus.getRevision().getNumber());
         assertNull(parsedStatus.getConflictNew());
         assertNull(parsedStatus.getConflictOld());
         assertNull(parsedStatus.getConflictWorking());
         assertEquals(myFile, parsedStatus.getFile());
-        Date expectedDate = SvnWcUtils.parseSvnDate("2006-06-05T11:03:38.718355Z");
+        Date expectedDate = SvnWcUtils.parseSvnDate("2007-06-12T15:24:28.289544Z");
         assertEquals(expectedDate, parsedStatus.getLastChangedDate());
-        assertEquals(11, parsedStatus.getLastChangedRevision().getNumber());
-        assertEquals("ed", parsedStatus.getLastCommitAuthor());
+        assertEquals(289, parsedStatus.getLastChangedRevision().getNumber());
+        assertEquals("tomas", parsedStatus.getLastCommitAuthor());
         assertEquals(SVNNodeKind.FILE, parsedStatus.getNodeKind());
         assertEquals(myFile.getPath(), parsedStatus.getPath());
         assertEquals(SVNStatusKind.NORMAL, parsedStatus.getPropStatus());
