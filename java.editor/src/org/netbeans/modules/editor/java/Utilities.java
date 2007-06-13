@@ -470,11 +470,9 @@ public class Utilities {
                     visit(bound, p);
                 } else {
                     bound = SourceUtils.getBound(t);
-                    if (bound != null) {
+                    if (bound != null && (bound.getKind() != TypeKind.DECLARED || !((TypeElement)((DeclaredType)bound).asElement()).getQualifiedName().contentEquals("java.lang.Object"))) { //NOI18N
                         DEFAULT_VALUE.append(" extends "); //NOI18N
                         visit(bound, p);
-                    } else {
-                        DEFAULT_VALUE.append(p ? " extends java.lang.Object" : " extends Object"); //NOI18N                        
                     }
                 }
             } else {
