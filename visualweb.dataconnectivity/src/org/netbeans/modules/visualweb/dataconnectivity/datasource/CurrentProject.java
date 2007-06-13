@@ -23,11 +23,15 @@ package org.netbeans.modules.visualweb.dataconnectivity.datasource;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.core.api.multiview.MultiViews;
 import org.netbeans.modules.visualweb.dataconnectivity.model.OpenProjectDetector;
@@ -46,30 +50,29 @@ import org.openide.windows.TopComponent;
  *
  * @author JohnBaker
  */
-public class CurrentProject implements ProjectOpenedListener  {
+public class CurrentProject {
     private static CurrentProject _instance = null;
-    private Project project = null;
+    private static Project project = null;
     private final PropertyChangeListener topComponentRegistryListener = new TopComponentRegistryListener();
     private TopComponent.Registry registry  = null;
     Set listeners = new HashSet<WeakReference>();
     private Project previousProject = null;
-    private static boolean datasourcesUpdated = false;
-    private OpenProjectDetector openedProject;
+    
+    protected ProjectsChangedListener changedProjectsListener = new ProjectsChangedListener();
     
     /** Creates a new instance of CurrentProject */
     private CurrentProject() {                        
         DataObject obj = Utilities.actionsGlobalContext().lookup(DataObject.class);
+        OpenProjects.getDefault().addPropertyChangeListener(changedProjectsListener);
+        
         if (obj != null) {
             FileObject fileObject = obj.getPrimaryFile();
-            project = FileOwnerQuery.getOwner(fileObject);
+            project = FileOwnerQuery.getOwner(fileObject);            
         }
         
         if (project != null){
             setPreviousProject(project);
-        }
-        
-        openedProject = new OpenProjectDetector();
-        openedProject.addProjectOpenedListener(this);
+        }               
     }
 
     
@@ -87,6 +90,7 @@ public class CurrentProject implements ProjectOpenedListener  {
         if (obj != null) {
             FileObject fileObject = obj.getPrimaryFile();
             project = FileOwnerQuery.getOwner(fileObject);
+            setPreviousProject(project);
             
             ProjectChangeEvent evt = new  ProjectChangeEvent(project);
             Iterator iter = listeners.iterator();
@@ -108,6 +112,7 @@ public class CurrentProject implements ProjectOpenedListener  {
     }
     
     public void setProject(Project prj) {
+        previousProject = project;
         project = prj;
     }
     
@@ -119,7 +124,41 @@ public class CurrentProject implements ProjectOpenedListener  {
                    multiViewChange();                
         }
     } 
-     
+    
+    
+    public class ProjectsChangedListener implements PropertyChangeListener {
+        public void propertyChange(PropertyChangeEvent event) {
+            
+            // The list of open projects has changed; clean up any old projects we may be holding on to.
+            if (OpenProjects.PROPERTY_OPEN_PROJECTS.equals(event.getPropertyName())) {
+                
+                List<Project> oldOpenProjectsList = Arrays.asList((Project[]) event.getOldValue());
+                List<Project> newOpenProjectsList = Arrays.asList((Project[]) event.getNewValue());
+                Set<Project> closedProjectsSet = new LinkedHashSet<Project>(oldOpenProjectsList);
+                closedProjectsSet.removeAll(newOpenProjectsList);
+                for (Project project : closedProjectsSet) {
+                    // Project has been closed; null the project; reset to the previous project
+                    _instance.project = null;
+
+                    if (!newOpenProjectsList.isEmpty()) {
+                        _instance.previousProject = newOpenProjectsList.get(newOpenProjectsList.size()-1);
+                        _instance.project = _instance.previousProject;
+                    } else {
+                        _instance.previousProject = null;
+                    }
+                }                
+                
+                Set<Project> openedProjectsSet = new LinkedHashSet<Project>(newOpenProjectsList);
+                openedProjectsSet.removeAll(oldOpenProjectsList);
+                for (Project project : openedProjectsSet) {
+                    // fire an event to notify listeners that a project opened
+                    _instance.previousProject = _instance.project;
+                    _instance.project = project;
+                }
+            }
+        }
+    }
+
     public void addProjectChangeListener(ProjectChangeListener listener){
         listeners.add(new WeakReference(listener));
     }
@@ -135,13 +174,5 @@ public class CurrentProject implements ProjectOpenedListener  {
     public Project getPreviousProject() {
         return previousProject;
     }
-
-    public void addProjectOpened(ProjectOpenedEvent evt) {
-        setProject(evt.getProject());
-    }
-
-    public void removeProjectOpened(ProjectOpenedEvent evt) {
-        openedProject.removeProjectOpenedListener(this);
-    }
-                
+             
 }
