@@ -13,6 +13,7 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <filesystem>
+    <!-- XXX all files are missing!
     <folder name="SVGXMLPalette">
         <folder name="Shapes">
             <file name="line.xml" url="items/line.xml"/>
@@ -26,6 +27,7 @@ Microsystems, Inc. All Rights Reserved.
             <file name="closed_curve.xml" url="items/closed_curve.xml"/>
         </folder>        
     </folder>
+    -->
 
     <folder name="Navigator">
         <folder name="Panels">
