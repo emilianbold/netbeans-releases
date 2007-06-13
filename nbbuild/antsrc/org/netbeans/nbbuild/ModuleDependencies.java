@@ -442,6 +442,7 @@ public class ModuleDependencies extends Task {
         PrintWriter w = new PrintWriter (new FileWriter (output));
         String SPACES = "                                                     ";
         for (File f : external) {
+            /* File hash is not very useful in practice; when two JARs of the same size differ only in hash, usually it is because it was just recompiled:
             java.security.MessageDigest dig;
             
             try {
@@ -461,16 +462,19 @@ public class ModuleDependencies extends Task {
             
             byte[] res = dig.digest ();
             is.close ();
+             */
             
             w.print ("LIBRARY ");
             w.print ((f.getName () + SPACES).substring (0, 50));
             String size = SPACES + f.length ();
             w.print (size.substring (size.length () - 15));
             w.print (" ");
+            /*
             for (byte b : res) {
                 String hex = "00" + Integer.toHexString(b);
                 w.print (hex.substring (hex.length () - 2));
             }
+             */
             w.println ();
         }
         w.close ();
