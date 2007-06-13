@@ -20,27 +20,20 @@
 package org.netbeans.modules.web.core.jsploader;
 
 import java.io.IOException;
-import java.io.InputStream;
 import javax.swing.text.Document;
 import java.net.URLClassLoader;
-import java.util.Iterator;
 import java.util.Map;
-import java.util.HashMap;
-import java.util.StringTokenizer;
 
-import org.openide.ErrorManager;
-import org.openide.util.Lookup;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.filesystems.FileObject;
-import org.openide.text.CloneableEditorSupport;
 
 import org.netbeans.modules.web.jsps.parserapi.JspParserFactory;
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
 import org.netbeans.modules.web.core.syntax.spi.JSPColoringData;
 import org.netbeans.modules.web.core.syntax.spi.JspContextInfo;
 import org.netbeans.modules.web.api.webmodule.WebModule;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.loaders.DataObject;
-import org.openide.loaders.DataNode;
 
 public class JspContextInfoImpl extends JspContextInfo {
     
@@ -54,7 +47,7 @@ public class JspContextInfoImpl extends JspContextInfo {
                 tlps = (TagLibParseSupport)DataObject.find(fo).getCookie(TagLibParseSupport.class);
             }
             catch (org.openide.loaders.DataObjectNotFoundException e){
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                Logger.getLogger("global").log(Level.INFO, null, e);
             }
         }
         return tlps;
@@ -71,15 +64,14 @@ public class JspContextInfoImpl extends JspContextInfo {
         try {
             JspParserAPI parser = JspParserFactory.getJspParser();
             if (parser == null) {
-                ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, 
-                new NullPointerException());
+                Logger.getLogger("global").log(Level.INFO, null, new NullPointerException());
             }
             else {
                 return parser.getTaglibMap(JspParserAccess.getJspParserWM (WebModule.getWebModule (fo)));
             }
         }
         catch (IOException e) {
-            ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, e);
+            Logger.getLogger("global").log(Level.INFO, null, e);
         }
         return null;
     }

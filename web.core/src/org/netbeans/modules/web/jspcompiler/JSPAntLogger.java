@@ -20,13 +20,14 @@
 package org.netbeans.modules.web.jspcompiler;
 
 import java.io.File;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.apache.tools.ant.module.spi.AntEvent;
 import org.apache.tools.ant.module.spi.AntLogger;
 import org.apache.tools.ant.module.spi.AntSession;
 import org.netbeans.modules.web.api.webmodule.WebModule;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
@@ -61,8 +62,8 @@ public final class JSPAntLogger extends AntLogger {
         AntEvent.LOG_ERR, // XXX is this needed?
     };
     
-    private static final ErrorManager ERR = ErrorManager.getDefault().getInstance(JSPAntLogger.class.getName());
-    private static final boolean LOGGABLE = ERR.isLoggable(ErrorManager.INFORMATIONAL);
+    private static final Logger ERR = Logger.getLogger(JSPAntLogger.class.getName());
+    private static final boolean LOGGABLE = ERR.isLoggable(Level.INFO);
     
     /** Default constructor for lookup. */
     public JSPAntLogger() {
@@ -103,14 +104,14 @@ public final class JSPAntLogger extends AntLogger {
         // XXX only check when the task is correct
         Matcher m = JSP_COMPILER_ERROR.matcher(line);
         if (m.matches()) { //it's our error
-            if (LOGGABLE) ERR.log("matched line: " + line);
+            if (LOGGABLE) ERR.log(Level.INFO, "matched line: " + line);
             // print the exception and error statement first
             String jspErrorText = line.substring(line.lastIndexOf(')')+1);
             session.println(line.substring(0, line.indexOf("file:")) + jspErrorText, true, null);
             
             // get the files from the line
             String filePart = line.substring(line.indexOf("file"), line.lastIndexOf(')')+1);
-            if (LOGGABLE) ERR.log("file part: " + filePart);
+            if (LOGGABLE) ERR.log(Level.INFO, "file part: " + filePart);
             
             // now create hyperlinks for all the files
             int startIndex = 0;
@@ -119,7 +120,7 @@ public final class JSPAntLogger extends AntLogger {
                 int end = filePart.indexOf(')', startIndex) + 1;
                 startIndex = end;
                 String file = filePart.substring(start, end);
-                if (LOGGABLE) ERR.log("file: " + file);
+                if (LOGGABLE) ERR.log(Level.INFO, "file: " + file);
 
                 // we've got the info for one file extracted, now extract the line/column and actual filename
                 Matcher fileMatcher = FILE_PATTERN.matcher(file);
@@ -127,7 +128,7 @@ public final class JSPAntLogger extends AntLogger {
                     String jspFile      = fileMatcher.group(1).trim();
                     int lineNumber      = Integer.parseInt(fileMatcher.group(2));
                     int columnNumber    = Integer.parseInt(fileMatcher.group(3)) + 1;
-                    if (LOGGABLE) ERR.log("linking line: " + lineNumber + ", column: " + columnNumber);
+                    if (LOGGABLE)  ERR.log(Level.INFO, "linking line: " + lineNumber + ", column: " + columnNumber);
                     
                     File f = new File(jspFile);
                     FileObject fo = FileUtil.toFileObject(f);

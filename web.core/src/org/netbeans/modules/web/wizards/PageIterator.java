@@ -24,6 +24,8 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.openide.cookies.SaveCookie;
@@ -240,7 +242,7 @@ public class PageIterator implements TemplateWizard.Iterator {
                             try {
                                 tldDO.write(taglib);
                             } catch (IOException ex) {
-                                org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.EXCEPTION,ex);
+                                Logger.getLogger("global").log(Level.WARNING, null, ex);
                             }
                         }
                     }

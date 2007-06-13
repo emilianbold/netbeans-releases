@@ -22,8 +22,8 @@ package org.netbeans.modules.web.core.jsploader;
 import java.beans.*;
 import java.awt.Image;
 
-import org.openide.ErrorManager;
 import org.openide.loaders.MultiFileLoader;
+import org.openide.util.Exceptions;
 
 /** JSP/Servlet loader bean info.
 *
@@ -35,7 +35,7 @@ public class JspServletDataLoaderBeanInfo extends SimpleBeanInfo {
         try {
             return new BeanInfo[] { Introspector.getBeanInfo (MultiFileLoader.class) };
         } catch (IntrospectionException ie) {
-            ErrorManager.getDefault ().notify (ie);
+            Exceptions.printStackTrace(ie);
             return null;
         }
     }

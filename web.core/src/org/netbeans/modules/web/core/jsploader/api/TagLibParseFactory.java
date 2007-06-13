@@ -19,12 +19,8 @@
 
 package org.netbeans.modules.web.core.jsploader.api;
 
-import org.netbeans.modules.web.core.jsploader.JspDataObject;
 import org.netbeans.modules.web.core.jsploader.TagLibParseSupport;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 
 /**
  *

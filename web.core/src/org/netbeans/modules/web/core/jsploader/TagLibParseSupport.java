@@ -25,7 +25,6 @@ import java.util.*;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.web.core.jsploader.api.TagLibParseCookie;
 import org.netbeans.modules.web.core.syntax.spi.ErrorAnnotation;
-import org.openide.ErrorManager;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
 import org.openide.filesystems.FileObject;
@@ -35,6 +34,7 @@ import org.netbeans.modules.web.jsps.parserapi.PageInfo;
 import org.netbeans.modules.web.core.syntax.spi.JSPColoringData;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 
 /** Support for parsing JSP pages and tag files and cooperation between the parser 
  * and the editor.
@@ -181,8 +181,8 @@ public class TagLibParseSupport implements org.openide.nodes.Node.Cookie, TagLib
         
         //debug #49300: print out current stacktrace when the editor support is not initialized yet
         if(!wasAnEditorPaneChangeEvent) 
-            ErrorManager.getDefault().annotate(new IllegalStateException(), 
-            "The TagLibParseSupport.parseObject() is called before editor support is created!"); //NOI18N
+            Exceptions.attachLocalizedMessage(new IllegalStateException(),
+                                              "The TagLibParseSupport.parseObject() is called before editor support is created!"); //NOI18N
         
         synchronized (parseResultLock) {
             RequestProcessor.Task t = parsingTask;

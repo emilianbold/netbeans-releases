@@ -27,6 +27,8 @@ import java.nio.charset.Charset;
 import java.util.Date;
 import java.util.EventListener;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.openide.*;
 import org.openide.cookies.EditorCookie;
@@ -181,7 +183,7 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
             try {
                 getPrimaryFile().setAttribute(PROP_ENCODING, encoding);
             } catch (IOException e) {
-                ErrorManager.getDefault().notify(ErrorManager.WARNING, e);
+                Logger.getLogger("global").log(Level.WARNING, null, e);
             }
         }
         
@@ -284,11 +286,9 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
                         try {
                             Charset.forName(encoding);
                         } catch (IllegalArgumentException ex) {
-                            IOException t = new IOException(
-                                    NbBundle.getMessage(JspDataObject.class, "FMT_UnsupportedEncoding", encoding)
-                                    );
-                            ErrorManager.getDefault().annotate(t, ex);
-                            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, t);
+                            IOException t = new IOException(NbBundle.getMessage(JspDataObject.class, "FMT_UnsupportedEncoding", encoding));
+                            t.initCause(ex);
+                            Logger.getLogger("global").log(Level.INFO, null, t);
                         }
                     } else
                         encoding = null;
@@ -297,12 +297,12 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
                     // actually set the encoding
                     servletFileObject.setAttribute(ATTR_FILE_ENCODING, encoding); //NOI18N
                 } catch (IOException ex) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                    Logger.getLogger("global").log(Level.INFO, null, ex);
                 }
             } else
                 servletDataObject = null;
         } catch (IOException e) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            Logger.getLogger("global").log(Level.INFO, null, e);
             servletDataObject = null;
         }
         

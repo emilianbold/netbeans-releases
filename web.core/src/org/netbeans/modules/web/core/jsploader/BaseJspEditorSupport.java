@@ -18,16 +18,12 @@
  */
 
 package org.netbeans.modules.web.core.jsploader;
-import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.Reader;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInput;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Timer;
 import javax.swing.event.CaretListener;
 import javax.swing.event.CaretEvent;
@@ -40,8 +36,6 @@ import javax.swing.text.StyledDocument;
 import javax.swing.text.EditorKit;
 import org.netbeans.modules.web.core.palette.JSPPaletteFactory;
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
-import org.netbeans.modules.web.jsps.parserapi.JspParserFactory;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
 
 import org.openide.text.DataEditorSupport;
@@ -57,7 +51,6 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
-import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 import org.openide.windows.CloneableOpenSupport;
 import org.openide.nodes.Node;
@@ -353,7 +346,7 @@ class BaseJspEditorSupport extends DataEditorSupport implements EditCookie, Edit
                     }
                 }
                 catch (javax.swing.text.BadLocationException e){
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);            
+                    Logger.getLogger("global").log(Level.INFO, null, e);            
                 }
             }
             super.saveDocument();

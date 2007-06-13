@@ -32,7 +32,6 @@ import org.openide.loaders.ExtensionList;
 import org.openide.loaders.MultiDataObject;
 import org.openide.filesystems.FileObject;
 import org.openide.actions.*;
-import org.openide.util.actions.SystemAction;
 import org.openide.util.NbBundle;
 
 /** Data loader which recognizes .tld files.

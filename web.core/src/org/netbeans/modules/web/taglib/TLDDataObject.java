@@ -25,7 +25,6 @@ import org.xml.sax.InputSource;
 import org.openide.loaders.*;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
-import org.openide.util.NbBundle;
 
 import org.netbeans.api.xml.cookies.ValidateXMLCookie;
 import org.netbeans.api.xml.cookies.CheckXMLCookie;

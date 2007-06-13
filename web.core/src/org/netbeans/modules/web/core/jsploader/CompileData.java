@@ -20,14 +20,13 @@
 package org.netbeans.modules.web.core.jsploader;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.URI;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.JSPServletFinder;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 
-import org.openide.ErrorManager;
 
 import org.openide.filesystems.*;
 
@@ -114,7 +113,7 @@ public class CompileData {
             return root.getFileObject(getServletResourceName());
         }
         catch (FileStateInvalidException e) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            Logger.getLogger("global").log(Level.INFO, null, e);
         }
         
         return null;

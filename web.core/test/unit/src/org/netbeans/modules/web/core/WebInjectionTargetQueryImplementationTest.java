@@ -34,6 +34,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.web.core.jsploader.JspNode;
 
 import org.netbeans.modules.web.core.test.TestUtil;
 

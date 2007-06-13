@@ -31,7 +31,7 @@ import org.openide.loaders.DataObject;
 import org.openide.NotifyDescriptor;
 
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
+import org.openide.util.Exceptions;
 
 /**
 * EditQueryStringAction.
@@ -64,7 +64,7 @@ public class EditQueryStringAction extends CookieAction {
                 qsc.setQueryString (dlg.getInputText());
             }
             catch (IOException e) {
-                ErrorManager.getDefault().notify(e);
+                Exceptions.printStackTrace(e);
             }
         }
     }

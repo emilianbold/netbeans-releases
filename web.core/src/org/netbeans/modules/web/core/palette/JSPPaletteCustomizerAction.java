@@ -11,7 +11,8 @@
 package org.netbeans.modules.web.core.palette;
 
 import java.io.IOException;
-import org.openide.ErrorManager;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.CallableSystemAction;
@@ -58,7 +59,7 @@ public class JSPPaletteCustomizerAction extends CallableSystemAction {
             JSPPaletteFactory.getPalette().showCustomizer();
         }
         catch (IOException ioe) {
-            ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ioe);
+            Logger.getLogger("global").log(Level.WARNING, null, ioe);
         }
     }
 

@@ -19,8 +19,9 @@
 
 package org.netbeans.modules.web.taglib;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
-import org.openide.ErrorManager;
 
 import org.openide.text.DataEditorSupport;
 import org.openide.text.NbDocument;
@@ -29,7 +30,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileLock;
 import org.openide.cookies.*;
 import org.openide.nodes.Node.Cookie;
-import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
@@ -94,7 +94,7 @@ implements OpenCookie, EditCookie, EditorCookie.Observable, PrintCookie, CloseCo
                 }
             }
             catch (javax.swing.text.BadLocationException e){
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);            
+                Logger.getLogger("global").log(Level.INFO, null, e);            
             }
             super.saveDocument();
             //moved from Env.save()
@@ -144,7 +144,7 @@ implements OpenCookie, EditCookie, EditorCookie.Observable, PrintCookie, CloseCo
                 getDataObject().setModified (false);
             }
             catch (javax.swing.text.BadLocationException e){
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);            
+                Logger.getLogger("global").log(Level.INFO, null, e);            
             }
         }
     }

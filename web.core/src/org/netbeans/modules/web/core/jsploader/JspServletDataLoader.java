@@ -19,7 +19,8 @@
 
 package org.netbeans.modules.web.core.jsploader;
 
-import org.openide.ErrorManager;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.filesystems.*;
 import org.openide.loaders.*;
 import org.openide.util.NbBundle;
@@ -121,8 +122,7 @@ public final class JspServletDataLoader extends MultiFileLoader {
     protected MultiDataObject.Entry createSecondaryEntry (MultiDataObject obj, FileObject secondaryFile) {
         //The JavaDataObject itself has no secondary entries, but its subclasses have.
         //So we have to keep it as MultiFileLoader
-        ErrorManager.getDefault().log ("Subclass of JavaDataLoader ("+this.getClass().getName()
-                +") has secondary entries but does not override createSecondaryEntries (MultidataObject, FileObject) method."); // NOI18N
+        Logger.getLogger("global").log(Level.INFO, "Subclass of JavaDataLoader (" + this.getClass().getName() + ") has secondary entries but does not override createSecondaryEntries (MultidataObject, FileObject) method."); // NOI18N
         return new FileEntry.Numb(obj, secondaryFile);
     }   
 

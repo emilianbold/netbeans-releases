@@ -23,24 +23,16 @@ package org.netbeans.modules.web.wizards;
 import javax.swing.DefaultCellEditor;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionListener;
-import javax.swing.table.JTableHeader;
-import javax.swing.table.TableColumnModel;
-import javax.swing.DefaultCellEditor;
 import org.netbeans.api.project.ProjectUtils;
 
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
-import org.openide.ErrorManager;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.SourceGroup;
-import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
 import org.netbeans.modules.web.api.webmodule.WebModule;
-import org.netbeans.spi.project.support.GenericSources;
 
 import org.openide.loaders.TemplateWizard;
 

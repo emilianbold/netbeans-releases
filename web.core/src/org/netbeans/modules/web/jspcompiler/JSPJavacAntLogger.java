@@ -21,19 +21,16 @@ package org.netbeans.modules.web.jspcompiler;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.PrintWriter;
 
 import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.regex.Matcher;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import org.apache.tools.ant.module.spi.AntEvent;
 import org.apache.tools.ant.module.spi.AntLogger;
 import org.apache.tools.ant.module.spi.AntSession;
 import org.netbeans.modules.web.api.webmodule.WebModule;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.windows.OutputListener;
 
@@ -60,8 +57,8 @@ public final class JSPJavacAntLogger extends AntLogger {
 //        debugwriter.flush();
 //    }
     
-    private static final ErrorManager ERR = ErrorManager.getDefault().getInstance(JSPJavacAntLogger.class.getName());
-    private static final boolean LOGGABLE = ERR.isLoggable(ErrorManager.INFORMATIONAL);
+    private static final Logger ERR = Logger.getLogger(JSPJavacAntLogger.class.getName());
+    private static final boolean LOGGABLE = ERR.isLoggable(Level.INFO);
     
     /**
      * Regexp matching the compilation error from JspC. Sample message could look like this:
@@ -146,47 +143,47 @@ public final class JSPJavacAntLogger extends AntLogger {
      * Possibly hyperlink a message logged event.
      */
     private static OutputListener findHyperlink(AntSession session, String line) {
-        if (LOGGABLE) ERR.log("line: " + line);
+        if (LOGGABLE) ERR.log(Level.INFO, "line: " + line);
         // #29246: handle new (Ant 1.5.1) URLifications:
         // [PENDING] Under JDK 1.4, could use new File(URI)... if Ant uses URI too (Jakarta BZ #8031)
         // XXX so tweak that for Ant 1.6 support!
         // XXX would be much easier to use a regexp here
         if (line.startsWith("file:///")) { // NOI18N
             line = line.substring(7);
-            if (LOGGABLE) ERR.log("removing file:///");
+            if (LOGGABLE) ERR.log(Level.INFO, "removing file:///");
         } else if (line.startsWith("file:")) { // NOI18N
             line = line.substring(5);
-            if (LOGGABLE) ERR.log("removing file:");
+            if (LOGGABLE) ERR.log(Level.INFO, "removing file:");
         } else if (line.length() > 0 && line.charAt(0) == '/') {
-            if (LOGGABLE) ERR.log("result: looks like Unix file");
+            if (LOGGABLE) ERR.log(Level.INFO, "result: looks like Unix file");
         } else if (line.length() > 2 && line.charAt(1) == ':' && line.charAt(2) == '\\') {
-            if (LOGGABLE) ERR.log("result: looks like Windows file");
+            if (LOGGABLE) ERR.log(Level.INFO, "result: looks like Windows file");
         } else {
             // not a file -> nothing to parse
-            if (LOGGABLE) ERR.log("result: not a file");
+            if (LOGGABLE) ERR.log(Level.INFO, "result: not a file");
             return null;
         }
         
         int colon1 = line.indexOf(':');
         if (colon1 == -1) {
-            if (LOGGABLE) ERR.log("result: no colon found");
+            if (LOGGABLE) ERR.log(Level.INFO, "result: no colon found");
             return null;
         }
         String fileName = line.substring (0, colon1); //.replace(File.separatorChar, '/');
         File file = FileUtil.normalizeFile(new File(fileName));
         if (!file.exists()) {
-            if (LOGGABLE) ERR.log("result: no FO for " + fileName);
+            if (LOGGABLE) ERR.log(Level.INFO, "result: no FO for " + fileName);
             // maybe we are on Windows and filename is "c:\temp\file.java:25"
             // try to do the same for the second colon
             colon1 = line.indexOf (':', colon1+1);
             if (colon1 == -1) {
-                if (LOGGABLE) ERR.log("result: no second colon found");
+                if (LOGGABLE) ERR.log(Level.INFO, "result: no second colon found");
                 return null;
             }
             fileName = line.substring (0, colon1);
             file = FileUtil.normalizeFile(new File(fileName));
             if (!file.exists()) {
-                if (LOGGABLE) ERR.log("result: no FO for " + fileName);
+                if (LOGGABLE) ERR.log(Level.INFO, "result: no FO for " + fileName);
                 return null;
             }
         }
@@ -223,10 +220,10 @@ public final class JSPJavacAntLogger extends AntLogger {
         if (message.length () == 0) {
             message = null;
         }
-        if (LOGGABLE) ERR.log("Hyperlink: [" + file + "," + line1 + "," + col1 + "," + line2 + "," + col2 + "," + message + "]");
+        if (LOGGABLE) ERR.log(Level.INFO, "Hyperlink: [" + file + "," + line1 + "," + col1 + "," + line2 + "," + col2 + "," + message + "]");
 
         File smapFile = getSMAPFileForFile(file);
-        if (LOGGABLE) ERR.log("smapfile: [" + smapFile + "]");
+        if (LOGGABLE) ERR.log(Level.INFO, "smapfile: [" + smapFile + "]");
         if ((smapFile != null) && (smapFile.exists())) {
             try {
                 SmapResolver resolver = new SmapResolver(new SmapFileReader(smapFile));
@@ -234,7 +231,7 @@ public final class JSPJavacAntLogger extends AntLogger {
                 if (jspName == null) {
                     return null;
                 }
-                if (LOGGABLE) ERR.log("translate: [" + line1 + ", " + col1 + "]");
+                if (LOGGABLE) ERR.log(Level.INFO, "translate: [" + line1 + ", " + col1 + "]");
                 int newRow = resolver.unmangle(line1, col1);
 //debug ("translated to '" + jspName + ":" + newRow + "'");
                 // some mappings may not exist, so try next or previous lines, too
@@ -263,14 +260,14 @@ public final class JSPJavacAntLogger extends AntLogger {
                 }
             }
             catch (IOException e) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                ERR.log(Level.INFO, null, e);
                 // PENDING
                 return null;
             }
             catch (Exception e) {
                 // PENDING - this catch clause should not be here, it's here only to
                 // hide bugs in the SmapResolver library
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                ERR.log(Level.INFO, null, e);
                 return null;
             }
         } else {

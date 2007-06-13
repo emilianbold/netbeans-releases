@@ -25,6 +25,8 @@ import java.util.Collections;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.text.MessageFormat;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.source.JavaSource;
@@ -35,7 +37,6 @@ import org.openide.WizardDescriptor;
 import org.openide.cookies.SaveCookie;
 import org.openide.loaders.*;
 import org.openide.util.NbBundle;
-import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
 
@@ -120,7 +121,7 @@ public class TagHandlerIterator implements TemplateWizard.Iterator {
             try {
                 generator.generate();
             } catch (IOException ex){
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,ex);
+                Logger.getLogger("global").log(Level.INFO, null, ex);
             }
         }
         
@@ -174,7 +175,7 @@ public class TagHandlerIterator implements TemplateWizard.Iterator {
                         try {
                             tldDO.write(taglib);
                         } catch (IOException ex) {
-                            ErrorManager.getDefault().notify(ErrorManager.EXCEPTION,ex);
+                            Logger.getLogger("global").log(Level.WARNING, null, ex);
                         }
                     }
                 }

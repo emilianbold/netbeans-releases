@@ -20,8 +20,6 @@
 package  org.netbeans.modules.web.taglib;
 
 import org.openide.loaders.*;
-import org.openide.util.HelpCtx;
-import org.openide.nodes.Node;
 import org.openide.nodes.Children;
 import org.openide.util.actions.SystemAction;
 

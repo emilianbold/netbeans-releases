@@ -20,13 +20,14 @@
 package org.netbeans.modules.web.jspcompiler;
 
 import java.io.File;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.apache.tools.ant.module.spi.AntEvent;
 import org.apache.tools.ant.module.spi.AntLogger;
 import org.apache.tools.ant.module.spi.AntSession;
 import org.netbeans.modules.web.api.webmodule.WebModule;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
@@ -57,8 +58,8 @@ public final class TldAntLogger extends AntLogger {
         AntEvent.LOG_ERR, // XXX is this needed?
     };
     
-    private static final ErrorManager ERR = ErrorManager.getDefault().getInstance(TldAntLogger.class.getName());
-    private static final boolean LOGGABLE = ERR.isLoggable(ErrorManager.INFORMATIONAL);
+    private static final Logger ERR = Logger.getLogger(TldAntLogger.class.getName());
+    private static final boolean LOGGABLE = ERR.isLoggable(Level.INFO);
     
     /** Default constructor for lookup. */
     public TldAntLogger() {
@@ -98,29 +99,29 @@ public final class TldAntLogger extends AntLogger {
 
         Matcher m = TLD_ERROR.matcher(line);
         if (m.matches()) { //it's our error
-            if (LOGGABLE) ERR.log("matched line: " + line);
+            if (LOGGABLE) ERR.log(Level.INFO, "matched line: " + line);
             // print the exception and error statement first
             String errorText = m.group(3) + m.group(4);
             session.println(m.group(2) + errorText, true, null);
             
             // get the file from the line
             String filePart = m.group(5).trim();
-            if (LOGGABLE) ERR.log("file part: " + filePart);
+            if (LOGGABLE) ERR.log(Level.INFO, "file part: " + filePart);
             
             // now create hyperlink for the file
             Matcher fileMatcher = FILE_PATTERN.matcher(filePart);
             if (fileMatcher.matches()) {
                 String tldFile = fileMatcher.group(1).trim();
-                if (LOGGABLE) ERR.log("tld file: " + tldFile);
+                if (LOGGABLE) ERR.log(Level.INFO, "tld file: " + tldFile);
 
                 int lineNumber = Integer.parseInt(fileMatcher.group(3));
                 int columnNumber = Integer.parseInt(fileMatcher.group(4));
-                if (LOGGABLE) ERR.log("linking line: " + lineNumber + ", column: " + columnNumber);
+                if (LOGGABLE) ERR.log(Level.INFO, "linking line: " + lineNumber + ", column: " + columnNumber);
 
                 File scriptLoc = event.getScriptLocation();
                 FileObject scriptLocFO = FileUtil.toFileObject(scriptLoc);
                 WebModule wm = WebModule.getWebModule(scriptLocFO);
-                if (LOGGABLE) ERR.log("wm: " + wm);
+                if (LOGGABLE) ERR.log(Level.INFO, "wm: " + wm);
                 
                 if (wm == null) {
                     session.println(tldFile, true, null);
@@ -129,7 +130,7 @@ public final class TldAntLogger extends AntLogger {
                 }
                 
                 FileObject tldSource = wm.getDocumentBase().getFileObject(tldFile);
-                if (LOGGABLE) ERR.log("tldSource: " + tldSource);
+                if (LOGGABLE) ERR.log(Level.INFO, "tldSource: " + tldSource);
                 
                 if (tldSource == null) {
                     session.println(tldFile, true, null);

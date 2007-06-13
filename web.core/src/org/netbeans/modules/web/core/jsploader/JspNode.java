@@ -21,7 +21,6 @@ package org.netbeans.modules.web.core.jsploader;
 
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
-import org.openide.ErrorManager;
 import org.openide.filesystems.*;
 import org.openide.nodes.*;
 import org.openide.loaders.DataNode;
@@ -33,6 +32,7 @@ import org.openide.util.actions.SystemAction;
 import org.netbeans.modules.web.core.WebExecSupport;
 
 //import org.netbeans.modules.java.Util;
+import org.openide.util.Exceptions;
 
 /** The node representation of <code>JspDataObject</code> for internet files.
 *
@@ -155,8 +155,8 @@ public class JspNode extends DataNode {
     }
 
     static final void wrapThrowable(Throwable outer, Throwable inner, String message) {
-        ErrorManager.getDefault().annotate(
-            outer, ErrorManager.USER, null, message, inner, null);
+        outer.initCause(inner);
+        Exceptions.attachMessage(outer, message);
     }
 
     /** Set request parameters for a given entry.

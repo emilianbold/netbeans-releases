@@ -27,10 +27,11 @@ import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import java.text.MessageFormat;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.modules.web.core.Util;
 
-import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.WizardDescriptor;
@@ -173,7 +174,7 @@ public class ListenerIterator implements TemplateWizard.Iterator {
                     try {
                         gen.generate(clazz);
                     } catch (IOException ex){
-                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,ex);
+                        Logger.getLogger("global").log(Level.INFO, null, ex);
                     }
                 }
             }

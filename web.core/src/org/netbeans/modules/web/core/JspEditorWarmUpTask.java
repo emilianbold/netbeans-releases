@@ -41,7 +41,7 @@ import org.netbeans.editor.Registry;
 import org.netbeans.editor.view.spi.EstimatedSpanView;
 import org.netbeans.editor.view.spi.LockView;
 import org.netbeans.modules.web.spi.webmodule.WebModuleImplementation;
-import org.openide.ErrorManager;
+import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -177,7 +177,7 @@ public class JspEditorWarmUpTask implements Runnable{
                     SwingUtilities.invokeLater(this);
 
                 } catch (BadLocationException e) {
-                    ErrorManager.getDefault().notify(e);
+                    Exceptions.printStackTrace(e);
                 }
                 break;
 
@@ -271,7 +271,7 @@ public class JspEditorWarmUpTask implements Runnable{
                         doc.readUnlock();
                     }
                 } catch (BadLocationException e) {
-                    ErrorManager.getDefault().notify(e);
+                    Exceptions.printStackTrace(e);
                 }
                     
                 status = STATUS_RENDER_FRAME;
