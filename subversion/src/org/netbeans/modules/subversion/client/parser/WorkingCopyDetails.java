@@ -487,8 +487,9 @@ public class WorkingCopyDetails {
                             }
                             fileIdx += spaces + 3;                                
                         } else {
-                            // we are done
-                            return false;
+                            // it's not a keyword -> rollback the index and keep comparing 
+                            fileIdx -= keyword.length();
+                            break; 
                         }
                                                 
                         // 4. it was a correctly closed keyword -> skip the chars until the next '$'
