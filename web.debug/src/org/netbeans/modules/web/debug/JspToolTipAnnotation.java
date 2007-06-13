@@ -23,12 +23,9 @@ import java.io.*;
 import javax.swing.JEditorPane;
 import javax.swing.text.*;
 
-import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
-import org.openide.nodes.Node;
 import org.openide.text.*;
 import org.openide.util.RequestProcessor;
-import org.openide.windows.TopComponent;
 
 import org.netbeans.modules.web.debug.util.Utils;
 import org.netbeans.api.debugger.*;
@@ -42,7 +39,7 @@ public class JspToolTipAnnotation extends Annotation implements Runnable {
     private StyledDocument doc;
 
     public String getShortDescription() {
-        Utils.getEM().log("JspTooltip: getShortDescription");
+        Utils.log("JspTooltip: getShortDescription");
         
         toolTipText = null;
         DebuggerEngine currentEngine = DebuggerManager.getDebuggerManager ().
@@ -70,7 +67,7 @@ public class JspToolTipAnnotation extends Annotation implements Runnable {
 
     public void run () {
 
-        Utils.getEM().log("JspTooltip: run");
+        Utils.log("JspTooltip: run");
 
         //1) get tooltip text
         Line.Part lp = (Line.Part)getAttachedAnnotatable();
@@ -83,12 +80,12 @@ public class JspToolTipAnnotation extends Annotation implements Runnable {
         
         //first try EL
         String text = Utils.getELIdentifier(doc, ep,NbDocument.findLineOffset(doc, lp.getLine().getLineNumber()) + lp.getColumn());
-        Utils.getEM().log("JspTooltip: ELIdentifier = " + text);
+        Utils.log("JspTooltip: ELIdentifier = " + text);
 
         boolean isScriptlet = Utils.isScriptlet(
             doc, ep, NbDocument.findLineOffset(doc, lp.getLine().getLineNumber()) + lp.getColumn()
         );
-        Utils.getEM().log("isScriptlet: " + isScriptlet);
+        Utils.log("isScriptlet: " + isScriptlet);
         
         //if not, try Java
         if ((text == null) && (isScriptlet)) {
@@ -96,7 +93,7 @@ public class JspToolTipAnnotation extends Annotation implements Runnable {
                 doc, ep, NbDocument.findLineOffset(doc, lp.getLine().getLineNumber()) + lp.getColumn()
             );
             textForTooltip = text;
-            Utils.getEM().log("JspTooltip: javaIdentifier = " + text);
+            Utils.log("JspTooltip: javaIdentifier = " + text);
             if (text == null) {
                 return;
             }
@@ -110,7 +107,7 @@ public class JspToolTipAnnotation extends Annotation implements Runnable {
                                 "\", java.lang.String.class, (javax.servlet.jsp.PageContext)pageContext, null)";
         }
         
-        Utils.getEM().log("JspTooltip: fullWatch = " + text);
+        Utils.log("JspTooltip: fullWatch = " + text);
         
         //3) obtain text representation of value of watch
         String old = toolTipText;
@@ -131,7 +128,7 @@ public class JspToolTipAnnotation extends Annotation implements Runnable {
         } catch (InvalidExpressionException e) {
             toolTipText = text + " = >" + e.getMessage() + "<";
         }
-        Utils.getEM().log("JspTooltip: " + toolTipText);
+        Utils.log("JspTooltip: " + toolTipText);
         firePropertyChange (PROP_SHORT_DESCRIPTION, old, toolTipText);       
     }
 

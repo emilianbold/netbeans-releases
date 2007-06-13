@@ -20,8 +20,6 @@
 package org.netbeans.modules.web.debug.breakpoints;
 
 import java.awt.Dialog;
-import java.awt.event.ActionEvent;
-import java.util.List;
 import javax.swing.Action;
 import javax.swing.JButton;
 import javax.swing.JComponent;

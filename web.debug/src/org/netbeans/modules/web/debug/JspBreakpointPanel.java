@@ -29,7 +29,6 @@ import javax.swing.*;
 import org.netbeans.spi.debugger.ui.Controller;
 import org.netbeans.api.debugger.DebuggerManager;
 
-import org.netbeans.modules.web.debug.util.Utils;
 import org.netbeans.modules.web.debug.breakpoints.*;
 
 /**

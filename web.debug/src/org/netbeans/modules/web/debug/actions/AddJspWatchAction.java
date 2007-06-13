@@ -21,22 +21,13 @@ package org.netbeans.modules.web.debug.actions;
 
 import java.awt.BorderLayout;
 import java.awt.Dialog;
-import java.awt.Toolkit;
-import java.awt.event.ActionEvent;
-import java.lang.ref.WeakReference;
-import java.util.LinkedList;
-import java.util.Iterator;
 import java.util.ResourceBundle;
-import javax.swing.AbstractAction;
-import javax.swing.Action;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
-import javax.swing.SwingUtilities;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import org.netbeans.api.debugger.DebuggerManager;
-import org.netbeans.api.debugger.Watch;
 import org.netbeans.modules.web.debug.util.Utils;
 
 import org.openide.DialogDisplayer;
@@ -116,14 +107,14 @@ public class AddJspWatchAction extends CallableSystemAction {
 
 
         String t = null;//Utils.getELIdentifier();
-//        Utils.getEM().log("Watch: ELIdentifier = " + t);
+//        Utils.log("Watch: ELIdentifier = " + t);
         
         boolean isScriptlet = Utils.isScriptlet();
-        Utils.getEM().log("Watch: isScriptlet: " + isScriptlet);
+        Utils.log("Watch: isScriptlet: " + isScriptlet);
         
         if ((t == null) && (isScriptlet)) {
             t = Utils.getJavaIdentifier();
-            Utils.getEM().log("Watch: javaIdentifier = " + t);
+            Utils.log("Watch: javaIdentifier = " + t);
         }
         
         if (t != null) {
@@ -175,11 +166,11 @@ public class AddJspWatchAction extends CallableSystemAction {
 //            watch = org.openide.util.Utilities.replaceString(watch, "\"", "\\\"");
 //            watch = "pageContext.getExpressionEvaluator().evaluate(\"" + watch +
 //                                "\", java.lang.String.class, (javax.servlet.jsp.PageContext)pageContext, null)";
-//            Utils.getEM().log("Watch: watch = " + watch);
+//            Utils.log("Watch: watch = " + watch);
 //        }
 //
 //        w.setVariableName(watch);
 //        if (w instanceof JPDAWatch) {
-//            Utils.getEM().log("it is jpda watch");
+//            Utils.log("it is jpda watch");
 //            //((JPDAWatch)w).setDescription(var);
 //        }

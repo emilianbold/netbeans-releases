@@ -19,16 +19,14 @@
 
 package org.netbeans.modules.web.debug.util;
 
-import java.awt.event.ActionEvent;
-import java.beans.PropertyChangeListener;
 import java.io.*;
-import java.lang.reflect.InvocationTargetException;
 import java.net.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.*;
 import javax.swing.text.*;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 
-import org.openide.ErrorManager;
 import org.openide.nodes.*;
 import org.openide.filesystems.*;
 import org.openide.text.*;
@@ -50,10 +48,14 @@ import org.netbeans.api.project.*;
 public class Utils {
     
     /** Logger for web.debug module. */
-    private static ErrorManager err = ErrorManager.getDefault().getInstance("org.netbeans.modules.web.debug");   // NOI18N
+    private static Logger err = Logger.getLogger("org.netbeans.modules.web.debug");   // NOI18N
      
-    public static ErrorManager getEM () {
+    public static Logger getEM () {
         return err;
+    }
+    
+    public static void log (String msg) {
+        err.log(Level.INFO, msg);
     }
     
     public static FileObject getFileObjectFromUrl(String url) {
@@ -144,7 +146,7 @@ public class Utils {
             servletPath = servletPath.substring(0, servletPath.length()-5); // length of ".java"
             servletPath = servletPath.replace('/', '.'); //NOI18N
         }
-        Utils.getEM().log("servlet class: " + servletPath);
+        Utils.log("servlet class: " + servletPath);
         return servletPath;
     }
 

@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.web.debug.breakpoints;
 
-import org.netbeans.api.debugger.jpda.JPDABreakpoint;
 import org.openide.util.NbBundle;
 
 /**

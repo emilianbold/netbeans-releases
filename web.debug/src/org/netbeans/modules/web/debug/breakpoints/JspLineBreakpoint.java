@@ -73,10 +73,10 @@ public class JspLineBreakpoint extends Breakpoint {
         
         DebuggerManager d = DebuggerManager.getDebuggerManager();
         
-        Utils.getEM().log("jsp url: " + url);
+        Utils.log("jsp url: " + url);
 
         String filter = Utils.getClassFilter(url);
-        Utils.getEM().log("filter: " + filter);
+        Utils.log("filter: " + filter);
         
         javalb = LineBreakpoint.create(url, lineNumber);
         javalb.setStratum("JSP"); // NOI18N
@@ -89,7 +89,7 @@ public class JspLineBreakpoint extends Breakpoint {
         String context = Utils.getContextPath(url);
         String condition = "request.getContextPath().equals(\"" + context + "\")"; // NOI18N
         javalb.setCondition(condition);
-        Utils.getEM().log("condition: " + condition);
+        Utils.log("condition: " + condition);
         
         d.addBreakpoint(javalb);
 
