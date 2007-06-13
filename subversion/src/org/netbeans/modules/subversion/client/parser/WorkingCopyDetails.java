@@ -441,6 +441,8 @@ public class WorkingCopyDetails {
             } else if(kw.equals("url") || kw.equals("headurl")) {                                           // NOI18N
                 keywordsList.add("HeadURL");                                                                // NOI18N
                 keywordsList.add("URL");                                                                    // NOI18N
+            } else if(kw.equals("id")) {                                                                    // NOI18N
+                keywordsList.add("Id");                                                                     // NOI18N                
             } else {
                 keywordsList.add(keywords[i]);                
             }            
