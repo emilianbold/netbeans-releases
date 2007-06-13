@@ -21,11 +21,15 @@ package org.netbeans.modules.j2ee.jpa.verification.rules.entity;
 
 import java.util.Arrays;
 import javax.lang.model.element.TypeElement;
+import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.j2ee.jpa.model.AccessType;
 import org.netbeans.modules.j2ee.jpa.verification.JPAClassRule;
 import org.netbeans.modules.j2ee.jpa.verification.JPAProblemContext;
 import org.netbeans.modules.j2ee.jpa.verification.common.ProblemContext;
+import org.netbeans.modules.j2ee.jpa.verification.fixes.UnifyAccessType;
 import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.spi.editor.hints.Severity;
 import org.openide.util.NbBundle;
 
 /**
@@ -42,8 +46,14 @@ public class ConsistentAccessType extends JPAClassRule {
     
     @Override public ErrorDescription[] apply(TypeElement subject, ProblemContext ctx){
         if (((JPAProblemContext)ctx).getAccessType() == AccessType.INCONSISTENT){
+            ElementHandle<TypeElement> classHandle = ElementHandle.create(ctx.getJavaClass());
+            
+            Fix fix1 = new UnifyAccessType.UnifyFieldAccess(ctx.getFileObject(), classHandle);
+            Fix fix2 = new UnifyAccessType.UnifyPropertyAccess(ctx.getFileObject(), classHandle);
+            
             return new ErrorDescription[]{createProblem(subject, ctx,
-                    NbBundle.getMessage(IdDefinedInHierarchy.class, "MSG_InconsistentAccessType"))};
+                    NbBundle.getMessage(IdDefinedInHierarchy.class, "MSG_InconsistentAccessType"),
+                    Severity.ERROR, Arrays.asList(fix1, fix2))};
         }
         
         return null;
