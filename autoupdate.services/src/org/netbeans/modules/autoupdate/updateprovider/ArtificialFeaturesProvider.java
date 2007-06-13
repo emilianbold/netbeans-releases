@@ -69,7 +69,7 @@ public class ArtificialFeaturesProvider implements UpdateProvider {
 
     private static boolean generateArtificialFeatures () {
         String tmp = System.getProperty ("autoupdate.services.generate.features");
-        return tmp == null || Boolean.valueOf (tmp);
+        return tmp != null && Boolean.valueOf (tmp);
     }
 
     public Map<String, UpdateItem> getUpdateItems () throws IOException {
