@@ -44,15 +44,16 @@ import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileStateInvalidException;
-import org.openide.util.Exceptions;
+import org.openide.filesystems.FileSystem;
 import org.openide.util.NbBundle;
+import org.openide.util.WeakListeners;
 
 /**
  * A query to check and monitor wheather a project can be considered to be built 
- * (up to date). This is analogous to <code>org.netbeans.api.queries.FileBuiltQuery<code>.
+ * (up to date). This is analogous to <code>org.netbeans.api.queries.FileBuiltQuery</code>.
  * 
  * The basic idea behind this is to consider a project built if all it's file are built. This
- * implementation monitors the status of files under <code>org.netbeans.api.project.SourceGroup<code>
+ * implementation monitors the status of files under <code>org.netbeans.api.project.SourceGroup</code>
  * returned by <code>org.netbeans.api.project.Sources</code> using the <code>FileBuiltQuery</code>.
  * It returns a <code>ProjectBuiltQuery.Status</code> object for a specified project. Using this
  * the client code can query if the project is built. The dynamic changes to the project's built
@@ -117,7 +118,7 @@ public class ProjectBuiltQuery {
         void removeChangeListener(ChangeListener l);
     }
     
-    private static class StatusImpl implements Status, FileChangeListener {
+    private static class StatusImpl implements Status, FileChangeListener, PropertyChangeListener {
         private Project project;
         
         private boolean built = false;
@@ -200,21 +201,22 @@ public class ProjectBuiltQuery {
                     }
                 }
                 update();
-                // monitor file addition, deletion, rename 
-                project.getProjectDirectory().getFileSystem().addFileChangeListener(this);
+                FileSystem fileSystem = project.getProjectDirectory().getFileSystem();
+				// monitor file addition, deletion, rename 
+                fileSystem.addFileChangeListener(WeakListeners.create(FileChangeListener.class, this, fileSystem));
                 // Monitor project close.
-                OpenProjects.getDefault().addPropertyChangeListener(new PropertyChangeListener() {
-                    public void propertyChange(PropertyChangeEvent evt) {
-                        if (OpenProjects.PROPERTY_OPEN_PROJECTS.equals(evt.getPropertyName())) {
-                            isProjectOpen();
-                        }
-                    }                    
-                });
+                OpenProjects.getDefault().addPropertyChangeListener(WeakListeners.propertyChange(this, OpenProjects.getDefault()));
             } catch (FileStateInvalidException e) {
                 ErrorManager.getDefault().notify(ErrorManager.ERROR, e);
             }
         }
                 
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (OpenProjects.PROPERTY_OPEN_PROJECTS.equals(evt.getPropertyName())) {
+                checkProjectOpen();
+            }
+        }
+        
         public Project getProject() {
             return project;
         }
@@ -350,13 +352,6 @@ public class ProjectBuiltQuery {
         }
         
         private void dispose() {
-            try {
-                if (project != null) {
-                    project.getProjectDirectory().getFileSystem().removeFileChangeListener(this);
-                }
-            } catch (FileStateInvalidException e) {
-                Exceptions.printStackTrace(e);
-            }
             project = null;
             fileObjectBuiltStatusMap = null;
             synchronized(this) {
