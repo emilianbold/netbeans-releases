@@ -64,3 +64,15 @@ for c in platform ide java apisupport harness enterprise profiler uml visualweb 
     expat="$expat|^$c[0-9]*/"
 done
 find * | egrep -v "$expat" | zip -q $DIST/zip/moduleclusters/$BASENAME-nb6.0-etc.zip -@ || exit
+
+generated=nbbuild/build/generated
+rm -rf $generated
+ant -f nbbuild/build.xml generate-golden-files generate-files-layout || exit
+# XXX other candidates: index-layer-paths, check-module-configs
+prev_generated=../lastSuccessful/archive/$generated
+if [ -d $prev_generated ]; then
+    diff -r -U 25 $prev_generated $generated > $generated.diff
+    if [ -s $generated.diff ]; then
+        (echo "http://deadlock.netbeans.org/hudson/job/trunk/$BUILD_NUMBER/changes"; echo "http://deadlock.netbeans.org/hudson/job/trunk/$BUILD_NUMBER/artifact/$generated/"; echo; cat $generated.diff) | mail -s "Golden file changes in trunk build #$BUILD_NUMBER" jesse.glick@sun.com trung.duc.tran@sun.com
+    fi
+fi
