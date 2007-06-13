@@ -30,10 +30,8 @@ package org.netbeans.modules.xml.schema.completion;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
-import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.xml.services.UserCatalog;
 import org.netbeans.modules.xml.xam.ModelSource;

@@ -35,7 +35,16 @@ public class BasicCompletionTest extends AbstractTestCase {
     }
     
     public static Test suite() {
-        TestSuite suite = new TestSuite(BasicCompletionTest.class);
+        TestSuite suite = new TestSuite();
+        suite.addTest(new BasicCompletionTest("testPurchaseOrder"));
+        suite.addTest(new BasicCompletionTest("testEmptyTag"));
+        suite.addTest(new BasicCompletionTest("testWildcard1"));
+        suite.addTest(new BasicCompletionTest("testWildcard2"));
+        suite.addTest(new BasicCompletionTest("testWildcard3"));
+        suite.addTest(new BasicCompletionTest("testWildcard4"));
+        suite.addTest(new BasicCompletionTest("testSchemaFromRuntimeCatalog"));
+        suite.addTest(new BasicCompletionTest("testChildren1"));
+        suite.addTest(new BasicCompletionTest("testChildren2"));
         return suite;
     }
 
@@ -158,7 +167,7 @@ public class BasicCompletionTest extends AbstractTestCase {
 //        assertResult(items, expectedResult);
     }
     
-    public void testChildren() throws Exception {
+    public void testChildren1() throws Exception {
         StringBuffer buffer = new StringBuffer();
         buffer.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"); //offset=39
         buffer.append("<ns0:component xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"); //offset=70
@@ -171,6 +180,21 @@ public class BasicCompletionTest extends AbstractTestCase {
         setupCompletion(TEST_INSTANCE_DOCUMENT, buffer);
         List<CompletionResultItem> items = query(278);
         String[] expectedResult = {"ns0:uninstallSteps"};
+        assertResult(items, expectedResult);
+    }
+
+    public void testChildren2() throws Exception {
+        StringBuffer buffer = new StringBuffer();
+        buffer.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"); //offset=39
+        buffer.append("<ns0:component xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"); //offset=70
+        buffer.append("  xmlns:ns0=\"http://xml.netbeans.org/schema/newXMLSchema\"\n"); //offset=59
+        buffer.append("  xsi:schemaLocation=\"http://xml.netbeans.org/schema/newXMLSchema Test.xsd\">\n"); //offset=78
+        buffer.append("  <ns0:installList/>\n"); //offset 21
+        buffer.append("  <\n"); //offset 9
+        buffer.append("</ns0:component>\n");
+        setupCompletion(TEST_INSTANCE_DOCUMENT, buffer);
+        List<CompletionResultItem> items = query(276);
+        String[] expectedResult = {"ns0:installList","ns0:uninstallList"};
         assertResult(items, expectedResult);
     }
 }

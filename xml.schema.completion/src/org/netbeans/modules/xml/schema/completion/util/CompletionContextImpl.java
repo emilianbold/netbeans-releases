@@ -253,11 +253,13 @@ public class CompletionContextImpl extends CompletionContext {
     }
     
     private List<QName> getPathFromRoot(SyntaxElement se) {
-        assert(se != null);
+        if(se == null)
+            return null;
         Stack stack = new Stack();
-        while( se != null) {            
+        if(se instanceof EmptyTag)
+            stack.push(se);
+        while( se != null) {
             if( (se instanceof EndTag) ||
-                (se instanceof EmptyTag && stack.isEmpty()) ||
                 (se instanceof StartTag && stack.isEmpty()) ) {
                 stack.push(se);
                 if( defaultNamespace == null &&

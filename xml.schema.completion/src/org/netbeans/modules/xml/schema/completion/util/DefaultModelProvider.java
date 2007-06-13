@@ -52,7 +52,7 @@ public class DefaultModelProvider extends CompletionModelProvider {
      * schemaLocation attribute in the document and if specified creates model
      * for each schema mentioned in there.
      */    
-    public List<CompletionModel> getModels(CompletionContext context) {
+    public synchronized List<CompletionModel> getModels(CompletionContext context) {
         this.context = (CompletionContextImpl)context;
         List<URI> uris = this.context.getSchemas();
         if(uris == null || uris.size() == 0)

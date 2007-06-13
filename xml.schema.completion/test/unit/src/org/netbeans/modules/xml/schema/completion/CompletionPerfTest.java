@@ -20,8 +20,6 @@ package org.netbeans.modules.xml.schema.completion;
 
 import java.util.List;
 import junit.framework.*;
-import javax.swing.text.Document;
-import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -46,12 +44,13 @@ public class CompletionPerfTest extends AbstractTestCase {
     public void testPerformance() throws Exception {
         long startTime = System.currentTimeMillis();
         setupCompletion(COMPLETION_TEST_DOCUMENT, null);
-        List<CompletionResultItem> items = query(819236);
+        List<CompletionResultItem> items = query(819239);
         long endTime = System.currentTimeMillis();
         System.out.println(endTime - startTime);
-        String[] expectedResult = null; //{"po:shipTo", "po:billTo", "po:comment", "po:items"};
-        //assertResult(items, expectedResult);
-        assert(true);
+        String[] expectedResult = {"xs:include", "xs:import", "xs:redefine",
+                "xs:annotation", "xs:simpleType", "xs:complexType", "xs:group",
+                "xs:attributeGroup", "xs:element", "xs:attribute", "xs:notation", "xs:annotation"};
+        assertResult(items, expectedResult);
     }
     
 }

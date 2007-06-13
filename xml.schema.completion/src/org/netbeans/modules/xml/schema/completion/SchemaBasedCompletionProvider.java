@@ -20,14 +20,11 @@
 package org.netbeans.modules.xml.schema.completion;
 
 import javax.swing.text.JTextComponent;
-import org.netbeans.modules.xml.schema.completion.spi.CompletionModelProvider;
-import org.netbeans.modules.xml.schema.completion.util.DefaultModelProvider;
 import org.netbeans.spi.editor.completion.CompletionProvider;
 import org.netbeans.spi.editor.completion.CompletionTask;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
-import org.openide.util.Lookup;
 import org.openide.windows.TopComponent;
 
 /**
@@ -52,8 +49,8 @@ public class SchemaBasedCompletionProvider implements CompletionProvider {
     
     public CompletionTask createTask(int queryType, JTextComponent component) {
         FileObject primaryFile = getPrimaryFile();
-        if(primaryFile == null || primaryFile.getExt().equals("xsd")) //NOI18N
-            return null;
+//        if(primaryFile == null || primaryFile.getExt().equals("xsd")) //NOI18N
+//            return null;
         
         if (queryType == COMPLETION_QUERY_TYPE || queryType == COMPLETION_ALL_QUERY_TYPE)
             return new AsyncCompletionTask(new CompletionQuery(getPrimaryFile()), component);

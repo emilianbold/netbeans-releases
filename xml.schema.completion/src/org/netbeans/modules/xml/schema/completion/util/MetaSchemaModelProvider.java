@@ -48,6 +48,8 @@ public class MetaSchemaModelProvider extends CompletionModelProvider {
      * for each schema mentioned in there.
      */    
     public List<CompletionModel> getModels(CompletionContext context) {
+        if(!"xsd".equals(context.getPrimaryFile().getExt()))
+            return null;
         SchemaModel sm = createMetaSchemaModel();
         if(sm == null)
             return null;        
