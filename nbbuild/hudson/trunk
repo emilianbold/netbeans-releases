@@ -53,13 +53,13 @@ mkdir -p $DIST/contrib
 
 find netbeans | egrep -v "netbeans/(extra|testtools)" | zip -q $DIST/zip/$BASENAME-full.zip -@ || exit
 
-find netbeans | egrep -v "netbeans/(extra|testtools|mobility|enterprise|visualweb|uml|ruby|cnd|soa)" | zip -q $DIST/zip/$BASENAME-basic.zip -@ || exit
-find netbeans | egrep -v "netbeans/(extra|testtools|uml|ruby|cnd|soa)" | zip -q $DIST/zip/$BASENAME-standard.zip -@ || exit
-find netbeans | egrep -v "netbeans/(extra|testtools|xml|java|apisupport|harness|profiler|mobility|enterprise|visualweb|cnd|uml|soa)" | zip -q $DIST/contrib/$BASENAME-rubyide.zip -@ || exit
+find netbeans | egrep -v "netbeans/(extra|testtools|mobility|enterprise|visualweb|uml|ruby|soa)" | zip -q $DIST/zip/$BASENAME-basic.zip -@ || exit
+find netbeans | egrep -v "netbeans/(extra|testtools|uml|ruby|soa)" | zip -q $DIST/zip/$BASENAME-standard.zip -@ || exit
+find netbeans | egrep -v "netbeans/(extra|testtools|xml|java|apisupport|harness|profiler|mobility|enterprise|visualweb|uml|soa)" | zip -q $DIST/contrib/$BASENAME-rubyide.zip -@ || exit
 
 cd netbeans
 expat='^extra/|^testtools/'
-for c in platform ide java apisupport harness enterprise profiler uml visualweb ruby mobility soa xml cnd; do
+for c in platform ide java apisupport harness enterprise profiler uml visualweb ruby mobility soa xml; do
     zip -q -r $DIST/zip/moduleclusters/$BASENAME-${c}.zip ${c}* || exit
     expat="$expat|^$c[0-9]*/"
 done
