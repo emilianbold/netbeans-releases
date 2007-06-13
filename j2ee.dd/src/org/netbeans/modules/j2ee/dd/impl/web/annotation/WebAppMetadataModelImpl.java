@@ -42,7 +42,6 @@ public class WebAppMetadataModelImpl implements MetadataModelImplementation<WebA
     private final AnnotationModelHelper helper;
     private final WebAppImpl root;
     private final WebAppMetadata metadata;
-    private final boolean merge;
 
     public static WebAppMetadataModelImpl create(MetadataUnit metadataUnit, boolean merge) {
         WebAppMetadataModelImpl result = new WebAppMetadataModelImpl(metadataUnit, merge);
@@ -52,10 +51,9 @@ public class WebAppMetadataModelImpl implements MetadataModelImplementation<WebA
 
     private WebAppMetadataModelImpl(MetadataUnit metadataUnit, boolean merge) {
         this.metadataUnit = metadataUnit;
-        this.merge = merge;
         ClasspathInfo cpi = ClasspathInfo.create(metadataUnit.getBootPath(), metadataUnit.getCompilePath(), metadataUnit.getSourcePath());
         helper = AnnotationModelHelper.create(cpi);
-        root = new WebAppImpl(helper);
+        root = new WebAppImpl(helper, merge);
         metadata = new WebAppMetadataImpl(root);
     }
 

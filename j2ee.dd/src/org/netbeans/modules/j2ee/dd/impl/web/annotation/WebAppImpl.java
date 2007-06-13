@@ -68,6 +68,7 @@ import org.xml.sax.SAXParseException;
 public class WebAppImpl implements WebApp, JavaContextListener {
 
     private final AnnotationModelHelper helper;
+    private final boolean merge;
     private WebApp ddRoot;
 
     // transient, set to null in javaContextLeft()
@@ -76,8 +77,9 @@ public class WebAppImpl implements WebApp, JavaContextListener {
     private EnvEntry[] envEntries = null;
     private MessageDestinationRef[] messageDestinationRefs = null;
 
-    public WebAppImpl(AnnotationModelHelper helper) {
+    public WebAppImpl(AnnotationModelHelper helper, boolean merge) {
         this.helper = helper;
+        this.merge = merge;
         helper.addJavaContextListener(this);
     }
 
@@ -128,7 +130,6 @@ public class WebAppImpl implements WebApp, JavaContextListener {
         envEntries = CommonAnnotationHelper.getEnvEntries(helper);
     }
     
-    
     private void initMessageDestinationRefs() {
         if (messageDestinationRefs != null) {
             return;
@@ -149,14 +150,14 @@ public class WebAppImpl implements WebApp, JavaContextListener {
     }
 
     public SAXParseException getError() {
-        if (ddRoot != null) {
+        if (merge && ddRoot != null) {
             return ddRoot.getError();
         }
         return null;
     }
 
     public int getStatus() {
-        if (ddRoot != null) {
+        if (merge && ddRoot != null) {
             return ddRoot.getStatus();
         }
         return 0;
@@ -167,7 +168,7 @@ public class WebAppImpl implements WebApp, JavaContextListener {
     }
 
     public boolean isDistributable() {
-        if (ddRoot != null) {
+        if (merge && ddRoot != null) {
             return ddRoot.isDistributable();
         }
         return false;
@@ -178,7 +179,7 @@ public class WebAppImpl implements WebApp, JavaContextListener {
     }
 
     public InitParam getContextParam(int index) {
-        if (ddRoot != null) {
+        if (merge && ddRoot != null) {
             return ddRoot.getContextParam(index);
         }
         return null;
@@ -189,14 +190,14 @@ public class WebAppImpl implements WebApp, JavaContextListener {
     }
 
     public InitParam[] getContextParam() {
-        if (ddRoot != null) {
+        if (merge && ddRoot != null) {
             return ddRoot.getContextParam();
         }
         return new InitParam[0];
     }
 
     public int sizeContextParam() {
-        if (ddRoot != null) {
+        if (merge && ddRoot != null) {
             return ddRoot.sizeContextParam();
         }
         return 0;
@@ -215,7 +216,7 @@ public class WebAppImpl implements WebApp, JavaContextListener {
     }
 
     public Filter getFilter(int index) {
-        if (ddRoot != null) {
+        if (merge && ddRoot != null) {
             return ddRoot.getFilter(index);
         }
         return null;
@@ -226,14 +227,14 @@ public class WebAppImpl implements WebApp, JavaContextListener {
     }
 
     public Filter[] getFilter() {
-        if (ddRoot != null) {
+        if (merge && ddRoot != null) {
             return ddRoot.getFilter();
         }
         return new Filter[0];
     }
 
     public int sizeFilter() {
-        if (ddRoot != null) {
+        if (merge && ddRoot != null) {
             return ddRoot.sizeFilter();
         }
         return 0;
@@ -252,7 +253,7 @@ public class WebAppImpl implements WebApp, JavaContextListener {
     }
 
     public FilterMapping getFilterMapping(int index) {
-        if (ddRoot != null) {
+        if (merge && ddRoot != null) {
             return ddRoot.getFilterMapping(index);
         }
         return null;
@@ -263,14 +264,14 @@ public class WebAppImpl implements WebApp, JavaContextListener {
     }
 
     public FilterMapping[] getFilterMapping() {
-        if (ddRoot != null) {
+        if (merge && ddRoot != null) {
             return ddRoot.getFilterMapping();
         }
         return new FilterMapping[0];
     }
 
     public int sizeFilterMapping() {
-        if (ddRoot != null) {
+        if (merge && ddRoot != null) {
             return ddRoot.sizeFilterMapping();
         }
         return 0;
@@ -289,7 +290,7 @@ public class WebAppImpl implements WebApp, JavaContextListener {
     }
 
     public Listener getListener(int index) {
-        if (ddRoot != null) {
+        if (merge && ddRoot != null) {
             return ddRoot.getListener(index);
         }
         return null;
@@ -300,14 +301,14 @@ public class WebAppImpl implements WebApp, JavaContextListener {
     }
 
     public Listener[] getListener() {
-        if (ddRoot != null) {
+        if (merge && ddRoot != null) {
             return ddRoot.getListener();
         }
         return new Listener[0];
     }
 
     public int sizeListener() {
-        if (ddRoot != null) {
+        if (merge && ddRoot != null) {
             return ddRoot.sizeListener();
         }
         return 0;
@@ -326,7 +327,7 @@ public class WebAppImpl implements WebApp, JavaContextListener {
     }
 
     public Servlet getServlet(int index) {
-        if (ddRoot != null) {
+        if (merge && ddRoot != null) {
             return ddRoot.getServlet(index);
         }
         return null;
@@ -337,14 +338,14 @@ public class WebAppImpl implements WebApp, JavaContextListener {
     }
 
     public Servlet[] getServlet() {
-        if (ddRoot != null) {
+        if (merge && ddRoot != null) {
             return ddRoot.getServlet();
         }
         return new Servlet[0];
     }
 
     public int sizeServlet() {
-        if (ddRoot != null) {
+        if (merge && ddRoot != null) {
             return ddRoot.sizeServlet();
         }
         return 0;
@@ -363,7 +364,7 @@ public class WebAppImpl implements WebApp, JavaContextListener {
     }
 
     public ServletMapping getServletMapping(int index) {
-        if (ddRoot != null) {
+        if (merge && ddRoot != null) {
             return ddRoot.getServletMapping(index);
         }
         return null;
@@ -374,14 +375,14 @@ public class WebAppImpl implements WebApp, JavaContextListener {
     }
 
     public ServletMapping[] getServletMapping() {
-        if (ddRoot != null) {
+        if (merge && ddRoot != null) {
             return ddRoot.getServletMapping();
         }
         return new ServletMapping[0];
     }
 
     public int sizeServletMapping() {
-        if (ddRoot != null) {
+        if (merge && ddRoot != null) {
             return ddRoot.sizeServletMapping();
         }
         return 0;
@@ -400,7 +401,7 @@ public class WebAppImpl implements WebApp, JavaContextListener {
     }
 
     public SessionConfig getSingleSessionConfig() {
-        if (ddRoot != null) {
+        if (merge && ddRoot != null) {
             return ddRoot.getSingleSessionConfig();
         }
         return null;
@@ -411,7 +412,7 @@ public class WebAppImpl implements WebApp, JavaContextListener {
     }
 
     public MimeMapping getMimeMapping(int index) {
-        if (ddRoot != null) {
+        if (merge && ddRoot != null) {
             return ddRoot.getMimeMapping(index);
         }
         return null;
@@ -422,14 +423,14 @@ public class WebAppImpl implements WebApp, JavaContextListener {
     }
 
     public MimeMapping[] getMimeMapping() {
-        if (ddRoot != null) {
+        if (merge && ddRoot != null) {
             return ddRoot.getMimeMapping();
         }
         return new MimeMapping[0];
     }
 
     public int sizeMimeMapping() {
-        if (ddRoot != null) {
+        if (merge && ddRoot != null) {
             return ddRoot.sizeMimeMapping();
         }
         return 0;
@@ -448,7 +449,7 @@ public class WebAppImpl implements WebApp, JavaContextListener {
     }
 
     public WelcomeFileList getSingleWelcomeFileList() {
-        if (ddRoot != null) {
+        if (merge && ddRoot != null) {
             return ddRoot.getSingleWelcomeFileList();
         }
         return null;
@@ -459,7 +460,7 @@ public class WebAppImpl implements WebApp, JavaContextListener {
     }
 
     public ErrorPage getErrorPage(int index) {
-        if (ddRoot != null) {
+        if (merge && ddRoot != null) {
             return ddRoot.getErrorPage(index);
         }
         return null;
@@ -470,14 +471,14 @@ public class WebAppImpl implements WebApp, JavaContextListener {
     }
 
     public ErrorPage[] getErrorPage() {
-        if (ddRoot != null) {
+        if (merge && ddRoot != null) {
             return ddRoot.getErrorPage();
         }
         return new ErrorPage[0];
     }
 
     public int sizeErrorPage() {
-        if (ddRoot != null) {
+        if (merge && ddRoot != null) {
             return ddRoot.sizeErrorPage();
         }
         return 0;
@@ -496,7 +497,7 @@ public class WebAppImpl implements WebApp, JavaContextListener {
     }
 
     public JspConfig getSingleJspConfig() throws VersionNotSupportedException {
-        if (ddRoot != null) {
+        if (merge && ddRoot != null) {
             return ddRoot.getSingleJspConfig();
         }
         return null;
@@ -515,7 +516,7 @@ public class WebAppImpl implements WebApp, JavaContextListener {
     }
 
     public SecurityConstraint getSecurityConstraint(int index) {
-        if (ddRoot != null) {
+        if (merge && ddRoot != null) {
             return ddRoot.getSecurityConstraint(index);
         }
         return null;
@@ -526,14 +527,14 @@ public class WebAppImpl implements WebApp, JavaContextListener {
     }
 
     public SecurityConstraint[] getSecurityConstraint() {
-        if (ddRoot != null) {
+        if (merge && ddRoot != null) {
             return ddRoot.getSecurityConstraint();
         }
         return new SecurityConstraint[0];
     }
 
     public int sizeSecurityConstraint() {
-        if (ddRoot != null) {
+        if (merge && ddRoot != null) {
             return ddRoot.sizeSecurityConstraint();
         }
         return 0;
@@ -552,7 +553,7 @@ public class WebAppImpl implements WebApp, JavaContextListener {
     }
 
     public LoginConfig getSingleLoginConfig() {
-        if (ddRoot != null) {
+        if (merge && ddRoot != null) {
             return ddRoot.getSingleLoginConfig();
         }
         return null;
@@ -563,7 +564,7 @@ public class WebAppImpl implements WebApp, JavaContextListener {
     }
 
     public SecurityRole getSecurityRole(int index) {
-        if (ddRoot != null) {
+        if (merge && ddRoot != null) {
             return ddRoot.getSecurityRole(index);
         }
         return null;
@@ -579,7 +580,7 @@ public class WebAppImpl implements WebApp, JavaContextListener {
     }
 
     public int sizeSecurityRole() {
-        if (ddRoot != null) {
+        if (merge && ddRoot != null) {
             return ddRoot.sizeSecurityRole();
         }
         return 0;
@@ -614,7 +615,7 @@ public class WebAppImpl implements WebApp, JavaContextListener {
     }
 
     public EjbRef getEjbRef(int index) {
-        if (ddRoot != null) {
+        if (merge && ddRoot != null) {
             return ddRoot.getEjbRef(index);
         }
         return null;
@@ -625,14 +626,14 @@ public class WebAppImpl implements WebApp, JavaContextListener {
     }
 
     public EjbRef[] getEjbRef() {
-        if (ddRoot != null) {
+        if (merge && ddRoot != null) {
             return ddRoot.getEjbRef();
         }
         return new EjbRef[0];
     }
 
     public int sizeEjbRef() {
-        if (ddRoot != null) {
+        if (merge && ddRoot != null) {
             return ddRoot.sizeEjbRef();
         }
         return 0;
@@ -651,7 +652,7 @@ public class WebAppImpl implements WebApp, JavaContextListener {
     }
 
     public EjbLocalRef getEjbLocalRef(int index) {
-        if (ddRoot != null) {
+        if (merge && ddRoot != null) {
             return ddRoot.getEjbLocalRef(index);
         }
         return null;
@@ -662,14 +663,14 @@ public class WebAppImpl implements WebApp, JavaContextListener {
     }
 
     public EjbLocalRef[] getEjbLocalRef() {
-        if (ddRoot != null) {
+        if (merge && ddRoot != null) {
             return ddRoot.getEjbLocalRef();
         }
         return new EjbLocalRef[0];
     }
 
     public int sizeEjbLocalRef() {
-        if (ddRoot != null) {
+        if (merge && ddRoot != null) {
             return ddRoot.sizeEjbLocalRef();
         }
         return 0;
@@ -688,7 +689,7 @@ public class WebAppImpl implements WebApp, JavaContextListener {
     }
 
     public ServiceRef getServiceRef(int index) throws VersionNotSupportedException {
-        if (ddRoot != null) {
+        if (merge && ddRoot != null) {
             return ddRoot.getServiceRef(index);
         }
         return null;
@@ -699,14 +700,14 @@ public class WebAppImpl implements WebApp, JavaContextListener {
     }
 
     public ServiceRef[] getServiceRef() throws VersionNotSupportedException {
-        if (ddRoot != null) {
+        if (merge && ddRoot != null) {
             return ddRoot.getServiceRef();
         }
         return new ServiceRef[0];
     }
 
     public int sizeServiceRef() throws VersionNotSupportedException {
-        if (ddRoot != null) {
+        if (merge && ddRoot != null) {
             return ddRoot.sizeServiceRef();
         }
         return 0;
@@ -729,7 +730,7 @@ public class WebAppImpl implements WebApp, JavaContextListener {
     }
 
     public ResourceRef[] getResourceRef() {
-        if (ddRoot != null) {
+        if (merge && ddRoot != null) {
             return ddRoot.getResourceRef();
         }
         initResourceRefs();
@@ -737,7 +738,7 @@ public class WebAppImpl implements WebApp, JavaContextListener {
     }
 
     public ResourceRef getResourceRef(int index) {
-        if (ddRoot != null) {
+        if (merge && ddRoot != null) {
             return ddRoot.getResourceRef(index);
         }
         initResourceRefs();
@@ -745,7 +746,7 @@ public class WebAppImpl implements WebApp, JavaContextListener {
     }
 
     public int sizeResourceRef() {
-        if (ddRoot != null) {
+        if (merge && ddRoot != null) {
             return ddRoot.sizeResourceRef();
         }
         initResourceRefs();
@@ -754,7 +755,7 @@ public class WebAppImpl implements WebApp, JavaContextListener {
 
     
     public ResourceEnvRef[] getResourceEnvRef() {
-        if (ddRoot != null) {
+        if (merge && ddRoot != null) {
             return ddRoot.getResourceEnvRef();
         }
         initResourceEnvRefs();
@@ -762,7 +763,7 @@ public class WebAppImpl implements WebApp, JavaContextListener {
     }
 
     public ResourceEnvRef getResourceEnvRef(int index) {
-        if (ddRoot != null) {
+        if (merge && ddRoot != null) {
             return ddRoot.getResourceEnvRef(index);
         }
         initResourceEnvRefs();
@@ -770,7 +771,7 @@ public class WebAppImpl implements WebApp, JavaContextListener {
     }
 
     public int sizeResourceEnvRef() {
-        if (ddRoot != null) {
+        if (merge && ddRoot != null) {
             return ddRoot.sizeResourceEnvRef();
         }
         initResourceEnvRefs();
@@ -778,7 +779,7 @@ public class WebAppImpl implements WebApp, JavaContextListener {
     }
 
     public EnvEntry[] getEnvEntry() {
-        if (ddRoot != null) {
+        if (merge && ddRoot != null) {
             return ddRoot.getEnvEntry();
         }
         initEnvEntries();
@@ -786,7 +787,7 @@ public class WebAppImpl implements WebApp, JavaContextListener {
     }
 
     public EnvEntry getEnvEntry(int index) {
-        if (ddRoot != null) {
+        if (merge && ddRoot != null) {
             return ddRoot.getEnvEntry(index);
         }
         initEnvEntries();
@@ -794,7 +795,7 @@ public class WebAppImpl implements WebApp, JavaContextListener {
     }
 
     public int sizeEnvEntry() {
-        if (ddRoot != null) {
+        if (merge && ddRoot != null) {
             return ddRoot.sizeEnvEntry();
         }
         initEnvEntries();
@@ -802,7 +803,7 @@ public class WebAppImpl implements WebApp, JavaContextListener {
     }
     
     public MessageDestinationRef[] getMessageDestinationRef() throws VersionNotSupportedException {
-        if (ddRoot != null) {
+        if (merge && ddRoot != null) {
             return ddRoot.getMessageDestinationRef();
         }
         initMessageDestinationRefs();
@@ -810,7 +811,7 @@ public class WebAppImpl implements WebApp, JavaContextListener {
     }
 
     public MessageDestinationRef getMessageDestinationRef(int index) throws VersionNotSupportedException {
-        if (ddRoot != null) {
+        if (merge && ddRoot != null) {
             return ddRoot.getMessageDestinationRef(index);
         }
         initMessageDestinationRefs();
@@ -818,7 +819,7 @@ public class WebAppImpl implements WebApp, JavaContextListener {
     }
 
     public int sizeMessageDestinationRef() throws VersionNotSupportedException {
-        if (ddRoot != null) {
+        if (merge && ddRoot != null) {
             return ddRoot.sizeMessageDestinationRef();
         }
         initMessageDestinationRefs();
@@ -870,7 +871,7 @@ public class WebAppImpl implements WebApp, JavaContextListener {
     }
 
     public MessageDestination getMessageDestination(int index) throws VersionNotSupportedException {
-        if (ddRoot != null) {
+        if (merge && ddRoot != null) {
             return ddRoot.getMessageDestination(index);
         }
         return null;
@@ -881,14 +882,14 @@ public class WebAppImpl implements WebApp, JavaContextListener {
     }
 
     public MessageDestination[] getMessageDestination() throws VersionNotSupportedException {
-        if (ddRoot != null) {
+        if (merge && ddRoot != null) {
             return ddRoot.getMessageDestination();
         }
         return new MessageDestination[0];
     }
 
     public int sizeMessageDestination() throws VersionNotSupportedException {
-        if (ddRoot != null) {
+        if (merge && ddRoot != null) {
             return ddRoot.sizeMessageDestination();
         }
         return 0;
@@ -903,7 +904,7 @@ public class WebAppImpl implements WebApp, JavaContextListener {
     }
 
     public LocaleEncodingMappingList getSingleLocaleEncodingMappingList() throws VersionNotSupportedException {
-        if (ddRoot != null) {
+        if (merge && ddRoot != null) {
             return ddRoot.getSingleLocaleEncodingMappingList();
         }
         return null;
@@ -918,7 +919,7 @@ public class WebAppImpl implements WebApp, JavaContextListener {
     }
 
     public Taglib getTaglib(int index) throws VersionNotSupportedException {
-        if (ddRoot != null) {
+        if (merge && ddRoot != null) {
             return ddRoot.getTaglib(index);
         }
         return null;
@@ -929,14 +930,14 @@ public class WebAppImpl implements WebApp, JavaContextListener {
     }
 
     public Taglib[] getTaglib() throws VersionNotSupportedException {
-        if (ddRoot != null) {
+        if (merge && ddRoot != null) {
             return ddRoot.getTaglib();
         }
         return new Taglib[0];
     }
 
     public int sizeTaglib() throws VersionNotSupportedException {
-        if (ddRoot != null) {
+        if (merge && ddRoot != null) {
             return ddRoot.sizeTaglib();
         }
         return 0;
@@ -955,7 +956,7 @@ public class WebAppImpl implements WebApp, JavaContextListener {
     }
 
     public boolean isMetadataComplete() throws VersionNotSupportedException {
-        if (ddRoot != null) {
+        if (merge && ddRoot != null) {
             return ddRoot.isMetadataComplete();
         }
         return false;
@@ -982,7 +983,7 @@ public class WebAppImpl implements WebApp, JavaContextListener {
     }
 
     public String getId() {
-        if (ddRoot != null) {
+        if (merge && ddRoot != null) {
             return ddRoot.getId();
         }
         return null;
@@ -1009,21 +1010,21 @@ public class WebAppImpl implements WebApp, JavaContextListener {
     }
 
     public String getDescription(String locale) throws VersionNotSupportedException {
-        if (ddRoot != null) {
+        if (merge && ddRoot != null) {
             return ddRoot.getDescription(locale);
         }
         return null;
     }
 
     public String getDefaultDescription() {
-        if (ddRoot != null) {
+        if (merge && ddRoot != null) {
             return ddRoot.getDefaultDescription();
         }
         return null;
     }
 
     public Map getAllDescriptions() {
-        if (ddRoot != null) {
+        if (merge && ddRoot != null) {
             return ddRoot.getAllDescriptions();
         }
         return null;
@@ -1054,21 +1055,21 @@ public class WebAppImpl implements WebApp, JavaContextListener {
     }
 
     public String getDisplayName(String locale) throws VersionNotSupportedException {
-        if (ddRoot != null) {
+        if (merge && ddRoot != null) {
             return ddRoot.getDisplayName(locale);
         }
         return null;
     }
 
     public String getDefaultDisplayName() {
-        if (ddRoot != null) {
+        if (merge && ddRoot != null) {
             return ddRoot.getDefaultDisplayName();
         }
         return null;
     }
 
     public Map getAllDisplayNames() {
-        if (ddRoot != null) {
+        if (merge && ddRoot != null) {
             return ddRoot.getAllDisplayNames();
         }
         return null;
@@ -1127,42 +1128,42 @@ public class WebAppImpl implements WebApp, JavaContextListener {
     }
 
     public String getSmallIcon(String locale) throws VersionNotSupportedException {
-        if (ddRoot != null) {
+        if (merge && ddRoot != null) {
             return ddRoot.getSmallIcon(locale);
         }
         return null;
     }
 
     public String getSmallIcon() {
-        if (ddRoot != null) {
+        if (merge && ddRoot != null) {
             return ddRoot.getSmallIcon();
         }
         return null;
     }
 
     public String getLargeIcon(String locale) throws VersionNotSupportedException {
-        if (ddRoot != null) {
+        if (merge && ddRoot != null) {
             return ddRoot.getLargeIcon(locale);
         }
         return null;
     }
 
     public String getLargeIcon() {
-        if (ddRoot != null) {
+        if (merge && ddRoot != null) {
             return ddRoot.getLargeIcon();
         }
         return null;
     }
 
     public Icon getDefaultIcon() {
-        if (ddRoot != null) {
+        if (merge && ddRoot != null) {
             return ddRoot.getDefaultIcon();
         }
         return null;
     }
 
     public Map getAllIcons() {
-        if (ddRoot != null) {
+        if (merge && ddRoot != null) {
             return ddRoot.getAllIcons();
         }
         return null;
