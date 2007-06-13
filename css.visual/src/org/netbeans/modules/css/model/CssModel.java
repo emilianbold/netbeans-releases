@@ -34,7 +34,7 @@ import org.netbeans.api.languages.ParseException;
 import org.netbeans.api.languages.ParserManager;
 import org.netbeans.api.languages.ParserManager.State;
 import org.netbeans.api.languages.ParserManagerListener;
-import org.openide.ErrorManager;
+import org.openide.util.Exceptions;
 
 /**
  * A domain object model representing CSS file backed up by 
@@ -254,8 +254,7 @@ public final class CssModel {
                 support.firePropertyChange(MODEL_UPDATED, oldRules, rules);
             }
         } catch (final Throwable t) {
-            Logger.getAnonymousLogger().throwing("bla", "blebla", t);
-            ErrorManager.getDefault().notify(t);
+            Exceptions.printStackTrace(t);
         }
     }
     

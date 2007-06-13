@@ -32,9 +32,9 @@ import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.css.visual.ui.preview.CssPreviewable;
 import org.netbeans.modules.css.visual.ui.preview.CssPreviewable.Content;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -233,7 +233,7 @@ public final class CssPreviewTopComponent extends TopComponent {
                 String errorMessage = "<html> <body> <div style=\"color: red\">" + e.getMessage() + "</div> </body> </html>"; //NOI18N
                 setPreviewContent(errorMessage, null);
             }catch(Exception ex) {
-                ErrorManager.getDefault().notify(ex);
+                Exceptions.printStackTrace(ex);
             }
         }
         revalidate();

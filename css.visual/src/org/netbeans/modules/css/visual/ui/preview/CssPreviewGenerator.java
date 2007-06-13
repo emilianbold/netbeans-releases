@@ -20,7 +20,6 @@
 package org.netbeans.modules.css.visual.ui.preview;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.StringTokenizer;
 import org.netbeans.modules.css.model.CssModel;
