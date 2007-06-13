@@ -117,16 +117,11 @@ public class ServicePanel extends SectionInnerPanel {
         stsChBox.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         tcpChBox.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         fiChBox.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
-//        mexBox.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
-//        mexSslBox.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         devDefaultsChBox.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         jSeparator1.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         jSeparator2.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         jSeparator3.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
 
-//        mexBox.setText(NbBundle.getMessage(ServicePanel.class, "LBL_Section_Service_mexBox"));
-//        mexSslBox.setText(NbBundle.getMessage(ServicePanel.class, "LBL_Section_Service_mexSslBox"));
-        
         addImmediateModifier(mtomChBox);
         addImmediateModifier(rmChBox);
         addImmediateModifier(orderedChBox);
@@ -135,8 +130,6 @@ public class ServicePanel extends SectionInnerPanel {
         addImmediateModifier(stsChBox);
         addImmediateModifier(tcpChBox);
         addImmediateModifier(fiChBox);
-//        addImmediateModifier(mexBox);
-//        addImmediateModifier(mexSslBox);
         addImmediateModifier(devDefaultsChBox);
 
         sync();
@@ -202,15 +195,7 @@ public class ServicePanel extends SectionInnerPanel {
             setSecurityProfile(ComboConstants.PROF_USERNAME);
             setChBox(devDefaultsChBox, true);
         }
-        
-//        boolean mexEnabled = false; //todo
-//        setChBox(mexBox, mexEnabled);
-        
-//        if (mexEnabled) {
-//            boolean mexSslEnabled = false; //todo
-//            setChBox(mexSslBox, mexSslEnabled);
-//        }
-        
+
         enableDisable();
         inSync = false;
     }
@@ -289,18 +274,26 @@ public class ServicePanel extends SectionInnerPanel {
         }
         
         if (source.equals(securityChBox)) {
+            String profile = (String) profileCombo.getSelectedItem();
             if (securityChBox.isSelected()) {
-                String profile = (String) profileCombo.getSelectedItem();
                 profileCombo.setSelectedItem(profile);
-                oldProfile = profile;
                 if (devDefaultsChBox.isSelected()) {
                     Util.fillDefaults(project);
                     ProfilesModelHelper.setServiceDefaults((String) profileCombo.getSelectedItem(), binding, project);
+                    if (ProfilesModelHelper.isSSLProfile(profile)) {
+                        ProfilesModelHelper.setSSLAttributes(binding);
+                    }
                 }
             } else {
+                if (devDefaultsChBox.isSelected()) {
+                    if (ProfilesModelHelper.isSSLProfile(profile)) {
+                        ProfilesModelHelper.unsetSSLAttributes(binding);
+                    }
+                }
                 Util.unfillDefaults(project);
                 SecurityPolicyModelHelper.disableSecurity(binding, true);
             }
+            oldProfile = profile;
         }
 
         if (source.equals(devDefaultsChBox)) {
@@ -329,6 +322,12 @@ public class ServicePanel extends SectionInnerPanel {
                 ProfilesModelHelper.setSecurityProfile(binding, profile, oldProfile);
                 if (devDefaultsChBox.isSelected()) {
                     ProfilesModelHelper.setServiceDefaults(profile, binding, project);
+                    if (ProfilesModelHelper.isSSLProfile(profile) && !ProfilesModelHelper.isSSLProfile(oldProfile)) {
+                        ProfilesModelHelper.setSSLAttributes(binding);
+                    } 
+                    if (!ProfilesModelHelper.isSSLProfile(profile) && ProfilesModelHelper.isSSLProfile(oldProfile)) {
+                        ProfilesModelHelper.unsetSSLAttributes(binding);
+                    }
                 }
                 boolean defUsed = ProfilesModelHelper.isServiceDefaultSetupUsed(profile, binding, project);
                 inSync = true; devDefaultsChBox.setSelected(defUsed); inSync = false;

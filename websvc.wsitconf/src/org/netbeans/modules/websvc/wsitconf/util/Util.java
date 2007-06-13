@@ -925,5 +925,12 @@ public class Util {
             }
         }
     }
-    
+
+    public static FileObject getSunDDFO(Project p) {
+        FileObject[] fobjs = getProvider(p).getConfigurationFiles();
+        if (fobjs.length > 0) {
+            return fobjs[0];
+        }
+        return null;
+    }    
 }
