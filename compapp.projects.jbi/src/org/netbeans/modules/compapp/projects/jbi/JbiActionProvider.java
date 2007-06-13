@@ -202,7 +202,7 @@ public class JbiActionProvider implements ActionProvider {
                 command.equals(COMMAND_DEBUG) ||
                 command.equals(JbiProjectConstants.COMMAND_TEST)) {
             
-            if (isProjectEmpty()) {
+            /*if (isProjectEmpty()) {
                 NotifyDescriptor d =
                         new NotifyDescriptor.Message(
                         NbBundle.getMessage(
@@ -211,7 +211,7 @@ public class JbiActionProvider implements ActionProvider {
                         NotifyDescriptor.ERROR_MESSAGE);
                 DialogDisplayer.getDefault().notify(d);
                 return;
-            }
+            }*/
             
             if (!isSelectedServer()) {
                 return;

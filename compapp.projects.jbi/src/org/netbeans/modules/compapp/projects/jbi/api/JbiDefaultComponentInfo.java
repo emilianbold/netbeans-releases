@@ -135,7 +135,7 @@ public class JbiDefaultComponentInfo {
         return singleton;
     }
 
-    private static void loadJbiDefaultComponentInfoForSDLEditor(FileObject fo) {
+    private static void loadJbiDefaultComponentInfoForSDLEditor(FileObject fo) { // Register Binding Component Icon: WSDLEditor/Binding/{FileBinding, ...}
         if (fo != null) {
             DataFolder df = DataFolder.findFolder(fo);
             DataObject[] bs = df.getChildren();
@@ -145,8 +145,8 @@ public class JbiDefaultComponentInfo {
                 if (name.equalsIgnoreCase("binding")) {
                     DataObject[] ms = DataFolder.findFolder(bs[i].getPrimaryFile()).getChildren();
                     for (int j = 0; j < ms.length; j++) {
-                        String bname = ms[j].getName().toLowerCase();
-                        FileObject msfo = ms[i].getPrimaryFile();
+                        String bname = ms[j].getName().toLowerCase(); // e.x., filebinding
+                        FileObject msfo = ms[i].getPrimaryFile(); 
                         Object icon = msfo.getAttribute(WSDL_ICON_NAME);
                         if (icon != null) {
                             singleton.defaultIconHash.put(bname, icon);
@@ -158,7 +158,7 @@ public class JbiDefaultComponentInfo {
         }
     }
 
-    private static void loadJbiDefaultComponentInfoFromFileObject(FileObject fo) {
+    private static void loadJbiDefaultComponentInfoFromFileObject(FileObject fo) { // JbiComponents or SeeBeyondJbiComponents
         if (fo != null) {
             DataFolder df = DataFolder.findFolder(fo);
             DataObject[] ms = df.getChildren();
@@ -171,17 +171,15 @@ public class JbiDefaultComponentInfo {
                 String state = "Installed"; // NOI18N
 //                        String ns = ""; // NOI18N
 //                        fo = ms[i].getPrimaryFile();
-                FileObject msfo = ms[i].getPrimaryFile();
+                FileObject msfo = ms[i].getPrimaryFile();  // e.x., SeeBeyondJbiComponents/sun-file-binding
                 
                 List nsList = new ArrayList();
-                List<String> bid = new ArrayList<String>();
-                //int m = 0;
+                List<String> bids = new ArrayList<String>();
                 
-                for (Enumeration e = msfo.getAttributes(); e.hasMoreElements();) {
-                    String cmd = (String) e.nextElement();
+                for (Enumeration<String> e = msfo.getAttributes(); e.hasMoreElements();) {
+                    String cmd = e.nextElement();
                     String attr = (String) msfo.getAttribute(cmd);
                     
-                    //log("\tAttr-" + m + ": " + cmd + " " + attr);
                     if (cmd.equals(COMP_ID)) {
                         id = attr;
                     } else if (cmd.equals(COMP_DESC)) {
@@ -191,16 +189,14 @@ public class JbiDefaultComponentInfo {
                     } else if (cmd.equals(COMP_NAMESPACE)) {
                         nsList.add(attr);
                     }
-                    
-                    //m++;
                 }
                 
                 if (JBIComponentStatus.BINDING_TYPE.equals(type) && ms[i] instanceof DataFolder) {
                     DataObject[] mgs = ((DataFolder)ms[i]).getChildren();
                     for (int j = 0; j < mgs.length; j++) {
-                        FileObject mgsfo = mgs[j].getPrimaryFile();
+                        FileObject mgsfo = mgs[j].getPrimaryFile(); // e.x., SeeBeyondJbiComponents/sun-file-binding/file.binding-1.0
                         String attr = (String)mgsfo.getAttribute(COMP_NAMESPACE);
-                        bid.add(mgsfo.getName());
+                        bids.add(mgsfo.getName()); // e.x., file.binding-1    // for http soap, there are two files: http.binding-1 and soap.binding-1
                         if (attr != null) {
                             nsList.add(attr);
                         }
@@ -221,13 +217,18 @@ public class JbiDefaultComponentInfo {
                             );
                     singleton.componentList.add(jcs);
                     singleton.componentHash.put(id, jcs);
-                    addBindingInfo(id, bid, desc, ns);
+                    addBindingInfo(id, bids, desc, ns);
                     //System.out.println("CompDisplayName: "+getDisplayName(id));
                 }
             }
         }
     }
-
+    /** 
+     * @param id    binding component name, e.x., "sun-http-binding"
+     * @param bids  binding types, e.x., "http", or "soap"
+     * @param desc  binding component description 
+     * @param ns    namespaces for the binding component
+     */
     private static void addBindingInfo(String id, List<String> bids, String desc, String[] ns) {
         Object icon = null;
         if (bids == null) {
@@ -241,7 +242,7 @@ public class JbiDefaultComponentInfo {
 
             for (Enumeration e = singleton.defaultIconHash.keys() ; e.hasMoreElements() ;) {
                 String name = (String) e.nextElement();
-                if (name.startsWith(bid)) {
+                if (name.startsWith(bid)) { // e.x., name: filebinding; bid: file
                     icon = singleton.defaultIconHash.get(name);
                     break;
                 }

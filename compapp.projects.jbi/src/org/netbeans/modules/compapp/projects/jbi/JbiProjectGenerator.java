@@ -101,14 +101,16 @@ public class JbiProjectGenerator {
         assert fo.getChildren().length == 0 : "Dir must have been empty: " + dir; // NOI18N
 
         AntProjectHelper h = setupProject(fo, name, j2eeLevel);
-        FileObject srcRoot = fo.createFolder(DEFAULT_SRC_FOLDER); // NOI18N
-        FileObject jbiasaRoot = srcRoot.createFolder(DEFAULT_JBIASA_FOLDER); 
+        FileObject srcRoot = fo.createFolder(DEFAULT_SRC_FOLDER); // NOI18N        
         FileObject confRoot = srcRoot.createFolder(DEFAULT_CONF_FOLDER); 
+        srcRoot.createFolder(DEFAULT_JBIASA_FOLDER); 
+        /*
         FileObject portmapFile = FileUtil.copyFile(
                 Repository.getDefault().getDefaultFileSystem().findResource(
                     "org-netbeans-modules-compapp-projects-jbi/portmap.xml" // NOI18N
                 ), confRoot, "portmap" // NOI18N
             ); 
+        */
         FileObject casaFile = FileUtil.copyFile(
                 Repository.getDefault().getDefaultFileSystem().findResource(
                     "org-netbeans-modules-compapp-projects-jbi/project.casa" // NOI18N
@@ -121,9 +123,11 @@ public class JbiProjectGenerator {
                 ), confRoot, "userConnections" // NOI18N
             ); 
         */
+        
         // Start Test Framework
-        FileObject testRoot = fo.createFolder(DEFAULT_TEST_FOLDER); 
+        fo.createFolder(DEFAULT_TEST_FOLDER); 
         // End Test Framework
+        
         // create the default component info file
         JbiDefaultComponentInfo ci = JbiDefaultComponentInfo.getJbiDefaultComponentInfo();
         JBIComponentDocument document = new JBIComponentDocument();
@@ -132,13 +136,11 @@ public class JbiProjectGenerator {
         File confFile = FileUtil.toFile(confRoot);
         try {
             document.getJbiComponentList().addAll(ci.getComponentList());
-//            document.dump();    // XXX
-
             CreateComponentInformation infoDoc = new CreateComponentInformation();
             infoDoc.buildComponentDOMTree(document);
-            infoDoc.writeToComponentFile(confFile.getPath()); // confRoot.getPath());
+            infoDoc.writeToComponentFile(confFile.getPath()); 
             infoDoc.buildBindingComponentDOMTree(document);
-            infoDoc.writeToBindingComponentFile(confFile.getPath()); // confRoot.getPath());
+            infoDoc.writeToBindingComponentFile(confFile.getPath());
         } catch (Exception e) {
             e.printStackTrace();
         }
