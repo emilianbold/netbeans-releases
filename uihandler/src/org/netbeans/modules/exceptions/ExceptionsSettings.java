@@ -24,11 +24,12 @@ import org.openide.util.NbPreferences;
 
 /**
  *
- * @author jindra
+ * @author Jindrich Sedek
  */
 public class ExceptionsSettings {
     
     private static final String userProp = "UserName";       // NOI18N
+    private static final String passwd = "Passwd";
     
     
     /** Creates a new instance of ExceptionsSettings */
@@ -47,4 +48,11 @@ public class ExceptionsSettings {
         prefs().put(userProp, userName);
     }
         
+    public String getPasswd() {
+        return prefs().get(passwd, "");
+    }
+
+    public void setPasswd(String userName) {
+        prefs().put(passwd, userName);
+    }
 }

@@ -23,7 +23,7 @@ import org.netbeans.junit.NbTestCase;
 
 /**
  *
- * @author jindra
+ * @author Jindrich Sedek
  */
 public class ExceptionsSettingsTest extends NbTestCase {
     
@@ -43,5 +43,16 @@ public class ExceptionsSettingsTest extends NbTestCase {
         assertEquals(previous, settings.getUserName());
     }
 
+    public void testPasswd() {
+        String str = "MY_PASSWD";
+        String previous;
+        ExceptionsSettings settings = new ExceptionsSettings();
+        assertNotNull(settings);
+        previous = settings.getPasswd();
+        settings.setPasswd(str);
+        assertEquals(str, settings.getPasswd());
+        settings.setPasswd(previous);
+        assertEquals(previous, settings.getPasswd());
+    }
 
 }

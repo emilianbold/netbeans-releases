@@ -995,6 +995,7 @@ public class Installer extends ModuleInstall {
             if ((reportPanel != null)&&(report)){
                 params.add(reportPanel.getSummary());
                 params.add(reportPanel.getComment());
+                params.add(new ExceptionsSettings().getPasswd());
             }
         }
         protected Object showDialogAndGetValue(DialogDescriptor dd) {
