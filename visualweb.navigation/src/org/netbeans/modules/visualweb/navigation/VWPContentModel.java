@@ -57,11 +57,11 @@ public class VWPContentModel extends PageContentModel{
     private Collection<PageContentItem> pageContentItems = new ArrayList<PageContentItem>();
     
     private static final Logger LOGGER = Logger.getLogger("org.netbeans.modules.web.jsf.navigation");
-//    
-//    static {
-//        LOGGER.setLevel(Level.ALL);
-//    }
-        
+    //
+    //    static {
+    //        LOGGER.setLevel(Level.ALL);
+    //    }
+    
     
     /** Creates a new instance of VWPContentModel
      * @param facesModel can not be null
@@ -119,7 +119,7 @@ public class VWPContentModel extends PageContentModel{
     public void destroyListeners() {
         
         LOGGER.entering("VWPContentModel", "destroyListeners()");
-        if ( facesModel != null ) {            
+        if ( facesModel != null ) {
             LOGGER.finest("Removing model listener for Page: " + getPageName());
             ModelSet set = facesModel.getOwner();
             if( set != null && msl != null ) {
@@ -425,15 +425,15 @@ public class VWPContentModel extends PageContentModel{
                                                     mev.updateReturnStrings(oldCaseOutcome, caseOutcome);
                                                 }catch( NullPointerException npe ){
                                                     LOGGER.severe("NullPointerException: Failed to update return strings\n" +
-                                                                  "Source Class: org.netbeans.modules.visualweb.navigation.VWPContentModel\n" + 
-                                                                  "Method: setCaseOutcome()\n" + 
-                                                                  "Call: mev.updateReturnStrings( " + oldCaseOutcome + ", " + caseOutcome + " )\n");
-//                                                    LogRecord record = new LogRecord(Level.WARNING, "Failed to update return strings.");
-//                                                    record.setSourceClassName("VWPContentModel");
-//                                                    record.setSourceMethodName("setCaseOutcome(VWPContentItem contentItem, String caseOutcome, DesignProperty addLinkToDP, boolean rename)");
-//                                                    record.setParameters(new Object[] {contentItem, caseOutcome, addLinkToDP, rename});
-//                                                    record.setThrown(npe);
-//                                                    LOGGER.log(record);
+                                                            "Source Class: org.netbeans.modules.visualweb.navigation.VWPContentModel\n" +
+                                                            "Method: setCaseOutcome()\n" +
+                                                            "Call: mev.updateReturnStrings( " + oldCaseOutcome + ", " + caseOutcome + " )\n");
+                                                    //                                                    LogRecord record = new LogRecord(Level.WARNING, "Failed to update return strings.");
+                                                    //                                                    record.setSourceClassName("VWPContentModel");
+                                                    //                                                    record.setSourceMethodName("setCaseOutcome(VWPContentItem contentItem, String caseOutcome, DesignProperty addLinkToDP, boolean rename)");
+                                                    //                                                    record.setParameters(new Object[] {contentItem, caseOutcome, addLinkToDP, rename});
+                                                    //                                                    record.setThrown(npe);
+                                                    //                                                    LOGGER.log(record);
                                                     throw npe;
                                                 }
                                                 
@@ -558,8 +558,8 @@ public class VWPContentModel extends PageContentModel{
         List<DesignBean> beans = new ArrayList<DesignBean>();
         findCommandBeans( facesModel, container, beans, false);
         try {
+            undo = facesModel.writeLock(null);  //!CQ TODO: nice description
             for( DesignBean designBean : beans ){
-                undo = facesModel.writeLock(null);  //!CQ TODO: nice description
                 DesignProperty pr = null;
                 String javaeePlatform = JsfProjectUtils.getJ2eePlatformVersion(getProject());
                 if ((javaeePlatform != null) && JsfProjectUtils.JAVA_EE_5.equals(javaeePlatform)){
