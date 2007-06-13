@@ -36,7 +36,7 @@ Microsystems, Inc. All Rights Reserved.
 
     <!-- 1st round -->    
     <testbag testattribs="measure_once or measure_ui or measure_openfiles" prio="2"
-             compiler="qa-perf-compiler" executor="ide_performance" name="Measure Open Files" >
+             compiler="qa-perf-compiler" executor="ide_performance" name="Measure Web Actions" >
 	<testset dir="qa-functional/src">
 	    <patternset>
 		<include name="gui/MeasureWebActions.class"/>
@@ -45,7 +45,7 @@ Microsystems, Inc. All Rights Reserved.
     </testbag>
 
     <testbag testattribs="measure_once or measure_ui or measure_nodepopup" prio="4"
-             compiler="qa-perf-compiler" executor="ide_performance" name="Measure Node Popup" >
+             compiler="qa-perf-compiler" executor="ide_performance" name="Measure Web Dialogs" >
 	<testset dir="qa-functional/src">
 	    <patternset>
 		<include name="gui/MeasureWebDialogs.class"/>
@@ -54,7 +54,7 @@ Microsystems, Inc. All Rights Reserved.
     </testbag>
 
     <testbag testattribs="measure_once or measure_ui or measure_runtimepopup" prio="6"
-             compiler="qa-perf-compiler" executor="ide_performance" name="Measure Runtime Node Popup" >
+             compiler="qa-perf-compiler" executor="ide_performance" name="Measure Web Menus" >
 	<testset dir="qa-functional/src">
 	    <patternset>
 		<include name="gui/MeasureWebMenus.class"/>
@@ -64,7 +64,7 @@ Microsystems, Inc. All Rights Reserved.
 
     <!-- 2nd round -->    
     <testbag testattribs="measure_ui or measure_openfiles" prio="12"
-             compiler="qa-perf-compiler" executor="ide_performance" name="Measure Open Files" >
+             compiler="qa-perf-compiler" executor="ide_performance" name="Measure Web Actions" >
 	<testset dir="qa-functional/src">
 	    <patternset>
 		<include name="gui/MeasureWebActions.class"/>
@@ -73,7 +73,7 @@ Microsystems, Inc. All Rights Reserved.
     </testbag>
 
     <testbag testattribs="measure_ui or measure_nodepopup" prio="14"
-             compiler="qa-perf-compiler" executor="ide_performance" name="Measure Node Popup" >
+             compiler="qa-perf-compiler" executor="ide_performance" name="Measure Web Dialogs" >
 	<testset dir="qa-functional/src">
 	    <patternset>
 		<include name="gui/MeasureWebDialogs.class"/>
@@ -82,7 +82,7 @@ Microsystems, Inc. All Rights Reserved.
     </testbag>
 
     <testbag testattribs="measure_ui or measure_runtimepopup" prio="16"
-             compiler="qa-perf-compiler" executor="ide_performance" name="Measure Runtime Node Popup" >
+             compiler="qa-perf-compiler" executor="ide_performance" name="Measure Web Menus" >
 	<testset dir="qa-functional/src">
 	    <patternset>
 		<include name="gui/MeasureWebMenus.class"/>
@@ -92,7 +92,7 @@ Microsystems, Inc. All Rights Reserved.
     
     <!-- 3rd round -->    
     <testbag testattribs="measure_ui or measure_openfiles" prio="22"
-             compiler="qa-perf-compiler" executor="ide_performance" name="Measure Open Files" >
+             compiler="qa-perf-compiler" executor="ide_performance" name="Measure Web Actions" >
 	<testset dir="qa-functional/src">
 	    <patternset>
 		<include name="gui/MeasureWebActions.class"/>
@@ -101,7 +101,7 @@ Microsystems, Inc. All Rights Reserved.
     </testbag>
 
     <testbag testattribs="measure_ui or measure_nodepopup" prio="24"
-             compiler="qa-perf-compiler" executor="ide_performance" name="Measure Node Popup" >
+             compiler="qa-perf-compiler" executor="ide_performance" name="Measure Web Dialogs" >
 	<testset dir="qa-functional/src">
 	    <patternset>
 		<include name="gui/MeasureWebDialogs.class"/>
@@ -110,7 +110,7 @@ Microsystems, Inc. All Rights Reserved.
     </testbag>
 
     <testbag testattribs="measure_ui or measure_runtimepopup" prio="26"
-             compiler="qa-perf-compiler" executor="ide_performance" name="Measure Runtime Node Popup" >
+             compiler="qa-perf-compiler" executor="ide_performance" name="Measure Web Menus" >
 	<testset dir="qa-functional/src">
 	    <patternset>
 		<include name="gui/MeasureWebMenus.class"/>
