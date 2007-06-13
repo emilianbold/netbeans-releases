@@ -11441,7 +11441,7 @@ public class ADDrawingAreaControl extends ApplicationView
        if(getReadOnly() == false) {
            if (e.isControlDown() ) {
                if (Character.toUpperCase(e.getKeyChar()) == KeyEvent.VK_S) {
-                   setIsDirty(false);
+//                   setIsDirty(false);
                }
            }
            else
@@ -11454,9 +11454,10 @@ public class ADDrawingAreaControl extends ApplicationView
 		       && (int)ch != 10)  // don't need enter key_typed either
 		   {
 		       handleCharTyped(e.getKeyChar());
+//                       setIsDirty(true);
 		   }
 	       }
-               setIsDirty(true);
+               
            }
       }
    }
