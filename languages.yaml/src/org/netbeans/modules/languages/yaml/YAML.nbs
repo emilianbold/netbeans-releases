@@ -58,11 +58,6 @@ FOLD:Collection
 NAVIGATOR:Item
 NAVIGATOR:Collection
 
-PROPERTIES {
-    printFirst:"true";
-    printRules:"true";
-}
-
 COMMENT_LINE {
     prefix:"#";
 }
