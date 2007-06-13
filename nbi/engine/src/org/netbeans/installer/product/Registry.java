@@ -477,8 +477,19 @@ public class Registry {
             // if there are no products that satisfy the requirement, the registry
             // is inconsistent
             if (requirees.size() == 0) {
+                String sourceId = 
+                        product.getUid() + "/" + 
+                        product.getVersion();
+                String requirementId = 
+                        requirement.getUid() + "/" + 
+                        requirement.getVersionLower() + " - " + 
+                        requirement.getVersionUpper() + 
+                        (requirement.getVersionResolved() != null ? 
+                            " [" + requirement.getVersionResolved() + "]" : "");
+                
                 throw new InitializationException("No components " +
-                        "matching the requirement.");
+                        "matching the requirement: " + sourceId + 
+                        " requires " + requirementId);
             }
             
             // iterate over the list of satisfying products, and check whether they
@@ -748,7 +759,15 @@ public class Registry {
             
             final DocumentBuilderFactory factory =
                     DocumentBuilderFactory.newInstance();
-            factory.setSchema(schema);
+            try {
+                factory.setSchema(schema);
+            } catch (UnsupportedOperationException e) {
+                // if the parser does not support schemas, let it be -- we can do 
+                // without it anyway -- just log it and proceed
+                ErrorManager.notifyDebug(
+                        "The current parser - " + factory.getClass() + " - does not support schemas.", 
+                        e);
+            }
             factory.setNamespaceAware(true);
             
             final DocumentBuilder builder = factory.newDocumentBuilder();
@@ -1125,12 +1144,20 @@ public class Registry {
                     newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI).
                     newSchema(schemaFile);
             
-            final DocumentBuilderFactory documentBuilderFactory =
+            final DocumentBuilderFactory factory =
                     DocumentBuilderFactory.newInstance();
-            documentBuilderFactory.setSchema(schema);
-            documentBuilderFactory.setNamespaceAware(true);
+            try {
+                factory.setSchema(schema);
+            } catch (UnsupportedOperationException e) {
+                // if the parser does not support schemas, let it be -- we can do 
+                // without it anyway -- just log it and proceed
+                ErrorManager.notifyDebug(
+                        "The current parser - " + factory.getClass() + " - does not support schemas.", 
+                        e);
+            }
+            factory.setNamespaceAware(true);
             
-            final Document document = documentBuilderFactory.
+            final Document document = factory.
                     newDocumentBuilder().
                     parse(stateFile);
             LogManager.log("...complete");
@@ -1238,12 +1265,20 @@ public class Registry {
                     newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI).
                     newSchema(schemaFile);
             
-            final DocumentBuilderFactory documentBuilderFactory =
+            final DocumentBuilderFactory factory =
                     DocumentBuilderFactory.newInstance();
-            documentBuilderFactory.setSchema(schema);
-            documentBuilderFactory.setNamespaceAware(true);
+            try {
+                factory.setSchema(schema);
+            } catch (UnsupportedOperationException e) {
+                // if the parser does not support schemas, let it be -- we can do 
+                // without it anyway -- just log it and proceed
+                ErrorManager.notifyDebug(
+                        "The current parser - " + factory.getClass() + " - does not support schemas.", 
+                        e);
+            }
+            factory.setNamespaceAware(true);
             
-            final Document document = documentBuilderFactory.
+            final Document document = factory.
                     newDocumentBuilder().
                     parse(stubFile);
             

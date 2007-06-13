@@ -201,12 +201,20 @@ public class Wizard {
                     newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI).
                     newSchema(schemaFile);
             
-            final DocumentBuilderFactory documentBuilderFactory =
+            final DocumentBuilderFactory factory =
                     DocumentBuilderFactory.newInstance();
-            documentBuilderFactory.setSchema(schema);
-            documentBuilderFactory.setNamespaceAware(true);
+            try {
+                factory.setSchema(schema);
+            } catch (UnsupportedOperationException e) {
+                // if the parser does not support schemas, let it be -- we can do 
+                // without it anyway -- just log it and proceed
+                ErrorManager.notifyDebug(
+                        "The current parser - " + factory.getClass() + " - does not support schemas.", 
+                        e);
+            }
+            factory.setNamespaceAware(true);
             
-            final Document document = documentBuilderFactory.newDocumentBuilder().
+            final Document document = factory.newDocumentBuilder().
                     parse(componentsFile);
             
             return loadWizardComponents(document.getDocumentElement(), classLoader);
