@@ -25,12 +25,10 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
-import junit.framework.AssertionFailedError;
 
 import org.openide.filesystems.*;
 import org.openide.loaders.*;
 import org.openide.cookies.*;
-import org.openide.loaders.InstanceSupport.Instance;
 import org.openide.util.*;
 
 import org.netbeans.junit.*;
@@ -52,6 +50,12 @@ public class FolderInstanceTest extends NbTestCase {
         return Level.FINE;
     }
 
+    @Override
+    protected int timeOut() {
+        return 20000;
+    }
+
+    
     
     private static void setSystemProp(String key, String value) {
         java.util.Properties prop = System.getProperties();
