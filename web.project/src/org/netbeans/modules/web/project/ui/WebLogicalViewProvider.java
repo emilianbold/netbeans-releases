@@ -36,12 +36,13 @@ import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JSeparator;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileStateInvalidException;
@@ -93,6 +94,7 @@ import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
 import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.netbeans.spi.project.ui.support.NodeFactorySupport;
 import org.openide.util.ChangeSupport;
+import org.openide.util.Exceptions;
 
 /**
  * Support for creating logical views.
@@ -338,9 +340,7 @@ public class WebLogicalViewProvider implements LogicalViewProvider {
                     fs.addFileStatusListener(fsl);
                     fileSystemListeners.put(fs, fsl);
                 } catch (FileStateInvalidException e) {
-                    ErrorManager err = ErrorManager.getDefault();
-                    err.annotate(e, ErrorManager.UNKNOWN, "Cannot get " + fo + " filesystem, ignoring...", null, null, null); // NO18N
-                    err.notify(ErrorManager.INFORMATIONAL, e);
+                    Exceptions.printStackTrace(Exceptions.attachMessage(e, "Cannot get " + fo + " filesystem, ignoring...")); // NO18N
                 }
             }
         }
@@ -353,7 +353,7 @@ public class WebLogicalViewProvider implements LogicalViewProvider {
                     FileObject fo = files.iterator().next();
                     img = fo.getFileSystem().getStatus().annotateIcon(img, type, files);
                 } catch (FileStateInvalidException e) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                    Logger.getLogger("global").log(Level.INFO, null, e);
                 }
             }
 
@@ -368,7 +368,7 @@ public class WebLogicalViewProvider implements LogicalViewProvider {
                     FileObject fo = files.iterator().next();
                     img = fo.getFileSystem().getStatus().annotateIcon(img, type, files);
                 } catch (FileStateInvalidException e) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                    Logger.getLogger("global").log(Level.INFO, null, e);
                 }
             }
 
@@ -545,7 +545,7 @@ public class WebLogicalViewProvider implements LogicalViewProvider {
                     BrokenReferencesSupport.showCustomizer(helper.getAntProjectHelper(), resolver, getBreakableProperties(), new String[]{WebProjectProperties.JAVA_PLATFORM});
                     run();
                 } catch (IOException ioe) {
-                    ErrorManager.getDefault().notify (ioe);
+                    Exceptions.printStackTrace(ioe);
                 }
             }
 

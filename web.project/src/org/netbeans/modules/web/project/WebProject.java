@@ -24,6 +24,8 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.*;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -34,7 +36,6 @@ import org.netbeans.modules.web.project.api.WebPropertyEvaluator;
 import org.netbeans.modules.web.project.jaxws.WebProjectJAXWSClientSupport;
 import org.netbeans.modules.web.project.jaxws.WebProjectJAXWSSupport;
 import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientSupport;
-import org.netbeans.modules.websvc.api.jaxws.project.WSUtils;
 import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
 import org.netbeans.modules.websvc.jaxws.spi.JAXWSSupportFactory;
 import org.netbeans.modules.websvc.spi.client.WebServicesClientSupportFactory;
@@ -42,7 +43,6 @@ import org.netbeans.modules.websvc.spi.jaxws.client.JAXWSClientSupportFactory;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
 import org.w3c.dom.Element;
@@ -50,7 +50,6 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
 import org.openide.filesystems.FileLock;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -106,7 +105,10 @@ import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.modules.websvc.api.webservices.WebServicesSupport;
 import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
+import org.netbeans.modules.websvc.api.jaxws.project.WSUtils;
 import org.netbeans.modules.websvc.spi.webservices.WebServicesSupportFactory;
+import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor;
 
 /**
  * Represents one plain Web project.
@@ -472,7 +474,7 @@ public final class WebProject implements Project, AntProjectListener, FileChange
                 classPathExtender.addArchiveFile(fo);
             }
             catch (IOException e) {
-                ErrorManager.getDefault().notify(e);
+                Exceptions.printStackTrace(e);
             }
         }
     }
@@ -534,7 +536,7 @@ public final class WebProject implements Project, AntProjectListener, FileChange
                             try {
                                 ProjectManager.getDefault().saveProject(WebProject.this);
                             } catch (IOException e) {
-                                ErrorManager.getDefault().notify(e);
+                                Exceptions.printStackTrace(e);
                             }
                             return null;
                         }
@@ -610,27 +612,27 @@ public final class WebProject implements Project, AntProjectListener, FileChange
                 GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
                 WebProject.class.getResource("resources/build-impl.xsl"));
             if ((flags & GeneratedFilesHelper.FLAG_MODIFIED) != 0) {
-                RequestProcessor.getDefault().post(new Runnable () {
-                    public void run () {
-                        JButton updateOption = new JButton (NbBundle.getMessage(WebProject.class, "CTL_Regenerate"));
+                RequestProcessor.getDefault().post(new Runnable() {
+                    public void run() {
+                        JButton updateOption = new JButton(NbBundle.getMessage(WebProject.class, "CTL_Regenerate"));
                         if (DialogDisplayer.getDefault().notify(
-                            new NotifyDescriptor (NbBundle.getMessage(WebProject.class,"TXT_BuildImplRegenerate"),
+                                new NotifyDescriptor(NbBundle.getMessage(WebProject.class, "TXT_BuildImplRegenerate"),
                                 NbBundle.getMessage(WebProject.class,"TXT_BuildImplRegenerateTitle"),
                                 NotifyDescriptor.DEFAULT_OPTION,
                                 NotifyDescriptor.WARNING_MESSAGE,
                                 new Object[] {
-                                    updateOption,
-                                    NotifyDescriptor.CANCEL_OPTION
-                                },
+                            updateOption,
+                            NotifyDescriptor.CANCEL_OPTION
+                        },
                                 updateOption)) == updateOption) {
                             try {
                                 genFilesHelper.generateBuildScriptFromStylesheet(
-                                    GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
-                                    WebProject.class.getResource("resources/build-impl.xsl"));
+                                        GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
+                                        WebProject.class.getResource("resources/build-impl.xsl"));
                             } catch (IOException e) {
-                                ErrorManager.getDefault().notify(e);
+                                Exceptions.printStackTrace(e);
                             } catch (IllegalStateException e) {
-                                ErrorManager.getDefault().notify(e);
+                                Exceptions.printStackTrace(e);
                             }
                         }
                     }
@@ -662,11 +664,11 @@ public final class WebProject implements Project, AntProjectListener, FileChange
                     // set jaxws.endorsed.dir property (for endorsed mechanism to be used with wsimport, wsgen)
                     WSUtils.setJaxWsEndorsedDirProperty(ep);
                     
-                    EditableProperties props = updateHelper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);    //Reread the properties, PathParser changes them
+                    EditableProperties props = updateHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);    //Reread the properties, PathParser changes them
                     if (props.getProperty(WebProjectProperties.WAR_PACKAGE) == null)
                         props.setProperty(WebProjectProperties.WAR_PACKAGE, "true"); //NOI18N
                     //update lib references in private properties
-                    ArrayList l = new ArrayList ();
+                    ArrayList l = new ArrayList();
                     l.addAll(cpMod.getClassPathSupport().itemsList(props.getProperty(WebProjectProperties.JAVAC_CLASSPATH),  WebProjectProperties.TAG_WEB_MODULE_LIBRARIES));
                     l.addAll(cpMod.getClassPathSupport().itemsList(props.getProperty(WebProjectProperties.WAR_CONTENT_ADDITIONAL),  WebProjectProperties.TAG_WEB_MODULE__ADDITIONAL_LIBRARIES));
                     WebProjectProperties.storeLibrariesLocations(l.iterator(), ep);
@@ -678,15 +680,15 @@ public final class WebProject implements Project, AntProjectListener, FileChange
                     }
                     
                     updateHelper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
-
+                    
                     // update a dual build directory project to use a single directory
                     String earBuildDir = props.getProperty(WebProjectProperties.BUILD_EAR_WEB_DIR);
                     if (null != earBuildDir) {
-                        // there is an BUILD_EAR_WEB_DIR property... we may 
+                        // there is an BUILD_EAR_WEB_DIR property... we may
                         //  need to change its value
                         String buildDir = props.getProperty(WebProjectProperties.BUILD_WEB_DIR);
                         if (null != buildDir) {
-                            // there is a value that we may need to change the 
+                            // there is a value that we may need to change the
                             // BUILD_EAR_WEB_DIR property value to match.
                             if (!buildDir.equals(earBuildDir)) {
                                 // the values do not match... update the property
@@ -699,7 +701,7 @@ public final class WebProject implements Project, AntProjectListener, FileChange
                         }
                         // else {
                         //   the project doesn't have a BUILD_WEB_DIR property
-                        //   ** This is not an expected state, but if the project 
+                        //   ** This is not an expected state, but if the project
                         //      properties evolve, this property may go away...
                         // }
                     }
@@ -707,13 +709,13 @@ public final class WebProject implements Project, AntProjectListener, FileChange
                     //   there isn't a BUILD_EAR_WEB_DIR in this project...
                     //     so we should not create one, by setting it.
                     // }
-
+                    
                     updateHelper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
                     
                     try {
                         ProjectManager.getDefault().saveProject(WebProject.this);
                     } catch (IOException e) {
-                        ErrorManager.getDefault().notify(e);
+                        Exceptions.printStackTrace(e);
                     }
                     return null;
                 }
@@ -788,7 +790,7 @@ public final class WebProject implements Project, AntProjectListener, FileChange
                 }
                 
             } catch (IOException e) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                Logger.getLogger("global").log(Level.INFO, null, e);
             }
             
             // register project's classpaths to GlobalPathRegistry
@@ -841,7 +843,7 @@ public final class WebProject implements Project, AntProjectListener, FileChange
             try {
                 ProjectManager.getDefault().saveProject(WebProject.this);
             } catch (IOException e) {
-                ErrorManager.getDefault().notify(e);
+                Exceptions.printStackTrace(e);
             }
             
             // Unregister copy on save support
@@ -849,7 +851,7 @@ public final class WebProject implements Project, AntProjectListener, FileChange
                 css.cleanup();
             } 
             catch (FileStateInvalidException e) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                Logger.getLogger("global").log(Level.INFO, null, e);
             }
             
             // unregister project's classpaths to GlobalPathRegistry
@@ -1047,7 +1049,7 @@ public final class WebProject implements Project, AntProjectListener, FileChange
                     cleanup();
                     initialize();
                 } catch (org.openide.filesystems.FileStateInvalidException e) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                    Logger.getLogger("global").log(Level.INFO, null, e);
                 }
             }
         }
@@ -1060,7 +1062,7 @@ public final class WebProject implements Project, AntProjectListener, FileChange
                 handleCopyFileToDestDir(fe.getFile());
             }
             catch (IOException e) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                Logger.getLogger("global").log(Level.INFO, null, e);
             }
         }
 
@@ -1069,7 +1071,7 @@ public final class WebProject implements Project, AntProjectListener, FileChange
                 handleCopyFileToDestDir(fe.getFile());
             }
             catch (IOException e) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                Logger.getLogger("global").log(Level.INFO, null, e);
             }
         }
         
@@ -1095,7 +1097,7 @@ public final class WebProject implements Project, AntProjectListener, FileChange
                 }
             }
             catch (IOException e) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                Logger.getLogger("global").log(Level.INFO, null, e);
             }
         }
         
@@ -1112,7 +1114,7 @@ public final class WebProject implements Project, AntProjectListener, FileChange
                 }
             }
             catch (IOException e) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                Logger.getLogger("global").log(Level.INFO, null, e);
             }
         }
         

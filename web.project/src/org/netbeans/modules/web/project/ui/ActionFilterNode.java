@@ -26,7 +26,6 @@ import java.util.Iterator;
 
 import javax.swing.Action;
 
-import org.openide.ErrorManager;
 import org.openide.actions.EditAction;
 import org.openide.actions.FindAction;
 import org.openide.loaders.DataObject;
@@ -52,6 +51,8 @@ import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.modules.web.project.UpdateHelper;
 import org.netbeans.modules.web.project.classpath.ClassPathSupport;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
+import org.openide.nodes.FilterNode.Children;
+import org.openide.util.Exceptions;
 
 /**
  * This class decorates package nodes and file nodes under the Libraries Nodes.
@@ -229,7 +230,7 @@ class ActionFilterNode extends FilterNode {
                 }
                 ShowJavadocAction.showJavaDoc(pageURL,relativeName.replace('/','.'));  //NOI18N
             } catch (FileStateInvalidException fsi) {
-                ErrorManager.getDefault().notify (fsi);
+                Exceptions.printStackTrace(fsi);
             }
         }
     }

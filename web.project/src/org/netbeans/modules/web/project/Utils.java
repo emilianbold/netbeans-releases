@@ -22,13 +22,11 @@ package org.netbeans.modules.web.project;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
-import java.util.Stack;
 import java.util.Vector;
 
 import javax.swing.*;
 
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 
 import org.netbeans.spi.project.support.ant.PropertyUtils;

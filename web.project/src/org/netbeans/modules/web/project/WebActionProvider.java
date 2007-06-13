@@ -64,6 +64,8 @@ import org.openide.NotifyDescriptor;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
 import java.util.HashSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.modules.web.api.webmodule.RequestParametersQuery;
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
@@ -78,7 +80,7 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.DialogDescriptor;
-import org.openide.ErrorManager;
+import org.openide.util.Exceptions;
 
 
 /** Action provider of the Web project. This is the place where to do
@@ -182,11 +184,11 @@ class WebActionProvider implements ActionProvider {
             return ;
         }
 
-        Runnable action = new Runnable () {
-            public void run () {
+        Runnable action = new Runnable() {
+            public void run() {
                 Properties p = new Properties();
                 String[] targetNames;
-        
+                
                 targetNames = getTargetNames(command, context, p);
                 if (targetNames == null) {
                     return;
@@ -201,18 +203,16 @@ class WebActionProvider implements ActionProvider {
                     FileObject buildFo = findBuildXml();
                     if (buildFo == null || !buildFo.isValid()) {
                         //The build.xml was deleted after the isActionEnabled was called
-  	                NotifyDescriptor nd = new NotifyDescriptor.Message(NbBundle.getMessage(WebActionProvider.class,
+                        NotifyDescriptor nd = new NotifyDescriptor.Message(NbBundle.getMessage(WebActionProvider.class,
                                 "LBL_No_Build_XML_Found"), NotifyDescriptor.WARNING_MESSAGE);
-  	                DialogDisplayer.getDefault().notify(nd);
-                    }
-                    else {
+                        DialogDisplayer.getDefault().notify(nd);
+                    } else {
                         ActionUtils.runTarget(buildFo, targetNames, p);
-  	            }                    
-                } 
-                catch (IOException e) {
-                    ErrorManager.getDefault().notify(e);
+                    }
+                } catch (IOException e) {
+                    Exceptions.printStackTrace(e);
                 }
-            }            
+            }
         };
         
         action.run();
@@ -618,7 +618,7 @@ class WebActionProvider implements ActionProvider {
             p.setProperty(RestSupport.PROP_RESTBEANS_TEST_URL, testFO.getURL().toString());
             p.setProperty(RestSupport.PROP_RESTBEANS_TEST_FILE, FileUtil.toFile(testFO).getAbsolutePath());
         } catch(Exception ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            Logger.getLogger("global").log(Level.INFO, null, ex);
         }
     }
 

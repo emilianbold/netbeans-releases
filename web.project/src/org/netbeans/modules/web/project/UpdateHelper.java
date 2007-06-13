@@ -41,7 +41,6 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 import org.openide.util.Mutex;
@@ -50,6 +49,8 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
+import org.openide.filesystems.URLMapper;
+import org.openide.util.Exceptions;
 
 
 /**
@@ -120,22 +121,20 @@ public class UpdateHelper {
      * @param props a set of properties
      */
     public void putProperties (final String path, final EditableProperties props) {
-        ProjectManager.mutex().writeAccess(
-            new Runnable () {
-                public void run() {
-                    if (isCurrent() || !AntProjectHelper.PROJECT_PROPERTIES_PATH.equals(path)) {  //Only project props should cause update
+        ProjectManager.mutex().writeAccess(new Runnable() {
+            public void run() {
+                if (isCurrent() || !AntProjectHelper.PROJECT_PROPERTIES_PATH.equals(path)) {  //Only project props should cause update
+                    helper.putProperties(path,props);
+                } else if (canUpdate()) {
+                    try {
+                        saveUpdate(props);
                         helper.putProperties(path,props);
-                    }
-                    else if (canUpdate()) {
-                        try {
-                            saveUpdate (props);
-                            helper.putProperties(path,props);
-                        } catch (IOException ioe) {
-                            ErrorManager.getDefault().notify (ioe);
-                        }
+                    } catch (IOException ioe) {
+                        Exceptions.printStackTrace(ioe);
                     }
                 }
-            });
+            }
+        });
     }
 
     /**
@@ -169,16 +168,16 @@ public class UpdateHelper {
      * <code>private.xml</code>
      */
     public void putPrimaryConfigurationData (final Element element, final boolean shared) {
-        ProjectManager.mutex().writeAccess(new Runnable () {
-            public void run () {
+        ProjectManager.mutex().writeAccess(new Runnable() {
+            public void run() {
                 if (!shared || isCurrent()) {
                     helper.putPrimaryConfigurationData(element, shared);
                 } else if (canUpdate()) {
                     try {
-                        saveUpdate (null);
+                        saveUpdate(null);
                         helper.putPrimaryConfigurationData(element, shared);
                     } catch (IOException ioe) {
-                        ErrorManager.getDefault().notify(ioe);
+                        Exceptions.printStackTrace(ioe);
                     }
                 }
             }
@@ -391,13 +390,13 @@ public class UpdateHelper {
                                 ArrayList dirs = new ArrayList ();
                                 for (Iterator it = roots.iterator(); it.hasNext();) {
                                     URL rootUrl = (URL) it.next();
-                                    FileObject root = org.openide.filesystems.URLMapper.findFileObject (rootUrl);
+                                    FileObject root = URLMapper.findFileObject (rootUrl);
                                     if ("jar".equals(rootUrl.getProtocol())) {  //NOI18N
                                         root = FileUtil.getArchiveFile (root);
                                     }
                                     if (root != null) {
                                         if (root.isData()) {
-                                            files.add(root); 
+                                            files.add(root);
                                         } else {
                                             dirs.add(root);
                                         }

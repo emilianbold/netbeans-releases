@@ -21,6 +21,8 @@ package org.netbeans.modules.web.project.jaxws;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
@@ -51,10 +53,10 @@ import org.netbeans.modules.websvc.jaxws.spi.ProjectJAXWSSupport;
 import org.netbeans.spi.java.project.classpath.ProjectClassPathExtender;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -134,11 +136,11 @@ public class WebProjectJAXWSSupport extends ProjectJAXWSSupport /*implements JAX
                 // This also saves server specific configuration, if necessary.
                 webApp.write(getDeploymentDescriptor());
             } catch (ClassNotFoundException exc) {
-                ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, exc.getLocalizedMessage());
+                Logger.getLogger("global").log(Level.INFO, exc.getLocalizedMessage());
             } catch (NameAlreadyUsedException exc) {
-                ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, exc.getLocalizedMessage());
+                Logger.getLogger("global").log(Level.INFO, exc.getLocalizedMessage());
             } catch (IOException exc) {
-                ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, exc.getLocalizedMessage());
+                Logger.getLogger("global").log(Level.INFO, exc.getLocalizedMessage());
             }
         }
     }
@@ -198,7 +200,7 @@ public class WebProjectJAXWSSupport extends ProjectJAXWSSupport /*implements JAX
             try{
                 webApp.write(getDeploymentDescriptor());
             } catch(IOException e){
-                ErrorManager.getDefault().notify(e);
+                Exceptions.printStackTrace(e);
             }
         }
     }
@@ -227,7 +229,7 @@ public class WebProjectJAXWSSupport extends ProjectJAXWSSupport /*implements JAX
                 return DDProvider.getDefault().getDDRoot(deploymentDescriptor);
             }
         } catch (java.io.IOException e) {
-            org.openide.ErrorManager.getDefault().log(e.getLocalizedMessage());
+            Logger.getLogger("global").log(Level.INFO, e.getLocalizedMessage());
         }
         return null;
     }
@@ -347,7 +349,7 @@ public class WebProjectJAXWSSupport extends ProjectJAXWSSupport /*implements JAX
             try{
                 removeNonJsr109Entries(serviceName);
             }catch(IOException e){
-                ErrorManager.getDefault().notify(e);
+                Exceptions.printStackTrace(e);
             }
         }
         
@@ -415,7 +417,7 @@ public class WebProjectJAXWSSupport extends ProjectJAXWSSupport /*implements JAX
             try {
                 WSUtils.createJaxWsFileObject(project);
             } catch (IOException ex) {
-                ErrorManager.getDefault().notify(ex);
+                Exceptions.printStackTrace(ex);
             }
         }
         return super.addService(name, serviceImpl, wsdlUrl, serviceName, portName, packageName, isJsr109);
@@ -428,7 +430,7 @@ public class WebProjectJAXWSSupport extends ProjectJAXWSSupport /*implements JAX
             try {
                 WSUtils.createJaxWsFileObject(project);
             } catch (IOException ex) {
-                ErrorManager.getDefault().notify(ex);
+                Exceptions.printStackTrace(ex);
             }
         }
         super.addService(serviceName, serviceImpl, isJsr109);

@@ -48,7 +48,6 @@ import org.netbeans.modules.web.project.WebProject;
 import org.netbeans.modules.web.spi.webmodule.WebFrameworkProvider;
 import org.netbeans.spi.project.ui.support.NodeFactory;
 import org.netbeans.spi.project.ui.support.NodeList;
-import org.openide.ErrorManager;
 import org.openide.actions.FindAction;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
@@ -66,6 +65,7 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.ChangeSupport;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -316,9 +316,7 @@ public final class ConfFilesNodeFactory implements NodeFactory {
                     fs.addFileStatusListener(fsl);
                     fileSystemListeners.put(fs, fsl);
                 } catch (FileStateInvalidException e) {
-                    ErrorManager err = ErrorManager.getDefault();
-                    err.annotate(e, "Can not get " + fo + " filesystem, ignoring...");  // NO18N
-                    err.notify(ErrorManager.INFORMATIONAL, e);
+                    Exceptions.printStackTrace(Exceptions.attachMessage(e, "Can not get " + fo + " filesystem, ignoring..."));  // NO18N
                 }
             }
         }

@@ -25,6 +25,8 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.ButtonModel;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultListModel;
@@ -43,7 +45,6 @@ import org.netbeans.modules.web.project.classpath.ClassPathSupport;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.ui.StoreGroup;
 
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.MutexException;
@@ -67,6 +68,7 @@ import org.netbeans.modules.web.spi.webmodule.WebFrameworkProvider;
 import org.netbeans.modules.websvc.spi.webservices.WebServicesConstants;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.Exceptions;
 
 /** Helper class. Defines constants for properties. Knows the proper
  *  place where to store the properties.
@@ -385,10 +387,10 @@ public class WebProjectProperties {
             }
         } 
         catch (MutexException e) {
-            ErrorManager.getDefault().notify((IOException)e.getException());
+            Exceptions.printStackTrace((IOException) e.getException());
         }
         catch ( IOException ex ) {
-            ErrorManager.getDefault().notify( ex );
+            Exceptions.printStackTrace(ex);
         }
         
     }
@@ -713,9 +715,8 @@ public class WebProjectProperties {
                     helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProps);
                     helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProps);
                     ProjectManager.getDefault().saveProject(project);
-                }
-                catch (IOException e) {
-                    ErrorManager.getDefault().notify(e);
+                } catch (IOException e) {
+                    Exceptions.printStackTrace(e);
                 }
             }
         });
@@ -738,7 +739,7 @@ public class WebProjectProperties {
         J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(newServInstID);
         if (j2eePlatform == null) {
             // probably missing server error
-            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "J2EE platform is null."); // NOI18N
+            Logger.getLogger("global").log(Level.INFO, "J2EE platform is null."); // NOI18N
             
             // update j2ee.server.type (throws NPE)
             //projectProps.setProperty(J2EE_SERVER_TYPE, Deployment.getDefault().getServerID(newServInstID));
@@ -818,7 +819,7 @@ public class WebProjectProperties {
         try {
             AntDeploymentHelper.writeDeploymentScript(new File(projectFolder, ANT_DEPLOY_BUILD_SCRIPT), J2eeModule.WAR, newServInstID); // NOI18N
         } catch (IOException ioe) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
+            Logger.getLogger("global").log(Level.INFO, null, ioe);
         }
         File antDeployPropsFile = AntDeploymentHelper.getDeploymentPropertiesFile(newServInstID);
         if (antDeployPropsFile == null) {

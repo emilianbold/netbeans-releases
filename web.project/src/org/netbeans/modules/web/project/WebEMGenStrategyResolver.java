@@ -35,8 +35,8 @@ import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
 import org.netbeans.modules.j2ee.persistence.dd.PersistenceMetadata;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.Persistence;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 
 /**
  * An implementation of EntityManagerGenerationStrategyResolver for web projects.
@@ -87,7 +87,7 @@ public class WebEMGenStrategyResolver implements EntityManagerGenerationStrategy
                 }
             });
         } catch (IOException ioe){
-            ErrorManager.getDefault().notify(ioe);
+            Exceptions.printStackTrace(ioe);
         }
         return result[0];
     }
@@ -107,7 +107,7 @@ public class WebEMGenStrategyResolver implements EntityManagerGenerationStrategy
                 return persistence.getPersistenceUnit(0);
             }
         } catch (IOException ex) {
-            ErrorManager.getDefault().notify(ex);
+            Exceptions.printStackTrace(ex);
         }
         return null;
     }

@@ -35,13 +35,14 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Iterator;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
-import org.openide.ErrorManager;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
@@ -81,7 +82,7 @@ public class WebProjectWebServicesClientSupport implements WebServicesClientSupp
                 return DDProvider.getDefault().getDDRoot(deploymentDescriptor);
             }
         } catch (java.io.IOException e) {
-            org.openide.ErrorManager.getDefault().log(e.getLocalizedMessage());
+            Logger.getLogger("global").log(Level.INFO, e.getLocalizedMessage());
         }
         return null;
     }
@@ -530,8 +531,7 @@ public class WebProjectWebServicesClientSupport implements WebServicesClientSupp
         } else if(create) {
             // Create was specified, but no WEB-INF was found, so how do we create it?
             // Expect an NPE if we return null for this case, but log it anyway.
-            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL,
-            NbBundle.getMessage(WebProjectWebServicesClientSupport.class,"MSG_WebInfNotFoundForWsdlFolder"));
+            Logger.getLogger("global").log(Level.INFO, NbBundle.getMessage(WebProjectWebServicesClientSupport.class, "MSG_WebInfNotFoundForWsdlFolder"));
         }
         
         return wsdlFolder;
@@ -844,16 +844,16 @@ public class WebProjectWebServicesClientSupport implements WebServicesClientSupp
 
             } catch (IOException ex) {
                 // Strange thing happen
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                Logger.getLogger("global").log(Level.INFO, null, ex);
             } catch (NameAlreadyUsedException ex) {
                 // Should never happen because we look for it by name first.
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                Logger.getLogger("global").log(Level.INFO, null, ex);
             } catch (URISyntaxException ex) {
                 // Programmer error - validation of input data should ensure this never happens.
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                Logger.getLogger("global").log(Level.INFO, null, ex);
             } catch (ClassNotFoundException ex) {
                 // Programmer error - mistyped object name.
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                Logger.getLogger("global").log(Level.INFO, null, ex);
             }
             
         }

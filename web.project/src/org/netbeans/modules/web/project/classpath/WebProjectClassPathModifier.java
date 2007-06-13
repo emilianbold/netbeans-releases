@@ -45,8 +45,8 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.util.RequestProcessor;
@@ -165,8 +165,9 @@ public class WebProjectClassPathModifier extends ProjectClassPathModifierImpleme
                 throw (IOException) e;
             }
             else {
-                Exception t = new IOException ();
-                throw (IOException) ErrorManager.getDefault().annotate(t,e);
+                IOException t = new IOException();
+                t.initCause(e);
+                throw t;
             }
         }
     }
@@ -222,8 +223,9 @@ public class WebProjectClassPathModifier extends ProjectClassPathModifierImpleme
                 throw (IOException) e;
             }
             else {
-                Exception t = new IOException ();
-                throw (IOException) ErrorManager.getDefault().annotate(t,e);
+                IOException t = new IOException();
+                t.initCause(e);
+                throw t;
             }
         }
     }
@@ -359,7 +361,7 @@ public class WebProjectClassPathModifier extends ProjectClassPathModifierImpleme
             public void run() {
                 ProjectManager.mutex().writeAccess(new Runnable() {
                     public void run() {
-                        EditableProperties props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);    //Reread the properties, PathParser changes them
+                        EditableProperties props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);    //Reread the properties, PathParser changes them
                         //update lib references in private properties
                         EditableProperties privateProps = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
                         List wmLibs = cs.itemsList(props.getProperty(WebProjectProperties.JAVAC_CLASSPATH),  WebProjectProperties.TAG_WEB_MODULE_LIBRARIES);
@@ -371,11 +373,11 @@ public class WebProjectClassPathModifier extends ProjectClassPathModifierImpleme
                         set.addAll(additionalLibs);
                         WebProjectProperties.storeLibrariesLocations(set.iterator(), privateProps);
                         helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProps);
-
+                        
                         try {
                             ProjectManager.getDefault().saveProject(project);
                         } catch (IOException e) {
-                            ErrorManager.getDefault().notify(e);
+                            Exceptions.printStackTrace(e);
                         }
                     }
                 });

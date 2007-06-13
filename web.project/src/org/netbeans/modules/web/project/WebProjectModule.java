@@ -26,13 +26,13 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
-import org.openide.ErrorManager;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.modules.ModuleInstall;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.FileSensitiveActions;
 import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -49,18 +49,17 @@ public class WebProjectModule extends ModuleInstall {
     
     public void restored() {
         
-        ProjectManager.mutex().postWriteRequest(
-                new Runnable () {
-                    public void run () {
-                        try {
-                            EditableProperties ep = PropertyUtils.getGlobalProperties();
-                            boolean changed = false;
-                            // JSPC classpath
-                            StringBuffer sb = new StringBuffer(450);
-                            // Ant is needed in classpath if we are forking JspC into another process
-                            sb.append(InstalledFileLocator.getDefault().locate("ant/lib/ant.jar", null, false)) //NOI18N
+        ProjectManager.mutex().postWriteRequest(new Runnable() {
+            public void run() {
+                try {
+                    EditableProperties ep = PropertyUtils.getGlobalProperties();
+                    boolean changed = false;
+                    // JSPC classpath
+                    StringBuffer sb = new StringBuffer(450);
+                    // Ant is needed in classpath if we are forking JspC into another process
+                    sb.append(InstalledFileLocator.getDefault().locate("ant/lib/ant.jar", null, false)) //NOI18N
                             .append(':') // NOI18N
-                             //XXX This is fix for issue #74250. This is a hack and should be solved in the glassfish's jasper 
+                            //XXX This is fix for issue #74250. This is a hack and should be solved in the glassfish's jasper
                             // also it must be moved before J2EE_PLATFORM_CLASSPATH, because a server (JBoss) can expose
                             // old jsp api, and the compiler is not then able compile some jsp pages with tag lib declarations
                             .append(InstalledFileLocator.getDefault().locate("modules/ext/servlet2.5-jsp2.1-api.jar", null, false)) //NOI18N
@@ -70,33 +69,32 @@ public class WebProjectModule extends ModuleInstall {
                             .append(InstalledFileLocator.getDefault().locate("modules/ext/glassfish-logging.jar", null, false)) //NOI18N
                             .append(':') // NOI18N
                             .append(InstalledFileLocator.getDefault().locate("modules/ext/commons-logging-1.0.4.jar", null, false)); //NOI18N
-                            
-                            String jspc_cp_old = ep.getProperty(JSPC_CLASSPATH);
-                            String jspc_cp = sb.toString();
-                            if (jspc_cp_old == null || !jspc_cp_old.equals (jspc_cp)) {
-                                ep.setProperty(JSPC_CLASSPATH, jspc_cp);
-                                changed = true;
-                            }
-                            File copy_files = InstalledFileLocator.getDefault().locate("ant/extra/copyfiles.jar", null, false); //NOI18N
-                            if (copy_files == null) {
-                                String msg = NbBundle.getMessage(WebProjectModule.class,"MSG_CopyFileMissing"); //NOI18N
-                                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE));
-                            } else {
-                                String copy_files_old = ep.getProperty(COPYFILES_CLASSPATH);
-                                if (copy_files_old == null || !copy_files_old.equals(copy_files.toString())) {
-                                    ep.setProperty(COPYFILES_CLASSPATH, copy_files.toString());
-                                    changed = true;
-                                }
-                            }
-                            if (changed) {
-                                PropertyUtils.putGlobalProperties (ep);
-                            }
-                        } catch (IOException ioe) {
-                            ErrorManager.getDefault().notify (ioe);
+                    
+                    String jspc_cp_old = ep.getProperty(JSPC_CLASSPATH);
+                    String jspc_cp = sb.toString();
+                    if (jspc_cp_old == null || !jspc_cp_old.equals(jspc_cp)) {
+                        ep.setProperty(JSPC_CLASSPATH, jspc_cp);
+                        changed = true;
+                    }
+                    File copy_files = InstalledFileLocator.getDefault().locate("ant/extra/copyfiles.jar", null, false); //NOI18N
+                    if (copy_files == null) {
+                        String msg = NbBundle.getMessage(WebProjectModule.class,"MSG_CopyFileMissing"); //NOI18N
+                        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE));
+                    } else {
+                        String copy_files_old = ep.getProperty(COPYFILES_CLASSPATH);
+                        if (copy_files_old == null || !copy_files_old.equals(copy_files.toString())) {
+                            ep.setProperty(COPYFILES_CLASSPATH, copy_files.toString());
+                            changed = true;
                         }
                     }
+                    if (changed) {
+                        PropertyUtils.putGlobalProperties(ep);
+                    }
+                } catch (IOException ioe) {
+                    Exceptions.printStackTrace(ioe);
                 }
-        );
+            }
+        });
     }
     
     public static Action compile() {

@@ -30,6 +30,8 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Iterator;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -41,7 +43,6 @@ import org.netbeans.modules.j2ee.dd.api.webservices.ServiceImplBean;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
-import org.openide.ErrorManager;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
@@ -149,7 +150,7 @@ public class WebProjectWebServicesSupport implements WebServicesSupportImpl {
                 return DDProvider.getDefault().getDDRoot(deploymentDescriptor);
             }
         } catch (java.io.IOException e) {
-            org.openide.ErrorManager.getDefault().log(e.getLocalizedMessage());
+            Logger.getLogger("global").log(Level.INFO, e.getLocalizedMessage());
         }
         return null;
     }
@@ -682,8 +683,7 @@ public class WebProjectWebServicesSupport implements WebServicesSupportImpl {
         } else if(create) {
             // Create was specified, but no WEB-INF was found, so how do we create it?
             // Expect an NPE if we return null for this case, but log it anyway.
-            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL,
-            NbBundle.getMessage(WebProjectWebServicesSupport.class,"MSG_WebInfNotFoundForWsdlFolder"));
+            Logger.getLogger("global").log(Level.INFO, NbBundle.getMessage(WebProjectWebServicesSupport.class, "MSG_WebInfNotFoundForWsdlFolder"));
         }
         
         return wsdlFolder;

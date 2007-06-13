@@ -34,7 +34,6 @@ import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.support.ant.ProjectGenerator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
@@ -69,6 +68,7 @@ import org.netbeans.modules.websvc.spi.webservices.WebServicesConstants;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.modules.SpecificationVersion;
+import org.openide.util.Exceptions;
 import org.w3c.dom.NodeList;
 
 
@@ -462,7 +462,7 @@ public class WebProjectUtilities {
                 }
             });
         } catch (MutexException me ) {
-            ErrorManager.getDefault().notify(me);
+            Exceptions.printStackTrace(me);
         }
         
         if (libFolder != null) {
@@ -661,7 +661,8 @@ public class WebProjectUtilities {
         // set j2ee.platform.classpath
         J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(serverInstanceID);
         if (!j2eePlatform.getSupportedSpecVersions(J2eeModule.WAR).contains(j2eeLevel)) {
-            ErrorManager.getDefault().log(ErrorManager.WARNING, "J2EE level:" + j2eeLevel + " not supported by server " + Deployment.getDefault().getServerInstanceDisplayName(serverInstanceID) + " for module type WAR");
+            Logger.getLogger("global").log(Level.WARNING,
+                    "J2EE level:" + j2eeLevel + " not supported by server " + Deployment.getDefault().getServerInstanceDisplayName(serverInstanceID) + " for module type WAR"); // NOI18N
         }
         String classpath = Utils.toClasspathString(j2eePlatform.getClasspathEntries());
         ep.setProperty(WebProjectProperties.J2EE_PLATFORM_CLASSPATH, classpath);
@@ -699,7 +700,7 @@ public class WebProjectUtilities {
             AntDeploymentHelper.writeDeploymentScript(new File(projectFolder, WebProjectProperties.ANT_DEPLOY_BUILD_SCRIPT),
                     J2eeModule.WAR, serverInstanceID);
         } catch (IOException ioe) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
+            Logger.getLogger("global").log(Level.INFO, null, ioe);
         }
         File deployAntPropsFile = AntDeploymentHelper.getDeploymentPropertiesFile(serverInstanceID);
         if (deployAntPropsFile != null) {

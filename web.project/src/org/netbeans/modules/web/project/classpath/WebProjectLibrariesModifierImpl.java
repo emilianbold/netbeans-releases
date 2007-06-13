@@ -32,14 +32,12 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.web.project.UpdateHelper;
-import org.netbeans.modules.web.project.ui.customizer.ClassPathUiSupport;
 import org.netbeans.modules.web.project.ui.customizer.WarIncludesUiSupport;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
@@ -201,8 +199,9 @@ public class WebProjectLibrariesModifierImpl implements WebProjectLibrariesModif
                 throw (IOException) e;
             }
             else {
-                Exception t = new IOException ();
-                throw (IOException) ErrorManager.getDefault().annotate(t,e);
+                IOException t = new IOException();
+                t.initCause(e);
+                throw t;
             }
         }
     }
@@ -245,8 +244,9 @@ public class WebProjectLibrariesModifierImpl implements WebProjectLibrariesModif
                 throw (IOException) e;
             }
             else {
-                Exception t = new IOException ();
-                throw (IOException) ErrorManager.getDefault().annotate(t,e);
+                IOException t = new IOException();
+                t.initCause(e);
+                throw t;
             }
         }
     }
@@ -330,8 +330,9 @@ public class WebProjectLibrariesModifierImpl implements WebProjectLibrariesModif
                 throw (IOException) e;
             }
             else {
-                Exception t = new IOException ();
-                throw (IOException) ErrorManager.getDefault().annotate(t,e);
+                IOException t = new IOException();
+                t.initCause(e);
+                throw t;
             }
         }
     }
@@ -380,8 +381,9 @@ public class WebProjectLibrariesModifierImpl implements WebProjectLibrariesModif
                 throw (IOException) e;
             }
             else {
-                Exception t = new IOException ();
-                throw (IOException) ErrorManager.getDefault().annotate(t,e);
+                IOException t = new IOException();
+                t.initCause(e);
+                throw t;
             }
         }
     }

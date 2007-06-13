@@ -33,7 +33,7 @@ import org.netbeans.spi.project.support.ant.EditableProperties;
 import java.util.Iterator;
 import java.util.Set;
 import org.netbeans.api.project.ProjectManager;
-import org.openide.ErrorManager;
+import org.openide.util.Exceptions;
 
 /**
  * Action for removing an ClassPathRoot. The action looks up
@@ -81,19 +81,18 @@ final class RemoveClassPathRootAction extends NodeAction {
                     Removable removable = (Removable) activatedNodes[i].getLookup().lookup(Removable.class);
                     if (removable == null)
                         continue;
-
+                    
                     Project p = removable.remove();
                     if (p != null)
                         changedProjectsSet.add(p);
                 }
-
+                
                 for (Iterator i = changedProjectsSet.iterator(); i.hasNext();) {
                     Project p = (Project)i.next();
                     try {
                         ProjectManager.getDefault().saveProject(p);
-                    }
-                    catch (IOException e) {
-                        ErrorManager.getDefault().notify(e);
+                    } catch (IOException e) {
+                        Exceptions.printStackTrace(e);
                     }
                 }
             }

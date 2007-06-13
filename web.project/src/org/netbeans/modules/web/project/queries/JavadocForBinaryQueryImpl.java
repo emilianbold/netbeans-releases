@@ -22,7 +22,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
 import java.net.URL;
 import java.net.MalformedURLException;
@@ -32,6 +31,7 @@ import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
 import org.netbeans.spi.java.queries.JavadocForBinaryQueryImplementation;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.util.ChangeSupport;
+import org.openide.util.Exceptions;
 import org.openide.util.WeakListeners;
 
 /**
@@ -73,7 +73,7 @@ public class JavadocForBinaryQueryImpl implements JavadocForBinaryQueryImplement
                             this.result = new URL[] {url};
                         } catch (MalformedURLException e) {
                             this.result = new URL[0];
-                            ErrorManager.getDefault().notify(e);
+                            Exceptions.printStackTrace(e);
                         }
                     }
                     else {
@@ -124,7 +124,7 @@ public class JavadocForBinaryQueryImpl implements JavadocForBinaryQueryImplement
                         binaryRoot.toExternalForm().startsWith(url.toExternalForm());
             }
         } catch (MalformedURLException malformedURL) {
-            ErrorManager.getDefault().notify(malformedURL);
+            Exceptions.printStackTrace(malformedURL);
         }
         return false;
     }

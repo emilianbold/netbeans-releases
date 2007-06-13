@@ -21,11 +21,11 @@ package org.netbeans.modules.web.project.ui;
 
 import java.beans.PropertyChangeListener;
 import javax.swing.Icon;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.netbeans.api.project.SourceGroup;
+import org.openide.util.Exceptions;
 
 
 /**
@@ -74,7 +74,7 @@ final class LibrariesSourceGroup implements SourceGroup {
         try {        
             return root.getURL().toExternalForm();
         } catch (FileStateInvalidException fsi) { 
-            ErrorManager.getDefault().notify (fsi);
+            Exceptions.printStackTrace(fsi);
             return root.toString();
         }
     }

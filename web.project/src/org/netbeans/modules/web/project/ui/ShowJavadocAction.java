@@ -22,7 +22,8 @@ package org.netbeans.modules.web.project.ui;
 import java.net.URL;
 import java.net.MalformedURLException;
 import java.text.MessageFormat;
-import org.openide.ErrorManager;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.awt.HtmlBrowser;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
@@ -117,7 +118,7 @@ final class ShowJavadocAction extends NodeAction {
      * @return the URL of found javadoc page or null if there is no such a page.
      */
     static  URL findJavadoc (String resource, URL urls[]) {
-        for (int i=0; i<urls.length; i++) {
+        for (int i = 0; i < urls.length; i++) {
             String base = urls[i].toExternalForm();
             if (!base.endsWith("/")) { // NOI18N
                 base+="/"; // NOI18N
@@ -129,7 +130,7 @@ final class ShowJavadocAction extends NodeAction {
                     return u;
                 }
             } catch (MalformedURLException ex) {
-                ErrorManager.getDefault().log(ErrorManager.ERROR, "Cannot create URL for "+base+resource+". "+ex.toString());   //NOI18N
+                Logger.getLogger("global").log(Level.SEVERE, "Cannot create URL for " + base + resource + ". " + ex.toString());
                 continue;
             }
         }
