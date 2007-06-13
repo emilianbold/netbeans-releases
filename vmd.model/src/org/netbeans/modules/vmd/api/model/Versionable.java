@@ -30,10 +30,25 @@ public interface Versionable {
      * Represents a Versionable which is always available. Often used as a default behaviour.
      */
     public static final Versionable FOREVER = new Versionable () {
+
+        public boolean isCompatibleWith (Versionable versionable) {
+            return true;
+        }
+
         public boolean isAvailable (DesignDocument document) {
             return true;
         }
+
     };
+
+    /**
+     * Checks whether this version is allowed within a specified version.
+     * Version1.isCompatibleWith(Version2)==true.
+     * Version2.isCompatibleWith(Version1)==false.
+     * @param versionable the versionable
+     * @return true, if compatible; false otherwise
+     */
+    boolean isCompatibleWith (Versionable versionable);
 
     /**
      * Called to resolve whether the version, which is represented by implementation of this interface, is available

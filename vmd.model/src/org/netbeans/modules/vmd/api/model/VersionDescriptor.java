@@ -30,6 +30,15 @@ import java.util.Set;
 public interface VersionDescriptor {
 
     /**
+     * Checks whether this version is allowed within a specified version.
+     * Version1.isCompatibleWith(Version2)==true.
+     * Version2.isCompatibleWith(Version1)==false.
+     * @param descriptor the version descriptor
+     * @return true, if compatible; false otherwise
+     */
+    public boolean isCompatibleWith (VersionDescriptor descriptor);
+
+    /**
      * Return whether this version descriptor is compatible with abilities.
      * @param abilities the collection of abilities
      * @return true, if compatible
