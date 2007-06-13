@@ -19,12 +19,15 @@
 
 package org.netbeans.modules.xml.xdm.nodes;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  *
  * @author Ajit Bhate
  */
 public class Token {
-    
+   
     Token(String val, TokenType type) {
 	value = val;
 	this.type = type;
@@ -58,14 +61,26 @@ public class Token {
     
     public static Token create(String value, TokenType type) {
 	Token t = null;
-	switch(type) {
+        switch(type) {
 	    case TOKEN_ATTR_EQUAL: {
 		t = EQUALS_TOKEN;
 		break;
 	    } case TOKEN_ELEMENT_END_TAG: {
 		t = value.length() == 1 ? CLOSE_ELEMENT:SELF_CLOSE_ELEMENT;
 		break;
-	    } 
+	    } case TOKEN_WHITESPACE: {
+                if(value.equals(" ")){
+                    t = WHITESPACE_TOKEN;
+                    break;
+                }
+            }  case TOKEN_ELEMENT_START_TAG: {
+                t = tokenMap.get(value);
+                if(t == null) {
+                    t = new Token(value, type);
+                    tokenMap.put(value, t);
+                } 
+                break;
+            }
 	    default: {
 		t = new Token(value,type);
 	    }
@@ -76,6 +91,9 @@ public class Token {
     
     private static final Token EQUALS_TOKEN = 
 	new Token("=", TokenType.TOKEN_ATTR_EQUAL); //NOI18N
+    
+    private static final Token WHITESPACE_TOKEN =
+            new Token(" ", TokenType.TOKEN_WHITESPACE);
     
     private static final Token CLOSE_ELEMENT =
 	new Token(">", TokenType.TOKEN_ELEMENT_END_TAG); //NOI18N
@@ -94,6 +112,8 @@ public class Token {
     
     public static final Token COMMENT_END =
 	new Token("-->", TokenType.TOKEN_CDATA_VAL); //NOI18N
+
+    private static Map<String, Token> tokenMap = new HashMap<String, Token>();
     
     private final String value;
     private final TokenType type;

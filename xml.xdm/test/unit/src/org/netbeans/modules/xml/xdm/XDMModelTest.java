@@ -442,17 +442,38 @@ public class XDMModelTest extends TestCase {
     }
     
     public void testXDMModelSize() throws Exception {
+        System.out.println("XDM Mem usage");
         MemoryUsage usage = ManagementFactory.getMemoryMXBean().getHeapMemoryUsage();
-        System.out.println("Usage: " + usage.getUsed() + "/" + usage.getMax());
+        long mem0 = usage.getUsed();
         javax.swing.text.Document swdoc = Util.getResourceAsDocument("resources/fields.xsd");
-        usage = ManagementFactory.getMemoryMXBean().getHeapMemoryUsage();
-        System.out.println("Usage: " + usage.getUsed() + "/" + usage.getMax());
-        XDMModel m = Util.loadXDMModel(swdoc);
-        usage = ManagementFactory.getMemoryMXBean().getHeapMemoryUsage();
-        System.out.println("Usage: " + usage.getUsed() + "/" + usage.getMax());
-    }
+        usage = ManagementFactory.getMemoryMXBean().getHeapMemoryUsage();                                                              
+        long mem1 = usage.getUsed();
+        
+        long memuse = mem1-mem0;
+        
+        System.out.println("Document creation = " + memuse + " bytes");
 
-    
+        Lookup lookup = Lookups.singleton(swdoc);
+        usage = ManagementFactory.getMemoryMXBean().getHeapMemoryUsage();
+        long mem2 = usage.getUsed();
+        ModelSource ms = new ModelSource(lookup, true);
+        usage = ManagementFactory.getMemoryMXBean().getHeapMemoryUsage();
+        long mem3 = usage.getUsed();
+        memuse = mem3-mem2;
+        
+        System.out.println("Model source creation = " + memuse + " bytes"); 
+
+        XDMModel m = new XDMModel(ms);
+        m.sync();
+        usage = ManagementFactory.getMemoryMXBean().getHeapMemoryUsage();
+        long mem4 = usage.getUsed();
+        memuse = mem4-mem3;
+        System.out.println("XDM creation = " + memuse + " bytes");
+        //System.out.println("Time taken to create XDM model: " + (endTime - startTime));
+        
+    }
+        
+      
     protected void setUp() throws Exception {
         um = new UndoManager();
         sd = Util.getResourceAsDocument("test.xml");
