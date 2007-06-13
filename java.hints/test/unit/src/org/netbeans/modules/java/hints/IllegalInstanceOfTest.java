@@ -69,6 +69,12 @@ public class IllegalInstanceOfTest extends TreeRuleTestBase {
                             146 - 30);
     }
     
+    public void test106461() throws Exception {
+        performAnalysisTest("test/Test.java",
+                            "package test; import javax.lang.model.element.*; public class Test {public void test() {Element e = null; if (e instanceof )}}",
+                            146 - 30);
+    }
+    
     protected List<ErrorDescription> computeErrors(CompilationInfo info, TreePath path) {
         return new IllegalInstanceOf().run(info, path);
     }

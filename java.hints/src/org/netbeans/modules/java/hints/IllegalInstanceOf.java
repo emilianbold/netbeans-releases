@@ -57,13 +57,13 @@ public class IllegalInstanceOf extends AbstractHint {
         TypeMirror     leftTypeMirror = info.getTrees().getTypeMirror(new TreePath(treePath, iot.getExpression()));
         Element        rightType = info.getTrees().getElement(new TreePath(treePath, iot.getType()));
         
-        if (leftTypeMirror.getKind() != TypeKind.DECLARED) {
+        if (leftTypeMirror == null || leftTypeMirror.getKind() != TypeKind.DECLARED) {
             return null;
         }
         
         Element leftType = ((DeclaredType) leftTypeMirror).asElement();
         
-        if (!leftType.getKind().isInterface() || !rightType.getKind().isInterface()) {
+        if (leftType == null || rightType == null || !leftType.getKind().isInterface() || !rightType.getKind().isInterface()) {
             //no problem:
             return null;
         }
