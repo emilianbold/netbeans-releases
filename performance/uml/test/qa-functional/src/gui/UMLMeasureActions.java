@@ -40,6 +40,7 @@ public class UMLMeasureActions  {
         suite.addTest(new MultipleNodeContextMenu("measureTime", "Multiple Node Context Menu"));
         suite.addTest(new CreateClassDiagramFromMultipleNodes("measureTime", "Create Class Diagram From Multiple Nodes")); 
         suite.addTest(new CreateSequenceDiagramFromMultipleNodes("measureTime", "Create Sequence Diagram From Multiple Nodes"));
+        suite.addTest(new GenerateModelReport("measureTime", "Generate Model Report"));
         return suite;
     }
     
