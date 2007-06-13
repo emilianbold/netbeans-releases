@@ -33,7 +33,6 @@ import org.apache.tools.ant.Task;
  */
 public class SetCluster extends Task {
     private String name = null;
-    private String propertiesList = null;
     private String cluster;
     private String thisModuleName = null;
     private String defaultLocation = null;
@@ -41,11 +40,6 @@ public class SetCluster extends Task {
     /** Sets the name of property which should contain the value */
     public void setName(String name) {
         this.name = name;
-    }
-    
-    /** Comma separated list of properties. One of those properties should contain the name of module from what it is ran. */
-    public void setList( String propertiesList ) {
-        this.propertiesList = propertiesList;
     }
     
     /** Name of a cluster */
@@ -64,44 +58,32 @@ public class SetCluster extends Task {
     }
     
     public void execute() throws BuildException {
-        if (name == null)
+        if (name == null) {
             throw new BuildException("Name of property to set have to be specified",this.getLocation());
-        if (propertiesList != null) {
-            if (cluster != null)
-                throw new BuildException("Either list or cluster property can be specified not both",this.getLocation());
-            if (thisModuleName == null)
-                throw new BuildException("The name of current module have to be set", this.getLocation());
-        } else {
-            if (cluster == null) {
-                throw new BuildException("Either list or cluster property have to be specified",this.getLocation());
-            }
-            if (thisModuleName != null) {
-                throw new BuildException("When cluster property is used thisModuleName should not be set",this.getLocation());
-            }
         }
-        
         if (cluster != null) {
             String clusterDir = this.getProject().getProperty(cluster + ".dir");
             if (clusterDir == null) throw new BuildException( "Property: " + cluster + ".dir have to be defined", this.getLocation());
             this.getProject().setProperty( name, clusterDir );
             return;
         }
-        
-        HashSet modules = new HashSet();
-        
-        StringTokenizer tokens = new StringTokenizer( propertiesList, " \t\n\f\r," );
-        while (tokens.hasMoreTokens()) {
-            String property = tokens.nextToken().trim();
+        if (thisModuleName == null) {
+            throw new BuildException("The name of current module have to be set", getLocation());
+        }
+
+        for (Object key : getProject().getProperties().keySet()) {
+            String property = (String) key;
+            String clusterDir = getProject().getProperty(property + ".dir");
+            if (clusterDir == null) {
+                continue;
+            }
             String list = this.getProject().getProperty( property );
-            if (list == null) throw new BuildException("Property: " + property + " is not defined anywhere",this.getLocation());
+            assert list != null : property;
             StringTokenizer modTokens = new StringTokenizer(list," \t\n\f\r,");
             while (modTokens.hasMoreTokens()) {
                 String module = modTokens.nextToken();
-                log( property + " " + module, Project.MSG_VERBOSE );
                 if (module.equals(thisModuleName)) {
                     // We found the list reffering to this module
-                    String clusterDir = this.getProject().getProperty(property + ".dir");
-                    if (clusterDir == null) throw new BuildException( "Property: " + property + ".dir have to be defined", this.getLocation());
                     log( "Property: " + name + " will be set to " + clusterDir, Project.MSG_VERBOSE);
                     this.getProject().setProperty( name, clusterDir );
                     return;

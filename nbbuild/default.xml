@@ -93,7 +93,7 @@ Microsystems, Inc. All Rights Reserved.
     <getmodulename name="module.name" root="${nb_all}"/>
     
     <property name="cluster.dir.fallback" value="extra" />
-    <setcluster name="cluster.dir" module="${module.name}" list="${clusters.list}" defaultLocation="${cluster.dir.fallback}"/>
+    <setcluster name="cluster.dir" module="${module.name}" defaultLocation="${cluster.dir.fallback}"/>
 
     <property name="cluster" location="${netbeans.dest.dir}/${cluster.dir}"/> <!-- #59872 -->
 
