@@ -21,7 +21,9 @@ package org.netbeans.modules.compapp.casaeditor.graph;
 
 import java.awt.Image;
 import java.awt.Rectangle;
+import org.netbeans.api.visual.anchor.Anchor;
 import org.netbeans.api.visual.widget.Scene;
+import org.netbeans.modules.compapp.casaeditor.graph.RegionUtilities.Directions;
 
 /**
  *
@@ -59,5 +61,10 @@ public class CasaPinWidgetBinding extends CasaPinWidget {
     public void setToolTip(String strValue) {
         mImageWidget.setToolTipText(strValue);
     }
+    
+    public Anchor getAnchor() {
+        return RegionUtilities.createFixedDirectionalAnchor(this, Directions.RIGHT, 0);
+    }
+
 
 }
