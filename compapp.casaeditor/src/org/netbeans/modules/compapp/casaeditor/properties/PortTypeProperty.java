@@ -67,20 +67,14 @@ public class PortTypeProperty extends BaseCasaProperty {
         if (component instanceof CasaPort) {
             if(val != null && val instanceof PortType) {
                 PortType pt = (PortType) val;
-                Set<QName> qnames = pt.getModel().getQNames();
-                for(QName interfaceQName : qnames) {
-                    if (interfaceQName.getNamespaceURI().equals( pt.getModel().getDefinitions().getTargetNamespace()) &&
-                        interfaceQName.getLocalPart().equals(pt.getName())) {
-                        CasaPort casaPort = (CasaPort) component;
-                        CasaEndpointRef endPointRef = casaPort.getConsumes();
-                        if (endPointRef == null) {
-                            endPointRef = casaPort.getProvides();
-                        }
-                        if(endPointRef != null) {
-                            getModel().setEndpointInterfaceQName(endPointRef, interfaceQName);                        
-                        }
-                        break;
-                    }
+                QName qName = new QName(pt.getModel().getDefinitions().getTargetNamespace(), pt.getName());
+                CasaPort casaPort = (CasaPort) component;
+                CasaEndpointRef endPointRef = casaPort.getConsumes();
+                if (endPointRef == null) {
+                    endPointRef = casaPort.getProvides();
+                }
+                if(endPointRef != null) {
+                    getModel().setEndpointInterfaceQName(endPointRef, qName);
                 }
             }
         } 
