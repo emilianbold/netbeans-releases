@@ -22,8 +22,6 @@ package org.netbeans.installer.infra.lib.registries.impl;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -625,6 +623,7 @@ public class RegistriesManagerImpl implements RegistriesManager {
                 "nb-javaee",
                 "nb-javame",
                 "glassfish",
+                "tomcat",
                 "sjsas");
         final List<String> full = Arrays.asList(
                 "nb-platform",

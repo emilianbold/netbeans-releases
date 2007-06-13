@@ -958,6 +958,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-javaee" version="6.0.0.0.${build.number}"/>
             <component uid="nb-javame" version="6.0.0.0.${build.number}"/>
             <component uid="glassfish" version="2.0.0.${glassfish.milestone.number}.${glassfish.build.number}"/>
+            <component uid="tomcat" version="6.0.13.0.0"/>
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="linux" 
@@ -967,6 +968,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-javaee" version="6.0.0.0.${build.number}"/>
             <component uid="nb-javame" version="6.0.0.0.${build.number}"/>
             <component uid="glassfish" version="2.0.0.${glassfish.milestone.number}.${glassfish.build.number}"/>
+            <component uid="tomcat" version="6.0.13.0.0"/>
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="solaris-x86" 
@@ -975,6 +977,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-javase" version="6.0.0.0.${build.number}"/>
             <component uid="nb-javaee" version="6.0.0.0.${build.number}"/>
             <component uid="glassfish" version="2.0.0.${glassfish.milestone.number}.${glassfish.build.number}"/>
+            <component uid="tomcat" version="6.0.13.0.0"/>
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="solaris-sparc" 
@@ -983,6 +986,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-javase" version="6.0.0.0.${build.number}"/>
             <component uid="nb-javaee" version="6.0.0.0.${build.number}"/>
             <component uid="glassfish" version="2.0.0.${glassfish.milestone.number}.${glassfish.build.number}"/>
+            <component uid="tomcat" version="6.0.13.0.0"/>
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="macosx-x86" 
@@ -991,6 +995,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-javase" version="6.0.0.0.${build.number}"/>
             <component uid="nb-javaee" version="6.0.0.0.${build.number}"/>
             <component uid="glassfish" version="2.0.0.${glassfish.milestone.number}.${glassfish.build.number}"/>
+            <component uid="tomcat" version="6.0.13.0.0"/>
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="macosx-ppc" 
@@ -999,6 +1004,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-javase" version="6.0.0.0.${build.number}"/>
             <component uid="nb-javaee" version="6.0.0.0.${build.number}"/>
             <component uid="glassfish" version="2.0.0.${glassfish.milestone.number}.${glassfish.build.number}"/>
+            <component uid="tomcat" version="6.0.13.0.0"/>
         </create-bundle>
         
         <create-bundle root="${output.dir}/registry-temp" 
