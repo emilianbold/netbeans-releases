@@ -36,6 +36,7 @@ static void parseArgs(int argc, char *argv[]);
 static int readClusterFile(const char* path);
 static int dirExists(const char* path);
 static void ErrorExit(LPTSTR lpszMessage, LPTSTR lpszFunction);
+static void adjustHeapSize();
 
 static char userdir[MAX_PATH] = "c:\\nbuser";
 static char options[4098] = "";
@@ -102,6 +103,8 @@ int WINAPI
     sprintf(buf, "%s\\etc\\netbeans.conf", userdir);
     parseConfigFile(buf);
     strcpy(userdir, olduserdir);
+
+    adjustHeapSize();
 
     char nbexec[MAX_PATH];
     char cmdline2[10240];
@@ -545,3 +548,24 @@ void ErrorExit(LPTSTR lpszMessage, LPTSTR lpszFunction)
     ExitProcess( (dw != 0)? dw: 1); 
 }
     
+// Seaches if -Xmx is specified in existing arguments
+// If it isn't it adds it - 25% of available RAM but min is 96M and max 512M
+void adjustHeapSize() {
+
+    MEMORYSTATUS ms;
+    char buf[20];
+    
+    if (strstr(options, "-J-Xmx") == NULL) {
+        // find how much memory we have and add -Xmx
+        GlobalMemoryStatus(&ms);
+        DWORDLONG memory = ms.dwTotalPhys / 4 / 1024 / 1024;
+        if (memory < 96) {
+            memory = 96;
+         }
+        else if (memory > 512) {
+            memory = 512;
+        }
+        sprintf(buf, " -J-Xmx%ldm", memory);
+        strcat(options, buf);
+    }
+}
