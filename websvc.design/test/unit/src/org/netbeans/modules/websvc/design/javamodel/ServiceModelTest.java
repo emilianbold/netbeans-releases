@@ -426,7 +426,7 @@ private static ServiceModelTest DEFAULT_LOOKUP = null;
             throw new AssertionError(ex);
         }        
     }
-    
+
     public void testParamModelSetter() {
         FileObject sourceFileObject = dataDir.getFileObject("generator/ParamSetterTestService.java");
         
@@ -458,6 +458,38 @@ private static ServiceModelTest DEFAULT_LOOKUP = null;
         }        
     }
     
+    public void testParamModelSetter_1() {
+        FileObject sourceFileObject = dataDir.getFileObject("generator/ParamSetterTestService_1.java");
+        
+        try {
+            ServiceModel model = ServiceModel.getServiceModel(sourceFileObject);
+
+            String org = copyFileToString(FileUtil.toFile(sourceFileObject));
+            System.out.println("Original ParamSetterTestService_1.java:");
+            System.out.println(".....................................");
+            System.out.println(org);
+            System.out.println(".....................................");
+            
+            model.getOperations().get(0).getParams().get(0).setName("name");
+            
+            String res = copyFileToString(FileUtil.toFile(sourceFileObject));
+            System.out.println("Changed ParamSetterTestService.java_1:");
+            System.out.println(".....................................");
+            System.out.println(res);
+            System.out.println(".....................................");
+
+            model.getOperations().get(0).getParams().get(0).setName(null);
+            
+            String res1 = copyFileToString(FileUtil.toFile(sourceFileObject));
+            System.out.println(res1);
+            //assertEquals(org, res1);
+            
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            throw new AssertionError(ex);
+        }        
+    }
+    
         /**
      * Returns a string which contains the contents of a file.
      *
@@ -474,7 +506,7 @@ private static ServiceModelTest DEFAULT_LOOKUP = null;
     }
     
     private String getFormatedDocument(SOAPMessage message) {
-        try {;
+        try {
             TransformerFactory transformerFactory = TransformerFactory.newInstance();
             transformerFactory.setAttribute("indent-number", new Integer(4));
             Transformer transformer = transformerFactory.newTransformer();
