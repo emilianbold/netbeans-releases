@@ -217,12 +217,12 @@ public final class Util {
         }
     }
     
-//    public static JavaClass resolveWebServiceClass(final FileObject projectFolder, final String fqn){
+//    public static JavaClass resolveWebServiceClass( final FileObject projectFolder, final String fqn ) {
 //        assert projectFolder != null;
 //        assert fqn != null;
-//        final FileObject resObj = projectFolder.getFileObject("build/generated/wsclient/" + fqn.replace('.','/') + ".java"); //NOI18N
-//        if (resObj == null) return null;
-//        resObj.refresh(false);
+//        final FileObject resObj = projectFolder.getFileObject( "build/generated/wsimport/client/" + fqn.replace('.','/') + ".java" ); //NOI18N
+//        if( resObj == null ) return null;
+//        resObj.refresh( false );
 //        final Resource res = JavaModel.getResource(resObj);
 //        return (JavaClass)res.getClassifiers().get(0);
 //    }

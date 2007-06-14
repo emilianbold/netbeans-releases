@@ -7,6 +7,9 @@ package ${mapping.getClientMapping().getPackageName()};
 import java.util.*;
 import java.io.*;
 import javax.microedition.io.*;
+<#list imports as import>
+import ${import};
+</#list>
 
 /**
  *

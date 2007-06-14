@@ -83,15 +83,14 @@ public class ServiceSelectionPanel implements TemplateWizard.Panel, ChangeListen
     }
     
     public boolean isValid() {
-        return true;
-//        final List<ClassData> data = gui.getConfiguration().getServices().get(0).getData();
-//        final boolean valid = !(data == null || data.size() == 0);
-//        if (valid){
-//            templateWizard.putProperty("WizardPanel_errorMessage", " "); // NOI18N`
-//        } else {
-//            templateWizard.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(ServiceSelectionPanel.class, "ERR_NoService")); // NOI18N
-//        }
-//        return valid;
+        final List<ClassData> data = gui.getConfiguration().getServices().get(0).getData();
+        final boolean valid = !( data == null || data.size() == 0 );
+        if( valid ){
+            templateWizard.putProperty( "WizardPanel_errorMessage", " " ); // NOI18N`
+        } else {
+            templateWizard.putProperty( "WizardPanel_errorMessage", NbBundle.getMessage( ServiceSelectionPanel.class, "ERR_NoService" )); // NOI18N
+        }
+        return valid;
     }
     
     public void addChangeListener( final ChangeListener changeListener ) {

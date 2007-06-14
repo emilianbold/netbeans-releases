@@ -214,6 +214,9 @@ public class ClassDataRegistry {
         baseClasses = new HashMap<String, ClassData>();
         basePackages = new HashSet<String>();
 
+        // Gather all instance names
+        Set<String> instanceNames = new HashSet<String>();
+        registeredTypes = new HashSet<ClassData>();
         for ( ClasspathInfo cpi : classpaths ) {
             try {
                 // Traverse the tree of classes
@@ -221,12 +224,9 @@ public class ClassDataRegistry {
                 JavaSource.create( cpi ).runUserActionTask( tt, true );
 
                 // Assign numbers to all registered types for serialization
-                registeredTypes = new HashSet<ClassData>();
                 registeredTypes.addAll( returnTypes );
                 registeredTypes.addAll( parameterTypes );
 
-                // Gather all instance names
-                Set<String> instanceNames = new HashSet<String>();
 
                 for ( ClassData cd : registeredTypes ) {
                     instanceNames.add( serializerRegistry.get( cd ).instanceOf( cd ) );
@@ -245,7 +245,6 @@ public class ClassDataRegistry {
                     idMapping.put( cd, id );
                     id++;
                 }
-
             } catch ( Exception e ) {
                 e.printStackTrace();
             }
@@ -304,34 +303,32 @@ public class ClassDataRegistry {
         private final static int RETURN_TYPES = 1;
         private final static int PARAMETERS_TYPES = 2;
         private int status;
-
+        
         public TraversingTask( JavonProfileProvider profileProvider, ClasspathInfo cpi ) {
             this.profileProvider = profileProvider;
             this.cpi = cpi;
 
-            baseClasses = new HashMap<String, ClassData>();
-            basePackages = new HashSet<String>();
-            typeMap = new HashMap();
+//            baseClasses = new HashMap<String, ClassData>();
+//            basePackages = new HashSet<String>();
+//            typeMap = new HashMap();
 
             serializerRegistry = new HashMap<ClassData, JavonSerializer>();
 
-            parameterTypes = new HashSet<ClassData>();
-            returnTypes = new HashSet<ClassData>();
+//            parameterTypes = new HashSet<ClassData>();
+//            returnTypes = new HashSet<ClassData>();
         }
-
+        
         public void cancel() {
         }
 
         public void run( CompilationController parameter ) throws Exception {
             Set<ElementHandle<TypeElement>> elements = cpi.getClassIndex().getDeclaredTypes( "", NameKind.PREFIX, EnumSet.of( SearchScope.SOURCE ) );
-//            System.err.println("Elements - " + elements );
             for ( ElementHandle<TypeElement> eh : elements ) {
                 TypeElement te = eh.resolve( parameter );
-
+                if( te == null ) continue;
                 ClassData cd = getServiceType( te.asType() );
                 // Skip unsupported types
                 if ( cd == null ) continue;
-                System.err.println( " cd - " + cd.getName() );
                 typeMap.put( cd.getFullyQualifiedName(), cd );
                 baseClasses.put( cd.getFullyQualifiedName(), cd );
                 // Add package if needed
@@ -390,7 +387,7 @@ public class ClassDataRegistry {
                         }
                     }
                 }
-                System.err.print( this.displayClassData( serviceType ) );
+//                System.err.print( this.displayClassData( serviceType ) );
                 return serviceType;
             }
             return null;

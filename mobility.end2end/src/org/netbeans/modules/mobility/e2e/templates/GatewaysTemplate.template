@@ -20,6 +20,7 @@ public class JavonGateways {
     <#assign serviceType = service.getType()/>
     <#assign className = service.getClassName()/>
     <#assign classFQN = packageName + "." + className/>
+    <#assign instanceTypeName = mapping.getProperty( "instance" )/>
     /**
      *  This class implements the application server connectivity specific to the needs.
      */
@@ -37,11 +38,11 @@ public class JavonGateways {
             <#assign paramType = parameter.getType()>
             ${paramType.getName()} ${parameter.getName()} = ${registry.getTypeSerializer( paramType ).fromObject( paramType, "Utility.readObject( input )" ) };
             </#list>
-                
-            ${serviceType} instance = (${serviceType})session.getAttribute("${serviceType}");
+             
+            ${instanceTypeName} instance = (${instanceTypeName})session .getAttribute("${instanceTypeName}");
             if (instance == null) {
-                instance = (${serviceType}) Class.forName("${serviceType}").newInstance();
-                session.setAttribute("${serviceType}", instance);
+                instance = (${instanceTypeName}) Class.forName("${instanceTypeName}").newInstance();
+                session.setAttribute("${instanceTypeName}", instance);
             }
             <#if method.getReturnType().getName() == "void">
             instance.${method.getName()}(<@paramList method/>);

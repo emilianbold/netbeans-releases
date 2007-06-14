@@ -99,8 +99,8 @@ public class ConnectionGenerator {
         }
         
         if( Configuration.WSDLCLASS_TYPE.equals( config.getServiceType())){
-            final FileObject fo = dataObject.getServerProject().getProjectDirectory().getFileObject( "build/generated/wsclient/" ); //NOI18N
-            if (fo == null){
+            final FileObject fo = dataObject.getServerProject().getProjectDirectory().getFileObject( "build/generated/wsimport/" ); //NOI18N
+            if( fo == null ) {
                 DialogDisplayer.getDefault().notify( new NotifyDescriptor.Message( NbBundle.getMessage( ConnectionGenerator.class, "MSG_WebProjectNotBuilt" )));
                 return null;
             }
@@ -114,15 +114,15 @@ public class ConnectionGenerator {
         // FIXME: check for proper type
 //        config.getServices();
 //        
-//        if (Configuration.WSDLCLASS_TYPE.equals( config.getServiceType())){
-//            final ProxyGenerator pg = new ProxyGenerator(dataObject);
-//            final String className = pg.generate();
-//            if (className == null){
-//                ph.finish();
-//                return null;
-//            }
-//            config.getServices().get(0).getData().get(0).setProxyClassType(className);
-//        }
+        if( Configuration.WSDLCLASS_TYPE.equals( config.getServiceType())){
+            final ProxyGenerator pg = new ProxyGenerator(dataObject);
+            final String className = pg.generate();
+            if( className == null ) {
+                ph.finish();
+                return null;
+            }
+            config.getServices().get( 0 ).getData().get( 0 ).setProxyClassType( className );
+        }
 //        JavonOutput[] outputs;
 //        Type type = null;
 //        

@@ -137,12 +137,12 @@ public class BeanTypeSerializer implements JavonSerializer {
                     for( ExecutableElement ee : ElementFilter.methodsIn( clazz.getEnclosedElements())) {
                         String eeName = ee.getSimpleName().toString();
                         if( setterName.equals( eeName )) {
-                            System.err.println(" - setter : " + setterName );
+//                            System.err.println(" - setter : " + setterName );
                             field.setSetter( setterName );
                             hasSetter = true;
                         }
                         if( getterName.equals( eeName )) {
-                            System.err.println(" - getter : " + getterName );
+//                            System.err.println(" - getter : " + getterName );
                             field.setGetter( getterName );
                             hasGetter = true;
                         }

@@ -228,6 +228,12 @@ public class E2EDataObject extends XmlMultiViewDataObject {
         //TODO: Dirty hack
         List<ClasspathInfo> classpathInfos = new ArrayList<ClasspathInfo>();
         classpathInfos.add( ClasspathInfo.create( ssg[0].getRootFolder()));   // TODO: fix this!!!
+        if( config.getServiceType().equals( Configuration.WSDLCLASS_TYPE )) {
+            FileObject projectFO = getServerProject().getProjectDirectory().getFileObject( "build/generated/wsimport/client" );
+            if( projectFO != null ) {
+                classpathInfos.add( ClasspathInfo.create( projectFO ));
+            }
+        }
         // TODO: fix 
         final ClassDataRegistry registry = ClassDataRegistry.getRegistry( "default", classpathInfos );  
 //        final ClassDataRegistry registry =
@@ -302,6 +308,7 @@ public class E2EDataObject extends XmlMultiViewDataObject {
             if( className == null ){
                 className = ccd.getType();
             }
+            mapping.setProperty( "instance", className );
             
             final org.netbeans.modules.mobility.e2e.classdata.ClassData classData = registry.getClassData( className );
             if( classData == null ) continue;
@@ -468,6 +475,7 @@ public class E2EDataObject extends XmlMultiViewDataObject {
             this.dataObject = (E2EDataObject)dObj;
         }
         
+        @Override
         public void open() {
             SwingUtilities.invokeLater( new Runnable() {
                 public void run() {

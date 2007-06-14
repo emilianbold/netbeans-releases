@@ -56,7 +56,10 @@ import java.awt.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.modules.mobility.e2e.classdata.ClassDataRegistry;
 
 
 /**
@@ -260,6 +263,41 @@ public class ServicesPanel extends SectionInnerPanel implements ExplorerManager.
                 repaintingTask = RequestProcessor.getDefault().create( updater  );
                 repaintingTask.schedule( 500 );
                 return;
+            } else {
+                final List<ClassData> ports = service.getData();
+                
+                FileObject generatedClientFO = 
+                        serverProject.getProjectDirectory().getFileObject( "build/generated/wsimport/client/" );
+                // Add all paths to the ClasspathInfo structure
+                List<ClasspathInfo> classpaths = Collections.singletonList( ClasspathInfo.create( generatedClientFO ));
+                // Get the registry for all available classes
+                ClassDataRegistry registry = ClassDataRegistry.getRegistry( ClassDataRegistry.DEFAULT_PROFILE, classpaths );
+                
+                PortData port = null;
+                if( ports != null && ports.size() > 0 ) port = (PortData)ports.get( 0 ); // Only one port allowed
+                
+                for( Node serviceNode : rootNode.getChildren().getNodes()) {
+                    for( Node portNode : serviceNode.getChildren().getNodes()) {
+                        WsdlPort wsdlPort = portNode.getLookup().lookup( WsdlPort.class );
+                        String serviceFQN = wsdlPort.getJavaName();
+                        if( port != null && !portNode.getName().equals( port.getName())) continue;
+                        org.netbeans.modules.mobility.e2e.classdata.ClassData cd = registry.getClassData( wsdlPort.getJavaName());
+                        for( Node operationNode : portNode.getChildren().getNodes()) {
+                            WsdlOperation wsdlOperation = operationNode.getLookup().lookup( WsdlOperation.class );
+                            org.netbeans.modules.mobility.e2e.classdata.MethodData methodData = null;
+                            for( org.netbeans.modules.mobility.e2e.classdata.MethodData md : cd.getMethods()) {
+                                if( md.getName().equals( wsdlOperation.getJavaName())) {
+                                    methodData = md;
+                                }
+                            }
+                            if( methodData == null ) {
+                                operationNode.setValue( ServiceNodeManager.NODE_VALIDITY_ATTRIBUTE, Boolean.FALSE );
+                            } else {
+                                operationNode.setValue( ServiceNodeManager.NODE_VALIDITY_ATTRIBUTE, Boolean.TRUE );
+                            }
+                        }
+                    }
+                }                
             }
         }
         
@@ -447,7 +485,6 @@ public class ServicesPanel extends SectionInnerPanel implements ExplorerManager.
                             if( serviceClassInfo == null ) {
                                 continue;
                             }
-                            
 //                            final OperationData md = getMethodData( serviceClassInfo.getFqPortTypeName(), operationName );
                             final OperationData md = new OperationData( operationName );
                             WsdlOperation wsdlOp = operationNodes[k].getLookup().lookup( WsdlOperation.class );
@@ -493,50 +530,7 @@ public class ServicesPanel extends SectionInnerPanel implements ExplorerManager.
             configuration.setServices( servicesData );
         }
     }
-        
-//TODO clarify where to put this code - this depends on possible changes in WS API's and should be shared with wizards
-    private OperationData getMethodData(final String serviceClassFQN, final String operationName) {
-//        JavaModel.getJavaRepository().beginTrans(false);
-//        try {
-//            final JavaClass jc = Util.resolveWebServiceClass(
-//                    dataObject != null  ? dataObject.getServerProject().getProjectDirectory() :
-//                        serverProjectFolder, serviceClassFQN);
-//            if (jc == null || jc instanceof UnresolvedClass){
-//                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(ServicesPanel.class, "MSG_WebProjectNotBuilt")));
-//                return null;
-//            }
-//            final List<Feature> features = jc.getFeatures();
-//            for ( final Feature feature : features ) {
-//                if (feature instanceof Method) {
-//                    if (!operationName.equals(feature.getName())){
-//                        continue;
-//                    }
-//                    final Method method = (Method) feature;
-//                    final int modifiers = method.getModifiers();
-//                    if (Modifier.isPublic(modifiers)) {
-//                        final List<Parameter> params = method.getParameters();
-//                        final List<TypeData> newParams = new ArrayList<TypeData>(params.size());
-//                        for ( final Parameter param : params ) {
-//                            //have a list of parameters for each method
-//                            final TypeData td = new TypeData( param.getName(), param.getType().getName());
-//                            newParams.add( td );
-//                        }
-//                        final OperationData od = new OperationData( feature.getName());
-//                        od.setMethodName( operationName );
-//                        od.setReturnType( method.getType().getName());
-//                        od.setParameterTypes( newParams );
-//                        return od;
-//                    }
-//                }
-//            }
-//        } catch (Exception e){
-//            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-//        } finally {
-//            JavaModel.getJavaRepository().endTrans();
-//        }
-        return null;
-    }
-    
+            
     private static WSI computeMethodCall( final Node serviceOperationNode ) {        
         try {
             final Node servicePortNode = serviceOperationNode.getParentNode();
@@ -553,7 +547,7 @@ public class ServicesPanel extends SectionInnerPanel implements ExplorerManager.
             final String serviceClassName = client.getName(); //here is the class name //??
 //            
             String servicePackageName = client.getPackageName();
-            String servicePortTypeName = client.getPackageName();
+            String servicePortTypeName = servicePortName;
 //          
 //            final ServiceInformation serviceInfo = (ServiceInformation) serviceNode.getCookie(ServiceInformation.class);
 //            if (serviceInfo != null) {

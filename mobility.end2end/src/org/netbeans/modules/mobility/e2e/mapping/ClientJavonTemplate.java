@@ -31,6 +31,7 @@ import javax.script.Bindings;
 import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
+import org.netbeans.modules.mobility.e2e.classdata.ClassData;
 import org.netbeans.modules.mobility.javon.JavonMapping;
 import org.netbeans.modules.mobility.javon.JavonTemplate;
 import org.netbeans.modules.mobility.javon.OutputFileFormatter;
@@ -91,6 +92,19 @@ public class ClientJavonTemplate extends JavonTemplate {
                 bind.put( "service", service );
                 bind.put( "utils", new Utils( mapping.getRegistry()));
 
+                // Compute imports for JavaBeans
+                Set<String> imports = new HashSet<String>();
+                String getClientPackage = mapping.getClientMapping().getPackageName();
+                for( ClassData cd : service.getParameterTypes()) {
+                    if( cd.isPrimitive()) continue;
+                    imports.add( cd.getFullyQualifiedName());
+                }
+                for( ClassData cd : service.getReturnTypes()) {
+                    if( cd.isPrimitive()) continue;
+                    imports.add( cd.getFullyQualifiedName());
+                }
+                bind.put( "imports", imports );
+                
                 Writer w = null;
                 Reader is = null;
                 try {
