@@ -237,25 +237,34 @@ public class NodeFactorySupport {
     private static class NodeListKeyWrapper  {
         NodeList nodeList;
         Object object;
+
         NodeListKeyWrapper(Object obj, NodeList list) {
             nodeList = list;
             object = obj;
         }
         
-        public @Override boolean equals(Object obj) {
-            if (! (obj instanceof NodeListKeyWrapper)) {
+        public boolean equals(Object obj) {
+            if (obj == null) {
                 return false;
             }
-            NodeListKeyWrapper other = (NodeListKeyWrapper)obj;
-            if (! nodeList.equals(other.nodeList)) {
+            if (getClass() != obj.getClass()) {
                 return false;
             }
-            return object.equals(other.object);
+            final NodeListKeyWrapper other = (NodeListKeyWrapper) obj;
+            if (this.nodeList != other.nodeList && (this.nodeList == null || !this.nodeList.equals(other.nodeList))) {
+                return false;
+            }
+            if (this.object != other.object && (this.object == null || !this.object.equals(other.object))) {
+                return false;
+            }
+            return true;
         }
-        
-        public @Override int hashCode() {
-            return (17 * 37 + nodeList.hashCode()) * 37 + object.hashCode();
-                    
+
+        public int hashCode() {
+            int hash = 5;
+            hash = 79 * hash + (this.nodeList != null ? this.nodeList.hashCode() : 0);
+            hash = 79 * hash + (this.object != null ? this.object.hashCode() : 0);
+            return hash;
         }
         
     }
