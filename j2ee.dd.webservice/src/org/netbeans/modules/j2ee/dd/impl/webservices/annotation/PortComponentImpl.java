@@ -72,6 +72,11 @@ public class PortComponentImpl implements PortComponent {
         }
         return serviceImplBean;
     }
+
+    public String getDisplayName() {
+        // use display name to hold information about implementation class
+        return typeElement.getQualifiedName().toString();
+    }
     
     // <editor-fold defaultstate="collapsed" desc="Not implemented methods">    
     public Object clone() {
@@ -111,10 +116,6 @@ public class PortComponentImpl implements PortComponent {
     }
 
     public void setDisplayName(String value) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public String getDisplayName() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
