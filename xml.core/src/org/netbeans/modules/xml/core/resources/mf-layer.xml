@@ -71,23 +71,6 @@ Microsystems, Inc. All Rights Reserved.
         </folder> <!-- XML -->
     </folder> <!-- Templates -->
                
-    <folder name="UI">
-        <folder name="Services">
-            <folder name="Editing">
-                <folder name="XML">
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.core.resources.Bundle"/>
-                    <attr name="helpID" stringvalue="org.netbeans.modules.xml.core.settings"/>
-
-                    <file name="org-netbeans-modules-xml-core-settings-CoreSettingsNode.instance">
-                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.xml.core.settings.CoreSettings.createViewNode"/>
-                    </file>
-                </folder> <!-- XML -->
-            </folder> <!-- Editing -->
-        </folder> <!-- Settings -->
-    </folder> <!-- UI -->
-
-
-    
 
     <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       - Following files represents system registrations (Lookup or some pool).
