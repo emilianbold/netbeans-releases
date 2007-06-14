@@ -32,6 +32,7 @@ import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
 import org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans;
 import org.netbeans.modules.j2ee.dd.api.web.WebAppMetadata;
 import org.netbeans.modules.j2ee.dd.api.webservices.WebservicesMetadata;
+import org.netbeans.modules.j2ee.sun.ddloaders.Utils;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
@@ -49,6 +50,12 @@ import org.openide.loaders.DataObject;
 public abstract class CommonBeanReader
 {
     protected String propertyName;
+    
+    protected void addMapString(Map<String, Object> map, String property, String value) {
+        if(Utils.notEmpty(value)) {
+            map.put(property, value);
+        }
+    }
     
     public CommonBeanReader(String propertyName) {
         this.propertyName = propertyName;
@@ -189,7 +196,6 @@ public abstract class CommonBeanReader
             implements MetadataModelAction<EjbJarMetadata, Map<String, Object>> {
 
         public Map<String, Object> run(EjbJarMetadata metadata) throws Exception {
-            // TODO how to read named beans from named ejbs... 
             CommonDDBean newParent = normalizeParent(metadata.getRoot());
             return genCommonProperties(newParent);
         }
@@ -200,7 +206,8 @@ public abstract class CommonBeanReader
             implements MetadataModelAction<WebservicesMetadata, Map<String, Object>> {
 
         public Map<String, Object> run(WebservicesMetadata metadata) throws Exception {
-            return genCommonProperties(metadata.getRoot());
+            CommonDDBean newParent = normalizeParent(metadata.getRoot());
+            return genCommonProperties(newParent);
         }
         
     }

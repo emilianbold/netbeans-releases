@@ -18,6 +18,7 @@ package org.netbeans.modules.j2ee.sun.ddloaders;
 
 import java.util.HashMap;
 import java.util.Map;
+import javax.enterprise.deploy.shared.ModuleType;
 import org.openide.ErrorManager;
 
 /**
@@ -34,15 +35,14 @@ public final class DDType {
     private static final String NAME_SUNRESOURCE = "sun-resource.xml"; // NOI18N
     
     // Type declarations for the different descriptor types.
-    public static DDType DD_SUN_WEB_APP = new DDType(NAME_SUNWEBAPP, DDViewFactory.SunWebDDViewFactory.class);
-    public static DDType DD_SUN_EJB_JAR = new DDType(NAME_SUNEJBJAR, DDViewFactory.SunEjbJarDDViewFactory.class);
-    public static DDType DD_SUN_APP_CLIENT = new DDType(NAME_SUNAPPCLIENT, DDViewFactory.SunAppClientDDViewFactory.class);
-    public static DDType DD_SUN_APPLICATION = new DDType(NAME_SUNAPPLICATION, DDViewFactory.SunApplicationDDViewFactory.class);
-    public static DDType DD_SUN_CMP_MAPPINGS = new DDType(NAME_SUNCMPMAPPING, DDViewFactory.SunCmpMappingsDDViewFactory.class);
-    public static DDType DD_SUN_RESOURCE = new DDType(NAME_SUNRESOURCE, DDViewFactory.SunResourceDDViewFactory.class);
-    
+    public static DDType DD_SUN_WEB_APP = new DDType(NAME_SUNWEBAPP, ModuleType.WAR, DDViewFactory.SunWebDDViewFactory.class);
+    public static DDType DD_SUN_EJB_JAR = new DDType(NAME_SUNEJBJAR, ModuleType.EJB, DDViewFactory.SunEjbJarDDViewFactory.class);
+    public static DDType DD_SUN_APP_CLIENT = new DDType(NAME_SUNAPPCLIENT, ModuleType.CAR, DDViewFactory.SunAppClientDDViewFactory.class);
+    public static DDType DD_SUN_APPLICATION = new DDType(NAME_SUNAPPLICATION, ModuleType.EAR, DDViewFactory.SunApplicationDDViewFactory.class);
+    public static DDType DD_SUN_CMP_MAPPINGS = new DDType(NAME_SUNCMPMAPPING, ModuleType.EJB, DDViewFactory.SunCmpMappingsDDViewFactory.class);
+    public static DDType DD_SUN_RESOURCE = new DDType(NAME_SUNRESOURCE, null, DDViewFactory.SunResourceDDViewFactory.class);
+
     // Various indexes for finding a DDType object
-    
     private static Map<String, DDType> fileToTypeMap = new HashMap<String, DDType>(11);
 
     static {
@@ -60,15 +60,21 @@ public final class DDType {
     
     // Internal data
     private final String descriptorName;
+    private final ModuleType moduleType;
     private final Class viewFactoryClass;
     
-    private DDType(String ddName, Class vfc) {
+    private DDType(final String ddName, final ModuleType type, final Class vfc) {
         descriptorName = ddName;
+        moduleType = type;
         viewFactoryClass = vfc;
     }
     
     public String getDescriptorFileName() {
         return this.descriptorName;
+    }
+    
+    public ModuleType getEditorModuleType() {
+        return moduleType;
     }
     
     public DDViewFactory createViewFactory() {

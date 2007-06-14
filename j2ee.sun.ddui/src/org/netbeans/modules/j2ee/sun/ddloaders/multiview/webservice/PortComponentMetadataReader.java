@@ -26,6 +26,7 @@ import org.netbeans.modules.j2ee.dd.api.common.CommonDDBean;
 import org.netbeans.modules.j2ee.dd.api.webservices.PortComponent;
 import org.netbeans.modules.j2ee.dd.api.webservices.ServiceImplBean;
 import org.netbeans.modules.j2ee.dd.api.webservices.WebserviceDescription;
+import org.netbeans.modules.j2ee.dd.api.webservices.Webservices;
 import org.netbeans.modules.j2ee.dd.api.webservices.WebservicesMetadata;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
@@ -33,7 +34,6 @@ import org.netbeans.modules.j2ee.sun.ddloaders.Utils;
 import org.netbeans.modules.j2ee.sun.ddloaders.multiview.common.CommonBeanReader;
 import org.netbeans.modules.j2ee.sun.ddloaders.multiview.common.DDBinding;
 import org.netbeans.modules.j2ee.sun.share.configbean.SunONEDeploymentConfiguration;
-import org.netbeans.modules.schema2beans.QName;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -43,10 +43,44 @@ import org.openide.loaders.DataObject;
  *
  * @author Peter Williams
  */
-public class WebServiceMetadataReader extends CommonBeanReader {
+public class PortComponentMetadataReader extends CommonBeanReader {
 
-    public WebServiceMetadataReader() {
-        super(DDBinding.PROP_WEBSERVICE_DESC);
+    private String parentName;
+    
+    public PortComponentMetadataReader(final String parentName) {
+        super(DDBinding.PROP_PORT);
+        this.parentName = parentName;
+    }
+    
+    /** For normalizing data structures
+     *    /webservices -> -> /webservices/webservice-description[webservice-description-name="xxx"]
+     * 
+     * TODO This mechanism will probably need optimization and caching to perform
+     * for larger files.
+     */
+    @Override
+    protected CommonDDBean normalizeParent(CommonDDBean parent) {
+        if(parentName != null && parent instanceof Webservices) {
+            parent = findWebServiceDescByName((Webservices) parent, parentName);
+        }
+        return parent;
+    }
+    
+    private CommonDDBean findWebServiceDescByName(Webservices webservices, String parentName) {
+        return findWebServiceDescByName(webservices.getWebserviceDescription(), parentName);
+    }
+    
+    private CommonDDBean findWebServiceDescByName(WebserviceDescription [] descs, String wsDescName) {
+        CommonDDBean match = null;
+        if(descs != null) {
+            for(WebserviceDescription ws: descs) {
+                if(wsDescName.equals(ws.getWebserviceDescriptionName())) {
+                    match = ws;
+                    break;
+                }
+            }
+        }
+        return match;
     }
     
     @Override
@@ -71,48 +105,34 @@ public class WebServiceMetadataReader extends CommonBeanReader {
         return result;
     }
     
-    /** Maps interesting fields from service-ref descriptor to a multi-level property map.
+    /** Maps interesting fields from port-component descriptor to a multi-level property map.
      * 
      * @return Map<String, Object> where Object is either a String value or nested map
      *  with the same structure (and thus ad infinitum)
      */
     public Map<String, Object> genProperties(CommonDDBean [] beans) {
         Map<String, Object> result = null;
-        if(beans instanceof WebserviceDescription []) {
-            WebserviceDescription [] webServices = (WebserviceDescription []) beans;
-            for(WebserviceDescription webServiceDesc: webServices) {
-                String webServiceDescName = webServiceDesc.getWebserviceDescriptionName();
-                if(Utils.notEmpty(webServiceDescName)) {
+        if(beans instanceof PortComponent []) {
+            PortComponent [] ports = (PortComponent []) beans;
+            for(PortComponent port: ports) {
+                String portName = port.getPortComponentName();
+                if(Utils.notEmpty(portName)) {
                     if(result == null) {
                         result = new HashMap<String, Object>();
                     }
-                    Map<String, Object> webServiceDescMap = new HashMap<String, Object>();
-                    result.put(webServiceDescName, webServiceDescMap);
-                    webServiceDescMap.put(DDBinding.PROP_NAME, webServiceDescName);
+                    Map<String, Object> portMap = new HashMap<String, Object>();
+                    result.put(portName, portMap);
+                    portMap.put(DDBinding.PROP_NAME, portName);
                     
-                    PortComponent [] ports = webServiceDesc.getPortComponent();
-                    if(ports != null && ports.length > 0) {
-                        Map<String, Object> portGroupMap = new HashMap<String, Object>();
-                        webServiceDescMap.put(DDBinding.PROP_PORT, portGroupMap);
-                        for(PortComponent port: ports) {
-                            String portName = port.getPortComponentName();
-                            if(Utils.notEmpty(portName)) {
-                                Map<String, Object> portMap = new HashMap<String, Object>(7);
-                                portMap.put(DDBinding.PROP_NAME, portName);
-                                portGroupMap.put(portName, portMap);
-                                
-                                addMapString(portMap, DDBinding.PROP_SEI, port.getServiceEndpointInterface());
+                    addMapString(portMap, DDBinding.PROP_SEI, port.getServiceEndpointInterface());
 
-                                // Wsdl port is actually 3 fields wrapped in a QName.  Do we really need it?
-//                                port.getWsdlPort();
-                                
-                                ServiceImplBean serviceBean = port.getServiceImplBean();
-                                if(serviceBean != null) {
-                                    addMapString(portMap, DDBinding.PROP_SERVLET_LINK, serviceBean.getServletLink());
-                                    addMapString(portMap, DDBinding.PROP_EJB_LINK, serviceBean.getEjbLink());
-                                }
-                            }
-                        }
+                    // Wsdl port is actually 3 fields wrapped in a QName.  Do we really need it?
+//                    port.getWsdlPort();
+
+                    ServiceImplBean serviceBean = port.getServiceImplBean();
+                    if(serviceBean != null) {
+                        addMapString(portMap, DDBinding.PROP_SERVLET_LINK, serviceBean.getServletLink());
+                        addMapString(portMap, DDBinding.PROP_EJB_LINK, serviceBean.getEjbLink());
                     }
                 }
             }

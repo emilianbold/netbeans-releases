@@ -24,6 +24,8 @@
 
 package org.netbeans.modules.j2ee.sun.share.configbean.customizers.common;
 
+import org.netbeans.modules.j2ee.sun.share.configbean.Utils;
+
 /** Class that associates two strings with each other, presumably one to be
  *  written in code contexts, such as XML, and the other for display purposes,
  *  allowing it to be localized independently of the code.  This was originally
@@ -43,11 +45,39 @@ public class TextMapping {
 		displayText = display;
 	}
 
-	public String toString() {
+	@Override
+    public String toString() {
 		return displayText;
 	}
 
 	public String getXMLString() {
 		return xmlText;
 	}
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        
+        final TextMapping other = (TextMapping) obj;
+        if(!Utils.strEquals(xmlText, other.xmlText) || !Utils.strEquals(displayText, other.displayText)) {
+            return false;
+        }
+        
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 17 * hash + this.xmlText != null ? this.xmlText.hashCode() : 0;
+        hash = 17 * hash + this.displayText != null ? this.displayText.hashCode() : 0;
+        return hash;
+    }
+
 }

@@ -16,14 +16,13 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-package org.netbeans.modules.j2ee.sun.ddloaders.multiview.web;
+package org.netbeans.modules.j2ee.sun.ddloaders.multiview.webservice;
 
 import org.netbeans.modules.j2ee.sun.dd.api.ASDDVersion;
-import org.netbeans.modules.j2ee.sun.dd.api.web.Servlet;
+import org.netbeans.modules.j2ee.sun.dd.api.common.WebserviceEndpoint;
 import org.netbeans.modules.j2ee.sun.ddloaders.multiview.common.DDBinding;
 import org.netbeans.modules.j2ee.sun.ddloaders.multiview.common.NamedBeanNode;
-import org.netbeans.modules.j2ee.sun.ddloaders.multiview.webservice.EndpointGroupNode;
-import org.netbeans.modules.j2ee.sun.share.configbean.customizers.ServletPanel;
+import org.netbeans.modules.j2ee.sun.share.configbean.customizers.webservice.EndpointPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeInnerPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
 
@@ -31,17 +30,15 @@ import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
 /**
  * @author Peter Williams
  */
-public class ServletNode extends NamedBeanNode {
+public class EndpointNode extends NamedBeanNode {
 
-    public ServletNode(SectionNodeView sectionNodeView, final DDBinding binding, final ASDDVersion version) {
-        super(sectionNodeView, binding, Servlet.SERVLET_NAME, ICON_BASE_SERVLET_NODE, version);
-
+    public EndpointNode(SectionNodeView sectionNodeView, final DDBinding binding, final ASDDVersion version) {
+        super(sectionNodeView, binding, WebserviceEndpoint.PORT_COMPONENT_NAME, ICON_BASE_PORT_INFO_NODE, version);
         enableRemoveAction();
-        
-        addChild(new EndpointGroupNode(sectionNodeView, binding.getSunBean(), version));
+    }
+
+    protected SectionNodeInnerPanel createNodeInnerPanel() {
+        return new EndpointPanel(getSectionNodeView(), this, version);
     }
     
-    protected SectionNodeInnerPanel createNodeInnerPanel() {
-        return new ServletPanel(getSectionNodeView(), this, version);
-    }
 }

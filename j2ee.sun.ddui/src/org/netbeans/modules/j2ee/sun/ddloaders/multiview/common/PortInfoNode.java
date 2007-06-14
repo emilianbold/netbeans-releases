@@ -38,7 +38,7 @@ public class PortInfoNode extends NamedBeanNode {
     }
 
     protected SectionNodeInnerPanel createNodeInnerPanel() {
-        return new PortInfoPanel(getSectionNodeView(), (PortInfo) key, version);
+        return new PortInfoPanel(getSectionNodeView(), this, version);
     }
     
     @Override

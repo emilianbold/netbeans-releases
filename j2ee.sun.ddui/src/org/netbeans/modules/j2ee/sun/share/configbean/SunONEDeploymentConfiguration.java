@@ -324,25 +324,25 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
                         stdRootDD = org.netbeans.modules.j2ee.dd.api.application.DDProvider.getDefault().getDDRoot(ddFO);
                     } 
                 } catch (IOException ex) {
-                    // just return null if this happens.
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
                 }
             }
         }
         return stdRootDD;
     }
     
-    public org.netbeans.modules.j2ee.dd.api.common.RootInterface getWebServicesRootDD() {
-        org.netbeans.modules.j2ee.dd.api.common.RootInterface wsRootDD = null;
+    public org.netbeans.modules.j2ee.dd.api.webservices.Webservices getWebServicesRootDD() {
+        org.netbeans.modules.j2ee.dd.api.webservices.Webservices wsRootDD = null;
         String ddName = webserviceDDNameMap.get(module.getModuleType());
         if(ddName != null) {
             File ddFile = module.getDeploymentConfigurationFile(ddName);
             if(ddFile.exists()) {
-                System.out.println("FIXME Add websvcddapi dependency and uncomment this code to access webservices.xml");
                 FileObject ddFO = FileUtil.toFileObject(ddFile);
-//                try {
-//                    wsRootDD = org.netbeans.modules.j2ee.dd.api.webservices.DDProvider.getDefault().getDDRoot(ddFO);
-//                } catch (IOException ex) {
-//                }
+                try {
+                    wsRootDD = org.netbeans.modules.j2ee.dd.api.webservices.DDProvider.getDefault().getDDRoot(ddFO);
+                } catch (IOException ex) {
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                }
             }
         }
         return wsRootDD;

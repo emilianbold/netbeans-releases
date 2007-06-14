@@ -60,6 +60,8 @@ public class BaseSectionNode extends SectionNode {
             "org/netbeans/modules/j2ee/sun/ddloaders/resources/MessageDestinationIcon"; // NOI18N
     public static final String ICON_BASE_MESSAGE_DESTINATION_REF_NODE =
             "org/netbeans/modules/j2ee/sun/ddloaders/resources/MessageDestinationRefIcon"; // NOI18N
+    public static final String ICON_BASE_ENDPOINT_NODE =
+            "org/netbeans/modules/j2ee/sun/ddloaders/resources/WebServiceEndpointIcon"; // NOI18N
             
     protected final ASDDVersion version;
     

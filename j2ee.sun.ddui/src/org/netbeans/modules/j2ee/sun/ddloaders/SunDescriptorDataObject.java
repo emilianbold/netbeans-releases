@@ -69,6 +69,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.enterprise.deploy.shared.ModuleType;
 import org.netbeans.modules.j2ee.sun.dd.api.DDProvider;
 import org.netbeans.modules.j2ee.sun.dd.api.RootInterface;
 import org.netbeans.modules.j2ee.sun.dd.impl.RootInterfaceImpl;
@@ -135,6 +136,16 @@ public class SunDescriptorDataObject extends DDMultiViewDataObject
 //            sources.addChangeListener(this);
 //        }
 //        refreshSourceFolders();
+    }
+    
+    /** Returns what the module type ought to be for this particular descriptor 
+     *  file (e.g. if someone puts sun-ejb-jar.xml into a web module folder, this
+     *  api will return ModuleType.EJB for this dataobject even though j2eeserver
+     *  will return ModuleType.WAR for the project's module type.
+     */
+    public ModuleType getModuleType() {
+        // FIXME What should this return for a sun-resource.xml file?  Right, it returns null.
+        return descriptorType.getEditorModuleType();
     }
     
     

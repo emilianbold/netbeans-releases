@@ -99,6 +99,13 @@ public abstract class NamedBeanNode extends BaseSectionNode {
                 binding.clearVirtual();
                 groupNode.addBean(binding.getSunBean());
                 
+                // If parent of this group is it's own named bean (ie EjbNode),
+                // then pass the add request up the chain.
+                Node namedParentNode = groupNode.getParentNode();
+                if(namedParentNode instanceof NamedBeanNode) {
+                    ((NamedBeanNode) namedParentNode).addVirtualBean();
+                }
+                
                 SunDescriptorDataObject dataObject = (SunDescriptorDataObject) getSectionNodeView().getDataObject();
                 XmlMultiViewDataSynchronizer synchronizer = dataObject.getModelSynchronizer();
                 synchronizer.requestUpdateData();

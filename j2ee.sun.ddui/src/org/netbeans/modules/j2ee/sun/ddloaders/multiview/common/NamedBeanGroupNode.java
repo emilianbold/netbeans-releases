@@ -16,7 +16,6 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
 package org.netbeans.modules.j2ee.sun.ddloaders.multiview.common;
 
 import java.util.ArrayList;
@@ -74,6 +73,7 @@ public abstract class NamedBeanGroupNode extends BaseSectionNode implements Bean
     public static final String STANDARD_RESOURCE_ENV_REF_NAME = ResourceEnvRef.RESOURCE_ENV_REF_NAME; // e.g. "ResourceEnvRefName"
     public static final String STANDARD_SERVICE_REF_NAME = ServiceRef.SERVICE_REF_NAME; // e.g. "ServiceRefName"
     public static final String STANDARD_ROLE_NAME = SecurityRoleMapping.ROLE_NAME; // e.g. "RoleName"
+    public static final String STANDARD_PORT_NAME = WebserviceDescription.WEBSERVICE_DESCRIPTION_NAME; // e.g. "WebserviceDescriptionName"
     public static final String STANDARD_WEBSERVICE_DESC_NAME = WebserviceDescription.WEBSERVICE_DESCRIPTION_NAME; // e.g. "WebserviceDescriptionName"
     public static final String STANDARD_MSGDEST_NAME = MessageDestination.MESSAGE_DESTINATION_NAME; // e.g. "MessageDestination"
     public static final String STANDARD_MSGDEST_REF_NAME = MessageDestinationRef.MESSAGE_DESTINATION_REF_NAME; // e.g. "MessageDestinationRef"

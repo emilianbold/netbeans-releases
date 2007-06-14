@@ -27,6 +27,7 @@ import org.netbeans.modules.j2ee.sun.ddloaders.multiview.common.ResourceRefGroup
 import org.netbeans.modules.j2ee.sun.ddloaders.multiview.common.ResourceEnvRefGroupNode;
 import org.netbeans.modules.j2ee.sun.ddloaders.multiview.common.ServiceRefGroupNode;
 import org.netbeans.modules.j2ee.sun.ddloaders.multiview.jms.MessageDestinationRefGroupNode;
+import org.netbeans.modules.j2ee.sun.ddloaders.multiview.webservice.EndpointGroupNode;
 import org.netbeans.modules.j2ee.sun.share.configbean.customizers.ejbmodule.EjbPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeInnerPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
@@ -43,11 +44,16 @@ public class EjbNode extends NamedBeanNode {
         enableRemoveAction();
         
         Ejb ejb = (Ejb) binding.getSunBean();
+        
+        // References (should be blocked in a group)
         addChild(new EjbRefGroupNode(sectionNodeView, ejb, version));
         addChild(new ResourceRefGroupNode(sectionNodeView, ejb, version));                
         addChild(new ResourceEnvRefGroupNode(sectionNodeView, ejb, version));
         addChild(new ServiceRefGroupNode(sectionNodeView, ejb, version));
         addChild(new MessageDestinationRefGroupNode(sectionNodeView, ejb, version));
+
+        // Webservice endpoints.
+        addChild(new EndpointGroupNode(sectionNodeView, binding.getSunBean(), version));
     }
 
     protected SectionNodeInnerPanel createNodeInnerPanel() {

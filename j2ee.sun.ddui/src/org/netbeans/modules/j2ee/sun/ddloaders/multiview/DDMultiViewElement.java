@@ -26,6 +26,7 @@ import org.netbeans.modules.xml.multiview.ToolBarMultiViewElement;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
 import org.netbeans.modules.xml.multiview.ui.SectionView;
 import org.netbeans.modules.xml.multiview.ui.ToolBarDesignEditor;
+import org.openide.ErrorManager;
 
 
 /**
@@ -70,7 +71,16 @@ public abstract class DDMultiViewElement extends ToolBarMultiViewElement {
         } else {
             node = sectionNodeView.getRootNode();
         }
-        sectionNodeView.openPanel(node);
+        
+        // TODO possible race condition -- occasionally nodes being opened by
+        // this call do not exist at the time the call is made (possibly they have
+        // been replaced by the background updates.)
+        try {
+            sectionNodeView.openPanel(node);
+        } catch(IllegalArgumentException ex) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+        }
+        
         dataObject.checkParseable();
     }
 
