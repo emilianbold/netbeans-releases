@@ -87,6 +87,11 @@ public class DeploymentManagerProperties {
      **/
     public static final String AVK_INSTRUMENTED_ATTR = "AVKTurnedOn";
     
+    /* Driver Deployment on or off
+     *
+     **/
+    public static final String DRIVER_DEPLOYMENT_ATTR = "DriverDeploymentEnabled";
+    
     private static final String PROP_SOURCES       = "sources";         // NOI18N
     private static final String PROP_JAVADOCS      = "javadocs";        // NOI18N
     
@@ -416,4 +421,42 @@ public class DeploymentManagerProperties {
     public void setStartupTimeout(int newVal) {
         instanceProperties.setProperty(InstanceProperties.STARTUP_TIMEOUT, Integer.toString(newVal));
     }
+    
+    /**
+     * Getter for property location. can be null if the dm is remote
+     * @return Value of property location.
+     */
+    public File getDriverLocation() {
+        String driverLocation = getLocation();
+        String domainName = getDomainName();
+        String driverDir = new File(driverLocation).getAbsolutePath();
+        driverLocation = driverDir + File.separator + domainName + File.separator + "lib";
+        return new File(driverLocation);
+    }
+    
+    /**
+     * return true for automatic deployment for JDBC Drivers
+     * true by default
+     ** @return 
+     */
+    public boolean isDriverDeploymentEnabled() {
+         if (instanceProperties == null){
+            return true;//true by default
+        }
+        String s = instanceProperties.getProperty(DRIVER_DEPLOYMENT_ATTR);
+        if (s == null){
+            instanceProperties.setProperty(DRIVER_DEPLOYMENT_ATTR,"true");     // NOI18N
+            s = instanceProperties.getProperty(DRIVER_DEPLOYMENT_ATTR);
+        }
+        return Boolean.valueOf(s).booleanValue();
+    }
+    
+    /**
+     * 
+     * @param dirpossible 
+     */
+    public void setDriverDeploymentEnabled(boolean driverEnabled) {
+        instanceProperties.setProperty(DRIVER_DEPLOYMENT_ATTR, Boolean.toString(driverEnabled));
+    }
+    
 }

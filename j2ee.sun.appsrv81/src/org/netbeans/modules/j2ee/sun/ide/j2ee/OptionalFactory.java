@@ -33,10 +33,12 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.MessageDestinationDeploy
 import org.netbeans.modules.j2ee.deployment.plugins.spi.OptionalDeploymentManagerFactory;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.FindJSPServlet;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.JDBCDriverDeployer;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.TargetModuleIDResolver;
 import org.netbeans.modules.j2ee.sun.ide.dm.SunDatasourceManager;
 import org.netbeans.modules.j2ee.sun.ide.dm.SunDeploymentManager;
+import org.netbeans.modules.j2ee.sun.ide.dm.SunJDBCDriverDeployer;
 import org.netbeans.modules.j2ee.sun.ide.dm.SunMessageDestinationDeployment;
 import org.netbeans.modules.j2ee.sun.ide.j2ee.jsps.FindJSPServletImpl;
 import org.netbeans.modules.j2ee.sun.ide.j2ee.incrdeploy.DirectoryDeploymentFacade;
@@ -98,6 +100,10 @@ public  class OptionalFactory extends OptionalDeploymentManagerFactory {
             throw new IllegalArgumentException("");
         SunMessageDestinationDeployment destMgr = new SunMessageDestinationDeployment(dm);
         return destMgr;
+    }
+    
+    public JDBCDriverDeployer getJDBCDriverDeployer(DeploymentManager dm) {
+        return new SunJDBCDriverDeployer(dm);
     }
     
 }

@@ -42,6 +42,7 @@ public class OptionTabVisualPanel extends javax.swing.JPanel {
         deploymentTimeoutValue.setText(dmp.getDeploymentTimeout()+"");
         enableDirectoryDeployment.setSelected(dmp.isDirectoryDeploymentPossible());
         enableDirectoryDeployment.setEnabled(((SunDeploymentManagerInterface) deployManager).isLocal());
+        enableDriverDeployment.setSelected(dmp.isDriverDeploymentEnabled());
     }
     
     /** This method is called from within the constructor to
@@ -57,6 +58,7 @@ public class OptionTabVisualPanel extends javax.swing.JPanel {
         deploymentTimeoutLabel = new javax.swing.JLabel();
         deploymentTimeoutValue = new javax.swing.JTextField();
         enableDirectoryDeployment = new javax.swing.JCheckBox();
+        enableDriverDeployment = new javax.swing.JCheckBox();
 
         startupTimeoutLabel.setLabelFor(startupTimeoutValue);
         org.openide.awt.Mnemonics.setLocalizedText(startupTimeoutLabel, org.openide.util.NbBundle.getMessage(OptionTabVisualPanel.class, "LBL_STARTUP_TIMEOUT")); // NOI18N
@@ -89,6 +91,15 @@ public class OptionTabVisualPanel extends javax.swing.JPanel {
             }
         });
 
+        org.openide.awt.Mnemonics.setLocalizedText(enableDriverDeployment, org.openide.util.NbBundle.getMessage(OptionTabVisualPanel.class, "CB_DRIVER_DEPLOY")); // NOI18N
+        enableDriverDeployment.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        enableDriverDeployment.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        enableDriverDeployment.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                enableDriverDeploymentActionPerformed(evt);
+            }
+        });
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -102,9 +113,10 @@ public class OptionTabVisualPanel extends javax.swing.JPanel {
                             .add(startupTimeoutLabel))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(deploymentTimeoutValue, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 47, Short.MAX_VALUE)
-                            .add(startupTimeoutValue, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 47, Short.MAX_VALUE)))
-                    .add(enableDirectoryDeployment))
+                            .add(deploymentTimeoutValue, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 67, Short.MAX_VALUE)
+                            .add(startupTimeoutValue, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 67, Short.MAX_VALUE)))
+                    .add(enableDirectoryDeployment)
+                    .add(enableDriverDeployment))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -120,9 +132,15 @@ public class OptionTabVisualPanel extends javax.swing.JPanel {
                     .add(deploymentTimeoutValue, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(enableDirectoryDeployment)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(enableDriverDeployment)
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
+
+private void enableDriverDeploymentActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_enableDriverDeploymentActionPerformed
+      dmp.setDriverDeploymentEnabled(enableDriverDeployment.isSelected());
+}//GEN-LAST:event_enableDriverDeploymentActionPerformed
 
     private void enableDirectoryDeploymentActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_enableDirectoryDeploymentActionPerformed
         dmp.setDirectoryDeploymentPossible(enableDirectoryDeployment.isSelected());
@@ -178,6 +196,7 @@ public class OptionTabVisualPanel extends javax.swing.JPanel {
     private javax.swing.JLabel deploymentTimeoutLabel;
     private javax.swing.JTextField deploymentTimeoutValue;
     private javax.swing.JCheckBox enableDirectoryDeployment;
+    private javax.swing.JCheckBox enableDriverDeployment;
     private javax.swing.JLabel startupTimeoutLabel;
     private javax.swing.JTextField startupTimeoutValue;
     // End of variables declaration//GEN-END:variables

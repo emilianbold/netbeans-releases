@@ -132,6 +132,7 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
     private long timeStampCheckingRunning =0;
     private File platformRoot  =null;
     private String domainDir = null;
+    private boolean driversdeployed=false;
     
     /* cache for local value. Sometimes, the islocal() call can be very long for IP that changed
      * usually when dhcp is used. So we calculate the value in a thread at construct time
@@ -298,6 +299,11 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
         if (isRunning()==false){
             return false;
         }
+        if (driversdeployed==true){
+            setRestartForDriverDeployment(false);
+            return true;
+        }
+        
         boolean retVal;
         try{
             ServerInfo si = new ServerInfo(getMBeanServerConnection());
@@ -1460,6 +1466,10 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
                 }
             }
         }
+    }
+    
+    public void setRestartForDriverDeployment(boolean restart){
+        this.driversdeployed = restart;
     }
     
     /** put a file inside this progress listener to get rid of it after
