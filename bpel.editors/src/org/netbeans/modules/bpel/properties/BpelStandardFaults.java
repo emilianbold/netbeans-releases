@@ -44,7 +44,7 @@ public enum BpelStandardFaults {
     COMPLETION_CONDITION_FAILURE("completionConditionFailure");
     
     public static final String BPEL_2_0_NS =
-            "http://schemas.xmlsoap.org/ws/2004/03/business-process/";	// NOI18N
+            "http://docs.oasis-open.org/wsbpel/2.0/process/executable";	// NOI18N
     
     private QName myQName;
     

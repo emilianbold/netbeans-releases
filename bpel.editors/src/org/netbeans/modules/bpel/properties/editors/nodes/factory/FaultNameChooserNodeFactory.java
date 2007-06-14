@@ -82,9 +82,9 @@ public class FaultNameChooserNodeFactory implements NodeFactory<NodeType> {
                 assert ref instanceof Process;
                 children = new Children.Array();
                 children.add(new Node[] {
-//                    new CategoryFolderNode(NodeType.SYSTEM_FAULTS_FOLDER,
-//                            new FaultNameStandardChildren(this, lookup),
-//                            lookup),
+                    new CategoryFolderNode(NodeType.SYSTEM_FAULTS_FOLDER,
+                            new FaultNameStandardChildren(this, lookup),
+                            lookup),
                     new CategoryFolderNode(NodeType.WSDL_FILES_FOLDER,
                             new WsdlImportsChildren((Process)ref, lookup),
                             lookup)
