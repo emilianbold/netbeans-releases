@@ -506,6 +506,22 @@ Link to <A HREF="overview-summary.html">Non-frame version.</A>
         </checklinks>
   </target>
 
+  <target name="check-javahelpbin" depends="init" description="Validate intermodule links in helpsets.">
+      <taskdef name="checkhelpsetsbin" classname="org.netbeans.nbbuild.CheckHelpSetsBin">
+        <classpath>
+          <pathelement location="${nb_all}/nbbuild/nbantext.jar"/>
+            <fileset dir="${nb_all}/core/external">
+              <include name="jh*.jar"/>
+            </fileset>
+        </classpath>
+      </taskdef>
+      <checkhelpsetsbin>
+        <fileset dir="netbeans">
+          <include name="*/**/modules/*.jar"/>
+        </fileset>
+      </checkhelpsetsbin>
+  </target>
+
   <target name="build-messaging" depends="init">
     <echo message="Starting a build for NetBeans (build ${buildnum}, config '${moduleconfig}') ..."/>
     <echo message="Selected modules: ${modules}"/>

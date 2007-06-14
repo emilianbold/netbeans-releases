@@ -113,7 +113,7 @@ public class CheckLinks extends MatchingTask {
             URI fileurl = file.toURI();
             log ("Scanning " + file, Project.MSG_VERBOSE);
             try {
-                scan(this, getLocation().toString(), "", fileurl, okurls, badurls, cleanurls, checkexternal, checkspaces, checkforbidden, 1, mappers, filters);
+                scan(this, null, null, getLocation().toString(), "", fileurl, okurls, badurls, cleanurls, checkexternal, checkspaces, checkforbidden, 1, mappers, filters);
             } catch (IOException ioe) {
                 throw new BuildException("Could not scan " + file + ": " + ioe, ioe, getLocation());
             }
@@ -143,25 +143,90 @@ public class CheckLinks extends MatchingTask {
      *                2 - recurse
      * @param mappers a list of Mappers to apply to get source files from HTML files
      */
-    public static void scan(Task task, String referrer, String referrerLocation, URI u, Set<URI> okurls, Set<URI> badurls, Set<URI> cleanurls, boolean checkexternal, boolean checkspaces, boolean checkforbidden, int recurse, List<Mapper> mappers) throws IOException {
-        scan (task, referrer, referrerLocation, u, okurls, badurls, cleanurls, checkexternal, checkspaces, checkforbidden, recurse, mappers, Collections.<Filter>emptyList());
+    public static void scan
+    (Task task, ClassLoader globalClassLoader, java.util.Map classLoaderMap,
+     String referrer, String referrerLocation, 
+     URI u, Set<URI> okurls, Set<URI> badurls, Set<URI> cleanurls, 
+     boolean checkexternal, boolean checkspaces, boolean checkforbidden, int recurse, 
+     List<Mapper> mappers) throws IOException {
+        scan (task, globalClassLoader, classLoaderMap,
+        referrer, referrerLocation, u, okurls, badurls, cleanurls, checkexternal, checkspaces, checkforbidden, recurse, mappers, Collections.<Filter>emptyList());
     }
     
-    private static void scan(Task task, String referrer, String referrerLocation, URI u, Set<URI> okurls, Set<URI> badurls, Set<URI> cleanurls, boolean checkexternal, boolean checkspaces, boolean checkforbidden, int recurse, List<Mapper> mappers, List<Filter> filters) throws IOException {
+    private static void scan
+    (Task task, ClassLoader globalClassLoader, java.util.Map classLoaderMap,
+     String referrer, String referrerLocation, 
+     URI u, Set<URI> okurls, Set<URI> badurls, Set<URI> cleanurls,
+     boolean checkexternal, boolean checkspaces, boolean checkforbidden, int recurse,
+     List<Mapper> mappers, List<Filter> filters) throws IOException {
         //task.log("scan: u=" + u + " referrer=" + referrer + " okurls=" + okurls + " badurls=" + badurls + " cleanurls=" + cleanurls + " recurse=" + recurse, Project.MSG_DEBUG);
+        //System.out.println("");
+        //System.out.println("CheckLinks.scan ref: " + referrer);
+        //System.out.println("CheckLinks.scan   u: " + u + " scheme:" + u.getScheme());
         if (okurls.contains(u) && recurse == 0) {
             // Yes it is OK.
             return;
+        }
+        //Check if referrer is jar file and if u is relative if yes make path absolute
+        if (referrer.startsWith("jar:file:") && (u.getScheme() == null) && !u.toString().startsWith("#")) {
+            if (u.toString().length() == 0) {
+                System.out.println("Invalid URL: Empty URL referred from: " + referrer);
+                return;
+            }
+            if (!u.isAbsolute()) {
+                //This is to make inner jar path after ! absolute.
+                //It uses java.io.File to remove ../ sequences but as file path
+                //on Windows is different from inner jar path it requires some
+                //'fix' on Windows.
+                int pos = referrer.indexOf("!");
+                if (pos != -1) {
+                    String base = referrer.substring(0,pos+1);
+                    String path1 = referrer.substring(pos+1,referrer.length());
+                    //System.out.println("base:" + base);
+                    //System.out.println("path1:" + path1);
+                    File f1 = new File(path1);
+                    File p = f1.getParentFile();
+                    File f2 = new File(p,u.getPath());
+                    //System.out.println("f1:" + f1);
+                    //System.out.println("f2:" + f2);
+                    String path2 = null;
+                    try {
+                        path2 = f2.getCanonicalPath();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    //Ugly hack to get jar inner path from Win FS path
+                    //System.out.println("path2:" + path2);
+                    if (System.getProperty("os.name").startsWith("Windows")) {
+                        path2 = path2.substring(2).replace('\\','/');
+                    }
+                    try {
+                        u = new URI(base+path2);
+                    } catch (URISyntaxException ex) {
+                        ex.printStackTrace();
+                    }
+                    //System.out.println("u:" + u);
+                }
+            }
+        }
+        URI base;
+        if (u.toString().startsWith("#")) {
+            try {
+                u = new URI(referrer + u.toString());
+            } catch (URISyntaxException ex) {
+                ex.printStackTrace();
+            }
         }
         String b = u.toString();
         int i = b.lastIndexOf('#');
         if (i != -1) {
             b = b.substring(0, i);
         }
-        URI base;
         try {
-            base = new URI(u.getScheme(), u.getUserInfo(), u.getHost(), u.getPort(), u.getPath(), u.getQuery(), /*fragment*/null);
+            base = new URI(b);
+            //base = new URI(u.getScheme(), u.getUserInfo(), u.getHost(), u.getPort(), u.toURL().getPath(), u.getQuery(), /*fragment*/null);
         } catch (URISyntaxException e) {
+            e.printStackTrace();
             throw new Error(e);
         }
         String frag = u.getFragment();
@@ -187,14 +252,16 @@ public class CheckLinks extends MatchingTask {
                 }
                 if (Boolean.FALSE.equals (decision)) {
                     task.log(normalize(referrer, mappers) + referrerLocation + ": forbidden link: " + base, Project.MSG_WARN);
+                    //System.out.println("badurls ADD1 base:" + base);
                     badurls.add(base);
+                    //System.out.println("badurls ADD1    u:" + u);
                     badurls.add(u);
                     return;
                 }
             }
         }
         
-        if (! checkexternal && ! "file".equals(u.getScheme())) {
+        if (!checkexternal && !"file".equals(u.getScheme()) && !"jar".equals(u.getScheme()) && !"nbdocs".equals(u.getScheme())) {
             task.log("Skipping external link: " + base, Project.MSG_VERBOSE);
             cleanurls.add(base);
             okurls.add(base);
@@ -202,13 +269,128 @@ public class CheckLinks extends MatchingTask {
             return;
         }
         
+         //Translate nbdocs protocol to jar protocol
+        if ("nbdocs".equals(u.getScheme())) {
+            //If called from CheckHelpSets following params are not set =>
+            //we cannot check nbdocs URLs.
+            if ((classLoaderMap == null) || (globalClassLoader == null)) {
+                return;
+            }
+            //System.out.println("");
+            //System.out.println("u:" + u);
+            //System.out.println("u.getScheme:" + u.getScheme());
+            //System.out.println("u.getHost:" + u.getHost());
+            //System.out.println("u.getPath:" + u.getPath());
+            //If no module base name is specified as host name check if given
+            //resource is available in current module or globaly.
+            if (u.getHost() == null) {
+                task.log("WARNING: Missing host in nbdocs protocol URL. URI: " + u, Project.MSG_WARN);
+                String name = u.getPath();
+                //Strip leading "/" as findResource does not work when leading slash is present
+                if (name.startsWith("/")) {
+                    name = name.substring(1,name.length());
+                    //System.out.println("name:" + name);
+                }
+                URL res;
+                res = globalClassLoader.getResource(name);
+                //System.out.println("res:" + res);
+                if (res != null) {
+                    try {
+                        base = res.toURI();
+                        u = base;
+                        basepath = base.toString();
+                        //System.out.println("base:" + base);
+                    } catch (URISyntaxException ex) {
+                        ex.printStackTrace();
+                    }
+                    //Try to find out module for link
+                    Set keySet = classLoaderMap.keySet();
+                    for (Iterator it1 = keySet.iterator(); it1.hasNext(); ) {
+                        Object key = it1.next();
+                        URLClassLoader cl = (URLClassLoader) classLoaderMap.get(key);
+                        if (cl != null) {
+                            URL moduleRes = cl.findResource(name);
+                            if (moduleRes != null) {
+                                task.log("INFO: Link found in module:" + key + ". URI: " + u, Project.MSG_WARN);
+                                break;
+                            }
+                        }
+                    }
+                } else {
+                    task.log("WARNING: Link not found globaly. URI: " + u, Project.MSG_WARN);
+                    return;
+                } 
+                //System.out.println("res:" + res);
+            } else {
+                String name = u.getPath();
+                //Strip leading "/" as findResource does not work when leading slash is present
+                if (name.startsWith("/")) {
+                    name = name.substring(1,name.length());
+                    //System.out.println("name:" + name);
+                }
+                URL res = null;
+                URLClassLoader moduleClassLoader = (URLClassLoader) classLoaderMap.get(u.getHost());
+                //Log warning
+                if (moduleClassLoader == null) {
+                    task.log("WARNING: Module " + u.getHost() + " not found among modules containing helpsets. URI: " + u, Project.MSG_WARN);
+                }
+                if (moduleClassLoader != null) {
+                    res = moduleClassLoader.findResource(name);
+                    //System.out.println("res1:" + res);
+                    if (res != null) {
+                        try {
+                            base = res.toURI();
+                            u = base;
+                            basepath = base.toString();
+                            //System.out.println("base:" + base);
+                        } catch (URISyntaxException ex) {
+                            ex.printStackTrace();
+                        }
+                    }
+                }
+                if (res == null) {
+                    if (moduleClassLoader != null) {
+                        task.log("WARNING: Link not found in module " + u.getHost() + " URI: " + u, Project.MSG_WARN);
+                    }
+                    res = globalClassLoader.getResource(name);
+                    //System.out.println("res2:" + res);
+                    if (res != null) {
+                        try {
+                            base = res.toURI();
+                            u = base;
+                            basepath = base.toString();
+                            //System.out.println("base:" + base);
+                        } catch (URISyntaxException ex) {
+                            ex.printStackTrace();
+                        }
+                        //Try to find out module for link
+                        Set keySet = classLoaderMap.keySet();
+                        for (Iterator it1 = keySet.iterator(); it1.hasNext(); ) {
+                            Object key = it1.next();
+                            URLClassLoader cl = (URLClassLoader) classLoaderMap.get(key);
+                            if (cl != null) {
+                                URL moduleRes = cl.findResource(name);
+                                if (moduleRes != null) {
+                                    task.log("INFO: Link found in module:" + key + ". URI: " + u, Project.MSG_WARN);
+                                    break;
+                                }
+                            }
+                        }
+                    } else {
+                        task.log("WARNING: Link not found globaly. URI: " + u, Project.MSG_WARN);
+                        return;
+                    } 
+                }
+            }
+        }
         task.log("Checking " + u + " (recursion level " + recurse + ")", Project.MSG_VERBOSE);
         String content;
         String mimeType;
         try {
             // XXX for protocol 'file', could more efficiently use a memmapped char buffer
-            URLConnection conn = base.toURL().openConnection ();
-            conn.connect ();
+            URLConnection conn = base.toURL().openConnection();
+            //System.out.println("CALL OF connect");
+            conn.connect();
             mimeType = conn.getContentType ();
             InputStream is = conn.getInputStream ();
             String enc = conn.getContentEncoding();
@@ -227,10 +409,16 @@ public class CheckLinks extends MatchingTask {
                 is.close();
             }
         } catch (IOException ioe) {
-            task.log(normalize(referrer, mappers) + referrerLocation + ": broken link: " + base, Project.MSG_WARN);
-            task.log("Error: " + ioe, Project.MSG_VERBOSE);
+            task.log("WARNING: Broken link referred from: " + normalize(referrer, mappers) + referrerLocation 
+            + " Broken link: " + base, Project.MSG_WARN);
+            task.log("ERROR: " + ioe, Project.MSG_VERBOSE);
             badurls.add(base);
             badurls.add(u);
+            //Log exception stack trace only in verbose mode
+            StringWriter sw = new StringWriter(500);
+            PrintWriter pw = new PrintWriter(sw);
+            ioe.printStackTrace(pw);
+            task.log(sw.toString(),Project.MSG_VERBOSE);
             return;
         }
         okurls.add(base);
@@ -239,75 +427,80 @@ public class CheckLinks extends MatchingTask {
         if (recurse > 0 && cleanurls.add(base)) {
             others = new HashMap<URI,String>(100);
         }
-            if (recurse == 0 && frag == null) {
-                // That is all we wanted to check.
-                return;
-            }
-            if ("text/html".equals(mimeType)) {
-                task.log("Parsing " + base, Project.MSG_VERBOSE);
-                Matcher m = hrefOrAnchor.matcher(content);
-                Set<String> names = new HashSet<String>(100);
-                while (m.find()) {
-                    // Get the stuff involved:
-                    String type = m.group(3);
-                    if (type.equalsIgnoreCase("name")) {
-                        // We have an anchor, therefore refs to it are valid.
-                        String name = unescape(m.group(4));
-                        if (names.add(name)) {
-                            try {
-                                okurls.add(new URI(base.getScheme(), base.getUserInfo(), base.getHost(), base.getPort(), base.getPath(), base.getQuery(), /*fragment*/name));
-                            } catch (URISyntaxException e) {
-                                task.log(normalize(basepath, mappers) + findLocation(content, m.start(4)) + ": bad anchor name: " + e.getMessage(), Project.MSG_WARN);
-                            }
-                        } else if (recurse == 1) {
-                            task.log(normalize(basepath, mappers) + findLocation(content, m.start(4)) + ": duplicate anchor name: " + name, Project.MSG_WARN);
+        if (recurse == 0 && frag == null) {
+            // That is all we wanted to check.
+            return;
+        }
+        if ("text/html".equals(mimeType)) {
+            task.log("Parsing " + base, Project.MSG_VERBOSE);
+            Matcher m = hrefOrAnchor.matcher(content);
+            Set<String> names = new HashSet<String>(100); // Set<String>
+            while (m.find()) {
+                // Get the stuff involved:
+                String type = m.group(3);
+                if (type.equalsIgnoreCase("name")) {
+                    // We have an anchor, therefore refs to it are valid.
+                    String name = unescape(m.group(4));
+                    if (names.add(name)) {
+                        try {
+                            //URI does not handle jar:file: protocol
+                            //okurls.add(new URI(base.getScheme(), base.getUserInfo(), base.getHost(), base.getPort(), base.getPath(), base.getQuery(), /*fragment*/name));
+                            okurls.add(new URI(base + "#" + name));
+                        } catch (URISyntaxException e) {
+                            System.out.println("name:" + name);
+                            e.printStackTrace();
+                            task.log(normalize(basepath, mappers) + findLocation(content, m.start(4)) + ": bad anchor name: " + e.getMessage(), Project.MSG_WARN);
                         }
-                    } else {
-                        // A link to some other document: href=, src=.
-                        
-                        // check whether this URL is not commented out
-                        int previousCommentStart = content.lastIndexOf ("<!--", m.start (0));
-                        int previousCommentEnd = content.lastIndexOf ("-->", m.start (0));
-                        boolean commentedOut = false;
-                        if (previousCommentEnd < previousCommentStart) {
-                            // comment start is there and end is before it
-                            commentedOut = true;
-                        }
-                        
-                        if (others != null && !commentedOut) {
-                            String otherbase = unescape(m.group(4));
-                            String otheranchor = unescape(m.group(5));
-                            String uri = (otheranchor == null) ? otherbase : otherbase + otheranchor;
-                            String location = findLocation(content, m.start(4));
-                            String fixedUri;
-                            if (uri.indexOf(' ') != -1) {
-                                fixedUri = uri.replaceAll(" ", "%20");
-                                if (checkspaces) {
-                                    task.log(normalize(basepath, mappers) + location + ": spaces in URIs should be encoded as \"%20\": " + uri, Project.MSG_WARN);
-                                }
-                            } else {
-                                fixedUri = uri;
-                            }
-                            try {
-                                URI relUri = new URI(fixedUri);
-                                if (!relUri.isOpaque()) {
-                                    URI o = base.resolve(relUri).normalize();
-                                    //task.log("href: " + o);
-                                    if (!others.containsKey(o)) {
-                                        // Only keep location info for first reference.
-                                        others.put(o, location);
-                                    }
-                                } // else mailto: or similar
-                            } catch (URISyntaxException e) {
-                                // Message should contain the URI.
-                                task.log(normalize(basepath, mappers) + location + ": bad relative URI: " + e.getMessage(), Project.MSG_WARN);
-                            }
-                        } // else we are only checking that this one has right anchors
+                    } else if (recurse == 1) {
+                        task.log(normalize(basepath, mappers) + findLocation(content, m.start(4)) + ": duplicate anchor name: " + name, Project.MSG_WARN);
                     }
+                } else {
+                    // A link to some other document: href=, src=.
+
+                    // check whether this URL is not commented out
+                    int previousCommentStart = content.lastIndexOf ("<!--", m.start (0));
+                    int previousCommentEnd = content.lastIndexOf ("-->", m.start (0));
+                    boolean commentedOut = false;
+                    if (previousCommentEnd < previousCommentStart) {
+                        // comment start is there and end is before it
+                        commentedOut = true;
+                    }
+
+                    if (others != null && !commentedOut) {
+                        String otherbase = unescape(m.group(4));
+                        String otheranchor = unescape(m.group(5));
+                        String uri = (otheranchor == null) ? otherbase : otherbase + otheranchor;
+                        String location = findLocation(content, m.start(4));
+                        String fixedUri;
+                        if (uri.indexOf(' ') != -1) {
+                            fixedUri = uri.replaceAll(" ", "%20");
+                            if (checkspaces) {
+                                task.log(normalize(basepath, mappers) + location + ": spaces in URIs should be encoded as \"%20\": " + uri, Project.MSG_WARN);
+                            }
+                        } else {
+                            fixedUri = uri;
+                        }
+                        try {
+                            URI relUri = new URI(fixedUri);
+                            if (!relUri.isOpaque()) {
+                                URI o = base.resolve(relUri).normalize();
+                                //task.log("href: " + o);
+                                if (!others.containsKey(o)) {
+                                    // Only keep location info for first reference.
+                                    others.put(o, location);
+                                }
+                            } // else mailto: or similar
+                        } catch (URISyntaxException e) {
+                            // Message should contain the URI.
+                            task.log(normalize(basepath, mappers) + location + ": bad relative URI: " + e.getMessage(), Project.MSG_WARN);
+                            e.printStackTrace();
+                        }
+                    } // else we are only checking that this one has right anchors
                 }
-            } else {
-                task.log("Not checking contents of " + base, Project.MSG_VERBOSE);
             }
+        } else {
+            task.log("Not checking contents of " + base, Project.MSG_VERBOSE);
+        }
         if (! okurls.contains(u)) {
             task.log(normalize(referrer, mappers) + referrerLocation + ": broken link: " + u, Project.MSG_WARN);
             badurls.add(u); // #97784
@@ -318,7 +511,9 @@ public class CheckLinks extends MatchingTask {
                 Map.Entry entry = (Map.Entry)it.next();
                 URI other = (URI)entry.getKey();
                 String location = (String)entry.getValue();
-                scan(task, basepath, location, other, okurls, badurls, cleanurls, checkexternal, checkspaces, checkforbidden, recurse == 1 ? 0 : 2, mappers, filters);
+                //System.out.println("CALL OF scan basepath:" + basepath + " location:" + location + " other:" + other);
+                scan(task, globalClassLoader, classLoaderMap,
+                basepath, location, other, okurls, badurls, cleanurls, checkexternal, checkspaces, checkforbidden, recurse == 1 ? 0 : 2, mappers, filters);
             }
         }
     }
