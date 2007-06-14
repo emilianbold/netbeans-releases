@@ -40,6 +40,7 @@ import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.refactoring.rename.WebXmlMove;
 import org.netbeans.modules.web.refactoring.rename.WebXmlPackageRename;
 import org.netbeans.modules.web.refactoring.rename.WebXmlRename;
+import org.netbeans.modules.web.refactoring.safedelete.TldSafeDelete;
 import org.netbeans.modules.web.refactoring.safedelete.WebXmlSafeDelete;
 import org.netbeans.modules.web.refactoring.whereused.TldWhereUsed;
 import org.netbeans.modules.web.refactoring.whereused.WebXmlWhereUsed;
@@ -86,6 +87,7 @@ public class WebRefactoringFactory implements RefactoringPluginFactory{
         } if (refactoring instanceof SafeDeleteRefactoring){
             SafeDeleteRefactoring safeDelete = (SafeDeleteRefactoring) refactoring;
             refactorings.add(new WebXmlSafeDelete(ddFile, webApp, clazz, safeDelete));
+            refactorings.add(new TldSafeDelete(clazz, safeDelete, sourceFO));
         } if (refactoring instanceof WhereUsedQuery){
             WhereUsedQuery whereUsedQuery = (WhereUsedQuery) refactoring;
             refactorings.add(new WebXmlWhereUsed(ddFile, webApp, clazz, whereUsedQuery));
