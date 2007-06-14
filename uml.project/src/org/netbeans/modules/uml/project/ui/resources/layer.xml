@@ -114,74 +114,20 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
         </folder>
     </folder>
     
-    <!--
     <folder name="Actions">
-        <folder name="UMLProject">
-            <folder name="Keyboard">
-                <folder name="AddToDiagram">
-                    <file name="org-netbeans-modules-uml-project-ui-nodes-actions-AddToDiagramAction.instance" />
-                </folder>
-            </folder>
-        </folder>
-        <folder name="Window">
-            <folder name="UMLDiagram">
-                <file name="com-sun-uml-netbeans-umlproject-actions-DocumentationAction.instance"/>
-                <file name="com-sun-uml-netbeans-umlproject-actions-PropertiesAction.instance"/>
-                <file name="com-sun-uml-netbeans-umlproject-actions-UMLPaletteAction.instance"/>
-            </folder>
-        </folder>
+       <folder name="UML">
+          <file name="UMLNewAction.instance">
+             <attr name="instanceClass" stringvalue="org-netbeans-modules-uml-project-ui-nodes-actions-UMLNewAction.instance"/>
+          </file>
+       </folder>
     </folder>
-    -->
     
+    <folder name="contextmenu">
+	<folder name="uml">
+	    <folder name="newtypes">
+		<file name="org-netbeans-modules-uml-project-ui-nodes-actions-UMLNewAction.instance"/>
+	    </folder>
+	</folder>
+    </folder>
     
-    <!--    
-    <folder name="Menu">
-        <folder name="Window">
-            <attr name="oldRootsEnd.txt/Form" boolvalue="true" />
-            <folder name="UMLDiagram">
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/openide/resources/actions/empty.gif" />
-                <file name="DocumentationAction.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Window/UMLDiagram/com-sun-uml-netbeans-umlproject-actions-DocumentationAction.instance"/>
-                </file>
-                <attr name="DocumentationAction.shadow/PropertiesAction.shadow" boolvalue="true" />
-                <file name="PropertiesAction.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Window/UMLDiagram/com-sun-uml-netbeans-umlproject-actions-PropertiesAction.instance"/>
-                </file>
-                <attr name="DocumentationAction.shadow/UMLPaletteAction.shadow" boolvalue="true" />
-                <file name="UMLPaletteAction.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Window/UMLDiagram/com-sun-uml-netbeans-umlproject-actions-UMLPaletteAction.instance"/>
-                </file>
-            </folder>
-            <attr name="Form/Debugger" boolvalue="true" />
-        </folder>
-    </folder>
-    --> 
-
-    <!--
-    <folder name="Windows2">
-        <folder name="Modes">
-            <file name="UMLDocumentation.wsmode" url="windowmanager/UMLDocumentation.wsmode"/>
-            <file name="UMLPalette.wsmode" url="windowmanager/UMLPalette.wsmode"/>
-            <folder name="UMLDocumentation">
-                <file name="UMLDocumentation.wstcref" url="windowmanager/UMLDocumentation/UMLDocumentation.wstcref"/> 
-            </folder>       
-            <folder name="UMLPalette">
-                <file name="UMLPalette.wstcref" url="windowmanager/UMLPalette/UMLPalette.wstcref"/> 
-            </folder>       
-        </folder>
-        
-        <folder name="Components">          
-            <file name="UMLDocumentation.settings" url="components/UMLDocumentation.settings"/>           
-            <file name="UMLPalette.settings" url="components/UMLPalette.settings"/>           
-        </folder>
-        
-        <folder name="Groups">
-            <file name="uml-diagram.wsgrp" url="groups/uml-diagram.wsgrp"/> 
-            <folder name="uml-diagram">
-                <file name="UMLDocumentation.wstcgrp" url="groups/uml-diagram/UMLDocumentation.wstcgrp"/>
-                <file name="UMLPalette.wstcgrp" url="groups/uml-diagram/UMLPalette.wstcgrp"/>
-            </folder>
-        </folder>
-    </folder>
-    -->
 </filesystem>

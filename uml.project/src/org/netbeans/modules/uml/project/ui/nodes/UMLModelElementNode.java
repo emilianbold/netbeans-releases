@@ -180,8 +180,7 @@ public class UMLModelElementNode extends UMLElementNode
                 elType.equals(ELEMENT_TYPE_STATE_MACHINE) ||
                 elType.equals(ELEMENT_TYPE_PACKAGE) ||
                 elType.equals(ELEMENT_TYPE_OPERATION) ||
-                elType.equals(ELEMENT_TYPE_PACKAGE) ||
-//					elType.equals(ELEMENT_TYPE_PART_FACADE) ||
+//		elType.equals(ELEMENT_TYPE_PART_FACADE) ||
                 elType.equals(ELEMENT_TYPE_ARTIFACT) ||
                 elType.equals(ELEMENT_TYPE_NODE) ||
                 elType.equals(ELEMENT_TYPE_ENUMERATION) ||

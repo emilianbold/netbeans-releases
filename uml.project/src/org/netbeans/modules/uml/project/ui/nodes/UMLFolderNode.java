@@ -187,14 +187,14 @@ public class UMLFolderNode extends UMLElementNode implements ITreeFolder
 			}
 			
 			else if (elType.equals(ELEMENT_TYPE_OPERATION))
-			{
-				return new NewType[]
-				{
-					new NewDiagramType(this),
-							new NewPackageType(this),
-							new NewElementType(this)
-				};
-			}
+                        {
+                           return new NewType[]
+                           {
+                              new NewDiagramType(this),
+                              new NewPackageType(this),
+                              new NewElementType(this)
+                           };
+                        }
 		} // if getModelElement() instanceof INamespace
 
 		if (retVal == null)
@@ -207,18 +207,20 @@ public class UMLFolderNode extends UMLElementNode implements ITreeFolder
    
    
 	public Action[] getActions(boolean context)
-	{
-		if (getElementType().equals(ELEMENT_TYPE_OPERATION) ||
-			getElementType().equals(ELEMENT_TYPE_ATTRIBUTE))
-		{
-			return new Action[]
-			{
-				SystemAction.get(NewAction.class)
-			};
-		}
-		
-		else return new Action[]{null};
-    }
+        {
+           String elemType = getElementType();
+           if (elemType.equals(ELEMENT_TYPE_OPERATION) ||
+                 elemType.equals(ELEMENT_TYPE_ATTRIBUTE))
+           {
+              return super.getNewMenuAction();
+              //			return new Action[]
+              //			{
+              //				SystemAction.get(NewAction.class)
+              //			};
+           }
+           
+           else return new Action[]{null};
+        }
 	
     public boolean canDestroy()
     {

@@ -40,7 +40,6 @@ import org.openide.nodes.Node;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.NbBundle;
 import org.openide.util.datatransfer.NewType;
-import org.openide.actions.NewAction;
 
 import org.netbeans.modules.uml.project.UMLProjectHelper;
 import org.netbeans.modules.uml.project.ui.NetBeansUMLProjectTreeModel;
@@ -240,8 +239,8 @@ public class UMLModelRootNode extends UMLModelElementNode
         // actions.add(CommonProjectActions.openSubprojectsAction());
         // actions.add(CommonProjectActions.closeProjectAction());
         
-        actions.add(SystemAction.get(NewAction.class));
-        actions.add(null);
+        //actions.add(SystemAction.get(NewAction.class));
+        super.getNewMenuAction(actions);
         actions.add(SystemAction.get(FilterAction.class));
         addContextMenu(actions);
         
@@ -419,9 +418,10 @@ public class UMLModelRootNode extends UMLModelElementNode
     protected void addContextMenu(List actions)
     {
         Action[] nodeActions = null;
-        UMLElementNode node = new UMLElementNode();
-        nodeActions =
-                node.getActionsFromRegistry("contextmenu/uml/designpatternformodel");
+//        UMLElementNode node = new UMLElementNode();
+        nodeActions = getActionsFromRegistry(
+              "contextmenu/uml/designpatternformodel");
+//                node.getActionsFromRegistry("contextmenu/uml/designpatternformodel");
         
         for(Action curAction : nodeActions)
         {
@@ -434,7 +434,7 @@ public class UMLModelRootNode extends UMLModelElementNode
         actions.add(null);
         
         nodeActions =
-                node.getActionsFromRegistry("Actions/UML/Search");
+                getActionsFromRegistry("Actions/UML/Search");
         for(Action curAction : nodeActions)
         {
             if (curAction == null)
@@ -447,7 +447,7 @@ public class UMLModelRootNode extends UMLModelElementNode
         actions.add(null);
         
         nodeActions =
-                node.getActionsFromRegistry("contextmenu/uml/report");
+                getActionsFromRegistry("contextmenu/uml/report");
         for(Action curAction : nodeActions)
         {
             if (curAction == null)

@@ -315,14 +315,14 @@ public abstract class AbstractModelElementNode extends AbstractNode
         // cvc - CR 6287660 & 6276911
         //commented out - moved to getNewAction() to improve performance
                 /*if (!(getParentNode() instanceof UMLDiagramsRootNode) &&
-                        !getElementType().equals(ELEMENT_TYPE_ABSTRACTION) &&
-                        !getElementType().equals(ELEMENT_TYPE_AGGREGATION) &&
-                        !getElementType().equals(ELEMENT_TYPE_ASSOCIATION) &&
-                        !getElementType().equals(ELEMENT_TYPE_DEPENDENCY) &&
-                        !getElementType().equals(ELEMENT_TYPE_GENERALIZATION) &&
-                        !getElementType().equals(ELEMENT_TYPE_PERMISSION) &&
-                        !getElementType().equals(ELEMENT_TYPE_REALIZATION) &&
-                        !getElementType().equals(ELEMENT_TYPE_USAGE))*/
+                        !elemType.equals(ELEMENT_TYPE_ABSTRACTION) &&
+                        !elemType.equals(ELEMENT_TYPE_AGGREGATION) &&
+                        !elemType.equals(ELEMENT_TYPE_ASSOCIATION) &&
+                        !elemType.equals(ELEMENT_TYPE_DEPENDENCY) &&
+                        !elemType.equals(ELEMENT_TYPE_GENERALIZATION) &&
+                        !elemType.equals(ELEMENT_TYPE_PERMISSION) &&
+                        !elemType.equals(ELEMENT_TYPE_REALIZATION) &&
+                        !elemType.equals(ELEMENT_TYPE_USAGE))*/
         Action newAction=getNewAction();
         if(newAction!=null)
         {
@@ -367,23 +367,28 @@ public abstract class AbstractModelElementNode extends AbstractNode
         // TODO: this needs to be reviewed as to what node should have new type action
         
         if(newAction==null)
-        {
+        {   String elemType = getElementType();
             if (!(getParentNode() instanceof UMLDiagramsRootNode) &&
                     getModelElement()!=null &&
-                    !getElementType().equals(ELEMENT_TYPE_ABSTRACTION) &&
-                    !getElementType().equals(ELEMENT_TYPE_AGGREGATION) &&
-                    !getElementType().equals(ELEMENT_TYPE_ASSOCIATION) &&
-                    !getElementType().equals(ELEMENT_TYPE_DEPENDENCY) &&
-                    !getElementType().equals(ELEMENT_TYPE_GENERALIZATION) &&
-                    !getElementType().equals(ELEMENT_TYPE_PERMISSION) &&
-                    !getElementType().equals(ELEMENT_TYPE_REALIZATION) &&
-                    !getElementType().equals(ELEMENT_TYPE_USAGE) &&
-                    !getElementType().equals(ELEMENT_TYPE_ACTOR) &&
-                    !getElementType().equals(ELEMENT_TYPE_DIAGRAM) &&
-                    !getElementType().equals(ELEMENT_TYPE_PROXY_DIAGRAM) &&
-                    !getElementType().equals(""))
+                    !elemType.equals(ELEMENT_TYPE_ABSTRACTION) &&
+                    !elemType.equals(ELEMENT_TYPE_AGGREGATION) &&
+                    !elemType.equals(ELEMENT_TYPE_ASSOCIATION) &&
+                    !elemType.equals(ELEMENT_TYPE_DEPENDENCY) &&
+                    !elemType.equals(ELEMENT_TYPE_GENERALIZATION) &&
+                    !elemType.equals(ELEMENT_TYPE_PERMISSION) &&
+                    !elemType.equals(ELEMENT_TYPE_REALIZATION) &&
+                    !elemType.equals(ELEMENT_TYPE_USAGE) &&
+                    !elemType.equals(ELEMENT_TYPE_ACTOR) &&
+                    !elemType.equals(ELEMENT_TYPE_DIAGRAM) &&
+                    !elemType.equals(ELEMENT_TYPE_PROXY_DIAGRAM) &&
+                    !elemType.equals(""))
             {
-                newAction=SystemAction.get(NewAction.class);
+                //newAction=SystemAction.get(NewAction.class);
+                  Action[] newActions = this.getNewMenuAction();
+                  if (newActions != null )
+                  {
+                     newAction= newActions[0];
+                  }
             }
         }
         return newAction;
@@ -615,8 +620,34 @@ public abstract class AbstractModelElementNode extends AbstractNode
         
         return retVal;
     }
+   
+    protected Action[] getNewMenuAction()
+    {
+       return getActionsFromRegistry(
+             "contextmenu/uml/newtypes");
+    }
     
-    
+    protected void getNewMenuAction(List actions)
+    {
+       Action [] nodeActions = getActionsFromRegistry(
+             "contextmenu/uml/newtypes");
+       if (nodeActions != null )
+       {
+          for(Action curAction : nodeActions)
+          {
+             if (curAction == null)
+             {
+                // Make Sure the Seperators are kept.
+                actions.add(null);
+             }
+             else if (curAction != null && curAction.isEnabled())
+             {
+                actions.add(curAction);
+             }
+          }
+          actions.add(null);  // add a Separator
+       }
+    }
     
     /**
      * Retrieve the context actions added by other modules.

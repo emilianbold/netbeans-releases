@@ -20,7 +20,6 @@
 package org.netbeans.modules.uml.project.ui.nodes;
 
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
-import org.netbeans.modules.uml.core.metamodel.core.foundation.INamespace;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IProxyDiagram;
@@ -46,17 +45,9 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
-import org.netbeans.modules.uml.project.ui.nodes.actions.FilterAction;
 import org.netbeans.modules.uml.project.ui.nodes.actions.NewDiagramType;
-import org.netbeans.modules.uml.project.ui.nodes.actions.NewElementType;
-import org.netbeans.modules.uml.project.ui.nodes.actions.NewPackageType;
 import java.awt.datatransfer.Transferable;
-import java.util.ArrayList;
 import java.util.Enumeration;
-import org.openide.actions.NewAction;
-import org.openide.actions.PropertiesAction;
-import org.openide.actions.ToolsAction;
-import org.openide.util.actions.SystemAction;
 import org.openide.util.datatransfer.NewType;
 import org.openide.util.datatransfer.PasteType;
 
@@ -157,10 +148,11 @@ public final class UMLDiagramsRootNode extends UMLModelElementNode
 
     public Action[] getActions( boolean context )
     {
-        return new Action[]
-		{
-			SystemAction.get(NewAction.class),
-		};
+       return super.getNewMenuAction();
+//       return new Action[]
+//       {
+//          SystemAction.get(NewAction.class),
+//       };
     }
 
     
