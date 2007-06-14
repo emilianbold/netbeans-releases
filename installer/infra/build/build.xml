@@ -193,9 +193,14 @@
         <glassfish-buildnumber 
             file="${temp.file}" 
             prefix="sjsas"/>
-        
+
+<!--
         <get
             src="${openesb.builds.host}/kits/openesb/main/latestGlassfish/log/"
+            dest="${temp.file}"/>
+-->
+        <get
+            src="${openesb.builds.host}/kits/openesb/main/GlassfishDrop_b50_2/log/"
             dest="${temp.file}"/>
         <openesb-buildnumber 
             file="${temp.file}" 
