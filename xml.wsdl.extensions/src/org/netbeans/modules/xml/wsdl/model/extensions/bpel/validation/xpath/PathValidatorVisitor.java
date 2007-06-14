@@ -215,8 +215,9 @@ public class PathValidatorVisitor extends AbstractXPathVisitor {
             //
             // Obtain the namespace URI by the prefix
             // The default namespace will be used in case of empty or null prefix
-            assert parentComponent instanceof AbstractDocumentComponent;
-            String nsUri = ((AbstractDocumentComponent)parentComponent).
+            WSDLComponent contentElement = myContext.getXpathContentElement();
+            assert contentElement instanceof AbstractDocumentComponent;
+            String nsUri = ((AbstractDocumentComponent)contentElement).
                     lookupNamespaceURI(nsPrefix, true);
             //
             if (nsUri == null) {
