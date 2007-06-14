@@ -63,7 +63,7 @@ public final class CheckModuleConfigs extends Task {
         }
         File buildPropertiesFile = new File(nbroot, "nbbuild" + File.separatorChar + "build.properties");
         File clusterPropertiesFile = new File(nbroot, "nbbuild" + File.separatorChar + "cluster.properties");
-        File goldenFile = new File(nbroot, "ide" + File.separatorChar + "golden" + File.separatorChar + "moduleconfigs.txt");
+        File goldenFile = new File(nbroot, "nbbuild" + File.separatorChar + "build" + File.separatorChar + "generated" + File.separatorChar + "moduleconfigs.txt");
         File masterProjectXml = new File(nbroot, "nbbuild" + File.separatorChar + "nbproject" + File.separatorChar + "project.xml");
         @SuppressWarnings("unchecked")
         Map<String,String> properties = getProject().getProperties();
@@ -134,16 +134,16 @@ public final class CheckModuleConfigs extends Task {
         }
         */
         // Check that stable = modules in enumerated clusters:
-        Set<String> stable = configs.get("stable");
+        Set<String> stable = configs.get("all");
         s = new TreeSet<String>(stable);
         s.removeAll(allClusterModules);
         if (!s.isEmpty()) {
-            log(buildPropertiesFile + ": warning: stable config not equal to listed cluster modules: " + s);
+            log(buildPropertiesFile + ": warning: 'all' config not equal to listed cluster modules: " + s);
         }
         s = new TreeSet<String>(allClusterModules);
         s.removeAll(stable);
         if (!s.isEmpty()) {
-            log(buildPropertiesFile + ": warning: stable config not equal to listed cluster modules: " + s);
+            log(buildPropertiesFile + ": warning: 'all' config not equal to listed cluster modules: " + s);
         }
         // Check that platform = modules in platform cluster:
         Set<String> platform = configs.get("platform");
@@ -188,6 +188,7 @@ public final class CheckModuleConfigs extends Task {
 
     private void writeModuleConfigs(File goldenFile, Map<String,Set<String>> configs, File buildPropertiesFile) throws IOException {
         log("Writing moduleconfigs " + configs.keySet() + " from " + buildPropertiesFile + " to " + goldenFile);
+        goldenFile.getParentFile().mkdirs();
         Writer w = new FileWriter(goldenFile); // default encoding OK
         try {
             PrintWriter pw = new PrintWriter(w);
