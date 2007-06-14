@@ -53,6 +53,14 @@ public class SaveActionTest extends NbTestCase {
     protected boolean runInEQ() {
         return true;
     }
+
+    public void testToStringOfDelegateContainsNameOfOriginalAction() throws Exception {
+        SaveAction sa = SaveAction.get(SaveAction.class);
+        Action a = sa.createContextAwareInstance(Lookup.EMPTY);
+        if (a.toString().indexOf("SaveAction") == -1) {
+            fail("We need name of the original action:\n" + a.toString());
+        }
+    }
     
     /** @see "issue #36616" */
     public void testSaveActionTakesNameOfDataNodeIfAvailable() throws Exception {
