@@ -78,6 +78,7 @@ public abstract class NamedBeanGroupNode extends BaseSectionNode implements Bean
     public static final String STANDARD_MSGDEST_NAME = MessageDestination.MESSAGE_DESTINATION_NAME; // e.g. "MessageDestination"
     public static final String STANDARD_MSGDEST_REF_NAME = MessageDestinationRef.MESSAGE_DESTINATION_REF_NAME; // e.g. "MessageDestinationRef"
     
+    private static RequestProcessor processor = new RequestProcessor("SunDDNodeBuilder", 1);
     
     protected CommonDDBean commonDD;
     private String beanNameProperty;
@@ -154,7 +155,7 @@ public abstract class NamedBeanGroupNode extends BaseSectionNode implements Bean
     }
     
     public void checkChildren(final CommonDDBean focusBean) {
-        RequestProcessor.getDefault().post(new Runnable() {
+        processor.post(new Runnable() {
             public void run() {
                 // Compute dataset
                 final SortedSet<DDBinding> bindingDataSet = computeBindingSet();
