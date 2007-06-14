@@ -316,6 +316,7 @@ public final class DDProvider {
     private static Map<String, VersionInfo> sunEjbJarVersionMap = new HashMap<String, VersionInfo>(11);
     private static Map<String, VersionInfo> sunApplicationVersionMap = new HashMap<String, VersionInfo>(11);
     private static Map<String, VersionInfo> sunAppClientVersionMap = new HashMap<String, VersionInfo>(11);
+    private static Map<String, VersionInfo> sunResourcesVersionMap = new HashMap<String, VersionInfo>(11);
     
     static {
         sunWebAppVersionMap.put(SunWebApp.VERSION_2_3_0, new VersionInfo(
@@ -381,11 +382,17 @@ public final class DDProvider {
                 org.netbeans.modules.j2ee.sun.dd.impl.client.model_5_0_0.SunApplicationClient.class, SunApplicationClientProxy.class,
                 DTDRegistry.SUN_APPCLIENT_50_DTD_PUBLIC_ID, DTDRegistry.SUN_APPCLIENT_50_DTD_SYSTEM_ID
             ));
+    
+        sunResourcesVersionMap.put(Resources.VERSION_1_3, new VersionInfo(
+                org.netbeans.modules.j2ee.sun.dd.impl.serverresources.model.Resources.class, ResourcesProxy.class,
+                DTDRegistry.SUN_RESOURCE_13_DTD_PUBLIC_ID, DTDRegistry.SUN_RESOURCE_13_DTD_SYSTEM_ID
+            ));
         
         apiToVersionMap.put(org.netbeans.modules.j2ee.sun.dd.api.web.SunWebApp.class, sunWebAppVersionMap);
         apiToVersionMap.put(org.netbeans.modules.j2ee.sun.dd.api.ejb.SunEjbJar.class, sunEjbJarVersionMap);
         apiToVersionMap.put(org.netbeans.modules.j2ee.sun.dd.api.app.SunApplication.class, sunApplicationVersionMap);
         apiToVersionMap.put(org.netbeans.modules.j2ee.sun.dd.api.client.SunApplicationClient.class, sunAppClientVersionMap);
+        apiToVersionMap.put(org.netbeans.modules.j2ee.sun.dd.api.serverresources.Resources.class, sunResourcesVersionMap);
     }
     
     @SuppressWarnings("unchecked")
@@ -504,7 +511,8 @@ public final class DDProvider {
      * @param doc XML document representing the .sun-resource file    
      */
     public Resources getResourcesGraph() {
-        Resources resourcesRoot = org.netbeans.modules.j2ee.sun.dd.impl.serverresources.model.Resources.createGraph();
+        Resources resourcesRoot = (Resources)newGraph(Resources.class, Resources.VERSION_1_3);
+        //Resources resourcesRoot = org.netbeans.modules.j2ee.sun.dd.impl.serverresources.model.Resources.createGraph();
         ResourcesProxy proxy = new ResourcesProxy(resourcesRoot);
         return proxy;
     }
@@ -946,6 +954,10 @@ public final class DDProvider {
                 SunCmpMappings.VERSION_1_0, SunCmpMappingsProxy.class, SunCmpMappings.class,
                 org.netbeans.modules.j2ee.sun.dd.impl.cmp.model_1_0.SunCmpMappings.class,
                 "/org/netbeans/modules/j2ee/sun/dd/impl/resources/sun-cmp-mapping_1_0.dtd")); // NOI18N
+        publicIdToInfoMap.put(DTDRegistry.SUN_RESOURCE_13_DTD_PUBLIC_ID, new DocTypeInfo(
+                Resources.VERSION_1_3, ResourcesProxy.class, Resources.class,
+                org.netbeans.modules.j2ee.sun.dd.impl.serverresources.model.Resources.class,
+                "/org/netbeans/modules/j2ee/sun/dd/impl/resources/sun-resources.dtd")); // NOI18N
         
     }
 }

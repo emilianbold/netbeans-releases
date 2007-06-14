@@ -125,56 +125,49 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
 
     public MessageDestination createJMSResource(String jndiName, MessageDestination.Type type, String ejbName, File dir) {
         SunMessageDestination msgDest = null;
-        try {
-            Resources resources = DDProvider.getDefault().getResourcesGraph();
-            AdminObjectResource aoresource = resources.newAdminObjectResource();
-            aoresource.setJndiName(jndiName);
-            if (MessageDestination.Type.QUEUE.equals(type)) {
-                aoresource.setResType(WizardConstants.__QUEUE);
-            } else if (MessageDestination.Type.TOPIC.equals(type)) {
-                   aoresource.setResType(WizardConstants.__TOPIC);
-            }
-            aoresource.setResAdapter(WizardConstants.__JmsResAdapter);
-            aoresource.setEnabled("true"); // NOI18N
-            aoresource.setDescription(""); // NOI18N
-            PropertyElement prop = aoresource.newPropertyElement();
-            prop.setName("Name"); // NOI18N
-            prop.setValue(ejbName);
-            aoresource.addPropertyElement(prop);
-            resources.addAdminObjectResource(aoresource);
-            
-            createFile(dir, jndiName, __JMSResource, resources);
-            resources = DDProvider.getDefault().getResourcesGraph();
-            ConnectorResource connresource = resources.newConnectorResource();
-            ConnectorConnectionPool connpoolresource = resources.newConnectorConnectionPool();
-            
-            String connectionFactoryJndiName= "jms/" + jndiName + "Factory"; // NOI18N
-            connresource.setJndiName(connectionFactoryJndiName);
-            connresource.setDescription("");
-            connresource.setEnabled("true");
-            connresource.setPoolName(connectionFactoryJndiName);
-
-            connpoolresource.setName(connectionFactoryJndiName);
-            connpoolresource.setResourceAdapterName(WizardConstants.__JmsResAdapter);
-            
-            if(type.equals(MessageDestination.Type.QUEUE)) {
-                connpoolresource.setConnectionDefinitionName(WizardConstants.__QUEUE_CNTN_FACTORY);
-            } else {
-                if(type.equals(MessageDestination.Type.TOPIC)) {
-                    connpoolresource.setConnectionDefinitionName(WizardConstants.__TOPIC_CNTN_FACTORY);
-                } else {
-                    assert false; //control should never reach here
-                }
-            }
-            resources.addConnectorResource(connresource);
-            resources.addConnectorConnectionPool(connpoolresource);                              
-            createFile(dir, jndiName, __JMSConnectionFactory, resources);
-            msgDest = new SunMessageDestination(jndiName, type);
-        } catch(IOException ex) {
-            // XXX Report I/O Exception to the user.  We should do a nicely formatted
-            // message identifying the problem.
-            ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
+        FileObject location = FileUtil.toFileObject(dir);
+        Resources resources = ResourceUtils.getServerResourcesGraph(location);
+        AdminObjectResource aoresource = resources.newAdminObjectResource();
+        aoresource.setJndiName(jndiName);
+        if (MessageDestination.Type.QUEUE.equals(type)) {
+            aoresource.setResType(WizardConstants.__QUEUE);
+        } else if (MessageDestination.Type.TOPIC.equals(type)) {
+            aoresource.setResType(WizardConstants.__TOPIC);
         }
+        aoresource.setResAdapter(WizardConstants.__JmsResAdapter);
+        aoresource.setEnabled("true"); // NOI18N
+        aoresource.setDescription(""); // NOI18N
+        PropertyElement prop = aoresource.newPropertyElement();
+        prop.setName("Name"); // NOI18N
+        prop.setValue(ejbName);
+        aoresource.addPropertyElement(prop);
+        resources.addAdminObjectResource(aoresource);
+        
+        ConnectorResource connresource = resources.newConnectorResource();
+        ConnectorConnectionPool connpoolresource = resources.newConnectorConnectionPool();
+        
+        String connectionFactoryJndiName= "jms/" + jndiName + "Factory"; // NOI18N
+        connresource.setJndiName(connectionFactoryJndiName);
+        connresource.setDescription("");
+        connresource.setEnabled("true");
+        connresource.setPoolName(connectionFactoryJndiName);
+        
+        connpoolresource.setName(connectionFactoryJndiName);
+        connpoolresource.setResourceAdapterName(WizardConstants.__JmsResAdapter);
+        
+        if(type.equals(MessageDestination.Type.QUEUE)) {
+            connpoolresource.setConnectionDefinitionName(WizardConstants.__QUEUE_CNTN_FACTORY);
+        } else {
+            if(type.equals(MessageDestination.Type.TOPIC)) {
+                connpoolresource.setConnectionDefinitionName(WizardConstants.__TOPIC_CNTN_FACTORY);
+            } else {
+                assert false; //control should never reach here
+            }
+        }
+        resources.addConnectorResource(connresource);
+        resources.addConnectorConnectionPool(connpoolresource);
+        ResourceUtils.createFile(location, resources);
+        msgDest = new SunMessageDestination(jndiName, type);
         return msgDest;
     }
     /** Creates a new JMS resource with the specified values.
@@ -186,53 +179,45 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
      * @param dir Folder where the resource should be stored.  Should not be null.
      */
     public void createJMSResource(String jndiName, String msgDstnType, String msgDstnName, String ejbName, File dir) {
-        try {
-            Resources resources = DDProvider.getDefault().getResourcesGraph();
-            AdminObjectResource aoresource = resources.newAdminObjectResource();
-            aoresource.setJndiName(jndiName);
-            aoresource.setResType(msgDstnType);
-            aoresource.setResAdapter(WizardConstants.__JmsResAdapter);
-            aoresource.setEnabled("true"); // NOI18N
-            aoresource.setDescription(""); // NOI18N
-            PropertyElement prop = aoresource.newPropertyElement();
-            prop.setName("Name"); // NOI18N
-            prop.setValue(ejbName);
-            aoresource.addPropertyElement(prop);
-            resources.addAdminObjectResource(aoresource);
-            
-            createFile(dir, jndiName, __JMSResource, resources);
-            
-            resources = DDProvider.getDefault().getResourcesGraph();
-            ConnectorResource connresource = resources.newConnectorResource();
-            ConnectorConnectionPool connpoolresource = resources.newConnectorConnectionPool();
-            
-            String connectionFactoryJndiName= "jms/" + msgDstnName + "Factory"; // NOI18N
-            connresource.setJndiName(connectionFactoryJndiName);
-            connresource.setDescription("");
-            connresource.setEnabled("true");
-            connresource.setPoolName(connectionFactoryJndiName);
-
-            connpoolresource.setName(connectionFactoryJndiName);
-            connpoolresource.setResourceAdapterName(WizardConstants.__JmsResAdapter);
-    
-            if(msgDstnType.equals(WizardConstants.__QUEUE)) {
-                connpoolresource.setConnectionDefinitionName(WizardConstants.__QUEUE_CNTN_FACTORY);
+        FileObject location = FileUtil.toFileObject(dir);
+        Resources resources = ResourceUtils.getServerResourcesGraph(location);
+        AdminObjectResource aoresource = resources.newAdminObjectResource();
+        aoresource.setJndiName(jndiName);
+        aoresource.setResType(msgDstnType);
+        aoresource.setResAdapter(WizardConstants.__JmsResAdapter);
+        aoresource.setEnabled("true"); // NOI18N
+        aoresource.setDescription(""); // NOI18N
+        PropertyElement prop = aoresource.newPropertyElement();
+        prop.setName("Name"); // NOI18N
+        prop.setValue(ejbName);
+        aoresource.addPropertyElement(prop);
+        resources.addAdminObjectResource(aoresource);
+        
+        ConnectorResource connresource = resources.newConnectorResource();
+        ConnectorConnectionPool connpoolresource = resources.newConnectorConnectionPool();
+        
+        String connectionFactoryJndiName= "jms/" + msgDstnName + "Factory"; // NOI18N
+        connresource.setJndiName(connectionFactoryJndiName);
+        connresource.setDescription("");
+        connresource.setEnabled("true");
+        connresource.setPoolName(connectionFactoryJndiName);
+        
+        connpoolresource.setName(connectionFactoryJndiName);
+        connpoolresource.setResourceAdapterName(WizardConstants.__JmsResAdapter);
+        
+        if(msgDstnType.equals(WizardConstants.__QUEUE)) {
+            connpoolresource.setConnectionDefinitionName(WizardConstants.__QUEUE_CNTN_FACTORY);
+        } else {
+            if(msgDstnType.equals(WizardConstants.__TOPIC)) {
+                connpoolresource.setConnectionDefinitionName(WizardConstants.__TOPIC_CNTN_FACTORY);
             } else {
-                if(msgDstnType.equals(WizardConstants.__TOPIC)) {
-                    connpoolresource.setConnectionDefinitionName(WizardConstants.__TOPIC_CNTN_FACTORY);
-                } else {
-                    assert false; //control should never reach here
-                }
+                assert false; //control should never reach here
             }
-            resources.addConnectorResource(connresource);
-            resources.addConnectorConnectionPool(connpoolresource);                              
-            
-            createFile(dir, jndiName, __JMSConnectionFactory, resources);
-        } catch(IOException ex) {
-            // XXX Report I/O Exception to the user.  We should do a nicely formatted
-            // message identifying the problem.
-            ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
         }
+        resources.addConnectorResource(connresource);
+        resources.addConnectorConnectionPool(connpoolresource);
+        
+        ResourceUtils.createFile(location, resources);
     }
     
     public void createJDBCDataSourceFromRef(String refName, String databaseInfo, File dir) {
@@ -314,30 +299,6 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
         return jndiName;
          */
         return null;
-    }
-    
-    // Utility methods needed in case of sun resource creations
-    private void createFile(File targetFolder, String beanName, String resourceType, Resources res) throws IOException {
-        //jdbc and jdo jndi names might be of format jdbc/ and jdo/
-        if(resourceType.indexOf("/") != -1) { // NOI18N
-            resourceType = resourceType.substring(0, resourceType.indexOf("/")) + "_" + // NOI18N
-                    resourceType.substring(resourceType.indexOf("/")+1, resourceType.length()); // NOI18N
-        }
-        if(resourceType.indexOf("\\") != -1) { // NOI18N
-            resourceType = resourceType.substring(0, resourceType.indexOf("\\")) + "_" +  // NOI18N
-                    resourceType.substring(resourceType.indexOf("\\")+1, resourceType.length()); // NOI18N
-        }
-
-        ensureFolderExists(targetFolder);
-        String filename = getFileName(beanName, resourceType);
-        File resourceFile = new File(targetFolder, filename);
-
-        // XXX This will default to UTF-8 encoding (deep inside schema2beans).
-        // Is this acceptable or should this be upgraded to allow the encoding to
-        // be specified?
-        if(!resourceFile.exists()) {
-            res.write(new BufferedOutputStream(new FileOutputStream(resourceFile)));
-        }
     }
     
     private boolean isLegalFilename(String filename) {
@@ -1067,7 +1028,8 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
     }    
     
     private void createCPPoolResource(String name, String databaseUrl, String username, String password, String driver, File resourceDir) throws IOException {
-        Resources resources = DDProvider.getDefault().getResourcesGraph();
+        FileObject location = FileUtil.toFileObject(resourceDir);
+        Resources resources = ResourceUtils.getServerResourcesGraph(location);
         
         JdbcConnectionPool jdbcConnectionPool = resources.newJdbcConnectionPool();
         jdbcConnectionPool.setName(name);
@@ -1128,19 +1090,20 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
         jdbcConnectionPool.addPropertyElement(passElement);
         resources.addJdbcConnectionPool(jdbcConnectionPool);
         
-        ResourceUtils.createFile(FileUtil.toFileObject(resourceDir), name, resources);
+        ResourceUtils.createFile(location, resources);
         try{
             Thread.sleep(1000);
         }catch(Exception ex){}
     }
     
     private void createJDBCResource(String jndiName, String poolName, File resourceDir) throws IOException {
-        Resources resources = DDProvider.getDefault().getResourcesGraph();
+        FileObject location = FileUtil.toFileObject(resourceDir);
+        Resources resources = ResourceUtils.getServerResourcesGraph(location);
         JdbcResource jdbcResource = resources.newJdbcResource();
         jdbcResource.setPoolName(poolName);
         jdbcResource.setJndiName(jndiName);
         resources.addJdbcResource(jdbcResource);
-        ResourceUtils.createFile(FileUtil.toFileObject(resourceDir), jndiName, resources);
+        ResourceUtils.createFile(location, resources);
     }
     
     private HashSet getServerResourceFiles(File resourceDir) {

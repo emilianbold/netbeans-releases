@@ -27,6 +27,8 @@ package org.netbeans.modules.j2ee.sun.ide.sunresources.beans;
 import java.io.File;
 import java.io.Writer;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.Arrays;
 import java.util.Collections;
@@ -82,6 +84,7 @@ import org.netbeans.modules.j2ee.sun.sunresources.beans.DatabaseUtils;
  *
  * @author  nityad
  */
+
 public class ResourceUtils implements WizardConstants{
     
     static final ResourceBundle bundle = ResourceBundle.getBundle("org.netbeans.modules.j2ee.sun.ide.sunresources.beans.Bundle");// NOI18N
@@ -89,7 +92,8 @@ public class ResourceUtils implements WizardConstants{
     static final String[] sysConnpools = {"__CallFlowPool", "__TimerPool", "DerbyPool"}; //NOI18N
     static final String SAMPLE_DATASOURCE = "jdbc/sample";
     static final String SAMPLE_CONNPOOL = "SamplePool";
-    
+    static final String SUN_RESOURCE_FILENAME = "sun-resource.xml"; //NOI18N
+            
     /** Creates a new instance of ResourceUtils */
     public ResourceUtils() {
     }
@@ -515,7 +519,7 @@ public class ResourceUtils implements WizardConstants{
     public static void saveConnPoolDatatoXml(ResourceConfigData data) {
         try{
             Vector vec = data.getProperties();
-            Resources res = getResourceGraph();
+            Resources res = getServerResourcesGraph(data.getTargetFileObject());
             JdbcConnectionPool connPool = res.newJdbcConnectionPool();
             
             String[] keys = data.getFieldNames();
@@ -573,7 +577,7 @@ public class ResourceUtils implements WizardConstants{
                 
             } //for
             res.addJdbcConnectionPool(connPool);
-            createFile(data.getTargetFileObject(), data.getTargetFile(), res);
+            createFile(data.getTargetFileObject(), res);
         }catch(Exception ex){
             System.out.println("Unable to saveConnPoolDatatoXml ");
         }
@@ -581,7 +585,7 @@ public class ResourceUtils implements WizardConstants{
     
     public static void saveJDBCResourceDatatoXml(ResourceConfigData dsData, ResourceConfigData cpData) {
         try{
-            Resources res = getResourceGraph();
+            Resources res = getServerResourcesGraph(dsData.getTargetFileObject());
             JdbcResource datasource = res.newJdbcResource();
            
             String[] keys = dsData.getFieldNames();
@@ -615,7 +619,7 @@ public class ResourceUtils implements WizardConstants{
             if(cpData != null){
                 saveConnPoolDatatoXml(cpData);
             }
-            createFile(dsData.getTargetFileObject(), dsData.getTargetFile(), res);
+            createFile(dsData.getTargetFileObject(), res);
         }catch(Exception ex){
             ex.printStackTrace();
             System.out.println("Unable to saveJDBCResourceDatatoXml ");
@@ -624,7 +628,7 @@ public class ResourceUtils implements WizardConstants{
     
     public static void savePMFResourceDatatoXml(ResourceConfigData pmfData, ResourceConfigData dsData, ResourceConfigData cpData) {
         try{
-            Resources res = getResourceGraph();
+            Resources res = getServerResourcesGraph(pmfData.getTargetFileObject());
             PersistenceManagerFactoryResource pmfresource = res.newPersistenceManagerFactoryResource();
            
             String[] keys = pmfData.getFieldNames();
@@ -655,7 +659,7 @@ public class ResourceUtils implements WizardConstants{
 
             } //for
             res.addPersistenceManagerFactoryResource(pmfresource);
-            createFile(pmfData.getTargetFileObject(), pmfData.getTargetFile(), res);
+            createFile(pmfData.getTargetFileObject(), res);
             
             if(dsData != null){
                 saveJDBCResourceDatatoXml(dsData, cpData);
@@ -667,7 +671,7 @@ public class ResourceUtils implements WizardConstants{
     
     public static void saveJMSResourceDatatoXml(ResourceConfigData jmsData) {
         try{
-            Resources res = getResourceGraph();
+            Resources res = getServerResourcesGraph(jmsData.getTargetFileObject());
             String type = jmsData.getString(__ResType);
             if(type.equals(__QUEUE) || type.equals(__TOPIC)){
                 AdminObjectResource aoresource = res.newAdminObjectResource();
@@ -709,7 +713,7 @@ public class ResourceUtils implements WizardConstants{
                 res.addConnectorConnectionPool(connpoolresource);
             }
             
-            createFile(jmsData.getTargetFileObject(), jmsData.getTargetFile(), res);
+            createFile(jmsData.getTargetFileObject(), res);
         }catch(Exception ex){
             ex.printStackTrace();
             System.out.println("Unable to saveJMSResourceDatatoXml ");
@@ -719,7 +723,7 @@ public class ResourceUtils implements WizardConstants{
     public static void saveMailResourceDatatoXml(ResourceConfigData data) {
         try{
             Vector vec = data.getProperties();
-            Resources res = getResourceGraph();
+            Resources res = getServerResourcesGraph(data.getTargetFileObject());
             MailResource mlresource = res.newMailResource();
                         
             String[] keys = data.getFieldNames();
@@ -760,49 +764,9 @@ public class ResourceUtils implements WizardConstants{
             } //for
             
             res.addMailResource(mlresource);
-            createFile(data.getTargetFileObject(), data.getTargetFile(), res);
+            createFile(data.getTargetFileObject(), res);
         }catch(Exception ex){
             System.out.println("Unable to saveMailResourceDatatoXml ");
-        }
-    }
-    
-    public static void createFile(FileObject targetFolder, String filename, final Resources res){
-        try{
-            //jdbc and jdo jndi names might be of format jdbc/ and jdo/
-            if(filename.indexOf("/") != -1){ //NOI18N
-                filename = filename.substring(0, filename.indexOf("/")) + "_" + filename.substring(filename.indexOf("/")+1, filename.length()); //NOI18N
-            }
-            if(filename.indexOf("\\") != -1){ //NOI18N
-                filename = filename.substring(0, filename.indexOf("\\")) + "_" + filename.substring(filename.indexOf("\\")+1, filename.length()); //NOI18N
-            }
-            String oldName = filename;
-            targetFolder = setUpExists(targetFolder);
-            filename =  FileUtil.findFreeFileName(targetFolder, filename, __SunResourceExt);
-	                
-            final String resFileName = filename;
-            final FileObject resTargetFolder  = targetFolder;
-            FileSystem fs = targetFolder.getFileSystem();
-            fs.runAtomicAction(new FileSystem.AtomicAction() {
-                public void run() throws java.io.IOException {
-                    FileObject newfile = resTargetFolder.createData(resFileName, "sun-resource"); //NOI18N
-                    
-                    FileLock lock = newfile.lock();
-                    Writer w = null;
-                    try {
-                        Writer out = new OutputStreamWriter(newfile.getOutputStream(lock), "UTF8");
-                        res.write(out);
-                        out.flush();
-                        out.close();
-                    } catch(Exception ex){
-                        //Error writing file
-                    } finally {
-                        lock.releaseLock();
-                    }
-                }
-            });
-        }catch(Exception ex){
-            //Unable to create file
-            System.out.println("Error while creating file");
         }
     }
     
@@ -1438,7 +1402,92 @@ public class ResourceUtils implements WizardConstants{
         return isGlassfish;
 
     }
+     
+    /*
+     * Create a new sun-resource graph if none exists or obtain the existing 
+     * graph to add new resource.
+     */     
+    public static Resources getServerResourcesGraph(FileObject targetFolder){
+        Resources res = getResourceGraph();
+        targetFolder = setUpExists(targetFolder);               
+        File sunResource = getServerResourcesFile(targetFolder);
+        if(sunResource != null){
+            java.io.FileInputStream in = null;
+            try {
+                in = new java.io.FileInputStream(sunResource);
+                res = DDProvider.getDefault().getResourcesGraph(in);
+            } catch (FileNotFoundException ex) {
+                ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
+            } finally {
+                try {
+                    in.close();
+                } catch (IOException ex) {
+                    ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
+                }
+            }
+        }
+        return res;
+    }
+
+    public static void createFile(FileObject targetFolder, final Resources res){
+        targetFolder = setUpExists(targetFolder);
+        File sunResource = getServerResourcesFile(targetFolder);
+        if((sunResource != null) && sunResource.exists()){
+            try {
+                res.write(sunResource);
+            } catch (Exception ex) {
+                ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
+            }
+        }else{
+            writeServerResource(targetFolder, res);
+        }
+    }
         
+    private static void writeServerResource(FileObject targetFolder, final Resources res){
+        try {
+            final FileObject resTargetFolder  = targetFolder;
+            FileSystem fs = targetFolder.getFileSystem();
+            fs.runAtomicAction(new FileSystem.AtomicAction() {
+                public void run() throws java.io.IOException {
+                    FileObject newfile = resTargetFolder.createData("sun-resource", "xml"); //NOI18N
+                    FileLock lock = newfile.lock();
+                    Writer w = null;
+                    try {
+                        Writer out = new OutputStreamWriter(newfile.getOutputStream(lock), "UTF8");
+                        res.write(out);
+                        out.flush();
+                        out.close();
+                    } catch(Exception ex){
+                        //Error writing file
+                    } finally {
+                        lock.releaseLock();
+                    }
+                }
+            });
+        } catch (Exception ex) {
+            ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
+        }
+    }
+    
+    private static File getServerResourcesFile(FileObject targetFolder){
+        File serverResource = null;
+        if(targetFolder != null){
+            FileObject setUpFolder = setUpExists(targetFolder);
+            
+            java.util.Enumeration en = setUpFolder.getData(false);
+            while(en.hasMoreElements()){
+                FileObject resourceFile = (FileObject)en.nextElement();
+                File resource = FileUtil.toFile(resourceFile);
+                if(resource.getName().equals(SUN_RESOURCE_FILENAME)){
+                    serverResource = resource;
+                }
+            }
+        }
+        return serverResource;
+    }
+    
+
+    
     private final static char BLANK = ' ';
     private final static char DOT   = '.';
     private final static char REPLACEMENT_CHAR = '_';

@@ -29,8 +29,12 @@ import org.netbeans.modules.schema2beans.Schema2BeansRuntimeException;
 /**
  * @author Nitya Doraisamy
  */
-public interface Resources extends org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean {
+public interface Resources extends org.netbeans.modules.j2ee.sun.dd.api.RootInterface {
     
+        public static final String VERSION_1_0 = "1.00"; //NOI18N
+        public static final String VERSION_1_2 = "1.20"; //NOI18N
+        public static final String VERSION_1_3 = "1.30"; //NOI18N
+        
         public static final String CUSTOM_RESOURCE = "CustomResource";	// NOI18N
 	public static final String EXTERNAL_JNDI_RESOURCE = "ExternalJndiResource";	// NOI18N
 	public static final String JDBC_RESOURCE = "JdbcResource";	// NOI18N

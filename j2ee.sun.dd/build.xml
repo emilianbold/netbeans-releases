@@ -228,7 +228,7 @@ Microsystems, Inc. All Rights Reserved.
             validate="false"
             attrProp="true"
             rootDir="src"/>    
-        <schema2beans schema="${s2b_res_root}/sun-resources.dtd"
+        <schema2beans schema="${s2b_res_root}/sun-resources_1_3.dtd"
  	  mddFile="${s2b_res_root}/sun-resources.mdd"
 	  package="org.netbeans.modules.j2ee.sun.dd.impl.serverresources.model"
           docRoot="resources"

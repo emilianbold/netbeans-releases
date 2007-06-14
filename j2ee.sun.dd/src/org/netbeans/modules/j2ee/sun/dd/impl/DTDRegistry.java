@@ -88,7 +88,14 @@ public final class DTDRegistry {
     public static final String TAGLIB_11_DTD_SYSTEM_ID =
         "http://java.sun.com/dtd/web-jsptaglibrary_1_1.dtd";
 
-
+    public static final String SUN_RESOURCE_13_DTD_PUBLIC_ID =
+        "-//Sun Microsystems, Inc.//DTD Application Server 9.0 Resource Definitions //EN";
+    public static final String SUN_RESOURCE_13_DTD_SYSTEM_ID =
+        "http://www.sun.com/software/appserver/dtds/sun-resources_1_3.dtd";
+    public static final String SUN_RESOURCE_12_DTD_PUBLIC_ID =
+        "-//Sun Microsystems, Inc.//DTD Application Server 9.0 Resource Definitions //EN";
+    public static final String SUN_RESOURCE_12_DTD_SYSTEM_ID =
+        "http://www.sun.com/software/appserver/dtds/sun-resources_1_2.dtd";
     //SunONE specific dtds
 
     /**

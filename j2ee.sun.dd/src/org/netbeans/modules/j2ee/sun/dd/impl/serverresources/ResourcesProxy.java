@@ -25,36 +25,55 @@
 
 package org.netbeans.modules.j2ee.sun.dd.impl.serverresources;
 
+import java.beans.PropertyChangeListener;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.List;
+import org.netbeans.modules.j2ee.sun.dd.api.ASDDVersion;
 import org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean;
+import org.netbeans.modules.j2ee.sun.dd.api.RootInterface;
 import org.netbeans.modules.j2ee.sun.dd.api.serverresources.Resources;
+import org.netbeans.modules.j2ee.sun.dd.impl.RootInterfaceImpl;
+import org.netbeans.modules.j2ee.sun.dd.impl.common.DDProviderDataObject;
+import org.netbeans.modules.schema2beans.Schema2BeansUtil;
+import org.openide.filesystems.FileLock;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.xml.sax.SAXParseException;
 
 /**
  *
  * @author Nitya Doraisamy
  */
-public class ResourcesProxy implements Resources {
+public class ResourcesProxy implements Resources, RootInterfaceImpl {
     
     private Resources resourcesRoot;
-// !PW If this class is ever ported to derive from RootInterface instead of CommonDDBean, it'll need these.    
-//    private int ddStatus;
-    private java.util.List listeners = new ArrayList(); 
+    private String version;
+    private int ddStatus;
+    private SAXParseException error;    
+    private List<PropertyChangeListener> listeners; 
+    private Schema2BeansUtil.ReindentationListener reindentationListener = new Schema2BeansUtil.ReindentationListener();
     
     /** Creates a new instance of ResourcesProxy */
     public ResourcesProxy(Resources resourcesRoot) {
-        this.resourcesRoot = resourcesRoot;
+        this(resourcesRoot, Resources.VERSION_1_3);
     }
 
+    public ResourcesProxy(Resources resourcesRoot, String version) {
+        this.resourcesRoot = resourcesRoot;
+        this.version = version;
+        this.listeners = new ArrayList<PropertyChangeListener>();
+        addPropertyChangeListener(reindentationListener);
+    }
+    
     public int addAdminObjectResource(org.netbeans.modules.j2ee.sun.dd.api.serverresources.AdminObjectResource value) {
         return resourcesRoot==null?-1:resourcesRoot.addAdminObjectResource(value);
     }
 
     public int removeAdminObjectResource(org.netbeans.modules.j2ee.sun.dd.api.serverresources.AdminObjectResource value) {
         return resourcesRoot==null?-1:resourcesRoot.removeAdminObjectResource(value);
-    }
-
-    public void write(java.io.Writer w) throws java.io.IOException, org.netbeans.modules.j2ee.sun.dd.api.DDException {
-        if (resourcesRoot!=null) resourcesRoot.write(w);
     }
 
     public void setPersistenceManagerFactoryResource(org.netbeans.modules.j2ee.sun.dd.api.serverresources.PersistenceManagerFactoryResource[] value) {
@@ -321,12 +340,6 @@ public class ResourcesProxy implements Resources {
         if (resourcesRoot!=null) resourcesRoot.setMailResource(value);
     }
 
-    public void write(java.io.OutputStream os) throws java.io.IOException {
-        if (resourcesRoot != null) {
-            resourcesRoot.write(os);
-        }
-    }
-
     public void setConnectorResource(org.netbeans.modules.j2ee.sun.dd.api.serverresources.ConnectorResource[] value) {
         if (resourcesRoot!=null) resourcesRoot.setConnectorResource(value);
     }
@@ -525,23 +538,81 @@ public class ResourcesProxy implements Resources {
         return (CommonDDBean) clone();
     }
    
+    public void write(java.io.OutputStream os) throws java.io.IOException {
+        if (resourcesRoot != null) {
+            resourcesRoot.write(os);
+        }
+    }
+
+    public void write(java.io.Writer w) throws java.io.IOException, org.netbeans.modules.j2ee.sun.dd.api.DDException {
+        if (resourcesRoot!=null) resourcesRoot.write(w);
+    }
+
     public void write(java.io.File f) throws java.io.IOException, org.netbeans.modules.schema2beans.Schema2BeansRuntimeException {
         if (resourcesRoot!=null) resourcesRoot.write(f);
     }
+
+    public void write(FileObject fo) throws IOException {
+        if(resourcesRoot != null) {
+            DataObject dataObject = DataObject.find(fo);
+            if(dataObject instanceof DDProviderDataObject) {
+                ((DDProviderDataObject) dataObject).writeModel(resourcesRoot);
+            } else {
+                FileLock lock = fo.lock();
+                try {
+                    OutputStream os = fo.getOutputStream(lock);
+                    try {
+                        write(os);
+                    } finally {
+                        os.close(); 
+                    }
+                } finally {
+                    lock.releaseLock();
+                }
+            }
+        }
+    }
     
-// !PW If this class is ever ported to derive from RootInterface instead of CommonDDBean, it'll need these.    
-//    public int getStatus() {
-//        return ddStatus;
-//    }
-//    
-//    public void setStatus(int value) {
-//        if (ddStatus!=value) {
-//            java.beans.PropertyChangeEvent evt =
-//                new java.beans.PropertyChangeEvent(this, PROPERTY_STATUS, Integer.valueOf(ddStatus), Integer.valueOf(value));
-//            ddStatus=value;
-//            for (int i=0;i<listeners.size();i++) {
-//                ((java.beans.PropertyChangeListener)listeners.get(i)).propertyChange(evt);
-//            }
-//        }
-//    }
+    public void setVersion(BigDecimal version) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public BigDecimal getVersion() {
+        return new java.math.BigDecimal(version);
+    }
+
+    public RootInterface getRootInterface() {
+        return this;
+    }
+
+    public SAXParseException getError() {
+        return error;
+    }
+
+    public void setError(SAXParseException error) {
+        this.error = error;
+    }
+
+    public boolean hasOriginal() {
+        return getOriginal() != null;
+    }
+
+    public ASDDVersion getASDDVersion() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+    
+    public int getStatus() {
+        return ddStatus;
+    }
+    
+    public void setStatus(int value) {
+        if (ddStatus!=value) {
+            java.beans.PropertyChangeEvent evt =
+                new java.beans.PropertyChangeEvent(this, PROPERTY_STATUS, Integer.valueOf(ddStatus), Integer.valueOf(value));
+            ddStatus=value;
+            for (int i=0;i<listeners.size();i++) {
+                ((java.beans.PropertyChangeListener)listeners.get(i)).propertyChange(evt);
+            }
+        }
+    }
 }
