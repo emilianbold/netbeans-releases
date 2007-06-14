@@ -45,16 +45,6 @@ Microsystems, Inc. All Rights Reserved.
 
     <!-- UI -->
     <folder name="UI">
-        <folder name="Services">
-            <folder name="IDEConfiguration">
-                <folder name="ServerAndExternalToolSettings">
-                    <file name="DatabaseOption.shadow">
-                        <attr name="originalFile" stringvalue="Services/org-netbeans-modules-db-explorer-DatabaseOption.settings"/>
-                    </file>                    
-                </folder> <!-- ServerAndExternalToolSettings -->
-            </folder> <!-- IDEConfiguration -->
-        </folder> <!-- Services -->
-
         <folder name="Runtime">
            <file name="org-netbeans-modules-db-explorer-nodes-RootNode.instance">
              <attr name="instanceClass" stringvalue="org.netbeans.modules.db.explorer.nodes.RootNode"/>
