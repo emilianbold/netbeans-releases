@@ -160,25 +160,11 @@ public class Utils {
             for (int j=0; j<resourceDirs.length; j++){
                 File resourceDir = resourceDirs[j];
                 File[] resources = null;
-                //Temporary flag while moving to single sun-resource file
-                //TODO -- remove/clean up
-                if (System.getProperties().getProperty("resource-redesign") != null){
-                    if(resourceDir != null){
-                        resources = resourceDir.listFiles(new newResourceFileFilter());
-                    }
-                    if(resources != null){
-                        registerSunResources(mejb, resources);
-                    }
-                }else{
-                    if(resourceDir != null){
-                        resources = resourceDir.listFiles(new ResourceFileFilter());
-                    }
-                    
-                    if(resources != null){
-                        registerConnectionPools(mejb, resources);
-                        registerDatasources(mejb, resources);
-                        registerOtherResources(resources, sunDm);//Remaining Resources
-                    }
+                if(resourceDir != null){
+                    resources = resourceDir.listFiles(new SunResourceFileFilter());
+                }
+                if(resources != null){
+                    registerSunResources(mejb, resources);
                 }
             }
         }catch(Exception ex){
@@ -282,7 +268,7 @@ public class Utils {
         }
     }
     
-    public static class newResourceFileFilter implements FileFilter {
+    public static class SunResourceFileFilter implements FileFilter {
         public boolean accept(File f) {
             return f.isDirectory() ||
                     f.getName().toLowerCase(Locale.getDefault()).endsWith(".xml"); //NOI18N
