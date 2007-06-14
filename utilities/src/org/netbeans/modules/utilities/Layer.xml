@@ -384,31 +384,6 @@ Microsystems, Inc. All Rights Reserved.
 
     </folder> <!-- Services -->
 
-    <folder name="UI">
-        <folder name="Services">
-
-            <!-- Search Services -->
-            <folder name="IDEConfiguration">
-                <folder name="ServerAndExternalToolSettings">
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.openfile.Bundle"/>
-
-                    <file name="org-netbeans-modules-pdf-PDFSettings.shadow">
-                        <attr name="originalFile" stringvalue="Services/org-netbeans-modules-pdf-PDFSettings.settings"/>
-                    </file>
-                </folder> <!-- ServerAndExternalToolSettings -->
-
-                <!--
-                <folder name="System">
-                    <file name="org-netbeans-modules-url-BookmarksNode.shadow">
-                        <attr name="originalFile" stringvalue="Services/org-netbeans-modules-url-BookmarksNode.instance"/>
-                    </file>
-                </folder> < ! - - System - - >
-                -->
-
-            </folder> <!-- IDEConfiguration -->
-        </folder> <!-- Services -->
-    </folder> <!-- UI -->
-    
     <folder name="Windows2">
         <folder name="Modes">
             <folder name="output">       <!-- "output" is defined in core/ui -->
