@@ -66,9 +66,11 @@
         <!--file name="O-F7.shadow">
             <attr name="originalFile" stringvalue="Actions/BpelNodes/org-netbeans-modules-bpel-nodes-actions-FindUsagesAction.instance"/>
         </file-->
+        <!-- # 106465
         <file name="O-I.shadow">
             <attr name="originalFile" stringvalue="Actions/BpelNodes/org-netbeans-modules-bpel-nodes-actions-GoToDiagrammAction.instance"/>
         </file>
+        -->
     </folder>
     <folder name="SoaPalette">
         <folder name="WebService">
