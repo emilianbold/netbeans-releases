@@ -107,7 +107,6 @@ public class E2EDataObject extends XmlMultiViewDataObject {
         super( file, ldr );
         
         synchronizer = new ModelSynchronizer( this );
-        clientProject = FileOwnerQuery.getOwner( file );
         
         saveCallbacks = new HashSet<SaveCallback>();
     }
@@ -162,6 +161,7 @@ public class E2EDataObject extends XmlMultiViewDataObject {
     }
     
     public Project getClientProject() {
+        if (clientProject == null)  clientProject = FileOwnerQuery.getOwner(getPrimaryFile());
         return clientProject;
     }
     
