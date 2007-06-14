@@ -57,6 +57,10 @@ public class WebserviceDescriptionImpl extends PersistentObject implements Webse
     }
     
     boolean refresh(TypeElement typeElement) {
+        if (typeElement.getKind() == ElementKind.INTERFACE) {
+            // don't consider interfaces (SEI classes)
+            return false;
+        }
         AnnotationModelHelper helper = getHelper();
         Map<String, ? extends AnnotationMirror> annByType = helper.getAnnotationsByType(typeElement.getAnnotationMirrors());
         AnnotationMirror webServiceAnn = annByType.get("javax.jws.WebService"); // NOI18N

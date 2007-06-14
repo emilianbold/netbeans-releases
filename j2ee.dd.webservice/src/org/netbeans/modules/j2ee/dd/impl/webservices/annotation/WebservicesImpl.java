@@ -334,6 +334,7 @@ public class WebservicesImpl implements Webservices {
             final List<WebserviceDescriptionImpl> result = new ArrayList<WebserviceDescriptionImpl>();
             helper.getAnnotationScanner().findAnnotatedTypes("javax.jws.WebService",new TypeAnnotationHandler() { // NOI18N
                 public void typeAnnotation(TypeElement type, AnnotationMirror annotation) {
+                    // don't consider interfaces (SEI classes)
                     if (type.getKind() != ElementKind.INTERFACE)
                         result.add(new WebserviceDescriptionImpl(helper, type));
                 }
@@ -341,9 +342,11 @@ public class WebservicesImpl implements Webservices {
             return result;
         }
         
-        public List<WebserviceDescriptionImpl> createObjects(TypeElement type) {
-            if (helper.hasAnnotation(type.getAnnotationMirrors(), "javax.jws.WebService")) { // NOI18N
-                return Collections.singletonList(new WebserviceDescriptionImpl(helper, type));
+        public List<WebserviceDescriptionImpl> createObjects(TypeElement type) {            
+            if (type.getKind() != ElementKind.INTERFACE) { // don't consider interfaces
+                if (helper.hasAnnotation(type.getAnnotationMirrors(), "javax.jws.WebService")) { // NOI18N
+                    return Collections.singletonList(new WebserviceDescriptionImpl(helper, type));
+                }
             }
             return Collections.emptyList();
         }
