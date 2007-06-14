@@ -32,6 +32,8 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.autoupdate.services.Utilities;
 import org.netbeans.spi.autoupdate.UpdateItem;
 import org.netbeans.spi.autoupdate.UpdateLicense;
@@ -88,7 +90,7 @@ public abstract class SimpleItem {
             UpdateItem res = UpdateItem.createFeature (
                     getAttribute (declaratingNode, CODE_NAME_BASE),
                     getAttribute (declaratingNode, SPECIFICATION_VERSION),
-                    readDependencies (dependencies),
+                    readDependencies (dependencies, getAttribute (declaratingNode, CODE_NAME_BASE)),
                     getAttribute (declaratingNode, DISPLAY_NAME),
                     getAttribute (declaratingNode, DESCRIPTION),
                     category);
@@ -450,9 +452,12 @@ public abstract class SimpleItem {
         return attr == null ? null : attr.getNodeValue ();
     }
     
-    private static Set<String> readDependencies (String input) {
+    private static Set<String> readDependencies (String input, String who) {
         Set<String> res = new HashSet<String> ();
-        assert input != null : "Each feature needs own modules.";
+        //assert input != null : "Each feature needs own modules, but " + who + " has " + input; XXX
+        if (input == null) {
+            Logger.getLogger (SimpleItem.class.getName ()).log (Level.INFO, "Each feature needs own modules, but " + who + " has " + input);
+        }
         if (input == null) {
             return res;
         }
