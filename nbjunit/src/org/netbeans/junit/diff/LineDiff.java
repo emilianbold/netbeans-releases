@@ -92,10 +92,11 @@ public class LineDiff implements Diff {
     }
 
     /**
-     * @param first first file to compare
-     * @param second second file to compare
+     * @param ref first file to compare
+     * @param pass second file to compare
      * @param diff difference file, caller can pass null value, when results are not needed.
      * @return true iff files differ
+     * @throws IOException when readin of files fails
      */
     public boolean diff(String ref, String pass, String diff) throws IOException {
         File fFirst = new File(ref);

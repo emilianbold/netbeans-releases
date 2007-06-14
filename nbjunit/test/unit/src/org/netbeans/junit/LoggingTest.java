@@ -139,16 +139,21 @@ public class LoggingTest extends NbTestCase {
         File f = new File(getWorkDir(), getName() + ".log");
         assertEquals("Log file exists", true, f.exists());
 
-        byte[] arr = new byte[(int)f.length()];
-        FileInputStream is = new FileInputStream(f);
-        int l = is.read(arr);
-        assertEquals(l, arr.length);
-
-        String s = new String(arr);
+        String s = readFile(f);
         if (s.indexOf("Ahoj") == -1) {
             fail("There should be Ahoj\n" + s);
         }
         assertEquals("Not logged for FINE: " + s, -1, s.indexOf("Jardo"));
+    }
+    
+    static String readFile(File f) throws IOException {
+        byte[] arr = new byte[(int)f.length()];
+        FileInputStream is = new FileInputStream(f);
+        int l = is.read(arr);
+        assertEquals(l, arr.length);
+        
+        String s = new String(arr);
+        return s;
     }
     public void testFmting() throws Exception {
         Logger log = Logger.getLogger(getName());
@@ -204,5 +209,4 @@ public class LoggingTest extends NbTestCase {
             fail("There should be output of the log:\n" + f.exceptionMessage());
         }
     }
-
 }
