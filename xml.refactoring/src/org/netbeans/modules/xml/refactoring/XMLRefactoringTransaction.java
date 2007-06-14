@@ -11,6 +11,7 @@ package org.netbeans.modules.xml.refactoring;
 
 import java.io.IOException;
 import java.net.URI;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -22,6 +23,7 @@ import java.util.logging.Logger;
 import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoManager;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
+import org.netbeans.modules.refactoring.api.MoveRefactoring;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.netbeans.modules.refactoring.api.SafeDeleteRefactoring;
 import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
@@ -30,10 +32,12 @@ import org.netbeans.modules.xml.refactoring.impl.UndoRedoProgress;
 import org.netbeans.modules.xml.refactoring.spi.RefactoringUtil;
 import org.netbeans.modules.xml.refactoring.spi.SharedUtils;
 import org.netbeans.modules.xml.retriever.catalog.ProjectCatalogSupport;
+import org.netbeans.modules.xml.retriever.catalog.Utilities;
 import org.netbeans.modules.xml.xam.AbstractModel;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.EmbeddableRoot;
 import org.netbeans.modules.xml.xam.Model;
+import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.Nameable;
 import org.netbeans.modules.xml.xam.NamedReferenceable;
 import org.netbeans.modules.xml.xam.Referenceable;
@@ -43,6 +47,7 @@ import org.netbeans.modules.xml.xam.locator.CatalogModel;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.URLMapper;
 import org.openide.util.NbBundle;
 
 /**
@@ -61,7 +66,8 @@ public class XMLRefactoringTransaction implements Transaction {
      //For delete refactoring we need to save the model since it wont be available after delete for undo/redo
     Model targetModel;
     boolean isLocal = false;
-    private UndoManager previewUndoManager, targetPreviewUndoManager;
+    ModelSource movedTargetModelSource;
+    
     
     
     
@@ -97,7 +103,7 @@ public class XMLRefactoringTransaction implements Transaction {
      * Rollbacks the refactoring changes for all the models
      */
     public void rollback() {
-      //  System.out.println("ROLLBACK called");
+       // System.out.println("ROLLBACK called");
         UndoRedoProgress progress = new UndoRedoProgress();
 	progress.start();
 	try {
@@ -114,7 +120,7 @@ public class XMLRefactoringTransaction implements Transaction {
             }
             
             //is it undo of FileRenameRefactoring??
-            if (target instanceof Model && request instanceof RenameRefactoring) {
+            if (target instanceof Model && ( (request instanceof RenameRefactoring) || (request instanceof MoveRefactoring) ) ){
                 undoRenameFile();
             }
             
@@ -152,7 +158,7 @@ public class XMLRefactoringTransaction implements Transaction {
                     
         try {            
             if (! isLocal) {
-                if (target instanceof Model && request instanceof RenameRefactoring) {
+                if (target instanceof Model &&  ( (request instanceof RenameRefactoring) || (request instanceof MoveRefactoring)) ) {
                     //file refactoring
                     refactorFile(models);
                 }else {
@@ -285,8 +291,19 @@ public class XMLRefactoringTransaction implements Transaction {
            FileObject referencedFO = (FileObject) ((Model)target).getModelSource().getLookup().lookup(FileObject.class);
            assert referencedFO != null : "Failed to lookup for file object in model source"; //NOI18N
            RefactoringUtil.saveTargetFile((Model)target, all);
-           referencedFO = SharedUtils.renameFile(referencedFO,((RenameRefactoring)request).getNewName());
-           refreshCatalogModel(referencedFO);
+           if(request instanceof RenameRefactoring ) {
+               referencedFO = SharedUtils.renameFile(referencedFO,((RenameRefactoring)request).getNewName());
+               refreshCatalogModel(referencedFO);
+           } else if (request instanceof MoveRefactoring ) {
+               FileObject target = SharedUtils.getOrCreateFolder(((MoveRefactoring)request).getTarget().lookup(URL.class));
+               referencedFO = SharedUtils.moveFile(referencedFO, target);
+               if(referencedFO != null) {
+                   this.movedTargetModelSource = Utilities.getModelSource(referencedFO, true);
+                  // request.getContext().add(movedTargetModelSource);
+                   refreshCatalogModel(referencedFO);
+                   //addUndoableRefactorListener(movedTargetModelSource);
+               }
+           }
    
        }
        
@@ -335,11 +352,19 @@ public class XMLRefactoringTransaction implements Transaction {
        private void undoRenameFile() throws IOException {
         CatalogModel cat = (CatalogModel) ((Model)target).getModelSource().getLookup().lookup(CatalogModel.class);
         FileObject fo = (FileObject) ((Model)target).getModelSource().getLookup().lookup(FileObject.class);
-        String oldName = request.getContext().lookup(String.class);
-        if(oldName == null || oldName.equals("")) {
-            throw new IOException("Unable to undo refactoring. Cannot retrieve old file name"); //not i118N
+        if(request instanceof RenameRefactoring ) {
+            String oldName = request.getContext().lookup(String.class);
+            if(oldName == null || oldName.equals("")) {
+                throw new IOException("Unable to undo refactoring. Cannot retrieve old file name"); //not i118N
+            }
+            fo = SharedUtils.renameFile(fo, oldName);
+        } else if(request instanceof MoveRefactoring) {
+            FileObject origFolder = SharedUtils.getOrCreateFolder(((MoveRefactoring)request).getContext().lookup(URL.class));
+            if(movedTargetModelSource != null) {
+                FileObject movedFile = this.movedTargetModelSource.getLookup().lookup(FileObject.class);
+                fo = SharedUtils.moveFile(movedFile, origFolder);
+            }
         }
-        fo = SharedUtils.renameFile(fo, oldName);
         refreshCatalogModel(fo);
     }
     
@@ -365,7 +390,7 @@ public class XMLRefactoringTransaction implements Transaction {
              ArrayList<RefactoringElementImplementation> elementsForRefactoring = new ArrayList<RefactoringElementImplementation>(elements);
              
              //for file rename, we dont need to refactor the target
-             if( !(target instanceof Model && request instanceof RenameRefactoring)) {
+             if( !( (target instanceof Model) && ( (request instanceof RenameRefactoring) || (request instanceof MoveRefactoring))) ) {
                  targetModel.startTransaction();
                  doRefactorTarget();
              }

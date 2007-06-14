@@ -20,8 +20,10 @@ package org.netbeans.modules.xml.refactoring.spi;
 
 import java.awt.Image;
 import java.beans.BeanInfo;
+import java.io.File;
 import java.io.IOException;
-import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -30,12 +32,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
+import org.netbeans.modules.refactoring.api.MoveRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.RefactoringElement;
 import org.netbeans.modules.refactoring.api.RefactoringSession;
@@ -63,13 +64,14 @@ import org.netbeans.modules.xml.xam.Named;
 import org.netbeans.modules.xml.xam.NamedReferenceable;
 import org.netbeans.modules.xml.xam.Referenceable;
 import org.netbeans.modules.xml.xam.dom.DocumentModel;
-import org.netbeans.modules.xml.xam.locator.CatalogModel;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
+import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.AbstractNode;
@@ -80,6 +82,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
 import org.openide.windows.TopComponent;
 
+
 /**
  * Shared utilities for service implementation code.
  *
@@ -88,7 +91,8 @@ import org.openide.windows.TopComponent;
 public class SharedUtils {
     
     public static final String WSDL_MIME_TYPE = "text/xml-wsdl";  // NOI18N
-    
+    public static final String SOURCES_TYPE_XML = "xml";
+    public static final String SOURCES_TYPE_JAVA = "java";
       
     
     public static void renameTarget(Nameable target, String newName) throws IOException {
@@ -183,24 +187,16 @@ public class SharedUtils {
         }
     }
     
-    /*public static void refreshCatalogModel(FileRenameRequest request, FileObject referencedFO) {
-        for (UsageGroup ug : request.getUsages().getUsages()) {
-            FileObject referencingFO = ug.getFileObject();
-            ProjectCatalogSupport pcs = getCatalogSupport(referencingFO);
-            if (pcs == null) continue;
-            for (Component uc : ug.getRefactorComponents()) {
-                String reference = ug.getEngine().getModelReference(uc);
-                if (reference == null) continue;
-                try {
-                    if (pcs != null && pcs.removeCatalogEntry(new URI(reference))) {
-                        pcs.createCatalogEntry(referencingFO, referencedFO);
-                    }
-                } catch(Exception ex) {
-                    Logger.getLogger(SharedUtils.class.getName()).log(Level.FINE, ex.getMessage());
-                }
-            }
+    public static FileObject moveFile(FileObject source, FileObject target) throws IOException {
+        if (source != null) {
+            return FileUtil.moveFile(source, target, source.getName());
         }
-    }*/
+        return null;
+        
+        
+    }
+    
+    
        
     protected static List<SourceGroup> getSourceGroups(Referenceable ref) {
             List<SourceGroup> sourceGroups = new ArrayList<SourceGroup>();
@@ -261,6 +257,28 @@ public class SharedUtils {
         sb.append(fo.getExt());
         return sb.toString();
     }
+     
+     public static String calculateNewLocationString(Model model, MoveRefactoring request) throws IOException {
+        StringBuilder sb = new StringBuilder();
+        URL url = ((MoveRefactoring)request).getTarget().lookup(URL.class);
+        FileObject tfo = getOrCreateFolder(url);
+        FileObject fo = model.getModelSource().getLookup().lookup(FileObject.class);
+        fo = fo.getParent();
+        String path = getRelativePath(tfo, fo);
+        sb.append(path);
+        Referenceable ref = request.getRefactoringSource().lookup(Referenceable.class);
+        Model mod = SharedUtils.getModel(ref);
+        FileObject ofo = mod.getModelSource().getLookup().lookup(FileObject.class);
+        sb.append(File.separator + ofo.getNameExt());
+        return sb.toString();
+    }
+     
+   /*  public static String calculateNewLocationString(ModelSource source, ModelSource target) throws Exception {
+         FileObject sourceFO = source.getLookup().lookup(FileObject.class);
+         FileObject referencedFO = target.getLookup().lookup(FileObject.class);
+         DefaultProjectCatalogSupport catalogSupport = DefaultProjectCatalogSupport.getInstance(sourceFO);
+         return (catalogSupport.getReferenceURI(sourceFO, referencedFO)).toString();
+     }*/
      
      public static Map<Model, Set<RefactoringElementImplementation>> getModelMap(List<RefactoringElementImplementation> elements){
         Map<Model, Set<RefactoringElementImplementation>> results = new HashMap<Model, Set<RefactoringElementImplementation>>();
@@ -547,6 +565,79 @@ public class SharedUtils {
         assert fo != null : "Model source does not provide FileObject lookup";
         n.setName(fo.getName());
         return n;
+    }
+    
+    /**
+     * creates or finds FileObject according to 
+     * @param url
+     * @return FileObject
+     * @throws java.io.IOException 
+     */
+    public static FileObject getOrCreateFolder(URL url) throws IOException {
+        try {
+            FileObject result = URLMapper.findFileObject(url);
+            if (result != null)
+                return result;
+            File f = new File(url.toURI());
+            
+            result = FileUtil.createFolder(f);
+            return result;
+        } catch (URISyntaxException ex) {
+            throw (IOException) new IOException().initCause(ex);
+        }
+    }
+    
+    public static String getRelativePath(Model model1, Model model2) throws IOException {
+        FileObject origFile = model1.getModelSource().getLookup().lookup(FileObject.class);
+        FileObject origRelativeTo = model2.getModelSource().getLookup().lookup(FileObject.class);
+        return getRelativePath(origFile, origRelativeTo);
+    }
+    
+     public  static String getRelativePath(FileObject origFile, FileObject origRelativeTo) throws IOException {
+        File file = FileUtil.toFile(origFile);
+        File relativeTo = FileUtil.toFile(origRelativeTo);
+        List filePathStack = new ArrayList();
+        List relativeToPathStack = new ArrayList();
+        // build the path stack info to compare it afterwards
+        file = file.getCanonicalFile();
+        while (file!=null) {
+            filePathStack.add(0, file);
+            file = file.getParentFile();
+        }
+        relativeTo = relativeTo.getCanonicalFile();
+        while (relativeTo!=null) {
+            relativeToPathStack.add(0, relativeTo);
+            relativeTo = relativeTo.getParentFile();
+        }
+        // compare as long it goes
+        int count = 0;
+        file = (File)filePathStack.get(count);
+        relativeTo = (File)relativeToPathStack.get(count);
+        while ( (count < filePathStack.size()-1) && (count <relativeToPathStack.size()-1) && file.equals(relativeTo)) {
+            count++;
+            file = (File)filePathStack.get(count);
+            relativeTo = (File)relativeToPathStack.get(count);
+        }
+        if (file.equals(relativeTo)) count++;
+        // up as far as necessary
+        
+        StringBuffer relString = new StringBuffer();
+        for (int i = count; i < relativeToPathStack.size(); i++) {
+             relString.append(".."+File.separator);
+        }
+        // now back down to the file
+        for (int i = count; i <filePathStack.size()-1; i++) {
+            relString.append(((File)filePathStack.get(i)).getName()+File.separator);
+        }
+            relString.append(((File)filePathStack.get(filePathStack.size()-1)).getName());
+        return relString.toString();
+        }
+     
+     public static List<String> getSourceGroups() {
+        List<String> srcGroups = new ArrayList<String>();
+        srcGroups.add(SOURCES_TYPE_JAVA);
+        srcGroups.add(SOURCES_TYPE_XML);
+        return srcGroups;
     }
 
    }

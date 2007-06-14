@@ -19,6 +19,8 @@ import org.netbeans.modules.xml.refactoring.ui.FileRenameRefactoringUI;
 import org.netbeans.modules.xml.refactoring.ui.RenameRefactoringUI;
 import org.netbeans.modules.xml.refactoring.ui.WhereUsedQueryUI;
 import org.netbeans.modules.xml.refactoring.spi.SharedUtils;
+//import org.netbeans.modules.xml.refactoring.ui.CopyRefactoringUI;
+import org.netbeans.modules.xml.refactoring.ui.MoveRefactoringUI;
 import org.netbeans.modules.xml.refactoring.ui.views.WhereUsedView;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.Model;
@@ -157,8 +159,41 @@ public class XMLRefactoringActionsProvider extends ActionsImplementationProvider
   }
     
           
+  public boolean canMove(Lookup lookup) {
+       Collection<? extends Node> nodes = lookup.lookupAll(Node.class);
+         if(nodes.size() !=1){
+             return false;
+         }
+             
+         Node[] n = nodes.toArray(new Node[0]);
+         Referenceable ref = SharedUtils.getReferenceable(n);
+         if(ref == null)
+             return false;
+         if ( ref instanceof Model && RefactoringUtil.isWritable((Model)ref) )
+             return true;
+         
+         return false;
+   }
+
+
+   public void doMove(final Lookup lookup) {
+       Collection<? extends Node> nodes = lookup.lookupAll(Node.class);
+       Node[] n = nodes.toArray(new Node[0]);
    
-
-
+       final Referenceable ref = SharedUtils.getReferenceable(n);
+       final EditorCookie ec = lookup.lookup(EditorCookie.class);
+       RefactoringUI ui = null;
+       if(ref instanceof Model) {
+           Model model = (Model) ref;
+           ui = new MoveRefactoringUI(model);
+       } 
+           
+      if(isFromEditor(ec)){
+           TopComponent activetc = TopComponent.getRegistry().getActivated();
+           UI.openRefactoringUI(ui, activetc);
+      } else {
+           UI.openRefactoringUI(ui);
+     }     
+   }
 }
 
