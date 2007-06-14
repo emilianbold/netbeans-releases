@@ -79,6 +79,9 @@
         <mkdir dir="${cluster}/ant/extra"/>
         <echo message="${cluster}/ant/extra/"/>
         <jar jarfile="${cluster}/ant/extra/wsclientuptodate.jar" compress="false">
+            <manifest>
+                <attribute name="NetBeans-Own-Library" value="true"/>
+            </manifest>
             <fileset dir="build/antclasses"/>
         </jar>
         <copy todir="${cluster}/ant/sources">
