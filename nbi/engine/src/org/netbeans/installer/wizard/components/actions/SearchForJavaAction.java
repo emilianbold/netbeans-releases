@@ -2,17 +2,17 @@
  * The contents of this file are subject to the terms of the Common Development and
  * Distribution License (the License). You may not use this file except in compliance
  * with the License.
- * 
+ *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html or
  * http://www.netbeans.org/cddl.txt.
- * 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file and
  * include the License file at http://www.netbeans.org/cddl.txt. If applicable, add
  * the following below the CDDL Header, with the fields enclosed by brackets []
  * replaced by your own identifying information:
- * 
+ *
  *     "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original Software
  * is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun Microsystems, Inc. All
  * Rights Reserved.
@@ -21,6 +21,7 @@
 package org.netbeans.installer.wizard.components.actions;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -227,12 +228,19 @@ public class SearchForJavaAction extends WizardAction {
             
             if (parent.exists() && parent.isDirectory()) {
                 locations.add(parent);
-                
-                for (File child: parent.listFiles()) {
-                    if (child.isDirectory()) {
-                        locations.add(child);
+                File [] children = parent.listFiles(new FileFilter() {
+                    public boolean accept(File pathname) {
+                        return pathname.isDirectory();
+                    }});
+                    
+                    if(children != null) {
+                        for (File child: children) {
+                            locations.add(child);
+                        }
+                    } else {
+                        LogManager.log(ErrorLevel.DEBUG,
+                                "Can`t get children of existing directory : " + parent.getPath());
                     }
-                }
             }
         }
     }
@@ -298,8 +306,8 @@ public class SearchForJavaAction extends WizardAction {
                         
                         LogManager.log("found: " + (section == HKLM ?
                             "HKEY_LOCAL_MACHINE" : "HKEY_CURRENT_USER") + // NOI18N
-                            "\\" + path + "\\" + key + "\\" + // NOI18N
-                            JavaUtils.JAVAHOME_VALUE + " = " + javaHome); // NOI18N
+                                "\\" + path + "\\" + key + "\\" + // NOI18N
+                                JavaUtils.JAVAHOME_VALUE + " = " + javaHome); // NOI18N
                         
                         
                         // add java home to the list if it's not there already
