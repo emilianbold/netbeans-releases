@@ -19,7 +19,8 @@
 package org.netbeans.modules.vmd.midp.components.displayables;
 
 import org.netbeans.modules.vmd.api.model.*;
-import org.netbeans.modules.vmd.api.model.common.AbstractAcceptPresenter;
+import org.netbeans.modules.vmd.api.model.common.AcceptPresenter;
+import org.netbeans.modules.vmd.api.model.common.AcceptSuggestion;
 import org.netbeans.modules.vmd.midp.components.MidpDocumentSupport;
 import org.netbeans.modules.vmd.midp.components.categories.CommandsCategoryCD;
 import org.netbeans.modules.vmd.midp.components.commands.CommandCD;
@@ -30,20 +31,20 @@ import org.netbeans.modules.vmd.midp.components.sources.CommandEventSourceCD;
  */
 public class DisplayableAccept {
     
-    static class DisplayableCommandsAcceptPresenter extends AbstractAcceptPresenter {
+    static class DisplayableCommandsAcceptPresenter extends AcceptPresenter {
         
         public DisplayableCommandsAcceptPresenter() {
             super(Kind.COMPONENT_PRODUCER);
         }
         
-        public boolean isAcceptable(ComponentProducer producer) {
+        public boolean isAcceptable (ComponentProducer producer, AcceptSuggestion suggestion) {
             if (getComponent().getComponentDescriptor().getPropertyDescriptor(DisplayableCD.PROP_COMMANDS).isReadOnly())
                 return false;
             DescriptorRegistry registry = getComponent().getDocument().getDescriptorRegistry();
             return registry.isInHierarchy(CommandCD.TYPEID, producer.getComponentTypeID());
         }
         
-        public final ComponentProducer.Result accept(ComponentProducer producer) {
+        public final ComponentProducer.Result accept (ComponentProducer producer, AcceptSuggestion suggestion) {
             DesignComponent displayable = getComponent();
             DesignDocument document = displayable.getDocument();
             
@@ -61,7 +62,7 @@ public class DisplayableAccept {
         
     }
     
-    //    static class DisplayableCommandsEventHandlerAcceptPresenter extends AbstractAcceptPresenter {
+    //    static class DisplayableCommandsEventHandlerAcceptPresenter extends AcceptPresenter {
     //
     //        public boolean isAcceptable (ComponentProducer producer) {
     //            if (getComponent ().getComponentDescriptor ().getPropertyDescriptor (DisplayableCD.PROP_COMMANDS).isReadOnly ())

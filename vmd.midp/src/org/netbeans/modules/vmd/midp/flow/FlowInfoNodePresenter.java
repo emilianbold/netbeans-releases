@@ -132,11 +132,11 @@ public final class FlowInfoNodePresenter extends FlowNodePresenter {
         }
 
         public boolean isAcceptable (FlowDescriptor descriptor, Transferable transferable) {
-            return AcceptSupport.isAcceptable (descriptor.getRepresentedComponent (), transferable);
+            return AcceptSupport.isAcceptable (descriptor.getRepresentedComponent (), transferable, null);
         }
 
         public void accept (FlowDescriptor descriptor, Transferable transferable) {
-            ComponentProducer.Result result = AcceptSupport.accept (descriptor.getRepresentedComponent (), transferable);
+            ComponentProducer.Result result = AcceptSupport.accept (descriptor.getRepresentedComponent (), transferable, null);
             AcceptSupport.selectComponentProducerResult (result);
         }
 

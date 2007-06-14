@@ -27,6 +27,7 @@ import java.util.List;
 import org.netbeans.modules.vmd.api.model.ComponentProducer.Result;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
+import org.netbeans.modules.vmd.api.model.common.AcceptSuggestion;
 import org.netbeans.modules.vmd.midp.components.MidpDocumentSupport;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.categories.ResourcesCategoryCD;
@@ -49,8 +50,8 @@ public class SVGFileAcceptPresenter extends FileAcceptPresenter {
         super(SVGAnimatorWrapperCD.PROP_SVG_IMAGE, SVGImageCD.TYPEID, "svg");
     }
     
-    public Result accept(Transferable transferable) {
-        Result result = super.accept(transferable);
+    public Result accept (Transferable transferable, AcceptSuggestion suggestion) {
+        Result result = super.accept(transferable, suggestion);
         DesignComponent svgImage = result.getComponents().iterator().next();
         final DesignComponent animator = getComponent();
         FileObject fileObject = getNodeFile(transferable);

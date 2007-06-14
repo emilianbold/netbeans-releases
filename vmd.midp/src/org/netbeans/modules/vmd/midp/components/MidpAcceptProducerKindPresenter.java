@@ -22,8 +22,8 @@ package org.netbeans.modules.vmd.midp.components;
 import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.modules.vmd.api.model.*;
-import org.netbeans.modules.vmd.api.model.common.AbstractAcceptPresenter;
-import org.netbeans.modules.vmd.api.model.common.AbstractAcceptPresenter.Kind;
+import org.netbeans.modules.vmd.api.model.common.AcceptPresenter;
+import org.netbeans.modules.vmd.api.model.common.AcceptSuggestion;
 import org.netbeans.modules.vmd.midp.components.categories.ResourcesCategoryCD;
 import org.netbeans.modules.vmd.midp.components.resources.FontCD;
 import org.netbeans.modules.vmd.midp.components.resources.ImageCD;
@@ -34,20 +34,20 @@ import org.netbeans.modules.vmd.midp.components.resources.TickerCD;
  * @author Karol Harezlak
  */
 
-public class MidpAcceptProducerKindPresenter extends AbstractAcceptPresenter {
+public class MidpAcceptProducerKindPresenter extends AcceptPresenter {
     private static final String PROP_IMAGE = "image"; //NOI18N
     private static final String PROP_FONT = "font"; //NOI18N
     private static final String PROP_TICKER = "ticker"; //NOI18N
     
-    public static AbstractAcceptPresenter createTickerAcceptPresenter() {
+    public static AcceptPresenter createTickerAcceptPresenter() {
         return new MidpAcceptTrensferableKindPresenter().addType(TickerCD.TYPEID, PROP_TICKER);
     }
     
-    public static AbstractAcceptPresenter createImageAcceptPresenter() {
+    public static AcceptPresenter createImageAcceptPresenter() {
         return new MidpAcceptTrensferableKindPresenter().addType(ImageCD.TYPEID, PROP_IMAGE);
     }
     
-    public static AbstractAcceptPresenter createFontAcceptPresenter() {
+    public static AcceptPresenter createFontAcceptPresenter() {
         return new MidpAcceptTrensferableKindPresenter().addType(FontCD.TYPEID, PROP_FONT);
     }
     private Map<TypeID, String> typesMap;
@@ -68,7 +68,7 @@ public class MidpAcceptProducerKindPresenter extends AbstractAcceptPresenter {
         return this;
     }
     
-    public boolean isAcceptable(ComponentProducer producer) {
+    public boolean isAcceptable (ComponentProducer producer, AcceptSuggestion suggestion) {
         DescriptorRegistry registry = getComponent().getDocument().getDescriptorRegistry();
         for (TypeID type : typesMap.keySet()) {
             if (registry.isInHierarchy(type, producer.getComponentTypeID())) {
@@ -79,7 +79,7 @@ public class MidpAcceptProducerKindPresenter extends AbstractAcceptPresenter {
         return false;
     }
     
-    public final ComponentProducer.Result accept(ComponentProducer producer) {
+    public final ComponentProducer.Result accept (ComponentProducer producer, AcceptSuggestion suggestion) {
         DesignDocument document = getComponent().getDocument();
         DesignComponent resource = producer.createComponent(document).getMainComponent();
         MidpDocumentSupport.getCategoryComponent(document, ResourcesCategoryCD.TYPEID).addComponent(resource);

@@ -129,22 +129,22 @@ public final class RootCD extends ComponentDescriptor {
 
         public boolean isAcceptable (FlowDescriptor descriptor, Transferable transferable) {
             DesignComponent categoryComponent = MidpDocumentSupport.getCategoryComponent (descriptor.getRepresentedComponent ().getDocument (), DisplayablesCategoryCD.TYPEID);
-            if (AcceptSupport.isAcceptable (categoryComponent, transferable))
+            if (AcceptSupport.isAcceptable (categoryComponent, transferable, null))
                 return true;
             categoryComponent = MidpDocumentSupport.getCategoryComponent (descriptor.getRepresentedComponent ().getDocument (), PointsCategoryCD.TYPEID);
-            return AcceptSupport.isAcceptable (categoryComponent, transferable);
+            return AcceptSupport.isAcceptable (categoryComponent, transferable, null);
         }
 
         public void accept (FlowDescriptor descriptor, Transferable transferable) {
             DesignComponent categoryComponent = MidpDocumentSupport.getCategoryComponent (descriptor.getRepresentedComponent ().getDocument (), DisplayablesCategoryCD.TYPEID);
-            if (AcceptSupport.isAcceptable (categoryComponent, transferable)) {
-                ComponentProducer.Result result = AcceptSupport.accept (categoryComponent, transferable);
+            if (AcceptSupport.isAcceptable (categoryComponent, transferable, null)) {
+                ComponentProducer.Result result = AcceptSupport.accept (categoryComponent, transferable, null);
                 AcceptSupport.selectComponentProducerResult (result);
                 return;
             }
             categoryComponent = MidpDocumentSupport.getCategoryComponent (descriptor.getRepresentedComponent ().getDocument (), PointsCategoryCD.TYPEID);
-            if (AcceptSupport.isAcceptable (categoryComponent, transferable)) {
-                ComponentProducer.Result result = AcceptSupport.accept (categoryComponent, transferable);
+            if (AcceptSupport.isAcceptable (categoryComponent, transferable, null)) {
+                ComponentProducer.Result result = AcceptSupport.accept (categoryComponent, transferable, null);
                 AcceptSupport.selectComponentProducerResult (result);
             }
         }

@@ -338,7 +338,7 @@ public class TopPanel extends JPanel {
         document.getTransactionManager().readAccess(new Runnable() {
             public void run() {
                 DesignComponent component = devicePanel.getDesignComponentAt(point);
-                ret[0] = AcceptSupport.isAcceptable(component, transferable);
+                ret[0] = AcceptSupport.isAcceptable(component, transferable, null);
             }
         });
         return ret[0];
@@ -351,7 +351,7 @@ public class TopPanel extends JPanel {
         document.getTransactionManager().writeAccess(new Runnable() {
             public void run() {
                 DesignComponent component = devicePanel.getDesignComponentAt(point);
-                ComponentProducer.Result result = AcceptSupport.accept(component, transferable);
+                ComponentProducer.Result result = AcceptSupport.accept(component, transferable, null);
                 AcceptSupport.selectComponentProducerResult(result);
             }
         });

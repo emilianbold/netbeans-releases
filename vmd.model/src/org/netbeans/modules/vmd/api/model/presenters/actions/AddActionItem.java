@@ -87,7 +87,7 @@ public abstract class AddActionItem extends AbstractAction {
                 final DesignDocument document = this.component.get().getDocument();
                 document.getTransactionManager().writeAccess(new Runnable() {
                     public void run() {
-                        ComponentProducer.Result result = AcceptSupport.accept(component.get(), producer);
+                        ComponentProducer.Result result = AcceptSupport.accept(component.get(), producer, null);
                         selectedComponent = result.getMainComponent();
                     }
                 });

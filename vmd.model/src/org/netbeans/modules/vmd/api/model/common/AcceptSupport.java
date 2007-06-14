@@ -32,49 +32,49 @@ public final class AcceptSupport {
     private AcceptSupport() {
     }
     
-    public static boolean isAcceptable(DesignComponent component, Transferable transferable) {
+    public static boolean isAcceptable (DesignComponent component, Transferable transferable, AcceptSuggestion suggestion) {
         if (component == null  ||  transferable == null)
             return false;
         ComponentProducer producer = DefaultDataFlavor.decodeFromDataFlavors (component.getDocument (), transferable);
-        for (AbstractAcceptPresenter presenter : component.getPresenters (AbstractAcceptPresenter.class))
+        for (AcceptPresenter presenter : component.getPresenters (AcceptPresenter.class))
             switch (presenter.getKind ()) {
                 case COMPONENT_PRODUCER:
-                    if (producer != null  &&  presenter.isAcceptable (producer))
+                    if (producer != null  &&  presenter.isAcceptable (producer, suggestion))
                         return true;
                     break;
                 case TRANSFERABLE:
-                    if (presenter.isAcceptable (transferable))
+                    if (presenter.isAcceptable (transferable, suggestion))
                         return true;
                     break;
             }
         return false;
     }
 
-    public static ComponentProducer.Result accept (DesignComponent component, Transferable transferable) {
+    public static ComponentProducer.Result accept (DesignComponent component, Transferable transferable, AcceptSuggestion suggestion) {
         if (component == null || transferable == null)
             return null;
         ComponentProducer producer = DefaultDataFlavor.decodeFromDataFlavors (component.getDocument (), transferable);
-        for (AbstractAcceptPresenter presenter : component.getPresenters (AbstractAcceptPresenter.class))
+        for (AcceptPresenter presenter : component.getPresenters (AcceptPresenter.class))
             switch (presenter.getKind ()) {
                 case COMPONENT_PRODUCER:
-                    if (producer != null  &&  presenter.isAcceptable (producer))
-                        return presenter.accept (producer);
+                    if (producer != null  &&  presenter.isAcceptable (producer, suggestion))
+                        return presenter.accept (producer, suggestion);
                     break;
                 case TRANSFERABLE:
-                    if (presenter.isAcceptable (transferable))
-                        return presenter.accept (transferable);
+                    if (presenter.isAcceptable (transferable, suggestion))
+                        return presenter.accept (transferable, suggestion);
                     break;
             }
         return null;
     }
 
-    public static boolean isAcceptable(DesignComponent component, ComponentProducer producer) {
+    public static boolean isAcceptable (DesignComponent component, ComponentProducer producer, AcceptSuggestion suggestion) {
         if (component == null  ||  producer == null)
             return false;
-        for (AbstractAcceptPresenter presenter : component.getPresenters (AbstractAcceptPresenter.class))
+        for (AcceptPresenter presenter : component.getPresenters (AcceptPresenter.class))
             switch (presenter.getKind ()) {
                 case COMPONENT_PRODUCER:
-                    if (presenter.isAcceptable (producer))
+                    if (presenter.isAcceptable (producer, suggestion))
                         return true;
                     break;
                 case TRANSFERABLE:
@@ -83,14 +83,14 @@ public final class AcceptSupport {
         return false;
     }
     
-    public static ComponentProducer.Result accept(DesignComponent component, ComponentProducer producer) {
+    public static ComponentProducer.Result accept (DesignComponent component, ComponentProducer producer, AcceptSuggestion suggestion) {
         if (component == null  || producer == null)
             return null;
-        for (AbstractAcceptPresenter presenter : component.getPresenters (AbstractAcceptPresenter.class))
+        for (AcceptPresenter presenter : component.getPresenters (AcceptPresenter.class))
             switch (presenter.getKind ()) {
                 case COMPONENT_PRODUCER:
-                    if (presenter.isAcceptable (producer))
-                        return presenter.accept (producer);
+                    if (presenter.isAcceptable (producer, suggestion))
+                        return presenter.accept (producer, suggestion);
                     break;
                 case TRANSFERABLE:
                     break;

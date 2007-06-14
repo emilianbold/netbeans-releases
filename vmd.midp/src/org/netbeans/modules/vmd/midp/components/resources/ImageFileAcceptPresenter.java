@@ -22,6 +22,7 @@ import java.awt.datatransfer.Transferable;
 import org.netbeans.modules.vmd.api.model.ComponentProducer.Result;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.TypeID;
+import org.netbeans.modules.vmd.api.model.common.AcceptSuggestion;
 import org.netbeans.modules.vmd.midp.components.MidpDocumentSupport;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.categories.ResourcesCategoryCD;
@@ -38,8 +39,8 @@ public class ImageFileAcceptPresenter extends FileAcceptPresenter {
         super(propertyName, typeID, fileExtensions);
     }
     
-    public Result accept(Transferable transferable) {
-        Result result = super.accept(transferable);
+    public Result accept (Transferable transferable, AcceptSuggestion suggestion) {
+        Result result = super.accept(transferable, suggestion);
         DesignComponent image = result.getComponents().iterator().next();
         FileObject fileObject = super.getNodeFile(transferable);
         if (fileObject == null)

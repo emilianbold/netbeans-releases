@@ -18,7 +18,6 @@
  */
 package org.netbeans.modules.vmd.midp.components;
 
-import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.IOException;
@@ -29,8 +28,9 @@ import org.netbeans.modules.vmd.api.model.ComponentProducer.Result;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.api.model.TypeID;
-import org.netbeans.modules.vmd.api.model.common.AbstractAcceptPresenter;
+import org.netbeans.modules.vmd.api.model.common.AcceptPresenter;
 import org.netbeans.modules.vmd.api.model.common.DesignComponentDataFlavor;
+import org.netbeans.modules.vmd.api.model.common.AcceptSuggestion;
 import org.netbeans.modules.vmd.midp.components.resources.FontCD;
 import org.netbeans.modules.vmd.midp.components.resources.ImageCD;
 import org.netbeans.modules.vmd.midp.components.resources.TickerCD;
@@ -40,25 +40,25 @@ import org.openide.util.Exceptions;
  *
  * @author Karol Harezlak
  */
-public class MidpAcceptTrensferableKindPresenter extends AbstractAcceptPresenter {
+public class MidpAcceptTrensferableKindPresenter extends AcceptPresenter {
     
     private static final String PROP_IMAGE = "image"; //NOI18N
     private static final String PROP_FONT = "font"; //NOI18N
     private static final String PROP_TICKER = "ticker"; //NOI18N
     
-    public static AbstractAcceptPresenter createTickerAcceptPresenter() {
+    public static AcceptPresenter createTickerAcceptPresenter() {
         return new MidpAcceptTrensferableKindPresenter().addType(TickerCD.TYPEID, PROP_TICKER);
     }
     
-    public static AbstractAcceptPresenter createImageAcceptPresenter() {
+    public static AcceptPresenter createImageAcceptPresenter() {
         return new MidpAcceptTrensferableKindPresenter().addType(ImageCD.TYPEID, PROP_IMAGE);
     }
     
-    public static AbstractAcceptPresenter createFontAcceptPresenter() {
+    public static AcceptPresenter createFontAcceptPresenter() {
         return new MidpAcceptTrensferableKindPresenter().addType(FontCD.TYPEID, PROP_FONT);
     }
     
-    public static AbstractAcceptPresenter createImageItemFromImageAcceptPresenter() {
+    public static AcceptPresenter createImageItemFromImageAcceptPresenter() {
         return new MidpAcceptTrensferableKindPresenter().addType(ImageCD.TYPEID, PROP_IMAGE);
     }
     
@@ -67,7 +67,7 @@ public class MidpAcceptTrensferableKindPresenter extends AbstractAcceptPresenter
     private String propertyName;
    
     public MidpAcceptTrensferableKindPresenter() {
-        super(AbstractAcceptPresenter.Kind.TRANSFERABLE);
+        super(AcceptPresenter.Kind.TRANSFERABLE);
         typesMap = new HashMap<TypeID, String>();
     }
     
@@ -81,7 +81,7 @@ public class MidpAcceptTrensferableKindPresenter extends AbstractAcceptPresenter
         return this;
     }
 
-    public boolean isAcceptable(Transferable transferable) {
+    public boolean isAcceptable (Transferable transferable, AcceptSuggestion suggestion) {
         if (typesMap.values().isEmpty())
             throw new IllegalArgumentException("No types to check. Use addNewType method to add types to check"); //NOI18N
         try {
@@ -100,7 +100,7 @@ public class MidpAcceptTrensferableKindPresenter extends AbstractAcceptPresenter
         return false;
     }
     
-    public Result accept(Transferable transferable) {
+    public Result accept (Transferable transferable, AcceptSuggestion suggestion) {
         getComponent().writeProperty(propertyName, PropertyValue.createComponentReference(this.component));
         propertyName = null;
         return new ComponentProducer.Result(this.component);

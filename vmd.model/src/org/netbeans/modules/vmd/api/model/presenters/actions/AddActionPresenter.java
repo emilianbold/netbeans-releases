@@ -66,7 +66,7 @@ public abstract class AddActionPresenter extends Presenter {
                     for (ComponentDescriptor descriptor : document.getDescriptorRegistry().getComponentDescriptors()){
                         if (getComponent().getDocument().getDescriptorRegistry().isInHierarchy(type, descriptor.getTypeDescriptor().getThisType())) {
                             for (ComponentProducer producer : document.getDescriptorRegistry().getComponentProducers()) {
-                                if (producer.getComponentTypeID().equals(descriptor.getTypeDescriptor().getThisType()) && AcceptSupport.isAcceptable(getComponent(), producer)){
+                                if (producer.getComponentTypeID().equals(descriptor.getTypeDescriptor().getThisType()) && AcceptSupport.isAcceptable(getComponent(), producer, null)){
                                     actions.add(AddActionItem.getInstance(getComponent(), producer));
                                 }
                             }

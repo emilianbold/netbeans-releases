@@ -18,13 +18,14 @@
  */
 package org.netbeans.modules.vmd.midp.general;
 
-import org.netbeans.modules.vmd.api.model.common.AbstractAcceptPresenter;
+import org.netbeans.modules.vmd.api.model.common.AcceptPresenter;
+import org.netbeans.modules.vmd.api.model.common.AcceptSuggestion;
 import org.netbeans.modules.vmd.api.model.*;
 
 /**
  * @author David Kaspar
  */
-public class AcceptTypePresenter extends AbstractAcceptPresenter {
+public class AcceptTypePresenter extends AcceptPresenter {
     
     private TypeID typeID;
     
@@ -34,13 +35,13 @@ public class AcceptTypePresenter extends AbstractAcceptPresenter {
         this.typeID = typeID;
     }
     
-    public final boolean isAcceptable(ComponentProducer producer) {
+    public final boolean isAcceptable (ComponentProducer producer, AcceptSuggestion suggestion) {
         DescriptorRegistry registry = getComponent().getDocument().getDescriptorRegistry();
         TypeID producerTypeID = producer.getComponentTypeID ();
         return registry.isInHierarchy(typeID, producerTypeID)  &&  notifyAccepting (producerTypeID);
     }
 
-    public final ComponentProducer.Result accept(ComponentProducer producer) {
+    public final ComponentProducer.Result accept (ComponentProducer producer, AcceptSuggestion suggestion) {
         ComponentProducer.Result result = producer.createComponent (getComponent ().getDocument ());
         DesignComponent component = result.getMainComponent();
         if (component != null)

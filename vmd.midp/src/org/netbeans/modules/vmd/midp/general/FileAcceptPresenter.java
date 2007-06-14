@@ -38,8 +38,6 @@ import org.netbeans.modules.vmd.midp.components.MidpProjectSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeTransfer;
 import org.openide.util.Exceptions;
@@ -48,13 +46,13 @@ import org.openide.util.Exceptions;
  *
  * @author Karol Harezlak
  */
-public abstract class FileAcceptPresenter extends AbstractAcceptPresenter {
+public abstract class FileAcceptPresenter extends AcceptPresenter {
     
     private Map<String, TypeID> extensionsMap;
     private Map<String, String> propertyNamesMap;
     
     public FileAcceptPresenter(String propertyName, TypeID typeID, String... fileExtensions) {
-        super(AbstractAcceptPresenter.Kind.TRANSFERABLE);
+        super(AcceptPresenter.Kind.TRANSFERABLE);
         extensionsMap = new HashMap<String, TypeID>();
         propertyNamesMap = new HashMap<String, String>();
         addFileExtensions(propertyName, typeID, fileExtensions);
@@ -71,7 +69,7 @@ public abstract class FileAcceptPresenter extends AbstractAcceptPresenter {
         return this;
     }
     
-    public boolean isAcceptable(Transferable transferable) {
+    public boolean isAcceptable (Transferable transferable, AcceptSuggestion suggestion) {
         assert (!extensionsMap.isEmpty());
         FileObject fileObject = getNodeFile(transferable);
         if (fileObject == null && !belongsToProject(fileObject))
@@ -86,7 +84,7 @@ public abstract class FileAcceptPresenter extends AbstractAcceptPresenter {
         return false;
     }
     
-    public ComponentProducer.Result accept(Transferable transferable) {
+    public ComponentProducer.Result accept (Transferable transferable, AcceptSuggestion suggestion) {
         FileObject fileObject = getNodeFile(transferable);
         TypeID typeID = getTypeForExtension(fileObject.getExt());
         String propertyName = getPropertyNameForExtension(fileObject.getExt());

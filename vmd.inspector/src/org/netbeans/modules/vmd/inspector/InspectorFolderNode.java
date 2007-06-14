@@ -41,7 +41,7 @@ import org.netbeans.modules.vmd.api.io.DataEditorView;
 
 import org.netbeans.modules.vmd.api.io.DataObjectContext;
 import org.netbeans.modules.vmd.api.model.ComponentProducer;
-import org.netbeans.modules.vmd.api.model.common.AbstractAcceptPresenter;
+import org.netbeans.modules.vmd.api.model.common.AcceptPresenter;
 import org.netbeans.modules.vmd.api.model.common.DesignComponentDataFlavor;
 import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
 import org.netbeans.modules.vmd.api.properties.common.PropertiesSupport;
@@ -159,23 +159,23 @@ final class InspectorFolderNode extends AbstractNode {
         final DesignComponent ifnc = transComponent;
         ifnc.getDocument().getTransactionManager().readAccess(new Runnable() {
             public void run() {
-                Map<AbstractAcceptPresenter, ComponentProducer> presentersMap = new HashMap<AbstractAcceptPresenter,ComponentProducer>();
+                Map<AcceptPresenter, ComponentProducer> presentersMap = new HashMap<AcceptPresenter,ComponentProducer>();
                 if (component == null)
                     return;
-                for ( AbstractAcceptPresenter presenter : component.get().getPresenters(AbstractAcceptPresenter.class) ){
+                for ( AcceptPresenter presenter : component.get().getPresenters(AcceptPresenter.class) ){
                     ComponentProducer producer = DocumentSupport.getComponentProducer(ifnc.getDocument(), ifnc.getType());
                     presentersMap.put(presenter, producer);
                 }
-                for (final AbstractAcceptPresenter presenter : presentersMap.keySet()) {
+                for (final AcceptPresenter presenter : presentersMap.keySet()) {
                     final Transferable trans = new NodeTransferable(ifnc);
                     System.out.println(presenter);
-                    System.out.println(presenter.isAcceptable(trans));
-                    if (presenter.getKind() == AbstractAcceptPresenter.Kind.TRANSFERABLE &&  presenter.isAcceptable(trans)) {
+                    System.out.println(presenter.isAcceptable(trans, null));
+                    if (presenter.getKind() == AcceptPresenter.Kind.TRANSFERABLE &&  presenter.isAcceptable(trans, null)) {
                         pasteType = new PasteType() {
                             public Transferable paste() throws IOException {
                                 ifnc.getDocument().getTransactionManager().writeAccess(new Runnable() {
                                     public void run() {
-                                        presenter.accept(trans);
+                                        presenter.accept(trans, null);
                                     }
                                 });
                                 return t;

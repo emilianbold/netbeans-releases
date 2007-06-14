@@ -24,7 +24,8 @@ import org.netbeans.modules.vmd.api.inspector.InspectorOrderingController;
 import org.netbeans.modules.vmd.api.inspector.InspectorPositionPresenter;
 import org.netbeans.modules.vmd.api.inspector.common.ArrayPropertyOrderingController;
 import org.netbeans.modules.vmd.api.model.*;
-import org.netbeans.modules.vmd.api.model.common.AbstractAcceptPresenter;
+import org.netbeans.modules.vmd.api.model.common.AcceptPresenter;
+import org.netbeans.modules.vmd.api.model.common.AcceptSuggestion;
 import org.netbeans.modules.vmd.api.model.presenters.actions.ActionsPresenter;
 import org.netbeans.modules.vmd.api.model.presenters.actions.DeleteDependencyPresenter;
 import org.netbeans.modules.vmd.api.model.presenters.actions.DeletePresenter;
@@ -209,18 +210,18 @@ public class ItemCD extends ComponentDescriptor {
         return Collections.<InspectorOrderingController>singletonList(new ArrayPropertyOrderingController(PROP_COMMANDS, 0, ItemCommandEventSourceCD.TYPEID));
     }
     
-    private static class AcceptItemCommandPresenter extends AbstractAcceptPresenter {
+    private static class AcceptItemCommandPresenter extends AcceptPresenter {
         
         public AcceptItemCommandPresenter() {
             super(Kind.COMPONENT_PRODUCER);
         }
 
-        public boolean isAcceptable (ComponentProducer producer) {
+        public boolean isAcceptable (ComponentProducer producer, AcceptSuggestion suggestion) {
             DescriptorRegistry registry = getComponent ().getDocument ().getDescriptorRegistry ();
             return registry.isInHierarchy (CommandCD.TYPEID, producer.getComponentTypeID ());
         }
 
-        public final ComponentProducer.Result accept (ComponentProducer producer) {
+        public final ComponentProducer.Result accept (ComponentProducer producer, AcceptSuggestion suggestion) {
             DesignComponent item = getComponent ();
             DesignDocument document = item.getDocument ();
 

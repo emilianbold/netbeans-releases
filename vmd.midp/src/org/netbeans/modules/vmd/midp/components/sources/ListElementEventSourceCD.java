@@ -22,7 +22,7 @@ import org.netbeans.modules.vmd.api.inspector.InspectorPositionPresenter;
 import org.netbeans.modules.vmd.api.inspector.common.RenameAction;
 import org.netbeans.modules.vmd.api.model.*;
 import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
-import org.netbeans.modules.vmd.api.model.common.AbstractAcceptPresenter;
+import org.netbeans.modules.vmd.api.model.common.AcceptPresenter;
 import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter;
 import org.netbeans.modules.vmd.api.model.presenters.actions.*;
 import org.netbeans.modules.vmd.api.model.support.ArraySupport;
@@ -37,7 +37,6 @@ import org.netbeans.modules.vmd.midp.components.resources.FontCD;
 import org.netbeans.modules.vmd.midp.components.resources.ImageCD;
 import org.netbeans.modules.vmd.midp.flow.FlowEventSourcePinPresenter;
 import org.netbeans.modules.vmd.midp.flow.FlowListElementPinOrderPresenter;
-import org.netbeans.modules.vmd.midp.general.FileAcceptPresenter;
 import org.netbeans.modules.vmd.midp.general.AcceptTypePresenter;
 import org.netbeans.modules.vmd.midp.inspector.controllers.ComponentsCategoryPC;
 import org.netbeans.modules.vmd.midp.inspector.folders.MidpInspectorSupport;
@@ -96,7 +95,7 @@ public final class ListElementEventSourceCD extends ComponentDescriptor {
     protected void gatherPresenters (ArrayList<Presenter> presenters) {
         DocumentSupport.removePresentersOfClass (presenters, InspectorPositionPresenter.class);
         DocumentSupport.removePresentersOfClass (presenters, ActionsPresenter.class);
-        DocumentSupport.removePresentersOfClass (presenters, AbstractAcceptPresenter.class);
+        DocumentSupport.removePresentersOfClass (presenters, AcceptPresenter.class);
         MidpActionsSupport.addCommonActionsPresenters(presenters, false, true, false, true, true);
         MidpActionsSupport.addMoveActionPresenter(presenters, ListCD.PROP_ELEMENTS);
         presenters.addAll(ActionsSupport.createByParent(DeleteAction.class, RenameAction.class));
