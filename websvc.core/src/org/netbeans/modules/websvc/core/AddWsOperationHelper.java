@@ -29,13 +29,10 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
 import java.io.IOException;
-import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
@@ -63,7 +60,6 @@ import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.common.method.MethodCustomizer;
 import org.netbeans.modules.j2ee.common.method.MethodCustomizerFactory;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
-import org.netbeans.modules.j2ee.common.method.MethodModel.Variable;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 
@@ -102,12 +98,12 @@ public class AddWsOperationHelper {
     
     protected MethodCustomizer createDialog(FileObject fileObject, MethodModel methodModel) throws IOException {
         
-        return MethodCustomizerFactory.operationMethod(
-                getTitle(),
-                methodModel,
+        return MethodCustomizerFactory.operationMethod (
+                getTitle(), 
+                methodModel, 
                 getExistingMethods(fileObject));
     }
-    
+
     public void addMethod(FileObject fileObject, String className) throws IOException {
         if (className == null) {
             return;
@@ -125,16 +121,10 @@ public class AddWsOperationHelper {
         }
     }
     
-    public void addMethod(FileObject implClassFO, String  methodName, String returnType, 
-            String methodBody, Map<String, String> params, List<String> exceptions, Set<Modifier> modifiers){
-            MethodModel methodModel = createMethodModel(methodName, returnType, methodBody, params, exceptions, modifiers);
-            addOperation(methodModel, implClassFO);
-    }
-    
     protected void okButtonPressed(MethodModel method, FileObject implClassFo, String className) throws IOException {
         addOperation(method, implClassFo);
     }
-    
+
     protected FileObject getDDFile(FileObject fileObject) {
         return EjbJar.getEjbJar(fileObject).getDeploymentDescriptor();
     }
@@ -144,7 +134,7 @@ public class AddWsOperationHelper {
      */
     private void addOperation(final MethodModel methodModel, final FileObject implClassFo) {
         final JavaSource targetSource = JavaSource.forFileObject(implClassFo);
-        final ProgressHandle handle = ProgressHandleFactory.createHandle("Adding operation");
+        final ProgressHandle handle = ProgressHandleFactory.createHandle("Adding operation"); 
         handle.start(100);
         final CancellableTask<WorkingCopy> modificationTask = new CancellableTask<WorkingCopy>() {
             public void run(WorkingCopy workingCopy) throws IOException {
@@ -158,18 +148,18 @@ public class AddWsOperationHelper {
                         ClassTree javaClass = genUtils.getClassTree();
                         TypeElement webMethodAn = workingCopy.getElements().getTypeElement("javax.jws.WebMethod"); //NOI18N
                         TypeElement webParamAn = workingCopy.getElements().getTypeElement("javax.jws.WebParam"); //NOI18N
-                        
+
                         AnnotationTree webMethodAnnotation = make.Annotation(
-                                make.QualIdent(webMethodAn),
-                                Collections.<ExpressionTree>emptyList()
-                                );
+                            make.QualIdent(webMethodAn), 
+                            Collections.<ExpressionTree>emptyList()
+                        );
                         // Public modifier
                         ModifiersTree modifiersTree = make.Modifiers(
-                                Collections.<Modifier>singleton(Modifier.PUBLIC),
-                                Collections.<AnnotationTree>emptyList()
-                                );
+                            Collections.<Modifier>singleton(Modifier.PUBLIC),
+                            Collections.<AnnotationTree>emptyList()
+                        );
                         // add @WebMethod annotation
-                        if(createAnnotations)
+                        if(createAnnotations) 
                             modifiersTree = make.addModifiersAnnotation(modifiersTree, webMethodAnnotation);
                         
                         handle.progress(40);
@@ -179,24 +169,24 @@ public class AddWsOperationHelper {
                             if (TypeKind.VOID == primitiveType.getPrimitiveTypeKind()) {
                                 TypeElement oneWayAn = workingCopy.getElements().getTypeElement("javax.jws.Oneway"); //NOI18N
                                 AnnotationTree oneWayAnnotation = make.Annotation(
-                                        make.QualIdent(oneWayAn),
-                                        Collections.<ExpressionTree>emptyList()
-                                        );
-                                if(createAnnotations)
+                                    make.QualIdent(oneWayAn), 
+                                    Collections.<ExpressionTree>emptyList()
+                                );
+                                if(createAnnotations) 
                                     modifiersTree = make.addModifiersAnnotation(modifiersTree, oneWayAnnotation);
                             }
                         }
-                        
-                        // add @WebParam annotations
+
+                        // add @WebParam annotations 
                         List<? extends VariableTree> parameters = method.getParameters();
                         List<VariableTree> newParameters = new ArrayList<VariableTree>();
-                        if(createAnnotations) {
+                        if(createAnnotations) { 
                             for (VariableTree param:parameters) {
                                 AnnotationTree paramAnnotation = make.Annotation(
-                                        make.QualIdent(webParamAn),
-                                        Collections.<ExpressionTree>singletonList(
+                                    make.QualIdent(webParamAn), 
+                                    Collections.<ExpressionTree>singletonList(
                                         make.Assignment(make.Identifier("name"), make.Literal(param.getName().toString()))) //NOI18N
-                                        );
+                                );
                                 newParameters.add(genUtils.addAnnotation(param, paramAnnotation));
                             }
                         } else {
@@ -206,15 +196,15 @@ public class AddWsOperationHelper {
                         handle.progress(70);
                         // create new (annotated) method
                         MethodTree  annotatedMethod = make.Method(
-                                modifiersTree,
-                                method.getName(),
-                                method.getReturnType(),
-                                method.getTypeParameters(),
-                                newParameters,
-                                method.getThrows(),
-                                getMethodBody(method.getReturnType()), //NOI18N
-                                (ExpressionTree)method.getDefaultValue());
-                        Comment comment = Comment.create(Style.JAVADOC, 0,0,0,NbBundle.getMessage(AddWsOperationHelper.class, "TXT_WSOperation"));
+                                    modifiersTree,
+                                    method.getName(),
+                                    method.getReturnType(),
+                                    method.getTypeParameters(),
+                                    newParameters,
+                                    method.getThrows(),
+                                    getMethodBody(method.getReturnType()), //NOI18N
+                                    (ExpressionTree)method.getDefaultValue());
+                        Comment comment = Comment.create(Style.JAVADOC, 0,0,0,NbBundle.getMessage(AddWsOperationHelper.class, "TXT_WSOperation"));                    
                         make.addComment(annotatedMethod, comment, true);
                         
                         handle.progress(90);
@@ -240,7 +230,7 @@ public class AddWsOperationHelper {
                     handle.finish();
                 }
             }
-        });
+        });               
     }
     
     private String getMethodBody(Tree returnType) {
@@ -269,9 +259,9 @@ public class AddWsOperationHelper {
         }
         return nodes[0].getLookup().lookup(MethodsNode.class);
     }
-     */
+    */
     
-    private Collection<MethodModel> getExistingMethods(FileObject implClass) {
+    private Collection<MethodModel> getExistingMethods(FileObject implClass) {       
         JavaSource javaSource = JavaSource.forFileObject(implClass);
         final ResultHolder<MethodModel> result = new ResultHolder<MethodModel>();
         if (javaSource!=null) {
@@ -309,7 +299,7 @@ public class AddWsOperationHelper {
         for (ExecutableElement method:methods) {
             //Set<Modifier> modifiers = method.getModifiers();
             //if (modifiers.contains(Modifier.PUBLIC)) {
-            publicMethods.add(method);
+                publicMethods.add(method);
             //}
         }
         return publicMethods;
@@ -327,24 +317,5 @@ public class AddWsOperationHelper {
         public void setResult(Collection<E> result) {
             this.result=result;
         }
-    }
-
-    private MethodModel createMethodModel(String  methodName, String returnType, 
-            String methodBody, Map<String, String> params, List<String> exceptions, Set<Modifier> modifiers){
-        List<Variable> parameters = new ArrayList<Variable>();
-        Set<String> paramNames = params.keySet();
-        
-        for(String paramName : paramNames){            
-            parameters.add(MethodModel.Variable.create(params.get(paramName), paramName));
-        }
-                 
-        return MethodModel.create(
-                methodName,
-                returnType,
-                methodBody,
-                parameters,
-                exceptions,
-                modifiers
-                );
     }
 }
