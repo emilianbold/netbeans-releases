@@ -244,6 +244,22 @@ public abstract class DDViewFactory implements Serializable {
         
     }
     
+    /** View factory for sun-resource.xml specific views
+     */
+    public static class SunResourceDDViewFactory extends DDViewFactory {
+        
+        private static final long serialVersionUID = -8759598009819101753L;
+        
+        public DesignMultiViewDesc[] getMultiViewDesc(SunDescriptorDataObject dataObject) {
+            return new DDView[0];
+        }
+        
+        @Override
+        public MultiViewElement createElement(SunDescriptorDataObject dataObject, final String name) {
+            return super.createElement(dataObject, name);
+        }
+        
+    }
     
     /** Common DDView class that represents a top level tab in the multiview page.
      *  Parameterized by it's name (TODO and what else ???)

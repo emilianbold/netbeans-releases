@@ -31,6 +31,7 @@ public final class DDType {
     private static final String NAME_SUNCMPMAPPING = "sun-cmp-mappings.xml"; // NOI18N
     private static final String NAME_SUNEJBJAR = "sun-ejb-jar.xml"; // NOI18N
     private static final String NAME_SUNWEBAPP = "sun-web.xml"; // NOI18N
+    private static final String NAME_SUNRESOURCE = "sun-resource.xml"; // NOI18N
     
     // Type declarations for the different descriptor types.
     public static DDType DD_SUN_WEB_APP = new DDType(NAME_SUNWEBAPP, DDViewFactory.SunWebDDViewFactory.class);
@@ -38,7 +39,8 @@ public final class DDType {
     public static DDType DD_SUN_APP_CLIENT = new DDType(NAME_SUNAPPCLIENT, DDViewFactory.SunAppClientDDViewFactory.class);
     public static DDType DD_SUN_APPLICATION = new DDType(NAME_SUNAPPLICATION, DDViewFactory.SunApplicationDDViewFactory.class);
     public static DDType DD_SUN_CMP_MAPPINGS = new DDType(NAME_SUNCMPMAPPING, DDViewFactory.SunCmpMappingsDDViewFactory.class);
-
+    public static DDType DD_SUN_RESOURCE = new DDType(NAME_SUNRESOURCE, DDViewFactory.SunResourceDDViewFactory.class);
+    
     // Various indexes for finding a DDType object
     
     private static Map<String, DDType> fileToTypeMap = new HashMap<String, DDType>(11);
@@ -49,6 +51,7 @@ public final class DDType {
         fileToTypeMap.put(NAME_SUNAPPLICATION, DD_SUN_APPLICATION);
         fileToTypeMap.put(NAME_SUNAPPCLIENT, DD_SUN_APP_CLIENT);
         fileToTypeMap.put(NAME_SUNCMPMAPPING, DD_SUN_CMP_MAPPINGS);
+        fileToTypeMap.put(NAME_SUNRESOURCE, DD_SUN_RESOURCE);
     }
     
     public static DDType getDDType(String fileName) {
