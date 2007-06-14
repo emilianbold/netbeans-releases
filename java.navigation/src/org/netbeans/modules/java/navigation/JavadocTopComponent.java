@@ -19,13 +19,11 @@
 
 package org.netbeans.modules.java.navigation;
 
-import java.awt.Rectangle;
+import java.awt.BorderLayout;
 import java.io.Serializable;
-import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.SwingUtilities;
-import org.openide.awt.HtmlBrowser;
+import org.netbeans.api.java.source.ui.ElementJavadoc;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -46,52 +44,20 @@ public final class JavadocTopComponent extends TopComponent {
     
     private static final String PREFERRED_ID = "JavadocTopComponent";
     
+    private DocumentationScrollPane documentationPane;
+    
     private JavadocTopComponent() {
         initComponents();
         setName(NbBundle.getMessage(JavadocTopComponent.class, "CTL_JavadocTopComponent"));
         setToolTipText(NbBundle.getMessage(JavadocTopComponent.class, "HINT_JavadocTopComponent"));
         setIcon(Utilities.loadImage(ICON_PATH, true));
+        
+        documentationPane = new DocumentationScrollPane( false );
+        add( documentationPane, BorderLayout.CENTER );
     }
     
-    private static final Rectangle ZERO = new Rectangle(0,0,1,1);
-
-    void setJavadoc(String header, String javadoc){    
-        if (javadoc == null) {
-            javadocEditorPane.setText("");
-        } else {
-            javadoc = javadoc
-                    .replaceAll("@author",     "<br><b>Author:</b>") // NOI18N
-                    .replaceAll("@deprecated", "<br><b>Deprecated.</b>") // NOI18N
-                    .replaceAll("@exception",  "<br><b>Throws:</b>") // NOI18N
-                    .replaceAll("@param",      "<br><b>Parameter:</b>") // NOI18N
-                    .replaceAll("@return",     "<br><b>Returns:</b>") // NOI18N
-                    .replaceAll("@see",        "<br><b>See Also:</b>") // NOI18N
-                    .replaceAll("@since",      "<br><b>Since:</b>") // NOI18N
-                    .replaceAll("@throws",     "<br><b>Throws:</b>") // NOI18N
-                    .replaceAll("@version",    "<br><b>Version:</b>") // NOI18N
-                    .replaceAll("@beaninfo",    "<br><b>@beaninfo</b><br>") // NOI18N
-                    .replaceAll("\\{@link ([^}]+)\\}", "$1") // NOI18N
-                    .replaceAll("\\{@code ([^}]+)\\}", "\\<code\\>$1\\</code\\>") // NOI18N
-                    //.replaceAll("\n\n",         "<br>") // NOI18N
-                    ;
-            javadocEditorPane.setText(
-                    "<html>" // NOI18N
-                    + "<head>" // NOI18N
-//                  + "<link rel=\"StyleSheet\" href=\"nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css\" type=\"text/css\">" // NOI18N
-                    + "<link rel=\"StyleSheet\" href=\"nbresloc:/org/netbeans/modules/java/navigation/resources/ide.css\" type=\"text/css\">" // NOI18N
-                    + "</head>" // NOI18N
-                    + "<body style=\"background-color: rgb(255,255,222);\">" // NOI18N
-                    + (header == null ? "" : ("<b>" + header + "</b><br><hr>"))
-                    + javadoc
-                    + "</body>" // NOI18N
-                    + "</html>" // NOI18N
-                    );
-        }
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                javadocEditorPane.scrollRectToVisible(ZERO);
-            }
-        });
+    void setJavadoc( ElementJavadoc doc ){    
+        documentationPane.setData( doc );
     }
     
     public static boolean shouldUpdate() {
@@ -111,46 +77,11 @@ public final class JavadocTopComponent extends TopComponent {
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        javadocScrollPane = new javax.swing.JScrollPane();
-        javadocEditorPane = new javax.swing.JEditorPane();
-
-        javadocEditorPane.setBackground(new java.awt.Color(255, 255, 222));
-        javadocEditorPane.setContentType("text/html");
-        javadocEditorPane.setEditable(false);
-        javadocEditorPane.addHyperlinkListener(new javax.swing.event.HyperlinkListener() {
-            public void hyperlinkUpdate(javax.swing.event.HyperlinkEvent evt) {
-                javadocEditorPaneHyperlinkUpdate(evt);
-            }
-        });
-        javadocScrollPane.setViewportView(javadocEditorPane);
-
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
-        this.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(javadocScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(javadocScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 300, Short.MAX_VALUE)
-        );
+        setLayout(new java.awt.BorderLayout());
     }// </editor-fold>//GEN-END:initComponents
-
-private void javadocEditorPaneHyperlinkUpdate(javax.swing.event.HyperlinkEvent evt) {//GEN-FIRST:event_javadocEditorPaneHyperlinkUpdate
-    if (javax.swing.event.HyperlinkEvent.EventType.ENTERED.equals(evt.getEventType())) {
-    } else if (javax.swing.event.HyperlinkEvent.EventType.ACTIVATED.equals(evt.getEventType())) {
-        URL url = evt.getURL();
-        if (url !=null /*&& url.getProtocol().equals("http") */) {
-            HtmlBrowser.URLDisplayer.getDefault().showURL(url);
-        }
-    } else if (javax.swing.event.HyperlinkEvent.EventType.EXITED.equals(evt.getEventType())) {
-    }
-}//GEN-LAST:event_javadocEditorPaneHyperlinkUpdate
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JEditorPane javadocEditorPane;
-    private javax.swing.JScrollPane javadocScrollPane;
     // End of variables declaration//GEN-END:variables
     
     /**
@@ -187,9 +118,15 @@ private void javadocEditorPaneHyperlinkUpdate(javax.swing.event.HyperlinkEvent e
     public int getPersistenceType() {
         return TopComponent.PERSISTENCE_ALWAYS;
     }
+
+    @Override
+    protected void componentActivated() {
+        super.componentActivated();
+        documentationPane.getViewport().getView().requestFocusInWindow();
+    }
     
     public void componentOpened() {
-        javadocEditorPane.requestFocusInWindow();
+        documentationPane.getViewport().getView().requestFocusInWindow();
     }
     
     public void componentClosed() {

@@ -22,6 +22,7 @@ package org.netbeans.modules.java.navigation;
 import org.netbeans.api.java.source.ElementHandle;
 import org.openide.filesystems.FileObject;
 import javax.swing.Icon;
+import org.netbeans.api.java.source.ui.ElementJavadoc;
 
 /**
  * The interface representing Java elements in hierarchy and members pop up windows.
@@ -33,7 +34,7 @@ public interface JavaElement {
     String getLabel();
     String getTooltip();
     Icon getIcon();
-    String getJavaDoc();
+    ElementJavadoc getJavaDoc();
     void gotoElement();
     FileObject getFileObject();
     ElementHandle getElementHandle();

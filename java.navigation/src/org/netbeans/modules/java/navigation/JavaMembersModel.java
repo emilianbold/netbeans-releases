@@ -52,6 +52,7 @@ import javax.lang.model.type.TypeMirror;
 import javax.swing.Icon;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
+import org.netbeans.api.java.source.ui.ElementJavadoc;
 
 /**
  * The tree model for members pop up window.
@@ -208,7 +209,7 @@ public final class JavaMembersModel extends DefaultTreeModel {
         private String label = "";
         private String tooltip = null;
         private Icon icon = null;
-        private String javaDoc = "";
+        private ElementJavadoc javaDoc;
 
         AbstractMembersTreeNode(FileObject fileObject,
             Element element, CompilationInfo compilationInfo) {
@@ -226,36 +227,7 @@ public final class JavaMembersModel extends DefaultTreeModel {
                     element.getModifiers()));
             setLabel(Utils.format(element));
             setToolTip(Utils.format(element, true));
-            Doc doc = compilationInfo.getElementUtilities().javaDocFor(element);
-            if (doc != null) {
-                StringBuilder stringBuilder = new StringBuilder();
-                
-                List<? extends AnnotationMirror> annotationMirrors = element.getAnnotationMirrors();
-                if (annotationMirrors != null && annotationMirrors.size() > 0) {
-                    stringBuilder.append("<b>" + // NOI18N
-                            NbBundle.getMessage(JavaMembersModel.class, "LBL_Annotations") +  // NOI18N
-                            "</b>"); // NOI18N
-                    stringBuilder.append("<br>"); // NOI18N
-                    for (AnnotationMirror annotationMirror : annotationMirrors) {
-                        stringBuilder.append(annotationMirror.toString());
-                        stringBuilder.append("<br>"); // NOI18N
-                    }
-                    stringBuilder.append("<hr>"); // NOI18N
-                }
-                
-                String javadocText = doc.getRawCommentText();
-                if (javadocText != null && javadocText.length() > 0) {
-                    if (stringBuilder.length() > 0) {
-                        stringBuilder.append("<b>" + // NOI18N
-                                NbBundle.getMessage(JavaMembersModel.class, "LBL_Javadoc") +  // NOI18N
-                                "</b>"); // NOI18N
-                        stringBuilder.append("<br>"); // NOI18N
-                    }
-                    stringBuilder.append(Utils.formatJavaDoc(javadocText));
-                }
-                
-                setJavaDoc(stringBuilder.toString());
-            }
+            setJavaDoc( ElementJavadoc.create(compilationInfo, element) );
             loadChildren(element, compilationInfo);
         }
 
@@ -300,11 +272,11 @@ public final class JavaMembersModel extends DefaultTreeModel {
             this.elementHandle = elementHandle;
         }
 
-        public String getJavaDoc() {
+        public ElementJavadoc getJavaDoc() {
             return javaDoc;
         }
 
-        public void setJavaDoc(String javaDoc) {
+        public void setJavaDoc(ElementJavadoc javaDoc) {
             this.javaDoc = javaDoc;
         }
 

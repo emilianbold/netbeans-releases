@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.java.navigation;
 
-import com.sun.javadoc.Doc;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import java.util.regex.Matcher;
@@ -32,6 +31,7 @@ import javax.swing.SwingUtilities;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.ui.ElementJavadoc;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -112,22 +112,22 @@ public class CaretListeningTask implements CancellableTask<CompilationInfo> {
                 lastEh = ElementHandle.create(element);
                 // Different element clear data
                 setDeclaration(""); // NOI18N
-                setJavadoc("", ""); // NOI18N
+                setJavadoc(null); // NOI18N
                 break;
             case PARAMETER:
                 lastEh = null; // ElementHandle not supported 
                 setDeclaration(""); // NOI18N
-                setJavadoc("", ""); // NOI18N
+                setJavadoc(null); // NOI18N
                 break;
             case LOCAL_VARIABLE:
                 lastEh = null; // ElementHandle not supported 
                 setDeclaration(Utils.format(element)); // NOI18N
-                setJavadoc("", ""); // NOI18N
+                setJavadoc(null); // NOI18N
                 return;
             default:
                 // clear
                 setDeclaration(""); // NOI18N
-                setJavadoc("", ""); // NOI18N
+                setJavadoc(null); // NOI18N
                 return;
             }
         }
@@ -160,12 +160,12 @@ public class CaretListeningTask implements CancellableTask<CompilationInfo> {
         });
     }
     
-    private void setJavadoc(final String header, final String javadoc) {
+    private void setJavadoc(final ElementJavadoc javadoc) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 JavadocTopComponent javadocTopComponent = JavadocTopComponent.findInstance();
                 if (javadocTopComponent != null && javadocTopComponent.isOpened()) {
-                    javadocTopComponent.setJavadoc(header, javadoc);
+                    javadocTopComponent.setJavadoc(javadoc);
                 }
             }
         });
@@ -190,21 +190,11 @@ public class CaretListeningTask implements CancellableTask<CompilationInfo> {
     
     private void computeAndSetJavadoc(CompilationInfo compilationInfo, Element element) {
         
-        String javadoc;
-        
-        if ( element.getKind() == ElementKind.PACKAGE ) {
-            javadoc = ""; // NOI18N
-        }
-        else {
-            Doc doc = compilationInfo.getElementUtilities().javaDocFor(element);
-            javadoc = doc == null ? "" : doc.getRawCommentText(); // NOI18N
-        }
-        
         if (isCancelled()) {
             return;
         }
                 
-        setJavadoc(element.toString(), javadoc);
+        setJavadoc(ElementJavadoc.create(compilationInfo, element));
     }
     
     private void computeAndSetDeclaration(CompilationInfo compilationInfo, Element element ) {

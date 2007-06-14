@@ -146,7 +146,11 @@ public class ElementJavadoc {
                                         }
                                     }
                                     ret[0] = new ElementJavadoc(controller, e, new URL(docURL, link));
-                                }
+                                } else {
+                                    //external URL
+                                    if( uri.isAbsolute() )
+                                        ret[0] = new ElementJavadoc( uri.toURL() );
+                                } 
                             }
                         }
                     }
@@ -190,6 +194,12 @@ public class ElementJavadoc {
             }
         }
         this.content = prepareContent(eu);
+    }
+    
+    private ElementJavadoc(URL url) {
+        assert url != null;
+        this.content = null;
+        this.docURL = url;
     }
 
     // Private section ---------------------------------------------------------

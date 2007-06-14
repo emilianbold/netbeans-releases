@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.java.navigation;
 
-import com.sun.javadoc.Doc;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -27,7 +26,6 @@ import java.util.EnumSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
@@ -49,6 +47,7 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.ui.ElementIcons;
+import org.netbeans.api.java.source.ui.ElementJavadoc;
 import org.netbeans.api.java.source.ui.ElementOpen;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
@@ -219,7 +218,7 @@ public final class JavaHierarchyModel extends DefaultTreeModel {
         private String label = "";
         private String tooltip = null;
         private Icon icon = null;
-        private String javaDoc = "";
+        private ElementJavadoc javaDoc = null;
 
         private boolean loaded = false;
 
@@ -236,39 +235,10 @@ public final class JavaHierarchyModel extends DefaultTreeModel {
             this.modifiers = element.getModifiers();
 
             setName(element.getSimpleName().toString());
-            setIcon(ElementIcons.getElementIcon(element.getKind(),
-                    element.getModifiers()));
+            setIcon(ElementIcons.getElementIcon(element.getKind(), element.getModifiers()));
             setLabel(Utils.format(element));
             setToolTip(Utils.format(element, true));
-            Doc doc = compilationInfo.getElementUtilities().javaDocFor(element);
-            if (doc != null) {
-                StringBuilder stringBuilder = new StringBuilder();
-                
-                List<? extends AnnotationMirror> annotationMirrors = element.getAnnotationMirrors();
-                if (annotationMirrors != null && annotationMirrors.size() > 0) {
-                    stringBuilder.append("<b>" + // NOI18N
-                            NbBundle.getMessage(JavaHierarchyModel.class, "LBL_Annotations") +  // NOI18N
-                            "</b>"); // NOI18N
-                    stringBuilder.append("<br>"); // NOI18N
-                    for (AnnotationMirror annotationMirror : annotationMirrors) {
-                        stringBuilder.append(annotationMirror.toString());
-                        stringBuilder.append("<br>"); // NOI18N
-                    }
-                    stringBuilder.append("<hr>"); // NOI18N
-                }
-                String javadocText = doc.getRawCommentText();
-                if (javadocText != null && javadocText.length() > 0) {
-                    if (stringBuilder.length() > 0) {
-                        stringBuilder.append("<b>" + // NOI18N
-                                NbBundle.getMessage(JavaHierarchyModel.class, "LBL_Javadoc") +  // NOI18N
-                                "</b>"); // NOI18N
-                        stringBuilder.append("<br>"); // NOI18N
-                    }
-                    stringBuilder.append(Utils.formatJavaDoc(javadocText));
-                }
-                
-                setJavaDoc(stringBuilder.toString());
-            }
+            javaDoc = ElementJavadoc.create( compilationInfo, element );
 
             if (!lazyLoadChildren) {
                 try {
@@ -332,11 +302,11 @@ public final class JavaHierarchyModel extends DefaultTreeModel {
             this.elementHandle = elementHandle;
         }
 
-        public String getJavaDoc() {
+        public ElementJavadoc getJavaDoc() {
             return javaDoc;
         }
 
-        public void setJavaDoc(String javaDoc) {
+        public void setJavaDoc(ElementJavadoc javaDoc) {
             this.javaDoc = javaDoc;
         }
 

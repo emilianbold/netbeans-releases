@@ -33,6 +33,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.swing.JComponent;
 import javax.swing.JRootPane;
+import javax.swing.JScrollPane;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
@@ -56,7 +57,6 @@ import org.openide.filesystems.FileObject;
 public class JavaMembersPanel extends javax.swing.JPanel {
     private FileObject fileObject;
     private JavaMembersModel javaMembersModel;
-    private HyperlinkListener hyperlinkListener;
 
     /**
      *
@@ -67,6 +67,9 @@ public class JavaMembersPanel extends javax.swing.JPanel {
     public JavaMembersPanel(FileObject fileObject, Element[] elements, CompilationInfo compilationInfo) {
         this.fileObject = fileObject;
         initComponents();
+        
+        docPane = new DocumentationScrollPane( true );
+        splitPane.setRightComponent( docPane );
 
         ToolTipManager.sharedInstance().registerComponent(javaMembersTree);
         ToolTipManager.sharedInstance().setLightWeightPopupEnabled(false);
@@ -91,8 +94,6 @@ public class JavaMembersPanel extends javax.swing.JPanel {
 
         javaMembersModel = new JavaMembersModel(fileObject, elements, compilationInfo);
         javaMembersTree.setModel(javaMembersModel);
-        javaDocPane.setEditorKitForContentType("text/html", new HTMLEditorKit()); // NOI18N
-        javaDocPane.setContentType("text/html"); // NOI18N
 
         registerKeyboardAction(
                 new ActionListener() {
@@ -296,19 +297,6 @@ public class JavaMembersPanel extends javax.swing.JPanel {
                 KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask(), true),
                 JComponent.WHEN_FOCUSED);
 
-        hyperlinkListener = new HyperlinkListener() {
-            public void hyperlinkUpdate(HyperlinkEvent e) {
-                if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
-                    URL url = e.getURL();
-                    if (url != null //&& url.getProtocol().equals("http")
-                            ) {
-                        HtmlBrowser.URLDisplayer.getDefault().showURL(url);
-                    }
-                }
-            }
-        };
-        javaDocPane.addHyperlinkListener(hyperlinkListener);
-
         showInheritedToggleButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent actionEvent) {
                 applyFilter();
@@ -390,9 +378,7 @@ public class JavaMembersPanel extends javax.swing.JPanel {
     }
 
     public void removeNotify() {
-        // The following two are required for fixing memory leaks
-        javaDocPane.removeHyperlinkListener(hyperlinkListener);
-        javaDocScrollPane.setViewportView(null);
+        docPane.setData(null);
         super.removeNotify();
     }
 
@@ -483,10 +469,12 @@ public class JavaMembersPanel extends javax.swing.JPanel {
         if (treePath != null) {
             Object node = treePath.getLastPathComponent();
             if (node instanceof JavaElement) {
-                Utils.showJavaDoc((JavaElement)node, javaDocPane);
+                docPane.setData( ((JavaElement)node).getJavaDoc() );
             }
         }
     }
+
+    private DocumentationScrollPane docPane;
 
     private void close() {
         Window window = SwingUtilities.getWindowAncestor(JavaMembersPanel.this);
@@ -530,8 +518,6 @@ public class JavaMembersPanel extends javax.swing.JPanel {
         splitPane = new javax.swing.JSplitPane();
         javaMembersTreeScrollPane = new javax.swing.JScrollPane();
         javaMembersTree = new javax.swing.JTree();
-        javaDocScrollPane = new javax.swing.JScrollPane();
-        javaDocPane = new javax.swing.JEditorPane();
         signatureEditorPane = new javax.swing.JEditorPane();
         filtersLabel = new javax.swing.JLabel();
         closeButton = new javax.swing.JButton();
@@ -566,11 +552,6 @@ public class JavaMembersPanel extends javax.swing.JPanel {
         javaMembersTreeScrollPane.setViewportView(javaMembersTree);
 
         splitPane.setLeftComponent(javaMembersTreeScrollPane);
-
-        javaDocPane.setEditable(false);
-        javaDocScrollPane.setViewportView(javaDocPane);
-
-        splitPane.setRightComponent(javaDocScrollPane);
 
         signatureEditorPane.setBorder(javax.swing.BorderFactory.createLineBorder(javax.swing.UIManager.getDefaults().getColor("Nb.ScrollPane.Border.color")));
         signatureEditorPane.setContentType("text/x-java");
@@ -702,8 +683,6 @@ public class JavaMembersPanel extends javax.swing.JPanel {
     public javax.swing.JTextField filterTextField;
     public javax.swing.JLabel filtersLabel;
     public javax.swing.JToolBar filtersToolbar;
-    public javax.swing.JEditorPane javaDocPane;
-    public javax.swing.JScrollPane javaDocScrollPane;
     public javax.swing.JTree javaMembersTree;
     public javax.swing.JScrollPane javaMembersTreeScrollPane;
     public javax.swing.JToggleButton showConstructorsToggleButton;

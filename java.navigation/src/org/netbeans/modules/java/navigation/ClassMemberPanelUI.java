@@ -7,19 +7,30 @@
 package org.netbeans.modules.java.navigation;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.event.MouseEvent;
 import javax.swing.Action;
+import javax.swing.JComponent;
 import javax.swing.KeyStroke;
 import java.awt.Toolkit;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyVetoException;
+import java.io.IOException;
+import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import javax.swing.BorderFactory;
-import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 import javax.swing.KeyStroke;
 import javax.swing.event.ChangeEvent;
+import javax.swing.tree.TreePath;
+import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.ui.ElementJavadoc;
 import org.netbeans.modules.java.navigation.ClassMemberFilters;
 import org.netbeans.modules.java.navigation.ElementNode;
 import org.netbeans.modules.java.navigation.ElementNode.Description;
@@ -34,6 +45,7 @@ import org.openide.util.Utilities;
 import org.netbeans.modules.java.navigation.base.TapPanel;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
+import org.openide.explorer.view.Visualizer;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -72,7 +84,7 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
         KeyStroke toggleKey = KeyStroke.getKeyStroke(KeyEvent.VK_T,
                 Toolkit.getDefaultToolkit().getMenuShortcutKeyMask());
         String keyText = Utilities.keyToString(toggleKey);
-        filtersPanel.setToolTipText(NbBundle.getMessage(ClassMemberPanelUI.class, "TIP_TapPanel", keyText));
+        filtersPanel.setToolTipText(NbBundle.getMessage(ClassMemberPanelUI.class, "TIP_TapPanel", keyText)); //NOI18N
         
         filters = new ClassMemberFilters( this );
         filters.getInstance().hookChangeListener(this);
@@ -132,12 +144,6 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
         } catch (PropertyVetoException propertyVetoException) {
             Exceptions.printStackTrace(propertyVetoException);
         }
-//        SwingUtilities.invokeLater(new Runnable() {
-//            public void run() {
-//                
-//            }
-//            
-//        });
     }
 
     public void refresh( final Description description ) {
@@ -241,19 +247,7 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
     }
     
     private MyBeanTreeView createBeanTreeView() {
-//        ActionMap map = getActionMap();
-//        map.put(DefaultEditorKit.copyAction, ExplorerUtils.actionCopy(manager));
-//        map.put(DefaultEditorKit.cutAction, ExplorerUtils.actionCut(manager));
-//        map.put(DefaultEditorKit.pasteAction, ExplorerUtils.actionPaste(manager));
-//        map.put("delete", new DelegatingAction(ActionProvider.COMMAND_DELETE, ExplorerUtils.actionDelete(manager, true)));
-//        
-        
-        MyBeanTreeView btv = new MyBeanTreeView();    // Add the BeanTreeView        
-//      btv.setDragSource (true);        
-//      btv.setRootVisible(false);        
-//      associateLookup( ExplorerUtils.createLookup(manager, map) );        
-        return btv;
-        
+        return new MyBeanTreeView();
     }
     
     
@@ -263,14 +257,164 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
         return manager;
     }
     
+    protected ElementJavadoc getJavaDocFor( ElementNode node ) {
+        ElementNode root = getRootNode();
+        if ( root == null ) {
+            return null;
+        }
+        
+        ElementHandle<? extends Element> eh = node.getDescritption().elementHandle;
+
+        JavaSource js = JavaSource.forFileObject( root.getDescritption().fileObject );
+        JavaDocCalculator calculator = new JavaDocCalculator( eh );
+        final CompilationInfo[] ci = new CompilationInfo[1];
+        
+        try {
+            js.runUserActionTask( calculator, true );
+        } catch( IOException ioE ) {
+            Exceptions.printStackTrace( ioE );
+            return null;
+        }
+        
+        return calculator.doc;
+        
+    }
     
-    private static class MyBeanTreeView extends BeanTreeView {
+    private static class JavaDocCalculator implements CancellableTask<CompilationController> {
+
+        private ElementHandle<? extends Element> handle;
+        private ElementJavadoc doc;
+        
+        public JavaDocCalculator( ElementHandle<? extends Element> handle ) {
+            this.handle = handle;
+        }
+
+        public void cancel() {
+        }
+
+        public void run(CompilationController cc) throws Exception {
+            cc.toPhase( JavaSource.Phase.UP_TO_DATE );
+            
+            Element e = handle.resolve( cc );
+            doc = ElementJavadoc.create( cc, e );
+        }
+    };
+        
+    private class MyBeanTreeView extends BeanTreeView implements ToolTipManagerEx.ToolTipProvider {
+        
+        public MyBeanTreeView() {
+            new ToolTipManagerEx( this );
+        }
+        
         public boolean getScrollOnExpand() {
             return tree.getScrollsOnExpand();
 }
         
         public void setScrollOnExpand( boolean scroll ) {
             this.tree.setScrollsOnExpand( scroll );
+        }
+        
+        public JComponent getComponent() {
+            return tree;
+        }
+
+        public String getToolTipText(Point loc) {
+            ElementJavadoc doc = getDocumentation(loc);
+            return null == doc ? null : doc.getText();
+        }
+        
+        private ElementJavadoc getDocumentation( Point loc ) {
+            TreePath path = tree.getPathForLocation( loc.x, loc.y );
+            if( null == path )
+                return null;
+            Node node = Visualizer.findNode( path.getLastPathComponent() );
+            if( node instanceof ElementNode ) {
+                return getJavaDocFor( (ElementNode)node );
+            }
+            return null;
+        }
+
+        public Rectangle getToolTipSourceBounds(Point loc) {
+            ElementNode root = getRootNode();
+            if ( root == null ) {
+                return null;
+            }
+            TreePath path = tree.getPathForLocation( loc.x, loc.y );
+            return null == path ? null : tree.getPathBounds( path );
+        }
+        
+        public Point getToolTipLocation( Point mouseLocation, Dimension tipSize ) {
+            Point screenLocation = getLocationOnScreen();
+            Rectangle sBounds = getGraphicsConfiguration().getBounds();
+            Dimension compSize = getSize();
+            Point res = new Point();
+            Rectangle tooltipSrcRect = getToolTipSourceBounds( mouseLocation );
+
+            Point viewPosition = getViewport().getViewPosition();
+            screenLocation.x -= viewPosition.x;
+            screenLocation.y -= viewPosition.y;
+            
+            //first try bottom right
+            res.x = screenLocation.x + compSize.width;
+            res.y = screenLocation.y + tooltipSrcRect.y+tooltipSrcRect.height;
+
+            if( res.x + tipSize.width <= sBounds.x+sBounds.width
+                    && res.y + tipSize.height <= sBounds.y+sBounds.height ) {
+                return res;
+            }
+
+            //upper right
+            res.x = screenLocation.x + compSize.width;
+            res.y = screenLocation.y + tooltipSrcRect.y - tipSize.height;
+
+            if( res.x + tipSize.width <= sBounds.x+sBounds.width
+                    && res.y >= sBounds.y ) {
+                return res;
+            }
+
+            //lower left
+            res.x = screenLocation.x - tipSize.width;
+            res.y = screenLocation.y + tooltipSrcRect.y;
+
+            if( res.x >= sBounds.x
+                    && res.y + tipSize.height <= sBounds.y+sBounds.height ) {
+                return res;
+            }
+
+            //upper left
+            res.x = screenLocation.x - tipSize.width;
+            res.y = screenLocation.y + tooltipSrcRect.y + tooltipSrcRect.height - tipSize.height;
+
+            if( res.x >= sBounds.x && res.y >= sBounds.y ) {
+                return res;
+            }
+
+            //give up (who's got such a small display anyway?)
+            res.x = screenLocation.x + tooltipSrcRect.x;
+            if( sBounds.y + sBounds.height - (screenLocation.y + tooltipSrcRect.y + tooltipSrcRect.height) 
+                > screenLocation.y + tooltipSrcRect.y - sBounds.y ) {
+                res.y = screenLocation.y + tooltipSrcRect.y + tooltipSrcRect.height;
+            } else {
+                res.y = screenLocation.y + tooltipSrcRect.y - tipSize.height;
+            }
+
+            return res;
+        }
+
+        public void invokeUserAction(final MouseEvent me) {
+            SwingUtilities.invokeLater( new Runnable() {
+                public void run() {
+                    if( null != me ) {
+                        ElementJavadoc doc = getDocumentation( me.getPoint() );
+                        JavadocTopComponent tc = JavadocTopComponent.findInstance();
+                        if( null != tc ) {
+                            tc.open();
+                            tc.setJavadoc( doc );
+                            tc.requestActive();
+                        }
+                    }
+                }
+            });
         }
     }
 }

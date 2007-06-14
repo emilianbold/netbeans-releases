@@ -710,49 +710,4 @@ class Utils {
             );
         }
     }
-    
-    // Javadoc Pane
-    static void showJavaDoc(JavaElement node, final JEditorPane javaDocPane) {
-        javaDocPane.setText("");
-        String javaDoc = ((JavaElement) node).getJavaDoc();
-        if (javaDoc != null) {
-            javaDocPane.setText(
-                    "<html>" // NOI18N
-                    + "<head>" // NOI18N
-//                  + "<link rel=\"StyleSheet\" href=\"nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css\" type=\"text/css\">" // NOI18N
-                    + "<link rel=\"StyleSheet\" href=\"nbresloc:/org/netbeans/modules/java/navigation/resources/ide.css\" type=\"text/css\">" // NOI18N
-                    + "</head>" // NOI18N
-                    + "<body>" // NOI18N
-                    + javaDoc
-                    + "</body>" // NOI18N
-                    + "</html>" // NOI18N
-                    );
-        }
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                javaDocPane.scrollRectToVisible(new Rectangle(0,0,1,1));
-            }});
-    }
-    
-    // Javadoc Pane
-    static String formatJavaDoc(String javaDoc) {
-        if (javaDoc != null) {
-            return javaDoc
-                    .replaceAll("@author",     "<br><b>Author:</b>") // NOI18N
-                    .replaceAll("@deprecated", "<br><b>Deprecated.</b>")  // NOI18N
-                    .replaceAll("@exception",  "<br><b>Throws:</b>") // NOI18N
-                    .replaceAll("@param",      "<br><b>Parameter:</b>") // NOI18N
-                    .replaceAll("@return",     "<br><b>Returns:</b>") // NOI18N
-                    .replaceAll("@see",        "<br><b>See Also:</b>") // NOI18N
-                    .replaceAll("@since",      "<br><b>Since:</b>") // NOI18N
-                    .replaceAll("@throws",     "<br><b>Throws:</b>") // NOI18N
-                    .replaceAll("@version",    "<br><b>Version:</b>") // NOI18N
-                    .replaceAll("@beaninfo ?", "<br><b>@beaninfo</b><br>") // NOI18N
-                    .replaceAll("\\{@link ([^}]+)\\}", "$1") // NOI18N
-                    .replaceAll("\\{@code ([^}]+)\\}", "\\<code\\>$1\\</code\\>") // NOI18N
-                    //.replaceAll("\n\n",         "<br>") // NOI18N
-                    ;
-        }
-        return null;
-    }
 }

@@ -57,7 +57,6 @@ import org.openide.filesystems.FileObject;
 public class JavaHierarchyPanel extends javax.swing.JPanel {
     private FileObject fileObject;
     private JavaHierarchyModel javaHierarchyModel;
-    private HyperlinkListener hyperlinkListener;
 
     /**
      *
@@ -68,7 +67,10 @@ public class JavaHierarchyPanel extends javax.swing.JPanel {
     public JavaHierarchyPanel(FileObject fileObject, Element[] elements, CompilationInfo compilationInfo) {
         this.fileObject = fileObject;
         initComponents();
-
+        
+        docPane = new DocumentationScrollPane( true );
+        splitPane.setRightComponent( docPane );
+        
         ToolTipManager.sharedInstance().registerComponent(javaHierarchyTree);
         ToolTipManager.sharedInstance().setLightWeightPopupEnabled(false);
 
@@ -85,8 +87,6 @@ public class JavaHierarchyPanel extends javax.swing.JPanel {
 
         javaHierarchyModel = new JavaHierarchyModel(fileObject, elements, compilationInfo);
         javaHierarchyTree.setModel(javaHierarchyModel);
-        javaDocPane.setEditorKitForContentType("text/html", new HTMLEditorKit()); // NOI18N
-        javaDocPane.setContentType("text/html"); // NOI18N
 
         registerKeyboardAction(
                 new ActionListener() {
@@ -288,19 +288,6 @@ public class JavaHierarchyPanel extends javax.swing.JPanel {
                 KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask(), true),
                 JComponent.WHEN_FOCUSED);
 
-        hyperlinkListener = new HyperlinkListener() {
-            public void hyperlinkUpdate(HyperlinkEvent e) {
-                if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
-                    URL url = e.getURL();
-                    if (url != null //&& url.getProtocol().equals("http")
-                            ) {
-                        HtmlBrowser.URLDisplayer.getDefault().showURL(url);
-                    }
-                }
-            }
-        };
-        javaDocPane.addHyperlinkListener(hyperlinkListener);
-
         showSuperTypeHierarchyToggleButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent actionEvent) {
                 // Prevent reloading of super type hierarchy
@@ -354,10 +341,7 @@ public class JavaHierarchyPanel extends javax.swing.JPanel {
     public void removeNotify() {
         // Reset the hierarchy mode
         JavaMembersAndHierarchyOptions.setShowSuperTypeHierarchy(true);
-
-        // The following two are required for fixing memory leaks
-        javaDocPane.removeHyperlinkListener(hyperlinkListener);
-        javaDocScrollPane.setViewportView(null);
+        docPane.setData( null );
         super.removeNotify();
     }
 
@@ -480,11 +464,13 @@ public class JavaHierarchyPanel extends javax.swing.JPanel {
         if (treePath != null) {
             Object node = treePath.getLastPathComponent();
             if (node instanceof JavaElement) {
-                Utils.showJavaDoc((JavaElement)node, javaDocPane);
+                docPane.setData( ((JavaElement)node).getJavaDoc() );
             }
         }
     }
 
+    private DocumentationScrollPane docPane;
+    
     private void close() {
         Window window = SwingUtilities.getWindowAncestor(JavaHierarchyPanel.this);
         if (window != null) {
@@ -507,8 +493,6 @@ public class JavaHierarchyPanel extends javax.swing.JPanel {
         splitPane = new javax.swing.JSplitPane();
         javaHierarchyTreeScrollPane = new javax.swing.JScrollPane();
         javaHierarchyTree = new javax.swing.JTree();
-        javaDocScrollPane = new javax.swing.JScrollPane();
-        javaDocPane = new javax.swing.JEditorPane();
         signatureEditorPane = new javax.swing.JEditorPane();
         filtersLabel = new javax.swing.JLabel();
         closeButton = new javax.swing.JButton();
@@ -538,11 +522,6 @@ public class JavaHierarchyPanel extends javax.swing.JPanel {
         javaHierarchyTreeScrollPane.setViewportView(javaHierarchyTree);
 
         splitPane.setLeftComponent(javaHierarchyTreeScrollPane);
-
-        javaDocPane.setEditable(false);
-        javaDocScrollPane.setViewportView(javaDocPane);
-
-        splitPane.setRightComponent(javaDocScrollPane);
 
         signatureEditorPane.setBorder(javax.swing.BorderFactory.createLineBorder(javax.swing.UIManager.getDefaults().getColor("Nb.ScrollPane.Border.color")));
         signatureEditorPane.setContentType("text/x-java");
@@ -639,8 +618,6 @@ public class JavaHierarchyPanel extends javax.swing.JPanel {
     public javax.swing.JTextField filterTextField;
     public javax.swing.JLabel filtersLabel;
     public javax.swing.JToolBar filtersToolbar;
-    public javax.swing.JEditorPane javaDocPane;
-    public javax.swing.JScrollPane javaDocScrollPane;
     public javax.swing.ButtonGroup javaHierarchyModeButtonGroup;
     public javax.swing.JTree javaHierarchyTree;
     public javax.swing.JScrollPane javaHierarchyTreeScrollPane;
