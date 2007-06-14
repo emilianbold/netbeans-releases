@@ -33,6 +33,8 @@ import org.netbeans.modules.refactoring.api.ProgressEvent;
 import org.netbeans.modules.refactoring.java.api.DiffElement;
 import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.netbeans.modules.refactoring.java.api.InnerToOuterRefactoring;
+import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
+import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
 import org.netbeans.modules.refactoring.java.spi.JavaRefactoringPlugin;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.openide.filesystems.FileObject;
@@ -202,7 +204,7 @@ public class InnerToOuterRefactoringPlugin extends JavaRefactoringPlugin {
             Element outer = inner.getEnclosingElement();
             Element outerouter = outer.getEnclosingElement();
             
-            TreePath tp = SourceUtils.pathFor(workingCopy, inner);
+            TreePath tp = workingCopy.getTrees().getPath(inner);
             ClassTree innerClass = (ClassTree) tp.getLeaf();
             ClassTree newInnerClass = tm.setLabel(innerClass, refactoring.getClassName());
             
@@ -210,26 +212,26 @@ public class InnerToOuterRefactoringPlugin extends JavaRefactoringPlugin {
             
             if (outerouter.getKind() == ElementKind.PACKAGE) {
                 FileObject sourceRoot=ClassPath.getClassPath(workingCopy.getFileObject(), ClassPath.SOURCE).findOwnerRoot(workingCopy.getFileObject());
-                ClassTree outerTree = (ClassTree) SourceUtils.treeFor(workingCopy, outer);
+                ClassTree outerTree = (ClassTree) workingCopy.getTrees().getTree(outer);
                 ClassTree newOuter = tm.removeClassMember(outerTree, innerClass);
                 workingCopy.rewrite(outerTree, newOuter);
+                JavaRefactoringUtils.cacheTreePathInfo(workingCopy.getTrees().getPath(outer), workingCopy);
                 CompilationUnitTree compilationUnit = tp.getCompilationUnit();
                 String relativePath = compilationUnit.getPackageName().toString().replace('.', '/') + '/' + refactoring.getClassName() + ".java";
-                //TODO:
-                //CompilationUnitTree newCompilation = tm.CompilationUnit(sourceRoot, relativePath, null, Collections.singletonList(newInnerClass));
-                //rewrite(null, newCompilation);        
+                CompilationUnitTree newCompilation = tm.CompilationUnit(sourceRoot, relativePath, null, Collections.singletonList(newInnerClass));
+                workingCopy.rewrite(null, newCompilation);        
             } else {
-                ClassTree outerTree = (ClassTree) SourceUtils.treeFor(workingCopy, outer);
-                ClassTree outerouterTree = (ClassTree) SourceUtils.treeFor(workingCopy, outerouter);
+                ClassTree outerTree = (ClassTree) workingCopy.getTrees().getTree(outer);
+                ClassTree outerouterTree = (ClassTree) workingCopy.getTrees().getTree(outerouter);
                 ClassTree newOuter = tm.removeClassMember(outerTree, innerClass);
                 ClassTree newOuterOuter = tm.addClassMember(outerouterTree, newInnerClass);
                 workingCopy.rewrite(outerTree, newOuter);
+                JavaRefactoringUtils.cacheTreePathInfo(workingCopy.getTrees().getPath(outer), workingCopy);
                 workingCopy.rewrite(outerouterTree, newOuterOuter);
             }
             
             for (Element superType:RetoucheUtils.getSuperTypes((TypeElement)inner, workingCopy, true)) {
-                ClassTree tree = (ClassTree) SourceUtils.treeFor(workingCopy, superType);
-                
+                ClassTree tree = (ClassTree) workingCopy.getTrees().getTree(superType);
             }
         }
         
