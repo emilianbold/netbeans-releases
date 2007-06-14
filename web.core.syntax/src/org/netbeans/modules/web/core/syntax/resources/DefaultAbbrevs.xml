@@ -17,45 +17,119 @@ The Original Software is NetBeans. The Initial Developer of the Original
 Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
-<!DOCTYPE abbrevs PUBLIC "-//NetBeans//DTD Editor Abbreviations settings 1.0//EN"
-                         "http://www.netbeans.org/dtds/EditorAbbreviations-1_0.dtd">
-<abbrevs>
-    <abbrev key="ag">application.getAttribute(&quot;|&quot;)</abbrev>
-    <abbrev key="ap">application.setAttribute(&quot;|&quot;, )</abbrev>
-    <abbrev key="ar">application.removeAttribute(&quot;|&quot;)</abbrev>
-    <abbrev key="cfgi">config.getInitParameter(&quot;|&quot;)</abbrev>
-    <abbrev key="jspf">&lt;jsp:forward page=&quot;|&quot;/></abbrev>
-    <abbrev key="jspg">&lt;jsp:getProperty name=&quot;|&quot; property=&quot;&quot;/></abbrev>
-    <abbrev key="jspi">&lt;jsp:include page=&quot;|&quot;/></abbrev>
-    <abbrev key="jspp">&lt;jsp:plugin type=&quot;|&quot; code=&quot;&quot; codebase=&quot;&quot;>\n&lt;/jsp:plugin></abbrev>
-    <abbrev key="jsps">&lt;jsp:setProperty name=&quot;|&quot; property=&quot;&quot;/></abbrev>
-    <abbrev key="jspu">&lt;jsp:useBean id=&quot;|&quot; type=&quot;&quot;/></abbrev>
-    <abbrev key="oup">out.print(&quot;|&quot;)</abbrev>
-    <abbrev key="oupl">out.println(&quot;|&quot;)</abbrev>
-    <abbrev key="pcg">pageContext.getAttribute(&quot;|&quot;)</abbrev>
-    <abbrev key="pcgn">pageContext.getAttributeNamesInScope(|)</abbrev>
-    <abbrev key="pcgs">pageContext.getAttributesScope(&quot;|&quot;)</abbrev>
-    <abbrev key="pcr">pageContext.removeAttribute(&quot;|&quot;)</abbrev>
-    <abbrev key="pcs">pageContext.setAttribute(&quot;|&quot;, )</abbrev>
-    <abbrev key="pg">&lt;%@page |%></abbrev>
+<!DOCTYPE codetemplates PUBLIC  "-//NetBeans//DTD Editor Code Templates settings 1.0//EN"
+                                "http://www.netbeans.org/dtds/EditorCodeTemplates-1_0.dtd">
+<codetemplates>
+    <codetemplate abbreviation="ag">
+        <code><![CDATA[application.getAttribute("${cursor}")]]></code>
+    </codetemplate>
+    <codetemplate abbreviation="ap">
+        <code><![CDATA[application.setAttribute("${cursor}", )]]></code>
+    </codetemplate>
+    <codetemplate abbreviation="ar">
+        <code><![CDATA[application.removeAttribute("${cursor}")]]></code>
+    </codetemplate>
+    <codetemplate abbreviation="cfgi">
+        <code><![CDATA[config.getInitParameter("${cursor}")]]></code>
+    </codetemplate>
+    <codetemplate abbreviation="jspf">
+        <code><![CDATA[<jsp:forward page="${cursor}"/>]]></code>
+    </codetemplate>
+    <codetemplate abbreviation="jspg">
+        <code><![CDATA[<jsp:getProperty name="${cursor}" property=""/>]]></code>
+    </codetemplate>
+    <codetemplate abbreviation="jspi">
+        <code><![CDATA[<jsp:include page="${cursor}"/>]]></code>
+    </codetemplate>
+    <codetemplate abbreviation="jspp">
+        <code>
+<![CDATA[<jsp:plugin type="${cursor}" code="" codebase="">
+</jsp:plugin>]]>
+        </code>
+    </codetemplate>
+    <codetemplate abbreviation="jsps">
+        <code><![CDATA[<jsp:setProperty name="${cursor}" property=""/>]]></code>
+    </codetemplate>
+    <codetemplate abbreviation="jspu">
+        <code><![CDATA[<jsp:useBean id="${cursor}" type=""/>]]></code>
+    </codetemplate>
+    <codetemplate abbreviation="oup">
+        <code><![CDATA[out.print("${cursor}")]]></code>
+    </codetemplate>
+    <codetemplate abbreviation="oupl">
+        <code><![CDATA[out.println("${cursor}")]]></code>
+    </codetemplate>
+    <codetemplate abbreviation="pcg">
+        <code><![CDATA[pageContext.getAttribute("${cursor}")]]></code>
+    </codetemplate>
+    <codetemplate abbreviation="pcgn">
+        <code><![CDATA[pageContext.getAttributeNamesInScope(${cursor})]]></code>
+    </codetemplate>
+    <codetemplate abbreviation="pcgs">
+        <code><![CDATA[pageContext.getAttributesScope("${cursor}")]]></code>
+    </codetemplate>
+    <codetemplate abbreviation="pcr">
+        <code><![CDATA[pageContext.removeAttribute("${cursor}")]]></code>
+    </codetemplate>
+    <codetemplate abbreviation="pcs">
+        <code><![CDATA[pageContext.setAttribute("${cursor}", )]]></code>
+    </codetemplate>
+    <codetemplate abbreviation="pg">
+        <code><![CDATA[<%@page ${cursor}%>]]></code>
+    </codetemplate>
+        
     <!-- default is true so false is only meaningful value -->
-    <abbrev key="pga">&lt;%@page autoFlush=&quot;false&quot;%></abbrev>
-    <abbrev key="pgb">&lt;%@page buffer=&quot;|kb&quot;%></abbrev>
-    <abbrev key="pgc">&lt;%@page contentType=&quot;|&quot;%></abbrev>
-    <abbrev key="pgerr">&lt;%@page errorPage=&quot;|&quot;%></abbrev>
-    <abbrev key="pgex">&lt;%@page extends=&quot;|&quot;%></abbrev>
-    <abbrev key="pgie">&lt;%@page isErrorPage=&quot;true&quot;%></abbrev>
-    <abbrev key="pgim">&lt;%@page import=&quot;|&quot;%></abbrev>
-    <abbrev key="pgin">&lt;%@page info=&quot;|&quot;%></abbrev>
-    <abbrev key="pgit">&lt;%@page isThreadSafe=&quot;false&quot;%></abbrev>
+    <codetemplate abbreviation="pga">
+        <code><![CDATA[<%@page autoFlush="false"%>]]></code>
+    </codetemplate>
+    <codetemplate abbreviation="pgb">
+        <code><![CDATA[<%@page buffer="${cursor}kb"%>]]></code>
+    </codetemplate>
+    <codetemplate abbreviation="pgc">
+        <code><![CDATA[<%@page contentType="${cursor}"%>]]></code>
+    </codetemplate>
+    <codetemplate abbreviation="pgerr">
+        <code><![CDATA[<%@page errorPage="${cursor}"%>]]></code>
+    </codetemplate>
+    <codetemplate abbreviation="pgex">
+        <code><![CDATA[<%@page extends="${cursor}"%>]]></code>
+    </codetemplate>
+    <codetemplate abbreviation="pgie">
+        <code><![CDATA[<%@page isErrorPage="true"%>]]></code>
+    </codetemplate>
+    <codetemplate abbreviation="pgim">
+        <code><![CDATA[<%@page import="${cursor}"%>]]></code>
+    </codetemplate>
+    <codetemplate abbreviation="pgin">
+        <code><![CDATA[<%@page info="${cursor}"%>]]></code>
+    </codetemplate>
+    <codetemplate abbreviation="pgit">
+        <code><![CDATA[<%@page isThreadSafe="false"%>]]></code>
+    </codetemplate>
+    
     <!-- only defined and required value this attribute is 'java' -->
-    <abbrev key="pgl">&lt;%@page language=&quot;java&quot;%></abbrev>
+    <codetemplate abbreviation="pgl">
+        <code><![CDATA[<%@page language="java"%>]]></code>
+    </codetemplate>
+        
     <!-- default is true so false is only meaningful value -->
-    <abbrev key="pgs">&lt;%@page session=&quot;false&quot;%></abbrev>
-    <abbrev key="rg">request.getParameter(&quot;|&quot;)</abbrev>
-    <abbrev key="sg">session.getAttribute(&quot;|&quot;)</abbrev>
-    <abbrev key="sp">session.setAttribute(&quot;|&quot;, )</abbrev>
-    <abbrev key="sr">session.removeAttribute(&quot;|&quot;)</abbrev>
-    <abbrev key="tglb">&lt;%@taglib uri=&quot;|&quot;%></abbrev>
-</abbrevs>
+    <codetemplate abbreviation="pgs">
+        <code><![CDATA[<%@page session="false"%>]]></code>
+    </codetemplate>
+    <codetemplate abbreviation="rg">
+        <code><![CDATA[request.getParameter("${cursor}")]]></code>
+    </codetemplate>
+    <codetemplate abbreviation="sg">
+        <code><![CDATA[session.getAttribute("${cursor}")]]></code>
+    </codetemplate>
+    <codetemplate abbreviation="sp">
+        <code><![CDATA[session.setAttribute("${cursor}", )]]></code>
+    </codetemplate>
+    <codetemplate abbreviation="sr">
+        <code><![CDATA[session.removeAttribute("${cursor}")]]></code>
+    </codetemplate>
+    <codetemplate abbreviation="tglb">
+        <code><![CDATA[<%@taglib uri="${cursor}"%>]]></code>
+    </codetemplate>
+</codetemplates>
 

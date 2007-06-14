@@ -126,8 +126,10 @@ Microsystems, Inc. All Rights Reserved.
                     <file name="org-openide-actions-ToolsAction.instance"/>
                 </folder>
 
-                <folder name="Defaults">
-                    <file name="abbreviations.xml" url="XMLEditor-abbreviations.xml"/>
+                <folder name="CodeTemplates">
+                    <folder name="Defaults">
+                        <file name="org-netbeans-modules-xml-text-xmlCodeTemplates.xml" url="XMLEditor-abbreviations.xml"/>
+                    </folder>
                 </folder>
 
                 <file name="Settings.settings" url="XMLEditor-options.xml"/>
@@ -186,8 +188,10 @@ Microsystems, Inc. All Rights Reserved.
                     <file name="org-openide-actions-ToolsAction.instance"/>
                 </folder>
 
-                <folder name="Defaults">
-                    <file name="abbreviations.xml" url="DTDEditor-abbreviations.xml"/>
+                <folder name="CodeTemplates">
+                    <folder name="Defaults">
+                        <file name="org-netbeans-modules-xml-text-dtdCodeTemplates.xml" url="DTDEditor-abbreviations.xml"/>
+                    </folder>
                 </folder>
 
                 <file name="Settings.settings" url="DTDEditor-options.xml"/>

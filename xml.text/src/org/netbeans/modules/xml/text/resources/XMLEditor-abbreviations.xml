@@ -18,19 +18,18 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
-<!DOCTYPE abbrevs PUBLIC "-//NetBeans//DTD Editor Abbreviations settings 1.0//EN"
-                         "http://www.netbeans.org/dtds/EditorAbbreviations-1_0.dtd">
+<!DOCTYPE codetemplates PUBLIC  "-//NetBeans//DTD Editor Code Templates settings 1.0//EN"
+                                "http://www.netbeans.org/dtds/EditorCodeTemplates-1_0.dtd">
 
-<!-- This must be synchronized with org.netbeans.modules.xml.text.syntax.XMLSettingsInitializer.getXMLAbbrevMap()!!! -->
-<abbrevs>
-    <abbrev key="?xm">&lt;?xml version="1.0" encoding="UTF-8"?&gt;</abbrev>
-    <abbrev key="!do">&lt;!DOCTYPE </abbrev>
-    <abbrev key="!cd">&lt;![CDATA[|]]&gt;</abbrev>
+<codetemplates>
+    <codetemplate abbreviation="?xm"><code><![CDATA[<?xml version="1.0" encoding="UTF-8"?>]]></code></codetemplate>
+    <codetemplate abbreviation="!do"><code><![CDATA[<!DOCTYPE ]]></code></codetemplate>
+    <codetemplate abbreviation="!cd"><code>&lt;![CDATA[${cursor}]]&gt;</code></codetemplate>
 
     <!-- DTD abbrevs subset useful for internal DTD -->
-    <abbrev key="!at">&lt;!ATTLIST |&gt;</abbrev>
-    <abbrev key="!el">&lt;!ELEMENT |&gt;</abbrev>
-    <abbrev key="!en">&lt;!ENTITY |&gt;</abbrev>
-    <abbrev key="pu">PUBLIC "|"</abbrev>
-    <abbrev key="sy">SYSTEM "|"</abbrev>
-</abbrevs>
+    <codetemplate abbreviation="!at"><code><![CDATA[<!ATTLIST ${cursor}>]]></code></codetemplate>
+    <codetemplate abbreviation="!el"><code><![CDATA[<!ELEMENT ${cursor}>]]></code></codetemplate>
+    <codetemplate abbreviation="!en"><code><![CDATA[<!ENTITY ${cursor}>]]></code></codetemplate>
+    <codetemplate abbreviation="pu"><code><![CDATA[PUBLIC "${cursor}"]]></code></codetemplate>
+    <codetemplate abbreviation="sy"><code><![CDATA[SYSTEM "${cursor}"]]></code></codetemplate>
+</codetemplates>

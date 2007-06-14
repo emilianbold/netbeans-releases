@@ -113,7 +113,15 @@ Microsystems, Inc. All Rights Reserved.
                         </folder>
                     </folder>
                 </folder>
-                            
+
+                <folder name="CodeTemplates">
+                    <folder name="Defaults">
+                        <file name="org-netbeans-modules-editor-java-codetemplates.xml" url="DefaultAbbrevs.xml">
+                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.editor.resources.Bundle"/>
+                        </file>
+                    </folder>
+                </folder>
+                
                 <folder name="SideBar">
                     <file name="org-netbeans-modules-editor-java-NbJavaCodeFoldingSideBarFactory.instance"/>
                     <attr name="org-netbeans-editor-GlyphGutter.instance/org-netbeans-modules-editor-java-NbJavaCodeFoldingSideBarFactory.instance" boolvalue="true"/>
@@ -126,7 +134,6 @@ Microsystems, Inc. All Rights Reserved.
                 
                 <file name="Settings.settings" url="JavaOptions.settings"/>
                 <folder name="Defaults">
-                    <file name="abbreviations.xml" url="DefaultAbbrevs.xml"/>
                     <file name="macros.xml" url="DefaultMacros.xml"/>
                 </folder>
                 

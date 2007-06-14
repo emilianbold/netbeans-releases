@@ -48,25 +48,16 @@ public class XMLSettingsInitializer extends Settings.AbstractInitializer {
 
         /** Add editor actions to DTD Kit. */
         if (kitClass == DTDKit.class) {
-
-            // layer based default does not work!
-            settingsMap.put (SettingsNames.ABBREV_MAP, getDTDAbbrevMap());
-
             SettingsUtil.updateListSetting (settingsMap, SettingsNames.TOKEN_CONTEXT_LIST,
                     new TokenContext[] { DTDTokenContext.context }
             );
-
         }
 
 
         /** Add editor actions to XML Kit. */
         if (kitClass == XMLKit.class) {
-
             settingsMap.put(SettingsNames.CODE_FOLDING_ENABLE, Boolean.TRUE);
             
-            // layer based default does not work!
-            settingsMap.put (SettingsNames.ABBREV_MAP, getXMLAbbrevMap());
-
             SettingsUtil.updateListSetting (settingsMap, SettingsNames.TOKEN_CONTEXT_LIST,
                     new TokenContext[] { XMLDefaultTokenContext.context }
             );
@@ -87,50 +78,6 @@ public class XMLSettingsInitializer extends Settings.AbstractInitializer {
         }
 
     }
-    
-    // This must be synchronized with org/netbeans/modules/xml/text/resources/XMLEditor-abbreviations.xml!!!
-    Map getXMLAbbrevMap() {
-        Map xmlAbbrevMap = new TreeMap();
-
-        xmlAbbrevMap.put ("?xm", "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"); // NOI18N
-        xmlAbbrevMap.put ("!do", "<!DOCTYPE "); // NOI18N
-        xmlAbbrevMap.put ("!cd", "<![CDATA[|]]>"); // NOI18N
-        xmlAbbrevMap.put ("!at", "<!ATTLIST |>"); // NOI18N
-        xmlAbbrevMap.put ("!el", "<!ELEMENT |>"); // NOI18N
-        xmlAbbrevMap.put ("!en", "<!ENTITY |>"); // NOI18N
-        xmlAbbrevMap.put ("pu",  "PUBLIC \"|\""); // NOI18N
-        xmlAbbrevMap.put ("sy",  "SYSTEM \"|\""); // NOI18N
-
-        return xmlAbbrevMap;
-    }
-
-    // This must be synchronized with org/netbeans/modules/xml/text/resources/DTDEditor-abbreviations.xml!!!
-    Map getDTDAbbrevMap() {
-        Map dtdAbbrevMap = new TreeMap();
-
-        dtdAbbrevMap.put ("!at", "<!ATTLIST |>"); // NOI18N
-        dtdAbbrevMap.put ("!el", "<!ELEMENT |>"); // NOI18N
-        dtdAbbrevMap.put ("!en", "<!ENTITY |>"); // NOI18N
-        dtdAbbrevMap.put ("!no", "<!NOTATION |>"); // NOI18N
-        dtdAbbrevMap.put ("cd",  "CDATA"); // NOI18N
-        dtdAbbrevMap.put ("em",  "EMPTY"); // NOI18N
-        dtdAbbrevMap.put ("en",  "ENTITY"); // NOI18N
-        dtdAbbrevMap.put ("ens", "ENTITIES"); // NOI18N
-        dtdAbbrevMap.put ("fi",  "#FIXED"); // NOI18N
-        dtdAbbrevMap.put ("im",  "#IMPLIED"); // NOI18N
-        dtdAbbrevMap.put ("nm",  "NMTOKEN"); // NOI18N
-        dtdAbbrevMap.put ("nms", "NMTOKENS"); // NOI18N
-        dtdAbbrevMap.put ("nn",  "NOTATION"); // NOI18N
-        dtdAbbrevMap.put ("pc",  "#PCDATA"); // NOI18N
-        dtdAbbrevMap.put ("pu",  "PUBLIC \"|\""); // NOI18N
-        dtdAbbrevMap.put ("re",  "#REQUIRED"); // NOI18N
-        dtdAbbrevMap.put ("rf",  "IDREF"); // NOI18N
-        dtdAbbrevMap.put ("rfs", "IDREFS"); // NOI18N
-        dtdAbbrevMap.put ("sy",  "SYSTEM \"|\""); // NOI18N
-
-        return dtdAbbrevMap;
-    }
-    
     
     /*
      * Identifiers accept all NameChar [4].

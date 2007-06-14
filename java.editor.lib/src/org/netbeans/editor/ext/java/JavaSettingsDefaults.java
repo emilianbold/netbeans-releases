@@ -19,6 +19,7 @@
 
 package org.netbeans.editor.ext.java;
 
+import java.util.Collections;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.TreeMap;
@@ -94,159 +95,11 @@ public class JavaSettingsDefaults extends ExtSettingsDefaults {
       + " CloneNotSupportedException NullPointerException NumberFormatException" // NOI18N
       + " SQLException IllegalAccessException IllegalArgumentException"; // NOI18N
 
+    /**
+     * @deprecated Use Editor Settings API instead.
+     */
     public static Map getJavaAbbrevMap() {
-        Map javaAbbrevMap = new TreeMap();
-        javaAbbrevMap.put("sout", "System.out.println(\"|\");"); // NOI18N
-        javaAbbrevMap.put("serr", "System.err.println(\"|\");"); // NOI18N
-
-        javaAbbrevMap.put("psf", "private static final "); // NOI18N
-        javaAbbrevMap.put("psfi", "private static final int "); // NOI18N
-        javaAbbrevMap.put("psfs", "private static final String "); // NOI18N
-        javaAbbrevMap.put("psfb", "private static final boolean "); // NOI18N
-        javaAbbrevMap.put("Psf", "public static final "); // NOI18N
-        javaAbbrevMap.put("Psfi", "public static final int "); // NOI18N
-        javaAbbrevMap.put("Psfs", "public static final String "); // NOI18N
-        javaAbbrevMap.put("Psfb", "public static final boolean "); // NOI18N
-
-
-        javaAbbrevMap.put("ab", "abstract "); // NOI18N
-        javaAbbrevMap.put("bo", "boolean "); // NOI18N
-        javaAbbrevMap.put("br", "break"); // NOI18N
-        javaAbbrevMap.put("ca", "catch ("); // NOI18N
-        javaAbbrevMap.put("cl", "class "); // NOI18N
-        javaAbbrevMap.put("cn", "continue"); // NOI18N
-        javaAbbrevMap.put("df", "default:"); // NOI18N
-        javaAbbrevMap.put("ex", "extends "); // NOI18N
-        javaAbbrevMap.put("fa", "false"); // NOI18N
-        javaAbbrevMap.put("fi", "final "); // NOI18N
-        javaAbbrevMap.put("fl", "float "); // NOI18N
-        javaAbbrevMap.put("fy", "finally "); // NOI18N
-        javaAbbrevMap.put("im", "implements "); // NOI18N
-        javaAbbrevMap.put("ir", "import "); // NOI18N
-        javaAbbrevMap.put("iof", "instanceof "); // NOI18N
-        javaAbbrevMap.put("ie", "interface "); // NOI18N
-        javaAbbrevMap.put("pr", "private "); // NOI18N
-        javaAbbrevMap.put("pe", "protected "); // NOI18N
-        javaAbbrevMap.put("pu", "public "); // NOI18N
-        javaAbbrevMap.put("re", "return "); // NOI18N
-        javaAbbrevMap.put("st", "static "); // NOI18N
-        javaAbbrevMap.put("sw", "switch ("); // NOI18N
-        javaAbbrevMap.put("sy", "synchronized "); // NOI18N
-        javaAbbrevMap.put("th", "throws "); // NOI18N
-        javaAbbrevMap.put("tw", "throw "); // NOI18N
-        javaAbbrevMap.put("twn", "throw new "); // NOI18N
-        javaAbbrevMap.put("wh", "while ("); // NOI18N
-
-        javaAbbrevMap.put("eq", "equals"); // NOI18N
-        javaAbbrevMap.put("le", "length"); // NOI18N
-
-        javaAbbrevMap.put("En", "Enumeration"); // NOI18N
-        javaAbbrevMap.put("Ex", "Exception"); // NOI18N
-        javaAbbrevMap.put("Ob", "Object"); // NOI18N
-        javaAbbrevMap.put("St", "String"); // NOI18N
-
-        javaAbbrevMap.put("pst", "printStackTrace();"); // NOI18N
-        javaAbbrevMap.put("tds", "Thread.dumpStack();"); // NOI18N
-
-        //Code templates
-        
-        javaAbbrevMap.put("fori", 
-                "for (int ${IDX newVarName default=\"idx\"} = 0; ${IDX} < ${ARR array default=\"arr\"}.length; ${IDX}++) {\n"
-                +    "${TYPE rightSideType default=\"Object\"} ${ELEM newVarName default=\"elem\"} = ${TYPE_CAST cast default=\"\" editable=false}${ARR}[${IDX}];\n"
-                +    "${selection line}${cursor}\n"
-                + "}\n"
-        );
-        javaAbbrevMap.put("forc",
-                "for (${IT_TYPE rightSideType type=\"java.util.Iterator\" default=\"Iterator\" editable=false} ${IT newVarName default=\"it\"} = ${COL instanceof=\"java.util.Collection\" default=\"col\"}.iterator(); ${IT}.hasNext();) {\n"
-                +    "${TYPE rightSideType default=\"Object\"} ${ELEM newVarName default=\"elem\"} = ${TYPE_CAST cast default=\"\" editable=false}${IT}.next();\n"
-                +    "${selection line}${cursor}\n"
-                + "}\n"
-        );
-        javaAbbrevMap.put("forl",
-                "for (int ${IDX newVarName default=\"idx\"} = 0; ${IDX} < ${LIST instanceof=\"java.util.List\" default=\"lst\"}.size(); ${IDX}++) {\n"
-                +    "${TYPE rightSideType default=\"Object\"} ${ELEM newVarName default=\"elem\"} = ${TYPE_CAST cast default=\"\" editable=false}${LIST}.get(${IDX});\n"
-                +    "${selection line}${cursor}\n"
-                + "}\n"
-        );
-        javaAbbrevMap.put("forv",
-                "for (int ${IDX newVarName default=\"idx\"} = 0; ${IDX} < ${VECTOR instanceof=\"java.util.Vector\" default=\"vct\"}.size(); ${IDX}++) {\n"
-                +    "${TYPE rightSideType default=\"Object\"} ${ELEM newVarName default=\"elem\"} = ${TYPE_CAST cast default=\"\" editable=false}${VECTOR}.elementAt(${IDX});\n"
-                +    "${selection line}${cursor}\n"
-                + "}\n"
-        );
-        javaAbbrevMap.put("fore",
-                "for (${TYPE iterableElementType default=\"Object\" editable=false} ${ELEM newVarName default=\"elem\"} : ${ITER iterable default=\"col\"}) {\n"
-                +    "${selection line}${cursor}\n"
-                + "}\n"
-        );
-        javaAbbrevMap.put("forst",
-                "for (${STR_TOK type=\"java.util.StringTokenizer\" default=\"StringTokenizer\" editable=false} ${TOKENIZER newVarName} = new ${STR_TOK}(${STRING instanceof=\"java.lang.String\"}); ${TOKENIZER}.hasMoreTokens();) {\n"
-                +     "String ${TOKEN default=\"token\"} = ${TOKENIZER}.nextToken();\n"
-                +     "${cursor}\n"
-                + "}\n"
-        );
-        javaAbbrevMap.put("inst",
-                "if (${EXP instanceof=\"java.lang.Object\" default=\"exp\"} instanceof ${TYPE default=\"Object\"}) {\n"
-                +    "${TYPE} ${VAR newVarName default=\"obj\"} = (${TYPE})${EXP};\n"
-                +    "${cursor}\n"
-                + "}\n"
-        );
-        javaAbbrevMap.put("soutv", "System.out.println(\"${EXP instanceof=\"<any>\" default=\"exp\"} = \" + ${EXP});");
-        javaAbbrevMap.put("whilen",
-                "while(${ENUM instanceof=\"java.util.Enumeration\" default=\"en\"}.hasMoreElements()) {\n"
-                +    "${TYPE rightSideType default=\"Object\"} ${ELEM newVarName default=\"elem\"} = ${TYPE_CAST cast default=\"\" editable=false} ${ENUM}.nextElement();\n"
-                +    "${selection line}${cursor}\n"
-                + "}\n"
-        );
-        javaAbbrevMap.put("whileit",
-                "while(${IT instanceof=\"java.util.Iterator\" default=\"it\"}.hasNext()) {\n"
-                +    "${TYPE rightSideType default=\"Object\"} ${ELEM newVarName default=\"elem\"} = ${TYPE_CAST cast default=\"\" editable=false} ${IT}.next();\n"
-                +    "${selection line}${cursor}\n"
-                + "}\n"
-        );
-        javaAbbrevMap.put("iff",
-                "if (${EXP instanceof=\"java.lang.Boolean\" default=\"exp\"}) {\n"
-                +    "${selection line}${cursor}\n"
-                + "}\n"
-        );
-        javaAbbrevMap.put("ifelse",
-                "if (${EXP instanceof=\"java.lang.Boolean\" default=\"exp\"}) {\n"
-                +    "${selection line}${cursor}\n"
-                + "} else {\n"
-                + "}\n"
-        );
-        javaAbbrevMap.put("whilexp", // NOI18N
-                "while (${EXP instanceof=\"java.lang.Boolean\" default=\"exp\"}) {\n" // NOI18N
-                +    "${selection line}${cursor}\n" // NOI18N
-                + "}\n"
-        );
-        javaAbbrevMap.put("dowhile", // NOI18N
-                "do {\n" // NOI18N
-                +    "${selection line}${cursor}\n" // NOI18N
-                + "} while (${EXP instanceof=\"java.lang.Boolean\" default=\"exp\"});\n" // NOI18N
-        );
-        javaAbbrevMap.put("runn",
-                "${RUNN_TYPE type=\"java.lang.Runnable\" default=\"Runnable\" editable=false} ${RUNN newVarName default=\"r\"} = new ${RUNN_TYPE}() {\n"
-                +    "public void run() {\n"
-                +        "${selection line}${cursor}\n"
-                +    "}\n"
-                + "};\n"
-        );
-        javaAbbrevMap.put("trycatch",
-                "try {\n"
-                +    "${selection line}${cursor}\n"
-                + "} catch (${EX_TYPE uncaughtExceptionType default=\"Exception\"} ${EX newVarName default=\"e\"}) {\n"
-                + "}\n"
-         );
-        javaAbbrevMap.put("newo", // NOI18N
-                "$TYPE default=\"Object\"} ${OBJ newVarName default=\"obj\"} = new ${TYPE}(${cursor});" // NOI18N
-        );        
-        javaAbbrevMap.put("psvm", // NOI18N
-                "public static void main(String[] args) {\n" // NOI18N
-                +    "${cursor}\n" // NOI18N
-                + "}\n" //NOI18N
-        );
-        return javaAbbrevMap;
+        return Collections.EMPTY_MAP;
     }
 
     /**

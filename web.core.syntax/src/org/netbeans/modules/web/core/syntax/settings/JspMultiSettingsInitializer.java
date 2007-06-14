@@ -21,7 +21,6 @@ package org.netbeans.modules.web.core.syntax.settings;
 
 import org.netbeans.modules.web.core.syntax.settings.JspSettings;
 import org.netbeans.modules.web.core.syntax.*;
-import java.awt.Toolkit;
 import java.util.*;
 import org.netbeans.editor.Settings;
 import org.netbeans.editor.SettingsNames;
@@ -40,8 +39,6 @@ public class JspMultiSettingsInitializer extends Settings.AbstractInitializer {
     }
 
     public void updateSettingsMap (Class kitClass, Map settingsMap) {
-        int mask = Toolkit.getDefaultToolkit().getMenuShortcutKeyMask();
-	 
 	if (kitClass == JavaKit.class) {
             settingsMap.put(JavaSettingsNames.INDENT_HOT_CHARS_ACCEPTOR,
                     JavaSettingsDefaults.defaultIndentHotCharsAcceptor);
@@ -57,58 +54,9 @@ public class JspMultiSettingsInitializer extends Settings.AbstractInitializer {
             settingsMap.put(JspSettings.CODE_FOLDING_UPDATE_TIMEOUT, JspSettings.defaultCodeFoldingUpdateInterval);
             settingsMap.put(JspSettings.CARET_SIMPLE_MATCH_BRACE, JspSettings.defaultCaretSimpleMatchBrace);
             
-//            settingsMap.put (org.netbeans.editor.SettingsNames.ABBREV_MAP, getJSPAbbrevMap());
-            
             settingsMap.put(SettingsNames.IDENTIFIER_ACCEPTOR,
                             HTMLSettingsInitializer.HTML_IDENTIFIER_ACCEPTOR);
-
         }
     }
-
-    Map getJSPAbbrevMap() {
-        Map jspAbbrevMap = new TreeMap ();
-        // <jsp:something tags
-        jspAbbrevMap.put ("jspu", "<jsp:useBean id=\"|\" type=\"\"/>");        // NOI18N
-        jspAbbrevMap.put ("jspg", "<jsp:getProperty name=\"|\" property=\"\"/>");  // NOI18N
-        jspAbbrevMap.put ("jsps", "<jsp:setProperty name=\"|\" property=\"\"/>");  // NOI18N
-        jspAbbrevMap.put ("jspi", "<jsp:include page=\"|\"/>");      // NOI18N
-        jspAbbrevMap.put ("jspf", "<jsp:forward page=\"|\"/>");      // NOI18N
-        jspAbbrevMap.put ("jspp", "<jsp:plugin type=\"|\" code=\"\" codebase=\"\">\n</jsp:plugin>");       // NOI18N
-        // taglib
-        jspAbbrevMap.put ("tglb", "<%@taglib uri=\"|\"%>");         // NOI18N
-        // <%@ page tags
-        jspAbbrevMap.put ("pg", "<%@page |%>");                   // NOI18N
-        jspAbbrevMap.put ("pgl", "<%@page language=\"java\"%>");       // NOI18N
-        jspAbbrevMap.put ("pgex", "<%@page extends=\"|\"%>");       // NOI18N
-        jspAbbrevMap.put ("pgim", "<%@page import=\"|\"%>");        // NOI18N
-        jspAbbrevMap.put ("pgs", "<%@page session=\"false\"%>");        // NOI18N
-        jspAbbrevMap.put ("pgb", "<%@page buffer=\"|kb\"%>");         // NOI18N
-        jspAbbrevMap.put ("pga", "<%@page autoFlush=\"false\"%>");      // NOI18N
-        jspAbbrevMap.put ("pgin", "<%@page info=\"|\"%>");          // NOI18N
-        jspAbbrevMap.put ("pgit", "<%@page isThreadSafe=\"false\"%>");  // NOI18N
-        jspAbbrevMap.put ("pgerr", "<%@page errorPage=\"|\"%>");    // NOI18N
-        jspAbbrevMap.put ("pgc", "<%@page contentType=\"|\"%>");    // NOI18N
-        jspAbbrevMap.put ("pgie", "<%@page isErrorPage=\"true\"%>");   // NOI18N
-        // common java abbrevs
-        jspAbbrevMap.put ("rg", "request.getParameter(\"|\")");     // NOI18N
-        jspAbbrevMap.put ("sg", "session.getAttribute(\"|\")");         // NOI18N
-        jspAbbrevMap.put ("sp", "session.setAttribute(\"|\", )");         // NOI18N
-        jspAbbrevMap.put ("sr", "session.removeAttribute(\"|\")");      // NOI18N
-        jspAbbrevMap.put ("pcg", "pageContext.getAttribute(\"|\")");// NOI18N
-        jspAbbrevMap.put ("pcgn", "pageContext.getAttributeNamesInScope(|)");// NOI18N
-        jspAbbrevMap.put ("pcgs", "pageContext.getAttributesScope(\"|\")");// NOI18N
-        jspAbbrevMap.put ("pcr", "pageContext.removeAttribute(\"|\")");// NOI18N
-        jspAbbrevMap.put ("pcs", "pageContext.setAttribute(\"|\", )");// NOI18N
-        jspAbbrevMap.put ("ag", "application.getAttribute(\"|\")");     // NOI18N
-        jspAbbrevMap.put ("ap", "application.putAttribute(\"|\", )");     // NOI18N
-        jspAbbrevMap.put ("ar", "application.removeAttribute(\"|\")");  // NOI18N
-        jspAbbrevMap.put ("oup", "out.print(\"|\")");               // NOI18N
-        jspAbbrevMap.put ("oupl", "out.println(\"|\")");            // NOI18N
-        jspAbbrevMap.put ("cfgi", "config.getInitParameter(\"|\")");// NOI18N
-
-        return jspAbbrevMap;
-    }
-
-
 }
 

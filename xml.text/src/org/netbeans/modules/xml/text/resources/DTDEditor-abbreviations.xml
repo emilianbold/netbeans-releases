@@ -18,28 +18,27 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
-<!DOCTYPE abbrevs PUBLIC "-//NetBeans//DTD Editor Abbreviations settings 1.0//EN"
-                         "http://www.netbeans.org/dtds/EditorAbbreviations-1_0.dtd">
+<!DOCTYPE codetemplates PUBLIC  "-//NetBeans//DTD Editor Code Templates settings 1.0//EN"
+                                "http://www.netbeans.org/dtds/EditorCodeTemplates-1_0.dtd">
 
-<!-- This must be synchronized with org.netbeans.modules.xml.text.syntax.XMLSettingsInitializer.getDTDAbbrevMap()!!! -->
-<abbrevs>
-    <abbrev key="!at">&lt;!ATTLIST |&gt;</abbrev>
-    <abbrev key="!el">&lt;!ELEMENT |&gt;</abbrev>
-    <abbrev key="!en">&lt;!ENTITY |&gt;</abbrev>
-    <abbrev key="!no">&lt;!NOTATION |&gt;</abbrev>
-    <abbrev key="cd">CDATA</abbrev>
-    <abbrev key="em">EMPTY</abbrev>
-    <abbrev key="en">ENTITY</abbrev>
-    <abbrev key="ens">ENTITIES</abbrev>
-    <abbrev key="fi">#FIXED</abbrev>
-    <abbrev key="im">#IMPLIED</abbrev>
-    <abbrev key="nm">NMTOKEN</abbrev>
-    <abbrev key="nms">NMTOKENS</abbrev>
-    <abbrev key="nn">NOTATION</abbrev>
-    <abbrev key="pc">#PCDATA</abbrev>
-    <abbrev key="pu">PUBLIC "|"</abbrev>
-    <abbrev key="re">#REQUIRED</abbrev>
-    <abbrev key="rf">IDREF</abbrev>
-    <abbrev key="rfs">IDREFS</abbrev>
-    <abbrev key="sy">SYSTEM "|"</abbrev>
-</abbrevs>
+<codetemplates>
+    <codetemplate abbreviation="!at"><code><![CDATA[<!ATTLIST ${cursor}>]]></code></codetemplate>
+    <codetemplate abbreviation="!el"><code><![CDATA[<!ELEMENT ${cursor}>]]></code></codetemplate>
+    <codetemplate abbreviation="!en"><code><![CDATA[<!ENTITY ${cursor}>]]></code></codetemplate>
+    <codetemplate abbreviation="!no"><code><![CDATA[<!NOTATION ${cursor}>]]></code></codetemplate>
+    <codetemplate abbreviation="cd"><code><![CDATA[CDATA]]></code></codetemplate>
+    <codetemplate abbreviation="em"><code><![CDATA[EMPTY]]></code></codetemplate>
+    <codetemplate abbreviation="en"><code><![CDATA[ENTITY]]></code></codetemplate>
+    <codetemplate abbreviation="ens"><code><![CDATA[ENTITIES]]></code></codetemplate>
+    <codetemplate abbreviation="fi"><code><![CDATA[#FIXED]]></code></codetemplate>
+    <codetemplate abbreviation="im"><code><![CDATA[#IMPLIED]]></code></codetemplate>
+    <codetemplate abbreviation="nm"><code><![CDATA[NMTOKEN]]></code></codetemplate>
+    <codetemplate abbreviation="nms"><code><![CDATA[NMTOKENS]]></code></codetemplate>
+    <codetemplate abbreviation="nn"><code><![CDATA[NOTATION]]></code></codetemplate>
+    <codetemplate abbreviation="pc"><code><![CDATA[#PCDATA]]></code></codetemplate>
+    <codetemplate abbreviation="pu"><code><![CDATA[PUBLIC "${cursor}"]]></code></codetemplate>
+    <codetemplate abbreviation="re"><code><![CDATA[#REQUIRED]]></code></codetemplate>
+    <codetemplate abbreviation="rf"><code><![CDATA[IDREF]]></code></codetemplate>
+    <codetemplate abbreviation="rfs"><code><![CDATA[IDREFS]]></code></codetemplate>
+    <codetemplate abbreviation="sy"><code><![CDATA[SYSTEM "${cursor}"]]></code></codetemplate>
+</codetemplates>

@@ -20,10 +20,12 @@
 package org.netbeans.modules.editor.java;
 
 import com.sun.source.tree.Tree;
-import com.sun.source.util.TreePath;
 import java.awt.Toolkit;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.EnumSet;
+import java.util.List;
+import java.util.logging.Logger;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
@@ -41,6 +43,8 @@ import org.openide.util.NbBundle;
  * @author Dusan Balek
  */
 public class JavaCodeTemplateFilter implements CodeTemplateFilter, CancellableTask<CompilationController> {
+    
+    private static final Logger LOG = Logger.getLogger(JavaCodeTemplateFilter.class.getName());
     
     private int startOffset;
     private int endOffset;
@@ -82,11 +86,25 @@ public class JavaCodeTemplateFilter implements CodeTemplateFilter, CancellableTa
     }
 
     private EnumSet<Tree.Kind> getTemplateContexts(CodeTemplate template) {
-        //TODO: rewrite this method when contexts are provided by templates
-        String abbrev = template.getAbbreviation().toLowerCase();
-        if (abbrev.equals("runn") || abbrev.startsWith("for") || abbrev.startsWith("while") || abbrev.equals("inst") || abbrev.startsWith("if") || abbrev.startsWith("do") || abbrev.startsWith("try"))
-            return EnumSet.of(Tree.Kind.BLOCK, Tree.Kind.CASE);
-        return EnumSet.noneOf(Tree.Kind.class);
+        List<String> contexts = template.getContexts();
+        List<Tree.Kind> kinds = new ArrayList<Tree.Kind>();
+        
+        if (contexts != null) {
+            for(String ctx : contexts) {
+                Tree.Kind kind = Tree.Kind.valueOf(ctx);
+                if (kind != null) {
+                    kinds.add(kind);
+                } else {
+                    LOG.warning("Invalid code template context '" + ctx + "', ignoring."); //NOI18N
+                }
+            }
+        }
+        
+        if (kinds.size() > 0) {
+            return EnumSet.copyOf(kinds);
+        } else {
+            return EnumSet.noneOf(Tree.Kind.class);
+        }
     }
 
     public static final class Factory implements CodeTemplateFilter.Factory {
