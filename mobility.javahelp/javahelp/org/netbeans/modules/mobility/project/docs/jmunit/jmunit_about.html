@@ -1,0 +1,83 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.1 Transitional//EN">
+
+<!--
+*     Copyright © 2006 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+-->
+<html>
+<head>
+<title>About JM Unit</title>
+<link rel="StyleSheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+<h2>About JMunit</h2>
+<p><small><a href="#seealso">See Also</a></small>
+<p>The IDE provides built-in JMUnit support for generating and executing unit 
+  tests for JME, CLDC/MIDP applications. JMUnit is an open source product, based 
+  on JUNIT, that supports development of tests and provides a harness for running 
+  these tests. 
+<p>For more information about JMUnit, see:</p>
+<p>
+  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+    <param name="content" value="http://sourceforge.net/projects/jmunit/">
+    <param name="text" value="<html><u>http://sourceforge.net/projects/jmunit/</u></html>">
+    <param name="textFontSize" value="medium">
+    <param name="textColor" value="blue">
+  </object>
+</p>
+<h3>Test Types in the IDE</h3>
+<p>You can use the IDE to create the following:</p>
+<ul>
+  <li><b>Empty Tests</b>. Test skeletons without testing methods, for which no 
+    class has been designated to be tested. </li>
+  <li><b>Tests for Existing Classes</b><strong> and Methods.</strong> Classes 
+    containing the actual testing methods which mirror the structure of the sources 
+    being tested.</li>
+</ul>
+<p><strong>Note:</strong> The IDE cannot create unit tests with JMunit for MIDlet classes or private 
+    methods at this time. </p>
+<h3>JMUnit Test Structure</h3>
+<p>The IDE represents unit tests as subtrees which mirror the project's Java package 
+  structure. Each test class has the name of the class it is testing appended 
+  by the word Test (for example, <tt>MyClassTest.java</tt>).</p>
+<p>Each standard project has a default test folder that is used to store your 
+  tests. This folder is displayed as the Test Packages node in the Projects window. 
+  You can add any number of test folders to your project. Test files must be located 
+  in a separate source tree than the source files they test.</p>
+<h3>Running JMunit Tests</h3>
+<p>You can generate and navigate to tests by selecting any class or package node 
+  in the Projects window and choosing from the Tools &gt; JUnit menu.</p>
+<p>When you generate your first test, a TestRunner MIDlet from the framework JAR 
+  gets added to the list of MIDlets This MIDlet will be shown in the emulator 
+  window&acute;s Run list when you run the project. </p>
+<p>All test classes are added to a property in the JAD manifest called 
+    JMunitTestClasses. When you generate your first test for the project, the JMunit 
+  framework JAR gets added to the project libraries for all project configurations. The framework JAR builds a list of tests to run from the JMunittestClasses property.<br>
+</p>
+<p><a name="seealso">See Also</a></p>
+<dl>
+  <dd><a href="nbdocs:/org/netbeans/modules/usersguide/junit/junit_about.html">About 
+    JUnit</a></dd>
+    
+  <dd><a href="nbdocs:/configuration/config_working.html"></a> <a href="jmunit_working.html"> 
+    Working With JMunit</a></dd>
+</dl>
+  <dl><dt>&nbsp;</dt>
+    <dt><a href="emulator_adding.html"></a></dt>
+  </dl>
+  <hr>
+<small><a href="../getstarted/credits.html">Legal Notices</a></small>
+<table border="0" cellpadding="20">
+  <tr>
+    <td width="398">&nbsp;</td>
+  </tr>
+  <tr>
+    <td>&nbsp;</td>
+  </tr>
+  <tr>
+    <td>&nbsp;</td>
+  </tr>
+</table>
+</body>
+</html>
+

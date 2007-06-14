@@ -2,26 +2,8 @@
 <!DOCTYPE toc PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp TOC Version 2.0//EN"
                      "http://java.sun.com/products/javahelp/toc_2_0.dtd">
 
-<!--
-The contents of this file are subject to the terms of the Common Development
-and Distribution License (the License). You may not use this file except in
-compliance with the License.
-
-You can obtain a copy of the License at http://www.netbeans.org/cddl.html
-or http://www.netbeans.org/cddl.txt.
-
-When distributing Covered Code, include this CDDL Header Notice in each file
-and include the License file at http://www.netbeans.org/cddl.txt.
-If applicable, add the following below the CDDL Header, with the fields
-enclosed by brackets [] replaced by your own identifying information:
-"Portions Copyrighted [year] [name of copyright owner]"
-
-The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
-Microsystems, Inc. All Rights Reserved.
--->
 <toc version="2.0">
-	<tocitem text="Java Micro Edition MIDP Development">
+	<tocitem text="Java ME CLDC/MIDP Development">
 		<tocitem text="Getting Started">
 			<tocitem text="About Java ME MIDP Applications" target="me.welcome" />
 			<tocitem text="How the IDE Supports Java ME MIDP Development" target="me.support" />
@@ -80,9 +62,18 @@ Microsystems, Inc. All Rights Reserved.
 		</tocitem>
 		<tocitem text="Visually Desiging MIDP Applications">
 			<tocitem text="About Visually Designing MIDP Applications" target="me.mvd_about" />
-			<tocitem text="Working with the MIDP Visual Designer" target="me.mvd_working" />
-			<tocitem text="MIDP Visual Designer Tasks: Quick Reference" target="me.mvd_quickref" />
-			<tocitem text="Adding Custom Components to the MVD" target="me.mvd_addcustomcomponent" />
+			<tocitem text="Working with the Visual Mobile Designer" target="me.mvd_working" />
+			<tocitem text="VMD Tasks: Quick Reference" target="me.mvd_quickref" />
+			<tocitem text="Adding Custom Components to the VMD" target="me.mvd_addcustomcomponent" />
+			<tocitem text="Adding and Editing SVG Graphic Files">
+				<tocitem text="About SVG (Scalable Vector Graphic) Files" target="cldc.svg_about" />
+				<tocitem text="Working with SVG Files" target="cldc.svg_working" />
+				<tocitem text="Using SVG Graphics: Quick Reference" target="cldc.svg_quickref" />
+				<tocitem text="Working with SVG Animations" target="cldc.svg_animations" />
+				<tocitem text="Adding SVG Splash Screens" target="cldc.svg_splashscreen" />
+				<tocitem text="Adding SVG Wait Screens" target="cldc.svg_waitscreen" />
+				<tocitem text="Adding SVG Menus" target="cldc.svg_menus" />
+			</tocitem>
 		</tocitem>
 		<tocitem text="Working with Project Configurations">
 			<tocitem text="About Project Configurations" target="me.config_about" />
@@ -116,6 +107,10 @@ Microsystems, Inc. All Rights Reserved.
 			<tocitem text="About Over-The-Air (OTA) Provisioning" target="me.about_ota" />
 			<tocitem text="Running Headless Applications" target="me.run_runheadlessapps" />
 		</tocitem>
+		<tocitem text="Testing with JMUnit">
+			<tocitem text="About JMUnit Testing" target="cldc.jmunit_about" />
+			<tocitem text="Working with JMUnit" target="cldc.jmunit_working" />
+		</tocitem>
 		<tocitem text="Deploying a MIDP Application">
 			<tocitem text="Deploying a MIDP Application" target="me.deploy_deploying" />
 			<tocitem text="About MIDP Deployment" target="me.about_deployment" />
@@ -135,7 +130,7 @@ Microsystems, Inc. All Rights Reserved.
 			<tocitem text="Using the Java ME Wireless Toolkit Utilities" target="me.toolkit_using" />
 		</tocitem>
 	</tocitem>
-        <tocitem text="Java ME CDC Development">
+	<tocitem text="Java ME CDC Development">
 		<tocitem text="Getting Started">
 			<tocitem text="About Java ME CDC Applications" target="cdc.welcome" />
 		</tocitem>
