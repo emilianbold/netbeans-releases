@@ -1317,27 +1317,6 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
         }
     }
     
-    /**
-     * Property to remember whether a directory is currently selected in the UI.
-     * This is normally called by the UI on a selection event.
-     *
-     * @param directorySelected if a directory is currently selected.
-     * @since 1.4
-     */
-    protected void setDirectorySelected(boolean directorySelected) {
-        super.setDirectorySelected(directorySelected);
-        JFileChooser chooser = getFileChooser();
-        if(directorySelected) {
-            approveButton.setText(directoryOpenButtonText);
-            approveButton.setToolTipText(directoryOpenButtonToolTipText);
-            approveButton.setMnemonic(directoryOpenButtonMnemonic);
-        } else {
-            approveButton.setText(getApproveButtonText(chooser));
-            approveButton.setToolTipText(getApproveButtonToolTipText(chooser));
-            approveButton.setMnemonic(getApproveButtonMnemonic(chooser));
-        }
-    }
-    
     private DirectoryComboBoxRenderer createDirectoryComboBoxRenderer(JFileChooser fc) {
         return new DirectoryComboBoxRenderer();
     }
