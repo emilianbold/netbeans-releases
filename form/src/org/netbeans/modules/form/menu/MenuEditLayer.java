@@ -24,7 +24,6 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Graphics;
-import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Stroke;
 import java.awt.dnd.DropTarget;
@@ -43,6 +42,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TooManyListenersException;
 import javax.swing.BorderFactory;
+import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.JLayeredPane;
 import javax.swing.JMenu;
@@ -56,6 +56,8 @@ import javax.swing.border.Border;
 import javax.swing.event.MouseInputAdapter;
 import javax.swing.plaf.PopupMenuUI;
 import org.netbeans.modules.form.*;
+import org.netbeans.modules.form.actions.PropertyAction;
+import org.netbeans.modules.form.editors.IconEditor.NbImageIcon;
 import org.netbeans.modules.form.palette.PaletteItem;
 import org.netbeans.modules.form.palette.PaletteUtils;
 import org.openide.nodes.Node;
@@ -68,6 +70,7 @@ import org.openide.nodes.NodeOp;
 public class MenuEditLayer extends JPanel {
     
     /* === public constants === */
+    /*
     public static final Border INSERTION_BORDER = BorderFactory.createCompoundBorder(
             BorderFactory.createMatteBorder(2,0,0,0,Color.RED),
             BorderFactory.createEmptyBorder(0,2,2,2)
@@ -76,12 +79,13 @@ public class MenuEditLayer extends JPanel {
     public static final Border INSERTION_BORDER_MENU_RIGHT = BorderFactory.createCompoundBorder(
             BorderFactory.createMatteBorder(0,0,0,2,Color.RED),
             BorderFactory.createEmptyBorder(2,2,2,0)
-            );
+            );*/
     public static final Border UNSELECTED_BORDER = BorderFactory.createEmptyBorder(1,1,1,1);
     public static final Color SELECTED_BORDER_COLOR = new Color(0xFFA400);
     public static final Border SELECTED_BORDER = BorderFactory.createLineBorder(SELECTED_BORDER_COLOR,1);
     public static final Border DRAG_MENU_BORDER = BorderFactory.createLineBorder(Color.BLACK,1);
-    static Stroke dashedStroke1 = new BasicStroke((float) 3.0,
+    public static final Border DRAG_SEPARATOR_BORDER = BorderFactory.createLineBorder(Color.RED,1);
+    public static Stroke dashedStroke1 = new BasicStroke((float) 3.0,
                                       BasicStroke.CAP_SQUARE,
                                       BasicStroke.JOIN_MITER,
                                       (float) 10.0,
@@ -96,21 +100,24 @@ public class MenuEditLayer extends JPanel {
     public FormDesigner formDesigner;
     JLayeredPane layers;
     JComponent glassLayer;
-    JComponent dropTargetLayer;
+    DropTargetLayer dropTargetLayer;
     boolean showMenubarWarning = false;
     
     /* === private fields === */
     private Map<JComponent,MouseInputAdapter> menuitemListenerMap;
     private Map<JMenu, PopupMenuUI> menuPopupUIMap;
     private Map<JComponent,JComponent> menuParentMap;
+    
+    public enum SelectedPortion { Icon, Text, Accelerator, All, None };
     private JComponent selectedComponent;
+    private SelectedPortion selectedPortion = SelectedPortion.None;
+    
     private JMenu currentMenu;
     private KeyboardMenuNavigator keyboardMenuNavigator;
     private Map<RADVisualContainer,FormModelListener> formModelListeners;
     private DragOperation dragop;
     private FormModelListener menuBarFormListener;
     private PropertyChangeListener selectionListener;
-    private RADComponent menuBarDropTargetComponent = null;
 
     /** Creates a new instance of MenuEditLayer */
     public MenuEditLayer(final FormDesigner formDesigner) {
@@ -141,46 +148,8 @@ public class MenuEditLayer extends JPanel {
         layers.add(glassLayer, new Integer(500)); // put the glass layer over the drag layer
         glassLayer.setSize(400,400); //josh: do i need this line? probably can delete it.
         
-        dropTargetLayer = new JComponent() {
-            public void paintComponent(Graphics g) {
-                Graphics2D g2 = (Graphics2D) g;
-                if(DEBUG) {
-                    g.setColor(Color.GREEN);
-                    g.drawString("DropTarget Layer ", 30,100);
-                }
-                if(menuBarDropTargetComponent != null) {
-                    RADComponent comp = getFormMenuBar();
-                    if(comp != null && formDesigner != null) {
-                        g2.setColor(SELECTED_BORDER_COLOR);
-                        g2.setStroke(dashedStroke1);
-                        if(comp == menuBarDropTargetComponent) { // over the menu bar
-                            JComponent mb = (JComponent) formDesigner.getComponent(comp);
-                            Point mblocation = SwingUtilities.convertPoint(mb, new Point(0,0), this);
-                            if(mb.getComponentCount() > 0) {
-                                Component lastComp = mb.getComponent(mb.getComponentCount()-1);
-                                mblocation.x += lastComp.getX() + lastComp.getWidth();
-                            }
-                            g2.drawRect(mblocation.x+2, mblocation.y+2, mb.getHeight()-4, mb.getHeight()-4);
-                        } else { // over a toplevel menu. draw between them
-                            JComponent menu = (JComponent) formDesigner.getComponent(menuBarDropTargetComponent);
-                            Point mblocation = SwingUtilities.convertPoint(menu, new Point(0,0), this);
-                            Point cursorLocation = SwingUtilities.convertPoint(dropTargetLayer, menuBarDropTargetPoint, menu);
-                            p("drop point = "+  cursorLocation);
-                            int size = menu.getHeight()-4;
-                            
-                            if(cursorLocation.x < 15) { // left edge
-                                g2.drawRect(mblocation.x-size/2, mblocation.y+2, size, size);
-                            } else if(cursorLocation.x > menu.getWidth()-15) { // right edge
-                                g2.drawRect(mblocation.x+menu.getWidth()-size/2, mblocation.y+2, size, size);
-                            } else { // center drop
-                                g2.drawRect(mblocation.x+size/2, mblocation.y+2+size/2, menu.getWidth()-size, size);
-                            }
-                        }
-                    }
-                }
-            }
-        };
-        layers.add(dropTargetLayer, new Integer(495)); // put the drop target layer just below the glass layer
+        dropTargetLayer = new DropTargetLayer(this);
+        layers.add(dropTargetLayer, new Integer(JLayeredPane.DRAG_LAYER-5)); // put the drop target layer just above the drag layer
         
         // make the extra layers resize to the main component
         this.addComponentListener(new ComponentAdapter() {
@@ -400,12 +369,17 @@ public class MenuEditLayer extends JPanel {
     void configureMenu(final JComponent parent, final JMenu menu) {
         // make sure it will draw it's border so we can have rollovers and selection
         menu.setBorderPainted(true);
+        //install the wrapper icon if not a toplevel
+        if(!(menu.getParent() instanceof JMenuBar)) {
+            if(!(menu.getIcon() instanceof WrapperIcon)) {
+                menu.setIcon(new WrapperIcon(menu.getIcon()));
+            }
+        }
         
         // configure the maps and popups
-        //p("configuring menu: " + menu.getText());
-        menuParentMap.put(menu,parent);
+        menuParentMap.put(menu, parent);
         JPopupMenu popup = menu.getPopupMenu();
-        menuPopupUIMap.put(menu,popup.getUI());
+        menuPopupUIMap.put(menu, popup.getUI());
         popup.setUI(new VisualDesignerPopupMenuUI(this, popup.getUI()));
         
         // get all of the components in this menu
@@ -464,9 +438,56 @@ public class MenuEditLayer extends JPanel {
     
     
     
+    class WrapperIcon implements Icon {
+        private Icon wrapee;
+        public WrapperIcon() {
+            this(null);
+        }
+        public WrapperIcon(Icon icon) {
+            wrapee = icon;
+        }
+        
+        public void setIcon(Icon icon) {
+            this.wrapee = icon;
+        }
+        
+        public void paintIcon(Component arg0, Graphics g, int x,  int y) {
+            if(wrapee != null) {
+                wrapee.paintIcon(arg0, g, x, y);
+            } else {
+                Graphics g2 = g.create();
+                g2.setColor(Color.LIGHT_GRAY);
+                g2.fillRect(x,y,getIconWidth()-1, getIconHeight()-1);
+                g2.setColor(Color.GRAY);
+                g2.drawRect(x,y,getIconWidth()-1, getIconHeight()-1);
+                g2.dispose();
+            }
+        }
+        
+        public int getIconWidth() {
+            if(wrapee != null) {
+                return wrapee.getIconWidth();
+            }
+            return 16;
+        }
+        
+        public int getIconHeight() {
+            if(wrapee != null) {
+                return wrapee.getIconHeight();
+            }
+            return 16;
+        }
+        
+    }
     
     void configureMenuItem(final JMenu parent, final JComponent c) {
         menuParentMap.put(c,parent);
+        if(c instanceof JMenuItem) {
+            JMenuItem item = (JMenuItem) c;
+            if(!(item.getIcon() instanceof WrapperIcon)) {
+                item.setIcon(new WrapperIcon(item.getIcon()));
+            }
+        }
     }
     
     void unconfigureMenuItem(JComponent c) {
@@ -558,6 +579,10 @@ public class MenuEditLayer extends JPanel {
     }
     
     
+    JComponent getSelectedComponent() {
+        return selectedComponent;
+    }
+    
     void setSelectedComponent(JComponent c) {
         if(selectedComponent == c) return;
         glassLayer.requestFocusInWindow();
@@ -577,6 +602,11 @@ public class MenuEditLayer extends JPanel {
             formDesigner.setSelectedComponent(rad);
             
             selectedComponent.setBorder(SELECTED_BORDER);
+            // clear the border if a menuitem, but not a menu
+            if(selectedComponent instanceof JMenuItem && selectedPortion != SelectedPortion.None &&
+                    !(selectedComponent instanceof JMenu)) {
+                selectedComponent.setBorder(UNSELECTED_BORDER);
+            }
             if(selectedComponent instanceof JMenu) {
                 JMenu menu = (JMenu) selectedComponent;
                 showMenuPopup(menu);
@@ -679,12 +709,19 @@ public class MenuEditLayer extends JPanel {
             p("payload rad = " + payloadRad);
             RADVisualContainer payloadParentRad = (RADVisualContainer) formDesigner.getMetaComponent(payloadParent);
             p("payload parent rad = " + payloadParentRad);
-            //skip if no payload rad, which probably means this is a new component from the palette
-            if(payloadRad != null) {
+            
+            if(payloadRad != null && payloadParentRad == null) {
+                p("MenuDesigner: WARNING! their is a payload rad without a parent! how did we get here!");
+            }
+            
+            // remove the component from it's old location
+            // if no payload rad then that probably means this is a new component from the palette
+            if(payloadRad != null && payloadParentRad != null) {
                 int index = payloadParentRad.getIndexOf(payloadRad);
                 payloadParentRad.remove(payloadRad);
                 FormModelEvent fme = formDesigner.getFormModel().fireComponentRemoved(payloadRad, payloadParentRad, index, false);
             }
+            
             RADVisualContainer targetMenuRad = (RADVisualContainer) formDesigner.getMetaComponent(targetMenu);
             p("target menu rad = " + targetMenuRad);
             //add inside the target menu
@@ -783,23 +820,26 @@ public class MenuEditLayer extends JPanel {
                 public void formChanged(FormModelEvent[] events) {
                     if (events != null) {
                         for(FormModelEvent evt : events) {
-                            /*
-                            System.out.print("form model update: " + evt.getChangeType() + " = ");
+                            
+                            p("form model update: " + evt.getChangeType() + " = ");
                             switch(evt.getChangeType()) {
                             case FormModelEvent.COMPONENT_PROPERTY_CHANGED: p("COMPONENT_PROPERTY_CHANGED");break;
                             case FormModelEvent.COMPONENT_ADDED: p("COMPONENT_ADDED");break;
                             case FormModelEvent.COMPONENT_REMOVED: p("COMPONENT_REMOVED");break;
                             case FormModelEvent.COMPONENTS_REORDERED: p("COMPONENTS_REORDERED");break;
                             default: p("unknown type");
-                            }*/
+                            }
                             if(evt.getComponent() != null) {
                                 p(" " + evt.getComponent().getName());
                             };
+                            
                             if(evt.getChangeType() == evt.COMPONENT_PROPERTY_CHANGED) {
                                 if(evt.getContainer() == metacomp || evt.getComponent() == metacomp) {
                                     rebuildOnScreenMenu(metacomp);
                                 }
+                                updateIcon(evt.getComponent());
                             }
+                            
                             // if this menu was deleted then make sure it's popup is hidden and removed
                             if(evt.getChangeType() == evt.COMPONENT_REMOVED) {
                                 if(evt.getComponent() == metacomp) {
@@ -881,6 +921,46 @@ public class MenuEditLayer extends JPanel {
         } else {
             p("menu popup not built yet");
         }
+    }
+    
+    private void updateIcon(RADComponent rad) {
+        try {
+            Component comp = (Component) formDesigner.getComponent(rad);
+            if(comp instanceof JMenuItem) {
+                JMenuItem item = (JMenuItem) comp;
+                //p("item rad = " + rad);
+                RADProperty icon_prop = rad.getBeanProperty("icon");
+                //p("icon prop = " + icon_prop);
+                Object value = icon_prop.getValue();
+                //p("value = " + value);
+                // extract the new value
+                Icon icon = null;
+                if(value instanceof Icon) {
+                    icon = (Icon) value;
+                }
+                if(value instanceof ResourceValue) {
+                    ResourceValue rv = (ResourceValue) value;
+                    //p("design value = " + rv.getDesignValue());
+                    Object designValue = rv.getDesignValue();
+                    if(designValue instanceof Icon) {
+                        //p("updating icon w/ design value");
+                        icon = (Icon) designValue;
+                    }
+                    if(designValue instanceof NbImageIcon) {
+                        icon = ((NbImageIcon)designValue).getIcon();
+                    }
+                }
+                // do the actual update
+                if(item.getIcon() instanceof WrapperIcon) {
+                    ((WrapperIcon)item.getIcon()).setIcon(icon);
+                } else {
+                    item.setIcon(icon);
+                }
+            }
+        } catch (Throwable thr) {
+            thr.printStackTrace();
+        }
+        
     }
     
     private static void p(String string) {
@@ -994,9 +1074,20 @@ public class MenuEditLayer extends JPanel {
                 if(c instanceof JMenuItem) {
                     p("starting the inline editing");
                     JMenuItem item = (JMenuItem) c;
+                    Point pt = SwingUtilities.convertPoint(glassLayer, e.getPoint(), item);
+                    SelectedPortion portion = DropTargetLayer.calculateSelectedPortion(item, pt);
+                    p("selected portion = " + portion);
                     RADComponent radcomp = formDesigner.getMetaComponent(item);
-                    isEditing = true;
-                    formDesigner.startInPlaceEditing(radcomp);
+                    if(portion == SelectedPortion.Icon) {
+                        p("editing icon");
+                        showIconEditor(radcomp);
+                    } else if (portion == SelectedPortion.Accelerator) {
+                        p("editing accel");
+                        showAcceleratorEditor(radcomp);
+                    } else {
+                        isEditing = true;
+                        formDesigner.startInPlaceEditing(radcomp);
+                    }
                 }
             }
             
@@ -1024,10 +1115,35 @@ public class MenuEditLayer extends JPanel {
                 if(!isEditing) {
                     JComponent c = (JComponent) dragop.getDeepestComponentInPopups(e.getPoint());
                     if(c != null) { 
+                        if(c instanceof JMenuItem) {
+                            Point localPt = SwingUtilities.convertPoint(glassLayer, e.getPoint(), c);
+                            selectedPortion = DropTargetLayer.calculateSelectedPortion((JMenuItem)c, localPt);
+                            dropTargetLayer.repaint();
+                        } else {
+                            selectedPortion = SelectedPortion.None;
+                        }
                         setSelectedComponent(c);
+                        
                     }
                 }
                 isEditing = false;
+            }
+        }
+        
+        private void showIconEditor(RADComponent comp) {
+            try {
+                RADProperty prop = comp.getBeanProperty("icon");
+                new PropertyAction(prop).actionPerformed(null);
+            } catch (Throwable th) {
+                th.printStackTrace();
+            }
+        }
+        private void showAcceleratorEditor(RADComponent comp) {
+            try {
+                RADProperty prop = comp.getBeanProperty("accelerator");
+                new PropertyAction(prop).actionPerformed(null);
+            } catch (Throwable th) {
+                th.printStackTrace();
             }
         }
         
@@ -1141,10 +1257,13 @@ public class MenuEditLayer extends JPanel {
     }*/
 
     public void setDrawMenuBarNewComponentTarget(RADComponent target, Point pt) {
-        this.menuBarDropTargetComponent = target;
-        this.menuBarDropTargetPoint = pt;
+        dropTargetLayer.menuBarDropTargetComponent = target;
+        dropTargetLayer.menuBarDropTargetPoint = pt;
     }
-    private Point menuBarDropTargetPoint;
     
-
+    public SelectedPortion getCurrentSelectedPortion() {
+        return selectedPortion;
+    }
+     
+    
 }

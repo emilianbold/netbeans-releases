@@ -18,10 +18,13 @@
  */
 package org.netbeans.modules.form.menu;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
+import java.awt.Dimension;
 import java.awt.Insets;
 import java.awt.Point;
+import javax.swing.BorderFactory;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
 import javax.swing.JLayeredPane;
@@ -29,6 +32,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JRadioButtonMenuItem;
+import javax.swing.JSeparator;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.form.HandleLayer;
 import org.netbeans.modules.form.MetaComponentCreator;
@@ -68,7 +72,7 @@ class DragOperation {
         started = true;
         
         
-        dragComponent = (JMenuItem) createDragFeedbackComponent(item);
+        dragComponent = (JMenuItem) createDragFeedbackComponent(item, null);
         dragComponent.setSize(dragComponent.getPreferredSize());
         dragComponent.setLocation(pt);
         menuEditLayer.layers.add(dragComponent, JLayeredPane.DRAG_LAYER);
@@ -76,7 +80,7 @@ class DragOperation {
         payloadComponent = item;
     }
     
-    private JComponent createDragFeedbackComponent(JMenuItem item) {
+    private JComponent createDragFeedbackComponent(JMenuItem item, Class type) {
         // get the pre-created component for use as drag feedback
         PaletteItem paletteItem = PaletteUtils.getSelectedItem();
         if(paletteItem != null) {
@@ -87,18 +91,38 @@ class DragOperation {
                 p("precreated: " + precreated.getBeanClass());
                 Object comp = precreated.getBeanInstance();
                 if(comp instanceof JComponent) {
+                    JComponent jcomp = (JComponent) comp;
+                    p("it's a jcomponent");
                     if(comp instanceof JMenuItem) {
-                        ((JMenuItem)comp).setBorder(MenuEditLayer.DRAG_MENU_BORDER);
+                        jcomp.setBorder(MenuEditLayer.DRAG_MENU_BORDER);
                         ((JMenuItem)comp).setBorderPainted(true);
                     }
-                    return (JComponent) comp;
+                    if(comp instanceof JSeparator) {
+                        p("it's a separator");
+                        jcomp.setBorder(BorderFactory.createLineBorder(Color.RED, 2));//, thickness)MenuEditLayer.DRAG_SEPARATOR_BORDER);
+                        jcomp.setPreferredSize(new Dimension(80,5));
+                        p("border = " + jcomp.getBorder());
+                    }
+                    return jcomp;
                 }
             }
         }
         
-        JMenuItem dragComponent = null;
+        JComponent dragComponent = null;
         dragComponent = new JMenuItem();
-        if(item instanceof JMenu) { dragComponent = new JMenu(); }
+        
+        if(item == null && type != null && JComponent.class.isAssignableFrom(type)) {
+            try {
+                dragComponent = (JComponent)type.newInstance();
+                p("created a drag component here: " + dragComponent);
+            } catch (Exception ex) {
+                System.out.println("exception: " + ex.getMessage());
+                ex.printStackTrace();
+            }
+        }
+        if(item instanceof JMenu) { 
+            dragComponent = new JMenu(); 
+        }
         if(item instanceof JCheckBoxMenuItem) { 
             dragComponent = new JCheckBoxMenuItem(); 
             ((JCheckBoxMenuItem)dragComponent).setSelected(true);
@@ -107,18 +131,21 @@ class DragOperation {
             dragComponent = new JRadioButtonMenuItem(); 
             ((JRadioButtonMenuItem)dragComponent).setSelected(true);
         }
-        if(item != null) {
-            dragComponent.setText(item.getText());
-            dragComponent.setIcon(item.getIcon());
-            if(! (item instanceof JMenu)) {
-                dragComponent.setAccelerator(item.getAccelerator());
+        if(dragComponent instanceof JMenuItem) {
+            JMenuItem dragItem = (JMenuItem) dragComponent;
+            if(item != null) {
+                dragItem.setText(item.getText());
+                dragItem.setIcon(item.getIcon());
+                if(! (item instanceof JMenu)) {
+                    dragItem.setAccelerator(item.getAccelerator());
+                }
+            } else {
+                dragItem.setText("a new menu item");
             }
-        } else {
-            dragComponent.setText("a new menu item");
+            dragItem.setMargin(new Insets(1,1,1,1));
+            dragItem.setBorderPainted(true);
         }
         dragComponent.setBorder(MenuEditLayer.DRAG_MENU_BORDER);
-        dragComponent.setMargin(new Insets(1,1,1,1));
-        dragComponent.setBorderPainted(true);
         return dragComponent;
 
     }
@@ -137,8 +164,10 @@ class DragOperation {
         op = Op.PICK_AND_PLOP_FROM_PALETTE;
         p("starting drag op for : " + item.getComponentClassName() + " at " + pt);
         started = true;
-        dragComponent = createDragFeedbackComponent(null);
+        dragComponent = createDragFeedbackComponent(null, item.getComponentClass());
+        p("created drag component = " + dragComponent);
         dragComponent.setSize(dragComponent.getPreferredSize());
+        p("created drag component = " + dragComponent);
         dragComponent.setLocation(pt);
         menuEditLayer.layers.add(dragComponent, JLayeredPane.DRAG_LAYER);
         menuEditLayer.repaint();
@@ -187,7 +216,7 @@ class DragOperation {
                 }
                 targetComponent = (JComponent)child;
                 if(targetComponent != null) {
-                    targetComponent.setBorder(MenuEditLayer.INSERTION_BORDER);
+                    menuEditLayer.dropTargetLayer.setDropTargetComponent(targetComponent, DropTargetLayer.DropTargetType.INTER_MENU, pt);
                 }
                 menuEditLayer.repaint();
             }
@@ -213,10 +242,12 @@ class DragOperation {
         p("point = " + point + "  widt = " + menu.getWidth());
         if(point.x > menu.getWidth()-30) {
             p("doing menu right");
-            menu.setBorder(MenuEditLayer.INSERTION_BORDER_MENU_RIGHT);
+            //menu.setBorder(MenuEditLayer.INSERTION_BORDER_MENU_RIGHT);
+            menuEditLayer.dropTargetLayer.setDropTargetComponent(menu, DropTargetLayer.DropTargetType.INTO_SUBMENU, point);
             menu.repaint();
         } else {
-            menu.setBorder(MenuEditLayer.INSERTION_BORDER);
+            menuEditLayer.dropTargetLayer.setDropTargetComponent(menu, DropTargetLayer.DropTargetType.INTER_MENU, point);
+            //menu.setBorder(MenuEditLayer.INSERTION_BORDER);
         }
         menuEditLayer.showMenuPopup(menu);
     }
@@ -227,6 +258,7 @@ class DragOperation {
         p("ending an operation at: " + pt);
         menuEditLayer.layers.remove(dragComponent);
         menuEditLayer.setDrawMenuBarNewComponentTarget(null, null);
+        menuEditLayer.dropTargetLayer.setDropTargetComponent(null, DropTargetLayer.DropTargetType.NONE, null);
         
         p("op = " + op);
         switch (op) {
