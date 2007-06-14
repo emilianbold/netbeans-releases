@@ -18,25 +18,21 @@
  */
 package org.netbeans.modules.xslt.mapper.view;
 
-import java.util.Iterator;
 import java.util.List;
-import org.netbeans.modules.soa.mapper.basicmapper.methoid.BasicField;
-import org.netbeans.modules.soa.mapper.basicmapper.methoid.BasicFieldNode;
 import org.netbeans.modules.soa.mapper.common.IMapperLink;
 import org.netbeans.modules.soa.mapper.common.IMapperNode;
 import org.netbeans.modules.soa.mapper.common.basicmapper.IBasicViewModel;
-import org.netbeans.modules.soa.mapper.common.basicmapper.methoid.IField;
 import org.netbeans.modules.soa.mapper.common.basicmapper.methoid.IFieldNode;
 import org.netbeans.modules.soa.mapper.common.basicmapper.methoid.IMethoid;
 import org.netbeans.modules.soa.mapper.common.basicmapper.methoid.IMethoidNode;
 import org.netbeans.modules.soa.mapper.common.basicmapper.tree.IMapperTreeNode;
 import org.netbeans.modules.xml.xpath.XPathExpression;
 import org.netbeans.modules.xml.xpath.XPathOperationOrFuntion;
-import org.netbeans.modules.xslt.mapper.methoid.Constants;
 import org.netbeans.modules.xslt.mapper.model.BuildExpressionVisitor;
 import org.netbeans.modules.xslt.mapper.model.nodes.LiteralCanvasNode;
 import org.netbeans.modules.xslt.mapper.model.nodes.Node;
 import org.netbeans.modules.xslt.mapper.model.nodes.TreeNode;
+import org.netbeans.modules.xslt.model.XslComponent;
 import org.netbeans.modules.xslt.model.XslComponent;
 
 /**
@@ -100,6 +96,7 @@ public class DiagramBuilder {
         
         // Look for predicates in the specified XPath expression
         if (new_expr != null) {
+            pfv.setContextXslComponent(xslc);
             new_expr.accept(pfv);
         }
         

@@ -21,10 +21,8 @@ package org.netbeans.modules.xslt.mapper.view;
 
 
 
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import org.netbeans.modules.soa.ui.axinodes.AxiomUtils;
 import org.netbeans.modules.xml.axi.AXIComponent;
 import org.netbeans.modules.xml.axi.AXIType;
@@ -40,6 +38,7 @@ import org.netbeans.modules.xml.xpath.XPathPredicateExpression;
 import org.netbeans.modules.xml.xpath.XPathVariableReference;
 import org.netbeans.modules.xml.xpath.visitor.AbstractXPathVisitor;
 import org.netbeans.modules.xslt.mapper.model.PredicatedAxiComponent;
+import org.netbeans.modules.xslt.model.XslComponent;
 
 /**
  * The visitor is intended to convert the
@@ -50,18 +49,14 @@ public class PredicateFinderVisitor extends AbstractXPathVisitor {
     
     private XsltMapper mapper;
     private XPathLocationPath myLocationPath;
-    private Map<String, String> prefixesMap;
+    private XslComponent contextXslComp;
     
     public PredicateFinderVisitor(XsltMapper mapper) {
         this.mapper = mapper;
-        //
-        //FIXME! namespace prefixes are taken from root element!
-        //should check the whole hierarchy, starting from element, which contains this expression
-        prefixesMap = ((AbstractDocumentComponent) mapper
-                .getContext()
-                .getXSLModel()
-                .getStylesheet())
-                .getPrefixes();
+    }
+    
+    public void setContextXslComponent(XslComponent xslc) {
+        contextXslComp = xslc;
     }
     
     //---------------------------------------------------
@@ -140,7 +135,10 @@ public class PredicateFinderVisitor extends AbstractXPathVisitor {
             //
             if (pos != -1){
                 String prefix = nameTest.substring(0, pos);
-                namespace = prefixesMap.get(prefix);
+                assert contextXslComp != null && 
+                        contextXslComp instanceof AbstractDocumentComponent;
+                namespace = ((AbstractDocumentComponent)contextXslComp).
+                        lookupNamespaceURI(prefix, true);
                 name = nameTest.substring(pos + 1);
             } else {
                 namespace = "";
