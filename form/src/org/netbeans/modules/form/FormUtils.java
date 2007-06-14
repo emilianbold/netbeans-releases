@@ -1161,11 +1161,12 @@ public class FormUtils
             }
         } else if (t instanceof TypeVariable) {
             TypeVariable tv = (TypeVariable)t;
-            Map<String,Type> actualTypeArgs = type.getActualTypeArgs();
+            Map<String,TypeHelper> actualTypeArgs = type.getActualTypeArgs();
             if (actualTypeArgs != null) {
-                Type tt = actualTypeArgs.get(tv.getName());
+                TypeHelper tt = actualTypeArgs.get(tv.getName());
                 if (tt != null) {
-                    clazz = typeToClass(new TypeHelper(tt, actualTypeArgs));
+                    Type typ = typeToClass(tt);
+                    clazz = typeToClass(new TypeHelper(typ, actualTypeArgs));
                 }
             }
         }
@@ -1178,14 +1179,20 @@ public class FormUtils
     public static class TypeHelper {
         /** The type. */
         private Type type;
+        /** Fully qualified name of the type. */
+        private String name;
         /** Type parameters that has been set. */
-        private Map<String,Type> actualTypeArgs;
+        private Map<String,TypeHelper> actualTypeArgs;
 
         /**
          * Creates <code>TypeHelper</code> that represents <code>Object</code>.
          */
         public TypeHelper() {
             this(Object.class, null);
+        }
+
+        public TypeHelper(String name) {
+            this.name = name;
         }
 
         /**
@@ -1205,7 +1212,7 @@ public class FormUtils
          * @param type type.
          * @param actualTypeArgs type parameters that has been set.
          */
-        public TypeHelper(Type type, Map<String,Type> actualTypeArgs) {
+        public TypeHelper(Type type, Map<String,TypeHelper> actualTypeArgs) {
             this.type = type;
             this.actualTypeArgs = actualTypeArgs;
         }
@@ -1219,13 +1226,17 @@ public class FormUtils
             return type;
         }
 
+        public String getName() {
+            return name;
+        }
+
         /**
          * Returns map of type parameters that has been set.
          *
          * @return map or <code>null</code> if the type is not generified
          * or none of its type parameters has been set.
          */
-        public Map<String,Type> getActualTypeArgs() {
+        public Map<String,TypeHelper> getActualTypeArgs() {
             return actualTypeArgs;
         }
 
@@ -1233,8 +1244,7 @@ public class FormUtils
          * Returns (undefined ;-)) normalized form of this type.
          */
         TypeHelper normalize() {
-            Type t = type;
-            Map<String,Type> newMap = null;
+            TypeHelper t = this;
             if (type instanceof TypeVariable) {
                 if (actualTypeArgs != null) {
                     TypeVariable tv = (TypeVariable)type;
@@ -1243,47 +1253,35 @@ public class FormUtils
             } else if (type instanceof ParameterizedType) {
                 ParameterizedType pt = (ParameterizedType)type;
                 Class clazz = (Class)pt.getRawType();
-                newMap = new HashMap();
+                Map<String,TypeHelper> newMap = new HashMap<String,TypeHelper>();
                 Type[] args = pt.getActualTypeArguments();
                 TypeVariable[] tvar = clazz.getTypeParameters();
                 for (int i=0; i<tvar.length; i++) {
                     Type arg = args[i];
                     TypeHelper sub = new TypeHelper(arg, actualTypeArgs).normalize();
-                    newMap.put(tvar[i].getName(), sub.getType());
+                    newMap.put(tvar[i].getName(), new TypeHelper(sub.getType()));
                 }
-                t = clazz;
+                t = new TypeHelper(clazz, newMap);
             } else if (type instanceof WildcardType) {
                 WildcardType wt = (WildcardType)type;
                 // PENDING more upper bounds
                 TypeHelper sub = new TypeHelper(wt.getUpperBounds()[0], actualTypeArgs).normalize();
-                t = sub.getType();
+                t = new TypeHelper(sub.getType());
             }
-            if (t == null) t = Object.class;
-            return new TypeHelper(t, newMap);
+            return t;
         }
     }
 
-    public static Class autobox(Class clazz) {
-        if (clazz.isPrimitive()) {
-            if (clazz == byte.class) {
-                return Byte.class;
-            } else if (clazz == short.class) {
-                return Short.class;
-            } else if (clazz == int.class) {
-                return Integer.class;
-            } else if (clazz == long.class) {
-                return Long.class;
-            } else if (clazz == float.class) {
-                return Float.class;
-            } else if (clazz == double.class) {
-                return Double.class;
-            } else if (clazz == char.class) {
-                return Character.class;
-            } else if (clazz == boolean.class) {
-                return Boolean.class;
-            }
+    public static String autobox(String className) {
+        if (className.equals("byte") || className.equals("short") || className.equals("long") // NOI18N
+                || className.equals("float") || className.equals("double") || className.equals("boolean")) { // NOI18N
+            className = "java.lang." + Character.toUpperCase(className.charAt(0)) + className.substring(1); // NOI18N
+        } else if (className.equals("int")) { // NOI18N
+            className = "java.lang.Integer"; // NOI18N
+        } else if (className.equals("char")) { // NOI18N
+            className = "java.lang.Character"; // NOI18N
         }
-        return clazz;
+        return className;
     }
  
     /*

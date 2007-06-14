@@ -1173,9 +1173,8 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
                 if (treePath != null) {
                     Object pComp = treePath.getLastPathComponent();
                     if (pComp instanceof BindingCustomizer.ExpressionNode) {
-                        Class c = ((BindingCustomizer.ExpressionNode)pComp).getType();
-                        c = FormUtils.autobox(c);
-                        clazz = c.getName();
+                        clazz = ((BindingCustomizer.ExpressionNode)pComp).getTypeName();
+                        clazz = FormUtils.autobox(clazz);
                         if (clazz.startsWith("java.lang.")) { // NOI18N
                             clazz = clazz.substring(10);
                         }

@@ -510,9 +510,9 @@ public class BindingCustomizer extends JPanel {
                         String item = items.get(i).toString();
                         MetaBinding subBinding = binding.addSubBinding(BindingDesignSupport.elWrap(item), null);
                         subBinding.setParameter(MetaBinding.TABLE_COLUMN_PARAMETER, i+""); // NOI18N
-                        Class columnType = columnToType.get(item);
-                        if ((columnType != null) && (columnType != java.lang.Object.class)) {
-                            String clazz = FormUtils.autobox(columnType).getName();
+                        String columnType = columnToType.get(item);
+                        if ((columnType != null) && (!columnType.equals("java.lang.Object"))) { // NOI18N
+                            String clazz = FormUtils.autobox(columnType);
                             if (clazz.startsWith("java.lang.")) { // NOI18N
                                 clazz = clazz.substring(10);
                             }
@@ -1025,7 +1025,7 @@ private void importDataButtonActionPerformed(java.awt.event.ActionEvent evt) {//
         return type;
     }
 
-    private Map<String,Class> columnToType;
+    private Map<String,String> columnToType;
     
     // Updates also displayExpressionCombo
     private void updateColumnSelector() {
@@ -1038,9 +1038,15 @@ private void importDataButtonActionPerformed(java.awt.event.ActionEvent evt) {//
                 List<BindingDescriptor> descriptors = designSupport.getAllBindingDescriptors(elemType);
                 columnSelector.setVisible(descriptors.size() > 0);
                 List available = new LinkedList();
-                columnToType = new HashMap<String,Class>();
+                columnToType = new HashMap<String,String>();
                 for (BindingDescriptor desc : descriptors) {
-                    columnToType.put(desc.getPath(), desc.getValueType());
+                    TypeHelper t = desc.getGenericValueType();
+                    String className = t.getName();
+                    if (className == null) {
+                        Class clazz = desc.getValueType();
+                        className = clazz.getName();
+                    }
+                    columnToType.put(desc.getPath(), className);
                     available.add(desc.getPath());
                 }
                 columnSelector.setItems(Collections.EMPTY_LIST, available);
@@ -1120,8 +1126,12 @@ private void importDataButtonActionPerformed(java.awt.event.ActionEvent evt) {//
            return category;
        }
 
-       public Class getType() {
-           return FormUtils.typeToClass(type);
+       public String getTypeName() {
+           String name = (type == null)? null : type.getName();
+           if (name == null) {
+               name = FormUtils.typeToClass(type).getName();
+           }
+           return name;
        }
 
        protected void loadChildren() {
@@ -1247,7 +1257,7 @@ private void importDataButtonActionPerformed(java.awt.event.ActionEvent evt) {//
                     BindingDescriptor descriptor = node.getDescriptor();
                     if (descriptor != null) {
                         updateFont(label, baseSize-node.getCategory());
-                        label.setText("<html><b>" + descriptor.getPath() + "</b> " + nameOfClass(descriptor.getValueType())); // NOI18N
+                        label.setText("<html><b>" + descriptor.getPath() + "</b> " + nameOfClass(descriptor.getGenericValueType())); // NOI18N
                     }
                 }
             } else if (value instanceof DefaultMutableTreeNode) {
@@ -1267,37 +1277,39 @@ private void importDataButtonActionPerformed(java.awt.event.ActionEvent evt) {//
             }
         }
         
-        private String nameOfClass(Class clazz) {
-            String name = clazz.getName();
-            StringBuilder sb = new StringBuilder();
-            if (name.startsWith("[")) { // NOI18N
-                while (name.startsWith("[")) { // NOI18N
-                    sb.append("[]"); // NOI18N
-                    name = name.substring(1);
+        private String nameOfClass(TypeHelper type) {
+            String name = type.getName();
+            if (name == null) {
+                name = FormUtils.typeToClass(type).getName();
+                if (name.startsWith("[")) { // NOI18N
+                    StringBuilder sb = new StringBuilder();
+                    while (name.startsWith("[")) { // NOI18N
+                        sb.append("[]"); // NOI18N
+                        name = name.substring(1);
+                    }
+                    if ("Z".equals(name)) { // NOI18N
+                        sb.insert(0, "boolean"); // NOI18N
+                    } else if ("B".equals(name)) { // NOI18N
+                        sb.insert(0, "byte"); // NOI18N
+                    } else if ("C".equals(name)) { // NOI18N
+                        sb.insert(0, "char"); // NOI18N
+                    } else if ("D".equals(name)) { // NOI18N
+                        sb.insert(0, "double"); // NOI18N
+                    } else if ("F".equals(name)) { // NOI18N
+                        sb.insert(0, "float"); // NOI18N
+                    } else if ("I".equals(name)) { // NOI18N
+                        sb.insert(0, "int"); // NOI18N
+                    } else if ("J".equals(name)) { // NOI18N
+                        sb.insert(0, "long"); // NOI18N
+                    } else if ("S".equals(name)) { // NOI18N
+                        sb.insert(0, "short"); // NOI18N
+                    } else {
+                        sb.insert(0, name.substring(1, name.length()-1));
+                    }
+                    name = sb.toString();
                 }
-                if ("Z".equals(name)) { // NOI18N
-                    sb.insert(0, "boolean"); // NOI18N
-                } else if ("B".equals(name)) { // NOI18N
-                    sb.insert(0, "byte"); // NOI18N
-                } else if ("C".equals(name)) { // NOI18N
-                    sb.insert(0, "char"); // NOI18N
-                } else if ("D".equals(name)) { // NOI18N
-                    sb.insert(0, "double"); // NOI18N
-                } else if ("F".equals(name)) { // NOI18N
-                    sb.insert(0, "float"); // NOI18N
-                } else if ("I".equals(name)) { // NOI18N
-                    sb.insert(0, "int"); // NOI18N
-                } else if ("J".equals(name)) { // NOI18N
-                    sb.insert(0, "long"); // NOI18N
-                } else if ("S".equals(name)) { // NOI18N
-                    sb.insert(0, "short"); // NOI18N
-                } else {
-                    sb.insert(0, name.substring(1, name.length()-1));
-                }
-                return sb.toString();
-            } else {
-                return name;
             }
+            return name;
         }
     }
 

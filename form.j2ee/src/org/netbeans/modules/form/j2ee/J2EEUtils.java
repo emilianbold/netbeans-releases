@@ -56,6 +56,7 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.form.FormEditor;
 import org.netbeans.modules.form.FormModel;
 import org.netbeans.modules.form.FormProperty;
+import org.netbeans.modules.form.FormUtils;
 import org.netbeans.modules.form.RADComponent;
 import org.netbeans.modules.form.codestructure.CodeStructure;
 import org.netbeans.modules.form.project.ClassPathUtils;
@@ -883,17 +884,9 @@ public class J2EEUtils {
                             type = variables.get(name);
                         }
                         if (type != null) {
+                            type = FormUtils.autobox(type);
                             if (type.startsWith("java.lang.")) { // NOI18N
                                 type = type.substring(10);
-                            }
-                            // Autoboxing
-                            if (type.equals("byte") || type.equals("short") || type.equals("long") // NOI18N
-                                    || type.equals("float") || type.equals("double") || type.equals("boolean")) { // NOI18N
-                                type = Character.toUpperCase(type.charAt(0)) + type.substring(1);
-                            } else if (type.equals("int")) { // NOI18N
-                                type = "Integer"; // NOI18N
-                            } else if (type.equals("char")) { // NOI18N
-                                type = "Character"; // NOI18N
                             }
                             type += ".class"; // NOI18N
                         }
@@ -949,6 +942,9 @@ public class J2EEUtils {
                 }
                 for (Basic basic : attrs.getBasic()) {
                     String propName = J2EEUtils.fieldToProperty(basic.getName());
+                    if ("<error>".equals(propName)) { // NOI18N
+                        continue;
+                    }
                     if (all) {
                         props.add(propName);
                     } else {
