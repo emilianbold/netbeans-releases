@@ -34,16 +34,6 @@ Microsystems, Inc. All Rights Reserved.
             </folder>
         </folder>
     </folder>
-    <folder name="Templates">
-        <folder name="Other">
-            <file name="EmptyShFile.sh" url="EmptyShFile.sh">
-                <attr name="template" boolvalue="true" />
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.languages.sh.Bundle"/>
-                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/languages/sh/EmptyShFileDescription.html"/>
-                <attr name="templateCategory" stringvalue="simple-files"/>
-            </file>            
-        </folder>
-    </folder>
     <folder name="OptionsDialog">
         <folder name="PreviewExamples">
             <folder name="text">
