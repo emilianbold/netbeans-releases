@@ -178,6 +178,8 @@ public abstract class AbstractRefactoring {
             Throwable cause = ex.getCause();
             if (cause!=null && cause.getClass().getName().equals("org.netbeans.api.java.source.JavaSource$InsufficientMemoryException")) {
                 return new Problem(true, NbBundle.getMessage(Util.class, "ERR_OutOfMemory"));
+            } else {
+                throw ex;
             }
         }
         return p;
