@@ -78,7 +78,7 @@ public class TreeModelNode extends AbstractNode {
     private Object              object;
     
     private String              htmlDisplayName;
-    private Map                 properties = new HashMap ();
+    private Map<String, Object> properties = new HashMap<String, Object>();
 
     
     // init ....................................................................
@@ -592,14 +592,14 @@ public class TreeModelNode extends AbstractNode {
     // innerclasses ............................................................
     
     /** Special locals subnodes (children) */
-    private static final class TreeModelChildren extends Children.Keys
+    private static final class TreeModelChildren extends Children.Keys<Object>
                                                  implements LazyEvaluator.Evaluable {
             
         private boolean             initialezed = false;
         private Models.CompoundModel model;
         private TreeModelRoot       treeModelRoot;
         private Object              object;
-        private WeakHashMap         objectToNode = new WeakHashMap ();
+        private WeakHashMap<Object, WeakReference<TreeModelNode>> objectToNode = new WeakHashMap<Object, WeakReference<TreeModelNode>>();
         private int[]               evaluated = { 0 }; // 0 - not yet, 1 - evaluated, -1 - timeouted
         private Object[]            children_evaluated;
         private boolean refreshingSubNodes = true;
@@ -625,7 +625,7 @@ public class TreeModelNode extends AbstractNode {
         
         protected void removeNotify () {
             initialezed = false;
-            setKeys (Collections.EMPTY_SET);
+            setKeys (Collections.emptySet());
         }
         
         void refreshChildren (boolean refreshSubNodes) {
@@ -720,17 +720,16 @@ public class TreeModelNode extends AbstractNode {
         private void applyChildren(final Object[] ch, boolean refreshSubNodes) {
             //System.err.println(this.hashCode()+" applyChildren("+refreshSubNodes+")");
             int i, k = ch.length; 
-            WeakHashMap newObjectToNode = new WeakHashMap ();
+            WeakHashMap<Object, WeakReference<TreeModelNode>> newObjectToNode = new WeakHashMap<Object, WeakReference<TreeModelNode>>();
             for (i = 0; i < k; i++) {
                 if (ch [i] == null) {
                     throw (NullPointerException) ErrorManager.getDefault().annotate(
                             new NullPointerException(),
                             "model: " + model + "\nparent: " + object);
                 }
-                WeakReference wr = (WeakReference) objectToNode.get 
-                    (ch [i]);
+                WeakReference<TreeModelNode> wr = objectToNode.get(ch [i]);
                 if (wr == null) continue;
-                TreeModelNode tmn = (TreeModelNode) wr.get ();
+                TreeModelNode tmn = wr.get ();
                 if (tmn == null) continue;
                 if (refreshSubNodes) {
                     tmn.setObject (ch [i]);
@@ -795,7 +794,7 @@ public class TreeModelNode extends AbstractNode {
                 treeModelRoot, 
                 object
             );
-            objectToNode.put (object, new WeakReference (tmn));
+            objectToNode.put (object, new WeakReference<TreeModelNode>(tmn));
             return new Node[] {tmn};
         }
     } // ItemChildren
@@ -1009,7 +1008,7 @@ public class TreeModelNode extends AbstractNode {
         /** Release the evaluator task after this time. */
         private static final long EXPIRE_TIME = 60000L;
 
-        private List objectsToEvaluate = new LinkedList();
+        private List<Object> objectsToEvaluate = new LinkedList<Object>();
         private Evaluable currentlyEvaluating;
         private Task evalTask;
         

@@ -49,7 +49,7 @@ public class TreeModelRoot implements ModelListener {
 
     private Models.CompoundModel model;
     private TreeModelNode rootNode;
-    private WeakHashMap objectToNode = new WeakHashMap ();
+    private WeakHashMap<Object, WeakReference<TreeModelNode>> objectToNode = new WeakHashMap<Object, WeakReference<TreeModelNode>>();
     private TreeTable treeTable;
     
     /** The children evaluator for view if this root. */
@@ -75,13 +75,13 @@ public class TreeModelRoot implements ModelListener {
     }
     
     void registerNode (Object o, TreeModelNode n) {
-        objectToNode.put (o, new WeakReference (n));
+        objectToNode.put (o, new WeakReference<TreeModelNode>(n));
     }
     
     TreeModelNode findNode (Object o) {
-        WeakReference wr = (WeakReference) objectToNode.get (o);
+        WeakReference<TreeModelNode> wr = objectToNode.get (o);
         if (wr == null) return null;
-        return (TreeModelNode) wr.get ();
+        return wr.get ();
     }
     
     public void modelChanged (final ModelEvent event) {
@@ -157,7 +157,7 @@ public class TreeModelRoot implements ModelListener {
         if (model != null)
             model.removeModelListener (this);
         model = null;
-        objectToNode = new WeakHashMap ();
+        objectToNode = new WeakHashMap<Object, WeakReference<TreeModelNode>>();
     }
 }
 

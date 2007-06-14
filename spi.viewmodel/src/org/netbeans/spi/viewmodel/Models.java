@@ -70,7 +70,7 @@ import org.openide.windows.TopComponent;
 public final class Models {
 
     /** Cached default implementations of expansion models. */
-    private static WeakHashMap defaultExpansionModels = new WeakHashMap();
+    private static WeakHashMap<Object, TreeExpansionModel> defaultExpansionModels = new WeakHashMap<Object, TreeExpansionModel>();
     /**
      * Empty model - returns default root node with no children.
      */
@@ -154,17 +154,17 @@ public final class Models {
      * @since 1.7
      */
     public static CompoundModel createCompoundModel (List models, String propertiesHelpID) {
-        List treeModels;
-        List treeModelFilters;
-        List treeExpansionModels;
-        List nodeModels;
-        List nodeModelFilters;
-        List tableModels;
-        List tableModelFilters;
-        List nodeActionsProviders;
-        List nodeActionsProviderFilters;
-        List columnModels;
-        List otherModels;
+        List<TreeModel>                 treeModels;
+        List<TreeModelFilter>           treeModelFilters;
+        List<TreeExpansionModel>        treeExpansionModels;
+        List<NodeModel>                 nodeModels;
+        List<NodeModelFilter>           nodeModelFilters;
+        List<TableModel>                tableModels;
+        List<TableModelFilter>          tableModelFilters;
+        List<NodeActionsProvider>       nodeActionsProviders;
+        List<NodeActionsProviderFilter> nodeActionsProviderFilters;
+        List<ColumnModel>               columnModels;
+        List<? extends Model>           otherModels;
         
         // Either the list contains 10 lists of individual models + one list of mixed models; or the models directly
         boolean hasLists = false;
@@ -178,33 +178,33 @@ public final class Models {
             }
         }
         if (hasLists) { // We have 11 lists of individual models
-            treeModels =            (List) models.get(0);
-            treeModelFilters =      (List) models.get(1);
+            treeModels =            (List<TreeModel>)       models.get(0);
+            treeModelFilters =      (List<TreeModelFilter>) models.get(1);
             revertOrder(treeModelFilters);
-            treeExpansionModels =   (List) models.get(2);
-            nodeModels =            (List) models.get(3);
-            nodeModelFilters =      (List) models.get(4);
+            treeExpansionModels =   (List<TreeExpansionModel>) models.get(2);
+            nodeModels =            (List<NodeModel>) models.get(3);
+            nodeModelFilters =      (List<NodeModelFilter>) models.get(4);
             revertOrder(nodeModelFilters);
-            tableModels =           (List) models.get(5);
-            tableModelFilters =     (List) models.get(6);
+            tableModels =           (List<TableModel>) models.get(5);
+            tableModelFilters =     (List<TableModelFilter>) models.get(6);
             revertOrder(tableModelFilters);
-            nodeActionsProviders =  (List) models.get(7);
-            nodeActionsProviderFilters = (List) models.get(8);
+            nodeActionsProviders =  (List<NodeActionsProvider>) models.get(7);
+            nodeActionsProviderFilters = (List<NodeActionsProviderFilter>) models.get(8);
             revertOrder(nodeActionsProviderFilters);
-            columnModels =          (List) models.get(9);
-            otherModels =           (List) models.get(10);
+            columnModels =          (List<ColumnModel>) models.get(9);
+            otherModels =           (List<? extends Model>) models.get(10);
         } else { // We have the models, need to find out what they implement
-            treeModels =           new LinkedList ();
-            treeModelFilters =     new LinkedList ();
-            treeExpansionModels =  new LinkedList ();
-            nodeModels =           new LinkedList ();
-            nodeModelFilters =     new LinkedList ();
-            tableModels =          new LinkedList ();
-            tableModelFilters =    new LinkedList ();
-            nodeActionsProviders = new LinkedList ();
-            nodeActionsProviderFilters = new LinkedList ();
-            columnModels =         new LinkedList ();
-            otherModels =          models;
+            treeModels =           new LinkedList<TreeModel> ();
+            treeModelFilters =     new LinkedList<TreeModelFilter> ();
+            treeExpansionModels =  new LinkedList<TreeExpansionModel> ();
+            nodeModels =           new LinkedList<NodeModel> ();
+            nodeModelFilters =     new LinkedList<NodeModelFilter> ();
+            tableModels =          new LinkedList<TableModel> ();
+            tableModelFilters =    new LinkedList<TableModelFilter> ();
+            nodeActionsProviders = new LinkedList<NodeActionsProvider> ();
+            nodeActionsProviderFilters = new LinkedList<NodeActionsProviderFilter> ();
+            columnModels =         new LinkedList<ColumnModel> ();
+            otherModels =          (List<? extends Model>) models;
         }
             
         Iterator it = otherModels.iterator ();
@@ -212,37 +212,37 @@ public final class Models {
             Object model = it.next ();
             boolean first = model.getClass ().getName ().endsWith ("First");
             if (model instanceof TreeModel)
-                treeModels.add(model);
+                treeModels.add((TreeModel) model);
             if (model instanceof TreeModelFilter)
                 if (first)
-                    treeModelFilters.add(model);
+                    treeModelFilters.add((TreeModelFilter) model);
                 else
-                    treeModelFilters.add(0, model);
+                    treeModelFilters.add(0, (TreeModelFilter) model);
             if (model instanceof TreeExpansionModel)
-                treeExpansionModels.add(model);
+                treeExpansionModels.add((TreeExpansionModel) model);
             if (model instanceof NodeModel)
-                nodeModels.add(model);
+                nodeModels.add((NodeModel) model);
             if (model instanceof NodeModelFilter)
                 if (first)
-                    nodeModelFilters.add(model);
+                    nodeModelFilters.add((NodeModelFilter) model);
                 else
-                    nodeModelFilters.add(0, model);
+                    nodeModelFilters.add(0, (NodeModelFilter) model);
             if (model instanceof TableModel)
-                tableModels.add(model);
+                tableModels.add((TableModel) model);
             if (model instanceof TableModelFilter)
                 if (first)
-                    tableModelFilters.add(model);
+                    tableModelFilters.add((TableModelFilter) model);
                 else
-                    tableModelFilters.add(0, model);
+                    tableModelFilters.add(0, (TableModelFilter) model);
             if (model instanceof NodeActionsProvider)
-                nodeActionsProviders.add(model);
+                nodeActionsProviders.add((NodeActionsProvider) model);
             if (model instanceof NodeActionsProviderFilter)
                 if (first)
-                    nodeActionsProviderFilters.add(model);
+                    nodeActionsProviderFilters.add((NodeActionsProviderFilter) model);
                 else
-                    nodeActionsProviderFilters.add(0, model);
+                    nodeActionsProviderFilters.add(0, (NodeActionsProviderFilter) model);
             if (model instanceof ColumnModel)
-                columnModels.add(model);
+                columnModels.add((ColumnModel) model);
         }
         /*
         System.out.println("Tree Models = "+treeModels);
@@ -257,10 +257,11 @@ public final class Models {
         System.out.println("Column Models = "+columnModels);
          */
         if (treeModels.isEmpty ()) {
-            treeModels = Collections.singletonList(new EmptyTreeModel ());
+            TreeModel etm = new EmptyTreeModel();
+            treeModels = Collections.singletonList(etm);
         }
         if (treeExpansionModels.isEmpty()) {
-            TreeExpansionModel tem = (TreeExpansionModel) defaultExpansionModels.get(models);
+            TreeExpansionModel tem = defaultExpansionModels.get(models);
             if (tem == null) {
                 tem = new DefaultTreeExpansionModel();
                 defaultExpansionModels.put(models, tem);
@@ -291,10 +292,10 @@ public final class Models {
         );
     }
     
-    private static void revertOrder(List filters) {
+    private static <T> void revertOrder(List<T> filters) {
         int n = filters.size();
         for (int i = 0; i < n; ) {
-            Object filter = filters.remove(i);
+            T filter = filters.remove(i);
             boolean first = filter.getClass ().getName ().endsWith ("First");
             if (first) { // The "First" should be the last one in this list
                 filters.add(filter);
@@ -482,22 +483,22 @@ public final class Models {
         public void actionPerformed (ActionEvent e) {
             Node[] ns = TopComponent.getRegistry ().getActivatedNodes ();
             int i, k = ns.length;
-            IdentityHashMap h = new IdentityHashMap ();
+            IdentityHashMap<Action, ArrayList<Object>> h = new IdentityHashMap<Action, ArrayList<Object>>();
             for (i = 0; i < k; i++) {
                 Object node = ns[i].getLookup().lookup(Object.class);
                 Action[] as = ns [i].getActions (false);
                 int j, jj = as.length;
                 for (j = 0; j < jj; j++)
                     if (equals (as [j])) {
-                        ArrayList l = (ArrayList) h.get (as [j]);
+                        ArrayList<Object> l = h.get (as [j]);
                         if (l == null) {
-                            l = new ArrayList ();
+                            l = new ArrayList<Object>();
                             h.put (as [j], l);
                         }
                         l.add (node);
                     }
             }
-            Iterator it = h.keySet ().iterator ();
+            Iterator<Action> it = h.keySet ().iterator ();
             while (it.hasNext ()) {
                 ActionSupport a = (ActionSupport) it.next ();
                 a.performer.perform (
@@ -555,7 +556,7 @@ public final class Models {
         private TreeModel model;
         private TreeModelFilter filter;
         
-        private Collection modelListeners = new HashSet();
+        private Collection<ModelListener> modelListeners = new HashSet<ModelListener>();
 
         
         /**
@@ -651,12 +652,12 @@ public final class Models {
 
         public void modelChanged(ModelEvent event) {
             ModelEvent newEvent = translateEvent(event, this);
-            Collection listeners;
+            Collection<ModelListener> listeners;
             synchronized (modelListeners) {
-                listeners = new ArrayList(modelListeners);
+                listeners = new ArrayList<ModelListener>(modelListeners);
             }
-            for (Iterator it = listeners.iterator(); it.hasNext(); ) {
-                ((ModelListener) it.next()).modelChanged(newEvent);
+            for (Iterator<ModelListener> it = listeners.iterator(); it.hasNext(); ) {
+                it.next().modelChanged(newEvent);
             }
         }
         
@@ -704,7 +705,7 @@ public final class Models {
         private ExtendedNodeModel model;
         private NodeModelFilter filter;
 
-        private Collection modelListeners = new HashSet();
+        private Collection<ModelListener> modelListeners = new HashSet<ModelListener>();
 
 
         /**
@@ -785,12 +786,12 @@ public final class Models {
 
         public void modelChanged(ModelEvent event) {
             ModelEvent newEvent = translateEvent(event, this);
-            Collection listeners;
+            Collection<ModelListener> listeners;
             synchronized (modelListeners) {
-                listeners = new ArrayList(modelListeners);
+                listeners = new ArrayList<ModelListener>(modelListeners);
             }
-            for (Iterator it = listeners.iterator(); it.hasNext(); ) {
-                ((ModelListener) it.next()).modelChanged(newEvent);
+            for (Iterator<ModelListener> it = listeners.iterator(); it.hasNext(); ) {
+                it.next().modelChanged(newEvent);
             }
         }
         
@@ -906,7 +907,7 @@ public final class Models {
         private TableModel model;
         private TableModelFilter filter;
 
-        private Collection modelListeners = new HashSet();
+        private Collection<ModelListener> modelListeners = new HashSet<ModelListener>();
 
 
         /**
@@ -1003,12 +1004,12 @@ public final class Models {
 
         public void modelChanged(ModelEvent event) {
             ModelEvent newEvent = translateEvent(event, this);
-            Collection listeners;
+            Collection<ModelListener> listeners;
             synchronized (modelListeners) {
-                listeners = new ArrayList(modelListeners);
+                listeners = new ArrayList<ModelListener>(modelListeners);
             }
-            for (Iterator it = listeners.iterator(); it.hasNext(); ) {
-                ((ModelListener) it.next()).modelChanged(newEvent);
+            for (Iterator<ModelListener> it = listeners.iterator(); it.hasNext(); ) {
+                it.next().modelChanged(newEvent);
             }
         }
         
@@ -1038,7 +1039,7 @@ public final class Models {
     final static class DelegatingTreeModel implements TreeModel {
 
         private TreeModel[] models;
-        private HashMap classNameToModel = new HashMap ();
+        private HashMap<String, TreeModel> classNameToModel = new HashMap<String, TreeModel>();
 
 
         /**
@@ -1047,13 +1048,13 @@ public final class Models {
          *
          * @param models a list of TableModels
          */
-        DelegatingTreeModel (List models) {
+        DelegatingTreeModel (List<TreeModel> models) {
             this (convert (models));
         }
 
-        private static TreeModel[] convert (List l) {
+        private static TreeModel[] convert (List<TreeModel> l) {
             TreeModel[] models = new TreeModel [l.size ()];
-            return (TreeModel[]) l.toArray (models);
+            return l.toArray (models);
         }
 
         /**
@@ -1089,7 +1090,7 @@ public final class Models {
          */
         public Object[] getChildren (Object node, int from, int to)
         throws UnknownTypeException {
-            TreeModel model = (TreeModel) classNameToModel.get (
+            TreeModel model = classNameToModel.get (
                 node.getClass ().getName ()
             );
             if (model != null) 
@@ -1149,7 +1150,7 @@ public final class Models {
          * @return  true if node is leaf
          */
         public boolean isLeaf (Object node) throws UnknownTypeException {
-            TreeModel model = (TreeModel) classNameToModel.get (
+            TreeModel model = classNameToModel.get (
                 node.getClass ().getName ()
             );
             if (model != null) 
@@ -1289,7 +1290,7 @@ public final class Models {
     final static class DelegatingTableModel implements TableModel {
 
         private TableModel[] models;
-        private HashMap classNameToModel = new HashMap ();
+        private HashMap<String, TableModel> classNameToModel = new HashMap<String, TableModel>();
 
 
         /**
@@ -1298,13 +1299,13 @@ public final class Models {
          *
          * @param models a list of TableModels
          */
-        DelegatingTableModel (List models) {
+        DelegatingTableModel (List<TableModel> models) {
             this (convert (models));
         }
 
-        private static TableModel[] convert (List l) {
+        private static TableModel[] convert (List<TableModel> l) {
             TableModel[] models = new TableModel [l.size ()];
-            return (TableModel[]) l.toArray (models);
+            return l.toArray (models);
         }
 
         /**
@@ -1332,7 +1333,7 @@ public final class Models {
          */
         public Object getValueAt (Object node, String columnID)
         throws UnknownTypeException {
-            TableModel model = (TableModel) classNameToModel.get (
+            TableModel model = classNameToModel.get (
                 node.getClass ().getName ()
             );
             if (model != null) 
@@ -1367,7 +1368,7 @@ public final class Models {
          */
         public boolean isReadOnly (Object node, String columnID) throws 
         UnknownTypeException {
-            TableModel model = (TableModel) classNameToModel.get (
+            TableModel model = classNameToModel.get (
                 node.getClass ().getName ()
             );
             if (model != null) 
@@ -1401,7 +1402,7 @@ public final class Models {
          */
         public void setValueAt (Object node, String columnID, Object value)
         throws UnknownTypeException {
-            TableModel model = (TableModel) classNameToModel.get (
+            TableModel model = classNameToModel.get (
                 node.getClass ().getName ()
             );
             if (model != null) 
@@ -1474,7 +1475,7 @@ public final class Models {
     implements TreeExpansionModel {
 
         private TreeExpansionModel[] models;
-        private HashMap classNameToModel = new HashMap ();
+        private HashMap<String, TreeExpansionModel> classNameToModel = new HashMap<String, TreeExpansionModel>();
 
 
         /**
@@ -1483,13 +1484,13 @@ public final class Models {
          *
          * @param models a list of TableModels
          */
-        DelegatingTreeExpansionModel (List models) {
+        DelegatingTreeExpansionModel (List<TreeExpansionModel> models) {
             this (convert (models));
         }
 
-        private static TreeExpansionModel[] convert (List l) {
+        private static TreeExpansionModel[] convert (List<TreeExpansionModel> l) {
             TreeExpansionModel[] models = new TreeExpansionModel [l.size()];
-            return (TreeExpansionModel[]) l.toArray (models);
+            return l.toArray (models);
         }
 
         /**
@@ -1510,7 +1511,7 @@ public final class Models {
          */
         public boolean isExpanded (Object node) 
         throws UnknownTypeException {
-            TreeExpansionModel model = (TreeExpansionModel) 
+            TreeExpansionModel model = 
                 classNameToModel.get (
                     node.getClass ().getName ()
                 );
@@ -1577,8 +1578,8 @@ public final class Models {
     
     private static class DefaultTreeExpansionModel implements TreeExpansionModel {
         
-        private Set expandedNodes = new WeakSet();
-        private Set collapsedNodes = new WeakSet();
+        private Set<Object> expandedNodes = new WeakSet<Object>();
+        private Set<Object> collapsedNodes = new WeakSet<Object>();
         
         /**
          * Defines default state (collapsed, expanded) of given node.
@@ -1636,7 +1637,7 @@ public final class Models {
     static final class DelegatingNodeModel implements ExtendedNodeModel {
 
         private NodeModel[] models;
-        private HashMap classNameToModel = new HashMap ();
+        private HashMap<String, NodeModel> classNameToModel = new HashMap<String, NodeModel>();
 
 
         /**
@@ -1646,14 +1647,14 @@ public final class Models {
          * @param models a list of NodeModels
          */
         DelegatingNodeModel (
-            List models
+            List<NodeModel> models
         ) {
             this (convert (models));
         }
 
-        private static NodeModel[] convert (List l) {
+        private static NodeModel[] convert (List<NodeModel> l) {
             NodeModel[] models = new NodeModel [l.size ()];
-            return (NodeModel[]) l.toArray (models);
+            return l.toArray (models);
         }
 
         /**
@@ -1682,7 +1683,7 @@ public final class Models {
          */
         public String getDisplayName (Object node) 
         throws UnknownTypeException {
-            NodeModel model = (NodeModel) classNameToModel.get (
+            NodeModel model = classNameToModel.get (
                 node.getClass ().getName ()
             );
             if (model != null) 
@@ -1711,7 +1712,7 @@ public final class Models {
          */
         public String getShortDescription (Object node) 
         throws UnknownTypeException {
-            NodeModel model = (NodeModel) classNameToModel.get (
+            NodeModel model = classNameToModel.get (
                 node.getClass ().getName ()
             );
             if (model != null) 
@@ -1740,7 +1741,7 @@ public final class Models {
          */
         public String getIconBase (Object node) 
         throws UnknownTypeException {
-            NodeModel model = (NodeModel) classNameToModel.get (
+            NodeModel model = classNameToModel.get (
                 node.getClass ().getName ()
             );
             if (model != null) 
@@ -1845,7 +1846,7 @@ public final class Models {
 
         public boolean canRename(Object node) throws UnknownTypeException {
             UnknownTypeException uex = null;
-            NodeModel model = (NodeModel) classNameToModel.get (
+            NodeModel model = classNameToModel.get (
                 node.getClass ().getName ()
             );
             if (model != null) {
@@ -1885,7 +1886,7 @@ public final class Models {
 
         public boolean canCopy(Object node) throws UnknownTypeException {
             UnknownTypeException uex = null;
-            NodeModel model = (NodeModel) classNameToModel.get (
+            NodeModel model = classNameToModel.get (
                 node.getClass ().getName ()
             );
             if (model != null) {
@@ -1925,7 +1926,7 @@ public final class Models {
 
         public boolean canCut(Object node) throws UnknownTypeException {
             UnknownTypeException uex = null;
-            NodeModel model = (NodeModel) classNameToModel.get (
+            NodeModel model = classNameToModel.get (
                 node.getClass ().getName ()
             );
             if (model != null) {
@@ -1966,7 +1967,7 @@ public final class Models {
         public Transferable clipboardCopy(Object node) throws IOException,
                                                               UnknownTypeException {
             UnknownTypeException uex = null;
-            NodeModel model = (NodeModel) classNameToModel.get (
+            NodeModel model = classNameToModel.get (
                 node.getClass ().getName ()
             );
             if (model != null) {
@@ -2007,7 +2008,7 @@ public final class Models {
         public Transferable clipboardCut(Object node) throws IOException,
                                                              UnknownTypeException {
             UnknownTypeException uex = null;
-            NodeModel model = (NodeModel) classNameToModel.get (
+            NodeModel model = classNameToModel.get (
                 node.getClass ().getName ()
             );
             if (model != null) {
@@ -2090,7 +2091,7 @@ public final class Models {
 
         public PasteType[] getPasteTypes(Object node, Transferable t) throws UnknownTypeException {
             UnknownTypeException uex = null;
-            NodeModel model = (NodeModel) classNameToModel.get (
+            NodeModel model = classNameToModel.get (
                 node.getClass ().getName ()
             );
             if (model != null) {
@@ -2173,7 +2174,7 @@ public final class Models {
 
         public void setName(Object node, String name) throws UnknownTypeException {
             UnknownTypeException uex = null;
-            NodeModel model = (NodeModel) classNameToModel.get (
+            NodeModel model = classNameToModel.get (
                 node.getClass ().getName ()
             );
             if (model != null) {
@@ -2216,7 +2217,7 @@ public final class Models {
 
         public String getIconBaseWithExtension(Object node) throws UnknownTypeException {
             UnknownTypeException uex = null;
-            NodeModel model = (NodeModel) classNameToModel.get (
+            NodeModel model = classNameToModel.get (
                 node.getClass ().getName ()
             );
             if (model != null) {
@@ -2510,7 +2511,7 @@ public final class Models {
     static final class DelegatingNodeActionsProvider implements NodeActionsProvider {
 
         private NodeActionsProvider[] models;
-        private HashMap classNameToModel = new HashMap ();
+        private HashMap<String, NodeActionsProvider> classNameToModel = new HashMap<String, NodeActionsProvider>();
 
 
         /**
@@ -2520,14 +2521,14 @@ public final class Models {
          * @param models a list of NodeActionsProvider
          */
         public DelegatingNodeActionsProvider (
-            List models
+            List<NodeActionsProvider> models
         ) {
             this (convert (models));
         }
 
-        private static NodeActionsProvider[] convert (List l) {
+        private static NodeActionsProvider[] convert (List<NodeActionsProvider> l) {
             NodeActionsProvider[] models = new NodeActionsProvider [l.size ()];
-            return (NodeActionsProvider[]) l.toArray (models);
+            return l.toArray (models);
         }
 
         /**
@@ -2549,7 +2550,7 @@ public final class Models {
          */
         public Action[] getActions (Object node) 
         throws UnknownTypeException {
-            NodeActionsProvider model = (NodeActionsProvider) classNameToModel.get (
+            NodeActionsProvider model = classNameToModel.get (
                 node.getClass ().getName ()
             );
             if (model != null) 
@@ -2577,7 +2578,7 @@ public final class Models {
          * @return  display name for given node
          */
         public void performDefaultAction (Object node) throws UnknownTypeException {
-            NodeActionsProvider model = (NodeActionsProvider) classNameToModel.get (
+            NodeActionsProvider model = classNameToModel.get (
                 node.getClass ().getName ()
             );
             if (model != null) 
@@ -2700,7 +2701,7 @@ public final class Models {
             TreeExpansionModel treeExpansionModel,
             ExtendedNodeModel nodeModel, 
             NodeActionsProvider nodeActionsProvider,
-            List columnModels,
+            List<ColumnModel> columnModels,
             TableModel tableModel,
             String propertiesHelpID
         ) {
@@ -2715,7 +2716,7 @@ public final class Models {
             this.nodeModel = nodeModel;
             this.tableModel = tableModel;
             this.nodeActionsProvider = nodeActionsProvider;
-            this.columnModels = (ColumnModel[]) columnModels.toArray (
+            this.columnModels = columnModels.toArray (
                 new ColumnModel [columnModels.size ()]
             );
             this.propertiesHelpID = propertiesHelpID;
