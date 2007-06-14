@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project default="deploy-deviceanywhere">
+    <target name="init">
+        <fail unless="deployment.jad">Property deployment.jad is not set.</fail>
+        <fail unless="deployment.jar">Property deployment.jar is not set.</fail>
+        <fail unless="deployment.deviceanywhere.device">Device ID is not set.</fail>
+        <condition property="skip-password-input">
+            <or>
+                <not><isset property="netbeans.home"/></not>
+                <and>
+                    <isset property="deployment.deviceanywhere.userid"/>
+                    <isset property="deployment.deviceanywhere.password"/>
+                    <not><equals arg1="${deployment.deviceanywhere.userid}" arg2="" trim="true"/></not>
+                    <not><equals arg1="${deployment.deviceanywhere.password}" arg2="" trim="true"/></not>
+                </and>
+            </or>
+        </condition>
+<!--        
+        <property name="deployment.deviceanywhere.device" value="-1"/>
+        <condition property="device-not-selected">
+            <or>
+                <equals arg1="${deployment.deviceanywhere.device}" arg2="" trim="true"/>
+                <equals arg1="${deployment.deviceanywhere.device}" arg2="-1" trim="true"/>
+            </or>
+        </condition>
+        <fail if="device-not-selected">Device must be selected!</fail>
+-->        
+    </target>
+    <target name="set-password" depends="init" unless="skip-password-input">
+        <property name="deployment.deviceanywhere.userid" value=""/>
+        <nb-enter-password connectionid="Device Anywhere" usernameproperty="deployment.deviceanywhere.userid.eval" username="${deployment.deviceanywhere.userid}" passwordproperty="deployment.deviceanywhere.password.eval"/>
+    </target>
+    <target name="deploy-deviceanywhere" depends="init,set-password">
+        <property name="deployment.deviceanywhere.userid.eval" value="${deployment.deviceanywhere.userid}"/>
+        <property name="deployment.deviceanywhere.password.eval" value="${deployment.deviceanywhere.password}"/>
+        <DeviceAnywhereUploadTask user="${deployment.deviceanywhere.userid.eval}" password="${deployment.deviceanywhere.password.eval}" deviceid="${deployment.deviceanywhere.device}" jadfile="${deployment.jad}" jarfile="${deployment.jar}"/>
+    </target>
+</project>
