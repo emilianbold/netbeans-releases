@@ -21,7 +21,7 @@ public class ${proxyClassName} {
             ${method.getReturnType().getName()} _result = null;
         </#if>
         try { // Call Web Service Operation
-            libraryservice.Library port = service.getLibraryPort();
+            ${portClassName} port = service.${portGetterName}();
             <#if method.getReturnType().getName() == "void"><#rt>
                 port.${method.getName()}(<#list method.getParameters() as parameter>${parameter.getName()}<#if parameter_has_next>, </#if></#list>);
             <#else>

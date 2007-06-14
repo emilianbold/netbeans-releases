@@ -155,10 +155,14 @@ public class ProxyGenerator {
             ClassDataRegistry registry = ClassDataRegistry.getRegistry( ClassDataRegistry.DEFAULT_PROFILE, classpaths );
             
             String servicePackage = null;
+            String portClassName = null;
+            String portGetterName = null;
             List<MethodData> methodList = new ArrayList<MethodData>();
             for( Node serviceNode : rootNode.getChildren().getNodes()) {
                 for( Node portNode : serviceNode.getChildren().getNodes()) {
                     WsdlPort wsdlPort = portNode.getLookup().lookup( WsdlPort.class );
+                    portGetterName = wsdlPort.getPortGetter();
+                    portClassName = wsdlPort.getJavaName();
                     String nnn = wsdlPort.getJavaName();
                     org.netbeans.modules.mobility.e2e.classdata.ClassData cd = registry.getClassData( wsdlPort.getJavaName());
                     servicePackage = cd.getPackage();
@@ -188,6 +192,8 @@ public class ProxyGenerator {
             bind.put( "service", wsdlService );
             
             bind.put( "methods", methodList );
+            bind.put( "portGetterName", portGetterName );
+            bind.put( "portClassName", portClassName );
             
             Writer w = null;
             Reader is = null;
@@ -209,6 +215,7 @@ public class ProxyGenerator {
                 }
                 if( is != null ) is.close();
                 off.close();
+                outputFile.refresh(false);
             }                  
         } catch( Exception e ) {                
             ErrorManager.getDefault().notify( e );

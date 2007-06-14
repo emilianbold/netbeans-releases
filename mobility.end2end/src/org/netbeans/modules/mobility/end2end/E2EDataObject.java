@@ -235,6 +235,7 @@ public class E2EDataObject extends XmlMultiViewDataObject {
             }
         }
         // TODO: fix 
+        System.err.println(" - classpathInfos: " + classpathInfos.size());
         final ClassDataRegistry registry = ClassDataRegistry.getRegistry( "default", classpathInfos );  
 //        final ClassDataRegistry registry =
 //                getClassDataRegistryFactory().create( classPath );
@@ -310,12 +311,16 @@ public class E2EDataObject extends XmlMultiViewDataObject {
             }
             mapping.setProperty( "instance", className );
             
+            Thread.sleep( 5000 ); // FIXME: Dirty, dirty, dirty hack :(
+            registry.updateClassDataTree();
             final org.netbeans.modules.mobility.e2e.classdata.ClassData classData = registry.getClassData( className );
+            System.err.println(" - classdata = " + classData);
             if( classData == null ) continue;
             
             final List<OperationData> methods = ccd.getOperations();
             final List<org.netbeans.modules.mobility.e2e.classdata.MethodData> methodsData = classData.getMethods();
             for( int j = 0; j < methods.size(); j++ ) {
+                System.err.println(" - method: " + methods.get( j ).getName());
                 final int methodIndex = findMethodIndex( methodsData, methods.get( j ).getName());
                 if( methodIndex >= 0 ) {
                     org.netbeans.modules.mobility.e2e.classdata.MethodData mmd = methodsData.get(methodIndex);
@@ -327,6 +332,7 @@ public class E2EDataObject extends XmlMultiViewDataObject {
         }
         mapping.setServletURL( Util.getServerURL( getServerProject(), getConfiguration()));
         
+        System.err.println(" - mapping :" + mapping.getServiceMappings().toString());
         return mapping;
     }
     

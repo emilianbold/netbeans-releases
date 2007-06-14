@@ -28,6 +28,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Future;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
@@ -217,11 +218,12 @@ public class ClassDataRegistry {
         // Gather all instance names
         Set<String> instanceNames = new HashSet<String>();
         registeredTypes = new HashSet<ClassData>();
+        int id = 1;        
         for ( ClasspathInfo cpi : classpaths ) {
             try {
                 // Traverse the tree of classes
                 TraversingTask tt = new TraversingTask( profileProvider, cpi );
-                JavaSource.create( cpi ).runUserActionTask( tt, true );
+                JavaSource.create( cpi ).runWhenScanFinished( tt, false );
 
                 // Assign numbers to all registered types for serialization
                 registeredTypes.addAll( returnTypes );
@@ -234,14 +236,13 @@ public class ClassDataRegistry {
                 // Assign id to all types
                 idMapping = new HashMap<ClassData, Integer>();
                 for ( ClassData cd : registeredTypes ) {
-                    int id = 1;
                     for ( String instanceName : instanceNames ) {
                         if ( serializerRegistry.get( cd ).instanceOf( cd ).equals( instanceName ) ) {
                             break;
                         }
                         id++;
                     }
-                    System.err.println( " - " + cd.getName() + " = " + id );
+//                    System.err.println( " - " + cd.getName() + " = " + id );
                     idMapping.put( cd, id );
                     id++;
                 }

@@ -78,7 +78,7 @@ public class ClientBeanGeneratorTemplate extends JavonTemplate {
                 if( serializer instanceof BeanTypeSerializer ) {
                     try {
                         BeanTypeSerializer bts = (BeanTypeSerializer) serializer;
-                        System.err.println(" - generating type: " + typeName);
+//                        System.err.println(" - generating type: " + typeName);
 
                         FileObject outputDir = FileUtil.toFileObject( FileUtil.normalizeFile( 
                             new File( mapping.getClientMapping().getOutputDirectory())));                    
@@ -87,7 +87,7 @@ public class ClientBeanGeneratorTemplate extends JavonTemplate {
                         FileObject destination = FileUtil.createFolder( outputDir, packageName.replace( '.', '/' ));
                         FileObject beanFile = destination.getFileObject( type.getName(), "java" );
                         if( beanFile == null ) {
-                                destination.createData( type.getName(), "java" );
+                                beanFile = destination.createData( type.getName(), "java" );
                         }
                         
                         generateBean( beanFile, type );
