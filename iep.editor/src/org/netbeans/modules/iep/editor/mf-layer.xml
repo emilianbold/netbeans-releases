@@ -29,6 +29,7 @@
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.iep.editor.Bundle" />
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/iep/editor/eventProcess.png" /> 
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/iep/editor/template.html" /> 
+                <attr name="templateCategory" stringvalue="SOA"/>
             </file>
         </folder>
     </folder>

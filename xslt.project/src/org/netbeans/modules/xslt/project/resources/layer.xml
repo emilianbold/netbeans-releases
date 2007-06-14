@@ -43,6 +43,7 @@
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/xslt/project/resources/xslt.html"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xslt.project.resources.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xslt/core/resources/xslt_file.gif"/>
+                <attr name="templateCategory" stringvalue="SOA"/>
             </file>
             <file name="jbi_xslt.service" url="jbi_xslt_service.xsl">
                 <attr name="template" boolvalue="false"/>

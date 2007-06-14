@@ -27,6 +27,7 @@
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/jdbcwizard/resources/template.html"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.jdbcwizard.resources.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/jdbcwizard/resources/SourceTable.png"/>
+                <attr name="templateCategory" stringvalue="SOA"/>
             </file>
         </folder>
     </folder>
