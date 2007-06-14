@@ -32,7 +32,6 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.jpa.verification.JPAProblemContext;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
@@ -107,6 +106,11 @@ public class ModelUtils {
         attr.setInstanceVariable(getField(problemCtx.getJavaClass(), attrName));
         attr.setAccesor(getAccesor(problemCtx.getJavaClass(), attrName));
         
+        attr.setMutator(getMutator(
+                problemCtx.getCompilationInfo(),
+                problemCtx.getJavaClass(),
+                attr.getInstanceVariable()));
+        
         if (problemCtx.getAccessType() == AccessType.FIELD){
             attr.setJavaElement(attr.getInstanceVariable());
         }
@@ -120,6 +124,24 @@ public class ModelUtils {
         for (ExecutableElement method : getMethod(clazz, getAccesorName(fieldName))){
             if (method.getParameters().size() == 0){
                 return method;
+            }
+        }
+        
+        return null;
+    }
+    
+    public static ExecutableElement getMutator(CompilationInfo info, TypeElement clazz, VariableElement field){
+        ExecutableElement matchingMethods[] = ModelUtils.getMethod(
+                clazz, ModelUtils.getMutatorName(field.getSimpleName().toString()));
+        
+        for (ExecutableElement potentialMutator : matchingMethods){
+            if (potentialMutator.getParameters().size() == 1){
+                TypeMirror argType = potentialMutator.getParameters().get(0).asType();
+                
+                if (info.getTypes().isSameType(argType,
+                        field.asType())) {
+                    return potentialMutator;
+                }
             }
         }
         

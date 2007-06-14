@@ -26,7 +26,9 @@ import org.netbeans.modules.j2ee.jpa.model.AttributeWrapper;
 import org.netbeans.modules.j2ee.jpa.verification.JPAEntityAttributeCheck;
 import org.netbeans.modules.j2ee.jpa.verification.JPAProblemContext;
 import org.netbeans.modules.j2ee.jpa.verification.common.Rule;
+import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Id;
 import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.netbeans.spi.editor.hints.Severity;
 import org.openide.util.NbBundle;
 
 /**
@@ -45,6 +47,9 @@ public class ValidModifiers extends JPAEntityAttributeCheck {
         
         Set<Modifier> accesorModifiers = attrib.getAccesor() == null ? null
                 : attrib.getAccesor().getModifiers();
+        
+        Set<Modifier> mutatorModifiers = attrib.getMutator() == null ? null
+                : attrib.getMutator().getModifiers();
         
         List<ErrorDescription> errors = new ArrayList<ErrorDescription>();
         
@@ -65,6 +70,25 @@ public class ValidModifiers extends JPAEntityAttributeCheck {
             if (accesorModifiers.contains(Modifier.FINAL)){
                 errors.add(Rule.createProblem(attrib.getAccesor(), ctx,
                         NbBundle.getMessage(ValidModifiers.class, "MSG_FinalAccesor")));
+            }
+        }
+        
+        if (mutatorModifiers != null){
+            if (!mutatorModifiers.contains(Modifier.PUBLIC)
+                    && !mutatorModifiers.contains(Modifier.PROTECTED)){
+                errors.add(Rule.createProblem(attrib.getMutator(), ctx,
+                        NbBundle.getMessage(ValidModifiers.class, "MSG_NonPublicMutator")));
+            }
+            else if (attrib.getModelElement() instanceof Id
+                    && mutatorModifiers.contains(Modifier.PUBLIC)){
+                errors.add(Rule.createProblem(attrib.getMutator(), ctx,
+                        NbBundle.getMessage(ValidModifiers.class, "MSG_PublicIdMutatorDiscouraged"),
+                        Severity.WARNING));
+            }
+            
+            if (mutatorModifiers.contains(Modifier.FINAL)){
+                errors.add(Rule.createProblem(attrib.getMutator(), ctx,
+                        NbBundle.getMessage(ValidModifiers.class, "MSG_FinalMutator")));
             }
         }
         

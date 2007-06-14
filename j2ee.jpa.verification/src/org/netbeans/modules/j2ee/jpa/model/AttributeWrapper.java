@@ -36,9 +36,18 @@ public class AttributeWrapper {
     private Element javaElement;
     private ExecutableElement accesor;
     private VariableElement instanceVariable;
+    private ExecutableElement mutator;
     
     public AttributeWrapper(Object modelElement) {
         this.modelElement = modelElement;
+    }
+    
+    public ExecutableElement getMutator() {
+        return mutator;
+    }
+
+    public void setMutator(ExecutableElement mutator) {
+        this.mutator = mutator;
     }
     
     public Object getModelElement(){
