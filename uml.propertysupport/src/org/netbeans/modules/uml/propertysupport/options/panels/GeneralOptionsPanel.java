@@ -26,20 +26,20 @@ import org.openide.util.NbBundle;
  *
  * @author krichard
  */
-public class ShowMeDialogsList implements UMLOptionsPanel {
+public class GeneralOptionsPanel implements UMLOptionsPanel {
     
-    ShowMeDialogsListPanel form = null ;
+    private GeneralOptionsPanelForm form = null ;
+
     
-    public ShowMeDialogsList() {
+    public GeneralOptionsPanel() {
     }
     
     public void update() {
-        form.load() ;
+        form.load();
     }
     
     public void applyChanges() {
-
-        form.store();
+        form.store() ;
     }
     
     public void cancel() {
@@ -47,10 +47,12 @@ public class ShowMeDialogsList implements UMLOptionsPanel {
     }
     
     public JComponent create() {
-        if (form == null)
-            form = new ShowMeDialogsListPanel() ;
+        if (form == null) {
         
-        return form ;
+            form = new GeneralOptionsPanelForm();
+        
+        }
+        return form;
     }
     
     public Hashtable getCurrentValues() {
@@ -62,8 +64,9 @@ public class ShowMeDialogsList implements UMLOptionsPanel {
     }
     
     public String getDisplayName() {
-        return NbBundle.getMessage(ShowMeDialogsList.class, "Dialogs") ;
+        return NbBundle.getMessage (JavaPlatformOptions.class, "JAVA_PLATFORM");
     }
+
     
     
 }

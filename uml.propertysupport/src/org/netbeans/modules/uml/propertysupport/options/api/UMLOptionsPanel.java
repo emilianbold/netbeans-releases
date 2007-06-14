@@ -36,6 +36,10 @@ public interface UMLOptionsPanel {
      *
      */
     public void update() ;
+    /*
+     * 
+     */
+    public void cancel() ;
     /**
      *
      * @return

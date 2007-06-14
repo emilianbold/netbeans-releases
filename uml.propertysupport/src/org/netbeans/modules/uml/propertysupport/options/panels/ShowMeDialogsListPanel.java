@@ -107,6 +107,10 @@ public class ShowMeDialogsListPanel extends javax.swing.JPanel {
         
     }
     
+    public void cancel() {
+        //do nothing ;
+    }
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is

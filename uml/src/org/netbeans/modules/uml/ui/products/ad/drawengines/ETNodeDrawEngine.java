@@ -187,10 +187,10 @@ public abstract class ETNodeDrawEngine extends ETDrawEngine implements INodeDraw
        else 
            props.setProperty(PSK_SHOWEMPTYLISTS, "PSK_NO");
        
-       this.getProperties().setProperty(PSK_DISPLAYCOMPARTMENTTITLE, prefs.get("UML_Display_Compartment_Titles", "PSK_ALWAYS"));
-       this.getProperties().setProperty(PSK_AUTORESIZE, prefs.get("UML_Automatically_Size_Elements", "PSK_RESIZE_ASNEEDED"));
+       props.setProperty(PSK_DISPLAYCOMPARTMENTTITLE, prefs.get("UML_Display_Compartment_Titles", "PSK_ALWAYS"));
+       props.setProperty(PSK_AUTORESIZE, prefs.get("UML_Automatically_Size_Elements", "PSK_RESIZE_ASNEEDED"));
        
-       this.getProperties().setProperty(PSK_SHOWEDITTOOLTIP, "PSK_YES");
+       props.setProperty(PSK_SHOWEDITTOOLTIP, "PSK_YES");
    }
 
    /**
@@ -346,7 +346,6 @@ public abstract class ETNodeDrawEngine extends ETDrawEngine implements INodeDraw
     */
    private String getResizeBehavior()
    {
-      IPreferenceManager2 pMgr = ProductHelper.getPreferenceManager();
 
       String sPreference = NbPreferences.forModule (ETNodeDrawEngine.class).get("UML_Automatically_Size_Elements","PSK_RESIZE_ASNEEDED");
 

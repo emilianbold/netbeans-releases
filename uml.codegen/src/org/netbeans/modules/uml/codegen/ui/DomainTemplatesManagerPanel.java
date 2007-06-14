@@ -329,6 +329,10 @@ public class DomainTemplatesManagerPanel extends javax.swing.JPanel
         // not needed since data is loaded during instantiation
     }
     
+    public void cancel () {
+        //TODO - yadda yadda yadda
+    }
+    
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">     
     public void actionPerformed(ActionEvent event)
     {

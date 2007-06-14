@@ -31,6 +31,8 @@ import java.beans.PropertyChangeListener;
 import javax.swing.JComponent;
 import javax.swing.JTabbedPane;
 import org.netbeans.modules.uml.propertysupport.options.api.UMLOptionsPanel;
+import org.netbeans.modules.uml.propertysupport.options.panels.GeneralOptionsPanel;
+import org.netbeans.modules.uml.propertysupport.options.panels.GeneralOptionsPanelForm;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
@@ -43,7 +45,7 @@ public class UMLPanelController extends OptionsPanelController {
     
     private boolean changed = false ;
     private static final boolean debug = false ;
-    private DefaultOptionsPanel defaultPanel = null ;
+    private GeneralOptionsPanel defaultPanel = null ;
     private MiscOptionsPanel misc = null ;
     private OptionsSupport support = null ;
     /**
@@ -91,7 +93,9 @@ public class UMLPanelController extends OptionsPanelController {
     }
     
     public void cancel() {
-        if (debug) log("cancel");
+        for (UMLOptionsPanel panel: support.getMainPanels()) {
+            panel.update(); 
+        }
     }
     
     public boolean isValid() {
@@ -115,8 +119,8 @@ public class UMLPanelController extends OptionsPanelController {
         JTabbedPane pane = new JTabbedPane() ;
         
         // (1) create the General panel and populate it.
-        defaultPanel = new DefaultOptionsPanel() ;
-        DefaultOptionsPanelForm defaultForm = (DefaultOptionsPanelForm) defaultPanel.create() ;
+        defaultPanel = new GeneralOptionsPanel() ;
+        GeneralOptionsPanelForm defaultForm = (GeneralOptionsPanelForm) defaultPanel.create() ;
         
         pane.addTab(defaultPanel.getDisplayName(), defaultForm) ;
         

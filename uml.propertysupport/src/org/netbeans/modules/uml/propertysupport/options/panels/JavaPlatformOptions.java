@@ -42,6 +42,10 @@ public class JavaPlatformOptions implements UMLOptionsPanel {
         form.store() ;
     }
     
+    public void cancel() {
+        form.cancel() ;
+    }
+    
     public JComponent create() {
         if (form == null) {
         

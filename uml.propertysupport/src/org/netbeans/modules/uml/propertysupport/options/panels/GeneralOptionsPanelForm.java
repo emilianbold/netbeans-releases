@@ -1,0 +1,342 @@
+/*
+ * GeneralOptionsPanel.java
+ *
+ * Created on June 14, 2007, 3:05 PM
+ */
+
+package org.netbeans.modules.uml.propertysupport.options.panels;
+
+import java.util.Hashtable;
+import java.util.prefs.Preferences;
+import javax.swing.JComboBox;
+import javax.swing.JComponent;
+import org.netbeans.modules.uml.propertysupport.options.api.UMLOptionsPanel;
+import org.netbeans.modules.uml.ui.support.drawingproperties.FontColorDialogs.ApplicationColorsAndFonts;
+import org.netbeans.modules.uml.util.DummyCorePreference;
+import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
+
+/**
+ *
+ * @author  krichard
+ */
+public class GeneralOptionsPanelForm extends javax.swing.JPanel {
+    
+    private final String PSK_ALWAYS = "PSK_ALWAYS" ;
+    private final String PSK_NEVER = "PSK_NEVER" ;
+    private  final String PSK_SELECTED = "PSK_SELECTED";
+    
+    public final String PSK_RESIZE_ASNEEDED = "PSK_RESIZE_ASNEEDED";
+    public final String PSK_RESIZE_EXPANDONLY = "PSK_RESIZE_EXPANDONLY";
+    public final String PSK_RESIZE_UNLESSMANUAL = "PSK_RESIZE_UNLESSMANUAL";
+    public final String PSK_RESIZE_NEVER = "PSK_RESIZE_NEVER";
+    
+    //for menu display
+    private final String ALWAYS = NbBundle.getMessage(GeneralOptionsPanelForm.class, "ALWAYS") ;
+    private final String NEVER = NbBundle.getMessage(GeneralOptionsPanelForm.class, "NEVER") ;
+    private final String SELECTED = NbBundle.getMessage(GeneralOptionsPanelForm.class, "SELECTED") ;
+    private final String ASNEEDED = NbBundle.getMessage(GeneralOptionsPanelForm.class,"ASNEEDED");
+    private final String EXPANDONLY = NbBundle.getMessage(GeneralOptionsPanelForm.class, "EXPANDONLY");
+    private final String UNLESSMANUAL = NbBundle.getMessage(GeneralOptionsPanelForm.class, "UNLESSMANUAL");
+    private final String RESIZE_NEVER = NbBundle.getMessage(GeneralOptionsPanelForm.class, "RESIZE_NEVER");
+    
+    private final String[] displayChoices = {ALWAYS, SELECTED, NEVER} ;
+    private final String[] mappedChoices = {PSK_ALWAYS, PSK_SELECTED, PSK_NEVER} ;
+    
+    private final String[] resizeDisplayChoices = {ASNEEDED, EXPANDONLY, UNLESSMANUAL, RESIZE_NEVER} ;
+    private final String[] resizeMappedChoices = {PSK_RESIZE_ASNEEDED, PSK_RESIZE_EXPANDONLY,
+    PSK_RESIZE_UNLESSMANUAL, PSK_RESIZE_NEVER};
+    
+    /** Creates new form GeneralOptionsPanel */
+    public GeneralOptionsPanelForm() {
+        initComponents();
+    }
+    
+    public void store() {
+        int autoResizeIndex = autoResizeElementsComboBox.getSelectedIndex() ;
+        int displayCompartmentIndex = displayCompartmentTitlesComboBox.getSelectedIndex() ;
+        
+        Preferences prefs = NbPreferences.forModule(DummyCorePreference.class);
+        prefs.put("UML_Automatically_Size_Elements", resizeMappedChoices[autoResizeIndex]) ;
+        prefs.put("UML_Display_Compartment_Titles", mappedChoices[displayCompartmentIndex]) ;
+        
+        prefs.putBoolean("UML_Display_Empty_Lists", displayEmpty.isSelected()) ;
+        prefs.putBoolean("UML_Gradient_Background", gradient.isSelected()) ;
+        prefs.putBoolean("UML_Reconnect_to_Presentation_Boundary", reconnect.isSelected()) ;
+        prefs.putBoolean("UML_Resize_with_Show_Aliases_Mode", resizeCB.isSelected()) ;
+        prefs.putBoolean("UML_Show_Stereotype_Icons", showStereotype.isSelected()) ;
+        
+        
+    }
+    
+    public void load() {
+        Preferences prefs = NbPreferences.forModule(DummyCorePreference.class);
+        
+        if (prefs.getBoolean("UML_Show_Aliases", false)) {
+            showAlias.setSelected(true);
+        }
+        
+        if (prefs.getBoolean("UML_Prompt_to_Save_Project", true)) {
+            promptToSaveCB.setSelected(true);
+        }
+        
+        if (prefs.getBoolean("UML_Open_Project_Diagrams", true)) {
+            openProjectDiagramsCB.setSelected(true);
+        }
+        
+        if (prefs.getBoolean("UML_Display_Empty_Lists", true))
+            displayEmpty.setSelected(true);
+        
+        if (prefs.getBoolean("UML_Gradient_Background", true))
+            gradient.setSelected(true);
+        
+        if (prefs.getBoolean("UML_Reconnect_to_Presentation_Boundary", true))
+            reconnect.setSelected(true);
+        
+        if (prefs.getBoolean("UML_Resize_with_Show_Aliases_Mode", false))
+            resizeCB.setSelected(true);
+        
+        
+        if (prefs.getBoolean("UML_Show_Stereotype_Icons", true))
+            showStereotype.setSelected(true);
+        
+        String autoResizeValue = prefs.get("UML_Automatically_Size_Elements", null) ;
+        String displayCompartmentValue = prefs.get("UML_Display_Compartment_Titles", null) ;
+        
+        int autoResizeIndex = getMappedIndex(resizeMappedChoices, autoResizeValue) ;
+        int compartmentIndex = getMappedIndex(mappedChoices, displayCompartmentValue) ;
+        
+        autoResizeElementsComboBox.setSelectedIndex(autoResizeIndex) ;
+        
+        displayCompartmentTitlesComboBox.setSelectedIndex(compartmentIndex) ;
+        
+    }
+    
+    public void cancel() {
+        //do nothing ;
+    }
+    
+    private int getMappedIndex(String[] a, String s) {
+        
+        int n = a.length ;
+        
+        for (int i = 0; i < n; i++) {
+            if (a[i].equals(s)) return i;
+        }
+        
+        return 0 ;
+        
+    }
+    
+    public void showFontsAndColorsDialog() {
+        new ApplicationColorsAndFonts().setVisible(true) ;
+    }
+    
+    /** This method is called from within the constructor to
+     * initialize the form.
+     * WARNING: Do NOT modify this code. The content of this method is
+     * always regenerated by the Form Editor.
+     */
+    // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
+    private void initComponents() {
+
+        advancedPropsPanel = new javax.swing.JPanel();
+        promptToSaveCB = new javax.swing.JCheckBox();
+        openProjectDiagramsCB = new javax.swing.JCheckBox();
+        showAlias = new javax.swing.JCheckBox();
+        jPanel4 = new javax.swing.JPanel();
+        displayEmpty = new javax.swing.JCheckBox();
+        reconnect = new javax.swing.JCheckBox();
+        resizeCB = new javax.swing.JCheckBox();
+        showStereotype = new javax.swing.JCheckBox();
+        gradient = new javax.swing.JCheckBox();
+        jPanel1 = new javax.swing.JPanel();
+        jLabel1 = new javax.swing.JLabel();
+        jLabel2 = new javax.swing.JLabel();
+        autoResizeElementsComboBox = new JComboBox(resizeDisplayChoices);
+        displayCompartmentTitlesComboBox = new JComboBox (displayChoices);
+        jButton1 = new javax.swing.JButton();
+
+        advancedPropsPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(null, org.openide.util.NbBundle.getMessage(GeneralOptionsPanelForm.class, "GeneralOptionsPanel.advancedPropsPanel.border.title"), javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Lucida Grande", 0, 13), java.awt.Color.blue)); // NOI18N
+
+        promptToSaveCB.setSelected(true);
+        promptToSaveCB.setText(org.openide.util.NbBundle.getMessage(GeneralOptionsPanelForm.class, "GeneralOptionsPanel.promptToSaveCB.text")); // NOI18N
+        promptToSaveCB.setMargin(new java.awt.Insets(0, 0, 0, 0));
+
+        openProjectDiagramsCB.setSelected(true);
+        openProjectDiagramsCB.setText(org.openide.util.NbBundle.getMessage(GeneralOptionsPanelForm.class, "GeneralOptionsPanel.openProjectDiagramsCB.text")); // NOI18N
+        openProjectDiagramsCB.setMargin(new java.awt.Insets(0, 0, 0, 0));
+
+        showAlias.setText(org.openide.util.NbBundle.getMessage(GeneralOptionsPanelForm.class, "GeneralOptionsPanelForm.showAlias.text")); // NOI18N
+        showAlias.setMargin(new java.awt.Insets(0, 0, 0, 0));
+
+        org.jdesktop.layout.GroupLayout advancedPropsPanelLayout = new org.jdesktop.layout.GroupLayout(advancedPropsPanel);
+        advancedPropsPanel.setLayout(advancedPropsPanelLayout);
+        advancedPropsPanelLayout.setHorizontalGroup(
+            advancedPropsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(advancedPropsPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .add(advancedPropsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(promptToSaveCB)
+                    .add(openProjectDiagramsCB)
+                    .add(showAlias))
+                .addContainerGap(599, Short.MAX_VALUE))
+        );
+        advancedPropsPanelLayout.setVerticalGroup(
+            advancedPropsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(advancedPropsPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .add(promptToSaveCB)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(openProjectDiagramsCB)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(showAlias)
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        jPanel4.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Diagram Elements:", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Lucida Grande", 0, 13), java.awt.Color.blue));
+
+        displayEmpty.setSelected(true);
+        displayEmpty.setText(org.openide.util.NbBundle.getMessage(GeneralOptionsPanelForm.class, "GeneralOptionsPanel.displayEmpty.text")); // NOI18N
+        displayEmpty.setMargin(new java.awt.Insets(0, 0, 0, 0));
+
+        reconnect.setSelected(true);
+        reconnect.setText(org.openide.util.NbBundle.getMessage(GeneralOptionsPanelForm.class, "GeneralOptionsPanel.reconnect.text")); // NOI18N
+        reconnect.setMargin(new java.awt.Insets(0, 0, 0, 0));
+
+        resizeCB.setText(org.openide.util.NbBundle.getMessage(GeneralOptionsPanelForm.class, "GeneralOptionsPanel.resizeCB.text")); // NOI18N
+        resizeCB.setMargin(new java.awt.Insets(0, 0, 0, 0));
+
+        showStereotype.setSelected(true);
+        showStereotype.setText(org.openide.util.NbBundle.getMessage(GeneralOptionsPanelForm.class, "GeneralOptionsPanel.showStereotype.text")); // NOI18N
+        showStereotype.setMargin(new java.awt.Insets(0, 0, 0, 0));
+
+        gradient.setSelected(true);
+        gradient.setText(org.openide.util.NbBundle.getMessage(GeneralOptionsPanelForm.class, "GeneralOptionsPanel.gradient.text")); // NOI18N
+        gradient.setMargin(new java.awt.Insets(0, 0, 0, 0));
+
+        org.jdesktop.layout.GroupLayout jPanel4Layout = new org.jdesktop.layout.GroupLayout(jPanel4);
+        jPanel4.setLayout(jPanel4Layout);
+        jPanel4Layout.setHorizontalGroup(
+            jPanel4Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jPanel4Layout.createSequentialGroup()
+                .add(jPanel4Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(displayEmpty)
+                    .add(reconnect)
+                    .add(resizeCB)
+                    .add(showStereotype)
+                    .add(gradient))
+                .addContainerGap(492, Short.MAX_VALUE))
+        );
+        jPanel4Layout.setVerticalGroup(
+            jPanel4Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jPanel4Layout.createSequentialGroup()
+                .add(displayEmpty)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(reconnect)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(resizeCB)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(showStereotype)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(gradient)
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder(null, org.openide.util.NbBundle.getMessage(GeneralOptionsPanelForm.class, "GeneralOptionsPanel.jPanel1.border.title"), javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Lucida Grande", 0, 13), java.awt.Color.blue)); // NOI18N
+
+        jLabel1.setText(org.openide.util.NbBundle.getMessage(GeneralOptionsPanelForm.class, "GeneralOptionsPanel.jLabel1.text")); // NOI18N
+
+        jLabel2.setText(org.openide.util.NbBundle.getMessage(GeneralOptionsPanelForm.class, "GeneralOptionsPanel.jLabel2.text")); // NOI18N
+
+        autoResizeElementsComboBox.setDoubleBuffered(true);
+
+        jButton1.setText(org.openide.util.NbBundle.getMessage(GeneralOptionsPanelForm.class, "GeneralOptionsPanel.jButton1.text")); // NOI18N
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
+
+        org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(jLabel1)
+                    .add(jLabel2))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                    .add(displayCompartmentTitlesComboBox, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(autoResizeElementsComboBox, 0, 259, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 45, Short.MAX_VALUE)
+                .add(jButton1)
+                .addContainerGap())
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(jLabel1)
+                    .add(autoResizeElementsComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(jLabel2)
+                    .add(displayCompartmentTitlesComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(jButton1))
+                .addContainerGap(22, Short.MAX_VALUE))
+        );
+
+        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        this.setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(layout.createSequentialGroup()
+                .addContainerGap()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(advancedPropsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(jPanel4, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(layout.createSequentialGroup()
+                .addContainerGap()
+                .add(advancedPropsPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(18, 18, 18)
+                .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(18, 18, 18)
+                .add(jPanel4, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(40, Short.MAX_VALUE))
+        );
+    }// </editor-fold>//GEN-END:initComponents
+    
+private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+    showFontsAndColorsDialog();
+}//GEN-LAST:event_jButton1ActionPerformed
+
+
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JPanel advancedPropsPanel;
+    private javax.swing.JComboBox autoResizeElementsComboBox;
+    private javax.swing.JComboBox displayCompartmentTitlesComboBox;
+    private javax.swing.JCheckBox displayEmpty;
+    private javax.swing.JCheckBox gradient;
+    private javax.swing.JButton jButton1;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel4;
+    private javax.swing.JCheckBox openProjectDiagramsCB;
+    private javax.swing.JCheckBox promptToSaveCB;
+    private javax.swing.JCheckBox reconnect;
+    private javax.swing.JCheckBox resizeCB;
+    private javax.swing.JCheckBox showAlias;
+    private javax.swing.JCheckBox showStereotype;
+    // End of variables declaration//GEN-END:variables
+    
+}
