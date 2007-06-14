@@ -266,33 +266,19 @@ public class PrimitiveTypeSerializer implements JavonSerializer {
     public String fromStream( JavonMapping mapping, ClassData type, String stream, String object ) {
         String result = "";
         if( object != null ) result = object + " = ";
-        if( booleanClassData.equals( type )) {
-            result += stream + ".readBoolean()";
-        } else if( byteClassData.equals( type )) {
-            result += stream + ".readByte()";
-        } else if( charClassData.equals( type )) {
-            result += stream + ".readChar()";
-        } else if( intClassData.equals( type )) {
-            result += stream + ".readInt()";
-        } else if( longClassData.equals( type )) {
-            result += stream + ".readLong()";
-        } else if( shortClassData.equals( type )) {
-            result += stream + ".readShort()";
-        } else if( stringClassData.equals( type )) {
-            result += stream + ".readUTF()";
-        } else if( voidClassData.equals( type )) {
+        if( voidClassData.equals( type )) {
             return object + " = _;";
-        } else if( BooleanClassData.equals( type )) {
+        } else if( BooleanClassData.equals( type ) || booleanClassData.equals( type)) {
             result += toObject( booleanClassData, stream + ".readBoolean()" );
-        } else if( ByteClassData.equals( type )) {
+        } else if( ByteClassData.equals( type ) || byteClassData.equals( type)) {
             result += toObject( byteClassData, stream + ".readByte()" );
-        } else if( CharClassData.equals( type )) {
+        } else if( CharClassData.equals( type ) || charClassData.equals( type)) {
             result += toObject( charClassData, stream + ".readChar()" );
-        } else if( IntClassData.equals( type )) {
+        } else if( IntClassData.equals( type ) || intClassData.equals( type)) {
             result += toObject( intClassData, stream + ".readInt()" );
-        } else if( LongClassData.equals( type )) {
+        } else if( LongClassData.equals( type ) || longClassData.equals( type)) {
             result += toObject( longClassData, stream + ".readLong()" );
-        } else if( ShortClassData.equals( type )) {
+        } else if( ShortClassData.equals( type ) || shortClassData.equals( type)) {
             result += toObject( shortClassData, stream + ".readShort()" );
         }
         if( "".equals( result ))
