@@ -19,8 +19,6 @@
 
 package org.netbeans.modules.html;
 
-import java.beans.PropertyVetoException;
-import java.io.IOException;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;

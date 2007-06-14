@@ -23,6 +23,8 @@ import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.text.Document;
@@ -32,7 +34,6 @@ import org.netbeans.modules.html.palette.HTMLPaletteUtilities;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.netbeans.modules.html.palette.BrowseFolders;
@@ -298,7 +299,7 @@ public class IMGCustomizer extends javax.swing.JPanel {
                 jTextField4.setText(imgFO.getName());
             }
             catch (Exception ex) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                Logger.getLogger("global").log(Level.INFO, null, ex);
             }
         }
     }//GEN-LAST:event_jButton1ActionPerformed

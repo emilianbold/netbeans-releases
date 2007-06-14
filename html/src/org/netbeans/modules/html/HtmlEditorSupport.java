@@ -22,6 +22,8 @@ package org.netbeans.modules.html;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInput;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.EditorKit;
 import javax.swing.text.StyledDocument;
 import javax.swing.text.BadLocationException;
@@ -32,7 +34,6 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.html.palette.HTMLPaletteFactory;
 import org.netbeans.spi.palette.PaletteController;
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.cookies.EditCookie;
 import org.openide.cookies.EditorCookie;
@@ -159,7 +160,7 @@ public final class HtmlEditorSupport extends DataEditorSupport implements OpenCo
                 text = doc.getText(doc.getStartPosition().getOffset(), doc.getLength());
             }
         } catch (BadLocationException e) {
-            ErrorManager.getDefault().notify(ErrorManager.WARNING, e);
+            Logger.getLogger("global").log(Level.WARNING, null, e);
         }
         return text;
     }

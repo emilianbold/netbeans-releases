@@ -22,8 +22,8 @@ package org.netbeans.modules.html;
 import java.beans.*;
 import java.awt.Image;
 
-import org.openide.ErrorManager;
 import org.openide.loaders.UniFileLoader;
+import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 
 /** Html data loader bean info.
@@ -36,7 +36,7 @@ public class HtmlLoaderBeanInfo extends SimpleBeanInfo {
         try {
             return new BeanInfo[] { Introspector.getBeanInfo (UniFileLoader.class) };
         } catch (IntrospectionException ie) {
-	    ErrorManager.getDefault().notify(ie);
+	    Exceptions.printStackTrace(ie);
             return null;
         }
     }

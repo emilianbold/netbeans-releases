@@ -23,10 +23,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
-import org.openide.ErrorManager;
 import org.openide.awt.HtmlBrowser;
 import org.openide.cookies.ViewCookie;
 import org.openide.filesystems.FileObject;
@@ -141,7 +142,7 @@ public class HtmlDataObject extends MultiDataObject implements CookieSet.Factory
         try {
             getPrimaryFile().setAttribute(PROP_ENCODING, encoding);
         } catch(IOException e) {
-            ErrorManager.getDefault().notify(ErrorManager.WARNING, e);
+            Logger.getLogger("global").log(Level.WARNING, null, e);
         }
     }
     
@@ -199,14 +200,14 @@ public class HtmlDataObject extends MultiDataObject implements CookieSet.Factory
             String txt = new String(arr, 0, len, encoding != null ? encoding : DEFAULT_ENCODING).toUpperCase();
             encoding = HtmlEditorSupport.findEncoding(txt);
         } catch (IOException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.WARNING, ex);
+            Logger.getLogger("global").log(Level.WARNING, null, ex);
         } finally {
             try {
                 if (is != null) {
                     is.close();
                 }
             } catch (IOException ex) {
-                ErrorManager.getDefault().notify(ErrorManager.WARNING, ex);
+                Logger.getLogger("global").log(Level.WARNING, null, ex);
             }
         }
         if (encoding != null) {
