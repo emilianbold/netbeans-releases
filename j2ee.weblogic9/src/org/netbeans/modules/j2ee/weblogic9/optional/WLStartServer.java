@@ -30,6 +30,8 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.Properties;
 import java.util.Vector;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.enterprise.deploy.shared.ActionType;
 import javax.enterprise.deploy.shared.CommandType;
 import javax.enterprise.deploy.shared.StateType;
@@ -49,7 +51,6 @@ import org.netbeans.modules.j2ee.weblogic9.WLDeploymentManager;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
 import org.netbeans.modules.j2ee.weblogic9.util.WLDebug;
 import org.netbeans.modules.j2ee.weblogic9.util.WLTailer;
-import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -463,7 +464,7 @@ public class WLStartServer extends StartServer {
                 // we consider the startup as failed and warn the user
                 serverProgress.notifyStart(StateType.FAILED, NbBundle.getMessage(WLStartServer.class, "MSG_StartServerTimeout"));
             } catch (IOException e) {
-                ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, e);
+                Logger.getLogger("global").log(Level.WARNING, null, e);
             }
         }
         
@@ -581,7 +582,7 @@ public class WLStartServer extends StartServer {
                 // we consider the startup as failed and warn the user
                 serverProgress.notifyStart(StateType.FAILED, NbBundle.getMessage(WLStartServer.class, "MSG_StartServerTimeout"));
             } catch (IOException e) {
-                ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, e);
+                Logger.getLogger("global").log(Level.WARNING, null, e);
             }
         }
         
@@ -690,7 +691,7 @@ public class WLStartServer extends StartServer {
                 serverProgress.notifyStop(StateType.FAILED, NbBundle.getMessage(WLStartServer.class, "MSG_StopServerTimeout"));
                 serverProcess.destroy();
             } catch (IOException e) {
-                ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, e);
+                Logger.getLogger("global").log(Level.WARNING, null, e);
             }
         }
         

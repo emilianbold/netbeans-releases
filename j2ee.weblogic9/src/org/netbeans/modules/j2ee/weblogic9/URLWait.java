@@ -20,13 +20,10 @@
 package org.netbeans.modules.j2ee.weblogic9;
 
 import java.io.IOException;
-import java.net.Socket;
 import java.net.InetAddress;
-import java.net.MalformedURLException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.UnknownHostException;
-import org.openide.ErrorManager;
 
 /** Utility class
 * @author  Petr Jiricka, Pavel Buzek

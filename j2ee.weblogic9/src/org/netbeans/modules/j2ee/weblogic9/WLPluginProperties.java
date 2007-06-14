@@ -25,20 +25,21 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.StringReader;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.Repository;
-import org.openide.ErrorManager;
 import org.openide.modules.SpecificationVersion;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.xml.XMLUtil;
@@ -90,16 +91,16 @@ public class WLPluginProperties {
                 if (null != propertiesFile)
                     inStream = propertiesFile.getInputStream();
             } catch (java.io.FileNotFoundException e) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                Logger.getLogger("global").log(Level.INFO, null, e);
             } catch (java.io.IOException e) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                Logger.getLogger("global").log(Level.INFO, null, e);
             } finally {
                 loadPluginProperties(inStream);
                 if (null != inStream)
                     inStream.close();
             }
         } catch (java.io.IOException e) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            Logger.getLogger("global").log(Level.INFO, null, e);
         }
         
     }
@@ -110,7 +111,7 @@ public class WLPluginProperties {
             try {
                 inProps.load(inStream);
             } catch (java.io.IOException e) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                Logger.getLogger("global").log(Level.INFO, null, e);
             }
         String loc = inProps.getProperty(INSTALL_ROOT_KEY);
         if (loc!=null){// try to get the default value
@@ -153,7 +154,7 @@ public class WLPluginProperties {
                     if (null != outStream)
                         outProp.store(outStream, "");
                 } catch (java.io.IOException e) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                    Logger.getLogger("global").log(Level.INFO, null, e);
                 } finally {
                     if (null != outStream)
                         outStream.close();
@@ -162,7 +163,7 @@ public class WLPluginProperties {
                 }
             }
         } catch (java.io.IOException e) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            Logger.getLogger("global").log(Level.INFO, null, e);
         }
     }
     
@@ -257,8 +258,8 @@ public class WLPluginProperties {
         } catch (Exception ex) {
             if (verboseRegistration) {
                 String msg = NbBundle.getMessage(WLPluginProperties.class, "ERR_READING_REGISTRY_FILE", registryFile.getPath());
-                ErrorManager.getDefault().annotate(ex, msg);
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                Exceptions.attachLocalizedMessage(ex, msg);
+                Logger.getLogger("global").log(Level.INFO, null, ex);
             }
         }
         
@@ -284,11 +285,11 @@ public class WLPluginProperties {
             }
             
         } catch(FileNotFoundException e) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            Logger.getLogger("global").log(Level.INFO, null, e);
         } catch(IOException e) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            Logger.getLogger("global").log(Level.INFO, null, e);
         } catch(SAXException e) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            Logger.getLogger("global").log(Level.INFO, null, e);
         }
         
         return null;
@@ -328,8 +329,8 @@ public class WLPluginProperties {
             }
         } catch (Exception ex) {
             String msg = NbBundle.getMessage(WLPluginProperties.class, "ERR_READING_BEAHOMELIST", beaHomeList.getPath());
-            ErrorManager.getDefault().annotate(ex, msg);
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            Exceptions.attachLocalizedMessage(ex, msg);
+            Logger.getLogger("global").log(Level.INFO, null, ex);
         }
         
         return beaHomesList;

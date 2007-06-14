@@ -37,7 +37,6 @@ import org.netbeans.modules.j2ee.weblogic9.config.gen.WeblogicWebApp;
 import org.netbeans.modules.schema2beans.AttrProp;
 import org.netbeans.modules.schema2beans.BaseBean;
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.SaveCookie;
@@ -45,6 +44,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.NbDocument;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
@@ -75,7 +75,7 @@ public class WarDeploymentConfiguration implements ModuleConfiguration,
             dataObject = DataObject.find(FileUtil.toFileObject(file));
             dataObject.addPropertyChangeListener(this);
         } catch(DataObjectNotFoundException donfe) {
-            ErrorManager.getDefault().notify(donfe);
+            Exceptions.printStackTrace(donfe);
         }
         this.dataObject = dataObject;
     }
@@ -121,7 +121,7 @@ public class WarDeploymentConfiguration implements ModuleConfiguration,
                     try {
                         webLogicWebApp = WeblogicWebApp.createGraph(file);
                     } catch (IOException ioe) {
-                        ErrorManager.getDefault().notify(ioe);
+                        Exceptions.printStackTrace(ioe);
                     } catch (RuntimeException re) {
                         // weblogic.xml is not parseable, do nothing
                     }
@@ -131,7 +131,7 @@ public class WarDeploymentConfiguration implements ModuleConfiguration,
                     ConfigUtil.writefile(file, webLogicWebApp);
                 }
             } catch (ConfigurationException ce) {
-                ErrorManager.getDefault().notify(ce);
+                Exceptions.printStackTrace(ce);
             }
         }
         return webLogicWebApp;
@@ -211,7 +211,7 @@ public class WarDeploymentConfiguration implements ModuleConfiguration,
             webLogicWebApp = newWeblogicWebApp;
         } catch (BadLocationException ble) {
             // this should not occur, just log it if it happens
-            ErrorManager.getDefault().notify(ble);
+            Exceptions.printStackTrace(ble);
         } catch (IOException ioe) {
             String msg = NbBundle.getMessage(WarDeploymentConfiguration.class, "MSG_CannotUpdateFile", file.getPath());
             throw new ConfigurationException(msg, ioe);
@@ -239,7 +239,7 @@ public class WarDeploymentConfiguration implements ModuleConfiguration,
         try {
             graph.write(out);
         } catch (IOException ioe) {
-            ErrorManager.getDefault().notify(ioe);
+            Exceptions.printStackTrace(ioe);
         }
         NbDocument.runAtomic(doc, new Runnable() {
             public void run() {
@@ -247,7 +247,7 @@ public class WarDeploymentConfiguration implements ModuleConfiguration,
                     doc.remove(0, doc.getLength());
                     doc.insertString(0, out.toString(), null);
                 } catch (BadLocationException ble) {
-                    ErrorManager.getDefault().notify(ble);
+                    Exceptions.printStackTrace(ble);
                 }
             }
         });

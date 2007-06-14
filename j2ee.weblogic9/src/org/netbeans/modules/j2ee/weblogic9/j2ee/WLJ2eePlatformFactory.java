@@ -22,6 +22,8 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 import java.awt.Image;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.enterprise.deploy.spi.*;
 
@@ -169,7 +171,7 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
                    library.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_JAVADOC, list);
                }
             } catch (MalformedURLException e) {
-                ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, e);
+                Logger.getLogger("global").log(Level.WARNING, null, e);
             }
             
             libraries = new LibraryImplementation[1];

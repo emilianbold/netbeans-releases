@@ -25,7 +25,8 @@ import org.netbeans.modules.j2ee.dd.api.application.Module;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import java.util.Vector;
 import java.io.File;
-import javax.enterprise.deploy.spi.DeploymentManager;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.enterprise.deploy.spi.Target;
 import javax.enterprise.deploy.spi.TargetModuleID;
 import javax.enterprise.deploy.spi.status.ProgressEvent;
@@ -35,7 +36,6 @@ import javax.enterprise.deploy.spi.exceptions.OperationUnsupportedException;
 import javax.enterprise.deploy.spi.status.ClientConfiguration;
 import javax.enterprise.deploy.spi.status.DeploymentStatus;
 import org.netbeans.modules.j2ee.weblogic9.config.gen.WeblogicWebApp;
-import org.openide.ErrorManager;
 import org.openide.filesystems.JarFileSystem;
 import org.openide.util.RequestProcessor;
 import org.openide.filesystems.FileObject;
@@ -99,7 +99,7 @@ public class WLDeployer implements ProgressObject, Runnable {
             
         }catch(Exception e){
             e.printStackTrace();
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            Logger.getLogger("global").log(Level.INFO, null, e);
         }
 
 

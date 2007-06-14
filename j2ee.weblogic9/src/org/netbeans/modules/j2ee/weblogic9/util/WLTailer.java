@@ -19,6 +19,8 @@
 package org.netbeans.modules.j2ee.weblogic9.util;
 
 import java.io.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.j2ee.deployment.plugins.api.UISupport;
 
 import org.openide.*;
@@ -134,16 +136,16 @@ public class WLTailer extends Thread {
                 }
             }
         } catch (FileNotFoundException e) {
-            ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, e);
+            Logger.getLogger("global").log(Level.WARNING, null, e);
             return;
         } catch (IOException e) {
-            ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, e);
+            Logger.getLogger("global").log(Level.WARNING, null, e);
         } finally {
             // close the opened stream
             try {
                 inputStream.close();
             } catch (IOException e) {
-                ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, e);
+                Logger.getLogger("global").log(Level.WARNING, null, e);
             }
         }
     }

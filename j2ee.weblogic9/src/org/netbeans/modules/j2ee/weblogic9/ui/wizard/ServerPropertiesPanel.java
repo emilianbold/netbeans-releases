@@ -22,6 +22,8 @@ import java.io.*;
 import java.util.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.*;
 import javax.swing.event.*;
 import javax.xml.parsers.*;
@@ -456,9 +458,9 @@ public class ServerPropertiesPanel extends JPanel implements WizardDescriptor.Pa
                 result.add(path);
             }
         } catch (FileNotFoundException e) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            Logger.getLogger("global").log(Level.INFO, null, e);
         } catch (IOException e) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            Logger.getLogger("global").log(Level.INFO, null, e);
         } finally {
             try {
                 // close the stream
@@ -466,7 +468,7 @@ public class ServerPropertiesPanel extends JPanel implements WizardDescriptor.Pa
                     lnr.close();
                 }
             } catch (IOException e) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                Logger.getLogger("global").log(Level.INFO, null, e);
             }
         }
         
@@ -507,7 +509,7 @@ public class ServerPropertiesPanel extends JPanel implements WizardDescriptor.Pa
                 
                 // get the child nodes
                 NodeList children = root.getChildNodes();
-                
+
                 // for each child
                 for (int j = 0; j < children.getLength(); j++) {
                     Node child = children.item(j);
@@ -520,24 +522,24 @@ public class ServerPropertiesPanel extends JPanel implements WizardDescriptor.Pa
                         String name = "";
                         String port = "";
                         String host = "";
-                        
+
                         // iterate over the children
-                        for (int k = 0; k < nl.getLength(); k++){
+                        for (int k = 0; k < nl.getLength(); k++) {
                             Node ch = nl.item(k);
-                            
-                            // if the child's name equals 'name' fetch the 
+
+                            // if the child's name equals 'name' fetch the
                             // instance's name
                             if (ch.getNodeName().matches("(?:[a-z]+\\:)?name")) {  // NOI18N
                                 name = ch.getFirstChild().getNodeValue();
                             }
 
-                            // if the child's name equals 'listen-port' fetch the 
+                            // if the child's name equals 'listen-port' fetch the
                             // instance's port
                             if (ch.getNodeName().matches("(?:[a-z]+\\:)?listen-port")) {  // NOI18N
                                 port = ch.getFirstChild().getNodeValue();
                             }
 
-                            // if the child's name equals 'listen-address' fetch the 
+                            // if the child's name equals 'listen-address' fetch the
                             // instance's host
                             if (ch.getNodeName().matches("(?:[a-z]+\\:)?listen-address")) {  // NOI18N
                                 if (ch.hasChildNodes()){
@@ -546,7 +548,7 @@ public class ServerPropertiesPanel extends JPanel implements WizardDescriptor.Pa
                             }
                         }
                         
-                        // if all the parameters were fetched successfully add 
+                        // if all the parameters were fetched successfully add
                         // them to the result
                         if ((name != null) && (!name.equals(""))) { // NOI18N
                             //address and port have minOccurs=0 and are missing in 90 examples server
@@ -556,21 +558,21 @@ public class ServerPropertiesPanel extends JPanel implements WizardDescriptor.Pa
                         }
                     }
                 }
-            } catch(FileNotFoundException e) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            } catch (FileNotFoundException e) {
+                Logger.getLogger("global").log(Level.INFO, null, e);
             } catch (IOException e) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                Logger.getLogger("global").log(Level.INFO, null, e);
             } catch (ParserConfigurationException e) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                Logger.getLogger("global").log(Level.INFO, null, e);
             } catch (SAXException e) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                Logger.getLogger("global").log(Level.INFO, null, e);
             } finally {
                 try {
                     if (inputStream != null) {
                         inputStream.close();
                     }
                 } catch (IOException e) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                    Logger.getLogger("global").log(Level.INFO, null, e);
                 }
             }
         }

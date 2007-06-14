@@ -30,9 +30,10 @@ import java.security.Permissions;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.WeakHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.enterprise.deploy.shared.factories.DeploymentFactoryManager;
 import org.netbeans.modules.j2ee.weblogic9.util.WLDebug;
-import org.openide.ErrorManager;
 
 import javax.enterprise.deploy.spi.*;
 import javax.enterprise.deploy.spi.factories.*;
@@ -118,7 +119,7 @@ public class WLDeploymentFactory implements DeploymentFactory {
             URL[] urls = new URL[] { new File(serverRoot + "/server/lib/weblogic.jar").toURI().toURL()}; // NOI18N
             loader = new WLClassLoader(urls, WLDeploymentFactory.class.getClassLoader());
         } catch (Exception e) {
-            ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, e);
+            Logger.getLogger("global").log(Level.WARNING, null, e);
         }
     }
     
@@ -149,7 +150,7 @@ public class WLDeploymentFactory implements DeploymentFactory {
             }
         } catch (Exception e) {
             dmce = new DeploymentManagerCreationException ("Cannot create weblogic DeploymentManager instance.");
-            ErrorManager.getDefault().annotate(dmce, e);
+            dmce.initCause(e);
         } finally {
             Thread.currentThread().setContextClassLoader(orig);
         }
@@ -180,7 +181,7 @@ public class WLDeploymentFactory implements DeploymentFactory {
             }
         } catch (Exception e) {
             dmce = new DeploymentManagerCreationException ("Cannot create weblogic disconnected DeploymentManager instance.");
-            ErrorManager.getDefault().annotate(dmce, e);
+            dmce.initCause(e);
         } finally {
             Thread.currentThread().setContextClassLoader(orig);
         }

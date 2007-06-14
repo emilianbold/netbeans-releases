@@ -21,6 +21,8 @@ package org.netbeans.modules.j2ee.weblogic9;
 
 import java.io.*;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.enterprise.deploy.model.*;
 import javax.enterprise.deploy.shared.*;
@@ -28,12 +30,8 @@ import javax.enterprise.deploy.spi.*;
 import javax.enterprise.deploy.spi.exceptions.*;
 import javax.enterprise.deploy.spi.status.*;
 import org.netbeans.modules.j2ee.deployment.plugins.api.*;
-import org.netbeans.modules.j2ee.weblogic9.config.EarDeploymentConfiguration;
-import org.netbeans.modules.j2ee.weblogic9.config.EjbDeploymentConfiguration;
-import org.netbeans.modules.j2ee.weblogic9.config.WarDeploymentConfiguration;
 
 import org.netbeans.modules.j2ee.weblogic9.util.WLDebug;
-import org.openide.ErrorManager;
 
 
 /**
@@ -467,7 +465,7 @@ public class WLDeploymentManager implements DeploymentManager {
                     dm.release();
                 }
                 catch (Exception e) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                    Logger.getLogger("global").log(Level.INFO, null, e);
                 }
                 finally {
                     dm = null;
