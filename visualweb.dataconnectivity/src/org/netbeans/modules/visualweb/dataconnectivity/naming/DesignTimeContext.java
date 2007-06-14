@@ -36,7 +36,10 @@ import javax.naming.NameNotFoundException;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.visualweb.dataconnectivity.datasource.CurrentProject;
+import org.netbeans.modules.visualweb.dataconnectivity.model.DataSourceInfo;
 import org.netbeans.modules.visualweb.dataconnectivity.sql.DesignTimeDataSourceHelper;
+import org.netbeans.modules.visualweb.dataconnectivity.utils.ImportDataSource;
 import org.openide.ErrorManager;
 
 /**
@@ -275,15 +278,41 @@ class DesignTimeContext implements Context {
         update = true;
         
         try {
-            dsHelper = new DesignTimeDataSourceHelper();
+            dsHelper = new DesignTimeDataSourceHelper();                        
+            
             if (dsHelper.datasourcesInProject(currentProj)) {
-                bindings = dsHelper.updateDataSource(currentProj);                
+                bindings = dsHelper.updateDataSource(currentProj);   
+                confirmConnections(bindings, dsHelper);
                 return bindings.get(name.toString());
-            }
+            }            
             
         } catch (NamingException ne) {
             ErrorManager.getDefault().notify(ne);
         }
         return obj;
     }       
+    
+    /**
+     * Make sure connections are available to inform the user if they aren't
+     */
+    private void confirmConnections(Map bindings, DesignTimeDataSourceHelper dsHelper) {
+        // Check if valid connection has been registered.  If not then check if the
+        // project is a legacy project and post an alert for migration
+        DataSourceInfo dsInfo = null;
+        for (int i = 0; i < bindings.size(); i++) {
+            dsInfo = (DataSourceInfo) bindings.get(i);
+            
+            // check if driverclass is derby and if it hasn't been started then try to start derby
+            
+        }
+        
+        if (bindings.isEmpty()) {
+            if (!dsHelper.isFound(dsInfo)) {
+                if (ImportDataSource.isLegacyProject(CurrentProject.getInstance().getProject())) {
+                    ImportDataSource.showAlert();
+                }
+            }
+        }
+}
+    
 }

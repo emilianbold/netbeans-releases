@@ -28,6 +28,7 @@ import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.logging.Logger;
 import javax.naming.Binding;
 import javax.naming.CompositeName;
 import javax.naming.Context;
@@ -38,6 +39,8 @@ import javax.naming.NameAlreadyBoundException;
 import javax.naming.NameNotFoundException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+import org.netbeans.api.db.explorer.ConnectionManager;
+import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.visualweb.api.j2ee.common.RequestedJdbcResource;
 import org.netbeans.modules.visualweb.api.j2ee.common.RequestedResource;
@@ -47,9 +50,11 @@ import org.netbeans.modules.visualweb.dataconnectivity.model.ProjectDataSourceMa
 import org.netbeans.modules.visualweb.dataconnectivity.naming.DatabaseSettingsImporter;
 import org.netbeans.modules.visualweb.dataconnectivity.naming.ProjectContextManager;
 import org.netbeans.modules.visualweb.dataconnectivity.project.datasource.ProjectDataSourceTracker;
+import org.netbeans.modules.visualweb.dataconnectivity.utils.ImportDataSource;
 import org.netbeans.modules.visualweb.project.jsf.services.DesignTimeDataSourceService;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.Utilities;
 import org.xml.sax.Attributes;
 import org.xml.sax.helpers.DefaultHandler;
 import org.xml.sax.SAXException;
@@ -65,6 +70,7 @@ public class DesignTimeDataSourceHelper {
 
     private static ResourceBundle rb = ResourceBundle.getBundle("org.netbeans.modules.visualweb.dataconnectivity.sql.Bundle",
         Locale.getDefault());
+    private volatile boolean firstTimeShowAlert = false;
 
     private static final String    DS_SUBCTX       = "java:comp/env/jdbc"; // NOI18N
     private static final String    ROOT_TAG        = "dataSources"; // NOI18N
@@ -484,7 +490,7 @@ public class DesignTimeDataSourceHelper {
     }
     
     
-    public  Map updateDataSource(Project currentProj) {
+    public Map updateDataSource(Project currentProj) {
         
         // Get the data sources in the project then bind them to the project's context
         String[] dynamicDataSources = ProjectDataSourceTracker.getDynamicDataSources(currentProj);
@@ -512,7 +518,7 @@ public class DesignTimeDataSourceHelper {
                     jdbcResources.add(jdbcResource);
             }
             
-            // Add resource reference to web.xml. If already added then resource is not added.           
+            // Add resource reference to web.xml. If already added then resource is not added.
             DatabaseSettingsImporter.getInstance().updateWebXml(currentProj, jdbcResources);
             
             // Support for Creator 2 projects and a hack - serverplugin not detecting datasources in project
@@ -527,6 +533,9 @@ public class DesignTimeDataSourceHelper {
                     while (it.hasNext()) {
                         dsInfo = (DataSourceInfo)it.next();
                         if (name.equals(DS_SUBCTX + "/" + dsInfo.getName())) { // NOI18N
+                            
+                            
+                            
                             binding.put(name, new DesignTimeDataSource(null, false, dsInfo.getDriverClassName(),
                                     dsInfo.getUrl(), null, dsInfo.getUsername(), dsInfo.getPassword())) ;
                             
@@ -536,9 +545,9 @@ public class DesignTimeDataSourceHelper {
                                     dsInfo.getDriverClassName(), dsInfo.getUrl(), null, dsInfo.getUsername(),
                                     dsInfo.getPassword(), null));
                         }
-                    }                                        
-                }                                        
-            } else {                
+                    }
+                }
+            } else {
                 // Check if datasource exists in the context.  If it doesn't exist then bind the datasource .
                 Iterator it = jdbcResources.iterator();
                 boolean found = false;
@@ -593,5 +602,73 @@ public class DesignTimeDataSourceHelper {
         RequestedJdbcResource jdbcResource = projectDataSourceManager.getDataSourceWithName(dsName);
         
         return new DataSourceInfo(dsName, jdbcResource.getDriverClassName(), jdbcResource.getUrl(), null, jdbcResource.getUsername(), jdbcResource.getPassword());
+    }
+    
+    /**
+     * Make sure the connections needed by the data sources have been registered
+     */
+     public static boolean isFound(DataSourceInfo ds) {
+        boolean found = false;
+        
+        if (ds != null) {
+            String url = ds.getUrl();
+            String username = ds.getUsername();
+            DatabaseConnection[] dbConns = ConnectionManager.getDefault().getConnections();
+            for(int i=0; i<dbConns.length; i++ ){
+                DatabaseConnection dbCon = dbConns[i];
+                String url1 = dbCon.getDatabaseURL();
+                String username1 = dbCon.getUser();
+                if (matchURL(url, url1, true) && Utilities.compareObjects(username, username1)) {
+                    found = true;
+                }
+            }
+        }
+        return found;
+    }
+    
+    
+    private static boolean matchURL(String jdbcResourceUrl, String dsInfoUrl, boolean ignoreCase) {
+        if (ignoreCase){
+            jdbcResourceUrl = jdbcResourceUrl.toLowerCase();
+            dsInfoUrl = dsInfoUrl.toLowerCase();
+        }
+        if (jdbcResourceUrl.equals(dsInfoUrl)){
+            return true;
+        }
+        
+        if (jdbcResourceUrl.contains("derby")) {
+            String newJdbcResourceUrl = jdbcResourceUrl.substring(0, jdbcResourceUrl.lastIndexOf(":")) + jdbcResourceUrl.substring(jdbcResourceUrl.lastIndexOf("/"));
+            if (newJdbcResourceUrl.equals(dsInfoUrl)){
+                return true;
+            }
+        }
+        
+        int nextIndex = 0;
+        if ((jdbcResourceUrl != null) && (dsInfoUrl != null)){
+            char[] jdbcResourceUrlChars = jdbcResourceUrl.toCharArray();
+            char[] dsInfoUrlChars = dsInfoUrl.toCharArray();
+            for(int i = 0; i < jdbcResourceUrlChars.length - 1; i++){
+                if ((jdbcResourceUrlChars[i] != dsInfoUrlChars[i]) && jdbcResourceUrlChars[i] == ':'){
+                    nextIndex = 1;
+                } else if (jdbcResourceUrlChars[i + nextIndex] != dsInfoUrlChars[i]){
+                    return false;
+                }
+            }
+        }
+        return true;
+    }       
+    
+    /**
+     * Show alert dialog if project is a legacy project
+     */
+    public void showAlert() {
+        javax.swing.SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                if (!firstTimeShowAlert) {
+                    ImportDataSource.showAlert();
+                    firstTimeShowAlert = true;
+                }
+            }
+        });
     }
 }
