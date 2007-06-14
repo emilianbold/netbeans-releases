@@ -24,6 +24,7 @@ import org.netbeans.modules.versioning.spi.VCSContext;
 
 import javax.swing.*;
 import java.awt.Image;
+import org.openide.ErrorManager;
 
 /**
  * Contract specific for Filesystem <-> UI interaction, to be replaced later with something more
@@ -32,17 +33,27 @@ import java.awt.Image;
  * @author Maros Sandor
  */
 class FileStatusProvider extends VCSAnnotator {
-
+    
     private boolean shutdown; 
 
     public String annotateName(String name, VCSContext context) {
         if (shutdown) return null;
-        return Subversion.getInstance().getAnnotator().annotateNameHtml(name, context, FileInformation.STATUS_VERSIONED_UPTODATE | FileInformation.STATUS_LOCAL_CHANGE | FileInformation.STATUS_NOTVERSIONED_EXCLUDED);
+        try {
+            return Subversion.getInstance().getAnnotator().annotateNameHtml(name, context, FileInformation.STATUS_VERSIONED_UPTODATE | FileInformation.STATUS_LOCAL_CHANGE | FileInformation.STATUS_NOTVERSIONED_EXCLUDED);
+        } catch (Exception e) {
+            ErrorManager.getDefault().notify(ErrorManager.ERROR, e);
+            return name;
+        }
     }
 
     public Image annotateIcon(Image icon, VCSContext context) {
         if (shutdown) return null;
-        return Subversion.getInstance().getAnnotator().annotateIcon(icon, context);
+        try {
+            return Subversion.getInstance().getAnnotator().annotateIcon(icon, context);
+        } catch (Exception e) {
+            ErrorManager.getDefault().notify(ErrorManager.ERROR, e);
+            return icon;
+        }        
     }
 
     public Action[] getActions(VCSContext context, VCSAnnotator.ActionDestination destination) {

@@ -30,6 +30,7 @@ import java.util.*;
 
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ChangeEvent;
+import org.openide.ErrorManager;
 
 /**
  * Hides folders that have 'Localy removed' status.
@@ -50,7 +51,12 @@ public class SubversionVisibilityQuery implements VisibilityQueryImplementation,
         if (fileObject.isData()) return true;
         File file = FileUtil.toFile(fileObject);
         if(file == null) return true;
-        return cache.getStatus(file).getStatus() != FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY; 
+        try {
+            return cache.getStatus(file).getStatus() != FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY;
+        } catch (Exception e) {
+            ErrorManager.getDefault().notify(ErrorManager.ERROR, e);
+            return true;
+        }        
     }
 
     public synchronized void addChangeListener(ChangeListener l) {
