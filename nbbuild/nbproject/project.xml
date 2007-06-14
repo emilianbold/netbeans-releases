@@ -179,7 +179,6 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../apisupport/samples/PaintApp-sample-ui</project>
                 <project>../apisupport/samples/feedreader-sample-ui</project>
                 <project>../apisupport/timers</project>
-                <project>../autoupdate</project>
                 <project>../autoupdate/services</project>
                 <project>../autoupdate/ui</project>
                 <project>../classfile</project>
@@ -228,6 +227,7 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../diff</project>
                 <project>../editor</project>
                 <project>../editor/bookmarks</project>
+                <project>../editor/bracesmatching</project>
                 <project>../editor/codetemplates</project>
                 <project>../editor/completion</project>
                 <project>../editor/errorstripe</project>
@@ -246,6 +246,46 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../editor/settings</project>
                 <project>../editor/settings/storage</project>
                 <project>../editor/util</project>
+                <project>../enterprise/bpel/bpelapi</project>
+                <project>../enterprise/bpel/bpelhelp</project>
+                <project>../enterprise/bpel/core</project>
+                <project>../enterprise/bpel/debugger</project>
+                <project>../enterprise/bpel/debuggerapi</project>
+                <project>../enterprise/bpel/debuggerbdi</project>
+                <project>../enterprise/bpel/debuggerui</project>
+                <project>../enterprise/bpel/editors</project>
+                <project>../enterprise/bpel/editorsapi</project>
+                <project>../enterprise/bpel/project</project>
+                <project>../enterprise/bpel/refactoring</project>
+                <project>../enterprise/bpel/samples</project>
+                <project>../enterprise/bpel/search</project>
+                <project>../enterprise/bpel/update</project>
+                <project>../enterprise/bpel/xpath</project>
+                <project>../enterprise/compapp/capshelp</project>
+                <project>../enterprise/compapp/casaeditor</project>
+                <project>../enterprise/compapp/jbimanager</project>
+                <project>../enterprise/compapp/libwsdl4j1.5.2</project>
+                <project>../enterprise/compapp/libxmlbeans2.1.0</project>
+                <project>../enterprise/compapp/projectbase</project>
+                <project>../enterprise/compapp/projectjbi</project>
+                <project>../enterprise/compapp/projectwizard</project>
+                <project>../enterprise/iep/editor</project>
+                <project>../enterprise/iep/help</project>
+                <project>../enterprise/iep/project</project>
+                <project>../enterprise/script/core</project>
+                <project>../enterprise/script/project</project>
+                <project>../enterprise/soa/mapper</project>
+                <project>../enterprise/soa/ui</project>
+                <project>../enterprise/sql/jdbchelp</project>
+                <project>../enterprise/sql/jdbcwizard</project>
+                <project>../enterprise/sql/project</project>
+                <project>../enterprise/wsdlextensions/file</project>
+                <project>../enterprise/wsdlextensions/jms</project>
+                <project>../enterprise/xslt/core</project>
+                <project>../enterprise/xslt/mapper</project>
+                <project>../enterprise/xslt/project</project>
+                <project>../enterprise/xslt/tmap</project>
+                <project>../enterprise/xslt/xslthelp</project>
                 <project>../extbrowser</project>
                 <project>../form</project>
                 <project>../form/j2ee</project>
@@ -264,6 +304,11 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../ide/launcher/upgrade</project>
                 <project>../ide/updatecenters</project>
                 <project>../ide/welcome</project>
+                <project>../identity/ant</project>
+                <project>../identity/profileapi</project>
+                <project>../identity/profileui</project>
+                <project>../identity/samples</project>
+                <project>../identity/servermgr</project>
                 <project>../image</project>
                 <project>../j2ee/archiveproject</project>
                 <project>../j2ee/clientproject</project>
@@ -275,10 +320,12 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../j2ee/ejbcore</project>
                 <project>../j2ee/ejbfreeform</project>
                 <project>../j2ee/ejbjarproject</project>
+                <project>../j2ee/ejbverification</project>
                 <project>../j2ee/genericserver</project>
                 <project>../j2ee/metadata</project>
                 <project>../j2ee/metadata/support</project>
                 <project>../j2ee/persistence</project>
+                <project>../j2ee/persistence/refactoring</project>
                 <project>../j2ee/persistence/verification</project>
                 <project>../j2ee/persistenceapi</project>
                 <project>../j2ee/platform</project>
@@ -305,6 +352,7 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../java/source/javacapi</project>
                 <project>../java/source/javacimpl</project>
                 <project>../java/source/preprocessorbridge</project>
+                <project>../java/sourceui</project>
                 <project>../javacvs/cvsmodule</project>
                 <project>../javacvs/libmodule</project>
                 <project>../javadoc</project>
@@ -315,6 +363,7 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../languages/diff</project>
                 <project>../languages/engine</project>
                 <project>../languages/manifest</project>
+                <project>../languages/yaml</project>
                 <project>../lexer</project>
                 <project>../lexer/editorbridge</project>
                 <project>../lexer/nbbridge</project>
@@ -322,11 +371,62 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../libs/freemarker</project>
                 <project>../libs/jsch</project>
                 <project>../libs/jsr223</project>
+                <project>../libs/lucene</project>
                 <project>../libs/resolver</project>
                 <project>../libs/swing-layout</project>
                 <project>../libs/xerces</project>
-                <project>../logger/uihandler</project>
-                <project>../logger/uihandlerlib</project>
+                <project>../mobility/ant-ext</project>
+                <project>../mobility/api</project>
+                <project>../mobility/cdcplatform</project>
+                <project>../mobility/cdcplatform/nokias80</project>
+                <project>../mobility/cdcplatform/nsicom</project>
+                <project>../mobility/cdcplatform/ricoh</project>
+                <project>../mobility/cdcplatform/semc</project>
+                <project>../mobility/cdcplatform/sun</project>
+                <project>../mobility/cdcplugins</project>
+                <project>../mobility/cdcplugins/nokiaS80</project>
+                <project>../mobility/cdcplugins/nsicom</project>
+                <project>../mobility/cdcplugins/ricoh</project>
+                <project>../mobility/cdcplugins/savaje</project>
+                <project>../mobility/cdcplugins/semc</project>
+                <project>../mobility/cldcplatform</project>
+                <project>../mobility/cldcplatform/catalog</project>
+                <project>../mobility/deployment/ftpscp</project>
+                <project>../mobility/deployment/sonyericsson</project>
+                <project>../mobility/deployment/webdav</project>
+                <project>../mobility/deployment/wm</project>
+                <project>../mobility/designer</project>
+                <project>../mobility/designer/nb_midp_module</project>
+                <project>../mobility/designer2/analyzer</project>
+                <project>../mobility/designer2/codegen</project>
+                <project>../mobility/designer2/flow</project>
+                <project>../mobility/designer2/game</project>
+                <project>../mobility/designer2/inspector</project>
+                <project>../mobility/designer2/io</project>
+                <project>../mobility/designer2/iojavame</project>
+                <project>../mobility/designer2/midp</project>
+                <project>../mobility/designer2/midpnb</project>
+                <project>../mobility/designer2/model</project>
+                <project>../mobility/designer2/palette</project>
+                <project>../mobility/designer2/properties</project>
+                <project>../mobility/designer2/screen</project>
+                <project>../mobility/designer2/structure</project>
+                <project>../mobility/editor</project>
+                <project>../mobility/end2end</project>
+                <project>../mobility/end2end/jsr172</project>
+                <project>../mobility/examples/midp</project>
+                <project>../mobility/j2meunit</project>
+                <project>../mobility/javahelp</project>
+                <project>../mobility/layouts/agui-swing</project>
+                <project>../mobility/layouts/pp-awt</project>
+                <project>../mobility/licensing</project>
+                <project>../mobility/nbactivesync</project>
+                <project>../mobility/proguard</project>
+                <project>../mobility/project</project>
+                <project>../mobility/snippets</project>
+                <project>../mobility/svg/core</project>
+                <project>../mobility/svg/nb_svg_midp_module</project>
+                <project>../mobility/svg/perseus_svg_library</project>
                 <project>../monitor</project>
                 <project>../openide/actions</project>
                 <project>../openide/awt</project>
@@ -347,6 +447,8 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../openide/util/enum</project>
                 <project>../openide/windows</project>
                 <project>../openidex</project>
+                <project>../print</project>
+                <project>../print/api</project>
                 <project>../profiler</project>
                 <project>../projects/libraries</project>
                 <project>../projects/projectapi</project>
@@ -360,19 +462,52 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../refactoring/java</project>
                 <project>../schema2beans/rt</project>
                 <project>../scripting/bat</project>
+                <project>../scripting/gsf</project>
+                <project>../scripting/gsf/api</project>
+                <project>../scripting/gsf/platform</project>
                 <project>../scripting/javascript</project>
+                <project>../scripting/ruby/bundledjruby</project>
+                <project>../scripting/ruby/debug-commons-java</project>
+                <project>../scripting/ruby/debugger</project>
+                <project>../scripting/ruby/editing</project>
+                <project>../scripting/ruby/jruby</project>
+                <project>../scripting/ruby/kit</project>
+                <project>../scripting/ruby/kxml2</project>
+                <project>../scripting/ruby/platform</project>
+                <project>../scripting/ruby/projects</project>
+                <project>../scripting/ruby/railsprojects</project>
+                <project>../scripting/ruby/rake</project>
+                <project>../scripting/ruby/refactoring</project>
+                <project>../scripting/ruby/rhtml</project>
                 <project>../scripting/sh</project>
                 <project>../serverplugins/jboss4</project>
                 <project>../serverplugins/sun/appsrv</project>
                 <project>../serverplugins/sun/appsrv81</project>
                 <project>../serverplugins/sun/sunddapi</project>
-                <project>../serverplugins/sun/sunddloaders</project>
                 <project>../serverplugins/sun/sunddui</project>
                 <project>../serverplugins/weblogic9</project>
                 <project>../subversion/client</project>
                 <project>../subversion/ini4j</project>
                 <project>../subversion/main</project>
                 <project>../tomcatint/tomcat5</project>
+                <project>../uml/antlr-2-7-2</project>
+                <project>../uml/codegen</project>
+                <project>../uml/core</project>
+                <project>../uml/designpattern</project>
+                <project>../uml/documentation</project>
+                <project>../uml/dom4jdependencies</project>
+                <project>../uml/doorsrequirements</project>
+                <project>../uml/drawingareacontrol</project>
+                <project>../uml/ideintegration</project>
+                <project>../uml/java5parser</project>
+                <project>../uml/kit</project>
+                <project>../uml/modelingpalette</project>
+                <project>../uml/projectui</project>
+                <project>../uml/propertysupport</project>
+                <project>../uml/requirements</project>
+                <project>../uml/tomsawyer</project>
+                <project>../uml/webreport</project>
+                <project>../uml/xmlrequirements</project>
                 <project>../usersguide</project>
                 <project>../usersguide/j2seexamples</project>
                 <project>../utilities</project>
@@ -381,12 +516,88 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../versioncontrol</project>
                 <project>../versioncontrol/localhistory</project>
                 <project>../versioncontrol/util</project>
+                <project>../visualweb/appbase</project>
+                <project>../visualweb/classloaderprovider</project>
+                <project>../visualweb/classloaderprovider/j2ee14</project>
+                <project>../visualweb/classloaderprovider/j2ee15</project>
+                <project>../visualweb/complib</project>
+                <project>../visualweb/dataconnectivity</project>
+                <project>../visualweb/dataconnectivity/designtime</project>
+                <project>../visualweb/dataprovider/designtime</project>
+                <project>../visualweb/dataprovider/runtime</project>
+                <project>../visualweb/designer</project>
+                <project>../visualweb/designer/api</project>
+                <project>../visualweb/designer/cssengine</project>
+                <project>../visualweb/designer/html</project>
+                <project>../visualweb/designer/jsf</project>
+                <project>../visualweb/designer/markup</project>
+                <project>../visualweb/designtime</project>
+                <project>../visualweb/designtime/idebridge</project>
+                <project>../visualweb/designtime/rave</project>
+                <project>../visualweb/designtimeext</project>
+                <project>../visualweb/ejb</project>
+                <project>../visualweb/ejb/support</project>
+                <project>../visualweb/errorhandler/client</project>
+                <project>../visualweb/errorhandler/server</project>
+                <project>../visualweb/extension_core</project>
+                <project>../visualweb/extension_j2eeserver_api</project>
+                <project>../visualweb/extension_openide</project>
+                <project>../visualweb/extension_openide_loaders</project>
+                <project>../visualweb/insync</project>
+                <project>../visualweb/insync/api</project>
+                <project>../visualweb/jsfsupport</project>
+                <project>../visualweb/jsfsupport/designtime</project>
+                <project>../visualweb/jsfsupport/designtime-1.1</project>
+                <project>../visualweb/jsfsupport/designtime-1.2</project>
+                <project>../visualweb/jsfsupport/runtime</project>
+                <project>../visualweb/navigation</project>
+                <project>../visualweb/outline</project>
+                <project>../visualweb/palette</project>
+                <project>../visualweb/portletcontainer/ddapi</project>
+                <project>../visualweb/project/importpage</project>
+                <project>../visualweb/project/jsf</project>
+                <project>../visualweb/project/jsfloader</project>
+                <project>../visualweb/propertyeditors</project>
+                <project>../visualweb/propertyeditors/api</project>
+                <project>../visualweb/propertyeditors/resolver</project>
+                <project>../visualweb/ravehelp/dynamichelp</project>
+                <project>../visualweb/ravehelp/rave_nbpack</project>
+                <project>../visualweb/ravelibs/batik</project>
+                <project>../visualweb/ravelibs/commons-beanutils</project>
+                <project>../visualweb/ravelibs/commons-collections</project>
+                <project>../visualweb/ravelibs/commons-digester</project>
+                <project>../visualweb/ravelibs/commons-fileupload</project>
+                <project>../visualweb/ravelibs/commons-logging</project>
+                <project>../visualweb/ravelibs/el-ri-1.2</project>
+                <project>../visualweb/ravelibs/javaee-5</project>
+                <project>../visualweb/ravelibs/jsf-api</project>
+                <project>../visualweb/ravelibs/jsf-metadata</project>
+                <project>../visualweb/ravelibs/jsf-ri</project>
+                <project>../visualweb/ravelibs/jsf-ri-1.2</project>
+                <project>../visualweb/ravelibs/jsp-api</project>
+                <project>../visualweb/ravelibs/jstl</project>
+                <project>../visualweb/ravelibs/jtidy</project>
+                <project>../visualweb/ravelibs/portlet-api</project>
+                <project>../visualweb/ravelibs/rowset</project>
+                <project>../visualweb/ravelibs/servlet-api</project>
+                <project>../visualweb/ravelibs/sun-apache-commons</project>
+                <project>../visualweb/sql</project>
+                <project>../visualweb/websvcmgr</project>
+                <project>../visualweb/webui/designtime</project>
+                <project>../visualweb/webui/runtime</project>
+                <project>../visualweb/webui/themes</project>
+                <project>../visualweb/woodstock/components</project>
+                <project>../visualweb/woodstock/defaulttheme</project>
+                <project>../visualweb/xhtml</project>
                 <project>../web/core</project>
                 <project>../web/css</project>
                 <project>../web/el/lexer</project>
                 <project>../web/examples</project>
+                <project>../web/flyingsaucer</project>
                 <project>../web/freeform</project>
                 <project>../web/jsf</project>
+                <project>../web/jsf/navigation</project>
+                <project>../web/jsf12</project>
                 <project>../web/jspdebug</project>
                 <project>../web/jspparser</project>
                 <project>../web/jspsyntax</project>
@@ -420,6 +631,7 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../xml/catalogsupport</project>
                 <project>../xml/core</project>
                 <project>../xml/graph</project>
+                <project>../xml/jaxb</project>
                 <project>../xml/jxpath</project>
                 <project>../xml/lexer</project>
                 <project>../xml/multiview</project>
@@ -431,7 +643,6 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../xml/schema/abe</project>
                 <project>../xml/schema/api</project>
                 <project>../xml/schema/completion</project>
-                <project>../xml/schema/core</project>
                 <project>../xml/schema/refactoring</project>
                 <project>../xml/schema/schemaui</project>
                 <project>../xml/tageditorsupport</project>
@@ -440,10 +651,18 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../xml/tools</project>
                 <project>../xml/validation</project>
                 <project>../xml/wsdl/api</project>
+                <project>../xml/wsdl/refactoring</project>
+                <project>../xml/wsdlbindingsupport</project>
+                <project>../xml/wsdlbindingsupport/api</project>
+                <project>../xml/wsdlext</project>
+                <project>../xml/wsdlextui</project>
+                <project>../xml/wsdlui</project>
                 <project>../xml/xam</project>
                 <project>../xml/xamui</project>
                 <project>../xml/xdm</project>
+                <project>../xml/xpath</project>
                 <project>../xml/xsl</project>
+                <project>../xml/xsl/api</project>
             </subprojects>
         </general-data>
         <java-data xmlns="http://www.netbeans.org/ns/freeform-project-java/2">
