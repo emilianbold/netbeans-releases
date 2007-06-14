@@ -220,7 +220,8 @@ public class UMLUserInterface
                 WizardDescriptor wizardDescriptor = new WizardDescriptor(iterator);
                 // {0} will be replaced by WizardDescriptor.Panel.getComponent().getName()
                 // {1} will be replaced by WizardDescriptor.Iterator.name()
-                wizardDescriptor.setTitleFormat(new MessageFormat("{0} ({1})"));
+                //wizardDescriptor.setTitleFormat(new MessageFormat("{0} ({1})"));
+                wizardDescriptor.setTitleFormat(new MessageFormat("{0}"));
                 wizardDescriptor.setTitle(org.openide.util.NbBundle.getMessage(UMLUserInterface.class, "IDS_NEW_PACKAGE_WIZARD_TITLE"));
                 wizardDescriptor.putProperty(PACKAGE_DETAILS, details);
                 
@@ -260,7 +261,8 @@ public class UMLUserInterface
                 WizardDescriptor wizardDescriptor = new WizardDescriptor(iterator);
                 // {0} will be replaced by WizardDescriptor.Panel.getComponent().getName()
                 // {1} will be replaced by WizardDescriptor.Iterator.name()
-                wizardDescriptor.setTitleFormat(new MessageFormat("{0} ({1})"));                
+                //wizardDescriptor.setTitleFormat(new MessageFormat("{0} ({1})")); 
+                wizardDescriptor.setTitleFormat(new MessageFormat("{0}")); 
                 wizardDescriptor.setTitle(org.openide.util.NbBundle.getMessage(UMLUserInterface.class, "IDS_NEW_ELEMENT_WIZARD_TITLE"));
                 wizardDescriptor.putProperty(ELEMENT_DETAILS, details);
                 Dialog dialog = DialogDisplayer.getDefault().createDialog(wizardDescriptor);
