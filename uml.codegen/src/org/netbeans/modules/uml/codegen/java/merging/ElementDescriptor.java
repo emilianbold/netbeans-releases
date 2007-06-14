@@ -186,8 +186,9 @@ public class ElementDescriptor
             if (desc == null) continue;
             
             String curType = desc.getType();
-            if (curType != null && curType.equals(type))
-               return desc;
+            if (curType != null && curType.equals(type)) {
+		return desc;
+	    }
          }
       }
       return null;

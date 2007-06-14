@@ -199,7 +199,7 @@ public class FileBuilder
    }
    
 
-    private void copyFile(File from, File to)
+    public static void copyFile(File from, File to)
 	throws IOException
     {
 	BufferedInputStream r = new BufferedInputStream(new FileInputStream(from));

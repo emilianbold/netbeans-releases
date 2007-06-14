@@ -92,7 +92,8 @@ public class Merger implements IUMLParserEventsSink {
     private HashSet<IElement> matchedOld = new HashSet<IElement>();
     private static WeakHashMap<Node, WeakReference<IElement>> cache 
 	= new WeakHashMap<Node, WeakReference<IElement>>();
-   private IUMLParser pParser; 	    
+    private IUMLParser pParser; 
+    private boolean errorHappened = false;
 
     /**
      *
@@ -110,18 +111,37 @@ public class Merger implements IUMLParserEventsSink {
 	this.targetFile = oldFile;
     }    
 
+    public Merger() {
+    }    
+
 
     public void merge() 
 	throws IOException
-    {
-	fileBuilder = new FileBuilder(newFile, oldFile, targetFile);
-			    
+    {			    
 	pParser = connectToParser();
 	parsedNew = parse(newFile);
 
 	pParser = connectToParser();
 	parsedOld = parse(oldFile);
 	
+	merge(parsedNew, newFile, parsedOld, oldFile, targetFile);
+	
+    }
+
+
+    public void merge(ParsedInfo parsedNew, 
+		      String newFile, 
+		      ParsedInfo parsedOld,
+		      String oldFile, 
+		      String targetFile) 
+	throws IOException
+    {
+	this.newFile = newFile;
+	this.oldFile = oldFile;
+	this.targetFile = targetFile;
+
+	fileBuilder = new FileBuilder(newFile, oldFile, targetFile);
+			    	
 	// TBD using of Java Model, ie. Info* classes.
 	// At this moment the sequence of tranforms  are  
 	// JavaSource-> [ UML XML model->UML core model ] -> JavaSource
@@ -166,11 +186,17 @@ public class Merger implements IUMLParserEventsSink {
 
     public ParsedInfo parse(String fileName) 
     {
+	pParser = connectToParser();
+	errorHappened = false;
 	classNodes = new ArrayList<IClassifier>();
 	imports = new ArrayList<Import>();
 	packageNodes = new ArrayList<Node>();
 	pParser.processStreamFromFile(fileName);
-	return new ParsedInfo(packageNodes, imports, classNodes);
+	if (errorHappened) 
+	{
+	    return null;
+	}
+	return new ParsedInfo(packageNodes, imports, classNodes, fileName);
 	//establishIDs(classNodes.get(0));
     }
 
@@ -856,6 +882,7 @@ public class Merger implements IUMLParserEventsSink {
     }
     
     public void onError(IErrorEvent data, IResultCell cell) {
+	errorHappened = true;
 	System.out.println("\nPARSER ERROR\n");
     }
 
@@ -907,14 +934,17 @@ public class Merger implements IUMLParserEventsSink {
 	ArrayList<Node> pack;
 	ArrayList<Import> imports;
 	ArrayList<IClassifier> classes;
+	String filePath = null;
 
 	public ParsedInfo(ArrayList<Node> pack,
 			  ArrayList<Import> imports,
-			  ArrayList<IClassifier> classes) 
+			  ArrayList<IClassifier> classes,
+			  String filePath) 
 	{
 	    this.pack = pack;
 	    this.imports = imports;
-	    this.classes = classes;	    
+	    this.classes = classes;	 
+	    this.filePath = filePath;
 	}
 
 	public Node getPack() {
@@ -922,6 +952,16 @@ public class Merger implements IUMLParserEventsSink {
 		return pack.get(0);
 	    }
 	    return null;
+	}
+
+	public String getPackageName() {
+	    String res = "";
+	    Node n = getPack();
+	    if (n != null) {
+		ElementDescriptor d = new ElementDescriptor(n);
+		res = d.getModelElemAttribute("name");
+	    }
+	    return res;
 	}
 
 	public ArrayList<Import> getImports() {
@@ -932,7 +972,46 @@ public class Merger implements IUMLParserEventsSink {
 	public ArrayList<IClassifier> getClasses() {
 	    return classes;
 	}
+
+	public String getFilePath() {
+	    return filePath;
+	}
 	
+	public List<String> getDefinitiveClassIds() {
+	    ArrayList<String> res = new ArrayList<String>();
+	    if (classes == null) {
+		return res;
+	    }
+	    for(IClassifier cls : classes) 
+	    {
+		String id = null;
+		Node n = cls.getNode();
+		if (n != null) 
+		{
+		    id = ElementMatcher.getIDMarker(n);
+		    String vis = new ElementDescriptor(n).getModelElemAttribute("visibility");
+		    if (vis != null && vis.equals("public"))  
+		    {
+			if (id != null) 
+			{
+			    res = new ArrayList<String>();
+			    res.add(id);
+			    return res;
+			}
+			else 
+			{
+			    return null;
+			}
+		    }					
+		}
+		if (id != null) 
+		{
+		    res.add(id);
+		}
+	    }
+	    return res;
+	}
+
     }
 
 }

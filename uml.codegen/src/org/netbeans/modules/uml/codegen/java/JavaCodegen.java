@@ -42,7 +42,9 @@ import org.netbeans.modules.uml.util.ITaskSupervisor;
 
 import org.netbeans.modules.uml.codegen.dataaccess.DomainTemplate;
 import org.netbeans.modules.uml.codegen.dataaccess.DomainTemplatesRetriever;
+import org.netbeans.modules.uml.codegen.java.merging.FileBuilder;
 import org.netbeans.modules.uml.codegen.java.merging.Merger;
+import org.netbeans.modules.uml.codegen.java.merging.Merger.ParsedInfo;
 
 public class JavaCodegen implements ICodeGenerator 
 {
@@ -51,6 +53,7 @@ public class JavaCodegen implements ICodeGenerator
     public final static String JAVA_EXT = ".java"; // NOI18N
     public final static String DOT = "."; // NOI18N
     public final static String LOG_INDENT = "  ";
+    public final static String SEP = "/"; //System.getProperty("file.separator");
 
     public JavaCodegen()
     {
@@ -139,104 +142,11 @@ public class JavaCodegen implements ICodeGenerator
 		clinfo.setExportSourceFolderName(targetFolderName);
 		clinfo.setComment(classifier.getDocumentation());
 		
-		// TODO sourceFile name determination and thus existence 
-		//should be moved below to be done based on the templates descs
-		File sourceFile = sourceFile(targetFolderName, classifier);
-		
-		// existing associated source file
-		boolean oldAssociated = false;
-		String associatedSource = ClassInfo.getSymbolFilename(classifier);
-		File ascFile = null;
-		
-		if (associatedSource != null) 
-		{
-		    ascFile = new File(associatedSource);
-		    
-		    if (ascFile.exists() && !ascFile.equals(sourceFile)) 
-		    {
-			// check that it is under the same targetFolder
-			File targetFolderFile = new File(targetFolderName);
-			File parent = ascFile.getParentFile();
-			
-			while(parent != null) 
-			{
-			    if (parent.equals(targetFolderFile)) 
-			    {
-				// TBD the file should be parsed and the path to  
-				// parent should be compared with package value
-				oldAssociated = true;
-				break;
-			    }	
-			    
-			    parent = parent.getParentFile();
-			} 
-		    }
-		}
-		
-		File newSourceFile = null;
-		String newTargetFolderName = null;
-		File newTargetFolder = null;
-		
-		if (! sourceFile.exists() && oldAssociated ) 
-		{
-		    FileUtil.copyFile(FileUtil.toFileObject(ascFile),
-				      FileUtil.toFileObject(sourceFile.getParentFile()),
-				      sourceFile.getName(), "");
-		}
-		
-		if (sourceFile.exists()) 
-		{
-		    String tmpdir = System.getProperty("java.io.tmpdir")+"/generated_";
-		    
-		    newTargetFolderName = new File(tmpdir).getCanonicalPath()
-			+((int)(Math.random() * 100000));
-		    
-		    newTargetFolder = new File(newTargetFolderName);
-		    newTargetFolder.mkdirs();		
-		    
-		    clinfo.setExportSourceFolderName(
-		        new File(newTargetFolderName).getAbsolutePath());
-                
-		    newSourceFile = sourceFile(newTargetFolderName, classifier);
-		    
-		    if (backup) 
-		    {
-			if (!oldAssociated) 
-			{
-			    FileObject buFileObj = backupFile(sourceFile);		
-			    
-			    if (buFileObj != null) 
-			    {
-				FileObject efo = FileUtil.toFileObject(sourceFile);
-				if (efo != null) 
-				    ; //efo.delete();
-			    }
-			} 
-			
-			else 
-			{
-			    FileObject buFileObj = backupFile(ascFile);		
-			    
-			    if (buFileObj != null) 
-			    {
-				FileObject efo = FileUtil.toFileObject(ascFile);
-				if (efo != null) 
-				    efo.delete();
-			    }
-			}
-		    }
-		    
-		    try 
-		    {
-			//clinfo.updateFilename(sourceFile.getCanonicalPath());
-		    }
-		    
-		    catch (Exception ex) 
-		    {
-			ex.printStackTrace();
-		    }
-		}
-                
+		boolean checkAsc = false;
+		boolean genToTmp = false;
+		ArrayList<FileMapping> fmappings = new ArrayList<FileMapping>();
+		Merger merger = new Merger();
+
 		// 2 possible places to get templates from - 
 		// registry and teplates subdir of the project 
 		FileSystem fs = Repository.getDefault().getDefaultFileSystem();
@@ -260,17 +170,11 @@ public class JavaCodegen implements ICodeGenerator
 		}
 		
 		Iterator<DomainTemplate> iterTemplates = domainTemplates.iterator();
-		
+
 		while (iterTemplates.hasNext()) 
 		{
-		    DomainTemplate domainTemplate = iterTemplates.next();
-				    
-		    task.log(task.SUMMARY, LOG_INDENT 
-			+ NbBundle.getMessage(JavaCodegen.class, "MSG_SourceCodeGenerating", // NOI18N
-					      domainTemplate.getTemplateFilename()), false); // NOI18N
-		    
-		    try 
-		    {
+		    try {
+		        DomainTemplate domainTemplate = iterTemplates.next();
 			FileObject templteFileObject;
 			File templateFile = new File(projTemplPath 
 			    + File.separator + domainTemplate.getTemplateFilename());
@@ -290,12 +194,136 @@ public class JavaCodegen implements ICodeGenerator
 			DataObject templateDataObject = 
                             DataObject.find(templteFileObject);
                     
+			FileMapping fmap = new FileMapping();
+			fmap.templateDataObject = templateDataObject;
+			fmap.domainTemplate = domainTemplate;
+			    
 			FileObject exportPkgFileObject = 
 			    clinfo.getExportPackageFileObject(
 			    domainTemplate.getFolderPath());
 			
+			if (exportPkgFileObject != null) {
+
+			    // lets check for existing source 
+			    String extAdd = templateDataObject.getPrimaryFile().getExt();
+			    if (extAdd != null && extAdd.length() > 0) 
+			    {
+				extAdd = "." + extAdd;
+			    } 
+			    else
+			    {
+				extAdd = "";
+			    }
+			    String targetPackageFolderPath = exportPkgFileObject.getPath();
+			    String targetFilePath = targetPackageFolderPath
+				+ SEP + getOutputName(clinfo.getName(), domainTemplate) + extAdd;
+			    fmap.targetFilePath = targetFilePath;
+			    File targetFile = new File(targetFilePath);
+			    if (targetFile.exists()) 
+			    {
+				fmap.existingSourcePath = targetFile.getCanonicalPath();
+				FileObject buFileObj = backupFile(targetFile);		
+				fmap.existingSourceBackupPath = buFileObj.getPath();
+				ParsedInfo existingFileInfo = merger.parse(targetFilePath);
+				if (existingFileInfo != null)
+				{
+				    fmap.existingFileInfo = existingFileInfo;
+				    fmap.merge = true;
+				    genToTmp = true;
+				} 				    				
+			    } 
+			    else 
+			    {
+				checkAsc = true;
+			    }
+			} 
+			else 
+			{
+			    // TBD - couldn't create the package directory for some reason
+			    task.log(task.TERSE, getBundleMessage("MSG_ErrorCreatingPackageDir")); // NOI18N	
+			    errorsCount++;
+			    continue;
+			}
+			fmappings.add(fmap);
+		    }
+		    catch (IOException ex) 
+		    {
+			task.log(task.TERSE, getBundleMessage("MSG_ErrorWhileProcessingElement") // NOI18N
+				 + ex.getMessage());
+			errorsCount++;
+			ex.printStackTrace();
+		    }					    
+		} 
+		
+		Hashtable<String, ParsedInfo> ascfiles = new Hashtable<String, ParsedInfo>();
+		if (checkAsc)
+		{
+		    List<IElement> sourceFiles = classifier.getSourceFiles();		    
+		    if (sourceFiles != null) 
+		    {
+			for (IElement src : sourceFiles) 
+			{
+			    if (! (src instanceof ISourceFileArtifact) )
+			    {
+				continue;
+			    }
+			    File ascFile = new File(((ISourceFileArtifact)src).getSourceFile());
+			    if (! inSubdir(new File(targetFolderName), ascFile))
+			    {
+				continue;
+			    }
+			    
+			    ParsedInfo ascInfo = merger.parse(ascFile.getCanonicalPath());
+			    if (ascInfo == null) 
+			    {
+				continue;
+			    }
+			    if (! inCorrectPackageSubdir(new File(targetFolderName), ascFile, ascInfo)) 
+			    {
+				continue;
+			    }
+			    List<String> ids = ascInfo.getDefinitiveClassIds();
+			    if (ids == null) 
+			    {
+				continue;
+			    }
+			    for(String id : ids) 
+			    {
+				if (id != null) 
+				{ 
+				    ascfiles.put(id, ascInfo);
+				}				
+			    }
+			}
+		    }	    
+		}
+
+		if (genToTmp) 
+		{
+		    clinfo.setExportSourceFolderName(getTempGenerationTargetDir());
+		} 
+
+		for(FileMapping fmap : fmappings)
+		{ 
+		    DomainTemplate domainTemplate = fmap.domainTemplate;	    
+		    DataObject templateDataObject = fmap.templateDataObject;
+			
+		    task.log(task.SUMMARY, LOG_INDENT 
+			+ NbBundle.getMessage(JavaCodegen.class, "MSG_SourceCodeGenerating", // NOI18N
+					      domainTemplate.getTemplateFilename()), false); // NOI18N
+		    try
+		    {
+			FileObject exportPkgFileObject = 
+			    clinfo.getExportPackageFileObject(
+		            domainTemplate.getFolderPath());
+			
 			if (exportPkgFileObject != null) 
 			{
+			    if (!genToTmp && fmap.existingSourcePath != null) 
+			    { 
+				FileUtil.toFileObject(new File(fmap.existingSourcePath)).delete(); 
+			    }
+
 			    DataFolder folder = 
 				DataFolder.findFolder(exportPkgFileObject);
 			    
@@ -311,80 +339,139 @@ public class JavaCodegen implements ICodeGenerator
 				getOutputName(clinfo.getName(), domainTemplate), 
 				parameters);
 
+			    fmap.generatedFilePath = n.getPrimaryFile().getPath();
 			    task.log(task.TERSE, " " + getBundleMessage("MSG_OK")); // NOI18N	
-		    
-			    try 
-			    {
-				if (newSourceFile != null) 
-				{
-				    task.log(task.SUMMARY, LOG_INDENT 
-					     + getBundleMessage("MSG_SourceCodeMerging"), false); // NOI18N
-				    
-				    new Merger(newSourceFile.getAbsolutePath(), 
-					sourceFile.getAbsolutePath()).merge();
-				
-				    FileObject targetFolderFO = 
-					FileUtil.toFileObject(newTargetFolder);
-				    
-				    if (targetFolderFO != null) 
-					targetFolderFO.delete();
-				    
-				    task.log(task.TERSE, " " + getBundleMessage("MSG_OK")); // NOI18N
-				}
-			    } catch (IOException ex) {
-				task.log(task.TERSE, getBundleMessage("MSG_ErrorWhileSourceCodeMerging") // NOI18N
-				    + ex.getMessage());
-				errorsCount++;
-				ex.printStackTrace();
-			    }
-
-			    try 
-			    {
-				List<IElement> sourceFiles = 
-				    classifier.getSourceFiles();
-				
-				if (sourceFiles != null) 
-				{
-				    for (IElement src : sourceFiles) 
-				    {
-					if (src instanceof ISourceFileArtifact) 
-					{
-					    classifier.removeSourceFile(
-						((ISourceFileArtifact)src)
-						.getSourceFile());
-					}
-				    }
-				}
-				
-				classifier.addSourceFileNotDuplicate(
-				    sourceFile.getCanonicalPath());
-			    }
-			    
-			    catch (IOException ex) 
-			    {
-				ex.printStackTrace();
-			    }
-			} 
-                    
+			}
 			else 
 			{
 			    // TBD - couldn't create the package directory for some reason
-			    task.log(task.TERSE, getBundleMessage("MSG_ErrorCreatingPackageDir")); // NOI18N				errorsCount++;
-
-			    ;			
+			    task.log(task.TERSE, getBundleMessage("MSG_ErrorCreatingPackageDir")); // NOI18N	
+			    errorsCount++;
+			    continue;
 			}
 		    }
-		    
 		    catch (Exception e) 
 		    {
 			task.log(task.TERSE, getBundleMessage("MSG_ErrorWhileSourceCodeGenerating") // NOI18N
 				 + e.getMessage());
 			errorsCount++;
-			e.printStackTrace();		
+			e.printStackTrace();
+			continue;
+		    }
+
+		    try 
+		    {
+			if ( ! (fmap.existingSourcePath == null && ascfiles.size() == 0) )
+			{
+			    fmap.generatedFileInfo = merger.parse(fmap.generatedFilePath);
+			    if (fmap.existingSourcePath != null)  
+			    {
+				task.log(task.SUMMARY, LOG_INDENT 
+					 + getBundleMessage("MSG_ExistingSource") // NOI18N
+					 + " -  " + fmap.existingSourcePath); 
+				    
+				if (fmap.existingFileInfo != null) 
+				{
+				    task.log(task.SUMMARY, LOG_INDENT 
+					     + getBundleMessage("MSG_SourceCodeMerging"), false); // NOI18N
+				    merger.merge(fmap.generatedFileInfo, 
+						 fmap.generatedFilePath,
+						 fmap.existingFileInfo, 
+						 fmap.existingSourceBackupPath, 
+						 fmap.targetFilePath);     
+				    task.log(task.TERSE, " " + getBundleMessage("MSG_OK")); // NOI18N
+				} 
+				else 
+				{
+				    task.log(task.SUMMARY, LOG_INDENT 
+					+ getBundleMessage("MSG_ExistingSourceNotParseableOverwritten")); // NOI18N
+				    continue;
+				}
+			    } 
+			    else 
+			    {
+				ParsedInfo ascInfo = extractById(ascfiles, fmap.generatedFileInfo);
+				if (ascInfo != null) {
+				    fmap.existingSourcePath = ascInfo.getFilePath();
+				    if (backup) 
+				    {
+					FileObject buFileObj 
+					    = backupFile(new File(ascInfo.getFilePath()));		
+					fmap.existingSourceBackupPath = buFileObj.getPath();
+				    }
+				    fmap.merge = true;
+				    task.log(task.SUMMARY, LOG_INDENT 
+					     + getBundleMessage("MSG_ExistingSource") // NOI18N
+					     + " -  " + ascInfo.getFilePath()); 
+				    task.log(task.SUMMARY, LOG_INDENT 
+					     + getBundleMessage("MSG_SourceCodeMerging"), false); // NOI18N
+				    merger.merge(fmap.generatedFileInfo, 
+						 fmap.generatedFilePath,
+						 ascInfo, 
+						 ascInfo.getFilePath(), 
+						 fmap.targetFilePath);     				    
+				    task.log(task.TERSE, " " + getBundleMessage("MSG_OK")); // NOI18N
+				}
+			    } 
+
+			}
+		    
+		    } 
+		    catch (IOException ex) 
+		    {
+			task.log(task.TERSE, getBundleMessage("MSG_ErrorWhileSourceCodeMerging") // NOI18N
+				 + ex.getMessage());
+			errorsCount++;
+			ex.printStackTrace();
+		    }			
+			
+		}
+
+		List<IElement> sourceFiles = 
+		    classifier.getSourceFiles();		
+		if (sourceFiles != null) 
+		{
+		    for (IElement src : sourceFiles) 
+		    {
+			if (src instanceof ISourceFileArtifact) 
+			{
+			    classifier.removeSourceFile(((ISourceFileArtifact)src)
+							.getSourceFile());
+			}
 		    }
 		}
-	    } 
-	    
+	     
+	    		    
+		for(FileMapping fmap : fmappings)
+		{ 
+		    if (genToTmp) 
+		    {
+			if (! fmap.merge) 
+			{
+			    FileBuilder.copyFile(new File(fmap.generatedFilePath),
+						 new File(fmap.targetFilePath));
+			}		    
+		    }
+		    if (fmap.existingSourcePath != null) 
+		    {
+			File exf = new File(fmap.existingSourcePath);
+			if (! exf.equals(new File(fmap.targetFilePath))) 
+			{
+			    exf.delete();
+			}
+			else 
+			{
+			    if ( (! backup) && (fmap.merge) 
+				 && (fmap.existingSourceBackupPath != null)) 
+			    {
+				new File(fmap.existingSourceBackupPath).delete();
+			    }
+			}
+		    }
+		    classifier.addSourceFileNotDuplicate(fmap.targetFilePath);
+		}			    
+
+	    } 	    
 	    catch (Exception e) 
 	    {
 		task.log(task.TERSE, getBundleMessage("MSG_ErrorWhileProcessingElement") // NOI18N
@@ -430,6 +517,76 @@ public class JavaCodegen implements ICodeGenerator
     }
     
 
+    private ParsedInfo extractById(Hashtable<String, ParsedInfo> ascfiles, ParsedInfo pinfo) {
+	List<String> ids = pinfo.getDefinitiveClassIds();
+	if (ids == null) 
+	{
+	    return null;
+	}
+	for(String id : ids) 
+	{
+	    ParsedInfo res = ascfiles.get(id);
+	    if (res != null) 
+	    {
+		ascfiles.remove(id);
+		Set<String> keys = ascfiles.keySet();
+		if (keys != null) 
+		{
+		    for(String k : keys) 
+		    {
+			ParsedInfo pi = ascfiles.get(k);
+			if (res.equals(pi)) 
+			{
+			   ascfiles.remove(k);
+			}
+		    }
+		}
+		return res;
+	    }
+	}
+	return null;
+    }
+
+    private String getTempGenerationTargetDir() 
+	throws IOException
+    {		    
+	String tmpdir = System.getProperty("java.io.tmpdir")+"/generated_";	
+	String trg = new File(tmpdir).getCanonicalPath()
+	    +((int)(Math.random() * 100000));
+	
+	File newTargetFolder = new File(trg);
+	newTargetFolder.mkdirs();
+	return newTargetFolder.getCanonicalPath();
+    }
+
+    
+    private boolean inCorrectPackageSubdir(File dir, File guessedChild, Merger.ParsedInfo info)
+	throws IOException
+    {
+	String pack = info.getPackageName();
+	String packPath = "";
+	if (pack != null) {
+	    packPath = pack.replaceAll("\\.", SEP);
+	}
+	File packDir = new File(dir.getCanonicalPath() + SEP + packPath);
+	File parent = guessedChild.getParentFile();
+	return packDir.equals(parent);			
+    }
+
+   
+    private boolean inSubdir(File dir, File guessedChild) {	
+	File parent = guessedChild;
+	while(parent != null) 
+	{
+	    if (parent.equals(dir)) 
+	    {
+		return true;
+	    }	
+	    parent = parent.getParentFile();
+	}
+	return false;
+    } 
+    
     
     private FileObject backupFile(File file)
     {
@@ -506,5 +663,21 @@ public class JavaCodegen implements ICodeGenerator
     {
         return "Unnamed"; // NOI18N
     }
+
+
+    public static class FileMapping {
+
+	public String targetFilePath = null;
+	public String generatedFilePath = null;
+	public ParsedInfo generatedFileInfo = null;
+	public String existingSourcePath = null;
+	public String existingSourceBackupPath = null;
+	public ParsedInfo existingFileInfo = null;
+	public boolean merge = false;
+	public DataObject templateDataObject = null;
+	public DomainTemplate domainTemplate = null;
+
+    }
+
 
 }
