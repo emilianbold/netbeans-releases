@@ -21,6 +21,7 @@ package org.netbeans.modules.extbrowser;
 
 import java.awt.Image;
 import java.beans.*;
+import org.openide.util.Exceptions;
 
 import org.openide.util.NbBundle;
 
@@ -55,7 +56,7 @@ public class SimpleExtBrowserBeanInfo extends SimpleBeanInfo {
             properties[0].setDisplayName (NbBundle.getMessage (SimpleExtBrowserBeanInfo.class, "PROP_browserExecutable"));
             properties[0].setShortDescription (NbBundle.getMessage (SimpleExtBrowserBeanInfo.class, "HINT_browserExecutable"));
         } catch (IntrospectionException ie) {
-            org.openide.ErrorManager.getDefault().notify(ie);
+            Exceptions.printStackTrace(ie);
             return null;
         }
         return properties;

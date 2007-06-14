@@ -25,7 +25,8 @@ import java.util.Iterator;
 import java.net.URL;
 import java.net.MalformedURLException;
 
-import org.openide.ErrorManager;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Lookup;
@@ -82,7 +83,7 @@ public class URLUtil {
             }
         }
         catch (MalformedURLException e) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            Logger.getLogger("global").log(Level.INFO, null, e);
         }
         
         return url;
@@ -122,8 +123,7 @@ public class URLUtil {
         URL url = URLMapper.findURL(fo, URLMapper.NETWORK);
         
         if (url == null){
-            ErrorManager.getDefault().log(ErrorManager.ERROR,
-                    "URLMapper.findURL() failed for " + fo); //NOI18N
+            Logger.getLogger("global").log(Level.SEVERE, "URLMapper.findURL() failed for " + fo); //NOI18N
             
             return null;
         }

@@ -29,13 +29,9 @@ import java.net.URL;
 import junit.framework.*;
 import org.netbeans.junit.*;
 import java.beans.*;
-import org.openide.ErrorManager;
-import org.openide.execution.NbProcessDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
-import org.openide.util.NbBundle;
-import org.openide.awt.HtmlBrowser;
          
 /**
  *

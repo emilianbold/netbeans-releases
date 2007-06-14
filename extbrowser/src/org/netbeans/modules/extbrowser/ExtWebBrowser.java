@@ -20,7 +20,8 @@
 package org.netbeans.modules.extbrowser;
 
 import java.beans.*;
-import org.openide.ErrorManager;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.openide.execution.NbProcessDescriptor;
 import org.openide.util.NbBundle;
@@ -84,11 +85,11 @@ public class ExtWebBrowser implements HtmlBrowser.Factory, java.io.Serializable,
     protected int openurlTimeout = DEFAULT_OPENURL_TIMEOUT;
 
     /** Logger for extbrowser module. */
-    private static ErrorManager err = ErrorManager.getDefault().getInstance("org.netbeans.modules.extbrowser");   // NOI18N
+    private static Logger err = Logger.getLogger("org.netbeans.modules.extbrowser");   // NOI18N
     
     protected String name;
     
-    public static ErrorManager getEM () {
+    public static Logger getEM() {
         return err;
     }
         
@@ -104,8 +105,8 @@ public class ExtWebBrowser implements HtmlBrowser.Factory, java.io.Serializable,
 
     /** initialize object */
     private void init () {
-        if (err.isLoggable(ErrorManager.INFORMATIONAL)) {
-            err.log(ErrorManager.INFORMATIONAL, getClass().getName() + " " + System.currentTimeMillis() + "> init");
+        if (err.isLoggable(Level.INFO)) {
+            err.log(Level.INFO, getClass().getName() + " " + System.currentTimeMillis() + "> init");
         }
         pcs = new PropertyChangeSupport(this);
         if (Utilities.isWindows()) {
@@ -131,7 +132,7 @@ public class ExtWebBrowser implements HtmlBrowser.Factory, java.io.Serializable,
             String old = this.ddeServer;
             this.ddeServer = ddeServer;
             pcs.firePropertyChange (PROP_DDESERVER, old, ddeServer);
-            getEM().log("DDEServer changed to: " + ddeServer);                  // NOI18N
+            err.log(Level.INFO, "DDEServer changed to: " + ddeServer);                  // NOI18N
         }
     }
    
@@ -242,8 +243,8 @@ public class ExtWebBrowser implements HtmlBrowser.Factory, java.io.Serializable,
             Object np = evt.getNewValue();
             if ((np != null) && (np instanceof NbProcessDescriptor)) {
                 String processName = ((NbProcessDescriptor)np).getProcessName();
-                if (err.isLoggable(ErrorManager.INFORMATIONAL)) {
-                    err.log(ErrorManager.INFORMATIONAL, "" + System.currentTimeMillis() + "> propertychange: " + processName);
+                if (err.isLoggable(Level.INFO)) {
+                    err.log(Level.INFO, "" + System.currentTimeMillis() + "> propertychange: " + processName);
                 }
                 if ((processName != null) && (processName.trim().length() > 0)) {
                     if (processName.toUpperCase().indexOf("IEXPLORE.EXE") > -1) {       // NOI18N
@@ -273,8 +274,8 @@ public class ExtWebBrowser implements HtmlBrowser.Factory, java.io.Serializable,
      */
     protected NbProcessDescriptor defaultBrowserExecutable () {
         String b = "netscape";  // NOI18N
-        if (err.isLoggable(ErrorManager.INFORMATIONAL)) {
-            err.log(ErrorManager.INFORMATIONAL, "" + System.currentTimeMillis() + "> ExtBrowser: defaultBrowserExecutable: ");
+        if (err.isLoggable(Level.INFO)) {
+            err.log(Level.INFO, "" + System.currentTimeMillis() + "> ExtBrowser: defaultBrowserExecutable: ");
         }
         if (Utilities.isWindows()) {
             b = "iexplore";                                             // NOI18N

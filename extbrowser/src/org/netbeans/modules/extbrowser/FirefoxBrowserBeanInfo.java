@@ -21,7 +21,7 @@ package org.netbeans.modules.extbrowser;
 
 import java.awt.Image;
 import java.beans.*;
-import org.openide.ErrorManager;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 public class FirefoxBrowserBeanInfo extends SimpleBeanInfo {
@@ -55,7 +55,7 @@ public class FirefoxBrowserBeanInfo extends SimpleBeanInfo {
         try {
             return new BeanInfo[] { Introspector.getBeanInfo (ExtWebBrowser.class) };
         } catch (IntrospectionException ie) {
-            ErrorManager.getDefault().notify(ie);
+            Exceptions.printStackTrace(ie);
             return null;
         }
     }

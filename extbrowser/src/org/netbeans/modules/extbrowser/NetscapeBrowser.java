@@ -24,11 +24,7 @@ import org.openide.execution.NbProcessDescriptor;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import java.beans.PropertyChangeListener;
-import org.openide.ErrorManager;
-
-/*
- * @author Martin Grebac
- */
+import java.util.logging.Level;
 public class NetscapeBrowser extends ExtWebBrowser implements PropertyChangeListener {
 
     private static final long serialVersionUID = -2097024098026706995L;
@@ -60,7 +56,7 @@ public class NetscapeBrowser extends ExtWebBrowser implements PropertyChangeList
             try {
                 detectedPath = NbDdeBrowserImpl.getBrowserPath("NETSCP");       // NOI18N
             } catch (NbBrowserException e) {
-                ExtWebBrowser.getEM().log("Cannot detect Netscape 7 : " + e);   // NOI18N
+                ExtWebBrowser.getEM().log(Level.INFO, "Cannot detect Netscape 7 : " + e);   // NOI18N
             }
             if ((detectedPath != null) && (detectedPath.trim().length() > 0)) {
                 return Boolean.FALSE;
@@ -69,7 +65,7 @@ public class NetscapeBrowser extends ExtWebBrowser implements PropertyChangeList
             try {
                 detectedPath = NbDdeBrowserImpl.getBrowserPath("NETSCP6");      // NOI18N
             } catch (NbBrowserException e) {
-                ExtWebBrowser.getEM().log("Cannot detect Netscape 6 : " + e);   // NOI18N
+                ExtWebBrowser.getEM().log(Level.INFO, "Cannot detect Netscape 6 : " + e);   // NOI18N
             }
             if ((detectedPath != null) && (detectedPath.trim().length() > 0)) {
                 return Boolean.FALSE;
@@ -78,7 +74,7 @@ public class NetscapeBrowser extends ExtWebBrowser implements PropertyChangeList
             try {
                 detectedPath = NbDdeBrowserImpl.getBrowserPath("NETSCAPE");     // NOI18N
             } catch (NbBrowserException e) {
-                ExtWebBrowser.getEM().log("Cannot detect Netscape 4 : " + e);   // NOI18N
+                ExtWebBrowser.getEM().log(Level.INFO, "Cannot detect Netscape 4 : " + e);   // NOI18N
             }
             if ((detectedPath != null) && (detectedPath.trim().length() > 0)) {
                 return Boolean.FALSE;
@@ -140,8 +136,8 @@ public class NetscapeBrowser extends ExtWebBrowser implements PropertyChangeList
                         return new NbProcessDescriptor(b, params);
                     }
                 } catch (NbBrowserException e) {
-                    if (ExtWebBrowser.getEM().isLoggable(ErrorManager.INFORMATIONAL)) {
-                        ExtWebBrowser.getEM().log("Cannot get Path for Netscape 7: " + e);   // NOI18N
+                    if (ExtWebBrowser.getEM().isLoggable(Level.INFO)) {
+                        ExtWebBrowser.getEM().log(Level.INFO, "Cannot get Path for Netscape 7: " + e);   // NOI18N
                     }
                 }
 
@@ -152,8 +148,8 @@ public class NetscapeBrowser extends ExtWebBrowser implements PropertyChangeList
                         return new NbProcessDescriptor(b, params);
                     }
                 } catch (NbBrowserException e) {
-                    if (ExtWebBrowser.getEM().isLoggable(ErrorManager.INFORMATIONAL)) {
-                        ExtWebBrowser.getEM().log("Cannot get Path for Netscape 6: " + e);   // NOI18N
+                    if (ExtWebBrowser.getEM().isLoggable(Level.INFO)) {
+                        ExtWebBrowser.getEM().log(Level.INFO, "Cannot get Path for Netscape 6: " + e);   // NOI18N
                     }
                 }
 
@@ -164,14 +160,14 @@ public class NetscapeBrowser extends ExtWebBrowser implements PropertyChangeList
                         return new NbProcessDescriptor(b, params);
                     }
                 } catch (NbBrowserException e) {
-                    if (ExtWebBrowser.getEM().isLoggable(ErrorManager.INFORMATIONAL)) {
-                        ExtWebBrowser.getEM().log("Cannot get Path for Netscape 4: " + e);   // NOI18N
+                    if (ExtWebBrowser.getEM().isLoggable(Level.INFO)) {
+                        ExtWebBrowser.getEM().log(Level.INFO, "Cannot get Path for Netscape 4: " + e);   // NOI18N
                     }
                 }
                 
             } catch (UnsatisfiedLinkError e) {
-                if (ExtWebBrowser.getEM().isLoggable(ErrorManager.INFORMATIONAL)) {
-                    ExtWebBrowser.getEM().log("Some problem here:" + e);   // NOI18N
+                if (ExtWebBrowser.getEM().isLoggable(Level.INFO)) {
+                    ExtWebBrowser.getEM().log(Level.INFO, "Some problem here:" + e);   // NOI18N
                 }
             }
 

@@ -30,7 +30,6 @@ import java.util.Vector;
 
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.ErrorManager;
 import org.openide.awt.StatusDisplayer;
 import org.openide.execution.NbProcessDescriptor;
 import org.openide.util.Utilities;
@@ -39,6 +38,9 @@ import org.openide.util.NbBundle;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.openide.util.Exceptions;
 
 
 /**
@@ -71,8 +73,8 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
     private static final String EXTBROWSER_DLL_64BIT = "extbrowser64"; //NOI18N
 
     static {
-        if (ExtWebBrowser.getEM().isLoggable(ErrorManager.INFORMATIONAL)) {
-            ExtWebBrowser.getEM().log(ErrorManager.INFORMATIONAL, "" + System.currentTimeMillis() + "> NbDdeBrowser: static initializer: ");
+        if (ExtWebBrowser.getEM().isLoggable(Level.INFO)) {
+            ExtWebBrowser.getEM().log(Level.INFO, "" + System.currentTimeMillis() + "> NbDdeBrowser: static initializer: ");
         }
         try {
             if (org.openide.util.Utilities.isWindows()) {
@@ -113,8 +115,8 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
     public NbDdeBrowserImpl (ExtWebBrowser extBrowserFactory) {
         super ();
         this.extBrowserFactory = extBrowserFactory;
-        if (ExtWebBrowser.getEM().isLoggable(ErrorManager.INFORMATIONAL)) {
-            ExtWebBrowser.getEM().log("" + System.currentTimeMillis() + "NbDdeBrowserImpl created with factory: " + extBrowserFactory); // NOI18N
+        if (ExtWebBrowser.getEM().isLoggable(Level.INFO)) {
+            ExtWebBrowser.getEM().log(Level.INFO, "" + System.currentTimeMillis() + "NbDdeBrowserImpl created with factory: " + extBrowserFactory); // NOI18N
         }
     }
     
@@ -133,8 +135,8 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
      * @param url URL to show in the browser.
      */
     public synchronized void setURL(final URL url) {
-        if (ExtWebBrowser.getEM().isLoggable(ErrorManager.INFORMATIONAL)) {
-            ExtWebBrowser.getEM().log("" + System.currentTimeMillis() + "NbDdeBrowserImpl.setUrl: " + url); // NOI18N
+        if (ExtWebBrowser.getEM().isLoggable(Level.INFO)) {
+            ExtWebBrowser.getEM().log(Level.INFO, "" + System.currentTimeMillis() + "NbDdeBrowserImpl.setUrl: " + url); // NOI18N
         }
         if (nativeThread == null) {
             nativeRunnable = new NbDdeBrowserImpl.URLDisplayer ();
@@ -149,8 +151,8 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
      *  Netscape or IExplore
      */
     private String realDDEServer () {
-        if (ExtWebBrowser.getEM().isLoggable(ErrorManager.INFORMATIONAL)) {
-            ExtWebBrowser.getEM().log("" + System.currentTimeMillis() + "NbDdeBrowserImpl.realDDEServer"); // NOI18N
+        if (ExtWebBrowser.getEM().isLoggable(Level.INFO)) {
+            ExtWebBrowser.getEM().log(Level.INFO, "" + System.currentTimeMillis() + "NbDdeBrowserImpl.realDDEServer"); // NOI18N
         }
         String srv = extBrowserFactory.getDDEServer ();
         if (srv != null) {
@@ -182,7 +184,7 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
             }
         } catch (Exception ex) {
             // some problem in native code likely
-            ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, ex);
+            Logger.getLogger("global").log(Level.INFO, null, ex);
         }
         // guess IE
         return ExtWebBrowser.IEXPLORE;
@@ -252,34 +254,34 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
         }
         
         public void run() {
-            if (ExtWebBrowser.getEM().isLoggable(ErrorManager.INFORMATIONAL)) {
-                ExtWebBrowser.getEM().log("" + System.currentTimeMillis() + "NbDdeBrowserImpl.run"); // NOI18N
+            if (ExtWebBrowser.getEM().isLoggable(Level.INFO)) {
+                ExtWebBrowser.getEM().log(Level.INFO, "" + System.currentTimeMillis() + "NbDdeBrowserImpl.run"); // NOI18N
             }
             while (doProcessing) {
                 try {
                     /** url to be displayed */
-                    DisplayTask task = getNextTask ();
-                   
+                    DisplayTask task = getNextTask();
+                    
                     isDisplaying = true;
-                    Timer timer = new Timer ();
-                    timer.schedule (new TimerTask () {
+                    Timer timer = new Timer();
+                    timer.schedule(new TimerTask() {
                         public void run() {
                             if (isDisplaying) {
                                 NbDdeBrowserImpl.nativeThread.interrupt();
-                                if (ExtWebBrowser.getEM().isLoggable(ErrorManager.INFORMATIONAL)) {
-                                    ExtWebBrowser.getEM().log("interrupted in URLDisplayer.run.TimerTask.run()");   // NOI18N
+                                if (ExtWebBrowser.getEM().isLoggable(Level.INFO)) {
+                                    ExtWebBrowser.getEM().log(Level.INFO, "interrupted in URLDisplayer.run.TimerTask.run()");   // NOI18N
                                 }
                                 DialogDisplayer.getDefault().notify(
-                                new NotifyDescriptor.Message(NbBundle.getMessage(NbDdeBrowserImpl.class, "MSG_win_browser_invocation_failed"),
-                                NotifyDescriptor.INFORMATION_MESSAGE)
-                                );
+                                        new NotifyDescriptor.Message(NbBundle.getMessage(NbDdeBrowserImpl.class, "MSG_win_browser_invocation_failed"),
+                                        NotifyDescriptor.INFORMATION_MESSAGE)
+                                        );
                             }
                         }
                     }, /*task.browser.extBrowserFactory.getBrowserStartTimeout() + */ADDITIONAL_WAIT_TIMEOUT);
                     dispatchURL (task);
                     timer.cancel();
                 } catch (InterruptedException ex) {
-                    ExtWebBrowser.getEM().log("interrupted in run(): " + ex);     // NOI18N
+                    ExtWebBrowser.getEM().log(Level.INFO, "interrupted in run(): " + ex);     // NOI18N
                     // do nothing
                 } finally {
                     isDisplaying = false;
@@ -288,21 +290,21 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
         }
 
         public void dispatchURL (DisplayTask task) {
-            if (ExtWebBrowser.getEM().isLoggable(ErrorManager.INFORMATIONAL)) {
-                ExtWebBrowser.getEM().log("" + System.currentTimeMillis() + " NbDdeBrowserImpl.dispatchURL: " + task); // NOI18N
+            if (ExtWebBrowser.getEM().isLoggable(Level.INFO)) {
+                ExtWebBrowser.getEM().log(Level.INFO, "" + System.currentTimeMillis() + " NbDdeBrowserImpl.dispatchURL: " + task); // NOI18N
             }
             try {
                 
                 URL url = task.url;
-                if (ExtWebBrowser.getEM().isLoggable(ErrorManager.INFORMATIONAL)) {
-                    ExtWebBrowser.getEM().log("" + System.currentTimeMillis() + " URLDispatcher.url: " + url);          // NOI18N
+                if (ExtWebBrowser.getEM().isLoggable(Level.INFO)) {
+                    ExtWebBrowser.getEM().log(Level.INFO, "" + System.currentTimeMillis() + " URLDispatcher.url: " + url);          // NOI18N
                 }
                 
                 // internal protocols cannot be displayed in external viewer
                 url = URLUtil.createExternalURL(url, URLUtil.browserHandlesJarURLs(task.browser.realDDEServer()));   // XXX support Netscape too?
                 
-                if (ExtWebBrowser.getEM().isLoggable(ErrorManager.INFORMATIONAL)) {
-                    ExtWebBrowser.getEM().log("" + System.currentTimeMillis() + " url: " + url);          // NOI18N
+                if (ExtWebBrowser.getEM().isLoggable(Level.INFO)) {
+                    ExtWebBrowser.getEM().log(Level.INFO, "" + System.currentTimeMillis() + " url: " + url);          // NOI18N
                 }
 
                 String urlStr = url.toString();
@@ -314,23 +316,23 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
                      urlStr = getFileUrl(urlStr);
                 }
 
-                if (ExtWebBrowser.getEM().isLoggable(ErrorManager.INFORMATIONAL)) {
-                    ExtWebBrowser.getEM().log("" + System.currentTimeMillis() + " urlstr: " + urlStr);          // NOI18N
+                if (ExtWebBrowser.getEM().isLoggable(Level.INFO)) {
+                    ExtWebBrowser.getEM().log(Level.INFO, "" + System.currentTimeMillis() + " urlstr: " + urlStr);          // NOI18N
                 }
                 if (!win9xHack(task.browser.realDDEServer())) {
                     StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage (NbDdeBrowserImpl.class, "MSG_activatingBrowser"));
                     try {
                         task.browser.reqDdeMessage(task.browser.realDDEServer(),WWW_ACTIVATE,"-1,0x0",task.browser.getActivateTimeout());
                     } catch (NbBrowserException ex) {
-                        if (ExtWebBrowser.getEM().isLoggable(ErrorManager.INFORMATIONAL)) {                
-                            ExtWebBrowser.getEM().log("" + System.currentTimeMillis() + "Exception, gonna start browser: " + ex);  // NOI18N
+                        if (ExtWebBrowser.getEM().isLoggable(Level.INFO)) {                
+                            ExtWebBrowser.getEM().log(Level.INFO, "" + System.currentTimeMillis() + "Exception, gonna start browser: " + ex);  // NOI18N
                         }
                         triedStart = true;
                         startBrowser(task.browser.extBrowserFactory.getBrowserExecutable(), urlStr);
                     }  
                 }
-                if (ExtWebBrowser.getEM().isLoggable(ErrorManager.INFORMATIONAL)) {
-                    ExtWebBrowser.getEM().log("" + System.currentTimeMillis() + " firstpart");          // NOI18N
+                if (ExtWebBrowser.getEM().isLoggable(Level.INFO)) {
+                    ExtWebBrowser.getEM().log(Level.INFO, "" + System.currentTimeMillis() + " firstpart");          // NOI18N
                 }
 
                 if (!triedStart) {
@@ -341,16 +343,16 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
                         Thread.sleep(500); // trying hack for bug #42438 - Browser executes twice which is a Mozilla bug
                         task.browser.reqDdeMessage(task.browser.realDDEServer(),WWW_OPEN_URL,args1,task.browser.getOpenUrlTimeout());
                     } catch (NbBrowserException ex) {
-                        if (ExtWebBrowser.getEM().isLoggable(ErrorManager.INFORMATIONAL)) {
-                            ExtWebBrowser.getEM().log("Restarting browser.");    // NOI18N
+                        if (ExtWebBrowser.getEM().isLoggable(Level.INFO)) {
+                            ExtWebBrowser.getEM().log(Level.INFO, "Restarting browser.");    // NOI18N
                         }
                         startBrowser(task.browser.extBrowserFactory.getBrowserExecutable(), urlStr);
                     } catch (InterruptedException ex) {
                         // just ignore
                     }
                 }
-                if (ExtWebBrowser.getEM().isLoggable(ErrorManager.INFORMATIONAL)) {
-                    ExtWebBrowser.getEM().log("" + System.currentTimeMillis() + " secondpart");          // NOI18N
+                if (ExtWebBrowser.getEM().isLoggable(Level.INFO)) {
+                    ExtWebBrowser.getEM().log(Level.INFO, "" + System.currentTimeMillis() + " secondpart");          // NOI18N
                 }
 
                 URL oldUrl = task.browser.url;
@@ -359,13 +361,13 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
 
             } catch (Exception ex) {
                 final Exception ex1 = ex;
-                if (ExtWebBrowser.getEM().isLoggable(ErrorManager.INFORMATIONAL)) {
-                    ExtWebBrowser.getEM().log("" + System.currentTimeMillis() + " Interrupted in URLDisplayer.dispatchURL.end");   // NOI18N
+                if (ExtWebBrowser.getEM().isLoggable(Level.INFO)) {
+                    ExtWebBrowser.getEM().log(Level.INFO, "" + System.currentTimeMillis() + " Interrupted in URLDisplayer.dispatchURL.end");   // NOI18N
                 }
-                ErrorManager.getDefault ().annotate(ex1, NbBundle.getMessage(NbDdeBrowserImpl.class, "MSG_win_browser_invocation_failed"));
+                Exceptions.attachLocalizedMessage(ex1, NbBundle.getMessage(NbDdeBrowserImpl.class, "MSG_win_browser_invocation_failed"));
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
-                        ErrorManager.getDefault ().notify (ex1);
+                        Exceptions.printStackTrace(ex1);
                     }
                 });
             }
@@ -376,8 +378,8 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
          *
          */
         private String getFileUrl(String url) {
-            if (ExtWebBrowser.getEM().isLoggable(ErrorManager.INFORMATIONAL)) {
-                ExtWebBrowser.getEM().log("" + System.currentTimeMillis() + "Gonna get redirect file for long url: " + url);
+            if (ExtWebBrowser.getEM().isLoggable(Level.INFO)) {
+                ExtWebBrowser.getEM().log(Level.INFO, "" + System.currentTimeMillis() + "Gonna get redirect file for long url: " + url);
             }
             String newurl = null;
             FileWriter fw = null;
@@ -389,8 +391,8 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
                 retries--;
                 try {
                     f = File.createTempFile("extbrowser", ".html");             // NOI18N
-                    if (ExtWebBrowser.getEM().isLoggable(ErrorManager.INFORMATIONAL)) {
-                        ExtWebBrowser.getEM().log("file: " + f);                // NOI18N
+                    if (ExtWebBrowser.getEM().isLoggable(Level.INFO)) {
+                        ExtWebBrowser.getEM().log(Level.INFO, "file: " + f);                // NOI18N
                     }
                     if (f != null) { 
                         fw = new FileWriter(f);
@@ -404,20 +406,20 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
                         newurl = "file:/" + f.getAbsolutePath();                // NOI18N
                     }
                 } catch (IOException ioe) {
-                     ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "" + System.currentTimeMillis() + ioe.toString());
+                     Logger.getLogger("global").log(Level.INFO, "" + System.currentTimeMillis() + ioe.toString());
                 } finally {
                     if (fw != null) {
                         try {
                             fw.close();
                         } catch (IOException ioe) {
-                            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "" + System.currentTimeMillis() + ioe.toString());
+                            Logger.getLogger("global").log(Level.INFO, "" + System.currentTimeMillis() + ioe.toString());
                         }
                     }
                 }                
             }
             if (newurl != null) { 
-                if (ExtWebBrowser.getEM().isLoggable(ErrorManager.INFORMATIONAL)) {
-                    ExtWebBrowser.getEM().log("" + System.currentTimeMillis() + "New URL: " + newurl);                // NOI18N
+                if (ExtWebBrowser.getEM().isLoggable(Level.INFO)) {
+                    ExtWebBrowser.getEM().log(Level.INFO, "" + System.currentTimeMillis() + "New URL: " + newurl);                // NOI18N
                 }
                 return newurl;
             }

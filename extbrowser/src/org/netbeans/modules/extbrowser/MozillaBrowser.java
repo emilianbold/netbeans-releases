@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.extbrowser;
 
+import java.util.logging.Level;
 import org.openide.awt.HtmlBrowser;
 import org.openide.execution.NbProcessDescriptor;
 import org.openide.util.NbBundle;
@@ -50,7 +51,7 @@ public class MozillaBrowser extends ExtWebBrowser {
             try {
                 detectedPath = NbDdeBrowserImpl.getBrowserPath("MOZILLA");      // NOI18N
             } catch (NbBrowserException e) {
-                ExtWebBrowser.getEM().log("Cannot detect Mozilla : " + e);      // NOI18N
+                ExtWebBrowser.getEM().log(Level.INFO, "Cannot detect Mozilla : " + e);      // NOI18N
             }
             if ((detectedPath != null) && (detectedPath.trim().length() > 0)) {
                 return Boolean.FALSE;

@@ -21,6 +21,7 @@ package org.netbeans.modules.extbrowser;
 
 import java.awt.Image;
 import java.beans.*;
+import org.openide.util.Exceptions;
 
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -60,7 +61,7 @@ public class ExtWebBrowserBeanInfo extends SimpleBeanInfo {
                 properties[2].setHidden(true);
 
             } catch (IntrospectionException ie) {
-                org.openide.ErrorManager.getDefault().notify(ie);
+                Exceptions.printStackTrace(ie);
                 return null;
             }
         } else {
@@ -73,7 +74,7 @@ public class ExtWebBrowserBeanInfo extends SimpleBeanInfo {
                 properties[0].setShortDescription (NbBundle.getMessage (ExtWebBrowserBeanInfo.class, "HINT_browserExecutable"));
 
             } catch (IntrospectionException ie) {
-                org.openide.ErrorManager.getDefault().notify(ie);
+                Exceptions.printStackTrace(ie);
                 return null;
             }
         }
