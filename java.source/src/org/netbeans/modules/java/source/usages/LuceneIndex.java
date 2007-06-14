@@ -21,6 +21,7 @@ package org.netbeans.modules.java.source.usages;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InterruptedIOException;
 import java.text.ParseException;
 import java.util.Comparator;
 import java.util.EnumSet;
@@ -80,7 +81,7 @@ class LuceneIndex extends Index {
     private IndexReader reader; //Cache, do not use this dirrectly, use getReader
     private Set<String> rootPkgCache;   //Cache, do not use this dirrectly
     
-    public static Index create (final File cacheRoot) throws IOException {        
+    static Index create (final File cacheRoot) throws IOException {        
         assert cacheRoot != null && cacheRoot.exists() && cacheRoot.canRead() && cacheRoot.canWrite();
         return new LuceneIndex (getReferencesCacheFolder(cacheRoot));
     }
@@ -92,10 +93,10 @@ class LuceneIndex extends Index {
     }
 
     @SuppressWarnings("unchecked") // NOI18N, unchecked - lucene has source 1.4
-    public List<String> getUsagesData(final String resourceName, Set<ClassIndexImpl.UsageType> mask, BooleanOperator operator) throws IOException {        
+    private List<String> getUsagesData(final String resourceName, Set<ClassIndexImpl.UsageType> mask, BooleanOperator operator) throws IOException {                
         if (!isValid(false)) {
             return null;
-        }
+        }        
         final Searcher searcher = new IndexSearcher (this.getReader());
         try {
             final List<String> result = new LinkedList<String> ();
@@ -139,10 +140,12 @@ class LuceneIndex extends Index {
     }
 
     @SuppressWarnings ("unchecked")     // NOI18N, unchecked - lucene has source 1.4
-    public List<String> getUsagesFQN(final String resourceName, final Set<ClassIndexImpl.UsageType>mask, final BooleanOperator operator) throws IOException {
+    public List<String> getUsagesFQN(final String resourceName, final Set<ClassIndexImpl.UsageType>mask, final BooleanOperator operator) throws IOException, InterruptedException {
         if (!isValid(false)) {
             return null;
         }
+        final AtomicBoolean cancel = this.cancel.get();
+        assert cancel != null;
         assert resourceName != null;
         assert mask != null;
         assert operator != null;
@@ -164,9 +167,15 @@ class LuceneIndex extends Index {
                     break;
                 default:
                     throw new IllegalArgumentException (operator.toString());
-            }            
+            }
+            if (cancel.get()) {
+                throw new InterruptedException ();
+            }
             final Hits hits = searcher.search (query);
             for (Iterator<Hit> it = (Iterator<Hit>) hits.iterator(); it.hasNext();) {
+                if (cancel.get()) {
+                    throw new InterruptedIOException ();
+                }
                 final Hit hit = it.next ();
                 final Document doc = hit.getDocument();
                 final String user = DocumentUtil.getBinaryName(doc);
@@ -178,7 +187,7 @@ class LuceneIndex extends Index {
         }
     }
 
-    public List<String> getReferencesData(final String resourceName) throws IOException {
+    private List<String> getReferencesData(final String resourceName) throws IOException {
         if (!isValid(false)) {
             return null;
         }    
@@ -200,11 +209,13 @@ class LuceneIndex extends Index {
     }
         
     @SuppressWarnings ("unchecked") // NOI18N, unchecked - lucene has source 1.4
-    public <T> void getDeclaredTypes (final String name, final ClassIndex.NameKind kind, final ResultConvertor<T> convertor, final Set<? super T> result) throws IOException {
+    public <T> void getDeclaredTypes (final String name, final ClassIndex.NameKind kind, final ResultConvertor<T> convertor, final Set<? super T> result) throws IOException, InterruptedException {
         if (!isValid(false)) {
             LOGGER.fine(String.format("LuceneIndex[%s] is invalid!\n", this.toString()));
             return;
         }
+        final AtomicBoolean cancel = this.cancel.get();
+        assert cancel != null;
         assert name != null;                
         final Set<Term> toSearch = new TreeSet<Term> (new Comparator<Term>(){
             public int compare (Term t1, Term t2) {
@@ -225,23 +236,23 @@ class LuceneIndex extends Index {
             case PREFIX:
                 if (name.length() == 0) {
                     //Special case (all) handle in different way
-                    emptyPrefixSearch(in, convertor, result);
+                    emptyPrefixSearch(in, convertor, result, cancel);
                     return;
                 }
                 else {
                     final Term nameTerm = DocumentUtil.simpleNameTerm(name);
-                    prefixSearh(nameTerm, in, toSearch);
+                    prefixSearh(nameTerm, in, toSearch, cancel);
                     break;
                 }
             case CASE_INSENSITIVE_PREFIX:
                 if (name.length() == 0) {
                     //Special case (all) handle in different way
-                    emptyPrefixSearch(in, convertor, result);
+                    emptyPrefixSearch(in, convertor, result, cancel);
                     return;
                 }
                 else {                    
                     final Term nameTerm = DocumentUtil.caseInsensitiveNameTerm(name.toLowerCase());     //XXX: I18N, Locale
-                    prefixSearh(nameTerm, in, toSearch);
+                    prefixSearh(nameTerm, in, toSearch, cancel);
                     break;
                 }
             case CAMEL_CASE:
@@ -266,7 +277,7 @@ class LuceneIndex extends Index {
                     }
                 }
                 final Pattern pattern = Pattern.compile(patternString.toString());
-                regExpSearch(pattern,DocumentUtil.simpleNameTerm(Character.toString(startChar)),in,toSearch);
+                regExpSearch(pattern,DocumentUtil.simpleNameTerm(Character.toString(startChar)),in,toSearch,cancel);
                 break;
                 }
             case CASE_INSENSITIVE_REGEXP:
@@ -275,7 +286,7 @@ class LuceneIndex extends Index {
                 }
                 {   
                     final Pattern pattern = Pattern.compile(name,Pattern.CASE_INSENSITIVE);
-                    regExpSearch(pattern, DocumentUtil.caseInsensitiveNameTerm(name.toLowerCase()), in, toSearch);      //XXX: Locale
+                    regExpSearch(pattern, DocumentUtil.caseInsensitiveNameTerm(name.toLowerCase()), in, toSearch,cancel);      //XXX: Locale
                     break;
                 }
             case REGEXP:
@@ -284,7 +295,7 @@ class LuceneIndex extends Index {
                 }                
                 {   
                     final Pattern pattern = Pattern.compile(name);                    
-                    regExpSearch(pattern, DocumentUtil.simpleNameTerm(name), in, toSearch);
+                    regExpSearch(pattern, DocumentUtil.simpleNameTerm(name), in, toSearch, cancel);
                     break;
                 }
             default:
@@ -296,19 +307,25 @@ class LuceneIndex extends Index {
         final ElementKind[] kindHolder = new ElementKind[1];
         Set<Integer> docNums = new TreeSet<Integer>();
         while (it.hasNext()) {
+            if (cancel.get()) {
+                throw new InterruptedException ();
+            }
             tds.seek(it.next());
             while (tds.next()) {
                 docNums.add (tds.doc());
             }
         }
         for (Integer docNum : docNums) {
+            if (cancel.get()) {
+                throw new InterruptedException ();
+            }
             final Document doc = in.document(docNum);
             final String binaryName = DocumentUtil.getBinaryName(doc, kindHolder);
             result.add (convertor.convert(kindHolder[0],binaryName));
         }        
     }
     
-    private void regExpSearch (final Pattern pattern, final Term startTerm, final IndexReader in, final Set<Term> toSearch) throws IOException {        
+    private void regExpSearch (final Pattern pattern, final Term startTerm, final IndexReader in, final Set<Term> toSearch, final AtomicBoolean cancel) throws IOException, InterruptedException {        
         final String startText = startTerm.text();
         final StringBuilder startBuilder = new StringBuilder ();
         startBuilder.append(startText.charAt(0));
@@ -324,6 +341,9 @@ class LuceneIndex extends Index {
         final TermEnum en = in.terms(startTerm);
         try {
             do {
+                if (cancel.get()) {
+                    throw new InterruptedException ();
+                }
                 Term term = en.term();                
                 if (term != null && camelField == term.field() && term.text().startsWith(startPrefix)) {
                     final Matcher m = pattern.matcher(term.text());
@@ -340,10 +360,13 @@ class LuceneIndex extends Index {
         }
     }
     
-    private <T> void emptyPrefixSearch (final IndexReader in, final ResultConvertor<T> convertor, final Set<? super T> result) throws IOException {        
+    private <T> void emptyPrefixSearch (final IndexReader in, final ResultConvertor<T> convertor, final Set<? super T> result, final AtomicBoolean cancel) throws IOException, InterruptedException {        
         final int bound = in.maxDoc();        
         final ElementKind[] kindHolder = new ElementKind[1];
         for (int i=0; i<bound; i++) {
+            if (cancel.get()) {
+                throw new InterruptedException ();
+            }
             if (!in.isDeleted(i)) {
                 final Document doc = in.document(i);
                 if (doc != null) {
@@ -360,12 +383,15 @@ class LuceneIndex extends Index {
         }
     }
     
-    private void prefixSearh (Term nameTerm, final IndexReader in, final Set<Term> toSearch) throws IOException {
+    private void prefixSearh (Term nameTerm, final IndexReader in, final Set<Term> toSearch, final AtomicBoolean cancel) throws IOException, InterruptedException {
         final String prefixField = nameTerm.field();
         final String name = nameTerm.text();
         final TermEnum en = in.terms(nameTerm);
         try {
             do {
+                if (cancel.get()) {
+                    throw new InterruptedException ();
+                }
                 Term term = en.term();                
                 if (term != null && prefixField == term.field() && term.text().startsWith(name)) {
                     toSearch.add (term);
@@ -380,10 +406,12 @@ class LuceneIndex extends Index {
     }
     
     
-    public void getPackageNames (final String prefix, final boolean directOnly, final Set<String> result) throws IOException {
+    public void getPackageNames (final String prefix, final boolean directOnly, final Set<String> result) throws IOException, InterruptedException {        
         if (!isValid(false)) {
             return;
-        }        
+        }
+        final AtomicBoolean cancel = this.cancel.get();
+        assert cancel != null;
         final IndexReader in = getReader();
         final Term pkgTerm = DocumentUtil.packageNameTerm (prefix);
         final String prefixField = pkgTerm.field();
@@ -398,6 +426,9 @@ class LuceneIndex extends Index {
                 final TermEnum terms = in.terms ();
                 try {
                     do {
+                        if (cancel.get()) {
+                            throw new InterruptedIOException ();
+                        }
                         final Term currentTerm = terms.term();
                         if (currentTerm != null && prefixField == currentTerm.field()) {
                             String pkgName = currentTerm.text();
@@ -420,6 +451,9 @@ class LuceneIndex extends Index {
             final TermEnum terms = in.terms (pkgTerm);
             try {
                 do {
+                    if (cancel.get()) {
+                        throw new InterruptedException ();
+                    }
                     final Term currentTerm = terms.term();
                     if (currentTerm != null && prefixField == currentTerm.field() && currentTerm.text().startsWith(prefix)) {
                         String pkgName = currentTerm.text();

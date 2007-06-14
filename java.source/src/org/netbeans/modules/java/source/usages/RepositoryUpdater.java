@@ -889,6 +889,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         }
         
         public void run (final CompilationInfo nullInfo) throws IOException {
+            try {
             ClassIndexManager.getDefault().writeLock (new ClassIndexManager.ExceptionAction<Void> () {
                 
                 @SuppressWarnings("fallthrough")
@@ -1129,6 +1130,10 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                     }
                 }
             }});
+            } catch (InterruptedException e) {
+                //Never thrown
+                Exceptions.printStackTrace(e);
+            }
         }
         
         private void findDependencies (final URL rootURL, final Stack<URL> cycleDetector, final Map<URL,List<URL>> depGraph,

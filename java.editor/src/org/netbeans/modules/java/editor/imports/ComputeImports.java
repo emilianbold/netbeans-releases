@@ -105,12 +105,16 @@ public class ComputeImports {
                 return new Pair(Collections.emptyMap(), Collections.emptyMap());
             
             List<TypeElement> classes = new ArrayList<TypeElement>();
-            
-            for (ElementHandle<TypeElement> typeNames : info.getJavaSource().getClasspathInfo().getClassIndex().getDeclaredTypes(unresolved, NameKind.SIMPLE_NAME,EnumSet.allOf(ClassIndex.SearchScope.class))) {
-                TypeElement te = info.getElements().getTypeElement(typeNames.getQualifiedName());
+            Set<ElementHandle<TypeElement>> typeNames = info.getJavaSource().getClasspathInfo().getClassIndex().getDeclaredTypes(unresolved, NameKind.SIMPLE_NAME,EnumSet.allOf(ClassIndex.SearchScope.class));
+            if (typeNames == null) {
+                //Canceled
+                return new Pair(Collections.emptyMap(), Collections.emptyMap());
+            }
+            for (ElementHandle<TypeElement> typeName : typeNames) {
+                TypeElement te = info.getElements().getTypeElement(typeName.getQualifiedName());
                 
                 if (te == null) {
-                    Logger.getLogger(ComputeImports.class.getName()).log(Level.INFO, "Cannot resolve type element \"" + typeNames + "\".");
+                    Logger.getLogger(ComputeImports.class.getName()).log(Level.INFO, "Cannot resolve type element \"" + typeName + "\".");
                     continue;
                 }
                 

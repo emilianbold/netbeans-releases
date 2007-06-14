@@ -36,6 +36,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.text.MessageFormat;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -53,12 +54,19 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import javax.swing.text.BadLocationException;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.source.ClassIndex;
+import org.netbeans.api.java.source.ClassIndex.NameKind;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.java.source.parsing.SourceFileObject;
+import org.netbeans.modules.java.source.usages.ClassIndexImpl.UsageType;
+import org.netbeans.modules.java.source.usages.Index;
+import org.netbeans.modules.java.source.usages.Index;
+import org.netbeans.modules.java.source.usages.ResultConvertor;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.SaveCookie;
@@ -74,7 +82,9 @@ import org.netbeans.api.java.source.JavaSource.Priority;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.modules.java.source.classpath.CacheClassPath;
+import org.netbeans.modules.java.source.usages.IndexFactory;
 import org.netbeans.modules.java.source.usages.IndexUtil;
+import org.netbeans.modules.java.source.usages.PersistentClassIndex;
 import org.netbeans.modules.java.source.usages.RepositoryUpdater;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 /**
@@ -1280,6 +1290,86 @@ public class JavaSourceTest extends NbTestCase {
         }, true);
     }
     
+    
+    public void testIndexCancel() throws Exception {
+        PersistentClassIndex.setIndexFactory(new TestIndexFactory());
+        try {
+            FileObject test = createTestFile ("Test1");
+            final ClassPath bootPath = createBootPath ();
+            final ClassPath compilePath = createCompilePath ();        
+            final ClassPath sourcePath = createSourcePath ();
+            
+            
+            ClassLoader l = JavaSourceTest.class.getClassLoader();
+            Lkp.DEFAULT.setLookupsWrapper(
+                Lookups.metaInfServices(l),
+                Lookups.singleton(l),
+                Lookups.singleton(new ClassPathProvider() {
+                public ClassPath findClassPath(FileObject file, String type) {
+                    if (ClassPath.BOOT == type) {
+                        return bootPath;
+                    }
+
+                    if (ClassPath.SOURCE == type) {
+                        return sourcePath;
+                    }
+
+                    if (ClassPath.COMPILE == type) {
+                        return compilePath;
+                    }                    
+                    return null;
+                }            
+            }));
+            
+            
+            JavaSource js = JavaSource.create(ClasspathInfo.create(bootPath, compilePath, sourcePath), test);
+            CountDownLatch rl = RepositoryUpdater.getDefault().scheduleCompilationAndWait(sourcePath.getRoots()[0], sourcePath.getRoots()[0]);
+            rl.await();
+            DataObject dobj = DataObject.find(test);
+            EditorCookie ec = (EditorCookie) dobj.getCookie(EditorCookie.class);                        
+            final StyledDocument doc = ec.openDocument();
+            Thread.sleep(500);  //It may happen that the js is invalidated before the dispatch of task is done and the test of timers may fail        
+
+            final CountDownLatch[] end = new CountDownLatch[]{new CountDownLatch (1)};
+            final Object[] result = new Object[1];
+            
+            CancellableTask<CompilationInfo> task = new CancellableTask<CompilationInfo>() {
+
+                public void cancel() {                
+                }
+
+                public void run(CompilationInfo p) throws Exception {
+                    ClassIndex index = p.getClasspathInfo().getClassIndex();
+                    result[0] = index.getPackageNames("javax", true, EnumSet.allOf(ClassIndex.SearchScope.class));                    
+                    end[0].countDown();
+                }
+
+            };
+            js.addPhaseCompletionTask (task,Phase.PARSED, Priority.HIGH);
+            Thread.sleep(500);  //Making test a more deterministic, when the task is cancelled by DocListener, it's hard for test to recover from it
+            NbDocument.runAtomic (doc,
+                new Runnable () {
+                    public void run () {                        
+                        try {
+                            String text = doc.getText(0,doc.getLength());
+                            int index = text.indexOf(REPLACE_PATTERN);
+                            assertTrue (index != -1);
+                            doc.remove(index,REPLACE_PATTERN.length());
+                            doc.insertString(index,"System.out.println();",null);
+                        } catch (BadLocationException ble) {
+                            ble.printStackTrace(System.out);
+                        }                 
+                    }
+            });               
+            end[0].await();
+            assertNull(result[0]);
+            js.removePhaseCompletionTask (task);
+        } finally {
+            PersistentClassIndex.setIndexFactory(null);
+        }
+    }
+    
+    
     private static class TestProvider implements JavaSource.JavaFileObjectProvider {
         
         private Object lock;
@@ -1597,6 +1687,65 @@ public class JavaSourceTest extends NbTestCase {
         
     }
     
+    private static class TestIndexFactory implements IndexFactory {        
+        
+        public Index create(File cacheRoot) throws IOException {
+            return new TestIndex ();
+        }
+        
+    }
+    
+    private static class TestIndex extends Index {
+        
+        
+        public TestIndex () {
+        }
+
+        public boolean isValid(boolean tryOpen) throws IOException {
+            return true;
+        }
+
+        public List<String> getUsagesFQN(String resourceName, Set<UsageType> mask, BooleanOperator operator) throws IOException, InterruptedException {
+            await ();
+            return Collections.<String>emptyList();
+        }
+
+        public <T> void getDeclaredTypes(String simpleName, NameKind kind, ResultConvertor<T> convertor, Set<? super T> result) throws IOException, InterruptedException {
+            await ();
+        }
+
+        public void getPackageNames(String prefix, boolean directOnly, Set<String> result) throws IOException, InterruptedException {
+            await ();
+        }
+
+        public void store(Map<String, List<String>> refs, Set<String> toDelete) throws IOException {            
+        }
+
+        public void store(Map<String, List<String>> refs, List<String> topLevels) throws IOException {            
+        }
+
+        public boolean isUpToDate(String resourceName, long timeStamp) throws IOException {
+            return true;
+        }
+
+        public void clear() throws IOException {            
+        }
+
+        public void close() throws IOException {            
+        }
+        
+        private void await () throws InterruptedException {
+            AtomicBoolean cancel = this.cancel.get();
+            while (true) {
+                if (cancel.get()) {
+                    throw new InterruptedException ();
+                }
+                Thread.sleep(100);
+            }
+        }
+        
+    }
+    
     private FileObject createTestFile (String className) {
         try {
             File workdir = this.getWorkDir();
@@ -1636,6 +1785,15 @@ public class JavaSourceTest extends NbTestCase {
     
     private ClassPath createCompilePath () {
         return ClassPathSupport.createClassPath(Collections.EMPTY_LIST);
+    }
+    
+    private ClassPath createSourcePath () throws IOException {
+        File workdir = this.getWorkDir();
+        File root = new File (workdir, "src");
+        if (!root.exists()) {
+            root.mkdirs();
+        }
+        return ClassPathSupport.createClassPath(new URL[] {root.toURI().toURL()});
     }
     
     private FileObject createTestFile (FileObject srcRoot, String relativeName, String content) throws IOException {

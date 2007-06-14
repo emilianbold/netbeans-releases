@@ -65,7 +65,7 @@ public final class ClassIndexManager {
         this.listeners.remove(listener);
     }
     
-    public <T> T writeLock (final ExceptionAction<T> r) throws IOException {
+    public <T> T writeLock (final ExceptionAction<T> r) throws IOException, InterruptedException {
         this.lock.writeLock().lock();
         try {
             depth++;
@@ -94,7 +94,7 @@ public final class ClassIndexManager {
         }
     }
     
-    public <T> T readLock (final ExceptionAction<T> r) throws IOException {
+    public <T> T readLock (final ExceptionAction<T> r) throws IOException, InterruptedException {
         this.lock.readLock().lock();
         try {
             return r.run();
@@ -149,7 +149,7 @@ public final class ClassIndexManager {
     }
     
     public static interface ExceptionAction<T> {
-        public T run () throws IOException;
+        public T run () throws IOException, InterruptedException;
     }
     
     private void fire (final Set<? extends URL> roots, final byte op) {

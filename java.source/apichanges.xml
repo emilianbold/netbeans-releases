@@ -83,6 +83,20 @@ is the proper place.
 
     <changes>
         
+        <change id="ClassIndex-interruption">
+            <api name="general"/>
+            <summary>ClassIndex methods are cancellable</summary>
+            <version major="0" minor="16"/>
+            <date day="13" month="6" year="2007"/>
+            <author login="tzezula"/>
+            <compatibility addition="no" binary="compatible" deletion="no" deprecation="no" modification="no" semantic="incompatible" source="compatible"/>
+            <description>
+                The ClassIndex methods called from the CancellableTask are cancellable. In case when they are cancelled by the JavaSource infrastructure
+                they return null instead of the Set to allow client to determine this state. The incompatible semantic change is that tasks registered by
+                factories have to check if the value returned from class index is null.
+            </description>
+        </change>
+        
         <change id="CompilationInfo-getTopLevelElements">
             <api name="general"/>
             <summary>Added a method to obtain top level elements defined in the source/class file.</summary>

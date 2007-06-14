@@ -213,7 +213,8 @@ public final class ClassIndex {
      * @param searchKind type of reference, {@see SearchKind}
      * @param scope to search in {@see SearchScope}
      * @return set of {@link ElementHandle}s containing the reference(s)
-     *
+     * It may return null when the caller is a CancellableTask&lt;CompilationInfo&gt; and is cancelled
+     * inside call of this method.
      */
     public Set<ElementHandle<TypeElement>> getElements (final ElementHandle<TypeElement> element, final Set<SearchKind> searchKind, final Set<SearchScope> scope) {
         assert element != null;
@@ -224,12 +225,16 @@ public final class ClassIndex {
         final Set<ClassIndexImpl.UsageType> ut =  encodeSearchKind(element.getKind(),searchKind);
         final String binaryName = element.getSignature()[0];
         final ResultConvertor<ElementHandle<TypeElement>> thConvertor = ResultConvertor.elementHandleConvertor();
-        if (!ut.isEmpty()) {
-            for (ClassIndexImpl query : queries) {
-                query.search(binaryName, ut, thConvertor, result);
+        try {
+            if (!ut.isEmpty()) {
+                for (ClassIndexImpl query : queries) {
+                    query.search(binaryName, ut, thConvertor, result);
+                }
             }
+            return Collections.unmodifiableSet(result);
+        } catch (InterruptedException e) {
+            return null;
         }
-        return Collections.unmodifiableSet(result);
     }
     
     /**
@@ -238,7 +243,8 @@ public final class ClassIndex {
      * @param searchKind type of reference, {@see SearchKind}
      * @param scope to search in {@see SearchScope}
      * @return set of {@link FileObject}s containing the reference(s)
-     *
+     * It may return null when the caller is a CancellableTask&lt;CompilationInfo&gt; and is cancelled
+     * inside call of this method.
      */
     public Set<FileObject> getResources (final ElementHandle<TypeElement> element, final Set<SearchKind> searchKind, final Set<SearchScope> scope) {
         assert element != null;
@@ -248,13 +254,17 @@ public final class ClassIndex {
         final Iterable<? extends ClassIndexImpl> queries = this.getQueries (scope);
         final Set<ClassIndexImpl.UsageType> ut =  encodeSearchKind(element.getKind(),searchKind);
         final String binaryName = element.getSignature()[0];        
-        if (!ut.isEmpty()) {
-            for (ClassIndexImpl query : queries) {
-                final ResultConvertor<FileObject> foConvertor = ResultConvertor.fileObjectConvertor (query.getSourceRoots());
-                query.search (binaryName, ut, foConvertor, result);
+        try {
+            if (!ut.isEmpty()) {
+                for (ClassIndexImpl query : queries) {
+                    final ResultConvertor<FileObject> foConvertor = ResultConvertor.fileObjectConvertor (query.getSourceRoots());
+                    query.search (binaryName, ut, foConvertor, result);
+                }
             }
+            return Collections.unmodifiableSet(result);
+        } catch (InterruptedException e) {
+            return null;
         }
-        return Collections.unmodifiableSet(result);
     }        
     
     
@@ -265,6 +275,8 @@ public final class ClassIndex {
      * @param kind of the name {@see NameKind}
      * @param scope to search in {@see SearchScope}
      * @return set of all matched declared types
+     * It may return null when the caller is a CancellableTask&lt;CompilationInfo&gt; and is cancelled
+     * inside call of this method.
      */
     public Set<ElementHandle<TypeElement>> getDeclaredTypes (final String name, final NameKind kind, final Set<SearchScope> scope) {
         assert name != null;
@@ -272,11 +284,15 @@ public final class ClassIndex {
         final Set<ElementHandle<TypeElement>> result = new HashSet<ElementHandle<TypeElement>>();        
         final Iterable<? extends ClassIndexImpl> queries = this.getQueries (scope);        
         final ResultConvertor<ElementHandle<TypeElement>> thConvertor = ResultConvertor.elementHandleConvertor();
-        for (ClassIndexImpl query : queries) {
-            query.getDeclaredTypes (name, kind, thConvertor, result);
+        try {
+            for (ClassIndexImpl query : queries) {
+                query.getDeclaredTypes (name, kind, thConvertor, result);
+            }
+            LOGGER.fine(String.format("ClassIndex.getDeclaredTypes returned %d elements\n", result.size()));
+            return Collections.unmodifiableSet(result);
+        } catch (InterruptedException e) {
+            return null;
         }
-        LOGGER.fine(String.format("ClassIndex.getDeclaredTypes returned %d elements\n", result.size()));
-        return Collections.unmodifiableSet(result);
     }
     
     /**
@@ -286,15 +302,21 @@ public final class ClassIndex {
      * the nearest component of the package.
      * @param scope to search in {@see SearchScope}
      * @return set of all matched package names
+     * It may return null when the caller is a CancellableTask&lt;CompilationInfo&gt; and is cancelled
+     * inside call of this method.
      */
     public Set<String> getPackageNames (final String prefix, boolean directOnly, final Set<SearchScope> scope) {
         assert prefix != null;
         final Set<String> result = new HashSet<String> ();        
         final Iterable<? extends ClassIndexImpl> queries = this.getQueries (scope);
-        for (ClassIndexImpl query : queries) {
-            query.getPackageNames (prefix, directOnly, result);
+        try {
+            for (ClassIndexImpl query : queries) {
+                query.getPackageNames (prefix, directOnly, result);
+            }
+            return Collections.unmodifiableSet(result);
+        } catch (InterruptedException e) {
+            return null;
         }
-        return Collections.unmodifiableSet(result);
     }
     
     // Private innerclasses ----------------------------------------------------

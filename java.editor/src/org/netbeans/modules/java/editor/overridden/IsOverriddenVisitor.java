@@ -43,7 +43,6 @@ import org.netbeans.api.java.source.ClassIndex;
 class IsOverriddenVisitor extends CancellableTreePathScanner<Void, Tree> {
     
     private CompilationInfo info;
-    private ClassIndex uq;
     private Document doc;
     
     Map<ElementHandle<TypeElement>, List<ElementHandle<ExecutableElement>>> type2Declaration;
@@ -55,7 +54,6 @@ class IsOverriddenVisitor extends CancellableTreePathScanner<Void, Tree> {
     IsOverriddenVisitor(Document doc, CompilationInfo info) {
         this.doc = doc;
         this.info = info;
-        this.uq = info.getJavaSource().getClasspathInfo().getClassIndex();
         
         type2Declaration = new HashMap<ElementHandle<TypeElement>, List<ElementHandle<ExecutableElement>>>();
         declaration2Tree = new HashMap<ElementHandle<ExecutableElement>, MethodTree>();

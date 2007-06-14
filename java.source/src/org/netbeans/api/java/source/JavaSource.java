@@ -111,6 +111,7 @@ import org.netbeans.modules.java.source.builder.DefaultEnvironment;
 import org.netbeans.modules.java.source.tasklist.CompilerSettings;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl;
 import org.netbeans.modules.java.source.usages.ClassIndexManager;
+import org.netbeans.modules.java.source.usages.Index;
 import org.netbeans.modules.java.source.usages.RepositoryUpdater;
 import org.netbeans.modules.java.source.util.LowMemoryEvent;
 import org.netbeans.modules.java.source.util.LowMemoryListener;
@@ -1436,7 +1437,12 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
                                                     //The state (or greater) was reached and document was not modified during moveToPhase
                                                     try {
                                                         final long startTime = System.currentTimeMillis();
-                                                        ((CancellableTask<CompilationInfo>)r.task).run (ci); //XXX: How to do it in save way?
+                                                        Index.cancel.set(currentRequest.getCanceledRef());
+                                                        try {
+                                                            ((CancellableTask<CompilationInfo>)r.task).run (ci); //XXX: How to do it in save way?
+                                                        } finally {
+                                                            Index.cancel.remove();
+                                                        }
                                                         final long endTime = System.currentTimeMillis();
                                                         if (LOGGER.isLoggable(Level.FINEST)) {
                                                             LOGGER.finest(String.format("executed task: %s in %d ms.",  //NOI18N
@@ -1822,10 +1828,11 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
         private JavaSource.Request reference;
         private JavaSource.Request canceledReference;
         private long cancelTime;
-        private boolean canceled;
+        private final AtomicBoolean canceled;
         private boolean mayCancelJavac;
         
         CurrentRequestReference () {
+            this.canceled = new AtomicBoolean();
         }
         
         boolean setCurrentTask (JavaSource.Request reference) throws InterruptedException {
@@ -1834,8 +1841,8 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
                 while (this.canceledReference!=null) {
                     INTERNAL_LOCK.wait();
                 }
-                result = this.canceled;
-                this.canceled = this.mayCancelJavac = false;
+                result = this.canceled.getAndSet(false);
+                this.mayCancelJavac = false;
                 this.cancelTime = 0;
                 this.reference = reference;                
             }
@@ -1851,7 +1858,7 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
                         request = this.reference;
                         this.canceledReference = request;
                         this.reference = null;
-                        this.canceled = true;                    
+                        this.canceled.set(true);                    
                         this.cancelTime = System.currentTimeMillis();
                     }
                 }
@@ -1868,7 +1875,7 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
                         request = this.reference;
                         this.canceledReference = request;
                         this.reference = null;
-                        this.canceled = true;
+                        this.canceled.set(true);
                         this.mayCancelJavac = mayCancelJavac;
                         this.cancelTime = System.currentTimeMillis();
                     }
@@ -1892,7 +1899,7 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
                         request = this.reference;
                         this.canceledReference = request;
                         this.reference = null;
-                        this.canceled = true;
+                        this.canceled.set(true);
                     }
                 }
             }
@@ -1908,7 +1915,7 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
                         assert this.canceledReference == null;
                         this.canceledReference = request;
                         this.reference = null;
-                        this.canceled = true;
+                        this.canceled.set(true);
                         this.cancelTime = System.currentTimeMillis();
                     }
                 }
@@ -1940,7 +1947,7 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
                         if (!result) {
                             this.reference = null;                        
                         }
-                        this.canceled = result;
+                        this.canceled.set(result);
                         this.cancelTime = System.currentTimeMillis();
                     }
                 }
@@ -1950,8 +1957,12 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
         
         boolean isCanceled () {
             synchronized (INTERNAL_LOCK) {
-                return this.canceled;
+                return this.canceled.get();
             }
+        }
+        
+        AtomicBoolean getCanceledRef () {
+            return this.canceled;
         }
         
         boolean isInterruptJavac () {

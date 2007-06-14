@@ -53,13 +53,14 @@ public class PersistentClassIndex extends ClassIndexImpl {
     private final boolean isSource;
     private WeakReference<JavaSource> dirty;
     private static final Logger LOGGER = Logger.getLogger(PersistentClassIndex.class.getName());
+    private static IndexFactory indexFactory;
     
     /** Creates a new instance of ClassesAndMembersUQ */
     private PersistentClassIndex(final URL root, final File cacheRoot, final boolean source) 
 	    throws IOException, IllegalArgumentException {
         assert root != null;
         this.root = root;
-        this.index = LuceneIndex.create (cacheRoot);
+        this.index = (indexFactory == null ? LuceneIndex.create (cacheRoot) : indexFactory.create(cacheRoot));
         this.isSource = source;
     }
     
@@ -92,7 +93,7 @@ public class PersistentClassIndex extends ClassIndexImpl {
     }
     
     // Implementation of UsagesQueryImpl ---------------------------------------    
-    public <T> void search (final String binaryName, final Set<UsageType> usageType, final ResultConvertor<T> convertor, final Set<? super T> result) {
+    public <T> void search (final String binaryName, final Set<UsageType> usageType, final ResultConvertor<T> convertor, final Set<? super T> result) throws InterruptedException {
         updateDirty();
         if (BinaryAnalyser.OBJECT.equals(binaryName)) {
             this.getDeclaredTypes("", ClassIndex.NameKind.PREFIX, convertor, result);
@@ -100,7 +101,7 @@ public class PersistentClassIndex extends ClassIndexImpl {
         }
         try {
             ClassIndexManager.getDefault().readLock(new ClassIndexManager.ExceptionAction<Void> () {
-                public Void run () throws IOException {
+                public Void run () throws IOException, InterruptedException {
                     usages(binaryName, usageType, convertor, result);
                     return null;
                 }
@@ -113,11 +114,11 @@ public class PersistentClassIndex extends ClassIndexImpl {
     
                
     
-    public <T> void getDeclaredTypes (final String simpleName, final ClassIndex.NameKind kind, final ResultConvertor<T> convertor, final Set<? super T> result) {
+    public <T> void getDeclaredTypes (final String simpleName, final ClassIndex.NameKind kind, final ResultConvertor<T> convertor, final Set<? super T> result) throws InterruptedException {
         updateDirty();
         try {
             ClassIndexManager.getDefault().readLock(new ClassIndexManager.ExceptionAction<Void> () {
-                public Void run () throws IOException {
+                public Void run () throws IOException, InterruptedException {
                     index.getDeclaredTypes (simpleName,kind, convertor, result);
                     return null;
                 }                    
@@ -128,10 +129,10 @@ public class PersistentClassIndex extends ClassIndexImpl {
     }
     
     
-    public void getPackageNames (final String prefix, final boolean directOnly, final Set<String> result) {
+    public void getPackageNames (final String prefix, final boolean directOnly, final Set<String> result) throws InterruptedException {
         try {
             ClassIndexManager.getDefault().readLock(new ClassIndexManager.ExceptionAction<Void>() {
-                public Void run () throws IOException {
+                public Void run () throws IOException, InterruptedException {
                     index.getPackageNames(prefix, directOnly, result);
                     return null;
                 }
@@ -152,6 +153,11 @@ public class PersistentClassIndex extends ClassIndexImpl {
     
     public @Override String toString () {
         return "CompromiseUQ["+this.root.toExternalForm()+"]";     // NOI18N
+    }
+    
+    //Unit test methods
+    public static void setIndexFactory (final IndexFactory factory) {
+        indexFactory = factory;
     }
     
     //Protected methods --------------------------------------------------------
@@ -191,6 +197,10 @@ public class PersistentClassIndex extends ClassIndexImpl {
                     } catch (IOException ioe) {
                         Exceptions.printStackTrace(ioe);
                     }
+                    catch (InterruptedException e) {
+                        //Should never happen
+                        Exceptions.printStackTrace(e);
+                    }
                 }
                 else {
                     try {
@@ -211,6 +221,10 @@ public class PersistentClassIndex extends ClassIndexImpl {
                                 } catch (IOException ioe) {
                                     Exceptions.printStackTrace(ioe);
                                 }
+                                catch (InterruptedException e) {
+                                    //Should never happen
+                                    Exceptions.printStackTrace(e);
+                                }
                             }
 
                             public void cancel () {}
@@ -228,7 +242,7 @@ public class PersistentClassIndex extends ClassIndexImpl {
         }
     }
     
-    private <T> void usages (final String binaryName, final Set<UsageType> usageType, ResultConvertor<T> convertor, Set<? super T> result) {               
+    private <T> void usages (final String binaryName, final Set<UsageType> usageType, ResultConvertor<T> convertor, Set<? super T> result) throws InterruptedException {               
         final List<String> classInternalNames = this.getUsagesFQN(binaryName,usageType, Index.BooleanOperator.OR);
         for (String classInternalName : classInternalNames) {
             T value = convertor.convert(ElementKind.OTHER, classInternalName);
@@ -238,7 +252,7 @@ public class PersistentClassIndex extends ClassIndexImpl {
         }
     }    
     
-    private List<String> getUsagesFQN (final String binaryName, final Set<UsageType> mask, final Index.BooleanOperator operator) {
+    private List<String> getUsagesFQN (final String binaryName, final Set<UsageType> mask, final Index.BooleanOperator operator) throws InterruptedException {
         List<String> result = null;
         try {
             result = this.index.getUsagesFQN(binaryName, mask, operator);          

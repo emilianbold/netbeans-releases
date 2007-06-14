@@ -79,7 +79,10 @@ public class JBrowseModule extends ModuleInstall {
             });
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
-        };            
+        }  
+        catch (InterruptedException e) {
+            Exceptions.printStackTrace(e);
+        }
         if (ENABLE_MBEANS) {
             unregisterMBeans();
         }

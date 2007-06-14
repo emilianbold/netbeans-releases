@@ -440,8 +440,11 @@ public class IsOverriddenAnnotationHandler implements CancellableTask<Compilatio
                 ElementHandle<TypeElement> eh = l.remove(0);
                 
                 result.add(eh);
-                
-                l.addAll(cpinfo.getClassIndex().getElements(eh, Collections.singleton(SearchKind.IMPLEMENTORS), EnumSet.of(ClassIndex.SearchScope.SOURCE)));
+                Set<ElementHandle<TypeElement>> typeElements = cpinfo.getClassIndex().getElements(eh, Collections.singleton(SearchKind.IMPLEMENTORS), EnumSet.of(ClassIndex.SearchScope.SOURCE));
+                //XXX: Canceling
+                if (typeElements != null) {
+                    l.addAll(typeElements);
+                }
             }
             return result;
         } finally {
