@@ -67,10 +67,12 @@ public class UnitDetails extends DetailsPanel{
                 text = u.annotate(XMLUtil.toElementContent(u.getDisplayName())); // NOI18N
                 setTitle(text);text = "";//NOI18N
                 setActionListener(action);
-                if (! showDetailsForDevelopers) {
-                    text += "<b>" + getBundle ("UnitDetails_Plugin_CodeName") + "</b>" + u.annotate(u.updateUnit.getCodeName() + "<br>"); // NOI18N
+                if (Utilities.modulesOnly ()) {
+                    if (! showDetailsForDevelopers) {
+                        text += "<b>" + getBundle ("UnitDetails_Plugin_CodeName") + "</b>" + u.annotate(u.updateUnit.getCodeName() + "<br>"); // NOI18N
+                    }
+                    text += "<b>" + getBundle ("UnitDetails_Plugin_Version") + "</b>" + u.annotate(u.getDisplayVersion()) + "<br>"; // NOI18N
                 }
-                text += "<b>" + getBundle ("UnitDetails_Plugin_Version") + "</b>" + u.annotate(u.getDisplayVersion()) + "<br>"; // NOI18N
                 if (u.getAuthor () != null && u.getAuthor ().length () > 0) {
                     text += "<b>" + getBundle ("UnitDetails_Plugin_Author") + "</b>" + u.annotate(u.getAuthor ()) + "<br>"; // NOI18N
                 }
@@ -90,7 +92,6 @@ public class UnitDetails extends DetailsPanel{
                     } else {
                         c = OperationContainer.createForEnable();
                     }
-                    text += "<b>" + getBundle ("UnitDetails_Plugin_CodeName") + "</b>" + u.annotate(u.updateUnit.getCodeName()); // NOI18N
                     if (u.updateUnit.isAutoload() || u.updateUnit.isEager () || u.updateUnit.isFixed ()) {
                         text += " (";
                         text += u.updateUnit.isAutoload () ? "<i>" + getBundle ("UnitDetails_Plugin_Autoload") + "</i>" : ""; // NOI18N
