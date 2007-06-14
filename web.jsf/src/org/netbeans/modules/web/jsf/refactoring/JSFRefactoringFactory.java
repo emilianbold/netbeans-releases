@@ -13,21 +13,20 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.web.jsf.refactoring;
 
 import java.util.logging.Logger;
+import org.netbeans.modules.refactoring.api.MoveRefactoring;
+import org.netbeans.modules.refactoring.api.SafeDeleteRefactoring;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
-import org.netbeans.modules.refactoring.api.WhereUsedQuery;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
 import org.netbeans.modules.refactoring.spi.RefactoringPluginFactory;
-
-//TODO: RETOUCHE refactoring
 
 /**
  *
@@ -37,10 +36,10 @@ import org.netbeans.modules.refactoring.spi.RefactoringPluginFactory;
 public class JSFRefactoringFactory implements RefactoringPluginFactory {
     
     private static final Logger LOGGER = Logger.getLogger(JSFRefactoringFactory.class.getName());
-
+    
     /** Creates a new instance of J2EERefactoringFactory */
     public JSFRefactoringFactory() { }
-
+    
     /** Creates and returns a new instance of the refactoring plugin or returns
      * null if the plugin is not suitable for the passed refactoring.
      * @param refactoring Refactoring, the plugin should operate on.
@@ -48,24 +47,23 @@ public class JSFRefactoringFactory implements RefactoringPluginFactory {
      * the passed refactoring.
      */
     public RefactoringPlugin createInstance(AbstractRefactoring refactoring) {
-
-        LOGGER.fine("Create instance called: " + refactoring);
+        
+        RefactoringPlugin plugin = null;
+        
+        LOGGER.fine("Create instance called: " + refactoring);                  //NOI18N
         if (refactoring instanceof RenameRefactoring) {
-            LOGGER.fine("Rename refactoring");
-            return new JSFRenamePlugin((RenameRefactoring) refactoring);
+            LOGGER.fine("Rename refactoring");                                  //NOI18N
+            plugin =  new JSFRenamePlugin((RenameRefactoring)refactoring);
+        } else if (refactoring instanceof WhereUsedQuery) {
+            LOGGER.fine("Where used refactoring");                              //NOI18N
+            plugin = new JSFWhereUsedPlugin((WhereUsedQuery)refactoring);
+        } else if (refactoring instanceof MoveRefactoring) {
+            LOGGER.fine("Move refactoring");                                    //NOI18N
+            plugin = new JSFMoveClassPlugin((MoveRefactoring)refactoring);
+        } else if (refactoring instanceof SafeDeleteRefactoring) {
+            LOGGER.fine("Safe delete refactoring");                             //NOI18N
+            return new JSFSafeDeletePlugin((SafeDeleteRefactoring)refactoring);
         }
-        if (refactoring instanceof WhereUsedQuery) {
-            LOGGER.fine("Where used refactoring");
-            return new JSFWhereUsedPlugin((WhereUsedQuery)refactoring);
-        }
-//        if (refactoring instanceof MoveClassRefactoring) {
-//            err.log("Move class refactoring (also rename package is move class refactoring)");
-//            return new JSFMoveClassPlugin((MoveClassRefactoring)refactoring);
-//        }
-//        if (refactoring instanceof SafeDeleteRefactoring) {
-//            err.log("Safe delete refactoring");
-//            return new JSFSafeDeletePlugin((SafeDeleteRefactoring)refactoring);
-//        }
-        return null;
+        return plugin;
     }
 }

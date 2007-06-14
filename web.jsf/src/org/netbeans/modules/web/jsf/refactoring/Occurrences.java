@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -41,11 +41,10 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.PositionBounds;
 import org.openide.text.PositionRef;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
- *
+ * These classes represents an occurence in a faces configuration file.
  * @author Petr Pisl
  */
 public class Occurrences {
@@ -55,13 +54,24 @@ public class Occurrences {
     public static abstract class OccurrenceItem {
         // the faces configuration file
         protected FileObject config;
-        protected String newValue;
+        
         protected String oldValue;
+        
+        protected String newValue;
+        
         
         public OccurrenceItem(FileObject config, String newValue, String oldValue){
             this.config = config;
             this.newValue = newValue;
             this.oldValue = oldValue;
+        }
+        
+        public String getNewValue(){
+            return newValue;
+        }
+        
+        public String getOldValue(){
+            return oldValue;
         }
         
         public FileObject getFacesConfig() {
@@ -70,23 +80,32 @@ public class Occurrences {
         
         public String getElementText(){
             StringBuffer stringBuffer = new StringBuffer();
-            stringBuffer.append("<font color=\"#0000FF\">");
-            stringBuffer.append("&lt;").append(getXMLElementName()).append("&gt;</font><b>");
-            stringBuffer.append(oldValue).append("</b><font color=\"#0000FF\">&lt;/").append(getXMLElementName());
-            stringBuffer.append("&gt;</font>");
+            stringBuffer.append("<font color=\"#0000FF\">");    //NOI18N
+            stringBuffer.append("&lt;").append(getXMLElementName()).append("&gt;</font><b>"); //NOI18N
+            stringBuffer.append(oldValue).append("</b><font color=\"#0000FF\">&lt;/").append(getXMLElementName()); //NOI18N
+            stringBuffer.append("&gt;</font>");     //NOI18N
             return stringBuffer.toString();
         }
         
         protected abstract String getXMLElementName();
         
-        public abstract void performRename();
-        public abstract void undoRename();
-        public abstract String getRenameMessage();
+        //for changes like rename, move, change package...
+        public abstract void performChange();
+        public abstract void undoChange();
+        public abstract String getChangeMessage();
         
+        
+        public String getRenamePackageMessage(){
+            return NbBundle.getMessage(Occurrences.class, "MSG_Package_Rename",  //NOI18N
+                    new Object[] {getElementText()});
+        }
+        
+        // save delete
         public abstract void performSafeDelete();
         public abstract void undoSafeDelete();
         public abstract String getSafeDeleteMessage();
         
+        // usages 
         public abstract String getWhereUsedMessage();
         
         protected PositionBounds createPosition(int startOffset, int endOffset) {
@@ -107,15 +126,14 @@ public class Occurrences {
             return null;
         }
         
-        public PositionBounds getClassDefinitionPosition() {
-            return createPosition(0, 0);
-        };
+        public abstract PositionBounds getChangePosition();
         
-        public PositionBounds getElementDefinitionPosition() {
-            return createPosition(0, 0);
-        };
+        
     }
     
+    /**
+     * Implementation for ManagedBean
+     */
     public static class ManagedBeanClassItem extends OccurrenceItem{
         private final ManagedBean bean;
         
@@ -128,11 +146,11 @@ public class Occurrences {
             return "managed-bean-class"; //NOI18N
         }
         
-        public void performRename(){
+        public void performChange(){
             changeBeanClass(newValue);
         }
         
-        public void undoRename(){
+        public void undoChange(){
             changeBeanClass(oldValue);
         }
         
@@ -141,7 +159,7 @@ public class Occurrences {
                     new Object[] { bean.getManagedBeanName(), getElementText()});
         }
         
-        public String getRenameMessage(){
+        public String getChangeMessage(){
             return NbBundle.getMessage(Occurrences.class, "MSG_ManagedBeanClass_Rename",  //NOI18N
                     new Object[] { bean.getManagedBeanName(), getElementText()});
         }
@@ -187,7 +205,7 @@ public class Occurrences {
             }
         }
         
-        public PositionBounds getClassDefinitionPosition() {
+        public PositionBounds getChangePosition() {
             PositionBounds position = null;
             try{
                 DataObject dataObject = DataObject.find(config);
@@ -196,27 +214,16 @@ public class Occurrences {
                 String text = document.getText(offsets);
                 int offset = offsets[0] + text.indexOf(oldValue);
                 position =  createPosition(offset, offset + oldValue.length());
-            } catch (BadLocationException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (DataObjectNotFoundException ex) {
-                LOGGER.log(Level.SEVERE, ex.getMessage(), ex);
+            } catch (BadLocationException exception) {
+                LOGGER.log(Level.SEVERE, exception.getMessage(), exception);
+            } catch (DataObjectNotFoundException exception) {
+                LOGGER.log(Level.SEVERE, exception.getMessage(), exception);
             }
             return position;
         };
         
-        public PositionBounds getElementDefinitionPosition() {
-            PositionBounds position = null;
-            try {
-                DataObject dataObject = DataObject.find(config);
-                BaseDocument document = JSFEditorUtilities.getBaseDocument(dataObject);
-                int [] offsets = JSFEditorUtilities.getManagedBeanDefinition(document, bean.getManagedBeanName());
-                position =  createPosition(offsets[0], offsets[1]);
-            } catch (DataObjectNotFoundException ex) {
-                LOGGER.log(Level.SEVERE, ex.getMessage(), ex);
-            }
-            return position;
-        };
     }
+    
     
     public static class ConverterClassItem extends OccurrenceItem {
         private final Converter converter;
@@ -230,11 +237,11 @@ public class Occurrences {
             return "converter-class"; //NOI18N
         }
         
-        public void performRename(){
+        public void performChange(){
             changeConverterClass(oldValue, newValue);
         }
         
-        public void undoRename(){
+        public void undoChange(){
             changeConverterClass(newValue, oldValue);
         }
         
@@ -242,7 +249,7 @@ public class Occurrences {
             return NbBundle.getMessage(Occurrences.class, "MSG_ConverterClass_WhereUsed", getElementText()); //NOI18N
         }
         
-        public String getRenameMessage(){
+        public String getChangeMessage(){
             return NbBundle.getMessage(Occurrences.class, "MSG_ConverterClass_Rename", getElementText()); //NOI18N
         }
         
@@ -268,7 +275,7 @@ public class Occurrences {
         }
         
         public String getSafeDeleteMessage() {
-            return NbBundle.getMessage(Occurrences.class, "MSG_ConverterClass_SafeDelete",  //NOI18N
+            return NbBundle.getMessage(Occurrences.class, "MSG_Converter_SafeDelete",  //NOI18N
                     new Object[] { getElementText()});
         }
         
@@ -286,7 +293,7 @@ public class Occurrences {
             }
         }
         
-        public PositionBounds getClassDefinitionPosition() {
+        public PositionBounds getChangePosition() {
             PositionBounds position = null;
             try{
                 DataObject dataObject = DataObject.find(config);
@@ -296,26 +303,14 @@ public class Occurrences {
                 String text = document.getText(offsets);
                 int offset = offsets[0] + text.indexOf(oldValue);
                 position =  createPosition(offset, offset + oldValue.length());
-            } catch (BadLocationException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (DataObjectNotFoundException ex) {
-                LOGGER.log(java.util.logging.Level.SEVERE, ex.getMessage(), ex);
+            } catch (BadLocationException exception) {
+                LOGGER.log(Level.SEVERE, exception.getMessage(), exception);
+            } catch (DataObjectNotFoundException exception) {
+                LOGGER.log(Level.SEVERE, exception.getMessage(), exception);
             }
             return position;
         };
         
-        public PositionBounds getElementDefinitionPosition() {
-            PositionBounds position = null;
-            try{
-                DataObject dataObject = DataObject.find(config);
-                BaseDocument document = JSFEditorUtilities.getBaseDocument(dataObject);
-                int [] offsets = JSFEditorUtilities.getConverterDefinition(document, converter.getConverterForClass());
-                position =  createPosition(offsets[0], offsets[1]);
-            } catch (DataObjectNotFoundException ex) {
-                LOGGER.log(java.util.logging.Level.SEVERE, ex.getMessage(), ex);
-            }
-            return position;
-        };
     }
     
     public static class ConverterForClassItem extends OccurrenceItem {
@@ -330,11 +325,11 @@ public class Occurrences {
             return "converter-for-class"; //NOI18N
         }
         
-        public void performRename(){
+        public void performChange(){
             changeConverterForClass(oldValue, newValue);
         }
         
-        public void undoRename(){
+        public void undoChange(){
             changeConverterForClass(newValue, oldValue);
         }
         
@@ -342,7 +337,7 @@ public class Occurrences {
             return NbBundle.getMessage(Occurrences.class, "MSG_ConverterForClass_WhereUsed", getElementText()); //NOI18N
         }
         
-        public String getRenameMessage(){
+        public String getChangeMessage(){
             return NbBundle.getMessage(Occurrences.class, "MSG_ConverterForClass_Rename", getElementText()); //NOI18N
         }
         
@@ -369,7 +364,7 @@ public class Occurrences {
         }
         
         public String getSafeDeleteMessage() {
-            return NbBundle.getMessage(Occurrences.class, "MSG_ManagedBeanClass_SafeDelete",  //NOI18N
+            return NbBundle.getMessage(Occurrences.class, "MSG_Converter_SafeDelete",  //NOI18N
                     new Object[] { getElementText()});
         }
         
@@ -387,7 +382,7 @@ public class Occurrences {
             }
         }
         
-        public PositionBounds getClassDefinitionPosition() {
+        public PositionBounds getChangePosition() {
             PositionBounds position = null;
             try{
                 DataObject dataObject = DataObject.find(config);
@@ -396,23 +391,10 @@ public class Occurrences {
                 String text = document.getText(offsets);
                 int offset = offsets[0] + text.indexOf(oldValue);
                 position =  createPosition(offset, offset + oldValue.length());
-            } catch (BadLocationException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (DataObjectNotFoundException ex) {
-                LOGGER.log(Level.SEVERE, ex.getMessage(), ex);
-            }
-            return position;
-        };
-        
-        public PositionBounds getElementDefinitionPosition() {
-            PositionBounds position = null;
-            try{
-                DataObject dataObject = DataObject.find(config);
-                BaseDocument document = JSFEditorUtilities.getBaseDocument(dataObject);
-                int [] offsets = JSFEditorUtilities.getConverterDefinition(document, converter.getConverterForClass());
-                position =  createPosition(offsets[0], offsets[1]);
-            } catch (DataObjectNotFoundException ex) {
-                LOGGER.log(Level.SEVERE, ex.getMessage(), ex);
+            } catch (BadLocationException exception) {
+                LOGGER.log(Level.SEVERE, exception.getMessage(), exception);
+            } catch (DataObjectNotFoundException exception) {
+                LOGGER.log(Level.SEVERE, exception.getMessage(), exception);
             }
             return position;
         };
@@ -422,9 +404,8 @@ public class Occurrences {
         List result = new ArrayList();
         assert webModule != null;
         assert oldName != null;
-        assert newName != null;
         
-        LOGGER.fine("getAllOccurences("+ webModule.getDocumentBase().getPath() + ", " + oldName + ", " + newName + ")");
+        LOGGER.fine("getAllOccurences("+ webModule.getDocumentBase().getPath() + ", " + oldName + ", " + newName + ")"); //NOI18N
         if (webModule != null){
             // find all jsf configuration files in the web module
             FileObject[] configs = ConfigurationUtils.getFacesConfigFiles(webModule);
@@ -452,6 +433,82 @@ public class Occurrences {
             }
         }
         return result;
+    }
+    
+    public static List <OccurrenceItem> getPackageOccurrences(WebModule webModule, String oldPackageName,
+            String newPackageName, boolean renameSubpackages){
+        List result = new ArrayList();
+        assert webModule != null;
+        assert oldPackageName != null;
+        
+        if (webModule != null){
+            // find all jsf configuration files in the web module
+            FileObject[] configs = ConfigurationUtils.getFacesConfigFiles(webModule);
+            
+            if (configs != null){
+                for (int i = 0; i < configs.length; i++) {
+                    FacesConfig facesConfig = ConfigurationUtils.getConfigModel(configs[i], true).getRootComponent();
+                    List <Converter> converters = facesConfig.getConverters();
+                    for (Iterator<Converter> it = converters.iterator(); it.hasNext();) {
+                        Converter converter = it.next();
+                        if (JSFRefactoringUtils.containsRenamingPackage(converter.getConverterClass(), oldPackageName, renameSubpackages))
+                            result.add(new ConverterClassItem(configs[i], converter, 
+                                    getNewFQCN(newPackageName, converter.getConverterClass(), renameSubpackages)));
+                        if (JSFRefactoringUtils.containsRenamingPackage(converter.getConverterForClass(), oldPackageName, renameSubpackages))
+                            result.add(new ConverterForClassItem(configs[i], converter,
+                                    getNewFQCN(newPackageName, converter.getConverterForClass(), renameSubpackages)));
+                    }
+                    List<ManagedBean> managedBeans = facesConfig.getManagedBeans();
+                    for (Iterator<ManagedBean> it = managedBeans.iterator(); it.hasNext();) {
+                        ManagedBean managedBean = it.next();
+                        if (JSFRefactoringUtils.containsRenamingPackage(managedBean.getManagedBeanClass(), oldPackageName, renameSubpackages))
+                            result.add(new ManagedBeanClassItem(configs[i], managedBean,
+                                    getNewFQCN(newPackageName, managedBean.getManagedBeanClass(), renameSubpackages)));
+                    }
+                    
+                }
+            }
+        }
+        return result;
+        
+    }
+    
+    /**
+     * A helper method, which is used for obtaining new FQCN, when a package is renamed. 
+     * @param newPackageName the new package name. It must to be always full qualified package name 
+     * @param oldFQCN the full qualified class name
+     * @param folderRename Indicates whether the changing package is based on the 
+     * renaming package or renaming folder.
+     * @returns new FQCN for the class. 
+     */
+    public static String getNewFQCN(String newPackageName, String oldFQCN, boolean folderRename){
+        String value = oldFQCN;
+        
+        if (!folderRename){
+            int index = oldFQCN.lastIndexOf('.');
+            if (index > -1){
+                value = oldFQCN.substring(index+1, oldFQCN.length());
+            }
+        } else {
+            int offset = 0;
+            int index;
+            while ((offset = newPackageName.indexOf('.', offset)) > 0){
+                index = value.indexOf('.');
+                if (index > -1) {
+                    value = value.substring(index+1);
+                }
+                offset++;
+            }
+            index = value.indexOf('.');
+            if (index > -1) {
+                value = value.substring(index+1);
+            }
+            
+        }
+        if (newPackageName.length() > 0){
+            value = newPackageName + '.' + value;
+        }
+        return value;
     }
     
 }

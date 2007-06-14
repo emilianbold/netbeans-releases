@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -103,7 +103,7 @@ public class JSFWhereUsedPlugin implements RefactoringPlugin{
                                     }
                                 }, false);
                             } catch (IOException ex) {
-                                LOGGER.log(Level.WARNING, "Exception in JSFWhereUsedPlugin", ex);
+                                LOGGER.log(Level.WARNING, "Exception in JSFWhereUsedPlugin", ex);   //NOI18N
                             }
                         }
                         info = refactoring.getContext().lookup(CompilationInfo.class);
@@ -150,7 +150,7 @@ public class JSFWhereUsedPlugin implements RefactoringPlugin{
         }
         
         public PositionBounds getPosition() {
-            return item.getClassDefinitionPosition();
+            return item.getChangePosition();
         }
         
         public Lookup getLookup() {
