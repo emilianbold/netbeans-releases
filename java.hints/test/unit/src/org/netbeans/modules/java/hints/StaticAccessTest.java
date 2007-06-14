@@ -44,7 +44,7 @@ public class StaticAccessTest extends TreeRuleTestBase {
     
     
     
-    public void testCallingStaticMethod() throws Exception {
+    public void testCallingStaticMethodInInitializer() throws Exception {
         String before = "package test; class Test {\n" +
             "{\n" +
             "Boolean b = null;\n" +
@@ -65,6 +65,32 @@ public class StaticAccessTest extends TreeRuleTestBase {
             golden
         );
     }
+    
+    public void testCallingStaticMethod() throws Exception {
+        String before = "package test; class Test {\n" +
+            "public void nic() {\n" +
+            "Boolean b = null;\n" +
+            "b = b.valu";
+        String after = "eOf(true);\n" +
+            "}\n" +
+            "}\n";
+
+        String golden = ("package test; class Test {\n" +
+            "public void nic() {\n" +
+            "Boolean b = null;\n" +
+            "b = Boolean.valueOf(true);\n" +
+            "}\n" +
+            "}\n").replace('\n', ' ');
+        
+        
+        performFixTest("test/Test.java", before + after, before.length(), 
+            "3:4-3:5:verifier:Accessing static field",
+            "FixStaticAccess",
+            golden
+        );
+    }
+    
+    
     public void testOkCallingStaticMethod() throws Exception {
         String before = "package test; class Test {" +
             "{" +
