@@ -52,6 +52,7 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.Comment;
 import org.netbeans.api.java.source.Comment.Style;
@@ -195,7 +196,23 @@ public class Utils {
                             
                     for (int i=0;i<methods.size();i++) {
                         MethodModel operation = new MethodModel();
-                        operation.setImplementationClass(implClass);
+                        
+                        boolean seiClassFound = false;
+                        if (serviceModel.endpointInterface!=null) {
+                            // find SEI File Object in sources
+                            ClassPath classPath = ClassPath.getClassPath(implClass, ClassPath.SOURCE);
+                            FileObject[] srcRoots = classPath.getRoots();
+                            for (FileObject srcRoot:srcRoots) {
+                                String seiClassResource = serviceModel.endpointInterface.replace('.', '/')+".java"; //NOI18N
+                                FileObject seiClassFo = srcRoot.getFileObject(seiClassResource);
+                                if (seiClassFo != null) {
+                                    seiClassFound = true;
+                                    operation.setImplementationClass(seiClassFo);
+                                    break;
+                                } 
+                            }
+                        }
+                        if (!seiClassFound) operation.setImplementationClass(implClass);
                         ElementHandle methodHandle = ElementHandle.create(methods.get(i));
                         operation.setMethodHandle(methodHandle);
                         Utils.populateOperation(controller, methods.get(i), operation, serviceModel.getTargetNamespace());
