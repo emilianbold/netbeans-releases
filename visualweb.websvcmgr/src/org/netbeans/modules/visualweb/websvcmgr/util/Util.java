@@ -21,6 +21,8 @@ package org.netbeans.modules.visualweb.websvcmgr.util;
 
 
 import com.sun.tools.ws.processor.model.java.JavaMethod;
+import java.io.FileInputStream;
+import java.net.URL;
 import java.util.*;
 import java.text.*;
 import java.io.*;
@@ -56,8 +58,6 @@ import org.netbeans.modules.visualweb.xml.rpc.processor.model.java.JavaParameter
  */
 import org.netbeans.modules.visualweb.websvcmgr.NotFoundException;
 import org.openide.util.NbBundle;
-import org.netbeans.modules.visualweb.websvcmgr.codegen.WebServiceSupportException;
-import org.netbeans.modules.visualweb.websvcmgr.codegen.WebServiceSupportLibraries;
 import org.openide.modules.InstalledFileLocator;
 import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectUtils;
 import org.openide.filesystems.FileObject;
@@ -543,43 +543,6 @@ public class Util {
     }
     
     /**
-     * This method will construct the default classpath to be used for running the "wscompile" tool.
-     */
-    public static String getRuntimeClassPath() {
-        String [] jarFileNames = null;
-        String returnClassPath = "";
-        WebServiceSupportLibraries supportLibs = null;
-        try {
-            supportLibs = WebServiceSupportLibraries.getInstance();
-            if(null == supportLibs) {
-                return returnClassPath;
-            }
-            
-            jarFileNames = (String []) supportLibs.getRunTimeJars().toArray(new String [0]);
-        } catch(WebServiceSupportException wsse) {
-            return returnClassPath;
-        }
-        
-        for(int ii=0; null != jarFileNames && ii < jarFileNames.length; ii++) {
-            returnClassPath += jarFileNames[ii];
-            /**
-             * If there's another path, add the path separator
-             */
-            if(ii+1 < jarFileNames.length) {
-                returnClassPath += File.pathSeparator;
-            }
-        }
-        
-        // dataprovider.jar and designTime.jar
-        returnClassPath += File.pathSeparator;
-        returnClassPath += dataproviderJar;
-        returnClassPath += File.pathSeparator;
-        returnClassPath += designTimeJar;
-        
-        return returnClassPath;
-        
-    }
-    /**
      * This method will determine if a package name is valid.  For each qualification of the package name (part between
      * the ".", the first character will be checked against Character.isJavaIdentifierStart() then each character will
      * be checked against Character.isJavaIdentifierPart().
@@ -674,23 +637,16 @@ public class Util {
      * type parameters.  I took the code below directly from the JAX-RPC class:
      * "org.netbeans.modules.visualweb.xml.rpc.processor.generator.StubGenerator" except that I'm not checking the Operation for an Array type.
      * - David Botterill 6/8/2004
-     * @param inPort The Port associated with inParameter
      * @param inParameter The JavaParameter to determine the type for.
      * @return String representing the class name for the type.  A null will be returned if the correct name cannot be resolved.
      */
-    public static String getParameterType(WsdlPort inPort, JavaParameter inParameter) {
+    public static String getParameterType(JavaParameter inParameter) {
         
         String parameterType = null;
 //        ClientProcessorEnvironment env = new ClientProcessorEnvironment(new ByteArrayOutputStream(), null, null);
         
         if (inParameter.isHolder()) {
-            if (inParameter.getHolderName() == null) {
-//                parameterType = env.getNames().holderClassName(inPort, inParameter.getType());
-                System.out.println("TODO - Currently commented out. Need fix!");
-                new Throwable().printStackTrace();
-            } else {
-                parameterType = inParameter.getHolderName();
-            }
+            parameterType = inParameter.getHolderName();
         } else {
             parameterType =inParameter.getType().getName();
         }
@@ -702,6 +658,47 @@ public class Util {
     public static String getFileName( String path ) {
         return new File(path).getName();
     }
+    
+    /**
+     * Creates a classpath from a set of properties from the $userdir/build.properties file
+     * 
+     * @param srcPath
+     * @param libProperties
+     * @return a URL array containing the classpath jars and directories
+     * @throws java.io.IOException 
+     */
+    public static List<URL> buildClasspath(File srcPath, String... libProperties) throws IOException {
+        // The classpath needs to be equivalent to (plus the ws client package root):
+        // classpath="${java.home}/../lib/tools.jar:${libs.jaxrpc16.classpath}:${libs.jsf12-support.classpath}"
+        ArrayList<URL> urls = new ArrayList<URL>();
+        Properties properties = new Properties();
+        properties.load(new FileInputStream(System.getProperty("netbeans.user") + "/build.properties"));
+        
+        if (srcPath != null) {
+            urls.add(srcPath.toURI().toURL());
+        }
+        
+        File toolsJar = new File(System.getProperty("java.home")).getParentFile();
+        toolsJar = new File(toolsJar, "lib" + File.separator + "tools.jar");
+        urls.add(toolsJar.toURI().toURL());
+        
+        String pathSeparator = System.getProperty("path.separator");
+        String longCP = properties.getProperty("libs.jsf12-support.classpath");
+        for (int i = 0; libProperties != null && i < libProperties.length; i++) {
+            longCP = properties.getProperty(libProperties[i]) + pathSeparator + longCP;
+        }
+        
+        StringTokenizer st = new StringTokenizer(longCP, pathSeparator);
+        
+        while (st.hasMoreTokens()) {
+            String next = st.nextToken();
+            File nextFile = new File(next);
+            urls.add(nextFile.toURI().toURL());
+        }
+        return urls;
+    }
+    
+    
 }
 
 // END_NOI18N

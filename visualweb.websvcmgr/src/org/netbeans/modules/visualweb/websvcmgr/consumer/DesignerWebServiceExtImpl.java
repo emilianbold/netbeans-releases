@@ -233,7 +233,7 @@ public class DesignerWebServiceExtImpl implements WebServiceManagerExt {
                 File tmpProxy = createTempCopy(proxyJar);
                 tmpProxy.deleteOnExit();
                 
-                URLClassLoader classLoader = new URLClassLoader(buildClasspath(tmpProxy, libProperty));
+                URLClassLoader classLoader = new URLClassLoader(Util.buildClasspath(tmpProxy, libProperty).toArray(new URL[0]));
                 Class serviceClass = null;
                 
                 try {
@@ -329,34 +329,6 @@ public class DesignerWebServiceExtImpl implements WebServiceManagerExt {
             wsMetadataDesc.addConsumerData(CONSUMER_ID, data);
         }
         
-        return result;
-    }
-    
-    private URL[] buildClasspath(File srcPath, String libProperty) throws IOException {
-        // The classpath needs to be equivalent to (plus the ws client package root):
-        // classpath="${java.home}/../lib/tools.jar:${libs.jaxrpc16.classpath}:${libs.jsf12-support.classpath}"
-        ArrayList<URL> urls = new ArrayList<URL>();
-        Properties properties = new Properties();
-        properties.load(new FileInputStream(userDir+"/build.properties"));
-        
-        urls.add(srcPath.toURI().toURL());
-        File toolsJar = new File(System.getProperty("java.home")).getParentFile();
-        toolsJar = new File(toolsJar, "lib" + File.separator + "tools.jar");
-        urls.add(toolsJar.toURI().toURL());
-        
-        String pathSeparator = System.getProperty("path.separator");
-        String longCP =
-                properties.getProperty(libProperty) + pathSeparator
-                + properties.getProperty("libs.jsf12-support.classpath");
-        
-        StringTokenizer st = new StringTokenizer(longCP, pathSeparator);
-        
-        while (st.hasMoreTokens()) {
-            String next = st.nextToken();
-            File nextFile = new File(next);
-            urls.add(nextFile.toURI().toURL());
-        }
-        URL[] result = urls.toArray(new URL[urls.size()]);
         return result;
     }
     
