@@ -656,22 +656,22 @@ public class ServicesPanel extends SectionInnerPanel implements ExplorerManager.
         if (ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())){
             getSelectedMethods();
             System.err.println(" - selection changed");
-//            final AbstractService service = configuration.getServices().get(0);
-//            final SectionView sectionView = getSectionView();
-//            if (sectionView != null){
-//                if( service == null || ( service != null && service.getData().size() == 0 )) {
-//                    sectionView.getErrorPanel().setError(
-//                            new Error( Error.TYPE_FATAL, Error.MISSING_VALUE_MESSAGE,
-//                            NbBundle.getMessage( ServicesPanel.class, "ERR_MissingServiceSelection" ), checkedTreeView ));
+            final AbstractService service = configuration.getServices().get(0);
+            final SectionView sectionView = getSectionView();
+            if (sectionView != null){
+                if( service == null || ( service != null && service.getData().size() == 0 )) {
+                    sectionView.getErrorPanel().setError(
+                            new Error( Error.TYPE_FATAL, Error.MISSING_VALUE_MESSAGE,
+                            NbBundle.getMessage( ServicesPanel.class, "ERR_MissingServiceSelection" ), checkedTreeView ));
 //                    //dataObject.setSaveEnable( false );
-//                    generateButton.setEnabled( false );
-//                } else {
-//                    sectionView.getErrorPanel().clearError();
+                    generateButton.setEnabled( false );
+                } else {
+                    sectionView.getErrorPanel().clearError();
 //                    //dataObject.setSaveEnable( true );
-//                    generateButton.setEnabled( true );
-//                }
-//            }
-//            fireChange();
+                    generateButton.setEnabled( true );
+                }
+            }
+            fireChange();
         } else if (E2EDataObject.PROP_GENERATING.equals(evt.getPropertyName())){
             generateButton.setEnabled(!Boolean.TRUE.equals(evt.getNewValue()));
         }
