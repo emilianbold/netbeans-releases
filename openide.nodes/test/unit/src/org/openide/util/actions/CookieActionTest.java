@@ -35,6 +35,7 @@ import org.openide.nodes.Children;
 import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 import org.openide.util.lookup.AbstractLookup;
 
 /** Test that cookie actions are in fact sensitive to the correct cookies in the
@@ -254,6 +255,14 @@ public class CookieActionTest extends NbTestCase {
         
         assertTrue("Node has to be enabled on OpenCookie", action.enable(new Node[] {node})); // NOI18N
         assertFalse("Node may not create OpenCookie instance, when tested on presence only", node.isCookieCreated()); // NOI18N
+    }
+    
+    public void testToStringOfDelegateContainsNameOfOriginalAction() throws Exception {
+        SimpleCookieAction sa = SimpleCookieAction.get(SimpleCookieAction.class);
+        Action a = sa.createContextAwareInstance(Lookup.EMPTY);
+        if (a.toString().indexOf("SimpleCookieAction") == -1) {
+            fail("We need name of the original action:\n" + a.toString());
+        }
     }
     
     public static class SimpleCookieAction extends CookieAction {
