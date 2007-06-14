@@ -354,6 +354,33 @@ public class LogRecordsTest extends NbTestCase {
             fail(log.toString());
         }
     }
+    public void testAlwaysSetParamters() throws Exception {
+        String what = "actionDelegates.xml";
+        InputStream is = getClass().getResourceAsStream(what);
+        class H extends Handler {
+            int cnt;
+            
+            public void publish(LogRecord record) {
+                cnt++;
+                if (record.getParameters() == null) {
+                    fail("Each record shall have paramters, #" + cnt + " did not: " + record.getMessage());
+                }
+            }
+
+            public void flush() {
+            }
+
+            public void close() throws SecurityException {
+            }
+        }
+        
+        H h = new H();
+        is = getClass().getResourceAsStream(what);
+        LogRecords.scan(is, h);
+        is.close();
+        
+        assertEquals("The four amount of records", 5, h.cnt);
+    }
     
     public void testScanEmpty91974() throws Exception {
         String what = "uigestures-iz91974.xml";

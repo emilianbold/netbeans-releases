@@ -270,9 +270,9 @@ public final class LogRecords {
                     } else {
                         LOG.log(Level.CONFIG, "Cannot find resource bundle <null> for key {1}", key);
                     }
-                    if (params != null) {
-                        r.setParameters(params.toArray());
-                    }
+                }
+                if (params != null) {
+                    r.setParameters(params.toArray());
                 }
                 if (exceptions != null) {
                     r.setThrown(createThrown(null));
