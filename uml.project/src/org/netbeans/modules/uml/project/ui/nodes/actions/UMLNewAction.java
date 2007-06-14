@@ -219,7 +219,7 @@ public class UMLNewAction extends NodeAction
          if (newTypes != null && newTypes.length > index)
          {
             NewType type = newTypes[index];
-            iconRes = (type instanceof NewTypeExt ? ((NewTypeExt)type).getIconResource() : null);
+            iconRes = (type instanceof INewTypeExt ? ((INewTypeExt)type).getIconResource() : null);
          }
          return iconRes;
       }
