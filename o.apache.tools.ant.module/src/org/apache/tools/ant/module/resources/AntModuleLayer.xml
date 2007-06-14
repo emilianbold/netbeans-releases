@@ -40,8 +40,7 @@ Microsystems, Inc. All Rights Reserved.
 
     <folder name="Templates">
  
-        <attr name="Package/Ant" boolvalue="true"/>
-        <folder name="Ant">
+        <folder name="Other">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.apache.tools.ant.module.resources.Bundle"/>
             <attr name="templateWizardURL" urlvalue="nbresloc:/org/apache/tools/ant/module/resources/AntDescription.html"/>
             <file name="Project.xml" url="Project.xml_">
@@ -60,9 +59,6 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="templateCategory" stringvalue="ant-task"/>
             </file>
         </folder>
-        <attr name="Classes/Ant" boolvalue="true"/>
-        <attr name="Ant/Other" boolvalue="true"/>
-
     </folder>
 
     <folder name="Services">
