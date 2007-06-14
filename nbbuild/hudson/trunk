@@ -74,6 +74,6 @@ prev_generated=../lastSuccessful/archive/$generated
 if [ -d $prev_generated ]; then
     diff -r -U 25 $prev_generated $generated > $generated.diff
     if [ -s $generated.diff ]; then
-        (echo "http://deadlock.netbeans.org/hudson/job/trunk/$BUILD_NUMBER/changes"; echo "http://deadlock.netbeans.org/hudson/job/trunk/$BUILD_NUMBER/artifact/$generated/"; echo; cat $generated.diff) | mail -s "Golden file changes in trunk build #$BUILD_NUMBER" jesse.glick@sun.com trung.duc.tran@sun.com
+        (echo "http://deadlock.netbeans.org/hudson/job/trunk/$BUILD_NUMBER/changes"; echo "http://deadlock.netbeans.org/hudson/job/trunk/$BUILD_NUMBER/artifact/$generated/"; echo; cat $generated.diff) | mail -s "Golden file changes in trunk build #$BUILD_NUMBER" api-changes@netbeans.org
     fi
 fi
