@@ -38,8 +38,8 @@ import org.netbeans.api.languages.SyntaxContext;
 import org.netbeans.api.languages.ASTNode;
 import org.netbeans.api.languages.ASTToken;
 import org.netbeans.api.languages.LibrarySupport;
-import org.openide.ErrorManager;
 import org.openide.text.NbDocument;
+import org.openide.util.Exceptions;
 
 
 /**
@@ -202,7 +202,7 @@ public class HTML {
         try {
             doc.insertString (offset, sb.toString (), null);
         } catch (BadLocationException ex) {
-            ErrorManager.getDefault ().notify (ex);
+            Exceptions.printStackTrace(ex);
         }
     }
     
