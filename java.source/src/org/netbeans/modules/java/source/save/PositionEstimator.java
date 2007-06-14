@@ -55,7 +55,7 @@ public abstract class PositionEstimator {
         this.oldL = oldL;
         this.newL = newL;
         this.copy = copy;
-        this.seq = copy != null ? copy.getTokenHierarchy().tokenSequence() : null;
+        this.seq = copy != null ? copy.getTokenHierarchy().tokenSequence(JavaTokenId.language()) : null;
         initialized = false;
     }
         
@@ -623,7 +623,7 @@ public abstract class PositionEstimator {
             int size = oldL.size();
             matrix = new int[size+1][5];
             matrix[size] = new int[] { -1, -1, -1, -1, -1 };
-            TokenSequence<JavaTokenId> seq = copy.getTokenHierarchy().tokenSequence();
+            TokenSequence<JavaTokenId> seq = copy.getTokenHierarchy().tokenSequence(JavaTokenId.language());
             int i = 0;
             SourcePositions positions = copy.getTrees().getSourcePositions();
             CompilationUnitTree compilationUnit = copy.getCompilationUnit();

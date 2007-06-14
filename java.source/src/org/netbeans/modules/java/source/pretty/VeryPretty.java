@@ -1448,7 +1448,7 @@ public final class VeryPretty extends JCTree.Visitor {
         if (isTreeMoved(tree)) {
             int a = TreeInfo.getStartPos(tree);
             int b = TreeInfo.getEndPos(tree, origUnit.endPositions);
-            TokenSequence<JavaTokenId> seq = workingCopy.getTokenHierarchy().tokenSequence();
+            TokenSequence<JavaTokenId> seq = workingCopy.getTokenHierarchy().tokenSequence(JavaTokenId.language());
             seq.move(a);
             PositionEstimator.moveToSrcRelevant(seq, Direction.BACKWARD);
             while (seq.moveNext() && nonRelevant.contains(seq.token().id())) {

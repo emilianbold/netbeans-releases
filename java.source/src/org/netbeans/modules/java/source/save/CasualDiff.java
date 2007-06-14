@@ -70,7 +70,7 @@ public class CasualDiff {
         diffs = new ListBuffer<Diff>();
         comments = CommentHandlerService.instance(context);
         this.workingCopy = workingCopy;
-        this.tokenSequence = workingCopy.getTokenHierarchy().tokenSequence();
+        this.tokenSequence = workingCopy.getTokenHierarchy().tokenSequence(JavaTokenId.language());
         this.origText = workingCopy.getText();
         this.context = context;
         printer = new VeryPretty(context, CodeStyle.getDefault(null), workingCopy, this);

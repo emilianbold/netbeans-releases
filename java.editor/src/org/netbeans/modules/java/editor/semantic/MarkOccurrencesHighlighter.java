@@ -414,7 +414,7 @@ public class MarkOccurrencesHighlighter implements CancellableTask<CompilationIn
     
     private Set<Highlight> detectBreakOrContinueTarget(CompilationInfo info, Document document, TreePath breakOrContinue) {
         Set<Highlight> result = new HashSet<Highlight>();
-        StatementTree target = info.getTreeUtilities().getBreakContinueTarget(info, breakOrContinue);
+        StatementTree target = info.getTreeUtilities().getBreakContinueTarget(breakOrContinue);
         
         if (target == null)
             return null;

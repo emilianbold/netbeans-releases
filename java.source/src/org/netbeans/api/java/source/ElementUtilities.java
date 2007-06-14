@@ -81,12 +81,34 @@ public final class ElementUtilities {
     }
     
     /**
-     * Returns the TypeElement which encloses the specified element.
+     * Returns the type element within which this member or constructor
+     * is declared. Does not accept pakages
+     * If this is the declaration of a top-level type (a non-nested class
+     * or interface), returns null.
+     *
+     * @return the type declaration within which this member or constructor
+     * is declared, or null if there is none
+     * @throws IllegalArgumentException if the provided element is a package element
      */
-    public TypeElement enclosingTypeElement(Element element) {
-        return delegate.enclosingTypeElement(element);
+    public static TypeElement enclosingTypeElement( Element element ) throws IllegalArgumentException {
+	
+	if( element.getKind() == ElementKind.PACKAGE ) {
+	    throw new IllegalArgumentException();
+	}
+	
+        if (element.getEnclosingElement().getKind() == ElementKind.PACKAGE) {
+            //element is a top level class, returning null according to the contract:
+            return null;
+        }
+        
+	while( !(element.getEnclosingElement().getKind().isClass() || 
+	       element.getEnclosingElement().getKind().isInterface()) ) {
+	    element = element.getEnclosingElement();
+	}
+	
+	return (TypeElement)element.getEnclosingElement(); // Wrong
     }
-
+    
     /**
      * 
      * The outermost TypeElement which indirectly encloses this element.
@@ -94,15 +116,15 @@ public final class ElementUtilities {
     public TypeElement outermostTypeElement(Element element) {
         return delegate.outermostTypeElement(element);
     }
-
+    
     /**
-     * 
+     *
      * The package element which indirectly encloses this element..
      */
     public PackageElement packageElement(Element element) {
         return delegate.packageElement(element);
     }
-    
+
     /**
      * Returns the implementation of a method in class origin; null if none exists.
      */
@@ -116,7 +138,7 @@ public final class ElementUtilities {
      *  @return true if and only if the given element is syntetic, false otherwise
      */
     public boolean isSynthetic(Element element) {
-        return delegate.isSynthetic(element);
+        return (((Symbol) element).flags() & Flags.SYNTHETIC) != 0 || (((Symbol) element).flags() & Flags.GENERATEDCONSTR) != 0;
     }
     
     /**
@@ -126,7 +148,7 @@ public final class ElementUtilities {
     public boolean overridesMethod(ExecutableElement element) {
         return delegate.overridesMethod(element);
     }
-
+    
     /**
      * Returns a binary name of a type.
      * @param element for which the binary name should be returned
@@ -142,6 +164,8 @@ public final class ElementUtilities {
         } 
     }
     
+    /**Get javadoc for given element.
+     */
     public Doc javaDocFor(Element element) {
         if (element != null) {
             DocEnv env = DocEnv.instance(ctx);
@@ -167,10 +191,22 @@ public final class ElementUtilities {
         return null;
     }
     
+    /**Find a {@link Element} corresponding to a given {@link Doc}.
+     */
     public Element elementFor(Doc doc) {
         return (doc instanceof JavadocEnv.ElementHolder) ? ((JavadocEnv.ElementHolder)doc).getElement() : null;
     }
     
+    /**
+     * Returns all members of a type, whether inherited or
+     * declared directly.  For a class the result also includes its
+     * constructors, but not local or anonymous classes.
+     * 
+     * @param type  the type being examined
+     * @param acceptor to filter the members
+     * @return all members in the type
+     * @see Elements#getAllMembers
+     */
     public Iterable<? extends Element> getMembers(TypeMirror type, ElementAcceptor acceptor) {
         ArrayList<Element> members = new ArrayList<Element>();
         if (type != null) {
@@ -210,6 +246,8 @@ public final class ElementUtilities {
         return members;
     }
     
+    /**Return members declared in the given scope.
+     */
     public Iterable<? extends Element> getLocalMembersAndVars(Scope scope, ElementAcceptor acceptor) {
         ArrayList<Element> members = new ArrayList<Element>();
         HashMap<String, ArrayList<Element>> hiders = new HashMap<String, ArrayList<Element>>();
@@ -268,6 +306,8 @@ public final class ElementUtilities {
         return members;
     }
 
+    /**Return variables declared in the given scope.
+     */
     public Iterable<? extends Element> getLocalVars(Scope scope, ElementAcceptor acceptor) {
         ArrayList<Element> members = new ArrayList<Element>();
         HashMap<String, ArrayList<Element>> hiders = new HashMap<String, ArrayList<Element>>();
@@ -292,6 +332,13 @@ public final class ElementUtilities {
         return members;
     }
     
+    /**Return {@link TypeElement}s:
+     * <ul>
+     *    <li>which are imported</li>
+     *    <li>which are in the same package as the current file</li>
+     *    <li>which are in the java.lang package</li>
+     * </ul>
+     */
     public Iterable<? extends TypeElement> getGlobalTypes(ElementAcceptor acceptor) {
         HashSet<TypeElement> members = new HashSet<TypeElement>();
         Trees trees = JavacTrees.instance(ctx);
@@ -317,7 +364,15 @@ public final class ElementUtilities {
         return members;
     }
 
+    /**Filter {@link Element}s
+     */
     public static interface ElementAcceptor {
+        /**Is the given element accepted.
+         * 
+         * @param e element to test
+         * @param type the type for which to check if the member is accepted
+         * @return true if and only if given element should be accepted
+         */
         boolean accept(Element e, TypeMirror type);
     }
     
@@ -377,7 +432,7 @@ public final class ElementUtilities {
      */
     public boolean isMemberOf(Element e, TypeElement type) {
         return delegate.isMemberOf(e, type);
-    }
+    }                
     
     /**
      * Returns the fully qualified name of this element, which is its
@@ -385,7 +440,7 @@ public final class ElementUtilities {
      */
     public CharSequence getFullName(Element element) {
         return delegate.getFullName(element);
-    }    
+    }
 
     /**
      * Returns the parent method which the specified method overrides, or null
@@ -393,7 +448,7 @@ public final class ElementUtilities {
      */
     public ExecutableElement getOverriddenMethod(ExecutableElement method) {
         return delegate.getOverriddenMethod(method);
-    }
+    }        
     /**
      * Returns true if this element represents a method which 
      * implements a method in an interface the parent class implements.

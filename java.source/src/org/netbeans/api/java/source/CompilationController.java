@@ -132,7 +132,7 @@ public class CompilationController extends CompilationInfo {
 
     /**@inheritDoc*/
     @Override
-    public TokenHierarchy getTokenHierarchy() {
+    public TokenHierarchy<Void> getTokenHierarchy() {
         return this.delegate.getTokenHierarchy();
     }
     

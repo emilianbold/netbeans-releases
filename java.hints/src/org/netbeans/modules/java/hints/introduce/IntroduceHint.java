@@ -761,7 +761,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
 
         @Override
         public Void visitBreak(BreakTree node, Void p) {
-            if (phase == PHASE_INSIDE_SELECTION && !treesSeensInSelection.contains(info.getTreeUtilities().getBreakContinueTarget(info, getCurrentPath()))) {
+            if (phase == PHASE_INSIDE_SELECTION && !treesSeensInSelection.contains(info.getTreeUtilities().getBreakContinueTarget(getCurrentPath()))) {
                 selectionExits.add(getCurrentPath());
                 hasBreaks = true;
             }
@@ -770,7 +770,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
 
         @Override
         public Void visitContinue(ContinueTree node, Void p) {
-            if (phase == PHASE_INSIDE_SELECTION && !treesSeensInSelection.contains(info.getTreeUtilities().getBreakContinueTarget(info, getCurrentPath()))) {
+            if (phase == PHASE_INSIDE_SELECTION && !treesSeensInSelection.contains(info.getTreeUtilities().getBreakContinueTarget(getCurrentPath()))) {
                 selectionExits.add(getCurrentPath());
                 hasContinues = true;
             }
@@ -820,7 +820,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                         }
                     }
                 } else {
-                    StatementTree target = info.getTreeUtilities().getBreakContinueTarget(info, tp);
+                    StatementTree target = info.getTreeUtilities().getBreakContinueTarget(tp);
                     
                     if (breakOrContinueTarget == null) {
                         breakOrContinueTarget = target;
@@ -862,12 +862,12 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
 
         @Override
         public Boolean visitBreak(BreakTree node, Void p) {
-            return !seenTrees.contains(info.getTreeUtilities().getBreakContinueTarget(info, getCurrentPath()));
+            return !seenTrees.contains(info.getTreeUtilities().getBreakContinueTarget(getCurrentPath()));
         }
 
         @Override
         public Boolean visitContinue(ContinueTree node, Void p) {
-            return !seenTrees.contains(info.getTreeUtilities().getBreakContinueTarget(info, getCurrentPath()));
+            return !seenTrees.contains(info.getTreeUtilities().getBreakContinueTarget(getCurrentPath()));
         }
 
         @Override
