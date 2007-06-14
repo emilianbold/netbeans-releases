@@ -21,16 +21,9 @@ package org.netbeans.modules.visualweb.dataconnectivity.sql;
 import org.netbeans.modules.visualweb.dataconnectivity.naming.ContextPersistance;
 import org.netbeans.modules.visualweb.dataconnectivity.naming.ObjectChangeListener;
 import org.netbeans.modules.visualweb.dataconnectivity.naming.ObjectChangeEvent;
-import java.io.File;
-import java.io.FileFilter;
 import java.io.PrintWriter;
-import java.io.UnsupportedEncodingException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Connection;
 import java.sql.Driver;
@@ -47,10 +40,6 @@ import java.util.SortedSet;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
 import javax.crypto.Cipher;
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.KeyGenerator;
-import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import javax.naming.NamingException;
@@ -58,7 +47,9 @@ import javax.sql.DataSource;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.db.explorer.JDBCDriver;
+import org.netbeans.modules.visualweb.dataconnectivity.datasource.CurrentProject;
 import org.netbeans.modules.visualweb.dataconnectivity.datasource.DataSourceResolver;
+import org.netbeans.modules.visualweb.dataconnectivity.utils.ImportDataSource;
 
 /**
  * DataSource adapter for java.sql.Driver classes.  Used at designtime for all datasources.
@@ -233,11 +224,13 @@ public class DesignTimeDataSource implements DataSource, ContextPersistance {
                 break;
             }
 
-        JDBCDriver jdbcDriver = DataSourceResolver.getInstance().findMatchingDriver(dbConn.getDriverClass());               
-        urls = jdbcDriver.getURLs();
-
-        driverClassName = dbConn.getDriverClass();
-        loadDriver();
+        if (dbConn != null) {
+            JDBCDriver jdbcDriver = DataSourceResolver.getInstance().findMatchingDriver(dbConn.getDriverClass());
+            urls = jdbcDriver.getURLs();
+            
+            driverClassName = dbConn.getDriverClass();
+            loadDriver();
+        }
         
         Properties props = new Properties();
         if (username != null) {
@@ -270,6 +263,12 @@ public class DesignTimeDataSource implements DataSource, ContextPersistance {
             return new DesignTimeConnection(this, conn);
 
         } catch (Exception e) {
+            
+            if (DesignTimeDataSourceHelper.isFound(this)) {
+                if (ImportDataSource.isLegacyProject(CurrentProject.getInstance().getProject())) {
+                    ImportDataSource.showAlert();
+                }
+            }
             if (e instanceof SQLException) {
                 setLastConnectFail( (SQLException)e ) ;
                 throw (SQLException)e;

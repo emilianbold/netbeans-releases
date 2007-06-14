@@ -68,7 +68,6 @@ public class DataSourceResolver implements JdbcDriverInfoListener, DataSourceInf
     private static DataSourceResolver dataSourceResolver;
     private JdbcDriverInfo jdbcDriverInfo = null;
     private String dataSourceInfo = null;
-    private final static JDBCDriver[] NULL_JDBC_DRIVER_ARRAY = new JDBCDriver[0];
 
     /** Creates a new instance of DataSourceResolver */
     private DataSourceResolver() {
@@ -234,33 +233,17 @@ public class DataSourceResolver implements JdbcDriverInfoListener, DataSourceInf
     
     // Find a matching driver registered with the IDE
     public JDBCDriver findMatchingDriver(String driverClass) {
-        int i = 0;
-        
+      int i = 0;
         JDBCDriver[] newDrivers;
-        List theDriver = new ArrayList();
         newDrivers = JDBCDriverManager.getDefault().getDrivers();
-        boolean found = false;
         
-//        if (dsInfo != null) {
-            if (newDrivers.length == 0)
-                newDrivers = (JDBCDriver[]) theDriver.toArray(NULL_JDBC_DRIVER_ARRAY);
-            
-            if (newDrivers != null) {
-                for (i=0; i<newDrivers.length; i++) {
-                    if (newDrivers[i].getClassName().equals(driverClass)) {
-                        found = true;
-                        break;
-                    }
-                }
-//            }
+        for (i = 0; i <newDrivers.length; i++) {
+            if (newDrivers[i].getClassName().equals(driverClass)) {
+                return newDrivers[i];
+            }
         }
         
-        if (!found)  {
-            i = 0;
-            //newDrivers = (JDBCDriver[]) theDriver.toArray(NULL_JDBC_DRIVER_ARRAY);
-            return null;
-        } else
-            return newDrivers[i];
+        return null;
     }
     
     

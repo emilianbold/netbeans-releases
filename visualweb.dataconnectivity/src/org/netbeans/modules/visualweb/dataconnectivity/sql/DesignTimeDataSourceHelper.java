@@ -606,6 +606,7 @@ public class DesignTimeDataSourceHelper {
     
     /**
      * Make sure the connections needed by the data sources have been registered
+     * using DatasourceInfo
      */
      public static boolean isFound(DataSourceInfo ds) {
         boolean found = false;
@@ -626,6 +627,28 @@ public class DesignTimeDataSourceHelper {
         return found;
     }
     
+     /**
+     * Make sure the connections needed by the data sources have been registered
+      * using DesignTimeDataSource
+     */
+     public static boolean isFound(DesignTimeDataSource ds) {
+        boolean found = false;
+        
+        if (ds != null) {
+            String url = ds.getUrl();
+            String username = ds.getUsername();
+            DatabaseConnection[] dbConns = ConnectionManager.getDefault().getConnections();
+            for(int i=0; i<dbConns.length; i++ ){
+                DatabaseConnection dbCon = dbConns[i];
+                String url1 = dbCon.getDatabaseURL();
+                String username1 = dbCon.getUser();
+                if (matchURL(url, url1, true) && Utilities.compareObjects(username, username1)) {
+                    found = true;
+                }
+            }
+        }
+        return found;
+    }
     
     private static boolean matchURL(String jdbcResourceUrl, String dsInfoUrl, boolean ignoreCase) {
         if (ignoreCase){
