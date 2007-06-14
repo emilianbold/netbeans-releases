@@ -41,6 +41,7 @@ public class UMLMeasureActions  {
         suite.addTest(new CreateClassDiagramFromMultipleNodes("measureTime", "Create Class Diagram From Multiple Nodes")); 
         suite.addTest(new CreateSequenceDiagramFromMultipleNodes("measureTime", "Create Sequence Diagram From Multiple Nodes"));
         suite.addTest(new GenerateModelReport("measureTime", "Generate Model Report"));
+        suite.addTest(new CodeGenerationFromUMLProject("measureTime", "Code Generation From UML Project"));
         return suite;
     }
     
