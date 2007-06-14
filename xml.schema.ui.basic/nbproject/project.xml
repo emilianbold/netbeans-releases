@@ -289,6 +289,7 @@
                 <friend>org.netbeans.modules.xml.schema.abe</friend>
                 <friend>org.netbeans.modules.xml.schema.refactoring</friend>
                 <friend>org.netbeans.modules.xml.schema.ui.analysis</friend>
+                <friend>org.netbeans.modules.encoder.ui.basic</friend>
                 <friend>org.netbeans.modules.xml.wsdlui</friend>
                 <friend>org.netbeans.modules.xslt.project</friend>
                 <package>org.netbeans.modules.xml.schema.ui.basic</package>

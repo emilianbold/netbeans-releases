@@ -157,6 +157,7 @@
                 <friend>org.netbeans.modules.xslt.core</friend>
                 <friend>org.netbeans.modules.xslt.tmap</friend>
                 <friend>org.netbeans.modules.compapp.casaeditor</friend>
+                <friend>org.netbeans.modules.encoder.ui.basic</friend>
                 <package>org.netbeans.modules.xml.xam.ui</package>
                 <package>org.netbeans.modules.xml.xam.ui.actions</package>
                 <package>org.netbeans.modules.xml.xam.ui.category</package>
