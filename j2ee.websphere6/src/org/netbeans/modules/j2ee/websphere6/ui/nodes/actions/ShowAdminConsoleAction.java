@@ -22,9 +22,10 @@ import java.io.IOException;
 import java.net.Socket;
 import java.net.URL;
 import java.net.UnknownHostException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.j2ee.websphere6.WSDeploymentManager;
 import org.netbeans.modules.j2ee.websphere6.ui.nodes.WSManagerNode;
-import org.openide.ErrorManager;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -85,7 +86,7 @@ public class ShowAdminConsoleAction extends CookieAction {
                 running = false;
                 break;
             }
-            
+
             WSDeploymentManager dm =
                     ((WSManagerNode) node).getDeploymentManager();
             
@@ -95,7 +96,7 @@ public class ShowAdminConsoleAction extends CookieAction {
                 
                 running = true;
             } catch (UnknownHostException e) {
-                ErrorManager.getDefault().notify(ErrorManager.ERROR, e);
+                Logger.getLogger("global").log(Level.SEVERE, null, e);
             } catch (IOException e) {
                 running = false;
             }

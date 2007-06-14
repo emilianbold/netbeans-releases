@@ -22,6 +22,8 @@ import java.io.*;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.openide.*;
 import org.openide.windows.*;
@@ -137,17 +139,17 @@ public class WSTailer extends Thread {
                 }
             }            
         } catch (FileNotFoundException e) {            
-            ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, e);
+            Logger.getLogger("global").log(Level.WARNING, null, e);
             return;
         } catch (IOException e) {            
-            ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, e);
+            Logger.getLogger("global").log(Level.WARNING, null, e);
         } finally {
             // close the opened stream
             try {
                 isIOPanelOpen.remove(io);
                 inputStream.close();         
             } catch (IOException e) {
-                ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, e);
+                Logger.getLogger("global").log(Level.WARNING, null, e);
             }
         }        
     }

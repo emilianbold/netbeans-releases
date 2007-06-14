@@ -18,7 +18,6 @@
  */
 package org.netbeans.modules.j2ee.websphere6;
 
-import java.io.File;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceCreationException;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 

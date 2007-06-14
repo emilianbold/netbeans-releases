@@ -39,6 +39,8 @@ import org.netbeans.modules.j2ee.deployment.plugins.api.*;
 import org.netbeans.modules.j2ee.websphere6.util.WSDebug;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 
 /**
@@ -347,9 +349,9 @@ public class WSDeploymentManager implements DeploymentManager {
                 // do nothing. Fix for issue with Exception on IDE restarting
                 // after removing server from Runtime with opened projects
             } catch (InstantiationException e) {
-                ErrorManager.getDefault().notify(ErrorManager.ERROR, e);
+                Logger.getLogger("global").log(Level.SEVERE, null, e);
             } catch (IllegalAccessException e) {
-                ErrorManager.getDefault().notify(ErrorManager.ERROR, e);
+                Logger.getLogger("global").log(Level.SEVERE, null, e);
             } finally {
                 // restore the loader
                 loader.restoreLoader();
@@ -393,7 +395,7 @@ public class WSDeploymentManager implements DeploymentManager {
                 isConnected = false;
                 dm = factory.getDisconnectedDeploymentManager(uri);
             } catch (DeploymentManagerCreationException ex) {
-                ErrorManager.getDefault().notify(ErrorManager.ERROR, ex);
+                Logger.getLogger("global").log(Level.SEVERE, null, ex);
             }
         } finally {
             // restore the context classloader
@@ -869,13 +871,13 @@ public class WSDeploymentManager implements DeploymentManager {
             }
             
         }  catch (IllegalAccessException e) {
-            ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, e);
+            Logger.getLogger("global").log(Level.WARNING, null, e);
         } catch (NoSuchMethodException e) {
-            ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, e);
+            Logger.getLogger("global").log(Level.WARNING, null, e);
         } catch (InvocationTargetException e) {
-            ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, e);
+            Logger.getLogger("global").log(Level.WARNING, null, e);
         } catch (ArrayIndexOutOfBoundsException e) {
-            ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, e);
+            Logger.getLogger("global").log(Level.WARNING, null, e);
         }
         
         try {

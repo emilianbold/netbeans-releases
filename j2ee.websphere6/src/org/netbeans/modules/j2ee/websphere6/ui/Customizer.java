@@ -33,6 +33,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.j2ee.deployment.common.api.J2eeLibraryTypeProvider;
 import org.netbeans.modules.j2ee.deployment.plugins.api.J2eePlatformImpl;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl;
 import org.netbeans.modules.j2ee.websphere6.j2ee.DeploymentManagerProperties;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 

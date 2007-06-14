@@ -18,11 +18,6 @@
  */
 package org.netbeans.modules.j2ee.websphere6.dd.loaders;
 
-import org.netbeans.modules.j2ee.websphere6.dd.beans.EjbRefBindingsType;
-import org.netbeans.modules.j2ee.websphere6.dd.beans.ResEnvRefBindingsType;
-import org.netbeans.modules.j2ee.websphere6.dd.beans.ResRefBindingsType;
-import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
-
 /**
  *
  * @author dlm198383

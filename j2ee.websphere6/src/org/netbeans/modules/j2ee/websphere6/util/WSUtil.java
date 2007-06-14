@@ -19,6 +19,8 @@
 package org.netbeans.modules.j2ee.websphere6.util;
 
 import java.io.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.openide.*;
 
@@ -59,7 +61,7 @@ public class WSUtil {
            // return the string
            return buffer.toString();
        } catch (IOException e) {
-           ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, e);
+           Logger.getLogger("global").log(Level.WARNING, null, e);
        }
        
        return null;
@@ -79,7 +81,7 @@ public class WSUtil {
             // create a writer and write the contents
             new FileOutputStream(file).write(contents.getBytes());
         } catch (IOException e) {
-            ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, e);
+            Logger.getLogger("global").log(Level.WARNING, null, e);
         }
     }
 }

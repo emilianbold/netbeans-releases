@@ -21,6 +21,8 @@ package org.netbeans.modules.j2ee.websphere6.optional;
 import java.io.*;
 import java.net.*;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.enterprise.deploy.shared.*;
 import javax.enterprise.deploy.spi.*;
@@ -30,6 +32,7 @@ import javax.enterprise.deploy.spi.status.*;
 import org.openide.*;
 import org.openide.util.*;
 import org.netbeans.modules.j2ee.deployment.plugins.api.*;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer;
 
 import org.netbeans.modules.j2ee.websphere6.*;
 import org.netbeans.modules.j2ee.websphere6.ui.nodes.actions.ShowServerLogAction;
@@ -361,7 +364,7 @@ public class WSStartServer extends StartServer {
             // if we are successful, return true
             return true;
         } catch (UnknownHostException e) {
-            ErrorManager.getDefault().notify(ErrorManager.ERROR, e);
+            Logger.getLogger("global").log(Level.SEVERE, null, e);
         } catch (IOException e) {
             // do nothing this exception means that the server is
             // not started
@@ -536,7 +539,7 @@ public class WSStartServer extends StartServer {
                 // set the state to stopped
                 state = STATE_STOPPED;
             } catch (IOException e) {
-                ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, e);
+                Logger.getLogger("global").log(Level.WARNING, null, e);
             }
         }
         
@@ -679,7 +682,7 @@ public class WSStartServer extends StartServer {
                 // set the state to stopped
                 state = STATE_STOPPED;
             } catch (IOException e) {
-                ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, e);
+                Logger.getLogger("global").log(Level.WARNING, null, e);
             }
         }
         
@@ -805,7 +808,7 @@ public class WSStartServer extends StartServer {
                 // set the state to started
                 state = STATE_STARTED;
             } catch (IOException e) {
-                ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, e);
+                Logger.getLogger("global").log(Level.WARNING, null, e);
             }
         }
         

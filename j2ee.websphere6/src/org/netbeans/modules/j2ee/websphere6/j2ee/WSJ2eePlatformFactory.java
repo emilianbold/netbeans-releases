@@ -22,6 +22,8 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 import java.awt.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.enterprise.deploy.spi.DeploymentManager;
 import org.netbeans.api.java.platform.JavaPlatform;
@@ -32,6 +34,8 @@ import org.netbeans.spi.project.libraries.*;
 import org.netbeans.modules.j2ee.deployment.common.api.*;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.*;
 import org.netbeans.modules.j2ee.deployment.plugins.api.*;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformFactory;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl;
 import org.netbeans.modules.j2ee.websphere6.*;
 
 /**
@@ -198,7 +202,7 @@ public class WSJ2eePlatformFactory extends J2eePlatformFactory {
                 library.setContent(J2eeLibraryTypeProvider.
                         VOLUME_TYPE_CLASSPATH, list);
             } catch (MalformedURLException e) {
-                ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, e);
+                Logger.getLogger("global").log(Level.WARNING, null, e);
             }
             
             // add the created library to the array

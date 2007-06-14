@@ -26,12 +26,13 @@ import org.netbeans.modules.j2ee.websphere6.dd.beans.DDXmi;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.spi.xml.cookies.*;
 import org.openide.filesystems.FileObject;
-import org.openide.ErrorManager;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.MultiFileLoader;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.xml.sax.*;
 
 
@@ -147,7 +148,7 @@ public abstract class WSMultiViewDataObject extends XmlMultiViewDataObject{
             try {
                 parseDocument();
             } catch (IOException e) {
-                ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, e);
+                Logger.getLogger("global").log(Level.WARNING, null, e);
             }
         }
         
@@ -162,9 +163,9 @@ public abstract class WSMultiViewDataObject extends XmlMultiViewDataObject{
                 out.close();
                 getDataCache().setData(lock, out.toString(), modify);
             } catch (IOException e) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                Logger.getLogger("global").log(Level.INFO, null, e);
             } catch (Schema2BeansException e) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                Logger.getLogger("global").log(Level.INFO, null, e);
             }
         }
         
@@ -172,7 +173,7 @@ public abstract class WSMultiViewDataObject extends XmlMultiViewDataObject{
             try {
                 return getDD();
             } catch (IOException e) {
-                ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, e);
+                Logger.getLogger("global").log(Level.INFO, null, e);
                 return null;
             }
         }
@@ -181,7 +182,7 @@ public abstract class WSMultiViewDataObject extends XmlMultiViewDataObject{
             try {
                 parseDocument();
             } catch (IOException e) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                Logger.getLogger("global").log(Level.INFO, null, e);
             }
         }
         

@@ -21,7 +21,6 @@ package org.netbeans.modules.j2ee.websphere6.ui;
 import java.util.Vector;
 import java.awt.event.*;
 import javax.swing.*;
-import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.j2ee.websphere6.ui.InstancesModel;
 import org.netbeans.modules.j2ee.websphere6.WSURIManager;

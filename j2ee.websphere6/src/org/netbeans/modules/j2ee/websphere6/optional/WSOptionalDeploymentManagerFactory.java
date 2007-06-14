@@ -22,6 +22,10 @@ import javax.enterprise.deploy.spi.*;
 
 import org.openide.WizardDescriptor.*;
 import org.netbeans.modules.j2ee.deployment.plugins.api.*;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.FindJSPServlet;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.OptionalDeploymentManagerFactory;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer;
 
 import org.netbeans.modules.j2ee.websphere6.ui.wizard.*;
 
