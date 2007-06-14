@@ -147,7 +147,7 @@ Microsystems, Inc. All Rights Reserved.
     
     <folder name="Loaders">
         <folder name="text">
-            <folder name="wsdl">
+            <folder name="x-wsdl+xml">
                 <folder name="Actions">
                     <file name="org-openide-actions-EditAction.instance"/>
                     <attr name="org-openide-actions-EditAction.instance/org-openide-actions-FileSystemAction.instance" boolvalue="true"/>
