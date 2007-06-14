@@ -20,13 +20,17 @@
 package org.netbeans.modules.refactoring.java.ui;
 
 import java.awt.Component;
+import java.util.Collections;
+import javax.lang.model.element.Modifier;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
+import javax.swing.Icon;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.ListSelectionModel;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.api.java.source.UiUtils;
 import org.netbeans.modules.refactoring.java.api.UseSuperTypeRefactoring;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.openide.util.NbBundle;
@@ -61,13 +65,20 @@ public class UseSuperTypePanel extends JPanel implements CustomRefactoringPanel 
         superTypeList.setCellRenderer(new DefaultListCellRenderer() {
             
             @Override
-                    public Component getListCellRendererComponent(JList list,
+            public Component getListCellRendererComponent(JList list,
                     Object value, int index, boolean isSelected,
                     boolean cellHasFocus) {
                 
-                return super.getListCellRendererComponent(list,
+                super.getListCellRendererComponent(list,
                         ((ElementHandle)value).getBinaryName(), index,
                         isSelected, cellHasFocus);
+                
+                if (value instanceof ElementHandle) {
+                    Icon i = UiUtils.getElementIcon(((ElementHandle) value).getKind(), Collections.singleton(Modifier.PUBLIC));
+                    setIcon(i);
+                }
+                return this;
+                
             }
         });
         superTypeList.setModel(new DefaultComboBoxModel(refactoring.getCandidateSuperTypes()));
