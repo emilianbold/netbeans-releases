@@ -27,7 +27,8 @@ import java.net.URLEncoder;
 import java.net.URLDecoder;
 import java.net.UnknownHostException;
 import java.util.StringTokenizer;
-import org.openide.ErrorManager;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.filesystems.URLMapper;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -131,7 +132,7 @@ public class HttpServerURLMapper extends URLMapper {
                 settings.getWrapperBaseURL() + path); // NOI18N
             return newURL;
         } catch (MalformedURLException e) {
-            ErrorManager.getDefault().notify(ErrorManager.WARNING, e);
+            Logger.getLogger("global").log(Level.WARNING, null, e);
             return null;
         }
     }

@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.httpserver;
 
-import java.awt.Component;
 import javax.swing.*;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;

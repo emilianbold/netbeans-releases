@@ -20,7 +20,6 @@
 package org.netbeans.modules.httpserver;
 
 import java.awt.Dialog;
-import java.beans.IntrospectionException;
 import java.util.Hashtable;
 import java.util.HashSet;
 import java.util.Set;
@@ -28,8 +27,6 @@ import java.util.StringTokenizer;
 import java.util.Properties;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.event.EventListenerList;
 import org.openide.DialogDescriptor;

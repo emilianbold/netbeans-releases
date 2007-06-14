@@ -22,13 +22,12 @@ package org.netbeans.modules.httpserver;
 import org.apache.tomcat.core.*;
 import java.beans.*;
 import java.io.*;
-import java.io.IOException;
 import java.lang.reflect.*;
 import java.util.*;
-import java.util.StringTokenizer;
-import org.openide.ErrorManager;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-import org.openide.util.SharedClassObject;
+import org.openide.util.Exceptions;
 
 /**
  * @author costin@dnt.ro
@@ -66,9 +65,8 @@ public class NbServletsInterceptor extends BaseInterceptor {
 	    addNbServlets( ctx );
 
 	} catch (Exception e) {
-            ErrorManager em = ErrorManager.getDefault();
-            em.annotate(e, "NbServletsInterceptor failed"); // NOI18N
-	    em.notify(ErrorManager.INFORMATIONAL, e);
+            Exceptions.attachMessage(e, "NbServletsInterceptor failed"); // NOI18N
+	    Logger.getLogger("global").log(Level.INFO, null, e);
 	}
 
     }

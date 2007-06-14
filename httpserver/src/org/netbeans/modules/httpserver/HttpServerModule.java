@@ -25,6 +25,8 @@ import java.net.MalformedURLException;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.Vector;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.servlet.ServletContext;
 import org.apache.tomcat.context.WebXmlReader;
 import org.apache.tomcat.startup.EmbededTomcat;
@@ -32,7 +34,6 @@ import org.apache.tomcat.core.ContextManager;
 import org.apache.tomcat.core.Context;
 import org.apache.tomcat.logging.TomcatLogger;
 import org.apache.tomcat.service.PoolTcpConnector;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.modules.ModuleInstall;
@@ -41,7 +42,6 @@ import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.util.SharedClassObject;
 
 /**
 * Module installation class for Http Server
@@ -71,60 +71,54 @@ public class HttpServerModule extends ModuleInstall implements Externalizable {
     static void initHTTPServer() {
         if (inSetRunning)
             return;
-        synchronized (HttpServerSettings.httpLock ()) {
+        synchronized (HttpServerSettings.httpLock()) {
             if (inSetRunning)
                 return;
             inSetRunning = true;
             try {
-                if ((serverThread != null) && (!httpserverSettings ().running)) {
+                if ((serverThread != null) && (!httpserverSettings().running)) {
                     // another thread is trying to start the server, wait for a while and then stop it if it's still bad
                     try {
                         Thread.currentThread().sleep(2000);
-                    }
-                    catch (InterruptedException e) {}
-                    if ((serverThread != null) && (!httpserverSettings ().running)) {
+                    } catch (InterruptedException e) {}
+                    if ((serverThread != null) && (!httpserverSettings().running)) {
                         serverThread.stop();
                         serverThread = null;
                     }
                 }
                 if (serverThread == null) {
                     serverThread = new Thread("HTTPServer") { // NOI18N
-                                       public void run() {
-                                           try {
-                                               server = buildServer();
-                                               server.start();
-                                               httpserverSettings ().runSuccess();
-                                               reloader.activate ();
-                                               // this is not a debug message, this is a server startup message
-                                               if (httpserverSettings ().isStartStopMessages())
-                                                   System.out.println(NbBundle.getMessage(HttpServerModule.class, "CTL_ServerStarted", new Object[] {new Integer(httpserverSettings ().getPort())}));
-                                           }
-                                           catch (ThreadDeath td) {
-                                               throw td;
-                                           }
-                                           catch (Throwable ex) {
-                                               ErrorManager.getDefault().notify( ErrorManager.INFORMATIONAL, ex);
-                                               // couldn't start
-                                               serverThread = null;
-                                               inSetRunning = false;
-                                               httpserverSettings ().runFailure(ex);
-                                           }
-                                           finally {
-                                               httpserverSettings ().setStartStopMessages(true);
-                                           }
-                                       }
-                                   };
+                        public void run() {
+                            try {
+                                server = buildServer();
+                                server.start();
+                                httpserverSettings().runSuccess();
+                                reloader.activate();
+                                // this is not a debug message, this is a server startup message
+                                if (httpserverSettings().isStartStopMessages())
+                                    System.out.println(NbBundle.getMessage(HttpServerModule.class, "CTL_ServerStarted", new Object[] {new Integer(httpserverSettings().getPort())}));
+                            } catch (ThreadDeath td) {
+                                throw td;
+                            } catch (Throwable ex) {
+                                Logger.getLogger("global").log(Level.INFO, null, ex);
+                                // couldn't start
+                                serverThread = null;
+                                inSetRunning = false;
+                                httpserverSettings().runFailure(ex);
+                            } finally {
+                                httpserverSettings().setStartStopMessages(true);
+                            }
+                        }
+                    };
                     serverThread.start();
                 }
                 // wait for the other thread to start the server
                 try {
-                    HttpServerSettings.httpLock ().wait(HttpServerSettings.SERVER_STARTUP_TIMEOUT);
+                    HttpServerSettings.httpLock().wait(HttpServerSettings.SERVER_STARTUP_TIMEOUT);
+                } catch (Exception e) {
+                    Logger.getLogger("global").log(Level.INFO, null, e);
                 }
-                catch (Exception e) {
-                    ErrorManager.getDefault().notify( ErrorManager.INFORMATIONAL, e);
-                }
-            }
-            finally {
+            } finally {
                 inSetRunning = false;
             }
         }

@@ -32,7 +32,6 @@ import javax.servlet.http.*;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.NbBundle;
-import org.openide.util.SharedClassObject;
 
 import javax.servlet.ServletOutputStream;
 

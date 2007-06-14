@@ -20,15 +20,13 @@
 package org.netbeans.modules.httpserver;
 
 import java.io.IOException;
-import java.util.HashSet;
 import java.net.InetAddress;
 import java.util.Set;
 import javax.servlet.*;
 import javax.servlet.http.*;
+import org.openide.util.Exceptions;
 
 import org.openide.util.NbBundle;
-import org.openide.ErrorManager;
-import org.openide.util.SharedClassObject;
 
 /** Base servlet for servlets which access NetBeans Open APIs
 *
@@ -99,7 +97,7 @@ public abstract class NbBaseServlet extends HttpServlet {
             String address = request.getRemoteAddr().trim();
             if (settings.allowAccess(InetAddress.getByName(address), pathI)) return true;
         } catch (Exception ex) {
-            ErrorManager.getDefault().notify(ex);
+            Exceptions.printStackTrace(ex);
             return false;
         }
 
