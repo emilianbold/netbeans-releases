@@ -46,7 +46,7 @@ public class CreateWebPackFiles extends org.netbeans.performance.test.utilities.
     private NewFileNameLocationStepOperator location;
     
     private static final String project_name = "VisualWebProject";
-    
+    private ProjectsTabOperator pto;
     /**
      * Creates a new instance of CreateWebPackFiles
      * @param testName the name of the test
@@ -117,9 +117,11 @@ public class CreateWebPackFiles extends org.netbeans.performance.test.utilities.
     
     public void initialize(){
 	log("::initialize::");
+        pto = ProjectsTabOperator.invoke();
+                
         Node projectRoot = null;
         try {
-            projectRoot = new ProjectsTabOperator().getProjectRootNode(project_name);
+            projectRoot = pto.getProjectRootNode(project_name);
             projectRoot.select();
             
         } catch (org.netbeans.jemmy.TimeoutExpiredException ex) {
@@ -163,16 +165,17 @@ public class CreateWebPackFiles extends org.netbeans.performance.test.utilities.
     
     private void cleanupTest() {
         log(":: do cleanup.....");
-        ProjectsTabOperator pto = new ProjectsTabOperator();
         long nodeTimeout = pto.getTimeouts().getTimeout("ComponentOperator.WaitStateTimeout");
         pto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 60000);
-        Node projectRootNode = new ProjectsTabOperator().getProjectRootNode(project_name);
+        Node projectRootNode = pto.getProjectRootNode(project_name);
         projectRootNode.select();
         
         waitNoEvent(1000);
         Node objNode;
-        objNode = new Node(projectRootNode,projectfolder+"|"+ buildedname+suffix);
+        objNode = new Node(projectRootNode,projectfolder);
         objNode.select();
+        objNode = new Node(projectRootNode,projectfolder+"|"+ buildedname+suffix);
+        objNode.select();        
         
         pto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout",nodeTimeout); 
         
