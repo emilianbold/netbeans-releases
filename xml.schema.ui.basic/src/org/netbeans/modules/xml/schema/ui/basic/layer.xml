@@ -47,24 +47,22 @@
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/xml/schema/ui/retriever/retrieveSchemaResource.html"/>
             </file>
             <attr name="XMLSchema2.xsd/xml_entity.ent" boolvalue="true"/>
-            <folder name="SampleSchemas">
+            <attr name="xml_entity.ent/po.xsd" boolvalue="true"/>
+            <file name="po.xsd" url="nbresloc:/org/netbeans/modules/xml/schema/ui/basic/wizard/templates/po.xsd">
+                <attr name="template" boolvalue="true"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.schema.ui.basic.wizard.Bundle"/>
-                <file name="po.xsd" url="nbresloc:/org/netbeans/modules/xml/schema/ui/basic/wizard/templates/po.xsd">
-                    <attr name="template" boolvalue="true"/>
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.schema.ui.basic.wizard.Bundle"/>
-                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/schema/core/resources/Schema_File.png"/>
-                    <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/xml/schema/ui/basic/wizard/templates/po.html"/>
-                    <attr name="templateCategory" stringvalue="XML"/>
-                </file>
-                <attr name="po.xsd/LoanApplication.xsd" boolvalue="true"/>
-                <file name="LoanApplication.xsd" url="nbresloc:/org/netbeans/modules/xml/schema/ui/basic/wizard/templates/LoanApplication.xsd">
-                    <attr name="template" boolvalue="true"/>
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.schema.ui.basic.wizard.Bundle"/>
-                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/schema/core/resources/Schema_File.png"/>
-                    <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/xml/schema/ui/basic/wizard/templates/LoanApplication.html"/>
-                    <attr name="templateCategory" stringvalue="XML"/>
-                </file>
-            </folder> <!-- SampleSchemas -->
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/schema/ui/basic/wizard/resources/Schema_File.png"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/xml/schema/ui/basic/wizard/templates/po.html"/>
+                <attr name="templateCategory" stringvalue="XML"/>
+            </file>
+            <attr name="po.xsd/LoanApplication.xsd" boolvalue="true"/>
+            <file name="LoanApplication.xsd" url="nbresloc:/org/netbeans/modules/xml/schema/ui/basic/wizard/templates/LoanApplication.xsd">
+                <attr name="template" boolvalue="true"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.schema.ui.basic.wizard.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/schema/ui/basic/wizard/resources/Schema_File.png"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/xml/schema/ui/basic/wizard/templates/LoanApplication.html"/>
+                <attr name="templateCategory" stringvalue="XML"/>
+            </file>
         </folder> <!-- XML -->
     </folder> <!-- Templates -->
 
