@@ -19,6 +19,7 @@
 
 package org.netbeans.lib.editor.codetemplates;
 
+import java.util.List;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplate;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplateManager;
 
@@ -68,7 +69,10 @@ public abstract class CodeTemplateApiPackageAccessor {
     CodeTemplate codeTemplate);
 
     public abstract CodeTemplate createCodeTemplate(
-    CodeTemplateManagerOperation managerOperation,
-    String abbreviation, String description, String parametrizedText);
+        CodeTemplateManagerOperation managerOperation,
+        String abbreviation, 
+        String description, 
+        String parametrizedText,
+        List<String> contexts);
 
 }

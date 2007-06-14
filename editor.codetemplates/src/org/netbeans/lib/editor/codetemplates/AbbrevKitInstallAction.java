@@ -24,19 +24,19 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.editor.BaseAction;
 
 /**
- * Action that jumps to next/previous bookmark.
+ * Action that hooks up code templates detection/expansion with <code>JTextComponent</code>.
  *
  * @author Miloslav Metelka
  * @version 1.00
  */
 
-public class AbbrevKitInstallAction extends BaseAction {
+public final class AbbrevKitInstallAction extends BaseAction {
 
     static final long serialVersionUID = -0L;
 
     public static final AbbrevKitInstallAction INSTANCE = new AbbrevKitInstallAction();
 
-    AbbrevKitInstallAction() {
+    private AbbrevKitInstallAction() {
         super("abbrev-kit-install"); // NOI18N
         putValue(BaseAction.NO_KEYBINDING, Boolean.TRUE);        
     }
@@ -44,7 +44,7 @@ public class AbbrevKitInstallAction extends BaseAction {
     public void actionPerformed(ActionEvent evt, JTextComponent target) {
         assert (target != null);
         // Initialize the abbreviation detection for the given component
-        AbbrevDetection.get(target); // Initialize the bookmark list
+        AbbrevDetection.get(target);
     }
 
 }

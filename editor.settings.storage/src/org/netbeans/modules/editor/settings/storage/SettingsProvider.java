@@ -187,7 +187,9 @@ public final class SettingsProvider implements MimeDataProvider {
                 if (this.kbsi == evt.getSource()) {
                     kbsChanged = true;
                     
-                } else if (this.ctsi == evt.getSource()) {
+                } else if (this.ctsi == evt.getSource() || 
+                           CodeTemplateSettingsImpl.PROP_EXPANSION_KEY.equals(evt.getPropertyName())
+                ) {
                     ctsChanged = true;
                     
                 } else if (evt.getPropertyName() == null) {

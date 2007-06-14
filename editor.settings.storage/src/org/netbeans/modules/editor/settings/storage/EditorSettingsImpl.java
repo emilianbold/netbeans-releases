@@ -467,6 +467,18 @@ public class EditorSettingsImpl extends EditorSettings {
         pcs.firePropertyChange (PROP_CURRENT_KEY_MAP_PROFILE, oldKeyMap, currentKeyMapProfile);
     }
     
+    // ------------------------------------------------------
+    // Code Templates
+    // ------------------------------------------------------
+
+    public void notifyExpansionKeyChange() {
+        // XXX: this is hack, we need to notify *all* lookups for all mime types
+        // that the expansion key has changed
+        pcs.firePropertyChange(CodeTemplateSettingsImpl.PROP_EXPANSION_KEY, null, null);
+    }
+    
+    // support methods .........................................................
+    
     /**
      * PropertyChangeListener registration.
      *
@@ -514,9 +526,6 @@ public class EditorSettingsImpl extends EditorSettings {
     ) {
         pcs.removePropertyChangeListener (propertyName, l);
     }
-    
-
-    // support methods .........................................................
 
     private EditorSettingsImpl() {
         

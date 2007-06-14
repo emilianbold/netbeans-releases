@@ -54,9 +54,6 @@ public final class CodeTemplate {
         if (abbreviation == null) {
             throw new NullPointerException("abbreviation cannot be null"); // NOI18N
         }
-        if (description == null) {
-            throw new NullPointerException("description cannot be null"); // NOI18N
-        }
         if (parametrizedText == null) {
             throw new NullPointerException("parametrizedText cannot be null"); // NOI18N
         }
@@ -92,7 +89,8 @@ public final class CodeTemplate {
      * <br>
      * It's being displayed e.g. in the code completion window.
      * 
-     * @return non-null description text.
+     * @return The description text or <code>null</code> if this template does
+     *   not have description.
      */
     public String getDescription() {
         return description;

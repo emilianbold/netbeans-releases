@@ -20,6 +20,7 @@
 package org.netbeans.lib.editor.codetemplates.api;
 
 import java.util.Collection;
+import java.util.List;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.Document;
 import org.netbeans.lib.editor.codetemplates.CodeTemplateApiPackageAccessor;
@@ -135,9 +136,13 @@ public final class CodeTemplateManager {
         }
         
         public CodeTemplate createCodeTemplate(
-        CodeTemplateManagerOperation managerOperation,
-        String abbreviation, String description, String parametrizedText) {
-            return new CodeTemplate(managerOperation, abbreviation, description, parametrizedText, null);
+            CodeTemplateManagerOperation managerOperation,
+            String abbreviation, 
+            String description, 
+            String parametrizedText,
+            List<String> contexts
+        ) {
+            return new CodeTemplate(managerOperation, abbreviation, description, parametrizedText, contexts);
         }
         
     }

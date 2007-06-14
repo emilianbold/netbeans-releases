@@ -31,21 +31,10 @@ import org.openide.modules.ModuleInstall;
  *
  * @author Miloslav Metelka
  */
-public class CodeTemplatesModule extends ModuleInstall {
+public final class CodeTemplatesModule extends ModuleInstall {
 
     public void restored () {
-        synchronized (Settings.class) {
-            SettingsUtil.updateListSetting(BaseKit.class,
-                    SettingsNames.CUSTOM_ACTION_LIST,
-                    new Object[] { AbbrevKitInstallAction.INSTANCE }
-            );
-            SettingsUtil.updateListSetting(BaseKit.class,
-                    SettingsNames.KIT_INSTALL_ACTION_NAME_LIST,
-                    new Object[] { AbbrevKitInstallAction.INSTANCE.getValue(Action.NAME) }
-            );
-            Settings.addInitializer(new AbbrevSettingsInitializer());
-        }
-        
+        Settings.addInitializer(new AbbrevSettingsInitializer());
     }
     
     /**
@@ -66,12 +55,12 @@ public class CodeTemplatesModule extends ModuleInstall {
         Settings.removeInitializer(AbbrevSettingsInitializer.NAME);
         Settings.reset();
         
-        // Go through components and clear the AbbrevDetection.class property
+        // XXX: Go through components and clear the AbbrevDetection.class property
     }
 
     private static final class AbbrevSettingsInitializer extends Settings.AbstractInitializer {
         
-        static final String NAME = "bookmarks-settings-initializer"; // NOI18N
+        static final String NAME = "codetemplates-settings-initializer"; // NOI18N
         
         AbbrevSettingsInitializer() {
             super(NAME);
@@ -90,6 +79,6 @@ public class CodeTemplatesModule extends ModuleInstall {
             }
         }
         
-    }
+    } // End of AbbrevSettingsInitializer class
     
 }

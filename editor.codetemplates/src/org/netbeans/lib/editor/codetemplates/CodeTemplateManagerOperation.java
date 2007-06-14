@@ -19,6 +19,8 @@
 
 package org.netbeans.lib.editor.codetemplates;
 
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -27,6 +29,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.KeyStroke;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.EventListenerList;
@@ -35,17 +40,16 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.CodeTemplateDescription;
-import org.netbeans.editor.Settings;
-import org.netbeans.editor.SettingsChangeEvent;
-import org.netbeans.editor.SettingsChangeListener;
+import org.netbeans.api.editor.settings.CodeTemplateSettings;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplate;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplateManager;
 import org.netbeans.lib.editor.codetemplates.spi.*;
-import org.netbeans.modules.editor.options.BaseOptions;
+import org.netbeans.modules.editor.NbEditorUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.RequestProcessor;
+import org.openide.util.WeakListeners;
 
 /**
  * Code template allows the client to paste itself into the given
@@ -54,10 +58,14 @@ import org.openide.util.RequestProcessor;
  * @author Miloslav Metelka
  */
 public final class CodeTemplateManagerOperation
-implements LookupListener, Runnable, SettingsChangeListener {
+    implements LookupListener, Runnable
+{
+    private static final Logger LOG = Logger.getLogger(CodeTemplateManagerOperation.class.getName());
     
-    private static Map<String, Reference<CodeTemplateManagerOperation>> mime2operation = 
+    private static final Map<String, Reference<CodeTemplateManagerOperation>> mime2operation = 
             new HashMap<String, Reference<CodeTemplateManagerOperation>>(8);
+    
+    private static final KeyStroke DEFAULT_EXPANSION_KEY = KeyStroke.getKeyStroke(KeyEvent.VK_TAB, 0);
     
     public static synchronized CodeTemplateManager getManager(Document doc) {
         return get(doc).getManager();
@@ -75,8 +83,6 @@ implements LookupListener, Runnable, SettingsChangeListener {
             operation = ref == null ? null : ref.get();
             if (operation == null) {
                 operation = new CodeTemplateManagerOperation(mimeType);
-                CodeTemplateApiPackageAccessor.get().createCodeTemplateManager(operation);
-
                 mime2operation.put(mimeType, new WeakReference<CodeTemplateManagerOperation>(operation));
             }
 
@@ -93,39 +99,32 @@ implements LookupListener, Runnable, SettingsChangeListener {
 
 
     private final CodeTemplateManager manager;
-
     private final String mimeType;
+    private final Lookup.Result<CodeTemplateSettings> ctslr;
+    private final EventListenerList listenerList = new EventListenerList();
 
-    private Lookup.Result<CodeTemplateDescription> descriptions;
-    
-    private Collection<? extends CodeTemplateProcessorFactory> processorFactories;
-    
-    private Collection<? extends CodeTemplateFilter.Factory> filterFactories;
-    
-    private Map<String, CodeTemplate> abbrev2template;
-    
-    private List<CodeTemplate> sortedTemplatesByAbbrev;
-    
-    private List<CodeTemplate> unmodSortedTemplatesByAbbrev;
-    
-    private List<CodeTemplate> sortedTemplatesByParametrizedText;
-    
-    private List<CodeTemplate> selectionTemplates;
-    
-    private EventListenerList listenerList = new EventListenerList();
-    
-    private boolean settingsListeningInitialized;
+    private boolean loaded = false;
+    private Map<String, CodeTemplate> abbrev2template = Collections.<String, CodeTemplate>emptyMap();
+    private List<CodeTemplate> sortedTemplatesByAbbrev = Collections.<CodeTemplate>emptyList();
+    private List<CodeTemplate> sortedTemplatesByParametrizedText = Collections.<CodeTemplate>emptyList();
+    private List<CodeTemplate> selectionTemplates = Collections.<CodeTemplate>emptyList();
+    private KeyStroke expansionKey = DEFAULT_EXPANSION_KEY;
+    private String expansionKeyText = getExpandKeyStrokeText(expansionKey);
     
     private CodeTemplateManagerOperation(String mimeType) {
         this.mimeType = mimeType;
+        
         this.manager = CodeTemplateApiPackageAccessor.get().createCodeTemplateManager(this);
+        assert manager != null : "Can't creat CodeTemplateManager"; //NOI18N
+        
+        this.ctslr = MimeLookup.getLookup(MimePath.parse(mimeType)).lookupResult(CodeTemplateSettings.class);
+        this.ctslr.addLookupListener(WeakListeners.create(LookupListener.class, this, this.ctslr));
         
         // Compute descriptions asynchronously
         RequestProcessor.getDefault().post(this);
     }
     
     public CodeTemplateManager getManager() {
-        assert (manager != null);
         return manager;
     }
     
@@ -134,7 +133,7 @@ implements LookupListener, Runnable, SettingsChangeListener {
     }
     
     public Collection<? extends CodeTemplate> getCodeTemplates() {
-        return unmodSortedTemplatesByAbbrev;
+        return sortedTemplatesByAbbrev;
     }
     
     public Collection<? extends CodeTemplate> findSelectionTemplates() {
@@ -201,15 +200,23 @@ implements LookupListener, Runnable, SettingsChangeListener {
         return result;
     }
     
-    public Collection<? extends CodeTemplateFilter> getTemplateFilters(JTextComponent component, int offset) {
-        List<CodeTemplateFilter> result = new ArrayList<CodeTemplateFilter>();
+    public static Collection<? extends CodeTemplateFilter> getTemplateFilters(JTextComponent component, int offset) {
+        String mimeType = NbEditorUtilities.getMimeType(component);
+        Collection<? extends CodeTemplateFilter.Factory> filterFactories = 
+            MimeLookup.getLookup(MimePath.parse(mimeType)).lookupAll(CodeTemplateFilter.Factory.class);
+        
+        List<CodeTemplateFilter> result = new ArrayList<CodeTemplateFilter>(filterFactories.size());
         for (CodeTemplateFilter.Factory factory : filterFactories) {
             result.add(factory.createFilter(component, offset));
         }
         return result;
     }
 
-    public void insert(CodeTemplate codeTemplate, JTextComponent component) {
+    public static void insert(CodeTemplate codeTemplate, JTextComponent component) {
+        String mimeType = NbEditorUtilities.getMimeType(component);
+        Collection<? extends CodeTemplateProcessorFactory> processorFactories = 
+            MimeLookup.getLookup(MimePath.parse(mimeType)).lookupAll(CodeTemplateProcessorFactory.class);
+        
         CodeTemplateInsertHandler handler = new CodeTemplateInsertHandler(
                 codeTemplate, component, processorFactories);
         handler.processTemplate();
@@ -264,26 +271,30 @@ implements LookupListener, Runnable, SettingsChangeListener {
     
     public boolean isLoaded() {
         synchronized (listenerList) {
-            return (descriptions != null);
+            return loaded;
         }
     }
     
     public void registerLoadedListener(ChangeListener listener) {
         synchronized (listenerList) {
-            if (descriptions != null) { // already loaded
-                listener.stateChanged(new ChangeEvent(this));
-            } else { // not yet loaded
+            if (!isLoaded()) {
+                // not yet loaded
                 listenerList.add(ChangeListener.class, listener);
+                return;
             }
         }
+
+        // already loaded
+        listener.stateChanged(new ChangeEvent(manager));
     }
     
     public void waitLoaded() {
         synchronized (listenerList) {
-            if (!isLoaded()) {
+            while(!isLoaded()) {
                 try {
                     listenerList.wait();
                 } catch (InterruptedException e) {
+                    throw new RuntimeException("Interrupted when waiting to load code templates"); //NOI18N
                 }
             }
         }
@@ -302,131 +313,116 @@ implements LookupListener, Runnable, SettingsChangeListener {
     }
     
     public void run() {
-        Lookup lookup = MimeLookup.getLookup(MimePath.parse(getMimeType()));
-        
-        processorFactories = lookup.lookupAll(CodeTemplateProcessorFactory.class);
-        // [TODO] listen for changes
-
-        filterFactories = lookup.lookupAll(CodeTemplateFilter.Factory.class);
-        // [TODO] listen for changes
-
-        // [TODO] take from settings
-        setDescriptions(Lookup.EMPTY.lookupResult(CodeTemplateDescription.class));
-    }
-    
-    public void settingsChange(SettingsChangeEvent evt) {
         rebuildCodeTemplates();
     }
     
-    void setDescriptions(Lookup.Result<CodeTemplateDescription> descriptions) {
-        synchronized (listenerList) {
-            this.descriptions = descriptions;
-            rebuildCodeTemplates();
-            fireStateChanged(new ChangeEvent(manager));
-            // Notify loading finished
-            listenerList.notifyAll();
-        }
-    }
-    
-    private Collection<? extends CodeTemplateDescription> updateDescriptionInstances(
-        Collection<? extends CodeTemplateDescription> descriptionsInstances
+    private static void processCodeTemplateDescriptions(
+        CodeTemplateManagerOperation operation,
+        Collection<? extends CodeTemplateDescription> ctds,
+        Map<String, CodeTemplate> codeTemplatesMap,
+        List<CodeTemplate> codeTemplatesWithSelection
     ) {
-        ArrayList<CodeTemplateDescription> templates = new ArrayList<CodeTemplateDescription>();
-        
-        Lookup lookup = MimeLookup.getLookup(MimePath.parse(mimeType));
-        BaseOptions baseOptions = lookup.lookup(BaseOptions.class);
-        if (baseOptions != null) {
-            Map<String, String> abbrevMap = baseOptions.getAbbrevMap();
-            if (abbrevMap != null) {
-                for (String abbreviation : abbrevMap.keySet()) {
-                    String abbrevText = abbrevMap.get(abbreviation);
-
-                    String parametrizedText = abbrevText.replaceFirst(
-                            "([^|]+)[|]([^|]+)", "$1\\${cursor}$2"); // NOI18N
-                    parametrizedText = parametrizedText.replaceAll("[|]{2}", "|"); // NOI18N
-
-                    String desc = abbrevText;
-                    int nlInd = abbrevText.indexOf('\n');
-                    if (nlInd != -1) {
-                        desc = abbrevText.substring(0, nlInd) + "..."; // NOI18N
-                    }
-                    StringBuffer htmlText = new StringBuffer();
-                    ParametrizedTextParser parser = new ParametrizedTextParser(null, desc);
-                    parser.parse();
-                    parser.appendHtmlText(htmlText);
-                    desc = htmlText.toString();
-
-                    CodeTemplateDescription ctd = new CodeTemplateDescription(
-                            abbreviation, desc, parametrizedText, null);
-                    templates.add(ctd);
-
-                }
-            }
-
-            // Start listening on 'abbrevMap' changes
-            if (!settingsListeningInitialized) {
-                settingsListeningInitialized = true;
-                Settings.addSettingsChangeListener(this);
+        for (CodeTemplateDescription ctd : ctds) {
+            CodeTemplate ct = CodeTemplateApiPackageAccessor.get().createCodeTemplate(
+                operation, 
+                ctd.getAbbreviation(),
+                ctd.getDescription(), 
+                ctd.getParametrizedText(),
+                ctd.getContexts()
+            );
+            
+            codeTemplatesMap.put(ct.getAbbreviation(), ct);
+            if (ct.getParametrizedText().toLowerCase().indexOf("${selection") > -1) { //NOI18N
+                codeTemplatesWithSelection.add(ct);
             }
         }
-        
-        return templates;
     }
     
     private void rebuildCodeTemplates() {
-        Collection<? extends CodeTemplateDescription> descriptionsInstances = descriptions.allInstances();
-        descriptionsInstances = updateDescriptionInstances(descriptionsInstances);
+        Collection<? extends CodeTemplateSettings> allCts = ctslr.allInstances();
+        CodeTemplateSettings cts = allCts.isEmpty() ? null : allCts.iterator().next();
+
+        Map<String, CodeTemplate> map = new HashMap<String, CodeTemplate>();
+        List<CodeTemplate> templatesWithSelection = new ArrayList<CodeTemplate>();
+        KeyStroke keyStroke = DEFAULT_EXPANSION_KEY;
         
-        List<CodeTemplate> codeTemplates = new ArrayList<CodeTemplate>(descriptionsInstances.size());
-        selectionTemplates = new ArrayList<CodeTemplate>(descriptionsInstances.size());
-        
-        CodeTemplateApiPackageAccessor api = CodeTemplateApiPackageAccessor.get();
-        // Construct template instances
-        for (CodeTemplateDescription description : descriptionsInstances) {
-            CodeTemplate ct = api.createCodeTemplate(
-                this, 
-                description.getAbbreviation(),
-                description.getDescription(), 
-                description.getParametrizedText()
-            );
+        if (cts != null) {
+            // Load templates
+            Collection<? extends CodeTemplateDescription> ctds = cts.getCodeTemplateDescriptions();
+            processCodeTemplateDescriptions(this, ctds, map, templatesWithSelection);
             
-            codeTemplates.add(ct);
-            if (description.getParametrizedText().toLowerCase().indexOf("${selection") > -1) { //NOI18N
-                selectionTemplates.add(ct);
+            // Load expansion key
+            keyStroke = patchExpansionKey(cts.getExpandKey());
+        } else {
+            if (LOG.isLoggable(Level.WARNING)) {
+                LOG.warning("Can't find CodeTemplateSettings for '" + mimeType + "'"); //NOI18N
             }
         }
-        
-        refreshMaps(codeTemplates);
+
+        List<CodeTemplate> byAbbrev = new ArrayList<CodeTemplate>(map.values());
+        Collections.sort(byAbbrev, CodeTemplateComparator.BY_ABBREVIATION_IGNORE_CASE);
+
+        List<CodeTemplate> byText = new ArrayList<CodeTemplate>(map.values());
+        Collections.sort(byText, CodeTemplateComparator.BY_PARAMETRIZED_TEXT_IGNORE_CASE);
+
+        boolean fire = false;
+
+        synchronized(listenerList) {
+            fire = abbrev2template == null;
+
+            abbrev2template = Collections.unmodifiableMap(map);
+            sortedTemplatesByAbbrev = Collections.unmodifiableList(byAbbrev);
+            sortedTemplatesByParametrizedText = Collections.unmodifiableList(byText);
+            selectionTemplates = Collections.unmodifiableList(templatesWithSelection);
+            expansionKey = keyStroke;
+            expansionKeyText = getExpandKeyStrokeText(keyStroke);
+            
+            loaded = true;
+            listenerList.notifyAll();
+        }
+
+        if (fire) {
+            fireStateChanged(new ChangeEvent(manager));
+        }
     }
     
-    private void refreshMaps(List<CodeTemplate> codeTemplates) {
-        abbrev2template = new HashMap<String, CodeTemplate>(codeTemplates.size());
-        sortedTemplatesByAbbrev = new ArrayList<CodeTemplate>(codeTemplates.size());
-        unmodSortedTemplatesByAbbrev = Collections.unmodifiableList(sortedTemplatesByAbbrev);
-        sortedTemplatesByParametrizedText = new ArrayList<CodeTemplate>(codeTemplates.size());
-        
-        // Construct template instances and store them in map and sorted list
-        for (CodeTemplate template : codeTemplates) {
-            String abbreviation = template.getAbbreviation();
-            abbrev2template.put(abbreviation, template);
-            sortedTemplatesByAbbrev.add(template);
-            sortedTemplatesByParametrizedText.add(template);
-        }
-        
-        // Sort the templates in case insensitive order
-        Collections.sort(sortedTemplatesByAbbrev,
-                CodeTemplateComparator.BY_ABBREVIATION_IGNORE_CASE);
-
-        Collections.sort(sortedTemplatesByParametrizedText,
-                CodeTemplateComparator.BY_PARAMETRIZED_TEXT_IGNORE_CASE);
+    public KeyStroke getExpansionKey() {
+        return expansionKey;
     }
 
+    public String getExpandKeyStrokeText() {
+        return expansionKeyText;
+    }
+    
+    private static String getExpandKeyStrokeText(KeyStroke keyStroke) {
+        String expandKeyStrokeText;
+        if (keyStroke.equals(KeyStroke.getKeyStroke(' '))) { //NOI18N
+            expandKeyStrokeText = "SPACE"; // NOI18N
+        } else if (keyStroke.equals(KeyStroke.getKeyStroke(new Character(' '), InputEvent.SHIFT_MASK))) { //NOI18N
+            expandKeyStrokeText = "Shift-SPACE"; // NOI18N
+        } else if (keyStroke.equals(KeyStroke.getKeyStroke(KeyEvent.VK_TAB, 0))) {
+            expandKeyStrokeText = "TAB"; // NOI18N
+        } else if (keyStroke.equals(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0))) {
+            expandKeyStrokeText = "ENTER"; // NOI18N
+        } else {
+            expandKeyStrokeText = keyStroke.toString();
+        }
+        return expandKeyStrokeText;
+    }
+    
+    private static KeyStroke patchExpansionKey(KeyStroke eks) {
+	// Patch the keyPressed => keyTyped to prevent insertion of expand chars into editor
+        if (eks.equals(KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, 0))) {
+            eks = KeyStroke.getKeyStroke(' ');
+        } else if (eks.equals(KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, InputEvent.SHIFT_MASK))) {
+            eks = KeyStroke.getKeyStroke(new Character(' '), InputEvent.SHIFT_MASK);
+        } else if (eks.equals(KeyStroke.getKeyStroke(KeyEvent.VK_TAB, 0))) {
+        } else if (eks.equals(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0))) {
+        }
+	return eks;
+    }
+    
     public void resultChanged(LookupEvent ev) {
         rebuildCodeTemplates();
     }
-    
-    public void testInstallProcessorFactory(CodeTemplateProcessorFactory factory) {
-        processorFactories = Collections.singletonList(factory);
-    }
-    
 }

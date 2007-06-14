@@ -52,6 +52,7 @@ public final class CodeTemplateCompletionItem implements CompletionItem {
     private final CodeTemplate codeTemplate;
     
     private String leftText;
+    private String rightText;
     
     public static String toHtmlText(String text) {
         StringBuffer htmlText = null;
@@ -97,16 +98,26 @@ public final class CodeTemplateCompletionItem implements CompletionItem {
     }
     
     private String getLeftText() {
-        // Temporarily - return just the description - already in html
-        // return toHtmlText(codeTemplate.getDescription());
-        return codeTemplate.getDescription();
+        if (leftText == null) {
+            String parametrizedText = codeTemplate.getParametrizedText();
+            String singleLine;
+            int nlInd = parametrizedText.indexOf('\n'); //NOI18N
+            if (nlInd != -1) {
+                singleLine = parametrizedText.substring(0, nlInd) + "..."; // NOI18N
+            } else {
+                singleLine = parametrizedText;
+            }
+            
+            leftText = parseToHtml(new StringBuffer(), singleLine).toString();
+        }
+        return leftText;
     }
     
     private String getRightText() {
-        if (leftText == null) {
-            leftText = toHtmlText(codeTemplate.getAbbreviation());
+        if (rightText == null) {
+            rightText = toHtmlText(codeTemplate.getAbbreviation());
         }
-        return leftText;
+        return rightText;
     }
     
     public int getPreferredWidth(Graphics g, Font defaultFont) {
@@ -192,6 +203,14 @@ public final class CodeTemplateCompletionItem implements CompletionItem {
         return insertPrefix;
     }
 
+    private static StringBuffer parseToHtml(StringBuffer sb, String parametrizedText) {
+        // Parametrized text - parsed; parameters in bold
+        ParametrizedTextParser parser = new ParametrizedTextParser(null, parametrizedText);
+        parser.parse();
+        parser.appendHtmlText(sb);
+        return sb;
+    }
+    
     private static final class DocQuery extends AsyncCompletionQuery {
         
         private CodeTemplate codeTemplate;
@@ -201,7 +220,28 @@ public final class CodeTemplateCompletionItem implements CompletionItem {
         }
 
         protected void query(CompletionResultSet resultSet, Document doc, int caretOffset) {
-            resultSet.setDocumentation(new DocItem(codeTemplate));
+            StringBuffer sb = new StringBuffer(); // NOI18N
+
+            sb.append("<html><pre>");
+            parseToHtml(sb, codeTemplate.getParametrizedText());
+            sb.append("</pre>"); // NOI18N
+
+            String desc = codeTemplate.getDescription();
+            if (desc != null && desc.length() > 0) {
+                sb.append("<p>").append(desc).append("</p>"); //NOI18N
+            }
+            
+            // Append abbreviation
+            CodeTemplateManagerOperation operation = CodeTemplateApiPackageAccessor.get().getOperation(codeTemplate);
+            sb.append("<p>"); //NOI18N
+            sb.append(NbBundle.getMessage(CodeTemplateCompletionItem.class, 
+                "DOC_ITEM_Abbreviation", //NOI18N
+                toHtmlText(codeTemplate.getAbbreviation()), 
+                operation.getExpandKeyStrokeText()
+            ));
+            sb.append("<p>"); //NOI18N
+            
+            resultSet.setDocumentation(new DocItem(sb.toString()));
             resultSet.finish();
         }
         
@@ -209,34 +249,14 @@ public final class CodeTemplateCompletionItem implements CompletionItem {
     
     private static final class DocItem implements CompletionDocumentation {
         
-        private CodeTemplate codeTemplate;
-        
         private String text;
         
-        DocItem(CodeTemplate codeTemplate) {
-            this.codeTemplate = codeTemplate;
-            text = createText();
+        DocItem(String text) {
+            this.text = text;
         }
         
         public String getText() {
             return text;
-        }
-        
-        private String createText() {
-            // Parametrized text - parsed; parameters in bold
-            StringBuffer htmlText = new StringBuffer("<html><pre>"); // NOI18N
-            ParametrizedTextParser parser = new ParametrizedTextParser(null, codeTemplate.getParametrizedText());
-            parser.parse();
-            parser.appendHtmlText(htmlText);
-            htmlText.append("</pre><br>"); // NOI18N
-
-            // Append abbreviation
-            String mimeType = CodeTemplateApiPackageAccessor.get().getOperation(codeTemplate).getMimeType();
-            htmlText.append(NbBundle.getMessage(CodeTemplateCompletionItem.class, "DOC_ITEM_Abbreviation", //NOI18N
-                toHtmlText(codeTemplate.getAbbreviation()), 
-                AbbrevSettings.get(mimeType).getExpandKeyStrokeText()));
-            
-            return htmlText.toString();
         }
         
         public CompletionDocumentation resolveLink(String link) {
@@ -251,7 +271,6 @@ public final class CodeTemplateCompletionItem implements CompletionItem {
         public javax.swing.Action getGotoSourceAction() {
             return null;
         }
-        
-    }
+    } // End of DocItem class
 
 }
