@@ -73,14 +73,7 @@ public class Token {
                     t = WHITESPACE_TOKEN;
                     break;
                 }
-            }  case TOKEN_ELEMENT_START_TAG: {
-                t = tokenMap.get(value);
-                if(t == null) {
-                    t = new Token(value, type);
-                    tokenMap.put(value, t);
-                } 
-                break;
-            }
+            }  
 	    default: {
 		t = new Token(value,type);
 	    }
@@ -113,7 +106,7 @@ public class Token {
     public static final Token COMMENT_END =
 	new Token("-->", TokenType.TOKEN_CDATA_VAL); //NOI18N
 
-    private static Map<String, Token> tokenMap = new HashMap<String, Token>();
+   // private static Map<String, Token> tokenMap = new HashMap<String, Token>();
     
     private final String value;
     private final TokenType type;
