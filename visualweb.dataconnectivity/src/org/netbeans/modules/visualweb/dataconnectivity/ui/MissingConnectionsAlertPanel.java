@@ -65,10 +65,10 @@ public class MissingConnectionsAlertPanel extends JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 11, 0, 0);
         add(notAgain, gridBagConstraints);
-        notAgain.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(MissingConnectionsAlertPanel.class, "ACSN_BrokenDatasourcesAlertPanel_notAgain")); // NOI18N
-        notAgain.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MissingConnectionsAlertPanel.class, "ACSD_BrokenDatasourcesAlertPanel_notAgain")); // NOI18N
+        notAgain.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(MissingConnectionsAlertPanel.class, "ACSN_UpdateDatasourcesAlertPanel_notAgain")); // NOI18N
+        notAgain.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MissingConnectionsAlertPanel.class, "ACSD_UpdateDatasourcesAlertPanel_notAgain")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(message, org.openide.util.NbBundle.getMessage(MissingConnectionsAlertPanel.class, "MSG_Broken_Datasources")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(message, org.openide.util.NbBundle.getMessage(MissingConnectionsAlertPanel.class, "MSG_Update_DatasourcesAlertPanel")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -78,11 +78,11 @@ public class MissingConnectionsAlertPanel extends JPanel {
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(11, 11, 0, 0);
         add(message, gridBagConstraints);
-        message.getAccessibleContext().setAccessibleName(NbBundle.getMessage(MissingConnectionsAlertPanel.class, "ACSN_BrokenDatasourcesAlertPanel")); // NOI18N
-        message.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MissingConnectionsAlertPanel.class, "ACSD_BrokenDatasourcesAlertPanel")); // NOI18N
+        message.getAccessibleContext().setAccessibleName(NbBundle.getMessage(MissingConnectionsAlertPanel.class, "ACSN_UpdateDatasourcesAlertPanel")); // NOI18N
+        message.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MissingConnectionsAlertPanel.class, "ACSD_UpdateDatasourcesAlertPanel")); // NOI18N
 
-        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(MissingConnectionsAlertPanel.class, "ACSN_BrokenDatasourceAlertPanel")); // NOI18N
-        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MissingConnectionsAlertPanel.class, "ACSD_BrokenDatasourcesAlertPanel")); // NOI18N
+        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(MissingConnectionsAlertPanel.class, "ACSN_UpdateDatasourcesAlertPanel")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MissingConnectionsAlertPanel.class, "ACSD_UpdateDatasourcesAlertPanel")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
     
     private void notAgainActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_notAgainActionPerformed
