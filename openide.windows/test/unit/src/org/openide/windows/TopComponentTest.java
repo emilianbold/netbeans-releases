@@ -19,10 +19,24 @@
 
 package org.openide.windows;
 
+import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.ObjectInputStream;
+import java.util.logging.Level;
+import javax.swing.Action;
+import javax.swing.JComponent;
+import javax.swing.KeyStroke;
+import javax.swing.SwingUtilities;
+import javax.swing.text.Keymap;
 import junit.framework.TestCase;
+import org.netbeans.junit.Log;
+import org.netbeans.junit.MockServices;
+import org.openide.nodes.Node;
+import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
+import org.openide.util.actions.CookieAction;
+import org.openide.util.actions.NodeAction;
 import org.openide.util.io.NbMarshalledObject;
 
 /**
@@ -123,5 +137,115 @@ public class TopComponentTest extends TestCase {
     }
     
     
+    public void testToStringOfDelegateContainsNameOfOriginalAction() throws Exception {
+        SaveAction sa = SaveAction.get(SaveAction.class);
+        Action a = sa.createContextAwareInstance(Lookup.EMPTY);
+        if (a.toString().indexOf("SaveAction") == -1) {
+            fail("We need name of the original action:\n" + a.toString());
+        }
+        
+        CharSequence log = Log.enable("org.netbeans.ui", Level.FINER);
+        
+        final TopComponent tc = new TopComponent();
+        tc.getActionMap().put("A", a);
+        final KeyEvent ke = new KeyEvent(tc, KeyEvent.KEY_PRESSED, System.currentTimeMillis(), KeyEvent.CTRL_MASK, 0, 'S');
+        final KeyStroke ks = KeyStroke.getKeyStrokeForEvent(ke);
+        tc.getInputMap().put(ks, a);
+        MockServices.setServices(MyKM.class);
+        SwingUtilities.invokeAndWait(new Runnable() {
+
+            public void run() {
+                tc.processKeyBinding(ks, ke, JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT, true);
+            }
+            
+        });
+        
+        if (log.toString().indexOf("SaveAction") == -1) {
+            fail(log.toString());
+        }
+    }
+    public static final class SaveAction extends CookieAction {
+        static int cnt;
+        
+        protected void performAction(Node[] activatedNodes) {
+            cnt++;
+        }
+
+        protected boolean enable(Node[] activatedNodes) {
+            return true;
+        }
+
+        public String getName() {
+            return "FakeName";
+        }
+
+        public HelpCtx getHelpCtx() {
+            return HelpCtx.DEFAULT_HELP;
+        }
+
+        protected int mode() {
+            return 0;
+        }
+
+        protected Class<?>[] cookieClasses() {
+            return new Class[0];
+        }
+        
+    }
     
+    public static final class MyKM implements Keymap {
+
+        public String getName() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public Action getDefaultAction() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public void setDefaultAction(Action a) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public Action getAction(KeyStroke key) {
+            return SaveAction.get(SaveAction.class);
+        }
+
+        public KeyStroke[] getBoundKeyStrokes() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public Action[] getBoundActions() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public KeyStroke[] getKeyStrokesForAction(Action a) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public boolean isLocallyDefined(KeyStroke key) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public void addActionForKeyStroke(KeyStroke key, Action a) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public void removeKeyStrokeBinding(KeyStroke keys) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public void removeBindings() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public Keymap getResolveParent() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public void setResolveParent(Keymap parent) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+        
+    }
 }
