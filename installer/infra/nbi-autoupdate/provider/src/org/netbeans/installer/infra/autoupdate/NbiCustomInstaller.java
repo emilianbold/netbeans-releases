@@ -17,14 +17,13 @@ import org.netbeans.installer.utils.exceptions.DownloadException;
 import org.netbeans.installer.utils.exceptions.InstallationException;
 import org.netbeans.installer.utils.progress.CompositeProgress;
 import org.netbeans.installer.utils.progress.Progress;
-import org.netbeans.installer.utils.progress.ProgressListener;
 import org.netbeans.spi.autoupdate.CustomInstaller;
 
 /**
  *
  * @author ks152834
  */
-public class NbiCustomInstaller implements CustomInstaller, ProgressListener {
+public class NbiCustomInstaller implements CustomInstaller {
     private Product product;
     
     public NbiCustomInstaller(
@@ -58,9 +57,5 @@ public class NbiCustomInstaller implements CustomInstaller, ProgressListener {
         }
         
         return true;
-    }
-    
-    public void progressUpdated(Progress arg0) {
-        throw new UnsupportedOperationException("Not supported yet.");
     }
 }
