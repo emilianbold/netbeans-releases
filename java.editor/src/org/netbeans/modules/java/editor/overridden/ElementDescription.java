@@ -32,7 +32,7 @@ import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.SourceUtils;
-import org.netbeans.api.java.source.UiUtils;
+import org.netbeans.api.java.source.ui.ElementIcons;
 import org.netbeans.modules.editor.java.Utilities;
 import org.openide.filesystems.FileObject;
 
@@ -70,7 +70,7 @@ public class ElementDescription {
     }
 
     public Icon getIcon() {
-        return UiUtils.getElementIcon(handle.getKind(), modifiers);
+        return ElementIcons.getElementIcon(handle.getKind(), modifiers);
     }
     
     public String getDisplayName() {

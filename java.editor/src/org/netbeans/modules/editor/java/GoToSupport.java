@@ -58,6 +58,7 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.UiUtils;
+import org.netbeans.api.java.source.ui.ElementOpen;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
@@ -578,7 +579,7 @@ public class GoToSupport {
             Toolkit.getDefaultToolkit().beep();
         }
         public void open(ClasspathInfo info, Element el) {
-            UiUtils.open(info, el);
+            ElementOpen.open(info, el);
         }
     };
     

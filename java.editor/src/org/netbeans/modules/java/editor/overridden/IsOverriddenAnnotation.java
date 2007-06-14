@@ -27,7 +27,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
 import javax.swing.text.StyledDocument;
-import org.netbeans.api.java.source.UiUtils;
+import org.netbeans.api.java.source.ui.ElementOpen;
 import org.openide.filesystems.FileObject;
 import org.openide.text.Annotation;
 import org.openide.text.NbDocument;
@@ -120,7 +120,7 @@ class IsOverriddenAnnotation extends Annotation {
                 FileObject file = desc.getSourceFile();
                 
                 if (file != null) {
-                    UiUtils.open(file, desc.getHandle());
+                    ElementOpen.open(file, desc.getHandle());
                 } else {
                     Toolkit.getDefaultToolkit().beep();
                 }

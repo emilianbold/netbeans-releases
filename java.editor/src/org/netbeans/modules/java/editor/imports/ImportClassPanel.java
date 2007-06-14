@@ -42,8 +42,8 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.TreeMaker;
-import org.netbeans.api.java.source.UiUtils;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.api.java.source.ui.ElementIcons;
 import org.netbeans.modules.java.editor.overridden.PopupUtil;
 import org.openide.ErrorManager;
 
@@ -281,7 +281,7 @@ public class ImportClassPanel extends javax.swing.JPanel {
                 if ( td.isDenied ) {
                     setForeground( denidedColor );
                 }
-                setIcon( UiUtils.getElementIcon( td.kind, null ) );
+                setIcon( ElementIcons.getElementIcon( td.kind, null ) );
             }
             else {
                 setText( value.toString() );

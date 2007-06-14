@@ -31,6 +31,7 @@ import javax.lang.model.util.Types;
 import javax.swing.text.JTextComponent;
 
 import org.netbeans.api.java.source.*;
+import org.netbeans.api.java.source.ui.ElementHeaders;
 import org.netbeans.lib.editor.codetemplates.spi.*;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.Exceptions;
@@ -264,7 +265,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                         if (e instanceof VariableElement && types.isAssignable(e.asType(), type)) {
                             if (name == null)
                                 return (VariableElement)e;
-                            int d = UiUtils.getDistance(e.getSimpleName().toString(), name);
+                            int d = ElementHeaders.getDistance(e.getSimpleName().toString(), name);
                             if (types.isSameType(e.asType(), type))
                                 d -= 1000;
                             if (d < distance) {
@@ -305,7 +306,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                         for (Element ee : cInfo.getElementUtilities().getMembers(dType, acceptor)) {
                             if (name == null)
                                 return (VariableElement)ee;
-                            int d = UiUtils.getDistance(ee.getSimpleName().toString(), name);
+                            int d = ElementHeaders.getDistance(ee.getSimpleName().toString(), name);
                             if (ee.getKind().isField() && types.isSameType(((VariableElement)ee).asType(), dType) || ee.getKind() == ElementKind.METHOD && types.isSameType(((ExecutableElement)ee).getReturnType(), dType))
                                 d -= 1000;
                             if (d < distance) {

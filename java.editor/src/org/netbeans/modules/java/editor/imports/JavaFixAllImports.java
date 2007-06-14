@@ -36,8 +36,8 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.TreePathHandle;
-import org.netbeans.api.java.source.UiUtils;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.api.java.source.ui.ElementIcons;
 import org.netbeans.modules.java.editor.semantic.SemanticHighlighter;
 import org.netbeans.modules.editor.java.Utilities;
 import org.openide.DialogDescriptor;
@@ -104,7 +104,7 @@ public class JavaFixAllImports {
 
                             for (TypeElement e : filteredVars) {
                                 variants[index][++i] = e.getQualifiedName().toString();
-                                icons[index][i] = UiUtils.getElementIcon(e.getKind(), e.getModifiers());
+                                icons[index][i] = ElementIcons.getElementIcon(e.getKind(), e.getModifiers());
                                 int level = Utilities.getImportanceLevel(variants[index][i]);
                                 if (level < minImportanceLevel) {
                                     defaults[index] = variants[index][i];

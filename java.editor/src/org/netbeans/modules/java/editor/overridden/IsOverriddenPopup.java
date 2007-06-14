@@ -35,7 +35,7 @@ import javax.swing.JPanel;
 import javax.swing.ListModel;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.SourceUtils;
-import org.netbeans.api.java.source.UiUtils;
+import org.netbeans.api.java.source.ui.ElementOpen;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -137,7 +137,7 @@ public class IsOverriddenPopup extends JPanel implements FocusListener {
             FileObject file = desc.getSourceFile();
             
             if (file != null) {
-                UiUtils.open(file, desc.getHandle());
+                ElementOpen.open(file, desc.getHandle());
             } else {
                 Toolkit.getDefaultToolkit().beep();
             }

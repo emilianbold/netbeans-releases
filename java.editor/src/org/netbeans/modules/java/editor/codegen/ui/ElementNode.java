@@ -41,7 +41,7 @@ import javax.lang.model.type.TypeVariable;
 import javax.lang.model.type.WildcardType;
 import javax.swing.Action;
 import org.netbeans.api.java.source.ElementHandle;
-import org.netbeans.api.java.source.UiUtils;
+import org.netbeans.api.java.source.ui.ElementIcons;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -77,7 +77,7 @@ public class ElementNode extends AbstractNode {
     public Image getIcon(int type) {
         if (description.elementHandle == null)
             return super.getIcon(type);
-        return Utilities.icon2Image(UiUtils.getElementIcon(description.elementHandle.getKind(), description.modifiers));
+        return Utilities.icon2Image(ElementIcons.getElementIcon(description.elementHandle.getKind(), description.modifiers));
     }
 
     @Override
