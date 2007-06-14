@@ -39,7 +39,7 @@ import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.modules.websvc.core.AddWsOperationHelper;
 import org.netbeans.modules.websvc.core._RetoucheUtil;
 import org.netbeans.modules.websvc.design.schema2java.OperationGeneratorHelper;
-import org.netbeans.modules.websvc.design.util.Util;
+import org.netbeans.modules.websvc.design.util.WSDLUtils;
 import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
 import org.netbeans.modules.xml.schema.model.Import;
 import org.netbeans.modules.xml.schema.model.ReferenceableSchemaComponent;
@@ -185,7 +185,7 @@ public class AddOperationAction extends AbstractAction {
     private void addWSDLOperation(AddOperationFromSchemaPanel panel)
             throws IOException, FileStateInvalidException, URISyntaxException, UnknownHostException{
         OperationGeneratorHelper generatorHelper = new OperationGeneratorHelper(wsdlFile);
-        WSDLModel wsdlModel = Util.getWSDLModel(FileUtil.toFileObject(wsdlFile), true);
+        WSDLModel wsdlModel = WSDLUtils.getWSDLModel(FileUtil.toFileObject(wsdlFile), true);
         
         Set<Schema> newSchemas = panel.getNewSchemas();
         if(newSchemas.size() > 0){

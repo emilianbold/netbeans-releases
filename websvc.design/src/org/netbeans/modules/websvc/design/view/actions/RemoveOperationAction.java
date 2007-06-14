@@ -20,7 +20,7 @@ import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.modules.websvc.core.MethodGenerator;
 import org.netbeans.modules.websvc.design.javamodel.MethodModel;
 import org.netbeans.modules.websvc.design.schema2java.OperationGeneratorHelper;
-import org.netbeans.modules.websvc.design.util.Util;
+import org.netbeans.modules.websvc.design.util.WSDLUtils;
 import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.openide.DialogDisplayer;
@@ -82,7 +82,7 @@ public class RemoveOperationAction extends AbstractAction{
     private void removeOperation() throws IOException{
         OperationGeneratorHelper generatorHelper = new OperationGeneratorHelper(wsdlFile);
         if(wsdlFile != null){
-            WSDLModel wsdlModel = Util.getWSDLModel(FileUtil.toFileObject(wsdlFile), true);
+            WSDLModel wsdlModel = WSDLUtils.getWSDLModel(FileUtil.toFileObject(wsdlFile), true);
             //TODO: methodName should be the equivalent operation name in the WSDL
             //i.e., should look at operationName annotation if present
             generatorHelper.removeWSOperation(wsdlModel, generatorHelper.
