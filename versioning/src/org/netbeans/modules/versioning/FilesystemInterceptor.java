@@ -228,7 +228,7 @@ class FilesystemInterceptor extends ProvidedExtensions implements FileChangeList
     }
     
     private DelegatingInterceptor getInterceptor(File file, boolean isDirectory) {
-        if (file == null) return nullDelegatingInterceptor;
+        if (file == null || master == null) return nullDelegatingInterceptor;
         
         VersioningSystem vs = master.getOwner(file);
         VCSInterceptor vsInterceptor = vs != null ? vs.getVCSInterceptor() : nullVCSInterceptor;        
