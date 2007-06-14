@@ -174,9 +174,9 @@ Microsystems, Inc. All Rights Reserved.
                     <pathelement location="${{netbeans.home}}/../ide8/modules/org-netbeans-modules-classfile.jar"/>   
                     <pathelement location="${{netbeans.home}}/../ide8/modules/org-apache-xml-resolver.jar"/>
                     <pathelement location="${{netbeans.home}}/../soa1/modules/org-netbeans-modules-xml-wsdl-extensions.jar"/>
-                    <pathelement location="${{netbeans.home}}/../ide8/modules/ext/jaxws21/api/jaxb-api.jar"/>
-                    <pathelement location="${{netbeans.home}}/../ide8/modules/ext/jaxws21/jaxb-impl.jar"/>
-                    <pathelement location="${{netbeans.home}}/../ide8/modules/ext/jaxws21/activation.jar"/>                    
+                    <pathelement location="${{netbeans.home}}/../java1/modules/ext/jaxws21/api/jaxb-api.jar"/>
+                    <pathelement location="${{netbeans.home}}/../java1/modules/ext/jaxws21/jaxb-impl.jar"/>
+                    <pathelement location="${{netbeans.home}}/../java1/modules/ext/jaxws21/activation.jar"/>                    
                 </path>
                 
                 <taskdef name="jbi-build-service-assembly" classname="org.netbeans.modules.compapp.projects.jbi.anttasks.BuildServiceAssembly">
