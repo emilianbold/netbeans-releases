@@ -91,7 +91,7 @@ public class InnerToOuterRefactoringPlugin extends JavaRefactoringPlugin {
         //                return result;
         //            }
         if (!RetoucheUtils.isElementInOpenProject(RetoucheUtils.getFileObject(sourceType))) {
-            preCheckProblem = new Problem(true, NbBundle.getMessage(JavaRefactoringPlugin.class, "ERR_ProjectNotOpened"));
+            preCheckProblem = new Problem(true, NbBundle.getMessage(InnerToOuterRefactoringPlugin.class, "ERR_ProjectNotOpened"));
             return preCheckProblem;
         }
         
@@ -99,7 +99,7 @@ public class InnerToOuterRefactoringPlugin extends JavaRefactoringPlugin {
         //            // check whether the element is an unresolved class
         //            if (sourceType instanceof UnresolvedClass) {
         //                // fatal error -> return
-        //                return new Problem(true, NbBundle.getMessage(JavaRefactoringPlugin.class, "ERR_ElementNotAvailable")); // NOI18N
+        //                return new Problem(true, NbBundle.getMessage(InnerToOuterRefactoringPlugin.class, "ERR_ElementNotAvailable")); // NOI18N
         //            }
         
         refactoring.setClassName(RetoucheUtils.getSimpleName(sourceType));

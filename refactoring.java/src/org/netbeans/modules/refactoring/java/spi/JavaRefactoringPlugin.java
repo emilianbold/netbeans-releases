@@ -175,11 +175,11 @@ public abstract class JavaRefactoringPlugin extends ProgressProviderAdapter impl
     protected static Problem isElementAvail(TreePathHandle e, CompilationInfo info) {
         if (e==null) {
             //element is null or is not valid.
-            return new Problem(true, NbBundle.getMessage(JavaRefactoringPlugin.class, "DSC_ElNotAvail")); // NOI18N
+            return new Problem(true, NbBundle.getMessage(FindVisitor.class, "DSC_ElNotAvail")); // NOI18N
         } else {
             Element el = e.resolveElement(info);
             if (el == null || el.asType().getKind() == TypeKind.ERROR) {
-                return new Problem(true, NbBundle.getMessage(JavaRefactoringPlugin.class, "DSC_ElementNotResolved"));
+                return new Problem(true, NbBundle.getMessage(FindVisitor.class, "DSC_ElementNotResolved"));
             }
             
             // element is still available

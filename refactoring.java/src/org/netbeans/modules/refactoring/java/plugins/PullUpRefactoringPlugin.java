@@ -82,7 +82,7 @@ public final class PullUpRefactoringPlugin extends JavaRefactoringPlugin {
                 return problem;
             }
             if (!RetoucheUtils.isElementInOpenProject(treePathHandle.getFileObject())) {
-                return new Problem(true, NbBundle.getMessage(JavaRefactoringPlugin.class, "ERR_ProjectNotOpened"));
+                return new Problem(true, NbBundle.getMessage(PullUpRefactoringPlugin.class, "ERR_ProjectNotOpened"));
             }
 
 

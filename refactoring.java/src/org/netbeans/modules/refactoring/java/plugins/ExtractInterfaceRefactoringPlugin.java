@@ -110,7 +110,7 @@ public final class ExtractInterfaceRefactoringPlugin extends JavaRefactoringPlug
         String newName = refactoring.getInterfaceName();
         
         if (!Utilities.isJavaIdentifier(newName)) {
-            result = createProblem(result, true, NbBundle.getMessage(JavaRefactoringPlugin.class, "ERR_InvalidIdentifier", newName)); // NOI18N
+            result = createProblem(result, true, NbBundle.getMessage(ExtractInterfaceRefactoringPlugin.class, "ERR_InvalidIdentifier", newName)); // NOI18N
             return result;
         }
         
@@ -119,7 +119,7 @@ public final class ExtractInterfaceRefactoringPlugin extends JavaRefactoringPlug
         FileObject[] children = folder.getChildren();
         for (FileObject child: children) {
             if (!child.isVirtual() && child.getName().equals(newName) && "java".equals(child.getExt())) { // NOI18N
-                result = createProblem(result, true, NbBundle.getMessage(JavaRefactoringPlugin.class, "ERR_ClassClash", newName, pkgName)); // NOI18N
+                result = createProblem(result, true, NbBundle.getMessage(ExtractInterfaceRefactoringPlugin.class, "ERR_ClassClash", newName, pkgName)); // NOI18N
                 return result;
             }
         }
@@ -157,14 +157,14 @@ public final class ExtractInterfaceRefactoringPlugin extends JavaRefactoringPlug
                 return result;
             }
             if (!RetoucheUtils.isElementInOpenProject(sourceType.getFileObject())) {
-                return new Problem(true, NbBundle.getMessage(JavaRefactoringPlugin.class, "ERR_ProjectNotOpened")); // NOI18N
+                return new Problem(true, NbBundle.getMessage(ExtractInterfaceRefactoringPlugin.class, "ERR_ProjectNotOpened")); // NOI18N
             }
             
             // check whether the element is an unresolved class
             Element sourceElm = sourceType.resolveElement(javac);
             if (sourceElm == null || (sourceElm.getKind() != ElementKind.CLASS && sourceElm.getKind() != ElementKind.INTERFACE && sourceElm.getKind() != ElementKind.ENUM)) {
                 // fatal error -> return
-                return new Problem(true, NbBundle.getMessage(JavaRefactoringPlugin.class, "ERR_ElementNotAvailable")); // NOI18N
+                return new Problem(true, NbBundle.getMessage(ExtractInterfaceRefactoringPlugin.class, "ERR_ElementNotAvailable")); // NOI18N
             }
             
             classHandle = ElementHandle.<TypeElement>create((TypeElement) sourceElm);
@@ -185,7 +185,7 @@ public final class ExtractInterfaceRefactoringPlugin extends JavaRefactoringPlug
     
     protected Problem checkParameters(CompilationController javac) throws IOException {
         if (refactoring.getMethods().isEmpty() && refactoring.getFields().isEmpty() && refactoring.getImplements().isEmpty()) {
-            return new Problem(true, NbBundle.getMessage(JavaRefactoringPlugin.class, "ERR_ExtractInterface_MembersNotAvailable")); // NOI18N);
+            return new Problem(true, NbBundle.getMessage(ExtractInterfaceRefactoringPlugin.class, "ERR_ExtractInterface_MembersNotAvailable")); // NOI18N);
         }
         // check whether the selected members are public and non-static in case of methods, static in other cases
         // check whether all members belong to the source type
@@ -200,7 +200,7 @@ public final class ExtractInterfaceRefactoringPlugin extends JavaRefactoringPlug
         for (ElementHandle<ExecutableElement> elementHandle : refactoring.getMethods()) {
             ExecutableElement elm = elementHandle.resolve(javac);
             if (elm == null) {
-                return new Problem(true, NbBundle.getMessage(JavaRefactoringPlugin.class, "ERR_ElementNotAvailable")); // NOI18N
+                return new Problem(true, NbBundle.getMessage(ExtractInterfaceRefactoringPlugin.class, "ERR_ElementNotAvailable")); // NOI18N
             }
             if (javac.getElementUtilities().isSynthetic(elm) || elm.getKind() != ElementKind.METHOD) {
                 return new Problem(true, NbBundle.getMessage(ExtractInterfaceRefactoringPlugin.class, "ERR_ExtractInterface_UnknownMember", // NOI18N
@@ -219,7 +219,7 @@ public final class ExtractInterfaceRefactoringPlugin extends JavaRefactoringPlug
         for (ElementHandle<VariableElement> elementHandle : refactoring.getFields()) {
             VariableElement elm = elementHandle.resolve(javac);
             if (elm == null) {
-                return new Problem(true, NbBundle.getMessage(JavaRefactoringPlugin.class, "ERR_ElementNotAvailable")); // NOI18N
+                return new Problem(true, NbBundle.getMessage(ExtractInterfaceRefactoringPlugin.class, "ERR_ElementNotAvailable")); // NOI18N
             }
             if (javac.getElementUtilities().isSynthetic(elm) || elm.getKind() != ElementKind.FIELD) {
                 return new Problem(true, NbBundle.getMessage(ExtractInterfaceRefactoringPlugin.class, "ERR_ExtractInterface_UnknownMember", // NOI18N

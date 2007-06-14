@@ -241,7 +241,7 @@ public class ChangeParametersPlugin extends JavaRefactoringPlugin implements Pro
         }
         
         if (!RetoucheUtils.isElementInOpenProject(fo)) {
-            preCheckProblem =new Problem(true, NbBundle.getMessage(JavaRefactoringPlugin.class, "ERR_ProjectNotOpened"));
+            preCheckProblem =new Problem(true, NbBundle.getMessage(ChangeParametersPlugin.class, "ERR_ProjectNotOpened"));
             return preCheckProblem;
         }
                     

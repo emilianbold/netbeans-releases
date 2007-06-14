@@ -76,7 +76,7 @@ public final class PushDownRefactoringPlugin extends JavaRefactoringPlugin {
                 return precheckProblem;
             }
             if (!RetoucheUtils.isElementInOpenProject(treePathHandle.getFileObject())) {
-                return new Problem(true, NbBundle.getMessage(JavaRefactoringPlugin.class, "ERR_ProjectNotOpened"));
+                return new Problem(true, NbBundle.getMessage(PushDownRefactoringPlugin.class, "ERR_ProjectNotOpened"));
             }
 
 

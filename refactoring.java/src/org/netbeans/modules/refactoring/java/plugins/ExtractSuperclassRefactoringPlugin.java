@@ -121,14 +121,14 @@ public final class ExtractSuperclassRefactoringPlugin extends JavaRefactoringPlu
                 return result;
             }
             if (!RetoucheUtils.isElementInOpenProject(sourceType.getFileObject())) {
-                return new Problem(true, NbBundle.getMessage(JavaRefactoringPlugin.class, "ERR_ProjectNotOpened")); // NOI18N
+                return new Problem(true, NbBundle.getMessage(ExtractSuperclassRefactoringPlugin.class, "ERR_ProjectNotOpened")); // NOI18N
             }
             
             // check whether the element is an unresolved class
             Element sourceElm = sourceType.resolveElement(javac);
             if (sourceElm == null || (sourceElm.getKind() != ElementKind.CLASS)) {
                 // fatal error -> return
-                return new Problem(true, NbBundle.getMessage(JavaRefactoringPlugin.class, "ERR_ElementNotAvailable")); // NOI18N
+                return new Problem(true, NbBundle.getMessage(ExtractSuperclassRefactoringPlugin.class, "ERR_ElementNotAvailable")); // NOI18N
             }
             
             classHandle = ElementHandle.<TypeElement>create((TypeElement) sourceElm);
@@ -157,7 +157,7 @@ public final class ExtractSuperclassRefactoringPlugin extends JavaRefactoringPlu
         String newName = refactoring.getSuperClassName();
         
         if (!Utilities.isJavaIdentifier(newName)) {
-            result = createProblem(result, true, NbBundle.getMessage(JavaRefactoringPlugin.class, "ERR_InvalidIdentifier", newName)); // NOI18N
+            result = createProblem(result, true, NbBundle.getMessage(ExtractSuperclassRefactoringPlugin.class, "ERR_InvalidIdentifier", newName)); // NOI18N
             return result;
         }
         
@@ -166,7 +166,7 @@ public final class ExtractSuperclassRefactoringPlugin extends JavaRefactoringPlu
         FileObject[] children = folder.getChildren();
         for (FileObject child: children) {
             if (!child.isVirtual() && child.getName().equals(newName) && "java".equals(child.getExt())) { // NOI18N
-                result = createProblem(result, true, NbBundle.getMessage(JavaRefactoringPlugin.class, "ERR_ClassClash", newName, pkgName)); // NOI18N
+                result = createProblem(result, true, NbBundle.getMessage(ExtractSuperclassRefactoringPlugin.class, "ERR_ClassClash", newName, pkgName)); // NOI18N
                 return result;
             }
         }
@@ -177,7 +177,7 @@ public final class ExtractSuperclassRefactoringPlugin extends JavaRefactoringPlu
     public Problem checkParameters() {
         MemberInfo[] members = refactoring.getMembers();
         if (refactoring.getMembers().length == 0) {
-            return new Problem(true, NbBundle.getMessage(JavaRefactoringPlugin.class, "ERR_ExtractSuperClass_MembersNotAvailable")); // NOI18N);
+            return new Problem(true, NbBundle.getMessage(ExtractSuperclassRefactoringPlugin.class, "ERR_ExtractSuperClass_MembersNotAvailable")); // NOI18N);
         }
         return super.checkParameters();
 
@@ -225,7 +225,7 @@ public final class ExtractSuperclassRefactoringPlugin extends JavaRefactoringPlu
     
     private Problem checkFieldParameter(CompilationController javac, VariableElement elm, Set<? extends Element> members) throws IOException {
         if (elm == null) {
-            return new Problem(true, NbBundle.getMessage(JavaRefactoringPlugin.class, "ERR_ElementNotAvailable")); // NOI18N
+            return new Problem(true, NbBundle.getMessage(ExtractSuperclassRefactoringPlugin.class, "ERR_ElementNotAvailable")); // NOI18N
         }
         if (javac.getElementUtilities().isSynthetic(elm) || elm.getKind() != ElementKind.FIELD) {
             return new Problem(true, NbBundle.getMessage(ExtractInterfaceRefactoringPlugin.class, "ERR_ExtractSuperClass_UnknownMember", // NOI18N
@@ -248,7 +248,7 @@ public final class ExtractSuperclassRefactoringPlugin extends JavaRefactoringPlu
     
     private Problem checkMethodParameter(CompilationController javac, ExecutableElement elm, Set<? extends Element> members) throws IOException {
         if (elm == null) {
-            return new Problem(true, NbBundle.getMessage(JavaRefactoringPlugin.class, "ERR_ElementNotAvailable")); // NOI18N
+            return new Problem(true, NbBundle.getMessage(ExtractSuperclassRefactoringPlugin.class, "ERR_ElementNotAvailable")); // NOI18N
         }
         if (javac.getElementUtilities().isSynthetic(elm) || elm.getKind() != ElementKind.METHOD) {
             return new Problem(true, NbBundle.getMessage(ExtractInterfaceRefactoringPlugin.class, "ERR_ExtractSuperClass_UnknownMember", // NOI18N
