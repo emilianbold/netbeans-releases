@@ -173,8 +173,7 @@ public class AddOperationFromSchemaPanel extends javax.swing.JPanel {
         jTabbedPane1 = new javax.swing.JTabbedPane();
         parametersPanel = new org.netbeans.modules.websvc.design.view.actions.ParametersPanel(getWsdlModel());
         jPanel1 = new javax.swing.JPanel();
-        docLiteralRB = new javax.swing.JRadioButton();
-        rpcLiteralRB = new javax.swing.JRadioButton();
+        bindingStyleLabel = new javax.swing.JLabel();
         schemaTypesTextField = new javax.swing.JTextField();
 
         nameLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/websvc/design/view/actions/Bundle").getString("LBL_OperationName_mnem").charAt(0));
@@ -202,21 +201,8 @@ public class AddOperationFromSchemaPanel extends javax.swing.JPanel {
 
         jPanel1.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 20, 10));
 
-        buttonGroup1.add(docLiteralRB);
-        docLiteralRB.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/websvc/design/view/actions/Bundle").getString("RB_DOCUMENT_LITERAL_mnem").charAt(0));
-        docLiteralRB.setSelected(true);
-        docLiteralRB.setText(org.openide.util.NbBundle.getMessage(AddOperationFromSchemaPanel.class, "RB_DOCUMENT_LITERAL")); // NOI18N
-        docLiteralRB.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        docLiteralRB.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        jPanel1.add(docLiteralRB);
-
-        buttonGroup1.add(rpcLiteralRB);
-        rpcLiteralRB.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/websvc/design/view/actions/Bundle").getString("RB_RPC_LITERAL_mnem").charAt(0));
-        rpcLiteralRB.setText(org.openide.util.NbBundle.getMessage(AddOperationFromSchemaPanel.class, "RB_RPC_LITERAL")); // NOI18N
-        rpcLiteralRB.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        rpcLiteralRB.setEnabled(false);
-        rpcLiteralRB.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        jPanel1.add(rpcLiteralRB);
+        bindingStyleLabel.setText("Document/Literal"); // NOI18N
+        jPanel1.add(bindingStyleLabel);
 
         schemaTypesTextField.setEditable(false);
         schemaTypesTextField.setText(org.openide.util.NbBundle.getMessage(AddOperationFromSchemaPanel.class, "AddOperationFromSchemaPanel.wsdlTextField.text")); // NOI18N
@@ -239,8 +225,8 @@ public class AddOperationFromSchemaPanel extends javax.swing.JPanel {
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(returnCombo, 0, 363, Short.MAX_VALUE)
                             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                                .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 146, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 78, Short.MAX_VALUE)
                                 .add(importSchemaBtn))
                             .add(org.jdesktop.layout.GroupLayout.TRAILING, opNameTxt, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 363, Short.MAX_VALUE)
                             .add(schemaTypesTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 363, Short.MAX_VALUE))))
@@ -265,9 +251,9 @@ public class AddOperationFromSchemaPanel extends javax.swing.JPanel {
                     .add(layout.createSequentialGroup()
                         .add(jLabel6)
                         .add(10, 10, 10))
-                    .add(layout.createSequentialGroup()
-                        .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 34, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .add(1, 1, 1)))
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                        .add(14, 14, 14)
+                        .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
                 .add(13, 13, 13)
                 .add(jTabbedPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 257, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .add(19, 19, 19)
@@ -373,8 +359,8 @@ private WSDLModel getWsdlModel() {
 }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JLabel bindingStyleLabel;
     private javax.swing.ButtonGroup buttonGroup1;
-    private javax.swing.JRadioButton docLiteralRB;
     private javax.swing.JButton importSchemaBtn;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JPanel jPanel1;
@@ -384,7 +370,6 @@ private WSDLModel getWsdlModel() {
     private org.netbeans.modules.websvc.design.view.actions.ParametersPanel parametersPanel;
     private javax.swing.JComboBox returnCombo;
     private javax.swing.JLabel returnLabel;
-    private javax.swing.JRadioButton rpcLiteralRB;
     private javax.swing.JTextField schemaTypesTextField;
     private javax.swing.JLabel wsdlLabel;
     // End of variables declaration//GEN-END:variables
