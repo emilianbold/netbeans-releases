@@ -30,7 +30,6 @@ import java.util.prefs.Preferences;
 import javax.lang.model.element.Modifier;
 import org.netbeans.api.java.source.*;
 import org.netbeans.api.java.source.JavaSource.Phase;
-import org.netbeans.api.java.source.gen.*;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.java.ui.FmtOptions;
 import org.openide.filesystems.FileUtil;

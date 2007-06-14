@@ -832,7 +832,7 @@ public class ClassMemberTest extends GeneratorTestMDRCompat {
 //                VariableTree par2 = make.Variable(parMods, "b", make.PrimitiveType(TypeKind.INT), null);
 //                MethodTree constrCopy = make.addMethodParameter(constr, par1);
 //                constrCopy = make.addMethodParameter(constrCopy, par2);
-                BlockTree newBody = make.createMethodBody(constr, "{ // TODO: Make it!\nint i = 0; }");
+                BlockTree newBody = make.createMethodBody(constr, "{\n // TODO: Make it!\nint i = 0; }");
                 workingCopy.rewrite(constr.getBody(), newBody);
                 ClassTree copy = make.insertClassMember(classTree, 1, m(make));
                 workingCopy.rewrite(classTree, copy);

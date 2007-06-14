@@ -1264,12 +1264,16 @@ public abstract class PositionEstimator {
         return base;
     }
     
+    public static final boolean isSeparator(JavaTokenId id) {
+        return "separator".equals(id.primaryCategory()); //NOI18N
+    }
+    
     /**
      * Represents non-relevant tokens in java source. (Tokens which are not
      * important for javac, i.e. line and block comments, empty lines and
      * whitespaces.)
      */
-    static final EnumSet<JavaTokenId> nonRelevant = EnumSet.<JavaTokenId>of(
+    public static final EnumSet<JavaTokenId> nonRelevant = EnumSet.<JavaTokenId>of(
             LINE_COMMENT, 
             BLOCK_COMMENT,
             JAVADOC_COMMENT,

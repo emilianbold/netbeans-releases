@@ -20,14 +20,10 @@
 package org.netbeans.modules.editor.java;
 
 import java.io.*;
-import javax.swing.text.Document;
 import org.netbeans.editor.ext.ExtFormatter;
-import org.netbeans.editor.ext.java.JavaFormatter;
 import org.netbeans.editor.ext.java.JavaSettingsNames;
 import org.netbeans.editor.ext.java.JavaSettingsDefaults;
-import org.netbeans.modules.editor.EditorModule;
 import org.netbeans.modules.editor.FormatterIndentEngine;
-import org.openide.text.IndentEngine;
 
 /**
 * Java indentation engine that delegates to java formatter
@@ -56,7 +52,7 @@ public class JavaIndentEngine extends FormatterIndentEngine {
     }
 
     protected ExtFormatter createFormatter() {
-        return new JavaFormatter(JavaKit.class);
+        return new NbJavaFormatter(JavaKit.class);
     }
 
 

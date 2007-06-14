@@ -101,12 +101,14 @@ public class CommentsTest extends GeneratorTest {
                 ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
                 MethodTree method = (MethodTree) clazz.getMembers().get(1);
                 String bodyText = 
-                        "{" +
+                        "{\n" +
                         "    // test\n" +
                         "    int a;\n" +
-                        "    /** becko */\n" +
+                        "    /**\n" +
+                        "     * becko\n" +
+                        "     */\n" +
                         "    int b;\n" +
-                        "    /* cecko\n */\n" +
+                        "    // cecko\n" +
                         "    int c; // trail\n" +
                         "}";
                 BlockTree block = make.createMethodBody(method, bodyText);
@@ -207,7 +209,7 @@ public class CommentsTest extends GeneratorTest {
                         Comment.Style.JAVADOC, 
                         Query.NOPOS, 
                         Query.NOPOS, 
-                        Query.NOPOS, 
+                        1, // to ensure indentation
                         "Comentario"), 
                         true
                 );
@@ -257,7 +259,7 @@ public class CommentsTest extends GeneratorTest {
                         Comment.Style.JAVADOC, 
                         Query.NOPOS, 
                         Query.NOPOS, 
-                        Query.NOPOS, 
+                        1, // to ensure indentation
                         "/** Comentario \n*/"),
                         true
                 );
@@ -417,10 +419,10 @@ public class CommentsTest extends GeneratorTest {
             "public class Test {\n" +
             "\n" +
             "    void method() {\n" +
-            "        \n" +
+            "\n" +
             "        // test\n" +
             "        int a;\n" +
-            "        \n" +
+            "\n" +
             "        /*\n" +
             "         * Test\n" +
             "         * Test2\n" +

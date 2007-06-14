@@ -43,7 +43,6 @@ import org.netbeans.api.java.source.CodeStyle;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.modules.java.source.pretty.VeryPretty;
-import org.netbeans.modules.java.source.save.ListMatcher;
 import static org.netbeans.modules.java.source.save.ListMatcher.*;
 import static com.sun.tools.javac.code.Flags.*;
 import static org.netbeans.modules.java.source.save.PositionEstimator.*;
@@ -73,7 +72,7 @@ public class CasualDiff {
         this.tokenSequence = workingCopy.getTokenHierarchy().tokenSequence(JavaTokenId.language());
         this.origText = workingCopy.getText();
         this.context = context;
-        printer = new VeryPretty(context, CodeStyle.getDefault(null), workingCopy, this);
+        printer = new VeryPretty(workingCopy, CodeStyle.getDefault(null));
     }
     
     public com.sun.tools.javac.util.List<Diff> getDiffs() {
@@ -649,7 +648,7 @@ public class CasualDiff {
         }
         int pos = oldT.stats.head.pos;
         PositionEstimator est = EstimatorFactory.deprecated(oldT.getStatements(), newT.getStatements(), workingCopy);
-        VeryPretty localPrinter = new VeryPretty(context);
+        VeryPretty localPrinter = new VeryPretty(workingCopy);
         int[] stmtPos = diffList(oldT.stats, newT.stats, pos, est, Measure.DEFAULT, localPrinter);
         if (localPointer < stmtPos[0]) copyTo(localPointer, stmtPos[0]);
         printer.print(localPrinter.toString());
@@ -679,7 +678,7 @@ public class CasualDiff {
         copyTo(localPointer, bodyPos[0]);
         localPointer = diffTree(oldT.body, newT.body, bodyPos);
         int pos = oldT.catchers.head != null ? getOldPos(oldT.catchers.head) : oldT.body.endpos + 1;
-        VeryPretty locPrint = new VeryPretty(context);
+        VeryPretty locPrint = new VeryPretty(workingCopy);
         PositionEstimator est = EstimatorFactory.deprecated(((TryTree) oldT).getCatches(), ((TryTree) newT).getCatches(), workingCopy);
         int[] retPos = diffList(oldT.catchers, newT.catchers, pos, est, Measure.DEFAULT, locPrint);
         if (localPointer < retPos[0]) {
@@ -1747,7 +1746,7 @@ public class CasualDiff {
                                 found = true;
                                 VeryPretty oldPrinter = this.printer;
                                 int old = oldPrinter.indent();
-                                this.printer = new VeryPretty(context);
+                                this.printer = new VeryPretty(workingCopy);
                                 this.printer.reset(old);
                                 int index = oldList.indexOf(oldT);
                                 int[] poss = estimator.getPositions(index);
@@ -1765,7 +1764,7 @@ public class CasualDiff {
                         if (lastdel != null && treesMatch(item.element, lastdel, false)) {
                             VeryPretty oldPrinter = this.printer;
                             int old = oldPrinter.indent();
-                            this.printer = new VeryPretty(context);
+                            this.printer = new VeryPretty(workingCopy);
                             this.printer.reset(old);
                             int index = oldList.indexOf(lastdel);
                             int[] poss = estimator.getPositions(index);
@@ -1928,7 +1927,7 @@ public class CasualDiff {
                                 found = true;
                                 VeryPretty oldPrinter = this.printer;
                                 int old = oldPrinter.indent();
-                                this.printer = new VeryPretty(context);
+                                this.printer = new VeryPretty(workingCopy);
                                 this.printer.reset(old);
                                 int index = oldList.indexOf(oldT);
                                 int[] poss = estimator.getPositions(index);
@@ -1944,7 +1943,7 @@ public class CasualDiff {
                         if (lastdel != null && treesMatch(item.element, lastdel, false)) {
                             VeryPretty oldPrinter = this.printer;
                             int old = oldPrinter.indent();
-                            this.printer = new VeryPretty(context);
+                            this.printer = new VeryPretty(workingCopy);
                             this.printer.reset(old);
                             int index = oldList.indexOf(lastdel);
                             int[] poss = estimator.getPositions(index);
@@ -2156,7 +2155,7 @@ public class CasualDiff {
                 ((binaries.contains(oldT.getKind()) && binaries.contains(newT.getKind())) == false) &&
                 ((unaries.contains(oldT.getKind()) && unaries.contains(newT.getKind())) == false)) {
                 // different kind of trees found, print the whole new one.
-                printer.print(newT, workingCopy);
+                printer.print(newT);
                 return endPos(oldT);
             }
         }

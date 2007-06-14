@@ -57,6 +57,8 @@ import com.sun.tools.javac.util.Name;
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.net.URLEncoder;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
@@ -68,6 +70,8 @@ import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.java.JavaDataLoader;
 import org.netbeans.modules.java.source.parsing.FileObjects;
+import org.netbeans.modules.java.source.pretty.VeryPretty;
+import org.netbeans.modules.java.source.save.Reformatter;
 import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
 import org.netbeans.modules.java.source.usages.Index;
 import org.netbeans.modules.java.source.usages.RepositoryUpdater;
@@ -139,6 +143,11 @@ public class SourceUtils {
     public static TypeMirror getBound(WildcardType wildcardType) {
         Type.TypeVar bound = ((Type.WildcardType)wildcardType).bound;
         return bound != null ? bound.bound : null;
+    }
+    
+    public static boolean reformat(CompilationController controller, Document doc, int startOffset, int endOffset) throws BadLocationException {
+        Reformatter r = new Reformatter(controller, doc, startOffset, endOffset);
+        return r.reformat();
     }
 
     /**

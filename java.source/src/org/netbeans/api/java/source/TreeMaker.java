@@ -2498,19 +2498,32 @@ public final class TreeMaker {
         for (StatementTree statement : trees) {
             seq.move((int) pos.getStartPosition(null, statement));
             PositionEstimator.moveToSrcRelevant(seq, Direction.BACKWARD);
+            int indent = Query.NOPOS;
             while (seq.moveNext() && nonRelevant.contains(seq.token().id())) {
                 switch (seq.token().id()) {
                     case LINE_COMMENT:
-                        comments.addComment(statement, Comment.create(Style.LINE, Query.NOPOS, Query.NOPOS, Query.NOPOS, seq.token().toString()));
+                        comments.addComment(statement, Comment.create(Style.LINE, Query.NOPOS, Query.NOPOS, indent, seq.token().toString()));
+                        indent = 0;
                         break;
                     case BLOCK_COMMENT:
-                        comments.addComment(statement, Comment.create(Style.BLOCK, Query.NOPOS, Query.NOPOS, Query.NOPOS, seq.token().toString()));
+                        comments.addComment(statement, Comment.create(Style.BLOCK, Query.NOPOS, Query.NOPOS, indent, seq.token().toString()));
+                        indent = Query.NOPOS;
                         break;
                     case JAVADOC_COMMENT:
-                        comments.addComment(statement, Comment.create(Style.JAVADOC, Query.NOPOS, Query.NOPOS, Query.NOPOS, seq.token().toString()));
+                        comments.addComment(statement, Comment.create(Style.JAVADOC, Query.NOPOS, Query.NOPOS, indent, seq.token().toString()));
+                        indent = Query.NOPOS;
                         break;
                     case WHITESPACE:
-                        comments.addComment(statement, Comment.create(Style.WHITESPACE, Query.NOPOS, Query.NOPOS, Query.NOPOS, seq.token().toString()));
+                        String tokenText = seq.token().toString();
+                        comments.addComment(statement, Comment.create(Style.WHITESPACE, Query.NOPOS, Query.NOPOS, Query.NOPOS, tokenText));
+                        int newLinePos = tokenText.lastIndexOf('\n');
+                        if (newLinePos < 0) {
+                            if (indent >= 0)
+                                indent += tokenText.length();
+                        } else {
+                            indent = tokenText.length() - newLinePos - 1;
+                        }
+                        break;
                 }
             }
         }
