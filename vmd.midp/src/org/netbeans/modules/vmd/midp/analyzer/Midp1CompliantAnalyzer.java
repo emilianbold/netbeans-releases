@@ -17,7 +17,6 @@
  * Microsystems, Inc. All Rights Reserved.
  *
  */
-
 package org.netbeans.modules.vmd.midp.analyzer;
 
 import org.netbeans.modules.vmd.api.analyzer.Analyzer;
@@ -26,6 +25,7 @@ import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter;
 import org.netbeans.modules.vmd.midp.components.MidpDocumentSupport;
 import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.MidpVersionable;
+import org.netbeans.modules.vmd.midp.components.items.ItemCD;
 import org.openide.util.NbBundle;
 
 import javax.swing.*;
@@ -63,11 +63,12 @@ public class Midp1CompliantAnalyzer implements Analyzer {
         if (visualRepresentation == null  ||  document == null)
             return;
         final JList list = (JList) ((JScrollPane) visualRepresentation).getViewport ().getView ();
-        list.removeAll ();
 
         document.getTransactionManager ().readAccess (new Runnable() {
             public void run () {
-                analyze ((DefaultListModel) list.getModel (), document.getRootComponent ());
+                DefaultListModel model = (DefaultListModel) list.getModel ();
+                model.removeAllElements ();
+                analyze (model, document.getRootComponent ());
             }
         });
     }
@@ -78,16 +79,35 @@ public class Midp1CompliantAnalyzer implements Analyzer {
             return;
 
         VersionDescriptor version = descriptor.getVersionDescriptor ();
-        if (! version.isCompatibleWith (MidpVersionDescriptor.MIDP))
-            list.addElement ("<html>Incompatible component: " + InfoPresenter.getHtmlDisplayName (component));
+        if (! version.isCompatibleWith (MidpVersionDescriptor.MIDP_1)) {
+            reportComponent (list, component);
+            return;
+        }
 
         for (PropertyDescriptor property : descriptor.getPropertyDescriptors ())
             if (! property.getVersionable ().isCompatibleWith (MidpVersionable.MIDP_1))
                 if (! component.isDefaultValue (property.getName ()))
-                    list.addElement ("<html>Incompatible property value set for: " + property.getName () + " in " + InfoPresenter.getHtmlDisplayName (component));
+                    reportComponentProperty (list, component, property.getName ());
 
         for (DesignComponent child : component.getComponents ())
             analyze (list, child);
+    }
+
+    private void reportComponent (DefaultListModel list, DesignComponent component) {
+        list.addElement ("<html>Incompatible component: " + InfoPresenter.getHtmlDisplayName (component));
+    }
+
+    private void reportComponentProperty (DefaultListModel list, DesignComponent component, String propertyName) {
+        DescriptorRegistry registry = component.getDocument ().getDescriptorRegistry ();
+        if (registry.isInHierarchy (ItemCD.TYPEID, component.getType ())) {
+            if (ItemCD.PROP_ITEM_COMMAND_LISTENER.equals (propertyName))
+                return;
+            if (ItemCD.PROP_COMMANDS.equals (propertyName)) {
+                list.addElement ("<html>Commands should not be assigned to Item: " + InfoPresenter.getHtmlDisplayName (component));
+                return;
+            }
+        }
+        list.addElement ("<html>Incompatible property value set for: " + propertyName + " in " + InfoPresenter.getHtmlDisplayName (component));
     }
 
 }
