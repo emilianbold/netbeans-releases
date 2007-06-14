@@ -26,12 +26,13 @@
 package org.netbeans.modules.tomcat5.util;
 
 import java.io.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.tomcat5.config.gen.Engine;
 import org.netbeans.modules.tomcat5.config.gen.Host;
 import org.netbeans.modules.tomcat5.config.gen.Server;
 import org.netbeans.modules.tomcat5.config.gen.Service;
 
-import org.openide.ErrorManager;
 import org.openide.filesystems.*;
 import org.openide.loaders.*;
 import org.openide.cookies.EditorCookie;
@@ -42,6 +43,7 @@ import org.netbeans.modules.tomcat5.TomcatFactory;
 import org.w3c.dom.Document;
 import org.apache.xml.serialize.*;
 import org.openide.modules.InstalledFileLocator;
+import org.openide.util.Exceptions;
 
 
 /**
@@ -77,8 +79,8 @@ public class TomcatInstallUtil {
         
         port = server.getAttributeValue("port");
                 
-        if (TomcatFactory.getEM ().isLoggable (ErrorManager.INFORMATIONAL)) {
-            TomcatFactory.getEM ().log ("T5Util.getAdminPort: " + port);             // NOI18N
+        if (TomcatFactory.getEM().isLoggable(Level.INFO)) {
+            TomcatFactory.getEM().log(Level.INFO, "T5Util.getAdminPort: " + port);             // NOI18N
         }
         return port != null ? port : String.valueOf(TomcatProperties.DEF_VALUE_SHUTDOWN_PORT);
     }
@@ -106,8 +108,8 @@ public class TomcatInstallUtil {
         
         port = service.getAttributeValue(PROP_CONNECTOR, defCon, ATTR_PORT);
 
-        if (TomcatFactory.getEM ().isLoggable (ErrorManager.INFORMATIONAL)) {
-            TomcatFactory.getEM ().log ("T5Util.getPort: " + port);             // NOI18N
+        if (TomcatFactory.getEM().isLoggable(Level.INFO)) {
+            TomcatFactory.getEM().log(Level.INFO, "T5Util.getPort: " + port);             // NOI18N
         }
         return port;
     }
@@ -119,8 +121,8 @@ public class TomcatInstallUtil {
             host = service.getAttributeValue("Engine",0,"defaultHost");
         }
        
-        if (TomcatFactory.getEM ().isLoggable (ErrorManager.INFORMATIONAL)) {
-            TomcatFactory.getEM ().log ("T5Util.getHost: " + host);             // NOI18N
+        if (TomcatFactory.getEM().isLoggable(Level.INFO)) {
+           TomcatFactory.getEM().log(Level.INFO, "T5Util.getHost: " + host);             // NOI18N
         }
         return host;
     }
@@ -231,13 +233,13 @@ public class TomcatInstallUtil {
                     }
                 }
             } catch(org.xml.sax.SAXException ex){
-                org.openide.ErrorManager.getDefault ().notify(ex);
+                Exceptions.printStackTrace(ex);
             } catch(org.openide.loaders.DataObjectNotFoundException ex){
-                org.openide.ErrorManager.getDefault ().notify(ex);
+                Exceptions.printStackTrace(ex);
             } catch(javax.swing.text.BadLocationException ex){
-                org.openide.ErrorManager.getDefault ().notify(ex);
+                Exceptions.printStackTrace(ex);
             } catch(java.io.IOException ex){
-                org.openide.ErrorManager.getDefault ().notify(ex);
+                Exceptions.printStackTrace(ex);
             }
         }
         return false;
@@ -292,9 +294,9 @@ public class TomcatInstallUtil {
             setHostAttributeValue(server, ATTR_AUTO_DEPLOY, BUNDLED_DEFAULT_AUTO_DEPLOY.toString());
             server.write(serverXml);
         } catch (IOException e) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            Logger.getLogger("global").log(Level.INFO, null, e);
         } catch (RuntimeException e) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            Logger.getLogger("global").log(Level.INFO, null, e);
         }
     }
     
@@ -309,13 +311,13 @@ public class TomcatInstallUtil {
                 updateDocument(dobj,doc);
                 return true;
             } catch(org.xml.sax.SAXException ex){
-                org.openide.ErrorManager.getDefault ().notify(ex);
+                Exceptions.printStackTrace(ex);
             } catch(org.openide.loaders.DataObjectNotFoundException ex){
-                org.openide.ErrorManager.getDefault ().notify(ex);
+                Exceptions.printStackTrace(ex);
             } catch(javax.swing.text.BadLocationException ex){
-                org.openide.ErrorManager.getDefault ().notify(ex);
+                Exceptions.printStackTrace(ex);
             } catch(java.io.IOException ex){
-                org.openide.ErrorManager.getDefault ().notify(ex);
+                Exceptions.printStackTrace(ex);
             }
         }
         return false;

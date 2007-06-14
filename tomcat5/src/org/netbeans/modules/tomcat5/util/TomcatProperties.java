@@ -26,7 +26,6 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -38,15 +37,14 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.tomcat5.TomcatFactory;
 import org.netbeans.modules.tomcat5.TomcatManager;
-import org.netbeans.modules.tomcat5.TomcatManager.TomcatVersion;
 import org.netbeans.modules.tomcat5.customizer.CustomizerSupport;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.modules.InstalledFileLocator;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 /**
@@ -208,7 +206,7 @@ public class TomcatProperties {
                     try {
                         storeAntDeploymentProperties(getAntDeploymentPropertiesFile(), false);
                     } catch(IOException ioe) {
-                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
+                        Logger.getLogger("global").log(Level.INFO, null, ioe);
                     }
                 }
             }
@@ -458,7 +456,7 @@ public class TomcatProperties {
             try {
                 return Integer.parseInt(val);
             } catch (NumberFormatException nfe) {
-                TomcatManager.ERR.notify(ErrorManager.INFORMATIONAL, nfe);
+                TomcatManager.ERR.log(Level.INFO, null, nfe);
             }
         }
         return DEF_VALUE_DEBUG_PORT;
@@ -478,7 +476,7 @@ public class TomcatProperties {
                     return port;
                 }
             } catch (NumberFormatException nfe) {
-                TomcatManager.ERR.notify(ErrorManager.INFORMATIONAL, nfe);
+                TomcatManager.ERR.log(Level.INFO, null, nfe);
             }
         }
         return tm.isBundledTomcat() ? DEF_VALUE_BUNDLED_SERVER_PORT : DEF_VALUE_SERVER_PORT;
@@ -498,7 +496,7 @@ public class TomcatProperties {
                     return port;
                 }
             } catch (NumberFormatException nfe) {
-                TomcatManager.ERR.notify(ErrorManager.INFORMATIONAL, nfe);
+                TomcatManager.ERR.log(Level.INFO, null, nfe);
             }
         }
         return tm.isBundledTomcat() ? DEF_VALUE_BUNDLED_SHUTDOWN_PORT : DEF_VALUE_SHUTDOWN_PORT;
@@ -594,7 +592,7 @@ public class TomcatProperties {
                     list.add(Utils.fileToUrl(docs));
                 }
             } catch (MalformedURLException e) {
-                ErrorManager.getDefault().notify(e);
+                Exceptions.printStackTrace(e);
             }
             return list;
         }
@@ -630,7 +628,7 @@ public class TomcatProperties {
             try {
                 return Long.parseLong(val);
             } catch (NumberFormatException nfe) {
-                TomcatManager.ERR.notify(ErrorManager.INFORMATIONAL, nfe);
+                TomcatManager.ERR.log(Level.INFO, null, nfe);
             }
         }
         return -1;
@@ -667,7 +665,7 @@ public class TomcatProperties {
             try {
                 return Integer.parseInt(val);
             } catch (NumberFormatException nfe) {
-                TomcatManager.ERR.notify(ErrorManager.INFORMATIONAL, nfe);
+                TomcatManager.ERR.log(Level.INFO, null, nfe);
             }
         }
         return DEF_VALUE_RUNNING_CHECK_TIMEOUT;
@@ -703,7 +701,7 @@ public class TomcatProperties {
             try {
                 urls.add(Utils.fileToUrl(jars[i]));
             } catch (MalformedURLException e) {
-                ErrorManager.getDefault().notify(e);
+                Exceptions.printStackTrace(e);
             }
         }
         return urls;

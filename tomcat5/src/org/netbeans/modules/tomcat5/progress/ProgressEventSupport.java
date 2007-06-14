@@ -19,12 +19,13 @@
 
 package org.netbeans.modules.tomcat5.progress;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.enterprise.deploy.spi.TargetModuleID;
 import javax.enterprise.deploy.spi.status.DeploymentStatus;
 import javax.enterprise.deploy.spi.status.ProgressEvent;
 import javax.enterprise.deploy.spi.status.ProgressListener;
 import org.netbeans.modules.tomcat5.TomcatFactory;
-import org.openide.ErrorManager;
 
 /**
  * This is a utility class that can be used by ProgressObject's,
@@ -72,8 +73,8 @@ public class ProgressEventSupport {
 
     /** Report event to any registered listeners. */
     public void fireHandleProgressEvent (TargetModuleID targetModuleID, DeploymentStatus sCode) {
-        if (TomcatFactory.getEM ().isLoggable (ErrorManager.INFORMATIONAL)) {
-            TomcatFactory.getEM ().log ("progress event from "+obj+" status "+sCode); // NOI18N
+        if (TomcatFactory.getEM().isLoggable(Level.INFO)) {
+            TomcatFactory.getEM().log(Level.INFO, "progress event from " + obj + " status " + sCode); // NOI18N
         }
         synchronized (this) {
             status = sCode;

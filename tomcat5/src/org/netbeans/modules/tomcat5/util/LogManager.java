@@ -25,6 +25,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.WeakHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.tomcat5.TomcatManager;
 import org.netbeans.modules.tomcat5.TomcatManagerConfig;
 import org.netbeans.modules.tomcat5.TomcatModule;
@@ -32,7 +34,6 @@ import org.netbeans.modules.tomcat5.TomcatModuleConfig;
 import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
-import org.openide.ErrorManager;
 
 /**
  * <code>LogManager</code> manages all context and shared context logs for one
@@ -154,7 +155,7 @@ public class LogManager {
             DialogDisplayer.getDefault().notify(notDesc);
             return;
         } catch (NullPointerException npe) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, npe);
+            Logger.getLogger("global").log(Level.INFO, null, npe);
         }
         
         // ensure only one thread will be opened
@@ -231,10 +232,10 @@ public class LogManager {
                                                   null, null, null, "localhost.", null, true, false); // NOI18N
                     juliLogViewer.setDisplayName(NbBundle.getMessage(LogManager.class, "TXT_JuliLogDisplayName", tp.getDisplayName()));
                 } catch (UnsupportedLoggerException e) { // should never occur
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                    Logger.getLogger("global").log(Level.INFO, null, e);
                     return;
                 } catch (NullPointerException npe) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, npe);
+                    Logger.getLogger("global").log(Level.INFO, null, npe);
                     return;
                 }
 		juliLogViewer.addLogViewerStopListener(new LogViewer.LogViewerStopListener() {
@@ -295,7 +296,7 @@ public class LogManager {
             DialogDisplayer.getDefault().notify(notDesc);
             return;
         } catch (NullPointerException npe) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, npe);
+            Logger.getLogger("global").log(Level.INFO, null, npe);
         }
         
         // ensure only one thread will be opened

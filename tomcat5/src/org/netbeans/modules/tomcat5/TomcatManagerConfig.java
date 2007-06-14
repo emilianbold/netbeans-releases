@@ -21,7 +21,8 @@ package org.netbeans.modules.tomcat5;
 
 import java.io.File;
 import java.io.IOException;
-import org.openide.ErrorManager;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.tomcat5.config.gen.Engine;
 import org.netbeans.modules.tomcat5.config.gen.Host;
 import org.netbeans.modules.tomcat5.config.gen.SContext;
@@ -107,9 +108,9 @@ public class TomcatManagerConfig {
         try {
             return Server.createGraph(serverXml);
         } catch (IOException ioe) {
-            ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, ioe);
+            Logger.getLogger("global").log(Level.INFO, null, ioe);
         } catch (RuntimeException e) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            Logger.getLogger("global").log(Level.INFO, null, e);
         }
         return null;
     }

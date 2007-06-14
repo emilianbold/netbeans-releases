@@ -35,6 +35,8 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.AbstractListModel;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
@@ -46,9 +48,9 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.filechooser.FileFilter;
 import org.netbeans.modules.j2ee.deployment.common.api.J2eeLibraryTypeProvider;
-import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -204,7 +206,7 @@ public final class CustomizerSupport {
             }
             return l;
         } catch (MalformedURLException e) {
-            ErrorManager.getDefault().notify(e);
+            Exceptions.printStackTrace(e);
             return new ArrayList();
         }
     }
@@ -357,7 +359,7 @@ public final class CustomizerSupport {
                 try {
                     url = new URL(url.toExternalForm() + "/"); // NOI18N
                 } catch (MalformedURLException mue) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, mue);
+                    Logger.getLogger("global").log(Level.INFO, null, mue);
                 }
             }
             int oldSize = data.size();

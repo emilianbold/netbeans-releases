@@ -26,13 +26,14 @@ import java.util.HashSet;
 import java.util.NoSuchElementException;
 import java.util.Properties;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JComponent;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.tomcat5.TomcatManager;
 import org.netbeans.modules.tomcat5.TomcatManager.TomcatVersion;
 import org.netbeans.modules.tomcat5.util.TomcatInstallUtil;
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileUtil;
@@ -112,7 +113,7 @@ public class AddInstanceIterator implements WizardDescriptor.InstantiatingIterat
             result.add(ip);
             checkStartupScript(panel.getVisual().getHomeDir());
         } catch (Exception ex) {
-            ErrorManager.getDefault().log(ErrorManager.EXCEPTION, ex.getMessage());
+            Logger.getLogger("global").log(Level.SEVERE, ex.getMessage());
         }
         return result;
     }

@@ -23,8 +23,9 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Collections;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
-import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -203,7 +204,7 @@ public class LogSupport {
                 try {
                     dataObject = DataObject.find(sourceFile);
                 } catch(DataObjectNotFoundException ex) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                    Logger.getLogger("global").log(Level.INFO, null, ex);
                 }
             }
             if (dataObject != null) {

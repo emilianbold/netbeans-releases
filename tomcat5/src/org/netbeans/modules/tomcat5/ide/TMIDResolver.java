@@ -23,9 +23,10 @@ import javax.enterprise.deploy.spi.*;
 import javax.enterprise.deploy.shared.ModuleType;
 import org.netbeans.modules.tomcat5.TomcatManager;
 import org.netbeans.modules.tomcat5.TomcatModule;
-import org.openide.ErrorManager;
 
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.TargetModuleIDResolver;
 
 /*
@@ -59,7 +60,7 @@ public class TMIDResolver extends TargetModuleIDResolver {
                     result.add(tm);
             }
         } catch(Exception ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            Logger.getLogger("global").log(Level.INFO, null, ex);
         }
         
         return (TargetModuleID[]) result.toArray(new TargetModuleID[result.size()]);

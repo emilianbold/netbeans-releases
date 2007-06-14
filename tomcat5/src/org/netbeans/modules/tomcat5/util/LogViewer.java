@@ -31,10 +31,12 @@ import java.util.EventListener;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.modules.tomcat5.TomcatManager;
 import org.netbeans.modules.tomcat5.util.LogSupport.LineInfo;
-import org.openide.ErrorManager;
+import org.openide.util.Exceptions;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 import org.openide.windows.OutputWriter;
@@ -202,7 +204,7 @@ public class LogViewer extends Thread {
                 try {
                     errorWriter.println(line, logSupport.getLink(lineInfo.message(), lineInfo.path(), lineInfo.line()));
                 } catch (IOException ex) {
-                    ErrorManager.getDefault().notify(ex);
+                    Exceptions.printStackTrace(ex);
                 }
             } else {
                 errorWriter.println(line);
@@ -227,7 +229,7 @@ public class LogViewer extends Thread {
         } 
         catch (IOException e) {
             // not a critical error, continue
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            Logger.getLogger("global").log(Level.INFO, null, e);
         }        
         inOut.select();
         writer = inOut.getOut();
@@ -279,7 +281,7 @@ public class LogViewer extends Thread {
                 reader.close();
             }
         } catch (IOException ex) {
-            TomcatManager.ERR.notify(ex);
+            Exceptions.printStackTrace(ex);
         } finally {
             writer.close();
         }
@@ -364,7 +366,7 @@ public class LogViewer extends Thread {
                                 line = Integer.valueOf(lineNum).intValue();
                             } catch(NumberFormatException nfe) { 
                                 // ignore it
-                                TomcatManager.ERR.notify(ErrorManager.INFORMATIONAL, nfe);
+                                TomcatManager.ERR.log(Level.INFO, null, nfe);
                             }
                             if (lineLenght > nextColonIdx) {
                                 message = logLine.substring(nextColonIdx + 1, lineLenght); 
@@ -388,7 +390,7 @@ public class LogViewer extends Thread {
                             try {
                                 line = Integer.valueOf(lineNum).intValue();
                             } catch(NumberFormatException nfe) { // ignore it
-                                TomcatManager.ERR.notify(ErrorManager.INFORMATIONAL, nfe);
+                                TomcatManager.ERR.log(Level.INFO, null, nfe);
                             }
                             if (lineLenght > thirdColonIdx) {
                                 message = logLine.substring(thirdColonIdx + 1, lineLenght);
@@ -413,7 +415,7 @@ public class LogViewer extends Thread {
                             try {
                                 line = Integer.valueOf(lineNum).intValue();
                             } catch(NumberFormatException nfe) { // ignore it
-                                TomcatManager.ERR.notify(ErrorManager.INFORMATIONAL, nfe);
+                                TomcatManager.ERR.log(Level.INFO, null, nfe);
                             }
                             message = prevMessage;
                         }

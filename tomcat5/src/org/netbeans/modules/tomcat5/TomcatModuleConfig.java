@@ -22,13 +22,14 @@ package org.netbeans.modules.tomcat5;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.tomcat5.config.gen.Context;
 import org.netbeans.modules.tomcat5.config.gen.Engine;
 import org.netbeans.modules.tomcat5.config.gen.Host;
 import org.netbeans.modules.tomcat5.config.gen.SContext;
 import org.netbeans.modules.tomcat5.config.gen.Server;
 import org.netbeans.modules.tomcat5.config.gen.Service;
-import org.openide.ErrorManager;
 
 
 /**
@@ -84,10 +85,10 @@ public class TomcatModuleConfig {
             Context ctx = Context.createGraph(contextXml);
             return ctx;
         } catch (IOException ioe) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
+            Logger.getLogger("global").log(Level.INFO, null, ioe);
             return null;
         } catch (RuntimeException e) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            Logger.getLogger("global").log(Level.INFO, null, e);
             return null;
         }
     }
@@ -120,7 +121,7 @@ public class TomcatModuleConfig {
             }
             
         } catch (IOException ioe) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
+            Logger.getLogger("global").log(Level.INFO, null, ioe);
         }
         return null;
     }

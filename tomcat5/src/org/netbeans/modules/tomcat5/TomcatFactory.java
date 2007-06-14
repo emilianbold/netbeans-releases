@@ -27,6 +27,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.WeakHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.enterprise.deploy.shared.factories.DeploymentFactoryManager;
 import javax.enterprise.deploy.spi.DeploymentManager;
 import javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException;
@@ -37,10 +39,10 @@ import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.tomcat5.TomcatManager.TomcatVersion;
 import org.netbeans.modules.tomcat5.util.TomcatInstallUtil;
 import org.netbeans.modules.tomcat5.util.TomcatProperties;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
@@ -79,7 +81,7 @@ public final class TomcatFactory implements DeploymentFactory {
     
     private static final WeakHashMap managerCache = new WeakHashMap();
     
-    private static ErrorManager err = ErrorManager.getDefault ().getInstance ("org.netbeans.modules.tomcat5");  // NOI18N
+    private static Logger err = Logger.getLogger("org.netbeans.modules.tomcat5");  // NOI18N
     
     private final String tomcatUriPrefix;
     private final String disconnectedUri;
@@ -122,7 +124,7 @@ public final class TomcatFactory implements DeploymentFactory {
      */
     public static synchronized TomcatFactory create50() {
         if (instance == null) {
-            if (err.isLoggable (ErrorManager.INFORMATIONAL)) err.log ("Creating TomcatFactory"); // NOI18N
+            if (err.isLoggable(Level.INFO)) err.log(Level.INFO, "Creating TomcatFactory"); // NOI18N
             instance = new TomcatFactory(TomcatVersion.TOMCAT_50);
             DeploymentFactoryManager.getInstance().registerDeploymentFactory(instance);
         }
@@ -134,7 +136,7 @@ public final class TomcatFactory implements DeploymentFactory {
      */
     public static synchronized TomcatFactory create55() {
         if (instance55 == null) {
-            if (err.isLoggable (ErrorManager.INFORMATIONAL)) err.log ("Creating TomcatFactory"); // NOI18N
+            if (err.isLoggable(Level.INFO)) err.log(Level.INFO, "Creating TomcatFactory"); // NOI18N
             instance55 = new TomcatFactory(TomcatVersion.TOMCAT_55);
             DeploymentFactoryManager.getInstance().registerDeploymentFactory(instance55);
         }
@@ -146,17 +148,17 @@ public final class TomcatFactory implements DeploymentFactory {
      */
     public static synchronized TomcatFactory create60() {
         if (instance60 == null) {
-            if (err.isLoggable (ErrorManager.INFORMATIONAL)) err.log ("Creating TomcatFactory"); // NOI18N
+            if (err.isLoggable(Level.INFO)) err.log(Level.INFO, "Creating TomcatFactory"); // NOI18N
             instance60 = new TomcatFactory(TomcatVersion.TOMCAT_60);
             DeploymentFactoryManager.getInstance().registerDeploymentFactory(instance60);
         }
         return instance60;
     }
     
-    /** Get the {@link org.openide.ErrorManager} that logs module events.
-     * @return Module specific ErrorManager.
+    /** Get the {@link Logger} that logs module events.
+     * @return Module specific Logger.
      */
-    public static ErrorManager getEM () {
+    public static Logger getEM () {
         return err;
     }
     
@@ -268,8 +270,7 @@ public final class TomcatFactory implements DeploymentFactory {
         FileObject serverInstanceDir = repository.getDefaultFileSystem().findResource("/J2EE/InstalledServers"); // NOI18N
         
         if (serverInstanceDir == null) {
-            err.log(ErrorManager.INFORMATIONAL, "Cannot register the default Tomcat server. " + // NOI18N
-                    " The //J2EE//InstalledServers folder cannot be found."); // NOI18N
+            err.log(Level.INFO, "Cannot register the default Tomcat server.  The //J2EE//InstalledServers folder cannot be found."); // NOI18N
             return;
         }
         
@@ -291,9 +292,8 @@ public final class TomcatFactory implements DeploymentFactory {
                 try {
                     autoregInstanceFO.delete();
                 } catch (IOException e) {
-                    err.log(ErrorManager.INFORMATIONAL, 
-                            "The server " + autoregInstanceFO.getAttribute(InstanceProperties.URL_ATTR) + " cannot be uregistered."); // NOI18N
-                    err.notify(e);
+                    err.log(Level.INFO, "The server " + autoregInstanceFO.getAttribute(InstanceProperties.URL_ATTR) + " cannot be uregistered."); // NOI18N
+                    Exceptions.printStackTrace(e);
                 }
             }
             return;
@@ -307,9 +307,8 @@ public final class TomcatFactory implements DeploymentFactory {
         
         File catalinaHome = new File(catalinaHomeValue);
         if (!catalinaHome.exists()) {
-            err.log(ErrorManager.INFORMATIONAL, "Cannot register the default Tomcat server. " // NOI18N
-                    + "The Catalina Home directory " + catalinaHomeValue  // NOI18N
-                    + " passed through the " + PROP_CATALINA_HOME + " property does not exist."); // NOI18N
+            err.log(Level.INFO, "Cannot register the default Tomcat server. " + "The Catalina Home directory " + catalinaHomeValue + // NOI18N
+                    " passed through the " + PROP_CATALINA_HOME + " property does not exist."); // NOI18N
             return;
         }
         
@@ -317,9 +316,8 @@ public final class TomcatFactory implements DeploymentFactory {
         try {
             version = getTomcatVersion(catalinaHome);
         } catch (IllegalStateException e) {
-            err.log(ErrorManager.INFORMATIONAL, "Cannot register the default Tomcat server. " + // NOI18N
-                    " Cannot recognize the Tomcat version."); // NOI18N
-            err.notify(ErrorManager.INFORMATIONAL, e);
+            err.log(Level.INFO, "Cannot register the default Tomcat server.  Cannot recognize the Tomcat version."); // NOI18N
+            err.log(Level.INFO, null, e);
             return;
         }
         
@@ -332,8 +330,7 @@ public final class TomcatFactory implements DeploymentFactory {
         } else if (version.startsWith("6.")) { // NOI18N
             urlTmp = new StringBuilder(TOMCAT_URI_PREFIX_60);
         } else {
-            err.log(ErrorManager.INFORMATIONAL, "Cannot register the default Tomcat server. " + // NOI18N
-                    " The version " + version + " is not supported."); // NOI18N
+            err.log(Level.INFO, "Cannot register the default Tomcat server. " + " The version " + version + " is not supported."); // NOI18N
             return;
         }
         urlTmp.append(TOMCAT_URI_HOME_PREFIX);
@@ -372,9 +369,8 @@ public final class TomcatFactory implements DeploymentFactory {
             try {
                 autoregInstanceFO.delete();
             } catch (IOException e) {
-                err.log(ErrorManager.INFORMATIONAL, 
-                        "The server " + autoregInstanceFO.getAttribute(InstanceProperties.URL_ATTR) + " cannot be uregistered."); // NOI18N
-                err.notify(e);
+                err.log(Level.INFO, "The server " + autoregInstanceFO.getAttribute(InstanceProperties.URL_ATTR) + " cannot be uregistered."); // NOI18N
+                Exceptions.printStackTrace(e);
             }
         }
         
@@ -435,8 +431,8 @@ public final class TomcatFactory implements DeploymentFactory {
             instanceFO.setAttribute(TomcatManager.PROP_BUNDLED_TOMCAT, "true"); // NOI18N
             instanceFO.setAttribute(TomcatProperties.PROP_AUTOREGISTERED, "true"); // NOI18N
         } catch (IOException e) {
-            err.log(ErrorManager.INFORMATIONAL, "Cannot register the default Tomcat server."); // NOI18N
-            err.notify(ErrorManager.INFORMATIONAL, e);
+            err.log(Level.INFO, "Cannot register the default Tomcat server."); // NOI18N
+            err.log(Level.INFO, null, e);
         }        
     }
 }

@@ -40,7 +40,7 @@ import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.Specification;
 import org.netbeans.modules.tomcat5.TomcatManager;
 import org.netbeans.modules.tomcat5.util.TomcatProperties;
-import org.openide.ErrorManager;
+import org.openide.util.Exceptions;
 
 
 /**
@@ -514,7 +514,7 @@ public class CustomizerDataSupport {
             try {
                 doc.insertString(0, text, null);
             } catch(BadLocationException e) {
-                ErrorManager.getDefault().notify(e);
+                Exceptions.printStackTrace(e);
             }
         }
         return doc;
@@ -532,7 +532,7 @@ public class CustomizerDataSupport {
         try {
             return doc.getText(0, doc.getLength());
         } catch(BadLocationException e) {
-            ErrorManager.getDefault().notify(e);
+            Exceptions.printStackTrace(e);
             return null;
         }
     }

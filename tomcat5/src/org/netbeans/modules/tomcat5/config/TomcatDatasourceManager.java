@@ -25,6 +25,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.enterprise.deploy.spi.DeploymentManager;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
@@ -36,7 +38,6 @@ import org.netbeans.modules.tomcat5.config.gen.GlobalNamingResources;
 import org.netbeans.modules.tomcat5.config.gen.Parameter;
 import org.netbeans.modules.tomcat5.config.gen.ResourceParams;
 import org.netbeans.modules.tomcat5.config.gen.Server;
-import org.openide.ErrorManager;
 
 /**
  * DataSourceManager implementation
@@ -66,11 +67,11 @@ public class TomcatDatasourceManager implements DatasourceManager {
             server = Server.createGraph(serverXml);
         } catch (IOException e) {
             // ok, log it and give up
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            Logger.getLogger("global").log(Level.INFO, null, e);
             return Collections.<Datasource>emptySet();
         } catch (RuntimeException e) {
             // server.xml file is most likely not parseable, log it and give up
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            Logger.getLogger("global").log(Level.INFO, null, e);
             return Collections.<Datasource>emptySet();
         }
         GlobalNamingResources[] globalNamingResources = server.getGlobalNamingResources();

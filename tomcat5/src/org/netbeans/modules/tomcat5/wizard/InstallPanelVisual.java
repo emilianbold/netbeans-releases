@@ -26,6 +26,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JFileChooser;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
@@ -38,7 +40,6 @@ import org.netbeans.modules.tomcat5.TomcatManager.TomcatVersion;
 import org.netbeans.modules.tomcat5.config.gen.Server;
 import org.netbeans.modules.tomcat5.util.TomcatInstallUtil;
 import org.netbeans.modules.tomcat5.util.TomcatProperties;
-import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -392,7 +393,7 @@ class InstallPanelVisual extends javax.swing.JPanel {
             url += ":base=" + jTextFieldBaseDir.getText();  // NOI18N
         }
         
-        TomcatFactory.getEM().log("TomcatInstall.getUrl: " + url);    // NOI18N
+        TomcatFactory.getEM().log(Level.INFO, "TomcatInstall.getUrl: " + url);    // NOI18N
         return url;
     }
     
@@ -427,12 +428,12 @@ class InstallPanelVisual extends javax.swing.JPanel {
                 return true;
             }
         } catch (IOException ioe) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
+            Logger.getLogger("global").log(Level.INFO, null, ioe);
         } catch (NumberFormatException nfe) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, nfe);
+            Logger.getLogger("global").log(Level.INFO, null, nfe);
         } catch (RuntimeException e) {
             // catch any runtime exception that may occur during graph parsing
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            Logger.getLogger("global").log(Level.INFO, null, e);
         }
         return false;
     }

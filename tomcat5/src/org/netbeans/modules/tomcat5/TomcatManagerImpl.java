@@ -42,10 +42,11 @@ import org.netbeans.modules.tomcat5.config.gen.Server;
 import org.netbeans.modules.tomcat5.config.gen.Service;
 import org.netbeans.modules.tomcat5.progress.ProgressEventSupport;
 import org.netbeans.modules.tomcat5.progress.Status;
-import org.openide.ErrorManager;
 import org.openide.util.RequestProcessor;
 import org.openide.util.NbBundle;
 import java.io.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.tomcat5.util.TomcatProperties;
 
 /** Implemtation of management task that provides info about progress
@@ -463,7 +464,7 @@ public class TomcatManagerImpl implements ProgressObject, Runnable {
     
     /** Executes one management task. */
     public synchronized void run () {
-        TomcatFactory.getEM ().log(ErrorManager.INFORMATIONAL, command);
+        TomcatFactory.getEM().log(Level.INFO, command);
         pes.fireHandleProgressEvent (tmId, new Status (ActionType.EXECUTE, cmdType, command /* message */, StateType.RUNNING));
         
         output = "";
@@ -491,7 +492,7 @@ public class TomcatManagerImpl implements ProgressObject, Runnable {
                 if (Boolean.getBoolean("org.netbeans.modules.tomcat5.LogManagerCommands")) { // NOI18N
                     String message = "Tomcat 5 sending manager command: " + urlToConnectTo;
                     System.out.println(message);
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, new Exception(message));
+                    Logger.getLogger("global").log(Level.INFO, null, new Exception(message));
                 }
 
                 conn = urlToConnectTo.openConnection();
@@ -533,7 +534,7 @@ public class TomcatManagerImpl implements ProgressObject, Runnable {
                     int code = hconn.getResponseCode();
                     String message = "Tomcat 5 receiving response, code: " + code;
                     System.out.println(message);
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, new Exception(message));
+                    Logger.getLogger("global").log(Level.INFO, null, new Exception(message));
                 }
                 // Send the request data (if any)
                 if (istream != null) {
@@ -567,7 +568,7 @@ public class TomcatManagerImpl implements ProgressObject, Runnable {
                     } else if ((ch == '\r') || (ch == '\n')) {
                         String line = buff.toString();
                         buff.setLength(0);
-                        TomcatFactory.getEM ().log(ErrorManager.INFORMATIONAL, line);
+                        TomcatFactory.getEM().log(Level.INFO, line);
                         if (first) {
                             // hard fix to accept the japanese localization of manager app
                             String japaneseOK="\u6210\u529f"; //NOI18N
@@ -590,19 +591,19 @@ public class TomcatManagerImpl implements ProgressObject, Runnable {
                     }
                 }
                 if (buff.length() > 0) {
-                    TomcatFactory.getEM ().log(ErrorManager.INFORMATIONAL, buff.toString());
+                    TomcatFactory.getEM().log(Level.INFO, buff.toString());
                 }
                 if (error != null) {
-                    TomcatFactory.getEM().log("TomcatManagerImpl connecting to: " + urlToConnectTo); // NOI18N
-                    TomcatFactory.getEM ().log (error);
+                    TomcatFactory.getEM().log(Level.INFO, "TomcatManagerImpl connecting to: " + urlToConnectTo); // NOI18N
+                    TomcatFactory.getEM ().log (Level.INFO, null, error);
                     pes.fireHandleProgressEvent (tmId, new Status (ActionType.EXECUTE, cmdType, error, StateType.FAILED));
                     failed = true;
                 }
 
             } catch (Exception e) {
                 if (retries < 0) {
-                    TomcatFactory.getEM().log("TomcatManagerImpl connecting to: " + urlToConnectTo); // NOI18N
-                    TomcatFactory.getEM ().notify (ErrorManager.INFORMATIONAL, e);
+                    TomcatFactory.getEM().log(Level.INFO, "TomcatManagerImpl connecting to: " + urlToConnectTo); // NOI18N
+                    TomcatFactory.getEM ().log(Level.INFO, null, e);
                     pes.fireHandleProgressEvent (tmId, new Status (ActionType.EXECUTE, cmdType, e.getLocalizedMessage (), StateType.FAILED));
                     failed = true;
                 }

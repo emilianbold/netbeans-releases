@@ -21,9 +21,10 @@ package org.netbeans.modules.tomcat5.nodes.actions;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.tomcat5.TomcatManager;
 import org.netbeans.modules.tomcat5.nodes.TomcatInstanceNode;
-import org.openide.ErrorManager;
 import org.openide.awt.HtmlBrowser.URLDisplayer;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
@@ -49,7 +50,7 @@ public class AdminConsoleAction extends NodeAction {
                         try {
                             URLDisplayer.getDefault().showURL(new URL(adminUrl));
                         } catch (MalformedURLException e) {
-                            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                            Logger.getLogger("global").log(Level.INFO, null, e);
                         }
                     }
                 });

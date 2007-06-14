@@ -30,6 +30,8 @@ import java.io.InputStream;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.enterprise.deploy.shared.ActionType;
 import javax.enterprise.deploy.shared.CommandType;
 import javax.enterprise.deploy.shared.StateType;
@@ -46,7 +48,6 @@ import org.netbeans.modules.tomcat5.progress.ProgressEventSupport;
 import org.netbeans.modules.tomcat5.progress.Status;
 import org.netbeans.modules.tomcat5.util.LogManager;
 import org.netbeans.modules.tomcat5.util.Utils;
-import org.openide.ErrorManager;
 import org.openide.execution.NbProcessDescriptor;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -131,8 +132,8 @@ public final class StartTomcat extends StartServer implements ProgressObject {
     /** Start Tomcat server if the TomcatManager is not connected.
      */
     public ProgressObject startDeploymentManager () {
-        if (TomcatFactory.getEM ().isLoggable (ErrorManager.INFORMATIONAL)) {
-            TomcatFactory.getEM ().log ("StartTomcat.startDeploymentManager called on "+tm);    // NOI18N
+        if (TomcatFactory.getEM().isLoggable(Level.INFO)) {
+            TomcatFactory.getEM().log(Level.INFO, "StartTomcat.startDeploymentManager called on " + tm);    // NOI18N
         }
         pes.fireHandleProgressEvent (null, new Status (ActionType.EXECUTE, CommandType.START, "", StateType.RUNNING));
         RequestProcessor.getDefault().post(
@@ -198,8 +199,8 @@ public final class StartTomcat extends StartServer implements ProgressObject {
      * @return ServerProgress object used to monitor start server progress
      */
     public ProgressObject stopDeploymentManager() { 
-        if (TomcatFactory.getEM ().isLoggable (ErrorManager.INFORMATIONAL)) {
-            TomcatFactory.getEM ().log ("StartTomcat.stopDeploymentManager called on "+tm);    // NOI18N
+        if (TomcatFactory.getEM().isLoggable(Level.INFO)) {
+            TomcatFactory.getEM().log(Level.INFO, "StartTomcat.stopDeploymentManager called on " + tm);    // NOI18N
         }
         pes.fireHandleProgressEvent (null, new Status (ActionType.EXECUTE, CommandType.STOP, "", StateType.RUNNING));
         RequestProcessor.getDefault().post(
@@ -218,8 +219,8 @@ public final class StartTomcat extends StartServer implements ProgressObject {
      * @return ServerProgress object to monitor progress on start operation
      */
     public ProgressObject startDebugging(Target target) {
-        if (TomcatFactory.getEM ().isLoggable (ErrorManager.INFORMATIONAL)) {
-            TomcatFactory.getEM ().log ("StartTomcat.startDebugging called on "+tm);    // NOI18N
+        if (TomcatFactory.getEM().isLoggable(Level.INFO)) {
+            TomcatFactory.getEM().log(Level.INFO, "StartTomcat.startDebugging called on " + tm);    // NOI18N
         }
         pes.fireHandleProgressEvent (null, new Status (ActionType.EXECUTE, CommandType.START, "", StateType.RUNNING));
         RequestProcessor.getDefault().post(
@@ -230,8 +231,8 @@ public final class StartTomcat extends StartServer implements ProgressObject {
     }
     
     public ProgressObject startProfiling(Target target, ProfilerServerSettings settings) {
-        if (TomcatFactory.getEM().isLoggable(ErrorManager.INFORMATIONAL)) {
-            TomcatFactory.getEM().log("StartTomcat.startProfiling called on " + tm); // NOI18N
+        if (TomcatFactory.getEM().isLoggable(Level.INFO)) {
+            TomcatFactory.getEM().log(Level.INFO, "StartTomcat.startProfiling called on " + tm); // NOI18N
         }
         pes.fireHandleProgressEvent(null, new Status(
                                                 ActionType.EXECUTE, 
@@ -322,22 +323,22 @@ public final class StartTomcat extends StartServer implements ProgressObject {
                         // tomcat has been started with monitor disabled
                         fireCmdExecProgressEvent("MSG_disableMonitorSupportErr", StateType.FAILED);
                     }
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                    Logger.getLogger("global").log(Level.INFO, null, e);
                     return;
                 } catch (SAXException e) {
                     // fault, but not a critical one
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                    Logger.getLogger("global").log(Level.INFO, null, e);
                 }
                 try {
                     DebugSupport.allowDebugging(tm);
                 }
                 catch (IOException e) {
                     // fault, but not a critical one
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                    Logger.getLogger("global").log(Level.INFO, null, e);
                 }
                 catch (SAXException e) {
                     // fault, but not a critical one
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                    Logger.getLogger("global").log(Level.INFO, null, e);
                 }
             }
             
@@ -416,9 +417,9 @@ public final class StartTomcat extends StartServer implements ProgressObject {
                         transport = "dt_shmem"; // NOI18N
                         address = tp.getSharedMem();
                     }
-                    if (TomcatFactory.getEM ().isLoggable (ErrorManager.INFORMATIONAL)) {
-                        TomcatFactory.getEM ().log ("transport: " + transport);    // NOI18N
-                        TomcatFactory.getEM ().log ("address: " + address);    // NOI18N
+                    if (TomcatFactory.getEM().isLoggable(Level.INFO)) {
+                        TomcatFactory.getEM().log(Level.INFO, "transport: " + transport);    // NOI18N
+                        TomcatFactory.getEM().log(Level.INFO, "address: " + address);    // NOI18N
                     }
                     p = pd.exec (
                         new TomcatFormat(startupScript, homeDir),
@@ -440,8 +441,8 @@ public final class StartTomcat extends StartServer implements ProgressObject {
                     tm.setTomcatProcess(p);
                     openLogs();
                 } catch (java.io.IOException ioe) {
-                    if (TomcatFactory.getEM ().isLoggable (ErrorManager.INFORMATIONAL)) {
-                        TomcatFactory.getEM ().notify (ErrorManager.INFORMATIONAL, ioe);
+                    if (TomcatFactory.getEM().isLoggable(Level.INFO)) {
+                        TomcatFactory.getEM().log(Level.INFO, null, ioe);
                     }
                     fireCmdExecProgressEvent(command == CommandType.START ? "MSG_StartFailedIOE" : "MSG_StopFailedIOE",
                             startupScript.getAbsolutePath(), StateType.FAILED);
@@ -489,8 +490,8 @@ public final class StartTomcat extends StartServer implements ProgressObject {
                     tm.setTomcatProcess(p);
                     openLogs();
                 } catch (java.io.IOException ioe) {
-                    if (TomcatFactory.getEM ().isLoggable (ErrorManager.INFORMATIONAL)) {
-                        TomcatFactory.getEM ().notify (ErrorManager.INFORMATIONAL, ioe);
+                    if (TomcatFactory.getEM().isLoggable(Level.INFO)) {
+                        TomcatFactory.getEM().log(Level.INFO, null, ioe);
                     }
                     fireCmdExecProgressEvent(command == CommandType.START ? "MSG_StartFailedIOE" : "MSG_StopFailedIOE",
                             startupScript.getAbsolutePath(), StateType.FAILED);
@@ -538,8 +539,8 @@ public final class StartTomcat extends StartServer implements ProgressObject {
                         RequestProcessor.getDefault().post(new StreamConsumer(p.getErrorStream()), 0, Thread.MIN_PRIORITY);
                     }
                 } catch (java.io.IOException ioe) {
-                    if (TomcatFactory.getEM ().isLoggable (ErrorManager.INFORMATIONAL)) {
-                        TomcatFactory.getEM ().notify (ErrorManager.INFORMATIONAL, ioe);    // NOI18N
+                    if (TomcatFactory.getEM().isLoggable(Level.INFO)) {
+                        TomcatFactory.getEM().log(Level.INFO, null, ioe);    // NOI18N
                     }
                     fireCmdExecProgressEvent(command == CommandType.START ? "MSG_StartFailedIOE" : "MSG_StopFailedIOE",
                             startupScript.getAbsolutePath(), StateType.FAILED);
@@ -860,9 +861,9 @@ public final class StartTomcat extends StartServer implements ProgressObject {
                 out.close();
             }
         } catch (FileNotFoundException fnfe) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, fnfe);
+            Logger.getLogger("global").log(Level.INFO, null, fnfe);
         } catch (IOException ioe) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
+            Logger.getLogger("global").log(Level.INFO, null, ioe);
         }
     }
     
@@ -884,13 +885,13 @@ public final class StartTomcat extends StartServer implements ProgressObject {
                     if (n < 0) {
                         break;
                     }
-                    if (TomcatFactory.getEM().isLoggable(ErrorManager.INFORMATIONAL)) {
-                        TomcatFactory.getEM().log(ErrorManager.INFORMATIONAL, new String(buffer, 0, n));
+                    if (TomcatFactory.getEM().isLoggable(Level.INFO)) {
+                        TomcatFactory.getEM().log(Level.INFO, new String(buffer, 0, n));
                     }
                 }
             } catch (IOException ioe) {
-                if (TomcatFactory.getEM().isLoggable(ErrorManager.INFORMATIONAL)) {
-                    TomcatFactory.getEM().notify(ErrorManager.INFORMATIONAL, ioe);
+                if (TomcatFactory.getEM().isLoggable(Level.INFO)) {
+                    TomcatFactory.getEM().log(Level.INFO, null, ioe);
                 }
             } finally {
                 try { in.close(); } catch (IOException ioe) {};

@@ -24,7 +24,6 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfiguration;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfigurationFactory;
 import org.netbeans.modules.tomcat5.TomcatManager.TomcatVersion;
-import org.netbeans.modules.tomcat5.TomcatModuleConfig;
 
 /**
  * Tomcat implementation of the ModuleConfigurationFactory.

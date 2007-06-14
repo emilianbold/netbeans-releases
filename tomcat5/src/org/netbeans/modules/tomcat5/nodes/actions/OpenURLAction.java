@@ -21,9 +21,10 @@ package org.netbeans.modules.tomcat5.nodes.actions;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.tomcat5.TomcatModule;
 import org.netbeans.modules.tomcat5.nodes.TomcatWebModule;
-import org.openide.ErrorManager;
 
 import org.openide.awt.HtmlBrowser.URLDisplayer;
 import org.openide.nodes.Node;
@@ -47,7 +48,7 @@ public class OpenURLAction extends NodeAction {
                 try {
                     URLDisplayer.getDefault().showURL(new URL(tomcatMod.getWebURL()));
                 } catch (MalformedURLException e) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                    Logger.getLogger("global").log(Level.INFO, null, e);
                 }
             }
         }

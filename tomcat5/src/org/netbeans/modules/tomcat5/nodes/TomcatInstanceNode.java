@@ -21,6 +21,8 @@ package org.netbeans.modules.tomcat5.nodes;
 
 import java.awt.Component;
 import java.util.LinkedList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.tomcat5.TomcatManager;
 import org.netbeans.modules.tomcat5.nodes.actions.AdminConsoleAction;
 import org.netbeans.modules.tomcat5.nodes.actions.ServerLogAction;
@@ -37,7 +39,6 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.cookies.EditorCookie;
 import org.openide.util.Utilities;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.AbstractNode;
@@ -120,14 +121,14 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
             try {
                 dataObject = DataObject.find(fileObject);
             } catch(DataObjectNotFoundException ex) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                Logger.getLogger("global").log(Level.INFO, null, ex);
             }
             if (dataObject != null) {
                 EditorCookie editorCookie = (EditorCookie)dataObject.getCookie(EditorCookie.class);
                 if (editorCookie != null) {
                     editorCookie.open();
                 } else {
-                    ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "Cannot find EditorCookie."); // NOI18N
+                    Logger.getLogger("global").log(Level.INFO, "Cannot find EditorCookie."); // NOI18N
                 }
             }
         }

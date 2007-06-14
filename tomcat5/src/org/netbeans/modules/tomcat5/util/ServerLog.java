@@ -29,15 +29,17 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.BufferedReader;
-import org.netbeans.modules.tomcat5.TomcatManager;
-import org.openide.ErrorManager;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.NbBundle;
 import org.openide.windows.InputOutput;
 import org.openide.windows.OutputWriter;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.modules.j2ee.deployment.plugins.api.UISupport;
+import org.netbeans.modules.tomcat5.TomcatManager;
 import org.netbeans.modules.tomcat5.util.LogSupport.LineInfo;
+import org.openide.util.Exceptions;
 
 /**
  * Tomcat server log reads from the Tomcat standard and error output and 
@@ -78,7 +80,7 @@ class ServerLog extends Thread {
             io.getOut().reset();
         } 
         catch (IOException e) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            Logger.getLogger("global").log(Level.INFO, null, e);
         }
         writer = io.getOut();
         errorWriter = io.getErr();
@@ -93,7 +95,7 @@ class ServerLog extends Thread {
                 try {
                     errorWriter.println(line, logSupport.getLink(lineInfo.message() , lineInfo.path(), lineInfo.line()));
                 } catch (IOException ex) {
-                    ErrorManager.getDefault().notify(ex);
+                    Exceptions.printStackTrace(ex);
                 }
             } else {
                 errorWriter.println(line);
@@ -155,7 +157,7 @@ class ServerLog extends Thread {
                 sleep(100); // take a nap
             }
         } catch (IOException ex) {
-            TomcatManager.ERR.notify(ErrorManager.INFORMATIONAL, ex);
+            TomcatManager.ERR.log(Level.INFO, null, ex);
         } catch (InterruptedException e) {
             // no op - the thread was interrupted 
         } finally {
@@ -218,7 +220,7 @@ class ServerLog extends Thread {
                                 line = Integer.valueOf(lineNum).intValue();
                             } catch(NumberFormatException nfe) { 
                                 // ignore it
-                                TomcatManager.ERR.notify(ErrorManager.INFORMATIONAL, nfe);
+                                TomcatManager.ERR.log(Level.INFO, null, nfe);
                             }
                             if (lineLenght > nextColonIdx) {
                                 message = logLine.substring(nextColonIdx + 1, lineLenght); 
@@ -243,7 +245,7 @@ class ServerLog extends Thread {
                                 line = Integer.valueOf(lineNum).intValue();
                             } catch(NumberFormatException nfe) { 
                                 // ignore it
-                                TomcatManager.ERR.notify(ErrorManager.INFORMATIONAL, nfe);
+                                TomcatManager.ERR.log(Level.INFO, null, nfe);
                             }
                             if (lineLenght > thirdColonIdx) {
                                 message = logLine.substring(thirdColonIdx + 1, lineLenght);
@@ -269,7 +271,7 @@ class ServerLog extends Thread {
                                 line = Integer.valueOf(lineNum).intValue();
                             } catch(NumberFormatException nfe) {
                                 // ignore it
-                                TomcatManager.ERR.notify(ErrorManager.INFORMATIONAL, nfe);
+                                TomcatManager.ERR.log(Level.INFO, null, nfe);
                             }
                             message = prevMessage;
                         }

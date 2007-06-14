@@ -22,11 +22,13 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.j2ee.dd.api.web.*;
 import org.netbeans.modules.j2ee.dd.api.common.InitParam;
 import org.netbeans.modules.tomcat5.TomcatManager;
 
-import org.openide.ErrorManager;
+import org.openide.util.Exceptions;
 import org.xml.sax.SAXException;
 
 
@@ -48,12 +50,12 @@ public class DebugSupport {
         // find the web.xml file
         File webXML = getDefaultWebXML(tm);
         if (webXML == null) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, new Exception(url));
+            Logger.getLogger("global").log(Level.INFO, null, new Exception(url));
             return;
         }
         WebApp webApp = DDProvider.getDefault().getDDRoot(webXML);
         if (webApp == null) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, new Exception(url));
+            Logger.getLogger("global").log(Level.INFO, null, new Exception(url));
             return;
         }
         boolean needsSave = setMappedProperty(webApp);
@@ -102,7 +104,7 @@ public class DebugSupport {
                 webApp.addServlet(servlet);
                 changed=true;
             } catch (ClassNotFoundException ex) {
-                TomcatManager.ERR.notify(ex);
+                Exceptions.printStackTrace(ex);
             }
         } else {
             try {
@@ -128,7 +130,7 @@ public class DebugSupport {
                     changed=true;
                 }
             } catch (ClassNotFoundException ex) {
-                TomcatManager.ERR.notify(ex);
+                Exceptions.printStackTrace(ex);
             }
         }
 

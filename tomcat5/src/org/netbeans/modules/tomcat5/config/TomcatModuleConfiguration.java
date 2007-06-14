@@ -51,7 +51,6 @@ import org.netbeans.modules.tomcat5.config.gen.Context;
 import org.netbeans.modules.tomcat5.config.gen.Parameter;
 import org.netbeans.modules.tomcat5.config.gen.ResourceParams;
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.SaveCookie;
@@ -62,6 +61,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.NbDocument;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
@@ -529,17 +529,18 @@ public class TomcatModuleConfiguration implements ModuleConfiguration, ContextRo
         try {
             graph.write(out);
         } catch (Schema2BeansException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            Logger.getLogger("global").log(Level.INFO, null, ex);
         } catch (IOException ioe) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
+            Logger.getLogger("global").log(Level.INFO, null, ioe);
         }
         NbDocument.runAtomic(doc, new Runnable() {
+
             public void run() {
                 try {
                     doc.remove(0, doc.getLength());
                     doc.insertString(0, out.toString(), null);
                 } catch (BadLocationException ble) {
-                    ErrorManager.getDefault().notify(ble);
+                    Exceptions.printStackTrace(ble);
                 }
             }
         });

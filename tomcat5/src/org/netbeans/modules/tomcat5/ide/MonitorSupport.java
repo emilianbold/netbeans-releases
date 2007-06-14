@@ -27,6 +27,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URL;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.Filter;
 import org.netbeans.modules.j2ee.dd.api.web.FilterMapping;
@@ -39,7 +41,6 @@ import org.openide.util.Lookup;
 import org.openide.util.LookupListener;
 import org.openide.util.LookupEvent;
 
-import org.openide.ErrorManager;
 import org.openide.modules.InstalledFileLocator;
 import org.xml.sax.SAXException;
 
@@ -99,12 +100,12 @@ public class MonitorSupport {
         // find the web.xml file
         File webXML = getDefaultWebXML(tm);
         if (webXML == null) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, new Exception(url));
+            Logger.getLogger("global").log(Level.INFO, null, new Exception(url));
             return;
         }
         WebApp webApp = DDProvider.getDefault().getDDRoot(webXML);
         if (webApp == null) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, new Exception(url));
+            Logger.getLogger("global").log(Level.INFO, null, new Exception(url));
             return;
         }
         boolean needsSave = false;
