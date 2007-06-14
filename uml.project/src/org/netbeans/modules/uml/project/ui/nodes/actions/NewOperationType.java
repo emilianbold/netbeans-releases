@@ -38,7 +38,7 @@ import org.openide.util.datatransfer.NewType;
  *
  * @author Craig Conover, craig.conover@sun.com
  */
-public class NewOperationType extends NewType
+public class NewOperationType extends NewType implements INewTypeExt
 {
 	private Node node;
 	
@@ -54,10 +54,15 @@ public class NewOperationType extends NewType
 	 */
 	public String getName()
 	{
-		return (String)NbBundle.getBundle(this.getClass())
-		.getString("NewType_Operation_Name"); // NOI18N
+		return NbBundle.getMessage(NewOperationType.class, 
+                      "NewType_Operation_Name"); // NOI18N
 	}
 	
+        public String getIconResource()
+	{
+		return NbBundle.getMessage(NewOperationType.class, 
+                      "OPERATION_ICON"); // NOI18N
+        }
 	
 	/**
 	 *

@@ -32,7 +32,6 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.INamespace;
 import org.netbeans.modules.uml.project.ProjectUtil;
 import org.netbeans.modules.uml.ui.support.ProductHelper;
 import org.netbeans.modules.uml.ui.support.applicationmanager.IProxyUserInterface;
-import org.netbeans.modules.uml.project.UMLProjectModule;
 import org.netbeans.modules.uml.project.ui.nodes.UMLDiagramNode;
 import org.netbeans.modules.uml.project.ui.nodes.UMLPhysicalViewProvider;
 import org.openide.nodes.Node;
@@ -44,7 +43,7 @@ import org.openide.util.datatransfer.NewType;
  *
  * @author Craig Conover, craig.conover@sun.com
  */
-public class NewPackageType extends NewType
+public class NewPackageType extends NewType implements INewTypeExt
 {
 	private Node node;
 	private IElement element = null;
@@ -66,11 +65,16 @@ public class NewPackageType extends NewType
 	 */
 	public String getName()
 	{
-		return (String)NbBundle.getBundle(this.getClass())
-				.getString("NewType_Package_Name"); // NOI18N
+		return NbBundle.getMessage(NewPackageType.class, 
+                      "NewType_Package_Name"); // NOI18N
 	}
 	
-	
+	public String getIconResource()
+	{
+		return NbBundle.getMessage(NewPackageType.class, 
+                      "PACKAGE_ICON"); // NOI18N
+        }
+        
 	/**
 	 *
 	 *

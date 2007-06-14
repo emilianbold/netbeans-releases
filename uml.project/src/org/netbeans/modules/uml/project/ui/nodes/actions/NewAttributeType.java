@@ -26,17 +26,9 @@
 package org.netbeans.modules.uml.project.ui.nodes.actions;
 
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
-import org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamespace;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IAttribute;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IClassifier;
-import org.netbeans.modules.uml.core.support.umlutils.ETList;
-import org.netbeans.modules.uml.ui.controls.projecttree.IProjectTreeItem;
-import org.netbeans.modules.uml.ui.support.ProductHelper;
-import org.netbeans.modules.uml.ui.support.applicationmanager.IProxyUserInterface;
-import org.netbeans.modules.uml.ui.support.projecttreesupport.ITreeItem;
-import org.netbeans.modules.uml.ui.swing.projecttree.ISwingProjectTreeModel;
-import javax.swing.tree.TreePath;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -46,7 +38,7 @@ import org.openide.util.datatransfer.NewType;
  *
  * @author Craig Conover, craig.conover@sun.com
  */
-public class NewAttributeType extends NewType
+public class NewAttributeType extends NewType implements INewTypeExt
 {
 	private Node node;
 	
@@ -62,11 +54,16 @@ public class NewAttributeType extends NewType
 	 */
 	public String getName()
 	{
-		return (String)NbBundle.getBundle(this.getClass())
-		.getString("NewType_Attribute_Name"); // NOI18N
+		return NbBundle.getMessage(NewAttributeType.class, 
+                      "NewType_Attribute_Name"); // NOI18N
 	}
 	
-	
+        public String getIconResource()
+	{
+		return NbBundle.getMessage(NewAttributeType.class, 
+                      "ATTRIBUTE_ICON"); // NOI18N
+        }
+        
 	/**
 	 *
 	 *

@@ -43,7 +43,7 @@ import org.openide.util.datatransfer.NewType;
  *
  * @author Craig Conover, craig.conover@sun.com
  */
-public class NewDiagramType extends NewType
+public class NewDiagramType extends NewType implements INewTypeExt
 {
 	private Node node;
 	private IElement element = null;
@@ -65,11 +65,16 @@ public class NewDiagramType extends NewType
 	 */
 	public String getName()
 	{
-		return (String)NbBundle.getBundle(this.getClass())
-				.getString("NewType_Diagram_Name"); // NOI18N
+		return NbBundle.getMessage(NewDiagramType.class, 
+                      "NewType_Diagram_Name"); // NOI18N
 	}
 	
-	
+	 public String getIconResource()
+	{
+		return NbBundle.getMessage(NewDiagramType.class, 
+                      "DIAGRAM_ICON"); // NOI18N
+        }
+         
 	/**
 	 *
 	 *
