@@ -265,6 +265,8 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                             if (name == null)
                                 return (VariableElement)e;
                             int d = UiUtils.getDistance(e.getSimpleName().toString(), name);
+                            if (types.isSameType(e.asType(), type))
+                                d -= 1000;
                             if (d < distance) {
                                 distance = d;
                                 closest = (VariableElement)e;
@@ -304,6 +306,8 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                             if (name == null)
                                 return (VariableElement)ee;
                             int d = UiUtils.getDistance(ee.getSimpleName().toString(), name);
+                            if (ee.getKind().isField() && types.isSameType(((VariableElement)ee).asType(), dType) || ee.getKind() == ElementKind.METHOD && types.isSameType(((ExecutableElement)ee).getReturnType(), dType))
+                                d -= 1000;
                             if (d < distance) {
                                 distance = d;
                                 closest = (VariableElement)ee;
