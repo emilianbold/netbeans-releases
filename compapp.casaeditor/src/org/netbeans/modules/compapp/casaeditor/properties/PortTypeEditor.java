@@ -17,25 +17,28 @@
 package org.netbeans.modules.compapp.casaeditor.properties;
 
 import java.awt.Component;
-import java.awt.Dialog;
-import java.awt.Dimension;
-import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.PropertyEditor;
 import java.beans.PropertyEditorSupport;
 import java.util.List;
+import javax.swing.JComboBox;
+import javax.swing.JComponent;
+import javax.swing.KeyStroke;
 import org.netbeans.modules.xml.wsdl.model.PortType;
 import org.netbeans.modules.compapp.casaeditor.Constants;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
+import org.openide.explorer.propertysheet.ExPropertyEditor;
+import org.openide.explorer.propertysheet.InplaceEditor;
+import org.openide.explorer.propertysheet.PropertyEnv;
+import org.openide.explorer.propertysheet.PropertyModel;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author rdara
  */
-public class PortTypeEditor extends PropertyEditorSupport{
+public class PortTypeEditor extends PropertyEditorSupport 
+                   implements ExPropertyEditor, InplaceEditor.Factory {
 
     private final static String EMPTY = Constants.EMPTY_STRING;
     
@@ -57,7 +60,7 @@ public class PortTypeEditor extends PropertyEditorSupport{
         mAllPortTypes = model.getPortTypes();
     }
     
-    
+    /*
     public boolean supportsCustomEditor() {
         return true;
     }
@@ -73,6 +76,7 @@ public class PortTypeEditor extends PropertyEditorSupport{
             return;
     }
 
+    
     public boolean isPaintable() {
         return false;
     }
@@ -83,6 +87,7 @@ public class PortTypeEditor extends PropertyEditorSupport{
             NbBundle.getMessage(StringEditor.class,"LBL_Null") :        // NOI18N
             getAsText();
     }
+
 
     public Component getCustomEditor() {
         final PortTypeEditorPanel panel = new PortTypeEditorPanel(
@@ -113,5 +118,96 @@ public class PortTypeEditor extends PropertyEditorSupport{
         dlg.setPreferredSize(new Dimension(500, 350));
         return dlg;
     }
+*/
+    public void attachEnv(PropertyEnv env) {
+        env.registerInplaceEditorFactory(this);
+    }
+
+    private InplaceEditor ed = null;
+
+    public InplaceEditor getInplaceEditor() {
+        if (ed == null) {
+            ed = new Inplace(mAllPortTypes, mPortType);
+        }
+        return ed;
+    }
  
+    private static class Inplace implements InplaceEditor {
+        private final JComboBox mPortTypesComboBox = new JComboBox();
+        private PropertyEditor editor = null;
+        List<PortType> mPortTypes;
+        PortType mPortType;
+
+        private Inplace(List<PortType> portTypes, PortType portType) {
+            mPortTypes = portTypes;
+            mPortType = portType;
+        
+            for(PortType pt : portTypes) {
+                mPortTypesComboBox.addItem(pt.getName());
+            }
+            if(portType != null) {
+                mPortTypesComboBox.setSelectedItem(portType.getName());
+            }
+        }
+
+        public void connect(PropertyEditor propertyEditor, PropertyEnv env) {
+            editor = propertyEditor;
+            reset();
+        }
+
+        public JComponent getComponent() {
+            return mPortTypesComboBox;
+        }
+
+        public void clear() {
+            //avoid memory leaks:
+            editor = null;
+            model = null;
+        }
+
+        public Object getValue() {
+            return mPortTypes.get(mPortTypesComboBox.getSelectedIndex());
+        }
+
+        public void setValue(Object object) {
+            mPortTypesComboBox.setSelectedItem(((PortType) object).getName());
+        }
+
+        public boolean supportsTextEntry() {
+            return false;
+        }
+
+        public void reset() {
+            //??
+        }
+
+        public KeyStroke[] getKeyStrokes() {
+            return new KeyStroke[0];
+        }
+
+        public PropertyEditor getPropertyEditor() {
+            return editor;
+        }
+
+        public PropertyModel getPropertyModel() {
+            return model;
+        }
+
+        private PropertyModel model;
+        public void setPropertyModel(PropertyModel propertyModel) {
+            this.model = propertyModel;
+        }
+
+        public boolean isKnownComponent(Component component) {
+            return component == mPortTypesComboBox || mPortTypesComboBox.isAncestorOf(component);
+        }
+
+        public void addActionListener(ActionListener actionListener) {
+           //do nothing - not needed for this component
+        }
+
+        public void removeActionListener(ActionListener actionListener) {
+           //do nothing - not needed for this component
+        }
+    }
 }
