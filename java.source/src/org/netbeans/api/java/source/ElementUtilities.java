@@ -90,7 +90,7 @@ public final class ElementUtilities {
      * is declared, or null if there is none
      * @throws IllegalArgumentException if the provided element is a package element
      */
-    public static TypeElement enclosingTypeElement( Element element ) throws IllegalArgumentException {
+    public TypeElement enclosingTypeElement( Element element ) throws IllegalArgumentException {
 	
 	if( element.getKind() == ElementKind.PACKAGE ) {
 	    throw new IllegalArgumentException();
