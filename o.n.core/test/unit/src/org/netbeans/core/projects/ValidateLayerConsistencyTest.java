@@ -41,7 +41,6 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import junit.framework.Test;
 import org.netbeans.core.startup.layers.BinaryCacheManager;
-import org.netbeans.core.startup.layers.ParsingLayerCacheManager;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
 import org.openide.cookies.InstanceCookie;
@@ -77,7 +76,7 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
         Mutex.EVENT.readAccess(new Mutex.Action<Void>() {
             public Void run() {
                 contextClassLoader = Thread.currentThread().getContextClassLoader();
-                Thread.currentThread().setContextClassLoader((ClassLoader)Lookup.getDefault().lookup(ClassLoader.class));
+                Thread.currentThread().setContextClassLoader(Lookup.getDefault().lookup(ClassLoader.class));
                 return null;
             }
         });
@@ -256,7 +255,7 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
                 }
             } catch (Exception ex) {
                 ex.printStackTrace();
-                errors.add ("\n    File " + fo + " thrown exception " + ex);
+                errors.add ("\n    File " + fo.getPath() + " threw " + ex);
             }
         }
         
