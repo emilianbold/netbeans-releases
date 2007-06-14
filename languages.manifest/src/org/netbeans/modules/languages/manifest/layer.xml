@@ -34,16 +34,6 @@ Microsystems, Inc. All Rights Reserved.
             </folder>
         </folder>
     </folder>
-    <folder name="Templates">
-        <folder name="Other">
-            <file name="EmptyManifestFile.mf" url="EmptyManifestFile.mf">
-                <attr name="template" boolvalue="true" />
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.languages.manifest.Bundle"/>
-                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/languages/manifest/EmptyManifestFileDescription.html"/>
-                <attr name="templateCategory" stringvalue="simple-files"/>
-            </file>            
-        </folder>
-    </folder>
     <folder name="OptionsDialog">
         <folder name="PreviewExamples">
             <folder name="text">
