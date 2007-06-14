@@ -112,6 +112,7 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
             
             if (
                 "Keymaps/NetBeans/D-BACK_QUOTE.shadow".equals(fo.getPath()) ||
+                "Keymaps/NetBeans55/D-BACK_QUOTE.shadow".equals(fo.getPath()) ||
                 "Keymaps/Emacs/D-BACK_QUOTE.shadow".equals(fo.getPath())
             ) {
                 // #46753
@@ -154,6 +155,7 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
             
             if (
                 "Keymaps/NetBeans/D-BACK_QUOTE.shadow".equals(fo.getPath()) ||
+                "Keymaps/NetBeans55/D-BACK_QUOTE.shadow".equals(fo.getPath()) ||
                 "Keymaps/Emacs/D-BACK_QUOTE.shadow".equals(fo.getPath())
             ) {
                 // #46753

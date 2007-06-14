@@ -146,7 +146,7 @@ Microsystems, Inc. All Rights Reserved.
   </folder>
  
   <folder name="Shortcuts">    
-      <file name="OS-O.shadow">
+      <file name="D-O.shadow">
            <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-java-actions-GoToType.instance"/>
        </file>           
   </folder>  

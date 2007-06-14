@@ -197,12 +197,14 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
         <file name="DS-U.instance">
 	    <attr name="instanceClass" stringvalue="org.netbeans.modules.junit.CreateTestAction"/>
 	</file>
-        <file name="OS-E.instance">
+        <file name="DS-T.instance">
 	    <attr name="instanceClass" stringvalue="org.netbeans.modules.junit.GoToOppositeAction"/>
 	</file>
+        <!--
         <file name="DS-6.shadow">
             <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-junit-output-ResultWindowOpenAction.instance"/>
 	</file>
+        -->
     </folder>
     
     <folder name="UI">

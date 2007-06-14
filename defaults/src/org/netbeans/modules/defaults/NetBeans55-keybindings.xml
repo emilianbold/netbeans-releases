@@ -1,4 +1,4 @@
-<?xml version="1.0"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
 The contents of this file are subject to the terms of the Common Development
 and Distribution License (the License). You may not use this file except in
@@ -14,24 +14,21 @@ enclosed by brackets [] replaced by your own identifying information:
 "Portions Copyrighted [year] [name of copyright owner]"
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <!DOCTYPE bindings PUBLIC "-//NetBeans//DTD Editor KeyBindings settings 1.1//EN" "http://www.netbeans.org/dtds/EditorKeyBindings-1_1.dtd">
-                          
-<!-- 
-    IMPORTANT:  To handle Apple-specific keybindings, some of the keybindings
-    added here are modified in NetBeans-keybindings-mac.xml.
--->
 
 <bindings>
+    <!-- Key bindinds used in NetBeans 5.5 -->
+
     <bind actionName="abbrev-expand" key="S-SPACE"/>
-    <bind actionName="adjust-caret-bottom" key="DS-PAGE_UP"/>
-    <bind actionName="adjust-caret-center" key="DS-INSERT"/>
-    <bind actionName="adjust-caret-top" key="DS-PAGE_DOWN"/>
-<!--    <bind actionName="adjust-window-bottom" key="O-U$B"/> -->
-<!--    <bind actionName="adjust-window-center" key="O-U$M"/> -->
-<!--    <bind actionName="adjust-window-top" key="O-U$T"/> -->
+    <bind actionName="adjust-caret-bottom" key="OS-B"/>
+    <bind actionName="adjust-caret-center" key="OS-M"/>
+    <bind actionName="adjust-caret-top" key="OS-T"/>
+    <bind actionName="adjust-window-bottom" key="O-U$B"/>
+    <bind actionName="adjust-window-center" key="O-U$M"/>
+    <bind actionName="adjust-window-top" key="O-U$T"/>
     <bind actionName="all-completion-show" key="DO-SPACE"/>
     <bind actionName="all-completion-show" key="DO-BACK_SLASH"/>
     <bind actionName="annotations-cycling" key="DS-C"/>
@@ -43,7 +40,7 @@ Microsystems, Inc. All Rights Reserved.
     <bind actionName="caret-down" key="KP_DOWN"/>
     <bind actionName="caret-end" key="D-END"/>
     <bind actionName="caret-end-line" key="END"/>
-    <!-- <bind actionName="caret-end-word" key="O-U$E"/> -->
+    <bind actionName="caret-end-word" key="O-U$E"/>
     <bind actionName="caret-forward" key="KP_RIGHT"/>
     <bind actionName="caret-forward" key="RIGHT"/>
     <bind actionName="caret-next-word" key="D-RIGHT"/>
@@ -80,15 +77,16 @@ Microsystems, Inc. All Rights Reserved.
     <bind actionName="find-selection" key="D-F3"/>
     <bind actionName="incremental-search-forward" key="D-I"/>
     <bind actionName="incremental-search-backward" key="DS-I"/>
-    <bind actionName="format" key="OS-F"/>
+    <bind actionName="format" key="DS-F"/>
     <bind actionName="goto" key="D-G"/>
     <bind actionName="insert-break" key="ENTER"/>
     <bind actionName="insert-tab" key="TAB"/>
     <bind actionName="jump-list-last-edit" key="D-Q"/>
-    <bind actionName="jump-list-next" key="O-RIGHT"/>
-    <bind actionName="jump-list-next-component" key="OS-RIGHT"/>
-    <bind actionName="jump-list-prev" key="O-LEFT"/>
-    <bind actionName="jump-list-prev-component" key="OS-LEFT"/>
+    <bind actionName="jump-list-next" key="O-L"/>
+    <bind actionName="jump-list-next-component" key="OS-L"/>
+    <bind actionName="jump-list-prev" key="O-K"/>
+    <bind actionName="jump-list-prev-component" key="OS-K"/>
+    <bind actionName="match-brace" key="D-OPEN_BRACKET"/>
     <bind actionName="page-down" key="PAGE_DOWN"/>
     <bind actionName="page-up" key="PAGE_UP"/>
     <bind actionName="paste-formated" key="DS-V"/>
@@ -97,10 +95,10 @@ Microsystems, Inc. All Rights Reserved.
     <bind actionName="paste-from-clipboard" key="S-INSERT"/>
     <bind actionName="redo" key="D-Y"/>
     <bind actionName="remove-line" key="D-E"/>
-    <!-- <bind actionName="remove-line-begin" key="D-U"/> -->
+    <bind actionName="remove-line-begin" key="D-U"/>
     <bind actionName="remove-tab" key="S-TAB"/>
-    <bind actionName="move-selection-else-line-up" key="OS-UP"/>
-    <bind actionName="move-selection-else-line-down" key="OS-DOWN"/>
+    <bind actionName="move-selection-else-line-up" key="O-UP"/>
+    <bind actionName="move-selection-else-line-down" key="O-DOWN"/>
     <bind actionName="copy-selection-else-line-up" key="DS-UP"/>
     <bind actionName="copy-selection-else-line-down" key="DS-DOWN"/>
     <!-- #47709 <bind actionName="remove-word" key="D-W"/> -->
@@ -110,9 +108,7 @@ Microsystems, Inc. All Rights Reserved.
     <bind actionName="scroll-down" key="D-UP"/>
     <bind actionName="scroll-up" key="D-DOWN"/>
     <bind actionName="select-all" key="D-A"/>
-    <bind actionName="select-element-next" key="OS-PERIOD"/>
-    <bind actionName="select-element-previous" key="OS-COMMA"/>
-    <bind actionName="select-identifier" key="OS-J"/>
+    <bind actionName="select-identifier" key="O-J"/>
     <bind actionName="select-next-parameter" key="D-M"/>
     <bind actionName="selection-backward" key="S-LEFT"/>
     <bind actionName="selection-begin" key="DS-HOME"/>
@@ -121,27 +117,47 @@ Microsystems, Inc. All Rights Reserved.
     <bind actionName="selection-end" key="DS-END"/>
     <bind actionName="selection-end-line" key="S-END"/>
     <bind actionName="selection-forward" key="S-RIGHT"/>
+    <bind actionName="selection-match-brace" key="DS-OPEN_BRACKET"/>
     <bind actionName="selection-next-word" key="DS-RIGHT"/>
     <bind actionName="selection-page-down" key="S-PAGE_DOWN"/>
     <bind actionName="selection-page-up" key="S-PAGE_UP"/>
     <bind actionName="selection-previous-word" key="DS-LEFT"/>
     <bind actionName="selection-up" key="S-UP"/>
     <bind actionName="shift-insert-break" key="S-ENTER"/>
-    <bind actionName="shift-line-left" key="OS-LEFT"/>
-    <bind actionName="shift-line-right" key="OS-RIGHT"/>
+    <bind actionName="shift-line-left" key="D-D"/>
+    <bind actionName="shift-line-right" key="D-T"/>
     <bind actionName="show-popup-menu" key="S-F10"/>
     <bind actionName="split-line" key="D-ENTER"/>
-    <!-- <bind actionName="start-macro-recording" key="D-J$S"/> -->
+    <bind actionName="start-macro-recording" key="D-J$S"/>
     <bind actionName="start-new-line" key="S-ENTER"/>
-    <!-- <bind actionName="stop-macro-recording" key="D-J$E"/> -->
-    <bind actionName="switch-case" key="D-U$S"/>
-    <bind actionName="to-lower-case" key="D-U$L"/>
-    <bind actionName="to-upper-case" key="D-U$U"/>
+    <bind actionName="stop-macro-recording" key="D-J$E"/>
+    <bind actionName="switch-case" key="O-U$R"/>
+    <bind actionName="to-lower-case" key="O-U$L"/>
+    <bind actionName="to-upper-case" key="O-U$U"/>
     <bind actionName="toggle-highlight-search" key="OS-H"/>
     <bind actionName="toggle-typing-mode" key="INSERT"/>
     <bind actionName="tooltip-show" key="D-P"/>
     <bind actionName="undo" key="UNDO"/>
     <bind actionName="undo" key="D-Z"/>
-    <bind actionName="word-match-next" key="OS-K"/>
-    <bind actionName="word-match-prev" key="OS-L"/>
+    <bind actionName="word-match-next" key="D-L"/>
+    <bind actionName="word-match-prev" key="D-K"/>
+
+    <bind actionName="goto-source" key="O-O"/>
+    <bind actionName="fast-import" key="OS-I"/>
+    <bind actionName="fix-imports" key="OS-F"/>
+
+    <bind actionName="goto-super-implementation" key="D-B"/>
+    <bind actionName="goto-declaration" key="O-G"/>    
+    <bind actionName="comment" key="DS-T"/>
+    <bind actionName="goto-help" key="O-F1"/>
+    <bind actionName="make-is" key="O-U$I"/>
+    <bind actionName="make-getter" key="O-U$G"/>
+    <bind actionName="macro-debug-var" key="D-J$D"/>
+    <bind actionName="uncomment" key="DS-D"/>
+    <bind actionName="make-setter" key="O-U$S"/>
+    <bind actionName="select-element-next" key="OS-UP"/>
+    <bind actionName="select-element-previous" key="OS-DOWN"/>
+
+    <bind actionName="in-place-refactoring" key="D-R"/>
+    <bind actionName="generate-code" key="O-INSERT"/>
 </bindings>

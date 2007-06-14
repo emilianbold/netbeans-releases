@@ -285,9 +285,11 @@ Microsystems, Inc. All Rights Reserved.
     </folder> <!-- Menu -->
 
     <folder name="Shortcuts">
+        <!--
         <file name="D-O.instance">
     	    <attr name="instanceClass" stringvalue="org.netbeans.modules.openfile.OpenFileAction"/>
 	</file>
+        -->
         <file name="DS-F.shadow">
     	    <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-search-FindInFilesAction.instance"/>
 	</file>

@@ -353,7 +353,7 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-CloseWindowAction.instance"/>
             </file>
         </folder>
-        <folder name="NetBeans">
+        <folder name="NetBeans55">
             <file name="CS-8.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-palette-ShowPaletteAction.instance"/>
             </file>
@@ -657,6 +657,264 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-BuildMainProject.instance"/>
             </file>
         </folder>
+        
+        
+        
+        <folder name="NetBeans">
+            <file name="CS-8.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-palette-ShowPaletteAction.instance"/>
+            </file>
+            <file name="S-F5.shadow">
+                <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-KillAction.instance"/>
+            </file>
+            <file name="OS-PAGE_UP.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-actions-PreviousViewCallbackAction.instance"/>
+            </file>
+            <file name="D-2.shadow">
+                <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-physical-tab-action.instance"/>
+            </file>
+            <file name="D-V.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-PasteAction.instance"/>
+            </file>
+            <file name="PASTE.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-PasteAction.instance"/>
+            </file>
+            <file name="S-INSERT.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-PasteAction.instance"/>
+            </file>
+            <file name="D-Z.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-UndoAction.instance"/>
+            </file>
+            <file name="UNDO.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-UndoAction.instance"/>
+            </file>
+            <file name="F9.shadow">
+                <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-CompileSingle.instance"/>
+            </file>
+            <file name="A-PAGE_UP.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-PreviousTabAction.instance"/>
+            </file>
+            <file name="O-F6.shadow">
+                <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-TestProject.instance"/>
+            </file>
+            <file name="DS-PERIOD.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/bookmark-next.instance"/>
+            </file>
+            <file name="D-F7.shadow">
+                <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-StepOutAction.instance"/>
+            </file>
+            <file name="F5.shadow">
+                <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-DebugMainProject.instance"/>
+            </file>
+            <file name="D-Y.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-RedoAction.instance"/>
+            </file>
+            <file name="F4.shadow">
+                <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-RunToCursorAction.instance"/>
+            </file>
+            <file name="O-F7.shadow">
+                <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-api-ui-WhereUsedAction.instance"/>
+            </file>
+            <file name="D-F8.shadow">
+                <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.instance"/>
+            </file>
+            <file name="DS-F8.shadow">
+                <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-AddBreakpointAction.instance"/>
+            </file>
+            <file name="SO-4.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-jpda-heapwalk-actions-ClassesCountsViewAction.instance"/>
+            </file>
+            <file name="A-PAGE_DOWN.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-NextTabAction.instance"/>
+            </file>
+            <file name="S-F11.shadow">
+                <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-RebuildMainProject.instance"/>
+            </file>
+            <file name="DS-F7.shadow">
+                <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-AddWatchAction.instance"/>
+            </file>
+            <file name="DS-F5.shadow">
+                <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-DebugSingle.instance"/>
+            </file>
+            <file name="D-3.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-favorites-View.instance"/>
+            </file>
+            <file name="D-PAGE_DOWN.shadow">
+                <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-MakeCallerCurrentAction.instance"/>
+            </file>
+            <file name="D-COMMA.shadow">
+                <attr name="originalFile" stringvalue="Actions/System/org-netbeans-core-actions-JumpPrevAction.instance"/>
+            </file>
+            <file name="C-G.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-GotoAction.instance"/>
+            </file>
+            <file name="DS-COMMA.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/bookmark-previous.instance"/>
+            </file>
+            <file name="F1.shadow">
+                <attr name="originalFile" stringvalue="Actions/Help/org-netbeans-modules-javahelp-HelpAction.instance"/>
+            </file>
+            <file name="DS-0.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-search-ResultViewOpenAction.instance"/>
+            </file>
+            <file name="D-F.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-FindAction.instance"/>
+            </file>
+            <file name="FIND.instance">
+                <!-- #32733 - Find shortcut should be CTRL-F unless kbd has a Find key -->
+                <attr name="instanceClass" stringvalue="org.openide.actions.FindAction"/>
+            </file>
+            <file name="COPY.instance">
+        	    <attr name="instanceClass" stringvalue="org.openide.actions.CopyAction"/>
+            </file>
+            <file name="D-INSERT.instance">
+        	    <attr name="instanceClass" stringvalue="org.openide.actions.CopyAction"/>
+            </file>
+            <file name="DS-N.shadow">
+                <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-NewProject.instance"/>
+            </file>
+            <file name="D-F6.shadow">
+                <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-TestSingle.instance"/>
+            </file>
+            <file name="C-H.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-ReplaceAction.instance"/>
+            </file>
+            <file name="DS-3.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/SelectDocumentNode/org-netbeans-modules-favorites-Select.instance"/>
+            </file>
+            <file name="D-N.shadow">
+                <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-NewFile.instance"/>
+            </file>
+            <file name="S-F4.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-DocumentsAction.instance"/>
+            </file>
+            <file name="SO-1.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-ui-actions-LocalsViewAction.instance"/>
+            </file>
+            <file name="D-F5.shadow">
+                <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-ContinueAction.instance"/>
+            </file>
+            <file name="F7.shadow">
+                <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-StepIntoAction.instance"/>
+            </file>
+            <file name="D-PERIOD.shadow">
+                <attr name="originalFile" stringvalue="Actions/System/org-netbeans-core-actions-JumpNextAction.instance"/>
+            </file>
+            <file name="D-C.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-CopyAction.instance"/>
+            </file>
+            <file name="DS-M.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/bookmark-toggle.instance"/>
+            </file>
+            <file name="OS-PAGE_DOWN.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-actions-NextViewCallbackAction.instance"/>
+            </file>
+            <file name="DS-2.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/SelectDocumentNode/org-netbeans-modules-project-ui-SelectInFiles.instance"/>
+            </file>
+            <file name="DS-1.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/SelectDocumentNode/org-netbeans-modules-project-ui-SelectInProjects.instance"/>
+            </file>
+            <file name="S-ESCAPE.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-MaximizeWindowAction.instance"/>
+            </file>
+            <file name="D-S.shadow">
+                <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-SaveAction.instance"/>
+            </file>
+            <file name="S-F6.shadow">
+                <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-RunSingle.instance"/>
+            </file>
+            <file name="D-F4.shadow">
+        	    <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-CloseWindowAction.instance"/>
+        	</file>
+            <file name="F8.shadow">
+                <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-StepOverAction.instance"/>
+            </file>
+            <file name="DS-7.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-actions-GlobalPropertiesAction.instance"/>
+            </file>
+            <file name="D-S-W.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-CloseAllDocumentsAction.instance"/>
+            </file>
+            <file name="SO-7.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-ui-actions-ThreadsViewAction.instance"/>
+            </file>
+            <file name="D-4.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-output2-OutputWindowAction.instance"/>
+            </file>
+            <file name="D-7.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-navigator-ShowNavigatorAction.instance"/>
+            </file>
+            <file name="S-F7.shadow">
+                <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-RunIntoMethodAction.instance"/>
+            </file>
+            <file name="DS-O.shadow">
+                <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-OpenProject.instance"/>
+            </file>
+            <file name="DS-F6.shadow">
+                <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-DebugTestSingle.instance"/>
+            </file>
+            <file name="DELETE.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-DeleteAction.instance"/>
+            </file>
+            <file name="D-0.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-SwitchToRecentDocumentAction.instance"/>
+            </file>
+            <file name="DS-U.shadow">
+                <attr name="originalFile" stringvalue="Actions/JUnitTests/org-netbeans-modules-junit-CreateTestAction.instance"/>
+            </file>
+            <file name="CONTEXT_MENU.shadow">
+                <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-PopupAction.instance"/>
+            </file>
+            <file name="S-F10.shadow">
+                <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-PopupAction.instance"/>
+            </file>
+            <file name="D-X.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-CutAction.instance"/>
+            </file>
+            <file name="CUT.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-CutAction.instance"/>
+            </file>
+            <file name="S-DELETE.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-CutAction.instance"/>
+            </file>
+            <file name="SO-8.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-jpda-ui-actions-SourcesViewAction.instance"/>
+            </file>
+            <file name="SO-2.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-ui-actions-WatchesViewAction.instance"/>
+            </file>
+            <file name="SO-3.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-ui-actions-CallStackViewAction.instance"/>
+            </file>
+            <file name="D-PAGE_UP.shadow">
+                <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-MakeCalleeCurrentAction.instance"/>
+            </file>
+            <file name="SO-5.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-ui-actions-BreakpointsViewAction.instance"/>
+            </file>
+            <file name="SO-6.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-ui-actions-SessionsViewAction.instance"/>
+            </file>
+            <file name="D-5.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-actions-ViewRuntimeTabAction.instance"/>
+            </file>
+            <file name="F6.shadow">
+                <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-RunMainProject.instance"/>
+            </file>
+            <file name="DS-S.shadow">
+                <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-SaveAllAction.instance"/>
+            </file>
+            <file name="D-1.shadow">
+                <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-logical-tab-action.instance"/>
+            </file>
+            <file name="F11.shadow">
+                <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-BuildMainProject.instance"/>
+            </file>
+        </folder>
+        
+        
+        
         <folder name="Eclipse">
 <!--retouche:-->
 <!--            <file name="DO-F.shadow">
@@ -889,6 +1147,14 @@ Microsystems, Inc. All Rights Reserved.
             <folder name="Emacs">
                 <folder name="Defaults">
                     <file name="org-netbeans-modules-defaults-keybindings.xml" url="Emacs-keybindings.xml"/>
+                </folder>
+            </folder>
+            <folder name="NetBeans55">
+                <folder name="Defaults">
+                    <file name="org-netbeans-modules-defaults-keybindings.xml" url="NetBeans55-keybindings.xml"/>
+                    <file name="org-netbeans-modules-editor-keybindings-mac.xml" url="NetBeans55-keybindings-mac.xml">
+                        <attr name="nbeditor-settings-targetOS" stringvalue="OS_MAC" />
+                    </file>
                 </folder>
             </folder>
         </folder>

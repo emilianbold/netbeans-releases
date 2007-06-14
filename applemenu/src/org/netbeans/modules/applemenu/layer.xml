@@ -72,6 +72,9 @@ Microsystems, Inc. All Rights Reserved.
 	    <attr name="instanceClass" stringvalue="org.openide.actions.GotoAction"/>
 	</file>
         
+        <file name="D-W.shadow">
+            <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-CloseWindowAction.instance"/>
+        </file>
     </folder>
 
 </filesystem>
