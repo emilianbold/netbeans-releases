@@ -32,6 +32,8 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
@@ -45,7 +47,6 @@ import org.netbeans.modules.j2ee.dd.api.web.ServletMapping;
 import org.netbeans.modules.j2ee.dd.api.web.Taglib;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.web.struts.config.model.MessageResources;
-import org.openide.ErrorManager;
 
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -67,6 +68,7 @@ import org.netbeans.modules.web.struts.ui.StrutsConfigurationPanel;
 
 import org.netbeans.spi.java.project.classpath.ProjectClassPathExtender;
 import org.openide.DialogDescriptor;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 
@@ -100,11 +102,11 @@ public class StrutsFrameworkProvider extends WebFrameworkProvider {
                 try {
                     cpExtender.addLibrary(lib);
                 } catch (IOException ioe) {
-                    ErrorManager.getDefault().notify(ioe);
-
+                    Exceptions.printStackTrace(ioe);
                 }
             } else {
-                ErrorManager.getDefault().log ("WebProjectClassPathExtender not found in the project lookup of project: "+project.getProjectDirectory().getPath());    //NOI18N
+                Logger.getLogger("global").log(Level.INFO,
+                        "WebProjectClassPathExtender not found in the project lookup of project: " + project.getProjectDirectory().getPath());    //NOI18N
             }
 
             try {
@@ -112,9 +114,9 @@ public class StrutsFrameworkProvider extends WebFrameworkProvider {
                 fs.runAtomicAction(new CreateStrutsConfig(wm));
                 result.add(wm.getDocumentBase().getFileObject("welcomeStruts", "jsp"));
             } catch (FileNotFoundException exc) {
-                ErrorManager.getDefault().notify(exc);
+                Exceptions.printStackTrace(exc);
             } catch (IOException exc) {
-                ErrorManager.getDefault().notify(exc);
+                Exceptions.printStackTrace(exc);
             }
         }
         return result;
@@ -360,7 +362,7 @@ public class StrutsFrameworkProvider extends WebFrameworkProvider {
                             
                         }
                         catch (VersionNotSupportedException e){
-                            ErrorManager.getDefault().notify(ErrorManager.WARNING, e);
+                            Logger.getLogger("global").log(Level.WARNING, null, e);
                         }
                     }
                     WelcomeFileList welcomeFiles = ddRoot.getSingleWelcomeFileList();
@@ -376,7 +378,7 @@ public class StrutsFrameworkProvider extends WebFrameworkProvider {
                     
                 }
                 catch (ClassNotFoundException cnfe){
-                    ErrorManager.getDefault().notify(cnfe);
+                    Exceptions.printStackTrace(cnfe);
                 }
             }
             

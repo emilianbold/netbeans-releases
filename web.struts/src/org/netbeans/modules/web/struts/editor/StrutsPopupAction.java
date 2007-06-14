@@ -18,13 +18,9 @@
  */
 package org.netbeans.modules.web.struts.editor;
 
-import java.awt.Dialog;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.ArrayList;
-import javax.swing.JButton;
 import javax.swing.JMenu;
-import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JSeparator;
 import javax.swing.text.Document;
@@ -50,10 +46,8 @@ import org.netbeans.modules.web.struts.dialogs.AddActionPanel;
 import org.netbeans.modules.web.struts.dialogs.AddFormBeanPanel;
 import org.netbeans.modules.web.struts.dialogs.AddFormPropertyPanel;
 import org.netbeans.modules.web.struts.dialogs.AddForwardDialogPanel;
-import org.netbeans.modules.web.struts.dialogs.ValidatingPanel;
-import org.openide.DialogDescriptor;
-import org.openide.ErrorManager;
 import org.openide.loaders.DataObject;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.Presenter;
@@ -138,7 +132,7 @@ public final class StrutsPopupAction extends SystemAction implements Presenter.P
                     //((StrutsConfigDataObject)data).write(config);
                     target.setCaretPosition(StrutsEditorUtilities.writeBean((BaseDocument)doc, bean, "form-bean", "form-beans"));       //NOI18N
                 } catch (java.io.IOException ex) {
-                    ErrorManager.getDefault().notify(ex);
+                    Exceptions.printStackTrace(ex);
                 }
             }
             
@@ -336,7 +330,7 @@ public final class StrutsPopupAction extends SystemAction implements Presenter.P
                     
                 }
             } catch (java.io.IOException ex) {
-                ErrorManager.getDefault().notify(ex);
+                Exceptions.printStackTrace(ex);
             }
         }
     }

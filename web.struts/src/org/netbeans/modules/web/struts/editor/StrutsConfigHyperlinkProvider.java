@@ -42,14 +42,13 @@ import org.netbeans.modules.j2ee.common.source.AbstractTask;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.struts.StrutsConfigDataObject;
 import org.netbeans.modules.web.struts.StrutsConfigUtilities;
-import org.openide.ErrorManager;
 import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -373,7 +372,7 @@ public class StrutsConfigHyperlinkProvider implements HyperlinkProvider {
             try{
                 dobj = DataObject.find(fObj);
             } catch (DataObjectNotFoundException e){
-                ErrorManager.getDefault().notify(e);
+                Exceptions.printStackTrace(e);
                 return;
             }
             if (dobj != null){

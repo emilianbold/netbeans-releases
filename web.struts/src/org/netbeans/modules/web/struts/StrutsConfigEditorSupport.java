@@ -21,13 +21,14 @@ package org.netbeans.modules.web.struts;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
 import org.netbeans.modules.xml.api.EncodingUtil;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -149,7 +150,7 @@ implements OpenCookie, EditCookie, EditorCookie.Observable, PrintCookie, CloseCo
                 }
             }
             catch (javax.swing.text.BadLocationException e){
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);            
+                Logger.getLogger("global").log(Level.INFO, null, e);            
             }
             super.saveDocument();
             //moved from Env.save()
@@ -199,7 +200,7 @@ implements OpenCookie, EditCookie, EditorCookie.Observable, PrintCookie, CloseCo
                 getDataObject().setModified (false);
             }
             catch (javax.swing.text.BadLocationException e){
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);            
+                Logger.getLogger("global").log(Level.INFO, null, e);            
             }
         }
     }

@@ -24,14 +24,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
-import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -51,11 +50,11 @@ import org.netbeans.modules.web.struts.config.model.MessageResources;
 import org.netbeans.modules.web.struts.config.model.StrutsConfig;
 import org.netbeans.modules.web.struts.config.model.FormBeans;
 import org.netbeans.modules.web.struts.config.model.FormBean;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -258,7 +257,7 @@ public class StrutsConfigUtilities {
             }
             return servlet;
         } catch (java.io.IOException e) {
-            ErrorManager.getDefault().notify(e);
+            Exceptions.printStackTrace(e);
             return null;
         }
     }
@@ -443,9 +442,9 @@ public class StrutsConfigUtilities {
                 index++;
             }
         } catch (DataObjectNotFoundException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.WARNING, ex);
+            Logger.getLogger("global").log(Level.WARNING, null, ex);
         } catch (IOException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.WARNING, ex);
+            Logger.getLogger("global").log(Level.WARNING, null, ex);
         }
         return resource;
     }

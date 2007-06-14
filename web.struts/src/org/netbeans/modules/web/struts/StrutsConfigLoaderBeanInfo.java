@@ -21,9 +21,9 @@ package org.netbeans.modules.web.struts;
 
 import java.beans.*;
 import java.awt.Image;
-import org.openide.ErrorManager;
 
 import org.openide.loaders.UniFileLoader;
+import org.openide.util.Exceptions;
 
 /** StrutsConfig loader bean info.
  *
@@ -35,7 +35,7 @@ public class StrutsConfigLoaderBeanInfo extends SimpleBeanInfo {
         try {
             return new BeanInfo[] { Introspector.getBeanInfo(UniFileLoader.class) };
         } catch (IntrospectionException ie) {
-            ErrorManager.getDefault().notify(ie);
+            Exceptions.printStackTrace(ie);
             return null;
         }
     }

@@ -22,6 +22,8 @@ package org.netbeans.modules.web.struts;
 //import org.netbeans.modules.xml.catalog.settings.CatalogSettings;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.web.struts.config.model.StrutsConfig;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObjectExistsException;
@@ -33,7 +35,6 @@ import org.xml.sax.InputSource;
 import org.netbeans.api.xml.cookies.ValidateXMLCookie;
 import org.netbeans.api.xml.cookies.CheckXMLCookie;
 import org.netbeans.spi.xml.cookies.*;
-import org.openide.ErrorManager;
 import org.w3c.dom.Document;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.SAXException;
@@ -198,7 +199,7 @@ public class StrutsConfigDataObject extends MultiDataObject
             error = updateNode(prepareInputSource());
         }
         catch (Exception e) {
-            ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, e);
+            Logger.getLogger("global").log(Level.INFO, null, e);
             setDocumentValid(false);
             return;
         }

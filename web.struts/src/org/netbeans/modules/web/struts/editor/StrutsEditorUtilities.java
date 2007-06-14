@@ -23,7 +23,6 @@ package org.netbeans.modules.web.struts.editor;
 import java.io.IOException;
 import java.io.StringWriter;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.JTextComponent;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.TokenItem;
 import org.netbeans.editor.ext.ExtSyntaxSupport;
@@ -31,7 +30,7 @@ import org.netbeans.modules.schema2beans.BaseBean;
 import org.netbeans.modules.web.struts.config.model.FormProperty;
 import org.netbeans.modules.web.struts.config.model.Forward;
 import org.netbeans.modules.web.struts.config.model.StrutsException;
-import org.openide.ErrorManager;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -93,7 +92,7 @@ public class StrutsEditorUtilities {
             }   
             return null;
         } catch (BadLocationException e) {
-            ErrorManager.getDefault().notify(e);
+            Exceptions.printStackTrace(e);
         }
         return null;
     }
@@ -141,7 +140,7 @@ public class StrutsEditorUtilities {
             }   
             return null;
         } catch (BadLocationException e) {
-            ErrorManager.getDefault().notify(e);
+            Exceptions.printStackTrace(e);
         }
         return null;
     }
@@ -244,7 +243,7 @@ public class StrutsEditorUtilities {
             }
                 
         } catch (BadLocationException ex) {
-            ErrorManager.getDefault().notify(ex);
+            Exceptions.printStackTrace(ex);
         }
         return possition;
     }
@@ -326,7 +325,7 @@ public class StrutsEditorUtilities {
                 }
             }
         } catch (BadLocationException ex) {
-            ErrorManager.getDefault().notify(ex);
+            Exceptions.printStackTrace(ex);
         }        
         return possition;
     }
