@@ -100,6 +100,11 @@ public class PathValidatorVisitor extends AbstractXPathVisitor {
     //========================================================
     
     public void visit(XPathLocationPath locationPath) {
+// hot fix for # 106445 [to nikita: please, investigate it]
+//
+        if (true) return;
+
+        
         if (myInitialExpression == null) {
             myInitialExpression = locationPath;
         } else {
@@ -177,6 +182,10 @@ public class PathValidatorVisitor extends AbstractXPathVisitor {
     }
     
     public void visit(LocationStep locationStep) {
+// hot fix for # 106445 [to nikita: please, investigate it]
+//
+        if (true) return;
+
         //
         assert parentComponent != null;
         //
