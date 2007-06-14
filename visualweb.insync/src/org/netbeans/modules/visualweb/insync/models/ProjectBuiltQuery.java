@@ -212,7 +212,7 @@ public class ProjectBuiltQuery {
                 
         public void propertyChange(PropertyChangeEvent evt) {
             if (OpenProjects.PROPERTY_OPEN_PROJECTS.equals(evt.getPropertyName())) {
-                checkProjectOpen();
+        		checkProjectOpen();
             }
         }
         
@@ -255,7 +255,6 @@ public class ProjectBuiltQuery {
 
         public void fileAttributeChanged(FileAttributeEvent fe) {
             // Ignore
-            
         }
 
         public void fileChanged(FileEvent fe) {
@@ -358,6 +357,9 @@ public class ProjectBuiltQuery {
         }
         
         private void dispose() {
+        	if (project == null) {
+        		return;
+        	}
             project = null;
             fileObjectBuiltStatusMap = null;
             synchronized(this) {
