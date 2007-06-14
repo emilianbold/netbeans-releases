@@ -315,7 +315,6 @@ then
     # Intentionally skipping check-commit-validation.
     # Running sanity-start just so you have a good chance to see deprecation messages etc.
     # Make sure to explicitly set JDK (ignore any definition in user.build.properties).
-    # XXX when fixed also add: commit-verification
     $antcmd -f $sources/nbbuild/build.xml -Dnbjdk.home=$nbjdk nozip-check
     status=$?
     if [ $status '!=' 0 ]
