@@ -53,7 +53,8 @@ public class WebFormDesignerOperator  extends TopComponentOperator {
     }
     
     public WebFormDesignerOperator(String topComponentName, int Index) {
-        super(topComponentName,Index);
+        //super(topComponentName,Index);
+        super(TopComponentOperator.findTopComponent(null,topComponentName, Index, new WebFormDesignerSubchooser()));
         try {
             surfacecomp = new ComponentOperator(this, new DesignerPaneChooser());
         } catch(TimeoutExpiredException tex) {
@@ -66,7 +67,7 @@ public class WebFormDesignerOperator  extends TopComponentOperator {
     /**
      * Find web designer operator located certain top component
      * @param topComponentName name of the top component
-     * @return WebFOrmDesignerOperator
+     * @return WebFormDesignerOperator
      */
     public static WebFormDesignerOperator findWebFormDesignerOperator(String topComponentName){
         return findWebFormDesignerOperator(topComponentName, true);
@@ -75,7 +76,7 @@ public class WebFormDesignerOperator  extends TopComponentOperator {
      * Find web designer operator located certain top component
      * @param topComponentName name of the top component
      * @param exactlyMatch flag to match component name exactly
-     * @return WebFOrmDesignerOperator
+     * @return WebFormDesignerOperator
      */
     public static WebFormDesignerOperator findWebFormDesignerOperator(String topComponentName, boolean exactlyMatch){
         long oldTimeout = JemmyProperties.getCurrentTimeouts().getTimeout("ComponentOperator.WaitComponentTimeout");
@@ -216,7 +217,7 @@ public class WebFormDesignerOperator  extends TopComponentOperator {
     
     public static final class WebFormDesignerSubchooser implements ComponentChooser {
         public boolean checkComponent(Component component) {
-            return component.getClass().getName().equals("org.netbeans.modules.visualweb.designer.DesignerTopComp");
+            return component.getClass().getName().equals("org.netbeans.modules.visualweb.designer.jsf.ui.JsfTopComponent");
         }
         
         public String getDescription() {
