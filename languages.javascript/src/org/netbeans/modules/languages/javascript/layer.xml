@@ -30,6 +30,8 @@ Microsystems, Inc. All Rights Reserved.
     </folder>
     <folder name="Templates">
         <folder name="JSP_Servlet">
+            <attr name="CascadeStyleSheet.css/EmptyJavaScript.js" boolvalue="true"/>
+            <attr name="EmptyJavaScript.js/EmptyJSON.json" boolvalue="true"/>
             <file name="EmptyJSON.json" url="EmptyJSON.json">
                 <attr name="template" boolvalue="true" />
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.languages.javascript.Bundle"/>
@@ -43,21 +45,7 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/languages/javascript/EmptyJavaScriptFileDescription.html"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/languages/javascript/JavaScript.png"/>
                 <attr name="templateCategory" stringvalue="web-types"/>
-            </file>            
-            <file name="JavaScriptMethod.js" url="JavaScriptMethod.js">
-                <attr name="template" boolvalue="true" />
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.languages.javascript.Bundle"/>
-                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/languages/javascript/JavaScriptMethoidFileDescription.html"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/languages/javascript/JavaScript.png"/>
-                <attr name="templateCategory" stringvalue="web-types"/>
-            </file>            
-            <file name="JavaScriptObject.js" url="JavaScriptObject.js">
-                <attr name="template" boolvalue="true" />
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.languages.javascript.Bundle"/>
-                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/languages/javascript/JavaScriptObjectFileDescription.html"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/languages/javascript/JavaScript.png"/>
-                <attr name="templateCategory" stringvalue="web-types"/>
-            </file>            
+            </file>
         </folder>
         <folder name="Other">
             <file name="EmptyJavaScript.js" url="EmptyJavaScript.js">
