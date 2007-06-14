@@ -36,7 +36,6 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformFactory;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl;
 import org.netbeans.modules.j2ee.jboss4.util.JBProperties;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
@@ -45,8 +44,11 @@ import org.openide.util.NbBundle;
 import javax.enterprise.deploy.spi.DeploymentManager;
 import org.netbeans.modules.j2ee.jboss4.JBDeploymentManager;
 import java.io.FilenameFilter;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.openide.modules.InstalledFileLocator;
+import org.openide.util.Exceptions;
 
  
 /**
@@ -231,11 +233,11 @@ public class JBJ2eePlatformFactory extends J2eePlatformFactory {
             } 
             catch (Exception ex) {
                 try {
-                    ErrorManager.getDefault().annotate(ex, serviceFO.getURL().toString());
+                    Exceptions.attachLocalizedMessage(ex, serviceFO.getURL().toString());
                 } catch (FileStateInvalidException fsie) { 
                     //noop
                 }
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                Logger.getLogger("global").log(Level.INFO, null, ex);
             }
             return false;
         }

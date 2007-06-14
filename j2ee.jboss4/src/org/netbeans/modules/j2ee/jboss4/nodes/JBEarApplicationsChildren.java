@@ -22,13 +22,14 @@ package org.netbeans.modules.j2ee.jboss4.nodes;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.Vector;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.management.ObjectInstance;
 import javax.management.ObjectName;
 import javax.management.QueryExp;
 import org.netbeans.modules.j2ee.jboss4.JBDeploymentManager;
 import org.netbeans.modules.j2ee.jboss4.ide.ui.JBPluginUtils;
 import org.netbeans.modules.j2ee.jboss4.nodes.actions.Refreshable;
-import org.openide.ErrorManager;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
@@ -64,8 +65,7 @@ public class JBEarApplicationsChildren extends Children.Keys implements Refresha
                     if (isRemoteManagementSupported() && isJB4x()) {
                         searchPattern = new ObjectName("jboss.management.local:j2eeType=J2EEApplication,*"); // NOI18N
                         propertyName = "name"; // NOI18N
-                    }
-                    else {
+                    } else {
                         searchPattern = new ObjectName("jboss.j2ee:service=EARDeployment,*"); // NOI18N
                         propertyName = "url"; // NOI18N
                     }
@@ -79,23 +79,22 @@ public class JBEarApplicationsChildren extends Children.Keys implements Refresha
                         try {
                             ObjectName elem = ((ObjectInstance) it.next()).getObjectName();
                             String name = elem.getKeyProperty(propertyName);
-
+                            
                             if (isRemoteManagementSupported() && isJB4x) {
                                 if (name.endsWith(".sar") || name.endsWith(".deployer")) { // NOI18N
                                     continue;
                                 }
-                            }
-                            else {
+                            } else {
                                 name = name.substring(1, name.length() - 1); // NOI18N
                             }
-
+                            
                             keys.add(new JBEarApplicationNode(name, lookup));
                         } catch (Exception ex) {
-                            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                            Logger.getLogger("global").log(Level.INFO, null, ex);
                         }
                     }
                 } catch (Exception ex) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                    Logger.getLogger("global").log(Level.INFO, null, ex);
                 }
                 
                 setKeys(keys);

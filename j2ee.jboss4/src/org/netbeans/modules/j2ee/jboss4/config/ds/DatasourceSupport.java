@@ -34,7 +34,6 @@ import org.netbeans.modules.j2ee.jboss4.config.ResourceConfigurationHelper;
 import org.netbeans.modules.j2ee.jboss4.config.gen.Datasources;
 import org.netbeans.modules.j2ee.jboss4.config.gen.LocalTxDatasource;
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.SaveCookie;
@@ -44,6 +43,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -137,7 +137,7 @@ public class DatasourceSupport {
                     if (datasources == null)
                         datasources = Datasources.createGraph(datasourcesFile);
                 } catch (IOException ioe) {
-                    ErrorManager.getDefault().notify(ioe);
+                    Exceptions.printStackTrace(ioe);
                 } catch (RuntimeException re) {
                     // jboss-ds.xml is not parseable, do nothing
                 }
@@ -148,7 +148,7 @@ public class DatasourceSupport {
                 ensureDatasourcesFOExists();
             }
         } catch (ConfigurationException ce) {
-            ErrorManager.getDefault().notify(ce);
+            Exceptions.printStackTrace(ce);
         }
 
         return datasources;
@@ -277,10 +277,10 @@ public class DatasourceSupport {
             datasources = newDatasources;
 
         } catch(DataObjectNotFoundException donfe) {
-            ErrorManager.getDefault().notify(donfe);
+            Exceptions.printStackTrace(donfe);
         } catch (BadLocationException ble) {
             // this should not occur, just log it if it happens
-            ErrorManager.getDefault().notify(ble);
+            Exceptions.printStackTrace(ble);
         } catch (IOException ioe) {
             String msg = NbBundle.getMessage(DatasourceSupport.class, "MSG_CannotUpdateFile", datasourcesFile.getAbsolutePath());
             throw new ConfigurationException(msg, ioe);

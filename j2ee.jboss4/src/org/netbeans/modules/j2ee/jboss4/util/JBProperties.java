@@ -39,7 +39,6 @@ import org.netbeans.api.java.platform.Specification;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.jboss4.JBDeploymentManager;
 import org.netbeans.modules.j2ee.jboss4.customizer.CustomizerSupport;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.NbCollections;
@@ -175,7 +174,7 @@ public class JBProperties {
                 try {
                     list.add(fileToUrl(jsfAPI));
                 } catch (MalformedURLException e) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                    Logger.getLogger("global").log(Level.INFO, null, e);
                 }
             }
             else 
@@ -183,7 +182,7 @@ public class JBProperties {
                 try {
                     list.add(fileToUrl(jsfAPI));
                 } catch (MalformedURLException e) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                    Logger.getLogger("global").log(Level.INFO, null, e);
                 }
             }
             
@@ -192,7 +191,7 @@ public class JBProperties {
                 try {
                     list.add(fileToUrl(jsfIMPL));
                 } catch (MalformedURLException e) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                    Logger.getLogger("global").log(Level.INFO, null, e);
                 }
             }
             else
@@ -200,11 +199,11 @@ public class JBProperties {
                 try {
                     list.add(fileToUrl(jsfIMPL));
                 } catch (MalformedURLException e) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                    Logger.getLogger("global").log(Level.INFO, null, e);
                 }
             }
         } catch (MalformedURLException e) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            Logger.getLogger("global").log(Level.INFO, null, e);
         }
         return list;
     }
@@ -220,16 +219,16 @@ public class JBProperties {
         if (files == null)
             return;
         for (int i = 0; i < files.length; i++) {
-            if (files [i].isDirectory()) {
-                addFiles(files [i], l);
+            if (files[i].isDirectory()) {
+                addFiles(files[i], l);
             } else {
                 try {
-                    l.add(fileToUrl(files [i]));
+                    l.add(fileToUrl(files[i]));
                 } catch (MalformedURLException e) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-               }
+                    Logger.getLogger("global").log(Level.INFO, null, e);
+                }
             }
-       }
+        }
     }
     
     public List<URL> getSources() {
@@ -255,7 +254,7 @@ public class JBProperties {
                     list.add(fileToUrl(j2eeDoc));
                 }
             } catch (MalformedURLException e) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                Logger.getLogger("global").log(Level.INFO, null, e);
             }
             return list;
         }

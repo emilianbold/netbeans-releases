@@ -19,22 +19,12 @@
 package org.netbeans.modules.j2ee.jboss4.customizer;
 
 
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.io.File;
-import java.util.ArrayList;
-import java.net.URL;
-import java.net.URI;
-import java.util.List;
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.j2ee.deployment.common.api.J2eeLibraryTypeProvider;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl;
-import org.netbeans.spi.project.libraries.LibraryImplementation;
 
 
 /**

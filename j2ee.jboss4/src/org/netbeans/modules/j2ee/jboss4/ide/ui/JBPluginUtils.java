@@ -28,9 +28,10 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.xml.parsers.DocumentBuilderFactory;
 import org.netbeans.modules.j2ee.jboss4.JBDeploymentManager;
-import org.openide.ErrorManager;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -303,7 +304,7 @@ public class JBPluginUtils {
                 }
             }
         }catch(Exception e){
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            Logger.getLogger("global").log(Level.INFO, null, e);
         }
         return "";
     }
@@ -343,7 +344,7 @@ public class JBPluginUtils {
                 }
             }
         }catch(Exception e){
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            Logger.getLogger("global").log(Level.INFO, null, e);
         }
         return "";
     }
@@ -383,7 +384,7 @@ public class JBPluginUtils {
                 }
             }
         }catch(Exception e){
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            Logger.getLogger("global").log(Level.INFO, null, e);
         }
         return "";
     }

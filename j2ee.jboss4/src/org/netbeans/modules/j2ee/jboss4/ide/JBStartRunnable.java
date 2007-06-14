@@ -23,6 +23,8 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.enterprise.deploy.shared.ActionType;
 import javax.enterprise.deploy.shared.CommandType;
 import javax.enterprise.deploy.shared.StateType;
@@ -34,10 +36,10 @@ import org.netbeans.modules.j2ee.jboss4.JBDeploymentManager;
 import org.netbeans.modules.j2ee.jboss4.ide.ui.JBPluginProperties;
 import org.netbeans.modules.j2ee.jboss4.ide.ui.JBPluginUtils;
 import org.netbeans.modules.j2ee.jboss4.util.JBProperties;
-import org.openide.ErrorManager;
 import org.openide.execution.NbProcessDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.windows.InputOutput;
@@ -119,11 +121,8 @@ class JBStartRunnable implements Runnable {
                                 value = "\"" + value + "\""; // NOI18N
                             }
                             catch (IOException ioe) {
-                                ErrorManager.getDefault().annotate(
-                                        ioe, 
-                                        NbBundle.getMessage(JBStartRunnable.class, "ERR_NonProxyHostParsingError")
-                                );
-                                ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ioe);
+                                Exceptions.attachLocalizedMessage(ioe, NbBundle.getMessage(JBStartRunnable.class, "ERR_NonProxyHostParsingError"));
+                                Logger.getLogger("global").log(Level.WARNING, null, ioe);
                                 value = null;
                             }
                         }
@@ -260,7 +259,7 @@ class JBStartRunnable implements Runnable {
         try {
             return pd.exec(null, envp, true, null );
         } catch (java.io.IOException ioe) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
+            Logger.getLogger("global").log(Level.INFO, null, ioe);
 
             final String serverLocation = ip.getProperty(JBPluginProperties.PROPERTY_ROOT_DIR);
             final String serverRunFileName = serverLocation + (Utilities.isWindows() ? STARTUP_BAT : STARTUP_SH);

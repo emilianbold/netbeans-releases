@@ -31,6 +31,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.deployment.common.api.DatasourceAlreadyExistsException;
@@ -40,11 +42,11 @@ import org.netbeans.modules.j2ee.jboss4.config.gen.Datasources;
 import org.netbeans.modules.j2ee.jboss4.config.gen.LocalTxDatasource;
 import org.netbeans.modules.j2ee.jboss4.ide.ui.JBPluginProperties;
 import org.netbeans.modules.schema2beans.BaseBean;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -70,8 +72,7 @@ public final class JBossDatasourceManager implements DatasourceManager {
         Set<Datasource> datasources = new HashSet<Datasource>();
         
         if (serverDir == null || !serverDir.isValid() || !serverDir.isFolder() || !serverDir.canRead()) {
-            ErrorManager.getDefault().log(ErrorManager.USER, 
-                    NbBundle.getMessage(JBossDatasourceManager.class, "ERR_WRONG_DEPLOY_DIR"));
+            Logger.getLogger("global").log(Level.WARNING, NbBundle.getMessage(JBossDatasourceManager.class, "ERR_WRONG_DEPLOY_DIR"));
             return datasources;
         }
         
@@ -96,18 +97,17 @@ public final class JBossDatasourceManager implements DatasourceManager {
                 } catch (RuntimeException re) {
                     // most likely not a data source (e.g. jms-ds.xml in JBoss 5.x)
                     String msg = NbBundle.getMessage(JBossDatasourceManager.class, "MSG_NotParseableDatasources", dsFile.getAbsolutePath());
-                    ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, msg);
+                    Logger.getLogger("global").log(Level.INFO, msg);
                     continue;
                 }
-                LocalTxDatasource ltxds[] = ds.getLocalTxDatasource();
+                LocalTxDatasource[] ltxds = ds.getLocalTxDatasource();
                 for (int i = 0; i < ltxds.length; i++) {
                     if (ltxds[i].getJndiName().length() > 0) {
-                        datasources.add(new JBossDatasource(
-                                    ltxds[i].getJndiName(),
-                                    ltxds[i].getConnectionUrl(),
-                                    ltxds[i].getUserName(),
-                                    ltxds[i].getPassword(),
-                                    ltxds[i].getDriverClass()));
+                        datasources.add(new JBossDatasource(ltxds[i].getJndiName(),
+                                                            ltxds[i].getConnectionUrl(),
+                                                            ltxds[i].getUserName(),
+                                                            ltxds[i].getPassword(),
+                                                            ltxds[i].getDriverClass()));
                     }
                 }
             } catch (IOException ioe) {
@@ -115,7 +115,7 @@ public final class JBossDatasourceManager implements DatasourceManager {
                 throw new ConfigurationException(msg, ioe);
             } catch (RuntimeException re) {
                 String msg = NbBundle.getMessage(JBossDatasourceManager.class, "MSG_NotParseableDatasources", dsFile.getAbsolutePath());
-                throw new ConfigurationException(msg ,re);
+                throw new ConfigurationException(msg, re);
             }
         }
         
@@ -159,10 +159,9 @@ public final class JBossDatasourceManager implements DatasourceManager {
         Datasources deployedDSGraph = null;
         try {
             deployedDSGraph = (dsXMLFile != null ? Datasources.createGraph(dsXMLFile) : new Datasources());
-        }
-        catch (IOException ioe) {
-            ErrorManager.getDefault().annotate(ioe, NbBundle.getMessage(getClass(), "ERR_CannotReadDSdotXml"));
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
+        } catch (IOException ioe) {
+            Exceptions.attachLocalizedMessage(ioe, NbBundle.getMessage(getClass(), "ERR_CannotReadDSdotXml"));
+            Logger.getLogger("global").log(Level.INFO, null, ioe);
             return;
         }
 
@@ -198,8 +197,8 @@ public final class JBossDatasourceManager implements DatasourceManager {
                     dsXmlFo = serverDir.createData(JBossDSdotXML);
                 }
                 catch (IOException ioe) {
-                    ErrorManager.getDefault().annotate(ioe, NbBundle.getMessage(getClass(), "ERR_CannotCreateDSdotXml"));
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
+                    Exceptions.attachLocalizedMessage(ioe, NbBundle.getMessage(getClass(), "ERR_CannotCreateDSdotXml"));
+                    Logger.getLogger("global").log(Level.INFO, null, ioe);
                     return;
                 }
                 

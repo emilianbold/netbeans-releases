@@ -27,9 +27,9 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.DeploymentPlanConfiguration;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfiguration;
 import org.netbeans.modules.j2ee.jboss4.config.gen.JbossApp;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
@@ -58,7 +58,7 @@ implements ModuleConfiguration, DeploymentPlanConfiguration {
             try {
                 deploymentDescriptorDO = deploymentDescriptorDO.find(FileUtil.toFileObject(jbossAppFile));
             } catch(DataObjectNotFoundException donfe) {
-                ErrorManager.getDefault().notify(donfe);
+                Exceptions.printStackTrace(donfe);
             }
         }
     }
@@ -84,7 +84,7 @@ implements ModuleConfiguration, DeploymentPlanConfiguration {
                     try {
                         jbossApp = jbossApp.createGraph(jbossAppFile);
                     } catch (IOException ioe) {
-                        ErrorManager.getDefault().notify(ioe);
+                        Exceptions.printStackTrace(ioe);
                     } catch (RuntimeException re) {
                         // jboss-app.xml is not parseable, do nothing
                     }
@@ -94,7 +94,7 @@ implements ModuleConfiguration, DeploymentPlanConfiguration {
                     ResourceConfigurationHelper.writeFile(jbossAppFile, jbossApp);
                 }
             } catch (ConfigurationException ce) {
-                ErrorManager.getDefault().notify(ce);
+                Exceptions.printStackTrace(ce);
             }
         }
         return jbossApp;

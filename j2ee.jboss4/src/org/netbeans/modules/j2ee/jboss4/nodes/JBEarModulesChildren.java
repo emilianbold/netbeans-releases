@@ -22,11 +22,12 @@ package org.netbeans.modules.j2ee.jboss4.nodes;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.Vector;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.management.ObjectInstance;
 import javax.management.ObjectName;
 import javax.management.QueryExp;
 import org.netbeans.modules.j2ee.jboss4.JBDeploymentManager;
-import org.openide.ErrorManager;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
@@ -78,11 +79,11 @@ public class JBEarModulesChildren extends Children.Keys {
                                 keys.add(new JBWebModuleNode(name, lookup, (context == null) ? null : url+context));
                             }
                         } catch (Exception ex) {
-                            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                            Logger.getLogger("global").log(Level.INFO, null, ex);
                         }
                     }
                 } catch (Exception ex) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                    Logger.getLogger("global").log(Level.INFO, null, ex);
                 }
                 
                 setKeys(keys);

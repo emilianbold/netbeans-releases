@@ -24,17 +24,17 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.StyledDocument;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
 import org.netbeans.modules.j2ee.jboss4.config.ResourceConfigurationHelper;
-import org.netbeans.modules.j2ee.jboss4.config.ds.DatasourceSupport;
 import org.netbeans.modules.j2ee.jboss4.config.gen.Depends;
 import org.netbeans.modules.j2ee.jboss4.config.gen.Mbean;
 import org.netbeans.modules.j2ee.jboss4.config.gen.Server;
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.SaveCookie;
@@ -44,6 +44,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -166,7 +167,7 @@ public class MessageDestinationSupport {
                     if (destinationServiceModel == null)
                         destinationServiceModel = Server.createGraph(destinationsFile);
                 } catch (IOException ioe) {
-                    ErrorManager.getDefault().notify(ioe);
+                    Exceptions.printStackTrace(ioe);
                 } catch (RuntimeException re) {
                     // netbeans-destinations-service.xml is not parseable, do nothing
                 }
@@ -177,7 +178,7 @@ public class MessageDestinationSupport {
                 ensureDestinationsFOExists();
             }
         } catch (ConfigurationException ce) {
-            ErrorManager.getDefault().notify(ce);
+            Exceptions.printStackTrace(ce);
             destinationServiceModel = null;
         }
 
@@ -203,7 +204,7 @@ public class MessageDestinationSupport {
         try {
             destinationsDO = DataObject.find(destinationsFO);
         } catch (DataObjectNotFoundException donfe) {
-            ErrorManager.getDefault().notify(donfe);
+            Exceptions.printStackTrace(donfe);
             return null;
         }
 
@@ -228,7 +229,7 @@ public class MessageDestinationSupport {
             throw new ConfigurationException(msg, ioe);
         } catch (BadLocationException ble) {
             // this should not occur, just log it if it happens
-            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, ble.toString());
+            Logger.getLogger("global").log(Level.INFO, ble.toString());
         } catch (RuntimeException e) {
             Server oldDestinationServiceModel = getMessageDestinationModel();
             if (oldDestinationServiceModel == null) {

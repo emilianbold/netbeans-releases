@@ -18,27 +18,23 @@
  */
 package org.netbeans.modules.j2ee.jboss4.ide.ui;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
-import java.util.Properties;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.j2ee.deployment.impl.ui.wizard.AddServerInstanceWizard;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceCreationException;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.jboss4.JBDeploymentFactory;
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 
@@ -131,7 +127,7 @@ public class JBInstantiatingIterator implements WizardDescriptor.InstantiatingIt
             result.add(ip);
         } catch (InstanceCreationException e){
             showInformation(e.getLocalizedMessage(), NbBundle.getMessage(AddServerPropertiesVisualPanel.class, "MSG_INSTANCE_REGISTRATION_FAILED")); //NOI18N
-            ErrorManager.getDefault().log(ErrorManager.EXCEPTION, e.getMessage());
+            Logger.getLogger("global").log(Level.SEVERE, e.getMessage());
         }
         
         return result;

@@ -36,8 +36,9 @@ import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.j2ee.jboss4.ide.ui.JBPluginUtils;
-import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 import javax.enterprise.deploy.spi.DeploymentManager;
 import javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException;
@@ -141,7 +142,7 @@ public class JBDeploymentFactory implements DeploymentFactory {
             URLClassLoader loader = new JBClassLoader(urlList.toArray(new URL[] {}), JBDeploymentFactory.class.getClassLoader());
             return loader;
         } catch (Exception e) {
-            ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, e);
+            Logger.getLogger("global").log(Level.WARNING, null, e);
         }
         return null;
     }
@@ -175,7 +176,7 @@ public class JBDeploymentFactory implements DeploymentFactory {
                 jbossFactories.put(jbossRoot, jbossFactory);
             }
         } catch (Exception e) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            Logger.getLogger("global").log(Level.INFO, null, e);
         }
 
         return jbossFactory;
@@ -203,7 +204,7 @@ public class JBDeploymentFactory implements DeploymentFactory {
             jbURI = uri.substring(0, uri.indexOf("&")); // NOI18N
         }
         catch (Exception e) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            Logger.getLogger("global").log(Level.INFO, null, e);
         }
         
         return new JBDeploymentManager(df.getDeploymentManager(jbURI, uname, passwd), uri, uname, passwd);
@@ -234,7 +235,7 @@ public class JBDeploymentFactory implements DeploymentFactory {
             jbURI = uri.substring(0, uri.indexOf("&")); // NOI18N
         }
         catch (Exception e) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            Logger.getLogger("global").log(Level.INFO, null, e);
         }
 
         return new JBDeploymentManager((df != null ? df.getDisconnectedDeploymentManager(jbURI) : null), uri, null, null);
@@ -270,7 +271,7 @@ public class JBDeploymentFactory implements DeploymentFactory {
             }
         }
         catch (IOException ioe) {
-            ErrorManager.getDefault().log(ErrorManager.EXCEPTION, ioe.getMessage());
+            Logger.getLogger("global").log(Level.SEVERE, ioe.getMessage());
         }
     }
     

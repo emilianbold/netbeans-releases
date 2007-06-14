@@ -32,9 +32,10 @@ import javax.enterprise.deploy.shared.StateType;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ServerDebugInfo;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer;
-import org.openide.ErrorManager;
 import org.openide.util.RequestProcessor;
 import java.util.Vector;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.enterprise.deploy.spi.DeploymentManager;
 import javax.enterprise.deploy.spi.Target;
 import javax.enterprise.deploy.spi.TargetModuleID;
@@ -185,24 +186,24 @@ public class JBStartServer extends StartServer implements ProgressObject{
                 ClassLoader oldLoader = null;
                 String checkingConfigName = ip.getProperty(JBPluginProperties.PROPERTY_SERVER);
                 String checkingServerDir = null;
-                
+
                 try {
                     String serverDir = ip.getProperty(JBPluginProperties.PROPERTY_SERVER_DIR);
-                    
-                    if(serverDir == null) {
+
+                    if (serverDir == null) {
                         result = false;
                         return;
                     }
                     
                     checkingServerDir = new File(serverDir).getCanonicalPath();
                 } catch (IllegalStateException ex) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                    Logger.getLogger("global").log(Level.INFO, null, ex);
                     result = false;
                 } catch (IOException ex) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                    Logger.getLogger("global").log(Level.INFO, null, ex);
                     result = false;
                 }
-                
+
                 Object serverName = Util.getMBeanParameter(dm, "ServerName", "jboss.system:type=ServerConfig");
                 Object serverHome = Util.getMBeanParameter(dm, "ServerHomeDir", "jboss.system:type=ServerConfig");
                 

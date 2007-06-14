@@ -23,11 +23,12 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.Vector;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectInstance;
 import javax.management.ObjectName;
 import javax.management.QueryExp;
-import org.openide.ErrorManager;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -74,19 +75,19 @@ public class JBServletsChildren extends Children.Keys {
                         keys.add(new JBServletNode(s));
                     }                    
                 } catch (MalformedObjectNameException ex) {
-                    ErrorManager.getDefault().log(ErrorManager.EXCEPTION, ex.getMessage());
+                    Logger.getLogger("global").log(Level.SEVERE, ex.getMessage());
                 } catch (NullPointerException ex) {
-                    ErrorManager.getDefault().log(ErrorManager.EXCEPTION, ex.getMessage());
+                    Logger.getLogger("global").log(Level.SEVERE, ex.getMessage());
                 } catch (IllegalArgumentException ex) {
-                    ErrorManager.getDefault().log(ErrorManager.EXCEPTION, ex.getMessage());
+                    Logger.getLogger("global").log(Level.SEVERE, ex.getMessage());
                 } catch (SecurityException ex) {
-                    ErrorManager.getDefault().log(ErrorManager.EXCEPTION, ex.getMessage());
+                    Logger.getLogger("global").log(Level.SEVERE, ex.getMessage());
                 } catch (InvocationTargetException ex) {
-                    ErrorManager.getDefault().log(ErrorManager.EXCEPTION, ex.getMessage());
+                    Logger.getLogger("global").log(Level.SEVERE, ex.getMessage());
                 } catch (IllegalAccessException ex) {
-                    ErrorManager.getDefault().log(ErrorManager.EXCEPTION, ex.getMessage());
+                    Logger.getLogger("global").log(Level.SEVERE, ex.getMessage());
                 } catch (NoSuchMethodException ex) {
-                    ErrorManager.getDefault().log(ErrorManager.EXCEPTION, ex.getMessage());
+                    Logger.getLogger("global").log(Level.SEVERE, ex.getMessage());
                 }
                 
                 setKeys(keys);

@@ -26,6 +26,8 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
@@ -36,7 +38,6 @@ import org.netbeans.modules.javacore.JMManager;
 import org.netbeans.modules.project.ui.OpenProjectList;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 //import org.netbeans.modules.web.project.WebProjectGenerator;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Mutex;
@@ -96,11 +97,11 @@ public class Util {
             // too early and finishes immediatelly.
             Thread waitThread = new Thread(new Runnable() {
                 public void run() {
-                    while(!listener.projectOpened) {
+                    while (!listener.projectOpened) {
                         try {
                             Thread.sleep(50);
                         } catch (Exception e) {
-                            ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, e);
+                            Logger.getLogger("global").log(Level.WARNING, null, e);
                         }
                     }
                 }
@@ -109,11 +110,11 @@ public class Util {
             try {
                 waitThread.join(60000L);  // wait 1 minute at the most
             } catch (InterruptedException iex) {
-                ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, iex);
+                Logger.getLogger("global").log(Level.WARNING, null, iex);
             }
             if (waitThread.isAlive()) {
                 // time-out expired, project not opened -> interrupt the wait thread
-                ErrorManager.getDefault().log(ErrorManager.USER, "Project not opened in 60 second.");
+                Logger.getLogger("global").log(Level.WARNING, "Project not opened in 60 second.");
                 waitThread.interrupt();
             }
             // WAIT PROJECT OPEN - end
@@ -121,7 +122,7 @@ public class Util {
             waitScanFinished();
             return project;
         } catch (Exception ex) {
-            ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
+            Logger.getLogger("global").log(Level.WARNING, null, ex);
             return null;
         } finally {
             OpenProjectList.getDefault().removePropertyChangeListener(listener);
@@ -195,7 +196,7 @@ public class Util {
             }
             return openProject(projectDir);
         } catch (IOException e) {
-            ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, e);
+            Logger.getLogger("global").log(Level.WARNING, null, e);
             return null;
         }
     }

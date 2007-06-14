@@ -23,13 +23,14 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.management.ObjectInstance;
 import javax.management.ObjectName;
 import javax.management.QueryExp;
 import org.netbeans.modules.j2ee.jboss4.JBDeploymentManager;
 import org.netbeans.modules.j2ee.jboss4.ide.ui.JBPluginUtils;
 import org.netbeans.modules.j2ee.jboss4.nodes.actions.Refreshable;
-import org.openide.ErrorManager;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
@@ -92,7 +93,7 @@ public class JBEjbModulesChildren extends Children.Keys implements Refreshable {
             }
 
         } catch (Exception ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            Logger.getLogger("global").log(Level.INFO, null, ex);
         }
     }
     
@@ -111,11 +112,11 @@ public class JBEjbModulesChildren extends Children.Keys implements Refreshable {
                     String name = elem.getKeyProperty("module"); // NOI18N
                     keys.add(new JBEjbModuleNode(name, lookup, true));
                 } catch (Exception ex) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                    Logger.getLogger("global").log(Level.INFO, null, ex);
                 }
             }
         } catch (Exception ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            Logger.getLogger("global").log(Level.INFO, null, ex);
         }
     }
     

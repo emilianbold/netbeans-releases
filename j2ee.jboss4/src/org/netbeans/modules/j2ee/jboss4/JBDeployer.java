@@ -33,6 +33,8 @@ import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import java.util.Vector;
 import java.io.File;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.enterprise.deploy.spi.Target;
 import javax.enterprise.deploy.spi.TargetModuleID;
 import javax.enterprise.deploy.spi.status.ProgressEvent;
@@ -42,7 +44,6 @@ import javax.enterprise.deploy.spi.exceptions.OperationUnsupportedException;
 import javax.enterprise.deploy.spi.status.ClientConfiguration;
 import javax.enterprise.deploy.spi.status.DeploymentStatus;
 import org.netbeans.modules.j2ee.jboss4.nodes.Util;
-import org.openide.ErrorManager;
 import org.openide.filesystems.JarFileSystem;
 import org.openide.util.RequestProcessor;
 import org.openide.filesystems.FileObject;
@@ -105,7 +106,7 @@ public class JBDeployer implements ProgressObject, Runnable {
             
         }catch(Exception e){
             e.printStackTrace();
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            Logger.getLogger("global").log(Level.INFO, null, e);
         }
 
         this.file = file;
@@ -178,13 +179,13 @@ public class JBDeployer implements ProgressObject, Runnable {
                 checkUrlReady(moduleID);
             }
         } catch (MalformedURLException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            Logger.getLogger("global").log(Level.INFO, null, ex);
             fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED, "Failed"));
         } catch (MissingResourceException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            Logger.getLogger("global").log(Level.INFO, null, ex);
             fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED, "Failed"));
         } catch (IOException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            Logger.getLogger("global").log(Level.INFO, null, ex);
             fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED, "Failed"));
         }
 
@@ -202,7 +203,7 @@ public class JBDeployer implements ProgressObject, Runnable {
                 managedObj = (Set) server.getClass().getMethod("queryMBeans", new Class[]  {ObjectName.class, QueryExp.class}).invoke(server, new Object[]  {searchPattern, null});
             }
         } catch (Exception ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            Logger.getLogger("global").log(Level.INFO, null, ex);
         }
     }
     

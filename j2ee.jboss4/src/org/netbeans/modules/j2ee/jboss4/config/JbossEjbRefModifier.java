@@ -31,8 +31,6 @@ import org.netbeans.modules.j2ee.jboss4.config.gen.Entity;
 import org.netbeans.modules.j2ee.jboss4.config.gen.Jboss;
 import org.netbeans.modules.j2ee.jboss4.config.gen.MessageDriven;
 import org.netbeans.modules.j2ee.jboss4.config.gen.Session;
-import org.openide.ErrorManager;
-import org.openide.util.NbBundle;
 
 /**
  * This class implements the core of the jboss.xml file modifications.

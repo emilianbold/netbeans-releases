@@ -23,7 +23,6 @@ import java.util.WeakHashMap;
 import javax.naming.NameNotFoundException;
 import javax.naming.NamingException;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
-import org.netbeans.modules.j2ee.jboss4.config.WarDeploymentConfiguration;
 import org.netbeans.modules.j2ee.jboss4.util.JBProperties;
 import org.netbeans.modules.j2ee.jboss4.ide.JBJ2eePlatformFactory;
 import java.io.File;
@@ -45,9 +44,6 @@ import javax.enterprise.deploy.spi.status.ProgressObject;
 import javax.management.MBeanServerConnection;
 import javax.naming.Context;
 import javax.naming.InitialContext;
-import org.netbeans.modules.j2ee.jboss4.config.CarDeploymentConfiguration;
-import org.netbeans.modules.j2ee.jboss4.config.EarDeploymentConfiguration;
-import org.netbeans.modules.j2ee.jboss4.config.EjbDeploymentConfiguration;
 import org.netbeans.modules.j2ee.jboss4.ide.ui.JBPluginProperties;
 import org.netbeans.modules.j2ee.jboss4.ide.ui.JBPluginUtils;
 

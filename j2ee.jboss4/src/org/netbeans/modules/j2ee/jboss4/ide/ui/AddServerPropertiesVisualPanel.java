@@ -18,13 +18,9 @@
  */
 package org.netbeans.modules.j2ee.jboss4.ide.ui;
 
-import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.InputMethodEvent;
-import java.awt.event.InputMethodListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.io.File;
@@ -34,12 +30,9 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Set;
 import javax.swing.AbstractListModel;
-import javax.swing.BorderFactory;
 import javax.swing.ComboBoxModel;
-import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;

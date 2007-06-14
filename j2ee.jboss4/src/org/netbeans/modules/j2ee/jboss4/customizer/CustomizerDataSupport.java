@@ -19,17 +19,12 @@
 
 package org.netbeans.modules.j2ee.jboss4.customizer;
 
-import java.awt.event.FocusAdapter;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.Arrays;
-import javax.swing.ButtonGroup;
 import javax.swing.ButtonModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JToggleButton;
-import javax.swing.SpinnerNumberModel;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -42,7 +37,7 @@ import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.Specification;
 import org.netbeans.modules.j2ee.jboss4.util.JBProperties;
-import org.openide.ErrorManager;
+import org.openide.util.Exceptions;
 
 
 /**
@@ -234,7 +229,7 @@ public class CustomizerDataSupport {
             try {
                 doc.insertString(0, text, null);
             } catch(BadLocationException e) {
-                ErrorManager.getDefault().notify(e);
+                Exceptions.printStackTrace(e);
             }
         }
         return doc;
@@ -245,7 +240,7 @@ public class CustomizerDataSupport {
         try {
             return doc.getText(0, doc.getLength());
         } catch(BadLocationException e) {
-            ErrorManager.getDefault().notify(e);
+            Exceptions.printStackTrace(e);
             return null;
         }
     }

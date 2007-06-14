@@ -28,12 +28,12 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.StyledDocument;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.schema2beans.BaseBean;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.text.NbDocument;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -96,7 +96,7 @@ public class ResourceConfigurationHelper {
         try {
             graph.write(out);
         } catch (IOException ioe) {
-            ErrorManager.getDefault().notify(ioe);
+            Exceptions.printStackTrace(ioe);
         }
         NbDocument.runAtomic(doc, new Runnable() {
             public void run() {
@@ -104,7 +104,7 @@ public class ResourceConfigurationHelper {
                     doc.remove(0, doc.getLength());
                     doc.insertString(0, out.toString(), null);
                 } catch (BadLocationException ble) {
-                    ErrorManager.getDefault().notify(ble);
+                    Exceptions.printStackTrace(ble);
                 }
             }
         });

@@ -20,11 +20,12 @@ package org.netbeans.modules.j2ee.jboss4.ide.ui;
 
 import java.io.File;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.Repository;
-import org.openide.ErrorManager;
 
 /**
  * Plugin Properties Singleton class
@@ -64,16 +65,16 @@ public class JBPluginProperties {
                 if (null != propertiesFile)
                     inStream = propertiesFile.getInputStream();
             } catch (java.io.FileNotFoundException e) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                Logger.getLogger("global").log(Level.INFO, null, e);
             } catch (java.io.IOException e) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                Logger.getLogger("global").log(Level.INFO, null, e);
             } finally {
                 loadPluginProperties(inStream);
                 if (null != inStream)
                     inStream.close();
             }
         } catch (java.io.IOException e) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            Logger.getLogger("global").log(Level.INFO, null, e);
         }
         
     }
@@ -84,7 +85,7 @@ public class JBPluginProperties {
             try {
                 inProps.load(inStream);
             } catch (java.io.IOException e) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                Logger.getLogger("global").log(Level.INFO, null, e);
             }
         String loc = inProps.getProperty(INSTALL_ROOT_KEY);
         if (loc!=null){// try to get the default value
@@ -128,7 +129,7 @@ public class JBPluginProperties {
                     if (null != outStream)
                         outProp.store(outStream, "");
                 } catch (java.io.IOException e) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                    Logger.getLogger("global").log(Level.INFO, null, e);
                 } finally {
                     if (null != outStream)
                         outStream.close();
@@ -137,7 +138,7 @@ public class JBPluginProperties {
                 }
             }
         } catch (java.io.IOException e) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            Logger.getLogger("global").log(Level.INFO, null, e);
         }
     }
     

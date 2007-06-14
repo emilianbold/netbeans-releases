@@ -26,11 +26,12 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.HashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.enterprise.deploy.shared.ActionType;
 import javax.enterprise.deploy.shared.CommandType;
 import javax.enterprise.deploy.shared.StateType;
 import org.netbeans.modules.j2ee.deployment.profiler.api.ProfilerSupport;
-import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
@@ -126,7 +127,7 @@ public final class JBLogWriter {
             this.logFile = logFile;
             this.reader = new BufferedReader(new FileReader(logFile));
         } catch (FileNotFoundException ioe) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
+            Logger.getLogger("global").log(Level.INFO, null, ioe);
         }
         
         //start the logging thread
@@ -391,7 +392,7 @@ public final class JBLogWriter {
                 try {
                     reader.close();
                 } catch (IOException e) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                    Logger.getLogger("global").log(Level.INFO, null, e);
                 }
             }
             try {
@@ -403,7 +404,7 @@ public final class JBLogWriter {
                 }
                 reader = new BufferedReader(new FileReader(logFile));
             } catch (IOException e) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                Logger.getLogger("global").log(Level.INFO, null, e);
             }
         }
     }
@@ -431,7 +432,7 @@ public final class JBLogWriter {
                     }
                 }
             } catch (IOException e) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                Logger.getLogger("global").log(Level.INFO, null, e);
             }
             return ready;
         }

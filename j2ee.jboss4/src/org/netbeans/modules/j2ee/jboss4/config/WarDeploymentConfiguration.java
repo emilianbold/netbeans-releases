@@ -27,7 +27,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.StyledDocument;
-import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
@@ -42,13 +41,13 @@ import org.netbeans.modules.j2ee.jboss4.config.gen.ResourceRef;
 import org.netbeans.modules.j2ee.jboss4.config.mdb.JBossMessageDestination;
 import org.netbeans.modules.j2ee.jboss4.config.mdb.MessageDestinationSupport;
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
@@ -78,7 +77,7 @@ implements ModuleConfiguration, ContextRootConfiguration, DatasourceConfiguratio
                 deploymentDescriptorDO = deploymentDescriptorDO.find(FileUtil.toFileObject(jbossWebFile));
                 deploymentDescriptorDO.addPropertyChangeListener(this);
             } catch(DataObjectNotFoundException donfe) {
-                ErrorManager.getDefault().notify(donfe);
+                Exceptions.printStackTrace(donfe);
             }
         }
         // TODO: rewrite
@@ -178,7 +177,7 @@ implements ModuleConfiguration, ContextRootConfiguration, DatasourceConfiguratio
                         addConnectionFactoryReference(resourceRef.getResRefName());
                     }
                 } catch (ConfigurationException ce) {
-                    ErrorManager.getDefault().notify(ce);
+                    Exceptions.printStackTrace(ce);
                 }
             } else if (newValue instanceof org.netbeans.modules.j2ee.dd.api.common.EjbRef) {
                 // a new ejb reference added
@@ -189,7 +188,7 @@ implements ModuleConfiguration, ContextRootConfiguration, DatasourceConfiguratio
                         addEjbReference(ejbRef.getEjbRefName(), ejbRef.getEjbRefName());
                     }
                 } catch (ConfigurationException ce) {
-                    ErrorManager.getDefault().notify(ce);
+                    Exceptions.printStackTrace(ce);
                 }
             } else if (newValue instanceof org.netbeans.modules.j2ee.dd.api.common.MessageDestinationRef) {
                 //a new message destination reference added
@@ -200,7 +199,7 @@ implements ModuleConfiguration, ContextRootConfiguration, DatasourceConfiguratio
                                             ? JBossMessageDestination.QUEUE_PREFIX : JBossMessageDestination.TOPIC_PREFIX;
                     addMsgDestReference(messageDestinationRef.getMessageDestinationRefName(), destPrefix);
                 } catch (ConfigurationException ce) {
-                    ErrorManager.getDefault().notify(ce);
+                    Exceptions.printStackTrace(ce);
                 }                 
             }       
         }
@@ -407,7 +406,7 @@ implements ModuleConfiguration, ContextRootConfiguration, DatasourceConfiguratio
                     try {
                         jbossWeb = JbossWeb.createGraph(jbossWebFile);
                     } catch (IOException ioe) {
-                        ErrorManager.getDefault().notify(ioe);
+                        Exceptions.printStackTrace(ioe);
                     } catch (RuntimeException re) {
                         // jboss-web.xml is not parseable, do nothing
                     }
@@ -417,7 +416,7 @@ implements ModuleConfiguration, ContextRootConfiguration, DatasourceConfiguratio
                     ResourceConfigurationHelper.writeFile(jbossWebFile, jbossWeb);
                 }
             } catch (ConfigurationException ce) {
-                ErrorManager.getDefault().notify(ce);
+                Exceptions.printStackTrace(ce);
             }
         }
         return jbossWeb;
@@ -499,7 +498,7 @@ implements ModuleConfiguration, ContextRootConfiguration, DatasourceConfiguratio
             }
         } catch (BadLocationException ble) {
             // this should not occur, just log it if it happens
-            ErrorManager.getDefault().notify(ble);
+            Exceptions.printStackTrace(ble);
         } catch (IOException ioe) {
             String msg = NbBundle.getMessage(WarDeploymentConfiguration.class, "MSG_CannotUpdateFile", jbossWebFile.getAbsolutePath());
             throw new ConfigurationException(msg, ioe);

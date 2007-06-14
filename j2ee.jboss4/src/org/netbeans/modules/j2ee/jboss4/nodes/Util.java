@@ -23,6 +23,8 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.enterprise.deploy.shared.ModuleType;
 import javax.management.AttributeNotFoundException;
 import javax.management.InstanceNotFoundException;
@@ -35,7 +37,6 @@ import javax.management.ReflectionException;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import org.netbeans.modules.j2ee.jboss4.JBDeploymentManager;
-import org.openide.ErrorManager;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -107,19 +108,19 @@ public class Util {
             if(managedObj.size() == 0)
                 return false;
         } catch (SecurityException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            Logger.getLogger("global").log(Level.INFO, null, ex);
         } catch (IllegalArgumentException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            Logger.getLogger("global").log(Level.INFO, null, ex);
         } catch (IllegalAccessException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            Logger.getLogger("global").log(Level.INFO, null, ex);
         } catch (InvocationTargetException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            Logger.getLogger("global").log(Level.INFO, null, ex);
         } catch (NoSuchMethodException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            Logger.getLogger("global").log(Level.INFO, null, ex);
         } catch (MalformedObjectNameException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            Logger.getLogger("global").log(Level.INFO, null, ex);
         } catch (NullPointerException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            Logger.getLogger("global").log(Level.INFO, null, ex);
         }
         
         return true;
@@ -137,15 +138,15 @@ public class Util {
             if(managedObj.size() > 0)
                 return true;
         } catch (IllegalArgumentException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            Logger.getLogger("global").log(Level.INFO, null, ex);
         } catch (SecurityException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            Logger.getLogger("global").log(Level.INFO, null, ex);
         } catch (InvocationTargetException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            Logger.getLogger("global").log(Level.INFO, null, ex);
         } catch (IllegalAccessException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            Logger.getLogger("global").log(Level.INFO, null, ex);
         } catch (NoSuchMethodException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            Logger.getLogger("global").log(Level.INFO, null, ex);
         }
         
         return false;
@@ -177,21 +178,21 @@ public class Util {
         try {
             return server.getAttribute(new ObjectName(targetObject), name);            
         } catch (InstanceNotFoundException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            Logger.getLogger("global").log(Level.INFO, null, ex);
         } catch (AttributeNotFoundException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            Logger.getLogger("global").log(Level.INFO, null, ex);
         } catch (MalformedObjectNameException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            Logger.getLogger("global").log(Level.INFO, null, ex);
         } catch (NullPointerException ex) {
             // it's normal behaviour when the server is not running
         } catch (IllegalArgumentException ex) {
             // it's normal behaviour when the server is not running
         } catch (ReflectionException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            Logger.getLogger("global").log(Level.INFO, null, ex);
         } catch (MBeanException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            Logger.getLogger("global").log(Level.INFO, null, ex);
         } catch (IOException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            Logger.getLogger("global").log(Level.INFO, null, ex);
         }            
         
         return null;
@@ -213,13 +214,13 @@ public class Util {
         try {
             doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(new ByteArrayInputStream(dd.getBytes()));
         } catch (SAXException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            Logger.getLogger("global").log(Level.INFO, null, ex);
             return null;
         } catch (IOException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            Logger.getLogger("global").log(Level.INFO, null, ex);
             return null;
         } catch (ParserConfigurationException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            Logger.getLogger("global").log(Level.INFO, null, ex);
             return null;
         }
         

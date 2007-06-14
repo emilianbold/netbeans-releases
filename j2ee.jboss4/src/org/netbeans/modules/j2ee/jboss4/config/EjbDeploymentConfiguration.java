@@ -27,15 +27,14 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.enterprise.deploy.model.DDBean;
 import javax.enterprise.deploy.model.DDBeanRoot;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.StyledDocument;
-import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
@@ -51,13 +50,13 @@ import org.netbeans.modules.j2ee.jboss4.config.gen.Session;
 import org.netbeans.modules.j2ee.jboss4.config.mdb.JBossMessageDestination;
 import org.netbeans.modules.j2ee.jboss4.config.mdb.MessageDestinationSupport;
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
@@ -115,7 +114,7 @@ implements ModuleConfiguration, DatasourceConfiguration, DeploymentPlanConfigura
                 deploymentDescriptorDO = deploymentDescriptorDO.find(FileUtil.toFileObject(jbossFile));
                 deploymentDescriptorDO.addPropertyChangeListener(this);
             } catch(DataObjectNotFoundException donfe) {
-                ErrorManager.getDefault().notify(donfe);
+                Exceptions.printStackTrace(donfe);
             }
         }
         // TODO: rewrite
@@ -171,7 +170,7 @@ implements ModuleConfiguration, DatasourceConfiguration, DeploymentPlanConfigura
                     try {
                         jboss = jboss.createGraph(jbossFile);
                     } catch (IOException ioe) {
-                        ErrorManager.getDefault().notify(ioe);
+                        Exceptions.printStackTrace(ioe);
                     } catch (RuntimeException re) {
                         // jboss.xml is not parseable, do nothing
                     }
@@ -181,7 +180,7 @@ implements ModuleConfiguration, DatasourceConfiguration, DeploymentPlanConfigura
                     ResourceConfigurationHelper.writeFile(jbossFile, jboss);
                 }
             } catch (ConfigurationException ce) {
-                ErrorManager.getDefault().notify(ce);
+                Exceptions.printStackTrace(ce);
             }
         }
         return jboss;
@@ -970,9 +969,7 @@ implements ModuleConfiguration, DatasourceConfiguration, DeploymentPlanConfigura
                         return destJndiName.substring(6); // JBossMessageDestination.QUEUE_PREFIX.length() == JBossMessageDestination.TOPIC_PREFIX.length() == 6
                     }
                     else {
-                        ErrorManager.getDefault().log(
-                                ErrorManager.INFORMATIONAL, 
-                                NbBundle.getMessage(EjbDeploymentConfiguration.class, "MSG_NoPrefix", destJndiName));
+                        Logger.getLogger("global").log(Level.INFO, NbBundle.getMessage(EjbDeploymentConfiguration.class, "MSG_NoPrefix", destJndiName));
                     }
                 }
                 return null;
@@ -1194,7 +1191,7 @@ implements ModuleConfiguration, DatasourceConfiguration, DeploymentPlanConfigura
             }
         } catch (BadLocationException ble) {
             // this should not occur, just log it if it happens
-            ErrorManager.getDefault().notify(ble);
+            Exceptions.printStackTrace(ble);
         } catch (IOException ioe) {
             String msg = NbBundle.getMessage(EjbDeploymentConfiguration.class, "MSG_CannotUpdateFile", jbossFile.getAbsolutePath());
             throw new ConfigurationException(msg, ioe);

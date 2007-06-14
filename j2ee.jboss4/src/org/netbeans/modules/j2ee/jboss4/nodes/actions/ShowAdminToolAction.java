@@ -22,8 +22,9 @@ package org.netbeans.modules.j2ee.jboss4.nodes.actions;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.j2ee.jboss4.nodes.*;
-import org.openide.ErrorManager;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -56,7 +57,7 @@ public class ShowAdminToolAction extends CookieAction {
                     URL url = new URL(((JBManagerNode) node).getAdminURL());
                     URLDisplayer.getDefault().showURL(url);
                 } catch (MalformedURLException ex) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                    Logger.getLogger("global").log(Level.INFO, null, ex);
                 }
             }
         }
