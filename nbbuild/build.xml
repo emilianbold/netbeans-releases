@@ -1654,4 +1654,30 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
       <ant dir="../visualweb/ravebuild" target="build-test-tools" inheritall="true"/>
       <ant dir="../visualweb/ravebuild" target="commit-validation" inheritall="false"/> 
   </target>
+  
+  <target name="generate-uc-catalog.init">
+    <mkdir dir="build/auclasses"/>
+    <available property="ant.jar" value="${ant.home}/lib/ant.jar" file="${ant.home}/lib/ant.jar"/>
+    <!-- if the previous location is not correct than find the ant.jar from the java.class.path value -->
+    <pathconvert property="ant.jar">
+        <mapper type="regexp" from="${path.separator}([^${path.separator}]*ant.jar)${path.separator}" to="\1"/>
+        <path location="${path.separator}${java.class.path}${path.separator}"/>
+    </pathconvert>
+    <javac srcdir="ausrc" destdir="build/auclasses" deprecation="true" debug="${build.compiler.debug}" source="1.5" target="1.5">
+      <classpath>
+         <pathelement location="${ant.jar}"/>
+      </classpath>
+      <compilerarg value="-Xlint"/>
+    </javac>
+    <jar jarfile="nbauext.jar">
+      <fileset dir="build/auclasses"/>
+    </jar>
+    <taskdef name="genau" classname="org.netbeans.nbbuild.aucenter.CatalogGenerator" classpath="nbauext.jar"/>
+  </target>
+    
+  <target name="generate-uc-catalog" depends="generate-uc-catalog.init">
+      <property name="nbms.location" location="nbms"/>
+      <property name="catalog.file" location="nbms/catalog.xml"/>
+      <genau config="ausrc/modules.setup" nbmLocation="${nbms.location}" catalog="${catalog.file}"/>
+  </target>
 </project>

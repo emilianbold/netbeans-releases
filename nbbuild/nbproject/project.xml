@@ -34,6 +34,10 @@ Microsystems, Inc. All Rights Reserved.
                     <label>Ant Tasks</label>
                     <location>antsrc</location>
                 </source-folder>
+		<source-folder>
+			<label>AU Ant Tasks</label>
+			<location>ausrc</location>
+		</source-folder>
                 <source-folder>
                     <label>Tests for Ant Tasks</label>
                     <location>test/unit/src</location>
@@ -110,6 +114,10 @@ Microsystems, Inc. All Rights Reserved.
                         <location>antsrc</location>
                     </source-folder>
                     <source-folder style="packages">
+		        <label>AU Ant Tasks</label>
+		        <location>ausrc</location>
+		    </source-folder>
+		    <source-folder style="packages">
                         <label>Tests for Ant Tasks</label>
                         <location>test/unit/src</location>
                     </source-folder>
