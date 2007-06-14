@@ -17,13 +17,21 @@ The Original Software is NetBeans. The Initial Developer of the Original
 Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
-
 <project xmlns="http://www.netbeans.org/ns/project/1">
     <type>org.netbeans.modules.apisupport.project</type>
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/3">
             <code-name-base>org.netbeans.modules.visualweb.jsfsupport</code-name-base>
             <module-dependencies>
+                <dependency>
+                    <code-name-base>org.netbeans.libs.xerces</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.8.1</specification-version>
+                    </run-dependency>
+                </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.visualweb.designtime</code-name-base>
                     <build-prerequisite/>
@@ -51,10 +59,6 @@ Microsystems, Inc. All Rights Reserved.
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <!--
-                    <code-name-base>org.netbeans.modules.visualweb.libs.jsf.api</code-name-base>
-                    -->
-                    <!-- Contains JSF 1.2 API -->
                     <code-name-base>org.netbeans.modules.visualweb.libs.javaee5</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -63,9 +67,6 @@ Microsystems, Inc. All Rights Reserved.
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <!--
-                    <code-name-base>org.netbeans.modules.visualweb.libs.jsf.ri</code-name-base>
-                    -->
                     <code-name-base>org.netbeans.modules.visualweb.libs.jsf.ri12</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -83,27 +84,7 @@ Microsystems, Inc. All Rights Reserved.
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.visualweb.libs.rowset</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.0.0</specification-version>
-                    </run-dependency>
-                </dependency>		
-                <dependency>
-                    <code-name-base>org.netbeans.libs.xerces</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.8.1</specification-version>
-                    </run-dependency>
-                </dependency>
-
-                <!-- Part of org.netbeans.modules.visualweb.libs.javaee5
-                <dependency>
-                    <code-name-base>org.netbeans.modules.servletjspapi</code-name-base>
+                    <code-name-base>org.netbeans.modules.visualweb.rowset</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
@@ -111,8 +92,6 @@ Microsystems, Inc. All Rights Reserved.
                         <specification-version>1.0</specification-version>
                     </run-dependency>
                 </dependency>
-                -->
-
                 <dependency>
                     <code-name-base>org.openide.filesystems</code-name-base>
                     <build-prerequisite/>
@@ -139,13 +118,13 @@ Microsystems, Inc. All Rights Reserved.
                 </dependency>
             </module-dependencies>
             <friend-packages>
-               <friend>org.netbeans.modules.visualweb.dataconnectivity</friend>
-               <friend>org.netbeans.modules.visualweb.designer.jsf</friend>
-               <friend>org.netbeans.modules.visualweb.insync</friend>
-               <friend>org.netbeans.modules.visualweb.j2ee14classloaderprovider</friend>
-               <friend>org.netbeans.modules.visualweb.j2ee15classloaderprovider</friend>
-               <friend>org.netbeans.modules.visualweb.jsfsupport.designtime</friend>
-               <friend>org.netbeans.modules.visualweb.xhtml</friend>
+                <friend>org.netbeans.modules.visualweb.dataconnectivity</friend>
+                <friend>org.netbeans.modules.visualweb.designer.jsf</friend>
+                <friend>org.netbeans.modules.visualweb.insync</friend>
+                <friend>org.netbeans.modules.visualweb.j2ee14classloaderprovider</friend>
+                <friend>org.netbeans.modules.visualweb.j2ee15classloaderprovider</friend>
+                <friend>org.netbeans.modules.visualweb.jsfsupport.designtime</friend>
+                <friend>org.netbeans.modules.visualweb.xhtml</friend>
                 <package>org.netbeans.modules.visualweb.jsfsupport.container</package>
             </friend-packages>
         </data>

@@ -85,9 +85,6 @@ public class DataconnectivityModuleInstaller extends ModuleInstall {
         //!JK See Carl for details.
         //!JK Also, temporary place to add JSFCL_DATA_BEANINFO_PATH to the beanInfoSearchPath
         org.netbeans.modules.visualweb.insync.live.LiveUnit.registerCustomizer(
-                com.sun.sql.rowset.JdbcRowSetXImpl.class.getName(),
-                new org.netbeans.modules.visualweb.dataconnectivity.customizers.SqlCommandCustomizer(com.sun.sql.rowset.JdbcRowSetXImpl.class.getName()));
-        org.netbeans.modules.visualweb.insync.live.LiveUnit.registerCustomizer(
                 com.sun.sql.rowset.CachedRowSetXImpl.class.getName(),
                 new org.netbeans.modules.visualweb.dataconnectivity.customizers.SqlCommandCustomizer(com.sun.sql.rowset.CachedRowSetXImpl.class.getName()));
               

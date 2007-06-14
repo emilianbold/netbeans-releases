@@ -1,0 +1,65 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<head>
+<title>com.sun.sql.rowset package</title>
+<!--
+/*
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ *
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ *
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
+-->
+</head>
+<body bgcolor="white">
+
+Provides classes and interfaces for handling result sets returned by databases.
+<p>
+These classes are capable of retrieving, updating, inserting and deleting rows from
+resultsets in a disconnected ({@link com.sun.sql.rowset.CachedRowSetX}) or connected
+({@link javax.sql.rowset.JdbcRowSet}) manner.
+</p>
+<p>
+The {@link com.sun.sql.rowset.CachedRowSetX} interface
+is an extension of the {@link javax.sql.rowset.CachedRowSet} 
+interface.  See {@link javax.sql.rowset.CachedRowSet} for how to use 
+{@link javax.sql.rowset.JdbcRowSet}s.  See
+{@link com.sun.sql.rowset.CachedRowSetX} for the details
+of the extensions in this package.
+</p>
+<p>
+This package also contains the following (see the
+documentation each interface/class for details).
+</p>
+<ul>
+<li>{@link com.sun.sql.rowset.BaseRowSetX}: An extension of {@link javax.sql.rowset.BaseRowSet}</li>
+<li>{@link com.sun.sql.rowset.CachedRowSetXImpl}: An implementation of {@link com.sun.sql.rowset.CachedRowSetX}</li>
+<li>{@link com.sun.sql.rowset.RowSetMetaDataX}: An extension of {@link javax.sql.RowSetMetaData}</li>
+<li>{@link com.sun.sql.rowset.RowSetMetaDataXImpl}: An implementation of {@link com.sun.sql.rowset.RowSetMetaDataX}</li>
+<li>{@link com.sun.sql.rowset.SyncResolverX}: An implementation of {@link javax.sql.rowset.spi.SyncResolver}</li>
+</ul>
+
+<h2>Package Specification</h2>
+
+ (none)
+
+
+<h2>Related Documentation </h2>
+
+<ul>
+   <li>{@link javax.sql.RowSet}
+</ul>
+</body>
+</html>

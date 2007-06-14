@@ -939,7 +939,7 @@ public class CachedRowSetDataProvider extends AbstractTableDataProvider
                             }
                         }
                     }
-                    throw new RuntimeException(message);
+                    throw new RuntimeException(message, spe);
                 }
             } catch (SQLException sqle) {
                 throw new RuntimeException(sqle);

@@ -32,7 +32,6 @@ import org.netbeans.modules.visualweb.dataconnectivity.sql.DesignTimeDataSource;
 import com.sun.rave.designtime.DesignBean;
 import com.sun.rave.designtime.impl.BasicCustomizer2;
 import com.sun.sql.rowset.CachedRowSetX;
-import com.sun.sql.rowset.JdbcRowSetX;
 
 import java.awt.Component;
 import java.awt.Container;
@@ -68,7 +67,7 @@ public class SqlCommandCustomizer extends BasicCustomizer2 {
     
     public SqlCommandCustomizer(String customerizerClassName )  {
         super(null, NbBundle.getMessage(SqlCommandCustomizer.class, "EDIT_QUERY"));        // NOI18N
-        this.customerizerClassName = customerizerClassName ; // e.g., com.sun.sql.rowset.JdbcRowSetXImpl.class.getName()
+        this.customerizerClassName = customerizerClassName ; 
         Log.err.log("Customizer for "+customerizerClassName) ;
     }
     
