@@ -35,7 +35,6 @@ import org.openide.util.actions.NodeAction;
 /**
  *
  * @author Tomas Stupka
- * // XXX context
  */
 public class ShowLocalHistoryAction extends NodeAction {
     

@@ -61,7 +61,7 @@ public class LocalHistoryFileView implements PropertyChangeListener {
     
     public LocalHistoryFileView() {                       
         tablePanel = new FileTablePanel();        
-        LocalHistory.getInstance().getLocalHistoryStore().addPropertyChangeListener(this); // XXX remove listener                                                
+        LocalHistory.getInstance().getLocalHistoryStore().addPropertyChangeListener(this); 
     }            
 
     public void refresh(File[] files) {

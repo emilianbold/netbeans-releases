@@ -107,7 +107,6 @@ public abstract class StoreEntry {
         return mimeType;
     }    
     
-    // XXX compresion level etc.
     static OutputStream createStoreFileOutputSteam(File storeFile) throws FileNotFoundException, IOException {
         ZipOutputStream zos = new ZipOutputStream(new BufferedOutputStream(new FileOutputStream(storeFile)));
         ZipEntry entry = new ZipEntry(storeFile.getName());

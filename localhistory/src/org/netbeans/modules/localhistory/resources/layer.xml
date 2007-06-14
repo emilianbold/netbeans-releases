@@ -21,7 +21,6 @@ Microsystems, Inc. All Rights Reserved.
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
 
-    <!-- XXX add actions -->
     <folder name="Actions">
         <folder name="LocalHistory">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.localhistory.resources.Bundle"/>

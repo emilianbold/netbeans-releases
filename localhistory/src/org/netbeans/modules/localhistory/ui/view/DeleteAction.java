@@ -43,7 +43,6 @@ public class DeleteAction extends NodeAction {
                 }
             }
         });
-        // XXX refresh view         
     }
 
     protected boolean enable(Node[] activatedNodes) {

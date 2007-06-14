@@ -19,13 +19,18 @@
 
 package org.netbeans.modules.localhistory.utils;
 
-import java.io.*;
-import org.openide.ErrorManager;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import org.openide.filesystems.FileUtil;
 
 /**
- * // XXX clean up
- * @author pkuzel
+ * @author Tomas Stupka
  */
 public class FileUtils {
 

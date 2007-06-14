@@ -56,7 +56,6 @@ public class RevertFileAction extends NodeAction {
                 Utils.revert(activatedNodes);
             }
         });
-        // XXX refresh view        
     }
             
     protected boolean enable(Node[] activatedNodes) {

@@ -64,11 +64,11 @@ public class LocalHistoryVCSAnnotator extends VCSAnnotator {
         } else {
             actions.add(SystemActionBridge.createAction(
                                             SystemAction.get(ShowLocalHistoryAction.class), 
-                                            NbBundle.getMessage(LocalHistoryVCSAnnotator.class, "CTL_PopupMenuItem_ShowLocalHistory"), // XXX get it from action
+                                            NbBundle.getMessage(ShowLocalHistoryAction.class, "CTL_ShowLocalHistory"), 
                                             context));
             actions.add(SystemActionBridge.createAction(
                                             SystemAction.get(RevertDeletedAction.class), 
-                                            NbBundle.getMessage(LocalHistoryVCSAnnotator.class, "CTL_PopupMenuItem_RevertDeleted"),  // XXX get it from action
+                                            NbBundle.getMessage(RevertDeletedAction.class, "CTL_ShowRevertDeleted"),  
                                             context));           
             actions.add(SystemActionBridge.createAction(
                                             SystemAction.get(RevertToAction.class), 
