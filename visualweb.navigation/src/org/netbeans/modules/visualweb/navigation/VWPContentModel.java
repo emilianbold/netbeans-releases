@@ -13,6 +13,7 @@ import com.sun.rave.designtime.DesignBean;
 import com.sun.rave.designtime.DesignBean;
 import com.sun.rave.designtime.DesignEvent;
 import com.sun.rave.designtime.DesignProperty;
+import com.sun.rave.designtime.markup.MarkupDesignBean;
 import java.awt.EventQueue;
 import java.awt.Image;
 import java.beans.BeanInfo;
@@ -30,10 +31,14 @@ import javax.faces.component.ActionSource2;
 import javax.swing.Action;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.visualweb.api.designer.cssengine.CssProvider;
+import org.netbeans.modules.visualweb.api.designer.cssengine.StyleData;
+import org.netbeans.modules.visualweb.api.designer.cssengine.XhtmlCss;
 import org.netbeans.modules.visualweb.insync.Model;
 import org.netbeans.modules.visualweb.insync.ModelSet;
 import org.netbeans.modules.visualweb.insync.ModelSetListener;
 import org.netbeans.modules.visualweb.insync.UndoEvent;
+import org.netbeans.modules.visualweb.insync.Util;
 import org.netbeans.modules.visualweb.insync.faces.HtmlBean;
 import org.netbeans.modules.visualweb.insync.live.MethodBindDesignEvent;
 import org.netbeans.modules.visualweb.insync.live.MethodBindDesignProperty;
@@ -45,6 +50,7 @@ import org.netbeans.modules.web.jsf.navigation.pagecontentmodel.PageContentModel
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
+import org.w3c.dom.Element;
 
 
 
@@ -597,6 +603,12 @@ public class VWPContentModel extends PageContentModel{
             if (bean == null) {
                 return bean;
             }
+            
+            // XXX #106338 Hacking positioning of the bean correctly (in the grid).
+            if (bean instanceof MarkupDesignBean) {
+                initMarkupDesignBeanPosition((MarkupDesignBean)bean);
+            }
+            
             facesModel.beanCreated(bean);
         } catch (Exception e) {
             ErrorManager.getDefault().notify(e);
@@ -616,5 +628,25 @@ public class VWPContentModel extends PageContentModel{
     }
     
     
-    
+    private void initMarkupDesignBeanPosition(MarkupDesignBean bean) {
+        if (Util.isGridMode(facesModel)) {
+            // XXX There should be some API in the designTime/insync?
+            Element element = bean.getElement();
+            List<StyleData> addStyle = new ArrayList<StyleData>();
+
+            addStyle.add(new StyleData(XhtmlCss.POSITION_INDEX, CssProvider.getValueService().getAbsoluteValue()));
+            addStyle.add(new StyleData(XhtmlCss.LEFT_INDEX, Integer.toString(0) + "px")); // NOI18N
+            addStyle.add(new StyleData(XhtmlCss.TOP_INDEX, Integer.toString(0) + "px")); // NOI18N
+
+            List<StyleData> removeStyle = new ArrayList<StyleData>();
+            removeStyle.add(new StyleData(XhtmlCss.RIGHT_INDEX));
+            removeStyle.add(new StyleData(XhtmlCss.BOTTOM_INDEX));
+
+            Util.updateLocalStyleValuesForElement(element,
+                    addStyle.toArray(new StyleData[addStyle.size()]),
+                    removeStyle.toArray(new StyleData[removeStyle.size()]));
+        } else {
+            // Float, no op now.
+        }
+    }
 }
