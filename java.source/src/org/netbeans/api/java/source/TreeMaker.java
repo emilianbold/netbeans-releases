@@ -308,7 +308,7 @@ public final class TreeMaker {
                                         List<? extends Tree> typeDeclarations) {
         String[] nameComponent = FileObjects.getFolderAndBaseName(path,'/');        //NOI18N
         JavaFileObject sourceFile = FileObjects.templateFileObject(sourceRoot, nameComponent[0], nameComponent[1]);
-        return delegate.CompilationUnit(Identifier(nameComponent[0]), imports, typeDeclarations, sourceFile);
+        return delegate.CompilationUnit(Identifier(nameComponent[0].replace('/', '.')), imports, typeDeclarations, sourceFile);
     }    
     
     /**
