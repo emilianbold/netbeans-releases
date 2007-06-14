@@ -26,6 +26,7 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import javax.swing.JComponent;
 import javax.swing.JMenu;
+import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.form.RADComponent;
@@ -63,6 +64,7 @@ public class DropTargetLayer extends JComponent {
             BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 1f,  new float[] {5f, 5f}, 0f);
     private static Color DROP_TARGET_COLOR = new Color(0xFFA400);
     private static Color SELECTION_COLOR = DROP_TARGET_COLOR;
+    private static BasicStroke SELECTION_STROKE = new BasicStroke(1);
     
     public DropTargetLayer(MenuEditLayer canvas) {
         this.canvas = canvas;
@@ -124,7 +126,9 @@ public class DropTargetLayer extends JComponent {
         
         // draw the menu item subselection rectangles
         JComponent selected = canvas.getSelectedComponent();
-        if(selected instanceof JMenuItem) { // && !(selected instanceof JMenu)) {
+        // style only menuitems and menus that aren't also toplevel menus
+        if(selected instanceof JMenuItem &&
+                !(selected.getParent() instanceof JMenuBar)) { // && !(selected instanceof JMenu)) {
             JMenuItem item = (JMenuItem) selected;
             Point location = SwingUtilities.convertPoint(item, new Point(0,0), this);
             g2.translate(location.x,location.y);
@@ -140,28 +144,29 @@ public class DropTargetLayer extends JComponent {
             int textLeft = iconLeft + iconWidth + iconGap;
             int accelLeft = item.getWidth() - accelWidth;
             
-            g2.setColor(Color.LIGHT_GRAY);
             // draw bounding boxes
-            g2.drawRect(iconLeft, 0, iconWidth-1, item.getHeight()-1);
-            g2.drawRect(textLeft, 0, textWidth-1, item.getHeight()-1);
+            g2.setColor(Color.LIGHT_GRAY);
+            //g2.drawRect(iconLeft, 0, iconWidth-1, item.getHeight()-1);
+            //g2.drawRect(textLeft, 0, textWidth-1, item.getHeight()-1);
             g2.drawRect(accelLeft, 0, accelWidth - 1, item.getHeight() - 1);
             
             // draw the selection rectangles
+            g2.setStroke(SELECTION_STROKE);
             g2.setColor(SELECTION_COLOR);
             switch(canvas.getCurrentSelectedPortion()) {
             case Icon: {
                 if(item.getIcon() != null) {
-                    g2.drawRect(iconLeft, iconTop, iconWidth-1, iconHeight-1);
+                    g2.drawRect(iconLeft-1, iconTop-1, iconWidth+1, iconHeight+1);
                 }
                 break;
             }
             case Text: {
-                g2.drawRect(iconLeft + iconWidth + iconGap, 0, textWidth-1, item.getHeight()-1);
+                g2.drawRect(iconLeft + iconWidth + iconGap -1, -1, textWidth+1, item.getHeight()+1);
                 break;
             }
             case Accelerator: {
                 if(item instanceof JMenu) break;
-                g2.drawRect(accelLeft, 0, accelWidth-1, item.getHeight()-1);
+                g2.drawRect(accelLeft -1 , -1, accelWidth+1, item.getHeight()+1);
                 break;
             }
             case All: {

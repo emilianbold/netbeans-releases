@@ -85,6 +85,9 @@ public class MenuEditLayer extends JPanel {
     public static final Border SELECTED_BORDER = BorderFactory.createLineBorder(SELECTED_BORDER_COLOR,1);
     public static final Border DRAG_MENU_BORDER = BorderFactory.createLineBorder(Color.BLACK,1);
     public static final Border DRAG_SEPARATOR_BORDER = BorderFactory.createLineBorder(Color.RED,1);
+    public static final Color SELECTED_MENU_BACKGROUND = new Color(0xA5A6A9);
+    public static final Color EMPTY_ICON_COLOR = new Color(0xDDDDDD);
+    public static final int EMPTY_ICON_BORDER_WIDTH = 2;
     public static Stroke dashedStroke1 = new BasicStroke((float) 3.0,
                                       BasicStroke.CAP_SQUARE,
                                       BasicStroke.JOIN_MITER,
@@ -456,10 +459,11 @@ public class MenuEditLayer extends JPanel {
                 wrapee.paintIcon(arg0, g, x, y);
             } else {
                 Graphics g2 = g.create();
-                g2.setColor(Color.LIGHT_GRAY);
+                g2.setColor(Color.WHITE);
                 g2.fillRect(x,y,getIconWidth()-1, getIconHeight()-1);
-                g2.setColor(Color.GRAY);
+                g2.setColor(MenuEditLayer.EMPTY_ICON_COLOR);
                 g2.drawRect(x,y,getIconWidth()-1, getIconHeight()-1);
+                g2.drawRect(x+1,y+1,getIconWidth()-3, getIconHeight()-3);
                 g2.dispose();
             }
         }
@@ -589,6 +593,7 @@ public class MenuEditLayer extends JPanel {
         try {
             if(selectedComponent != null) {
                 selectedComponent.setBorder(UNSELECTED_BORDER);
+                selectedComponent.setBackground(null);
             }
             
             selectedComponent = c;
@@ -602,6 +607,7 @@ public class MenuEditLayer extends JPanel {
             formDesigner.setSelectedComponent(rad);
             
             selectedComponent.setBorder(SELECTED_BORDER);
+            selectedComponent.setBackground(SELECTED_MENU_BACKGROUND);
             // clear the border if a menuitem, but not a menu
             if(selectedComponent instanceof JMenuItem && selectedPortion != SelectedPortion.None &&
                     !(selectedComponent instanceof JMenu)) {
