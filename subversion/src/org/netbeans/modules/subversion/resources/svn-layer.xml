@@ -136,12 +136,13 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
     </folder>
 
+    <folder name="VersioningOptionsDialog">
+        <file name="Subversion.instance">
+            <attr name="instanceClass" stringvalue="org.netbeans.modules.subversion.options.SvnOptions"/>
+        </file>
+    </folder>        
+
     <folder name="OptionsDialog">
-        <folder name="Advanced">
-            <file name="Subversion.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.subversion.options.SvnOptions"/>
-            </file>
-        </folder>        
         <folder name="Actions">
             <folder name="Subversion">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.subversion.resources.Bundle"/>
