@@ -65,8 +65,7 @@ class ToDoCustomizer extends javax.swing.JPanel {
     void update() {
         Collection<String> patterns = Settings.getDefault().getPatterns();
         table.setModel( createModel( patterns ) );
-        table.getTableHeader().setReorderingAllowed( false );
-        table.getTableHeader().setResizingAllowed( false );
+        table.setTableHeader( null );
         checkScanCommentsOnly.setSelected( Settings.getDefault().isScanCommentsOnly() );
         changed = false;
     }
@@ -107,30 +106,15 @@ class ToDoCustomizer extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jScrollPane1 = new javax.swing.JScrollPane();
-        table = new MyTable();
         btnAdd = new javax.swing.JButton();
         btnChange = new javax.swing.JButton();
-        btnRemove = new javax.swing.JButton();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        table = new MyTable();
         checkScanCommentsOnly = new javax.swing.JCheckBox();
+        jLabel1 = new javax.swing.JLabel();
+        btnRemove = new javax.swing.JButton();
 
         setOpaque(false);
-
-        jScrollPane1.setOpaque(false);
-
-        table.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null}
-            },
-            new String [] {
-                "Title 1", "Title 2", "Title 3", "Title 4"
-            }
-        ));
-        table.setOpaque(false);
-        jScrollPane1.setViewportView(table);
 
         org.openide.awt.Mnemonics.setLocalizedText(btnAdd, org.openide.util.NbBundle.getMessage(ToDoCustomizer.class, "ToDoCustomizer.btnAdd.text")); // NOI18N
         btnAdd.addActionListener(new java.awt.event.ActionListener() {
@@ -146,12 +130,22 @@ class ToDoCustomizer extends javax.swing.JPanel {
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(btnRemove, org.openide.util.NbBundle.getMessage(ToDoCustomizer.class, "ToDoCustomizer.btnRemove.text")); // NOI18N
-        btnRemove.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnRemoveActionPerformed(evt);
+        jScrollPane1.setOpaque(false);
+
+        table.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null}
+            },
+            new String [] {
+                "Title 1", "Title 2", "Title 3", "Title 4"
             }
-        });
+        ));
+        table.setOpaque(false);
+        table.setTableHeader(null);
+        jScrollPane1.setViewportView(table);
 
         org.openide.awt.Mnemonics.setLocalizedText(checkScanCommentsOnly, org.openide.util.NbBundle.getMessage(ToDoCustomizer.class, "ToDoCustomizer.checkScanCommentsOnly.text")); // NOI18N
         checkScanCommentsOnly.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
@@ -163,6 +157,16 @@ class ToDoCustomizer extends javax.swing.JPanel {
             }
         });
 
+        jLabel1.setLabelFor(table);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(ToDoCustomizer.class, "ToDoCustomizer.TableHeader")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(btnRemove, org.openide.util.NbBundle.getMessage(ToDoCustomizer.class, "ToDoCustomizer.btnRemove.text")); // NOI18N
+        btnRemove.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnRemoveActionPerformed(evt);
+            }
+        });
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -170,20 +174,22 @@ class ToDoCustomizer extends javax.swing.JPanel {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(checkScanCommentsOnly)
-                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 213, Short.MAX_VALUE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                    .add(btnRemove, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(btnChange, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(btnAdd, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .add(layout.createSequentialGroup()
+                        .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 237, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                            .add(btnRemove, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .add(btnChange, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .add(btnAdd, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                    .add(jLabel1)
+                    .add(checkScanCommentsOnly))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(checkScanCommentsOnly)
+                .add(jLabel1)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
@@ -192,7 +198,10 @@ class ToDoCustomizer extends javax.swing.JPanel {
                         .add(btnChange)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(btnRemove))
-                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 169, Short.MAX_VALUE))
+                    .add(layout.createSequentialGroup()
+                        .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 149, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(checkScanCommentsOnly)))
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -270,6 +279,7 @@ private void btnChangeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
     private javax.swing.JButton btnChange;
     private javax.swing.JButton btnRemove;
     private javax.swing.JCheckBox checkScanCommentsOnly;
+    private javax.swing.JLabel jLabel1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTable table;
     // End of variables declaration//GEN-END:variables
