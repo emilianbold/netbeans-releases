@@ -111,10 +111,12 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         ts.move(start);
         
         if (ts.moveNext()) {
-            while (WHITESPACES.contains(ts.token().id()))
-                ts.moveNext();
+            boolean wasMoveNext = true;
             
-            if (ts.offset() > start)
+            while (WHITESPACES.contains(ts.token().id()) && (wasMoveNext = ts.moveNext()))
+                ;
+            
+            if (wasMoveNext && ts.offset() > start)
                 start = ts.offset();
         }
         

@@ -496,6 +496,20 @@ public class IntroduceHintTest extends NbTestCase {
 //                       new DialogDisplayerImpl3("name", null, DialogDescriptor.OK_OPTION));
 //    }
     
+    public void testIntroduceMethodFixNeverEnds1() throws Exception {
+        performFixTest("package test; public class Test {}    ",
+                        60 - 25, 61 - 25,
+                        null,
+                        new DialogDisplayerImpl(null, null, null, null));
+    }
+    
+    public void testIntroduceMethodFixNeverEnds2() throws Exception {
+        performFixTest("     package test; public class Test {}",
+                        26 - 25, 28 - 25,
+                        null,
+                        new DialogDisplayerImpl(null, null, null, null));
+    }
+    
     protected void prepareTest(String code) throws Exception {
         clearWorkDir();
         
