@@ -36,9 +36,6 @@ import org.netbeans.jellytools.actions.DeleteAction;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
-import org.netbeans.qa.form.VisualDevelopmentUtil;
-import org.netbeans.qa.form.DeleteDir;
-
 
 /**
  * A Test based on JellyTestCase. JellyTestCase redirects Jemmy output
@@ -64,7 +61,7 @@ import org.netbeans.qa.form.DeleteDir;
 public class OpenTempl_defaultPack extends JellyTestCase {
     public String DATA_PROJECT_NAME = "Sample";
     public String PACKAGE_NAME = "Source Package";
-    public String PROJECT_NAME = "General";
+    public String PROJECT_NAME = "Java";
     public String workdirpath;
     
     
