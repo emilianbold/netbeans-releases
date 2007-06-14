@@ -280,14 +280,14 @@ class HeapView extends JComponent {
      * Overriden to return true, GCComponent paints in its entire bounds in
      * an opaque manner.
      */
-    public boolean isOpaque() {
+    @Override public boolean isOpaque() {
         return true;
     }
     
     /**
      * Updates the look and feel for this component.
      */
-    public void updateUI() {
+    @Override public void updateUI() {
         Font f = new JLabel().getFont();
         f = new Font(f.getName(), Font.BOLD, f.getSize());
         setFont(f);
@@ -361,7 +361,7 @@ class HeapView extends JComponent {
      *
      * @param font the font used to display the heap size
      */
-    public void setFont(Font font) {
+    @Override public void setFont(Font font) {
         super.setFont(font);
         updateTextWidth();
     }
@@ -386,7 +386,7 @@ class HeapView extends JComponent {
      *
      * @param e the MouseEvent
      */
-    protected void processMouseEvent(MouseEvent e) {
+    @Override protected void processMouseEvent(MouseEvent e) {
         super.processMouseEvent(e);
         if (!e.isConsumed()) {
             if (e.isPopupTrigger()) {
@@ -408,7 +408,7 @@ class HeapView extends JComponent {
                 SwingUtilities.isLeftMouseButton(e) && 
                 e.getClickCount() == 1) {
             // Trigger a gc
-            ((GarbageCollectAction)GarbageCollectAction.get(GarbageCollectAction.class)).performAction();;
+            GarbageCollectAction.get(GarbageCollectAction.class).performAction();;
         }
     }
 
@@ -463,7 +463,7 @@ class HeapView extends JComponent {
     /**
      * Paints the component.
      */
-    protected void paintComponent(Graphics g) {
+    @Override protected void paintComponent(Graphics g) {
         Graphics2D g2 = (Graphics2D)g;
         int width = getWidth();
         int height = getHeight();
@@ -719,7 +719,7 @@ class HeapView extends JComponent {
      * Invoked when component removed from a heavy weight parent. Stops the
      * timer.
      */
-    public void removeNotify() {
+    @Override public void removeNotify() {
         super.removeNotify();
         stopTimerIfNecessary();
     }
@@ -875,9 +875,9 @@ class HeapView extends JComponent {
             return percent;
         }
         
-        protected void fireActionPerformed(ActionEvent e) {
+        @Override protected void fireActionPerformed(ActionEvent e) {
             long time = System.currentTimeMillis();
-            long delta = time - startTime;
+            long delta = Math.max(0L, time - startTime);
             if (delta > HEAP_GROW_ANIMATE_TIME) {
                 stopHeapAnimate();
             } else {

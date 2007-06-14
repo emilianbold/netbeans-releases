@@ -110,7 +110,8 @@ public class GarbageCollectAction extends CallableSystemAction {
             return pref;
         }
 
-        public void layout() {
+        @SuppressWarnings("deprecation")
+        @Override public void layout() {
             int w = getWidth();
             int h = getHeight();
             HeapView heapView = getHeapView();
