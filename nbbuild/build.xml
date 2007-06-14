@@ -1342,6 +1342,16 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     </ant>
   </target>
 
+  <!-- Needs to be run separately from commitValidation, since that target will abort if there are any failures. -->
+  <target name="commit-validation-junit-format" depends="bootstrap" description="Produce JUnit-format results, e.g. for publishing to Hudson.">
+    <taskdef name="xtest2junit" classname="org.netbeans.nbbuild.XTest2JUnitResultFormatter" classpath="nbantext.jar"/>
+    <delete dir="${xtest.home}/instance/results/junit-format" failonerror="false"/>
+    <mkdir dir="${xtest.home}/instance/results/junit-format"/>
+    <xtest2junit outputdir="${xtest.home}/instance/results/junit-format">
+        <input dir="${xtest.home}/instance" includes="results/testrun_*/testbag_*/xmlresults/suites/TEST-*.xml"/>
+    </xtest2junit>
+  </target>
+
   <target name="no-commit-validation" depends="check-commit-validation" unless="run.validation">
     <echo>
         *** WARNING ***
