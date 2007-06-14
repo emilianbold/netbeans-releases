@@ -248,7 +248,7 @@ public class ModuleDependencies extends Task {
             return true;
         }
         String name = jar.getName();
-        if (name.matches("designtime.*\\.jar|jruby\\.jar|graphlib\\.jar")) { // XXX hardcoded for now
+        if (name.matches("designtime.*\\.jar|webui.*\\.jar|jruby\\.jar|graphlib\\.jar")) { // XXX hardcoded for now
             return true;
         }
         if (name.endsWith("_nb.jar") && !name.equals("resolver-1_1_nb.jar")) {
