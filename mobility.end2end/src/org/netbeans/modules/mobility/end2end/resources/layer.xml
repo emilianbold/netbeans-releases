@@ -45,24 +45,27 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="Templates">
         <folder name="Client">
             <file name="Client.java" url="../../e2e/templates/ClientTemplate.template">
-                 <attr name="template" boolvalue="true"/>
+                 <attr name="template" boolvalue="false"/>
             </file>
             <file name="Bean.java" url="../../e2e/templates/Bean.template">
-                 <attr name="template" boolvalue="true"/>
+                 <attr name="template" boolvalue="false"/>
             </file>
         </folder>
         <folder name="Server">
             <file name="Servlet.java" url="../../e2e/templates/ServletTemplate.template">
-                 <attr name="template" boolvalue="true"/>
+                 <attr name="template" boolvalue="false"/>
             </file>
             <file name="Gateways.java" url="../../e2e/templates/GatewaysTemplate.template">
-                 <attr name="template" boolvalue="true"/>
+                 <attr name="template" boolvalue="false"/>
             </file>
             <file name="InvocationAbstraction.java" url="../../e2e/templates/InvocationAbstractionTemplate.template">
-                 <attr name="template" boolvalue="true"/>
+                 <attr name="template" boolvalue="false"/>
             </file>
             <file name="Utility.java" url="../../e2e/templates/UtilityTemplate.template">
-                 <attr name="template" boolvalue="true"/>
+                 <attr name="template" boolvalue="false"/>
+            </file>
+            <file name="Proxy.java" url="../../e2e/templates/ProxyTemplate.template">
+                 <attr name="template" boolvalue="false"/>
             </file>
         </folder>
     </folder>    
