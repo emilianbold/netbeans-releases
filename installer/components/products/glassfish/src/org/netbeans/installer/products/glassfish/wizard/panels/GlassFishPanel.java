@@ -195,6 +195,12 @@ public class GlassFishPanel extends DestinationPanel {
                 JdkLocationPanel.MAXIMUM_JDK_VERSION_PROPERTY,
                 getProperty(JdkLocationPanel.MAXIMUM_JDK_VERSION_PROPERTY));
         
+        if (getProperty(JdkLocationPanel.PREFERRED_JDK_VERSION_PROPERTY) != null) {
+            jdkLocationPanel.setProperty(
+                    JdkLocationPanel.PREFERRED_JDK_VERSION_PROPERTY,
+                    getProperty(JdkLocationPanel.PREFERRED_JDK_VERSION_PROPERTY));
+        }
+        
         jdkLocationPanel.initialize();
     }
     

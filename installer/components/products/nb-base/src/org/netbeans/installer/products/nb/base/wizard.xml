@@ -21,5 +21,6 @@
 
 <wizard xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="wizard-components.xsd">
     <component class="org.netbeans.installer.wizard.components.actions.SearchForJavaAction"/>
+    
     <component class="org.netbeans.installer.products.nb.base.wizard.panels.NbBasePanel"/>
 </wizard>

@@ -2,17 +2,17 @@
  * The contents of this file are subject to the terms of the Common Development and
  * Distribution License (the License). You may not use this file except in compliance
  * with the License.
- * 
+ *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html or
  * http://www.netbeans.org/cddl.txt.
- * 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file and
  * include the License file at http://www.netbeans.org/cddl.txt. If applicable, add
  * the following below the CDDL Header, with the fields enclosed by brackets []
  * replaced by your own identifying information:
- * 
+ *
  *     "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original Software
  * is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun Microsystems, Inc. All
  * Rights Reserved.
@@ -34,6 +34,7 @@ import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.applications.JavaUtils;
 import org.netbeans.installer.utils.helper.Status;
 import org.netbeans.installer.utils.helper.Version;
+import org.netbeans.installer.utils.helper.Version.VersionDistance;
 import org.netbeans.installer.wizard.components.actions.SearchForJavaAction;
 
 /**
@@ -45,6 +46,7 @@ public class JdkLocationPanel extends ApplicationLocationPanel {
     // Instance
     private Version minimumVersion;
     private Version maximumVersion;
+    private Version preferredVersion;
     
     private List<File>   jdkLocations;
     private List<String> jdkLabels;
@@ -85,15 +87,22 @@ public class JdkLocationPanel extends ApplicationLocationPanel {
                 DEFAULT_USEDBY_LABEL);
     }
     
+    @Override
     public void initialize() {
         minimumVersion = Version.getVersion(
                 getProperty(MINIMUM_JDK_VERSION_PROPERTY));
         maximumVersion = Version.getVersion(
                 getProperty(MAXIMUM_JDK_VERSION_PROPERTY));
         
+        if (getProperty(PREFERRED_JDK_VERSION_PROPERTY) != null) {
+            preferredVersion = Version.getVersion(
+                    getProperty(PREFERRED_JDK_VERSION_PROPERTY));
+        }
+        
         jdkLocations = new LinkedList<File>();
         jdkLabels = new LinkedList<String>();
         
+        final Registry registry = Registry.getInstance();
         for (int i = 0; i < SearchForJavaAction.javaLocations.size(); i++) {
             final File location = SearchForJavaAction.javaLocations.get(i);
             
@@ -108,7 +117,7 @@ public class JdkLocationPanel extends ApplicationLocationPanel {
             if (location.exists()) {
                 version = JavaUtils.getVersion(location);
             } else {
-                for (Product jdk: Registry.getInstance().getProducts(JDK_PRODUCT_UID)) {
+                for (Product jdk: registry.getProducts(JDK_PRODUCT_UID)) {
                     if ((jdk.getStatus() == Status.TO_BE_INSTALLED) &&
                             jdk.getInstallationLocation().equals(location)) {
                         version = jdk.getVersion();
@@ -128,7 +137,7 @@ public class JdkLocationPanel extends ApplicationLocationPanel {
                     new ProductFilter(Status.INSTALLED),
                     new ProductFilter(Status.TO_BE_INSTALLED));
             final List<Product> products = new LinkedList<Product>();
-            for (Product product: Registry.getInstance().queryProducts(filter)) {
+            for (Product product: registry.queryProducts(filter)) {
                 String jdk = product.getProperty(JDK_LOCATION_PROPERTY);
                 
                 if ((jdk != null) && jdk.equals(location.getAbsolutePath())) {
@@ -176,24 +185,50 @@ public class JdkLocationPanel extends ApplicationLocationPanel {
                 getWizard().getProperty(JDK_LOCATION_PROPERTY);
         
         // the first obvious choice is the jdk that has already been selected for
-        // this product; if it has not yet been set - check whether we can reuse the
-        // location which was selected on another jdk location panel; if it does
-        // not fit the requirements fallback to the first item in the list or
-        // an empty path
+        // this product; if it has not yet been set, there are still lots of
+        // choices:
+        // - choose the closest one to the preferred version if it is defined and
+        //   a valid closest version exists
+        // - reuse the location which was selected on another jdk location panel if
+        //   it fits the requirements
+        // - use the first item in the list
+        // - use an empty path
         if (path != null) {
             return new File(path);
-        } else {
-            if ((SearchForJavaAction.lastSelectedJava != null) &&
-                    jdkLocations.contains(SearchForJavaAction.lastSelectedJava)) {
-                return SearchForJavaAction.lastSelectedJava;
-            } else {
-                if (jdkLocations.size() != 0) {
-                    return jdkLocations.get(0);
-                } else {
-                    return new File("");
+        }
+        
+        if (preferredVersion != null) {
+            File closestLocation = null;
+            VersionDistance closestDistance = null;
+            
+            for (File location: jdkLocations) {
+                final Version currentVersion =
+                        JavaUtils.getVersion(location);
+                final VersionDistance currentDistance =
+                        currentVersion.getDistance(preferredVersion);
+                
+                if ((closestDistance == null) || 
+                        currentDistance.lessThan(closestDistance)) {
+                    closestLocation = location;
+                    closestDistance = currentDistance;
                 }
             }
+            
+            if (closestLocation != null) {
+                return closestLocation;
+            }
         }
+        
+        if ((SearchForJavaAction.lastSelectedJava != null) &&
+                jdkLocations.contains(SearchForJavaAction.lastSelectedJava)) {
+            return SearchForJavaAction.lastSelectedJava;
+        }
+        
+        if (jdkLocations.size() != 0) {
+            return jdkLocations.get(0);
+        }
+        
+        return new File("");
     }
     
     public String validateLocation(final String path) {
@@ -240,17 +275,17 @@ public class JdkLocationPanel extends ApplicationLocationPanel {
         
         if (version.olderThan(minimumVersion)) {
             return StringUtils.format(
-                    getProperty(ERROR_WRONG_VERSION_OLDER_PROPERTY), 
-                    path, 
-                    version, 
+                    getProperty(ERROR_WRONG_VERSION_OLDER_PROPERTY),
+                    path,
+                    version,
                     minimumVersion);
         }
         
         if (version.newerThan(maximumVersion)) {
             return StringUtils.format(
-                    getProperty(ERROR_WRONG_VERSION_NEWER_PROPERTY), 
-                    path, 
-                    version, 
+                    getProperty(ERROR_WRONG_VERSION_NEWER_PROPERTY),
+                    path,
+                    version,
                     maximumVersion);
         }
         
@@ -278,6 +313,8 @@ public class JdkLocationPanel extends ApplicationLocationPanel {
             "minimum.jdk.version"; // NOI18N
     public static final String MAXIMUM_JDK_VERSION_PROPERTY =
             "maximum.jdk.version"; // NOI18N
+    public static final String PREFERRED_JDK_VERSION_PROPERTY =
+            "preferred.jdk.version"; // NOI18N
     
     public static final String DEFAULT_LOCATION_LABEL_TEXT =
             ResourceUtils.getString(JdkLocationPanel.class,
@@ -347,5 +384,6 @@ public class JdkLocationPanel extends ApplicationLocationPanel {
     public static final String USEDBY_LABEL_PROPERTY =
             "usedby.label"; //NOI18N
     
-    private static final String JDK_PRODUCT_UID = "jdk"; //NOI18N
+    private static final String JDK_PRODUCT_UID =
+            "jdk"; //NOI18N
 }

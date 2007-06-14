@@ -31,12 +31,10 @@ import javax.swing.ComboBoxModel;
 import javax.swing.JFileChooser;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.utils.helper.swing.NbiButton;
 import org.netbeans.installer.utils.helper.swing.NbiLabel;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StringUtils;
-import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.helper.Version;
 import org.netbeans.installer.utils.helper.swing.NbiComboBox;
 import org.netbeans.installer.utils.helper.swing.NbiTextField;
@@ -104,6 +102,12 @@ public class NbBasePanel extends DestinationPanel {
         jdkLocationPanel.setProperty(
                 JdkLocationPanel.MAXIMUM_JDK_VERSION_PROPERTY,
                 getProperty(JdkLocationPanel.MAXIMUM_JDK_VERSION_PROPERTY));
+        
+        if (getProperty(JdkLocationPanel.PREFERRED_JDK_VERSION_PROPERTY) != null) {
+            jdkLocationPanel.setProperty(
+                    JdkLocationPanel.PREFERRED_JDK_VERSION_PROPERTY,
+                    getProperty(JdkLocationPanel.PREFERRED_JDK_VERSION_PROPERTY));
+        }
         
         jdkLocationPanel.initialize();
     }
@@ -354,5 +358,4 @@ public class NbBasePanel extends DestinationPanel {
     public static final String DEFAULT_MAXIMUM_JDK_VERSION =
             ResourceUtils.getString(NbBasePanel.class,
             "NBP.maximum.jdk.version"); // NOI18N
-    
 }
