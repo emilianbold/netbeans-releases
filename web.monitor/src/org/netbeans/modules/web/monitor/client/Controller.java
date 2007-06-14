@@ -42,11 +42,12 @@ import java.net.MalformedURLException;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.net.URL;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.swing.SwingUtilities;
 
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser;
 import org.openide.filesystems.FileAlreadyLockedException;
@@ -453,7 +454,7 @@ class Controller  {
 	MonitorData md = getMonitorData(tn, false, false);
         if (md == null) {
             String msg = NbBundle.getMessage(Controller.class, "MSG_NoMonitorData");
-            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, msg);
+            Logger.getLogger("global").log(Level.INFO, msg);
             return;
         }
 	if(!useBrowserCookie) 
@@ -809,9 +810,9 @@ class Controller  {
                             lock = fileObject.lock();
                             fileObject.delete(lock);
                         } catch(FileAlreadyLockedException falex) {
-                            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, falex);
-                        } catch(IOException IOex) {
-                            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, IOex);
+                            Logger.getLogger("global").log(Level.INFO, null, falex);
+                        } catch(IOException exception) {
+                            Logger.getLogger("global").log(Level.INFO, null, exception);
                         } finally { 
                             if(lock != null) {
                                 lock.releaseLock();
@@ -880,9 +881,9 @@ class Controller  {
                         lock = fo.lock();
                         fo.delete(lock);
                     } catch(FileAlreadyLockedException falex) {
-                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, falex);
-                    } catch(IOException IOex) {
-                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, IOex);
+                        Logger.getLogger("global").log(Level.INFO, null, falex);
+                    } catch(IOException exception) {
+                        Logger.getLogger("global").log(Level.INFO, null, exception);
                     } finally { 
                         if(lock != null) {
                             lock.releaseLock();
@@ -965,7 +966,7 @@ class Controller  {
                     try {
                         ((FileObject) it.next()).delete();
                     } catch (IOException e) {
-                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                        Logger.getLogger("global").log(Level.INFO, null, e);
                     }
                 }
             }
@@ -1204,7 +1205,7 @@ class Controller  {
 					    fromCache, true);
             if (md == null) {
                 String msg = NbBundle.getMessage(Controller.class, "MSG_NoMonitorData");
-                ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, msg);
+                Logger.getLogger("global").log(Level.INFO, msg);
                 return null;
             }
 	    return (DataRecord)md;
@@ -1237,7 +1238,7 @@ class Controller  {
 					    true, true); 
             if (md == null) {
                 String msg = NbBundle.getMessage(Controller.class, "MSG_NoMonitorData");
-                ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, msg);
+                Logger.getLogger("global").log(Level.INFO, msg);
                 return null;
             }
 	    DataRecord dr = (DataRecord)md;
@@ -1360,21 +1361,21 @@ class Controller  {
 	    catch(IOException ioex2) {} 
 	} 
 	catch(FileAlreadyLockedException falex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, falex);
+            Logger.getLogger("global").log(Level.INFO, null, falex);
 	    if(debug) { 
 		log("File is locked: " + fo.getNameExt()); //NOI18N 
 		falex.printStackTrace();
 	    }
 	}
 	catch(IOException ioex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioex);
+            Logger.getLogger("global").log(Level.INFO, null, ioex);
 	    if(debug) { 
 		log("Couldn't read data file: " + fo.getNameExt()); //NOI18N 
 		ioex.printStackTrace();
 	    }
 	}
 	catch(Exception ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            Logger.getLogger("global").log(Level.INFO, null, ex);
 	    if(debug) { 
 		log("Something went wrong when retrieving record"); //NOI18N 
 		ex.printStackTrace();

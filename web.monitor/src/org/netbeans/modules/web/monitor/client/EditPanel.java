@@ -48,7 +48,8 @@ import javax.swing.event.*;
 
 import java.util.*;
 
-import org.openide.ErrorManager;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -123,7 +124,7 @@ class EditPanel extends javax.swing.JPanel implements
         if (md == null) {
 	    // We couldn't get the data. 
             String msg = NbBundle.getMessage(EditPanel.class, "MSG_NoMonitorData");
-            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, msg);
+            Logger.getLogger("global").log(Level.INFO, msg);
 	    return; 
 	}
 
