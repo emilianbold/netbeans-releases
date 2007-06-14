@@ -71,7 +71,11 @@ public class WebRefactoringFactory implements RefactoringPluginFactory{
             sourceFO = handle.getFileObject();
         }
         
-        FileObject ddFile = WebModule.getWebModule(sourceFO).getDeploymentDescriptor();
+        WebModule wm = WebModule.getWebModule(sourceFO);
+        if (wm == null){
+            return null;
+        }
+        FileObject ddFile = wm.getDeploymentDescriptor();
         WebApp webApp = getWebApp(ddFile);
         String clazz = resolveClass(handle);
 
