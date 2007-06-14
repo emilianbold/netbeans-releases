@@ -44,9 +44,14 @@ public class NBInstallation {
     
     private static Logger LOGGER = WSProjectOpener.LOGGER;
     
-    private static final String searchStr = "Installation;";
+    // there are two versions of log file
+    private static final String searchStr1 = "Installation; User Dir.";
+    private static final String searchStr2 = "Installation";
     
+    // regexp for matching nb cluster, e.g. nb5.5
     private static final Pattern NB_CLUSTER_REGEX = Pattern.compile("[/\\\\]nb(\\d*(\\.\\d+)*)$");
+    // regexp for matching start of windows path, e.g. e:\
+    private static final Pattern WIN_ROOT_REGEX = Pattern.compile("^[a-zA-Z]:\\\\");
     
     private static final String[] NON_CLUSTER_DIRS = new String[] { "etc", "bin", "harness" };
     
@@ -250,8 +255,12 @@ public class NBInstallation {
         LOGGER.fine("Parsing file: " + logFile.getAbsolutePath());
         BufferedReader logFileReader = new BufferedReader(new FileReader(logFile));
         String line = logFileReader.readLine();
+        boolean lineRead;
+        
         while (line != null) {
-            if (line.indexOf(searchStr) != -1) {
+            
+            lineRead = false;
+            if (line.indexOf(searchStr1) != -1) { // old version of log file
                 LOGGER.fine("Found line: " + line);
                 int index1 = line.indexOf('=') + 2;
                 int index2 = line.indexOf("; ", index1);
@@ -271,14 +280,50 @@ public class NBInstallation {
                         }
                     }
                 }
+            } else if (line.indexOf(searchStr2) != -1) { // new version of log file
+                LOGGER.fine("Found line: " + line);
+                int index = line.indexOf('=') + 2;
+                String tLine = line.substring(index).trim();
+                boolean matching;
+                
+                do {
+                    matching = false;
+                    // startsWith("/") OR startsWith("e:\")
+                    if (tLine.startsWith("/") || matchWinRoot(tLine)) { // correct line matched
+                        matching = true;
+                        LOGGER.fine("Matching line: " + tLine);
+                        Matcher matcher = NB_CLUSTER_REGEX.matcher(tLine);
+                        if (matcher.find()) { // nb cluster matched
+                            File f = new File(tLine).getParentFile();
+                            LOGGER.fine("Found file: " + f.getAbsolutePath());
+                            if (f.exists()) {
+                                dirPath = f.getAbsolutePath();
+                            }
+                        }
+                        line = logFileReader.readLine();
+                        lineRead = true;
+                        tLine = line.trim();
+                    }
+                } while (matching);
+                
             }
-            line = logFileReader.readLine();
+            
+            if (!lineRead) {
+                line = logFileReader.readLine();
+            }
+            
         }
+        
         if (dirPath != null) {
             return new File(dirPath);
         } else {
             return null;
         }
+    }
+    
+    private boolean matchWinRoot(String line) {
+        Matcher matcher = WIN_ROOT_REGEX.matcher(line);
+        return matcher.find();
     }
     
     // XXX the version might be read from log file

@@ -37,7 +37,7 @@ import java.util.logging.Logger;
  */
 public class WSProjectOpener {
     
-    public static String APP_VERSION = "1.0";
+    public static String APP_VERSION = "1.1";
     
     public static String MIN_NB_VERSION = "5.5.1";
     
