@@ -202,34 +202,7 @@ public class WSDLRenameRefactoringPlugin extends WSDLRefactoringPlugin implement
     }
 
       
-    public Problem processErrors(List<ErrorItem> errorItems){
-        
-        if (errorItems == null || errorItems.size()== 0){
-            return null;
-        }
-        Problem parent = null;
-        Problem child = null;
-        Problem head = null;
-        Iterator<ErrorItem> iterator = errorItems.iterator();
-                
-        while(iterator.hasNext()) {
-            ErrorItem error = iterator.next();
-            if(parent == null ){
-                parent = new Problem(isFatal(error), error.getMessage());
-                child = parent;
-                head = parent;
-                continue;
-            }
-            child = new Problem(isFatal(error), error.getMessage());
-            parent.setNext(child);
-            parent = child;
-            
-        }
-        
        
-        return head;
-    }
-    
         
     /** Does the change for a given refactoring.
      * @param refactoringElements Collection of refactoring elements 

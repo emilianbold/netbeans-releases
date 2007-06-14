@@ -22,6 +22,8 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import org.netbeans.modules.refactoring.api.AbstractRefactoring;
+import org.netbeans.modules.refactoring.api.MoveRefactoring;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 import org.netbeans.modules.xml.refactoring.spi.RefactoringEngine;
@@ -86,25 +88,9 @@ public class WSDLRefactoringEngine {//extends RefactoringEngine {
         return Collections.emptyList();
     }
 
-  /* public void refactorUsages(RefactorRequest request) throws IOException {
-        for (UsageGroup g : request.getUsages().getUsages()) {
-            if (g.getModel() instanceof WSDLModel) {
-                if (request.getTarget() instanceof WSDLComponent) {
-                    if (request instanceof RenameRequest) {
-                        new WSDLRenameReferenceVisitor().refactor((RenameRequest) request, g);
-                    } else if (request instanceof DeleteRequest) {
-                        // cascade delete or reset reference is not supported
-                    } 
-                } else if (request.getTarget() instanceof WSDLModel &&
-                           request instanceof FileRenameRequest) {
-                    _refactorUsages((FileRenameRequest) request, g);
-                    
-                }   
-            }
-        }
-    }*/
+  
     
-   public void _refactorUsages(Model model,Set<RefactoringElementImplementation> elements, RenameRefactoring request) {
+   public void _refactorUsages(Model model,Set<RefactoringElementImplementation> elements, AbstractRefactoring request) {
         if (request == null || elements == null || model == null) return;
         if (! (model instanceof WSDLModel)) return;
 
@@ -118,7 +104,16 @@ public class WSDLRefactoringEngine {//extends RefactoringEngine {
             for (RefactoringElementImplementation u : elements) {
                 Import ref = u.getLookup().lookup(Import.class);
                 if (ref!=null) {
-                    String newLocation = calculateNewLocationString(ref.getLocation(), request);
+                    String newLocation = ref.getLocation();
+                    if(request instanceof RenameRefactoring ) {
+                         newLocation = SharedUtils.calculateNewLocationString(ref.getLocation(), (RenameRefactoring)request);
+                    } else if (request instanceof MoveRefactoring) {
+                        try {
+                             newLocation = SharedUtils.calculateNewLocationString(model , (MoveRefactoring)request);
+                        } catch (IOException io) {
+                            //do nothing, let the old schema location remain
+                        }
+                    }
                     ref.setLocation(newLocation);
                 }
             }
@@ -144,98 +139,9 @@ public class WSDLRefactoringEngine {//extends RefactoringEngine {
         return sb.toString();
     }
 
-    /*public void precheck(RefactorRequest request) {
-        if (request.getTarget() instanceof WSDLComponent) {
-            if (request instanceof DeleteRequest) {
-                SharedUtils.addCascadeDeleteErrors((DeleteRequest)request, WSDLModel.class);
-            } else if (request instanceof RenameRequest) {
-                prepareDescription((RenameRequest) request);
-            } else if (request instanceof FileRenameRequest) {
-                prepareDescription((FileRenameRequest) request);
-            }
-        }
-    }
-  */
-
-    /**
-     * Returns UI helper in displaying the usages.  Implementation could override
-     * the default UI to help display usages in a more intuitive way than the 
-     * generic helper.
-     */
-  /* public UIHelper getUIHelper() {
-        return new WSDLUIHelper();
-    }
-
-    public List<UsageGroup> findUsages(Model target, Component searchRoot) {
-        if (target instanceof WSDLModel &&
-            searchRoot instanceof Definitions) {
-            Definitions definitions = (Definitions) searchRoot;
-            String namespace = ((WSDLModel)target).getDefinitions().getTargetNamespace();
-            //UsageGroup ug = new UsageGroup(this, searchRoot.getModel(), (WSDLModel) target);
-            for (Import i : definitions.getImports()) {
-                Model imported = null;
-                if (namespace.equals(i.getNamespace())) {
-                    try {
-                        imported = i.getImportedWSDLModel();
-                    } catch(CatalogModelException ex) {
-                        ug.addError(searchRoot, ex.getMessage());
-                    }
-                }
-
-                if (imported == target) {
-                    ug.addItem(i);
-                }
-            }
-            //return Collections.singletonList(ug);
-        }
-        return Collections.emptyList();
-    }
     
-    private void prepareDescription(RenameRequest request) {
-        WSDLComponent target =  (WSDLComponent) request.getTarget();
-        for (UsageGroup usage : request.getUsages().getUsages()) {
-            if (! (usage.getModel() instanceof WSDLModel)) {
-                continue;
-            }
-            String ns = ((WSDLModel)target.getModel()).getDefinitions().getTargetNamespace();
-            for (Usage i : usage.getItems()) {
-                String prefix = ((AbstractDocumentComponent)i.getComponent()).lookupPrefix(ns);
-                String refString = prefix + ":" + request.getNewName(); //NOI18N
-                //TODO a visitor to get the right attribute name from i.getComponent().
-                String refAttribute = "ref"; //NOI18N
-                String msg = NbBundle.getMessage(WSDLRefactoringEngine.class, 
-                        "MSG_SetReferenceStringTo", refAttribute, refString);
-                i.setRefactoringDescription(msg);
-            }
-        }
-    }
 
-    private void prepareDescription(FileRenameRequest request) {
-        WSDLModel target =  (WSDLModel) request.getTargetModel();
-        for (UsageGroup usage : request.getUsages().getUsages()) {
-            if (! (usage.getModel() instanceof WSDLModel) && 
-                ! (usage.getEngine() instanceof WSDLRefactoringEngine)) {
-                continue;
-            }
-            for (Usage i : usage.getItems()) {
-                if (i.getComponent() instanceof Import) {
-                    String refAttribute = "location"; //NOI18N
-                    String msg = NbBundle.getMessage(WSDLRefactoringEngine.class, 
-                            "MSG_SetLocationStringTo", refAttribute, getNewLocationValue(request, i.getComponent()));
-                    i.setRefactoringDescription(msg);
-                }
-            }
-        }
-    }
     
-    private static String getNewLocationValue(FileRenameRequest request, Component usageComponent) {
-        String current = ""; //NOI18N
-        if (usageComponent instanceof Import) {
-            current =((Import)usageComponent).getLocation();
-        }        
-
-        return request.calculateNewLocationString(current);
-    }*/
     
     
     public String getModelReference(Component component) {

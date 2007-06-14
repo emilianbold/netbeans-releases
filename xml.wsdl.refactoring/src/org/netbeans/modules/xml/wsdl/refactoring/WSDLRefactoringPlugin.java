@@ -14,24 +14,20 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.RefactoringSession;
 import org.netbeans.modules.refactoring.spi.ProgressProviderAdapter;
 import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
 import org.netbeans.modules.xml.refactoring.ErrorItem;
-import org.netbeans.modules.xml.refactoring.XMLRefactoringPlugin;
 import org.netbeans.modules.xml.refactoring.XMLRefactoringTransaction;
 import org.netbeans.modules.xml.refactoring.spi.SharedUtils;
 import org.netbeans.modules.xml.schema.model.ReferenceableSchemaComponent;
-import org.netbeans.modules.xml.schema.model.Schema;
-import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
-import org.netbeans.modules.xml.schema.model.SchemaModelReference;
-import org.netbeans.modules.xml.schema.model.visitor.FindUsageVisitor;
-import org.netbeans.modules.xml.schema.model.visitor.Preview;
 import org.netbeans.modules.xml.wsdl.model.Definitions;
 import org.netbeans.modules.xml.wsdl.model.Import;
 import org.netbeans.modules.xml.wsdl.model.ReferenceableWSDLComponent;
@@ -39,11 +35,8 @@ import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.refactoring.xsd.FindSchemaUsageVisitor;
 import org.netbeans.modules.xml.wsdl.refactoring.xsd.SchemaUsageRefactoringEngine;
 import org.netbeans.modules.xml.xam.Component;
-import org.netbeans.modules.xml.xam.EmbeddableRoot;
 import org.netbeans.modules.xml.xam.Model;
-import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.Referenceable;
-import org.netbeans.modules.xml.xam.dom.DocumentModel;
 import org.netbeans.modules.xml.xam.locator.CatalogModelException;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
@@ -187,4 +180,31 @@ public abstract class WSDLRefactoringPlugin extends ProgressProviderAdapter impl
             return false;
    } 
      
+     public Problem processErrors(List<ErrorItem> errorItems){
+        
+        if (errorItems == null || errorItems.size()== 0){
+            return null;
+        }
+        Problem parent = null;
+        Problem child = null;
+        Problem head = null;
+        Iterator<ErrorItem> iterator = errorItems.iterator();
+                
+        while(iterator.hasNext()) {
+            ErrorItem error = iterator.next();
+            if(parent == null ){
+                parent = new Problem(isFatal(error), error.getMessage());
+                child = parent;
+                head = parent;
+                continue;
+            }
+            child = new Problem(isFatal(error), error.getMessage());
+            parent.setNext(child);
+            parent = child;
+            
+        }
+        
+       
+        return head;
+    }
 }

@@ -28,6 +28,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.refactoring.api.AbstractRefactoring;
+import org.netbeans.modules.refactoring.api.MoveRefactoring;
 import org.netbeans.modules.refactoring.api.RefactoringSession;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
@@ -123,7 +125,7 @@ public class SchemaUsageRefactoringEngine {
     }
  
 
-    public void _refactorUsages(Model mod, Set<RefactoringElementImplementation> elements, RenameRefactoring request) throws IOException {
+    public void _refactorUsages(Model mod, Set<RefactoringElementImplementation> elements, AbstractRefactoring request) throws IOException {
         if (request == null || elements == null || mod == null) return;
         if (! (mod instanceof WSDLModel)) return;
         WSDLModel model = (WSDLModel) mod;
@@ -136,11 +138,22 @@ public class SchemaUsageRefactoringEngine {
             for (RefactoringElementImplementation u:elements) {
                 if (u.getLookup().lookup(Import.class)!=null) {
                     Import im = u.getLookup().lookup(Import.class);
-                    String newLocation = calculateNewLocationString(im.getLocation(), request);
+                    String newLocation = im.getLocation();
+                    if(request instanceof RenameRefactoring ) {
+                        newLocation = SharedUtils.calculateNewLocationString(im.getLocation(), (RenameRefactoring)request);
+                     } else if (request instanceof MoveRefactoring) {
+                        newLocation = SharedUtils.calculateNewLocationString(mod, (MoveRefactoring)request);
+                     }
                     im.setLocation(newLocation);
                 } else if (u.getLookup().lookup(SchemaModelReference.class)!=null) {
                     SchemaModelReference ref = u.getLookup().lookup(SchemaModelReference.class);
-                    String newLocation = calculateNewLocationString(ref.getSchemaLocation(), request);
+                    String newLocation = ref.getSchemaLocation();
+                    if(request instanceof RenameRefactoring ) {
+                         newLocation = calculateNewLocationString(ref.getSchemaLocation(), (RenameRefactoring)request);
+                    } else if (request instanceof MoveRefactoring){
+                        newLocation = SharedUtils.calculateNewLocationString(mod, (MoveRefactoring)request);
+                        
+                    }
                     ref.setSchemaLocation(newLocation);
                 }
             }
@@ -166,54 +179,7 @@ public class SchemaUsageRefactoringEngine {
         return sb.toString();
     }
     
-   /* public void precheck(RefactorRequest request) {
-        if (request.getTarget() instanceof SchemaComponent || 
-            request.getTarget() instanceof SchemaModel) {
-            if (request instanceof RenameRequest) {
-                prepareDescription((RenameRequest)request);
-            } else if (request instanceof DeleteRequest) {
-                SharedUtils.addCascadeDeleteErrors((DeleteRequest)request, WSDLModel.class);
-            } else if (request instanceof FileRenameRequest) {
-                prepareDescription((FileRenameRequest)request);
-            }
-        }
-    }
-
-    private void prepareDescription(RenameRequest request) {
-        SchemaComponent target =  (SchemaComponent) request.getTarget();
-        for (UsageGroup usage : request.getUsages().getUsages()) {
-            if (! (usage.getModel() instanceof WSDLModel)) {
-                continue;
-            }
-            String ns = ((SchemaModel)target.getModel()).getEffectiveNamespace(target);
-            for (Object o : usage.getItems()) {
-                Usage i = (Usage) o; //strange i have to do this
-                String prefix = ((AbstractDocumentComponent)i.getComponent()).lookupPrefix(ns);
-                String refString = prefix + ":" + request.getNewName(); //NOI18N
-                //TODO a visitor to get the right attribute name from i.getComponent().
-                String refAttribute = "ref"; //NOI18N
-                String msg = NbBundle.getMessage(SchemaUsageRefactoringEngine.class, 
-                        "MSG_SetReferenceStringTo", refAttribute, refString);
-                i.setRefactoringDescription(msg);
-            }
-        }
-    }
-
-    private void prepareDescription(FileRenameRequest request) {
-        SchemaModel target =  (SchemaModel) request.getTargetModel();
-        for (UsageGroup usage : request.getUsages().getUsages()) {
-            if (! (usage.getModel() instanceof WSDLModel)) {
-                continue;
-            }
-            for (Usage i : usage.getItems()) {
-                String refAttribute = getLocationReferenceAttributeName(i.getComponent());
-                String msg = NbBundle.getMessage(SchemaUsageRefactoringEngine.class, 
-                        "MSG_SetLocationStringTo", refAttribute, getNewLocationValue(request, i.getComponent()));
-                i.setRefactoringDescription(msg);
-            }
-        }
-    }*/
-    
+      
     public static String getLocationReferenceAttributeName(Component usageComponent) {
         if (usageComponent instanceof org.netbeans.modules.xml.wsdl.model.Import) {
             return "location"; //NOI18N
@@ -224,17 +190,7 @@ public class SchemaUsageRefactoringEngine {
         }
     }
     
-    /*private static String getNewLocationValue(FileRenameRequest request, Component usageComponent) {
-        String current = ""; //NOI18N
-        if (usageComponent instanceof Import) {
-            current =((Import)usageComponent).getLocation();
-        } else if (usageComponent instanceof SchemaModelReference) {
-            current = ((SchemaModelReference)usageComponent).getSchemaLocation();
-        }        
-
-        return request.calculateNewLocationString(current);
-    }*/
-
+    
     public static ModelSource resolveModelSource(
             String location, Model currentModel, CatalogModel currentCatalog) {
         ModelSource ms = null;

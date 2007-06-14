@@ -23,6 +23,7 @@ import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.netbeans.modules.refactoring.api.SafeDeleteRefactoring;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;
+import org.netbeans.modules.refactoring.api.MoveRefactoring;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
 import org.netbeans.modules.refactoring.spi.RefactoringPluginFactory;
 
@@ -40,6 +41,8 @@ public class SchemaRefactoringsFactory implements RefactoringPluginFactory {
             return new SchemaRenameRefactoringPlugin( (RenameRefactoring)refactoring);
         } else if(refactoring instanceof SafeDeleteRefactoring) {
             return new SchemaSafeDeleteRefactoringPlugin( (SafeDeleteRefactoring)refactoring);
+        } else if (refactoring instanceof MoveRefactoring) {
+            return new SchemaMoveRefactoringPlugin((MoveRefactoring) refactoring);
         }
         return null;
     }
