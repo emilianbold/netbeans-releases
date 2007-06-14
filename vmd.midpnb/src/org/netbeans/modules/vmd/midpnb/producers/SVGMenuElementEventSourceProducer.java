@@ -23,6 +23,7 @@ import org.netbeans.modules.vmd.api.model.ComponentProducer;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.PaletteDescriptor;
+import org.netbeans.modules.vmd.midp.components.MidpJavaSupport;
 import org.netbeans.modules.vmd.midpnb.components.sources.SVGMenuElementEventSourceCD;
 import org.netbeans.modules.vmd.midpnb.palette.MidpNbPaletteProvider;
 
@@ -31,20 +32,21 @@ import org.netbeans.modules.vmd.midpnb.palette.MidpNbPaletteProvider;
  * @author Anton Chechel
  */
 public class SVGMenuElementEventSourceProducer extends ComponentProducer {
-
+    
     private static final String PRODUCER_ID = "#SVGMenuElementEventSourceProducer"; // NOI18N
-
-    public SVGMenuElementEventSourceProducer () {
-        super (PRODUCER_ID, SVGMenuElementEventSourceCD.TYPEID, new PaletteDescriptor (MidpNbPaletteProvider.CATEGORY_SVG, "SVG Menu Element", "SVG Menu Element", SVGMenuElementEventSourceCD.ICON_PATH, null));
+    
+    public SVGMenuElementEventSourceProducer() {
+        super(PRODUCER_ID, SVGMenuElementEventSourceCD.TYPEID, new PaletteDescriptor(MidpNbPaletteProvider.CATEGORY_SVG, "SVG Menu Element", "SVG Menu Element", SVGMenuElementEventSourceCD.ICON_PATH, null));
     }
-
-    public Result createComponent (DesignDocument document) {
-        DesignComponent eventSource = document.createComponent (SVGMenuElementEventSourceCD.TYPEID);
-        return new Result (eventSource);
+    
+    public Result createComponent(DesignDocument document) {
+        DesignComponent eventSource = document.createComponent(SVGMenuElementEventSourceCD.TYPEID);
+        return new Result(eventSource);
     }
-
+    
     public boolean checkValidity(DesignDocument document) {
-        return true;
+        return MidpJavaSupport.checkValidity(document, "javax.microedition.m2g.SVGImage") && // NOI18N
+                MidpJavaSupport.checkValidity(document, "javax.microedition.lcdui.Canvas"); // NOI18N
     }
-
+    
 }

@@ -19,6 +19,9 @@
 
 package org.netbeans.modules.vmd.palette;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.io.IOException;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.vmd.api.io.ProjectUtils;
 import org.netbeans.modules.vmd.api.model.*;
@@ -30,26 +33,36 @@ import javax.swing.*;
 import java.io.File;
 import java.lang.ref.WeakReference;
 import java.util.*;
+import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.project.Project;
+import org.openide.util.WeakListeners;
 
 /**
  * @author David Kaspar, Anton Chechel
  */
-public final class PaletteMap implements ActiveDocumentSupport.Listener, FileChangeListener, DescriptorRegistryListener {
+public final class PaletteMap implements ActiveDocumentSupport.Listener, FileChangeListener, DescriptorRegistryListener, PropertyChangeListener {
     
     private static final PaletteMap instance = new PaletteMap();
     
     private final WeakHashMap<String, WeakReference<PaletteKit>> kitMap = new WeakHashMap<String, WeakReference<PaletteKit>>();
     private String activeProjectID;
     
-    private AtomicBoolean requiresUpdate = new AtomicBoolean(false);
-
     private DescriptorRegistry registeredRegistry;
+    private final AtomicBoolean requiresPaletteUpdate = new AtomicBoolean(false);
+    private boolean isFileListenerRegistered;
+    
+    private final Set<String> registeredProjects = new HashSet<String>();
     
     private PaletteMap() {
         ActiveDocumentSupport.getDefault().addActiveDocumentListener(this);
-        activeDocumentChanged(null, ActiveDocumentSupport.getDefault().getActiveDocument());
-        registerFileSystemListener();
+        //activeDocumentChanged(null, ActiveDocumentSupport.getDefault().getActiveDocument());
     }
     
     public static PaletteMap getInstance() {
@@ -60,41 +73,53 @@ public final class PaletteMap implements ActiveDocumentSupport.Listener, FileCha
         if (activatedDocument == null) {
             return;
         }
-
-        DescriptorRegistry currentRegistry = activatedDocument.getDescriptorRegistry ();
-        if (registeredRegistry != currentRegistry) {
-            if (registeredRegistry != null)
-                registeredRegistry.removeRegistryListener (this);
-            registeredRegistry = currentRegistry;
-            if (registeredRegistry != null)
-                registeredRegistry.addRegistryListener(this);
+        
+        synchronized (this) {
+            if (!isFileListenerRegistered) {
+                registerFileSystemListener();
+                isFileListenerRegistered = true;
+            }
         }
-        updatePalette(activatedDocument);
+        
+        DescriptorRegistry currentRegistry = activatedDocument.getDescriptorRegistry();
+        if (registeredRegistry != currentRegistry) {
+            if (registeredRegistry != null) {
+                registeredRegistry.removeRegistryListener(this);
+            }
+            registeredRegistry = currentRegistry;
+            if (registeredRegistry != null) {
+                registeredRegistry.addRegistryListener(this);
+            }
+        }
+        
+        String oldProjectID;
+        synchronized (this) {
+            oldProjectID = activeProjectID;
+            activeProjectID = activatedDocument.getDocumentInterface().getProjectID();
+        }
+        
+        boolean isProjectIDChanged = !activeProjectID.equals(oldProjectID);
+        if (isProjectIDChanged) {
+            registerClassPathListener(activatedDocument);
+        }
+        
+        updatePalette(activatedDocument, isProjectIDChanged);
     }
     
     public void activeComponentsChanged(Collection<DesignComponent> activeComponents) {
     }
     
     public void descriptorRegistryUpdated() {
-        updatePalette(ActiveDocumentSupport.getDefault().getActiveDocument());
+        updatePalette(ActiveDocumentSupport.getDefault().getActiveDocument(), false);
     }
     
-    private void updatePalette(DesignDocument document) {
-        if (document == null) {
-            return;
-        }
-        
-        String oldProjectID;
-        synchronized (this) {
-            oldProjectID = activeProjectID;
-            activeProjectID = document.getDocumentInterface().getProjectID();
-        }
-        
-        if (!activeProjectID.equals(oldProjectID)) {
+    private void updatePalette(DesignDocument document, boolean isProjectIDChanged) {
+        if (isProjectIDChanged) {
             for (WeakReference<PaletteKit> kitReference : kitMap.values()) {
                 PaletteKit kit = kitReference.get();
-                assert kit != null;
-                kit.clearNodesStateCache();
+                if (kit != null) {
+                    kit.clearNodesStateCache();
+                }
             }
         }
         
@@ -107,8 +132,11 @@ public final class PaletteMap implements ActiveDocumentSupport.Listener, FileCha
             return;
         }
         kit.setActiveDocument(document);
-        kit.update();
-        //kit.refreshPalette();
+        if (isProjectIDChanged) {
+            scheduleUpdateAfteCPScanned(document, kit);
+        } else {
+            kit.update();
+        }
     }
     
     public synchronized PaletteKit getPaletteKitForProjectType(String projectType) {
@@ -120,15 +148,16 @@ public final class PaletteMap implements ActiveDocumentSupport.Listener, FileCha
         }
         return kit;
     }
-
+    
     void checkValidity(String projectType, Lookup lookup) {
         WeakReference<PaletteKit> kitReference = kitMap.get(projectType);
         PaletteKit kit = kitReference != null ? kitReference.get() : null;
         if (kit == null) {
             PaletteItemDataNode node = lookup.lookup(PaletteItemDataNode.class);
-            assert node != null;
-            node.setNeedCheck(false);
-            node.setValid(true);
+            if (node != null) {
+                node.setNeedCheck(false);
+                node.setValid(true);
+            }
         } else {
             kit.checkValidity(lookup);
         }
@@ -139,6 +168,11 @@ public final class PaletteMap implements ActiveDocumentSupport.Listener, FileCha
         if (root != null) {
             schedulePaletteUpdate();
         }
+    }
+    
+    private void checkNeedUpdate(final PropertyChangeEvent evt) {
+        // TODO add conditions for checking CP
+        schedulePaletteUpdate();
     }
     
     public void fileFolderCreated(FileEvent fe) {
@@ -164,22 +198,83 @@ public final class PaletteMap implements ActiveDocumentSupport.Listener, FileCha
     public void fileAttributeChanged(FileAttributeEvent fe) {
     }
     
+    public void propertyChange(PropertyChangeEvent evt) {
+        checkNeedUpdate(evt);
+    }
+    
+    private void scheduleUpdateAfteCPScanned(DesignDocument document, final PaletteKit kit) {
+        final Project project = ProjectUtils.getProject(document);
+        final ClasspathInfo info = getClasspathInfo(project);
+        if (info == null) {
+            return;
+        }
+        try {
+            Future future = JavaSource.create(info).runWhenScanFinished(new CancellableTask<CompilationController>() {
+                public void cancel() {
+                }
+                
+                public void run(CompilationController controller) throws Exception {
+                    kit.update();
+                }
+            }, true);
+        } catch (IOException ex) {
+            Debug.warning(ex);
+        }
+    }
+    
+    private void registerClassPathListener(DesignDocument document) {
+        final Project project = ProjectUtils.getProject(document);
+        final ClasspathInfo info = getClasspathInfo(project);
+        if (info == null) {
+            return;
+        }
+        
+        String projID = document.getDocumentInterface().getProjectID();
+        if (!registeredProjects.contains(projID)) {
+            CancellableTask<CompilationController> ct = new ListenerCancellableTask(info);
+            try {
+                JavaSource.create(info).runUserActionTask(ct, true);
+                registeredProjects.add(projID);
+            } catch (IOException ex) {
+                Debug.warning(ex);
+            }
+        }
+    }
+    
+    private ClasspathInfo getClasspathInfo(Project project) {
+        SourceGroup group = getSourceGroup(project);
+        if (group == null) {
+            return null;
+        }
+        FileObject fileObject = group.getRootFolder();
+        return ClasspathInfo.create(fileObject);
+    }
+    
+    private SourceGroup getSourceGroup(Project project) {
+        SourceGroup[] sourceGroups = org.netbeans.api.project.ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        if (sourceGroups == null || sourceGroups.length < 1) {
+            return null;
+        }
+        return sourceGroups[0];
+    }
+    
     /**
      * Inspired by RepositoryUpdater.registerFileSystemListener
      */
     private void registerFileSystemListener() {
         final File[] roots = File.listRoots();
-        final Set<FileSystem> fss = new HashSet<FileSystem>();
+        final Set<FileSystem> fsSet = new HashSet<FileSystem>();
         for (File root : roots) {
             final FileObject fo = FileUtil.toFileObject(root);
             if (fo == null) {
                 Debug.warning("No MasterFS for file system root: " + root.getAbsolutePath()); // NOI18N
             } else {
                 try {
-                    final FileSystem fs = fo.getFileSystem();
-                    if (!fss.contains(fs)) {
-                        fs.addFileChangeListener(this);
-                        fss.add(fs);
+                    final FileSystem fileSystem = fo.getFileSystem();
+                    if (!fsSet.contains(fileSystem)) {
+                        FileChangeListener fileChangeListener = WeakListeners.create(FileChangeListener.class, this, fileSystem);
+                        fileSystem.addFileChangeListener(fileChangeListener);
+                        fsSet.add(fileSystem);
                     }
                 } catch (FileStateInvalidException e) {
                     Debug.warning(e);
@@ -209,13 +304,13 @@ public final class PaletteMap implements ActiveDocumentSupport.Listener, FileCha
     }
     
     private void schedulePaletteUpdate() {
-        if (requiresUpdate.getAndSet(true)) {
+        if (requiresPaletteUpdate.getAndSet(true)) {
             return;
         }
         
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                while (requiresUpdate.getAndSet(false)) {
+                while (requiresPaletteUpdate.getAndSet(false)) {
                     for (WeakReference<PaletteKit> kitReference : kitMap.values()) {
                         PaletteKit kit = kitReference.get();
                         if (kit == null) {
@@ -230,4 +325,20 @@ public final class PaletteMap implements ActiveDocumentSupport.Listener, FileCha
         });
     }
     
+    private final class ListenerCancellableTask implements CancellableTask<CompilationController> {
+        private ClasspathInfo info;
+        
+        public ListenerCancellableTask(ClasspathInfo info) {
+            this.info = info;
+        }
+        
+        public void cancel() {
+        }
+        
+        public void run(CompilationController controller) throws Exception {
+            ClassPath cp = info.getClassPath(ClasspathInfo.PathKind.BOOT);
+            PropertyChangeListener wcl = WeakListeners.propertyChange(PaletteMap.this, cp);
+            cp.addPropertyChangeListener(wcl);
+        }
+    }
 }

@@ -122,9 +122,10 @@ public class PaletteKit implements Runnable {
     private void updateCore(List<ComponentProducer> producers, String projectType) {
         Collection<? extends PaletteProvider> providers = Lookup.getDefault().lookupAll(PaletteProvider.class);
         for (PaletteProvider provider : providers) {
-            assert provider != null;
-            provider.initPaletteCategories(projectType, rootFolder);
-            initPalette(producers);
+            if (provider != null) {
+                provider.initPaletteCategories(projectType, rootFolder);
+                initPalette(producers);
+            }
         }
     }
     
@@ -162,8 +163,13 @@ public class PaletteKit implements Runnable {
                 }
             }
             
-            String path = catFO.getPath() + '/' + producerID + '.' + PaletteItemDataLoader.EXTENSION; // NOI18N
-            if (fs.findResource(path) == null) {
+            StringBuffer path = new StringBuffer();
+            path.append(catFO.getPath());
+            path.append('/'); // NOI18N
+            path.append(producerID);
+            path.append('.'); // NOI18N
+            path.append(PaletteItemDataLoader.EXTENSION); // NOI18N
+            if (fs.findResource(path.toString()) == null) {
                 try {
                     FileObject itemFO = catFO.createData(producerID, PaletteItemDataLoader.EXTENSION);
                     
@@ -255,6 +261,7 @@ public class PaletteKit implements Runnable {
             }
             checkValidityCore(validationQueue.remove());
         }
+        refreshPalette();
     }
     
     private void checkValidityCore(Lookup lookup) {
@@ -343,6 +350,7 @@ public class PaletteKit implements Runnable {
             return new AbstractAction() {
                 public void actionPerformed(ActionEvent evt) {
                     update();
+//                    refreshPalette();
                 }
             };
         }
@@ -354,7 +362,8 @@ public class PaletteKit implements Runnable {
         }
         
         public boolean isValidItem(Lookup lkp) {
-            return true;
+            PaletteItemDataNode node = (PaletteItemDataNode) lkp.lookup(PaletteItemDataNode.class);
+            return node != null ? node.isValid() : true;
         }
     }
     
