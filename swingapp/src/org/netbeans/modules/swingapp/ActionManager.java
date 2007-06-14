@@ -405,6 +405,10 @@ public class ActionManager {
                 buf.append("\n"); // NOI18N
             }
             doc.insertString(pos, buf.toString(), null);
+            
+            //generate selected and enabled properties if they don't already exist
+            generateProperties(action, sourceFile);
+            
             return true;
         } catch (Exception ex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
@@ -770,6 +774,10 @@ public class ActionManager {
             int endPos = positions[1];
             doc.remove(startPos, endPos-startPos);
             doc.insertString(startPos, getAnnotationCode(action), null);
+            
+            //generate selected and enabled properties if they don't already exist
+            generateProperties(action, sourceFile);
+            
         } catch (Exception ex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         }
@@ -863,7 +871,108 @@ public class ActionManager {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         } */
     }
+    
+    private void generateProperties(ProxyAction action, FileObject sourceFile) {
+        if(action.isAnnotationAttributeSet("enabledProperty")){
+            String enabledProperty = (String) action.getAnnotationAttributeValue("enabledProperty");
+            if(!findBooleanProperty(enabledProperty, sourceFile)) {
+                generatePropertyGetterAndSetter(enabledProperty,sourceFile);
+            }
+        }
+        if(action.isAnnotationAttributeSet("selectedProperty")){
+            String enabledProperty = (String) action.getAnnotationAttributeValue("selectedProperty");
+            if(!findBooleanProperty(enabledProperty, sourceFile)) {
+                generatePropertyGetterAndSetter(enabledProperty,sourceFile);
+            }
+        }
+    }
+    
+    private static boolean findBooleanProperty(String enabledProperty, FileObject sourceFile) {
+        p("enabled prop = " + enabledProperty);
+        List<String> props = findBooleanProperties(sourceFile);
+        boolean found = false;
+        for(String prop : props) {
+            p("prop = " + prop + " vs " + enabledProperty);
+            if(prop.equals(enabledProperty)) {
+                return true;
+            }
+        }
+        p("found = " + found);
+        return false;
+    }
 
+    //this code should switch to the propery java code generation infrastructure in the future
+    private static boolean generatePropertyGetterAndSetter(String propertyName, FileObject sourceFile) {
+        p("generating a property for: " + propertyName);
+        try {
+            DataObject dobj = DataObject.find(sourceFile);
+            EditorCookie ec = (EditorCookie)dobj.getCookie(EditorCookie.class);
+            if (ec == null) {
+                return false;
+            }
+            if(ec.getDocument() == null) {
+                ec.openDocument();
+            }
+            //ec.open(); //josh: we fail if the document isn't opened yet. is there a better way to do this?
+            Document doc = ec.getDocument();
+            int pos;
+            if (ec instanceof FormEditorSupport) {
+                // in form's source add before the variables section
+                doc = ec.getDocument();
+                pos = ((FormEditorSupport)ec).getVariablesSection().getStartPosition().getOffset();
+            } else {
+                // in general java source add at the end of the class
+                Integer result = (Integer) new ClassTask(sourceFile) {
+                    Object run(CompilationController controller, ClassTree classTree, TypeElement classElement) {
+                        return (int) controller.getTrees().getSourcePositions().getEndPosition(
+                                controller.getCompilationUnit(), classTree);
+                    }
+                }.execute();
+                javax.swing.text.Element docRoot = doc.getDefaultRootElement();
+                pos = docRoot.getElement(docRoot.getElementIndex(result.intValue()))
+                        .getStartOffset();
+            }
+            
+            String code = getPropertyGetterAndSetterBodyText(propertyName);
+            doc.insertString(pos, code.toString(), null);
+            return true;
+        } catch (Exception ex) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            return false;
+        }        
+    }
+    
+    
+    /*
+    private boolean prop = false;
+    private boolean isProp() {
+        return prop;
+    }
+    private void setProp(boolean b) {
+        boolean old = isProp();
+        this.prop = b;
+        firePropertyChange("prop",old,isProp());
+    }*/
+    
+    private static String getPropertyGetterAndSetterBodyText(String prop) {
+        StringBuilder buf = new StringBuilder();
+        String indent = "    "; // NOI18N
+        String getterName = "is"+prop.substring(0,1).toUpperCase() + prop.substring(1); // NOI18N
+        String setterName = "set"+prop.substring(0,1).toUpperCase() + prop.substring(1); // NOI18N
+        
+        buf.append(indent+"private boolean " + prop + " = false;\n"); // NOI18N
+        buf.append(indent+"public boolean " + getterName + "() {\n"); // NOI18N
+        buf.append(indent+indent+"return " + prop + ";\n"); // NOI18N
+        buf.append(indent+"}\n"); // NOI18N
+        buf.append("\n"); // NOI18N
+        buf.append(indent+"public void "+setterName+"(boolean b) {\n"); // NOI18N
+        buf.append(indent+indent+"boolean old = " + getterName + "();\n"); // NOI18N
+        buf.append(indent+indent+"this."+prop + " = b;\n"); // NOI18N
+        buf.append(indent+indent+"firePropertyChange(\""+prop+"\", old, "+getterName+"());\n"); // NOI18N
+        buf.append(indent+"}\n\n"); // NOI18N
+        return buf.toString();
+    }
+    
     private static String getCommentedBodyText(String bodyText) {
         bodyText = getMethodBodyWithoutBraces(bodyText);
         StringBuilder buf = new StringBuilder();

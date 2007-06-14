@@ -173,11 +173,6 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel {
             this.setMode(Mode.Form);
         }
         
-        List<String> strings = ActionManager.findBooleanProperties(sourceFile);
-        enabledCombo.setModel(new DefaultComboBoxModel(strings.toArray()));
-        selectedCombo.setModel(new DefaultComboBoxModel(strings.toArray()));
-        enabledCombo.setEnabled(!strings.isEmpty());
-        selectedCombo.setEnabled(!strings.isEmpty());
         enabledCombo.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 enabledTextfield.setText((String)enabledCombo.getSelectedItem());
@@ -185,10 +180,30 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel {
         });
         selectedCombo.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                selectedTextfield.setText((String)enabledCombo.getSelectedItem());
+                selectedTextfield.setText((String)selectedCombo.getSelectedItem());
             }
         });
         
+        updatePropertyCombos(null);
+    }
+    
+    /* update the selected and enabled combos based on the class of the action
+     * passed in. If the action is null, then use this sourcefile provided to this
+     * ActionPropertyEditorPanel. If that is null then the combos will be disabled.
+     * The combos will also be disabled if there are no boolean properties.
+     */
+    private void updatePropertyCombos(ProxyAction act) {
+        List<String> strings = new ArrayList<String>();
+        if(act != null) {
+            FileObject classFile = ActionManager.getActionManager(sourceFile).getFileForClass(act.getClassname());
+            strings = ActionManager.findBooleanProperties(classFile);
+        } else if(sourceFile != null) {
+            strings = ActionManager.findBooleanProperties(sourceFile);
+        }
+        enabledCombo.setModel(new DefaultComboBoxModel(strings.toArray()));
+        selectedCombo.setModel(new DefaultComboBoxModel(strings.toArray()));
+        enabledCombo.setEnabled(!strings.isEmpty());
+        selectedCombo.setEnabled(!strings.isEmpty());
     }
     
     
@@ -254,6 +269,7 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel {
             selectedTextfield.setEnabled(true);
             enabledTextfield.setEnabled(true);
             backgroundTaskCheckbox.setEnabled(true);
+            updatePropertyCombos(act);
         }
         
         setFromActionProperty(textField,act,Action.NAME);
@@ -1126,7 +1142,9 @@ private void backgroundTaskCheckboxActionPerformed(java.awt.event.ActionEvent ev
         iconButtonLarge.setEnabled(true);
         iconButtonSmall.setEnabled(true);
         selectedTextfield.setEnabled(true);
+        selectedTextfield.setText("");
         enabledTextfield.setEnabled(true);
+        enabledTextfield.setText("");
         actionsCombo.setEnabled(false);
         textField.setText(""); // NOI18N
         acceleratorListener.clearFields();
