@@ -27,13 +27,13 @@ import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import org.netbeans.editor.BaseDocument;
-import org.openide.ErrorManager;
 import org.openide.loaders.DataObject;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.PositionBounds;
 import javax.swing.text.Position.Bias;
 import org.openide.nodes.Node;
 import org.openide.text.PositionRef;
+import org.openide.util.Exceptions;
 import org.openide.util.Parameters;
 
 /**
@@ -99,7 +99,7 @@ public class PositionBoundsResolver {
                     return new PositionBounds(start, end);
                 }
             } catch (BadLocationException ex) {
-                ErrorManager.getDefault().notify(ex);
+                Exceptions.printStackTrace(ex);
             }
         }
         return getDefaultPositionBounds();
@@ -148,15 +148,15 @@ public class PositionBoundsResolver {
                 result.remove(0, result.getLength());
                 result.insertString(0, text, null);
             } catch (InterruptedException ex) {
-                ErrorManager.getDefault().notify(ex);
+                Exceptions.printStackTrace(ex);
             } catch (InvocationTargetException ex) {
-                ErrorManager.getDefault().notify(ex);
+                Exceptions.printStackTrace(ex);
             } catch (FileNotFoundException ex) {
-                ErrorManager.getDefault().notify(ex);
+                Exceptions.printStackTrace(ex);
             } catch (IOException ex) {
-                ErrorManager.getDefault().notify(ex);
+                Exceptions.printStackTrace(ex);
             } catch (BadLocationException ex) {
-                ErrorManager.getDefault().notify(ex);
+                Exceptions.printStackTrace(ex);
             }
         }
         return result;
@@ -179,16 +179,16 @@ public class PositionBoundsResolver {
                 line = reader.readLine();
             }
         } catch (UnsupportedEncodingException ex) {
-            ErrorManager.getDefault().notify(ex);
+            Exceptions.printStackTrace(ex);
         } catch (IOException ex) {
-            ErrorManager.getDefault().notify(ex);
+            Exceptions.printStackTrace(ex);
         } finally {
             try {
                 if (reader != null){
                     reader.close();
                 }
             } catch (IOException ex) {
-                ErrorManager.getDefault().notify(ex);
+                Exceptions.printStackTrace(ex);
             }
         }
         return result.toString();
