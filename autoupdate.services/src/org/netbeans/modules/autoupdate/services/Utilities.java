@@ -449,7 +449,7 @@ public class Utilities {
             break;
         case CUSTOM_HANDLED_COMPONENT : // XXX: CUSTOM_HANDLED_COMPONENT should support UpdateItem<->UpdateItem dependencies
             mInfos = Collections.emptyList ();
-            err.log (Level.INFO, "CUSTOM_HANDLED_COMPONENT should support UpdateItem<->UpdateItem dependencies.");
+            getLogger ().log (Level.INFO, "CUSTOM_HANDLED_COMPONENT should support UpdateItem<->UpdateItem dependencies.");
             break;
         default:
             assert false : "Unsupported for " + element + "[impl: " + el.getClass() + "]";
