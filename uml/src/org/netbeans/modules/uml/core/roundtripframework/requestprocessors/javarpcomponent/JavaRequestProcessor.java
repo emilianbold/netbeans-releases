@@ -26,10 +26,8 @@ import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure
 import java.util.Locale;
 import org.netbeans.modules.uml.common.generics.ETPairT;
 import org.netbeans.modules.uml.core.coreapplication.ICoreProduct;
-import org.netbeans.modules.uml.core.coreapplication.IPreferenceManager2;
 import org.netbeans.modules.uml.core.eventframework.IBatchEventContext;
 import org.netbeans.modules.uml.core.eventframework.IEventContext;
-import org.netbeans.modules.uml.core.metamodel.core.constructs.IClass;
 import org.netbeans.modules.uml.core.metamodel.core.constructs.IDataType;
 import org.netbeans.modules.uml.core.metamodel.core.constructs.IEnumerationLiteral;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
@@ -79,6 +77,7 @@ import org.netbeans.modules.uml.ui.support.SimpleQuestionDialogKind;
 import org.netbeans.modules.uml.ui.support.SimpleQuestionDialogResultKind;
 import org.netbeans.modules.uml.ui.support.commondialogs.IQuestionDialog;
 import org.netbeans.modules.uml.ui.swing.commondialogs.SwingQuestionDialogImpl;
+import org.netbeans.modules.uml.util.DummyCorePreference;
 import org.openide.util.NbPreferences;
 
 /**
@@ -1322,7 +1321,7 @@ public class JavaRequestProcessor implements IJavaRequestProcessor
                 {
                     
                     String str = 
-                            NbPreferences.forModule (JavaRequestProcessor.class).get ("UML_ShowMe_Dont_Show_Filter_Warning_Dialog", "PSK_ASK") ;
+                            NbPreferences.forModule (DummyCorePreference.class).get ("UML_ShowMe_Dont_Show_Filter_Warning_Dialog", "PSK_ASK") ;
                     
                     if (str != null && str.equals("PSK_NEVER"))
                     {

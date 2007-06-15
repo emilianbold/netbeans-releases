@@ -31,7 +31,7 @@ import org.netbeans.modules.uml.ui.swing.projecttree.JFilterDialog;
 import org.netbeans.modules.uml.project.UMLProjectModule;
 import org.netbeans.modules.uml.project.ui.nodes.ModelRootNodeCookie;
 import javax.swing.tree.DefaultTreeModel;
-import org.netbeans.modules.uml.propertysupport.options.panels.ShowMeDialogsListPanel;
+import org.netbeans.modules.uml.util.DummyCorePreference;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -157,7 +157,7 @@ public class FilterAction extends CookieAction
         
         //Kris Richards - This is a "show me dialog" preference. Need to get the 
         // preference value for the propertysupport module.
-        String showMe = NbPreferences.forModule(ShowMeDialogsListPanel.class).get("UML_ShowMe_Dont_Show_Filter_Warning_Dialog", "PSK_ASK");
+        String showMe = NbPreferences.forModule(DummyCorePreference.class).get("UML_ShowMe_Dont_Show_Filter_Warning_Dialog", "PSK_ASK");
         
         if (showMe.equals("PSK_ALWAYS"))
             return true ;

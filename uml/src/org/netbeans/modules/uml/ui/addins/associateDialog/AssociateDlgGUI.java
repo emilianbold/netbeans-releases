@@ -57,6 +57,7 @@ import org.netbeans.modules.uml.core.metamodel.infrastructure.RelationFactory;
 import org.netbeans.modules.uml.core.metamodel.structure.IProject;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
 import org.netbeans.modules.uml.ui.support.ProductHelper;
+import org.netbeans.modules.uml.util.DummyCorePreference;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
@@ -634,7 +635,7 @@ public class AssociateDlgGUI extends JCenterDialog implements IAssociateDlgGUI
         Object obj = evt.getSource();
         if (obj instanceof JCheckBox)
         {
-            Preferences prefs = NbPreferences.forModule (AssociateDlgGUI.class) ;
+            Preferences prefs = NbPreferences.forModule (DummyCorePreference.class) ;
             JCheckBox box = (JCheckBox)obj;
             boolean checkboxState = box.isSelected();
             if (checkboxState)

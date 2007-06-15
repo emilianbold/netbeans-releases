@@ -21,6 +21,7 @@ package org.netbeans.modules.uml.propertysupport.options.panels;
 
 import java.util.prefs.Preferences;
 import javax.swing.JComboBox;
+import org.netbeans.modules.uml.util.DummyCorePreference;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 
@@ -44,7 +45,7 @@ public class ShowMeDialogsListPanel extends javax.swing.JPanel {
     public void load() {
         
         String s = "";
-        Preferences prefs = NbPreferences.forModule(ShowMeDialogsListPanel.class);
+        Preferences prefs = NbPreferences.forModule(DummyCorePreference.class);
        
         s = prefs.get("UML_ShowMe_Allow_Lengthy_Searches", PSK_ASK);
         allowLengthySearchesCB.setSelectedItem(s);
@@ -81,7 +82,7 @@ public class ShowMeDialogsListPanel extends javax.swing.JPanel {
     
     public void store() {
         
-        Preferences prefs = NbPreferences.forModule(ShowMeDialogsListPanel.class);
+        Preferences prefs = NbPreferences.forModule(DummyCorePreference.class);
         int index = -1;
         
         index = allowLengthySearchesCB.getSelectedIndex() ;

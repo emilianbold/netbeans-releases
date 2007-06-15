@@ -44,10 +44,10 @@ import org.netbeans.modules.uml.integration.finddialog.DefaultFindDialogResource
 import org.netbeans.modules.uml.integration.finddialog.FindController;
 import org.netbeans.modules.uml.integration.finddialog.FindResults;
 import org.netbeans.modules.uml.integration.finddialog.FindUtilities;
-import org.netbeans.modules.uml.propertysupport.options.panels.ShowMeDialogsListPanel;
 import org.netbeans.modules.uml.ui.support.ProductHelper;
 import org.netbeans.modules.uml.ui.swing.commondialogs.JCenterDialog;
 import org.netbeans.modules.uml.ui.swing.commondialogs.SwingErrorDialog;
+import org.netbeans.modules.uml.util.DummyCorePreference;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbPreferences;
 
@@ -723,7 +723,7 @@ public class ReplaceDialogUI extends JCenterDialog
         Object obj = evt.getSource();
         if (obj instanceof JCheckBox)
         {
-            Preferences prefs = NbPreferences.forModule (ShowMeDialogsListPanel.class) ;
+            Preferences prefs = NbPreferences.forModule (DummyCorePreference.class) ;
             JCheckBox box = (JCheckBox)obj;
             boolean checkboxState = box.isSelected();
             if (checkboxState)

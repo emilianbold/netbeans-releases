@@ -41,11 +41,10 @@ import org.netbeans.modules.uml.core.support.umlutils.ETList;
 import org.netbeans.modules.uml.integration.finddialog.FindController;
 import org.netbeans.modules.uml.integration.finddialog.FindResults;
 import org.netbeans.modules.uml.integration.finddialog.FindUtilities;
-import org.netbeans.modules.uml.integration.options.FindDialogOptionsForm;
-import org.netbeans.modules.uml.ui.support.ProductHelper;
 import org.netbeans.modules.uml.ui.support.finddialog.DefaultFindDialogResource;
 import org.netbeans.modules.uml.ui.swing.commondialogs.JCenterDialog;
 import org.netbeans.modules.uml.ui.swing.commondialogs.SwingErrorDialog;
+import org.netbeans.modules.uml.util.DummyCorePreference;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
@@ -911,7 +910,7 @@ public class FindDialogUI extends JCenterDialog
         // the case sensitivity option. It is no longer driven off the "LongSearch"
         // property.
         //return "PSK_YES".equals(ProductHelper.getPreferenceManager().getPreferenceValue("FindDialog", "CaseSensitivity"));
-        return NbPreferences.forModule (FindDialogOptionsForm.class).getBoolean ("UML_Case_Sensitivity", true);
+        return NbPreferences.forModule (DummyCorePreference.class).getBoolean ("UML_Case_Sensitivity", true);
         
     }
     
@@ -919,7 +918,7 @@ public class FindDialogUI extends JCenterDialog
         //return !"PSK_NEVER".equals(ProductHelper.getPreferenceManager().getPreferenceValue("FindDialog", "LongSearch"));    
         
         //options are "ASK ME", "ALWAYS", and "NEVER"
-        String status = NbPreferences.forModule (FindDialogOptionsForm.class).get ("UML_ShowMe_Allow_Lengthy_Searches", "ALWAYS");
+        String status = NbPreferences.forModule (DummyCorePreference.class).get ("UML_ShowMe_Allow_Lengthy_Searches", "ALWAYS");
         return ! status.equals ("PSK_NEVER") ;
     }
     
