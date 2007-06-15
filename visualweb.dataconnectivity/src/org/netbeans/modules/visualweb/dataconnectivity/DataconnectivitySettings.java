@@ -33,8 +33,9 @@ public class DataconnectivitySettings extends SystemOption {
     /** create on page by default */
     public static final String PROP_MAKE_IN_SESSION = "1makeInSession"; // NOI18N
     public static final String PROP_CHECK_ROWSET = "2checkRowset"; // NOI18N
-    public static final String PROP_DATAPROVIDER = "3dataprovider"; // NOI18N
-    public static final String PROP_ROWSET = "4rowset"; // NOI18N
+    public static final String PROP_PROMPT_FOR_NAME = "3checkRowset"; // NOI18N
+    public static final String PROP_DATAPROVIDER = "4dataprovider"; // NOI18N
+    public static final String PROP_ROWSET = "5rowset"; // NOI18N
 
     // Default instance of this system option, for the convenience of associated classes.
     public static DataconnectivitySettings getInstance() {
@@ -48,6 +49,7 @@ public class DataconnectivitySettings extends SystemOption {
 
         setMakeInSession( true ) ;  // EA default
         setCheckRowSetProp(true) ; // this checking is new in thresher FCS.
+	setPromptForName(false) ;
         setRowSetSuffixProp("RowSet") ; //NOI18N
         setDataProviderSuffixProp("DataProvider") ; // NOI18N
     }
@@ -104,6 +106,13 @@ public class DataconnectivitySettings extends SystemOption {
         putProperty(PROP_CHECK_ROWSET, checkStuff ? Boolean.TRUE : Boolean.FALSE, true);
     }
 
+    public boolean getPromptForName() {
+        return ((Boolean)getProperty(PROP_PROMPT_FOR_NAME)).booleanValue();
+    }
+
+    public void setPromptForName(boolean prompt) {
+        putProperty(PROP_PROMPT_FOR_NAME, prompt ? Boolean.TRUE : Boolean.FALSE, true);
+    }
 
     public static boolean canDropAnywhere() {
         return ! DataconnectivitySettings.getInstance().getMakeInSession() ;
@@ -113,5 +122,8 @@ public class DataconnectivitySettings extends SystemOption {
         return DataconnectivitySettings.getInstance().getCheckRowSetProp() ;
     }
 
+    public static boolean promptForName() {
+        return DataconnectivitySettings.getInstance().getPromptForName() ;
+    }
 
 }

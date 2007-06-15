@@ -44,6 +44,8 @@ public class DataconnectivitySettingsBeanInfo extends SimpleBeanInfo {
                             "getMakeInSession", "setMakeInSession"), // NOI18N
                         new PropertyDescriptor(DataconnectivitySettings.PROP_CHECK_ROWSET, DataconnectivitySettings.class,
                             "getCheckRowSetProp", "setCheckRowSetProp"), // NOI18N
+                        new PropertyDescriptor(DataconnectivitySettings.PROP_PROMPT_FOR_NAME, DataconnectivitySettings.class,
+                            "getPromptForName", "setPromptForName"), // NOI18N
                         new PropertyDescriptor(DataconnectivitySettings.PROP_DATAPROVIDER, DataconnectivitySettings.class,
                             "getDataProviderSuffixProp", "setDataProviderSuffixProp"), // NOI18N
                         new PropertyDescriptor(DataconnectivitySettings.PROP_ROWSET, DataconnectivitySettings.class,
@@ -56,11 +58,14 @@ public class DataconnectivitySettingsBeanInfo extends SimpleBeanInfo {
                 desc[1].setDisplayName(NbBundle.getMessage(DataconnectivitySettings.class, "PROP_CHECK_ROWSET"));
                 desc[1].setShortDescription(NbBundle.getMessage(DataconnectivitySettings.class, "PROP_CHECK_ROWSET"));
 
-                desc[2].setDisplayName(NbBundle.getMessage(DataconnectivitySettings.class, "PROP_DATAPROVIDER"));
-                desc[2].setShortDescription(NbBundle.getMessage(DataconnectivitySettings.class, "PROP_DATAPROVIDER"));
+                desc[2].setDisplayName(NbBundle.getMessage(DataconnectivitySettings.class, "PROP_PROMPT_FOR_NAME"));
+                desc[2].setShortDescription(NbBundle.getMessage(DataconnectivitySettings.class, "PROP_PROMPT_FOR_NAME"));
 
-                desc[3].setDisplayName(NbBundle.getMessage(DataconnectivitySettings.class, "PROP_ROWSET"));
-                desc[3].setShortDescription(NbBundle.getMessage(DataconnectivitySettings.class, "PROP_ROWSET"));
+                desc[3].setDisplayName(NbBundle.getMessage(DataconnectivitySettings.class, "PROP_DATAPROVIDER"));
+                desc[3].setShortDescription(NbBundle.getMessage(DataconnectivitySettings.class, "PROP_DATAPROVIDER"));
+
+                desc[4].setDisplayName(NbBundle.getMessage(DataconnectivitySettings.class, "PROP_ROWSET"));
+                desc[4].setShortDescription(NbBundle.getMessage(DataconnectivitySettings.class, "PROP_ROWSET"));
 
             } catch (IntrospectionException ex) {
                 ErrorManager.getDefault().notify(ex);

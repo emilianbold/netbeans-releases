@@ -27,24 +27,26 @@
 
 package org.netbeans.modules.visualweb.dataconnectivity.model;
 
+import org.netbeans.modules.visualweb.dataconnectivity.DataconnectivitySettings;
+
 import org.netbeans.modules.visualweb.api.designerapi.DesignTimeTransferDataCreator;
 import org.netbeans.modules.visualweb.dataconnectivity.explorer.RowSetBeanCreateInfoSet;
 
-import org.netbeans.modules.visualweb.dataconnectivity.ui.JdbcDriverConfigUtil;
 import com.sun.rave.designtime.DesignBean;
 import com.sun.rave.designtime.DisplayItem;
 import com.sun.rave.designtime.Result;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
-import java.net.URISyntaxException;
-import java.net.URL;
 import java.sql.SQLException;
-import javax.naming.NamingException;
+
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.modules.db.api.explorer.DatabaseMetaDataTransfer;
-import org.netbeans.modules.visualweb.dataconnectivity.sql.DesignTimeDataSource;
-import org.netbeans.modules.visualweb.dataconnectivity.sql.DesignTimeDataSourceHelper;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 import org.openide.ErrorManager;
 
 /**
@@ -61,7 +63,7 @@ public class DatasourceTransferManager implements DesignTimeTransferDataCreator{
         try {
             DataFlavor tableFlavor = DatabaseMetaDataTransfer.TABLE_FLAVOR;
             DataFlavor viewFlavor = DatabaseMetaDataTransfer.VIEW_FLAVOR;
-
+            
             if (transferable.isDataFlavorSupported(tableFlavor)){
                 transferData = transferable.getTransferData(tableFlavor);
                 if(transferData != null){
@@ -128,14 +130,14 @@ public class DatasourceTransferManager implements DesignTimeTransferDataCreator{
                 sqle.printStackTrace();
             }
             
-            String dsName = "dataSource";                        
+            String dsName = "dataSource";
             String driverClassName = dbConnection.getDriverClass();
             String url = dbConnection.getDatabaseURL();
             String validationQuery = null;
             String username = dbConnection.getUser();
             String password = dbConnection.getPassword();
             String schema = dbConnection.getSchema();
-                       
+            
             if (schema.equals("")) {
                 if (databaseProductName.equals("MySQL") && url.lastIndexOf("?") == -1)
                     dsName = url.substring(url.lastIndexOf("/") + 1, url.length()) + "_" + databaseProductName;
@@ -144,20 +146,41 @@ public class DatasourceTransferManager implements DesignTimeTransferDataCreator{
                 } else
                     dsName = getTableName() + "_" + databaseProductName;
             } else
-                dsName = dbConnection.getSchema() + "_" + databaseProductName; 
+                dsName = dbConnection.getSchema() + "_" + databaseProductName;
+            
+            if (DataconnectivitySettings.promptForName()) {
+                JndiNamePanel jndiPanel = new JndiNamePanel(dsName);
+                final DialogDescriptor dialogDescriptor = new DialogDescriptor(
+                        jndiPanel,
+                        NbBundle.getMessage(JndiNamePanel.class, "LBL_SpecifyJndiName"), //NOI18N
+                        true,
+                        DialogDescriptor.OK_CANCEL_OPTION,
+                        DialogDescriptor.OK_OPTION,
+                        DialogDescriptor.DEFAULT_ALIGN,
+                        HelpCtx.DEFAULT_HELP,
+                        null);
+                
+                // initial invalidation
+                dialogDescriptor.setValid(true);
+                // show and eventually save
+                Object option = DialogDisplayer.getDefault().notify(dialogDescriptor);
+                if (option == NotifyDescriptor.OK_OPTION) {
+                    dsName = jndiPanel.getJndiName();
+                }
+            }
             
             DataSourceInfo dataSourceInfo = new DataSourceInfo(dsName, driverClassName, url, validationQuery, username, password);
-                                    
+            
             // Logic to reuse the datasource exist in the project. No necessary to create new data source
-            ProjectDataSourceManager projectDataSourceManager = new ProjectDataSourceManager(designBean); 
+            ProjectDataSourceManager projectDataSourceManager = new ProjectDataSourceManager(designBean);
             
             // Add the data sources to the project
             projectDataSourceManager.addDataSource(dataSourceInfo);
-                                    
-            // create the rowset 
+            
+            // create the rowset
             setDataSourceInfo(dataSourceInfo);
             return super.beansCreatedSetup(designBeans);
-        }        
+        }
         
         private String getUniqueName(String name){
             if(name.indexOf('_') != -1){
