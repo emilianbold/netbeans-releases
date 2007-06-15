@@ -105,6 +105,14 @@ public abstract class PlaceHolder {
     }
     
     
+    public void copyDrop(Pattern copiedDraggedPattern) {
+        if (copiedDraggedPattern == null) {
+            return;
+        }
+        draggedPattern = copiedDraggedPattern;
+        drop();
+    }
+    
     public abstract void drop();
     
     

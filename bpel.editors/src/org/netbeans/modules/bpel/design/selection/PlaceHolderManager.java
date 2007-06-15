@@ -133,6 +133,9 @@ public class PlaceHolderManager implements DnDTool {
         }
     }
     
+    public List<PlaceHolder> getPlaceHolders() {
+        return placeHolders;
+    }
     
     public void move(FPoint mp) {
         if (isEmpty()) { return; }

@@ -53,7 +53,6 @@ import javax.swing.JScrollPane;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
-
 import org.netbeans.modules.bpel.design.decoration.DecorationManager;
 import org.netbeans.modules.bpel.design.decoration.components.DiagramButton;
 import org.netbeans.modules.bpel.design.decoration.providers.CollapseExpandDecorationProvider;
@@ -108,6 +107,10 @@ import org.netbeans.modules.bpel.design.decoration.providers.SelectionDecoration
 import org.netbeans.modules.bpel.design.decoration.providers.ValidationDecorationProvider;
 import org.netbeans.modules.bpel.design.geometry.FDimension;
 import org.netbeans.modules.bpel.design.geometry.FPoint;
+import org.netbeans.modules.bpel.design.phmode.PlaceHolderIterator;
+import org.netbeans.modules.bpel.design.phmode.PlaceHolderIteratorImpl;
+import org.netbeans.modules.bpel.design.phmode.PlaceHolderSelectionModel;
+import org.netbeans.modules.bpel.design.selection.PlaceHolder;
 import org.netbeans.modules.soa.ui.nodes.NodeFactory;
 import org.netbeans.modules.bpel.editors.api.ExternalBpelEditorTopComponentListener;
 import org.netbeans.modules.bpel.editors.multiview.ThumbScrollPane;
@@ -153,6 +156,8 @@ public class DesignView extends JPanel implements
     private DnDHandler dndHandler;
     private GhostSelection ghost;
     private PlaceHolderManager placeHolderManager;
+    private PlaceHolderSelectionModel phSelectionModel;
+    private CopyPasteHandler copyPasteHandler;
     private FlowlinkTool flowLinkTool;
     private NameEditor nameEditor;
     private ErrorPanel errorPanel;
@@ -175,6 +180,8 @@ public class DesignView extends JPanel implements
     private NavigationTools navigationTools;
     
     private RightStripe rightStripe;
+    
+    private DesignViewMode designViewMode = DesignViewMode.DESIGN;
     
     public DesignView(Lookup lookup) {
         super(new DesignViewLayout());
@@ -201,6 +208,8 @@ public class DesignView extends JPanel implements
         ghost = new GhostSelection(this);
         flowLinkTool = new FlowlinkTool(this);
         placeHolderManager = new PlaceHolderManager(this);
+        copyPasteHandler = new CopyPasteHandler(this);
+        phSelectionModel = new PlaceHolderSelectionModel(placeHolderManager);
         
         nameEditor = new NameEditor(this);
         
@@ -213,7 +222,7 @@ public class DesignView extends JPanel implements
         errorPanel = new ErrorPanel(this);
         
         decorationManager = new DecorationManager(this);
-        
+
         loadDecorationProviders();
         
         reloadModel();
@@ -417,8 +426,9 @@ public class DesignView extends JPanel implements
         return selectionModel;
     }
     
-
-    
+    public PlaceHolderSelectionModel getPhSelectionModel() {
+        return phSelectionModel;
+    }
     
     public GhostSelection getGhost() {
         return ghost;
@@ -441,6 +451,10 @@ public class DesignView extends JPanel implements
     public PlaceHolderManager getPlaceHolderManager() {
         return placeHolderManager;
     }
+    
+    public CopyPasteHandler getCopyPasteHandler() {
+        return copyPasteHandler;
+    } 
     
     
     public DecorationManager getDecorationManager() {
@@ -566,6 +580,10 @@ public class DesignView extends JPanel implements
         im1.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, KeyEvent.SHIFT_DOWN_MASK), "collapse-current-pattern"); // NOI18N
         im1.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "expand-current-pattern"); // NOI18N
         im1.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, KeyEvent.ALT_DOWN_MASK), "expand-all-patterns"); // NOI18N
+
+        im1.put(KeyStroke.getKeyStroke(KeyEvent.VK_C, KeyEvent.CTRL_DOWN_MASK), "copy-pattern"); // NOI18N
+        im1.put(KeyStroke.getKeyStroke(KeyEvent.VK_V, KeyEvent.CTRL_DOWN_MASK), "paste-pattern"); // NOI18N
+        im1.put(KeyStroke.getKeyStroke(KeyEvent.VK_X, KeyEvent.CTRL_DOWN_MASK), "cut-pattern"); // NOI18N
         
         im2.put(KeyStroke.getKeyStroke(KeyEvent.VK_F2, 0), "rename-something"); // NOI18N
         im2.put(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0), "delete-something"); // NOI18N
@@ -594,6 +612,10 @@ public class DesignView extends JPanel implements
         im2.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "expand-current-pattern"); // NOI18N
         im2.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, KeyEvent.ALT_DOWN_MASK), "expand-all-patterns"); // NOI18N
 
+        im2.put(KeyStroke.getKeyStroke(KeyEvent.VK_C, KeyEvent.CTRL_DOWN_MASK), "copy-pattern"); // NOI18N
+        im2.put(KeyStroke.getKeyStroke(KeyEvent.VK_V, KeyEvent.CTRL_DOWN_MASK), "paste-pattern"); // NOI18N
+        im2.put(KeyStroke.getKeyStroke(KeyEvent.VK_X, KeyEvent.CTRL_DOWN_MASK), "cut-pattern"); // NOI18N
+
         am.put("rename-something", new RenameAction()); // NOI18N
         am.put("delete-something", new DeleteAction()); // NOI18N
         am.put("cancel-something", new CancelAction()); // NOI18N
@@ -612,6 +634,16 @@ public class DesignView extends JPanel implements
         am.put("expand-current-pattern", new ExpandCurrentPatternAction()); // NOI18N
         am.put("collapse-current-pattern", new CollapseCurrentPatternAction()); // NOI18N
         am.put("expand-all-patterns", new ExpandAllPatternsAction());
+        
+        am.put("copy-pattern", new CopyAction()); // NOI18N
+        am.put("cut-pattern", new CutAction()); // NOI18N
+        am.put("paste-pattern", new PasteAction()); // NOI18N
+
+/**
+         im2.put(KeyStroke.getKeyStroke(KeyEvent.VK_C, KeyEvent.CTRL_DOWN_MASK), "copy-pattern"); // NOI18N
+        im2.put(KeyStroke.getKeyStroke(KeyEvent.VK_V, KeyEvent.CTRL_DOWN_MASK), "paste-pattern"); // NOI18N
+        im2.put(KeyStroke.getKeyStroke(KeyEvent.VK_X, KeyEvent.CTRL_DOWN_MASK), "cut-pattern"); // NOI18N
+*/        
         
     }
     
@@ -640,8 +672,7 @@ public class DesignView extends JPanel implements
             diagramChanged();
         }
     }
-    
-    
+
     private void updateAccordingToViewFiltersStatus(Pattern pattern) {
         if (pattern instanceof SequencePattern) {
             ((SequencePattern) pattern).updateAccordingToViewFiltersStatus();
@@ -1247,10 +1278,111 @@ public class DesignView extends JPanel implements
         
         public void actionPerformed(ActionEvent e) {
             mouseHandler.cancel();
+            exitPlaceHolderMode();
         }
     }
     
+    private Pattern getPatternCopy(Pattern pattern, Pattern parentPattern) {
+        if (pattern == null) {
+            return null;
+        }
+        Pattern copiedPattern = null;
+        
+        BpelEntity entity = pattern.getOMReference();
+        BpelEntity parentEntity = parentPattern.getOMReference();
+        if (entity == null || parentEntity == null) {
+            return null;
+        }
+        
+        copiedPattern = diagramModel.createPattern((BpelEntity)entity.copy(parentEntity));
+        
+        return copiedPattern;
+    }
     
+    private Pattern getPatternCut(Pattern pattern) {
+        if (pattern == null) {
+            return null;
+        }
+        Pattern cuttedPattern = null;
+        BpelEntity entity = pattern.getOMReference();
+        if (entity == null) {
+            return null;
+        }
+        
+        cuttedPattern = diagramModel.createPattern(entity.cut());
+                
+        return cuttedPattern;
+    }
+    
+    class CopyAction extends AbstractAction {
+        private static final long serialVersionUID = 1L;
+        
+        public void actionPerformed(ActionEvent e) {
+            if (getModel().isReadOnly()) return;
+//            Pattern copiedPattern = getPatternCopy(getSelectionModel().getSelectedPattern());
+            
+            
+            goPlaceHolderMode(getSelectionModel().getSelectedPattern(), true);
+            repaint();
+        }
+    }
+
+    class CutAction extends AbstractAction {
+        private static final long serialVersionUID = 1L;
+        
+        public void actionPerformed(ActionEvent e) {
+            if (getModel().isReadOnly()) return;
+            Pattern cuttedPattern = getPatternCut(getSelectionModel().getSelectedPattern());
+            
+            goPlaceHolderMode(cuttedPattern, false);
+            repaint();
+        }
+    }
+
+    class PasteAction extends AbstractAction {
+        private static final long serialVersionUID = 1L;
+
+        public void actionPerformed(ActionEvent e) {
+            if (isDesignMode() || getModel().isReadOnly()) {
+                return;
+            }
+            PlaceHolder ph = getPhSelectionModel().getSelectedPlaceHolder();
+            if (ph != null) {
+                if (DesignViewMode.COPY_PLACE_HOLDER.equals(getDesignViewMode())) {
+// TODO a                    
+//                    Pattern copiedPattern = getPatternCopy(
+//                            ph.getDraggedPattern(), ph.getOwnerPattern());
+//                    ph.copyDrop(copiedPattern);
+                } else {
+                    ph.drop();
+                }
+            }
+            exitPlaceHolderMode();
+            repaint();
+        }
+    }
+    
+    private void goPlaceHolderMode(Pattern bufferedPattern, boolean isCopyAction) {
+        if (bufferedPattern == null) {
+            return;
+        }
+        CopyPasteHandler cpHandler = getCopyPasteHandler();
+        cpHandler.initPlaceHolderMode(bufferedPattern);
+        setDesignViewMode(isCopyAction 
+                ? DesignViewMode.COPY_PLACE_HOLDER 
+                : DesignViewMode.CUT_PLACE_HOLDER);
+    }
+    
+    private void exitPlaceHolderMode() {
+//        Pattern selectedPattern = getSelectionModel().getSelectedPattern();
+//        if (selectedPattern == null) {
+//            return;
+//        }
+        CopyPasteHandler cpHandler = getCopyPasteHandler();
+        cpHandler.exitPlaceHolderMode();
+        setDesignViewMode(DesignViewMode.DESIGN);
+    }
+
     class RenameAction extends AbstractAction {
         private static final long serialVersionUID = 1L;
         
@@ -1392,6 +1524,10 @@ public class DesignView extends JPanel implements
     abstract class GoHieComponentAction extends AbstractGoThroughDesignAction {
         protected DiagramModelIterator getDiagramModelIterator() {
             return new DiagramModelHierarchyIterator(getModel(), getSelectionModel());
+        }
+        
+        protected PlaceHolderIterator getPlaceHolderIterator() {
+            return new PlaceHolderIteratorImpl(getPlaceHolderManager(), getPhSelectionModel());
         }
     }
     
@@ -1588,10 +1724,19 @@ public class DesignView extends JPanel implements
         private static final long serialVersionUID = 1L;
         
         public void actionPerformed(ActionEvent e) {
-            Pattern nextPattern = getDiagramModelIterator().next();
-            if (nextPattern != null) {
-                getSelectionModel().setSelectedPattern(nextPattern);
-                scrollSelectedToView();
+            if (isDesignMode()) {
+                Pattern nextPattern = getDiagramModelIterator().next();
+                if (nextPattern != null) {
+                    getSelectionModel().setSelectedPattern(nextPattern);
+                    scrollSelectedToView();
+                }
+            } else {
+                PlaceHolder nextPh = getPlaceHolderIterator().next();
+                if (nextPh != null) {
+                    getPhSelectionModel().setSelectedPlaceHolder(nextPh);
+                    repaint();
+//                    scrollSelectedToView();
+                }
             }
         }
         
@@ -1599,12 +1744,20 @@ public class DesignView extends JPanel implements
     
     class GoPrevHieComponentAction extends GoHieComponentAction {
         private static final long serialVersionUID = 1L;
-        
+
         public void actionPerformed(ActionEvent e) {
-            Pattern prevPattern = getDiagramModelIterator().previous();
-            if (prevPattern != null) {
-                getSelectionModel().setSelectedPattern(prevPattern);
-                scrollSelectedToView();
+            if (isDesignMode()) {
+                Pattern prevPattern = getDiagramModelIterator().previous();
+                if (prevPattern != null) {
+                    getSelectionModel().setSelectedPattern(prevPattern);
+                    scrollSelectedToView();
+                }
+            } else {
+                PlaceHolder prevPh = getPlaceHolderIterator().previous();
+                if (prevPh != null) {
+                    getPhSelectionModel().setSelectedPlaceHolder(prevPh);
+                    repaint();
+                }
             }
         }
     }
@@ -1792,5 +1945,27 @@ public class DesignView extends JPanel implements
     
     public DnDHandler getDndHandler() {
         return dndHandler;
+    }
+
+    private DesignViewMode getDesignViewMode() {
+        return designViewMode;
+    }
+    
+    private void setDesignViewMode(DesignViewMode mode) {
+        if (mode == null) {
+            return;
+        }
+        designViewMode = mode;
+    }
+
+    public boolean isDesignMode() {
+        return DesignViewMode.DESIGN.equals(designViewMode);
+    }
+            
+    private enum DesignViewMode {
+        CUT_PLACE_HOLDER,
+        COPY_PLACE_HOLDER,
+        DESIGN;
+        
     }
 }
