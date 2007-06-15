@@ -29,8 +29,8 @@ import org.netbeans.modules.web.spi.webmodule.WebPrivilegedTemplates;
 public class JSFPrivilegedTemplates implements WebPrivilegedTemplates {
     public String[] getPrivilegedTemplates(WebModule webModule) {
          return new String[] {
-             "Templates/JSP_Servlet/Page.jsp", // NOI18N
-             "Templates/JSP_Servlet/PageFragment.jspf", // NOI18N
+             "Templates/JSF/Page.jsp", // NOI18N
+             "Templates/JSF/PageFragment.jspf", // NOI18N
          };
     }
 }
