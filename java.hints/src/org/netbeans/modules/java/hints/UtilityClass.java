@@ -145,7 +145,7 @@ public class UtilityClass extends AbstractHint implements ElementVisitor<Boolean
                 compilationInfo.getFileObject()
                 ));
 
-            int[] span = Utilities.findIdentifierSpan(treePath, compilationInfo.getCompilationUnit(), compilationInfo.getTrees().getSourcePositions(), doc);
+            int[] span = Utilities.findIdentifierSpan(treePath, compilationInfo, doc);
 
             if (span[0] != (-1) && span[1] != (-1)) {
                 ErrorDescription ed = ErrorDescriptionFactory.createErrorDescription(

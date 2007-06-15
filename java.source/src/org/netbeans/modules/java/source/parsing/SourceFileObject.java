@@ -366,9 +366,13 @@ public class SourceFileObject implements JavaFileObject, DocumentProvider {
             doc.render(new Runnable() {
                 public void run () {
                   try {
-			int len = doc.getLength();
+			CharSequence text = doc.getText(0, doc.getLength());
+                        if (filter != null) {
+                            text = filter.filterCharSequence(text);
+                        }
+                        int len = text.length();
 			result[0] = new char[len+1];
-			doc.getText(0,len).getChars(0,len,result[0],0);
+			text.toString().getChars(0,len,result[0],0);
                         length[0] = len;
                     } catch (BadLocationException e) {
                         ErrorManager.getDefault().notify(e);

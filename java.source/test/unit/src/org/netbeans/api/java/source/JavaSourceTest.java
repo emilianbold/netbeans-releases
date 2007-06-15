@@ -1067,7 +1067,7 @@ public class JavaSourceTest extends NbTestCase {
         
         js.runUserActionTask(new Task<CompilationController>() {
             public void run(CompilationController cc) throws IOException {
-                files.add(cc.getFileObject());
+                files.add(cc.getPositionConverter().getFileObject());
                 cc.toPhase(Phase.RESOLVED);
             }
         }, true);
@@ -1078,7 +1078,7 @@ public class JavaSourceTest extends NbTestCase {
         
         js.runModificationTask(new Task<WorkingCopy>() {
             public void run(WorkingCopy cc) throws IOException {
-                files.add(cc.getFileObject());
+                files.add(cc.getPositionConverter().getFileObject());
                 cc.toPhase(Phase.RESOLVED);
             }
         });

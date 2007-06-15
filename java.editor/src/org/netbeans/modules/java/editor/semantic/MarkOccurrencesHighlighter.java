@@ -281,9 +281,9 @@ public class MarkOccurrencesHighlighter implements CancellableTask<CompilationIn
         //variable declaration:
         Element el = info.getTrees().getElement(tp);
         if (   el != null
-                && (!(tree.getKind() == Kind.CLASS) || isIn(caretPosition, Utilities.findIdentifierSpan(tp, cu, info.getTrees().getSourcePositions(), doc)))
+                && (!(tree.getKind() == Kind.CLASS) || isIn(caretPosition, Utilities.findIdentifierSpan(tp, info, doc)))
                 && !Utilities.isKeyword(tree)
-                && (!(tree.getKind() == Kind.METHOD) || isIn(caretPosition, Utilities.findIdentifierSpan(tp, cu, info.getTrees().getSourcePositions(), doc)))
+                && (!(tree.getKind() == Kind.METHOD) || isIn(caretPosition, Utilities.findIdentifierSpan(tp, info, doc)))
                 && isEnabled(node, el)) {
             FindLocalUsagesQuery fluq = new FindLocalUsagesQuery();
             
@@ -400,7 +400,7 @@ public class MarkOccurrencesHighlighter implements CancellableTask<CompilationIn
                     for (TypeElement superType : superTypes) {
                         for (ExecutableElement ee : ElementFilter.methodsIn(info.getElements().getAllMembers(superType))) {
                             if (info.getElements().overrides((ExecutableElement) el, ee, thisType) && (superType.getKind().isClass() || !ee.getEnclosingElement().equals(jlObject))) {
-                                highlights.add(Utilities.createHighlight(info.getCompilationUnit(), info.getTrees().getSourcePositions(), document, path, EnumSet.of(ColoringAttributes.MARK_OCCURRENCES),MarkOccurrencesHighlighter.ES_COLOR));
+                                highlights.add(Utilities.createHighlight(info, document, path, EnumSet.of(ColoringAttributes.MARK_OCCURRENCES),MarkOccurrencesHighlighter.ES_COLOR));
                                 continue OUTER;
                             }
                         }
@@ -424,7 +424,7 @@ public class MarkOccurrencesHighlighter implements CancellableTask<CompilationIn
         ts.move((int) info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), target));
         
         if (ts.moveNext()) {
-            result.add(Utilities.createHighlight(info.getCompilationUnit(), info.getTrees().getSourcePositions(), document, ts.offset(), ts.offset() + ts.token().length(), EnumSet.of(ColoringAttributes.MARK_OCCURRENCES),MarkOccurrencesHighlighter.ES_COLOR));
+            result.add(Utilities.createHighlight(info, document, ts.offset(), ts.offset() + ts.token().length(), EnumSet.of(ColoringAttributes.MARK_OCCURRENCES),MarkOccurrencesHighlighter.ES_COLOR));
         }
         
         StatementTree statement = target.getKind() == Kind.LABELED_STATEMENT ? ((LabeledStatementTree) target).getStatement() : target;
@@ -452,7 +452,7 @@ public class MarkOccurrencesHighlighter implements CancellableTask<CompilationIn
             ts.move((int) info.getTrees().getSourcePositions().getEndPosition(info.getCompilationUnit(), block));
             
             if (ts.movePrevious() && ts.token().id() == JavaTokenId.RBRACE) {
-                result.add(Utilities.createHighlight(info.getCompilationUnit(), info.getTrees().getSourcePositions(), document, ts.offset(), ts.offset() + ts.token().length(), EnumSet.of(ColoringAttributes.MARK_OCCURRENCES),MarkOccurrencesHighlighter.ES_COLOR));
+                result.add(Utilities.createHighlight(info, document, ts.offset(), ts.offset() + ts.token().length(), EnumSet.of(ColoringAttributes.MARK_OCCURRENCES),MarkOccurrencesHighlighter.ES_COLOR));
             }
         }
         

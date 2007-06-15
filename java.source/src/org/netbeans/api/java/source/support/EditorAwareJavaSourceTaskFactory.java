@@ -18,17 +18,14 @@
  */
 package org.netbeans.api.java.source.support;
 
-import java.util.ArrayList;
 import java.util.List;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.swing.text.Document;
-import javax.swing.text.JTextComponent;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.JavaSource.Priority;
 import org.netbeans.api.java.source.JavaSourceTaskFactory;
+import org.netbeans.api.java.source.SourceUtils;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
 
 /**A {@link JavaSourceTaskFactorySupport} that registers tasks to all files that are
  * opened in the editor and are visible.
@@ -37,20 +34,34 @@ import org.openide.loaders.DataObject;
  */
 public abstract class EditorAwareJavaSourceTaskFactory extends JavaSourceTaskFactory {
     
+    private String[] supportedMimeTypes;
+    
     /**Construct the EditorAwareJavaSourceTaskFactory with given {@link Phase} and {@link Priority}.
      *
      * @param phase phase to use for tasks created by {@link #createTask}
      * @param priority priority to use for tasks created by {@link #createTask}
      */
     protected EditorAwareJavaSourceTaskFactory(Phase phase, Priority priority) {
+        this(phase, priority, (String[]) null);
+    }
+    
+    /**Construct the EditorAwareJavaSourceTaskFactory with given {@link Phase} and {@link Priority}.
+     *
+     * @param phase phase to use for tasks created by {@link #createTask}
+     * @param priority priority to use for tasks created by {@link #createTask}
+     * @param supportedMimeTypes a list of mime types on which the tasks created by this factory should be run
+     * @since 0.21
+     */
+    protected EditorAwareJavaSourceTaskFactory(Phase phase, Priority priority, String... supportedMimeTypes) {
         super(phase, priority);
         //XXX: weak, or something like this:
         OpenedEditors.getDefault().addChangeListener(new ChangeListenerImpl());
+        this.supportedMimeTypes = supportedMimeTypes != null ? supportedMimeTypes.clone() : null;
     }
     
     /**@inheritDoc*/
     public List<FileObject> getFileObjects() {
-        List<FileObject> files = new ArrayList<FileObject>(OpenedEditors.getDefault().getVisibleEditorsFiles());
+        List<FileObject> files = OpenedEditors.filterSupportedMIMETypes(OpenedEditors.getDefault().getVisibleEditorsFiles(), supportedMimeTypes);
 
         return files;
     }

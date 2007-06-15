@@ -41,13 +41,11 @@ import javax.tools.JavaFileObject;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.parsing.SourceFileObject;
-import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
 import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
-
 
 /** Asorted information about the JavaSource.
  *
@@ -60,7 +58,7 @@ public class CompilationInfo {
     private List<Diagnostic> errors;
     
     private JavacTaskImpl javacTask;
-    private FileObject fo;
+    private PositionConverter binding;
     final JavaFileObject jfo;    
     final JavaSource javaSource;        
     boolean needsRestart;
@@ -76,11 +74,11 @@ public class CompilationInfo {
         this.errors = null;
     }
     
-    CompilationInfo ( final JavaSource javaSource, final FileObject fo, final JavaFileFilterImplementation filter, final JavacTaskImpl javacTask) throws IOException {
+    CompilationInfo (  final JavaSource javaSource,final PositionConverter binding, final JavacTaskImpl javacTask) throws IOException {
         assert javaSource != null;        
         this.javaSource = javaSource;
-        this.fo = fo;
-        this.jfo = fo != null ? javaSource.jfoProvider.createJavaFileObject(fo, filter) : null;
+        this.binding = binding;
+        this.jfo = this.binding != null ? javaSource.jfoProvider.createJavaFileObject(binding.getFileObject(), this.binding.getFilter()) : null;
         this.javacTask = javacTask;        
         this.errors = new ArrayList<Diagnostic>();
     }
@@ -172,7 +170,7 @@ public class CompilationInfo {
             Elements elements = getElements();
             assert elements != null;
             assert this.javaSource.rootFo != null;
-            String name = FileObjects.convertFolder2Package(FileObjects.stripExtension(FileUtil.getRelativePath(javaSource.rootFo, fo)));
+            String name = FileObjects.convertFolder2Package(FileObjects.stripExtension(FileUtil.getRelativePath(javaSource.rootFo, getFileObject())));
             TypeElement e = ((JavacElements)elements).getTypeElementByBinaryName(name);
             if (e != null) {                
                 if (!isLocal(e)) {
@@ -237,17 +235,29 @@ public class CompilationInfo {
 	return javaSource.getClasspathInfo();
     }
     
-    public FileObject getFileObject() {        
-        return fo;
+    public FileObject getFileObject() {
+        return this.binding != null ? this.binding.getFileObject() : null;
+    }
+    
+    /**Return {@link PositionConverter} binding virtual Java source and the real source.
+     * Please note that this method is needed only for clients that need to work
+     * in non-Java files (eg. JSP files) or in dialogs, like code completion.
+     * Most clients do not need to use {@link PositionConverter}.
+     * 
+     * @return PositionConverter binding the virtual Java source and the real source.
+     * @since 0.21
+     */
+    public PositionConverter getPositionConverter() {
+        return binding;
     }
     
     public Document getDocument() throws IOException {
-        if (this.fo == null) {
+        if (this.binding == null || this.binding.getFileObject() == null) {
             return null;
         }
-        DataObject od = DataObject.find(fo);            
-        EditorCookie ec = (EditorCookie) od.getCookie(EditorCookie.class);        
-        if (ec != null) {                
+        DataObject od = DataObject.find(this.binding.getFileObject());            
+        EditorCookie ec = od.getCookie(EditorCookie.class);
+        if (ec != null) {
             return  ec.getDocument();
         } else {
             return null;

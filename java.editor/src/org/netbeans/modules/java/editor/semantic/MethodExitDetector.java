@@ -29,7 +29,6 @@ import com.sun.source.tree.ThrowTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.TryTree;
 import com.sun.source.util.TreePath;
-import com.sun.source.util.TreePathScanner;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -92,7 +91,7 @@ public class MethodExitDetector extends CancellableTreePathScanner<Boolean, Stac
                     
                     if (lastBracket != (-1)) {
                         //highlight the "fall over" exitpoint:
-                        result.add(Utilities.createHighlight(cu, info.getTrees().getSourcePositions(), document, lastBracket, lastBracket + 1, EnumSet.of(ColoringAttributes.MARK_OCCURRENCES),MarkOccurrencesHighlighter.ES_COLOR));
+                        result.add(Utilities.createHighlight(info, document, lastBracket, lastBracket + 1, EnumSet.of(ColoringAttributes.MARK_OCCURRENCES), MarkOccurrencesHighlighter.ES_COLOR));
                     }
                 }
             }
@@ -206,7 +205,7 @@ public class MethodExitDetector extends CancellableTreePathScanner<Boolean, Stac
     }
     
     private Highlight createHighlight(TreePath tree) {
-        return Utilities.createHighlight(info.getCompilationUnit(), info.getTrees().getSourcePositions(), doc, tree, EnumSet.of(ColoringAttributes.MARK_OCCURRENCES),MarkOccurrencesHighlighter.ES_COLOR);
+        return Utilities.createHighlight(info, doc, tree, EnumSet.of(ColoringAttributes.MARK_OCCURRENCES), MarkOccurrencesHighlighter.ES_COLOR);
     }
     
     @Override

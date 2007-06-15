@@ -199,7 +199,7 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
         }
         
         //#89736: if the caret is not in the resolved element's name, no rename:
-        final Highlight name = org.netbeans.modules.java.editor.semantic.Utilities.createHighlight(info.getCompilationUnit(), info.getTrees().getSourcePositions(), info.getDocument(), path, EnumSet.of(ColoringAttributes.MARK_OCCURRENCES), null);
+        final Highlight name = org.netbeans.modules.java.editor.semantic.Utilities.createHighlight(info, info.getDocument(), path, EnumSet.of(ColoringAttributes.MARK_OCCURRENCES), null);
         
         info.getDocument().render(new Runnable() {
             public void run() {
@@ -224,7 +224,7 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
                     TreePath t = info.getTrees().getPath(c);
                     
                     if (t != null) {
-                        Highlight h = org.netbeans.modules.java.editor.semantic.Utilities.createHighlight(info.getCompilationUnit(), info.getTrees().getSourcePositions(), info.getDocument(), t, EnumSet.of(ColoringAttributes.MARK_OCCURRENCES), null);
+                        Highlight h = org.netbeans.modules.java.editor.semantic.Utilities.createHighlight(info, info.getDocument(), t, EnumSet.of(ColoringAttributes.MARK_OCCURRENCES), null);
                         
                         if (h != null) {
                             points.add(h);

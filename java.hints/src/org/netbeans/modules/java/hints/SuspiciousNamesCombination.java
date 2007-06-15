@@ -150,7 +150,7 @@ public class SuspiciousNamesCombination extends AbstractHint {
         
         if (isConflicting(declarationName, actualName)) {
             try {
-                int[] span = Utilities.findIdentifierSpan(treePath, info.getCompilationUnit(), info.getTrees().getSourcePositions(), info.getDocument());
+                int[] span = Utilities.findIdentifierSpan(treePath, info, info.getDocument());
                 
                 if (span != null && span[0] != (-1) && span[1] != (-1)) {
                     return Collections.singletonList(ErrorDescriptionFactory.createErrorDescription(getSeverity().toEditorSeverity(), "Suspicious names combination", info.getFileObject(), span[0], span[1]));

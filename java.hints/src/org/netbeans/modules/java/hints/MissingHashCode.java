@@ -101,7 +101,7 @@ public class MissingHashCode extends AbstractHint {
                     compilationInfo.getFileObject()
                 ));
 
-                int[] span = Utilities.findIdentifierSpan(treePath, compilationInfo.getCompilationUnit(), compilationInfo.getTrees().getSourcePositions(), doc);
+                int[] span = Utilities.findIdentifierSpan(treePath, compilationInfo, doc);
 
                 ErrorDescription ed = ErrorDescriptionFactory.createErrorDescription(
                     getSeverity().toEditorSeverity(), 

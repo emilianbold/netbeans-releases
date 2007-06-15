@@ -179,6 +179,20 @@ public class SimplifiedJSPServlet {
         return shiftedOffset;
     }
     
+    public int getRealOffset(int offset){
+        assureProcessCalled();
+        
+        for (CodeBlockData codeBlock : codeBlocks) {
+            int len = codeBlock.getEndOffset() - codeBlock.getStartOffset();
+            
+            if (codeBlock.getNewBlockStart() <= offset && codeBlock.getNewBlockStart() + len >= offset) {
+                return codeBlock.getStartOffset() +  offset - codeBlock.getNewBlockStart();
+            }
+        }
+        
+        return -1;
+    }
+    
     public String getVirtualClassBody(){
         assureProcessCalled();
         return importStatements + CLASS_HEADER + mergedDeclarations + METHOD_HEADER

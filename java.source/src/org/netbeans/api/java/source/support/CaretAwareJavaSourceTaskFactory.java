@@ -19,6 +19,7 @@
 package org.netbeans.api.java.source.support;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,6 +32,7 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.JavaSource.Priority;
 import org.netbeans.api.java.source.JavaSourceTaskFactory;
+import org.netbeans.api.java.source.SourceUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.util.RequestProcessor;
 
@@ -39,7 +41,7 @@ import org.openide.util.RequestProcessor;
  * opened and visible JTextComponents and reschedules the tasks as necessary.
  *
  * The tasks may access current caret position using {@link #getLastPosition} method.
- *
+ * 
  * @author Jan Lahoda
  */
 public abstract class CaretAwareJavaSourceTaskFactory extends JavaSourceTaskFactory {
@@ -48,6 +50,7 @@ public abstract class CaretAwareJavaSourceTaskFactory extends JavaSourceTaskFact
     private static final RequestProcessor WORKER = new RequestProcessor("CaretAwareJavaSourceTaskFactory worker");
     
     private int timeout;
+    private String[] supportedMimeTypes;
     
     /**Construct the CaretAwareJavaSourceTaskFactory with given {@link Phase} and {@link Priority}.
      *
@@ -55,21 +58,33 @@ public abstract class CaretAwareJavaSourceTaskFactory extends JavaSourceTaskFact
      * @param priority priority to use for tasks created by {@link #createTask}
      */
     public CaretAwareJavaSourceTaskFactory(Phase phase, Priority priority) {
+        this(phase, priority, (String[]) null);
+    }
+    
+    /**Construct the CaretAwareJavaSourceTaskFactory with given {@link Phase} and {@link Priority}.
+     *
+     * @param phase phase to use for tasks created by {@link #createTask}
+     * @param priority priority to use for tasks created by {@link #createTask}
+     * @param supportedMimeTypes a list of mime types on which the tasks created by this factory should be run
+     * @since 0.21
+     */
+    public CaretAwareJavaSourceTaskFactory(Phase phase, Priority priority, String... supportedMimeTypes) {
         super(phase, priority);
         //XXX: weak, or something like this:
         OpenedEditors.getDefault().addChangeListener(new ChangeListenerImpl());
         this.timeout = DEFAULT_RESCHEDULE_TIMEOUT;
+        this.supportedMimeTypes = supportedMimeTypes != null ? supportedMimeTypes.clone() : null;
     }
     
     /**@inheritDoc*/
     public List<FileObject> getFileObjects() {
-        List<FileObject> files = new ArrayList<FileObject>(OpenedEditors.getDefault().getVisibleEditorsFiles());
+        List<FileObject> files = OpenedEditors.filterSupportedMIMETypes(OpenedEditors.getDefault().getVisibleEditorsFiles(), supportedMimeTypes);
 
         return files;
     }
 
-    private Map<JTextComponent, ComponentListener> component2Listener = new HashMap();
-    private static Map<FileObject, Integer> file2LastPosition = new WeakHashMap();
+    private Map<JTextComponent, ComponentListener> component2Listener = new HashMap<JTextComponent, ComponentListener>();
+    private static Map<FileObject, Integer> file2LastPosition = new WeakHashMap<FileObject, Integer>();
     
     /**Returns current caret position in current {@link JTextComponent} for a given file.
      *

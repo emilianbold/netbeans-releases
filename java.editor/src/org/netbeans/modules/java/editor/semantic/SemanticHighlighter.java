@@ -78,7 +78,6 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Position;
 import javax.swing.text.StyledDocument;
-import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.support.CancellableTreePathScanner;
@@ -231,7 +230,7 @@ public class SemanticHighlighter extends ScanningCancellableTask<CompilationInfo
             if (el == null || el.getSimpleName() == null)
                 continue;
             
-            Highlight h = Utilities.createHighlight(cu, info.getTrees().getSourcePositions(), doc, tree, EnumSet.of(ColoringAttributes.UNUSED), Color.GRAY);
+            Highlight h = Utilities.createHighlight(info, doc, tree, EnumSet.of(ColoringAttributes.UNUSED), Color.GRAY);
             
             if (h != null) {
                 result.add(h);
@@ -281,7 +280,7 @@ public class SemanticHighlighter extends ScanningCancellableTask<CompilationInfo
                 }
                 
                 Collection<ColoringAttributes> c = EnumSet.copyOf(u.spec);
-                Highlight h = Utilities.createHighlight(cu, info.getTrees().getSourcePositions(), doc, u.tree, c, null);
+                Highlight h = Utilities.createHighlight(info, doc, u.tree, c, null);
                 
                 if (h != null) {
                     result.add(h);
@@ -355,10 +354,6 @@ public class SemanticHighlighter extends ScanningCancellableTask<CompilationInfo
             type2Uses = new HashMap<Element, List<Use>>();
             this.type2Highlight = new HashMap<Element, TreePath/*ImportTree*/>();
 //            this.pos = pos;
-        }
-        
-        private Highlight createHighlight(CompilationUnitTree cu, SourcePositions sp, TreePath tree, Collection<ColoringAttributes> c, Color es) {
-            return Utilities.createHighlight(cu, sp, doc, tree, c, es);
         }
         
         @Override

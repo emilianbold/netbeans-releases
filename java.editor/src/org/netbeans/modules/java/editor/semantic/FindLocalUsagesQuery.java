@@ -25,7 +25,6 @@ import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
-import com.sun.source.util.TreePathScanner;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
@@ -62,7 +61,7 @@ public class FindLocalUsagesQuery extends CancellableTreePathScanner<Void, Stack
     }
 
     private Highlight createHighlight(TreePath tree) {
-        return Utilities.createHighlight(info.getCompilationUnit(), info.getTrees().getSourcePositions(), doc, tree, EnumSet.of(ColoringAttributes.MARK_OCCURRENCES),MarkOccurrencesHighlighter.ES_COLOR);
+        return Utilities.createHighlight(info, doc, tree, EnumSet.of(ColoringAttributes.MARK_OCCURRENCES), MarkOccurrencesHighlighter.ES_COLOR);
     }
     
     private void handlePotentialVariable(TreePath tree) {

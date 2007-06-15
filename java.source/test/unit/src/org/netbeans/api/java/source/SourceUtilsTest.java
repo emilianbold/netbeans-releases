@@ -21,6 +21,8 @@ package org.netbeans.api.java.source;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.Reader;
+import java.io.Writer;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -39,7 +41,10 @@ import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.queries.SourceForBinaryQuery.Result;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ClasspathInfo.PathKind;
+import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.java.preprocessorbridge.spi.JavaSourceProvider;
 import org.netbeans.modules.java.source.ElementHandleAccessor;
 import org.netbeans.modules.java.source.TestUtil;
 import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
@@ -48,6 +53,8 @@ import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.MIMEResolver;
+import org.openide.util.Lookup;
 
 /**
  *
@@ -422,4 +429,98 @@ public class SourceUtilsTest extends NbTestCase {
         }
     }
     
+//    //tests for SourceUtils.filterSupportedMIMETypes:
+//
+//    @SuppressWarnings("deprecation")
+//    public void testFilter() throws Exception {
+//        SourceUtilsTestUtil.setLookup(new Object[] {new JavaSourceProviderImpl(), new ResolverImpl()}, SourceUtilsTest.class.getClassLoader());
+//        boolean registered = false;
+//        
+//        for (JavaSourceProvider p : Lookup.getDefault().lookupAll(JavaSourceProvider.class)) {
+//            if (p instanceof JavaSourceProvider) {
+//                registered = true;
+//                break;
+//            }
+//        }
+//        
+//        assertTrue(registered);
+//        
+//        FileObject work = FileUtil.toFileObject(getWorkDir());
+//        
+//        FileObject file1 = FileUtil.createData(work, "test.ext1");
+//        FileObject file2 = FileUtil.createData(work, "test.ext2");
+//        FileObject file3 = FileUtil.createData(work, "test.ext3");
+//        FileObject file4 = FileUtil.createData(work, "test.ext4");
+//        FileObject file5 = FileUtil.createData(work, "test.txt");
+//        FileObject file6 = FileUtil.createData(work, "test.ant");
+//
+//        assertEquals("text/x-java", FileUtil.getMIMEType(file1));
+//        assertEquals("text/jsp", FileUtil.getMIMEType(file2));
+//        assertEquals("text/plain", FileUtil.getMIMEType(file3));
+//        assertEquals("text/test+x-java", FileUtil.getMIMEType(file4));
+//        assertEquals("text/test+x-ant+xml", FileUtil.getMIMEType(file6));
+//        
+//        List<FileObject> files = Arrays.asList(file1, file2, file3, file4, file5, file6);
+//        
+//        assertEquals(Arrays.asList(file1, file2, file3, file4, file6), SourceUtils.filterSupportedMIMETypes(files, F1.class));
+//        assertEquals(Arrays.asList(file1, file4), SourceUtils.filterSupportedMIMETypes(files, F2.class));
+//        assertEquals(Arrays.asList(file4), SourceUtils.filterSupportedMIMETypes(files, F3.class));
+//        assertEquals(Arrays.asList(file1, file4), SourceUtils.filterSupportedMIMETypes(files, F4.class));
+//        assertEquals(Arrays.asList(file1, file2, file4), SourceUtils.filterSupportedMIMETypes(files, F5.class));
+//    }
+//    
+//    public static class JavaSourceProviderImpl implements JavaSourceProvider {
+//        public PositionTranslatingJavaFileFilterImplementation forFileObject(FileObject fo) {
+//            if ("txt".equals(fo.getExt()))
+//                return null;
+//            
+//            return new PositionTranslatingJavaFileFilterImplementation() {
+//                public int getOriginalPosition(int javaSourcePosition) {
+//                    return javaSourcePosition;
+//                }
+//                public int getJavaSourcePosition(int originalPosition) {
+//                    return originalPosition;
+//                }
+//                public Reader filterReader(Reader r) {
+//                    return r;
+//                }
+//                public CharSequence filterCharSequence(CharSequence charSequence) {
+//                    return charSequence;
+//                }
+//                public Writer filterWriter(Writer w) {
+//                    return w;
+//                }
+//                public void addChangeListener(ChangeListener listener) {}
+//                public void removeChangeListener(ChangeListener listener) {}
+//            };
+//        }
+//    }
+//    
+//    public static class ResolverImpl extends MIMEResolver {
+//        public String findMIMEType(FileObject fo) {
+//            String ext = fo.getExt();
+//            
+//            if ("ext1".contains(ext)) return "text/x-java";
+//            if ("ext2".contains(ext)) return "text/jsp";
+//            if ("ext3".contains(ext)) return "text/plain";
+//            if ("ext4".contains(ext)) return "text/test+x-java";
+//            if ("ant".contains(ext)) return "text/test+x-ant+xml";
+//            
+//            return null;
+//        }
+//    }
+//    
+//    @SupportedMimeTypes("*")
+//    private static class F1 {}
+//    
+//    @SupportedMimeTypes("text/x-java")
+//    private static class F2 {}
+//    
+//    @SupportedMimeTypes("text/test+x-java")
+//    private static class F3 {}
+//    
+//    private static class F4 {}
+//    
+//    @SupportedMimeTypes({"text/x-java", "text/jsp"})
+//    private static class F5 {}
 }

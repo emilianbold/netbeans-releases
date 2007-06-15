@@ -106,7 +106,7 @@ public abstract class ErrorHintsTestBase extends NbTestCase {
     private CompilationInfo info;
     private Document doc;
     
-    protected abstract List<Fix> computeFixes(CompilationInfo info, int pos, TreePath path);
+    protected abstract List<Fix> computeFixes(CompilationInfo info, int pos, TreePath path) throws Exception;
     
     protected String toDebugString(CompilationInfo info, Fix f) {
         return f.toString();

@@ -121,7 +121,7 @@ public class EmptyCancelForCancellableTask extends AbstractHint {
         
         try {
             Document doc = compilationInfo.getDocument();
-            int[] span = Utilities.findIdentifierSpan(treePath, compilationInfo.getCompilationUnit(), compilationInfo.getTrees().getSourcePositions(), doc);
+            int[] span = Utilities.findIdentifierSpan(treePath, compilationInfo, doc);
             
             if (span[0] != (-1) && span[1] != (-1)) {
                 String message = NbBundle.getMessage(EmptyCancelForCancellableTask.class, "MSG_EmptyCancel");

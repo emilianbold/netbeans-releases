@@ -92,10 +92,13 @@ import javax.tools.JavaCompiler;
 import javax.tools.JavaFileObject;
 import javax.tools.ToolProvider;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.java.source.ClasspathInfo.PathKind;
 import org.netbeans.api.java.source.ModificationResult.Difference;
+import org.netbeans.api.lexer.Language;
+import org.netbeans.api.timers.TimesCollector;
 import org.netbeans.editor.Registry;
 import org.netbeans.modules.java.source.JavaFileFilterQuery;
 import org.netbeans.modules.java.source.builder.ASTService;
@@ -106,6 +109,7 @@ import org.netbeans.modules.java.source.engine.ReattributionException;
 import org.netbeans.modules.java.source.engine.RootTree;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
+import org.netbeans.modules.java.preprocessorbridge.spi.JavaSourceProvider;
 import org.netbeans.modules.java.source.TreeLoader;
 import org.netbeans.modules.java.source.builder.DefaultEnvironment;
 import org.netbeans.modules.java.source.tasklist.CompilerSettings;
@@ -130,6 +134,7 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
@@ -280,6 +285,8 @@ public final class JavaSource {
     //Preprocessor support
     private FilterListener filterListener;
     
+    private PositionConverter binding;
+    
     private static final Logger LOGGER = Logger.getLogger(JavaSource.class.getName());
         
     static {
@@ -299,14 +306,7 @@ public final class JavaSource {
         if (files == null || cpInfo == null) {
             throw new IllegalArgumentException ();
         }
-        try {
-            return new JavaSource(cpInfo, files);
-        } catch (DataObjectNotFoundException donf) {
-            LOGGER.warning("Ignoring non existent file: " + FileUtil.getFileDisplayName(donf.getFileObject()));     //NOI18N
-        } catch (IOException ex) {            
-            Exceptions.printStackTrace(ex);
-        }        
-        return null;
+        return create(cpInfo, null, files);
     }
     
     
@@ -322,7 +322,18 @@ public final class JavaSource {
         if (files == null || cpInfo == null) {
             throw new IllegalArgumentException ();
         }
-        return create(cpInfo, Arrays.asList(files));
+        return create(cpInfo, null, Arrays.asList(files));
+    }
+    
+    private static JavaSource create(final ClasspathInfo cpInfo, final PositionConverter binding, final Collection<? extends FileObject> files) throws IllegalArgumentException {
+        try {
+            return new JavaSource(cpInfo, binding, files);
+        } catch (DataObjectNotFoundException donf) {
+            Logger.getLogger("global").warning("Ignoring non existent file: " + FileUtil.getFileDisplayName(donf.getFileObject()));     //NOI18N
+        } catch (IOException ex) {            
+            Exceptions.printStackTrace(ex);
+        }        
+        return null;
     }
     
     private static Map<FileObject, Reference<JavaSource>> file2JavaSource = new WeakHashMap<FileObject, Reference<JavaSource>>();
@@ -341,43 +352,55 @@ public final class JavaSource {
         if (!fileObject.isValid()) {
             return null;
         }
-        if ("text/x-java".equals(FileUtil.getMIMEType(fileObject)) || "java".equals(fileObject.getExt())) {  //NOI18N
-           Reference<JavaSource> ref = file2JavaSource.get(fileObject);
-            JavaSource js = ref != null ? ref.get() : null;
-            if (js == null) {
-                file2JavaSource.put(fileObject, new WeakReference<JavaSource>(js = create(ClasspathInfo.create(fileObject), fileObject)));
+
+        Reference<JavaSource> ref = file2JavaSource.get(fileObject);
+        JavaSource js = ref != null ? ref.get() : null;
+        if (js == null) {
+            if ("application/x-class-file".equals(FileUtil.getMIMEType(fileObject)) || "class".equals(fileObject.getExt())) {   //NOI18N
+                ClassPath bootPath = ClassPath.getClassPath(fileObject, ClassPath.BOOT);
+                ClassPath compilePath = ClassPath.getClassPath(fileObject, ClassPath.COMPILE);
+                if (compilePath == null) {
+                    compilePath = ClassPathSupport.createClassPath(new URL[0]);
+                }
+                ClassPath srcPath = ClassPath.getClassPath(fileObject, ClassPath.SOURCE);
+                if (srcPath == null) {
+                    srcPath = ClassPathSupport.createClassPath(new URL[0]);
+                }
+                ClassPath execPath = ClassPath.getClassPath(fileObject, ClassPath.EXECUTE);
+                if (execPath != null) {
+                    bootPath = ClassPathSupport.createProxyClassPath(execPath, bootPath);
+                }
+                final ClasspathInfo info = ClasspathInfo.create(bootPath, compilePath, srcPath);
+                FileObject root = ClassPathSupport.createProxyClassPath(bootPath,compilePath,srcPath).findOwnerRoot(fileObject);
+                try {
+                    js = new JavaSource (info,fileObject,root);
+                } catch (IOException ioe) {
+                    Exceptions.printStackTrace(ioe);
+                }
+            } else {
+            PositionConverter binding = null;
+            if (!"text/x-java".equals(FileUtil.getMIMEType(fileObject)) && !"java".equals(fileObject.getExt())) {  //NOI18N
+                for (JavaSourceProvider provider : Lookup.getDefault().lookupAll(JavaSourceProvider.class)) {
+                    JavaFileFilterImplementation filter = provider.forFileObject(fileObject);
+                    if (filter != null) {
+                        binding = new PositionConverter(fileObject, filter);
+                        break;
+                    }
+                }
+                if (binding == null)
+                    return null;
             }
-            return js;
+            js = create(ClasspathInfo.create(fileObject), binding, Collections.singletonList(fileObject));
+            }
+            file2JavaSource.put(fileObject, new WeakReference<JavaSource>(js));
         }
-        if ("application/x-class-file".equals(FileUtil.getMIMEType(fileObject)) || "class".equals(fileObject.getExt())) {   //NOI18N
-            ClassPath bootPath = ClassPath.getClassPath(fileObject, ClassPath.BOOT);
-            ClassPath compilePath = ClassPath.getClassPath(fileObject, ClassPath.COMPILE);
-            if (compilePath == null) {
-                compilePath = ClassPathSupport.createClassPath(new URL[0]);
-            }
-            ClassPath srcPath = ClassPath.getClassPath(fileObject, ClassPath.SOURCE);
-            if (srcPath == null) {
-                srcPath = ClassPathSupport.createClassPath(new URL[0]);
-            }
-            ClassPath execPath = ClassPath.getClassPath(fileObject, ClassPath.EXECUTE);
-            if (execPath != null) {
-                bootPath = ClassPathSupport.createProxyClassPath(execPath, bootPath);
-            }
-            final ClasspathInfo info = ClasspathInfo.create(bootPath, compilePath, srcPath);
-            FileObject root = ClassPathSupport.createProxyClassPath(bootPath,compilePath,srcPath).findOwnerRoot(fileObject);
-            try {
-                return new JavaSource (info,fileObject,root);
-            } catch (IOException ioe) {
-                Exceptions.printStackTrace(ioe);
-            }
-        }
-        return null;        
+        return js;
     }
     
     /**
-     * Returns a {@link JavaSource} instance associated to {@link org.openide.filesystems.FileObject}
-     * the {@link Document} was created from, it returns null if the {@link Document} is not
-     * associanted with data type providing the {@link JavaSource}.
+     * Returns a {@link JavaSource} instance associated to the given {@link javax.swing.Document},
+     * it returns null if the {@link Document} is not
+     * associated with data type providing the {@link JavaSource}.
      * @param doc {@link Document} for which the {@link JavaSource} should be found/created.
      * @return {@link JavaSource} or null
      * @throws {@link IllegalArgumentException} if doc is null
@@ -386,8 +409,7 @@ public final class JavaSource {
         if (doc == null) {
             throw new IllegalArgumentException ("doc == null");  //NOI18N
         }
-        Reference<?> ref = (Reference<?>) doc.getProperty(JavaSource.class);
-        JavaSource js = ref != null ? (JavaSource) ref.get() : null;
+        JavaSource js = (JavaSource)doc.getProperty(JavaSource.class);
         if (js == null) {
             DataObject dObj = (DataObject)doc.getProperty(Document.StreamDescriptionProperty);
             if (dObj != null)
@@ -401,10 +423,11 @@ public final class JavaSource {
      * @param files to create JavaSource for
      * @param cpInfo classpath info
      */
-    private JavaSource (ClasspathInfo cpInfo, Collection<? extends FileObject> files) throws IOException {
+    private JavaSource (ClasspathInfo cpInfo, PositionConverter binding, Collection<? extends FileObject> files) throws IOException {
         this.reparseDelay = REPARSE_DELAY;
         this.files = Collections.unmodifiableList(new ArrayList<FileObject>(files));   //Create a defensive copy, prevent modification
         this.fileChangeListener = new FileChangeListenerImpl ();
+        this.binding = binding;
         boolean multipleSources = this.files.size() > 1, filterAssigned = false;
         for (Iterator<? extends FileObject> it = this.files.iterator(); it.hasNext();) {
             FileObject file = it.next();
@@ -418,7 +441,10 @@ public final class JavaSource {
                 }
                 if (!filterAssigned) {
                     filterAssigned = true;
-                    JavaFileFilterImplementation filter = JavaFileFilterQuery.getFilter(file);
+                    if (this.binding == null) {
+                        this.binding = new PositionConverter(file, JavaFileFilterQuery.getFilter(file));
+                    }
+                    JavaFileFilterImplementation filter = this.binding.getFilter();
                     if (filter != null) {
                         this.filterListener = new FilterListener (filter);
                     }
@@ -433,7 +459,7 @@ public final class JavaSource {
                 }
             }
         }
-        this.classpathInfo = cpInfo;        
+        this.classpathInfo = cpInfo;
         if (this.files.size() == 1) {
             this.rootFo = classpathInfo.getClassPath(PathKind.SOURCE).findOwnerRoot(this.files.iterator().next());
         }
@@ -486,7 +512,7 @@ public final class JavaSource {
         assert !holdsDocumentWriteLock(files) : "JavaSource.runCompileControlTask called under Document write lock.";    //NOI18N
         
         boolean a = false;
-        assert a = true;        
+        assert a = true;
         if (a && javax.swing.SwingUtilities.isEventDispatchThread()) {
             StackTraceElement stackTraceElement = Thread.currentThread().getStackTrace()[2];
             if (warnedAboutRunInEQ.add(stackTraceElement)) {
@@ -512,7 +538,7 @@ public final class JavaSource {
                         }                        
                     }
                     if (currentInfo == null) {
-                        currentInfo = createCurrentInfo(this,this.files.isEmpty() ? null : this.files.iterator().next(), filterListener, null);                
+                        currentInfo = createCurrentInfo(this, binding, null);
                         if (shared) {
                             synchronized (this) {                        
                                 if (this.currentInfo == null || (this.flags & INVALID) != 0) {
@@ -581,7 +607,7 @@ public final class JavaSource {
                         else {
                             restarted = true;
                         }
-                        CompilationInfo ci = createCurrentInfo(this,activeFile,filterListener,jt);
+                        CompilationInfo ci = createCurrentInfo(this, new PositionConverter(activeFile, null), jt);
                         task.run(new CompilationController(ci));
                         if (!ci.needsRestart) {
                             jt = ci.getJavacTask();
@@ -742,7 +768,7 @@ public final class JavaSource {
                         }
                     }
                     if (currentInfo == null) {
-                        currentInfo = createCurrentInfo(this,this.files.isEmpty() ? null : this.files.iterator().next(), filterListener, null);
+                        currentInfo = createCurrentInfo(this, binding, null);
                         synchronized (this) {
                             if (this.currentInfo == null || (this.flags & INVALID) != 0) {
                                 this.currentInfo = currentInfo;
@@ -801,7 +827,7 @@ public final class JavaSource {
                         else {
                             restarted = true;
                         }
-                        CompilationInfo ci = createCurrentInfo(this,activeFile, filterListener, jt);
+                        CompilationInfo ci = createCurrentInfo(this, new PositionConverter(activeFile, null), jt);
                         WorkingCopy copy = new WorkingCopy(ci);
                         task.run(copy);
                         if (!ci.needsRestart) {
@@ -880,7 +906,7 @@ public final class JavaSource {
             currentInfo = this.currentInfo;
         }
         if (currentInfo == null) {
-            currentInfo = createCurrentInfo (this, this.files.isEmpty() ? null : this.files.iterator().next(), filterListener, null);
+            currentInfo = createCurrentInfo (this, binding, null);
         }
         synchronized (this) {
             if (this.currentInfo == null) {
@@ -1423,7 +1449,7 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
                                     try {
                                         //createCurrentInfo has to be out of synchronized block, it aquires an editor lock                                    
                                         if (jsInvalid) {
-                                            ci = createCurrentInfo (js,js.files.isEmpty() ? null : js.files.iterator().next(), js.filterListener, null);
+                                            ci = createCurrentInfo (js, js.binding, null);
                                             synchronized (js) {
                                                 if ((js.flags & INVALID) != 0) {
                                                     js.currentInfo = ci;
@@ -1731,11 +1757,8 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
     
     private final class FilterListener implements ChangeListener {        
         
-        private final JavaFileFilterImplementation filter;
-        
         public FilterListener (final JavaFileFilterImplementation filter) {
-            this.filter = filter;
-            this.filter.addChangeListener(WeakListeners.change(this, this.filter));
+            filter.addChangeListener(WeakListeners.change(this, filter));
         }
         
         public void stateChanged(ChangeEvent event) {
@@ -1743,10 +1766,12 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
         }
     }
         
-    private static CompilationInfo createCurrentInfo (final JavaSource js, final FileObject fo, final FilterListener filterListener, final JavacTaskImpl javac) throws IOException {        
-        CompilationInfo info = new CompilationInfo (js, fo, filterListener == null ? null : filterListener.filter, javac);
-        Logger.getLogger("TIMER").log(Level.FINE, "CompilationInfo",
-            new Object[] {fo, info});
+    private static CompilationInfo createCurrentInfo (final JavaSource js, final PositionConverter binding, final JavacTaskImpl javac) throws IOException {        
+        CompilationInfo info = new CompilationInfo (js, binding, javac);
+        if (binding != null) {
+            Logger.getLogger("TIMER").log(Level.FINE, "CompilationInfo",
+                    new Object[] {binding.getFileObject(), info});
+        }
         return info;
     }
 
@@ -1829,6 +1854,14 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
         @Override
         public boolean isDispatchThread () {
             return factory.isDispatchThread(Thread.currentThread());
+        }
+
+        public JavaSource create(ClasspathInfo cpInfo, PositionConverter binding, Collection<? extends FileObject> files) throws IllegalArgumentException {
+            return JavaSource.create(cpInfo, binding, files);
+        }
+
+        public PositionConverter create(FileObject fo, int offset, int length, JTextComponent component) {
+            return new PositionConverter(fo, offset, length, component);
         }
     }
     
@@ -2199,7 +2232,7 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
         String dumpDir =  userDir + "/var/log/"; //NOI18N
         String src = info.getText();
         FileObject file = info.getFileObject();
-        String fileName = FileUtil.getFileDisplayName(info.getFileObject());
+        String fileName = FileUtil.getFileDisplayName(file);
         String origName = file.getName();
         File f = new File(dumpDir + origName + ".dump"); // NOI18N
         boolean dumpSucceeded = false;

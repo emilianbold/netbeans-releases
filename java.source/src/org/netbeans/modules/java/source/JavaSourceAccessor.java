@@ -21,15 +21,19 @@ package org.netbeans.modules.java.source;
 
 import com.sun.tools.javac.api.JavacTaskImpl;
 import java.io.IOException;
+import java.util.Collection;
+import javax.swing.text.JTextComponent;
 import javax.tools.DiagnosticListener;
 import javax.tools.JavaFileObject;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.PositionConverter;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.java.source.builder.DefaultEnvironment;
 import org.openide.ErrorManager;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -85,6 +89,9 @@ public abstract class JavaSourceAccessor {
     
     public abstract void revalidate(JavaSource js); 
     
+    public abstract JavaSource create(final ClasspathInfo cpInfo, final PositionConverter binding, final Collection<? extends FileObject> files) throws IllegalArgumentException;
+    
+    public abstract PositionConverter create(final FileObject fo, int offset, int length, final JTextComponent component);
     
     /**
      * Returns true when the caller is a {@link JavaSource} worker thread

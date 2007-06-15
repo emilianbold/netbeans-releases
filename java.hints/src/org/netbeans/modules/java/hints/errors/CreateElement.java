@@ -27,6 +27,7 @@ import com.sun.source.tree.ParameterizedTypeTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -57,6 +58,7 @@ import org.netbeans.modules.java.hints.spi.ErrorRule;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 
 import static org.netbeans.modules.java.hints.errors.CreateElementUtilities.*;
 
@@ -75,10 +77,15 @@ public final class CreateElement implements ErrorRule<Void> {
     }
     
     public List<Fix> run(CompilationInfo info, String diagnosticKey, int offset, TreePath treePath, Data<Void> data) {
-        return analyze(info, offset);
+        try {
+            return analyze(info, offset);
+        } catch (IOException e) {
+            Exceptions.printStackTrace(e);
+            return null;
+        }
     }
     
-    static List<Fix> analyze(CompilationInfo info, int offset) {
+    static List<Fix> analyze(CompilationInfo info, int offset) throws IOException {
         TreePath errorPath = ErrorHintsProvider.findUnresolvedElement(info, offset);
         
         if (errorPath == null) {

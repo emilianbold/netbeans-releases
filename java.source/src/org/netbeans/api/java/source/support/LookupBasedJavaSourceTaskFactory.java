@@ -21,12 +21,14 @@ package org.netbeans.api.java.source.support;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.JavaSource.Priority;
 import org.netbeans.api.java.source.JavaSourceTaskFactory;
+import org.netbeans.api.java.source.SourceUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
@@ -52,6 +54,8 @@ public abstract class LookupBasedJavaSourceTaskFactory extends JavaSourceTaskFac
     
     private List<FileObject> currentFiles;
     private LookupListener listener;
+    
+    private String[] supportedMimeTypes;
 
     /**Construct the LookupBasedJavaSourceTaskFactory with given {@link Phase} and {@link Priority}.
      *
@@ -59,9 +63,20 @@ public abstract class LookupBasedJavaSourceTaskFactory extends JavaSourceTaskFac
      * @param priority priority to use for tasks created by {@link #createTask}
      */
     public LookupBasedJavaSourceTaskFactory(Phase phase, Priority priority) {
+        this(phase, priority, (String[]) null);
+    }
+    
+    /**Construct the LookupBasedJavaSourceTaskFactory with given {@link Phase} and {@link Priority}.
+     *
+     * @param phase phase to use for tasks created by {@link #createTask}
+     * @param priority priority to use for tasks created by {@link #createTask}
+     * @since 0.21
+     */
+    public LookupBasedJavaSourceTaskFactory(Phase phase, Priority priority, String... supportedMimeTypes) {
         super(phase, priority);
         currentFiles = Collections.emptyList();
         listener = new LookupListenerImpl();
+        this.supportedMimeTypes = supportedMimeTypes != null ? supportedMimeTypes.clone() : null;
     }
 
     /**Sets a new {@link Lookup} to search.
@@ -91,7 +106,7 @@ public abstract class LookupBasedJavaSourceTaskFactory extends JavaSourceTaskFac
     }
 
     private synchronized void updateCurrentFiles() {
-        Set<FileObject> newCurrentFiles = new HashSet();
+        Set<FileObject> newCurrentFiles = new HashSet<FileObject>();
 
         newCurrentFiles.addAll(fileObjectResult.allInstances());
 
@@ -107,7 +122,7 @@ public abstract class LookupBasedJavaSourceTaskFactory extends JavaSourceTaskFac
             }
         }
 
-        currentFiles = new ArrayList<FileObject>(newCurrentFiles);
+        currentFiles = OpenedEditors.filterSupportedMIMETypes(new LinkedList<FileObject>(newCurrentFiles), supportedMimeTypes);
         
         lookupContentChanged();
     }

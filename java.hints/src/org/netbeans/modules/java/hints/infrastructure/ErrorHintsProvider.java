@@ -54,6 +54,7 @@ import javax.swing.text.Position.Bias;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
@@ -96,7 +97,7 @@ public final class ErrorHintsProvider implements CancellableTask<CompilationInfo
         errorKind2Severity.put(Diagnostic.Kind.OTHER, Severity.WARNING);
     }
     
-    List<ErrorDescription> computeErrors(CompilationInfo info, Document doc) {
+    List<ErrorDescription> computeErrors(CompilationInfo info, Document doc) throws IOException {
         JavaSource js = JavaSource.forFileObject(file);
         List<Diagnostic> errors = info.getDiagnostics();
         List<ErrorDescription> descs = new ArrayList<ErrorDescription>();
@@ -156,7 +157,7 @@ public final class ErrorHintsProvider implements CancellableTask<CompilationInfo
     public Document getDocument() {
         try {
             DataObject d = DataObject.find(file);
-            EditorCookie ec = (EditorCookie) d.getCookie(EditorCookie.class);
+            EditorCookie ec = d.getCookie(EditorCookie.class);
             
             if (ec == null)
                 return null;
@@ -168,8 +169,15 @@ public final class ErrorHintsProvider implements CancellableTask<CompilationInfo
         }
     }
     
-    public static Token findUnresolvedElementToken(CompilationInfo info, int offset) {
-        TokenSequence<JavaTokenId> ts = info.getTokenHierarchy().tokenSequence(JavaTokenId.language());
+    public static Token findUnresolvedElementToken(CompilationInfo info, int offset) throws IOException {
+        offset = info.getPositionConverter().getOriginalPosition(offset);
+        
+        TokenHierarchy th = TokenHierarchy.get(info.getDocument());
+        TokenSequence<JavaTokenId> ts = SourceUtils.getJavaTokenSequence(th, offset);
+        
+        if (ts == null) {
+            return null;
+        }
         
         ts.move(offset);
         if (ts.moveNext()) {
@@ -205,22 +213,20 @@ public final class ErrorHintsProvider implements CancellableTask<CompilationInfo
         return null;
     }
     
-    private static int[] findUnresolvedElementSpan(CompilationInfo info, int offset) {
-        TokenHierarchy th = info.getTokenHierarchy();
-        
+    private static int[] findUnresolvedElementSpan(CompilationInfo info, int offset) throws IOException {
         Token t = findUnresolvedElementToken(info, offset);
         
         if (t != null) {
             return new int[] {
-                t.offset(th),
-                t.offset(th) + t.length()
+                t.offset(null),
+                t.offset(null) + t.length()
             };
         }
         
         return null;
     }
     
-    public static TreePath findUnresolvedElement(CompilationInfo info, int offset) {
+    public static TreePath findUnresolvedElement(CompilationInfo info, int offset) throws IOException {
         int[] span = findUnresolvedElementSpan(info, offset);
         
         if (span != null) {
@@ -241,11 +247,11 @@ public final class ErrorHintsProvider implements CancellableTask<CompilationInfo
             "compiler.err.var.might.not.have.been.initialized"
     ));
     
-    private Position[] getLine(CompilationInfo info, Diagnostic d, final Document doc, int startOffset, int endOffset) {
+    private Position[] getLine(CompilationInfo info, Diagnostic d, final Document doc, int startOffset, int endOffset) throws IOException {
         StyledDocument sdoc = (StyledDocument) doc;
         DataObject dObj = (DataObject)doc.getProperty(doc.StreamDescriptionProperty );
-        LineCookie lc = (LineCookie) dObj.getCookie(LineCookie.class);
-        int lineNumber = NbDocument.findLineNumber(sdoc, startOffset);
+        LineCookie lc = dObj.getCookie(LineCookie.class);
+        int lineNumber = NbDocument.findLineNumber(sdoc, info.getPositionConverter().getOriginalPosition(startOffset));
         int lineOffset = NbDocument.findLineOffset(sdoc, lineNumber);
         Line line = lc.getLineSet().getCurrent(lineNumber);
         
@@ -262,9 +268,10 @@ public final class ErrorHintsProvider implements CancellableTask<CompilationInfo
         }
         
         if (UNDERLINE_IDENTIFIER.contains(d.getCode())) {
-            TokenSequence<JavaTokenId> ts = info.getTokenHierarchy().tokenSequence(JavaTokenId.language());
+            int offset = info.getPositionConverter().getOriginalPosition((int) getPrefferedPosition(info, d));
+            TokenSequence<JavaTokenId> ts = SourceUtils.getJavaTokenSequence(TokenHierarchy.get(doc), offset);
             
-            int diff = ts.move((int) getPrefferedPosition(info, d));
+            int diff = ts.move(offset);
             
             if (ts.moveNext() && diff >= 0 && diff < ts.token().length()) {
                 Token<JavaTokenId> t = ts.token();
@@ -347,7 +354,7 @@ public final class ErrorHintsProvider implements CancellableTask<CompilationInfo
         cancel = false;
     }
     
-    public void run(CompilationInfo info) {
+    public void run(CompilationInfo info) throws IOException {
         resume();
         
         Document doc = getDocument();
@@ -372,7 +379,7 @@ public final class ErrorHintsProvider implements CancellableTask<CompilationInfo
                 new Object[] {info.getFileObject(), end - start});
     }
     
-    private long getPrefferedPosition(CompilationInfo info, Diagnostic d) {
+    private long getPrefferedPosition(CompilationInfo info, Diagnostic d) throws IOException {
         if ("compiler.err.doesnt.exist".equals(d.getCode())) {
             return d.getStartPosition();
         }

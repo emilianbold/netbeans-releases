@@ -82,6 +82,18 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="jsp-dialogs">
+            <api name="general"/>
+            <summary>Support for JSPs and dialogs</summary>
+            <version major="0" minor="21"/>
+            <date day="15" month="6" year="2007"/>
+            <author login="jlahoda"/>
+            <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" modification="no" semantic="compatible" source="compatible"/>
+            <description>
+                Adding ability to use Java infrastructure for non-Java file (eg. JSP files) and inside dialogs.
+            </description>
+            <issue number="106629"/>
+        </change>
         <change id="GeneratorUtilities">
             <api name="general"/>
             <summary>Adding GeneratorUtilities</summary>

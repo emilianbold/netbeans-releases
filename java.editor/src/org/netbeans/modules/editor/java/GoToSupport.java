@@ -115,7 +115,7 @@ public class GoToSupport {
                         return ;
                     }
                     
-                    int exactOffset = span[0] + 1;
+                    int exactOffset = controller.getPositionConverter().getJavaSourcePosition(span[0] + 1);
                     
                     TreePath path = controller.getTreeUtilities().pathFor(exactOffset);
                     TreePath parent = path.getParentPath();
@@ -259,8 +259,8 @@ public class GoToSupport {
             return null;
         }
         
-        TokenHierarchy<Document> th = TokenHierarchy.get(doc);
-        TokenSequence<JavaTokenId> ts = th.tokenSequence(JavaTokenId.language());
+        TokenHierarchy th = TokenHierarchy.get(doc);
+        TokenSequence<JavaTokenId> ts = SourceUtils.getJavaTokenSequence(th, offset);
         
         if (ts == null)
             return null;

@@ -114,8 +114,8 @@ public class Utilities {
         return null;        
     }        
     
-    public static boolean isJavaContext(final JTextComponent component, final int offset) {
-        TokenSequence<JavaTokenId> ts = getJavaTokenSequence(component, offset);
+    public static boolean isJavaContext(final JTextComponent component, final int offset) {        
+        TokenSequence<JavaTokenId> ts = SourceUtils.getJavaTokenSequence(TokenHierarchy.get(component.getDocument()), offset);
         if (ts == null)
             return false;
         switch(ts.token().id()) {

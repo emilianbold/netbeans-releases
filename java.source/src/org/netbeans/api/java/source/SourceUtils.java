@@ -27,6 +27,7 @@ import java.net.URL;
 import java.util.*;
 
 import javax.lang.model.element.*;
+import javax.lang.model.type.*;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
@@ -59,13 +60,20 @@ import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.queries.JavadocForBinaryQuery;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.java.source.ClasspathInfo.PathKind;
 import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenId;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.java.JavaDataLoader;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.save.Reformatter;
@@ -76,8 +84,10 @@ import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
+import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -89,6 +99,24 @@ public class SourceUtils {
     private static final String PACKAGE_SUMMARY = "package-summary";   //NOI18N
     
     private SourceUtils() {}
+    
+    /**
+     * @since 0.21
+     */
+    public static TokenSequence<JavaTokenId> getJavaTokenSequence(final TokenHierarchy hierarchy, final int offset) {
+        if (hierarchy != null) {
+            TokenSequence<? extends TokenId> ts = hierarchy.tokenSequence();
+            while(ts != null && (ts.moveNext() || offset == 0)) {
+                ts.move(offset);
+                if (!ts.moveNext())
+                    return null;
+                if (ts.language() == JavaTokenId.language())
+                    return (TokenSequence<JavaTokenId>)ts;
+                ts = ts.embedded();
+            }
+        }
+        return null;
+    }
     
     public static boolean checkTypesAssignable(CompilationInfo info, TypeMirror from, TypeMirror to) {
         Context c = ((JavacTaskImpl) info.getJavacTask()).getContext();

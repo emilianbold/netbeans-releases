@@ -30,8 +30,8 @@ import javax.lang.model.util.Types;
 import javax.swing.text.Document;
 import javax.tools.Diagnostic;
 import org.netbeans.api.lexer.TokenHierarchy;
-import static org.netbeans.api.java.source.JavaSource.Phase.*;
 import org.openide.filesystems.FileObject;
+import static org.netbeans.api.java.source.JavaSource.Phase.*;
 
 /** Class for explicit invocation of compilation phases on a java source.
  *  The implementation delegates to the {@link CompilationInfo} to get the data,
@@ -175,10 +175,15 @@ public class CompilationController extends CompilationInfo {
     public FileObject getFileObject() {
         return this.delegate.getFileObject();
     }
-
+    
     @Override
     public Document getDocument() throws IOException {
         return this.delegate.getDocument();
+    }
+    
+    @Override
+    public PositionConverter getPositionConverter() {
+        return this.delegate.getPositionConverter();
     }
     
     @Override

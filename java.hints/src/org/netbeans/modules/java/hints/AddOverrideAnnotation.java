@@ -125,7 +125,7 @@ public class AddOverrideAnnotation extends AbstractHint {
                 if (addHint) {
                     List<Fix> fixes = Collections.<Fix>singletonList(new FixImpl(TreePathHandle.create(treePath, compilationInfo), compilationInfo.getFileObject()));
                     
-                    int[] span = Utilities.findIdentifierSpan(treePath, compilationInfo.getCompilationUnit(), compilationInfo.getTrees().getSourcePositions(), doc);
+                    int[] span = Utilities.findIdentifierSpan(treePath, compilationInfo, doc);
                     
                     if (span[0] != (-1) && span[1] != (-1)) {
                         ErrorDescription ed = ErrorDescriptionFactory.createErrorDescription(getSeverity().toEditorSeverity(), "Add Override Annotation", fixes, doc, doc.createPosition(span[0]), doc.createPosition(span[1]));

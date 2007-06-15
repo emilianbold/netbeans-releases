@@ -89,8 +89,7 @@ public class HideFieldByVar extends HideField {
 
         int[] span = Utilities.findIdentifierSpan(
             treePath, 
-            compilationInfo.getCompilationUnit(), 
-            compilationInfo.getTrees().getSourcePositions(), 
+            compilationInfo, 
             doc
         );
         List<Fix> fixes = Collections.<Fix>singletonList(new FixImpl(

@@ -53,6 +53,7 @@ import org.netbeans.spi.editor.hints.EnhancedFix;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -99,7 +100,13 @@ public final class ImportClass implements ErrorRule<ImportCandidatesHolder> {
             }
         }
         
-        Token ident = ErrorHintsProvider.findUnresolvedElementToken(info, offset);
+        Token ident = null;
+        
+        try {
+            ident = ErrorHintsProvider.findUnresolvedElementToken(info, offset);
+        } catch (IOException e) {
+            Exceptions.printStackTrace(e);
+        }
         
         ErrorHintsProvider.LOG.log(Level.FINE, "ImportClassEnabler.create ident={0}", ident); //NOI18N
         

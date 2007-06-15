@@ -34,7 +34,7 @@ public class SemanticHighlighterFactory extends EditorAwareJavaSourceTaskFactory
     
     /** Creates a new instance of SemanticHighlighterFactory */
     public SemanticHighlighterFactory() {
-        super(Phase.RESOLVED, Priority.BELOW_NORMAL);
+        super(Phase.RESOLVED, Priority.BELOW_NORMAL, "*");
     }
 
     public CancellableTask<CompilationInfo> createTask(FileObject file) {

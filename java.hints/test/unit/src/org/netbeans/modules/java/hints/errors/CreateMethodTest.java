@@ -19,6 +19,7 @@
 package org.netbeans.modules.java.hints.errors;
 
 import com.sun.source.util.TreePath;
+import java.io.IOException;
 import org.netbeans.api.java.source.CompilationInfo;
 import java.util.LinkedList;
 import java.util.List;
@@ -76,7 +77,7 @@ public class CreateMethodTest extends ErrorHintsTestBase {
                        "package test; public class Test {public void test() {Int i = null; i.test(1);} public static interface Int{ public void test(int i); }}");
     }
     
-    protected List<Fix> computeFixes(CompilationInfo info, int pos, TreePath path) {
+    protected List<Fix> computeFixes(CompilationInfo info, int pos, TreePath path) throws IOException {
         List<Fix> fixes = new CreateElement().analyze(info, pos);
         List<Fix> result=  new LinkedList<Fix>();
         
