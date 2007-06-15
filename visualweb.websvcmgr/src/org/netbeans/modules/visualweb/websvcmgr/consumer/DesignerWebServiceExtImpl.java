@@ -203,6 +203,8 @@ public class DesignerWebServiceExtImpl implements WebServiceManagerExt {
             // data provider classes) for the port will live in a sub-package with the port display name (in lower cases)
             Map<String, String> methodToDataProviderClassMap = new HashMap<String, String>();
             String className = port.getName() + "Client";
+            String serviceClassName = wsMetadataDesc.getPackageName() + "." + wsMetadataDesc.getName();
+            
             String javaName = port.getJavaName();
             
             proxyBeanNames.put(port.getJavaName(), wsMetadataDesc.getPackageName() + "." + className);
@@ -234,16 +236,30 @@ public class DesignerWebServiceExtImpl implements WebServiceManagerExt {
                 tmpProxy.deleteOnExit();
                 
                 URLClassLoader classLoader = new URLClassLoader(Util.buildClasspath(tmpProxy, libProperty).toArray(new URL[0]));
-                Class serviceClass = null;
                 
+                
+                // Verify that the port getter method exists in the Service class, otherwise
+                // the code generation in WrapperClientWriter will fail
                 try {
-                    serviceClass = classLoader.loadClass(javaName);
+                    String portImplMethod = "get" + Util.getProperPortName(port.getName());
+                    Class serviceClass = classLoader.loadClass(serviceClassName);
+                    serviceClass.getMethod(portImplMethod);
+                }catch (Exception ex) {
+                    ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "Invalid port: " + port.getName());
+                    continue;
+                }
+
+                // Use reflection to get the proxy class methods; needed because the JAX-WS model is not
+                // valid for JAX-RPC clients
+                Class proxyClass = null;
+                try {
+                    proxyClass = classLoader.loadClass(javaName);
                 }catch (ClassNotFoundException cnfe) {
                     ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "Could not load class: " + javaName);
                     continue;
                 }
                 
-                java.lang.reflect.Method[] methods = serviceClass.getDeclaredMethods();
+                java.lang.reflect.Method[] methods = proxyClass.getDeclaredMethods();
                 ArrayList<java.lang.reflect.Method> methodList = new ArrayList<java.lang.reflect.Method>();
                 for (int index = 0; index < methods.length; index++) {
                     methodList.add(methods[index]);
@@ -261,7 +277,7 @@ public class DesignerWebServiceExtImpl implements WebServiceManagerExt {
                 
                 beanWriter.setPackage(wsMetadataDesc.getPackageName());
                 beanWriter.setClassName(className);
-                beanWriter.setContainedClassInfo(wsMetadataDesc.getName());
+                beanWriter.setContainedClassInfo(serviceClassName);
                 beanWriter.addImport(wsMetadataDesc.getPackageName() + ".*");
                 beanWriter.setPort(port);
                 beanWriter.writeClass();
