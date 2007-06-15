@@ -33,21 +33,13 @@ import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.dnd.DnDConstants;
 import java.lang.ref.WeakReference;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 import org.netbeans.modules.vmd.api.io.ActiveViewSupport;
 import org.netbeans.modules.vmd.api.io.DataEditorView;
 
 import org.netbeans.modules.vmd.api.io.DataObjectContext;
-import org.netbeans.modules.vmd.api.model.ComponentProducer;
-import org.netbeans.modules.vmd.api.model.common.AcceptPresenter;
 import org.netbeans.modules.vmd.api.model.common.AcceptSupport;
 import org.netbeans.modules.vmd.api.model.common.DesignComponentDataFlavor;
-import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
 import org.netbeans.modules.vmd.api.properties.common.PropertiesSupport;
-import org.openide.nodes.Node;
-import org.openide.nodes.NodeTransfer;
 import org.openide.nodes.Sheet;
 import org.openide.util.datatransfer.PasteType;
 
@@ -159,6 +151,8 @@ final class InspectorFolderNode extends AbstractNode {
         ifnc.getDocument().getTransactionManager().readAccess(new Runnable() {
             public void run() {
                 final Transferable trans = new NodeTransferable(ifnc);
+                if (component == null)
+                    return;
                 if (component.get() != null && AcceptSupport.isAcceptable(component.get(),trans, null)) {
                     pasteType = new PasteType() {
                         public Transferable paste() throws IOException {
