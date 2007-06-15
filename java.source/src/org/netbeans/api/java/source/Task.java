@@ -21,7 +21,7 @@ package org.netbeans.api.java.source;
 /**
  * Runnable which takes parameter of a given type.
  * @author Petr Hrebejk, Tomas Zezula
- * @since 0.17
+ * @since 0.18
  */
 public interface Task<P> {
 

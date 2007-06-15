@@ -85,7 +85,7 @@ is the proper place.
         <change id="JavaSource-Task">
             <api name="general"/>
             <summary>CancellableTask split into Task and CancellableTask.</summary>
-            <version major="0" minor="17"/>
+            <version major="0" minor="18"/>
             <date day="13" month="6" year="2007"/>
             <author login="tzezula"/>
             <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" modification="no" semantic="compatible" source="compatible"/>
