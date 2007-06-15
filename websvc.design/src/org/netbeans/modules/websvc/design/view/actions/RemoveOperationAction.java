@@ -13,8 +13,14 @@ import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
 import javax.swing.AbstractAction;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.websvc.api.jaxws.project.WSUtils;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.modules.websvc.core.MethodGenerator;
@@ -51,7 +57,7 @@ public class RemoveOperationAction extends AbstractAction{
         super(getName());
         this.service = service;
         this.method = method;
-        this.implementationClass = method.getImplementationClass();
+        this.implementationClass = getImplementationClass(service.getLocalWsdlFile() != null);
         this.wsdlFile = getWSDLFile();
         this.methodName = method.getOperationName();
     }
@@ -88,7 +94,7 @@ public class RemoveOperationAction extends AbstractAction{
             generatorHelper.removeWSOperation(wsdlModel, generatorHelper.
                     getPortTypeName(implementationClass), methodName);
             generatorHelper.generateJavaArtifacts(service.getName(), implementationClass, methodName, true);
-    
+            
         } else{
             //WS from Java
             MethodGenerator.deleteMethod(implementationClass, methodName);
@@ -120,4 +126,30 @@ public class RemoveOperationAction extends AbstractAction{
     private static String getName() {
         return NbBundle.getMessage(RemoveOperationAction.class, "LBL_RemoveOperation");
     }
+    
+    private FileObject getImplementationClass(boolean fromWSDL){
+        FileObject implementationClass= null;
+        FileObject classFO = method.getImplementationClass();
+        String implClassName = service.getImplementationClass();
+        if(fromWSDL){
+            Project project = FileOwnerQuery.getOwner(classFO);
+            SourceGroup[] sgs = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+            if(sgs.length > 0){
+                ClassPath classPath = null;
+                for(int i = 0; i < sgs.length; i++){
+                    classPath = ClassPath.getClassPath(sgs[i].getRootFolder(),ClassPath.SOURCE);
+                    if(classPath != null){
+                        implementationClass = classPath.findResource(implClassName.replace('.', '/') + ".java");
+                        if(implementationClass != null){
+                            break;
+                        }
+                    }
+                }
+            }
+        }else{
+            implementationClass = classFO;
+        }
+        return implementationClass;
+    }
+    
 }
