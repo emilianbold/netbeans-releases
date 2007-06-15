@@ -56,13 +56,7 @@ public class ConfFilesNodeFactory implements NodeFactory {
         }
         
         public List<String> keys() {
-            EjbJar ejbModule = project.getAPIEjbJar();
-            FileObject docBaseDir = ejbModule.getMetaInf();
-            if (docBaseDir != null) {
-                return Collections.singletonList(CONF_FILES);
-            }
-            
-            return Collections.emptyList();
+            return Collections.singletonList(CONF_FILES);
         }
 
         public void addChangeListener(ChangeListener l) {
@@ -75,8 +69,12 @@ public class ConfFilesNodeFactory implements NodeFactory {
 
         public Node node(String key) {
             if (key == CONF_FILES) {
-                EjbJar ejbModule = project.getAPIEjbJar();
-                return J2eeProjectView.createConfigFilesView(ejbModule.getMetaInf());                
+                FileObject metaInf = project.getAPIEjbJar().getMetaInf();
+                if (metaInf != null) {
+                    return J2eeProjectView.createConfigFilesView(metaInf);
+                } else {
+                    return null;
+                }
             }
             assert false: "No node for key: " + key; // NOI18N
             return null;
