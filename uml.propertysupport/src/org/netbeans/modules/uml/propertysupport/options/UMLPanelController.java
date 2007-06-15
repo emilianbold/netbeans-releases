@@ -94,7 +94,7 @@ public class UMLPanelController extends OptionsPanelController {
     
     public void cancel() {
         for (UMLOptionsPanel panel: support.getMainPanels()) {
-            panel.update(); 
+            panel.cancel(); 
         }
     }
     
