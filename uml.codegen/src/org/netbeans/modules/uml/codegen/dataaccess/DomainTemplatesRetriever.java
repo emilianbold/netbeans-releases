@@ -56,11 +56,11 @@ public class DomainTemplatesRetriever
 
         // initialize to the size of the enabled templates
         codeGenTemplates = 
-            new HashMap<String,List<DomainTemplate>>(projectTemplates.size());
+            new HashMap<String, List<DomainTemplate>>(projectTemplates.size());
 
         // get all of the available templates (from UML Options UI)
         TemplateFamiliesHandler dataHandler = 
-            TemplateFamiliesHandler.getInstance();
+            TemplateFamiliesHandler.getInstance(true);
         
         // TemplateFamilies templateFamilies = dataHandler.getTemplateFamilies();
         TemplateFamilies templateFamilies = dataHandler.getTemplateFamilies();

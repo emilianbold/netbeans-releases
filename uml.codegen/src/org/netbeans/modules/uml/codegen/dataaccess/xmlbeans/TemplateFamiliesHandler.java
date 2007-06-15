@@ -45,13 +45,20 @@ public class TemplateFamiliesHandler
     public final static String configFolder = 
         ProductHelper.getConfigManager().getDefaultConfigLocation();
 
-    
-    public static TemplateFamiliesHandler getInstance()
+    public static TemplateFamiliesHandler getInstance(boolean reset)
     {
+        if (reset)
+            self = null;
+        
         if (self == null)
             self = new TemplateFamiliesHandler();
         
         return self;
+    }
+    
+    public static TemplateFamiliesHandler getInstance()
+    {
+        return TemplateFamiliesHandler.getInstance(false);
     }
     
     private TemplateFamiliesHandler()
