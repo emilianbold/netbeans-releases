@@ -139,16 +139,18 @@ public class ServerResourceNode extends FilterNode {
         if (LOG) {
             LOGGER.log(Level.FINE, "The DataFolder is: " + folderDo); // NOI18N
         }
+        final Node original = getDataFolderNode(folderDo, project);
+        final org.openide.nodes.Children children = getDataFolderNodeChildren(folderDo);
+        // #106687: should not call Children.getNodes(true) under Children.MUTEX
+        if (LOG) {
+            LOGGER.log(Level.FINE, "New children count: " + children.getNodes(true).length);
+        }
         // #64665: should not call FilterNode.changeOriginal() or Node.setChildren() 
         // under Children.MUTEX read access
         Children.MUTEX.postWriteRequest(new Runnable() {
             public void run() {
-                changeOriginal(getDataFolderNode(folderDo, project), false);
-                org.openide.nodes.Children children = getDataFolderNodeChildren(folderDo);
+                changeOriginal(original, false);
                 setChildren(children);
-                if (LOG) {
-                    LOGGER.log(Level.FINE, "Children count: " + children.getNodes(true).length);
-                }
             }
         });
 
