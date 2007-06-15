@@ -26,6 +26,7 @@ public class J2EEUISettings  {
     private static final J2EEUISettings INSTANCE = new J2EEUISettings();
     private static final String SHOW_AGAIN_BROKEN_REF_ALERT = "showAgainBrokenRefAlert"; // NOI18N
     private static final String SHOW_AGAIN_BROKEN_SERVER_ALERT = "showAgainBrokenServerAlert"; // NOI18N
+    private static final String SHOW_AGAIN_BROKEN_DATASOURCE_ALERT = "showAgainBrokenDatasourceAlert"; // NOI18N
     
     public String displayName() {
         return "J2EEUISettings"; // NOI18N (not shown in UI)
@@ -50,6 +51,15 @@ public class J2EEUISettings  {
     public void setShowAgainBrokenServerAlert(boolean again) {
         getPreferences().putBoolean(SHOW_AGAIN_BROKEN_SERVER_ALERT, again);
     }
+    
+     public boolean isShowAgainBrokenDatasourceAlert() {
+        return getPreferences().getBoolean(SHOW_AGAIN_BROKEN_DATASOURCE_ALERT, true);
+    }
+    
+    public void setShowAgainBrokenDatasourceAlert(boolean again) {
+        getPreferences().putBoolean(SHOW_AGAIN_BROKEN_DATASOURCE_ALERT, again);
+    }
+    
     
     public static J2EEUISettings getDefault() {
         return INSTANCE;

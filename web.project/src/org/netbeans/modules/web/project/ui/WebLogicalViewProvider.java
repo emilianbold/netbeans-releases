@@ -43,6 +43,8 @@ import javax.swing.Action;
 import javax.swing.JSeparator;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.db.explorer.ConnectionListener;
+import org.netbeans.api.db.explorer.ConnectionManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileStateInvalidException;
@@ -75,6 +77,8 @@ import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.j2ee.common.ui.BrokenDatasourceSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
@@ -92,9 +96,11 @@ import org.netbeans.modules.web.project.UpdateHelper;
 import org.netbeans.modules.web.project.WebProject;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
 import org.netbeans.modules.websvc.rest.spi.RestSupport;
+import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.ui.support.NodeFactorySupport;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
+import org.w3c.dom.Element;
 
 /**
  * Support for creating logical views.
@@ -103,6 +109,7 @@ import org.openide.util.Exceptions;
 public class WebLogicalViewProvider implements LogicalViewProvider {
 
     private static final RequestProcessor BROKEN_LINKS_RP = new RequestProcessor("WebLogicalViewProvider.BROKEN_LINKS_RP"); // NOI18N
+    private static final RequestProcessor BROKEN_DATASOURCE_RP = new RequestProcessor("WebLogicalViewProvider.BROKEN_DATASOURCE_RP"); //NOI18N
     
     private final WebProject project;
     private final UpdateHelper helper;
@@ -245,6 +252,7 @@ public class WebLogicalViewProvider implements LogicalViewProvider {
 
         private final Action brokenLinksAction;
         private final BrokenServerAction brokenServerAction;
+        private final BrokenDatasourceAction brokenDatasourceAction;
         private boolean broken;
 
         // icon badging >>>
@@ -270,6 +278,7 @@ public class WebLogicalViewProvider implements LogicalViewProvider {
             }
             brokenLinksAction = new BrokenLinksAction();
             brokenServerAction = new BrokenServerAction();
+            brokenDatasourceAction = new BrokenDatasourceAction();
             J2eeModuleProvider moduleProvider = (J2eeModuleProvider)project.getLookup().lookup(J2eeModuleProvider.class);
             moduleProvider.addInstanceListener((InstanceListener)WeakListeners.create(
                         InstanceListener.class, brokenServerAction, moduleProvider));
@@ -424,12 +433,12 @@ public class WebLogicalViewProvider implements LogicalViewProvider {
         
         public Image getMyIcon( int type ) {
             Image original = super.getIcon( type );                
-            return broken || brokenServerAction.isEnabled() ? Utilities.mergeImages(original, brokenProjectBadge, 8, 0) : original;
+            return broken || brokenServerAction.isEnabled() || brokenDatasourceAction.isEnabled() ? Utilities.mergeImages(original, brokenProjectBadge, 8, 0) : original;
         }
 
         public Image getMyOpenedIcon( int type ) {
             Image original = super.getOpenedIcon(type);                
-            return broken || brokenServerAction.isEnabled() ? Utilities.mergeImages(original, brokenProjectBadge, 8, 0) : original;            
+            return broken || brokenServerAction.isEnabled() || brokenDatasourceAction.isEnabled() ? Utilities.mergeImages(original, brokenProjectBadge, 8, 0) : original;            
         }            
 
         public String getHtmlDisplayName() {
@@ -439,7 +448,7 @@ public class WebLogicalViewProvider implements LogicalViewProvider {
             } catch (CharConversionException ex) {
                 return dispName;
             }
-            return broken || brokenServerAction.isEnabled() ? "<font color=\"#A40000\">" + dispName + "</font>" : null; //NOI18N
+            return broken || brokenServerAction.isEnabled() || brokenDatasourceAction.isEnabled() ? "<font color=\"#A40000\">" + dispName + "</font>" : null; //NOI18N
         }
 
         public Action[] getActions( boolean context ) {
@@ -512,6 +521,9 @@ public class WebLogicalViewProvider implements LogicalViewProvider {
             }
             if (brokenServerAction.isEnabled()) {
                 actions.add(brokenServerAction);
+            }
+            if (brokenDatasourceAction.isEnabled()) {
+                actions.add(brokenDatasourceAction);
             }
             actions.add(CommonProjectActions.customizeProjectAction());
             
@@ -634,8 +646,115 @@ public class WebLogicalViewProvider implements LogicalViewProvider {
                     fireDisplayNameChange(null, null);
                 }
             }
+        } 
+        
+        // For checking projects that use database connections to see if these connections are available
+        private class BrokenDatasourceAction extends AbstractAction implements Runnable, ConnectionListener {
+            private volatile boolean brokenDatasource;
+            private volatile boolean firstTime = false;
+            private RequestProcessor.Task task = null;
+            
+            public BrokenDatasourceAction() {
+                ConnectionManager.getDefault().addConnectionListener(this);
+                
+                // For now make sure BrokenDatasourceAction only applies to visualweb/Creator projects
+                // The if-statement here can be expanded to support other types of projects
+                if (!isVisualWebLegacyProject()) {
+                    putValue(Action.NAME,
+                            NbBundle.getMessage(WebLogicalViewProvider.class,
+                            "LBL_Fix_Broken_Datasource_Action")); //NOI18N
+                    checkMissingDatabaseConnection();
+                }
+            }
+            
+            // Used to check to see if project is a visualweb or Creator project
+            private boolean isVisualWebLegacyProject() {
+                boolean isLegacyProject = false;
+                
+                // Check if Web module is a visualweb 5.5.x or Creator project
+                AuxiliaryConfiguration ac = (AuxiliaryConfiguration)project.getLookup().lookup(AuxiliaryConfiguration.class);
+                Element auxElement = ac.getConfigurationFragment("creator-data", "http://www.sun.com/creator/ns", true); //NOI18N
+                
+                // if project is a visualweb or creator project then find out whether it is a legacy project
+                if (auxElement != null) {
+                    String version = auxElement.getAttribute("jsf.project.version"); //NOI18N
+                    if (version != null) {
+                        if (!version.equals("4.0")) { //NOI18N
+                            isLegacyProject = true;
+                        }
+                    }
+                }
+                
+                return isLegacyProject;
+            }
+            
+            public boolean isEnabled() {
+                return brokenDatasource;
+            }
+            
+            public void actionPerformed(ActionEvent e) {//
+                BrokenDatasourceSupport.fixDatasources(project);
+                checkMissingDatabaseConnection();
+            }
+            
+            private void checkMissingDatabaseConnection() {
+                // Checking for valid database connections for each data source
+                // may take awhile, so run in a separate thread
+                if (task == null) {
+                    task = BROKEN_DATASOURCE_RP.create(this);
+                }
+                task.schedule(100);
+                
+            }
+            
+            public void run() {
+                doCheckMissingDatabaseConnection();
+            }
+            
+            /*
+             * Badge project node, change font color of display name to red and
+             * post an alert dialog if not the first time
+             */
+            private void doCheckMissingDatabaseConnection() {
+                boolean old = brokenDatasource;
+                
+                // Only mark visualweb 6 projects if they are broken
+                if (!isVisualWebLegacyProject()) {
+                    // if the project has any broken data sources then set the brokenDatasource flag to true
+                    if (!BrokenDatasourceSupport.getBrokenDatasources(project).isEmpty()) {
+                        brokenDatasource = true;
+                    } else {
+                        brokenDatasource = false;
+                    }
+                    
+                    if (old != brokenDatasource) {
+                        // make changes in EDT thread
+                        javax.swing.SwingUtilities.invokeLater(new Runnable() {
+                            public void run() {
+                                setEnabled(brokenDatasource);
+                                fireIconChange();
+                                fireOpenedIconChange();
+                                fireDisplayNameChange(null, null);
+                                if (brokenDatasource && !firstTime) {
+                                    BrokenDatasourceSupport.showAlert();
+                                    firstTime = true;
+                                }
+                            }
+                        });
+                    }
+                                        
+                    if (!brokenDatasource) {
+                        ConnectionManager.getDefault().removeConnectionListener(this);
+                    }                    
+                }
+            }
+            
+            public void connectionsChanged() {
+                checkMissingDatabaseConnection();
+            }
         }
     }
+
 
     /** Factory for project actions.<BR>
      * XXX This class is a candidate for move to org.netbeans.spi.project.ui.support
