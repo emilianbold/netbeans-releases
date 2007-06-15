@@ -271,6 +271,23 @@ public class JavaSourceHelper {
         
         return null;
     }
+
+    public static MethodTree getMethodByName(CompilationController controller, String methodName) {
+        TypeElement classElement = getTopLevelClassElement(controller);
+        List<ExecutableElement> methods = ElementFilter.methodsIn(classElement.getEnclosedElements());
+        List<MethodTree> found = new ArrayList<MethodTree>();
+        for (ExecutableElement method : methods) {
+            if (method.getSimpleName().toString().equals(methodName)) {
+                found.add(controller.getTrees().getTree(method));
+            }
+        }
+        if (found.size() > 1) {
+            throw new IllegalArgumentException("Unexpected overloading methods of '"+ methodName + "' found.");
+        } else if (found.size() == 1) {
+            return found.get(0);
+        }
+        return null;
+    }
     
     public static VariableTree getField(CompilationController controller, String fieldName) {
         TypeElement classElement = getTopLevelClassElement(controller);

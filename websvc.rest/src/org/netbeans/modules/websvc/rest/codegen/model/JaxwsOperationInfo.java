@@ -2,16 +2,16 @@
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
- * 
+ *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- * 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -49,7 +49,7 @@ public class JaxwsOperationInfo {
     Project project;
     JAXWSClientSupport support;
     Client client;
-
+    
     WsdlService service;
     WsdlOperation operation;
     WsdlPort port;
@@ -79,23 +79,23 @@ public class JaxwsOperationInfo {
         sb.append(segments[segments.length-2]);
         return sb.toString();
     }
-
+    
     public String getServiceName() {
         return serviceName;
     }
-
+    
     public String getPortName() {
         return portName;
     }
-
+    
     public String getOperationName() {
         return operationName;
     }
-
+    
     public String getWsdlURL() {
         return wsdlUrl;
     }
-
+    
     public URL getWsdlLocation() {
         try {
             String clientName = getServiceClient().getName();
@@ -107,7 +107,7 @@ public class JaxwsOperationInfo {
             throw new IllegalArgumentException(ex);
         }
     }
-
+    
     public Client getServiceClient() {
         if (client != null) {
             return client;
@@ -123,7 +123,7 @@ public class JaxwsOperationInfo {
         }
         return null;
     }
-
+    
     public void initWsdlModelInfo() {
         if (service != null) {
             return;
@@ -167,7 +167,7 @@ public class JaxwsOperationInfo {
         initWsdlModelInfo();
         return getOutputType();
     }
-
+    
     public WsdlPort getPort() {
         initWsdlModelInfo();
         return port;
@@ -182,7 +182,7 @@ public class JaxwsOperationInfo {
         initWsdlModelInfo();
         return service;
     }
-
+    
     //TODO maybe parse SEI class (using Retouche) for @WebParam.Mode annotation
     public List<WsdlParameter> getOutputParameters() {
         ArrayList<WsdlParameter> params = new ArrayList<WsdlParameter>();
@@ -193,26 +193,35 @@ public class JaxwsOperationInfo {
         }
         return params;
     }
-
+    
+    public static String getParamType(WsdlParameter param) {
+        if (param.isHolder()) {
+            String outputType = param.getTypeName();
+            int iLT = outputType.indexOf('<');
+            int iGT = outputType.indexOf('>');
+            if (iLT > 0 || iGT > 0) {
+                outputType = outputType.substring(iLT+1, iGT).trim();
+            }
+            return outputType;
+        } else {
+            return param.getTypeName();
+        }
+    }
+    
     //TODO maybe parse SEI class (using Retouche) for @WebParam.Mode annotation
     public String getOutputType() {
         String outputType = getOperation().getReturnTypeName();
         if (Constants.VOID.equals(outputType)) {
             for (WsdlParameter p : getOperation().getParameters()) {
                 if (p.isHolder()) {
-                    outputType = p.getTypeName();
-                    int iLT = outputType.indexOf('<');
-                    int iGT = outputType.indexOf('>');
-                    if (iLT > 0 || iGT > 0) {
-                        outputType = outputType.substring(iLT+1, iGT).trim();
-                    }
+                    outputType = getParamType(p);
                     break;
                 }
             }
         }
         return outputType;
     }
-
+    
     //TODO maybe parse SEI class (using Retouche) for @WebParam.Mode annotation
     public String[] getInputParameterNames() {
         ArrayList<String> names = new ArrayList<String>();
@@ -221,10 +230,10 @@ public class JaxwsOperationInfo {
                 names.add(p.getName());
             }
         }
-
+        
         return names.toArray(new String[names.size()]);
     }
-
+    
     //TODO maybe parse SEI class (using Retouche) for @WebParam.Mode annotation
     public String[] getInputParameterTypes() {
         ArrayList<String> types = new ArrayList<String>();
@@ -233,7 +242,7 @@ public class JaxwsOperationInfo {
                 types.add(p.getTypeName());
             }
         }
-
+        
         return types.toArray(new String[types.size()]);
     }
 }
