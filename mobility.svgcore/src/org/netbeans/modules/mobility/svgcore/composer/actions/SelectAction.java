@@ -30,7 +30,7 @@ import org.netbeans.modules.mobility.svgcore.view.source.SVGSourceMultiViewEleme
  * @author Pavel Benes
  */
 public class SelectAction extends AbstractComposerAction {
-    private final SVGObject m_selected;
+    private SVGObject m_selected;
 
     public SelectAction(ComposerActionFactory factory, SVGObject selected) {
         super(factory);
@@ -71,16 +71,23 @@ public class SelectAction extends AbstractComposerAction {
     }
 
     public void paint(Graphics g, int x, int y) {
-        assert !m_isCompleted : "Action should be alive";
-        m_selected.getOutline().draw(g, x, y);
+        if ( !m_isCompleted) {
+            m_selected.getOutline().draw(g, x, y);
+        }
     }
 
     public SVGObject getSelected() {
+        if ( m_selected != null && m_selected.isDeleted()) {
+            actionCompleted();
+            m_selected = null;
+        }
         return m_selected;
     }
 
     public void actionCompleted() {
-        m_selected.repaint(SVGObjectOutline.SELECTOR_OVERLAP);
-        super.actionCompleted();
+        if (m_selected != null) {
+            m_selected.repaint(SVGObjectOutline.SELECTOR_OVERLAP);
+            super.actionCompleted();
+        }
     }
 }

@@ -59,5 +59,10 @@ public class TranslateAction extends AbstractComposerAction {
     }
 
     public void paint(Graphics g, int x, int y) {
-    }    
+    }
+
+    public void actionCompleted() {
+        applyChanges();
+        super.actionCompleted();
+    }
 }

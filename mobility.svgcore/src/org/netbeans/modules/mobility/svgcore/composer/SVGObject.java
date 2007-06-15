@@ -19,8 +19,11 @@ import com.sun.perseus.model.ModelNode;
 import com.sun.perseus.util.SVGConstants;
 import java.awt.Graphics;
 import java.awt.Rectangle;
+import javax.swing.text.BadLocationException;
 import org.netbeans.modules.mobility.svgcore.composer.prototypes.PatchedElement;
 import org.netbeans.modules.mobility.svgcore.composer.prototypes.PatchedGroup;
+import org.netbeans.modules.mobility.svgcore.model.SVGFileModel;
+import org.openide.util.Exceptions;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.svg.SVGElement;
@@ -35,7 +38,8 @@ import org.w3c.dom.svg.SVGRect;
 public class SVGObject {
     private final SceneManager        m_sceneMgr;
     private       SVGLocatableElement m_elem;
-    private       SVGObjectOutline    m_outline       = null;
+    private       SVGObjectOutline    m_outline = null;
+    private       boolean             m_isDeleted = false;
 
     private       float               m_translateDx = 0;
     private       float               m_translateDy = 0;
@@ -50,8 +54,9 @@ public class SVGObject {
     public SVGObject(SceneManager sceneMgr, SVGLocatableElement elem) {
         m_sceneMgr = sceneMgr;
         m_elem     = elem;
+        readUserTransform();            
     }
-
+    
     public SceneManager getSceneManager() {
         return m_sceneMgr;
     }
@@ -65,13 +70,13 @@ public class SVGObject {
     }
 
     public int [] getActualSelection() {
-        int [] path = m_sceneMgr.getPerseusController().getPath((ModelNode)m_elem);
+        int [] path = getPerseusController().getPath((ModelNode)m_elem);
         return path;
     }       
     
     public synchronized SVGRect getSVGScreenBBox() {
         SVGRect bBox = getSVGElement().getScreenBBox();
-        assert bBox != null : "The element is no longer in document!";
+        assert bBox != null : "The element " + getSVGElement() + " is no longer in document!";
         return bBox;
     }
     
@@ -81,6 +86,10 @@ public class SVGObject {
                               (int) bBox.getWidth(), (int) bBox.getHeight());
     }
 
+    public boolean isDeleted() {
+        return m_isDeleted;
+    }
+    
     public void repaint() {
         repaint(0);
     }
@@ -90,7 +99,9 @@ public class SVGObject {
     }
     
     public void repaint(int overlap) {
-        m_sceneMgr.getScreenManager().repaint( getScreenBBox(), overlap);
+        if ( !m_isDeleted) {
+            m_sceneMgr.getScreenManager().repaint( getScreenBBox(), overlap);
+        }
     }
     
     public synchronized SVGObjectOutline getOutline() {
@@ -103,10 +114,15 @@ public class SVGObject {
     public void translate(final float dx, final float dy) {
         m_sceneMgr.getPerseusController().execute(new Runnable() {
             public void run() {
-                checkWrapped();
-                m_tempTranslateDx = dx;
-                m_tempTranslateDy = dy;
-                applyUserTransform();
+                try {
+                    checkWrapped();
+                    m_tempTranslateDx = dx;
+                    m_tempTranslateDy = dy;
+                    applyUserTransform();
+                } catch (Exception ex) {
+                    System.err.println("Translate operation failed!");
+                    Exceptions.printStackTrace(ex);
+                }
             }            
         });
     }
@@ -114,9 +130,14 @@ public class SVGObject {
     public void scale(final float scale) {
         m_sceneMgr.getPerseusController().execute(new Runnable() {
             public void run() {
-                checkWrapped();
-                m_tempScale = scale;
-                applyUserTransform();
+                try {
+                    checkWrapped();
+                    m_tempScale = scale;
+                    applyUserTransform();
+                } catch (Exception ex) {
+                    System.err.println("Scale operation failed!");
+                    Exceptions.printStackTrace(ex);
+                }
             }            
         });
     }
@@ -124,13 +145,87 @@ public class SVGObject {
     public void rotate(final float rotate) {
         m_sceneMgr.getPerseusController().execute(new Runnable() {
             public void run() {
-                checkWrapped();
-                m_tempRotate = rotate;
-                applyUserTransform();
+                try {
+                    checkWrapped();
+                    m_tempRotate = rotate;
+                    applyUserTransform();
+                } catch (BadLocationException ex) {
+                    System.err.println("Rotate operation failed!");
+                    Exceptions.printStackTrace(ex);
+                }
             }            
         });
     }
 
+    public void moveToTop() {
+        try {
+            int [] path = getActualSelection();
+            getPerseusController().moveToTop(m_elem);
+            getFileModel().moveToTop(path);
+            repaint();
+        } catch(Exception e) {
+            System.err.println("MoveToTop failed");
+            e.printStackTrace();
+        }
+    }
+
+    public void moveToBottom() {
+        try {
+            int [] path = getActualSelection();
+            getPerseusController().moveToBottom(m_elem);
+            getFileModel().moveToBottom(path);
+            repaint();
+        } catch(Exception e) {
+            System.err.println("MoveToBottom failed");
+            e.printStackTrace();
+        }
+    }
+
+    public void moveForward() {
+        try {
+            int [] path = getActualSelection();
+            getPerseusController().moveForward(m_elem);
+            getFileModel().moveForward(path);
+            repaint();
+        } catch(Exception e) {
+            System.err.println("MoveForward failed");
+            e.printStackTrace();
+        }
+    }
+
+    public void moveBackward() {
+        try {
+            int [] path = getActualSelection();
+            getPerseusController().moveBackward(m_elem);
+            getFileModel().moveBackward(path);
+            repaint();
+        } catch(Exception e) {
+            System.err.println("MoveBackWard failed");
+            e.printStackTrace();
+        }
+    }
+    
+    public void delete() {
+        if ( !m_isDeleted) {
+            //ask for repaint before the object is removed,
+            //the bounding box shall not be avaiable after delete
+            repaint(SVGObjectOutline.SELECTOR_OVERLAP);
+            
+            m_isDeleted = true;
+
+            int [] path = getActualSelection();
+                    
+            getPerseusController().delete(m_elem);
+            try {
+                getFileModel().deleteElement(path);
+            } catch(BadLocationException e) {
+                e.printStackTrace();
+            }
+        } else {
+            System.err.println("Already deleted!");
+        }
+    }
+    
     public void commitChanges() {
         m_translateDx = getCurrentTranslateX();
         m_translateDy = getCurrentTranslateY();
@@ -169,37 +264,49 @@ public class SVGObject {
     }
     
     protected synchronized boolean isWrappedObject() {
-        return m_elem instanceof PatchedGroup &&
-               ((PatchedGroup) m_elem).isWrapper();
+        return PatchedGroup.getWrapper(m_elem) != null;
     }
       
-    protected void checkWrapped() {
+    protected void checkWrapped() throws BadLocationException {
         if (!isWrappedObject()) {
             wrapObject();
         }
         assert isWrappedObject() : "Wrapping failed";
     }
     
-    protected synchronized void wrapObject() {
+    protected synchronized void wrapObject() throws BadLocationException {
+        int [] path = getPerseusController().getPath((ModelNode) m_elem);
+        
         Node parent = m_elem.getParentNode();
         Document doc = getOwnerDocument(parent);
         // HACK - clear all elements' ids so that the element removal is possible
-        setNullIds(m_elem, true);
+        //TODO move to PerseusController
+        PerseusController.setNullIds(m_elem, true);
         parent.removeChild(m_elem);
         PatchedGroup wrapper = (PatchedGroup) doc.createElementNS(SVGConstants.SVG_NAMESPACE_URI,
                 SVGConstants.SVG_G_TAG);
         wrapper.attachSVGObject(this);
         wrapper.appendChild(m_elem);
         // HACK - restore element ids
-        setNullIds(m_elem, false);
+        PerseusController.setNullIds(m_elem, false);
         if (m_elem instanceof PatchedElement) {
             wrapper.setPath( ((PatchedElement)m_elem).getPath());
         }
         parent.appendChild(wrapper);
-        wrapper.setWrapper(true);
+        wrapper.setId(generateWrapperID());
         m_elem = wrapper;
+        getFileModel().wrapElement(path, wrapper.getText());
     }
     
+    //TODO revisit (use filename for inserted files)
+    public static String generateWrapperID() {
+        return "w_" + System.currentTimeMillis();
+    }
+    
+    public static boolean isWrapperID(String id) {
+        return id != null && id.startsWith("w_");
+    }
+            
     protected void applyUserTransform() {
         if (isWrappedObject()) {
             getOutline().setDirty();
@@ -208,7 +315,23 @@ public class SVGObject {
                                           getCurrentTranslateX(),
                                           getCurrentTranslateY());
             txf.mRotate(getCurrentRotate());
-            ((PatchedGroup)m_elem).setTransform(txf);
+            PatchedGroup pg = (PatchedGroup) m_elem;
+            pg.setUserTransform(txf);
+        }
+    }
+
+    protected void readUserTransform() {
+        PatchedGroup pg = PatchedGroup.getWrapper(m_elem);
+        
+        if (pg != null) {
+            Transform txf = pg.getTransform();
+            if (txf != null) {
+                m_scale = txf.getComponent(0);
+                m_translateDx = txf.getComponent(4);
+                m_translateDy = txf.getComponent(5);
+                //TODO read rotate as well
+                m_rotate = 0;
+            }
         }
     }
     
@@ -220,18 +343,12 @@ public class SVGObject {
         }
         return (Document) elem;
     }
+        
+    protected final PerseusController getPerseusController() {
+        return m_sceneMgr.getPerseusController();
+    }
     
-    public static void setNullIds(SVGElement elem, boolean isNull) {
-        if (elem instanceof PatchedElement) {
-            ((PatchedElement) elem).setNullId(isNull);
-        } else if ( elem.getId() != null) {
-            System.err.println("The patched element must be used instead of " + elem.getClass().getName() + "[" + elem.getId() + "]");
-        }
-
-        SVGElement child = (SVGElement) elem.getFirstElementChild();
-        while(child != null) {
-            setNullIds( child, isNull);
-            child = (SVGElement)child.getNextElementSibling();
-        }
+    protected final SVGFileModel getFileModel() {
+        return m_sceneMgr.getDataObject().getModel();
     }
 }

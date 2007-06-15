@@ -16,6 +16,7 @@ package org.netbeans.modules.mobility.svgcore.composer;
 import com.sun.perseus.model.ModelNode;
 import java.awt.event.InputEvent;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Stack;
 import javax.microedition.m2g.SVGImage;
@@ -23,16 +24,21 @@ import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JPopupMenu;
 import org.netbeans.modules.mobility.svgcore.SVGDataObject;
+import org.netbeans.modules.mobility.svgcore.composer.actions.DeleteActionFactory;
 import org.netbeans.modules.mobility.svgcore.composer.actions.HighlightActionFactory;
+import org.netbeans.modules.mobility.svgcore.composer.actions.MoveBackwardActionFactory;
+import org.netbeans.modules.mobility.svgcore.composer.actions.MoveForwardActionFactory;
+import org.netbeans.modules.mobility.svgcore.composer.actions.MoveToBottomActionFactory;
+import org.netbeans.modules.mobility.svgcore.composer.actions.MoveToTopActionFactory;
 import org.netbeans.modules.mobility.svgcore.composer.actions.RotateActionFactory;
 import org.netbeans.modules.mobility.svgcore.composer.actions.ScaleActionFactory;
-import org.netbeans.modules.mobility.svgcore.composer.actions.SelectAction;
 import org.netbeans.modules.mobility.svgcore.composer.actions.SelectActionFactory;
 import org.netbeans.modules.mobility.svgcore.composer.actions.TranslateActionFactory;
+import org.netbeans.modules.mobility.svgcore.composer.prototypes.PatchedGroup;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.InstanceContent;
-import org.w3c.dom.svg.SVGAnimationElement;
 
 /**
  *
@@ -61,6 +67,9 @@ public class SceneManager {
     }
 
     public void initialize(SVGImage svgImage) {
+        //TODO HACK - revisit
+        PatchedGroup.s_sceneMgr = this;
+        
         m_svgImage = svgImage;
         m_perseusController.initialize();
         m_screenMgr.initialize();
@@ -72,9 +81,24 @@ public class SceneManager {
         m_registeredActions.add( new TranslateActionFactory(this));
         m_registeredActions.add( new ScaleActionFactory(this));
         m_registeredActions.add( new RotateActionFactory(this));
+        m_registeredActions.add( new DeleteActionFactory(this));
+        m_registeredActions.add( new MoveToTopActionFactory(this));
+        m_registeredActions.add( new MoveToBottomActionFactory(this));
+        m_registeredActions.add( new MoveForwardActionFactory(this));
+        m_registeredActions.add( new MoveBackwardActionFactory(this));
     }
     
     public void registerPopupActions( Action [] actions, Lookup lookup) {
+        List<Action> factoryMenuActions = new ArrayList(Arrays.asList(actions));
+        
+        for (ComposerActionFactory factory : m_registeredActions) {
+            Action a;
+            if ( (a=factory.getMenuAction()) != null) {
+                factoryMenuActions.add(a);
+            }
+        }
+        
+        actions = factoryMenuActions.toArray( new Action[factoryMenuActions.size()]);
         JPopupMenu popup = Utilities.actionsToPopup( actions, lookup);
         m_screenMgr.registerPopupMenu(popup);
     }
@@ -196,6 +220,14 @@ public class SceneManager {
         return m_activeActions;
     }
 
+    
+    
+    
+    
+    
+    
+    
+    
     public boolean containsAction( Class clazz) {
         for (int i = m_activeActions.size() - 1; i >= 0; i--) {
             if ( clazz.isInstance( m_activeActions.get(i))) {
@@ -205,6 +237,24 @@ public class SceneManager {
         return false;    
     }
     
+    public void applyChangesToText() {
+        try {
+            m_dObj.getModel().synchronize((ModelNode) m_perseusController.getSVGDocument());
+        } catch (Exception ex) {
+            System.err.println("Changes were not applied to text!");
+            Exceptions.printStackTrace(ex);
+        }
+    }
+    
+    public void deleteObject(SVGObject svgObj) {
+        SVGObject [] oldSelection = getSelectedObjects();
+        svgObj.delete();
+        SVGObject [] newSelection = getSelectedObjects();
+        if (!areSame(newSelection, oldSelection)) {
+            selectionChanged(newSelection, oldSelection);
+        }                    
+    }
+        
     protected void selectionChanged(SVGObject [] newSelection, SVGObject [] oldSelection) { 
         if (oldSelection != null) {
             for (int i = 0; i < oldSelection.length; i++) {
@@ -221,6 +271,8 @@ public class SceneManager {
         }        
     }
     
+    
+    //TODO move to SVGObject class
     protected static boolean areSame(SVGObject [] arr1,SVGObject [] arr2) {
         if (arr1 == arr2) {
             return true;

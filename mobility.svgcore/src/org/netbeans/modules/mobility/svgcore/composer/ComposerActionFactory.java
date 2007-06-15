@@ -15,6 +15,7 @@
 package org.netbeans.modules.mobility.svgcore.composer;
 
 import java.awt.event.InputEvent;
+import org.netbeans.modules.mobility.svgcore.view.svg.AbstractSVGAction;
 
 /**
  *
@@ -26,4 +27,5 @@ public interface ComposerActionFactory {
     public void              setBlocked(boolean isBlocked);
     public SceneManager      getSceneManager();
     public ActionMouseCursor getMouseCursor(InputEvent evt);
+    public AbstractSVGAction getMenuAction();
 }

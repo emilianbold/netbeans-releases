@@ -13,21 +13,19 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <filesystem>
-    <!-- XXX all files are missing!
     <folder name="SVGXMLPalette">
         <folder name="Shapes">
-            <file name="line.xml" url="items/line.xml"/>
-            <file name="rectangle.xml" url="items/rectangle.xml"/>
-            <file name="round_rectangle.xml" url="items/round_rectangle.xml"/>
-            <file name="circle.xml" url="items/circle.xml"/>
-            <file name="ellipse.xml" url="items/ellipse.xml"/>
-            <file name="polyline.xml" url="items/polyline.xml"/>
-            <file name="polygon.xml" url="items/polygon.xml"/>
-            <file name="open_curve.xml" url="items/open_curve.xml"/>
-            <file name="closed_curve.xml" url="items/closed_curve.xml"/>
+            <file name="line.xml" url="/org/netbeans/modules/mobility/svgcore/items/line.xml"/>
+            <file name="rectangle.xml" url="/org/netbeans/modules/mobility/svgcore/items/rectangle.xml"/>
+            <file name="round_rectangle.xml" url="/org/netbeans/modules/mobility/svgcore/items/round_rectangle.xml"/>
+            <file name="circle.xml" url="/org/netbeans/modules/mobility/svgcore/items/circle.xml"/>
+            <file name="ellipse.xml" url="/org/netbeans/modules/mobility/svgcore/items/ellipse.xml"/>
+            <file name="polyline.xml" url="/org/netbeans/modules/mobility/svgcore/items/polyline.xml"/>
+            <file name="polygon.xml" url="/org/netbeans/modules/mobility/svgcore/items/polygon.xml"/>
+            <file name="open_curve.xml" url="/org/netbeans/modules/mobility/svgcore/items/open_curve.xml"/>
+            <file name="closed_curve.xml" url="/org/netbeans/modules/mobility/svgcore/items/closed_curve.xml"/>
         </folder>        
     </folder>
-    -->
 
     <folder name="Navigator">
         <folder name="Panels">

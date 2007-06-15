@@ -30,5 +30,7 @@ public interface ComposerAction {
 
     public boolean isCompleted();
 
+    //TODO Remove - better use some container for active actions
+    // on the SelectActionFactory and ask there for current selection
     public SVGObject getSelected();
 }

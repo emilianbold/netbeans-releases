@@ -123,7 +123,7 @@ public class ScreenManager {
      * @param y the new position of the cursor along the y-axis.
      */
     private void popupAt(final int x, final int y) {
-        SVGLocatableElement elem = m_sceneMgr.getPerseusController().findElementAt(x, y);
+        SVGLocatableElement elem = m_sceneMgr.getPerseusController()._findElementAt(x, y);
         if (m_popupElement != null) {
             m_sceneMgr.getLoookupContent().remove(m_popupElement);
         }

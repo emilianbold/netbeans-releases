@@ -21,6 +21,7 @@ import com.sun.perseus.util.SVGConstants;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Vector;
+import org.netbeans.modules.mobility.svgcore.composer.SceneManager;
 
 /**
  *

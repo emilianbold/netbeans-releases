@@ -57,4 +57,7 @@ public abstract class AbstractComposerAction implements ComposerAction{
         return m_factory.getSceneManager().getDataObject();
     }
     
+    protected void applyChanges() {
+        m_factory.getSceneManager().applyChangesToText();
+    }
 }

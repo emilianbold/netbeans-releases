@@ -34,6 +34,7 @@ public class HighlightAction extends AbstractComposerAction {
 
     public HighlightAction(ComposerActionFactory factory, SVGObject highlighted) {
         super(factory);
+        assert highlighted != null : "Null object for highlight";
         m_highlighted = highlighted;
         getScreenManager().getAnimatorView().setToolTipText(getTooltipText());
         m_highlighted.repaint(SVGObjectOutline.SELECTOR_OVERLAP);

@@ -98,19 +98,23 @@ public class SVGNavigatorTree extends JTree {
     }
     
     public void selectNode( int [] path) {
-        DocumentElement de = dObj.getModel().findElement(path);
-        if (de != null) {
-            SVGNavigatorNode node = ((SVGNavigatorNode) treeModel.getRoot()).findNode(de);
-            if ( node != null) {
-                TreePath treePath = node.getNodePath();
-                makeVisible(treePath);
-                setSelectionPath(treePath);
-                repaint();
+        if (path == null) {
+            DocumentElement de = dObj.getModel().findElement(path);
+            if (de != null) {
+                SVGNavigatorNode node = ((SVGNavigatorNode) treeModel.getRoot()).findNode(de);
+                if ( node != null) {
+                    TreePath treePath = node.getNodePath();
+                    makeVisible(treePath);
+                    setSelectionPath(treePath);
+                    repaint();
+                } else {
+                    System.err.println("Node not found");
+                }
             } else {
-                System.err.println("Node not found");
+                System.err.println("Element not found");
             }
         } else {
-            System.err.println("Element not found");
+            System.err.println("Null path provided");
         }
     }
     

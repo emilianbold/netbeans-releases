@@ -49,6 +49,7 @@ import org.netbeans.modules.mobility.svgcore.SVGDataLoader;
 import org.netbeans.modules.mobility.svgcore.composer.prototypes.PatchedElement;
 import org.netbeans.modules.mobility.svgcore.composer.prototypes.PatchedGroup;
 import org.netbeans.modules.mobility.svgcore.composer.prototypes.SVGComposerPrototypeFactory;
+import org.netbeans.modules.mobility.svgcore.model.SVGFileModel;
 import org.openide.util.Exceptions;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -132,7 +133,7 @@ public class PerseusController {
     public void execute(Runnable command) {
         try {
             m_animator.invokeAndWait(command);
-        } catch (InterruptedException ex) {
+        } catch (Exception ex) {
             Exceptions.printStackTrace(ex);
         }
     }
@@ -236,7 +237,8 @@ public class PerseusController {
     }
 
   */  
-    private String toString(int [] array) {
+    //TODO move to utils
+    public static String toString(int [] array) {
         StringBuilder sb = new StringBuilder("[");
         if (array == null) {
             sb.append("null");
@@ -293,18 +295,29 @@ public class PerseusController {
         
         return node;        
     }
-        
+            
+    
     public SVGObject [] getObjectsAt(int x, int y) {
-        //Rectangle bounds = m_sceneMgr.getScreenManager().getImageBounds();
-        //if (bounds.contains(x, y)) {
-        SVGLocatableElement elem = findElementAt(x,y);
+        SVGLocatableElement elem = _findElementAt(x,y);
+        
         if (elem != null) {
+            Node node = elem;
+            while( node != null) {
+                if ( node instanceof PatchedGroup) {
+                    PatchedGroup pg = (PatchedGroup) node;
+                    if ( pg.isWrapper()) {
+                        assert pg.getSVGObject() != null : "The wrapper cannot have null object";
+                        return new SVGObject [] {pg.getSVGObject()};
+                    }
+                }
+                node = node.getParentNode();
+            }
+
             SVGObject obj = getSVGObject(elem);
             if (obj != null) {
                 return new SVGObject [] {obj};
             }
         }
-        //}
         return null;
     }
 
@@ -316,6 +329,111 @@ public class PerseusController {
         return null;
     }
 
+    public void delete(final SVGLocatableElement elem) {
+        execute(new Runnable() {
+            public void run() {
+                Node parent = elem.getParentNode();
+                // HACK - clear all elements' ids so that the element removal is possible
+                setNullIds(elem, true);
+                try {
+                    parent.removeChild(elem);
+                } finally {
+                    setNullIds(elem, false);
+                }
+            }            
+        });
+    }
+
+    public void moveToBottom(final SVGLocatableElement elem) {
+        final Node parent     = elem.getParentNode();
+        final ModelNode firstChild = ((ModelNode)parent).getFirstChildNode();
+        
+        if (firstChild != elem) {
+            execute(new Runnable() {
+                public void run() {
+                    // HACK - clear all elements' ids so that the element removal is possible
+                    setNullIds(elem, true);
+                    try {
+                        parent.removeChild(elem);
+                        parent.insertBefore(elem, (Node) firstChild);
+                    } finally {
+                        setNullIds(elem, false);
+                    }
+                }            
+            });
+        }
+    }
+
+    public void moveToTop(final SVGLocatableElement elem) {
+        final Node parent         = elem.getParentNode();
+        final ModelNode lastChild = ((ModelNode)parent).getLastChildNode();
+        
+        if (lastChild != elem) {
+            execute(new Runnable() {
+                public void run() {
+                    // HACK - clear all elements' ids so that the element removal is possible
+                    setNullIds(elem, true);
+                    try {
+                        parent.removeChild(elem);
+                        parent.appendChild(elem);
+                    } finally {
+                        setNullIds(elem, false);
+                    }
+                }            
+            });
+        }
+    }
+
+    public void moveBackward(final SVGLocatableElement elem) {
+        final Node parent          = elem.getParentNode();
+        final ModelNode firstChild = ((ModelNode)parent).getFirstChildNode();
+        
+        if (firstChild != elem) {
+            execute(new Runnable() {
+                public void run() {
+                    // HACK - clear all elements' ids so that the element removal is possible
+                    setNullIds(elem, true);
+                    try {
+                        ModelNode previousChild = ((ModelNode)elem).getPreviousSiblingNode();
+                        assert previousChild != null;
+                        parent.removeChild(elem);
+                        
+                        parent.insertBefore(elem, (Node) previousChild);
+                    } finally {
+                        setNullIds(elem, false);
+                    }
+                }            
+            });
+        }
+    }
+    
+    public void moveForward(final SVGLocatableElement elem) {
+        final Node parent         = elem.getParentNode();
+        final ModelNode lastChild = ((ModelNode)parent).getLastChildNode();
+        
+        if (lastChild != elem) {
+            execute(new Runnable() {
+                public void run() {
+                    // HACK - clear all elements' ids so that the element removal is possible
+                    setNullIds(elem, true);
+                    try {
+                        ModelNode nextChild = ((ModelNode)elem).getNextSiblingNode();                        
+                        assert nextChild != null;
+                        parent.removeChild(elem);
+                        if (nextChild == lastChild) {
+                            parent.appendChild(elem);
+                        } else {
+                            parent.insertBefore(elem, (Node)nextChild.getNextSiblingNode());
+                        }
+                    } finally {
+                        setNullIds(elem, false);
+                    }
+                }            
+            });
+        }
+    }
+    
+    
     private synchronized SVGObject getSVGObject(SVGLocatableElement elem) {
         assert elem != null : "Element must not be null";
         if ( elem instanceof PatchedElement) {
@@ -332,15 +450,13 @@ public class PerseusController {
         }   
     }
 
-    public SVGLocatableElement findElementAt(int x, int y) {
+    public SVGLocatableElement _findElementAt(int x, int y) {
         float[] pt = {x, y};
         ModelNode target = m_svgDoc.nodeHitAt(pt);
         SVGLocatableElement elt = null;
         if (target != null) {
             while (elt == null && target != null) {
-                if (target instanceof SVGLocatableElement &&
-                    target instanceof PatchedElement &&
-                    ((PatchedElement) target).getPath() != null) {
+                if (target instanceof SVGLocatableElement) {
                     elt = (SVGLocatableElement) target;
                 } else {
                     target = target.getParent();
@@ -430,7 +546,7 @@ public class PerseusController {
         }
         return node;
     }
-    
+/*    
     public void _mergeImage(File file) throws FileNotFoundException {
         FileInputStream     fin = new FileInputStream(file);
         BufferedInputStream in  = new BufferedInputStream(fin);
@@ -459,13 +575,16 @@ public class PerseusController {
         System.out.println("After children transfer");
         printTree(m_svgDoc, 0);
     }
+  */  
     
+    //TODO use more robust mechanism for id replacement
     private static final String [] REPLACE_PATTERNS = {
         "id=\"{0}\"",
         "begin=\"{0}.",
         "end=\"{0}."
     };
     
+    //Show dialog with id conversion mapping
     public void mergeImage(File file) throws FileNotFoundException, IOException, DocumentModelException, BadLocationException {
         FileInputStream     fin = null;
         DocumentModel       docModel;
@@ -477,59 +596,72 @@ public class PerseusController {
             fin.close();
         }
                 
-//        SVGImage img = (SVGImage) PerseusController.createImage( in);
+        DocumentElement svgElem = SVGFileModel.getSVGRoot(docModel);
+        int childElemNum;
         
-        Set<String> oldIds = new HashSet<String>();
-        collectIDs(m_svgDoc, oldIds);
-        
-        Set<String> newIds = new HashSet<String>();
-        collectIDs( docModel.getRootElement(), newIds);
-        
-        Set<String> conflicts = new HashSet<String>();
-        for (String id  : newIds) {
-            if (oldIds.contains(id)) {
-                conflicts.add(id);
-            }
-        }
+        if (svgElem != null && (childElemNum=svgElem.getElementCount()) > 0) {
+            int startOff = svgElem.getElement(0).getStartOffset();
+            int endOff   = svgElem.getElement(childElemNum - 1).getEndOffset();
 
-        BaseDocument doc  = (BaseDocument) docModel.getDocument();
-        if ( !conflicts.isEmpty()) {
-            for (String id : conflicts) {
-                String newID = id+System.currentTimeMillis();
-                for (String pattern : REPLACE_PATTERNS) {
-                    String oldStr = MessageFormat.format(pattern, id);
-                    String newStr = MessageFormat.format(pattern, newID);
-                    replaceAllOccurences(doc, oldStr, newStr);
+            String insertedText = docModel.getDocument().getText(startOff, endOff - startOff + 1);
+            
+            Set<String> oldIds = new HashSet<String>();
+            collectIDs(m_svgDoc, oldIds);
+
+            Set<String> newIds = new HashSet<String>();
+            collectIDs( svgElem, newIds);
+
+            Set<String> conflicts = new HashSet<String>();
+            for (String id  : newIds) {
+                if (oldIds.contains(id)) {
+                    conflicts.add(id);
                 }
             }
-        }
-        
-        String       text = doc.getText(0, doc.getLength());
-        StringBufferInputStream in = new StringBufferInputStream(text);
-        ModelBuilder.loadDocument(in, m_svgDoc,
-                SVGComposerPrototypeFactory.getPrototypes(m_svgDoc));
-        
-        SVG svgRoot = (SVG)getSVGRootElement();
-        System.out.println("Before children transfer");
-        printTree(m_svgDoc, 0);
-        
-        ModelNode sibling = svgRoot;
-        while( (sibling=sibling.getNextSiblingNode()) != null) {
-            if (sibling instanceof  SVG) {
 
-                PatchedGroup wrapper = (PatchedGroup) m_svgDoc.createElementNS(SVGConstants.SVG_NAMESPACE_URI,
-                    SVGConstants.SVG_G_TAG);
-                ((SVG)svgRoot).appendChild(wrapper);
-                wrapper.setPath( new int[] { 0, 0});
-                wrapper.setWrapper(true);
-                
-                
-                
-                transferChildren(wrapper, (SVG)sibling);
+            BaseDocument doc  = (BaseDocument) docModel.getDocument();
+            if ( !conflicts.isEmpty()) {
+                for (String id : conflicts) {
+                    String newID = id+System.currentTimeMillis();
+                    for (String pattern : REPLACE_PATTERNS) {
+                        String oldStr = MessageFormat.format(pattern, id);
+                        String newStr = MessageFormat.format(pattern, newID);
+                        replaceAllOccurences(doc, oldStr, newStr);
+                    }
+                }
             }
-        }
-        System.out.println("After children transfer");
-        printTree(m_svgDoc, 0);        
+
+            String       text = doc.getText(0, doc.getLength());
+            StringBufferInputStream in = new StringBufferInputStream(text);
+            ModelBuilder.loadDocument(in, m_svgDoc,
+                    SVGComposerPrototypeFactory.getPrototypes(m_svgDoc));
+
+
+            SVG svgRoot = (SVG)getSVGRootElement();
+            System.out.println("Before children transfer");
+            printTree(m_svgDoc, 0);
+
+            ModelNode sibling = svgRoot;
+            while( (sibling=sibling.getNextSiblingNode()) != null) {
+                if (sibling instanceof SVG && 
+                    sibling.getFirstChildNode() != null) {
+
+                    PatchedGroup wrapper = (PatchedGroup) m_svgDoc.createElementNS(SVGConstants.SVG_NAMESPACE_URI,
+                        SVGConstants.SVG_G_TAG);
+                    ((SVG)svgRoot).appendChild(wrapper);
+                    //wrapper.setPath( new int[] { 0, getChildrenCount(svgRoot)});
+                    wrapper.setId(SVGObject.generateWrapperID());
+                    wrapper.attachSVGObject( new SVGObject(m_sceneMgr, wrapper));
+
+                    transferChildren(wrapper, (SVG)sibling);
+                    wrapper.setPath(_getPath(wrapper));
+                    m_sceneMgr.getDataObject().getModel().appendElement(wrapper.getText(), insertedText);
+                    break;
+                }
+            }
+            
+            System.out.println("After children transfer");
+            printTree(m_svgDoc, 0);                    
+        }       
     }
     
     
@@ -665,16 +797,26 @@ public class PerseusController {
         return sii;        
     }
 
+    protected static int getChildrenCount( ModelNode node) {
+        int count = 0;
+        ModelNode child = node.getFirstChildNode();
+        while( child != null) {
+            count++;
+            child = child.getNextSiblingNode();
+        }
+        return count;        
+    }
+    
     protected static void transferChildren(SVGElement target, SVGElement source) {
         ModelNode child = ((ModelNode) source).getFirstChildNode();
         while(child != null) {
             if (child instanceof PatchedElement) {
                 PatchedElement pe = (PatchedElement) child;
                 child = child.getNextSiblingNode();
-                SVGObject.setNullIds( (SVGElement) pe, true);
+                setNullIds( (SVGElement) pe, true);
                 source.removeChild((Node)pe);
                 target.appendChild((Node)pe);
-                SVGObject.setNullIds( (SVGElement) pe, false);
+                setNullIds( (SVGElement) pe, false);
             } else {
                 System.err.println("The PatchedElement must be used instead of " + child.getClass().getName());
             }
@@ -692,4 +834,19 @@ public class PerseusController {
             child = child.getNextSiblingNode();
         }               
     }
+    
+    public static void setNullIds(SVGElement elem, boolean isNull) {
+        if (elem instanceof PatchedElement) {
+            ((PatchedElement) elem).setNullId(isNull);
+        } else if ( elem.getId() != null) {
+            System.err.println("The patched element must be used instead of " + elem.getClass().getName() + "[" + elem.getId() + "]");
+        }
+
+        SVGElement child = (SVGElement) elem.getFirstElementChild();
+        while(child != null) {
+            setNullIds( child, isNull);
+            child = (SVGElement)child.getNextElementSibling();
+        }
+    }
+    
 }

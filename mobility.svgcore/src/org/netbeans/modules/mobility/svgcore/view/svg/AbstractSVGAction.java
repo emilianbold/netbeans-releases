@@ -28,7 +28,7 @@ import org.openide.util.actions.Presenter;
  *
  * @author Pavel Benes
  */
-abstract class AbstractSVGAction extends AbstractAction implements Presenter.Popup {
+public abstract class AbstractSVGAction extends AbstractAction implements Presenter.Popup {
     private static final String ICON_PATH_PREFIX = "org/netbeans/modules/mobility/svgcore/resources/";
     private final String lblResId;
     

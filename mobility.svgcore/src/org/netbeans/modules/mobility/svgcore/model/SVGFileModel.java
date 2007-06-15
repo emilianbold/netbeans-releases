@@ -12,6 +12,7 @@
  */   
 package org.netbeans.modules.mobility.svgcore.model;
 
+import com.sun.perseus.model.ModelNode;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -29,7 +30,10 @@ import org.netbeans.modules.editor.structure.api.DocumentModel;
 import org.netbeans.modules.editor.structure.api.DocumentModelException;
 import org.netbeans.modules.editor.structure.api.DocumentModelListener;
 import org.netbeans.modules.mobility.svgcore.SVGDataLoader;
+import org.netbeans.modules.mobility.svgcore.composer.PerseusController;
+import org.netbeans.modules.mobility.svgcore.composer.prototypes.PatchedGroup;
 import org.netbeans.modules.xml.multiview.XmlMultiViewEditorSupport;
+import org.w3c.dom.svg.SVGElement;
 
 /**
  *
@@ -55,7 +59,7 @@ public class SVGFileModel {
     private       List<SelectionListener>   selectionListeners = new ArrayList<SelectionListener>();
     private       BaseDocument              bDoc;
     private       EditorKit                 kit;
-    private       DocumentModel             model;
+    private       DocumentModel             m_model;
     private       boolean                   isChanged = false;
     
     private final DocumentListener          docListener = new DocumentListener() {
@@ -106,7 +110,7 @@ public class SVGFileModel {
     /** Creates a new instance of SVGFileModel */
     public SVGFileModel(XmlMultiViewEditorSupport edSup) {
         this.edSup      = edSup;
-        this.model      = null;
+        m_model      = null;
     }        
 
     public boolean isChanged() {
@@ -210,107 +214,26 @@ public class SVGFileModel {
                 }
             }
         }
-        assert model != null;
+        assert m_model != null;
         assert kit   != null;
         assert bDoc  != null;
     }
 
     private void createModel( BaseDocument doc, boolean addListener) throws DocumentModelException {
         bDoc  = doc;
-        model = DocumentModel.getDocumentModel(bDoc);
+        m_model = DocumentModel.getDocumentModel(bDoc);
         
         if (addListener) {
             bDoc.addDocumentListener(docListener);
-            model.addDocumentModelListener(modelListener);
+            m_model.addDocumentModelListener(modelListener);
         }
     }
     
-/*    
-    public static class StreamDescriptor {
-        public Thread      th;
-        public InputStream in;
-        
-        public void init(Thread th, InputStream in) {
-            this.th = th;
-            this.in = in;
-        }
-    }
-    
-    public synchronized StreamDescriptor getInputStream() throws IOException, DocumentModelException  {
-        checkDocument();
-        
-        final BaseDocument      bDocCopy = bDoc;
-        System.out.println("Locking document");
-        bDocCopy.readLock();
-        final EditorKit         kitCopy  = kit;        
-        final PipedInputStream  in       = new PipedInputStream();
-        final PipedOutputStream out      = new PipedOutputStream(in);
-        
-        final StreamDescriptor descr = new StreamDescriptor();
-        Thread th = new Thread(new Runnable() {
-            public void run() {
-                try {
-                    System.out.println("Serializing document ...");
-                    kitCopy.write( out, bDocCopy, 0, bDocCopy.getLength());
-                    System.out.println("Flushing document...");
-                    out.flush();
-                    System.out.println("Write ended ...");
-                } catch (Exception ex) {
-                    System.out.println("Write failed");
-                    ex.printStackTrace();
-                } finally {
-                    try {
-                        out.close();
-                    } catch (IOException ex) {
-                        ex.printStackTrace();
-                    }
-                    System.out.println("Unlocking document");
-                    bDocCopy.readUnlock();
-                    synchronized(descr) {
-                        descr.notifyAll();
-                    }
-                }
-            }
-        });
-        descr.init( th, in);
-        th.start();
-        return descr;
-    }
-*/    
     public synchronized String writeToString() throws Exception {
         checkDocument();
         return bDoc.getText(0, bDoc.getLength());
     }
     
-/*    
-    public synchronized String getSVGHeader() throws Exception {
-        checkDocument();
-        return getSVGText( model.getRootElement());
-    }
-    private String getSVGText(DocumentElement el) throws BadLocationException {
-        String text;
-        if ("svg".equals(el.getName())) {
-            int startOffset = el.getStartOffset();
-            int endOffset;
-            if (el.getElementCount() > 0) {
-                endOffset = el.getElement(0).getStartOffset();
-            } else {
-                endOffset = el.getEndOffset();
-            }
-            
-            String txt = bDoc.getText( startOffset, endOffset - startOffset);
-            return txt;
-        } else {
-        int elCount = el.getElementCount();
-        for (int i = 0; i < elCount; i++) {
-            if ( (text=getSVGText(el.getElement(i))) != null) {
-                return text;
-            }
-        }
-        return null;
-        }
-    }
-*/    
     public synchronized int getElementStartOffset( DocumentElement del) throws IOException, DocumentModelException {
         return del.getStartOffset();
     }
@@ -339,7 +262,7 @@ public class SVGFileModel {
     }
     
     public DocumentElement findElement(int [] pathIndexes) {
-        DocumentElement element = model.getRootElement();
+        DocumentElement element = m_model.getRootElement();
         
         main_loop: for (int i = 0; i < pathIndexes.length; i++)  {
             int childNum = element.getElementCount();
@@ -365,7 +288,7 @@ public class SVGFileModel {
     
     public int [] getIndexedPath( DocumentElement de) {
         assert isTagElement(de);
-        assert de.getDocumentModel() == model;
+        assert de.getDocumentModel() == m_model : "The element is no longer in the current document";
         
         int [] path = null;
         
@@ -376,7 +299,7 @@ public class SVGFileModel {
                 de = de.getParentElement();
             } while( de != null);
 
-            de = model.getRootElement();
+            de = m_model.getRootElement();
             assert de == objectPath.get(objectPath.size()-1);
 
             path = new int[objectPath.size()-1];
@@ -409,72 +332,12 @@ public class SVGFileModel {
         return path;       
     }
     
-    /*
-    public synchronized boolean updateHierarchy( Node root, NodeFactory nodeFactory) throws IOException, DocumentModelException {
-        checkDocument();
-        return updateHierarchy(root, model.getRootElement(), nodeFactory);
-    }
-    
-    protected boolean updateHierarchy( Node node, DocumentElement elem, NodeFactory nodeFactory) {
-        Node [] nodeChildren = node.getChildren().getNodes();
-        int     elemCount    = elem.getElementCount();
-        
-        boolean changed = false;
-        int     index   = 0;
-        
-        for (int i = 0; i < elemCount; i++) {
-            DocumentElement deChild = elem.getElement(i);
-            if (isTagElement(deChild)) {
-                if (index >= nodeChildren.length ||
-                    !nodeChildren[index].getName().equals(deChild.getName())) {
-                    changed = true;
-                    break;
-                }
-                index++;
-            }            
-        }
-        
-        if (index < nodeChildren.length - 1) {
-            changed = true;
-        }
-        
-        if (!changed) {
-            index = 0;
-            for (int i = 0; i < elemCount; i++) {
-                DocumentElement deChild = elem.getElement(i);
-                if ( isTagElement(deChild)) {
-                    if ( updateHierarchy( nodeChildren[index], deChild, nodeFactory)) {
-                        changed = true;
-                    }
-                    index++;
-                }
-            }            
-        } else {
-            node.getChildren().remove(nodeChildren);
-            node.getChildren().add( createHiearchy(elem, nodeFactory).getNodes());
-        }
-        return changed;
-    }
-    */
-    
-    /*
-    public synchronized String getRootElement() throws IOException, DocumentModelException {
-        checkDocument();
-        return "";
-    }
-    */
-    
     public DocumentModel getDocumentModel() {
-        return model;
+        return m_model;
     }
-/*    
-    public synchronized ElementFilterTag getRootElement() throws IOException, DocumentModelException {
-        checkDocument();
-        return rootFilterTag;
-    }
-*/    
+
     public DocumentElement findElement(String id) {
-        DocumentElement element = model.getRootElement();
+        DocumentElement element = m_model.getRootElement();
         int idLength = id.length();
         int pos = 0;
         
@@ -564,58 +427,6 @@ public class SVGFileModel {
             return null;
         }
     }
-/*    
-    public synchronized Children createHierarchy(NodeFactory nodeFactory) throws IOException, DocumentModelException  {
-        checkDocument();
-        return createHiearchy( model.getRootElement(), nodeFactory);
-    }
-    
-    protected Children createHiearchy(DocumentElement elem, NodeFactory nodeFactory) {
-        int childNum = elem.getElementCount();
-        
-        Children.Array array = null;
-        
-        if (childNum > 0) {
-            array = new Children.Array();
-            int index = 0;
-            
-            for (int i = 0; i < childNum; i++) {
-                DocumentElement child = elem.getElement(i);
-                if ( isTagElement(child)) {
-                    Children children = createHiearchy(child, nodeFactory);
-                    Node node = nodeFactory.createNode(child.getName(), index, children);
-                    array.add( new Node[] {node});
-                    index++;
-                }
-            }
-        }
-        
-        return array;
-    }
- */ 
- /*
-    public synchronized void visitModel( SVGContentModel.SVGContentVisitor visitor) throws Exception {
-        checkDocument();
-        visitElement( visitor, model.getRootElement(), null);
-    }
-     
-    private void visitElement(SVGContentModel.SVGContentVisitor visitor,
-                               DocumentElement parent, Object parentUserData) {
-        int index = 0;
-     
-        DocumentElement child;
-     
-        for (int i = 0; i < parent.getElementCount(); i++) {
-            child = parent.getElement(i);
-     
-            if ( isTagElement(child)) {
-                Object userData = visitor.visitObject(child, index, parent, parentUserData);
-                visitElement( visitor, child, userData);
-                index++;
-            }
-        }
-    }
-     */
     
     public synchronized String describeElement(int [] path, boolean showTag, boolean showAttributes, String lineSep) {
         DocumentElement el = findElement(path);
@@ -686,4 +497,240 @@ public class SVGFileModel {
         }
         return false;
     }
+    
+    public void deleteElement(int [] path) throws BadLocationException {
+        assert path != null : "Element not found";
+        DocumentElement de = findElement(path);
+        assert de != null : "No element at path: " + PerseusController.toString(path);
+        //TODO any locking??
+        int startOff = de.getStartOffset();
+        bDoc.remove(startOff, de.getEndOffset() - startOff + 1);
+    }
+    
+    public void wrapElement(int [] path, String text) throws BadLocationException {
+        assert path != null : "Element not found";
+        DocumentElement de = findElement(path);
+        assert de != null : "No element at path: " + PerseusController.toString(path);
+        checkIntegrity(de);
+        //TODO any locking??
+        int startOff = de.getStartOffset();
+        int length   = de.getEndOffset() - startOff + 1;
+
+        bDoc.replace(startOff, length,
+                     wrapText(text, bDoc.getText(startOff, length)), null);
+    }
+    
+    public static DocumentElement getSVGRoot(final DocumentModel model) {
+        DocumentElement root = model.getRootElement();
+        for (int i = root.getElementCount() - 1; i >= 0; i--) {
+            DocumentElement de = root.getElement(i);
+            if (isTagElement(de) && "svg".equals(de.getName())) {
+                return de;
+            }
+        }
+        return null;
+    }
+    
+    private static String wrapText(String group, String text) {
+        //TODO indent the wrapped text
+        StringBuilder sb = new StringBuilder();
+        sb.append( "\n");
+        sb.append(group);
+        sb.append("\n");
+        sb.append(text);
+        sb.append("\n</g>");
+        return sb.toString();
+    }
+    
+    public void appendElement( String groupHeader, String childXMLText) throws BadLocationException {
+        DocumentElement svgRoot = getSVGRoot(m_model);
+        
+        if (svgRoot != null) {
+            int svgRootChildNum = svgRoot.getElementCount();
+            int insertPosition;
+
+            if (svgRootChildNum > 0) {
+                // insert new text after last child
+                insertPosition = svgRoot.getElement(svgRootChildNum-1).getEndOffset();
+                bDoc.insertString(insertPosition, wrapText(groupHeader, childXMLText), null);
+            } else {
+                //TODO implement
+                throw new RuntimeException("Insert into empty document not implemented.");
+            }
+        } else {
+            //TODO handle situation when no SVG root element is found
+        }
+    }
+
+    /**
+     * Make the selected element to become the first child of its parent.
+     */
+    public void moveToBottom(int [] path) throws BadLocationException {
+        assert path != null : "Element not found";
+        DocumentElement de = findElement(path);
+        assert de != null : "No element at path: " + PerseusController.toString(path);
+        checkIntegrity(de);
+        
+        DocumentElement parent = de.getParentElement();
+        DocumentElement firstChild = parent.getElement(0);
+        if (de != firstChild) {
+            //TODO lock document??
+            int startOffset = de.getStartOffset();
+            int length      = de.getEndOffset() - startOffset + 1;
+            String elemText = bDoc.getText(startOffset, length);
+            
+            int insertOffset = firstChild.getStartOffset();
+            assert insertOffset < startOffset;
+            
+            bDoc.remove(startOffset, length);
+            bDoc.insertString(insertOffset, elemText, null);
+        }
+    }
+    
+    /**
+     * Make the selected element to become the last child of its parent.
+     */
+    public void moveToTop(int [] path) throws BadLocationException {
+        assert path != null : "Element not found";
+        DocumentElement de = findElement(path);
+        assert de != null : "No element at path: " + PerseusController.toString(path);
+        checkIntegrity(de);
+        
+        DocumentElement parent = de.getParentElement();
+        DocumentElement lastChild = parent.getElement(parent.getElementCount() - 1);
+        if (de != lastChild) {
+            //TODO lock document??
+            int startOffset = de.getStartOffset();
+            int length      = de.getEndOffset() - startOffset + 1;
+            String elemText = bDoc.getText(startOffset, length);
+            
+            int insertOffset = lastChild.getEndOffset();
+            assert startOffset < insertOffset;
+            
+            bDoc.insertString(insertOffset, elemText, null);
+            bDoc.remove(startOffset, length);
+        }
+    }
+
+    /**
+     * Move the selected element one position to the end of a list of its siblings.
+     */
+    public void moveForward(int [] path) throws BadLocationException {
+        assert path != null : "Element not found";
+        DocumentElement de = findElement(path);
+        assert de != null : "No element at path: " + PerseusController.toString(path);
+        checkIntegrity(de);
+        
+        DocumentElement parent = de.getParentElement();
+        DocumentElement lastChild = parent.getElement(parent.getElementCount() - 1);
+        if (de != lastChild) {
+            //TODO lock document??
+            int startOffset = de.getStartOffset();
+            int length      = de.getEndOffset() - startOffset + 1;
+            String elemText = bDoc.getText(startOffset, length);
+            
+            int index = getDocumentElementIndex(de);
+            DocumentElement nextChild = parent.getElement(index+1);
+                        
+            int insertOffset = nextChild.getEndOffset() + 1;
+            assert startOffset < insertOffset;
+            
+            bDoc.insertString(insertOffset, elemText, null);
+            bDoc.remove(startOffset, length);
+        }
+    }
+
+    /**
+     * Move the selected element one position to the beginning of a list of its siblings.
+     */
+    public void moveBackward(int [] path) throws BadLocationException {
+        assert path != null : "Element not found";
+        DocumentElement de = findElement(path);
+        assert de != null : "No element at path: " + PerseusController.toString(path);
+        checkIntegrity(de);
+        
+        DocumentElement parent = de.getParentElement();
+        DocumentElement firstChild = parent.getElement(0);
+        if (de != firstChild) {
+            //TODO lock document??
+            int startOffset = de.getStartOffset();
+            int length      = de.getEndOffset() - startOffset + 1;
+            String elemText = bDoc.getText(startOffset, length);
+            
+            int index = getDocumentElementIndex(de);
+            DocumentElement previousChild = parent.getElement(index-1);
+                        
+            int insertOffset = previousChild.getStartOffset();
+            assert startOffset > insertOffset;
+            
+            bDoc.remove(startOffset, length);
+            bDoc.insertString(insertOffset, elemText, null);
+        }
+    }
+    
+    private static int getDocumentElementIndex(DocumentElement de) {
+        DocumentElement parent = de.getParentElement();
+        int childNum = parent.getElementCount();
+        for (int i = 0; i < childNum; i++) {
+            if (parent.getElement(i) == de) {
+                return i;
+            }
+        }
+        throw new RuntimeException("The document element " + de + " is no longer part of the document");
+    }
+    
+    public void synchronize(ModelNode perseusRoot) throws BadLocationException {
+        DocumentElement element = m_model.getRootElement();
+        //TODO lock document?
+        synchronize( element, perseusRoot);
+    }
+    
+    public void synchronize(DocumentElement docElem, ModelNode perseusNode) throws BadLocationException {
+        assert docElem != null;
+        assert perseusNode != null;
+        
+        //TODO check if works for multiple synchronisation changes
+        if ( perseusNode instanceof PatchedGroup) {
+            PatchedGroup pg = (PatchedGroup) perseusNode;
+            if (pg.isChanged()) {
+                int startOff = docElem.getStartOffset();
+                if ( docElem.getElementCount() > 0) {
+                    int endOff = docElem.getElement(0).getStartOffset();
+                    String text = ((PatchedGroup)perseusNode).getText();
+                    bDoc.replace(startOff, endOff - startOff, text, null);
+                } else {
+                    System.err.println("Invalid wrapper");
+                }
+                pg.setChanged(false);
+            }
+        }
+        
+        int childElemNum = docElem.getElementCount();
+        ModelNode childNode = perseusNode.getFirstChildNode();
+        for (int i = 0; i < childElemNum; i++) {
+            DocumentElement childElem = docElem.getElement(i);
+            if ( isTagElement(childElem)) {
+                if (childNode != null) {
+                    synchronize(childElem, childNode);
+                    childNode = childNode.getNextSiblingNode();
+                } else {
+                    System.err.println("Inconsistent tree structure");
+                    break;
+                }
+            }
+        }
+        
+        if (childNode != null) {
+            System.err.println("Inconsistent tree structure");
+        }
+    }
+    
+    private void checkIntegrity(DocumentElement de) {
+        
+        if ( de.getDocumentModel() != m_model ||
+             de.getDocument() != bDoc) {
+            System.out.println("Element is not part of the current document");
+            throw new RuntimeException("Element is not part of the current document");
+        }
+    }    
 }

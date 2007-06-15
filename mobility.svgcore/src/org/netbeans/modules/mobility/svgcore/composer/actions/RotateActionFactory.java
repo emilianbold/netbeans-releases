@@ -89,6 +89,7 @@ public class RotateActionFactory extends AbstractComposerActionFactory {
         public void actionCompleted() {
             m_rotated.repaint(SVGObjectOutline.SELECTOR_OVERLAP);
             repaintRotatePivot();
+            applyChanges();
             super.actionCompleted();
         }
         

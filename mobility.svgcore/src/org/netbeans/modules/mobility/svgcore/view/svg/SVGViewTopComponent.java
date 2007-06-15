@@ -30,7 +30,6 @@ import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
@@ -91,7 +90,6 @@ import org.netbeans.modules.mobility.svgcore.composer.PerseusController;
 import org.netbeans.modules.mobility.svgcore.composer.SceneManager;
 import org.netbeans.modules.mobility.svgcore.composer.ScreenManager;
 import org.netbeans.modules.mobility.svgcore.model.SVGFileModel;
-import org.netbeans.modules.mobility.svgcore.navigator.SVGNavigatorContent;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.w3c.dom.svg.SVGLocatableElement;
@@ -391,6 +389,11 @@ final public class SVGViewTopComponent extends CloneableTopComponent {
         }
 */
     }
+    
+    
+    
+    
+    
     
     private void removeSvgPanel(){
         assert SwingUtilities.isEventDispatchThread() : "Not in AWT event dispach thread";  //NOI18N

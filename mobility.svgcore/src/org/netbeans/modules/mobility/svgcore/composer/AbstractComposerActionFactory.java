@@ -15,6 +15,7 @@
 package org.netbeans.modules.mobility.svgcore.composer;
 
 import java.awt.event.InputEvent;
+import org.netbeans.modules.mobility.svgcore.view.svg.AbstractSVGAction;
 
 /**
  *
@@ -40,7 +41,15 @@ public abstract class AbstractComposerActionFactory implements ComposerActionFac
         return m_sceneMgr;
     }
 
+    public ComposerAction startAction(InputEvent event) {
+        return null;
+    }
+    
     public ActionMouseCursor getMouseCursor(InputEvent evt) {
+        return null;
+    }   
+
+    public AbstractSVGAction getMenuAction() {
         return null;
     }    
 }
