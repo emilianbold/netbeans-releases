@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.debugger.jpda.breakpoints;
 
+import java.awt.EventQueue;
 import java.beans.PropertyChangeListener;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -136,11 +137,13 @@ implements PropertyChangeListener, DebuggerManagerListener {
                 }
             }
         });
-        synchronized (started) {
-            if (!started[0]) {
-                try {
-                    started.wait();
-                } catch (InterruptedException iex) {}
+        if (!EventQueue.isDispatchThread()) { // AWT should not wait for debugger.LOCK
+            synchronized (started) {
+                if (!started[0]) {
+                    try {
+                        started.wait();
+                    } catch (InterruptedException iex) {}
+                }
             }
         }
     }    
@@ -162,11 +165,13 @@ implements PropertyChangeListener, DebuggerManagerListener {
                 }
             }
         });
-        synchronized (started) {
-            if (!started[0]) {
-                try {
-                    started.wait();
-                } catch (InterruptedException iex) {}
+        if (!EventQueue.isDispatchThread()) { // AWT should not wait for debugger.LOCK
+            synchronized (started) {
+                if (!started[0]) {
+                    try {
+                        started.wait();
+                    } catch (InterruptedException iex) {}
+                }
             }
         }
     }
