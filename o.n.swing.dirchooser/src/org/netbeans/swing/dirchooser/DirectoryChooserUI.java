@@ -25,6 +25,7 @@ import java.util.logging.Level;
 import javax.swing.*;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.Timer;
 import javax.swing.event.TreeExpansionListener;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
@@ -44,6 +45,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.lang.reflect.Constructor;
 import java.security.AccessControlException;
 import java.util.*;
@@ -604,8 +606,17 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
     }
     
     private JComponent createTree() {
+        final DirectoryHandler dirHandler = createDirectoryHandler(fileChooser);
         // #106011: don't show "colors, food, sports" sample model after init :-)
-        tree = new JTree(new Object[0]);
+        tree = new JTree(new Object[0]) {
+
+            @Override
+            protected void processMouseEvent(MouseEvent e) {
+                dirHandler.preprocessMouseEvent(e);
+                super.processMouseEvent(e);
+            }
+            
+        };
         // #105642: start with right content in tree 
         File curDir = fileChooser.getCurrentDirectory();
         if (curDir == null) {
@@ -622,8 +633,8 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
         TreeKeyHandler keyHandler = new TreeKeyHandler();
         tree.addKeyListener(keyHandler);
         tree.addFocusListener(keyHandler);
-        DirectoryHandler dirHandler = createDirectoryHandler(fileChooser);
         tree.addMouseListener(dirHandler);
+        tree.addFocusListener(dirHandler);
         tree.addTreeSelectionListener(dirHandler);
         
         if(fileChooser.isMultiSelectionEnabled()) {
@@ -656,6 +667,15 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
             if(evt.getKeyCode() == KeyEvent.VK_DELETE) {
                 deleteAction();
             }
+            
+            // F2 as rename shortcut
+            if (evt.getKeyCode() == KeyEvent.VK_F2) {
+                DirectoryNode node = (DirectoryNode)tree.getLastSelectedPathComponent();
+                if (node != null) {
+                    applyEdit(node);
+                }
+            }
+            
             if (!isCharForSearch(evt)) {
                 resetBuffer();
             }
@@ -1829,8 +1849,16 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
         }
     }
     
-    private class DirectoryHandler extends MouseAdapter implements TreeSelectionListener, CellEditorListener {
+    private class DirectoryHandler extends MouseAdapter 
+            implements TreeSelectionListener, CellEditorListener, ActionListener,
+                        FocusListener, Runnable {
         private JFileChooser fileChooser;
+        /** current selection holder */
+        private WeakReference<TreePath> curSelPath;
+        /** timer for slow click to rename feature */ 
+        private Timer renameTimer;
+        /** path to rename for slow click to rename feature */
+        private TreePath pathToRename;
         
         public DirectoryHandler(JFileChooser fileChooser) {
             this.fileChooser = fileChooser;
@@ -1843,6 +1871,9 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
             FileSystemView fsv = fileChooser.getFileSystemView();
             JTree tree = (JTree) e.getSource();
             TreePath path = tree.getSelectionPath();
+            TreePath curSel = e.getNewLeadSelectionPath();
+            curSelPath = (curSel != null) ? new WeakReference<TreePath>(curSel) : null;
+            
             if(path != null) {
                 
                 DirectoryNode node = (DirectoryNode)path.getLastPathComponent();
@@ -1887,9 +1918,9 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
                 
                 DirectoryNode node = (DirectoryNode) path.getLastPathComponent();
                 newFolderAction.setEnabled(canWrite(node.getFile()));
-                
+    
                 if (SwingUtilities.isLeftMouseButton(e) && (e.getClickCount() == 2)) {
-                    
+                    cancelRename();
                     if(node.isNetBeansProject()) {
                         fileChooser.approveSelection();
                     } else if (node.getFile().isFile() && !node.getFile().getPath().endsWith(".lnk")){
@@ -1898,6 +1929,19 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
                         changeTreeDirectory(node.getFile());
                     }
                     
+                }
+                
+                // handles click to rename feature
+                if (SwingUtilities.isLeftMouseButton(e) && (e.getClickCount() == 1)) {
+                    if (pathToRename != null) {
+                        if (renameTimer != null) {
+                            renameTimer.stop();
+                        }
+                        // start slow click rename timer
+                        renameTimer = new Timer(800, this);
+                        renameTimer.setRepeats(false);
+                        renameTimer.start();
+                    }
                 }
                 
                 ((DirectoryTreeModel) tree.getModel()).nodeChanged(node);
@@ -1966,6 +2010,69 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
         public void editingCanceled(ChangeEvent e) {
             // no operation
         }
+
+        /********** ActionListener impl, slow-double-click rename ******/ 
+        
+        public void actionPerformed(ActionEvent e) {
+            if (tree.isFocusOwner() && isSelectionKept(pathToRename)) {
+                DirectoryNode node = (DirectoryNode)tree.getLastSelectedPathComponent();
+                if (node != null) {
+                    applyEdit(node);
+                }
+            }
+            // clear
+            cancelRename();
+        }
+        
+        void preprocessMouseEvent (MouseEvent e) {
+            if ((e.getID() != MouseEvent.MOUSE_PRESSED) || (e.getButton() != MouseEvent.BUTTON1)) {
+                return;
+            }
+            TreePath clickedPath = tree.getPathForLocation(e.getX(), e.getY());
+            if (clickedPath != null && isSelectionKept(clickedPath)) {
+                pathToRename = clickedPath;
+            }
+        }
+        
+        private boolean isSelectionKept (TreePath selPath) {
+            if (curSelPath != null) {
+                TreePath oldSel = curSelPath.get();
+                if (oldSel != null && oldSel.equals(selPath)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        
+        private void cancelRename () {
+            if (renameTimer != null) {
+                renameTimer.stop();
+                renameTimer = null;
+            }
+            pathToRename = null;
+        }
+        
+        /******** implementation of focus listener, for slow click rename cancelling ******/ 
+
+        public void focusGained(FocusEvent e) {
+            // don't allow to invoke click to rename immediatelly after focus gain
+            // what may happen is that tree gains focus by mouse
+            // click on selected item - on some platforms selected item
+            // is not visible without focus and click to rename will
+            // be unwanted and surprising for users
+            
+            // see run method
+            SwingUtilities.invokeLater(this);
+        }
+
+        public void run() {
+            cancelRename();
+        }
+
+        public void focusLost(FocusEvent e) {
+            cancelRename();
+        }
+
     }
     
     private class TreeExpansionHandler implements  TreeExpansionListener  {
