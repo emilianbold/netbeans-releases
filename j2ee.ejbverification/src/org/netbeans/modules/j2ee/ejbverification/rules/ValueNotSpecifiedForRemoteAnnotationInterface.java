@@ -22,8 +22,6 @@ import java.util.Collection;
 import java.util.Collections;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ElementKind;
-import javax.lang.model.type.TypeMirror;
-import org.netbeans.modules.j2ee.dd.api.ejb.Session;
 import org.netbeans.modules.j2ee.ejbverification.EJBAPIAnnotations;
 import org.netbeans.modules.j2ee.ejbverification.EJBProblemContext;
 import org.netbeans.modules.j2ee.ejbverification.EJBVerificationRule;
