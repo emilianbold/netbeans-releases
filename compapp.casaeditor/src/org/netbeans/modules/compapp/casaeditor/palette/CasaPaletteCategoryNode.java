@@ -32,8 +32,8 @@ public class CasaPaletteCategoryNode extends AbstractNode {
    
     public CasaPaletteCategoryNode(CasaPaletteCategoryID categoryID, Lookup lookup) {
         super(new CasaPaletteItems(categoryID, lookup), lookup);
-        setName(categoryID.getDisplayName());
-        setDisplayName(categoryID.getDisplayName());
+        setName(categoryID.getName());
+        setDisplayName(categoryID.getName());
         setValue(PaletteController.ATTR_IS_EXPANDED, Boolean.TRUE);
     }
 

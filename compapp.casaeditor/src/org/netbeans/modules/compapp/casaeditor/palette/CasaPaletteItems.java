@@ -47,7 +47,7 @@ public class CasaPaletteItems extends Index.ArrayChildren {
 
     private List<Node> addPaletteNodes() {
         List<Node> childrenNodes = new ArrayList<Node>();
-        CasaPaletteItemID[] pluginItems = mCategoryID.getPlugin().getItemIDs(mCategoryID);
+        List<CasaPaletteItemID> pluginItems = mCategoryID.getItems();
         if (pluginItems != null) {
             for (CasaPaletteItemID itemID : pluginItems) {
                 childrenNodes.add(new CasaPaletteItemNode(itemID, mLookup));

@@ -21,8 +21,10 @@ package org.netbeans.modules.compapp.casaeditor.palette;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import org.netbeans.modules.compapp.casaeditor.api.CasaPaletteCategoryID;
+import org.netbeans.modules.compapp.casaeditor.api.CasaPaletteItemID;
 import org.netbeans.modules.compapp.casaeditor.api.CasaPalettePlugin;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -49,16 +51,22 @@ public class CasaPaletteCategoryChildren extends Children.Keys {
     protected void addNotify() {
         super.addNotify();
         
-        List<CasaPaletteCategoryID> objs = new ArrayList<CasaPaletteCategoryID>();
-        Collection<? extends CasaPalettePlugin> plugins = CasaPalette.getPlugins(mLookup);
+        java.util.Map<String,CasaPaletteCategoryID> categoryMap = new HashMap<String,CasaPaletteCategoryID>();
+        List<CasaPaletteCategoryID> categories = new ArrayList<CasaPaletteCategoryID>();
+        Collection<? extends CasaPalettePlugin> plugins = CasaPalette.getPlugins();
         for (CasaPalettePlugin plugin : plugins) {
-            if (plugin.getCategoryIDs() != null) {
-                for (CasaPaletteCategoryID id : plugin.getCategoryIDs()) {
-                    objs.add(id);
+            for (CasaPaletteItemID itemID : plugin.getItemIDs()) {
+                String categoryName = itemID.getCategory();
+                CasaPaletteCategoryID categoryID = categoryMap.get(categoryName);
+                if (categoryID == null) {
+                    categoryID = new CasaPaletteCategoryID(categoryName);
+                    categoryMap.put(categoryName, categoryID);
+                    categories.add(categoryID);
                 }
+                categoryID.addItem(itemID);
             }
         }
 
-        setKeys(objs);
+        setKeys(categories);
     }
 }

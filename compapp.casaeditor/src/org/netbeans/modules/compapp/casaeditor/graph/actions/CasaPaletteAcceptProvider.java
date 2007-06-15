@@ -26,14 +26,11 @@ import java.awt.datatransfer.DataFlavor;
 import java.io.IOException;
 import java.util.List;
 import java.util.ArrayList;
-import java.util.Iterator;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.visual.action.ConnectorState;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ant.AntArtifact;
-import org.netbeans.modules.compapp.casaeditor.api.CasaPaletteCategoryID;
 import org.netbeans.modules.compapp.casaeditor.api.CasaPaletteItemID;
 import org.netbeans.modules.compapp.casaeditor.api.CasaPalettePlugin;
 import org.netbeans.modules.compapp.casaeditor.api.PluginDropHandler;
@@ -47,9 +44,6 @@ import org.netbeans.modules.compapp.casaeditor.model.casa.JBIServiceUnitTransfer
 import org.netbeans.modules.compapp.casaeditor.palette.CasaCommonAcceptProvider;
 import org.netbeans.modules.compapp.casaeditor.palette.CasaPalette;
 import org.netbeans.modules.compapp.casaeditor.palette.DefaultPluginDropHandler;
-import org.netbeans.modules.compapp.projects.jbi.api.JbiDefaultComponentInfo;
-import org.netbeans.modules.compapp.projects.jbi.api.JbiProjectConstants;
-import org.netbeans.spi.project.ant.AntArtifactProvider;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
@@ -64,48 +58,14 @@ import org.openide.util.datatransfer.MultiTransferObject;
 public class CasaPaletteAcceptProvider extends CasaCommonAcceptProvider {
     
     private CasaWrapperModel mModel;
-    private List<String> artifactTypes = new ArrayList<String>();
     private static final DataFlavor genericDataFlavor = new DataFlavor( Object.class, "whatever" );
+    
     
     public CasaPaletteAcceptProvider(CasaModelGraphScene scene, CasaWrapperModel model) {
         super(scene);
         mModel = model;
-        artifactTypes.add(JbiProjectConstants.ARTIFACT_TYPE_JBI_ASA);
     }
     
-    
-    private String getJbiProjectType(Project p) {
-        if (p == null) {
-            return null;
-        }
-
-        // todo: 06/08/07, allow JavaEE DnD in CASA
-        if (JbiDefaultComponentInfo.isJavaEEProject(p)) {
-            return (JbiProjectConstants.JAVA_EE_SE_COMPONENT_NAME);
-        }
-
-        AntArtifactProvider prov = (AntArtifactProvider)p.getLookup().lookup(AntArtifactProvider.class);
-        if (prov != null) {
-            AntArtifact[] artifacts = prov.getBuildArtifacts();
-            Iterator<String> artifactTypeItr = null;
-            String artifactType = null;
-            if (artifacts != null) {
-                for (int i = 0; i < artifacts.length; i++) {
-                    artifactTypeItr = this.artifactTypes.iterator();
-                    while (artifactTypeItr.hasNext()){
-                        artifactType = artifactTypeItr.next();
-                        String arts = artifacts[i].getType();
-                        if (arts.startsWith(artifactType)) {
-                            int idx = arts.indexOf(':') + 1;
-                            return arts.substring(idx);
-                        }
-                    }
-                }
-            }
-        }
-        
-        return null;
-    }
     
     public ConnectorState isAcceptable(Widget widget, Point point, Transferable transferable){
         ConnectorState retState = ConnectorState.REJECT;
@@ -147,7 +107,7 @@ public class CasaPaletteAcceptProvider extends CasaCommonAcceptProvider {
                 region = getScene().getEngineRegion();
                 DataObject obj = (DataObject) ((Node) dfo).getCookie(DataObject.class);
                 Project p = getProjectFromDataObject(obj); // ProjectManager.getDefault().findProject(obj.getPrimaryFile());
-                if (getJbiProjectType(p) != null) {
+                if (mModel.getJbiProjectType(p) != null) {
                     String pname = p.getProjectDirectory().getName();
                     // todo: 01/24/07 needs to check for duplicates...
                     if (!mModel.existingServiceEngineServiceUnit(pname)) {
@@ -241,7 +201,11 @@ public class CasaPaletteAcceptProvider extends CasaCommonAcceptProvider {
     
     private void acceptFromPalette(Point point, CasaPaletteItemID itemID) {
         PluginDropHandler handler = new DefaultPluginDropHandler(getScene(), point);
-        itemID.getCategory().getPlugin().handleDrop(handler, itemID);
+        try {
+            itemID.getPlugin().handleDrop(handler, itemID);
+        } catch (IOException ioe) {
+            ErrorManager.getDefault().notify(ioe);
+        }
     }
     
     private void acceptFromOther(Point point, Transferable transferable)
@@ -250,7 +214,7 @@ public class CasaPaletteAcceptProvider extends CasaCommonAcceptProvider {
             if (dfo instanceof Node) {
                 DataObject obj = (DataObject) ((Node) dfo).getCookie(DataObject.class);
                 Project p = getProjectFromDataObject(obj); // ProjectManager.getDefault().findProject(obj.getPrimaryFile());
-                String type = getJbiProjectType(p);
+                String type = mModel.getJbiProjectType(p);
                 point = getScene().getEngineRegion().convertSceneToLocal(point);
                 mModel.addInternalJBIModule(p, type, point.x, point.y);
             } else if(dfo instanceof List) {
@@ -350,7 +314,7 @@ public class CasaPaletteAcceptProvider extends CasaCommonAcceptProvider {
     
     private CasaRegionWidget getApplicableRegion(CasaPaletteItemID itemID) {
         CasaPalettePlugin.REGION regionID = 
-                itemID.getCategory().getPlugin().getDropRegion(itemID);
+                itemID.getPlugin().getDropRegion(itemID);
         if (regionID == null) {
             return null;
         }

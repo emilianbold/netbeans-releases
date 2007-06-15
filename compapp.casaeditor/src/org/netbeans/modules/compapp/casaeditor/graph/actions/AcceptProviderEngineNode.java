@@ -25,7 +25,6 @@ import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.IOException;
 import org.netbeans.api.visual.action.ConnectorState;
 import org.netbeans.api.visual.widget.Widget;
-import org.netbeans.modules.compapp.casaeditor.api.CasaPaletteCategoryID;
 import org.netbeans.modules.compapp.casaeditor.api.CasaPaletteItemID;
 import org.netbeans.modules.compapp.casaeditor.design.CasaModelGraphScene;
 import org.netbeans.modules.compapp.casaeditor.graph.CasaNodeWidgetEngineExternal;
@@ -51,7 +50,7 @@ public class AcceptProviderEngineNode extends CasaCommonAcceptProvider {
             if(transferable.isDataFlavorSupported(CasaPalette.CasaPaletteDataFlavor)) {
                 CasaPaletteItemID itemID = (CasaPaletteItemID) transferable.getTransferData(CasaPalette.CasaPaletteDataFlavor);
                 if (itemID != null) {
-                    CasaPaletteCategoryID categoryID = itemID.getCategory();
+                    String categoryID = itemID.getCategory();
                     if (categoryID.equals(CasaPalette.CATEGORY_ID_END_POINTS)) {
                         retState = ConnectorState.ACCEPT;
                     } else {
@@ -72,7 +71,7 @@ public class AcceptProviderEngineNode extends CasaCommonAcceptProvider {
             if (transferable.isDataFlavorSupported(CasaPalette.CasaPaletteDataFlavor)) {
                 CasaPaletteItemID itemID = (CasaPaletteItemID) transferable.getTransferData(CasaPalette.CasaPaletteDataFlavor);
                 if (itemID != null) {
-                    CasaPaletteCategoryID categoryID = itemID.getCategory();
+                    String categoryID = itemID.getCategory();
                     if (categoryID.equals(CasaPalette.CATEGORY_ID_END_POINTS)) {
                         highlightExtSUs(false);
                         addEndpoint(widget, itemID);

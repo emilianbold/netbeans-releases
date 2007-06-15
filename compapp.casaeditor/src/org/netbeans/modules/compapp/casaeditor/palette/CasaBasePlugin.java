@@ -48,39 +48,20 @@ public class CasaBasePlugin implements CasaPalettePlugin {
         return mInstance;
     }
     
-    public String getDisplayName() {
-        return "";
-    }
-
-    public CasaPaletteCategoryID[] getCategoryIDs() {
-        return new CasaPaletteCategoryID[] { 
-            CasaPalette.CATEGORY_ID_WSDL_BINDINGS, 
-            CasaPalette.CATEGORY_ID_SERVICE_UNITS, 
-            CasaPalette.CATEGORY_ID_END_POINTS
-        };
-    }
-
-    public CasaPaletteItemID[] getItemIDs(CasaPaletteCategoryID categoryID) {
-        if       (categoryID.equals(CasaPalette.CATEGORY_ID_WSDL_BINDINGS)) {
-            return getExternalWsdlPointItems();
-        } else if(categoryID.equals(CasaPalette.CATEGORY_ID_SERVICE_UNITS)) {
-            return new CasaPaletteItemID[] {
-                // Don't add Int. SU / Jbi Module. Add it when its supported.
-                // CasaPalette.ITEM_ID_INTERNAL_SU,
-                CasaPalette.ITEM_ID_EXTERNAL_SU
-            };
-        } else if(categoryID.equals(CasaPalette.CATEGORY_ID_END_POINTS)) {
-            return new CasaPaletteItemID[] {
-                CasaPalette.ITEM_ID_CONSUME,
-                CasaPalette.ITEM_ID_PROVIDE
-            };
-        }
-        
-        return null;
+    public CasaPaletteItemID[] getItemIDs() {
+        List<CasaPaletteItemID> items = new ArrayList<CasaPaletteItemID>();
+        // wsdl bindings
+        items.addAll(getExternalWsdlPointItems());
+        // service units
+        items.add(CasaPalette.ITEM_ID_EXTERNAL_SU);
+        // end points
+        items.add(CasaPalette.ITEM_ID_CONSUME);
+        items.add(CasaPalette.ITEM_ID_PROVIDE);
+        return items.toArray(new CasaPaletteItemID[items.size()]);
     }
     
     
-    private CasaPaletteItemID[] getExternalWsdlPointItems() {
+    private List<CasaPaletteItemID> getExternalWsdlPointItems() {
         List<CasaPaletteItemID> bcItems = new ArrayList<CasaPaletteItemID>();
         HashMap bcTemplates = getWsdlTemplates();
         JbiDefaultComponentInfo bcinfo = JbiDefaultComponentInfo.getJbiDefaultComponentInfo();
@@ -90,6 +71,7 @@ public class CasaBasePlugin implements CasaPalettePlugin {
                 String biName = bi.getBindingName().toUpperCase();
                 if (bcTemplates.get(biName) != null) {
                     CasaPaletteItemID item = new CasaPaletteItemID(
+                            this,
                             CasaPalette.CATEGORY_ID_WSDL_BINDINGS, 
                             bi.getBindingName(),
                             bi.getIcon().getFile());
@@ -98,7 +80,7 @@ public class CasaBasePlugin implements CasaPalettePlugin {
                 }
             }
         }
-        return bcItems.toArray(new CasaPaletteItemID[bcItems.size()]);
+        return bcItems;
     }
     
     private HashMap getWsdlTemplates() {
@@ -117,7 +99,7 @@ public class CasaBasePlugin implements CasaPalettePlugin {
 
     public void handleDrop(PluginDropHandler handler, CasaPaletteItemID itemID) {
         DefaultPluginDropHandler defaultHandler = (DefaultPluginDropHandler) handler;
-        CasaPaletteCategoryID categoryID = itemID.getCategory();
+        String categoryID = itemID.getCategory();
         if        (categoryID.equals(CasaPalette.CATEGORY_ID_WSDL_BINDINGS)) {
             defaultHandler.addCasaPort(
                     itemID.getDisplayName(), 
@@ -135,7 +117,7 @@ public class CasaBasePlugin implements CasaPalettePlugin {
 
     public REGION getDropRegion(CasaPaletteItemID itemID) {
         if (itemID != null) {
-            CasaPaletteCategoryID categoryID = itemID.getCategory();
+            String categoryID = itemID.getCategory();
             if (categoryID.equals(CasaPalette.CATEGORY_ID_WSDL_BINDINGS)) {
                 return REGION.WSDL_ENDPOINTS;
             } else if (categoryID.equals(CasaPalette.CATEGORY_ID_SERVICE_UNITS)) {

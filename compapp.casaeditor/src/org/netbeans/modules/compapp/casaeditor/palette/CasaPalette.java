@@ -26,11 +26,10 @@ import java.util.List;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import javax.swing.Action;
-import org.netbeans.modules.compapp.casaeditor.api.CasaPaletteCategoryID;
 import org.netbeans.modules.compapp.casaeditor.api.CasaPaletteItemID;
 import org.netbeans.modules.compapp.casaeditor.api.CasaPalettePlugin;
-import org.netbeans.modules.compapp.casaeditor.api.PaletteIDFactory;
-import org.netbeans.modules.compapp.casaeditor.aspect.AspectPalettePlugin;
+import org.netbeans.modules.compapp.casaeditor.api.InternalProjectTypePalettePlugin;
+import org.netbeans.modules.compapp.projects.jbi.api.InternalProjectTypePlugin;
 import org.netbeans.spi.palette.PaletteActions;
 import org.netbeans.spi.palette.PaletteController;
 import org.netbeans.spi.palette.PaletteFactory;
@@ -45,27 +44,35 @@ import org.openide.util.NbBundle;
  */
 public class CasaPalette {
     
-    public static final CasaPaletteCategoryID CATEGORY_ID_WSDL_BINDINGS = 
-            PaletteIDFactory.createCategoryID(CasaBasePlugin.getInstance(), NbBundle.getMessage(CasaPalette.class, "WSDLBindings"));  // NOI18N
-    public static final CasaPaletteCategoryID CATEGORY_ID_SERVICE_UNITS = 
-            PaletteIDFactory.createCategoryID(CasaBasePlugin.getInstance(), NbBundle.getMessage(CasaPalette.class, "ServiceUnits"));  // NOI18N
-    public static final CasaPaletteCategoryID CATEGORY_ID_END_POINTS    = 
-            PaletteIDFactory.createCategoryID(CasaBasePlugin.getInstance(), NbBundle.getMessage(CasaPalette.class, "EndPoints"));     // NOI18N
+    public static final String CATEGORY_ID_WSDL_BINDINGS = 
+            NbBundle.getMessage(CasaPalette.class, "WSDLBindings");  // NOI18N
+    public static final String CATEGORY_ID_SERVICE_UNITS = 
+            NbBundle.getMessage(CasaPalette.class, "ServiceUnits");  // NOI18N
+    public static final String CATEGORY_ID_END_POINTS    = 
+            NbBundle.getMessage(CasaPalette.class, "EndPoints");     // NOI18N
     
     public static final CasaPaletteItemID ITEM_ID_CONSUME               = 
-            new CasaPaletteItemID(CasaPalette.CATEGORY_ID_END_POINTS, 
+            new CasaPaletteItemID(
+                CasaBasePlugin.getInstance(),
+                CasaPalette.CATEGORY_ID_END_POINTS, 
                 NbBundle.getMessage(CasaPalette.class, "Palette_Consume_Title"), // NOI18N
                 "org/netbeans/modules/compapp/casaeditor/palette/resources/consumesPalette.png"); // NOI18N
     public static final CasaPaletteItemID ITEM_ID_PROVIDE               = 
-            new CasaPaletteItemID(CasaPalette.CATEGORY_ID_END_POINTS, 
+            new CasaPaletteItemID(
+                CasaBasePlugin.getInstance(),
+                CasaPalette.CATEGORY_ID_END_POINTS, 
                 NbBundle.getMessage(CasaPalette.class, "Palette_Provide_Title"), // NOI18N
                 "org/netbeans/modules/compapp/casaeditor/palette/resources/providesPalette.png"); // NOI18N
     public static final CasaPaletteItemID ITEM_ID_INTERNAL_SU           = 
-            new CasaPaletteItemID(CasaPalette.CATEGORY_ID_SERVICE_UNITS, 
+            new CasaPaletteItemID(
+                CasaBasePlugin.getInstance(),
+                CasaPalette.CATEGORY_ID_SERVICE_UNITS, 
                 NbBundle.getMessage(CasaPalette.class, "Palette_ExtSU_Title"), // NOI18N
                 "org/netbeans/modules/compapp/casaeditor/palette/resources/intsu.png"); // NOI18N
     public static final CasaPaletteItemID ITEM_ID_EXTERNAL_SU           = 
-            new CasaPaletteItemID(CasaPalette.CATEGORY_ID_SERVICE_UNITS, 
+            new CasaPaletteItemID(
+                CasaBasePlugin.getInstance(),
+                CasaPalette.CATEGORY_ID_SERVICE_UNITS, 
                 NbBundle.getMessage(CasaPalette.class, "Palette_IntSU_Title"), // NOI18N
                 "org/netbeans/modules/compapp/casaeditor/palette/resources/extsu.png"); // NOI18N
 
@@ -96,16 +103,20 @@ public class CasaPalette {
         return palette;
     }
     
-    public static Collection<? extends CasaPalettePlugin> getPlugins(Lookup lookup) {
+    public static Collection<? extends CasaPalettePlugin> getPlugins() {
         List<CasaPalettePlugin> plugins = new ArrayList<CasaPalettePlugin>();
         
         // CASA itself plugs into its own palette
         plugins.add(CasaBasePlugin.getInstance());
         
-        // For now just hard code this in.
-        // This eventually should be replaced with a lookup for 
-        // external service providers.
-//        plugins.add(new AspectPalettePlugin());
+        // Add all internal project types as palette plugins.
+        Collection<? extends InternalProjectTypePlugin> projectPlugins = 
+                Lookup.getDefault().lookupAll(InternalProjectTypePlugin.class);
+        for (InternalProjectTypePlugin projectTypePlugin : projectPlugins) {
+            CasaPalettePlugin palettePlugin = 
+                    new InternalProjectTypePalettePlugin(projectTypePlugin);
+            plugins.add(palettePlugin);
+        }
         
         return plugins;
     }

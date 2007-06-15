@@ -18,6 +18,8 @@
  */
 package org.netbeans.modules.compapp.casaeditor.api;
 
+import java.io.IOException;
+
 /**
  *
  * @author jsandusky
@@ -26,15 +28,10 @@ public interface CasaPalettePlugin {
 
     enum REGION { WSDL_ENDPOINTS, JBI_MODULES, EXTERNAL };
     
-    // Arbitrary display name of the plugin.
-    String getDisplayName();
-    
-    CasaPaletteCategoryID[] getCategoryIDs();
-
-    CasaPaletteItemID[] getItemIDs(CasaPaletteCategoryID categoryID);
+    CasaPaletteItemID[] getItemIDs();
     
     REGION getDropRegion(CasaPaletteItemID itemID);
     
-    void handleDrop(PluginDropHandler dropHandler, CasaPaletteItemID itemID);
+    void handleDrop(PluginDropHandler dropHandler, CasaPaletteItemID itemID) throws IOException;
     
 }

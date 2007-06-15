@@ -18,10 +18,14 @@
  */
 package org.netbeans.modules.compapp.casaeditor.api;
 
+import org.netbeans.api.project.Project;
+
 /**
  *
  * @author Josh Sandusky
  */
 public interface PluginDropHandler {
+    
+    void addInternalJBIModule(Project p);
 
 }

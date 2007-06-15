@@ -28,20 +28,26 @@ public class CasaPaletteItemID {
     private static int mCount;
     private int mID = mCount++;
     
-    private CasaPaletteCategoryID mCategoryType;
+    private CasaPalettePlugin mPlugin;
+    private String mCategoryName;
     private String mDisplayName;
     private String mIconFileBase;
     private Object mDataObject;
     
     
-    public CasaPaletteItemID(CasaPaletteCategoryID categoryID, String displayName, String iconFileBase) {
-        mCategoryType = categoryID;
+    public CasaPaletteItemID(
+            CasaPalettePlugin plugin, 
+            String categoryName, 
+            String displayName, 
+            String iconFileBase) {
+        mPlugin = plugin;
+        mCategoryName = categoryName;
         mDisplayName = displayName;
         mIconFileBase = iconFileBase;
     }
     
-    public CasaPaletteCategoryID getCategory() {
-        return mCategoryType;
+    public String getCategory() {
+        return mCategoryName;
     }
     
     public String getDisplayName() {
@@ -71,5 +77,9 @@ public class CasaPaletteItemID {
             return mID == ((CasaPaletteItemID) obj).mID;
         }
         return false;
+    }
+    
+    public CasaPalettePlugin getPlugin() {
+        return mPlugin;
     }
 }

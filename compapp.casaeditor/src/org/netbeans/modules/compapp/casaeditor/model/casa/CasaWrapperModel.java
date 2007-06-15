@@ -44,6 +44,7 @@ import org.netbeans.modules.compapp.casaeditor.model.casa.impl.CasaModelImpl;
 import org.netbeans.modules.compapp.casaeditor.model.jbi.impl.JBIAttributes;
 import org.netbeans.modules.compapp.projects.jbi.api.JbiBindingInfo;
 import org.netbeans.modules.compapp.projects.jbi.api.JbiDefaultComponentInfo;
+import org.netbeans.modules.compapp.projects.jbi.api.JbiProjectConstants;
 import org.netbeans.modules.compapp.projects.jbi.api.JbiProjectHelper;
 import org.netbeans.modules.compapp.projects.jbi.ui.actions.AddProjectAction;
 import org.netbeans.modules.compapp.projects.jbi.ui.actions.DeleteModuleAction;
@@ -119,6 +120,8 @@ public class CasaWrapperModel extends CasaModelImpl {
     // mapping WSDL port link hrefs to WSDL components
     private Map<String, Object> cachedWSDLComponents = new HashMap<String, Object>();
     
+    private List<String> artifactTypes = new ArrayList<String>();
+    
 //    // mapping binding component name to binding type, 
 //    // e.x, "sun-smtp-binding" -> "smtp".
 //    private Map<String, String> bcName2BindingType;
@@ -139,6 +142,7 @@ public class CasaWrapperModel extends CasaModelImpl {
             ex.printStackTrace();
         }
         
+        artifactTypes.add(JbiProjectConstants.ARTIFACT_TYPE_JBI_ASA);
 //        buildBindingComponentMaps();
     }
         
@@ -2710,6 +2714,33 @@ public class CasaWrapperModel extends CasaModelImpl {
         }
         
         return ret;
+    }
+
+    public String getJbiProjectType(Project p) {
+        if (p == null) {
+            return null;
+        }
+        AntArtifactProvider prov = (AntArtifactProvider)p.getLookup().lookup(AntArtifactProvider.class);
+        if (prov != null) {
+            AntArtifact[] artifacts = prov.getBuildArtifacts();
+            Iterator<String> artifactTypeItr = null;
+            String artifactType = null;
+            if (artifacts != null) {
+                for (int i = 0; i < artifacts.length; i++) {
+                    artifactTypeItr = this.artifactTypes.iterator();
+                    while (artifactTypeItr.hasNext()){
+                        artifactType = artifactTypeItr.next();
+                        String arts = artifacts[i].getType();
+                        if (arts.startsWith(artifactType)) {
+                            int idx = arts.indexOf(':') + 1;
+                            return arts.substring(idx);
+                        }
+                    }
+                }
+            }
+        }
+        
+        return null;
     }
     
 // TODO This is only an example of how a sync might be done.

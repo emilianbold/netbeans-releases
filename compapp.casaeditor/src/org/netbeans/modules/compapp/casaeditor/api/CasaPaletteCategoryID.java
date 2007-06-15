@@ -18,18 +18,50 @@
  */
 package org.netbeans.modules.compapp.casaeditor.api;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  *
  * @author jsandusky
  */
-public abstract class CasaPaletteCategoryID {
+public class CasaPaletteCategoryID {
 
-    CasaPaletteCategoryID() {
-        // To create an instance of this class, use PaletteIDFactory.
+    private List<CasaPaletteItemID> mItems;
+    private String mCategoryName;
+    
+    
+    public CasaPaletteCategoryID(String categoryName) {
+        mCategoryName = categoryName;
     }
     
-    public abstract String getDisplayName();
+    public String getName() {
+        return mCategoryName;
+    }
     
-    public abstract CasaPalettePlugin getPlugin();
+    @Override
+    public int hashCode() {
+        // Only the id number should be used when determining equality.
+        return mCategoryName.hashCode();
+    }
     
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof CasaPaletteCategoryID) {
+            // Only the id number should be used when determining equality.
+            return mCategoryName.equals(((CasaPaletteCategoryID) obj).mCategoryName);
+        }
+        return false;
+    }
+    
+    public List<CasaPaletteItemID> getItems() {
+        return mItems;
+    }
+    
+    public void addItem(CasaPaletteItemID item) {
+        if (mItems == null) {
+            mItems = new ArrayList<CasaPaletteItemID>();
+        }
+        mItems.add(item);
+    }
 }

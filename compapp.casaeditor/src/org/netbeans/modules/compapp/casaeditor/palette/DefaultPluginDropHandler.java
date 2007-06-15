@@ -19,6 +19,7 @@
 package org.netbeans.modules.compapp.casaeditor.palette;
 
 import java.awt.Point;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.compapp.casaeditor.api.PluginDropHandler;
 import org.netbeans.modules.compapp.casaeditor.design.CasaModelGraphScene;
 
@@ -60,5 +61,11 @@ public class DefaultPluginDropHandler implements PluginDropHandler {
             getDropLocationForJBIModuleRegion() :
             getDropLocationForExternalRegion();
         mScene.getModel().addServiceEngineServiceUnit(isInternal, regionLoc.x, regionLoc.y);
+    }
+    
+    public void addInternalJBIModule(Project p) {
+        String type = mScene.getModel().getJbiProjectType(p);
+        Point regionLoc = getDropLocationForJBIModuleRegion();
+        mScene.getModel().addInternalJBIModule(p, type, regionLoc.x, regionLoc.y);
     }
 }
