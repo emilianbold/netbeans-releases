@@ -30,6 +30,7 @@ import org.netbeans.modules.j2ee.ejbverification.rules.LocalAnnotatedBeanHasLBI;
 import org.netbeans.modules.j2ee.ejbverification.rules.RemoteAnnotatedBeanHasRBI;
 import org.netbeans.modules.j2ee.ejbverification.rules.SBSuperClassNotSB;
 import org.netbeans.modules.j2ee.ejbverification.rules.SessionSynchImplementedBySFSBOnly;
+import org.netbeans.modules.j2ee.ejbverification.rules.ValueNotSpecifiedForRemoteAnnotationInterface;
 import org.netbeans.modules.j2ee.ejbverification.rules.WSisSLSB;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 
@@ -48,7 +49,9 @@ public class EJBRulesRegistry {
             new LegalModifiers(),
             new LocalAnnotatedBeanHasLBI(),
             new RemoteAnnotatedBeanHasRBI(),
-            new SessionSynchImplementedBySFSBOnly());
+            new SessionSynchImplementedBySFSBOnly(),
+            new ValueNotSpecifiedForRemoteAnnotationInterface()
+            );
     
     public static Collection<ErrorDescription> check(EJBProblemContext ctx){
         Collection<ErrorDescription> problemsFound = new ArrayList<ErrorDescription>();
