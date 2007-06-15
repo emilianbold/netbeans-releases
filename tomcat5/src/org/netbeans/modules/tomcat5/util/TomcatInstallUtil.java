@@ -79,8 +79,8 @@ public class TomcatInstallUtil {
         
         port = server.getAttributeValue("port");
                 
-        if (TomcatFactory.getEM().isLoggable(Level.INFO)) {
-            TomcatFactory.getEM().log(Level.INFO, "T5Util.getAdminPort: " + port);             // NOI18N
+        if (TomcatFactory.getEM().isLoggable(Level.FINE)) {
+            TomcatFactory.getEM().log(Level.FINE, "T5Util.getAdminPort: " + port);             // NOI18N
         }
         return port != null ? port : String.valueOf(TomcatProperties.DEF_VALUE_SHUTDOWN_PORT);
     }
@@ -108,8 +108,8 @@ public class TomcatInstallUtil {
         
         port = service.getAttributeValue(PROP_CONNECTOR, defCon, ATTR_PORT);
 
-        if (TomcatFactory.getEM().isLoggable(Level.INFO)) {
-            TomcatFactory.getEM().log(Level.INFO, "T5Util.getPort: " + port);             // NOI18N
+        if (TomcatFactory.getEM().isLoggable(Level.FINE)) {
+            TomcatFactory.getEM().log(Level.FINE, "T5Util.getPort: " + port);             // NOI18N
         }
         return port;
     }
@@ -121,8 +121,8 @@ public class TomcatInstallUtil {
             host = service.getAttributeValue("Engine",0,"defaultHost");
         }
        
-        if (TomcatFactory.getEM().isLoggable(Level.INFO)) {
-           TomcatFactory.getEM().log(Level.INFO, "T5Util.getHost: " + host);             // NOI18N
+        if (TomcatFactory.getEM().isLoggable(Level.FINE)) {
+           TomcatFactory.getEM().log(Level.FINE, "T5Util.getHost: " + host);             // NOI18N
         }
         return host;
     }

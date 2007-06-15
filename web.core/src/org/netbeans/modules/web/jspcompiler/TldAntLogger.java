@@ -59,7 +59,7 @@ public final class TldAntLogger extends AntLogger {
     };
     
     private static final Logger ERR = Logger.getLogger(TldAntLogger.class.getName());
-    private static final boolean LOGGABLE = ERR.isLoggable(Level.INFO);
+    private static final boolean LOGGABLE = ERR.isLoggable(Level.FINE);
     
     /** Default constructor for lookup. */
     public TldAntLogger() {
@@ -99,29 +99,29 @@ public final class TldAntLogger extends AntLogger {
 
         Matcher m = TLD_ERROR.matcher(line);
         if (m.matches()) { //it's our error
-            if (LOGGABLE) ERR.log(Level.INFO, "matched line: " + line);
+            if (LOGGABLE) ERR.log(Level.FINE, "matched line: " + line);
             // print the exception and error statement first
             String errorText = m.group(3) + m.group(4);
             session.println(m.group(2) + errorText, true, null);
             
             // get the file from the line
             String filePart = m.group(5).trim();
-            if (LOGGABLE) ERR.log(Level.INFO, "file part: " + filePart);
+            if (LOGGABLE) ERR.log(Level.FINE, "file part: " + filePart);
             
             // now create hyperlink for the file
             Matcher fileMatcher = FILE_PATTERN.matcher(filePart);
             if (fileMatcher.matches()) {
                 String tldFile = fileMatcher.group(1).trim();
-                if (LOGGABLE) ERR.log(Level.INFO, "tld file: " + tldFile);
+                if (LOGGABLE) ERR.log(Level.FINE, "tld file: " + tldFile);
 
                 int lineNumber = Integer.parseInt(fileMatcher.group(3));
                 int columnNumber = Integer.parseInt(fileMatcher.group(4));
-                if (LOGGABLE) ERR.log(Level.INFO, "linking line: " + lineNumber + ", column: " + columnNumber);
+                if (LOGGABLE) ERR.log(Level.FINE, "linking line: " + lineNumber + ", column: " + columnNumber);
 
                 File scriptLoc = event.getScriptLocation();
                 FileObject scriptLocFO = FileUtil.toFileObject(scriptLoc);
                 WebModule wm = WebModule.getWebModule(scriptLocFO);
-                if (LOGGABLE) ERR.log(Level.INFO, "wm: " + wm);
+                if (LOGGABLE) ERR.log(Level.FINE, "wm: " + wm);
                 
                 if (wm == null) {
                     session.println(tldFile, true, null);
@@ -130,7 +130,7 @@ public final class TldAntLogger extends AntLogger {
                 }
                 
                 FileObject tldSource = wm.getDocumentBase().getFileObject(tldFile);
-                if (LOGGABLE) ERR.log(Level.INFO, "tldSource: " + tldSource);
+                if (LOGGABLE) ERR.log(Level.FINE, "tldSource: " + tldSource);
                 
                 if (tldSource == null) {
                     session.println(tldFile, true, null);

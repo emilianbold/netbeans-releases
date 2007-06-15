@@ -309,7 +309,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
         
         if(tcp.contains(HTMLTokenContext.contextPath)) {
             //we are in content language
-            if (err.isLoggable(Level.INFO)) err.log(Level.INFO, "CONTENTL_COMPLETION_CONTEXT");   // NOI18N
+            if (err.isLoggable(Level.FINE)) err.log(Level.FINE, "CONTENTL_COMPLETION_CONTEXT");   // NOI18N
             ExtSyntaxSupport support = getContentLanguageSyntaxSupport();
             if (support != null) {
                 return support.checkCompletion( target, typedText, visible );
@@ -347,7 +347,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
                 
                 if(tracking.getImage().startsWith("<%")) {
                     //we are in a directive
-                    if (err.isLoggable(Level.INFO)) err.log(Level.INFO, "DIRECTIVE_COMPLETION_CONTEXT");   // NOI18N
+                    if (err.isLoggable(Level.FINE)) err.log(Level.FINE, "DIRECTIVE_COMPLETION_CONTEXT");   // NOI18N
                     
                     //open completion also in such a case: <%=|
                     if( !visible && first == '=' && tracking.getImage().equals("<%")) return COMPLETION_POPUP;
@@ -358,20 +358,20 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
                 }
                 if(tracking.getImage().equals("<")) {
                     //we are in a tag
-                    if (err.isLoggable(Level.INFO)) err.log(Level.INFO, "TAG_COMPLETION_CONTEXT");   // NOI18N
+                    if (err.isLoggable(Level.FINE)) err.log(Level.FINE, "TAG_COMPLETION_CONTEXT");   // NOI18N
                     if( !visible && first == ' ' || first == ':' ) return COMPLETION_POPUP;
                     if( visible && first == '>' ) return COMPLETION_HIDE;
                     return visible ? COMPLETION_POST_REFRESH : COMPLETION_CANCEL;
                 }
                 if(tracking.getImage().equals("</")) {
                     //we are in an end tag
-                    if (err.isLoggable(Level.INFO)) err.log(Level.INFO, "ENDTAG_COMPLETION_CONTEXT");   // NOI18N
+                    if (err.isLoggable(Level.FINE)) err.log(Level.FINE, "ENDTAG_COMPLETION_CONTEXT");   // NOI18N
                     if( visible && first == '>' ) return COMPLETION_HIDE;
                     return visible ? COMPLETION_POST_REFRESH : COMPLETION_CANCEL;
                 }
                 //test whether we are still in the tag context
                 if(!tracking.getTokenContextPath().contains(JspTagTokenContext.contextPath)) {
-                    if (err.isLoggable(Level.INFO)) err.log(Level.INFO, "We are out of jsp tag without finding any tag start token!");
+                    if (err.isLoggable(Level.FINE)) err.log(Level.FINE, "We are out of jsp tag without finding any tag start token!");
                     break;
                 }
                 

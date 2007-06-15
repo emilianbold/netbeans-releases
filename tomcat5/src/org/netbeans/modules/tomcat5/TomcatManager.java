@@ -112,8 +112,8 @@ public class TomcatManager implements DeploymentManager {
      */
     public TomcatManager(boolean conn, String uri, TomcatVersion tomcatVersion) 
     throws IllegalArgumentException {
-        if (TomcatFactory.getEM().isLoggable(Level.INFO)) {
-            Logger.getLogger("global").log(Level.INFO, "Creating connected TomcatManager uri=" + uri); //NOI18N
+        if (TomcatFactory.getEM().isLoggable(Level.FINE)) {
+            Logger.getLogger("global").log(Level.FINE, "Creating connected TomcatManager uri=" + uri); //NOI18N
         }
         this.connected = conn;
         this.tomcatVersion = tomcatVersion;
@@ -551,8 +551,8 @@ public class TomcatManager implements DeploymentManager {
             throw new IllegalStateException ("TomcatManager.distribute called on disconnected instance");   // NOI18N
         }
         
-        if (TomcatFactory.getEM().isLoggable(Level.INFO)) {
-            TomcatFactory.getEM().log(Level.INFO, "TomcatManager.distribute streams");
+        if (TomcatFactory.getEM().isLoggable(Level.FINE)) {
+            TomcatFactory.getEM().log(Level.FINE, "TomcatManager.distribute streams");
         }
         TomcatManagerImpl impl = new TomcatManagerImpl (this);
         impl.deploy (targets[0], is, deplPlan);
@@ -572,8 +572,8 @@ public class TomcatManager implements DeploymentManager {
             throw new IllegalStateException ("TomcatManager.distribute called on disconnected instance");   // NOI18N
         }
         
-        if (TomcatFactory.getEM().isLoggable(Level.INFO)) {
-            TomcatFactory.getEM().log(Level.INFO, "TomcatManager.distribute archive=" + moduleArchive.getPath() + ", plan=" + deplPlan.getPath()); // NOI18N
+        if (TomcatFactory.getEM().isLoggable(Level.FINE)) {
+            TomcatFactory.getEM().log(Level.FINE, "TomcatManager.distribute archive=" + moduleArchive.getPath() + ", plan=" + deplPlan.getPath()); // NOI18N
         }
         TomcatManagerImpl impl = new TomcatManagerImpl (this);
         impl.install (targets[0], moduleArchive, deplPlan);
@@ -691,8 +691,8 @@ public class TomcatManager implements DeploymentManager {
         try {
             return Server.createGraph(tp.getServerXml());
         } catch (IOException e) {
-            if (TomcatFactory.getEM().isLoggable(Level.INFO)) {
-                TomcatFactory.getEM().log(Level.INFO, e.toString());
+            if (TomcatFactory.getEM().isLoggable(Level.FINE)) {
+                TomcatFactory.getEM().log(Level.FINE, e.toString());
             }
             return null;
         } catch (RuntimeException e) {

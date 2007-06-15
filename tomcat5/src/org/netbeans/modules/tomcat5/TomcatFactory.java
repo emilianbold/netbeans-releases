@@ -124,7 +124,7 @@ public final class TomcatFactory implements DeploymentFactory {
      */
     public static synchronized TomcatFactory create50() {
         if (instance == null) {
-            if (err.isLoggable(Level.INFO)) err.log(Level.INFO, "Creating TomcatFactory"); // NOI18N
+            if (err.isLoggable(Level.FINE)) err.log(Level.FINE, "Creating TomcatFactory"); // NOI18N
             instance = new TomcatFactory(TomcatVersion.TOMCAT_50);
             DeploymentFactoryManager.getInstance().registerDeploymentFactory(instance);
         }
@@ -136,7 +136,7 @@ public final class TomcatFactory implements DeploymentFactory {
      */
     public static synchronized TomcatFactory create55() {
         if (instance55 == null) {
-            if (err.isLoggable(Level.INFO)) err.log(Level.INFO, "Creating TomcatFactory"); // NOI18N
+            if (err.isLoggable(Level.FINE)) err.log(Level.FINE, "Creating TomcatFactory"); // NOI18N
             instance55 = new TomcatFactory(TomcatVersion.TOMCAT_55);
             DeploymentFactoryManager.getInstance().registerDeploymentFactory(instance55);
         }
@@ -148,7 +148,7 @@ public final class TomcatFactory implements DeploymentFactory {
      */
     public static synchronized TomcatFactory create60() {
         if (instance60 == null) {
-            if (err.isLoggable(Level.INFO)) err.log(Level.INFO, "Creating TomcatFactory"); // NOI18N
+            if (err.isLoggable(Level.FINE)) err.log(Level.FINE, "Creating TomcatFactory"); // NOI18N
             instance60 = new TomcatFactory(TomcatVersion.TOMCAT_60);
             DeploymentFactoryManager.getInstance().registerDeploymentFactory(instance60);
         }
