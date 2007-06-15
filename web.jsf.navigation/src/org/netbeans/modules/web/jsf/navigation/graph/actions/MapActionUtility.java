@@ -71,7 +71,7 @@ public class MapActionUtility {
         actionMap.put("handleEscape", handleEscape);
         
         actionMap.put("handleLinkStart", handleLinkStart);
-        //        actionMap.put("handleLinkEnd", new TestAction("handleLinkEnd"));
+        actionMap.put("handleLinkEnd", handleLinkEnd);
         //
         //        actionMap.put("handleZoomPage", new TestAction("handleZoomPage"));
         //        actionMap.put("handleUnZoomPage", new TestAction("handleUnZoomPage"));
@@ -103,7 +103,7 @@ public class MapActionUtility {
         //
         //Lower Case s,e,z,u
         inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_S,0), "handleLinkStart");
-        //                inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_E,0), "handleLinkEnd");
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_E,0), "handleLinkEnd");
         //        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_Z,0), "handleZoomPage");
         //        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_U,0), "handleUnZoomPage");
         //
@@ -178,6 +178,7 @@ public class MapActionUtility {
                 if( CONNECT_WIDGET != null && scene.getConnectionLayer().getChildren().contains(CONNECT_WIDGET)){
                     Anchor targetAnchor = null;
                     if( nextElement instanceof Page ){
+                        assert CONNECT_DECORATOR_DEFAULT != null;
                         targetAnchor = CONNECT_DECORATOR_DEFAULT.createTargetAnchor(scene.findWidget(nextElement));
                     } else if ( nextElement instanceof Pin ){
                         Widget pageWidget = scene.findWidget(((Pin) nextElement).getPageFlowNode());
@@ -199,8 +200,7 @@ public class MapActionUtility {
     
     
     private static ConnectDecorator CONNECT_DECORATOR_DEFAULT = null;
-    private static PageFlowScene CONNECT_SCENE = null;
-    private static ConnectionWidget CONNECT_WIDGET= null;
+    private static ConnectionWidget CONNECT_WIDGET = null;
     // Handle Link Start Key Stroke
     public static Action handleLinkStart = new AbstractAction() {
         public void actionPerformed(ActionEvent e) {
@@ -218,7 +218,6 @@ public class MapActionUtility {
                     }
                     if( selPin != null ){
                         CONNECT_DECORATOR_DEFAULT = ActionFactory.createDefaultConnectDecorator();
-                        CONNECT_SCENE = scene;
                         CONNECT_DECORATOR_DEFAULT.createTargetAnchor(scene.findWidget(selPin));
                         CONNECT_WIDGET = CONNECT_DECORATOR_DEFAULT.createConnectionWidget(scene);
                         CONNECT_WIDGET.setSourceAnchor(CONNECT_DECORATOR_DEFAULT.createSourceAnchor(scene.findWidget(selPin)));
@@ -227,6 +226,49 @@ public class MapActionUtility {
                         scene.validate();
                     }
                 }
+            }
+        }
+    };
+    
+    // Handle Escape - cancels the link action
+    public static Action handleLinkEnd = new AbstractAction() {
+        public void actionPerformed(ActionEvent e) {
+            /* Cancel A11y Linking */
+            Object sourceObj = e.getSource();
+            if( !(sourceObj instanceof PageFlowScene) ){
+                return;
+            }
+            PageFlowScene scene = (PageFlowScene)sourceObj;
+            if( CONNECT_WIDGET != null ){
+                
+                /* Figure out source */
+                Object sourceObject = scene.findObject(CONNECT_WIDGET.getSourceAnchor().getRelatedWidget());
+                Page sourcePage = null;
+                Pin sourcePin = null;
+                if ( scene.isPin(sourceObject)){
+                    sourcePin = (Pin)sourceObject;
+                    sourcePage = (sourcePin).getPageFlowNode(); 
+                }
+                if ( scene.isNode(sourceObject)){
+                    sourcePage = (Page)sourceObject;
+                }
+                
+                /* Figure out target */
+                Object targetObject = scene.findObject(CONNECT_WIDGET.getTargetAnchor().getRelatedWidget());
+                Page targetPage = null;
+                if ( scene.isPin(targetObject)){
+                    targetPage = ((Pin)targetObject).getPageFlowNode();
+                }
+                if ( scene.isNode(targetObject)){
+                    targetPage = (Page)targetObject;
+                }
+                
+                if( sourcePage != null && targetPage != null ){
+                    scene.getPageFlowView().getPageFlowController().createLink(sourcePage, targetPage, sourcePin);
+                }
+                CONNECT_WIDGET.removeFromParent();
+                CONNECT_WIDGET=null;
+                scene.validate();
             }
         }
     };
