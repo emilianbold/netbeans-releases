@@ -3670,7 +3670,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                     ts.movePrevious(); // Move to previous token
                 else
                     ts.moveNext(); // otherwise move to the token that "contains" the offset
-                if (ts.offset() < offset && (ts.token().id() == JavaTokenId.IDENTIFIER || "keyword".equals(ts.token().id().primaryCategory()))) { //TODO: Use isKeyword(...) when available
+                if (ts.offset() < offset && (ts.token().id() == JavaTokenId.IDENTIFIER || ts.token().id().primaryCategory().startsWith("keyword"))) { //TODO: Use isKeyword(...) when available
                     prefix = ts.token().toString().substring(0, offset - ts.offset());
                     offset = ts.offset();
                 }
