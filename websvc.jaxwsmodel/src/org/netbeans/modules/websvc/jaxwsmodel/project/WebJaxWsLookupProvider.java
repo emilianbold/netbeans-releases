@@ -37,8 +37,6 @@ import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
-import org.openide.util.Mutex;
-import org.openide.util.MutexException;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -223,16 +221,9 @@ public class WebJaxWsLookupProvider implements LookupProvider {
                         int fromWsdlServicesLength,
                         int clientsLength,
                         boolean isJsr109) throws IOException {
-        try {
-            ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Boolean>() {
-                public Boolean run() throws IOException {
-                    TransformerUtils.transformClients(prj.getProjectDirectory(), styleSheetResource, true);
-                    return Boolean.TRUE;
-                }
-            });
-        } catch (MutexException e) {
-            throw (IOException)e.getException();
-        }
+        
+        TransformerUtils.transformClients(prj.getProjectDirectory(), styleSheetResource, true);
+
         FileObject jaxws_build = prj.getProjectDirectory().getFileObject(TransformerUtils.JAXWS_BUILD_XML_PATH);
         assert jaxws_build!=null;
         AntBuildExtender.Extension extension = ext.getExtension(JAXWS_EXTENSION);
@@ -262,16 +253,8 @@ public class WebJaxWsLookupProvider implements LookupProvider {
                         int fromWsdlServicesLength,
                         int clientsLength,
                         boolean isJsr109) throws IOException {
-        try {
-            ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Boolean>() {
-                public Boolean run() throws IOException {
-                    TransformerUtils.transformClients(prj.getProjectDirectory(), styleSheetResource, true);
-                    return Boolean.TRUE;
-                }
-            });
-        } catch (MutexException e) {
-            throw (IOException)e.getException();
-        }
+
+        TransformerUtils.transformClients(prj.getProjectDirectory(), styleSheetResource, true);
         FileObject jaxws_build = prj.getProjectDirectory().getFileObject(TransformerUtils.JAXWS_BUILD_XML_PATH);
         assert jaxws_build!=null;
         AntBuildExtender.Extension extension = ext.getExtension(JAXWS_EXTENSION);

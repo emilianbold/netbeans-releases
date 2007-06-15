@@ -33,11 +33,14 @@ import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.websvc.api.jaxws.project.JAXWSVersionProvider;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Mutex;
+import org.openide.util.MutexException;
 
 /**
  *
@@ -65,23 +68,39 @@ public class TransformerUtils {
     public static void transformClients(final FileObject projectDirectory,
                                         final String jaxws_stylesheet_resource,
                                         boolean setJaxWsVersion) throws java.io.IOException {
-        FileObject jaxws_xml = projectDirectory.getFileObject(JAX_WS_XML_PATH);
+        final FileObject jaxws_xml = projectDirectory.getFileObject(JAX_WS_XML_PATH);
         final FileObject jaxWsBuildScriptXml = FileUtil.createData(projectDirectory, JAXWS_BUILD_XML_PATH);
         byte[] projectXmlData;
-        InputStream is = jaxws_xml.getInputStream();
+        
         try {
-            projectXmlData = load(is);
-        } finally {
-            is.close();
+            projectXmlData = ProjectManager.mutex().readAccess(new Mutex.ExceptionAction<byte[]>() {
+                public byte[] run() throws IOException {
+                    FileLock lock1 = jaxWsBuildScriptXml.lock();
+                    try {
+                        InputStream is = jaxws_xml.getInputStream();
+                        try {
+                            return load(is);
+                        } finally {
+                            is.close();
+                        }
+                    } finally {
+                        lock1.releaseLock();
+                    }
+                }
+            });
+        } catch (MutexException e) {
+            throw (IOException)e.getException();
         }
+        
         URL stylesheet = TransformerUtils.class.getResource(jaxws_stylesheet_resource);
         byte[] stylesheetData;
-        is = stylesheet.openStream();
+        InputStream is = stylesheet.openStream();
         try {
             stylesheetData = load(is);
         } finally {
             is.close();
         }
+        
         final byte[] resultData;
 
         TransformerFactory tf = TransformerFactory.newInstance();
@@ -104,14 +123,23 @@ public class TransformerUtils {
         } catch (TransformerException e) {
             throw (IOException)new IOException(e.toString()).initCause(e);
         }
-        FileLock lock1 = jaxWsBuildScriptXml.lock();
-        try {
-            OutputStream os = jaxWsBuildScriptXml.getOutputStream(lock1);
-            os.write(resultData);
-        } finally {
-            lock1.releaseLock();
-        }
         
+        try {
+            ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Boolean>() {
+                public Boolean run() throws IOException {
+                    FileLock lock1 = jaxWsBuildScriptXml.lock();
+                    try {
+                        OutputStream os = jaxWsBuildScriptXml.getOutputStream(lock1);
+                        os.write(resultData);
+                    } finally {
+                        lock1.releaseLock();
+                    }
+                    return Boolean.TRUE;
+                }
+            });
+        } catch (MutexException e) {
+            throw (IOException)e.getException();
+        }        
     }
             
     /**
