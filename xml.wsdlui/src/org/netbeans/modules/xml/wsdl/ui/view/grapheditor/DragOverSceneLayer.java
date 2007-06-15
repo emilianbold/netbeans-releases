@@ -80,7 +80,7 @@ public class DragOverSceneLayer extends LayerWidget {
                                 IconNodeWidget.TextOrientation.BOTTOM_CENTER);
                         icon.setOpaque(false);
                         addChild(icon);
-                        icon.setLabel(node.getName());
+                        icon.setLabel(node.getDisplayName());
                         Image image = node.getIcon(BeanInfo.ICON_COLOR_16x16);
                         if (image == null) {
                             image = node.getIcon(BeanInfo.ICON_COLOR_32x32);
