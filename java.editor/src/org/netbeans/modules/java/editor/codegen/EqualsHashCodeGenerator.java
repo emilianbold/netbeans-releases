@@ -185,7 +185,7 @@ public class EqualsHashCodeGenerator implements CodeGenerator {
         if (el == null) {
             return ret;
         }
-        if (type.getKind() != ElementKind.CLASS) {
+        if (type == null || type.getKind() != ElementKind.CLASS) {
             return ret;
         }
         
