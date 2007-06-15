@@ -46,7 +46,11 @@ public class JavaSourceProviderImpl implements JavaSourceProvider {
     }
     
     public PositionTranslatingJavaFileFilterImplementation forFileObject(FileObject file) {
-        return new FilterImpl(file);
+        if (accept(file)) {
+            return new FilterImpl(file);
+        } else {
+            return null;
+        }
     }
     
     private static final class FilterImpl implements PositionTranslatingJavaFileFilterImplementation {
