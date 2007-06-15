@@ -89,6 +89,7 @@ Microsystems, Inc. All Rights Reserved.
             <file name="JnlpTemplate.jnlp" url="JnlpTemplate.jnlp">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javawebstart.Bundle"/>
                 <attr name="template" boolvalue="true"/>
+                <attr name="templateCategory" stringvalue="java-classes"/>
             </file>
         </folder>
     </folder>
