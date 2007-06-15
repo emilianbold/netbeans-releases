@@ -118,14 +118,6 @@ public final class ElementUtilities {
     }
     
     /**
-     *
-     * The package element which indirectly encloses this element..
-     */
-    public PackageElement packageElement(Element element) {
-        return delegate.packageElement(element);
-    }
-
-    /**
      * Returns the implementation of a method in class origin; null if none exists.
      */
     public Element getImplementationOf(ExecutableElement method, TypeElement origin) {
@@ -390,27 +382,6 @@ public final class ElementUtilities {
     }
     
     /**
-     * Returns true if the specified element is referenced by a specified tree.
-     */
-    public boolean referenced(Element e, Element parent) {
-        return delegate.referenced(e, parent);
-    }
-    
-    /**
-     * Returns true if the element is assigned by a specified tree.
-     */
-    public boolean assigned(Element e, Element parent) {
-        return delegate.assigned(e, parent);
-    }
-    
-    /**
-     * Returns true if the element is a parameter for a specified method.
-     */
-    public boolean parameter(Element e, Element parent) {
-        return delegate.parameter(e, parent);
-    }
-    
-    /**
      * Returns true if the element is declared (directly or indirectly) local
      * to a method or variable initializer.  Also true for fields of inner 
      * classes which are in turn local to a method or variable initializer.
@@ -434,14 +405,6 @@ public final class ElementUtilities {
         return delegate.isMemberOf(e, type);
     }                
     
-    /**
-     * Returns the fully qualified name of this element, which is its
-     * simple name with its owner(s) prepended.
-     */
-    public CharSequence getFullName(Element element) {
-        return delegate.getFullName(element);
-    }
-
     /**
      * Returns the parent method which the specified method overrides, or null
      * if the method does not override a parent class method.

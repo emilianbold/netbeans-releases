@@ -77,7 +77,9 @@
                     <code-name-base>org.netbeans.modules.java.source</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
-                    <run-dependency/>
+                    <run-dependency>
+                        <specification-version>0.19</specification-version>
+                    </run-dependency>
                 </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.javahelp</code-name-base>

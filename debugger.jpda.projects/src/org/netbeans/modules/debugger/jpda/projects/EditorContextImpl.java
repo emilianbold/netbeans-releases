@@ -729,7 +729,7 @@ public class EditorContextImpl extends EditorContext {
                             if (name.equals(methodName)) {
                                 if (methodSignature == null || egualMethodSignatures(methodSignature, createSignature((ExecutableElement) elm))) {
                                     SourcePositions positions =  ci.getTrees().getSourcePositions();
-                                    Tree tree = SourceUtils.treeFor(ci, elm);
+                                    Tree tree = ci.getTrees().getTree(elm);
                                     int pos = (int)positions.getStartPosition(ci.getCompilationUnit(), tree);
                                     EditorCookie editor = (EditorCookie) dataObject.getCookie(EditorCookie.class);
                                     result[0] = NbDocument.findLineNumber(editor.openDocument(), pos) + 1;

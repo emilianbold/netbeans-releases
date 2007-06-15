@@ -298,12 +298,7 @@ public final class ImportClass implements ErrorRule<ImportCandidatesHolder> {
                             return ;
                         }
                         
-                        CompilationUnitTree cut = SourceUtils.addImports(
-                            copy.getCompilationUnit(),
-                            Collections.singletonList(te.getQualifiedName().toString()),
-                            copy.getTreeMaker()
-                        );
-                        copy.rewrite(copy.getCompilationUnit(), cut);
+                        SourceUtils.resolveImport(copy, new TreePath(copy.getCompilationUnit()), fqn);
                     }
                     
                     public void cancel() {

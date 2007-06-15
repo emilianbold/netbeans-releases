@@ -93,37 +93,6 @@ public class SourceUtils {
     
     private SourceUtils() {}
     
-    /**
-     * @deprecated Use {@link com.sun.source.util.Trees#getTree(Element)} instead.
-     */
-    public static Tree treeFor(CompilationInfo info, Element element) {
-        Context ctx = getSourceContextFor(info.getClasspathInfo(), Phase.ELEMENTS_RESOLVED, element);
-        if (ctx != null) {
-            Element e = getSourceElementFor(element, ctx);
-            if (e != null)
-                return JavacElements.instance(ctx).getTree((Symbol)e);
-        }
-        return null;
-    }
-
-    /**
-     * @deprecated Use {@link com.sun.source.util.Trees#getPath(Element)} instead.
-     */
-    public static TreePath pathFor(CompilationInfo info, Element element) {
-        Context ctx = getSourceContextFor(info.getClasspathInfo(), Phase.ELEMENTS_RESOLVED, element);
-        if (ctx != null) {
-            Element e = getSourceElementFor(element, ctx);
-            if (e != null)
-                return JavacTrees.instance(ctx).getPath(e);
-        }
-        return null;
-    }
-    
-    public static Element getImplementationOf(CompilationInfo info, ExecutableElement method, TypeElement origin) {
-        Context c = ((JavacTaskImpl) info.getJavacTask()).getContext();
-        return ((MethodSymbol)method).implementation((TypeSymbol)origin, com.sun.tools.javac.code.Types.instance(c), true);
-    }
-
     public static boolean checkTypesAssignable(CompilationInfo info, TypeMirror from, TypeMirror to) {
         Context c = ((JavacTaskImpl) info.getJavacTask()).getContext();
         if (from.getKind() == TypeKind.DECLARED) {
@@ -194,9 +163,6 @@ public class SourceUtils {
 		
 	return (TypeElement)ec;
     }
-    
-    private static EnumSet JAVA_JFO_KIND = EnumSet.of(Kind.CLASS, Kind.SOURCE);
-        
     
     /**Resolve full qualified name in the given context. Adds import statement as necessary.
      * Returns name that resolved to a given FQN in given context (either simple name
@@ -308,7 +274,7 @@ public class SourceUtils {
      *
      *
      */
-    public static CompilationUnitTree addImports(CompilationUnitTree cut, List<String> toImport, TreeMaker make)
+    private static CompilationUnitTree addImports(CompilationUnitTree cut, List<String> toImport, TreeMaker make)
         throws IOException {
         // do not modify the list given by the caller (may be reused or immutable).
         toImport = new ArrayList<String>(toImport); 
@@ -342,42 +308,12 @@ public class SourceUtils {
 
     /**
      * Returns a {@link FileObject} in which the Element is defined.
-     * Element must be defined in source file
-     * @param element for which the {@link FileObject} should be located
-     * @return the defining {@link FileObject} or null if it cannot be
-     * found in any source file.
-     */
-    public static FileObject getFile(Element element) {
-        if (element == null) {
-            throw new IllegalArgumentException ("Cannot pass null as an argument of the SourceUtils.getFile");  //NOI18N
-        }
-        Element prev = null;
-        while (element.getKind() != ElementKind.PACKAGE) {
-            prev = element;
-            element = element.getEnclosingElement();
-        }
-        if (prev == null || (!prev.getKind().isClass() && !prev.getKind().isInterface()))
-            return null;
-        ClassSymbol clsSym = (ClassSymbol)prev;
-        URI uri;
-        if (clsSym.completer != null)
-            clsSym.complete();
-        if (clsSym.sourcefile != null && (uri=clsSym.sourcefile.toUri())!= null && uri.isAbsolute()) {
-            try {
-                return URLMapper.findFileObject(uri.toURL());
-            } catch (MalformedURLException ex) {
-                ex.printStackTrace();
-            }
-        }
-        return null;
-    }
-    
-    /**
-     * Returns a {@link FileObject} in which the Element is defined.
      * @param element for which the {@link FileObject} should be located
      * @param cpInfo the classpaths context
      * @return the defining {@link FileObject} or null if it cannot be
      * found
+     * 
+     * @deprecated use {@link getFile(ElementHandle, ClasspathInfo)}
      */
     public static FileObject getFile (Element element, ClasspathInfo cpInfo) {
         try {
@@ -714,6 +650,7 @@ out:                for (URL e : roots) {
      * Waits for the end of the initial scan, this helper method 
      * is designed for tests which require to wait for end of initial scan.
      * @throws InterruptedException is thrown when the waiting thread is interrupted.
+     * @deprecated use {@link JavaSource#runWhenScanFinished}
      */
     public static void waitScanFinished () throws InterruptedException {
         RepositoryUpdater.getDefault().waitScanFinished();
@@ -969,72 +906,4 @@ out:                for (URL e : roots) {
     
     // --------------- End of getFile () helper methods ------------------------------
 
-    private static Context getSourceContextFor(ClasspathInfo cpInfo, final JavaSource.Phase phase, Element element) {
-        try {
-            FileObject fo = getFile(element, cpInfo);
-            if (fo != null) {
-                JavaSource js = JavaSource.forFileObject(fo);
-                if (js != null) {
-                    final Context[] ret = new Context[1];
-                    js.runUserActionTask(new CancellableTask<CompilationController>() {
-                        public void cancel() {
-                        }
-                        public void run(CompilationController controller) throws Exception {
-                            controller.toPhase(phase);
-                            ret[0] = controller.getJavacTask().getContext();
-                        }
-                    },true);
-                    return ret[0];
-                }
-            }
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        return null;
-    }
-    
-    private static Element getSourceElementFor(Element element, Context ctx) {
-        Symbol sym = (Symbol)element;
-        Symtab symbolTable = Symtab.instance(ctx);
-        Name.Table nameTable = Name.Table.instance(ctx);
-        Symbol owner = sym.owner;
-        ClassSymbol enclCls = sym.enclClass();
-        Name name = nameTable.fromString(enclCls.flatname.toString());
-        ClassSymbol cls = symbolTable.classes.get(name);
-        if (enclCls == sym)
-            return cls;
-        if (cls != null && owner == enclCls) {
-            com.sun.tools.javac.code.Scope.Entry e = cls.members().lookup(nameTable.fromString(sym.name.toString()));
-            while (e.scope != null) {
-                if (e.sym.kind == sym.kind && (e.sym.flags_field & Flags.SYNTHETIC) == 0 &&
-                        e.sym.type.toString().equals(sym.type.toString()))
-                    return e.sym;
-                e = e.next();
-            }
-        } else if (cls != null && owner.kind == Kinds.MTH && sym.kind == Kinds.VAR) {
-            com.sun.tools.javac.code.Scope.Entry e = cls.members().lookup(nameTable.fromString(owner.name.toString()));
-            Symbol newOwner = null;
-            while (e.scope != null) {
-                if (e.sym.kind == owner.kind && (e.sym.flags_field & Flags.SYNTHETIC) == 0 &&
-                        e.sym.type.toString().equals(owner.type.toString())) {
-                    newOwner = e.sym;
-                    break;
-                }
-                e = e.next();
-            }
-            if (newOwner != null && newOwner.kind == Kinds.MTH) {
-                int i = 0;
-                for (com.sun.tools.javac.util.List<VarSymbol> l = ((MethodSymbol)owner).params; l.nonEmpty(); l = l.tail) {
-                    i++;
-                    if (sym == l.head)
-                        break;
-                }
-                for (com.sun.tools.javac.util.List<VarSymbol> l = ((MethodSymbol)newOwner).params; l.nonEmpty(); l = l.tail) {
-                    if (--i == 0)
-                        return l.head;
-                }
-            }
-        }
-        return null;
-    }
 }

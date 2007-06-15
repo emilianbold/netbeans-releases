@@ -481,7 +481,7 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
                 TypeMirror desc = par.asType();
                 String typeRepresentation = getTypeStringRepresentation(desc);
                 LocalVarScanner scan = new LocalVarScanner(info, null);
-                scan.scan(SourceUtils.pathFor(info, method), par);
+                scan.scan(info.getTrees().getPath(method), par);
                 Boolean removable = !scan.hasRefernces();
                 if (model.getRowCount()<=originalIndex) {
                     Object[] parRep = new Object[] { par.toString(), typeRepresentation, "", new Integer(originalIndex), removable };

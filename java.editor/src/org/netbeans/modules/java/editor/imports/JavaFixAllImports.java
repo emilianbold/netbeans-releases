@@ -183,11 +183,15 @@ public class JavaFixAllImports {
                                 
                                 cut = wc.getTreeMaker().removeCompUnitImport(cut, (ImportTree) path.getLeaf());
                             }
+                            
+                            wc.rewrite(wc.getCompilationUnit(), cut);
                         }
                         
-                        cut = SourceUtils.addImports(cut, toImport, wc.getTreeMaker());
+                        TreePath context = new TreePath(wc.getCompilationUnit());
                         
-                        wc.rewrite(wc.getCompilationUnit(), cut);
+                        for (String fqn : toImport) {
+                            SourceUtils.resolveImport(wc, context, fqn);
+                        }
                     }
                 } catch (IOException ex) {
                     //TODO: ErrorManager

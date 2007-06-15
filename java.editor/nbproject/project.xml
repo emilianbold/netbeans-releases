@@ -155,7 +155,7 @@ Microsystems, Inc. All Rights Reserved.
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>0.17.0</specification-version>
+                        <specification-version>0.19.0</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>

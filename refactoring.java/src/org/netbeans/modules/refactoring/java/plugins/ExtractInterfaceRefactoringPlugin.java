@@ -169,7 +169,7 @@ public final class ExtractInterfaceRefactoringPlugin extends JavaRefactoringPlug
             
             classHandle = ElementHandle.<TypeElement>create((TypeElement) sourceElm);
             
-            PackageElement pkgElm = javac.getElementUtilities().packageElement(sourceElm);
+            PackageElement pkgElm = (PackageElement) javac.getElementUtilities().outermostTypeElement(sourceElm).getEnclosingElement();
             pkgName = pkgElm.getQualifiedName().toString();
             
             // increase progress (step 1)
