@@ -380,7 +380,7 @@ public class CommentsTest extends GeneratorTest {
                 TypeElement originClass = wc.getElements().getTypeElement("Origin");
                 assertNotNull(originClass);
                 
-                ClassTree origClassTree = (ClassTree) SourceUtils.treeFor(wc, originClass);
+                ClassTree origClassTree = (ClassTree) wc.getTrees().getTree(originClass);
                 Tree method = origClassTree.getMembers().get(1);
                 assertNotNull(method);
                 
