@@ -83,6 +83,7 @@ public class WebAppImpl implements WebApp, JavaContextListener {
     private EnvEntry[] envEntries = null;
     private MessageDestinationRef[] messageDestinationRefs = null;
     private ServiceRef[] serviceRefs = null;
+    private SecurityRole[] securityRoles = null;
     private Servlet[] servlets = null;
 
     public WebAppImpl(AnnotationModelHelper helper, boolean merge) {
@@ -96,6 +97,7 @@ public class WebAppImpl implements WebApp, JavaContextListener {
         resourceEnvRefs = null;
         envEntries = null;
         messageDestinationRefs = null;
+        securityRoles = null;
         servlets = null;
     }
 
@@ -153,6 +155,13 @@ public class WebAppImpl implements WebApp, JavaContextListener {
         serviceRefs = CommonAnnotationHelper.getServiceRefs(helper);
     }
     
+    private void initSecurityRoles() {
+        if (securityRoles != null) {
+            return;
+        }
+        securityRoles = CommonAnnotationHelper.getSecurityRoles(helper);
+    }
+
     private void initServlets() {
         if (servlets != null) {
             return;
@@ -615,7 +624,8 @@ public class WebAppImpl implements WebApp, JavaContextListener {
         if (merge && ddRoot != null) {
             return ddRoot.getSecurityRole(index);
         }
-        return null;
+        initSecurityRoles();
+        return securityRoles[index];
     }
 
     public void setSecurityRole(SecurityRole[] value) {
@@ -623,15 +633,19 @@ public class WebAppImpl implements WebApp, JavaContextListener {
     }
 
     public SecurityRole[] getSecurityRole() {
-        // XXX merge
-        return CommonAnnotationHelper.getSecurityRoles(helper);
+        if (merge && ddRoot != null) {
+            return ddRoot.getSecurityRole();
+        }
+        initSecurityRoles();
+        return securityRoles;
     }
 
     public int sizeSecurityRole() {
         if (merge && ddRoot != null) {
             return ddRoot.sizeSecurityRole();
         }
-        return 0;
+        initSecurityRoles();
+        return securityRoles.length;
     }
 
     public int addSecurityRole(SecurityRole valueInterface) {
