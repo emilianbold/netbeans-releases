@@ -24,6 +24,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.Document;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.CompilationInfo;
@@ -45,12 +47,18 @@ import org.openide.loaders.DataObject;
  * @author Jan Lahoda
  */
 public abstract class TreeRuleTestBase extends NbTestCase {
+    protected final Logger LOG;
     
     public TreeRuleTestBase(String name) {
         super(name);
-        
+        LOG = Logger.getLogger("test." + name);
     }
     
+    @Override
+    protected Level logLevel() {
+        return Level.INFO;
+    }
+
     @Override
     protected void setUp() throws Exception {
         super.setUp();
@@ -181,6 +189,19 @@ public abstract class TreeRuleTestBase extends NbTestCase {
     
     protected FileObject[] extraClassPath() {
         return new FileObject[0];
+    }
+
+    // common tests to check nothing is reported
+    public void testIssue105979() throws Exception {
+        String before = "package test; class Test {" +
+            "  return b;" +
+            "}\n";
+        
+        for (int i = 0; i < before.length(); i++) {
+            LOG.info("testing position " + i + " at " + before.charAt(i));
+            clearWorkDir();
+            performAnalysisTest("test/Test.java", before, i);
+        }
     }
     
 }

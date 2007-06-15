@@ -128,7 +128,7 @@ public class DoubleCheckTest extends TreeRuleTestBase {
                 "synchro";
         String after1 = "nized (INST) {\n" +
                   "if (INST == null) {\n" +
-                    "INST = new Test();\n" +
+                    "INST = new test.Test();\n" +
                   "}\n" +
                 "}\n";
         String after2 =

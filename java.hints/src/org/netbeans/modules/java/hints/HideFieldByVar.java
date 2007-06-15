@@ -51,6 +51,9 @@ public class HideFieldByVar extends HideField {
 
     @Override
     protected List<Fix> computeFixes(CompilationInfo compilationInfo, TreePath treePath, Document doc, int[] bounds) {
+        if (treePath.getLeaf().getKind() != Kind.VARIABLE) {
+            return null;
+        }
         VariableTree vt = (VariableTree)treePath.getLeaf();
         Element el = compilationInfo.getTrees().getElement(treePath);
         if (el == null) {

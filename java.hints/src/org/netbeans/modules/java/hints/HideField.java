@@ -66,6 +66,9 @@ public class HideField extends AbstractHint {
         if (el == null || el.getKind() != ElementKind.FIELD) {
             return null;
         }
+        if (el.getSimpleName().contentEquals("<error>")) {
+            return null;
+        }
         
         Element hidden = null;
         TypeElement te = (TypeElement)el.getEnclosingElement();

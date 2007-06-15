@@ -53,6 +53,10 @@ public class IllegalInstanceOf extends AbstractHint {
     }
 
     public List<ErrorDescription> run(CompilationInfo info, TreePath treePath) {
+        if (treePath.getLeaf().getKind() != Kind.INSTANCE_OF) {
+            return null;
+        }
+        
         InstanceOfTree iot = (InstanceOfTree) treePath.getLeaf();
         TypeMirror     leftTypeMirror = info.getTrees().getTypeMirror(new TreePath(treePath, iot.getExpression()));
         Element        rightType = info.getTrees().getElement(new TreePath(treePath, iot.getType()));

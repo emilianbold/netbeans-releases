@@ -21,6 +21,8 @@ package org.netbeans.modules.java.hints;
 import com.sun.source.util.TreePath;
 import java.util.List;
 import java.util.Locale;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.SourceUtilsTestUtil;
 import org.netbeans.modules.java.hints.infrastructure.TreeRuleTestBase;
@@ -31,6 +33,7 @@ import org.netbeans.spi.editor.hints.ErrorDescription;
  * @author Jaroslav Tulach
  */
 public class HideFieldTest extends TreeRuleTestBase {
+    private String sourceLevel = "1.5";
     
     public HideFieldTest(String testName) {
         super(testName);
@@ -38,8 +41,8 @@ public class HideFieldTest extends TreeRuleTestBase {
 
     @Override
     protected void setUp() throws Exception {
+        super.setUp();
         Locale.setDefault(Locale.US);
-        SourceUtilsTestUtil.setLookup(new Object[0], getClass().getClassLoader());
     }
     
     
@@ -74,6 +77,5 @@ public class HideFieldTest extends TreeRuleTestBase {
         return new HideField().run(info, path);
     }
     
-    private String sourceLevel = "1.5";
     
 }

@@ -32,8 +32,6 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 import javax.swing.JComponent;
-import javax.swing.JEditorPane;
-import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.java.source.CancellableTask;
@@ -42,17 +40,12 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.modules.java.editor.rename.InstantRenamePerformer;
-import org.netbeans.modules.java.editor.semantic.Utilities;
 import org.netbeans.modules.java.hints.spi.AbstractHint;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.Fix;
-import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -71,6 +64,9 @@ public class StaticAccess extends AbstractHint {
     }
 
     protected List<Fix> computeFixes(CompilationInfo info, TreePath treePath, Document doc, int[] bounds) {
+        if (treePath.getLeaf().getKind() != Kind.MEMBER_SELECT) {
+            return null;
+        }
         MemberSelectTree mst = (MemberSelectTree)treePath.getLeaf();
         TreePath expr = info.getTrees().getPath(info.getCompilationUnit(), mst.getExpression());
         if (expr == null) {
