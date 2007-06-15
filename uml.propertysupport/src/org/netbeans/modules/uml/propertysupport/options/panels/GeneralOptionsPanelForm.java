@@ -73,8 +73,8 @@ public class GeneralOptionsPanelForm extends javax.swing.JPanel {
         Preferences prefs = NbPreferences.forModule(DummyCorePreference.class);
         
         prefs.putBoolean("UML_Display_Empty_Lists", showAlias.isSelected()) ;
-        prefs.putBoolean("UML_Display_Empty_Lists", promptToSaveCB.isSelected()) ;
-        prefs.putBoolean("UML_Display_Empty_Lists", openProjectDiagramsCB.isSelected()) ;
+        prefs.putBoolean("UML_Prompt_to_Save_Project", promptToSaveCB.isSelected()) ;
+        prefs.putBoolean("UML_Open_Project_Diagrams", openProjectDiagramsCB.isSelected()) ;
         
         prefs.put("UML_Automatically_Size_Elements", resizeMappedChoices[autoResizeIndex]) ;
         prefs.put("UML_Display_Compartment_Titles", mappedChoices[displayCompartmentIndex]) ;
