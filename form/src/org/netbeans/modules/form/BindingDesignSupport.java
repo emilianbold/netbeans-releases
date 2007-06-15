@@ -53,9 +53,9 @@ public class BindingDesignSupport {
     private FormModel formModel;
 
     /** Realizations of bindings among replicated components. */
-    private Map<MetaBinding, List<Binding>> bindingsMap = new HashMap();
+    private Map<MetaBinding, List<Binding>> bindingsMap = new HashMap<MetaBinding, List<Binding>>();
     /** Realizations of bindings among metacomponents. */
-    private Map<MetaBinding, Binding> modelBindings = new HashMap();
+    private Map<MetaBinding, Binding> modelBindings = new HashMap<MetaBinding, Binding>();
     /** Binding context for reference instances in metacomponents. */
     private BindingContext bindingContext;
 
@@ -165,7 +165,7 @@ public class BindingDesignSupport {
         List<BindingDescriptor> list;
         Class beanClass = beanDescriptor.getBeanClass();
         Object[] propsCats = FormUtils.getPropertiesCategoryClsf(beanClass, beanDescriptor);
-        Iterable<FeatureDescriptor> fds;
+        Iterable<? extends FeatureDescriptor> fds;
         if (instance == NO_INSTANCE) {
             PropertyDescriptor[] pd;
             try {
@@ -174,8 +174,7 @@ public class BindingDesignSupport {
                 ex.printStackTrace();
                 pd = new PropertyDescriptor[0];
             }
-            List pds = Arrays.asList(pd);
-            fds = (Iterable<FeatureDescriptor>)pds;
+            fds = Arrays.asList(pd);
         } else {
             fds = bindingContext.getFeatureDescriptors(instance);
         }
@@ -243,10 +242,10 @@ public class BindingDesignSupport {
         } else {
             observableList.addAll(prefList);
         }
-        Comparator bdComparator = new Comparator() {
-            public int compare(Object o1, Object o2) {
-                String path1 = ((BindingDescriptor)o1).getPath();
-                String path2 = ((BindingDescriptor)o2).getPath();
+        Comparator<BindingDescriptor> bdComparator = new Comparator<BindingDescriptor>() {
+            public int compare(BindingDescriptor o1, BindingDescriptor o2) {
+                String path1 = o1.getPath();
+                String path2 = o2.getPath();
                 return path1.compareToIgnoreCase(path2);
             }
         };
@@ -475,14 +474,14 @@ public class BindingDesignSupport {
      */
     private static String[] parsePath(String path) {
         if (path == null) return new String[0];
-        List pathItems = new LinkedList();
+        List<String> pathItems = new LinkedList<String>();
         int index;
         while ((index = path.indexOf('.')) != -1) {
             pathItems.add(path.substring(0,index));
             path = path.substring(index+1);
         }
         pathItems.add(path);
-        return (String[])pathItems.toArray(new String[pathItems.size()]);
+        return pathItems.toArray(new String[pathItems.size()]);
     }
 
     /**
@@ -522,77 +521,6 @@ public class BindingDesignSupport {
             }
         }
         return elemType;
-    }
-
-    // PENDING - is it still needed? Check what it did in the past.
-    /**
-     * @return List of descriptors available on given path; the list can be modified
-     */
-//    public static List<BindingDescriptor> getPossibleNestedSourceBindings(
-//                        RADComponent source, BindingDescriptor desc)
-//    {
-//        Object value = getSourceValue(source, desc.getPath());
-//        if (value == null) {
-//            BindingDescriptor related = desc.getRelatedBinding();
-//            if (related != null) {
-//                List<BindingDescriptor> list = getPossibleNestedSourceBindings(source, related);
-//                if (!list.isEmpty())
-//                    return list;
-//            }
-//            return getPossibleSourceBindings(desc.getValueType());
-//        }
-//
-//        if (value instanceof Collection) {
-//            // TODO need introspection of generics...
-//            Collection col = (Collection) value;
-//            if (col.size() > 0) {
-//                value = col.iterator().next();
-//            }
-//            else value = null;
-//
-//            if (value == null) // can't determine the element type
-//                return Collections.EMPTY_LIST;
-//        }
-//
-//        if (value instanceof Map) {
-//            Map map = (Map) value;
-//            List<BindingDescriptor> descList = new ArrayList(map.size());
-//            Iterator it = map.entrySet().iterator();
-//            while (it.hasNext()) {
-//                Map.Entry en = (Map.Entry) it.next();
-//                Object key = en.getKey();
-//                if (key instanceof String) {
-//                    Object val = en.getValue();
-//                    descList.add(new BindingDescriptor(
-//                            null,
-//                            (String) key,
-//                            val != null ? val.getClass() : Object.class));
-//                }
-//            }
-//            return descList;
-//        }
-//        else {
-//            return getPossibleSourceBindings(value.getClass());
-//        }
-//    }
-
-//    private static Class getSourceValueType(RADComponent source, String path) {
-//        FormProperty prop = source.getBeanProperty(path);
-//        return prop != null ? prop.getValueType() : null;
-//    }
-
-    // [would be better to this via a binding resolver]
-    private static Object getSourceValue(RADComponent source, String path) {
-        FormProperty prop = source.getBeanProperty(path);
-        if (prop != null) {
-            try {
-                return prop.getRealValue();
-            }
-            catch (Exception ex) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-            }
-        }
-        return null;
     }
 
     public void establishUpdatedBindings(RADComponent metacomp,
@@ -651,7 +579,7 @@ public class BindingDesignSupport {
     private static Collection<MetaBinding> collectBindingDefs(RADComponent metacomp, boolean recursive) {
         Collection<MetaBinding> col = collectBindingDefs(metacomp, recursive, null);
         if (col == null)
-            col = Collections.EMPTY_LIST;
+            col = Collections.emptyList();
         return col;
     }
 
@@ -662,7 +590,7 @@ public class BindingDesignSupport {
             MetaBinding bindingDef = (MetaBinding) bProp.getValue();
             if (bindingDef != null) {
                 if (col == null)
-                    col = new LinkedList();
+                    col = new LinkedList<MetaBinding>();
                 col.add(bindingDef);
             }
         }
@@ -706,7 +634,7 @@ public class BindingDesignSupport {
                 }
             }
             else {
-                establishedBindings = new LinkedList();
+                establishedBindings = new LinkedList<Binding>();
                 bindingsMap.put(bindingDef, establishedBindings);
             }
             establishedBindings.add(createBinding(bindingDef, source, target, context));
@@ -723,7 +651,7 @@ public class BindingDesignSupport {
     {
         Binding binding;
         Collection<MetaBinding> subBindings = bindingDef.getSubBindings();
-        List parameters = new LinkedList();
+        List<Object> parameters = new LinkedList<Object>();
         String changeStrategy = bindingDef.getParameter(MetaBinding.TEXT_CHANGE_STRATEGY);
         if (changeStrategy != null) {
             Object value = null;
@@ -810,9 +738,12 @@ public class BindingDesignSupport {
                 itex.printStackTrace();
             }
         }
+        if (bindingDef.isNameSpecified()) {
+            // PENDING
+        }
         if (bindingDef.hasSubBindings()) {
             for (MetaBinding sub : subBindings) {
-                List subParameters = new LinkedList();
+                List<Object> subParameters = new LinkedList<Object>();
                 String tableColumn = sub.getParameter(MetaBinding.TABLE_COLUMN_PARAMETER);
                 if (tableColumn != null) {
                     try {

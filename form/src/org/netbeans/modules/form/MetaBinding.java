@@ -38,7 +38,7 @@ public class MetaBinding {
     private int updateStrategy = UPDATE_STRATEGY_READ_WRITE;
     private boolean nullValueSpecified;
     private boolean incompleteValueSpecified;
-    private Map<String,String> parameters = new TreeMap();
+    private Map<String,String> parameters = new TreeMap<String, String>();
     private boolean bindImmediately;
 
     private List<MetaBinding> subBindings;
@@ -118,6 +118,12 @@ public class MetaBinding {
         return !validatorProp.isDefaultValue();
     }
 
+    public boolean isNameSpecified() {
+        BindingProperty prop = getTarget().getBindingProperty(getTargetPath());
+        FormProperty nameProp = prop.getNameProperty();
+        return !nameProp.isDefaultValue();
+    }
+
     public boolean isBindImmediately() {
         return bindImmediately;
     }
@@ -153,7 +159,7 @@ public class MetaBinding {
 
     public MetaBinding addSubBinding(String sourcePath, String targetPath) {
         if (subBindings == null) {
-            subBindings = new ArrayList();
+            subBindings = new ArrayList<MetaBinding>();
         }
         MetaBinding binding = new MetaBinding(null, sourcePath, null, targetPath);
         subBindings.add(binding);

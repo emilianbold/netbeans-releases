@@ -36,6 +36,7 @@ public class BindingProperty extends PropertySupport.ReadWrite {
     private RADComponent bindingComponent;
     private BindingDescriptor bindingDescriptor;
     private MetaBinding binding;
+    private Property nameProperty;
     private Property nullValueProperty;
     private Property incompleteValueProperty;
     private Property validatorProperty;
@@ -56,12 +57,15 @@ public class BindingProperty extends PropertySupport.ReadWrite {
             name = FormUtils.getBundleString("MSG_Binding_IncompletePathProperty"); // NOI18N
             incompleteValueProperty = new Property(prop, "incompletePathValue", desc.getValueType(), name, name, false); // NOI18N
             name = FormUtils.getBundleString("MSG_Binding_Validator"); // NOI18N
-            validatorProperty = new Property(prop, "validator", BindingValidator.class, name, name, true); // NOI18N
+            validatorProperty = new Property(prop, "validator", String.class/*BindingValidator.class*/, name, name, true); // NOI18N
             name = FormUtils.getBundleString("MSG_Binding_Converter"); // NOI18N
             converterProperty = new Property(prop, "converter", BindingConverter.class, name, name, true); // NOI18N
+            name = FormUtils.getBundleString("MSG_Binding_Name"); // NOI18N
+            nameProperty = new Property(prop, "name", String.class, name, name, true); // NOI18N
         }
     }
 
+    @Override
     public String getHtmlDisplayName() {
         return binding != null ? "<b>" + getDisplayName() : null; // NOI18N
     }
@@ -85,12 +89,23 @@ public class BindingProperty extends PropertySupport.ReadWrite {
         }
     }
 
+    @Override
     public boolean supportsDefaultValue() {
         return true;
     }
 
+    @Override
     public void restoreDefaultValue() {
         setValue(null);
+        try {
+            validatorProperty.restoreDefaultValue();
+            converterProperty.restoreDefaultValue();
+            nameProperty.restoreDefaultValue();
+            nullValueProperty.setValue(null);
+            incompleteValueProperty.setValue(null);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
         Node.Property prop = bindingComponent.getPropertyByName(bindingDescriptor.getPath());
         if ((prop != null) && prop.supportsDefaultValue()) {
             try {
@@ -101,10 +116,12 @@ public class BindingProperty extends PropertySupport.ReadWrite {
         }
     }
 
+    @Override
     public boolean isDefaultValue() {
         return (getValue() == null);
     }
 
+    @Override
     public PropertyEditor getPropertyEditor() {
         return new BindingPropertyEditor();
     }
@@ -145,6 +162,10 @@ public class BindingProperty extends PropertySupport.ReadWrite {
         return converterProperty;
     }
 
+    FormProperty getNameProperty() {
+        return nameProperty;
+    }
+
     // -----
 
     private class BindingPropertyEditor extends PropertyEditorSupport { //implements ExPropertyEditor
@@ -152,6 +173,7 @@ public class BindingProperty extends PropertySupport.ReadWrite {
         private BindingCustomizer customizer;
         private ActionListener customizerListener;
 
+        @Override
         public String getAsText() {
             RADComponent boundComp = null;
             String path = null;
@@ -168,6 +190,7 @@ public class BindingProperty extends PropertySupport.ReadWrite {
                    boundComp.getName();
         }
 
+        @Override
         public void setAsText(String text) {
             if ("".equals(text)) { // NOI18N
                 setValue(null);
@@ -193,10 +216,12 @@ public class BindingProperty extends PropertySupport.ReadWrite {
             }
         }
 
+        @Override
         public boolean supportsCustomEditor() {
             return true;
         }
 
+        @Override
         public Component getCustomEditor() {
             if (customizer == null) {
                 customizer = new BindingCustomizer(BindingProperty.this);
@@ -230,6 +255,7 @@ public class BindingProperty extends PropertySupport.ReadWrite {
             this.value = value;
         }
 
+        @Override
         public boolean supportsDefaultValue () {
             return supportsDefaultValue;
         }

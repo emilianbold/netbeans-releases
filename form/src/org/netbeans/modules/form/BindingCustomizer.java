@@ -68,11 +68,13 @@ public class BindingCustomizer extends JPanel {
     private FormProperty incompletePathValueProperty;
     private FormProperty converterProperty;
     private FormProperty validatorProperty;
+    private FormProperty nameProperty;
     /** Original values of nested properties. */
     private FormProperty.ValueWithEditor oldNullValue;
     private FormProperty.ValueWithEditor oldIncompletePathValue;
     private FormProperty.ValueWithEditor oldConverter;
     private FormProperty.ValueWithEditor oldValidator;
+    private FormProperty.ValueWithEditor oldName;
 
     /** Expression combo box. */
     private ComboBoxWithTree expressionCombo;
@@ -155,6 +157,10 @@ public class BindingCustomizer extends JPanel {
         validatorProperty = property.getValidatorProperty();
         if (validatorProperty != null) {
             validatorPanel.setProperty(validatorProperty);
+        }
+        nameProperty = property.getNameProperty();
+        if (nameProperty != null) {
+            namePanel.setProperty(nameProperty);
         }
 
         // Hack - make HTML labels non-resizable
@@ -246,11 +252,13 @@ public class BindingCustomizer extends JPanel {
             dd.setClosingOptions(new JButton[] { okButton, cancelButton });
             dialog = DialogDisplayer.getDefault().createDialog(dd);
             dialog.addWindowListener(new WindowAdapter() {
+                @Override
                 public void windowClosed(WindowEvent e) {
                     restore(nullValueProperty, oldNullValue);
                     restore(incompletePathValueProperty, oldIncompletePathValue);
                     restore(converterProperty, oldConverter);
                     restore(validatorProperty, oldValidator);
+                    restore(nameProperty, oldName);
                 }
                 private void restore(FormProperty property, Object value) {
                     // the original values are cleared when okButton is pressed
@@ -302,6 +310,7 @@ public class BindingCustomizer extends JPanel {
                     oldIncompletePathValue = null;
                     oldConverter = null;
                     oldValidator = null;
+                    oldName = null;
                     if (dialogListener != null) {
                         dialogListener.actionPerformed(ev);
                     }
@@ -360,15 +369,15 @@ public class BindingCustomizer extends JPanel {
             updateColumnSelector();
             if (columnSelector != null) {
                 if (binding.hasSubBindings()) {
-                    SortedMap columns = new TreeMap();
+                    SortedMap<Integer,String> columns = new TreeMap<Integer,String>();
                     for (MetaBinding subBinding : binding.getSubBindings()) {
                         Object value = subBinding.getParameter(MetaBinding.TABLE_COLUMN_PARAMETER);
                         if (value != null) {
                             columns.put(new Integer(value.toString()), subBinding.getSourcePath());
                         }
                     }
-                    List available = new LinkedList(columnSelector.getSelectedItems());
-                    List selected = new LinkedList();
+                    List<String> available = new LinkedList<String>(columnSelector.getSelectedItems());
+                    List<String> selected = new LinkedList<String>();
                     Iterator iter = columns.values().iterator();
                     while (iter.hasNext()) {
                         String column = iter.next().toString();
@@ -395,6 +404,9 @@ public class BindingCustomizer extends JPanel {
             if (binding.isValidatorSpecified()) {
                 oldValidator = propertyValue(validatorProperty);
             }
+            if (binding.isNameSpecified()) {
+                oldName = propertyValue(nameProperty);
+            }
         } else {
             sourceCombo.setSelectedIndex(0);
             updateModeCombo.setSelectedIndex(0);
@@ -407,6 +419,7 @@ public class BindingCustomizer extends JPanel {
             oldIncompletePathValue = null;
             oldConverter = null;
             oldValidator = null;
+            oldName = null;
         }
         updatePropertyPanels();
     }
@@ -444,11 +457,11 @@ public class BindingCustomizer extends JPanel {
         nonvisualList.remove(topcomp);
         visualList.remove(topcomp);
 
-        Comparator c = new RADComponentComparator();
+        Comparator<RADComponent> c = new RADComponentComparator();
         Collections.sort(nonvisualList, c);
         Collections.sort(visualList, c);
 
-        allComponents = new ArrayList(nonvisualList.size() + visualList.size() + 1);
+        allComponents = new ArrayList<RADComponent>(nonvisualList.size() + visualList.size() + 1);
         allComponents.addAll(nonvisualList);
         allComponents.addAll(visualList);
         allComponents.add(topcomp);
@@ -578,6 +591,9 @@ public class BindingCustomizer extends JPanel {
         updateLabel = new javax.swing.JLabel();
         converterMessage = new javax.swing.JLabel();
         validatorMessage = new javax.swing.JLabel();
+        identificationLabel = new javax.swing.JLabel();
+        nameLabel = new javax.swing.JLabel();
+        namePanel = new org.openide.explorer.propertysheet.PropertyPanel();
 
         FormListener formListener = new FormListener();
 
@@ -604,7 +620,7 @@ public class BindingCustomizer extends JPanel {
         );
         detailPanelLayout.setVerticalGroup(
             detailPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 228, Short.MAX_VALUE)
+            .add(0, 286, Short.MAX_VALUE)
         );
 
         org.jdesktop.layout.GroupLayout bindingPanelLayout = new org.jdesktop.layout.GroupLayout(bindingPanel);
@@ -750,6 +766,26 @@ public class BindingCustomizer extends JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(validatorMessage, org.openide.util.NbBundle.getMessage(BindingCustomizer.class, "MSG_BindingCustomizer_ValidationTxt")); // NOI18N
 
+        org.openide.awt.Mnemonics.setLocalizedText(identificationLabel, org.openide.util.NbBundle.getMessage(BindingCustomizer.class, "MSG_BindingCustomizer_Identification")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(nameLabel, org.openide.util.NbBundle.getMessage(BindingCustomizer.class, "MSG_BindingCustomizer_Name")); // NOI18N
+
+        if (false) {
+            namePanel.setEnabled(false);
+        }
+        namePanel.setPreferences(PropertyPanel.PREF_TABLEUI);
+
+        org.jdesktop.layout.GroupLayout namePanelLayout = new org.jdesktop.layout.GroupLayout(namePanel);
+        namePanel.setLayout(namePanelLayout);
+        namePanelLayout.setHorizontalGroup(
+            namePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(0, 395, Short.MAX_VALUE)
+        );
+        namePanelLayout.setVerticalGroup(
+            namePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(0, 24, Short.MAX_VALUE)
+        );
+
         org.jdesktop.layout.GroupLayout advancedPanelLayout = new org.jdesktop.layout.GroupLayout(advancedPanel);
         advancedPanel.setLayout(advancedPanelLayout);
         advancedPanelLayout.setHorizontalGroup(
@@ -758,46 +794,26 @@ public class BindingCustomizer extends JPanel {
                 .addContainerGap()
                 .add(advancedPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(converterLabel)
-                    .add(validatorLabel))
+                    .add(validatorLabel)
+                    .add(nameLabel))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(advancedPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(namePanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .add(converterPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .add(validatorPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
             .add(advancedPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .add(validationLabel)
-                .addContainerGap(406, Short.MAX_VALUE))
+                .add(identificationLabel)
+                .addContainerGap(386, Short.MAX_VALUE))
             .add(advancedPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .add(validatorMessage)
-                .addContainerGap(349, Short.MAX_VALUE))
+                .add(updateLabel)
+                .addContainerGap(234, Short.MAX_VALUE))
             .add(advancedPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .add(converterMessage)
-                .addContainerGap(266, Short.MAX_VALUE))
-            .add(advancedPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .add(conversionLabel)
+                .add(specialValuesLabel)
                 .addContainerGap(368, Short.MAX_VALUE))
-            .add(advancedPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .add(displayValuesLabel)
-                .addContainerGap(155, Short.MAX_VALUE))
-            .add(advancedPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .add(advancedPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(nullValueCheckBox)
-                    .add(incompletePathValueCheckBox))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(advancedPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(incompletePathValuePanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(nullValuePanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap())
-            .add(advancedPanelLayout.createSequentialGroup()
-                .add(10, 10, 10)
-                .add(updatePropertiesLabel)
-                .addContainerGap(359, Short.MAX_VALUE))
             .add(advancedPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .add(advancedPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -809,18 +825,50 @@ public class BindingCustomizer extends JPanel {
                     .add(updateModeCombo, 0, 378, Short.MAX_VALUE))
                 .add(10, 10, 10))
             .add(advancedPanelLayout.createSequentialGroup()
+                .add(10, 10, 10)
+                .add(updatePropertiesLabel)
+                .addContainerGap(359, Short.MAX_VALUE))
+            .add(advancedPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .add(specialValuesLabel)
+                .add(advancedPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(nullValueCheckBox)
+                    .add(incompletePathValueCheckBox))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(advancedPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(incompletePathValuePanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(nullValuePanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
+            .add(advancedPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .add(displayValuesLabel)
+                .addContainerGap(155, Short.MAX_VALUE))
+            .add(advancedPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .add(conversionLabel)
                 .addContainerGap(368, Short.MAX_VALUE))
             .add(advancedPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .add(updateLabel)
-                .addContainerGap(234, Short.MAX_VALUE))
+                .add(converterMessage)
+                .addContainerGap(266, Short.MAX_VALUE))
+            .add(advancedPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .add(validatorMessage)
+                .addContainerGap(349, Short.MAX_VALUE))
+            .add(advancedPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .add(validationLabel)
+                .addContainerGap(406, Short.MAX_VALUE))
         );
         advancedPanelLayout.setVerticalGroup(
             advancedPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(advancedPanelLayout.createSequentialGroup()
                 .addContainerGap()
+                .add(identificationLabel)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(advancedPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.CENTER)
+                    .add(namePanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(nameLabel))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(updatePropertiesLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(updateLabel)
@@ -837,17 +885,17 @@ public class BindingCustomizer extends JPanel {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(converterMessage)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(advancedPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(org.jdesktop.layout.GroupLayout.CENTER, converterLabel)
-                    .add(org.jdesktop.layout.GroupLayout.CENTER, converterPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(advancedPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.CENTER)
+                    .add(converterLabel)
+                    .add(converterPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(validationLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(validatorMessage)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(advancedPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(org.jdesktop.layout.GroupLayout.CENTER, validatorLabel)
-                    .add(org.jdesktop.layout.GroupLayout.CENTER, validatorPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(advancedPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.CENTER)
+                    .add(validatorLabel)
+                    .add(validatorPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(specialValuesLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -860,7 +908,7 @@ public class BindingCustomizer extends JPanel {
                 .add(advancedPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(org.jdesktop.layout.GroupLayout.CENTER, incompletePathValueCheckBox)
                     .add(org.jdesktop.layout.GroupLayout.CENTER, incompletePathValuePanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(13, Short.MAX_VALUE))
+                .addContainerGap(21, Short.MAX_VALUE))
         );
 
         tabbedPane.addTab(org.openide.util.NbBundle.getMessage(BindingCustomizer.class, "MSG_BindingCustomizer_AdvancedTab"), advancedPanel); // NOI18N
@@ -961,10 +1009,13 @@ private void importDataButtonActionPerformed(java.awt.event.ActionEvent evt) {//
     javax.swing.JLabel displayExpressionLabel;
     javax.swing.JLabel displayValuesLabel;
     javax.swing.JLabel expressionLabel;
+    javax.swing.JLabel identificationLabel;
     javax.swing.JButton importDataButton;
     javax.swing.JCheckBox incompletePathValueCheckBox;
     org.openide.explorer.propertysheet.PropertyPanel incompletePathValuePanel;
     javax.swing.JLabel infoLabel;
+    javax.swing.JLabel nameLabel;
+    org.openide.explorer.propertysheet.PropertyPanel namePanel;
     javax.swing.JCheckBox nullValueCheckBox;
     org.openide.explorer.propertysheet.PropertyPanel nullValuePanel;
     javax.swing.JComboBox sourceCombo;
@@ -988,23 +1039,13 @@ private void importDataButtonActionPerformed(java.awt.event.ActionEvent evt) {//
     /**
      * Comparator of <code>RADComponent</code>s.
      */
-    private static class RADComponentComparator implements Comparator {
-        public int compare(Object o1, Object o2) {
-            String name1 = ((RADComponent)o1).getName();
-            String name2 = ((RADComponent)o2).getName();
+    private static class RADComponentComparator implements Comparator<RADComponent> {
+        public int compare(RADComponent o1, RADComponent o2) {
+            String name1 = o1.getName();
+            String name2 = o2.getName();
             return name1.compareToIgnoreCase(name2);
         }
-    }
 
-    /**
-     * Comparator of <code>BindingDescriptor</code>s.
-     */
-    private static class BDComparator implements Comparator {
-        public int compare(Object o1, Object o2) {
-            String path1 = ((BindingDescriptor)o1).getPath();
-            String path2 = ((BindingDescriptor)o2).getPath();
-            return path1.compareToIgnoreCase(path2);
-        }
     }
 
     public TypeHelper getSelectedType() {
@@ -1037,7 +1078,7 @@ private void importDataButtonActionPerformed(java.awt.event.ActionEvent evt) {//
             if (columnSelector != null) {
                 List<BindingDescriptor> descriptors = designSupport.getAllBindingDescriptors(elemType);
                 columnSelector.setVisible(descriptors.size() > 0);
-                List available = new LinkedList();
+                List<String> available = new LinkedList<String>();
                 columnToType = new HashMap<String,String>();
                 for (BindingDescriptor desc : descriptors) {
                     TypeHelper t = desc.getGenericValueType();
@@ -1134,6 +1175,7 @@ private void importDataButtonActionPerformed(java.awt.event.ActionEvent evt) {//
            return name;
        }
 
+       @Override
        protected void loadChildren() {
            loadedChildren = true;
            if ("root".equals(getUserObject())) { // NOI18N
@@ -1199,7 +1241,7 @@ private void importDataButtonActionPerformed(java.awt.event.ActionEvent evt) {//
                 }
                 return null;
             }
-            List path = new LinkedList();
+            List<DefaultMutableTreeNode> path = new LinkedList<DefaultMutableTreeNode>();
             // always include root
             path.add(node);
             int index;
@@ -1244,6 +1286,7 @@ private void importDataButtonActionPerformed(java.awt.event.ActionEvent evt) {//
             this.baseSize = new JLabel().getFont().getSize()+1;
         }
 
+        @Override
         public Component getTreeCellRendererComponent(JTree tree, Object value,
                boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
             JLabel label = (JLabel)super.getTreeCellRendererComponent(tree, value, selected, expanded, leaf, row, hasFocus); // NOI18N

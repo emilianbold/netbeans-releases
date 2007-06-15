@@ -2483,6 +2483,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
                         loadProperty(subNodes[j], null, property.getConverterProperty());
                     } else if ("validator".equals(subPropName)) { // NOI18N
                         loadProperty(subNodes[j], null, property.getValidatorProperty());
+                    } else if ("name".equals(subPropName)) { // NOI18N
+                        loadProperty(subNodes[j], null, property.getNameProperty());
                     }
                 }
             }
@@ -4105,6 +4107,9 @@ public class GandalfPersistenceManager extends PersistenceManager {
             }
             if (binding.isValidatorSpecified()) {
                 saveProperty(prop.getValidatorProperty(), prop.getValidatorProperty().getName(), buf, indent2);
+            }
+            if (binding.isNameSpecified()) {
+                saveProperty(prop.getNameProperty(), prop.getNameProperty().getName(), buf, indent2);
             }
 
             // Save subbindings    

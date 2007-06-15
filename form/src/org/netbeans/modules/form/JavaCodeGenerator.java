@@ -1567,6 +1567,9 @@ class JavaCodeGenerator extends CodeGenerator {
                 if (bindingDef.isValidatorSpecified()) {
                     generateComponentBinding0(initCodeWriter, prop.getValidatorProperty(), variable + ".setValidator"); // NOI18N
                 }
+                if (bindingDef.isNameSpecified()) {
+                    // PENDING
+                }
                 if (variable != null) {
                     // PENDING the following check should not be there - the binding should be always
                     // added to context, but BindingContext.bindingBecameBound() must be fixed before that
