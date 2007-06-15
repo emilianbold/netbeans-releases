@@ -1469,7 +1469,11 @@ public class ResourceUtils implements WizardConstants{
         }
     }
     
-    private static File getServerResourcesFile(FileObject targetFolder){
+    /*
+     *  Get sun-resource.xml file if it exists in a given folder.
+     *  Returns null if no file exists.
+     */
+    public static File getServerResourcesFile(FileObject targetFolder){
         File serverResource = null;
         if(targetFolder != null){
             FileObject setUpFolder = setUpExists(targetFolder);

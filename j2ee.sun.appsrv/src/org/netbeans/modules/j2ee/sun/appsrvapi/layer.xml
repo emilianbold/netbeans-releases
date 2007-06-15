@@ -47,14 +47,6 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
         <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/sun/ide/sunresources/wizards/DataSourceWizardInfo.html"/>
         <attr name="templateCategory" stringvalue="web-types,ejb-types,ear-types,sunresource-types"/>
       </file>
-      <file name="Persistence_Resource">
-        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.sun.ide.sunresources.wizards.Bundle"/>
-        <attr name="template" boolvalue="true"/>
-        <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.j2ee.sun.ide.sunresources.wizards.PMFWizard.create" />
-        <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/j2ee/sun/ide/resources/ResNodeNodeIcon.gif"/>
-        <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/sun/ide/sunresources/wizards/PersistenceWizardInfo.html"/>
-        <attr name="templateCategory" stringvalue="web-types,ejb-types,ear-types,sunresource-types"/>
-     </file>
      <file name="JavaMail_Resource">
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.sun.ide.sunresources.wizards.Bundle"/>
         <attr name="template" boolvalue="true"/>
@@ -77,15 +69,11 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
   <folder name="Loaders">
         <folder name="xml">
             <folder name="sun-resource">
-                <folder name="Actions">
+              <folder name="Actions">
               <file name="OpenAction.instance">
                 <attr name="instanceClass" stringvalue="org.openide.actions.OpenAction" />
               </file>
-              <attr boolvalue="true" name="OpenAction.instance/RegisterAction.instance" />
-              <file name="RegisterAction.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.sun.ide.sunresources.resourceactions.RegisterAction" />
-              </file>
-              <attr boolvalue="true" name="RegisterAction.instance/FileSystemAction.instance" />
+              <attr boolvalue="true" name="OpenAction.instance/FileSystemAction.instance" />
               <file name="FileSystemAction.instance">
                 <attr name="instanceClass" stringvalue="org.openide.actions.FileSystemAction" />
               </file>

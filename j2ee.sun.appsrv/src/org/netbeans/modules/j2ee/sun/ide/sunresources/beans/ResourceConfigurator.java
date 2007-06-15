@@ -24,19 +24,14 @@
 
 package org.netbeans.modules.j2ee.sun.ide.sunresources.beans;
 
-import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.ResourceBundle;
 
 import javax.enterprise.deploy.spi.DeploymentManager;
@@ -79,10 +74,6 @@ import org.openide.filesystems.FileUtil;
  */
 public class ResourceConfigurator implements ResourceConfiguratorInterface {
     
-    public static final String __JMSResource = "jms"; // NOI18N
-    public static final String __JMSConnectionFactory = "jms_CF"; // NOI18N
-    public static final String __JdbcConnectionPool = "connection-pool"; // NOI18N
-   
     public static final String __SunResourceExt = "sun-resource"; // NOI18N
     
     private final static char BLANK = ' ';
@@ -92,11 +83,13 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
     private final static char REPLACEMENT_CHAR = '_';
     private final static char DASH = '-';
     
-    public static final String __ConnectionPool = "ConnectionPool"; // NOI18N
     private static final String DATAFILE = "org/netbeans/modules/j2ee/sun/sunresources/beans/CPWizard.xml";  // NOI18N
 
     private boolean showMsg = false;
     private DeploymentManager currentDM = null;
+    
+    public static final String JDBC_RESOURCE = "jdbc"; // NOI18N
+    public static final String JMS_RESOURCE = "jms"; // NOI18N
     
     ResourceBundle bundle = ResourceBundle.getBundle("org.netbeans.modules.j2ee.sun.ide.sunresources.beans.Bundle");// NOI18N
     
@@ -120,7 +113,7 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
      *  other possibilities.
      */
     public boolean isJMSResourceDefined(String jndiName, File dir) {
-        return resourceAlreadyDefined(jndiName, dir, __JMSResource);
+        return requiredResourceExists(jndiName, dir, JMS_RESOURCE);
     }
 
     public MessageDestination createJMSResource(String jndiName, MessageDestination.Type type, String ejbName, File dir) {
@@ -544,112 +537,86 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
         }
     }
     
-    private boolean resourceAlreadyDefined(String resName, File dir, String resType) {
-        boolean result = false;
-        if(dir != null && dir.exists()) {
-            String filename = getFileName(resName, resType);
-            File resourceFile = new File(dir, filename);
-            if(resourceFile.exists()) {
-                result = true;
-            }
-        }
-        
-        return result;
-    }
-    
-    private String isSameDatabaseConnection(File resourceFile, String databaseUrl, String username, String password) {
+    private String isSameDatabaseConnection(JdbcConnectionPool connPool, String databaseUrl, String username, String password) {
         String poolJndiName = null;
-        try {
-            FileInputStream in = new FileInputStream(resourceFile);
-            Resources resources = DDProvider.getDefault().getResourcesGraph(in);
-            
-            // identify JDBC Resources xml
-            JdbcConnectionPool[] pools = (JdbcConnectionPool[])resources.getJdbcConnectionPool();
-            if(pools.length != 0) {
-                JdbcConnectionPool connPool = pools[0];
-                PropertyElement[] pl = (PropertyElement[])connPool.getPropertyElement();
-                if(databaseUrl.startsWith("jdbc:derby:")){ //NOI18N
-                    databaseUrl = stripExtraDBInfo(databaseUrl);
-                    String workingUrl = databaseUrl.substring(databaseUrl.indexOf("//") + 2, databaseUrl.length());
-                    String hostName = getDerbyServerName(workingUrl);
-                    String portNumber = getDerbyPortNo(workingUrl);
-                    String databaseName = getDerbyDatabaseName(workingUrl);
-                    String hostProp = null;
-                    String portProp = null;
-                    String dbProp = null;
-                    String dbUser = null;
-                    String dbPwd = null;
-                    for(int i=0; i<pl.length; i++) {
-                        String prop = pl[i].getName();
-                        if(prop.equalsIgnoreCase(WizardConstants.__ServerName)) { 
-                            hostProp = pl[i].getValue();
-                        }else if(prop.equals(WizardConstants.__DerbyPortNumber)){
-                            portProp = pl[i].getValue();
-                        }else if(prop.equals(WizardConstants.__DerbyDatabaseName)){
-                            dbProp = pl[i].getValue();
-                        }else if(prop.equals(WizardConstants.__User)){
-                            dbUser = pl[i].getValue();
-                        }else if(prop.equals(WizardConstants.__Password)){
-                            dbPwd = pl[i].getValue();
-                        }
-                    }
-                    if(hostName.equals(hostProp) && portNumber.equals(portProp) && 
-                            databaseName.equals(dbProp)){
-                        if(dbUser != null && dbPwd != null && dbUser.equals(username) && dbPwd.equals(password)){
-                            poolJndiName = connPool.getName();
-                        }
-                    }   
-                }else{
-                    String hostName = ""; //NOI18N
-                    String portNumber = ""; //NOI18N
-                    String databaseName = ""; //NOI18N
-                    String sid = ""; //NOI18N
-                    String user = ""; //NOI18N
-                    String pwd = ""; //NOI18N
-                    for(int i=0; i<pl.length; i++) {
-                        String prop = pl[i].getName();
-                        if(prop.equalsIgnoreCase(WizardConstants.__ServerName)) {
-                            hostName = pl[i].getValue();
-                        }else if(prop.equals(WizardConstants.__PortNumber)){
-                            portNumber = pl[i].getValue();
-                        }else if(prop.equals(WizardConstants.__DatabaseName)){
-                            databaseName = pl[i].getValue();
-                        }else if(prop.equals(WizardConstants.__SID)){
-                            sid = pl[i].getValue();
-                        }else if(prop.equals(WizardConstants.__User)){
-                            user = pl[i].getValue();
-                        }else if(prop.equals(WizardConstants.__Password)){
-                            pwd = pl[i].getValue();
-                        }
-                    }
-                    String serverPort = hostName;
-                    if (null != portNumber && portNumber.length() > 0) {
-                        serverPort += ":" + portNumber; //NOI18N
-                    }
-                    if((databaseUrl.indexOf(serverPort) != -1 ) && 
-                       ((databaseUrl.indexOf(databaseName) != -1) || (databaseUrl.indexOf(sid) != -1))){
-                            if((username != null && user.equals(username)) && (password != null && pwd.equals(password))){
-                                poolJndiName = connPool.getName();
-                            }
-                    }
-                        
-                    for(int i=0; i<pl.length; i++) {
-                        String prop = pl[i].getName();
-                        if(prop.equals("URL") || prop.equals("databaseName")) { // NOI18N
-                            String urlValue = pl[i].getValue();
-                            if(urlValue.equals(databaseUrl)) {
-                                if((username != null && user.equals(username)) && (password != null && pwd.equals(password))){
-                                    poolJndiName = connPool.getName();
-                                    break;
-                                }
-                            }
-                        }
-                    } //for
+        PropertyElement[] pl = connPool.getPropertyElement();
+        if(databaseUrl.startsWith("jdbc:derby:")){ //NOI18N
+            databaseUrl = stripExtraDBInfo(databaseUrl);
+            String workingUrl = databaseUrl.substring(databaseUrl.indexOf("//") + 2, databaseUrl.length());
+            String hostName = getDerbyServerName(workingUrl);
+            String portNumber = getDerbyPortNo(workingUrl);
+            String databaseName = getDerbyDatabaseName(workingUrl);
+            String hostProp = null;
+            String portProp = null;
+            String dbProp = null;
+            String dbUser = null;
+            String dbPwd = null;
+            for(int i=0; i<pl.length; i++) {
+                String prop = pl[i].getName();
+                if(prop.equalsIgnoreCase(WizardConstants.__ServerName)) {
+                    hostProp = pl[i].getValue();
+                }else if(prop.equals(WizardConstants.__DerbyPortNumber)){
+                    portProp = pl[i].getValue();
+                }else if(prop.equals(WizardConstants.__DerbyDatabaseName)){
+                    dbProp = pl[i].getValue();
+                }else if(prop.equals(WizardConstants.__User)){
+                    dbUser = pl[i].getValue();
+                }else if(prop.equals(WizardConstants.__Password)){
+                    dbPwd = pl[i].getValue();
                 }
             }
-            in.close();
-        } catch(IOException ex) {
-            // Could not check local file
+            if(hostName.equals(hostProp) && portNumber.equals(portProp) &&
+                    databaseName.equals(dbProp)){
+                if(dbUser != null && dbPwd != null && dbUser.equals(username) && dbPwd.equals(password)){
+                    poolJndiName = connPool.getName();
+                }
+            }
+        }else{
+            String hostName = ""; //NOI18N
+            String portNumber = ""; //NOI18N
+            String databaseName = ""; //NOI18N
+            String sid = ""; //NOI18N
+            String user = ""; //NOI18N
+            String pwd = ""; //NOI18N
+            for(int i=0; i<pl.length; i++) {
+                String prop = pl[i].getName();
+                if(prop.equalsIgnoreCase(WizardConstants.__ServerName)) {
+                    hostName = pl[i].getValue();
+                }else if(prop.equals(WizardConstants.__PortNumber)){
+                    portNumber = pl[i].getValue();
+                }else if(prop.equals(WizardConstants.__DatabaseName)){
+                    databaseName = pl[i].getValue();
+                }else if(prop.equals(WizardConstants.__SID)){
+                    sid = pl[i].getValue();
+                }else if(prop.equals(WizardConstants.__User)){
+                    user = pl[i].getValue();
+                }else if(prop.equals(WizardConstants.__Password)){
+                    pwd = pl[i].getValue();
+                }
+            }
+            String serverPort = hostName;
+            if (null != portNumber && portNumber.length() > 0) {
+                serverPort += ":" + portNumber; //NOI18N
+            }
+            if((databaseUrl.indexOf(serverPort) != -1 ) &&
+                    ((databaseUrl.indexOf(databaseName) != -1) || (databaseUrl.indexOf(sid) != -1))){
+                if((username != null && user.equals(username)) && (password != null && pwd.equals(password))){
+                    poolJndiName = connPool.getName();
+                }
+            }
+            
+            for(int i=0; i<pl.length; i++) {
+                String prop = pl[i].getName();
+                if(prop.equals("URL") || prop.equals("databaseName")) { // NOI18N
+                    String urlValue = pl[i].getValue();
+                    if(urlValue.equals(databaseUrl)) {
+                        if((username != null && user.equals(username)) && (password != null && pwd.equals(password))){
+                            poolJndiName = connPool.getName();
+                            break;
+                        }
+                    }
+                }
+            } //for
         }
         return poolJndiName;
     }
@@ -843,20 +810,21 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
      * Implementation of DS Management API in ConfigurationSupport
      * SunDataSource is a combination of JDBC & JDBC Connection Pool Resources.
      * Called through ConfigurationSupportImpl
-     * @return Returns Set of SunDataSource's(JDBC Resources) present in this J2EE project
+     * @return Returns Set of SunDatasource's(JDBC Resources) present in this J2EE project
      * @param dir File providing location of the project's server resource directory
      */
     public HashSet getResources(File resourceDir) {
-        HashSet serverresources = getServerResourceFiles(resourceDir);
-        if (serverresources.size() == 0) {
+        HashSet serverresources = new HashSet();
+        File resourceFile = getServerResourceFiles(resourceDir);
+        if (resourceFile == null) {
             return serverresources;
         }    
 
-        HashSet dsources = new HashSet();
-        HashMap connPools = getConnectionPools(serverresources);
-        List dataSources = getJdbcResources(serverresources);
-        for(int i=0; i<dataSources.size(); i++){
-            JdbcResource datasourceBean = (JdbcResource)dataSources.get(i);
+        HashSet<SunDatasource> dsources = new HashSet<SunDatasource>();
+        HashMap connPools = getConnectionPools(resourceFile);
+        HashMap dataSources = getJdbcResources(resourceFile);
+        for (Iterator it = dataSources.values().iterator(); it.hasNext();) {
+            JdbcResource datasourceBean = (JdbcResource)it.next();
             String poolName = datasourceBean.getPoolName();
             try{
                 JdbcConnectionPool connectionPoolBean =(JdbcConnectionPool)connPools.get(poolName);
@@ -1004,20 +972,18 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
                 ensureFolderExists(dir);
                 // Is connection pool already defined
                 String poolName = vendorName + WizardConstants.__ConnPoolSuffix;
-                HashMap poolMap = updatePoolName(jndiName, poolName, dir, url, username, password);
-                Object[] pools = poolMap.keySet().toArray();
-                String newPoolName = (String)pools[0]; 
-                Object resFile = poolMap.get(pools[0]);
-                if(resFile != null) {
-                    if(resourceFileExists(jndiName, dir)) {
+                boolean poolExists = requiredPoolExists(dir, url, username, password);
+                if(poolExists) {
+                    boolean jdbcExists = requiredResourceExists(jndiName, dir, JDBC_RESOURCE);
+                    if(jdbcExists) {
                         ds = null;
                     } else {
-                        createJDBCResource(jndiName, newPoolName, dir);
+                        createJDBCResource(jndiName, poolName, dir);
                         ds = new SunDatasource(jndiName, url, username, password, driver);
                     }    
                 } else {
-                    createCPPoolResource(newPoolName, url, username, password, driver, dir);
-                    createJDBCResource(jndiName, newPoolName, dir);
+                    createCPPoolResource(poolName, url, username, password, driver, dir);
+                    createJDBCResource(jndiName, poolName, dir);
                     ds = new SunDatasource(jndiName, url, username, password, driver);
                 }
             }
@@ -1106,93 +1072,58 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
         ResourceUtils.createFile(location, resources);
     }
     
-    private HashSet getServerResourceFiles(File resourceDir) {
-        HashSet serverresources = new HashSet();
-        if(resourceDir.exists()){
-            FileObject resDir = FileUtil.toFileObject(resourceDir);
-            Enumeration files = resDir.getChildren(true);
-            while (files.hasMoreElements()) {
-                FileObject file = (FileObject) files.nextElement();
-                if (!file.isFolder() && file.getNameExt().endsWith(".sun-resource") && file.canRead()) { //NOI18N
-                    serverresources.add(file);
-                }
-            }
+    private File getServerResourceFiles(File resourceDir) {
+        File resourceFile = null;
+        if(resourceDir != null){
+            resourceFile =  ResourceUtils.getServerResourcesFile(FileUtil.toFileObject(resourceDir));
         }
-        return serverresources;
+        return resourceFile;
     }
     
-    private List getJdbcResources(HashSet serverresources) {
-        List dataSources = new ArrayList();
-        for (Iterator it = serverresources.iterator(); it.hasNext();) {
-            try {
-                FileObject dsObj = (FileObject)it.next();
-                File dsFile = FileUtil.toFile(dsObj);
-                if(! dsFile.isDirectory()){
-                    FileInputStream in = new FileInputStream(dsFile);
-                    
-                    Resources resources = DDProvider.getDefault().getResourcesGraph(in);
-                    
-                    // identify JDBC Resources xml
-                    JdbcResource[] dSources = resources.getJdbcResource();
-                    if(dSources.length != 0){
-                        dataSources.add(dSources[0]);
-                    }
-                }
-            } catch (Exception ex) {
-                ErrorManager.getDefault().notify(ex);
-            }
-        }
-        return dataSources;
-    }
-    
-    private HashMap getConnectionPools(HashSet serverresources) {
-        HashMap connPools = new HashMap();
-        for (Iterator it = serverresources.iterator(); it.hasNext();) {
-            try {
-                FileObject dsObj = (FileObject)it.next();
-                File dsFile = FileUtil.toFile(dsObj);
-                if(! dsFile.isDirectory()){
-                    FileInputStream in = new FileInputStream(dsFile);
-                    
-                    Resources resources = DDProvider.getDefault().getResourcesGraph(in);
-                    
-                    // identify JDBC Connection Pool xml
-                    JdbcConnectionPool[] pools = resources.getJdbcConnectionPool();
-                    if(pools.length != 0){
-                        JdbcConnectionPool cp = pools[0];
-                        connPools.put(cp.getName(), cp);
-                    }
-                }
-            } catch (Exception ex) {
-                ErrorManager.getDefault().notify(ex);
-            }
+    private HashMap getConnectionPools(File resourceFile) {
+        HashMap<String, JdbcConnectionPool> connPools = new HashMap<String, JdbcConnectionPool>();
+        Resources resources = getResourcesGraph(resourceFile);
+        JdbcConnectionPool[] pools = resources.getJdbcConnectionPool();
+        for(int i=0; i<pools.length; i++){
+            JdbcConnectionPool pool = pools[i];
+            connPools.put(pool.getName(), pool);
         }
         return connPools;
     }
     
-    private HashMap getPoolFiles(HashSet serverresources) {
-        HashMap connPools = new HashMap();
-        for (Iterator it = serverresources.iterator(); it.hasNext();) {
-            try {
-                FileObject dsObj = (FileObject)it.next();
-                File dsFile = FileUtil.toFile(dsObj);
-                
-                if(! dsFile.isDirectory()){
-                    FileInputStream in = new FileInputStream(dsFile);
-                    
-                    Resources resources = DDProvider.getDefault().getResourcesGraph(in);
-                    
-                    // identify JDBC Connection Pool xml
-                    JdbcConnectionPool[] pools = resources.getJdbcConnectionPool();
-                    if(pools.length != 0){
-                        connPools.put(dsObj.getName(), dsFile);
-                    }
-                }
-            } catch (Exception ex) {
-                ErrorManager.getDefault().notify(ex);
-            }
+    private HashMap getJdbcResources(File resourceFile) {
+        HashMap<String, JdbcResource> jdbcResources = new HashMap<String, JdbcResource>();
+        Resources resources = getResourcesGraph(resourceFile);
+        JdbcResource[] dsources = resources.getJdbcResource();
+        for(int i=0; i<dsources.length; i++){
+            JdbcResource datasource = dsources[i];
+            jdbcResources.put(datasource.getJndiName(), datasource);
         }
-        return connPools;
+        return jdbcResources;
+    }
+    
+    private HashMap getAdminObjectResources(File resourceFile) {
+        HashMap<String, AdminObjectResource> aoResources = new HashMap<String, AdminObjectResource>();
+        Resources resources = getResourcesGraph(resourceFile);
+        AdminObjectResource[] adminObjects = resources.getAdminObjectResource();
+        for(int i=0; i<adminObjects.length; i++){
+            AdminObjectResource aObject = adminObjects[i];
+            aoResources.put(aObject.getJndiName(), aObject);
+        }
+        return aoResources;
+    }
+    
+    private Resources getResourcesGraph(File resourceFile){
+        Resources resourceGraph = DDProvider.getDefault().getResourcesGraph();
+        try {
+            if(! resourceFile.isDirectory()){
+                FileInputStream in = new FileInputStream(resourceFile);
+                resourceGraph = DDProvider.getDefault().getResourcesGraph(in);
+            }
+        } catch (Exception ex) {
+            ErrorManager.getDefault().notify(ex);
+        }
+        return resourceGraph;
     }
     
     private boolean isDataSourcePresent(String jndiName, File dir){
@@ -1205,7 +1136,7 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
     }
     
     private HashMap getDataSourceMap(HashSet resources){
-        HashMap dSources = new HashMap();
+        HashMap<String, SunDatasource> dSources = new HashMap<String, SunDatasource>();
         for (Iterator it = resources.iterator(); it.hasNext();) {
             SunDatasource ds = (SunDatasource)it.next();
             dSources.put(ds.getJndiName(), ds);
@@ -1215,35 +1146,27 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
     
     /**
      * 
-     * @param dsJndiName JNDI Name of JDBC Datasource that uses/needs this Connection Pool
-     * @param poolName Connection Pool for this JDBC Datasource
      * @param dir Resource Directory
      * @param url Database URL
      * @return Returns null if Connection Pool already exists for this database else return 
      * unique Connection PoolName.
      *    
      */
-    private HashMap updatePoolName(String dsJndiName, String poolName, File dir, String url, String username, String password){
-        HashMap poolAndFile = new HashMap();
-        String cpName = poolName;
-        HashSet resourceFiles = getServerResourceFiles(dir);
-        HashMap poolFiles = getPoolFiles(resourceFiles);
-        for(Iterator itr=poolFiles.values().iterator(); itr.hasNext();){
-            File resourceFile = (File)itr.next();
-            if(resourceFile != null && resourceFile.exists()) {
-                String poolJndiName = isSameDatabaseConnection(resourceFile, url, username, password);
+    private boolean requiredPoolExists(File dir, String url, String username, String password){
+        boolean connectionExists = false;
+        File resourceFile = getServerResourceFiles(dir);
+        if(resourceFile != null){
+            HashMap pools = getConnectionPools(resourceFile);
+            for(Iterator itr=pools.values().iterator(); itr.hasNext();){
+                JdbcConnectionPool pool = (JdbcConnectionPool)itr.next();
+                String poolJndiName = isSameDatabaseConnection(pool, url, username, password);
                 if(poolJndiName != null){
-                    cpName = poolJndiName;
-                    poolAndFile.put(cpName, resourceFile);
+                    connectionExists = true;
                     break;
-                }    
+                }
             }
         }
-        if(poolAndFile.size() == 0){
-            cpName = FileUtil.findFreeFileName(FileUtil.toFileObject(dir), poolName, __SunResourceExt);
-            poolAndFile.put(cpName, null);
-        }    
-        return poolAndFile;
+        return connectionExists;
     }
     
     /**
@@ -1252,15 +1175,16 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
      * @param dir File providing location of the project's server resource directory
      */
     public HashSet getMessageDestinations(File resourceDir) {
-        HashSet serverresources = getServerResourceFiles(resourceDir);
-        if (serverresources.size() == 0) {
+        HashSet serverresources = new HashSet();
+        File resourceFile = getServerResourceFiles(resourceDir);
+        if (resourceFile == null) {
             return serverresources;
         }    
 
-        HashSet destinations = new HashSet();
-        List jmsResources = getJmsResources(serverresources);
-        for(int i=0; i<jmsResources.size(); i++){
-            AdminObjectResource aoBean = (AdminObjectResource)jmsResources.get(i);
+        HashSet<SunMessageDestination> destinations = new HashSet<SunMessageDestination>();
+        HashMap jmsResources = getAdminObjectResources(resourceFile);
+        for(Iterator itr=jmsResources.values().iterator(); itr.hasNext();){
+            AdminObjectResource aoBean = (AdminObjectResource)itr.next();
             String jmsName = aoBean.getJndiName();
             String type = aoBean.getResType();
             SunMessageDestination sunMessage = null;
@@ -1275,54 +1199,29 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
         return destinations;
     }
     
-    private List getJmsResources(HashSet serverresources) {
-        List jmsResources = new ArrayList();
-        for (Iterator it = serverresources.iterator(); it.hasNext();) {
-            try {
-                FileObject connObj = (FileObject)it.next();
-                File connFile = FileUtil.toFile(connObj);
-                if(! connFile.isDirectory()){
-                    FileInputStream in = new FileInputStream(connFile);
-                    
-                    Resources resources = DDProvider.getDefault().getResourcesGraph(in);
-                    
-                    // identify AdminObjectResource xml
-                    AdminObjectResource[] adminResources = resources.getAdminObjectResource();
-                    if(adminResources.length != 0){
-                        jmsResources.add(adminResources[0]);
-                    }
-                }
-            } catch (Exception ex) {
-                ErrorManager.getDefault().notify(ex);
-            }
-        }
-        return jmsResources;
-    }
-    
     public HashSet getServerDestinations() {
         return ResourceUtils.getServerDestinations(this.currentDM);
     }
-    
-    private File getResourceFile(String fileName, File dir){
-        File resourceFile = null;
-        if(dir != null && dir.exists()) {
-            String filename = fileName + DOT + __SunResourceExt; 
-            resourceFile = new File(dir, filename);
-        }
-        return resourceFile;
-    }
-    
-    private boolean resourceFileExists(String resName, File dir) {
-        boolean result = false;
-        if(dir != null && dir.exists()) {
-            String filename = resName + DOT + __SunResourceExt; 
-            File resourceFile = new File(dir, filename);
-            if(resourceFile.exists()) {
-                result = true;
+        
+    private boolean requiredResourceExists(String jndiName, File dir, String resType) {
+        boolean resourceExists = false;
+        File resourceFile = getServerResourceFiles(dir);
+        if(resourceFile != null){
+            HashMap resources = new HashMap();
+            if(resType.equals(JDBC_RESOURCE)){
+                resources = getJdbcResources(resourceFile);
+            }else if(resType.equals(JMS_RESOURCE)){
+                resources = getAdminObjectResources(resourceFile);
+            }
+            for(Iterator itr=resources.keySet().iterator(); itr.hasNext();){
+                String resJndiName = (String)itr.next();
+                if(resJndiName.equals(jndiName)){
+                    resourceExists = true;
+                    break;
+                }
             }
         }
-        return result;
-    } 
-    
+        return resourceExists;
+    }
 }
 
