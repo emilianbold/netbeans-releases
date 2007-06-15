@@ -80,7 +80,7 @@ public final class CompletionLayout {
     CompletionLayout() {
         completionPopup = new CompletionPopup();
         completionPopup.setLayout(this);
-        completionPopup.setPreferDisplayAboveCaret(true);
+        completionPopup.setPreferDisplayAboveCaret(false);
         docPopup = new DocPopup();
         docPopup.setLayout(this);
         docPopup.setPreferDisplayAboveCaret(false);
