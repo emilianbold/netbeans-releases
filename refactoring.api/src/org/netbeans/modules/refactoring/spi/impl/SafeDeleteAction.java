@@ -18,17 +18,19 @@
  */
 package org.netbeans.modules.refactoring.spi.impl;
 
+import java.util.Dictionary;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.refactoring.api.impl.ActionsImplementationFactory;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.explorer.ExtendedDelete;
 
 /** 
  * @author Jan Becicka
  */
-public class SafeDeleteAction extends RefactoringGlobalAction {
+public class SafeDeleteAction extends RefactoringGlobalAction implements ExtendedDelete {
 
     /**
      * Creates a new instance of SafeDeleteAction
@@ -53,15 +55,27 @@ public class SafeDeleteAction extends RefactoringGlobalAction {
     protected boolean enable(Lookup context) {
         return ActionsImplementationFactory.canDelete(context); 
     }
-
+    
+    protected Lookup getLookup(Node[] n) {
+        Lookup l = super.getLookup(n);
+        if (regularDelete) {
+            l.lookup(Dictionary.class).put("DnD", true);
+        }
+        return l;
+    }
+    
+    private boolean regularDelete = false;
     public boolean delete(final Node[] nodes) {
         if (enable(nodes)) {
             if (java.awt.EventQueue.isDispatchThread()) {
+                regularDelete = true;
                 performAction(nodes);
             } else {
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
+                        regularDelete = true;
                         performAction(nodes);
+                        regularDelete = false;
                     }
                     
                 });

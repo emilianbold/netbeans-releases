@@ -286,6 +286,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
     public void doDelete(final Lookup lookup) {
         Runnable task;
         EditorCookie ec = lookup.lookup(EditorCookie.class);
+        final Boolean b = (Boolean) lookup.lookup(Dictionary.class).get("DnD");
         if (isFromEditor(ec)) {
             task = new TextComponentTask(ec) {
                 @Override
@@ -293,7 +294,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                     Element selected = selectedElement.resolveElement(info);
                     if (selected.getKind() == ElementKind.PACKAGE || selected.getEnclosingElement().getKind() == ElementKind.PACKAGE) {
                         if (info.getFileObject().getName().equals(selected.getSimpleName().toString())) {
-                            return new SafeDeleteUI(new FileObject[]{info.getFileObject()}, Collections.singleton(selectedElement));
+                            return new SafeDeleteUI(new FileObject[]{info.getFileObject()}, Collections.singleton(selectedElement), b!=null && b==true);
                         }
                     }
                     return new SafeDeleteUI(new TreePathHandle[]{selectedElement}, info);
@@ -303,7 +304,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
             task = new NodeToFileObjectTask(lookup.lookupAll(Node.class)) {
                 @Override
                 protected RefactoringUI createRefactoringUI(FileObject[] selectedElements, Collection<TreePathHandle> handles) {
-                    return new SafeDeleteUI(selectedElements, handles);
+                    return new SafeDeleteUI(selectedElements, handles, b!=null && b==true);
                 }
                 
             };

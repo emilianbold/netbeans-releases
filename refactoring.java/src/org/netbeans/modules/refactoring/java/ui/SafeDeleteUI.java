@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.refactoring.java.ui;
 
+import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Collection;
@@ -32,7 +33,9 @@ import org.netbeans.modules.refactoring.api.SafeDeleteRefactoring;
 import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
+import org.netbeans.modules.refactoring.spi.ui.RefactoringUIBypass;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
@@ -42,7 +45,7 @@ import org.openide.util.lookup.ProxyLookup;
  * A CustomRefactoringUI subclass that represents Safe Delete
  * @author Bharath Ravikumar
  */
-public class SafeDeleteUI implements RefactoringUI{
+public class SafeDeleteUI implements RefactoringUI, RefactoringUIBypass{
     
     private final Object[] elementsToDelete;
     
@@ -52,15 +55,17 @@ public class SafeDeleteUI implements RefactoringUI{
     
     private ResourceBundle bundle;
     
+    private boolean regulardelete = false;
     /**
      * Creates a new instance of SafeDeleteUI
      * @param selectedElements An array of selected Elements that need to be 
      * safely deleted
      */
-    public SafeDeleteUI(FileObject[] selectedElements, Collection<TreePathHandle> handles) {
+    public SafeDeleteUI(FileObject[] selectedElements, Collection<TreePathHandle> handles, boolean regulardelete) {
         this.elementsToDelete = selectedElements;
         refactoring = new SafeDeleteRefactoring(new ProxyLookup(Lookups.fixed(elementsToDelete), Lookups.fixed(handles.toArray(new Object[handles.size()]))));
         refactoring.getContext().add(RetoucheUtils.getClasspathInfoFor(selectedElements));
+        this.regulardelete = regulardelete;
     }
 
     /**
@@ -118,7 +123,7 @@ public class SafeDeleteUI implements RefactoringUI{
     public CustomRefactoringPanel getPanel(ChangeListener parent) {
         //TODO:Do you want to just use Arrays.asList?
         if(panel == null)
-            panel = new SafeDeletePanel(refactoring, Arrays.asList(elementsToDelete));
+            panel = new SafeDeletePanel(refactoring, Arrays.asList(elementsToDelete), regulardelete);
         return panel;
     }
     
@@ -156,6 +161,14 @@ public class SafeDeleteUI implements RefactoringUI{
     private String getString(String key, Object value) {
         return new MessageFormat(getString(key)).format(new Object[] {value});
     }
-    
-    
+
+    public boolean isRefactoringBypassRequired() {
+        return panel.isRegularDelete();
+    }
+
+    public void doRefactoringBypass() throws IOException {
+        for (FileObject file:getRefactoring().getRefactoringSource().lookupAll(FileObject.class)) {
+            DataObject.find(file).delete();
+        }
+    }
 }

@@ -17,12 +17,16 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.refactoring.java.ui;
+import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.io.IOException;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import javax.swing.JCheckBox;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.java.source.CancellableTask;
@@ -35,6 +39,7 @@ import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.refactoring.java.RefactoringModule;
+import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 
 
@@ -47,16 +52,18 @@ public class SafeDeletePanel extends JPanel implements CustomRefactoringPanel {
     
     private final transient Collection elements;
     private final transient SafeDeleteRefactoring refactoring;
+    private boolean regulardelete;
     
     /**
      * Creates new form RenamePanelName
      * @param refactoring The SafeDelete refactoring used by this panel
      * @param selectedElements A Collection of selected elements
      */
-    public SafeDeletePanel(SafeDeleteRefactoring refactoring, Collection selectedElements) {
+    public SafeDeletePanel(SafeDeleteRefactoring refactoring, Collection selectedElements, boolean regulardelete) {
         setName(NbBundle.getMessage(SafeDeletePanel.class,"LBL_SafeDel")); // NOI18N
         this.elements = selectedElements;
         this.refactoring = refactoring;
+        this.regulardelete = regulardelete;
         initComponents();
     }
     
@@ -77,74 +84,61 @@ public class SafeDeletePanel extends JPanel implements CustomRefactoringPanel {
         
         if (initialized) return;
         
-        final ArrayList<String> names = new ArrayList();
-        //TODO: should be improved
-        for (Object o:refactoring.getRefactoringSource().lookupAll(Object.class)) {
-            if (o instanceof FileObject)
-                names.add(((FileObject)o).getName());
-            else if (o instanceof TreePathHandle) {
-                final TreePathHandle handle=(TreePathHandle) o;
-                //"really easy" way how to get name of the method
-                //from handle
-                JavaSource s = JavaSource.forFileObject(handle.getFileObject());
-                try {
-                s.runUserActionTask(new CancellableTask<CompilationController>() {
-                    public void cancel() {
-                    }
-
-                    public void run(CompilationController parameter) throws Exception {
-                        parameter.toPhase(Phase.RESOLVED);
-                        names.add(handle.resolveElement(parameter).getSimpleName().toString());
-                    }
-                }, true);
-                } catch (IOException ioe) {
-                    throw (RuntimeException) new RuntimeException().initCause(ioe);
-                }
-                       
+        final String labelText;
+        
+        Collection<? extends FileObject> files = refactoring.getRefactoringSource().lookupAll(FileObject.class);
+        final Collection<? extends TreePathHandle> handles = refactoring.getRefactoringSource().lookupAll(TreePathHandle.class);
+        
+        if (files.size()>1 && files.size() == handles.size()) {
+            //delete multiple files
+            if (regulardelete) {
+                labelText = NbBundle.getMessage(SafeDeletePanel.class, "LBL_SafeDel_RegularDelete",handles.size());
+            } else {
+                labelText = NbBundle.getMessage(SafeDeletePanel.class, "LBL_SafeDel_Classes",handles.size());
             }
+        } else if (handles.size()>1) {
+            labelText = NbBundle.getMessage(SafeDeletePanel.class, "LBL_SafeDel_Classes",handles.size());;
+        } else if (handles.size()==1) {
+          JavaSource s = JavaSource.forFileObject(handles.iterator().next().getFileObject());
+          final String[] name = new String[1];
+          try {
+              s.runUserActionTask(new CancellableTask<CompilationController>() {
+                  public void cancel() {
+                  }
+                  
+                  public void run(CompilationController parameter) throws Exception {
+                      parameter.toPhase(Phase.RESOLVED);
+                      name[0] = handles.iterator().next().resolveElement(parameter).getSimpleName().toString();
+                  }
+              }, true);
+          } catch (IOException ioe) {
+              throw (RuntimeException) new RuntimeException().initCause(ioe);
+          }
+          if (regulardelete) {
+              labelText = NbBundle.getMessage(SafeDeletePanel.class, "LBL_SafeDel_RegularDeleteElement",name[0]);
+          } else {
+              labelText = NbBundle.getMessage(SafeDeletePanel.class, "LBL_SafeDel_Element",name[0]);
+          }
+        } else {
+            labelText ="";
         }
-//        final String labelText;
-//            if(elements.size() > 1){
-//                Iterator elementIterator = elements.iterator();
-//                Object elementToDelete = null;
-//                //Fix for bug 61742
-//                //One needs to peek into the list & check if there
-//                //is a resource which is being deleted. If so, only the resource's
-//                //name will be shown in the UI. Otherwise, the names of the multiple
-//                //features being deleted will be shown in the dialog.
-//                //I wish we didn't have to do this. This sure is avoidable. :-(
-//                while(elementIterator.hasNext()){
-//                    Object localElementToDelete = elementIterator.next();
-//                    if(localElementToDelete instanceof Resource){
-//                        elementToDelete = localElementToDelete;
-//                        break;
-//                    }
-//                }
-//                if(elementToDelete != null){
-//                    //You just have to display the resource file's name in the dialog now.
-//                    String elementName = getElementName((Element)elementToDelete);
-//                    labelText = NbBundle.getMessage(SafeDeletePanel.class, "LBL_SafeDelHeader",elementName);// NOI18N
-//                } else{
-//                    //Display only the first two feature elements in the dialog for now.
-//                    elementIterator = elements.iterator();
-//                    Element firstElement = (Element) elementIterator.next();
-//                    String firstElementName = getElementName(firstElement);
-//                    String secondElementName = getElementName((Element) elementIterator.next());
-//                    labelText = NbBundle.getMessage(SafeDeletePanel.class, "LBL_SafeDel_Elements",firstElementName, secondElementName);// NOI18N
-//                }
-//            }//End if elements size > 1
-//            else{
-//            Element element = (Element) elements.iterator().next();
-//            labelText = getCustomString(element);
-//            }
         
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                if (names.size()==1) {
-                    label.setText(NbBundle.getMessage(SafeDeletePanel.class, "LBL_SafeDelHeader", names.get(0)));
-                } else {
-                    label.setText(NbBundle.getMessage(SafeDeletePanel.class, "LBL_SafeDel_Elements", names.get(0), names.get(1)));
+                if (regulardelete) {
+                    safeDelete = new JCheckBox();
+                    Mnemonics.setLocalizedText(safeDelete, NbBundle.getMessage(SafeDeletePanel.class, "LBL_SafeDelCheckBox"));
+                    safeDelete.setMargin(new java.awt.Insets(2, 14, 2, 2));
+                    searchInComments.setEnabled(false);
+                    safeDelete.addItemListener(new ItemListener() {
+                        public void itemStateChanged(ItemEvent evt) {
+                            searchInComments.setEnabled(safeDelete.isSelected());
+                        }
+                    });
+
+                    checkBoxes.add(safeDelete, BorderLayout.CENTER);
                 }
+                label.setText(labelText);
                 validate();
             }
         });
@@ -154,6 +148,13 @@ public class SafeDeletePanel extends JPanel implements CustomRefactoringPanel {
     public void requestFocus() {
         super.requestFocus();
     }
+
+    boolean isRegularDelete() {
+        if (safeDelete!=null) {
+            return !safeDelete.isSelected();
+        }
+        return false;
+    }
     
     /** This method is called from within the constructor to
      * initialize the form.
@@ -162,32 +163,32 @@ public class SafeDeletePanel extends JPanel implements CustomRefactoringPanel {
      */
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
+
         buttonGroup = new javax.swing.ButtonGroup();
-        jPanel3 = new javax.swing.JPanel();
+        checkBoxes = new javax.swing.JPanel();
         label = new javax.swing.JLabel();
         searchInComments = new javax.swing.JCheckBox();
 
         setLayout(new java.awt.BorderLayout());
 
-        jPanel3.setLayout(new java.awt.BorderLayout());
+        checkBoxes.setLayout(new java.awt.BorderLayout());
 
-        jPanel3.add(label, java.awt.BorderLayout.NORTH);
+        label.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 8, 0));
+        checkBoxes.add(label, java.awt.BorderLayout.NORTH);
 
         searchInComments.setSelected(((Boolean) RefactoringModule.getOption("searchInComments.whereUsed", Boolean.FALSE)).booleanValue());
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/refactoring/java/ui/Bundle"); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(searchInComments, bundle.getString("LBL_SafeDelInComents")); // NOI18N
-        searchInComments.setMargin(new java.awt.Insets(10, 14, 2, 2));
+        searchInComments.setMargin(new java.awt.Insets(2, 14, 2, 2));
         searchInComments.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 searchInCommentsItemStateChanged(evt);
             }
         });
-
-        jPanel3.add(searchInComments, java.awt.BorderLayout.SOUTH);
+        checkBoxes.add(searchInComments, java.awt.BorderLayout.SOUTH);
         searchInComments.getAccessibleContext().setAccessibleDescription(searchInComments.getText());
 
-        add(jPanel3, java.awt.BorderLayout.NORTH);
-
+        add(checkBoxes, java.awt.BorderLayout.NORTH);
     }// </editor-fold>//GEN-END:initComponents
     
     private void searchInCommentsItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_searchInCommentsItemStateChanged
@@ -200,11 +201,11 @@ public class SafeDeletePanel extends JPanel implements CustomRefactoringPanel {
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.ButtonGroup buttonGroup;
-    private javax.swing.JPanel jPanel3;
+    private javax.swing.JPanel checkBoxes;
     private javax.swing.JLabel label;
     private javax.swing.JCheckBox searchInComments;
     // End of variables declaration//GEN-END:variables
-    
+    private javax.swing.JCheckBox safeDelete;
     
     public Dimension getPreferredSize() {
         Dimension orig = super.getPreferredSize();

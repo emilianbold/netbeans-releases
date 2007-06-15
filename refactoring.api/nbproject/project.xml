@@ -88,6 +88,14 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.openide.explorer</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>6.10</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.openide.filesystems</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -157,11 +165,11 @@
                         <code-name-base>org.netbeans.modules.java.source</code-name-base>
                         <compile-dependency/>
                     </test-dependency>
-                     <test-dependency>
+                    <test-dependency>
                         <code-name-base>org.netbeans.core</code-name-base>
                         <compile-dependency/>
                     </test-dependency>
-               </test-type>
+                </test-type>
             </test-dependencies>
             <public-packages>
                 <package>org.netbeans.modules.refactoring.api</package>
