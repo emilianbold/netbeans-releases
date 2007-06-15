@@ -26,7 +26,7 @@ Microsystems, Inc. All Rights Reserved.
     <fontcolor name="error" default="error"/>
     <fontcolor name="operator" default="argument"/>
     <fontcolor name="sgml-comment" default="comment"/>
-    <fontcolor name="sgml-declaration" foreColor="ffbf9221" default="default"/>
+    <fontcolor name="sgml-declaration" foreColor="ff628FB5" default="default"/>
     <fontcolor name="tag" default="markup-element"/>
     <fontcolor name="text" default="default"/>
     <fontcolor name="value" default="markup-attribute-value"/>

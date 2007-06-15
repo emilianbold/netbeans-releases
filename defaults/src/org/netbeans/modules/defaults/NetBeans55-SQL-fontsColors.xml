@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE fontscolors PUBLIC "-//NetBeans//DTD Editor Fonts and Colors settings 1.1//EN" "http://www.netbeans.org/dtds/EditorFontsColors-1_1.dtd">
 <!--
 The contents of this file are subject to the terms of the Common Development
 and Distribution License (the License). You may not use this file except in
@@ -17,16 +18,17 @@ The Original Software is NetBeans. The Initial Developer of the Original
 Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
-<!DOCTYPE fontscolors PUBLIC "-//NetBeans//DTD Editor Fonts and Colors settings 1.1//EN" "http://www.netbeans.org/dtds/EditorFontsColors-1_1.dtd">
-
 <fontscolors>
-    <fontcolor name="dtd-comment" default="comment"/>
-    <fontcolor name="dtd-eol" default="whitespace"/>
-    <fontcolor name="dtd-error" default="error"/>
-    <fontcolor name="dtd-keyword" default="keyword"/>
-    <fontcolor name="dtd-plain" default="default"/>
-    <fontcolor name="dtd-ref" default="entity-reference"/>
-    <fontcolor name="dtd-string" default="string"/>
-    <fontcolor name="dtd-symbol" default="operator"/>        
-    <fontcolor name="dtd-target" foreColor="ffb20000" default="default"/>
+    <fontcolor name="default" default="default"/>
+    <fontcolor name="sql-whitespace" default="whitespace"/>
+    <fontcolor name="sql-line-comment" default="comment"/>
+    <fontcolor name="sql-block-comment" default="comment"/>
+    <fontcolor name="sql-string-literal" default="string"/>
+    <fontcolor name="sql-identifier" foreColor="blue" default="default"/>
+    <fontcolor name="sql-operator" default="operator"/>
+    <fontcolor name="sql-int-literal" default="number"/>
+    <fontcolor name="sql-double-literal" default="number"/>
+    <fontcolor name="sql-keyword" default="keyword"/>
+    <fontcolor name="sql-errors" default="error"/>
+    <fontcolor name="sql-dot" default="operator"/>
 </fontscolors>

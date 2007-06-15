@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+The contents of this file are subject to the terms of the Common Development
+and Distribution License (the License). You may not use this file except in
+compliance with the License.
+
+You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+or http://www.netbeans.org/cddl.txt.
+
+When distributing Covered Code, include this CDDL Header Notice in each file
+and include the License file at http://www.netbeans.org/cddl.txt.
+If applicable, add the following below the CDDL Header, with the fields
+enclosed by brackets [] replaced by your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<!DOCTYPE fontscolors PUBLIC "-//NetBeans//DTD Editor Fonts and Colors settings 1.1//EN" "http://www.netbeans.org/dtds/EditorFontsColors-1_1.dtd">
+
+<fontscolors>
+    <!-- JavaTokenId categories -->
+    <fontcolor name="character" default="char"/>
+    <fontcolor name="errors" default="error"/>
+    <fontcolor name="identifier" default="identifier"/>
+    <fontcolor name="keyword" default="keyword"/>
+    <fontcolor name="literal" default="keyword" />
+    <fontcolor name="comment" default="comment"/>
+    <fontcolor name="number" default="number"/>
+    <fontcolor name="operator" default="operator"/>
+    <fontcolor name="string" default="string"/>
+    <fontcolor name="whitespace" default="whitespace"/>
+    
+    <!--"semantic" highlighting:-->
+    
+    <fontcolor name="mod-constructor-declaration" default="constructor" />
+    <fontcolor name="mod-constructor" default="constructor" />
+    <fontcolor name="mod-method-declaration" default="method" />
+    <fontcolor name="mod-method" default="method" />
+    <fontcolor name="mod-field-declaration" default="field" />
+    <fontcolor name="mod-field" default="field" />
+    <fontcolor name="mod-local-variable-declaration" default="local-variable" />
+    <fontcolor name="mod-local-variable" default="local-variable" />
+    <fontcolor name="mod-parameter-declaration" default="method-parameter" />
+    <fontcolor name="mod-parameter" default="method-parameter" />
+
+    <fontcolor name="mod-class-declaration" default="class"/>
+    <fontcolor name="mod-class" default="class" />
+    <fontcolor name="mod-interface-declaration" default="interface"/>
+    <fontcolor name="mod-interface" default="interface" />
+    <fontcolor name="mod-annotation-type-declaration" default="interface"/>
+    <fontcolor name="mod-annotation-type" default="interface" />
+    <fontcolor name="mod-enum-declaration" default="enum"/>
+    <fontcolor name="mod-enum" default="enum" />
+
+    <fontcolor name="mod-unused" default="unused" />
+    <fontcolor name="mod-deprecated" default="deprecated" />
+    <fontcolor name="mod-abstract" default="abstract" />
+    <fontcolor name="mod-static" default="static" />
+    <fontcolor name="mod-private" default="private" />
+    <fontcolor name="mod-package-private" default="private"/>
+    <fontcolor name="mod-protected" default="protected" />
+    <fontcolor name="mod-public" default="public" />
+    
+    <!--mark occurrences:-->
+    <fontcolor name="mark-occurrences" bgColor="ECEBA3"/>
+
+    <!-- JavaStringTokenId categories -->
+    <fontcolor name="string-escape" default="string">
+        <font style="bold" />
+    </fontcolor>
+    <fontcolor name="string-escape-invalid" default="string">
+        <font style="italic" />
+    </fontcolor>
+   
+    <!-- JavadocTokenId categories -->
+    <fontcolor name="javadoc-tag" foreColor="0000CC" default="comment">
+        <font style="bold" />
+    </fontcolor>
+    <fontcolor name="html-tag" foreColor="blue" default="default"/>
+
+</fontscolors>

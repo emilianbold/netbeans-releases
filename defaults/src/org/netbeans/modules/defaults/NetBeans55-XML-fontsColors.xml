@@ -28,7 +28,7 @@ Microsystems, Inc. All Rights Reserved.
         <font style="bold"/>
     </fontcolor>
     <fontcolor name="xml-error" default="error"/>
-    <fontcolor name="xml-operator" default="operator"/>
+    <fontcolor name="xml-operator" default="xml-attribute"/>
     <fontcolor name="xml-pi-content" foreColor="ff00007c" default="default"/>
     <fontcolor name="xml-pi-end" foreColor="ff00007c" default="default">
         <font style="bold"/>
@@ -42,6 +42,6 @@ Microsystems, Inc. All Rights Reserved.
     <fontcolor name="xml-ref" default="entity-reference"/>
     <fontcolor name="xml-tag" default="markup-element"/>
     <fontcolor name="xml-text" default="default"/>
-    <fontcolor name="xml-value" default="default"/> <!-- Pretty ugly -->
+    <fontcolor name="xml-value" default="markup-attribute-value"/>
     <fontcolor name="xml-ws" default="whitespace"/>
 </fontscolors>

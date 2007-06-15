@@ -20,13 +20,21 @@ Microsystems, Inc. All Rights Reserved.
 <!DOCTYPE fontscolors PUBLIC "-//NetBeans//DTD Editor Fonts and Colors settings 1.1//EN" "http://www.netbeans.org/dtds/EditorFontsColors-1_1.dtd">
 
 <fontscolors>
-    <fontcolor name="dtd-comment" default="comment"/>
-    <fontcolor name="dtd-eol" default="whitespace"/>
-    <fontcolor name="dtd-error" default="error"/>
-    <fontcolor name="dtd-keyword" default="keyword"/>
-    <fontcolor name="dtd-plain" default="default"/>
-    <fontcolor name="dtd-ref" default="entity-reference"/>
-    <fontcolor name="dtd-string" default="string"/>
-    <fontcolor name="dtd-symbol" default="operator"/>        
-    <fontcolor name="dtd-target" foreColor="ffb20000" default="default"/>
+    <fontcolor name="block-search" foreColor="black" bgColor="ffe0e8f1"/>
+    <fontcolor name="code-folding" foreColor="ff666666"/>
+    <fontcolor name="code-folding-bar" foreColor="ff666666"/>
+    <fontcolor name="guarded" bgColor="ffe1ecf7"/>
+    <fontcolor name="highlight-caret-row" bgColor="ffffffdc"/>
+    <fontcolor name="highlight-search" foreColor="black" bgColor="fff6f88b"/>
+    <fontcolor name="inc-search" foreColor="black" bgColor="ffff9900"/>
+    <fontcolor name="line-number" foreColor="black" bgColor="ffe9e8e2"/>
+    <fontcolor name="selection" foreColor="white" bgColor="ffb4b4b4"/>
+    <fontcolor name="status-bar">
+        <font name="Monospaced" size="12" style="plain"/>
+    </fontcolor>
+    <fontcolor name="status-bar-bold" foreColor="white" bgColor="red">
+        <font name="Monospaced" size="12" style="plain"/>
+    </fontcolor>
+    <fontcolor name="caret-color-insert-mode" foreColor="black"/>
+    <fontcolor name="text-limit-line-color" foreColor="ffffebeb"/>
 </fontscolors>

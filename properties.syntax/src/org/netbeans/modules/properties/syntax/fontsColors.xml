@@ -23,8 +23,8 @@ Microsystems, Inc. All Rights Reserved.
     <fontcolor name="properties-line-comment" default="comment"/>
     <fontcolor name="properties-equal-sign" default="operator"/>
     <fontcolor name="properties-value" default="string"/>
-    <fontcolor name="properties-text" default="default"/>
-    <fontcolor name="properties-key" default="keyword">
+    <fontcolor name="properties-text" default="default">
         <font style="bold"/>
-    </fontcolor>
+    </fontcolor>    
+    <fontcolor name="properties-key" default="default"/>        
 </fontscolors>

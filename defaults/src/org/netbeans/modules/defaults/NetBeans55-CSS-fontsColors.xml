@@ -20,13 +20,15 @@ Microsystems, Inc. All Rights Reserved.
 <!DOCTYPE fontscolors PUBLIC "-//NetBeans//DTD Editor Fonts and Colors settings 1.1//EN" "http://www.netbeans.org/dtds/EditorFontsColors-1_1.dtd">
 
 <fontscolors>
-    <fontcolor name="dtd-comment" default="comment"/>
-    <fontcolor name="dtd-eol" default="whitespace"/>
-    <fontcolor name="dtd-error" default="error"/>
-    <fontcolor name="dtd-keyword" default="keyword"/>
-    <fontcolor name="dtd-plain" default="default"/>
-    <fontcolor name="dtd-ref" default="entity-reference"/>
-    <fontcolor name="dtd-string" default="string"/>
-    <fontcolor name="dtd-symbol" default="operator"/>        
-    <fontcolor name="dtd-target" foreColor="ffb20000" default="default"/>
+    <fontcolor name="css-at-keyword" foreColor="blue" default="keyword">
+        <font style="bold"/>
+    </fontcolor>
+    <fontcolor name="css-comment" foreColor="ff006666" default="comment"/>
+    <fontcolor name="css-eol" foreColor="black" default="whitespace"/>
+    <fontcolor name="css-error" foreColor="red" default="error"/>
+    <fontcolor name="css-plain" foreColor="black" default="default"/>
+    <fontcolor name="css-property" foreColor="blue" default="default"/>
+    <fontcolor name="css-selector" foreColor="ff007c00" default="default">
+        <font style="bold"/>
+    </fontcolor>
 </fontscolors>

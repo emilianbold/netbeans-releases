@@ -1124,6 +1124,34 @@ Microsystems, Inc. All Rights Reserved.
                     </file>
                 </folder>
             </folder>
+            
+            <folder name="NetBeans55">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults.Bundle"/>
+                <folder name="Defaults">
+                    <file name="org-netbeans-modules-defaults-token-colorings.xml" url="NetBeans55-fontsColorsDefaults.xml">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults.Bundle"/>
+                    </file>
+                    <file name="org-netbeans-modules-defaults-highlight-colorings.xml" url="NetBeans55-editor.xml">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults.Bundle"/>
+                        <attr name="nbeditor-settings-ColoringType" stringvalue="highlight"/>
+                    </file>
+                </folder>
+            </folder>
+            
+            <folder name="NetBeansEarth">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults.Bundle"/>
+                <folder name="Defaults">
+                    <file name="org-netbeans-modules-defaults-token-colorings.xml" url="NetBeansEarth-fontsColorsDefaults.xml">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults.Bundle"/>
+                    </file>
+                    <file name="org-netbeans-modules-defaults-highlight-colorings.xml" url="NetBeansEarth-editor.xml">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults.Bundle"/>
+                        <attr name="nbeditor-settings-ColoringType" stringvalue="highlight"/>
+                    </file>
+                </folder>
+            </folder>
+            
+            
             <folder name="CityLights">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults.Bundle"/>
                 <folder name="Defaults">
@@ -1169,6 +1197,13 @@ Microsystems, Inc. All Rights Reserved.
                             </file>
                         </folder>
                     </folder>
+                    <folder name="NetBeans55">
+                        <folder name="Defaults">
+                            <file name="org-netbeans-modules-css-token-colorings.xml" url="NetBeans55-CSS-fontsColors.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults.Bundle"/>
+                            </file>
+                        </folder>
+                    </folder>
                 </folder>
             </folder>
 
@@ -1181,6 +1216,20 @@ Microsystems, Inc. All Rights Reserved.
                             </file>
                         </folder>
                     </folder>
+                    <folder name="NetBeans55">
+                        <folder name="Defaults">
+                            <file name="org-netbeans-modules-properties-syntax-token-colorings.xml" url="NetBeans55-Properties-fontsColors.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults.Bundle"/>
+                            </file>
+                        </folder>
+                    </folder>
+                    <folder name="NetBeansEarth">
+                        <folder name="Defaults">
+                            <file name="org-netbeans-modules-properties-syntax-token-colorings.xml" url="NetBeansEarth-Properties-fontsColors.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults.Bundle"/>
+                            </file>
+                        </folder>
+                    </folder>
                 </folder>
             </folder>
 
@@ -1189,6 +1238,13 @@ Microsystems, Inc. All Rights Reserved.
                     <folder name="CityLights">
                         <folder name="Defaults">
                             <file name="org-netbeans-modules-editor-html-colorings.xml" url="CityLights-HTML-fontsColors.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults.Bundle"/>
+                            </file>
+                        </folder>
+                    </folder>
+                    <folder name="NetBeans55">
+                        <folder name="Defaults">
+                            <file name="org-netbeans-modules-editor-html-colorings.xml" url="NetBeans55-HTML-fontsColors.xml">
                                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults.Bundle"/>
                             </file>
                         </folder>
@@ -1217,6 +1273,22 @@ Microsystems, Inc. All Rights Reserved.
                             </file>
                         </folder>
                     </folder>
+                    <folder name="NetBeans55">
+                        <folder name="Defaults">
+                            <file name="org-netbeans-modules-editor-java-token-colorings.xml" url="NetBeans55-Java-fontsColors.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults.Bundle"/>
+                            </file>
+                        </folder>
+                    </folder>
+                    
+                    <folder name="NetBeansEarth">
+                        <folder name="Defaults">
+                            <file name="org-netbeans-modules-editor-java-token-colorings.xml" url="NetBeansEarth-Java-fontsColors.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults.Bundle"/>
+                            </file>
+                        </folder>
+                    </folder>
+                    
                 </folder>
             </folder>
             
@@ -1253,8 +1325,35 @@ Microsystems, Inc. All Rights Reserved.
                             </file>
                         </folder>
                     </folder>
+                    <folder name="NetBeans55">
+                        <folder name="Defaults">
+                            <file name="org-netbeans-modules-xml-text-token-colorings.xml" url="NetBeans55-XML-fontsColors.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults.Bundle"/>
+                            </file>
+                        </folder>
+                    </folder>
+                    <folder name="NetBeansEarth">
+                        <folder name="Defaults">
+                            <file name="org-netbeans-modules-xml-text-token-colorings.xml" url="NetBeansEarth-XML-fontsColors.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults.Bundle"/>
+                            </file>
+                        </folder>
+                    </folder>
                 </folder>
             </folder>
+            
+            <folder name="x-sql">
+                <folder name="FontsColors">
+                    <folder name="NetBeans55">
+                        <folder name="Defaults">
+                            <file name="org-netbeans-modules-db-sql-editor-token-colorings.xml" url="NetBeans55-SQL-fontsColors.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults.Bundle"/>
+                            </file>
+                        </folder>
+                    </folder>
+                </folder>
+            </folder>
+            
         </folder>
         
         <folder name="application">
@@ -1263,6 +1362,13 @@ Microsystems, Inc. All Rights Reserved.
                     <folder name="CityLights">
                         <folder name="Defaults">
                             <file name="org-netbeans-modules-xml-text-token-colorings.xml" url="CityLights-DTD-fontsColors.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults.Bundle"/>
+                            </file>
+                        </folder>
+                    </folder>
+                    <folder name="NetBeans55">
+                        <folder name="Defaults">
+                            <file name="org-netbeans-modules-xml-text-token-colorings.xml" url="NetBeans55-DTD-fontsColors.xml">
                                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults.Bundle"/>
                             </file>
                         </folder>

@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+The contents of this file are subject to the terms of the Common Development
+and Distribution License (the License). You may not use this file except in
+compliance with the License.
+
+You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+or http://www.netbeans.org/cddl.txt.
+
+When distributing Covered Code, include this CDDL Header Notice in each file
+and include the License file at http://www.netbeans.org/cddl.txt.
+If applicable, add the following below the CDDL Header, with the fields
+enclosed by brackets [] replaced by your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<!DOCTYPE fontscolors PUBLIC "-//NetBeans//DTD Editor Fonts and Colors settings 1.1//EN" "http://www.netbeans.org/dtds/EditorFontsColors-1_1.dtd">
+
+<fontscolors>
+    <fontcolor name="default" foreColor="black" bgColor="white"/>
+
+    <!-- syntax colorings -->
+    
+    <fontcolor name="char" foreColor="ff006f00"/>
+    <fontcolor name="comment" foreColor="ff737373"/>
+    <fontcolor name="error" foreColor="black" bgColor="pink"/>
+    <fontcolor name="identifier"/>
+    <fontcolor name="keyword" foreColor="ff000099">
+        <font style="bold"/>
+    </fontcolor>
+    <fontcolor name="number" foreColor="ff780000"/>
+    <fontcolor name="operator"/>
+    <fontcolor name="string" foreColor="ff99006b"/>
+    <fontcolor name="whitespace" foreColor="black"/>
+    
+    <fontcolor name="markup-element" foreColor="blue"/>
+    <fontcolor name="markup-attribute" foreColor="ff007c00"/>
+    <fontcolor name="markup-attribute-value" default="string"/>
+    <fontcolor name="entity-reference" foreColor="ffb20000"/>
+
+    <!-- semantic colorings -->
+    
+    <fontcolor name="constructor" >
+        <font style="bold" />
+    </fontcolor>
+    <fontcolor name="method" >
+        <font style="bold" />
+    </fontcolor>
+    <fontcolor name="field" foreColor="098618" >
+        <font style="bold" />
+    </fontcolor>
+    <fontcolor name="local-variable" />
+    <fontcolor name="method-parameter" foreColor="A06001"/>
+    
+    <fontcolor name="class" />
+    <fontcolor name="interface" />
+    <fontcolor name="enum" />
+    
+    <fontcolor name="unused" foreColor="gray"/>
+    <fontcolor name="deprecated" strikeThrough="404040" />
+    <fontcolor name="abstract" />
+    <fontcolor name="static" >
+        <font style="italic" />
+    </fontcolor>
+    <fontcolor name="private" />
+    <fontcolor name="protected" />
+    <fontcolor name="public" />
+
+</fontscolors>

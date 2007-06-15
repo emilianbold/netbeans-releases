@@ -20,13 +20,20 @@ Microsystems, Inc. All Rights Reserved.
 <!DOCTYPE fontscolors PUBLIC "-//NetBeans//DTD Editor Fonts and Colors settings 1.1//EN" "http://www.netbeans.org/dtds/EditorFontsColors-1_1.dtd">
 
 <fontscolors>
-    <fontcolor name="dtd-comment" default="comment"/>
-    <fontcolor name="dtd-eol" default="whitespace"/>
-    <fontcolor name="dtd-error" default="error"/>
-    <fontcolor name="dtd-keyword" default="keyword"/>
-    <fontcolor name="dtd-plain" default="default"/>
-    <fontcolor name="dtd-ref" default="entity-reference"/>
-    <fontcolor name="dtd-string" default="string"/>
-    <fontcolor name="dtd-symbol" default="operator"/>        
-    <fontcolor name="dtd-target" foreColor="ffb20000" default="default"/>
+    <fontcolor name="xml-EOL" default="whitespace"/>
+    <fontcolor name="xml-attribute" default="markup-attribute"/>
+    <fontcolor name="xml-cdata-section" foreColor="ff7c6200" default="default"/>
+    <fontcolor name="xml-comment" default="comment"/>
+    <fontcolor name="xml-doctype" foreColor="ff00007c" default="default"/>
+    <fontcolor name="xml-error" default="error"/>
+    <fontcolor name="xml-operator" default="operator"/>
+    <fontcolor name="xml-pi-content" foreColor="ff00007c" default="default"/>
+    <fontcolor name="xml-pi-end" foreColor="ff00007c" default="default"/>
+    <fontcolor name="xml-pi-start" foreColor="ff00007c" default="default"/>
+    <fontcolor name="xml-pi-target" foreColor="ff00007c" default="default"/>
+    <fontcolor name="xml-ref" default="entity-reference"/>
+    <fontcolor name="xml-tag" default="markup-element"/>
+    <fontcolor name="xml-text" default="default"/>
+    <fontcolor name="xml-value" default="markup-attribute-value"/> 
+    <fontcolor name="xml-ws" default="whitespace"/>
 </fontscolors>

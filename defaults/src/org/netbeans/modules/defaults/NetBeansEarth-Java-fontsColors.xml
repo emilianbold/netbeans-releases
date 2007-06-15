@@ -32,50 +32,60 @@ Microsystems, Inc. All Rights Reserved.
     <fontcolor name="string" default="string"/>
     <fontcolor name="whitespace" default="whitespace"/>
     
-    <fontcolor name="keyword-directive" default="keyword"/>
-    
+    <!-- keyword groups -->
+    <fontcolor name="keyword-directive" default="keyword">
+        <font style="bold"/>
+    </fontcolor> 
+        
     <!--"semantic" highlighting:-->
-    <fontcolor name="mod-unused" waveUnderlined="999999"/>
+    <fontcolor name="mod-unused" foreColor="999999"/>
     <fontcolor name="mod-abstract" />
     
-    <fontcolor name="mod-field-declaration" default="identifier"/>    
-    <fontcolor name="mod-local-variable-declaration" default="identifier"/>    
-    <fontcolor name="mod-parameter-declaration" default="identifier"/>
+    <fontcolor name="mod-field-declaration" default="field">    
+        <font style="bold"/>
+    </fontcolor> 
+    <fontcolor name="mod-local-variable-declaration"> 
+        <!-- font style="bold"/ -->
+    </fontcolor> 
+    <fontcolor name="mod-parameter-declaration">
+        <!-- font style="bold"/ -->
+    </fontcolor> 
     
-    <fontcolor name="mod-method-declaration" default="identifier">
-        <font style="bold" />
+    <fontcolor name="mod-method-declaration" >
+        <font style="bold"/>
     </fontcolor>
-    <fontcolor name="mod-constructor-declaration" default="identifier">
-        <font style="bold" />
+    <fontcolor name="mod-constructor-declaration" >
+        <font style="bold"/>
     </fontcolor>
-    <fontcolor name="mod-class-declaration" default="identifier">
-            <font style="bold" />
+    <fontcolor name="mod-class-declaration" >
+            <font style="bold"/>
     </fontcolor>
-    <fontcolor name="mod-interface-declaration" default="identifier">
-            <font style="bold" />
+    <fontcolor name="mod-interface-declaration" >
+            <font style="bold"/>
     </fontcolor>
-    <fontcolor name="mod-annotation-type-declaration" default="identifier">
-                <font style="bold" />
+    <fontcolor name="mod-annotation-type-declaration" >
+                <font style="bold"/>
     </fontcolor>
-    <fontcolor name="mod-enum-declaration" default="identifier">
-        <font style="bold" />
+    <fontcolor name="mod-enum-declaration" >
+        <font style="bold"/>
     </fontcolor>
     
-    <fontcolor name="mod-field" foreColor="009900" default="identifier"/>        
-    <fontcolor name="mod-local-variable" default="identifier"/>
-    <fontcolor name="mod-parameter" default="identifier"/>
-    <fontcolor name="mod-method" default="identifier"/>
-    <fontcolor name="mod-constructor" default="identifier"/>
-    <fontcolor name="mod-class" default="identifier"/>
-    <fontcolor name="mod-interface" default="identifier"/>
-    <fontcolor name="mod-annotation-type" default="identifier"/>
-    <fontcolor name="mod-enum" default="identifier"/>
+    <fontcolor name="mod-field" default="field"/> <!-- "54A054" -->        
+    <fontcolor name="mod-local-variable"/>
+    <fontcolor name="mod-parameter"/>
+    <fontcolor name="mod-method" />
+    <fontcolor name="mod-constructor" />
+    <fontcolor name="mod-class" />
+    <fontcolor name="mod-interface" />
+    <fontcolor name="mod-annotation-type" />
+    <fontcolor name="mod-enum" />
     
+    <fontcolor name="mod-deprecated" strikeThrough="black"/>
     
-    <fontcolor name="mod-deprecated" strikeThrough="black"/>    
     <fontcolor name="mod-static" >
         <font style="italic" />
-    </fontcolor>    
+    </fontcolor>
+    
     <fontcolor name="mod-private" />
     <fontcolor name="mod-package-private" />
     <fontcolor name="mod-protected" />
@@ -93,7 +103,7 @@ Microsystems, Inc. All Rights Reserved.
     <fontcolor name="string-escape" default="string">
         <font style="bold" />
     </fontcolor>
-    <fontcolor name="string-escape-invalid" waveUnderlined="CE7B00" default="string">
+    <fontcolor name="string-escape-invalid" foreColor="a42828">
         <font style="bold" />
     </fontcolor>
    

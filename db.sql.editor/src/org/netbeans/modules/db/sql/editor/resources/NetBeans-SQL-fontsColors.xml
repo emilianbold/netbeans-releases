@@ -24,7 +24,7 @@ Microsystems, Inc. All Rights Reserved.
     <fontcolor name="sql-line-comment" default="comment"/>
     <fontcolor name="sql-block-comment" default="comment"/>
     <fontcolor name="sql-string-literal" default="string"/>
-    <fontcolor name="sql-identifier" foreColor="blue" default="default"/>
+    <fontcolor name="sql-identifier" default="field"/>
     <fontcolor name="sql-operator" default="operator"/>
     <fontcolor name="sql-int-literal" default="number"/>
     <fontcolor name="sql-double-literal" default="number"/>

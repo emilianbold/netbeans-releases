@@ -27,6 +27,10 @@ Microsystems, Inc. All Rights Reserved.
     <fontcolor name="dtd-plain" default="default"/>
     <fontcolor name="dtd-ref" default="entity-reference"/>
     <fontcolor name="dtd-string" default="string"/>
-    <fontcolor name="dtd-symbol" default="operator"/>        
-    <fontcolor name="dtd-target" foreColor="ffb20000" default="default"/>
+    <fontcolor name="dtd-symbol" default="default">
+        <font style="bold"/>
+    </fontcolor>
+    <fontcolor name="dtd-target" foreColor="ffb20000" default="default">
+        <font style="bold"/>
+    </fontcolor>
 </fontscolors>
