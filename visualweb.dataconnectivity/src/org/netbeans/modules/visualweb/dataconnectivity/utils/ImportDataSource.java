@@ -42,13 +42,12 @@ import org.netbeans.modules.visualweb.dataconnectivity.naming.DatabaseSettingsIm
 import org.netbeans.modules.visualweb.dataconnectivity.ui.DatasourceUISettings;
 import org.netbeans.modules.visualweb.dataconnectivity.ui.MissingConnectionsAlertPanel;
 import org.netbeans.modules.visualweb.dataconnectivity.ui.UpdateDataSourcesDialog;
+import org.netbeans.modules.visualweb.dataconnectivity.ui.WaitForUpdateDialog;
 import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectUtils;
-import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.NbBundle;
-import org.w3c.dom.Element;
 
 /**
  * This is a utility class that has methods to migrate the old but critical
@@ -268,10 +267,7 @@ public class ImportDataSource {
       * sources.  After clicking ok the progress bar will show the progress.
       * @param project  Project from which the Update action occurred
       */
-    public static synchronized void showUpdate(final Project project) {
-        // Do not show alert if it is already shown or if it was shown
-        // in last BROKEN_ALERT_TIMEOUT milliseconds or if user do not wish it.
-        
+    public static synchronized void showUpdate(final Project project) {        
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 try {
@@ -287,6 +283,35 @@ public class ImportDataSource {
                         brokenAlertLastTime = System.currentTimeMillis();
                         brokenAlertShown = false;
                     }
+                }
+            }
+        });
+    }            
+    
+     /**
+      * Show OK/Cancel dialog that starts the migration of user settings and updating the project's data
+      * sources.  After clicking ok the progress bar will show the progress.
+      * @param project  Project from which the Update action occurred
+      */
+    public static synchronized void showUpdateWait(final Project project) {                
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                try {
+                    WaitForUpdateDialog pleaseWait = new WaitForUpdateDialog(project);
+                    DialogDescriptor dd = new DialogDescriptor(
+                            pleaseWait,
+                            NbBundle.getMessage(WaitForUpdateDialog.class, "MSG_WaitForUpdate_Title"),
+                            true,
+                            null,
+                            null,
+                            DialogDescriptor.DEFAULT_ALIGN,
+                            null,
+                            null);
+                    dd.setMessageType(DialogDescriptor.WARNING_MESSAGE);
+                    Dialog dlg = DialogDisplayer.getDefault().createDialog(dd);
+                    dlg.setVisible(true);
+                } finally {
+                    
                 }
             }
         });
