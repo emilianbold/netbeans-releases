@@ -469,7 +469,11 @@ public class Wizard {
         }
         
         // init the look and feel
-        UiUtils.initializeLookAndFeel();
+        try {
+            UiUtils.initializeLookAndFeel();
+        } catch (InitializationException  e) {
+            ErrorManager.notifyWarning(e.getMessage(), e.getCause());
+        }
         
         // then create the container according to the current UI mode
         switch (UiMode.getCurrentUiMode()) {
@@ -518,7 +522,7 @@ public class Wizard {
      * {@link UiMode#SILENT}.
      *
      * <p>
-     * If the current wizard is not the root one - the parent's {@link #close()}
+     * If the current wizard is not the ro  ot one - the parent's {@link #close()}
      * method is called.
      */
     public void close() {

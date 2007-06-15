@@ -20,6 +20,8 @@
 
 package org.netbeans.installer.utils;
 
+import java.awt.HeadlessException;
+import java.awt.Toolkit;
 import java.security.Principal;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
@@ -34,6 +36,7 @@ import org.netbeans.installer.utils.helper.UiMode;
 import static javax.swing.JOptionPane.YES_NO_OPTION;
 import static javax.swing.JOptionPane.YES_OPTION;
 import static javax.swing.JOptionPane.NO_OPTION;
+import org.netbeans.installer.utils.exceptions.InitializationException;
 
 /**
  *
@@ -48,28 +51,32 @@ public final class UiUtils {
             final String message,
             final String title,
             final MessageType messageType) {
-        initializeLookAndFeel();
+        try {
+            initializeLookAndFeel();
+        } catch (InitializationException  e) {
+            ErrorManager.notifyWarning(e.getMessage(), e.getCause());
+        }
         
         switch (UiMode.getCurrentUiMode()) {
-        case SWING:
-            int intMessageType = JOptionPane.INFORMATION_MESSAGE;
-            if (messageType == MessageType.WARNING) {
-                intMessageType = JOptionPane.WARNING_MESSAGE;
-            } else if (messageType == MessageType.ERROR) {
-                intMessageType = JOptionPane.ERROR_MESSAGE;
-            } else if (messageType == MessageType.CRITICAL) {
-                intMessageType = JOptionPane.ERROR_MESSAGE;
-            }
-            
-            JOptionPane.showMessageDialog(
-                    null, 
-                    message,
-                    title,
-                    intMessageType);
-            break;
-        case SILENT:
-            System.err.println(message);
-            break;
+            case SWING:
+                int intMessageType = JOptionPane.INFORMATION_MESSAGE;
+                if (messageType == MessageType.WARNING) {
+                    intMessageType = JOptionPane.WARNING_MESSAGE;
+                } else if (messageType == MessageType.ERROR) {
+                    intMessageType = JOptionPane.ERROR_MESSAGE;
+                } else if (messageType == MessageType.CRITICAL) {
+                    intMessageType = JOptionPane.ERROR_MESSAGE;
+                }
+                
+                JOptionPane.showMessageDialog(
+                        null,
+                        message,
+                        title,
+                        intMessageType);
+                break;
+            case SILENT:
+                System.err.println(message);
+                break;
         }
     }
     
@@ -213,69 +220,88 @@ public final class UiUtils {
     }
     
     public static void initializeLookAndFeel(
-            ) {
+            ) throws InitializationException {
         if (lookAndFeelInitialized) {
             return;
         }
-        
-        switch (UiMode.getCurrentUiMode()) {
-        case SWING:
-            String className = System.getProperty(LAF_CLASS_NAME_PROPERTY);
-            if (className == null) {
-                LogManager.log("... custom look and feel class name was not specified, using system default");
-                className = UiUtils.getDefaultLookAndFeelClassName();
+        try {
+            LogManager.log("... initializing L&F");
+            LogManager.indent();
+             switch (UiMode.getCurrentUiMode()) {
+                case SWING:
+                    String className = System.getProperty(LAF_CLASS_NAME_PROPERTY);
+                    if (className == null) {
+                        LogManager.log("... custom look and feel class name was not specified, using system default");
+                        className = UiUtils.getDefaultLookAndFeelClassName();
+                    }
+                    
+                    LogManager.log("... class name: " + className);
+                    
+                    JFrame.setDefaultLookAndFeelDecorated(true);
+                    try {
+                        try {
+                            // this helps to avoid some GTK L&F bugs for some locales
+                            UIManager.getInstalledLookAndFeels();
+                            
+                            UIManager.setLookAndFeel(className);
+                            
+                            // workaround for the issue with further using JFileChooser
+                            // in case of missing system icons
+                            // Java Issue :
+                            // http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6210674
+                            // NBI Issue :
+                            // http://www.netbeans.org/issues/show_bug.cgi?id=105065
+                            new JFileChooser();   
+                            
+                            Toolkit.getDefaultToolkit();
+                        } catch (Throwable e) {
+                            // we're catching Exception here as pretty much anything can happen
+                            // while setting the look and feel and we have no control over it
+                            // if something wrong happens we should fall back to the default
+                            // cross-platform look and feel which is assumed to be working
+                            // correctly
+                            if(e instanceof InternalError) {
+                                System.err.println(e.getMessage());
+                            }  else if(e instanceof ExceptionInInitializerError) {
+                                Throwable cause = e.getCause();
+                                if(cause!=null && cause instanceof HeadlessException) {
+                                    System.err.println(cause.getMessage());
+                                }
+                            }
+                            LogManager.log("... could not activate defined L&F, initializing cross-platfrom one", e);                            
+                            String cpLapName = UIManager.getCrossPlatformLookAndFeelClassName();
+                            LogManager.log("... cross-platform L&F class-name : " + cpLapName);
+                            UIManager.setLookAndFeel(cpLapName);
+                            // this exception would be thrown only if cross-platform LAF is successfully installed
+                            throw new InitializationException("Could not activate the defined look and feel - falling back to the default cross-platform one.", e);
+                        }
+                    } catch (NoClassDefFoundError e) {
+                        throw new InitializationException("Could not activate the cross-platform look and feel - proceeding with whatever look and feel was the default.", e);
+                    } catch (ClassNotFoundException e) {
+                        throw new InitializationException("Could not activate the cross-platform look and feel - proceeding with whatever look and feel was the default.", e);
+                    } catch (InstantiationException e) {
+                        throw new InitializationException("Could not activate the cross-platform look and feel - proceeding with whatever look and feel was the default.", e);
+                    } catch (IllegalAccessException e) {
+                        throw new InitializationException("Could not activate the cross-platform look and feel - proceeding with whatever look and feel was the default.", e);
+                    } catch (UnsupportedLookAndFeelException e) {
+                        throw new InitializationException("Could not activate the cross-platform look and feel - proceeding with whatever look and feel was the default.", e);
+                    }
+                    break;
             }
-            
-            LogManager.log("... class name: " + className);
-            
-            JFrame.setDefaultLookAndFeelDecorated(true);
-            try {
-                try {
-                    // this helps to avoid some GTK L&F bugs for some locales
-                    UIManager.getInstalledLookAndFeels();
-                    
-                    UIManager.setLookAndFeel(className);
-                    
-                    // workaround for the issue with further using JFileChooser 
-                    // in case of missing system icons 
-                    // Java Issue :
-                    // http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6210674
-                    // NBI Issue :
-                    // http://www.netbeans.org/issues/show_bug.cgi?id=105065
-                    new JFileChooser();
-                    
-                } catch (Exception e) {
-                    // we're catching Exception here as pretty much anything can happen
-                    // while setting the look and feel and we have no control over it
-                    // if something wrong happens we should fall back to the default
-                    // cross-platform look and feel which is assumed to be working
-                    // correctly
-                    ErrorManager.notifyWarning("Could not activate the defined look and feel - falling back to the default cross-platform one.", e);
-                    UIManager.setLookAndFeel(
-                            UIManager.getCrossPlatformLookAndFeelClassName());
-                }
-            } catch (ClassNotFoundException e) {
-                ErrorManager.notifyWarning("Could not activate the cross-platform look and feel - proceeding with whatever look and feel was the default.", e);
-            } catch (InstantiationException e) {
-                ErrorManager.notifyWarning("Could not activate the cross-platform look and feel - proceeding with whatever look and feel was the default.", e);
-            } catch (IllegalAccessException e) {
-                ErrorManager.notifyWarning("Could not activate the cross-platform look and feel - proceeding with whatever look and feel was the default.", e);
-            } catch (UnsupportedLookAndFeelException e) {
-                ErrorManager.notifyWarning("Could not activate the cross-platform look and feel - proceeding with whatever look and feel was the default.", e);
-            }
-            break;
+        } finally {
+            LogManager.unindent();
+            LogManager.log("... initializing L&F finished");            
+            lookAndFeelInitialized = true;
         }
-        
-        lookAndFeelInitialized = true;
     }
     
     public static String getDefaultLookAndFeelClassName(
             ) {
         switch (UiMode.getCurrentUiMode()) {
-        case SWING:
-            return UIManager.getSystemLookAndFeelClassName();
-        default:
-            return null;
+            case SWING:
+                return UIManager.getSystemLookAndFeelClassName();
+            default:
+                return null;
         }
     }
     
