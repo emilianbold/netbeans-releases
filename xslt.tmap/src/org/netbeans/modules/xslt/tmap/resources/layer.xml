@@ -70,6 +70,7 @@
             <file name="TMapTemplate.xml" url="TMapTemplate.xml">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xslt.tmap.resources.Bundle"/>
                 <attr name="template" boolvalue="true"/>
+                <attr name="templateCategory" stringvalue="SOA" />
             </file>
         </folder>
     </folder>
