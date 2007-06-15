@@ -423,6 +423,9 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
     }
 
     private boolean affectsView(VersioningEvent event) {
+        if(context == null) {
+            return false;
+        }
         File file = (File) event.getParams()[0];
         FileInformation oldInfo = (FileInformation) event.getParams()[1];
         FileInformation newInfo = (FileInformation) event.getParams()[2];
