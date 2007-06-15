@@ -55,6 +55,13 @@ Microsystems, Inc. All Rights Reserved.
         <attr name="JUnit/NetBeansModuleDevelopment" boolvalue="true"/>
         <folder name="NetBeansModuleDevelopment">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.apisupport.project.ui.wizard.Bundle"/>
+            <file name="gLFTemplate">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.apisupport.project.ui.wizard.glf.Bundle"/>
+                <attr name="instantiatingIterator" newvalue="org.netbeans.modules.apisupport.project.ui.wizard.glf.GLFTemplateWizardIterator"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/ui/resources/GLFTemplate.html"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/ui/resources/glfIcon.png"/>
+            </file>
             <file name="newAction">
                 <attr boolvalue="true" name="template"/>
                 <attr methodvalue="org.netbeans.modules.apisupport.project.ui.wizard.action.NewActionIterator.createIterator" name="instantiatingIterator"/>
