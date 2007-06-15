@@ -103,8 +103,10 @@ Microsystems, Inc. All Rights Reserved.
     </folder>
     
     <folder name="Templates">
-        <folder name="JSP_Servlet">
-            <attr name="Html.html/JSFManagedBean.java" boolvalue="true"/>
+        <attr name="JSP_Servlet/JSF" boolvalue="true"/>
+        <folder name="JSF">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.resources.Bundle"/>
+            <attr name="TagHandler.java/JSFManagedBean.java" boolvalue="true"/>
             <file name="JSFManagedBean.java" url="templates/JSFManagedBean.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.resources.Bundle"/>
                 <attr name="templateCategory" stringvalue="web-types"/>

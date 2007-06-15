@@ -37,6 +37,8 @@ Microsystems, Inc. All Rights Reserved.
       <attr name="TagFile.tag/TagHandler.java" boolvalue="true"/>
       <attr name="TagHandler.java/Html.html" boolvalue="true"/>
       <attr name="XHtml.xhtml/CascadeStyleSheet.css" boolvalue="true"/>
+      <attr name="CascadeStyleSheet.css/TagLibrary.tld" boolvalue="true"/>
+      <attr name="TagLibrary.tld/TagFile.tag" boolvalue="true"/>
       <file name="JSP.jsp" url="templates/JSP.template">
         <attr name="template" boolvalue="true"/>
         <attr name="templateWizardURL" 
@@ -147,7 +149,7 @@ Microsystems, Inc. All Rights Reserved.
       <file name="BodyTagHandler.java" url="templates/BodyTagHandler.template"/>
       
     </folder>
-  </folder>
+</folder>
 
   <folder name="Actions">
     <folder name="Build">

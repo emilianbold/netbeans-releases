@@ -86,9 +86,11 @@ Microsystems, Inc. All Rights Reserved.
 
 
     <folder name="Templates">
-        <folder name="JSP_Servlet">
+        <attr name="Struts/Classes" boolvalue="true"/>
+        <attr name="Struts/Persistence" boolvalue="true"/>
+        <folder name="Struts">
             <attr name="JSFManagedBean.java/StrutsAction.java" boolvalue="true"/>
-            <attr name="Html.html/StrutsAction.java" boolvalue="true"/>
+            <attr name="TagHandler.java/StrutsAction.java" boolvalue="true"/>
             <attr name="StrutsAction.java/StrutsActionForm.java" boolvalue="true"/>
             <file name="StrutsAction.java" url="templates/StrutsAction.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.struts.resources.Bundle"/>

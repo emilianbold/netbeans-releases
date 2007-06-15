@@ -30,6 +30,8 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
     </folder>
     <folder name="Templates">
+        <attr name="Classes/Persistence" boolvalue="true"/>
+        <attr name="JUnit/Persistence" boolvalue="true"/>
         <folder name="Persistence">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.persistence.ui.resources.Bundle"/>
             <file name="Entity.java">

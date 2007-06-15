@@ -56,8 +56,7 @@ Microsystems, Inc. All Rights Reserved.
     </folder>
 
     <folder name="Templates">
-        <folder name="JSP_Servlet">
-            <attr name="JSP.jsp/Page.jsp" boolvalue="true"/>
+        <folder name="JSF">
             <file name="Page.jsp" url="/org/netbeans/modules/visualweb/project/jsf/resources/templates/Page.jsp.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.project.jsf.resources.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org.netbeans.modules.html.htmlObject.gif"/>
@@ -87,7 +86,7 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/visualweb/project/jsf/resources/templates/descriptions/pageJavaTemplateHelp.html" />
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
             </file>
-
+            <attr name="PageFragment.jspf/JSFManagedBean.java" boolvalue="true"/>
             <attr name="JSFManagedBean.java/RequestBean.java" boolvalue="true"/>
             <file name="RequestBean.java" url="/org/netbeans/modules/visualweb/project/jsf/resources/templates/RequestBean.java.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.project.jsf.resources.Bundle"/>
@@ -116,7 +115,7 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
             </file>
         </folder>
-
+        
         <folder name="Other">
             <file name="stylesheet.css" url="/org/netbeans/modules/visualweb/project/jsf/resources/templates/stylesheet.css.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.project.jsf.resources.Bundle"/>

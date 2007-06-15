@@ -28,6 +28,29 @@ Microsystems, Inc. All Rights Reserved.
     </folder>
 -->    
     <folder name="Templates">
+        <folder name="JSP_Servlet">
+            <attr name="ApplicationBean.java/ServiceLocator.java" boolvalue="true"/>
+            <attr name="TagHandler.java/ServiceLocator.java" boolvalue="true"/>
+            <attr name="JSFManagedBean.java/ServiceLocator.java" boolvalue="true"/>
+            <attr name="StrutsActionForm.java/ServiceLocator.java" boolvalue="true"/>
+            <attr name="ServiceLocator.java/CachingServiceLocator.java" boolvalue="true"/>
+            <file name="CachingServiceLocator.java" url="CachingServiceLocator.template">
+                <attr name="template" boolvalue="true"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="instantiatingIterator" newvalue="org.netbeans.modules.j2ee.ejbcore.patterns.ServiceLocatorWizard"/>
+                <attr name="templateCategory" stringvalue="web-types"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/ejbcore/resources/CachingServiceLocator.html"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.ejbcore.patterns.Bundle"/>
+            </file>
+            <file name="ServiceLocator.java" url="ServiceLocator.template">
+                <attr name="template" boolvalue="true"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="instantiatingIterator" newvalue="org.netbeans.modules.j2ee.ejbcore.patterns.ServiceLocatorWizard"/>
+                <attr name="templateCategory" stringvalue="web-types"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/ejbcore/resources/ServiceLocator.html"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.ejbcore.patterns.Bundle"/>
+            </file>
+        </folder>
         <attr name="JSP_Servlet/J2EE" boolvalue="true"/>
         <folder name="J2EE">
             
