@@ -57,7 +57,7 @@ public class BindingProperty extends PropertySupport.ReadWrite {
             name = FormUtils.getBundleString("MSG_Binding_IncompletePathProperty"); // NOI18N
             incompleteValueProperty = new Property(prop, "incompletePathValue", desc.getValueType(), name, name, false); // NOI18N
             name = FormUtils.getBundleString("MSG_Binding_Validator"); // NOI18N
-            validatorProperty = new Property(prop, "validator", String.class/*BindingValidator.class*/, name, name, true); // NOI18N
+            validatorProperty = new Property(prop, "validator", BindingValidator.class, name, name, true); // NOI18N
             name = FormUtils.getBundleString("MSG_Binding_Converter"); // NOI18N
             converterProperty = new Property(prop, "converter", BindingConverter.class, name, name, true); // NOI18N
             name = FormUtils.getBundleString("MSG_Binding_Name"); // NOI18N
