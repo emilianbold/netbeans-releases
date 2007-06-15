@@ -67,13 +67,13 @@ public class CasaPalette {
             new CasaPaletteItemID(
                 CasaBasePlugin.getInstance(),
                 CasaPalette.CATEGORY_ID_SERVICE_UNITS, 
-                NbBundle.getMessage(CasaPalette.class, "Palette_ExtSU_Title"), // NOI18N
+                NbBundle.getMessage(CasaPalette.class, "Palette_IntSU_Title"), // NOI18N
                 "org/netbeans/modules/compapp/casaeditor/palette/resources/intsu.png"); // NOI18N
     public static final CasaPaletteItemID ITEM_ID_EXTERNAL_SU           = 
             new CasaPaletteItemID(
                 CasaBasePlugin.getInstance(),
                 CasaPalette.CATEGORY_ID_SERVICE_UNITS, 
-                NbBundle.getMessage(CasaPalette.class, "Palette_IntSU_Title"), // NOI18N
+                NbBundle.getMessage(CasaPalette.class, "Palette_ExtSU_Title"), // NOI18N
                 "org/netbeans/modules/compapp/casaeditor/palette/resources/extsu.png"); // NOI18N
 
     public static final DataFlavor CasaPaletteDataFlavor = new DataFlavor( 
