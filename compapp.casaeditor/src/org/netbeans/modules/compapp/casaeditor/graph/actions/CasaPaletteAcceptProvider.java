@@ -47,6 +47,7 @@ import org.netbeans.modules.compapp.casaeditor.model.casa.JBIServiceUnitTransfer
 import org.netbeans.modules.compapp.casaeditor.palette.CasaCommonAcceptProvider;
 import org.netbeans.modules.compapp.casaeditor.palette.CasaPalette;
 import org.netbeans.modules.compapp.casaeditor.palette.DefaultPluginDropHandler;
+import org.netbeans.modules.compapp.projects.jbi.api.JbiDefaultComponentInfo;
 import org.netbeans.modules.compapp.projects.jbi.api.JbiProjectConstants;
 import org.netbeans.spi.project.ant.AntArtifactProvider;
 import org.openide.ErrorManager;
@@ -77,6 +78,12 @@ public class CasaPaletteAcceptProvider extends CasaCommonAcceptProvider {
         if (p == null) {
             return null;
         }
+
+        // todo: 06/08/07, allow JavaEE DnD in CASA
+        if (JbiDefaultComponentInfo.isJavaEEProject(p)) {
+            return (JbiProjectConstants.JAVA_EE_SE_COMPONENT_NAME);
+        }
+
         AntArtifactProvider prov = (AntArtifactProvider)p.getLookup().lookup(AntArtifactProvider.class);
         if (prov != null) {
             AntArtifact[] artifacts = prov.getBuildArtifacts();

@@ -315,7 +315,7 @@ public class ProjectUtil {
         return subProjects;
     }
     
-    private static boolean isJavaEEProject(Project proj){
+    public static boolean isJavaEEProject(Project proj){
         boolean ret = false;
         String projClassName = proj.getClass().getName();
         

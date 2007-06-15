@@ -23,6 +23,7 @@ import java.awt.Image;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.compapp.casaeditor.Constants;
+import org.netbeans.modules.compapp.casaeditor.nodes.actions.WSDLEndpointAction;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaPort;
 import org.netbeans.modules.compapp.casaeditor.properties.PropertyUtils;
@@ -34,6 +35,7 @@ import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
+import org.openide.util.actions.SystemAction;
 
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaComponent;
 import org.netbeans.modules.compapp.casaeditor.model.jbi.impl.JBIAttributes;
@@ -88,7 +90,15 @@ public class WSDLEndpointNode extends CasaNode {
             return getBadName();
         }
     }
-    
+
+    // todo: 05/31/07, enable WSIT GUI
+    /*
+    @Override
+    public void addCustomActions(List actions) {
+        actions.add(SystemAction.get(WSDLEndpointAction.class));
+    }
+    */
+
     protected void setupPropertySheet(Sheet sheet) {
         final CasaPort casaPort = (CasaPort) getData();
         if (casaPort == null) {

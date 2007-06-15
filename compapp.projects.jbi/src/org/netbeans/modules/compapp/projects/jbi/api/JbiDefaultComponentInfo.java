@@ -21,6 +21,8 @@ package org.netbeans.modules.compapp.projects.jbi.api;
 
 import java.util.ArrayList;
 import org.netbeans.modules.compapp.projects.jbi.descriptor.componentInfo.model.JBIComponentStatus;
+import org.netbeans.modules.compapp.javaee.util.ProjectUtil;
+import org.netbeans.api.project.Project;
 
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.Repository;
@@ -316,5 +318,15 @@ public class JbiDefaultComponentInfo {
             }
         }
         return id;
+    }
+
+    /**
+     * Is a given project a JavaEE project
+     *
+     * @param proj given project
+     * @return true if it is a JavaEE project
+     */
+    public static boolean isJavaEEProject(Project proj){
+        return ProjectUtil.isJavaEEProject(proj);
     }
 }
