@@ -252,6 +252,10 @@ Microsystems, Inc. All Rights Reserved.
             <folder name="Lookup">
                 <file name="org.netbeans.modules.websvc.core.jaxws.projects.EjbWSSupportLookupProvider.instance"/>
             </folder>
+            <folder name="Nodes">
+                <attr name="org-netbeans-modules-j2ee-ejbjarproject-ui-LibrariesNodeFactory.instance/org-netbeans-modules-websvc-core-jaxws-nodes-WebServicesNodeFactory.instance" boolvalue="true"/>
+                <file name="org-netbeans-modules-websvc-core-jaxws-nodes-WebServicesNodeFactory.instance"/>
+            </folder>
         </folder>
     </folder>
 </filesystem>
