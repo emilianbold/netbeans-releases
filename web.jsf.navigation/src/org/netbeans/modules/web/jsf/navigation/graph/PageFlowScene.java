@@ -26,6 +26,7 @@ import java.awt.Paint;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.TexturePaint;
+import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.util.Arrays;
 import java.util.Arrays;
@@ -52,6 +53,8 @@ import java.util.List;
 import java.util.Map;
 import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
+import javax.swing.InputMap;
+import javax.swing.KeyStroke;
 import javax.swing.border.Border;
 import org.netbeans.api.visual.action.SelectProvider;
 import org.netbeans.api.visual.action.TextFieldInplaceEditor;
@@ -106,6 +109,7 @@ public class PageFlowScene extends GraphPinScene<Page,NavigationCaseEdge,Pin> {
     private WidgetAction dragNdropAction = ActionFactory.createAcceptAction(new PageFlowAcceptProvider());
     private WidgetAction connectAction = ActionFactory.createConnectAction(connectionLayer, new LinkCreateProvider(this));
     private WidgetAction selectAction = ActionFactory.createSelectAction(new PageFlowSelectProvider());
+    //    private final static WidgetAction CYCLE_FOCUS_OBJECT_SCENE = new CycleFocusAction (new CycleObjectSceneFocusProvider2 ());
     
     //    private SceneLayout sceneGraphLayout;
     private PageFlowView tc;
@@ -131,8 +135,8 @@ public class PageFlowScene extends GraphPinScene<Page,NavigationCaseEdge,Pin> {
     public PageFlowScene(PageFlowView tc) {
         this.tc = tc;
         
-        setOpaque (true);
-        setBackground (PAINT_BACKGROUND);
+        setOpaque(true);
+        setBackground(PAINT_BACKGROUND);
         
         setKeyEventProcessingType(EventProcessingType.FOCUSED_WIDGET_AND_ITS_PARENTS);
         
@@ -149,9 +153,27 @@ public class PageFlowScene extends GraphPinScene<Page,NavigationCaseEdge,Pin> {
         actions.addAction(ActionFactory.createZoomAction());
         actions.addAction(ActionFactory.createPanAction());
         actions.addAction(ActionFactory.createRectangularSelectAction(this, backgroundLayer));
+        //        actions.addAction(CYCLE_FOCUS_OBJECT_SCENE);
         actions.addAction(popupGraphAction);
         actions.addAction(createActionMap());
         addObjectSceneListener(new MyObjectSceneListener(), ObjectSceneEventType.OBJECT_SELECTION_CHANGED);
+        
+        
+        InputMap inputMap = MapActionUtility.initInputMap();
+//        InputMap inputMap = new InputMap();
+//        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0, false), "enterAction");
+//        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_TAB,0), "handleTab");
+//        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE,0), "handleEscape");
+        ActionMap actionMap = MapActionUtility.initActionMap();
+        
+//        ActionMap actionMap = new ActionMap();
+//        actionMap.put("enterAction", new TestAction("ActionEnter"));
+//        actionMap.put("handleTab", new TestAction("handleTab"));
+//        actionMap.put("handleEscape", new TestAction("EscapeAction"));
+//        actionMap.put("handleLinkStart", handleLinkStart);
+//        actionMap.put("handleLinkEnd", handleLinkEnd);
+        
+        actions.addAction(ActionFactory.createActionMapAction(inputMap, actionMap));
         
         
         fpnl = new FreePlaceNodesLayouter(this, tc.getVisibleRect());
@@ -239,7 +261,7 @@ public class PageFlowScene extends GraphPinScene<Page,NavigationCaseEdge,Pin> {
         }
     }
     
-
+    
     
     /**
      * Implements attaching a widget to a node. The widget is VMDNodeWidget and has object-hover, select, popup-menu and move actions.
@@ -277,7 +299,7 @@ public class PageFlowScene extends GraphPinScene<Page,NavigationCaseEdge,Pin> {
         return nodeWidget;
     }
     
-
+    
     
     private Map<VMDNodeWidget,Point> nodeWidget2Point = new HashMap<VMDNodeWidget,Point>();
     
@@ -384,7 +406,7 @@ public class PageFlowScene extends GraphPinScene<Page,NavigationCaseEdge,Pin> {
         assert edge != null;
         
         VMDConnectionWidget2 connectionWidget = new VMDConnectionWidget2(this, router, edge.isModifiable());
-
+        
         LabelWidget label = new LabelWidget(this, edge.getName());
         label.setOpaque(true);
         label.getActions().addAction(
@@ -676,6 +698,8 @@ public class PageFlowScene extends GraphPinScene<Page,NavigationCaseEdge,Pin> {
     //
     //
     //    }
+    
+    
     
 }
 
