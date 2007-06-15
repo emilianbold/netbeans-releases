@@ -53,13 +53,7 @@ public class StaticAccessTest extends TreeRuleTestBase {
             "}\n" +
             "}\n";
 
-        String golden = "package test; class Test { " +
-            "{ " +
-            "Boolean b = null; " +
-            "b = Boolean.valueOf(true); " +
-            "} " +
-            "} ";
-        
+        String golden = (before + after).replace('\n', ' ').replace("b.value", "Boolean.value");
         
         performFixTest("test/Test.java", before + after, before.length(), 
             "3:4-3:5:verifier:Accessing static field",
