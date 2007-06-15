@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -75,7 +75,7 @@ public class LogicalViewChildren extends Children.Keys  implements AntProjectLis
             return ;
         }
         
-        EarProject earProject = (EarProject) p.getLookup().lookup(EarProject.class);
+        EarProject earProject = p.getLookup().lookup(EarProject.class);
         List<VisualClassPathItem> vcpis = earProject.getProjectProperties().getJarContentAdditional();
         vcpItems = new HashMap<String, VisualClassPathItem>();
         for (VisualClassPathItem vcpi : vcpis) {
@@ -85,7 +85,7 @@ public class LogicalViewChildren extends Children.Keys  implements AntProjectLis
             }
             AntArtifact aa = (AntArtifact) obj;
             Project vcpiProject = aa.getProject();
-            J2eeModuleProvider jmp = (J2eeModuleProvider) vcpiProject.getLookup().lookup(J2eeModuleProvider.class);
+            J2eeModuleProvider jmp = vcpiProject.getLookup().lookup(J2eeModuleProvider.class);
             if (null != jmp) {
                 vcpItems.put(vcpi.getRaw(), vcpi);
             }

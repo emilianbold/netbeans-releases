@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -27,6 +27,7 @@ import java.io.CharConversionException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -57,6 +58,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.earproject.BrokenProjectSupport;
 import org.netbeans.modules.j2ee.earproject.EarProject;
 import org.netbeans.modules.j2ee.earproject.UpdateHelper;
+import org.netbeans.modules.j2ee.earproject.ui.actions.AddModuleAction;
 import org.netbeans.modules.j2ee.earproject.ui.customizer.EarProjectProperties;
 import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
 import org.netbeans.spi.java.project.support.ui.PackageView;
@@ -68,6 +70,7 @@ import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
+import org.netbeans.spi.project.ui.support.NodeFactorySupport;
 import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
 import org.openide.actions.FindAction;
 import org.openide.filesystems.FileObject;
@@ -105,12 +108,13 @@ public class J2eeArchiveLogicalViewProvider implements LogicalViewProvider {
     protected final UpdateHelper helper;
     private final PropertyEvaluator evaluator;
     protected final ReferenceHelper resolver;
-    private final List<? extends Action> specialActions;
+    private final List<? extends Action> specialActions =
+            Collections.singletonList(SystemAction.get(AddModuleAction.class));
     private final AntBasedProjectType abpt;
     
     public J2eeArchiveLogicalViewProvider(EarProject project, UpdateHelper helper,
             PropertyEvaluator evaluator, ReferenceHelper resolver,
-            List<? extends Action> specialActions, AntBasedProjectType abpt) {
+            AntBasedProjectType abpt) {
         this.project = project;
         assert project != null;
         this.helper = helper;
@@ -118,7 +122,6 @@ public class J2eeArchiveLogicalViewProvider implements LogicalViewProvider {
         this.evaluator = evaluator;
         assert evaluator != null;
         this.resolver = resolver;
-        this.specialActions = specialActions;
         this.abpt = abpt;
     }
     
@@ -127,7 +130,7 @@ public class J2eeArchiveLogicalViewProvider implements LogicalViewProvider {
     }
     
     public Node findPath(Node root, Object target) {
-        Project project = (Project) root.getLookup().lookup(Project.class);
+        Project project = root.getLookup().lookup(Project.class);
         if (project == null) {
             return null;
         }
@@ -202,7 +205,7 @@ public class J2eeArchiveLogicalViewProvider implements LogicalViewProvider {
     }
     
     private String getIconBase() {
-        IconBaseProvider ibp = (IconBaseProvider) project.getLookup().lookup(IconBaseProvider.class);
+        IconBaseProvider ibp = project.getLookup().lookup(IconBaseProvider.class);
         return (null == ibp)
                 ? "org/netbeans/modules/j2ee/earproject/ui/resources/" // NOI18N
                 : ibp.getIconBase();
@@ -230,7 +233,7 @@ public class J2eeArchiveLogicalViewProvider implements LogicalViewProvider {
         // icon badging <<<
         
         public ArchiveLogicalViewRootNode() {
-            super(new ArchiveViews.LogicalViewChildren(project, helper.getAntProjectHelper(), evaluator),
+            super(NodeFactorySupport.createCompositeChildren(project, "Projects/org-netbeans-modules-j2ee-earproject/Nodes"), // NOI18N
                     createLookup(project, helper.getAntProjectHelper()));
             setIconBaseWithExtension(getIconBase() + "projectIcon.gif"); // NOI18N
             super.setName( ProjectUtils.getInformation( project ).getDisplayName() );
@@ -238,12 +241,10 @@ public class J2eeArchiveLogicalViewProvider implements LogicalViewProvider {
                 broken = true;
             }
             brokenServerAction = new BrokenServerAction();
-            J2eeModuleProvider moduleProvider = (J2eeModuleProvider)project.getLookup().lookup(J2eeModuleProvider.class);
-            moduleProvider.addInstanceListener((InstanceListener)WeakListeners.create(
-                    InstanceListener.class, brokenServerAction, moduleProvider));
+            J2eeModuleProvider moduleProvider = project.getLookup().lookup(J2eeModuleProvider.class);
+            moduleProvider.addInstanceListener(WeakListeners.create(InstanceListener.class, brokenServerAction, moduleProvider));
             refreshProjectFiles();
-            this.brokenProjectSupport = (BrokenProjectSupport) 
-                    project.getLookup().lookup(BrokenProjectSupport.class);
+            this.brokenProjectSupport = project.getLookup().lookup(BrokenProjectSupport.class);
             this.brokenProjectSupport.addChangeListener(new ChangeListener() {
                 public void stateChanged(ChangeEvent e) {
                     checkProjectValidity();

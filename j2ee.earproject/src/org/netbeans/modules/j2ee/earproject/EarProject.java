@@ -42,7 +42,6 @@ import org.netbeans.modules.j2ee.earproject.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.j2ee.earproject.ui.EarCustomizerProvider;
 import org.netbeans.modules.j2ee.earproject.ui.IconBaseProvider;
 import org.netbeans.modules.j2ee.earproject.ui.J2eeArchiveLogicalViewProvider;
-import org.netbeans.modules.j2ee.earproject.ui.LogicalViewProvider;
 import org.netbeans.modules.j2ee.earproject.ui.customizer.EarProjectProperties;
 import org.netbeans.modules.j2ee.earproject.ui.customizer.VisualClassPathItem;
 import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarFactory;
@@ -170,7 +169,7 @@ public final class EarProject implements Project, AntProjectListener, FileChange
             new ProjectEarProvider(),
             appModule, //implements J2eeModuleProvider
             new EarActionProvider(this, updateHelper),
-            new LogicalViewProvider(this, updateHelper, evaluator(), refHelper, abpt),
+            new J2eeArchiveLogicalViewProvider(this, updateHelper, evaluator(), refHelper, abpt),
             new MyIconBaseProvider(),
             new EarCustomizerProvider( this, helper, refHelper, abpt ),
             new ClassPathProviderImpl(helper, evaluator()),
@@ -400,11 +399,11 @@ public final class EarProject implements Project, AntProjectListener, FileChange
             }
             
             // register project's classpaths to GlobalPathRegistry
-            ClassPathProviderImpl cpProvider = (ClassPathProviderImpl)lookup.lookup(ClassPathProviderImpl.class);
+            ClassPathProviderImpl cpProvider = lookup.lookup(ClassPathProviderImpl.class);
             GlobalPathRegistry.getDefault().register(ClassPath.BOOT, cpProvider.getProjectClassPaths(ClassPath.BOOT));
             GlobalPathRegistry.getDefault().register(ClassPath.COMPILE, cpProvider.getProjectClassPaths(ClassPath.COMPILE));
             
-            J2eeModuleProvider pwm = (J2eeModuleProvider) EarProject.this.getLookup().lookup(J2eeModuleProvider.class);
+            J2eeModuleProvider pwm = EarProject.this.getLookup().lookup(J2eeModuleProvider.class);
             pwm.getConfigSupport().ensureConfigurationReady();
             
             // Make it easier to run headless builds on the same machine at least.
@@ -438,7 +437,7 @@ public final class EarProject implements Project, AntProjectListener, FileChange
             brokenProjectSupport.cleanUp();
             
             // unregister project's classpaths to GlobalPathRegistry
-            ClassPathProviderImpl cpProvider = (ClassPathProviderImpl)lookup.lookup(ClassPathProviderImpl.class);
+            ClassPathProviderImpl cpProvider = lookup.lookup(ClassPathProviderImpl.class);
             GlobalPathRegistry.getDefault().unregister(ClassPath.BOOT, cpProvider.getProjectClassPaths(ClassPath.BOOT));
             GlobalPathRegistry.getDefault().unregister(ClassPath.COMPILE, cpProvider.getProjectClassPaths(ClassPath.COMPILE));
         }
@@ -477,7 +476,7 @@ public final class EarProject implements Project, AntProjectListener, FileChange
     }
     
     /** May return <code>null</code>. */
-    FileObject getOrCreateMetaInfDir() {
+    public FileObject getOrCreateMetaInfDir() {
         String metaInfProp = helper.getStandardPropertyEvaluator().
                 getProperty(EarProjectProperties.META_INF);
         if (metaInfProp == null) {
