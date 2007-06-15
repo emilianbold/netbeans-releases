@@ -49,7 +49,8 @@ public final class CodeTemplateDescription {
     private final String description;
     private final String parametrizedText;
     private final List<String> contexts;    
-
+    private final String uniqueId;
+    
     /**
      * Creates a new code template description. It call the other constructor
      * passing <code>null</code> for the <code>contexts</code> parameter.
@@ -60,7 +61,7 @@ public final class CodeTemplateDescription {
      *   a user writes the abbreviation in the editor.
      */
     public CodeTemplateDescription(String abbreviation, String description, String parametrizedText) {
-        this(abbreviation, description, parametrizedText, null);
+        this(abbreviation, description, parametrizedText, null, null);
     }
     
     /**
@@ -72,15 +73,21 @@ public final class CodeTemplateDescription {
      *
      * @param abbreviation The abbreviation text that expands this code template.
      * @param description The code template's display text.
+     *   Can be <code>null</code>
      * @param parametrizedText The actual code template that will get expanded when
      *   a user writes the abbreviation in the editor.
      * @param contexts The list of context ids that apply for this code template.
+     *   Can be <code>null</code>
+     * @param uniqueId The id uniquely identifying this template. If you pass
+     *   non-<code>null</code> value, please make sure that it is really a unique
+     *   id for this template. Can be <code>null</code>.
      */
     public CodeTemplateDescription(
         String abbreviation, 
         String description, 
         String parametrizedText, 
-        List<String> contexts
+        List<String> contexts,
+        String uniqueId
     ) {
         assert abbreviation != null : "The abbreviation parameter can't be null"; //NOI18N
         assert parametrizedText != null : "The parametrizedText parameter can't be null"; //NOI18N
@@ -91,6 +98,7 @@ public final class CodeTemplateDescription {
         this.contexts = contexts == null ? 
             Collections.<String>emptyList() : 
             Collections.unmodifiableList(new ArrayList<String>(contexts));
+        this.uniqueId = uniqueId;
     }
     
     /**
@@ -148,6 +156,21 @@ public final class CodeTemplateDescription {
         return contexts;
     }
 
+    /**
+     * Gets an id that can be used for identifying this template. A code template
+     * does not generally have to have a unique id, but if it has one it is
+     * guaranteed to uniquely identify the template.
+     * 
+     * <p class="nonnormative">Unique ids can be useful for tools importing and
+     * exporting code templates from other applications such as TextMate, etc.
+     * 
+     * @return The unique id or <code>null</code>.
+     * @since 1.11
+     */
+    public String getUniqueId() {
+        return uniqueId;
+    }
+    
     public String toString() {
         return "abbrev='" + getAbbreviation() + "', parametrizedText='" + getParametrizedText() + "'"; // NOI18N
     }
