@@ -34,6 +34,7 @@ import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import org.apache.tools.ant.module.api.support.ActionUtils;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
@@ -46,7 +47,9 @@ import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModelListener;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModeler;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModeler;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModelerFactory;
+import org.netbeans.modules.websvc.core.JaxWsUtils;
 import org.netbeans.modules.websvc.design.util.SourceUtils;
+import org.netbeans.modules.websvc.design.util.WSDLUtils;
 import org.netbeans.modules.websvc.design.view.actions.ParamModel;
 import org.netbeans.modules.websvc.design.view.actions.Utils;
 import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
@@ -105,7 +108,7 @@ public class OperationGeneratorHelper {
         this.wsdlFile=wsdlFile;
         
     }
-   
+    
     /** This method adds new operation to the wsdl file
      */
     public Operation addWsOperation(WSDLModel wsdlModel,
@@ -115,6 +118,7 @@ public class OperationGeneratorHelper {
             ReferenceableSchemaComponent returnType,
             List<ParamModel> faultTypes) {
         
+        boolean isDocOriented = WSDLUtils.isDocumentOriented(wsdlModel);
         WSDLComponentFactory factory = wsdlModel.getFactory();
         Definitions definitions = wsdlModel.getDefinitions();
         Types types = definitions.getTypes();
@@ -131,7 +135,7 @@ public class OperationGeneratorHelper {
         try {
             wsdlModel.startTransaction();
             
-            // we need to distinct between void operation and one way
+            // we need to distinguish between void operation and one way
             //if(returnType != null) {
             operation = factory.createRequestResponseOperation();
             //} else {
@@ -140,6 +144,7 @@ public class OperationGeneratorHelper {
             operation.setName(operationName);
             
             Message inputMessage=null;
+            GlobalComplexType complexType = null;
             GlobalElement paramElement=null;
             GlobalElement returnElement = null;
             List<GlobalElement> faultElements = new ArrayList<GlobalElement>();
@@ -163,7 +168,7 @@ public class OperationGeneratorHelper {
                 }
                 
                 //wrap the parameters in a global element
-                GlobalComplexType complexType = schemaModel.getFactory().createGlobalComplexType();
+                complexType = schemaModel.getFactory().createGlobalComplexType();
                 complexType.setName(paramTypeName);
                 Sequence seq = schemaModel.getFactory().createSequence();
                 complexType.setDefinition(seq);
@@ -195,18 +200,32 @@ public class OperationGeneratorHelper {
                     schema.addElement(paramElement);
                 }
             }
-            
-            if (paramElement!=null) {
-                if(inputMessage == null){
-                    inputMessage = factory.createMessage();
-                    inputMessage.setName(messageName);
-                    definitions.addMessage(inputMessage);
+            if(isDocOriented){
+                if (paramElement!=null) {
+                    if(inputMessage == null){
+                        inputMessage = factory.createMessage();
+                        inputMessage.setName(messageName);
+                        definitions.addMessage(inputMessage);
+                    }
+                    Part part = factory.createPart();
+                    part.setName(partName);
+                    NamedComponentReference<GlobalElement> ref = part.createSchemaReference(paramElement, GlobalElement.class);
+                    part.setElement(ref);
+                    inputMessage.addPart(part);
                 }
-                Part part = factory.createPart();
-                part.setName(partName);
-                NamedComponentReference<GlobalElement> ref = part.createSchemaReference(paramElement, GlobalElement.class);
-                part.setElement(ref);
-                inputMessage.addPart(part);
+            } else{
+                if(complexType != null){
+                    if(inputMessage == null){
+                        inputMessage = factory.createMessage();
+                        inputMessage.setName(messageName);
+                        definitions.addMessage(inputMessage);
+                    }
+                    Part part = factory.createPart();
+                    part.setName(partName);
+                    NamedComponentReference<GlobalType> ref = part.createSchemaReference(complexType, GlobalType.class);
+                    part.setType(ref);
+                    inputMessage.addPart(part);
+                }
             }
             
             if (inputMessage!=null) {
@@ -448,7 +467,7 @@ public class OperationGeneratorHelper {
         }
         return null;
     }
- 
+    
     
     private void addElementToSequence(Sequence sequence, SchemaModel schemaModel, ParamModel param) {
         
@@ -562,9 +581,14 @@ public class OperationGeneratorHelper {
      * add new menthod to implementation class
      */
     public void generateJavaArtifacts(String serviceName,
-            final FileObject implementationClass, final String operationName, final boolean remove) {
+            final FileObject implementationClass, final String operationName, final boolean remove) throws IOException{
         Project project = FileOwnerQuery.getOwner(implementationClass);
         invokeWsImport(project,serviceName);
+        
+        //copy SEI to source directory
+        ClassPath classPath = ClassPath.getClassPath(implementationClass, ClassPath.SOURCE);
+        copySEItoSource(project, getServiceEndpointInterface(implementationClass),classPath.findOwnerRoot(implementationClass));
+        
         try {
             WsdlModeler modeler = WsdlModelerFactory.getDefault().getWsdlModeler(wsdlFile.toURI().toURL());
             modeler.generateWsdlModel(new WsdlModelListener() {
@@ -587,7 +611,13 @@ public class OperationGeneratorHelper {
         }
     }
     
-    public String getPortTypeName(FileObject implBean){
+    private void copySEItoSource(Project project, String seiClassName, FileObject srcRoot)throws IOException{
+        FileObject serviceArtifactsFolder = project.getProjectDirectory().getFileObject("build/generated/wsimport/service"); //NOI18N
+        FileObject seiFile = serviceArtifactsFolder.getFileObject(seiClassName.replace('.', '/') + ".java");
+        JaxWsUtils.copyToSource(seiFile, seiClassName,srcRoot);
+    }
+    
+    public String getServiceEndpointInterface(FileObject implBean){
         JavaSource javaSource = JavaSource.forFileObject(implBean);
         final String[] endpointInterface = new String[1];
         if (javaSource!=null) {
@@ -620,17 +650,19 @@ public class OperationGeneratorHelper {
             } catch (IOException ex) {
                 ErrorManager.getDefault().notify(ex);
             }
-            String seiName = endpointInterface[0];
-            if(seiName != null){
-                int index = seiName.lastIndexOf(".");
-                if(index != -1){
-                    seiName = seiName.substring(index + 1);
-                }
-                System.out.println("seiName: " + seiName);
-                return seiName;
-            }
         }
-        return null;
+        return endpointInterface[0];
+    }
+    
+    public String getPortTypeName(FileObject implBean){        
+        String seiName = getServiceEndpointInterface(implBean);
+        if(seiName != null){
+            int index = seiName.lastIndexOf(".");
+            if(index != -1){
+                seiName = seiName.substring(index + 1);
+            }
+        }        
+        return seiName;
     }
     
     

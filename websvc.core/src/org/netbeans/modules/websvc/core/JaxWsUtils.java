@@ -88,6 +88,10 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import java.util.Iterator;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.openide.filesystems.FileLock;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -128,7 +132,7 @@ public class JaxWsUtils {
     /** This method is called from Create Web Service from WSDL wizard
      */
     public static void generateJaxWsImplementationClass(Project project, FileObject targetFolder, String targetName, URL wsdlURL, WsdlService service, WsdlPort port) throws Exception {
-            generateJaxWsImplClass(project, targetFolder, targetName, wsdlURL, service, port, true, null);
+        generateJaxWsImplClass(project, targetFolder, targetName, wsdlURL, service, port, true, null);
     }
     
     /** This method is called from Create Web Service from WSDL wizard
@@ -145,56 +149,56 @@ public class JaxWsUtils {
     
     public static void generateProviderImplClass(Project project, FileObject targetFolder,
             String targetName, WsdlService service, WsdlPort port, String serviceID) throws Exception{
-// Retouche        
-//        initProjectInfo(project);
-//        JAXWSSupport jaxWsSupport = JAXWSSupport.getJAXWSSupport(project.getProjectDirectory());
-//        String wsdlLocation = jaxWsSupport.getWsdlLocation(serviceID);
-//        JavaClass javaClass = null;
-//        JavaModel.getJavaRepository().beginTrans(true);
-//        
-//        try{
-//            javaClass = JMIGenerationUtil.createClass(targetFolder, targetName);
-//            //Initially, Provider<Source> will be implemented. The user can then change the Provider type if he/she wishes
-//            JMIUtils.addInterface(javaClass, "javax.xml.ws.Provider<Source>"); //NOI18N 
-//            
-//            if (projectType == EJB_PROJECT_TYPE) {//EJB project
-//                Annotation statelessAnnotation = JMIGenerationUtil.createAnnotation(javaClass, "javax.ejb.Stateless", Collections.EMPTY_LIST); //NOI18N
-//                javaClass.getAnnotations().add(statelessAnnotation);
-//            }
-//            
-//            //Initially, set mode to PAYLOAD. The user can then change if he/she wishes
-//            AttributeValue serviceModeValue = JMIGenerationUtil.createAttributeValue(javaClass, "value", "javax.xml.ws.Service.Mode", "PAYLOAD"); //NOI18N
-//            ArrayList attrList = new ArrayList();
-//            attrList.add(serviceModeValue);
-//            Annotation serviceModeAnnotation = JMIGenerationUtil.createAnnotation(javaClass, "javax.xml.ws.ServiceMode", attrList); //NOI18N
-//            javaClass.getAnnotations().add(serviceModeAnnotation);
-//            
-//            AttributeValue wsdlLocationValue = JMIGenerationUtil.createAttributeValue(javaClass, "wsdlLocation", wsdlLocation );
-//            AttributeValue serviceNameAttibuteValue = JMIGenerationUtil.createAttributeValue(javaClass, "serviceName", service.getName()); //NOI18N
-//            AttributeValue targetNamespaceAttibuteValue = JMIGenerationUtil.createAttributeValue(javaClass, "targetNamespace", port.getNamespaceURI()); //NOI18N
-//            AttributeValue portNameAttibuteValue = JMIGenerationUtil.createAttributeValue(javaClass, "portName", port.getName()); //NOI18N
-//            attrList = new ArrayList();
-//            attrList.add(wsdlLocationValue);
-//            attrList.add(serviceNameAttibuteValue);
-//            attrList.add(targetNamespaceAttibuteValue);
-//            attrList.add(portNameAttibuteValue);
-//            Annotation serviceProviderAnnotation = JMIGenerationUtil.createAnnotation(javaClass, "javax.xml.ws.WebServiceProvider", attrList); //NOI18N
-//            javaClass.getAnnotations().add(serviceProviderAnnotation);
-//            String returnType = "javax.xml.transform.Source";  //NOI18N
-//            String operationName = "invoke";   //NOI18N
-//            Method op = JMIGenerationUtil.createMethod(javaClass, operationName, Modifier.PUBLIC, returnType);
-//            Parameter param = JMIGenerationUtil.createParameter(javaClass, "source", returnType);  //NOI18N
-//            op.getParameters().add(param);
-//            op.setBodyText("//TODO implement this method\nreturn null;");  //NOI18N
-//            javaClass.getFeatures().add(op);
-//        }finally{
-//            JavaModel.getJavaRepository().endTrans();
-//        }
-//        
-//        FileObject fo = JavaModel.getFileObject(javaClass.getResource());
-//        //open in the editor
-//        DataObject dobj = DataObject.find(fo);
-//        openFileInEditor(dobj);
+        // Retouche
+        //        initProjectInfo(project);
+        //        JAXWSSupport jaxWsSupport = JAXWSSupport.getJAXWSSupport(project.getProjectDirectory());
+        //        String wsdlLocation = jaxWsSupport.getWsdlLocation(serviceID);
+        //        JavaClass javaClass = null;
+        //        JavaModel.getJavaRepository().beginTrans(true);
+        //
+        //        try{
+        //            javaClass = JMIGenerationUtil.createClass(targetFolder, targetName);
+        //            //Initially, Provider<Source> will be implemented. The user can then change the Provider type if he/she wishes
+        //            JMIUtils.addInterface(javaClass, "javax.xml.ws.Provider<Source>"); //NOI18N
+        //
+        //            if (projectType == EJB_PROJECT_TYPE) {//EJB project
+        //                Annotation statelessAnnotation = JMIGenerationUtil.createAnnotation(javaClass, "javax.ejb.Stateless", Collections.EMPTY_LIST); //NOI18N
+        //                javaClass.getAnnotations().add(statelessAnnotation);
+        //            }
+        //
+        //            //Initially, set mode to PAYLOAD. The user can then change if he/she wishes
+        //            AttributeValue serviceModeValue = JMIGenerationUtil.createAttributeValue(javaClass, "value", "javax.xml.ws.Service.Mode", "PAYLOAD"); //NOI18N
+        //            ArrayList attrList = new ArrayList();
+        //            attrList.add(serviceModeValue);
+        //            Annotation serviceModeAnnotation = JMIGenerationUtil.createAnnotation(javaClass, "javax.xml.ws.ServiceMode", attrList); //NOI18N
+        //            javaClass.getAnnotations().add(serviceModeAnnotation);
+        //
+        //            AttributeValue wsdlLocationValue = JMIGenerationUtil.createAttributeValue(javaClass, "wsdlLocation", wsdlLocation );
+        //            AttributeValue serviceNameAttibuteValue = JMIGenerationUtil.createAttributeValue(javaClass, "serviceName", service.getName()); //NOI18N
+        //            AttributeValue targetNamespaceAttibuteValue = JMIGenerationUtil.createAttributeValue(javaClass, "targetNamespace", port.getNamespaceURI()); //NOI18N
+        //            AttributeValue portNameAttibuteValue = JMIGenerationUtil.createAttributeValue(javaClass, "portName", port.getName()); //NOI18N
+        //            attrList = new ArrayList();
+        //            attrList.add(wsdlLocationValue);
+        //            attrList.add(serviceNameAttibuteValue);
+        //            attrList.add(targetNamespaceAttibuteValue);
+        //            attrList.add(portNameAttibuteValue);
+        //            Annotation serviceProviderAnnotation = JMIGenerationUtil.createAnnotation(javaClass, "javax.xml.ws.WebServiceProvider", attrList); //NOI18N
+        //            javaClass.getAnnotations().add(serviceProviderAnnotation);
+        //            String returnType = "javax.xml.transform.Source";  //NOI18N
+        //            String operationName = "invoke";   //NOI18N
+        //            Method op = JMIGenerationUtil.createMethod(javaClass, operationName, Modifier.PUBLIC, returnType);
+        //            Parameter param = JMIGenerationUtil.createParameter(javaClass, "source", returnType);  //NOI18N
+        //            op.getParameters().add(param);
+        //            op.setBodyText("//TODO implement this method\nreturn null;");  //NOI18N
+        //            javaClass.getFeatures().add(op);
+        //        }finally{
+        //            JavaModel.getJavaRepository().endTrans();
+        //        }
+        //
+        //        FileObject fo = JavaModel.getFileObject(javaClass.getResource());
+        //        //open in the editor
+        //        DataObject dobj = DataObject.find(fo);
+        //        openFileInEditor(dobj);
     }
     
     private static void generateJaxWsImplClass(Project project, FileObject targetFolder, String targetName, URL wsdlURL, final WsdlService service, final WsdlPort port, boolean addService, String serviceID) throws Exception {
@@ -204,7 +208,7 @@ public class JaxWsUtils {
         //ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(JaxWsUtils.class, "TXT_WebServiceGeneration")); //NOI18N
         //handle.start(100);
         JAXWSSupport jaxWsSupport = JAXWSSupport.getJAXWSSupport(project.getProjectDirectory());
-
+        
         FileObject implClassFo = GenerationUtils.createClass(targetFolder, targetName, null);
         
         ClassPath classPath = ClassPath.getClassPath(implClassFo, ClassPath.SOURCE);
@@ -214,15 +218,19 @@ public class JaxWsUtils {
         if (addService) {
             serviceID = jaxWsSupport.addService(targetName, serviceImplPath, wsdlURL.toString(), service.getName(), port.getName(), artifactsPckg, jsr109Supported && Util.isJavaEE5orHigher(project));
         }
+        //Copy SEI to src dir       
+        FileObject serviceArtifactsFolder = project.getProjectDirectory().getFileObject("build/generated/wsimport/service"); //NOI18N
+        FileObject seiClass = serviceArtifactsFolder.getFileObject(port.getJavaName().replace('.', '/') + ".java");
+        copyToSource(seiClass, port.getJavaName(),classPath.findOwnerRoot(implClassFo));
         
         final String wsdlLocation = jaxWsSupport.getWsdlLocation(serviceID);
         JavaSource targetSource = JavaSource.forFileObject(implClassFo);
         CancellableTask<WorkingCopy> task = new CancellableTask<WorkingCopy>() {
-
+            
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
                 GenerationUtils genUtils = GenerationUtils.newInstance(workingCopy);
-                if (genUtils!=null) {     
+                if (genUtils!=null) {
                     TreeMaker make = workingCopy.getTreeMaker();
                     ClassTree javaClass = genUtils.getClassTree();
                     
@@ -233,29 +241,29 @@ public class JaxWsUtils {
                     TypeElement WSAn = workingCopy.getElements().getTypeElement("javax.jws.WebService"); //NOI18N
                     List<ExpressionTree> attrs = new ArrayList<ExpressionTree>();
                     attrs.add(
-                        make.Assignment(make.Identifier("serviceName"), make.Literal(service.getName()))); //NOI18N
+                            make.Assignment(make.Identifier("serviceName"), make.Literal(service.getName()))); //NOI18N
                     attrs.add(
-                        make.Assignment(make.Identifier("portName"), make.Literal(port.getName()))); //NOI18N
+                            make.Assignment(make.Identifier("portName"), make.Literal(port.getName()))); //NOI18N
                     attrs.add(
-                        make.Assignment(make.Identifier("endpointInterface"), make.Literal(port.getJavaName()))); //NOI18N
+                            make.Assignment(make.Identifier("endpointInterface"), make.Literal(port.getJavaName()))); //NOI18N
                     attrs.add(
-                        make.Assignment(make.Identifier("targetNamespace"), make.Literal(port.getNamespaceURI()))); //NOI18N
+                            make.Assignment(make.Identifier("targetNamespace"), make.Literal(port.getNamespaceURI()))); //NOI18N
                     attrs.add(
-                        make.Assignment(make.Identifier("wsdlLocation"), make.Literal(wsdlLocation))); //NOI18N
+                            make.Assignment(make.Identifier("wsdlLocation"), make.Literal(wsdlLocation))); //NOI18N
                     
                     AnnotationTree WSAnnotation = make.Annotation(
-                        make.QualIdent(WSAn), 
-                        attrs
-                    );
+                            make.QualIdent(WSAn),
+                            attrs
+                            );
                     modifiedClass = genUtils.addAnnotation(modifiedClass, WSAnnotation);
-                        
+                    
                     // add @Stateless annotation
                     if (projectType == EJB_PROJECT_TYPE) {//EJB project
-                        TypeElement StatelessAn = workingCopy.getElements().getTypeElement("javax.ejb.Stateless"); //NOI18N                   
+                        TypeElement StatelessAn = workingCopy.getElements().getTypeElement("javax.ejb.Stateless"); //NOI18N
                         AnnotationTree StatelessAnnotation = make.Annotation(
-                            make.QualIdent(StatelessAn), 
-                            Collections.<ExpressionTree>emptyList()
-                        );
+                                make.QualIdent(StatelessAn),
+                                Collections.<ExpressionTree>emptyList()
+                                );
                         modifiedClass = genUtils.addAnnotation(modifiedClass, StatelessAnnotation);
                     }
                     
@@ -263,7 +271,7 @@ public class JaxWsUtils {
                     for(WsdlOperation operation: operations) {
                         
                         // return type
-                       String returnType = operation.getReturnTypeName();
+                        String returnType = operation.getReturnTypeName();
                         
                         // create parameters
                         List<WsdlParameter> parameters = operation.getParameters();
@@ -273,13 +281,13 @@ public class JaxWsUtils {
                             // final ObjectOutput arg0
                             params.add(make.Variable(
                                     make.Modifiers(
-                                        Collections.<Modifier>emptySet(),
-                                        Collections.<AnnotationTree>emptyList()
+                                    Collections.<Modifier>emptySet(),
+                                    Collections.<AnnotationTree>emptyList()
                                     ),
                                     parameter.getName(), // name
                                     make.Identifier(parameter.getTypeName()), // parameter type
                                     null // initializer - does not make sense in parameters.
-                            ));
+                                    ));
                         }
                         
                         // create exceptions
@@ -290,24 +298,24 @@ public class JaxWsUtils {
                             TypeElement excEl = workingCopy.getElements().getTypeElement(exception);
                             exc.add(make.QualIdent(excEl));
                         }
-
+                        
                         // create method
                         ModifiersTree methodModifiers = make.Modifiers(
-                            Collections.<Modifier>singleton(Modifier.PUBLIC),
-                            Collections.<AnnotationTree>emptyList()
-                        );
+                                Collections.<Modifier>singleton(Modifier.PUBLIC),
+                                Collections.<AnnotationTree>emptyList()
+                                );
                         MethodTree method = make.Method(
                                 methodModifiers, // public
                                 operation.getJavaName(), // operation name
-                                make.Identifier(returnType), // return type 
+                                make.Identifier(returnType), // return type
                                 Collections.<TypeParameterTree>emptyList(), // type parameters - none
                                 params,
-                                exc, // throws 
+                                exc, // throws
                                 "{ //TODO implement this method\nthrow new UnsupportedOperationException(\"Not implemented yet.\") }", // body text
                                 null // default value - not applicable here, used by annotations
-                        );
+                                );
                         
-                        modifiedClass =  make.addClassMember(modifiedClass, method); 
+                        modifiedClass =  make.addClassMember(modifiedClass, method);
                     }
                     workingCopy.rewrite(javaClass, modifiedClass);
                 }
@@ -329,106 +337,109 @@ public class JaxWsUtils {
             }
         }
         
-// Retouche        
-//        JavaClass javaClass = null;
-//        boolean rollback = true;
-//        
-//        JAXWSSupport jaxWsSupport = JAXWSSupport.getJAXWSSupport(project.getProjectDirectory());
-//        
-//        JavaModel.getJavaRepository().beginTrans(true);
-//        try {
-//            javaClass = JMIGenerationUtil.createClass(targetFolder, targetName);
-//            JMIUtils.addInterface(javaClass, port.getJavaName());
-//            
-//            if (projectType == EJB_PROJECT_TYPE) {//EJB project
-//                Annotation statelessAnnotation = JMIGenerationUtil.createAnnotation(javaClass, "javax.ejb.Stateless", Collections.EMPTY_LIST); //NOI18N
-//                javaClass.getAnnotations().add(statelessAnnotation);
-//            }
-//            
-//            List operations = port.getOperations();
-//            if (operations != null) {
-//                for (int i = 0; i < operations.size(); i++) {
-//                    WsdlOperation operation = (WsdlOperation) operations.get(i);
-//                    List parameters = operation.getParameters();
-//                    
-//                    String returnType = operation.getReturnTypeName();
-//                    List exceptions = operation.getExceptions();
-//                    Method op = JMIGenerationUtil.createMethod(javaClass, operation.getJavaName(), Modifier.PUBLIC, returnType);
-//                    JMIUtils.addExceptions(op, exceptions);
-//                    if (parameters != null) {
-//                        for (int j = 0; j < parameters.size(); j++) {
-//                            WsdlParameter parameter = (WsdlParameter) parameters.get(j);
-//                            Parameter param = JMIGenerationUtil.createParameter(javaClass, parameter.getName(), parameter.getTypeName());
-//                            op.getParameters().add(param);
-//                        }
-//                    }
-//                    
-//                    Type type = JavaModel.getDefaultExtent().getType().resolve(returnType);
-//                    op.setBodyText(createBody(type));
-//                    
-//                    javaClass.getFeatures().add(op);
-//                    
-//                }
-//            }
-//            
-//            rollback = false;
-//        } finally {
-//            JavaModel.getJavaRepository().endTrans(rollback);
-//        }
-//        
-//        FileObject fo = javaClass == null ? null : JavaModel.getFileObject(javaClass.getResource());
-//        ClassPath classPath = ClassPath.getClassPath(fo, ClassPath.SOURCE);
-//        String serviceImplPath = classPath.getResourceName(fo, '.', false);
-//        String portJavaName = port.getJavaName();
-//        String artifactsPckg = portJavaName.substring(0, portJavaName.lastIndexOf("."));
-//        
-//        if (addService) {
-//            serviceID = jaxWsSupport.addService(targetName, serviceImplPath, wsdlURL.toString(), service.getName(), port.getName(), artifactsPckg, jsr109Supported && Util.isJavaEE5orHigher(project));
-//        }
-//        String wsdlLocation = jaxWsSupport.getWsdlLocation(serviceID);
-//        
-//        //add wsdlLocation attribute
-//        rollback = true;
-//        JavaModel.getJavaRepository().beginTrans(true);
-//        try {
-//            AttributeValue serviceNameAttibuteValue = JMIGenerationUtil.createAttributeValue(javaClass, "serviceName", service.getName()); //NOI18N
-//            AttributeValue portNameAttibuteValue = JMIGenerationUtil.createAttributeValue(javaClass, "portName", port.getName()); //NOI18N
-//            AttributeValue endPointInterfaceAttibuteValue = JMIGenerationUtil.createAttributeValue(javaClass, "endpointInterface", port.getJavaName()); //NOI18N
-//            AttributeValue targetNamespaceAttibuteValue = JMIGenerationUtil.createAttributeValue(javaClass, "targetNamespace", port.getNamespaceURI()); //NOI18N
-//            AttributeValue wsdlLocationAttibuteValue = JMIGenerationUtil.createAttributeValue(javaClass, "wsdlLocation", wsdlLocation); //NOI18N
-//            
-//            List attributes = new LinkedList();
-//            attributes.add(serviceNameAttibuteValue);
-//            attributes.add(portNameAttibuteValue);
-//            attributes.add(endPointInterfaceAttibuteValue);
-//            attributes.add(targetNamespaceAttibuteValue);
-//            attributes.add(wsdlLocationAttibuteValue);
-//            Annotation wsAnnotation = JMIGenerationUtil.createAnnotation(javaClass, "javax.jws.WebService", attributes); //NOI18N
-//            javaClass.getAnnotations().add(wsAnnotation);
-//            
-//            // add @javax.xml.ws.BindingType annotation for SOAP12 binding
-//            if (port.getSOAPVersion().equals(WsdlPort.SOAP_VERSION_12)) {
-//                AttributeValue bindingAttibuteValue = JMIGenerationUtil.createAttributeValue(javaClass, "value", WsdlPort.SOAP_VERSION_12); //NOI18N
-//                attributes.clear();
-//                attributes.add(bindingAttibuteValue);
-//                Annotation bindingAnnotation = JMIGenerationUtil.createAnnotation(javaClass, "javax.xml.ws.BindingType", attributes); //NOI18N
-//                javaClass.getAnnotations().add(bindingAnnotation);
-//            }
-//            
-//            rollback = false;
-//        } finally {
-//            JavaModel.getJavaRepository().endTrans(rollback);
-//        }
-//        
-//        //open in the editor
-//        DataObject dobj = DataObject.find(fo);
-//        openFileInEditor(dobj);
-//        
-//        //handle.finish();
+        
+        
+        // Retouche
+        //        JavaClass javaClass = null;
+        //        boolean rollback = true;
+        //
+        //        JAXWSSupport jaxWsSupport = JAXWSSupport.getJAXWSSupport(project.getProjectDirectory());
+        //
+        //        JavaModel.getJavaRepository().beginTrans(true);
+        //        try {
+        //            javaClass = JMIGenerationUtil.createClass(targetFolder, targetName);
+        //            JMIUtils.addInterface(javaClass, port.getJavaName());
+        //
+        //            if (projectType == EJB_PROJECT_TYPE) {//EJB project
+        //                Annotation statelessAnnotation = JMIGenerationUtil.createAnnotation(javaClass, "javax.ejb.Stateless", Collections.EMPTY_LIST); //NOI18N
+        //                javaClass.getAnnotations().add(statelessAnnotation);
+        //            }
+        //
+        //            List operations = port.getOperations();
+        //            if (operations != null) {
+        //                for (int i = 0; i < operations.size(); i++) {
+        //                    WsdlOperation operation = (WsdlOperation) operations.get(i);
+        //                    List parameters = operation.getParameters();
+        //
+        //                    String returnType = operation.getReturnTypeName();
+        //                    List exceptions = operation.getExceptions();
+        //                    Method op = JMIGenerationUtil.createMethod(javaClass, operation.getJavaName(), Modifier.PUBLIC, returnType);
+        //                    JMIUtils.addExceptions(op, exceptions);
+        //                    if (parameters != null) {
+        //                        for (int j = 0; j < parameters.size(); j++) {
+        //                            WsdlParameter parameter = (WsdlParameter) parameters.get(j);
+        //                            Parameter param = JMIGenerationUtil.createParameter(javaClass, parameter.getName(), parameter.getTypeName());
+        //                            op.getParameters().add(param);
+        //                        }
+        //                    }
+        //
+        //                    Type type = JavaModel.getDefaultExtent().getType().resolve(returnType);
+        //                    op.setBodyText(createBody(type));
+        //
+        //                    javaClass.getFeatures().add(op);
+        //
+        //                }
+        //            }
+        //
+        //            rollback = false;
+        //        } finally {
+        //            JavaModel.getJavaRepository().endTrans(rollback);
+        //        }
+        //
+        //        FileObject fo = javaClass == null ? null : JavaModel.getFileObject(javaClass.getResource());
+        //        ClassPath classPath = ClassPath.getClassPath(fo, ClassPath.SOURCE);
+        //        String serviceImplPath = classPath.getResourceName(fo, '.', false);
+        //        String portJavaName = port.getJavaName();
+        //        String artifactsPckg = portJavaName.substring(0, portJavaName.lastIndexOf("."));
+        //
+        //        if (addService) {
+        //            serviceID = jaxWsSupport.addService(targetName, serviceImplPath, wsdlURL.toString(), service.getName(), port.getName(), artifactsPckg, jsr109Supported && Util.isJavaEE5orHigher(project));
+        //        }
+        //        String wsdlLocation = jaxWsSupport.getWsdlLocation(serviceID);
+        //
+        //        //add wsdlLocation attribute
+        //        rollback = true;
+        //        JavaModel.getJavaRepository().beginTrans(true);
+        //        try {
+        //            AttributeValue serviceNameAttibuteValue = JMIGenerationUtil.createAttributeValue(javaClass, "serviceName", service.getName()); //NOI18N
+        //            AttributeValue portNameAttibuteValue = JMIGenerationUtil.createAttributeValue(javaClass, "portName", port.getName()); //NOI18N
+        //            AttributeValue endPointInterfaceAttibuteValue = JMIGenerationUtil.createAttributeValue(javaClass, "endpointInterface", port.getJavaName()); //NOI18N
+        //            AttributeValue targetNamespaceAttibuteValue = JMIGenerationUtil.createAttributeValue(javaClass, "targetNamespace", port.getNamespaceURI()); //NOI18N
+        //            AttributeValue wsdlLocationAttibuteValue = JMIGenerationUtil.createAttributeValue(javaClass, "wsdlLocation", wsdlLocation); //NOI18N
+        //
+        //            List attributes = new LinkedList();
+        //            attributes.add(serviceNameAttibuteValue);
+        //            attributes.add(portNameAttibuteValue);
+        //            attributes.add(endPointInterfaceAttibuteValue);
+        //            attributes.add(targetNamespaceAttibuteValue);
+        //            attributes.add(wsdlLocationAttibuteValue);
+        //            Annotation wsAnnotation = JMIGenerationUtil.createAnnotation(javaClass, "javax.jws.WebService", attributes); //NOI18N
+        //            javaClass.getAnnotations().add(wsAnnotation);
+        //
+        //            // add @javax.xml.ws.BindingType annotation for SOAP12 binding
+        //            if (port.getSOAPVersion().equals(WsdlPort.SOAP_VERSION_12)) {
+        //                AttributeValue bindingAttibuteValue = JMIGenerationUtil.createAttributeValue(javaClass, "value", WsdlPort.SOAP_VERSION_12); //NOI18N
+        //                attributes.clear();
+        //                attributes.add(bindingAttibuteValue);
+        //                Annotation bindingAnnotation = JMIGenerationUtil.createAnnotation(javaClass, "javax.xml.ws.BindingType", attributes); //NOI18N
+        //                javaClass.getAnnotations().add(bindingAnnotation);
+        //            }
+        //
+        //            rollback = false;
+        //        } finally {
+        //            JavaModel.getJavaRepository().endTrans(rollback);
+        //        }
+        //
+        //        //open in the editor
+        //        DataObject dobj = DataObject.find(fo);
+        //        openFileInEditor(dobj);
+        //
+        //        //handle.finish();
     }
-
+    
+    
     public static void openFileInEditor(DataObject dobj, Service service){
-
+        
         final OpenCookie openCookie = getMultiViewCookie(service,dobj);
         if (openCookie!=null) {
             RequestProcessor.getDefault().post(new Runnable(){
@@ -445,30 +456,61 @@ public class JaxWsUtils {
             }, 1000);
         }
     }
-
-// Retouche
-//    private static String createBody(Type type) {
-//        String initVal;
-//        
-//        if (type instanceof PrimitiveType) {
-//            PrimitiveTypeKind primitiveType = ((PrimitiveType) type).getKind();
-//            if (PrimitiveTypeKindEnum.BOOLEAN.equals(primitiveType)) {
-//                initVal = "false"; // NOI18N
-//            } else if (PrimitiveTypeKindEnum.CHAR.equals(primitiveType)) {
-//                initVal = "'\\0'"; // NOI18N
-//            } else if (PrimitiveTypeKindEnum.VOID.equals(primitiveType)) {
-//                return "throw new UnsupportedOperationException(\"Not yet implemented\");"; // NOI18N
-//            } else {
-//                initVal = "0"; // NOI18N
-//            }
-//        } else if (type instanceof ClassDefinition) {
-//            initVal = "null"; // NOI18N
-//        } else {
-//            throw new IllegalArgumentException("Type "+type.getClass()); // NOI18N
-//        }
-//        return "return ".concat(initVal).concat(";"); // NOI18N
-//    }
     
+    // Retouche
+    //    private static String createBody(Type type) {
+    //        String initVal;
+    //
+    //        if (type instanceof PrimitiveType) {
+    //            PrimitiveTypeKind primitiveType = ((PrimitiveType) type).getKind();
+    //            if (PrimitiveTypeKindEnum.BOOLEAN.equals(primitiveType)) {
+    //                initVal = "false"; // NOI18N
+    //            } else if (PrimitiveTypeKindEnum.CHAR.equals(primitiveType)) {
+    //                initVal = "'\\0'"; // NOI18N
+    //            } else if (PrimitiveTypeKindEnum.VOID.equals(primitiveType)) {
+    //                return "throw new UnsupportedOperationException(\"Not yet implemented\");"; // NOI18N
+    //            } else {
+    //                initVal = "0"; // NOI18N
+    //            }
+    //        } else if (type instanceof ClassDefinition) {
+    //            initVal = "null"; // NOI18N
+    //        } else {
+    //            throw new IllegalArgumentException("Type "+type.getClass()); // NOI18N
+    //        }
+    //        return "return ".concat(initVal).concat(";"); // NOI18N
+    //    }
+    
+    
+    public static String getPackageName(String fullyQualifiedName){
+        String packageName = "";
+        int index = fullyQualifiedName.lastIndexOf(".");
+        if(index != -1){
+            packageName = fullyQualifiedName.substring(0, index);
+        }
+        return packageName;
+    }
+    
+    public  static void copyToSource(FileObject fileToCopy, String qualifiedClassName, FileObject srcRoot )throws IOException{
+        if(fileToCopy != null){
+            String packageToCopy =  getPackageName(qualifiedClassName);
+            FileObject destFolder = FileUtil.createFolder(srcRoot, packageToCopy.replace('.', '/'));
+            FileObject existingFile = destFolder.getFileObject(fileToCopy.getNameExt());
+            if(existingFile != null){
+                FileLock lock = null;
+                try{
+                    lock = existingFile.lock();
+                    existingFile.delete(lock);
+                }finally{
+                    if(lock != null){
+                        lock.releaseLock();
+                    }
+                }
+            }
+            FileUtil.copyFile(fileToCopy, destFolder, fileToCopy.getName());
+        }
+    }
+    
+ 
     private static void initProjectInfo(Project project) {
         JAXWSSupport wss = JAXWSSupport.getJAXWSSupport(project.getProjectDirectory());
         if (wss != null) {
@@ -563,19 +605,19 @@ public class JaxWsUtils {
     public static boolean addRelativeWsdlLocation(FileObject bindingFile, String relativePath) {
         GlobalBindings gb = null;
         
-            ModelSource ms = org.netbeans.modules.xml.retriever.catalog.Utilities.getModelSource(bindingFile, true);
-            if(ms != null){
-                BindingsModel bindingsModel =  BindingsModelFactory.getDefault().getModel(ms);
-                if(bindingsModel != null){
-                    gb = bindingsModel.getGlobalBindings();
-                    if(gb != null){
-                        bindingsModel.startTransaction();
-                        gb.setWsdlLocation(relativePath);
-                        bindingsModel.endTransaction();
-                        return true;
-                    }
+        ModelSource ms = org.netbeans.modules.xml.retriever.catalog.Utilities.getModelSource(bindingFile, true);
+        if(ms != null){
+            BindingsModel bindingsModel =  BindingsModelFactory.getDefault().getModel(ms);
+            if(bindingsModel != null){
+                gb = bindingsModel.getGlobalBindings();
+                if(gb != null){
+                    bindingsModel.startTransaction();
+                    gb.setWsdlLocation(relativePath);
+                    bindingsModel.endTransaction();
+                    return true;
                 }
             }
+        }
         return false;
     }
     /** Package name validation
@@ -587,20 +629,20 @@ public class JaxWsUtils {
             int state = 0;
             for(int i = 0, pkglength = pkg.length(); i < pkglength && state < 2; i++) {
                 switch(state) {
-                    case 0:
-                        if(Character.isJavaIdentifierStart(pkg.charAt(i))) {
-                            state = 1;
-                        } else {
-                            state = 2;
-                        }
-                        break;
-                    case 1:
-                        if(pkg.charAt(i) == '.') {
-                            state = 0;
-                        } else if(!Character.isJavaIdentifierPart(pkg.charAt(i))) {
-                            state = 2;
-                        }
-                        break;
+                case 0:
+                    if(Character.isJavaIdentifierStart(pkg.charAt(i))) {
+                        state = 1;
+                    } else {
+                        state = 2;
+                    }
+                    break;
+                case 1:
+                    if(pkg.charAt(i) == '.') {
+                        state = 0;
+                    } else if(!Character.isJavaIdentifierPart(pkg.charAt(i))) {
+                        state = 2;
+                    }
+                    break;
                 }
             }
             
@@ -664,14 +706,14 @@ public class JaxWsUtils {
     public static boolean isEjbJavaEE5orHigher(ProjectInfo projectInfo) {
         int projectType = projectInfo.getProjectType();
         if (projectType == ProjectInfo.EJB_PROJECT_TYPE) {
-                FileObject ddFolder = JAXWSSupport.getJAXWSSupport(projectInfo.getProject().getProjectDirectory()).getDeploymentDescriptorFolder();
-                if (ddFolder==null || ddFolder.getFileObject("ejb-jar.xml")==null) { //NOI18N
-                    return true;
-                }
+            FileObject ddFolder = JAXWSSupport.getJAXWSSupport(projectInfo.getProject().getProjectDirectory()).getDeploymentDescriptorFolder();
+            if (ddFolder==null || ddFolder.getFileObject("ejb-jar.xml")==null) { //NOI18N
+                return true;
+            }
         }
         return false;
     }
-
+    
     public static boolean isCarProject(Project project) {
         ProjectInfo projectInfo = new ProjectInfo(project);
         return isCarProject(projectInfo);
@@ -683,9 +725,9 @@ public class JaxWsUtils {
     }
     
     private static final Lookup.Result<MultiViewCookieProvider> multiviewCookieProviders =
-        Lookup.getDefault().lookup(new Lookup.Template<MultiViewCookieProvider>(MultiViewCookieProvider.class));
+            Lookup.getDefault().lookup(new Lookup.Template<MultiViewCookieProvider>(MultiViewCookieProvider.class));
     
-    /** 
+    /**
      * Find MultiViewCookie for given this node
      */
     public static MultiViewCookie getMultiViewCookie(Service service, DataObject dataObject) {
@@ -699,7 +741,7 @@ public class JaxWsUtils {
         return null;
     }
     /** Setter for WebService annotation attribute, e.g. serviceName = "HelloService"
-     * 
+     *
      */
     public static void setWebServiceAttrValue(FileObject implClassFo, final String attrName, final String attrValue) {
         final JavaSource javaSource = JavaSource.forFileObject(implClassFo);
@@ -711,7 +753,7 @@ public class JaxWsUtils {
                     TreeMaker make = workingCopy.getTreeMaker();
                     ClassTree classTree = genUtils.getClassTree();
                     
-                    ExpressionTree attrExpr = 
+                    ExpressionTree attrExpr =
                             (attrValue==null?null:genUtils.createAnnotationArgument(attrName, attrValue));
                     
                     ModifiersTree modif = classTree.getModifiers();
@@ -719,7 +761,7 @@ public class JaxWsUtils {
                     List<AnnotationTree> newAnnotations = new ArrayList<AnnotationTree>();
                     
                     for (AnnotationTree an:annotations) {
-                        IdentifierTree ident = (IdentifierTree) an.getAnnotationType();                    
+                        IdentifierTree ident = (IdentifierTree) an.getAnnotationType();
                         TreePath anTreePath = workingCopy.getTrees().getPath(workingCopy.getCompilationUnit(), ident);
                         TypeElement anElement = (TypeElement)workingCopy.getTrees().getElement(anTreePath);
                         if(anElement!=null && anElement.getQualifiedName().contentEquals("javax.jws.WebService")) { //NOI18N
@@ -742,8 +784,8 @@ public class JaxWsUtils {
                                 newExpressions.add(attrExpr);
                             }
                             
-                            TypeElement webServiceEl = workingCopy.getElements().getTypeElement("javax.jws.WebService"); //NOI18N                            
-                            AnnotationTree webServiceAn = make.Annotation(make.QualIdent(webServiceEl), newExpressions);                            
+                            TypeElement webServiceEl = workingCopy.getElements().getTypeElement("javax.jws.WebService"); //NOI18N
+                            AnnotationTree webServiceAn = make.Annotation(make.QualIdent(webServiceEl), newExpressions);
                             newAnnotations.add(webServiceAn);
                         } else {
                             newAnnotations.add(an);
@@ -754,7 +796,7 @@ public class JaxWsUtils {
                     workingCopy.rewrite(modif, newModifier);
                 }
             }
-
+            
             public void cancel() {
             }
         };
@@ -764,10 +806,10 @@ public class JaxWsUtils {
             ErrorManager.getDefault().notify(ex);
         }
     }
- 
+    
     /** Setter for WebMethod annotation attribute, e.g. operationName = "HelloOperation"
-     * 
-     */    
+     *
+     */
     public static void setWebMethodAttrValue(FileObject implClassFo, final ElementHandle method, final String attrName, final String attrValue) {
         final JavaSource javaSource = JavaSource.forFileObject(implClassFo);
         final CancellableTask<WorkingCopy> modificationTask = new CancellableTask<WorkingCopy>() {
@@ -776,8 +818,8 @@ public class JaxWsUtils {
                 GenerationUtils genUtils = GenerationUtils.newInstance(workingCopy);
                 if (genUtils != null) {
                     TreeMaker make = workingCopy.getTreeMaker();
-                                 
-                    ExpressionTree attrExpr = 
+                    
+                    ExpressionTree attrExpr =
                             (attrValue == null?null:genUtils.createAnnotationArgument(attrName, attrValue));
                     
                     Element methodEl = method.resolve(workingCopy);
@@ -790,7 +832,7 @@ public class JaxWsUtils {
                     boolean foundWebMethodAn = false;
                     
                     for (AnnotationTree an:annotations) {
-                        IdentifierTree ident = (IdentifierTree) an.getAnnotationType();                    
+                        IdentifierTree ident = (IdentifierTree) an.getAnnotationType();
                         TreePath anTreePath = workingCopy.getTrees().getPath(workingCopy.getCompilationUnit(), ident);
                         TypeElement anElement = (TypeElement)workingCopy.getTrees().getElement(anTreePath);
                         if(anElement!=null && anElement.getQualifiedName().contentEquals("javax.jws.WebMethod")) { //NOI18N
@@ -813,9 +855,9 @@ public class JaxWsUtils {
                             if (!attrFound) {
                                 newExpressions.add(attrExpr);
                             }
-
-                            TypeElement webMethodEl = workingCopy.getElements().getTypeElement("javax.jws.WebMethod"); //NOI18N                            
-                            AnnotationTree webMethodAn = make.Annotation(make.QualIdent(webMethodEl), newExpressions);                            
+                            
+                            TypeElement webMethodEl = workingCopy.getElements().getTypeElement("javax.jws.WebMethod"); //NOI18N
+                            AnnotationTree webMethodAn = make.Annotation(make.QualIdent(webMethodEl), newExpressions);
                             newAnnotations.add(webMethodAn);
                         } else {
                             newAnnotations.add(an);
@@ -823,10 +865,10 @@ public class JaxWsUtils {
                     }
                     
                     if (!foundWebMethodAn && attrExpr!=null) {
-                        TypeElement webMethodEl = workingCopy.getElements().getTypeElement("javax.jws.WebMethod"); //NOI18N 
+                        TypeElement webMethodEl = workingCopy.getElements().getTypeElement("javax.jws.WebMethod"); //NOI18N
                         AnnotationTree webMethodAn = make.Annotation(
-                                                     make.QualIdent(webMethodEl),
-                                                     Collections.<ExpressionTree>singletonList(attrExpr));
+                                make.QualIdent(webMethodEl),
+                                Collections.<ExpressionTree>singletonList(attrExpr));
                         newAnnotations.add(webMethodAn);
                     }
                     
@@ -834,7 +876,7 @@ public class JaxWsUtils {
                     workingCopy.rewrite(modif, newModifier);
                 }
             }
-
+            
             public void cancel() {
             }
         };
@@ -846,8 +888,8 @@ public class JaxWsUtils {
     }
     
     /** Setter for WebParam annotation attribute, e.g. name = "x"
-     * 
-     */    
+     *
+     */
     public static void setWebParamAttrValue(FileObject implClassFo, final TreePathHandle param, final String attrName, final String attrValue) {
         final JavaSource javaSource = JavaSource.forFileObject(implClassFo);
         final CancellableTask<WorkingCopy> modificationTask = new CancellableTask<WorkingCopy>() {
@@ -856,8 +898,8 @@ public class JaxWsUtils {
                 GenerationUtils genUtils = GenerationUtils.newInstance(workingCopy);
                 if (genUtils != null) {
                     TreeMaker make = workingCopy.getTreeMaker();
-                                 
-                    ExpressionTree attrExpr = 
+                    
+                    ExpressionTree attrExpr =
                             (attrValue == null?null:genUtils.createAnnotationArgument(attrName, attrValue));
                     
                     Element paramEl = param.resolveElement(workingCopy);
@@ -869,8 +911,8 @@ public class JaxWsUtils {
                     
                     boolean foundWebParamAn = false;
                     
-                    for (AnnotationTree an:annotations) {                            
-                        IdentifierTree ident = (IdentifierTree) an.getAnnotationType();                            
+                    for (AnnotationTree an:annotations) {
+                        IdentifierTree ident = (IdentifierTree) an.getAnnotationType();
                         TreePath anTreePath = workingCopy.getTrees().getPath(workingCopy.getCompilationUnit(), ident);
                         TypeElement anElement = (TypeElement)workingCopy.getTrees().getElement(anTreePath);
                         if(anElement!=null && anElement.getQualifiedName().contentEquals("javax.jws.WebParam")) { //NOI18N
@@ -893,9 +935,9 @@ public class JaxWsUtils {
                             if (!attrFound) {
                                 newExpressions.add(attrExpr);
                             }
-
-                            TypeElement webParamEl = workingCopy.getElements().getTypeElement("javax.jws.WebParam"); //NOI18N                            
-                            AnnotationTree webParamAn = make.Annotation(make.QualIdent(webParamEl), newExpressions);                            
+                            
+                            TypeElement webParamEl = workingCopy.getElements().getTypeElement("javax.jws.WebParam"); //NOI18N
+                            AnnotationTree webParamAn = make.Annotation(make.QualIdent(webParamEl), newExpressions);
                             newAnnotations.add(webParamAn);
                         } else {
                             newAnnotations.add(an);
@@ -903,19 +945,19 @@ public class JaxWsUtils {
                     }
                     
                     if (!foundWebParamAn && attrExpr!=null) {
-                        TypeElement webParamEl = workingCopy.getElements().getTypeElement("javax.jws.WebParam"); //NOI18N                       
+                        TypeElement webParamEl = workingCopy.getElements().getTypeElement("javax.jws.WebParam"); //NOI18N
                         AnnotationTree webParamAn = make.Annotation(
-                                                    make.QualIdent(webParamEl),
-                                                    Collections.<ExpressionTree>singletonList(attrExpr));
+                                make.QualIdent(webParamEl),
+                                Collections.<ExpressionTree>singletonList(attrExpr));
                         newAnnotations.add(webParamAn);
-                    }                   
+                    }
                     
                     
                     ModifiersTree newModifier = make.Modifiers(modif, newAnnotations);
                     workingCopy.rewrite(modif, newModifier);
                 }
             }
-
+            
             public void cancel() {
             }
         };

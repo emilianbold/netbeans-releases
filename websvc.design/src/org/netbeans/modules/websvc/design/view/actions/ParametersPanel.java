@@ -136,9 +136,9 @@ public final class ParametersPanel extends javax.swing.JPanel {
         Collection<Schema> schemas = types.getSchemas();
         
         List<ReferenceableSchemaComponent> schemaTypes = new ArrayList<ReferenceableSchemaComponent>();
-        for(Schema schema : schemas) {
-            // primitive types
-            schemaTypes.addAll(Utils.getPrimitiveTypes());
+        // primitive types
+        schemaTypes.addAll(Utils.getPrimitiveTypes());
+        for(Schema schema : schemas) {            
             // populate with internal schema
             String schemaNamespace = schema.getTargetNamespace();
             if (schemaNamespace!=null) {
