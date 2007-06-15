@@ -41,8 +41,8 @@ public class GSDeploymentFactory implements DeploymentFactory {
     
     public static synchronized DeploymentFactory create() {
         if (instance == null) {
-            if (err.isLoggable(Level.INFO)) {
-                err.log(Level.INFO, "Creating Generic Server Factory"); // NOI18N
+            if (err.isLoggable(Level.FINE)) {
+                err.log(Level.FINE, "Creating Generic Server Factory"); // NOI18N
             }
             instance = new GSDeploymentFactory();
             DeploymentFactoryManager.getInstance().registerDeploymentFactory(instance);
