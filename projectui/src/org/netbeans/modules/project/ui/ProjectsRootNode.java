@@ -45,6 +45,7 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
@@ -364,7 +365,7 @@ public class ProjectsRootNode extends AbstractNode {
             return true;
         }
 
-        public Iterator/*<DataObject>*/ objectsToSearch() {
+        public Iterator<DataObject> objectsToSearch() {
             return delegate.objectsToSearch();
         }
         
