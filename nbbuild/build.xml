@@ -95,6 +95,7 @@ Microsystems, Inc. All Rights Reserved.
     <javac srcdir="antsrc" destdir="build/antclasses" deprecation="true" debug="${build.compiler.debug}" source="1.5" target="1.5">
       <classpath refid="bootstrap-cp"/>
       <exclude name="**/CheckHelpSets.java" unless="have.javahelp"/>
+      <exclude name="**/CheckHelpSetsBin.java" unless="have.javahelp"/>
       <compilerarg value="-Xlint"/>
     </javac>
     <jar jarfile="nbantext.jar">
