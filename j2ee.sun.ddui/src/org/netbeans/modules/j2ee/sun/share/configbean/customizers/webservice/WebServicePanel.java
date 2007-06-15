@@ -49,10 +49,6 @@ public class WebServicePanel extends SectionNodeInnerPanel {
     private WebServiceNode webServiceNode;
     private ASDDVersion version;
 
-    // For managing endpoint subpanel
-//	private SelectedEndpointPanel selectedEndpointPanel;
-//	private DefaultComboBoxModel endpointModel;
-    
     
     public WebServicePanel(SectionNodeView sectionNodeView, final WebServiceNode webServiceNode, 
             final ASDDVersion version) {
@@ -88,9 +84,6 @@ public class WebServicePanel extends SectionNodeInnerPanel {
         jTxtName = new javax.swing.JTextField();
         jLblWsdlPublishLocation = new javax.swing.JLabel();
         jTxtWsdlPublishLocation = new javax.swing.JTextField();
-        jLblPortDescription = new javax.swing.JLabel();
-        jLblPortComponentName = new javax.swing.JLabel();
-        jCbxPortSelector = new javax.swing.JComboBox();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -107,7 +100,6 @@ public class WebServicePanel extends SectionNodeInnerPanel {
         jLblName.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_WebServiceDescriptionName")); // NOI18N
         jLblName.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_WebServiceDescriptionName")); // NOI18N
 
-        jTxtName.setEditable(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -126,11 +118,6 @@ public class WebServicePanel extends SectionNodeInnerPanel {
         jLblWsdlPublishLocation.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_WsdlPublishLocation")); // NOI18N
         jLblWsdlPublishLocation.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_WsdlPublishLocation")); // NOI18N
 
-        jTxtWsdlPublishLocation.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyReleased(java.awt.event.KeyEvent evt) {
-                jTxtWsdlPublishLocationKeyReleased(evt);
-            }
-        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -147,63 +134,10 @@ public class WebServicePanel extends SectionNodeInnerPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 5, 5);
         add(jPanel1, gridBagConstraints);
-
-        jLblPortDescription.setText(bundle.getString("LBL_ServiceEndpointDescription")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 5);
-        add(jLblPortDescription, gridBagConstraints);
-
-        jLblPortComponentName.setLabelFor(jCbxPortSelector);
-        jLblPortComponentName.setText(bundle.getString("LBL_PortComponentName_1")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.insets = new java.awt.Insets(6, 6, 5, 0);
-        add(jLblPortComponentName, gridBagConstraints);
-
-        jCbxPortSelector.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jCbxPortSelectorActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(6, 6, 5, 5);
-        add(jCbxPortSelector, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
-    private void jCbxPortSelectorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCbxPortSelectorActionPerformed
-//		EndpointMapping endpointMapping = (EndpointMapping) endpointModel.getSelectedItem();
-//
-//		if(endpointMapping != null) {
-//			selectedEndpointPanel.setEndpointMapping(endpointMapping);
-//		} else {
-//			selectedEndpointPanel.setEndpointMapping(null);
-//		}
-    }//GEN-LAST:event_jCbxPortSelectorActionPerformed
-
-    private void jTxtWsdlPublishLocationKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jTxtWsdlPublishLocationKeyReleased
-//        if(theBean != null) {
-//            String oldWsdlPublishLocation = theBean.getWsdlPublishLocation();
-//            try {
-//                String newWsdlPublishLocation = jTxtWsdlPublishLocation.getText().trim();
-//                if(!newWsdlPublishLocation.equals(oldWsdlPublishLocation)) {
-//                    theBean.setWsdlPublishLocation(newWsdlPublishLocation);
-//                    validateField(WebServiceDescriptor.FIELD_WSDL_PUBLISH_LOCATION);
-//                }
-//            } catch(java.beans.PropertyVetoException ex) {
-//                jTxtWsdlPublishLocation.setText(oldWsdlPublishLocation);
-//            }
-//        }
-    }//GEN-LAST:event_jTxtWsdlPublishLocationKeyReleased
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JComboBox jCbxPortSelector;
     private javax.swing.JLabel jLblName;
-    private javax.swing.JLabel jLblPortComponentName;
-    private javax.swing.JLabel jLblPortDescription;
     private javax.swing.JLabel jLblWsdlPublishLocation;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JTextField jTxtName;
