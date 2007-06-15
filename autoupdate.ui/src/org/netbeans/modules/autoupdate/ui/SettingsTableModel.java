@@ -54,7 +54,6 @@ public class SettingsTableModel extends AbstractTableModel {
     };
     private List<UpdateUnitProvider> updateProviders;
     private Set<String> originalProviders;
-    private String filter;
     private PluginManagerUI pluginManager = null;
     
     private final Logger logger = Logger.getLogger ("org.netbeans.modules.autoupdate.ui.SettingsTableModel");
@@ -70,19 +69,7 @@ public class SettingsTableModel extends AbstractTableModel {
     PluginManagerUI getPluginManager () {
         return pluginManager;
     }
-    
-    void setFilter (final String filter)  {
-        SwingUtilities.invokeLater (new Runnable () {
-            public void run () {
-                synchronized(SettingsTableModel.class) {
-                    SettingsTableModel.this.filter = filter.toLowerCase ();
-                }
-                refreshModel ();
-            }
-        });
         
-    }
-    
     void refreshModel () {
         Set<String> oldValue = originalProviders;
         originalProviders = new HashSet<String> ();
@@ -106,14 +93,6 @@ public class SettingsTableModel extends AbstractTableModel {
             });
         }
         updateProviders = new ArrayList<UpdateUnitProvider> (providers);
-        if (filter != null && filter.length () > 0) {
-            for (Iterator<UpdateUnitProvider> it = updateProviders.iterator (); it.hasNext ();) {
-                UpdateUnitProvider updateUnitProvider = it.next ();
-                if (updateUnitProvider.getDisplayName ().toLowerCase ().indexOf (filter) == -1 ) {
-                    it.remove ();
-                }
-            }
-        }
         sortAlphabetically (updateProviders);
         fireTableDataChanged ();
     }
