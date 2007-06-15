@@ -140,7 +140,7 @@ public class DataconnectivityModuleInstaller extends ModuleInstall {
                 
                 // Dataconnectivity implementation to support Project migration of previous releases projects
                 // For previous release userdir migration, if no context file then settings haven't been migrated
-                File contextFile =  DatabaseSettingsImporter.getInstance().locateContextFile();
+                File contextFile =  DatabaseSettingsImporter.getInstance().retrieveMigratedSettingsAtStartup();
                 if (contextFile != null)
                     new DerbyWaiter(contextFile.exists());  // waits for Derby drivers to be registered before migrating userdir settings
                 else {

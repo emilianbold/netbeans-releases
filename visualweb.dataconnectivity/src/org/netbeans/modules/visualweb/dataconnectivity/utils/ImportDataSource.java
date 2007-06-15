@@ -38,6 +38,7 @@ import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.visualweb.dataconnectivity.datasource.CurrentProject;
+import org.netbeans.modules.visualweb.dataconnectivity.naming.DatabaseSettingsImporter;
 import org.netbeans.modules.visualweb.dataconnectivity.ui.DatasourceUISettings;
 import org.netbeans.modules.visualweb.dataconnectivity.ui.MissingConnectionsAlertPanel;
 import org.netbeans.modules.visualweb.dataconnectivity.ui.UpdateDataSourcesDialog;
@@ -265,15 +266,16 @@ public class ImportDataSource {
      /**
       * Show OK/Cancel dialog that starts the migration of user settings and updating the project's data
       * sources.  After clicking ok the progress bar will show the progress.
+      * @param project  Project from which the Update action occurred
       */
-    public static synchronized void showUpdate() {
+    public static synchronized void showUpdate(final Project project) {
         // Do not show alert if it is already shown or if it was shown
         // in last BROKEN_ALERT_TIMEOUT milliseconds or if user do not wish it.
         
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 try {
-                    UpdateDataSourcesDialog dialog = new UpdateDataSourcesDialog(new javax.swing.JFrame(), true);
+                    UpdateDataSourcesDialog dialog = new UpdateDataSourcesDialog(new javax.swing.JFrame(), project, true);
                     dialog.addWindowListener(new java.awt.event.WindowAdapter() {
                         public void windowClosing(java.awt.event.WindowEvent e) {
                             System.exit(0);
@@ -290,5 +292,7 @@ public class ImportDataSource {
         });
     }            
     
-    
+    public static void registerDatabaseSettings() {
+        DatabaseSettingsImporter.getInstance().locateAndRegisterConnections(false);
+    }
 }

@@ -58,7 +58,7 @@ public class DerbyWaiter {
         if (drvsArray.length > 0) {
             if (isMigration) {
                 DatabaseSettingsImporter.getInstance().locateAndRegisterDrivers();
-                DatabaseSettingsImporter.getInstance().locateAndRegisterConnections();
+                DatabaseSettingsImporter.getInstance().locateAndRegisterConnections(true);
                 SampleDatabaseCreator.createAll("travel", "travel", "travel", "TRAVEL", "modules/ext/travel.zip", false, "localhost", 1527);
             } else
                 SampleDatabaseCreator.createAll("travel", "travel", "travel", "TRAVEL", "modules/ext/travel.zip", false, "localhost", 1527);

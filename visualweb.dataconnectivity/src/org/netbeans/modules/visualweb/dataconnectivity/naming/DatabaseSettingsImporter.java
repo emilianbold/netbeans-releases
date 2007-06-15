@@ -25,6 +25,7 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -79,7 +80,7 @@ public class DatabaseSettingsImporter {
     public static final String  VALUE_ATTR   = "value"; // NOI18N
     public static final String DRIVER_CLASS_NET = "org.apache.derby.jdbc.ClientDriver"; // NOI18N
     private File         userCtxFile;
-    private ArrayList    dataSources;            
+    private ArrayList <String[]>    dataSources;            
     ArrayList <DataSourceInfo> dataSourcesInfo;   
     
     private static ResourceBundle rb = ResourceBundle.getBundle("org.netbeans.modules.visualweb.dataconnectivity.naming.Bundle", // NOI18N
@@ -89,8 +90,8 @@ public class DatabaseSettingsImporter {
     
     /** Creates a new instance of DatabaseImporter */
     private DatabaseSettingsImporter() {
-        dataSources = new ArrayList();
-        dataSourcesInfo = new ArrayList();
+        dataSources = new ArrayList<String[]>();
+        dataSourcesInfo = new ArrayList<DataSourceInfo>();
     }
     
     /**
@@ -107,6 +108,7 @@ public class DatabaseSettingsImporter {
     
     /**
      * Obtain JDBC driver jars from previous release then register the drivers
+     * @param isStartup 
      * @return
      */
     public boolean locateAndRegisterDrivers() {
@@ -184,55 +186,61 @@ public class DatabaseSettingsImporter {
     
     /**
      * Obtain connection info from previous release's context.xml then register connections
+     * @param isStartup flag indicates that settings were migrated at startup or not
      * @return
      */
-    public boolean locateAndRegisterConnections() {
-        File contextFile = locateContextFile();
+    public boolean locateAndRegisterConnections(boolean isStartup) {
+        File contextFile = null;
+        Set <File> contextFiles = null;
+        
+        if (isStartup) {
+            contextFile = retrieveMigratedSettingsAtStartup();
+        } else {
+            contextFiles = locateMigratedSettings();
+        }
+           
         if (contextFile == null)
             return false;
         
         registerConnections(contextFile);
+        registerConnections(contextFiles);
         return true;
     }
     
-    public File locateContextFile() {
-        String seps =  File.separator ;
-        File contextReleaseRoot  = new File(System.getProperty("netbeans.user") + seps + "config" +  seps); // NOI18N
-        String contextReleasePath = contextReleaseRoot.getPath();
-        String creator2_0Path = contextReleasePath  +  seps + "2_0"; // NOI18N
-        String creator2_1Path = contextReleasePath  +  seps + "2_1"; // NOI18N
-        String nb55Path = contextReleasePath +  seps  + "5_5"; // NOI18N
-        String nb551Path = contextReleasePath  +  seps + "5_5_1"; // NOI18N
-        File contextReleaseDir = null;
-        File[] configDir = contextReleaseRoot.listFiles();
-        boolean found = false;
-        File[] contextReleaseDirFiles = null;
+    public File retrieveMigratedSettingsAtStartup() {
+        File contextReleaseRoot  = new File(System.getProperty("netbeans.user")); // NOI18N        
+        File[] contextReleaseDirFiles = null;                
         
-        for (File releaseDir : configDir) {
-            String rPath = releaseDir.getPath();
-            
-            if (rPath.equals(creator2_0Path) || rPath.equals(creator2_1Path) || rPath.equals(nb55Path) ||
-                    rPath.equals(nb551Path)) {
-                contextReleaseDir = releaseDir;
-                found = true;
+        contextReleaseDirFiles = contextReleaseRoot.listFiles();
+        File contextFile = null;
+        for (int i = 0; i < contextReleaseDirFiles.length; i++) {
+            String fileName = contextReleaseDirFiles[i].getName();
+            if (fileName.equals("context.xml")) {
+                contextFile = contextReleaseDirFiles[i];
                 break;
             }
         }
+                        
+        return contextFile;                
+    }
+    
+    public Set <File> locateMigratedSettings() {
+        File contextReleaseRoot  = new File(System.getProperty("netbeans.user")); // NOI18N
+        File[] contextFileDirs = null;
+        Set <File> contextReleaseDirFiles = new HashSet<File>();                 
+        File migratedDir = new File (contextReleaseRoot.getAbsolutePath() + File.separator + "migrated");
         
-        // If there are settings to migrate, list the contents
-        if (found) {
-            contextReleaseDirFiles = contextReleaseDir.listFiles();
+        if (migratedDir == null || !migratedDir.exists() || !migratedDir.isDirectory()) {
+           return null;
         }
         
-        if (contextReleaseDirFiles == null)
-            return null;
+        contextFileDirs = migratedDir.listFiles();
+        for (File releaseDir : contextFileDirs) {
+            String rPath = releaseDir.getPath();            
+            contextReleaseDirFiles.add(releaseDir);          
+        }
         
-        if (contextReleaseDirFiles[0].exists())
-            return contextReleaseDirFiles[0];
-        else
-            return null;
-        
-        
+        return contextReleaseDirFiles;        
     }
     
     private void registerConnections(File contextFile) {
@@ -270,6 +278,49 @@ public class DatabaseSettingsImporter {
             }                        
         } catch (DatabaseException de) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, de);
+        }
+    }
+    
+    
+    private void registerConnections(Set<File> contextFiles) {
+        Iterator it = contextFiles.iterator();
+        
+        while (it.hasNext()) {
+            dataSourcesInfo = createDataSourceInfoFromCtx((File)it.next());
+            
+            try {
+                Iterator itDataSource = dataSourcesInfo.iterator();
+                DataSourceInfo dsInfo = null;
+                boolean isDriverJavaDB = false;
+                DatabaseConnection dbconn = null;
+                JDBCDriver drvs = null;
+                JDBCDriver[] drvsArray = null;
+                
+                // From each Data Source, add a connection to DB Explorer
+                while (itDataSource.hasNext()) {
+                    dsInfo = ((DataSourceInfo)itDataSource.next());
+                    String username = dsInfo.getUsername();
+                    String password = dsInfo.getPassword();
+                    isDriverJavaDB = dsInfo.getDriverClassName().equals(DRIVER_CLASS_NET);
+                    
+                    // To register a Derby connection, no need to check to see if Java DB driver had been registered
+                    if (dsInfo.getDriverClassName().equals(DRIVER_CLASS_NET)) {
+                        if (!dsInfo.getName().equals("Travel")) {
+                            drvsArray = JDBCDriverManager.getDefault().getDrivers(DRIVER_CLASS_NET);
+                            dbconn = DatabaseConnection.create(drvsArray[0], dsInfo.getUrl(), username,  username.toUpperCase(), password,  true);
+                            ConnectionManager.getDefault().addConnection(dbconn);
+                        }
+                    } else {
+                        drvs = DataSourceResolver.getInstance().findMatchingDriver(dsInfo.getDriverClassName());
+                        if (drvs != null) {
+                            dbconn = DatabaseConnection.create(drvs, dsInfo.getUrl(), username,  username.toUpperCase(), password,  true);
+                            ConnectionManager.getDefault().addConnection(dbconn);
+                        }
+                    }
+                }
+            } catch (DatabaseException de) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, de);
+            }
         }
     }
     
@@ -341,7 +392,7 @@ public class DatabaseSettingsImporter {
     }
     
     private ArrayList<DataSourceInfo> createDataSourceInfoFromCtx(File contextFile) {
-        ArrayList <DataSourceInfo> dsInfo = new ArrayList();
+        ArrayList <DataSourceInfo> dsInfo = new ArrayList<DataSourceInfo>();
         
         try {
             userCtxFile = contextFile;
@@ -396,7 +447,7 @@ public class DatabaseSettingsImporter {
             private String objectName;
             private String className;
             private int tagCount = 0;
-            ArrayList args = new ArrayList();
+            ArrayList<String> args = new ArrayList<String>();
             public void startElement(String uri, String localName, String qName, Attributes attributes)  throws SAXException {
                 
                 if (qName.equals(OBJ_TAG)) {
@@ -474,7 +525,7 @@ public class DatabaseSettingsImporter {
         boolean needWrite = false;
         
         ResourceRef[] rscRefs = webApp.getResourceRef();
-        List reqList = new LinkedList();
+        List<RequestedResource> reqList = new LinkedList<RequestedResource>();
         Iterator itRess = ress.iterator();
         while (itRess.hasNext()) {
             reqList.add((RequestedResource)itRess.next());
