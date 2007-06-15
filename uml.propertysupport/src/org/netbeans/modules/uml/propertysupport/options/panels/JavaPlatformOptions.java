@@ -29,7 +29,7 @@ import org.openide.util.NbBundle;
 public class JavaPlatformOptions implements UMLOptionsPanel {
     
     private JavaPlatformOptionsPanel form = null ;
-
+    
     
     public JavaPlatformOptions() {
     }
@@ -48,25 +48,23 @@ public class JavaPlatformOptions implements UMLOptionsPanel {
     
     public JComponent create() {
         if (form == null) {
-        
+            
             form = new JavaPlatformOptionsPanel();
-        
+            
         }
         return form;
     }
     
     public Hashtable getCurrentValues() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
     
     public Hashtable getUpdatedValues() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
     
     public String getDisplayName() {
-        return NbBundle.getMessage (JavaPlatformOptions.class, "JAVA_PLATFORM");
+        return NbBundle.getMessage(JavaPlatformOptions.class, "JAVA_PLATFORM"); // NOI18N
     }
-
-    
     
 }

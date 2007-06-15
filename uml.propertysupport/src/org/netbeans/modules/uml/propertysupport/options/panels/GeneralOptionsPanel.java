@@ -29,7 +29,7 @@ import org.openide.util.NbBundle;
 public class GeneralOptionsPanel implements UMLOptionsPanel {
     
     private GeneralOptionsPanelForm form = null ;
-
+    
     
     public GeneralOptionsPanel() {
     }
@@ -48,9 +48,9 @@ public class GeneralOptionsPanel implements UMLOptionsPanel {
     
     public JComponent create() {
         if (form == null) {
-        
+            
             form = new GeneralOptionsPanelForm();
-        
+            
         }
         return form;
     }
@@ -64,9 +64,8 @@ public class GeneralOptionsPanel implements UMLOptionsPanel {
     }
     
     public String getDisplayName() {
-        return NbBundle.getMessage (JavaPlatformOptions.class, "JAVA_PLATFORM");
+        return NbBundle.getMessage(GeneralOptionsPanel.class, "GeneralOptionsPanel.tabTitle");
     }
+    
 
-    
-    
 }

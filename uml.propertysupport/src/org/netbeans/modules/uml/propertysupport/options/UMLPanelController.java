@@ -28,6 +28,7 @@
 
 package org.netbeans.modules.uml.propertysupport.options;
 import java.beans.PropertyChangeListener;
+import java.util.Vector;
 import javax.swing.JComponent;
 import javax.swing.JTabbedPane;
 import org.netbeans.modules.uml.propertysupport.options.api.UMLOptionsPanel;
@@ -48,75 +49,79 @@ public class UMLPanelController extends OptionsPanelController {
     private GeneralOptionsPanel defaultPanel = null ;
     private MiscOptionsPanel misc = null ;
     private OptionsSupport support = null ;
+    private JTabbedPane pane = null ;    
+    
     /**
      * Creates a new instance of UMLPanelController
      */
     public UMLPanelController() {
-        if (debug) log("MyPanelController");
+        if (debug) log("MyPanelController"); // NOI18N
     }
     
     
     public void update() {
         changed = false ;
-        if (debug) log("update");
+        if (debug) log("update"); // NOI18N
         
         // (1) apply changes for "general" panel options
         defaultPanel.update();
         
         // (2..n) apply changes for registered panel options
         for (UMLOptionsPanel panel: support.getMainPanels()) {
-            panel.update(); 
+            panel.update();
         }
         
         //((n+1)..m) apply changes for misc panels options
         for (UMLOptionsPanel panel: support.getMiscPanels()) {
-            panel.update(); 
+            panel.update();
         }
     }
     
     public void applyChanges() {
         changed = true ;
-        if (debug) log("applyChanges");
+        if (debug) log("applyChanges"); // NOI18N
         
         // (1) apply changes for "general" panel options
         defaultPanel.applyChanges();
         
         // (2..n) apply changes for registered panel options
         for (UMLOptionsPanel panel: support.getMainPanels()) {
-            panel.applyChanges(); 
+            panel.applyChanges();
         }
         
         //((n+1)..m) apply changes for misc panels options
         for (UMLOptionsPanel panel: support.getMiscPanels()) {
-            panel.applyChanges(); 
+            panel.applyChanges();
         }
     }
     
     public void cancel() {
         for (UMLOptionsPanel panel: support.getMainPanels()) {
-            panel.cancel(); 
+            panel.cancel();
         }
     }
     
     public boolean isValid() {
-        if (debug) log("isValid");
+        if (debug) log("isValid"); // NOI18N
         return true ;
     }
     
     public boolean isChanged() {
-        if (debug) log("isChanged"); 
+        if (debug) log("isChanged");  // NOI18N
         return changed ;
     }
     
     public JComponent getComponent(Lookup lookup) {
         
-        if (debug) log("getComponent");
-        
+        if (debug) log("getComponent"); // NOI18N
+
         // this is the main component that holds the various tabs. There are two
         // panels being added directly: General and Misc. The other tabs are found
         // from the lookup (via layer file). See OptionsSupport getMainPanels() and
         // getMiscPanels().
-        JTabbedPane pane = new JTabbedPane() ;
+        pane = new JTabbedPane() ;
+        
+        // (1) create the General panel and populate it.
         
         // (1) create the General panel and populate it.
         defaultPanel = new GeneralOptionsPanel() ;
@@ -126,8 +131,10 @@ public class UMLPanelController extends OptionsPanelController {
         
         // (2..n) add all panels that are registered via layer files
         support = new OptionsSupport() ;
+        Vector<UMLOptionsPanel> panels = support.getMainPanels() ;
         
-        for (UMLOptionsPanel panel:support.getMainPanels()) {
+        int i = 1;
+        for (UMLOptionsPanel panel: panels) {
             pane.addTab(panel.getDisplayName(), panel.create()) ;
         }
         
@@ -135,37 +142,40 @@ public class UMLPanelController extends OptionsPanelController {
         //the following will add a "Misc" tab to this tabbed pane and populate
         //the panel with panels registered in their layer files as UML|Misc panels.
         //It is removed for now because there is no need for such a category.
-//        misc = new MiscOptionsPanel() ;
-//        UMLMiscOptionsPanelForm miscPanel = (UMLMiscOptionsPanelForm) misc.create() ;
-//        
-//        pane.addTab(misc.getDisplayName(), miscPanel) ;
-//        
-//        for (UMLOptionsPanel panel:support.getMiscPanels()) {
-//            miscPanel.addTab(panel) ;
-//        }
+        //        misc = new MiscOptionsPanel() ;
+        //        UMLMiscOptionsPanelForm miscPanel = (UMLMiscOptionsPanelForm) misc.create() ;
+        //
+        //        pane.addTab(misc.getDisplayName(), miscPanel) ;
+        //
+        //        for (UMLOptionsPanel panel:support.getMiscPanels()) {
+        //            miscPanel.addTab(panel) ;
+        //        }
         
         
         return pane ;
         
     }
     
+    
     public HelpCtx getHelpCtx() {
-        if (debug) log("getHelpCtx");
-        return HelpCtx.DEFAULT_HELP ;
+        if (debug) log("getHelpCtx"); // NOI18N
+
+        return new HelpCtx("uml_prefs_categories_in_preferences_editor") ;
     }
     
     public void addPropertyChangeListener(PropertyChangeListener propertyChangeListener) {
-        if (debug) log("addPropertyChangeListener::"+propertyChangeListener.toString());
+        if (debug) log("addPropertyChangeListener::"+propertyChangeListener.toString()); // NOI18N
         
     }
     
     public void removePropertyChangeListener(PropertyChangeListener propertyChangeListener) {
-        if (debug) log("removePropertyChangeListener");
+        if (debug) log("removePropertyChangeListener"); // NOI18N
         
     }
     
     private static void log(String s) {
-        System.out.println("MyPanelController::"+s);
+        System.out.println("MyPanelController::"+s); // NOI18N
     }
+    
     
 }

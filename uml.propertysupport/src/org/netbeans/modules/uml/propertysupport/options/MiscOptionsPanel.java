@@ -56,7 +56,7 @@ public class MiscOptionsPanel {
     }
     
     private String loc(String key) {
-        return NbBundle.getMessage(DefaultOptionsPanel.class, key) ;
+        return NbBundle.getMessage(MiscOptionsPanel.class, key) ;
     }
     
     private void log (String s) {
