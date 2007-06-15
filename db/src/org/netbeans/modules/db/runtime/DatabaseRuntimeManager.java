@@ -45,7 +45,7 @@ import org.openide.util.Lookup;
 public final class DatabaseRuntimeManager {
     
     private static final Logger LOGGER = Logger.getLogger(DatabaseRuntimeManager.class.getName());
-    private static final boolean LOG = LOGGER.isLoggable(Level.INFO);
+    private static final boolean LOG = LOGGER.isLoggable(Level.FINE);
     
     /**
      * The path where the runtimes are registered in the SystemFileSystem.
@@ -95,7 +95,7 @@ public final class DatabaseRuntimeManager {
         for (Iterator i = result.allInstances().iterator(); i.hasNext();) {
             DatabaseRuntime runtime = (DatabaseRuntime)i.next();
             if (LOG) {
-                LOGGER.log(Level.INFO, "Runtime: " + runtime.getClass().getName() + " for driver " + runtime.getJDBCDriverClass()); // NOI18N
+                LOGGER.log(Level.FINE, "Runtime: " + runtime.getClass().getName() + " for driver " + runtime.getJDBCDriverClass()); // NOI18N
             }
             if (jdbcDriverClassName.equals(runtime.getJDBCDriverClass())) {
                 runtimeList.add(runtime);

@@ -79,7 +79,7 @@ import org.openide.windows.TopComponent;
 public class DatabaseConnection implements DBConnection {
     
     private static final Logger LOGGER = Logger.getLogger(DatabaseConnection.class.getName());
-    private static final boolean LOG = LOGGER.isLoggable(Level.INFO);
+    private static final boolean LOG = LOGGER.isLoggable(Level.FINE);
 
     static final long serialVersionUID =4554639187416958735L;
 
@@ -391,7 +391,7 @@ public class DatabaseConnection implements DBConnection {
      */
     public Connection createJDBCConnection() throws DDLException {
         if (LOG) {
-            LOGGER.log(Level.INFO, "createJDBCConnection()");
+            LOGGER.log(Level.FINE, "createJDBCConnection()");
         }
         
         if (drv == null || db == null || usr == null || pwd == null )
@@ -462,7 +462,7 @@ public class DatabaseConnection implements DBConnection {
 
     public void connect() {
         if (LOG) {
-            LOGGER.log(Level.INFO, "connect()");
+            LOGGER.log(Level.FINE, "connect()");
         }
         
         createConnectTask() ;

@@ -55,7 +55,7 @@ import org.netbeans.api.db.explorer.JDBCDriver;
 public class DbDriverManager {
     
     private static final Logger LOGGER = Logger.getLogger("org.netbeans.modules.db.explorer.DbDriverManager"); // NOI18N
-    private static final boolean LOG = LOGGER.isLoggable(Level.INFO);
+    private static final boolean LOG = LOGGER.isLoggable(Level.FINE);
     
     private static final DbDriverManager DEFAULT = new DbDriverManager();
     
@@ -90,7 +90,7 @@ public class DbDriverManager {
      */
     public Connection getConnection(String databaseURL, Properties props, JDBCDriver jdbcDriver) throws SQLException {
         if (LOG) {
-            LOGGER.log(Level.INFO, "Attempting to connect to \'" + databaseURL + "\'"); // NOI18N
+            LOGGER.log(Level.FINE, "Attempting to connect to \'" + databaseURL + "\'"); // NOI18N
         }
         
         // try to find a registered driver or use the supplied jdbcDriver
@@ -100,7 +100,7 @@ public class DbDriverManager {
             Connection conn = driver.connect(databaseURL, props);
             if (conn == null) {
                 if (LOG) {
-                    LOGGER.log(Level.INFO, driver.getClass().getName() + ".connect() returned null"); // NOI18N
+                    LOGGER.log(Level.FINE, driver.getClass().getName() + ".connect() returned null"); // NOI18N
                 }
                 throw createDriverNotFoundException();
             }
@@ -235,12 +235,12 @@ public class DbDriverManager {
             if (loader == null) {
                 loader = new DbURLClassLoader(driver.getURLs());
                 if (LOG) {
-                    LOGGER.log(Level.INFO, "Creating " + loader); // NOI18N
+                    LOGGER.log(Level.FINE, "Creating " + loader); // NOI18N
                 }
                 driver2Loader.put(driver, loader);
             } else {
                 if (LOG) {
-                    LOGGER.log(Level.INFO, "Reusing " + loader); // NOI18N
+                    LOGGER.log(Level.FINE, "Reusing " + loader); // NOI18N
                 }
             }
         }
