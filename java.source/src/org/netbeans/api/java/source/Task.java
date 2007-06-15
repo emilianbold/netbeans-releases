@@ -13,20 +13,21 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
 package org.netbeans.api.java.source;
 
-/** Cancellable runnable which takes parameter of given type.
- *
- * @author Petr Hrebejk
+/**
+ * Runnable which takes parameter of a given type.
+ * @author Petr Hrebejk, Tomas Zezula
+ * @since 0.17
  */
-public interface CancellableTask<P> extends Task<P>{
+public interface Task<P> {
 
-    /** After this method is called the task if running should exit the run
-     * method immediately.
+    /** Implement the functionality here.
+     *@param parameter Parameter depending on the context or null.
      */
-    public void cancel();    
+    public void run( P parameter ) throws Exception;
+
 }

@@ -478,7 +478,7 @@ public final class JavaSource {
      * </p>
      * </div>
      */
-    public void runUserActionTask( final CancellableTask<CompilationController> task, final boolean shared) throws IOException {
+    public void runUserActionTask( final Task<CompilationController> task, final boolean shared) throws IOException {
         if (task == null) {
             throw new IllegalArgumentException ("Task cannot be null");     //NOI18N
         }
@@ -618,6 +618,11 @@ public final class JavaSource {
             }
         }
     }
+
+    private void runUserActionTask( final CancellableTask<CompilationController> task, final boolean shared) throws IOException {
+        final Task<CompilationController> _task = task;
+        this.runUserActionTask (_task, shared);
+    }
     
     
     /**
@@ -633,7 +638,7 @@ public final class JavaSource {
      * @throws IOException encapsulating the exception thrown by {@link CancellableTasks#run}
      * @since 0.12
      */
-    public Future<Void> runWhenScanFinished (final CancellableTask<CompilationController> task, final boolean shared) throws IOException {
+    public Future<Void> runWhenScanFinished (final Task<CompilationController> task, final boolean shared) throws IOException {
         assert task != null;
         final ScanSync sync = new ScanSync (task);
         final DeferredTask r = new DeferredTask (this,task,shared,sync);
@@ -694,14 +699,19 @@ public final class JavaSource {
         }
         return sync;
     }
+
+    private Future<Void> runWhenScanFinished (final CancellableTask<CompilationController> task, final boolean shared) throws IOException {
+        final Task<CompilationController> _task = task;
+        return this.runWhenScanFinished (_task, shared);
+    }
        
     /** Runs a task which permits for modifying the sources.
      * Call to this method will cancel processig of all the phase completion tasks until
      * this task does not finish.<BR>
-     * @see CancellableTask for information about implementation requirements
+     * @see Task for information about implementation requirements
      * @param task The task which.
      */    
-    public ModificationResult runModificationTask(CancellableTask<WorkingCopy> task) throws IOException {        
+    public ModificationResult runModificationTask(Task<WorkingCopy> task) throws IOException {        
         if (task == null) {
             throw new IllegalArgumentException ("Task cannot be null");     //NOI18N
         }
@@ -835,6 +845,12 @@ public final class JavaSource {
             this.flags|=INVALID;
         }
         return result;
+    }
+
+
+    private ModificationResult runModificationTask(CancellableTask<WorkingCopy> task) throws IOException { 
+        final Task<WorkingCopy> _task = task;
+        return this.runModificationTask (_task);
     }
        
     /** Adds a task to given compilation phase. The tasks will run sequentially by
@@ -1995,11 +2011,11 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
     
     static final class ScanSync implements Future<Void> {
         
-        private CancellableTask<CompilationController> task;
+        private Task<CompilationController> task;
         private final CountDownLatch sync;
         private final AtomicBoolean canceled;
         
-        public ScanSync (final CancellableTask<CompilationController> task) {
+        public ScanSync (final Task<CompilationController> task) {
             assert task != null;
             this.task = task;
             this.sync = new CountDownLatch (1);
@@ -2050,11 +2066,11 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
     
     static final class DeferredTask {
         final JavaSource js;
-        final CancellableTask<CompilationController> task;
+        final Task<CompilationController> task;
         final boolean shared;
         final ScanSync sync;
         
-        public DeferredTask (final JavaSource js, final CancellableTask<CompilationController> task, final boolean shared, final ScanSync sync) {
+        public DeferredTask (final JavaSource js, final Task<CompilationController> task, final boolean shared, final ScanSync sync) {
             assert js != null;
             assert task != null;
             assert sync != null;

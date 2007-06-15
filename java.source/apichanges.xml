@@ -82,7 +82,21 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
-        
+        <change id="JavaSource-Task">
+            <api name="general"/>
+            <summary>CancellableTask split into Task and CancellableTask.</summary>
+            <version major="0" minor="17"/>
+            <date day="13" month="6" year="2007"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" modification="no" semantic="compatible" source="compatible"/>
+            <description>
+                The JavaSource.runModificationTask(), runWhenScanFinished() and runUserActionTask() never call the cancel method of the
+                CancellableTask, the implementor of such a CancellableTask just writes an empty cancel method. The compatible API
+                change splits the CancellableTask into Task with run method and CancellableTask which extends the Task by cancel method.
+                The JavaSource methods mentioned above take Task rather than CancellableTask. The CancellableTask is used only for tasks
+                registered by factories.
+            </description>
+        </change>
         <change id="ClassIndex-interruption">
             <api name="general"/>
             <summary>ClassIndex methods are cancellable</summary>
@@ -96,7 +110,6 @@ is the proper place.
                 factories have to check if the value returned from class index is null.
             </description>
         </change>
-        
         <change id="CompilationInfo-getTopLevelElements">
             <api name="general"/>
             <summary>Added a method to obtain top level elements defined in the source/class file.</summary>
