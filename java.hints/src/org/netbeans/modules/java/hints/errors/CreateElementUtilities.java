@@ -443,15 +443,21 @@ public final class CreateElementUtilities {
         if (tree.getExpression() == error) {
             List<? extends TypeMirror> parentTypes = resolveType(types, info, parent.getParentPath(), tree, offset, null, null);
             
-            if (parentTypes == null) {
-                types.add(ElementKind.PARAMETER);
-                types.add(ElementKind.LOCAL_VARIABLE);
-                types.add(ElementKind.FIELD);
-                
-                return Collections.singletonList(info.getTypes().getPrimitiveType(TypeKind.INT));
+            if (parentTypes != null) {
+                //may contain only "void", ignore:
+                if (parentTypes.size() != 1) {
+                    return parentTypes;
+                }
+                if (parentTypes.get(0).getKind() != TypeKind.VOID) {
+                    return parentTypes;
+                }
             }
             
-            return parentTypes;
+            types.add(ElementKind.PARAMETER);
+            types.add(ElementKind.LOCAL_VARIABLE);
+            types.add(ElementKind.FIELD);
+
+            return Collections.singletonList(info.getTypes().getPrimitiveType(TypeKind.INT));
         }
         
         return null;
