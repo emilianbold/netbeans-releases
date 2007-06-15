@@ -163,6 +163,7 @@
     				stringvalue="org.netbeans.modules.xml.wsdl.ui.netbeans.module.resources.Bundle" />
     			<attr name="SystemFileSystem.icon"
     				urlvalue="nbresloc:/org/netbeans/modules/xml/wsdl/ui/netbeans/module/resources/wsdl16.gif" />
+    			<attr name="templateCategory" stringvalue="XML" />
     		</file>
     		<file name="WSDL_import.wsdl" url="WSDL_import.template" />
     	</folder>
