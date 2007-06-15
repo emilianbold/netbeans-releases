@@ -108,10 +108,22 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="OptionsDialog">
         <folder name="Advanced">
             <file name="Diff.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.diff.DiffOptions"/>
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.diff.options.DiffOptions"/>
             </file>
         </folder>
     </folder>
     
+    <folder name="org-netbeans-modules-options-editor">
+        <folder name="OptionsDialogCategories">
+            <folder name="FontsColors">
+                <attr name="AnnotationsPanel.instance/DiffColorsPanel.instance" boolvalue="true"/>
+                <file name="DiffColorsPanel.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.options.colors.spi.FontsColorsController"/>
+                    <attr name="instanceCreate" newvalue="org.netbeans.modules.diff.options.DiffColorsPanel"/>
+                </file>
+            </folder>
+        </folder>
+    </folder>
+
 </filesystem>
 
