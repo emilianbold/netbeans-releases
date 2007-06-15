@@ -69,7 +69,7 @@ public final class ColorModel {
 
     private static final Logger LOG = Logger.getLogger(ColorModel.class.getName());
     
-    /* package */ static final String ALL_LANGUAGES = NbBundle.getMessage(ColorModel.class, "CTL_All_Languages"); //NOI18N
+    public static final String ALL_LANGUAGES = NbBundle.getMessage(ColorModel.class, "CTL_All_Languages"); //NOI18N
     private static final String [] EMPTY_MIMEPATH = new String[0];
     
     // schemes .................................................................
