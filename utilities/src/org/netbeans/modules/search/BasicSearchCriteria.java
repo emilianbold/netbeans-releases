@@ -68,6 +68,7 @@ final class BasicSearchCriteria {
     static {
         searchableXMimeTypes = new HashSet<String>(17);
         searchableXMimeTypes.add("csh");                                //NOI18N
+        searchableXMimeTypes.add("httpd-eruby");                        //NOI18N
         searchableXMimeTypes.add("httpd-php");                          //NOI18N
         searchableXMimeTypes.add("httpd-php-source");                   //NOI18N
         searchableXMimeTypes.add("javascript");                         //NOI18N
