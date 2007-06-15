@@ -166,7 +166,6 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
         cbVerify.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/project/jsf/framework/Bundle").getString("MNE_cbVerify").charAt(0));
         cbVerify.setText(org.openide.util.NbBundle.getMessage(JSFConfigurationPanelVisual.class, "CB_Verify_Objects"));
         cbVerify.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        cbVerify.setEnabled(false);
         cbVerify.setMargin(new java.awt.Insets(0, 0, 0, 0));
         cbVerify.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JSFConfigurationPanelVisual.class, "ACSD_VerifyObjects"));
 
@@ -438,10 +437,6 @@ private void jtFolderKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_
             components[i].setEnabled(enable);
         }
         
-        // <RAVE> XXX Not working yet
-        cbVerify.setEnabled(false);
-        // </RAVE>
-
         components = libPanel.getComponents();
         for (int i = 0; i < components.length; i++) {
             components[i].setEnabled(enable);
