@@ -82,6 +82,18 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="GeneratorUtilities">
+            <api name="general"/>
+            <summary>Adding GeneratorUtilities</summary>
+            <version major="0" minor="20"/>
+            <date day="15" month="6" year="2007"/>
+            <author login="jlahoda"/>
+            <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" modification="no" semantic="compatible" source="compatible"/>
+            <description>
+                A utility class, org.netbeans.api.java.source.GeneratorUtilities has been added.
+            </description>
+            <issue number="106678" />
+        </change>
         <change id="JavaSource-Cleanup1">
             <api name="general"/>
             <summary>Removal of obsolette, duplicated and deprecated methods from java/source</summary>

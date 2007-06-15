@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.api.java.source;
@@ -45,9 +45,11 @@ import com.sun.tools.javadoc.DocEnv;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
@@ -419,4 +421,54 @@ public final class ElementUtilities {
     public boolean implementsMethod(ExecutableElement element) {
         return delegate.implementsMethod(element);
     }
+    
+    /**Find all methods in given type and its supertypes, which are not implemented.
+     * 
+     * @param type to inspect
+     * @return list of all unimplemented methods
+     * 
+     * @since 0.20
+     */
+    public List<? extends ExecutableElement> findUnimplementedMethods(TypeElement impl) {
+        return findUnimplementedMethods(impl, impl);
+    }
+
+    // private implementation --------------------------------------------------
+
+
+    private List<? extends ExecutableElement> findUnimplementedMethods(TypeElement impl, TypeElement element) {
+        List<ExecutableElement> undef = new ArrayList<ExecutableElement>();
+        if (element.getModifiers().contains(Modifier.ABSTRACT)) {
+            for (Element e : element.getEnclosedElements()) {
+                if (e.getKind() == ElementKind.METHOD && e.getModifiers().contains(Modifier.ABSTRACT)) {
+                    ExecutableElement ee = (ExecutableElement)e;
+                    Element eeImpl = getImplementationOf(ee, impl);
+                    if (eeImpl == null || eeImpl == ee)
+                        undef.add(ee);
+                }
+            }
+        }
+        Types types = JavacTypes.instance(ctx);
+        DeclaredType implType = (DeclaredType)impl.asType();
+        for (TypeMirror t : types.directSupertypes(element.asType())) {
+            for (ExecutableElement ee : findUnimplementedMethods(impl, (TypeElement)((DeclaredType)t).asElement())) {
+                //check if "the same" method has already been added:
+                boolean exists = false;
+                TypeMirror eeType = types.asMemberOf(implType, ee);
+                for (ExecutableElement existing : undef) {
+                    if (existing.getSimpleName().contentEquals(ee.getSimpleName())) {
+                        TypeMirror existingType = types.asMemberOf(implType, existing);
+                        if (types.isSameType(eeType, existingType)) {
+                            exists = true;
+                            break;
+                        }
+                    }
+                }
+                if (!exists)
+                    undef.add(ee);
+            }
+        }
+        return undef;
+    }
+
 }
