@@ -53,10 +53,12 @@ public class StaticAccessTest extends TreeRuleTestBase {
             "}\n" +
             "}\n";
 
-        String golden = "package test; class Test {" +
-            "{" +
-            "Boolean b = null;" +
-            "b = Boolean.valueOf(true);";
+        String golden = "package test; class Test { " +
+            "{ " +
+            "Boolean b = null; " +
+            "b = Boolean.valueOf(true); " +
+            "} " +
+            "} ";
         
         
         performFixTest("test/Test.java", before + after, before.length(), 
