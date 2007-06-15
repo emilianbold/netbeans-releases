@@ -51,7 +51,7 @@ import org.openide.util.NbBundle;
  * @author Nam Nguyen
  */
 public class WSDLRefactoringEngine {//extends RefactoringEngine {
-    public static final String WSDL_MIME_TYPE = "text/xml-wsdl";  // NOI18N
+    public static final String WSDL_MIME_TYPE = "text/x-wsdl+xml";  // NOI18N
     
     /** Creates a new instance of WSDLRefactoringEngine */
     public WSDLRefactoringEngine() {

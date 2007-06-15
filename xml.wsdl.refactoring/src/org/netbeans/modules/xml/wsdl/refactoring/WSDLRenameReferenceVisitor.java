@@ -132,7 +132,7 @@ public class WSDLRenameReferenceVisitor extends DefaultVisitor implements WSDLVi
     }
     
     public void visit(BindingInput referencing) {
-        if (referencing.getName() != null && referencing.getName().equals(request.getNewName()) ||
+        if (referencing.getName() != null && referencing.getName().equals(oldName) ||
                 isOverloaded((BindingOperation) referencing.getParent())) {
             referencing.setName(request.getNewName());
         }
