@@ -235,9 +235,8 @@ public class Pin extends PageFlowSceneElement{
             }
             Set gs = ss;
             
-            try {
-                PropertySupport.Reflection p;
-                p = new Reflection<String>(pageContentItem, String.class, "getName", "setName"); // NOI18N
+            try {                
+                PropertySupport.Reflection  p = new Reflection<String>(pageContentItem, String.class, "getName", "setName"); // NOI18N
                 p.setName("fromView"); // NOI18N
                 p.setDisplayName(NbBundle.getMessage(Pin.class, "FromView")); // NOI18N
                 p.setShortDescription(NbBundle.getMessage(Pin.class, "FromViewHint")); // NOI18N
