@@ -56,7 +56,7 @@
     <folder name="Menu"> 
         <folder name="RunProject">
             <file name="org-netbeans-modules-debugger-ui-actions-ConnectAction.shadow_hidden"/>
-            <file name="org-netbeans-modules-project-ui-DebugMainProject.shadow_hidden"/>
+            <file name="org-netbeans-modules-debugger-ui-actions-DebugMainProjectAction.instance_hidden"/>
             <file name="org-netbeans-modules-project-ui-RunMainProject.shadow_hidden"/>
         </folder>
         <folder name="Tools">

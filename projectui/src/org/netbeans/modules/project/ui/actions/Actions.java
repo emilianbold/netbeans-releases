@@ -275,17 +275,6 @@ public class Actions implements ActionsFactory {
         return a;
     }
     
-    public static Action debugSingle() {
-        Action a = new FileCommandAction (
-            "debug.single", // XXX Define standard
-            NbBundle.getMessage(Actions.class, "LBL_DebugSingleAction_Name"), // NOI18N
-            new ImageIcon( Utilities.loadImage( "org/netbeans/modules/project/ui/resources/debugSingle.png" ) ), //NOI18N
-            null);
-        a.putValue("iconBase","org/netbeans/modules/project/ui/resources/debugSingle.png"); //NOI18N
-        a.putValue("noIconInMenu", Boolean.TRUE); //NOI18N
-        return a;
-    }
-    
     public static Action testSingle() {
         Action a = new FileCommandAction (
             "test.single", // XXX Define standard
@@ -297,17 +286,6 @@ public class Actions implements ActionsFactory {
         return a;
     }
     
-    public static Action debugTestSingle()  {
-        Action a = new FileCommandAction (
-            "debug.test.single", // XXX Define standard
-            NbBundle.getMessage(Actions.class, "LBL_DebugTestSingleAction_Name" ),// NOI18N
-            new ImageIcon( Utilities.loadImage( "org/netbeans/modules/project/ui/resources/debugTestSingle.png" ) ), //NOI18N
-            null ); //NOI18N
-        a.putValue("iconBase","org/netbeans/modules/project/ui/resources/debugTestSingle.png"); //NOI18N
-        a.putValue("noIconInMenu", Boolean.TRUE); //NOI18N
-        return a;
-    }
-        
     // Main Project actions ----------------------------------------------------
     
     
@@ -347,15 +325,6 @@ public class Actions implements ActionsFactory {
         return a;
     }
     
-    public static Action debugMainProject() {
-        Action a = new MainProjectAction(
-            ActionProvider.COMMAND_DEBUG, 
-            NbBundle.getMessage(Actions.class, "LBL_DebugMainProjectAction_Name" ), // NOI18N
-            new ImageIcon( Utilities.loadImage( "org/netbeans/modules/project/ui/resources/debugProject.png" ) ) ); //NOI18N
-        a.putValue("iconBase","org/netbeans/modules/project/ui/resources/debugProject.png"); //NOI18N
-        return a;
-    }
-
     public Action setProjectConfigurationAction() {
         return SystemAction.get(ActiveConfigAction.class);
     }

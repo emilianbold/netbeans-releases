@@ -106,6 +106,14 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="instanceOf" stringvalue="javax.swing.Action"/>
             </file>    
 
+            <file name="org-netbeans-modules-debugger-ui-actions-DebugMainProjectAction.instance" />
+            <file name="org-netbeans-modules-debugger-ui-actions-DebugFileAction.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.debugger.ui.actions.DebuggerAction.createDebugFileAction"/>
+            </file>
+            <file name="org-netbeans-modules-debugger-ui-actions-DebugTestFileAction.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.debugger.ui.actions.DebuggerAction.createDebugTestFileAction"/>
+            </file>
+            
             <file name="org-netbeans-modules-debugger-ui-actions-ConnectAction.instance" />
             <file name="org-netbeans-modules-debugger-ui-actions-AddBreakpointAction.instance" />
             <file name="org-netbeans-modules-debugger-ui-actions-PauseAction.instance">
@@ -138,6 +146,26 @@ Microsystems, Inc. All Rights Reserved.
     </folder>
     
     <folder name="Menu">
+        <folder name="RunProject">
+            <attr name="org-netbeans-modules-project-ui-RunMainProject.shadow/org-netbeans-modules-debugger-ui-actions-DebugMainProjectAction.shadow" boolvalue="true" />
+            <file name="org-netbeans-modules-debugger-ui-actions-DebugMainProjectAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-DebugMainProjectAction.instance"/>
+            </file>
+            <attr name="org-netbeans-modules-debugger-ui-actions-DebugMainProjectAction.shadow/org-netbeans-modules-project-ui-TestProject.shadow" boolvalue="true" />
+            
+            <folder name="RunOther">
+                <attr name="org-netbeans-modules-project-ui-RunSingle.shadow/org-netbeans-modules-debugger-ui-actions-DebugFileAction.shadow" boolvalue="true" />
+                <file name="org-netbeans-modules-debugger-ui-actions-DebugFileAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-DebugFileAction.instance"/>
+                </file>
+                <attr name="org-netbeans-modules-debugger-ui-actions-DebugFileAction.shadow/org-netbeans-modules-project-ui-TestSingle.shadow" boolvalue="true" />
+                <attr name="org-netbeans-modules-project-ui-TestSingle.shadow/org-netbeans-modules-debugger-ui-actions-DebugTestFileAction.shadow" boolvalue="true" />
+                <file name="org-netbeans-modules-debugger-ui-actions-DebugTestFileAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-DebugTestFileAction.instance"/>
+                </file>
+            </folder>
+        </folder>
+        
         <folder name="Window">
             <attr name="Output/Debug" boolvalue="true" />
             <attr name="Navigator/Debug" boolvalue="true" />
@@ -179,8 +207,25 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="Debug/Separator3.instance" boolvalue="true" />
         </folder>
     </folder>
+    
+    <folder name="ProjectsTabActions">
+        <attr name="org-netbeans-modules-project-ui-RunMainProject.shadow/org-netbeans-modules-debugger-ui-actions-DebugMainProjectAction.shadow" boolvalue="true"/>
+        <file name="org-netbeans-modules-debugger-ui-actions-DebugMainProjectAction.shadow">
+            <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-DebugMainProjectAction.instance"/>
+        </file>
+        <attr name="org-netbeans-modules-debugger-ui-actions-DebugMainProjectAction.shadow/sep-4.instance" boolvalue="true"/>
+    </folder>
 
     <folder name="Shortcuts">
+        <file name="F5.shadow">
+            <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-DebugMainProjectAction.instance"/>
+	</file>
+        <file name="DS-F5.shadow">
+            <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-DebugFileAction.instance"/>
+	</file>
+        <file name="DS-F6.shadow">
+            <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-DebugTestFileAction.instance"/>
+	</file>
         <file name="SO-6.shadow">
             <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-ui-actions-SessionsViewAction.instance"/>
         </file>
@@ -280,7 +325,16 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
 
     </folder>
+    
+    <folder name="Toolbars">
+        <folder name="Build">
+            <attr name="org-netbeans-modules-project-ui-RunMainProject.shadow/org-netbeans-modules-debugger-ui-actions-DebugMainProjectAction.shadow" boolvalue="true"/>
 
+            <file name="org-netbeans-modules-debugger-ui-actions-DebugMainProjectAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-DebugMainProjectAction.instance"/>
+            </file>
+        </folder>
+    </folder>
        
     <folder name="Editors"> 
         <folder name="AnnotationTypes">

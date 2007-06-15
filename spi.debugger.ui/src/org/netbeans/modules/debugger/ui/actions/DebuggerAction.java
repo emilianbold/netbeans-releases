@@ -24,15 +24,21 @@ import java.beans.PropertyChangeEvent;
 import java.lang.ref.WeakReference;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.ImageIcon;
 import javax.swing.SwingUtilities;
-import org.netbeans.api.debugger.ActionsManager;
 
+import org.netbeans.api.debugger.ActionsManager;
 import org.netbeans.api.debugger.ActionsManagerListener;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
+
 import org.netbeans.modules.debugger.ui.Utils;
+
+import org.netbeans.spi.project.ui.support.FileSensitiveActions;
+
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 
 /**
@@ -278,6 +284,27 @@ public class DebuggerAction extends AbstractAction {
         return action;
     }
     
+    // Debug File Actions:
+    
+    public static Action createDebugFileAction() {
+        Action a = FileSensitiveActions.fileCommandAction(
+            "debug.single", // XXX Define standard
+            NbBundle.getMessage(DebuggerAction.class, "LBL_DebugSingleAction_Name"), // NOI18N
+            new ImageIcon( Utilities.loadImage( "org/netbeans/modules/debugger/resources/debugSingle.png" ) )); //NOI18N
+        a.putValue("iconBase","org/netbeans/modules/debugger/resources/debugSingle.png"); //NOI18N
+        a.putValue("noIconInMenu", Boolean.TRUE); //NOI18N
+        return a;
+    }
+    
+    public static Action createDebugTestFileAction()  {
+        Action a = FileSensitiveActions.fileCommandAction(
+            "debug.test.single", // XXX Define standard
+            NbBundle.getMessage(DebuggerAction.class, "LBL_DebugTestSingleAction_Name" ),// NOI18N
+            new ImageIcon( Utilities.loadImage( "org/netbeans/modules/debugger/resources/debugTestSingle.png" ) )); //NOI18N
+        a.putValue("iconBase","org/netbeans/modules/debugger/resources/debugTestSingle.png"); //NOI18N
+        a.putValue("noIconInMenu", Boolean.TRUE); //NOI18N
+        return a;
+    }
     
     // innerclasses ............................................................
     

@@ -52,7 +52,7 @@ public class DebugAction extends Action {
      */
     public void performMenu(Node node) {
         this.menuPath = runItem+"|"+runFileItem+"|"+
-                Bundle.getString("org.netbeans.modules.project.ui.actions.Bundle",
+                Bundle.getString("org.netbeans.modules.debugger.ui.actions.Bundle",
                                  "LBL_DebugSingleAction_Name",
                                  new Object[] {new Integer(1), node.getText()});
         super.performMenu(node);

@@ -72,10 +72,6 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.project.ui.actions.Actions.runMainProject"/>
             </file>
             
-            <file name="org-netbeans-modules-project-ui-DebugMainProject.instance">
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.project.ui.actions.Actions.debugMainProject"/>
-            </file>
-            
             <!-- Current project -->            
             <file name="org-netbeans-modules-project-ui-TestProject.instance">
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.project.ui.actions.Actions.testProject"/>
@@ -110,18 +106,10 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.project.ui.actions.Actions.runSingle"/>
             </file>
             
-            <file name="org-netbeans-modules-project-ui-DebugSingle.instance">
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.project.ui.actions.Actions.debugSingle"/>
-            </file>
-            
             <file name="org-netbeans-modules-project-ui-TestSingle.instance">
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.project.ui.actions.Actions.testSingle"/>
             </file>
             
-            <file name="org-netbeans-modules-project-ui-DebugTestSingle.instance">
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.project.ui.actions.Actions.debugTestSingle"/>
-            </file>
-                                    
             <!-- Project tabs opening -->
             <file name="org-netbeans-modules-project-ui-logical-tab-action.instance">
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.project.ui.ProjectTabAction.projectsLogical"/>
@@ -411,13 +399,7 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-RunMainProject.instance"/>
             </file>
             
-            <attr name="org-netbeans-modules-project-ui-RunMainProject.shadow/org-netbeans-modules-project-ui-DebugMainProject.shadow" boolvalue="true" />                
-            
-            <file name="org-netbeans-modules-project-ui-DebugMainProject.shadow">
-                <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-DebugMainProject.instance"/>
-            </file>
-           
-            <attr name="org-netbeans-modules-project-ui-DebugMainProject.shadow/org-netbeans-modules-project-ui-TestProject.shadow" boolvalue="true" />                             
+            <attr name="org-netbeans-modules-project-ui-RunMainProject.shadow/org-netbeans-modules-project-ui-TestProject.shadow" boolvalue="true" />                             
                 
             <file name="org-netbeans-modules-project-ui-TestProject.shadow">
                     <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-TestProject.instance"/>
@@ -434,23 +416,10 @@ Microsystems, Inc. All Rights Reserved.
                     <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-RunSingle.instance"/>
                 </file>
 
-                <attr name="org-netbeans-modules-project-ui-RunSingle.shadow/org-netbeans-modules-project-ui-DebugSingle.shadow" boolvalue="true" />
-
-                <file name="org-netbeans-modules-project-ui-DebugSingle.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-DebugSingle.instance"/>
-                </file>
-
-                <attr name="org-netbeans-modules-project-ui-DebugSingle.instance/org-netbeans-modules-project-ui-TestSingle.shadow" boolvalue="true" />                
+                <attr name="org-netbeans-modules-project-ui-RunSingle.shadow/org-netbeans-modules-project-ui-TestSingle.shadow" boolvalue="true" />                
                 <file name="org-netbeans-modules-project-ui-TestSingle.shadow">
                     <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-TestSingle.instance"/>
                 </file>
-
-
-                <attr name="org-netbeans-modules-project-ui-TestSingle.shadow/org-netbeans-modules-project-ui-DebugTestSingle.shadow" boolvalue="true" />                
-                <file name="org-netbeans-modules-project-ui-DebugTestSingle.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-DebugTestSingle.instance"/>
-                </file>
-
             
            </folder>     
 
@@ -532,12 +501,6 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-RunMainProject.instance"/>
             </file>
 
-            <attr name="org-netbeans-modules-project-ui-RunMainProject.shadow/org-netbeans-modules-project-ui-DebugMainProject.shadow" boolvalue="true"/>
-
-            <file name="org-netbeans-modules-project-ui-DebugMainProject.shadow">
-                <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-DebugMainProject.instance"/>
-            </file>
-    
         </folder>
                 
     </folder>
@@ -580,10 +543,6 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-RunMainProject.instance"/>
 	</file>
                 
-        <file name="F5.shadow">
-            <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-DebugMainProject.instance"/>
-	</file>
-                     
         <file name="O-F6.shadow">
             <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-TestProject.instance"/>
 	</file> 
@@ -592,16 +551,8 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-RunSingle.instance"/>
 	</file>
         
-        <file name="DS-F5.shadow">
-            <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-DebugSingle.instance"/>
-	</file>
-        
         <file name="D-F6.shadow">
             <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-TestSingle.instance"/>
-	</file>
-        
-        <file name="DS-F6.shadow">
-            <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-DebugTestSingle.instance"/>
 	</file>
         
         <file name="F11.shadow">
@@ -623,12 +574,7 @@ Microsystems, Inc. All Rights Reserved.
                     <file name="org-netbeans-modules-project-ui-RunSingle.shadow">
                         <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-RunSingle.instance"/>
                     </file>
-                    <attr name="org-netbeans-modules-project-ui-RunSingle.shadow/org-netbeans-modules-project-ui-DebugSingle.shadow" boolvalue="true"/>
-                    <file name="org-netbeans-modules-project-ui-DebugSingle.shadow">
-                        <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-DebugSingle.instance"/>
-                    </file>
-                    <attr name="org-netbeans-modules-project-ui-DebugSingle.shadow/SeparatorBeforeCut.instance" boolvalue="true"/>
-                    <attr name="org-netbeans-modules-project-ui-DebugSingle.shadow/org-netbeans-modules-debugger-ui-actions-RunIntoMethodAction.shadow" boolvalue="true"/>
+                    <attr name="org-netbeans-modules-project-ui-RunSingle.shadow/SeparatorBeforeCut.instance" boolvalue="true"/>
                 </folder>
             </folder>
         </folder>
@@ -704,11 +650,7 @@ Microsystems, Inc. All Rights Reserved.
         <file name="org-netbeans-modules-project-ui-RunMainProject.shadow">
             <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-RunMainProject.instance"/>
         </file>
-        <attr name="org-netbeans-modules-project-ui-RunMainProject.shadow/org-netbeans-modules-project-ui-DebugMainProject.shadow" boolvalue="true"/>
-        <file name="org-netbeans-modules-project-ui-DebugMainProject.shadow">
-            <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-DebugMainProject.instance"/>
-        </file>
-        <attr name="org-netbeans-modules-project-ui-DebugMainProject.shadow/sep-4.instance" boolvalue="true"/>
+        <attr name="org-netbeans-modules-project-ui-RunMainProject.shadow/sep-4.instance" boolvalue="true"/>
         <file name="sep-4.instance">
             <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
         </file>
