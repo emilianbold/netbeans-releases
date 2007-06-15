@@ -92,18 +92,12 @@ public class AutoupdateCatalogFactory {
         Boolean en = (Boolean) fo.getAttribute("enabled"); // NOI18N
         AutoupdateCatalogProvider au_catalog = new AutoupdateCatalogProvider (sKey, displayName (fo), url);
         
-        try {
-            if (true || ! getPreferences ().nodeExists (sKey)) {
-                Preferences providerPreferences = getPreferences ().node (sKey);
-                providerPreferences.put ("displayName", au_catalog.getDisplayName ());
-                if (en != null) {
-                    providerPreferences.put ("enabled", en.toString ());
-                }
-            }
-        } catch (BackingStoreException bse) {
-            err.log (Level.INFO, bse.getMessage(), bse);
+        Preferences providerPreferences = getPreferences ().node (sKey);
+        providerPreferences.put ("displayName", au_catalog.getDisplayName ());
+        if (en != null) {
+            providerPreferences.put ("enabled", en.toString ());
         }
-        
+
         return au_catalog;
     }
     
