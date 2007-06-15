@@ -72,6 +72,8 @@ public abstract class TreeRuleTestBase extends NbTestCase {
         
         assertNotNull(workFO);
         
+        workFO.refresh();
+        
         sourceRoot = workFO.createFolder("src");
         FileObject buildRoot  = workFO.createFolder("build");
         FileObject cache = workFO.createFolder("cache");
