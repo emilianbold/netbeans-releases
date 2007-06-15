@@ -19,11 +19,8 @@
 
 package org.netbeans.modules.welcome;
 
-import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
+import java.util.prefs.Preferences;
+import org.openide.util.NbPreferences;
 
 /**
  *
@@ -36,12 +33,12 @@ public class WelcomeOptions {
     private static final String PROP_SHOW_ON_STARTUP = "showOnStartup";
     private static final String PROP_FIRST_TIME_START = "firstTimeStart";
     
-    private static final String FOLDER_NAME = "WelcomePage";
-    
-    private Logger log = Logger.getLogger( WelcomeOptions.class.getName() );
-
     /** Creates a new instance of WelcomeOptions */
     private WelcomeOptions() {
+    }
+
+    private Preferences prefs() {
+        return NbPreferences.forModule(WelcomeOptions.class);
     }
 
     public static synchronized WelcomeOptions getDefault() {
@@ -52,46 +49,18 @@ public class WelcomeOptions {
     }
  
     public void setShowOnStartup( boolean show ) {
-        FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource( FOLDER_NAME );
-        if( null != fo ) {
-            try {
-                fo.setAttribute( PROP_SHOW_ON_STARTUP, Boolean.valueOf(show) );
-            } catch (IOException ex) {
-                log.log( Level.INFO, ex.getMessage(), ex );
-            }
-        }
+        prefs().putBoolean(PROP_SHOW_ON_STARTUP, show);
     }
 
     public boolean isShowOnStartup() {
-        FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource( FOLDER_NAME );
-        if( null != fo ) {
-            Object val = fo.getAttribute( PROP_SHOW_ON_STARTUP );
-            if( null != val && val instanceof Boolean ) {
-                return ((Boolean)val).booleanValue();
-            }
-        }
-        return true;
+        return prefs().getBoolean(PROP_SHOW_ON_STARTUP, true);
     }
 
     public void setFirstTimeStart( boolean firstTime ) {
-        FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource( FOLDER_NAME );
-        if( null != fo ) {
-            try {
-                fo.setAttribute( PROP_FIRST_TIME_START, Boolean.valueOf(firstTime) );
-            } catch (IOException ex) {
-                log.log( Level.INFO, ex.getMessage(), ex );
-            }
-        }
+        prefs().putBoolean(PROP_FIRST_TIME_START, firstTime);
     }
 
     public boolean isFirstTimeStart() {
-        FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource( FOLDER_NAME );
-        if( null != fo ) {
-            Object val = fo.getAttribute( PROP_FIRST_TIME_START );
-            if( null != val && val instanceof Boolean ) {
-                return ((Boolean)val).booleanValue();
-            }
-        }
-        return true;
+        return prefs().getBoolean(PROP_FIRST_TIME_START, true);
     }
 }
