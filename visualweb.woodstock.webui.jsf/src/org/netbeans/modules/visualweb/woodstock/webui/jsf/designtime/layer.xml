@@ -145,7 +145,7 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="WoodstockHelpInline.comp_palette_item/WoodstockContentPageTitle.comp_palette_item" boolvalue="true"/>
             
             <!-- Woodstock components not included in VWP. Add them here so that people can test the designtime code -->
-		
+	    <!--	
             <attr name="WoodstockContentPageTitle.comp_palette_item/WoodstockMasthead.comp_palette_item" boolvalue="true"/>
             <attr name="WoodstockMasthead.comp_palette_item/WoodstockVersionPage.comp_palette_item" boolvalue="true"/>
             <attr name="WoodstockVersionPage.comp_palette_item/WoodstockProgressIndicator.comp_palette_item" boolvalue="true"/>
@@ -163,7 +163,7 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="WoodstockWizardBranch.comp_palette_item/WoodstockWizardBranchSteps.comp_palette_item" boolvalue="true"/>
             <attr name="WoodstockWizardBranchSteps.comp_palette_item/WoodstockWizardStep.comp_palette_item" boolvalue="true"/>
             <attr name="WoodstockWizardStep.comp_palette_item/WoodstockWizardSubstepBranch.comp_palette_item" boolvalue="true"/> 
-            <attr name="WoodstockWizardSubstepBranch.comp_palette_item/WoodstockEditableField.comp_palette_item" boolvalue="true"/>
+            <attr name="WoodstockWizardSubstepBranch.comp_palette_item/WoodstockEditableField.comp_palette_item" boolvalue="true"/> -->
 
             <!-- End of Woodstock components not included in VWP -->
             
@@ -175,7 +175,7 @@ Microsystems, Inc. All Rights Reserved.
             <file name="WoodstockHelpInline.comp_palette_item" url="resources/WoodstockHelpInline.comp_palette_item"/>  
             
             <!-- Woodstock components not included in VWP. Add them here so that people can test the designtime code -->
-            <file name="WoodstockContentPageTitle.comp_palette_item" url="resources/WoodstockContentPageTitle.comp_palette_item"/>
+         <!--   <file name="WoodstockContentPageTitle.comp_palette_item" url="resources/WoodstockContentPageTitle.comp_palette_item"/>
             <file name="WoodstockMasthead.comp_palette_item" url="resources/WoodstockMasthead.comp_palette_item"/>
             <file name="WoodstockVersionPage.comp_palette_item" url="resources/WoodstockVersionPage.comp_palette_item"/>
             <file name="WoodstockProgressIndicator.comp_palette_item" url="resources/WoodstockProgressIndicator.comp_palette_item"/>
@@ -193,7 +193,7 @@ Microsystems, Inc. All Rights Reserved.
             <file name="WoodstockWizardBranchSteps.comp_palette_item" url="resources/WoodstockWizardBranchSteps.comp_palette_item"/>
             <file name="WoodstockWizardStep.comp_palette_item" url="resources/WoodstockWizardStep.comp_palette_item"/>
             <file name="WoodstockWizardSubstepBranch.comp_palette_item" url="resources/WoodstockWizardSubstepBranch.comp_palette_item"/> 
-		<file name="WoodstockEditableField.comp_palette_item" url="resources/WoodstockEditableField.comp_palette_item"/>
+		<file name="WoodstockEditableField.comp_palette_item" url="resources/WoodstockEditableField.comp_palette_item"/> -->
             <!-- End fo Woodstock components not included in VWP -->
         </folder>
         <folder name="Advanced">
