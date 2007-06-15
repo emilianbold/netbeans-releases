@@ -68,7 +68,7 @@ import org.openide.nodes.Node;
             if (CONF_FILES.equals(key)) {
                 FileObject metaInfDir = project.getOrCreateMetaInfDir();
                 if (metaInfDir != null) {
-                    return J2eeProjectView.createConfigFilesView(project.getOrCreateMetaInfDir());
+                    return J2eeProjectView.createConfigFilesView(metaInfDir);
                 } else {
                     return null;
                 } 
