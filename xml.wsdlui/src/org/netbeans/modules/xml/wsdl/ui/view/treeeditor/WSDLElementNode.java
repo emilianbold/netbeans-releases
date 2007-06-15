@@ -443,6 +443,17 @@ public abstract class WSDLElementNode<T extends WSDLComponent> extends AbstractN
     }
 
     public void valueChanged(ComponentEvent evt) {
+        if (!isSameAsMyWSDLElement((Component) evt.getSource())) {
+            return;
+        }
+        
+        Cookie cookie = getCookie(WSDLAttributeCookie.class);
+        if (hasOtherAttributesProperties()) {
+            mLookupContents.add(new WSDLAttributeCookie("attribute", getWSDLComponent()));//NOI18N
+        } else if (cookie != null) {
+            mLookupContents.remove(cookie);
+        }
+        
     }
 
     public void propertyChange(PropertyChangeEvent event) {
