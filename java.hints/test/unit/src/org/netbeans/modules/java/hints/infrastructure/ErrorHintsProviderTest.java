@@ -19,13 +19,12 @@
 
 package org.netbeans.modules.java.hints.infrastructure;
 
-import org.netbeans.modules.java.hints.infrastructure.ErrorHintsProvider;
 import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import javax.swing.text.Document;
-import org.netbeans.modules.editor.NbEditorDocument;
+import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -33,9 +32,8 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.SourceUtilsTestUtil;
-import org.netbeans.editor.BaseDocument;
+import org.netbeans.api.lexer.Language;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.editor.java.JavaKit;
 import org.netbeans.modules.java.source.TestUtil;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.LocalFileSystem;
@@ -153,14 +151,10 @@ public class ErrorHintsProviderTest extends NbTestCase {
         prepareTest(name);
         
         DataObject testData = DataObject.find(testSource);
-        EditorCookie ec = (EditorCookie) testData.getCookie(EditorCookie.class);
+        EditorCookie ec = testData.getCookie(EditorCookie.class);
         Document doc = ec.openDocument();
         
-        BaseDocument bdoc = new NbEditorDocument(JavaKit.class);
-        
-        bdoc.putProperty("mimeType", "text/x-java");
-        bdoc.putProperty(Document.StreamDescriptionProperty, testData);
-        bdoc.insertString(0, doc.getText(0, doc.getLength()), null);
+        doc.putProperty(Language.class, JavaTokenId.language());
         
         for (ErrorDescription ed : new ErrorHintsProvider(testSource).computeErrors(info, doc))
             ref(ed.toString());
