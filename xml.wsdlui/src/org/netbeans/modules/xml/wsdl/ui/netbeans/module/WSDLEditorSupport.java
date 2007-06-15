@@ -284,12 +284,12 @@ public class WSDLEditorSupport extends DataEditorSupport
     }
 
     public WSDLModel getModel() {
-	WSDLDataObject dobj = getEnv().getWSDLDataObject();
-	ModelSource modelSource = Utilities.getModelSource(dobj.getPrimaryFile(), true);
+        WSDLDataObject dobj = getEnv().getWSDLDataObject();
+        ModelSource modelSource = Utilities.getModelSource(dobj.getPrimaryFile(), true);
         if(modelSource != null) {
             return WSDLModelFactory.getDefault().getModel(modelSource);
         }
-	
+
         return null;
     }
 
@@ -360,16 +360,16 @@ public class WSDLEditorSupport extends DataEditorSupport
      */
     private void addUndoManagerToModel(QuietUndoManager undo) {
         // This method may be called repeatedly.
-    	WSDLModel model = getModel();
-    	if (model != null) {
-    		// Ensure the listener is not added twice.
-    		model.removeUndoableEditListener(undo);
-    		model.addUndoableEditListener(undo);
-    		// Ensure the model is sync'd when undo/redo is invoked,
-    		// otherwise the edits are added to the queue and eventually
-    		// cause exceptions.
-    		undo.setModel(model);
-    	}
+        WSDLModel model = getModel();
+        if (model != null) {
+            // Ensure the listener is not added twice.
+            model.removeUndoableEditListener(undo);
+            model.addUndoableEditListener(undo);
+            // Ensure the model is sync'd when undo/redo is invoked,
+            // otherwise the edits are added to the queue and eventually
+            // cause exceptions.
+            undo.setModel(model);
+        }
     }
 
     /**
@@ -379,7 +379,7 @@ public class WSDLEditorSupport extends DataEditorSupport
      * the swing document. 
      */ 
     public boolean silentClose() {
-    	return super.close(false);
+        return super.close(false);
     }
 
     /**
@@ -462,21 +462,21 @@ public class WSDLEditorSupport extends DataEditorSupport
 
         private WSDLEditorSupport getWSDLEditorSupport() {
             return dataObject instanceof WSDLDataObject ?
-                ((WSDLDataObject) dataObject).getWSDLEditorSupport() : null;
+                    ((WSDLDataObject) dataObject).getWSDLEditorSupport() : null;
         }
 
         public boolean resolveCloseOperation(CloseOperationState[] elements) {
             WSDLEditorSupport wsdlEditor = getWSDLEditorSupport();
-	    boolean canClose = wsdlEditor != null ? wsdlEditor.canClose() : true;
-	    // during the shutdown sequence this is called twice. The first time
-	    // through the multi-view infrastructure. The second time is done through
-	    // the TopComponent close. If the file is dirty and the user chooses
-	    // to discard changes, the second time will also ask whether the
-	    // to save or discard changes. 
-	    if (canClose) {
-		dataObject.setModified(false);
-	    }
-	    return canClose;
+            boolean canClose = wsdlEditor != null ? wsdlEditor.canClose() : true;
+            // during the shutdown sequence this is called twice. The first time
+            // through the multi-view infrastructure. The second time is done through
+            // the TopComponent close. If the file is dirty and the user chooses
+            // to discard changes, the second time will also ask whether the
+            // to save or discard changes. 
+            if (canClose) {
+                dataObject.setModified(false);
+            }
+            return canClose;
         }
     }
 }

@@ -23,6 +23,7 @@ import java.awt.EventQueue;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+
 import org.netbeans.core.api.multiview.MultiViewHandler;
 import org.netbeans.core.api.multiview.MultiViewPerspective;
 import org.netbeans.core.api.multiview.MultiViews;
@@ -34,7 +35,6 @@ import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.dom.DocumentComponent;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
 import org.netbeans.modules.xml.xam.ui.cookies.ViewComponentCookie;
-import org.netbeans.modules.xml.xam.ui.cookies.ViewComponentCookie.View;
 import org.openide.nodes.Node;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -119,7 +119,7 @@ public class WSDLMultiViewSupport implements ViewComponentCookie, ShowCookie {
                     }
                 }
             }
-            if (showCookie != null) {
+            if (showCookie != null && component != null) {
                 if (resultItem == null) {
                     resultItem = new ResultItem(null, null, component, null);
                 }
@@ -130,7 +130,7 @@ public class WSDLMultiViewSupport implements ViewComponentCookie, ShowCookie {
 
     // see schemamultiviewsupport for implementation
     public boolean canView(ViewComponentCookie.View view, Component component) {
-        if (view != null && component != null) {
+        if (view != null) {
             switch (view) {
             case SOURCE:
                 if (!WSDLSourceMultiviewDesc.PREFERRED_ID.equals(

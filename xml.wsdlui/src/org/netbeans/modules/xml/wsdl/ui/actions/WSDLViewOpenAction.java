@@ -19,14 +19,18 @@
 
 package org.netbeans.modules.xml.wsdl.ui.actions;
 
+import org.netbeans.modules.xml.wsdl.model.Definitions;
+import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.ui.netbeans.module.WSDLDataObject;
 import org.netbeans.modules.xml.wsdl.ui.netbeans.module.WSDLEditorSupport;
+import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.ui.cookies.ViewComponentCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.NodeAction;
+
 
 /**
  * Opens the WSDLDataObject in the WSDL editor tree view.
@@ -49,13 +53,22 @@ public class WSDLViewOpenAction extends NodeAction{
             ViewComponentCookie svc = sdo.getCookie(
                     ViewComponentCookie.class);
             if (svc != null) {
-            	if (wes.getOpenedPanes() == null ||
-            			wes.getOpenedPanes().length == 0) {
-            		svc.view(ViewComponentCookie.View.STRUCTURE,
-            				wes.getModel().getDefinitions());
-            	} else {
-            		wes.open();
-            	}
+                WSDLModel model= wes.getModel();
+                Definitions def = null;
+                ViewComponentCookie.View view = ViewComponentCookie.View.STRUCTURE;
+                if (model.getState() ==  Model.State.VALID) {
+                    def = model.getDefinitions();
+                }
+                if (def == null) {
+                    view = ViewComponentCookie.View.SOURCE;
+                }
+                
+                if (wes.getOpenedPanes() == null ||
+                        wes.getOpenedPanes().length == 0) {
+                    svc.view(view, def);
+                } else {
+                    wes.open();
+                }                
             	return;
             }
         }
