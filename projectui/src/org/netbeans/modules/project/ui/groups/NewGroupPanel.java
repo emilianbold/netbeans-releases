@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
 import javax.swing.JFileChooser;
+import javax.swing.JPanel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.project.Project;
@@ -41,7 +42,9 @@ import org.openide.util.Exceptions;
  * Applicable in advanced mode.
  * @author Jesse Glick
  */
-public class NewGroupPanel extends AbstractNewGroupPanel {
+public class NewGroupPanel extends JPanel {
+
+    public static final String PROP_READY = "ready"; // NOI18N
 
     public NewGroupPanel() {
         initComponents();
@@ -254,20 +257,16 @@ public class NewGroupPanel extends AbstractNewGroupPanel {
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
+                .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
-                        .add(12, 12, 12)
-                        .add(directoryKindRadio))
-                    .add(layout.createSequentialGroup()
-                        .add(12, 12, 12)
                         .add(nameLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(nameField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 546, Short.MAX_VALUE))
+                    .add(directoryKindRadio)
+                    .add(adHocKindRadio)
                     .add(layout.createSequentialGroup()
-                        .add(12, 12, 12)
-                        .add(adHocKindRadio))
-                    .add(layout.createSequentialGroup()
-                        .add(29, 29, 29)
+                        .add(17, 17, 17)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(layout.createSequentialGroup()
                                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
@@ -284,15 +283,12 @@ public class NewGroupPanel extends AbstractNewGroupPanel {
                                     .add(org.jdesktop.layout.GroupLayout.TRAILING, directoryButton)))
                             .add(directoryKindLabel)))
                     .add(layout.createSequentialGroup()
-                        .add(12, 12, 12)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
                             .add(subprojectsKindRadio)
                             .add(layout.createSequentialGroup()
                                 .add(17, 17, 17)
                                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                                    .add(layout.createSequentialGroup()
-                                        .add(masterProjectLabel)
-                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 315, Short.MAX_VALUE))
+                                    .add(masterProjectLabel)
                                     .add(subprojectsKindLabel)))
                             .add(layout.createSequentialGroup()
                                 .add(17, 17, 17)
@@ -308,7 +304,11 @@ public class NewGroupPanel extends AbstractNewGroupPanel {
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(12, 12, 12)
+                .addContainerGap()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(nameLabel)
+                    .add(nameField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(18, 18, 18)
                 .add(adHocKindRadio)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(adHocKindLabel)
@@ -334,11 +334,7 @@ public class NewGroupPanel extends AbstractNewGroupPanel {
                     .add(directoryButton)
                     .add(directoryLabel)
                     .add(directoryField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(nameLabel)
-                    .add(nameField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap())
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 

@@ -49,13 +49,13 @@ public class AdHocGroup extends Group {
      * Create a new ad-hoc group of projects.
      */
     public static AdHocGroup create(String name, boolean autoSynch) {
-        String id = sanitizeNameAndUniquifyForId(name);
-        LOG.log(Level.FINE, "Creating: {0}", id);
-        Preferences p = NODE.node(id);
+        String sanitizedId = sanitizeNameAndUniquifyForId(name);
+        LOG.log(Level.FINE, "Creating: {0}", sanitizedId);
+        Preferences p = NODE.node(sanitizedId);
         p.put(KEY_NAME, name);
         p.put(KEY_KIND, KIND);
         p.putBoolean(KEY_AUTO_SYNCH, autoSynch);
-        return new AdHocGroup(id);
+        return new AdHocGroup(sanitizedId);
     }
 
     AdHocGroup(String id) {
@@ -129,7 +129,7 @@ public class AdHocGroup extends Group {
     }
 
     public GroupEditPanel createPropertiesPanel() {
-        return Group.isAdvancedMode() ? new AdHocGroupEditPanel(this) : new AdHocGroupEditPanelBasic(this);
+        return new AdHocGroupEditPanel(this);
     }
 
     @Override

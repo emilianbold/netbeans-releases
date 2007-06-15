@@ -25,12 +25,10 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import javax.swing.AbstractAction;
 import javax.swing.JButton;
-import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JRadioButtonMenuItem;
-import org.netbeans.api.project.ui.OpenProjects;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -83,9 +81,11 @@ public class GroupsMenu extends AbstractAction implements Presenter.Menu, Presen
                 JRadioButtonMenuItem mi = new JRadioButtonMenuItem(g.getName());
                 if (g.equals(active)) {
                     mi.setSelected(true);
-                    if (g.isPristine() && Group.isAdvancedMode()) {
+                    /* Was disliked by UI people:
+                    if (g.isPristine()) {
                         mi.setEnabled(false);
                     }
+                     */
                 }
                 mi.addActionListener(new ActionListener() {
                     public void actionPerformed(ActionEvent e) {
@@ -103,9 +103,11 @@ public class GroupsMenu extends AbstractAction implements Presenter.Menu, Presen
             Mnemonics.setLocalizedText(mi, NbBundle.getMessage(GroupsMenu.class, "GroupsMenu.no_group"));
             if (active == null) {
                 mi.setSelected(true);
-                if (OpenProjects.getDefault().getOpenProjects().length == 0 && Group.isAdvancedMode()) {
+                /* Was disliked by UI people:
+                if (OpenProjects.getDefault().getOpenProjects().length == 0) {
                     mi.setEnabled(false);
                 }
+                 */
             }
             mi.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
@@ -146,15 +148,6 @@ public class GroupsMenu extends AbstractAction implements Presenter.Menu, Presen
                 });
                 add(mi);
             }
-            mi = new JCheckBoxMenuItem();
-            Mnemonics.setLocalizedText(mi, NbBundle.getMessage(GroupsMenu.class, "GroupsMenu.advanced"));
-            mi.setSelected(Group.isAdvancedMode());
-            mi.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    Group.setAdvancedMode(!Group.isAdvancedMode());
-                }
-            });
-            add(mi);
             return new JComponent[] {this};
         }
 
@@ -168,7 +161,7 @@ public class GroupsMenu extends AbstractAction implements Presenter.Menu, Presen
      * Create (and open) a new group.
      */
     private static void newGroup() {
-        final AbstractNewGroupPanel panel = Group.isAdvancedMode() ? new NewGroupPanel() : new NewGroupPanelBasic();
+        final NewGroupPanel panel = new NewGroupPanel();
         DialogDescriptor dd = new DialogDescriptor(panel, NbBundle.getMessage(GroupsMenu.class, "GroupsMenu.new_title"));
         dd.setOptionType(NotifyDescriptor.OK_CANCEL_OPTION);
         dd.setModal(true);
@@ -178,7 +171,7 @@ public class GroupsMenu extends AbstractAction implements Presenter.Menu, Presen
         create.setEnabled(panel.isReady());
         panel.addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
-                if (AbstractNewGroupPanel.PROP_READY.equals(evt.getPropertyName())) {
+                if (NewGroupPanel.PROP_READY.equals(evt.getPropertyName())) {
                     create.setEnabled(panel.isReady());
                 }
             }

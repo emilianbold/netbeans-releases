@@ -62,8 +62,6 @@ public abstract class Group {
     protected static final Preferences NODE = NbPreferences.forModule(Group.class).node("groups");
     /** Preferences key for the active group ID. */
     private static final String KEY_ACTIVE = "active"; // NOI18N
-    /** Preferences key for whether to use "basic" or "advanced" mode. */
-    private static final String KEY_ADVANCED_MODE = "advancedMode"; // NOI18N
     /** Preferences key for display name of group. */
     protected static final String KEY_NAME = "name"; // NOI18N
     /** Preferences key for kind of group (see constants in subclasses). */
@@ -97,9 +95,9 @@ public abstract class Group {
     public static SortedSet<Group> allGroups() {
         SortedSet<Group> groups = new TreeSet<Group>(displayNameComparator());
         try {
-            for (String id : NODE.childrenNames()) {
-                LOG.log(Level.FINER, "Considering project group id={0}", id);
-                Group g = load(id);
+            for (String groupId : NODE.childrenNames()) {
+                LOG.log(Level.FINER, "Considering project group id={0}", groupId);
+                Group g = load(groupId);
                 if (g != null) {
                     groups.add(g);
                 }
@@ -142,39 +140,24 @@ public abstract class Group {
         open(nue);
     }
 
-    public static boolean isAdvancedMode() {
-        return NODE.getBoolean(KEY_ADVANCED_MODE, false);
-    }
-
-    public static void setAdvancedMode(boolean b) {
-        NODE.putBoolean(KEY_ADVANCED_MODE, b);
-        if (UILOG.isLoggable(Level.FINE)) {
-            LogRecord rec = new LogRecord(Level.FINE, "Group.UI.setAdvancedMode");
-            rec.setParameters(new Object[] {b});
-            rec.setResourceBundle(NbBundle.getBundle(Group.class));
-            rec.setLoggerName(UILOG.getName());
-            UILOG.log(rec);
-        }
-    }
-
     protected static String sanitizeNameAndUniquifyForId(String name) {
-        String id = name.replaceAll("[^a-zA-Z0-9_.-]+", "_");
+        String sanitizedId = name.replaceAll("[^a-zA-Z0-9_.-]+", "_");
         Set<String> existing;
         try {
             existing = new HashSet<String>(Arrays.asList(NODE.childrenNames()));
         } catch (BackingStoreException x) {
             Exceptions.printStackTrace(x);
-            return id;
+            return sanitizedId;
         }
-        if (existing.contains(id)) {
+        if (existing.contains(sanitizedId)) {
             for (int i = 2; ; i++) {
-                String candidate = id + "_" + i;
+                String candidate = sanitizedId + "_" + i;
                 if (!existing.contains(candidate)) {
                     return candidate;
                 }
             }
         } else {
-            return id;
+            return sanitizedId;
         }
     }
 
