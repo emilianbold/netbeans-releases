@@ -31,6 +31,7 @@ import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
@@ -649,7 +650,8 @@ public class WebLogicalViewProvider implements LogicalViewProvider {
         } 
         
         // For checking projects that use database connections to see if these connections are available
-        private class BrokenDatasourceAction extends AbstractAction implements Runnable, ConnectionListener {
+        private class BrokenDatasourceAction extends AbstractAction implements Runnable, ConnectionListener, 
+                PropertyChangeListener {
             private volatile boolean brokenDatasource;
             private volatile boolean firstTime = false;
             private RequestProcessor.Task task = null;
@@ -741,19 +743,29 @@ public class WebLogicalViewProvider implements LogicalViewProvider {
                                 }
                             }
                         });
-                    }
-                                        
-                    if (!brokenDatasource) {
-                        ConnectionManager.getDefault().removeConnectionListener(this);
-                    }                    
+                    }                                        
                 }
             }
             
             public void connectionsChanged() {
                 checkMissingDatabaseConnection();
             }
+            
+            public void propertyChange(PropertyChangeEvent evt) {                
+                // The list of open projects has changed; remove a connection listener for the project.
+                if (OpenProjects.PROPERTY_OPEN_PROJECTS.equals(evt.getPropertyName())) {                    
+                    List<Project> oldOpenProjectsList = Arrays.asList((Project[]) evt.getOldValue());
+                    List<Project> newOpenProjectsList = Arrays.asList((Project[]) evt.getNewValue());
+                    Set<Project> closedProjectsSet = new LinkedHashSet<Project>(oldOpenProjectsList);
+                    closedProjectsSet.removeAll(newOpenProjectsList);
+                    for (Project project : closedProjectsSet) {
+                        ConnectionManager.getDefault().removeConnectionListener(this);
+                    }
+                }
+            }
         }
     }
+        
 
 
     /** Factory for project actions.<BR>
