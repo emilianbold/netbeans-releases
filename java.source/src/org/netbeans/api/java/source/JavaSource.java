@@ -2192,7 +2192,11 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
      * @param  exc  exception to write to the end of dump file
      */
     private static void dumpSource(CompilationInfo info, Throwable exc) {
-        String dumpDir = System.getProperty("netbeans.user") + "/var/log/"; //NOI18N
+        String userDir = System.getProperty("netbeans.user");
+        if (userDir == null) {
+            return;
+        }
+        String dumpDir =  userDir + "/var/log/"; //NOI18N
         String src = info.getText();
         FileObject file = info.getFileObject();
         String fileName = FileUtil.getFileDisplayName(info.getFileObject());
