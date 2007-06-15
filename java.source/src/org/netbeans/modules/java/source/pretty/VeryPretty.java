@@ -291,7 +291,6 @@ public final class VeryPretty extends JCTree.Visitor {
      *************************************************************************/
 
     public void visitTopLevel(JCCompilationUnit tree) {
-        printPrecedingComments(tree);
         printPackage(tree.pid);
         boolean hasImports = false;
         List<JCTree> l = tree.defs;
@@ -1593,7 +1592,8 @@ public final class VeryPretty extends JCTree.Visitor {
                 }
                 TokenSequence<JavaTokenId> tokens = cInfo.getTokenHierarchy().tokenSequence(JavaTokenId.language());
                 tokens.move(startPos);
-                PositionEstimator.moveToSrcRelevant(tokens, Direction.BACKWARD);
+                if (PositionEstimator.moveToSrcRelevant(tokens, Direction.BACKWARD) == null)
+                    tokens.moveStart();
                 int indent = Query.NOPOS;
                 while (tokens.moveNext() && PositionEstimator.nonRelevant.contains(tokens.token().id())) {
                     if (tokens.index() > lastReadCommentIdx) {

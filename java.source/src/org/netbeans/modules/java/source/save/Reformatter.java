@@ -72,12 +72,16 @@ public class Reformatter {
         int indent = getIndent(path);
         if (indent < 0)
             return false;
-        SourcePositions sp = controller.getTrees().getSourcePositions();
-        int start = (int)sp.getStartPosition(controller.getCompilationUnit(), tree);
-        int end = (int)sp.getEndPosition(controller.getCompilationUnit(), tree);
-        if (start < 0 || end < 0)
-            return false;
-        String sourceText = controller.getText().substring(start, end);
+        String sourceText = controller.getText();
+        int start = 0;
+        if (tree.getKind() != Tree.Kind.COMPILATION_UNIT) {
+            SourcePositions sp = controller.getTrees().getSourcePositions();
+            start = (int)sp.getStartPosition(controller.getCompilationUnit(), tree);
+            int end = (int)sp.getEndPosition(controller.getCompilationUnit(), tree);
+            if (start < 0 || end < 0)
+                return false;
+            sourceText = sourceText.substring(start, end);
+        }
         VeryPretty pretty = new VeryPretty(controller);
         String text = pretty.reformat((JCTree)tree, startOffset, endOffset, indent);
         if (text == null)
