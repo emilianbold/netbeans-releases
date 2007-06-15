@@ -56,11 +56,11 @@ public class JSFConfigurationPanel implements FrameworkConfigurationPanel, Wizar
         this.customizer = customizer;
         getComponent();
     }
-
+    
     private boolean customizer;
-
-
-
+    
+    
+    
     public boolean isFinishPanel() {
         return true;
     }
@@ -71,18 +71,18 @@ public class JSFConfigurationPanel implements FrameworkConfigurationPanel, Wizar
 
         return component;
     }
-
+    
     public HelpCtx getHelp() {
         return new HelpCtx(JSFConfigurationPanel.class);
     }
-
+    
     public boolean isValid() {
         getComponent();
         return component.valid(wizardDescriptor);
     }
-
+    
     private final Set/*<ChangeListener>*/ listeners = new HashSet(1);
-
+    
     public final void addChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.add(l);
@@ -103,11 +103,11 @@ public class JSFConfigurationPanel implements FrameworkConfigurationPanel, Wizar
             ((ChangeListener)it.next()).stateChanged(ev);
         }
     }
-
+    
     public void readSettings(Object settings) {
         wizardDescriptor = (WizardDescriptor) settings;
         component.read (wizardDescriptor);
-
+        
         // XXX hack, TemplateWizard in final setTemplateImpl() forces new wizard's title
         // this name is used in NewProjectWizard to modify the title
         Object substitute = ((JComponent) component).getClientProperty("NewProjectWizard_Title"); // NOI18N
@@ -121,7 +121,7 @@ public class JSFConfigurationPanel implements FrameworkConfigurationPanel, Wizar
         }
         // </RAVE>
     }
-
+    
    
     public void storeSettings(Object settings) {
         WizardDescriptor d = (WizardDescriptor) settings;
@@ -137,7 +137,7 @@ public class JSFConfigurationPanel implements FrameworkConfigurationPanel, Wizar
     public void enableComponents(boolean enable) {
         getComponent();
         component.enableComponents(enable);
-
+        
     }
 
     // <RAVE> Default Bean Package
@@ -153,27 +153,27 @@ public class JSFConfigurationPanel implements FrameworkConfigurationPanel, Wizar
     public String getServletName(){
         return component.getServletName();
     }
-
+    
     public void setServletName(String name){
         component.setServletName(name);
     }
-
+    
     public String getURLPattern(){
         return component.getURLPattern();
     }
-
+    
     public void setURLPattern(String pattern){
         component.setURLPattern(pattern);
     }
-
+    
     public boolean validateXML(){
         return component.validateXML();
     }
-
+    
     public void setValidateXML(boolean ver){
         component.setValidateXML(ver);
     }
-
+    
     public boolean verifyObjects(){
         return component.verifyObjects();
     }

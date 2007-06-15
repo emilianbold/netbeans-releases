@@ -45,14 +45,14 @@ import org.openide.util.NbBundle;
 public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements HelpCtx.Provider, DocumentListener  {
 
     private JSFConfigurationPanel panel;
-
+    
     private ArrayList <Library> jsfLibraries;
     private boolean webModule25Version = true;
 
     // <RAVE> Default Bean Package
     private boolean beanPackageModified = false;
     // </RAVE>
-
+    
     /** Creates new form JSFConfigurationPanelVisual */
     public JSFConfigurationPanelVisual(JSFConfigurationPanel panel, boolean customizer) {
         initComponents();
@@ -66,7 +66,7 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
             enableComponents(false);
         }
     }
-
+    
     private void initLibraries(){
         Library libraries[] = LibraryManager.getDefault().getLibraries();
         Vector <String> items = new Vector();
@@ -204,10 +204,9 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
                                             .add(cbValidate))))
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(confPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(org.jdesktop.layout.GroupLayout.TRAILING, confPanelLayout.createSequentialGroup()
+                                    .add(confPanelLayout.createSequentialGroup()
                                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                        .add(cbVerify)
-                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 234, Short.MAX_VALUE))
+                                        .add(cbVerify))
                                     .add(confPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
                                         .add(org.jdesktop.layout.GroupLayout.LEADING, tURLPattern)
                                         .add(org.jdesktop.layout.GroupLayout.LEADING, tServletName)
@@ -368,7 +367,7 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
         panel.fireChangeEvent();
     }//GEN-LAST:event_beanPackageTextFieldKeyReleased
     
-    private void rbNoneLibraryItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_rbNoneLibraryItemStateChanged
+private void rbNoneLibraryItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_rbNoneLibraryItemStateChanged
     updateLibrary();
 }//GEN-LAST:event_rbNoneLibraryItemStateChanged
 
@@ -403,7 +402,7 @@ private void jbBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRS
 private void jtFolderKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jtFolderKeyPressed
     checkNewLibrarySetting();
 }//GEN-LAST:event_jtFolderKeyPressed
-
+    
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel beanPackageLabel;
