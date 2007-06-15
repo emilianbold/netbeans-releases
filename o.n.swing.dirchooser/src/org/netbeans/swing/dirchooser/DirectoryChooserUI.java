@@ -40,7 +40,6 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -660,8 +659,19 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
             if (!isCharForSearch(evt)) {
                 resetBuffer();
             }
-        }
 
+            // #105527: keyboard invocation of tree's popup menu 
+            if ((evt.getKeyCode() == KeyEvent.VK_F10) && evt.isShiftDown() && !popupMenu.isShowing()) {
+                JTree tree = (JTree) evt.getSource();
+                int selRow = tree.getLeadSelectionRow();
+                if (selRow >= 0) {
+                    Rectangle bounds = tree.getRowBounds(selRow);
+                    popupMenu.show(tree, bounds.x + bounds.width / 2, bounds.y + bounds.height * 3 / 5);
+                    evt.consume();
+                }
+            }
+        }
+        
         @Override
         public void keyTyped(KeyEvent evt) {
             char keyChar = evt.getKeyChar();
@@ -743,8 +753,8 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
         popupMenu.add(item1);
         popupMenu.add(item2);
         popupMenu.add(item3);
-    }
-    
+            }
+
     // remove multiple directories
     // Todo - instead of printing out the files, just print out the numbers of directories that will be deleted
     private void deleteAction() {
