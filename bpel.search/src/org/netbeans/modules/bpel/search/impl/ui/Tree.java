@@ -187,18 +187,19 @@ final class Tree extends JTree implements SearchListener {
   }
 
   private void handleAction(int code, int modifiers, DefaultMutableTreeNode node) {
-    if (code == KeyEvent.VK_D && isAlt(modifiers)) {
-      select(node);
-    }
-    else if (code == KeyEvent.VK_O && isAlt(modifiers)) {
-      gotoSource(node);
-    }
-    else if (code == KeyEvent.VK_C && isCtrl(modifiers)) {
+//    if (code == KeyEvent.VK_D && isAlt(modifiers)) {
+//      select(node);
+//    }
+//    else if (code == KeyEvent.VK_O && isAlt(modifiers)) {
+//      gotoSource(node);
+//    }
+//    else
+    if (code == KeyEvent.VK_C && isCtrl(modifiers)) {
       copy(node);
     }
-    else if (code == KeyEvent.VK_H && isCtrl(modifiers)) {
-      export(node);
-    }
+//    else if (code == KeyEvent.VK_H && isCtrl(modifiers)) {
+//      export(node);
+//    }
     else {
       handleResult(code, modifiers, node);
     }
@@ -211,9 +212,9 @@ final class Tree extends JTree implements SearchListener {
     else if (code == KeyEvent.VK_F12) {
       nextOccurence(node);
     }
-    else if (code == KeyEvent.VK_E && isCtrl(modifiers)) {
-      expose(node);
-    }
+//    else if (code == KeyEvent.VK_E && isCtrl(modifiers)) {
+//      expose(node);
+//    }
     else if (code == KeyEvent.VK_DELETE) {
       remove(node);
     }
@@ -260,7 +261,7 @@ final class Tree extends JTree implements SearchListener {
         expose(node);
       }
     });
-    item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_E, KeyEvent.CTRL_MASK));
+//  item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_E, KeyEvent.CTRL_MASK));
     popup.add(item);
 
     // remove
@@ -289,7 +290,7 @@ final class Tree extends JTree implements SearchListener {
         select(node);
       }
     });
-    item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_D, KeyEvent.ALT_MASK));
+//  item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_D, KeyEvent.ALT_MASK));
     popup.add(item);
 
     // go to source
@@ -300,7 +301,7 @@ final class Tree extends JTree implements SearchListener {
         gotoSource(node);
       }
     });
-    item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, KeyEvent.ALT_MASK));
+//  item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, KeyEvent.ALT_MASK));
     popup.add(item);
 
     // copy
@@ -320,7 +321,7 @@ final class Tree extends JTree implements SearchListener {
         export(node);
       }
     });
-    item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_H, KeyEvent.CTRL_MASK));
+//  item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_H, KeyEvent.CTRL_MASK));
     popup.add(item);
   }
 
