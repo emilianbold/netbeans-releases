@@ -18,7 +18,6 @@
  */
 package org.netbeans.modules.compapp.projects.jbi.api;
 
-import javax.swing.Icon;
 import org.netbeans.api.project.Project;
 
 /**
@@ -36,10 +35,10 @@ public interface InternalProjectTypePlugin {
     String getDisplayName();
     
     /**
-     * Icon that corresponds to this JBI project type.
+     * Resource path to the icon that corresponds to this JBI project type.
      * @return icon
      */
-    Icon getIcon();
+    String getIconFileBase();
     
     /**
      * Category name for the JBI project type.

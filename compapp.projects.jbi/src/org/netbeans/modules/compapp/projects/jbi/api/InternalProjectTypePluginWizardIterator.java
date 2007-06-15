@@ -12,7 +12,9 @@
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  * 
- * Portions Copyrighted 2007 Sun Microsystems, Inc.
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.compapp.projects.jbi.api;
 
@@ -20,11 +22,15 @@ import java.awt.Component;
 import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.compapp.projects.jbi.ui.wizards.WizardProperties;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -37,49 +43,89 @@ import org.openide.util.NbBundle;
  */
 public abstract class InternalProjectTypePluginWizardIterator implements WizardDescriptor.InstantiatingIterator {
 
+    private transient int index;
+    private transient WizardDescriptor.Panel[] panels;
+    private transient WizardDescriptor wiz;
+    
+    private transient List<WizardDescriptor.Panel> mAddedPanels;
+    private transient List<String> mAddedSteps;
+    
+    private transient FileObject mProjectFileObject;
+    
     
     protected abstract void createProject(File dirF, String name, String j2eeLevel) throws IOException;
 
     
-    private WizardDescriptor.Panel[] createPanels() {
-        return new WizardDescriptor.Panel[] {
-        };
+    public void uninitialize(WizardDescriptor wiz) {
+        this.wiz.putProperty(WizardProperties.PROJECT_DIR, null);
+        this.wiz.putProperty(WizardProperties.NAME, null);
+        this.wiz = null;
+        panels = null;
     }
     
-    private String[] createSteps() {
-        return new String[] {
-        };
-    }
-
     protected String getDefaultName() {
-        return NbBundle.getMessage(getClass(), "LBL_NPW1_DefaultProjectName");
+        return NbBundle.getMessage(getClass(), "LBL_NPW1_DefaultProjectName"); //NOI18N
     }
     
     protected String getDefaultTitle() {
-        return NbBundle.getMessage(getClass(), "TXT_NewWebApp");
+        return NbBundle.getMessage(getClass(), "TXT_NewWebApp"); //NOI18N
     }
     
-    public Set instantiate() throws IOException {
+    
+    public final String name() {
+        return MessageFormat.format(
+                NbBundle.getMessage(getClass(), "LBL_WizardStepsCount"),  //NOI18N
+                new String[] {
+                    (new Integer(index + 1)).toString(), 
+                    (new Integer(panels.length)).toString() });
+    }
+    
+    public final boolean hasNext() {
+        return index < panels.length - 1;
+    }
+    public final boolean hasPrevious() {
+        return index > 0;
+    }
+    public final void nextPanel() {
+        if (!hasNext()) throw new NoSuchElementException();
+        index++;
+    }
+    public final void previousPanel() {
+        if (!hasPrevious()) throw new NoSuchElementException();
+        index--;
+    }
+    public final WizardDescriptor.Panel current() {
+        return panels[index];
+    }
+    
+    public final Set instantiate() throws IOException {
         Set resultSet = new HashSet();
         File dirF = (File) wiz.getProperty(WizardProperties.PROJECT_DIR);
         String name = (String) wiz.getProperty(WizardProperties.NAME);
         String j2eeLevel = (String) wiz.getProperty(WizardProperties.J2EE_LEVEL);
         
         createProject(dirF, name, j2eeLevel);
-        FileObject dir = FileUtil.toFileObject(dirF);
+        mProjectFileObject = FileUtil.toFileObject(dirF);
         
-        resultSet.add(dir);
+        resultSet.add(mProjectFileObject);
         
         // Returning set of FileObject of project diretory. 
         // Project will be open and set as main
         return resultSet;
     }
     
-    private transient int index;
-    private transient WizardDescriptor.Panel[] panels;
-    private transient WizardDescriptor wiz;
+    public final Project getProject() throws IOException {
+        if (mProjectFileObject != null) {
+            return ProjectManager.getDefault().findProject(mProjectFileObject);
+        }
+        return null;
+    }
     
-    public void initialize(WizardDescriptor wiz) {
+    public final boolean hasContent() {
+        return mAddedPanels != null && mAddedSteps != null;
+    }
+    
+    public final void initialize(WizardDescriptor wiz) {
         this.wiz = wiz;
         index = 0;
         panels = createPanels();
@@ -102,41 +148,38 @@ public abstract class InternalProjectTypePluginWizardIterator implements WizardD
             }
         }
     }
-    public void uninitialize(WizardDescriptor wiz) {
-        this.wiz.putProperty(WizardProperties.PROJECT_DIR, null);
-        this.wiz.putProperty(WizardProperties.NAME, null);
-        this.wiz = null;
-        panels = null;
-    }
-    
-    public String name() {
-        return MessageFormat.format(
-                NbBundle.getMessage(getClass(), "LBL_WizardStepsCount"),  //NOI18N
-                new String[] {
-                    (new Integer(index + 1)).toString(), 
-                    (new Integer(panels.length)).toString() });
-    }
-    
-    public boolean hasNext() {
-        return index < panels.length - 1;
-    }
-    public boolean hasPrevious() {
-        return index > 0;
-    }
-    public void nextPanel() {
-        if (!hasNext()) throw new NoSuchElementException();
-        index++;
-    }
-    public void previousPanel() {
-        if (!hasPrevious()) throw new NoSuchElementException();
-        index--;
-    }
-    public WizardDescriptor.Panel current() {
-        return panels[index];
-    }
     
     // If nothing unusual changes in the middle of the wizard, simply:
     public final void addChangeListener(ChangeListener l) {}
     public final void removeChangeListener(ChangeListener l) {}
 
+    
+    protected final void addPanel(WizardDescriptor.Panel panel) {
+        if (mAddedPanels == null) {
+            mAddedPanels = new ArrayList<WizardDescriptor.Panel>();
+        }
+        mAddedPanels.add(panel);
+    }
+    
+    protected final void addStep(String step) {
+        if (mAddedSteps == null) {
+            mAddedSteps = new ArrayList<String>();
+        }
+        mAddedSteps.add(step);
+    }
+    
+    
+    private WizardDescriptor.Panel[] createPanels() {
+        if (mAddedPanels != null) {
+            return mAddedPanels.toArray(new WizardDescriptor.Panel[mAddedPanels.size()]);
+        }
+        return new WizardDescriptor.Panel[] {};
+    }
+    
+    private String[] createSteps() {
+        if (mAddedSteps != null) {
+            return mAddedSteps.toArray(new String[mAddedSteps.size()]);
+        }
+        return new String[] {};
+    }
 }
