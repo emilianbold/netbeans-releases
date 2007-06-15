@@ -22,6 +22,8 @@ package org.netbeans.modules.visualweb.insync.faces.refactoring;
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -139,6 +141,41 @@ final class FacesRefactoringUtils {
         }
         return false;
     }
+
+    static boolean isFolderParentOfPageBeanRoot(FileObject fo) {
+    	if (fo.isFolder()) {
+    		Project p = FileOwnerQuery.getOwner(fo);
+            if (p==null) {
+                return false;
+            }
+            FileObject pageBeanRoot = JsfProjectUtils.getPageBeanRoot(p);
+            if (pageBeanRoot != null) {
+                return FileUtil.isParentOf(fo, pageBeanRoot);
+            }
+    	}
+        return false;
+    }
+        
+    static boolean isFolderPageBeanRoot(FileObject fo) {
+    	if (fo.isFolder()) {
+    		Project p = FileOwnerQuery.getOwner(fo);
+            if (p==null) {
+                return false;
+            }
+            FileObject pageBeanRoot = JsfProjectUtils.getPageBeanRoot(p);
+            if (pageBeanRoot != null) {
+                return pageBeanRoot.equals(fo);
+            }
+    	}
+        return false;
+    }
+    
+    static boolean isFolderUnderPageBeanRoot(FileObject fo) {
+    	if (fo.isFolder()) {
+	        return isFileUnderPageBeanRoot(fo);
+    	}
+        return false;
+    }
     
     static boolean isFileInJsfProject(FileObject f) {
         // Any project owner?
@@ -245,6 +282,10 @@ final class FacesRefactoringUtils {
         ClassPath compile = ClassPath.getClassPath(files[0], ClassPath.COMPILE);
         ClasspathInfo cpInfo = ClasspathInfo.create(boot, compile, rcp);
         return cpInfo;
+    }
+    
+    public static FileObject getClassPathRoot(FileObject fileObject) {
+        return ClassPath.getClassPath(fileObject, ClassPath.SOURCE).findOwnerRoot(fileObject);
     }
     
     /**

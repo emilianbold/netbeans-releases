@@ -116,7 +116,7 @@ public class ElementGripFactory {
                 Element current = info.getTrees().getElement(tp);
                 Tree.Kind kind = tp.getLeaf().getKind();
                 if (kind != Tree.Kind.CLASS && kind != Tree.Kind.METHOD) {
-                    if (tp.getParentPath().getLeaf().getKind() == Tree.Kind.COMPILATION_UNIT) {
+                    if (tp.getParentPath()==null || tp.getParentPath().getLeaf().getKind() == Tree.Kind.COMPILATION_UNIT) {
                         //xxx: rather workaround. should be fixed better.
                         return null;
                     } else {

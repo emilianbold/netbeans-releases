@@ -24,8 +24,14 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -35,6 +41,7 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 
+import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
@@ -46,6 +53,8 @@ import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.ModificationResult.Difference;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.queries.VisibilityQuery;
+import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.MoveRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
@@ -78,6 +87,12 @@ import com.sun.source.util.TreePath;
  * @author
  */
 public class FacesJavaFileMoveRefactoringPlugin extends FacesRefactoringPlugin {
+	
+    private Map packagePostfix = new HashMap();
+    ArrayList<FileObject> filesToMove = new ArrayList();
+    HashMap<FileObject,ElementHandle> classes;
+    Map<FileObject, Set<FileObject>> whoReferences = new HashMap();
+    private FileObject[] origFilesToMove;
 
     /**
      * 
@@ -85,10 +100,49 @@ public class FacesJavaFileMoveRefactoringPlugin extends FacesRefactoringPlugin {
      */
     public FacesJavaFileMoveRefactoringPlugin(MoveRefactoring refactoring) {
         super(refactoring);
+    	setup(refactoring.getRefactoringSource().lookupAll(FileObject.class), "", true);
     }
-
+    
+    public FacesJavaFileMoveRefactoringPlugin(RenameRefactoring refactoring) {
+        super(refactoring);
+        if (!isDelegatedRefactoring(getRefactoring())) {
+	        FileObject fo = refactoring.getRefactoringSource().lookup(FileObject.class);
+	        if (fo!=null) {
+	            setup(Collections.singletonList(fo), "", true);
+	        } else {
+	            setup(Collections.singletonList((refactoring.getRefactoringSource().lookup(NonRecursiveFolder.class)).getFolder()), "", false);
+	        }
+        }
+    }
+    
+    private RenameRefactoring getRenameRefactoring() {
+        return (RenameRefactoring) getRefactoring();
+    }
+    
     private MoveRefactoring getMoveRefactoring() {
         return (MoveRefactoring) getRefactoring();
+    }
+    
+    private void setup(Collection fileObjects, String postfix, boolean recursively) {
+        for (Iterator i = fileObjects.iterator(); i.hasNext(); ) {
+            FileObject fo = (FileObject) i.next();
+            if (FacesRefactoringUtils.isJavaFileObjectOfInterest(fo)) {
+                packagePostfix.put(fo, postfix.replace('/', '.'));
+                filesToMove.add(fo);
+            } else if (!(fo.isFolder())) {
+                packagePostfix.put(fo, postfix.replace('/', '.'));
+            } else if (VisibilityQuery.getDefault().isVisible(fo)) {
+                //o instanceof DataFolder
+                //CVS folders are ignored
+                boolean addDot = !"".equals(postfix);
+                Collection col = new ArrayList();
+                for (FileObject fo2: fo.getChildren()) {
+                    if (!fo2.isFolder() || (fo2.isFolder() && recursively)) 
+                        col.add(fo2);
+                }
+                setup(col, postfix +(addDot?".":"") +fo.getName(), recursively); // NOI18N
+            }
+        }
     }
     
     @Override
@@ -103,15 +157,43 @@ public class FacesJavaFileMoveRefactoringPlugin extends FacesRefactoringPlugin {
             return null;
         }
         
-        FileObject fileObject = getMoveRefactoring().getRefactoringSource().lookup(FileObject.class);
-        URL targetURL = getMoveRefactoring().getTarget().lookup(URL.class);
-        if (fileObject != null) {
-            if (FacesRefactoringUtils.isJavaFileObjectOfInterest(fileObject)) {
-                if (targetURL == null) {
-                    return new Problem(true, NbBundle.getMessage(FacesJspFileRenameRefactoringPlugin.class, "ERR_TargetLocationCannotBeNull")); // NOI18N
-                } 
-                
-                if (FacesRefactoringUtils.isVisualWebJspFile(fileObject)) {
+        if (getRefactoring() instanceof RenameRefactoring) {
+            FileObject fileObject = getRefactoring().getRefactoringSource().lookup(FileObject.class);
+            if (fileObject != null) {
+            	if (FacesRefactoringUtils.isFolderPageBeanRoot(fileObject)) {
+            		return new Problem(true, NbBundle.getMessage(FacesJavaFileMoveRefactoringPlugin.class, "ERR_CannotRenamePackageBeanRootFolder")); // NOI18N
+            	}
+            } else {
+            	NonRecursiveFolder nonRecursiveFolder = getRefactoring().getRefactoringSource().lookup(NonRecursiveFolder.class);
+            	if (nonRecursiveFolder != null) {
+            		fileObject = nonRecursiveFolder.getFolder();
+            		if (FacesRefactoringUtils.isFolderPageBeanRoot(fileObject)) {
+                		return new Problem(true, NbBundle.getMessage(FacesJavaFileMoveRefactoringPlugin.class, "ERR_CannotRenamePackageBeanRoot")); // NOI18N
+                	}
+            		// Now check if they are renaming a package under default package to outside 
+            		if (FacesRefactoringUtils.isFolderUnderPageBeanRoot(fileObject)) {
+                        String newName = getRenameRefactoring().getNewName();
+                        Project fileObjectProject = FileOwnerQuery.getOwner(fileObject);
+                    	FileObject pageBeanRoot = JsfProjectUtils.getPageBeanRoot(fileObjectProject);
+                    	String pageBeanRootPackageName = FacesRefactoringUtils.getPackageName(pageBeanRoot);
+                    	if (!newName.startsWith(pageBeanRootPackageName)) {
+                    		return new Problem(true, NbBundle.getMessage(FacesJavaFileMoveRefactoringPlugin.class, "ERR_CannotMovePackageOutsideDefaultPackage")); // NOI18N                    		
+                    	}
+            		}
+            	}
+            }
+        }
+        if (getRefactoring() instanceof MoveRefactoring) {
+	        FileObject fileObject = getMoveRefactoring().getRefactoringSource().lookup(FileObject.class);
+	        URL targetURL = getMoveRefactoring().getTarget().lookup(URL.class);
+	        if (fileObject != null) {
+        		if (targetURL == null) {
+                    return new Problem(true, NbBundle.getMessage(FacesJavaFileMoveRefactoringPlugin.class, "ERR_TargetLocationCannotBeNull")); // NOI18N
+                }
+	        	if (FacesRefactoringUtils.isFolderParentOfPageBeanRoot(fileObject) ||
+	        			FacesRefactoringUtils.isFolderPageBeanRoot(fileObject)) {
+	        		return new Problem(true, NbBundle.getMessage(FacesJavaFileMoveRefactoringPlugin.class, "ERR_CannotMovePackageBeanRoot")); // NOI18N
+	        	} else if (FacesRefactoringUtils.isFolderUnderPageBeanRoot(fileObject)) {
                     FileObject targetFileObject = URLMapper.findFileObject(targetURL);
                     if (targetFileObject == null) {
                         File file = null;
@@ -121,85 +203,164 @@ public class FacesJavaFileMoveRefactoringPlugin extends FacesRefactoringPlugin {
                             Exceptions.printStackTrace(e);
                         }
                         if (file == null) {
-                            return new Problem(true, NbBundle.getMessage(FacesJspFileRenameRefactoringPlugin.class, "ERR_TargetLocationCannotBeResolved")); // NOI18N
+                            return new Problem(true, NbBundle.getMessage(FacesJavaFileMoveRefactoringPlugin.class, "ERR_TargetLocationCannotBeResolved")); // NOI18N
                         }
                         targetFileObject = FileUtil.toFileObject(file);
                         if (targetFileObject == null) {
-                            return new Problem(true, NbBundle.getMessage(FacesJspFileRenameRefactoringPlugin.class, "ERR_TargetLocationCannotBeResolved")); // NOI18N
+                            return new Problem(true, NbBundle.getMessage(FacesJavaFileMoveRefactoringPlugin.class, "ERR_TargetLocationCannotBeResolved")); // NOI18N
                         }
                     }
                     Project targetFileObjectProject = FileOwnerQuery.getOwner(targetFileObject);
                     if (targetFileObjectProject == null) {
-                        return new Problem(true, NbBundle.getMessage(FacesJspFileRenameRefactoringPlugin.class, "ERR_TargetLocationIsNotInAnOpenProject")); // NOI18N                            
+                        return new Problem(true, NbBundle.getMessage(FacesJavaFileMoveRefactoringPlugin.class, "ERR_TargetLocationIsNotInAnOpenProject")); // NOI18N                            
                     }
                     if (!targetFileObject.isFolder()) {
-                        return new Problem(true, NbBundle.getMessage(FacesJspFileRenameRefactoringPlugin.class, "ERR_TargetLocationIsNotAFolder")); // NOI18N
+                        return new Problem(true, NbBundle.getMessage(FacesJavaFileMoveRefactoringPlugin.class, "ERR_TargetLocationIsNotAFolder")); // NOI18N
                     }
                     if (targetFileObject.equals(fileObject.getParent())) {
-                        return new Problem(true, NbBundle.getMessage(FacesJspFileRenameRefactoringPlugin.class, "ERR_CannotMoveToSameLocation")); // NOI18N
+                        return new Problem(true, NbBundle.getMessage(FacesJavaFileMoveRefactoringPlugin.class, "ERR_CannotMoveToSameLocation")); // NOI18N
                     }
-                    FileObject targetFileObjectWithSameName = targetFileObject.getFileObject(fileObject.getName(), fileObject.getExt());
-                    if (targetFileObjectWithSameName != null && targetFileObjectWithSameName.isValid()) {
-                        return new Problem(true, NbBundle.getMessage(FacesJspFileRenameRefactoringPlugin.class, "ERR_TargetJspFileAlreadyExists")); // NOI18N
-                    }
-                    
+                                        
                     Project fileObjectProject = FileOwnerQuery.getOwner(fileObject);
                     if (fileObjectProject.equals(targetFileObjectProject)) {
+                    	// Same project move
+                    	FileObject pageBeanRoot = JsfProjectUtils.getPageBeanRoot(fileObjectProject);
+                    	String pageBeanRootPackageName = FacesRefactoringUtils.getPackageName(pageBeanRoot);
+                    	String targetPackageName = FacesRefactoringUtils.getPackageName(targetFileObject);
+                    	if (!targetPackageName.startsWith(pageBeanRootPackageName)) {
+                    		return new Problem(true, NbBundle.getMessage(FacesJavaFileMoveRefactoringPlugin.class, "ERR_CannotMoveFolderOutsideDefaultPackageFolder")); // NOI18N                    		
+                    	}
 
                     } else {
                         if (JsfProjectUtils.isJsfProject(targetFileObjectProject)) {
                             
-                        }
-                        boolean isStartPage = JsfProjectUtils.isStartPage(fileObject);
-                        if (isStartPage) {
-                            return new Problem(false, NbBundle.getMessage(FacesJspFileRenameRefactoringPlugin.class, "WRN_MovingProjectStartPage")); // NOI18N
+                        } else {
+
                         }
                     }
-                }
-            }
-        }       
+	        	} else {
+	        		FileObject targetFileObject = URLMapper.findFileObject(targetURL);
+                    if (targetFileObject == null) {
+                        File file = null;
+                        try {
+                            file = new File(targetURL.toURI());
+                        } catch (URISyntaxException e) {
+                            Exceptions.printStackTrace(e);
+                        }
+                        if (file == null) {
+                            return new Problem(true, NbBundle.getMessage(FacesJavaFileMoveRefactoringPlugin.class, "ERR_TargetLocationCannotBeResolved")); // NOI18N
+                        }
+                        targetFileObject = FileUtil.toFileObject(file);
+                        if (targetFileObject == null) {
+                            return new Problem(true, NbBundle.getMessage(FacesJavaFileMoveRefactoringPlugin.class, "ERR_TargetLocationCannotBeResolved")); // NOI18N
+                        }
+                    }
+                    Project targetFileObjectProject = FileOwnerQuery.getOwner(targetFileObject);
+                    if (targetFileObjectProject == null) {
+                        return new Problem(true, NbBundle.getMessage(FacesJavaFileMoveRefactoringPlugin.class, "ERR_TargetLocationIsNotInAnOpenProject")); // NOI18N                            
+                    }
+                    if (!targetFileObject.isFolder()) {
+                        return new Problem(true, NbBundle.getMessage(FacesJavaFileMoveRefactoringPlugin.class, "ERR_TargetLocationIsNotAFolder")); // NOI18N
+                    }
+	                for (FileObject fileToMove : filesToMove) {
+		                if (FacesRefactoringUtils.isJavaFileObjectOfInterest(fileToMove)) {
+		                	// TODO
+//		                    FileObject targetFileObjectWithSameName = targetFileObject.getFileObject(fileObject.getName(), fileObject.getExt());
+//		                    if (targetFileObjectWithSameName != null && targetFileObjectWithSameName.isValid()) {
+//		                        return new Problem(true, NbBundle.getMessage(FacesJavaFileMoveRefactoringPlugin.class, "ERR_TargetJspFileAlreadyExists")); // NOI18N
+//		                    }
+		                    
+		                    Project fileObjectProject = FileOwnerQuery.getOwner(fileToMove);
+		                    if (fileObjectProject.equals(targetFileObjectProject)) {
+		
+		                    } else {
+		                        if (JsfProjectUtils.isJsfProject(targetFileObjectProject)) {
+		                            
+		                        }
+		                        // TODO - Convert to jsp file object
+		                        // TODO
+//		                        boolean isStartPage = JsfProjectUtils.isStartPage(fileToMove);
+//		                        if (isStartPage) {
+//		                            return new Problem(false, NbBundle.getMessage(FacesJavaFileMoveRefactoringPlugin.class, "WRN_MovingProjectStartPage")); // NOI18N
+//		                        }
+		                    }
+		                }
+	                }
+	            }
+	        }
+        }
         return null;
     }
 
     @Override
     public Problem prepare(RefactoringElementsBag refactoringElements) {
-        FileObject refactoringSourcefileObject = getRefactoring().getRefactoringSource().lookup(FileObject.class);
-        if (refactoringSourcefileObject != null) {
+        for (FileObject refactoringSourcefileObject : filesToMove) {
             Project project = FileOwnerQuery.getOwner(refactoringSourcefileObject);
             if (FacesRefactoringUtils.isJavaFileObjectOfInterest(refactoringSourcefileObject)) {                
-                URL targetURL = getMoveRefactoring().getTarget().lookup(URL.class);
+                URL targetURL = null;
+                FileObject targetFileObject = null;
                 
-                if (targetURL == null) {
-                    return new Problem(true, NbBundle.getMessage(FacesJspFileRenameRefactoringPlugin.class, "ERR_TargetLocationCannotBeNull")); // NOI18N
-                }
+                if (getRefactoring() instanceof MoveRefactoring) {
+                	targetURL = getMoveRefactoring().getTarget().lookup(URL.class);
                 
-                FileObject targetFileObject = URLMapper.findFileObject(targetURL);
-                if (targetFileObject == null) {
-                    File file = null;
-                    try {
-                        file = new File(targetURL.toURI());
-                    } catch (URISyntaxException e) {
-                        Exceptions.printStackTrace(e);
-                    }
-                    if (file == null) {
-                        return new Problem(true, NbBundle.getMessage(FacesJspFileRenameRefactoringPlugin.class, "ERR_TargetLocationCannotBeResolved")); // NOI18N
-                    }
-                    targetFileObject = FileUtil.toFileObject(file);
+	                if (targetURL == null) {
+	                    return new Problem(true, NbBundle.getMessage(FacesJavaFileMoveRefactoringPlugin.class, "ERR_TargetLocationCannotBeNull")); // NOI18N
+	                }
+	                
+	                targetFileObject = URLMapper.findFileObject(targetURL);
+	                if (targetFileObject == null) {
+	                    File file = null;
+	                    try {
+	                        file = new File(targetURL.toURI());
+	                    } catch (URISyntaxException e) {
+	                        Exceptions.printStackTrace(e);
+	                    }
+	                    if (file == null) {
+	                        return new Problem(true, NbBundle.getMessage(FacesJavaFileMoveRefactoringPlugin.class, "ERR_TargetLocationCannotBeResolved")); // NOI18N
+	                    }
+	                    targetFileObject = FileUtil.toFileObject(file);
+	                    if (targetFileObject == null) {
+	                        return new Problem(true, NbBundle.getMessage(FacesJavaFileMoveRefactoringPlugin.class, "ERR_TargetLocationCannotBeResolved")); // NOI18N
+	                    }
+	                }
+                } else if (getRefactoring() instanceof RenameRefactoring) {
+                	// compute the new target and make sure it exists
+                	String newPackageName = getRenameRefactoring().getNewName();
+                	String newPackageNameWithSlashes = newPackageName.replace('.', '/');
+                	
+                	NonRecursiveFolder nonRecursiveFolder = getRefactoring().getRefactoringSource().lookup(NonRecursiveFolder.class);
+                	if (nonRecursiveFolder != null) {
+                		FileObject nonRecursiveFolderFileObject = nonRecursiveFolder.getFolder();
+                		if (nonRecursiveFolderFileObject != null) {
+                			FileObject sourceRootFileObject = FacesRefactoringUtils.getClassPathRoot(nonRecursiveFolderFileObject);
+                			if (sourceRootFileObject != null) {
+                				FileObject targetJspFolder = sourceRootFileObject.getFileObject(newPackageNameWithSlashes);
+                                if (targetJspFolder == null) {
+                                	try {
+                                		targetFileObject = FileUtil.createFolder(sourceRootFileObject, newPackageNameWithSlashes);
+        							} catch (IOException ioe) {
+        	                            // TODO return problem
+        	                            ErrorManager.getDefault().notify(ErrorManager.ERROR, ioe);
+        							}
+                                }
+                			}
+                		}
+                	}
                     if (targetFileObject == null) {
-                        return new Problem(true, NbBundle.getMessage(FacesJspFileRenameRefactoringPlugin.class, "ERR_TargetLocationCannotBeResolved")); // NOI18N
+                        return new Problem(true, NbBundle.getMessage(FacesJavaFileMoveRefactoringPlugin.class, "ERR_TargetLocationCannotBeResolved")); // NOI18N
                     }
                 }
                 Project targetFileObjectProject = FileOwnerQuery.getOwner(targetFileObject);
                 if (targetFileObjectProject == null) {
-                    return new Problem(true, NbBundle.getMessage(FacesJspFileRenameRefactoringPlugin.class, "ERR_TargetLocationIsNotInAnOpenProject")); // NOI18N                            
+                    return new Problem(true, NbBundle.getMessage(FacesJavaFileMoveRefactoringPlugin.class, "ERR_TargetLocationIsNotInAnOpenProject")); // NOI18N                            
                 }
                 
                 if (!project.equals(targetFileObjectProject)) {
-                    return new Problem(true, NbBundle.getMessage(FacesJspFileRenameRefactoringPlugin.class, "ERR_TargetLocationIsNotInSameProject")); // NOI18N
+                    return new Problem(true, NbBundle.getMessage(FacesJavaFileMoveRefactoringPlugin.class, "ERR_TargetLocationIsNotInSameProject")); // NOI18N
                 }
                 
                 if (!targetFileObject.isFolder()) {
-                    return new Problem(true, NbBundle.getMessage(FacesJspFileRenameRefactoringPlugin.class, "ERR_TargetLocationIsNotAFolder")); // NOI18N
+                    return new Problem(true, NbBundle.getMessage(FacesJavaFileMoveRefactoringPlugin.class, "ERR_TargetLocationIsNotAFolder")); // NOI18N
                 }
                 
                 String oldName = refactoringSourcefileObject.getName();
@@ -210,10 +371,20 @@ public class FacesJavaFileMoveRefactoringPlugin extends FacesRefactoringPlugin {
                 
                 FileObject fileObjectParent = refactoringSourcefileObject.getParent();
                 
+                String packagePostfixForFileToMove = (String) packagePostfix.get(refactoringSourcefileObject);
+                
                 // Compute relative path of parent folder to bean root.
                 String parentsRelativePathWithDollars = FileUtil.getRelativePath(pageBeanRoot, fileObjectParent).replace('/', '$'); // NOI18N
                 String targetRelativePath = FileUtil.getRelativePath(pageBeanRoot, targetFileObject); // NOI18N
                 String targetRelativePathWithDollars = targetRelativePath.replace('/', '$'); // NOI18N
+
+                if (packagePostfixForFileToMove != null && packagePostfixForFileToMove.length() > 0) {
+                	if (targetRelativePathWithDollars.length() > 0) {
+                		targetRelativePathWithDollars += "$" + packagePostfixForFileToMove.replace('.', '$');
+                	} else {
+                		targetRelativePathWithDollars = packagePostfixForFileToMove.replace('.', '$');                		
+                	}
+                }
                 
                 String oldBeanName = parentsRelativePathWithDollars 
                     + (parentsRelativePathWithDollars.length() == 0 ? "" : "$") // NOI18N
@@ -238,7 +409,6 @@ public class FacesJavaFileMoveRefactoringPlugin extends FacesRefactoringPlugin {
                 
 //              String oldBeanClass = JsfProjectUtils.get
 //              String oldBeanClass = JsfPr
-
                 
                 FacesModelSet facesModelSet = FacesModelSet.getInstance(refactoringSourcefileObject);
                 
@@ -412,10 +582,15 @@ public class FacesJavaFileMoveRefactoringPlugin extends FacesRefactoringPlugin {
                         if (targetDocumentRoot == null) {
                             // TODO
                         }
-                        
-                        FileObject targetJspFolder = targetDocumentRoot.getFileObject(targetRelativePath);
+                        String targetRelativePathWithSlashes = targetRelativePathWithDollars.replace("$", "/");
+                        FileObject targetJspFolder = targetDocumentRoot.getFileObject(targetRelativePathWithSlashes);
                         if (targetJspFolder == null) {
-                            // TODO
+                        	try {
+								targetJspFolder = FileUtil.createFolder(targetDocumentRoot, targetRelativePathWithSlashes);
+							} catch (IOException ioe) {
+	                            // TODO return problem
+	                            ErrorManager.getDefault().notify(ErrorManager.ERROR, ioe);
+							}
                         }
                         
                         URL url = URLMapper.findURL(targetJspFolder, URLMapper.EXTERNAL);

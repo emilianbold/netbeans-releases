@@ -19,6 +19,8 @@
 
 package org.netbeans.modules.visualweb.insync.faces.refactoring;
 
+import java.util.Arrays;
+
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
@@ -48,45 +50,95 @@ import com.sun.source.tree.Tree;
 public class FacesRefactoringsPluginFactory implements RefactoringPluginFactory {
     
     public RefactoringPlugin createInstance(AbstractRefactoring refactoring) {
+//    	System.out.println("<-----");
+//    	System.out.println("Refactoring: " + refactoring.getClass().getName());
+//    	System.out.println("Context Lookup: ");
+//    	for (Object o:refactoring.getContext().lookupAll(Object.class)) {
+//    		if (o.getClass().isArray()) {    			
+//    			System.out.println(Arrays.asList((Object[])o));
+//    		} else {
+//    			System.out.println(o);
+//    		}
+//    	}
+//    	System.out.println("RefactoringSource Lookup: ");
+//    	for (Object o:refactoring.getRefactoringSource().lookupAll(Object.class)) {
+//    		if (o.getClass().isArray()) {    			
+//    			System.out.println(Arrays.asList((Object[])o));
+//    		} else {
+//    			System.out.println(o);
+//    		}
+//    	}
+//    	System.out.println("------>");
+    	
         Lookup refactoringSource = refactoring.getRefactoringSource();
         // Is this refactoring for a FileObject
         FileObject refactoredFileObject = refactoringSource.lookup(FileObject.class);
         if (refactoredFileObject != null) {
             if (FacesRefactoringUtils.isVisualWebJspFile(refactoredFileObject)) {
-                // Ensure the modelling has happened
                 FacesModelSet.getInstance(refactoredFileObject);
                 if (refactoring instanceof RenameRefactoring) {
+                	// Ensure the modelling has happened
+                	FacesModelSet.getInstance(refactoredFileObject);
                     return new FacesJspFileRenameRefactoringPlugin((RenameRefactoring)refactoring);
                 } else if (refactoring instanceof MoveRefactoring) { 
+                	// Ensure the modelling has happened
+                	FacesModelSet.getInstance(refactoredFileObject);
                     return new FacesJspFileMoveRefactoringPlugin((MoveRefactoring)refactoring);
                 }
-            } else if (FacesRefactoringUtils.isJavaFileObjectOfInterest(refactoredFileObject)) {
-                TreePathHandle treePathHandle = refactoringSource.lookup(TreePathHandle.class);
-                if (treePathHandle == null || treePathHandle.getKind() == Tree.Kind.CLASS) {
-                    // Ensure the modelling has happened
-                    FacesModelSet.getInstance(refactoredFileObject);
-                    if (refactoring instanceof RenameRefactoring) {
-                        return new FacesJavaFileRenameRefactoringPlugin((RenameRefactoring)refactoring);
-                    } else if (refactoring instanceof MoveRefactoring) {
-                        return new FacesJavaFileMoveRefactoringPlugin((MoveRefactoring)refactoring);
-                    }
-                }
+            } else if (refactoredFileObject.isFolder() && 
+            		FacesRefactoringUtils.isFileInJsfProject(refactoredFileObject)) { // folder in JsfProject 
+            	if (FacesRefactoringUtils.isOnSourceClasspath(refactoredFileObject)) {            	
+	            	if (FacesRefactoringUtils.isFolderParentOfPageBeanRoot(refactoredFileObject) ||
+	            			FacesRefactoringUtils.isFolderPageBeanRoot(refactoredFileObject) ||             
+		            		FacesRefactoringUtils.isFolderUnderPageBeanRoot(refactoredFileObject)) {
+		            	if (refactoring instanceof RenameRefactoring) {
+		                	// Ensure the modelling has happened
+		                	FacesModelSet.getInstance(refactoredFileObject);
+		                    return new FacesJavaFileMoveRefactoringPlugin((RenameRefactoring)refactoring);
+		                } else if (refactoring instanceof MoveRefactoring) {
+		                	// Ensure the modelling has happened
+		                	FacesModelSet.getInstance(refactoredFileObject);
+		                    return new FacesJavaFileMoveRefactoringPlugin((MoveRefactoring)refactoring);
+		                }
+	            	}
+            	}
+            	// else check for folder in web folder
+            } else if (FacesRefactoringUtils.isFileInJsfProject(refactoredFileObject)) {
+            	if (FacesRefactoringUtils.isOnSourceClasspath(refactoredFileObject)) {
+            		// Ensure the modelling has happened
+            		FacesModelSet.getInstance(refactoredFileObject);
+	            	if (FacesRefactoringUtils.isJavaFileObjectOfInterest(refactoredFileObject)) {
+		                TreePathHandle treePathHandle = refactoringSource.lookup(TreePathHandle.class);
+		                if (treePathHandle == null || treePathHandle.getKind() == Tree.Kind.CLASS) {
+		                    if (refactoring instanceof RenameRefactoring) {
+		                        return new FacesJavaFileRenameRefactoringPlugin((RenameRefactoring)refactoring);
+		                    } else if (refactoring instanceof MoveRefactoring) {
+		                        return new FacesJavaFileMoveRefactoringPlugin((MoveRefactoring)refactoring);
+		                    }
+		                }
+		            }
+            	}
             }
-            // Check if this is a non special folder under web/ folder
-            // Check if this is a folder under pageBeansRoot
         } else {
             // Is this refactoring for a package
             NonRecursiveFolder refactoredNonRecursiveFolder = refactoringSource.lookup(NonRecursiveFolder.class);
             if (refactoredNonRecursiveFolder != null) {
-                
-            } else {
-                
+                FileObject fileObject = refactoredNonRecursiveFolder.getFolder();
+                if (FacesRefactoringUtils.isFolderPageBeanRoot(fileObject) || 
+	            		FacesRefactoringUtils.isFolderUnderPageBeanRoot(fileObject)) {
+	            	if (refactoring instanceof RenameRefactoring) {
+	                	// Ensure the modelling has happened
+	                	FacesModelSet.getInstance(fileObject);
+	                    return new FacesJavaFileMoveRefactoringPlugin((RenameRefactoring)refactoring);
+	                }
+	            	// No need to handle package move - only rename is allowed
+                }
             }
         }
         return null;
     }
     
-    // An of this class is put in the delegate AbstractRefactoring's context
+    // An instance of this class is put in the delegate AbstractRefactoring's context
     // to indicate delegation.
     static class DelegatedRefactoring {}   
     static final DelegatedRefactoring DELEGATED_REFACTORING = new DelegatedRefactoring();

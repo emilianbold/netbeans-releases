@@ -20,8 +20,7 @@
 package org.netbeans.modules.visualweb.insync.faces.refactoring;
 
 import java.io.IOException;
-
-import javax.swing.text.StyledDocument;
+import java.lang.ref.WeakReference;
 
 import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.ModificationResult.Difference;
@@ -35,17 +34,20 @@ import org.openide.util.lookup.Lookups;
 
 // NOTE:Copied from org.netbeans.modules.refactoring.java.DiffElement.
 /**
+ * Implementatation of RefactoringElementImplementation specific to refactoring
+ * in java files.
  * 
  * @author Jan Becicka
  */
- public class DiffElement extends SimpleRefactoringElementImplementation {
+ public final class DiffElement extends SimpleRefactoringElementImplementation {
     private PositionBounds bounds;
     private String displayText;
     private FileObject parentFile;
     private Difference diff;
     private ModificationResult modification;
+    private WeakReference<String> newFileContent;
     
-    public DiffElement(Difference diff, PositionBounds bounds, FileObject parentFile, ModificationResult modification) {
+    private DiffElement(Difference diff, PositionBounds bounds, FileObject parentFile, ModificationResult modification) {
         this.bounds = bounds;
         this.displayText = diff.getDescription();
         this.parentFile = parentFile;
@@ -61,11 +63,12 @@ import org.openide.util.lookup.Lookups;
         Object composite = ElementGripFactory.getDefault().get(parentFile, bounds.getBegin().getOffset());
         if (composite==null) 
             composite = parentFile;
-        return Lookups.singleton(composite);
+        return Lookups.fixed(composite, diff);
     }
     
     public void setEnabled(boolean enabled) {
         diff.exclude(!enabled);
+        newFileContent = null;
         super.setEnabled(enabled);
     }
 
@@ -85,18 +88,32 @@ import org.openide.util.lookup.Lookups;
     }
     
     protected String getNewFileContent() {
-        try     {
-            return modification.getResultingSource(parentFile);
+        String result;
+        if (newFileContent !=null) {
+            result = newFileContent.get();
+            if (result!=null)
+                return result;
+        }
+        try {
+            result = modification.getResultingSource(parentFile);
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
             return null;
         }
+        newFileContent = new WeakReference(result);
+        return result;
     }
-
+    
+    /**
+     * Factory method for DiffElement
+     * @param diff diff instance corresponding to thid Element
+     * @param fileObject fileObject corresponding to this Element
+     * @param modification 
+     * @return ModificationResult corresponding to this change
+     */
     public static DiffElement create(Difference diff, FileObject fileObject, ModificationResult modification) {
         PositionRef start = diff.getStartPosition();
         PositionRef end = diff.getEndPosition();
-        StyledDocument doc = null;
         PositionBounds bounds = new PositionBounds(start, end);
         return new DiffElement(diff, bounds, fileObject, modification);
     }    

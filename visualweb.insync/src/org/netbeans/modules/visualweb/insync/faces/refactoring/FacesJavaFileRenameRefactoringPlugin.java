@@ -83,7 +83,7 @@ public class FacesJavaFileRenameRefactoringPlugin extends FacesRefactoringPlugin
 
     @Override
     public Problem fastCheckParameters() {
-        // Don't do the checking only if this is a delegated refactoring
+        // Don't do the checking if this is a delegated refactoring
         if (isDelegatedRefactoring(getRefactoring())) {
             return null;
         }

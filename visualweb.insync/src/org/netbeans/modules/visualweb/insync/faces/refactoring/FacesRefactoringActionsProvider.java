@@ -49,8 +49,12 @@ public class FacesRefactoringActionsProvider extends ActionsImplementationProvid
      */
     @Override
     public boolean canRename(Lookup lookup) {
+        Collection<? extends Node> nodes = lookup.lookupAll(Node.class);
+        if (nodes.size() != 1) {
+            return false;
+        }
         // Get the Node being renamed
-        Node node = lookup.lookup(Node.class);
+        Node node = nodes.iterator().next();
         if (node != null) {
             // Get the DataObject
             DataObject dataObject = node.getLookup().lookup(DataObject.class);
