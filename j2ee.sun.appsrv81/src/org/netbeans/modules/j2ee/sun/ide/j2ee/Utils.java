@@ -186,13 +186,13 @@ public class Utils {
     public static void registerIndvResources(ServerInterface mejb, java.io.File primaryFile) throws Exception {
         Resources resources = getResourceGraph(primaryFile);
         Object retVal = null;
-        // identify JDBC Connection Pools
+        
         JdbcConnectionPool[] pools = resources.getJdbcConnectionPool();
         for(int i=0; i<pools.length; i++){           
             JdbcConnectionPool connectionPoolBean = pools[i];
             ResourceUtils.register(connectionPoolBean, mejb, true);
         }
-        // identify JDBC Resources
+        
         JdbcResource[] dataSources = resources.getJdbcResource();
         for(int i=0; i<dataSources.length; i++){           
             JdbcResource datasourceBean = dataSources[i];
@@ -204,18 +204,28 @@ public class Utils {
             }    
         }
         
-        // identify Mail Resources
         MailResource[] mailResources = resources.getMailResource();
         for(int i=0; i<mailResources.length; i++){           
             MailResource mailBean = mailResources[i];
             ResourceUtils.register(mailBean, mejb, true);
         }
         
-        // identify JMS Resources
-        JmsResource[] jmsResources = resources.getJmsResource();
-        for(int i=0; i<jmsResources.length; i++){           
-            JmsResource jmsBean = jmsResources[i];
-            ResourceUtils.register(jmsBean, mejb, true);
+        AdminObjectResource[] aoResources = resources.getAdminObjectResource();
+        for(int i=0; i<aoResources.length; i++){           
+            AdminObjectResource aoBean = aoResources[i];
+            ResourceUtils.register(aoBean, mejb, true);
+        }
+        
+        ConnectorConnectionPool[] connPoolResources = resources.getConnectorConnectionPool();
+        for(int i=0; i<connPoolResources.length; i++){           
+            ConnectorConnectionPool connPoolBean = connPoolResources[i];
+            ResourceUtils.register(connPoolBean, mejb, true);
+        }
+        
+        ConnectorResource[] connResources = resources.getConnectorResource();
+        for(int i=0; i<connResources.length; i++){           
+            ConnectorResource connBean = connResources[i];
+            ResourceUtils.register(connBean, mejb, true);
         }
     }
     
