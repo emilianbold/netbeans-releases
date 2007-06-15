@@ -46,6 +46,7 @@ import javax.swing.KeyStroke;
 import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.action.ConnectDecorator;
 import org.netbeans.api.visual.anchor.Anchor;
+import org.netbeans.api.visual.vmd.VMDNodeWidget;
 import org.netbeans.api.visual.widget.ConnectionWidget;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.web.jsf.navigation.Page;
@@ -73,8 +74,8 @@ public class MapActionUtility {
         actionMap.put("handleLinkStart", handleLinkStart);
         actionMap.put("handleLinkEnd", handleLinkEnd);
         //
-        //        actionMap.put("handleZoomPage", new TestAction("handleZoomPage"));
-        //        actionMap.put("handleUnZoomPage", new TestAction("handleUnZoomPage"));
+        actionMap.put("handleZoomPage", handleZoomPage);
+        actionMap.put("handleUnZoomPage", handleZoomPage);
         actionMap.put("handleOpenPage", handleOpenPage);
         //
         //        actionMap.put("handleNewWebForm", new TestAction("handleNewWebForm"));
@@ -104,8 +105,8 @@ public class MapActionUtility {
         //Lower Case s,e,z,u
         inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_S,0), "handleLinkStart");
         inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_E,0), "handleLinkEnd");
-        //        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_Z,0), "handleZoomPage");
-        //        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_U,0), "handleUnZoomPage");
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_Z,0), "handleZoomPage");
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_U,0), "handleUnZoomPage");
         //
         //        //Keys enter, b,l,i
         inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER,0), "handleOpenPage");
@@ -247,7 +248,7 @@ public class MapActionUtility {
                 Pin sourcePin = null;
                 if ( scene.isPin(sourceObject)){
                     sourcePin = (Pin)sourceObject;
-                    sourcePage = (sourcePin).getPageFlowNode(); 
+                    sourcePage = (sourcePin).getPageFlowNode();
                 }
                 if ( scene.isNode(sourceObject)){
                     sourcePage = (Page)sourceObject;
@@ -347,6 +348,42 @@ public class MapActionUtility {
         
     };
     
+    // Handle Zoom Key Stroke
+    public static final Action handleZoomPage = new AbstractAction() {
+        public void actionPerformed(ActionEvent e) {
+            Object obj = e.getSource();
+            if ( !(obj instanceof PageFlowScene) ){
+                return;
+            }
+            PageFlowScene scene = (PageFlowScene) obj;
+            for( Object selObj : scene.getSelectedObjects()){
+                if( selObj instanceof Page ){
+                    Page selPage = (Page)selObj;
+                    if( scene.isNode(selPage) ){
+                        VMDNodeWidget pageWidget = (VMDNodeWidget) scene.findWidget(selPage);
+                        if( pageWidget.isMinimized()) {
+                            pageWidget.expandWidget();
+                        } else{
+                            pageWidget.collapseWidget();
+                        }
+                    }
+                }
+            }
+        }
+    };
+    
+    // Handle UnZoom Key Stroke
+    public static final Action handleUnZoomPage = new AbstractAction() {
+        public void actionPerformed(ActionEvent e) {
+            //            GraphEvent selectedEvent  = graphDocument.getSelectedComponents();
+            //            IGraphNode[] selectedNodes = selectedEvent.getNodes();
+            //            for( IGraphNode node : selectedNodes ){
+            //                if( node instanceof NavigationGraphNode ) {
+            //                    ((NavigationGraphNode)node).setZoomed(false);
+            //                }
+            //            }
+        }
+    };
     
 }
 
