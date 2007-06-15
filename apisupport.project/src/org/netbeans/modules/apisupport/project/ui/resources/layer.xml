@@ -61,6 +61,7 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/ui/resources/GLFTemplate.html"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/ui/resources/glfIcon.png"/>
+                <attr name="templateCategory" stringvalue="nbm-specific"/>
             </file>
             <file name="newAction">
                 <attr boolvalue="true" name="template"/>
