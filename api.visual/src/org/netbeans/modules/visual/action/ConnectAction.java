@@ -29,6 +29,7 @@ import org.netbeans.api.visual.widget.Widget;
 
 import java.awt.*;
 import java.awt.event.MouseEvent;
+import java.awt.event.KeyEvent;
 
 /**
  * Override at least isTargetWidget and createConnection methods. isSourceWidget is always called before isTargetWidget.
@@ -81,15 +82,19 @@ public class ConnectAction extends WidgetAction.LockedAdapter {
             if (targetWidget != null)
                 if (Math.abs (startingPoint.x - point.x) >= MIN_DIFFERENCE  ||  Math.abs (startingPoint.y - point.y) >= MIN_DIFFERENCE)
                     provider.createConnection (sourceWidget, targetWidget);
-            sourceWidget = null;
-            targetWidget = null;
-            startingPoint = null;
-            connectionWidget.setSourceAnchor (null);
-            connectionWidget.setTargetAnchor (null);
-            interractionLayer.removeChild (connectionWidget);
-            connectionWidget = null;
+            cancel ();
         }
         return state ? State.CONSUMED : State.REJECTED;
+    }
+
+    private void cancel () {
+        sourceWidget = null;
+        targetWidget = null;
+        startingPoint = null;
+        connectionWidget.setSourceAnchor (null);
+        connectionWidget.setTargetAnchor (null);
+        interractionLayer.removeChild (connectionWidget);
+        connectionWidget = null;
     }
 
     public WidgetAction.State mouseDragged (Widget widget, WidgetAction.WidgetMouseEvent event) {
@@ -147,6 +152,15 @@ public class ConnectAction extends WidgetAction.LockedAdapter {
         if (state == ConnectorState.ACCEPT)
             result[0] = widget;
         return true;
+    }
+
+
+    public State keyPressed (Widget widget, WidgetKeyEvent event) {
+        if (isLocked ()  &&  event.getKeyCode () == KeyEvent.VK_ESCAPE) {
+            cancel ();
+            return State.CONSUMED;
+        }
+        return super.keyPressed (widget, event);
     }
 
 }

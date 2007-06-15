@@ -26,6 +26,7 @@ import org.netbeans.api.visual.action.*;
 
 import java.awt.*;
 import java.awt.event.MouseEvent;
+import java.awt.event.KeyEvent;
 import java.util.List;
 
 /**
@@ -87,18 +88,23 @@ public final class ReconnectAction extends WidgetAction.LockedAdapter {
         Point point = event.getPoint ();
         boolean state = move (widget, point);
         if (state) {
-            if (reconnectingSource)
-                connectionWidget.setSourceAnchor (originalAnchor);
-            else
-                connectionWidget.setTargetAnchor (originalAnchor);
-            provider.reconnectingFinished (connectionWidget, reconnectingSource);
-            if (Math.abs (floatPoint.x - point.x) >= ReconnectAction.MIN_DIFFERENCE  ||  Math.abs (floatPoint.y - point.y) >= ReconnectAction.MIN_DIFFERENCE)
-                provider.reconnect (connectionWidget, replacementWidget, reconnectingSource);
-            replacementWidget = null;
-            floatPoint = null;
-            connectionWidget = null;
+            cancel (point);
         }
         return state ? State.CONSUMED : State.REJECTED;
+    }
+
+    private void cancel (Point point) {
+        if (reconnectingSource)
+            connectionWidget.setSourceAnchor (originalAnchor);
+        else
+            connectionWidget.setTargetAnchor (originalAnchor);
+        provider.reconnectingFinished (connectionWidget, reconnectingSource);
+        if (point != null)
+            if (Math.abs (floatPoint.x - point.x) >= ReconnectAction.MIN_DIFFERENCE  ||  Math.abs (floatPoint.y - point.y) >= ReconnectAction.MIN_DIFFERENCE)
+                provider.reconnect (connectionWidget, replacementWidget, reconnectingSource);
+        replacementWidget = null;
+        floatPoint = null;
+        connectionWidget = null;
     }
 
     public State mouseDragged (Widget widget, WidgetMouseEvent event) {
@@ -161,6 +167,15 @@ public final class ReconnectAction extends WidgetAction.LockedAdapter {
         if (state == ConnectorState.ACCEPT)
             result[0] = widget;
         return true;
+    }
+
+
+    public State keyPressed (Widget widget, WidgetKeyEvent event) {
+        if (isLocked ()  &&  event.getKeyCode () == KeyEvent.VK_ESCAPE) {
+            cancel (null);
+            return State.CONSUMED;
+        }
+        return super.keyPressed (widget, event);
     }
 
 }
