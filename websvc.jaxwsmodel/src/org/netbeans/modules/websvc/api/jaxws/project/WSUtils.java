@@ -358,18 +358,27 @@ public class WSUtils {
      *  generate JaxWsModel,
      *  add FileChangeListener to jax-ws.xml file object
      */
-    public static FileObject createJaxWsFileObject(Project project) throws IOException {
-        WSUtils.retrieveJaxWsFromResource(project.getProjectDirectory());
-        FileObject jaxWsFo = findJaxWsFileObject(project);
-        assert jaxWsFo != null : "Cannot find jax-ws.xml in project's nbproject directory"; //NOI18N
-        if (jaxWsFo!=null) {
-            //jaxWsListener = new JaxWsListener();
-            //jaxWsFo.addFileChangeListener(jaxWsListener);
-            JaxWsModel jaxWsModel = project.getLookup().lookup(JaxWsModel.class);
-            if (jaxWsModel!=null) jaxWsModel.setJaxWsFile(jaxWsFo);
-            //else jaxWsModel = JaxWsModelProvider.getDefault().getJaxWsModel(jaxWsFo);
+    public static FileObject createJaxWsFileObject(final Project project) throws IOException {
+        
+        try {
+            return ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<FileObject>() {
+                public FileObject run() throws IOException {
+                    retrieveJaxWsFromResource(project.getProjectDirectory());
+                    FileObject jaxWsFo = findJaxWsFileObject(project);
+                    assert jaxWsFo != null : "Cannot find jax-ws.xml in project's nbproject directory"; //NOI18N
+                    if (jaxWsFo!=null) {
+                        JaxWsModel jaxWsModel = project.getLookup().lookup(JaxWsModel.class);
+                        if (jaxWsModel!=null) jaxWsModel.setJaxWsFile(jaxWsFo);
+                    }
+                    return jaxWsFo;
+                }
+
+        
+
+            });
+        } catch (MutexException e) {
+            throw (IOException)e.getException();
         }
-        return jaxWsFo;
     }
     
     public static EditableProperties getEditableProperties(final Project prj,final  String propertiesPath) 
