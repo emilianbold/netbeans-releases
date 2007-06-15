@@ -146,8 +146,8 @@ public class ItemDisplayPresenter extends ScreenDisplayPresenter {
         Position verticalPosition = null;
         
         try {
-            horizontalPosition = (Position) transferable.getTransferData(org.netbeans.modules.vmd.api.screen.display.ScreenDisplayDataFlavorSupport.HORIZONTAL_POSITION_DATA_FLAVOR);
-            verticalPosition = (Position) transferable.getTransferData(org.netbeans.modules.vmd.api.screen.display.ScreenDisplayDataFlavorSupport.VERTICAL_POSITION_DATA_FLAVOR);
+            horizontalPosition = (Position) transferable.getTransferData(ScreenDisplayDataFlavorSupport.HORIZONTAL_POSITION_DATA_FLAVOR);
+            verticalPosition = (Position) transferable.getTransferData(ScreenDisplayDataFlavorSupport.VERTICAL_POSITION_DATA_FLAVOR);
         } catch (UnsupportedFlavorException ex) {
             Exceptions.printStackTrace(ex);
         } catch (IOException ex) {
@@ -155,7 +155,5 @@ public class ItemDisplayPresenter extends ScreenDisplayPresenter {
         }
         return new ItemAcceptSuggestion(horizontalPosition, verticalPosition);
     }
-    
-    
     
 }
