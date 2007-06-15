@@ -105,8 +105,8 @@ public class ExtWebBrowser implements HtmlBrowser.Factory, java.io.Serializable,
 
     /** initialize object */
     private void init () {
-        if (err.isLoggable(Level.INFO)) {
-            err.log(Level.INFO, getClass().getName() + " " + System.currentTimeMillis() + "> init");
+        if (err.isLoggable(Level.FINE)) {
+            err.log(Level.FINE, getClass().getName() + " " + System.currentTimeMillis() + "> init");
         }
         pcs = new PropertyChangeSupport(this);
         if (Utilities.isWindows()) {
@@ -243,8 +243,8 @@ public class ExtWebBrowser implements HtmlBrowser.Factory, java.io.Serializable,
             Object np = evt.getNewValue();
             if ((np != null) && (np instanceof NbProcessDescriptor)) {
                 String processName = ((NbProcessDescriptor)np).getProcessName();
-                if (err.isLoggable(Level.INFO)) {
-                    err.log(Level.INFO, "" + System.currentTimeMillis() + "> propertychange: " + processName);
+                if (err.isLoggable(Level.FINE)) {
+                    err.log(Level.FINE, "" + System.currentTimeMillis() + "> propertychange: " + processName);
                 }
                 if ((processName != null) && (processName.trim().length() > 0)) {
                     if (processName.toUpperCase().indexOf("IEXPLORE.EXE") > -1) {       // NOI18N
@@ -274,8 +274,8 @@ public class ExtWebBrowser implements HtmlBrowser.Factory, java.io.Serializable,
      */
     protected NbProcessDescriptor defaultBrowserExecutable () {
         String b = "netscape";  // NOI18N
-        if (err.isLoggable(Level.INFO)) {
-            err.log(Level.INFO, "" + System.currentTimeMillis() + "> ExtBrowser: defaultBrowserExecutable: ");
+        if (err.isLoggable(Level.FINE)) {
+            err.log(Level.FINE, "" + System.currentTimeMillis() + "> ExtBrowser: defaultBrowserExecutable: ");
         }
         if (Utilities.isWindows()) {
             b = "iexplore";                                             // NOI18N

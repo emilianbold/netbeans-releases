@@ -136,8 +136,8 @@ public class NetscapeBrowser extends ExtWebBrowser implements PropertyChangeList
                         return new NbProcessDescriptor(b, params);
                     }
                 } catch (NbBrowserException e) {
-                    if (ExtWebBrowser.getEM().isLoggable(Level.INFO)) {
-                        ExtWebBrowser.getEM().log(Level.INFO, "Cannot get Path for Netscape 7: " + e);   // NOI18N
+                    if (ExtWebBrowser.getEM().isLoggable(Level.FINE)) {
+                        ExtWebBrowser.getEM().log(Level.FINE, "Cannot get Path for Netscape 7: " + e);   // NOI18N
                     }
                 }
 
@@ -148,8 +148,8 @@ public class NetscapeBrowser extends ExtWebBrowser implements PropertyChangeList
                         return new NbProcessDescriptor(b, params);
                     }
                 } catch (NbBrowserException e) {
-                    if (ExtWebBrowser.getEM().isLoggable(Level.INFO)) {
-                        ExtWebBrowser.getEM().log(Level.INFO, "Cannot get Path for Netscape 6: " + e);   // NOI18N
+                    if (ExtWebBrowser.getEM().isLoggable(Level.FINE)) {
+                        ExtWebBrowser.getEM().log(Level.FINE, "Cannot get Path for Netscape 6: " + e);   // NOI18N
                     }
                 }
 
@@ -160,14 +160,14 @@ public class NetscapeBrowser extends ExtWebBrowser implements PropertyChangeList
                         return new NbProcessDescriptor(b, params);
                     }
                 } catch (NbBrowserException e) {
-                    if (ExtWebBrowser.getEM().isLoggable(Level.INFO)) {
-                        ExtWebBrowser.getEM().log(Level.INFO, "Cannot get Path for Netscape 4: " + e);   // NOI18N
+                    if (ExtWebBrowser.getEM().isLoggable(Level.FINE)) {
+                        ExtWebBrowser.getEM().log(Level.FINE, "Cannot get Path for Netscape 4: " + e);   // NOI18N
                     }
                 }
                 
             } catch (UnsatisfiedLinkError e) {
-                if (ExtWebBrowser.getEM().isLoggable(Level.INFO)) {
-                    ExtWebBrowser.getEM().log(Level.INFO, "Some problem here:" + e);   // NOI18N
+                if (ExtWebBrowser.getEM().isLoggable(Level.FINE)) {
+                    ExtWebBrowser.getEM().log(Level.FINE, "Some problem here:" + e);   // NOI18N
                 }
             }
 

@@ -62,8 +62,8 @@ public class UnixBrowserImpl extends ExtBrowserImpl {
         
         String [] args = org.openide.util.Utilities.parseParameters(p.getArguments());
         if (args.length > 1) {
-            if (ExtWebBrowser.getEM().isLoggable(Level.INFO)) {        
-                ExtWebBrowser.getEM().log(Level.INFO, "Old arguments: " + p.getArguments());    // NOI18N
+            if (ExtWebBrowser.getEM().isLoggable(Level.FINE)) {        
+                ExtWebBrowser.getEM().log(Level.FINE, "Old arguments: " + p.getArguments());    // NOI18N
             }
             StringBuffer newArgs = new StringBuffer ();
             boolean found = false;
@@ -83,9 +83,9 @@ public class UnixBrowserImpl extends ExtBrowserImpl {
             if (found) {
                 newP = new NbProcessDescriptor (p.getProcessName(), newArgs.toString(), p.getInfo());
             }
-            if (ExtWebBrowser.getEM().isLoggable(Level.INFO)) {        
-                ExtWebBrowser.getEM().log(Level.INFO, "ProcessName: " + p.getProcessName());    // NOI18N
-                ExtWebBrowser.getEM().log(Level.INFO, "New arguments: " + newArgs.toString());    // NOI18N
+            if (ExtWebBrowser.getEM().isLoggable(Level.FINE)) {        
+                ExtWebBrowser.getEM().log(Level.FINE, "ProcessName: " + p.getProcessName());    // NOI18N
+                ExtWebBrowser.getEM().log(Level.FINE, "New arguments: " + newArgs.toString());    // NOI18N
             }
         }
         return newP;
@@ -102,8 +102,8 @@ public class UnixBrowserImpl extends ExtBrowserImpl {
     public UnixBrowserImpl (ExtWebBrowser extBrowserFactory) {
         super();
         this.extBrowserFactory = extBrowserFactory;
-        if (ExtWebBrowser.getEM().isLoggable(Level.INFO)) {        
-            ExtWebBrowser.getEM().log(Level.INFO, "UnixBrowserImpl created from factory: " + extBrowserFactory);    // NOI18N
+        if (ExtWebBrowser.getEM().isLoggable(Level.FINE)) {        
+            ExtWebBrowser.getEM().log(Level.FINE, "UnixBrowserImpl created from factory: " + extBrowserFactory);    // NOI18N
         }
     }
        
@@ -135,13 +135,13 @@ public class UnixBrowserImpl extends ExtBrowserImpl {
         try {
             // internal protocols cannot be displayed in external viewer
             url = URLUtil.createExternalURL(url, false);
-            if (ExtWebBrowser.getEM().isLoggable(Level.INFO)) {
-                ExtWebBrowser.getEM().log(Level.INFO, "External url: " + url); // NOI18N
+            if (ExtWebBrowser.getEM().isLoggable(Level.FINE)) {
+                ExtWebBrowser.getEM().log(Level.FINE, "External url: " + url); // NOI18N
             }
             
             cmd = extBrowserFactory.getBrowserExecutable (); // NOI18N
-            if (ExtWebBrowser.getEM().isLoggable(Level.INFO)) {
-                ExtWebBrowser.getEM().log(Level.INFO, "Executable: " + cmd); // NOI18N
+            if (ExtWebBrowser.getEM().isLoggable(Level.FINE)) {
+                ExtWebBrowser.getEM().log(Level.FINE, "Executable: " + cmd); // NOI18N
             }
             sd.setStatusText (NbBundle.getMessage (UnixBrowserImpl.class, "MSG_Running_command", cmd.getProcessName ()));
             p = cmd.exec (new ExtWebBrowser.UnixBrowserFormat (url.toString ()));
@@ -216,28 +216,28 @@ public class UnixBrowserImpl extends ExtBrowserImpl {
          */
         public void run () {
             boolean retried = false;
-            if (ExtWebBrowser.getEM().isLoggable(Level.INFO)) {
-                ExtWebBrowser.getEM().log(Level.INFO, "Retried: " + retried); // NOI18N
+            if (ExtWebBrowser.getEM().isLoggable(Level.FINE)) {
+                ExtWebBrowser.getEM().log(Level.FINE, "Retried: " + retried); // NOI18N
             }
             int exitStatus = 1;
             Reader r = new InputStreamReader (p.getErrorStream ());
             try {
                 exitStatus = p.exitValue();
-                if (ExtWebBrowser.getEM().isLoggable(Level.INFO)) {
-                    ExtWebBrowser.getEM().log(Level.INFO, "Command executed. exitValue = " + exitStatus); // NOI18N
+                if (ExtWebBrowser.getEM().isLoggable(Level.FINE)) {
+                    ExtWebBrowser.getEM().log(Level.FINE, "Command executed. exitValue = " + exitStatus); // NOI18N
                 }
             } catch (IllegalThreadStateException ex) {
                 retries--;
-                if (ExtWebBrowser.getEM().isLoggable(Level.INFO)) {
-                    ExtWebBrowser.getEM().log(Level.INFO, "Retries: " + retries); // NOI18N
-                    ExtWebBrowser.getEM().log(Level.INFO, "Time: " + System.currentTimeMillis()); // NOI18N
+                if (ExtWebBrowser.getEM().isLoggable(Level.FINE)) {
+                    ExtWebBrowser.getEM().log(Level.FINE, "Retries: " + retries); // NOI18N
+                    ExtWebBrowser.getEM().log(Level.FINE, "Time: " + System.currentTimeMillis()); // NOI18N
                 }
                 if (retries > 0) {
                     RequestProcessor.getDefault().post(this, 1000);
                     return;
                 } else {
-                    if (ExtWebBrowser.getEM().isLoggable(Level.INFO)) {
-                        ExtWebBrowser.getEM().log(Level.INFO, "Command not finished yet"); // NOI18N
+                    if (ExtWebBrowser.getEM().isLoggable(Level.FINE)) {
+                        ExtWebBrowser.getEM().log(Level.FINE, "Command not finished yet"); // NOI18N
                     }
                 }
             }
@@ -253,8 +253,8 @@ public class UnixBrowserImpl extends ExtBrowserImpl {
                         sb.append (buff, 0, l);
                     }
                     if (sb.toString ().indexOf (FAILURE_MSG) >= 0) {
-                        if (ExtWebBrowser.getEM().isLoggable(Level.INFO)) {
-                            ExtWebBrowser.getEM().log(Level.INFO, "Browser output: \"" + FAILURE_MSG + "\""); // NOI18N
+                        if (ExtWebBrowser.getEM().isLoggable(Level.FINE)) {
+                            ExtWebBrowser.getEM().log(Level.FINE, "Browser output: \"" + FAILURE_MSG + "\""); // NOI18N
                         }
                         exitStatus = 2;
                     }
@@ -276,8 +276,8 @@ public class UnixBrowserImpl extends ExtBrowserImpl {
                         sb.append (buff, 0, l);
                     }
                     if (sb.toString ().indexOf (FAILURE_MSG_BADWINDOW) >= 0) {
-                        if (ExtWebBrowser.getEM().isLoggable(Level.INFO)) {
-                            ExtWebBrowser.getEM().log(Level.INFO, "Browser output: \"" + FAILURE_MSG_BADWINDOW + "\""); // NOI18N
+                        if (ExtWebBrowser.getEM().isLoggable(Level.FINE)) {
+                            ExtWebBrowser.getEM().log(Level.FINE, "Browser output: \"" + FAILURE_MSG_BADWINDOW + "\""); // NOI18N
                         }
                         exitStatus = 0;
                     }

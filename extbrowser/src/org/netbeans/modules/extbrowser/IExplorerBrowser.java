@@ -93,8 +93,8 @@ public class IExplorerBrowser extends ExtWebBrowser {
             // someone is customizing this on non-Win platform
             b = "iexplore";     // NOI18N
         }
-        if (ExtWebBrowser.getEM().isLoggable(Level.INFO)) {
-            ExtWebBrowser.getEM().log(Level.INFO, "" + System.currentTimeMillis() + " IE: defaultBrowserExecutable: " + params + ", " + b);
+        if (ExtWebBrowser.getEM().isLoggable(Level.FINE)) {
+            ExtWebBrowser.getEM().log(Level.FINE, "" + System.currentTimeMillis() + " IE: defaultBrowserExecutable: " + params + ", " + b);
         }
         return new NbProcessDescriptor (b, params);
     }

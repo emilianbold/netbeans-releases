@@ -23,7 +23,6 @@ import java.beans.*;
 import java.io.IOException;
 import java.net.URL;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
@@ -37,8 +36,8 @@ public class SimpleExtBrowserImpl extends ExtBrowserImpl {
     public SimpleExtBrowserImpl(ExtWebBrowser extBrowserFactory) {
         super();
         this.extBrowserFactory = extBrowserFactory;
-        if (ExtWebBrowser.getEM().isLoggable(Level.INFO)) {
-            ExtWebBrowser.getEM().log(Level.INFO, "SimpleExtBrowserImpl created from factory: " + extBrowserFactory);    // NOI18N
+        if (ExtWebBrowser.getEM().isLoggable(Level.FINE)) {
+            ExtWebBrowser.getEM().log(Level.FINE, "SimpleExtBrowserImpl created from factory: " + extBrowserFactory);    // NOI18N
         }
     }
 

@@ -219,8 +219,8 @@ public class Util {
             FileObject sourceRoot = URLMapper.findFileObject(urls[i]);
             if (sourceRoot != null) {
                 result.add(sourceRoot);
-            } else if (Logger.getLogger("global").isLoggable(Level.INFO)) {
-                Logger.getLogger("global").log(Level.INFO, null, new IllegalStateException("No FileObject found for the following URL: " + urls[i]));
+            } else if (Logger.getLogger("global").isLoggable(Level.FINE)) {
+                Logger.getLogger("global").log(Level.FINE, null, new IllegalStateException("No FileObject found for the following URL: " + urls[i]));
             }
         }
         return result;
