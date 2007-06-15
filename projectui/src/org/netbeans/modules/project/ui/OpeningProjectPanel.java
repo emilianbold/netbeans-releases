@@ -17,29 +17,18 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-
 package org.netbeans.modules.project.ui;
 
-import java.awt.BorderLayout;
-import javax.swing.JComponent;
-import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.ProgressHandleFactory;
 
 /**
  *
  * @author Jan Lahoda
  */
 public class OpeningProjectPanel extends javax.swing.JPanel {
-
-    private JComponent progress;
-
     /** Creates new form OpeningProjectPanel */
     public OpeningProjectPanel(ProgressHandle handle) {
-        progress = ProgressHandleFactory.createProgressComponent(handle);
         initComponents();
-        //#67914: On macosx, the background of JTextField is white even if non-editable:
-        nameOfTheProject.setBackground(javax.swing.UIManager.getColor("Panel.background")); // NOI18N
     }
     
     /** This method is called from within the constructor to
@@ -49,62 +38,39 @@ public class OpeningProjectPanel extends javax.swing.JPanel {
      */
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
-        java.awt.GridBagConstraints gridBagConstraints;
 
-        jLabel1 = new javax.swing.JLabel();
-        innerPanel = new javax.swing.JPanel();
-        nameOfTheProject = new javax.swing.JTextField();
-        jPanel1 = new javax.swing.JPanel();
+        openingProjectLabel = new javax.swing.JLabel();
+        nameOfTheProject = new javax.swing.JLabel();
 
         setBorder(javax.swing.BorderFactory.createEmptyBorder(11, 11, 11, 11));
-        setLayout(new java.awt.GridBagLayout());
 
-        jLabel1.setText(org.openide.util.NbBundle.getMessage(OpeningProjectPanel.class, "LBL_Opening_Projects", new Object[] {})); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 6);
-        add(jLabel1, gridBagConstraints);
+        openingProjectLabel.setText(org.openide.util.NbBundle.getMessage(OpeningProjectPanel.class, "OpeningProjectPanel.openingProjectLabel.text")); // NOI18N
 
-        innerPanel.add(progress, BorderLayout.CENTER);
-        innerPanel.setLayout(new java.awt.BorderLayout());
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weightx = 1.0;
-        add(innerPanel, gridBagConstraints);
-
-        nameOfTheProject.setColumns(20);
-        nameOfTheProject.setEditable(false);
-        nameOfTheProject.setFont(javax.swing.UIManager.getFont("Label.font"));
-        nameOfTheProject.setBorder(null);
-        nameOfTheProject.setDisabledTextColor(javax.swing.UIManager.getColor("Label.foreground"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
-        add(nameOfTheProject, gridBagConstraints);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        add(jPanel1, gridBagConstraints);
+        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        this.setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(layout.createSequentialGroup()
+                .add(openingProjectLabel)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(nameOfTheProject, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 298, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                .add(openingProjectLabel)
+                .add(nameOfTheProject))
+        );
     }// </editor-fold>//GEN-END:initComponents
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    public javax.swing.JPanel innerPanel;
-    public javax.swing.JLabel jLabel1;
-    public javax.swing.JPanel jPanel1;
-    public javax.swing.JTextField nameOfTheProject;
+    private javax.swing.JLabel nameOfTheProject;
+    private javax.swing.JLabel openingProjectLabel;
     // End of variables declaration//GEN-END:variables
     
-    public void setProjectName(final String name) {
+    public void setProjectName(String name) {
         nameOfTheProject.setText(name);
     }
 }
