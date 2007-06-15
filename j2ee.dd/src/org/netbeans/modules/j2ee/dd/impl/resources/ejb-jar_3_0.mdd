@@ -91,6 +91,7 @@
 		<namespace>http://java.sun.com/xml/ns/javaee</namespace>
 		<bean-name>InterceptorBinding</bean-name>
                 <implements>org.netbeans.modules.j2ee.dd.api.ejb.InterceptorBinding</implements> 
+                <extends>org.netbeans.modules.j2ee.dd.impl.common.DescriptionBeanMultiple</extends> 
 	</meta-element>
 	<meta-element>
 		<dtd-name>message-destinationType</dtd-name>
