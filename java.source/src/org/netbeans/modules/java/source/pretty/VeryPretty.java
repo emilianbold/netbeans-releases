@@ -1778,9 +1778,11 @@ public final class VeryPretty extends JCTree.Visitor {
         if (stpos >= 0 && stpos < limit)
 	    lines.add(new CommentLine(stpos, limit - stpos, body));
         if (comment.indent() == 0) {
-            newline();
+            if (out.lastBlankLines == 0)
+                newline();
         } else if (comment.indent() > 0 && !preceding) {
-            newline();
+            if (out.lastBlankLines == 0)
+                newline();
             toLeftMargin();
         } else {
             needSpace();
@@ -1826,7 +1828,7 @@ public final class VeryPretty extends JCTree.Visitor {
         if (comment.indent() > 0) {
             newline();
             toLeftMargin();
-        } else if (comment.style() == Comment.Style.LINE) {
+        } else if (comment.style() != Comment.Style.BLOCK) {
             newline();
         } else {
            needSpace();
