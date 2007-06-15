@@ -195,15 +195,16 @@ public class DatabaseSettingsImporter {
         
         if (isStartup) {
             contextFile = retrieveMigratedSettingsAtStartup();
+            registerConnections(contextFile);
         } else {
             contextFiles = locateMigratedSettings();
+            registerConnections(contextFiles);
         }
            
         if (contextFile == null)
             return false;
         
-        registerConnections(contextFile);
-        registerConnections(contextFiles);
+               
         return true;
     }
     
