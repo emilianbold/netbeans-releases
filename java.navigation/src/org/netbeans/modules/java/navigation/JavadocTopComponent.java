@@ -109,7 +109,7 @@ public final class JavadocTopComponent extends TopComponent {
         if (win instanceof JavadocTopComponent) {
             return (JavadocTopComponent)win;
         }
-        LOGGER.log(Level.WARNING, 
+        LOGGER.log(Level./* Shut up! Logged dozens of times in every session. */FINE,
                 "There seem to be multiple components with the '" + PREFERRED_ID +
                 "' ID. That is a potential source of errors and unexpected behavior.");
         return getDefault();

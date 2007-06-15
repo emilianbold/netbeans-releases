@@ -134,7 +134,7 @@ public final class DeclarationTopComponent extends TopComponent {
         if (win instanceof DeclarationTopComponent) {
             return (DeclarationTopComponent)win;
         }
-        LOGGER.log(Level.WARNING, 
+        LOGGER.log(Level./* Shut up! Logged dozens of times in every session. */FINE,
                 "There seem to be multiple components with the '" + PREFERRED_ID +
                 "' ID. That is a potential source of errors and unexpected behavior.");
         return getDefault();
