@@ -25,10 +25,12 @@ public class IdImpl implements Id {
 
     private final String name;
     private final Column column;
+    private final String temporal;
 
-    public IdImpl(String name, Column column) {
+    public IdImpl(String name, Column column, String temporal) {
         this.name = name;
         this.column = column;
+        this.temporal = temporal;
     }
 
     public void setName(String value) {
@@ -68,7 +70,7 @@ public class IdImpl implements Id {
     }
 
     public String getTemporal() {
-        throw new UnsupportedOperationException("This operation is not implemented yet."); // NOI18N
+        return temporal;
     }
 
     public void setTableGenerator(TableGenerator value) {

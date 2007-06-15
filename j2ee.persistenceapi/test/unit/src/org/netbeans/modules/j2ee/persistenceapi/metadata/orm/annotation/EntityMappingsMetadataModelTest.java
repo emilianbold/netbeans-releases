@@ -29,6 +29,7 @@ import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappings;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappingsMetadata;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Id;
+import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Version;
 import org.netbeans.modules.java.source.usages.RepositoryUpdater;
 import org.openide.filesystems.FileObject;
 
@@ -45,6 +46,7 @@ public class EntityMappingsMetadataModelTest extends EntityMappingsTestCase {
     public void testModel() throws Exception {
         TestUtilities.copyStringToFileObject(srcFO, "foo/CustomerImpl.java",
                 "package foo;" +
+                "import java.util.*;" +
                 "import javax.persistence.*;" +
                 "@Entity(name = \"Customer\")" +
                 "public class CustomerImpl {" +
@@ -55,15 +57,27 @@ public class EntityMappingsMetadataModelTest extends EntityMappingsTestCase {
                 "   private int age;" +
                 "   @Column(name = \"CUST_NAME\", nullable = false)" +
                 "   private String name;" +
+                "   @Temporal(TemporalType.DATE)" +
+                "   private Date birthDate;" +
+                "   @Temporal(TemporalType.TIME)" +
+                "   private Date birthTime;" +
+                "   @Version()" +
+                "   @Column(name = \"VER\", nullable = false)" +
+                "   private int version;" +
                 "}");
         TestUtilities.copyStringToFileObject(srcFO, "foo/Employee.java",
                 "package foo;" +
                 "import javax.persistence.*;" +
+                "import java.util.*;" +
                 "@Entity()" +
                 "public class Employee {" +
                 "   @Id()" +
                 "   @Column(name=\"EMP_ID\")" +
-                "   private int id;" +
+                "   @Temporal(TemporalType.TIMESTAMP)" +
+                "   private Date id;" +
+                "   @Version()" +
+                "   @Temporal(TemporalType.DATE)" +
+                "   private Date entryDate;" +
                 "}");
         final String expectedResult = "foo";
         String result = createModel().runReadAction(new MetadataModelAction<EntityMappingsMetadata, String>() {
@@ -81,19 +95,35 @@ public class EntityMappingsMetadataModelTest extends EntityMappingsTestCase {
                 assertEquals(1, idList.length);
                 assertEquals("id", idList[0].getName());
                 assertEquals("CUST_ID", idList[0].getColumn().getName());
+                assertNull(idList[0].getTemporal());
                 Basic[] basicList = entity.getAttributes().getBasic();
-                assertEquals(2, basicList.length);
+                assertEquals(4, basicList.length);
                 assertEquals("age", basicList[0].getName());
                 assertFalse(basicList[0].isOptional());
                 assertEquals("AGE", basicList[0].getColumn().getName());
+                assertNull(basicList[0].getTemporal());
                 assertEquals("name", basicList[1].getName());
                 assertTrue(basicList[1].isOptional());
                 assertEquals("CUST_NAME", basicList[1].getColumn().getName());
                 assertEquals(255, basicList[1].getColumn().getLength());
                 assertFalse(basicList[1].getColumn().isNullable());
+                assertNull(basicList[1].getTemporal());
+                assertEquals("DATE", basicList[2].getTemporal());
+                assertEquals("TIME", basicList[3].getTemporal());
+                Version[] versionList = entity.getAttributes().getVersion();
+                assertEquals(1, versionList.length);
+                assertEquals("version", versionList[0].getName());
+                assertEquals("VER", versionList[0].getColumn().getName());
                 // test Employee
                 entity = getEntityByName(entityList, "Employee");
                 assertNotNull(entity);
+                idList = entity.getAttributes().getId();
+                assertEquals(1, idList.length);
+                assertEquals("TIMESTAMP", idList[0].getTemporal());
+                versionList = entity.getAttributes().getVersion();
+                assertEquals(1, versionList.length);
+                assertEquals("entryDate", versionList[0].getName());
+                assertEquals("DATE", versionList[0].getTemporal());
                 return expectedResult;
             }
         });

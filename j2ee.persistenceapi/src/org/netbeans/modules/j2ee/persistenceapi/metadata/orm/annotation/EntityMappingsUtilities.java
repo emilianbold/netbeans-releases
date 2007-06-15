@@ -150,6 +150,13 @@ public class EntityMappingsUtilities {
         }
         return result;
     }
+    
+    public static String getTemporalType(AnnotationModelHelper helper, AnnotationMirror temporalAnnotation) {
+        AnnotationParser parser = AnnotationParser.create(helper);
+        parser.expectEnumConstant("value", helper.resolveType("javax.persistence.TemporalType"), null); // NOI18N
+        return parser.parse(temporalAnnotation).get("value", String.class);
+        
+    }
 
     // not private because of unit tests
     static TypeElement getFirstTypeArgument(TypeMirror type) {

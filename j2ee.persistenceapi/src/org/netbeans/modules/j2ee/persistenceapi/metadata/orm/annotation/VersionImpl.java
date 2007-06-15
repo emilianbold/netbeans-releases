@@ -22,13 +22,23 @@ package org.netbeans.modules.j2ee.persistenceapi.metadata.orm.annotation;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.*;
 
 public class VersionImpl implements Version {
+    
+    private final String name;
+    private final Column column;
+    private final String temporal;
+
+    public VersionImpl(String name, Column column, String temporal) {
+        this.name = name;
+        this.column = column;
+        this.temporal = temporal;
+    }
 
     public void setName(String value) {
         throw new UnsupportedOperationException("This operation is not implemented yet."); // NOI18N
     }
 
     public String getName() {
-        throw new UnsupportedOperationException("This operation is not implemented yet."); // NOI18N
+        return name;
     }
 
     public void setColumn(Column value) {
@@ -36,7 +46,7 @@ public class VersionImpl implements Version {
     }
 
     public Column getColumn() {
-        throw new UnsupportedOperationException("This operation is not implemented yet."); // NOI18N
+        return column;
     }
 
     public Column newColumn() {
@@ -48,6 +58,6 @@ public class VersionImpl implements Version {
     }
 
     public String getTemporal() {
-        throw new UnsupportedOperationException("This operation is not implemented yet."); // NOI18N
+        return temporal;
     }
 }

@@ -36,6 +36,7 @@ public class AttributesImpl implements Attributes {
     private boolean fieldAccess;
     private EmbeddedId embeddedId;
     private final List<Id> idList = new ArrayList<Id>();
+    private final List<Version> versionList = new ArrayList<Version>();
     private final List<Basic> basicList = new ArrayList<Basic>();
     private final List<OneToOne> oneToOneList = new ArrayList<OneToOne>();
     private final List<OneToMany> oneToManyList = new ArrayList<OneToMany>();
@@ -88,7 +89,6 @@ public class AttributesImpl implements Attributes {
         AnnotationMirror oneToManyAnnotation = annByType.get("javax.persistence.OneToMany"); // NOI18N
         AnnotationMirror manyToOneAnnotation = annByType.get("javax.persistence.ManyToOne"); // NOI18N
         AnnotationMirror manyToManyAnnotation = annByType.get("javax.persistence.ManyToMany"); // NOI18N
-        AnnotationMirror idAnnotation = annByType.get("javax.persistence.Id"); // NOI18N
         AnnotationMirror embeddedIdAnnotation = annByType.get("javax.persistence.EmbeddedId"); // NOI18N
 
         if (oneToOneAnnotation != null) {
@@ -104,13 +104,19 @@ public class AttributesImpl implements Attributes {
             if (embeddedIdAnnotation != null) {
                 embeddedId = new EmbeddedIdImpl(propertyName);
             } else {
+                AnnotationMirror versionAnnotation = annByType.get("javax.persistence.Version"); // NOI18N
+                AnnotationMirror idAnnotation = annByType.get("javax.persistence.Id"); // NOI18N
                 AnnotationMirror columnAnnotation = annByType.get("javax.persistence.Column"); // NOI18N
+                AnnotationMirror temporalAnnotation = annByType.get("javax.persistence.Temporal"); // NOI18N
+                String temporal = temporalAnnotation != null ? EntityMappingsUtilities.getTemporalType(helper, temporalAnnotation) : null;
                 Column column = new ColumnImpl(helper, columnAnnotation, propertyName.toUpperCase()); // NOI18N
                 if (idAnnotation != null) {
-                    idList.add(new IdImpl(propertyName, column));
+                    idList.add(new IdImpl(propertyName, column, temporal));
+                } else if (versionAnnotation != null) {
+                    versionList.add(new VersionImpl(propertyName, column, temporal));
                 } else {
                     AnnotationMirror basicAnnotation = annByType.get("javax.persistence.Basic"); // NOI18N
-                    basicList.add(new BasicImpl(helper, basicAnnotation, propertyName, column));
+                    basicList.add(new BasicImpl(helper, basicAnnotation, propertyName, column, temporal));
                 }
             }
         }
@@ -201,7 +207,7 @@ public class AttributesImpl implements Attributes {
     }
 
     public Version getVersion(int index) {
-        throw new UnsupportedOperationException("This operation is not implemented yet."); // NOI18N
+        return versionList.get(index);
     }
 
     public int sizeVersion() {
@@ -213,7 +219,7 @@ public class AttributesImpl implements Attributes {
     }
 
     public Version[] getVersion() {
-        throw new UnsupportedOperationException("This operation is not implemented yet."); // NOI18N
+        return versionList.toArray(new Version[versionList.size()]);
     }
 
     public int addVersion(Version value) {

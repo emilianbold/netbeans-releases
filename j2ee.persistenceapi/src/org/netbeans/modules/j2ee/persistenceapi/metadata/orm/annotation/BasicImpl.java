@@ -29,11 +29,13 @@ public class BasicImpl implements Basic {
 
     private final String name;
     private final Column column;
+    private final String temporal;
     private final ParseResult parseResult;
 
-    public BasicImpl(AnnotationModelHelper helper, AnnotationMirror annotation, String name, Column column) {
+    public BasicImpl(AnnotationModelHelper helper, AnnotationMirror annotation, String name, Column column, String temporal) {
         this.name = name;
         this.column = column;
+        this.temporal = temporal;
         AnnotationParser parser = AnnotationParser.create(helper);
         parser.expectPrimitive("optional", Boolean.class, parser.defaultValue(true));
         parseResult = parser.parse(annotation);
@@ -92,7 +94,7 @@ public class BasicImpl implements Basic {
     }
 
     public String getTemporal() {
-        throw new UnsupportedOperationException("This operation is not implemented yet."); // NOI18N
+        return temporal;
     }
 
     public void setEnumerated(String value) {
