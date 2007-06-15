@@ -23,7 +23,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
-import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
@@ -77,7 +76,6 @@ public class MarkOccurrencesSupport implements CaretListener {
     private void refresh (int offset) {
         ParserManager parserManager = ParserManager.get (editor.getDocument ());
         if (parserManager.getState () == State.PARSING) {
-            System.out.println("parsing");
             return;
         }
         try {

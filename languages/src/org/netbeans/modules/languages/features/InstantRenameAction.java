@@ -67,7 +67,6 @@ public class InstantRenameAction extends BaseAction implements KeyListener, Docu
         int offset = editor.getCaretPosition ();
         ParserManager parserManager = ParserManager.get (editor.getDocument ());
         if (parserManager.getState () == State.PARSING) {
-            System.out.println("parsing");
             return;
         }
         try {
