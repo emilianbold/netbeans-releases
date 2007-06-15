@@ -469,12 +469,8 @@ public abstract class ETListCompartment extends ETSimpleListCompartment implemen
                 boolean bDisplay = false;
                 Preferences prefs = NbPreferences.forModule(ETListCompartment.class) ;
                 
-                    String sShowList = prefs.get("UML_Display_Empty_Lists", "PSK_YES");
-                    if (sShowList != null && sShowList.equals("PSK_YES")) {
-                        bDisplay = true;
-                    }
-                
-                
+                bDisplay = prefs.getBoolean("UML_Display_Empty_Lists", true);
+                    
                 // don't display if empty, determine if empty
                 if (!bDisplay) {
                     bDisplay = this.getNumCompartments() > 0;
