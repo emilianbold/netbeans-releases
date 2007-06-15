@@ -93,9 +93,8 @@ public class AutoupdateCatalogFactory {
         AutoupdateCatalogProvider au_catalog = new AutoupdateCatalogProvider (sKey, displayName (fo), url);
         
         try {
-            if (! getPreferences ().nodeExists (sKey)) {
+            if (true || ! getPreferences ().nodeExists (sKey)) {
                 Preferences providerPreferences = getPreferences ().node (sKey);
-                providerPreferences.put ("url", url.toExternalForm ());
                 providerPreferences.put ("displayName", au_catalog.getDisplayName ());
                 if (en != null) {
                     providerPreferences.put ("enabled", en.toString ());
