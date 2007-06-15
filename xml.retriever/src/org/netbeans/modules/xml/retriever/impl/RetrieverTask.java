@@ -197,7 +197,11 @@ public class RetrieverTask {
                 //treat URLs differently
                 result = getSaveFileForURL(curUri);
             } else{
-                result = new File(new URI(retEngine.getFixedSaveRootFolder().toURI().toString()+"/"+curFileName));
+                URI temp = new URI(rent.getCurrentAddress());
+                if(temp.isAbsolute())
+                    result = new File(new URI(retEngine.getFixedSaveRootFolder().toURI().toString()+"/"+curFileName));
+                else
+                    result = new File(new URI(retEngine.getFixedSaveRootFolder().toURI().toString()+"/"+temp.toString()));
             }
         }else{
             File newFile = new File(new URI(rent.getLocalBaseFile().getParentFile().toURI().normalize().toString()+"/"+rent.getCurrentAddress())).getCanonicalFile();
