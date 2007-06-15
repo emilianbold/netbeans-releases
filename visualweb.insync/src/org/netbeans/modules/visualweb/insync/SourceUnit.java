@@ -330,7 +330,9 @@ public abstract class SourceUnit implements Unit, DocumentListener, UndoableEdit
      */
     public void removeUpdate(DocumentEvent e) {
         assert Trace.trace("insync-listener", "SU.removeUpdate");
-        undoManager.notifyBufferEdited(this);
+        if (undoManager != null) {
+        	undoManager.notifyBufferEdited(this);
+        }
         setSourceDirty();
     }
     
@@ -338,7 +340,9 @@ public abstract class SourceUnit implements Unit, DocumentListener, UndoableEdit
      * @see javax.swing.event.UndoableEditListener#undoableEditHappened(javax.swing.event.UndoableEditEvent)
      */
     public void undoableEditHappened(UndoableEditEvent e) {
-        undoManager.notifyUndoableEditEvent(this);
+    	if (undoManager != null) {
+    		undoManager.notifyUndoableEditEvent(this);
+    	}
     }
     
     //-------------------------------------------------------------------------------------- Locking
@@ -493,7 +497,7 @@ public abstract class SourceUnit implements Unit, DocumentListener, UndoableEdit
         }
         
         Util.BufferResult bufferResult = loadBuf();
- 	read(bufferResult.getBuffer(), bufferResult.getSize());
+        read(bufferResult.getBuffer(), bufferResult.getSize());
                  
         if (state == State.SOURCEDIRTY) // read() may have set an error, if so don't do to Clean
             setClean();  //state = State.CLEAN;

@@ -403,7 +403,10 @@ public class FacesModelSet extends ModelSet implements FacesDesignProject {
      *
      */
     public void destroy() {
-        facesContainer.destroy();
+    	// Prevent NPE
+    	if (facesContainer != null) {
+    		facesContainer.destroy();
+    	}
         if (projectBuiltQueryStatus != null) {
             projectBuiltQueryStatus.removeChangeListener(projectBuiltQueryStatusChangeListener);
         }

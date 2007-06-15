@@ -1033,6 +1033,16 @@ public class FacesModel extends Model {
             return;
         }
     
+        // XXX - this can happen when the project is closed while syncing is in progress.
+        // Prevent NPE
+        if (facesModelSet == null) {
+        	return;
+        }
+        // Prevent NPE
+        if (facesModelSet.getFacesContainer() == null) {
+        	return;
+        }
+        
         // main unit synchronizing
         facesModelSet.getFacesContainer().getFacesContext();  // make sure the context is available to components via thread lookup
         boolean synced = unit.sync();
