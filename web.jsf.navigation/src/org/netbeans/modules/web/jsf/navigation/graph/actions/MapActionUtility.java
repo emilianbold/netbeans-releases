@@ -19,8 +19,14 @@
 
 package org.netbeans.modules.web.jsf.navigation.graph.actions;
 
+import java.awt.AWTException;
+import java.awt.EventQueue;
+import java.awt.Point;
+import java.awt.Robot;
 import java.awt.event.ActionEvent;
+import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.lang.Object;
 import java.util.HashSet;
@@ -40,7 +46,16 @@ import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 import java.lang.*;
 import java.lang.Object;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.KeyStroke;
+import org.netbeans.api.visual.action.ActionFactory;
+import org.netbeans.api.visual.action.ConnectDecorator;
+import org.netbeans.api.visual.anchor.Anchor;
+import org.netbeans.api.visual.widget.ConnectionWidget;
+import org.netbeans.api.visual.widget.Widget;
+import org.netbeans.modules.web.jsf.navigation.Page;
+import org.netbeans.modules.web.jsf.navigation.Pin;
 import org.netbeans.modules.web.jsf.navigation.graph.PageFlowSceneElement;
 import org.netbeans.modules.web.jsf.navigation.graph.layout.SceneElementComparator;
 import org.openide.cookies.OpenCookie;
@@ -54,41 +69,14 @@ public class MapActionUtility {
     public MapActionUtility() {
     }
     
-    //    public static ActionMap initActionMap() {
-    //        ActionMap actionMap = new ActionMap();
-    //        //        // Install the actions
-    //        actionMap.put("handleTab", handleTab);
-    //        //        actionMap.put("handleEscape", handleEscape);
-    //        //
-    //        //        actionMap.put("handleLinkStart", handleLinkStart);
-    //        //        actionMap.put("handleLinkEnd", handleLinkEnd);
-    //        //
-    //        //        actionMap.put("handleZoomPage", handleZoomPage);
-    //        //        actionMap.put("handleUnZoomPage", handleUnZoomPage);
-    //        //        actionMap.put("handleOpenPage", handleOpenPage);
-    //
-    //        actionMap.put("handleNewWebForm", handleNewWebForm);
-    //        //
-    //        //        actionMap.put("handleLeftArrowKey", handleLeftArrowKey);
-    //        //        actionMap.put("handleRightArrowKey", handleRightArrowKey);
-    //        //        actionMap.put("handleUpArrowKey", handleUpArrowKey);
-    //        //        actionMap.put("handleDownArrowKey", handleDownArrowKey);
-    //        //
-    //        //        actionMap.put("handleAddCommandButton", handleAddCommandButton);
-    //        //        actionMap.put("handleAddCommandLink", handleAddCommandLink);
-    //        //        actionMap.put("handleAddImageHyperLink", handleAddImageHyperLink);
-    //        //        actionMap.put("handlePopupMenu", handlePopupMenu);
-    //        //        actionMap.put("handleDeleteKey", handleDeleteKey);
-    //        return actionMap;
-    //    }
-    //
+    
     public static ActionMap initActionMap() {
         ActionMap actionMap = new ActionMap();
         // Install the actions
         actionMap.put("handleTab", handleTab);
-//        actionMap.put("handleEscape", new TestAction("handleEscape"));
+        actionMap.put("handleEscape", handleEscape);
         
-        //        actionMap.put("handleLinkStart", new TestAction("handleLinkStart"));  // new TestAction(""));
+        actionMap.put("handleLinkStart", handleLinkStart);
         //        actionMap.put("handleLinkEnd", new TestAction("handleLinkEnd"));
         //
         //        actionMap.put("handleZoomPage", new TestAction("handleZoomPage"));
@@ -115,13 +103,13 @@ public class MapActionUtility {
         // Tab Key
         inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_TAB,0), "handleTab");
         // Esc Key
-//        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE,0), "handleEscape");
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE,0), "handleEscape");
         //
         //        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_A,InputEvent.CTRL_MASK), "handleNewWebForm");
         //
-        //        //Lower Case s,e,z,u
-        //        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_S,0), "handleLinkStart");
-        //        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_E,0), "handleLinkEnd");
+        //Lower Case s,e,z,u
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_S,0), "handleLinkStart");
+        //                inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_E,0), "handleLinkEnd");
         //        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_Z,0), "handleZoomPage");
         //        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_U,0), "handleUnZoomPage");
         //
@@ -166,20 +154,21 @@ public class MapActionUtility {
         return inputMap;
     }
     
-//    // Handle Escape - cancels the link action
-//    public static Action handleEscape = new AbstractAction() {
-//        public void actionPerformed(ActionEvent e) {
-//            /* Cancel A11y Linking */
-//            if( linkStartNode != null ){
-//                if( linkStartNode instanceof NavigationGraphNode){
-//                    ((NavigationGraphNode)linkStartNode).setZoomed(false);
-//                }
-//                linkStartNode=null;
-//            }
-//            setRelink(null,null,true,null);
-//            viewPresenter.scheduleRepaint();
-//        }
-//    };
+    // Handle Escape - cancels the link action
+    public static Action handleEscape = new AbstractAction() {
+        public void actionPerformed(ActionEvent e) {
+            /* Cancel A11y Linking */
+            Object sourceObj = e.getSource();
+            if( !(sourceObj instanceof PageFlowScene) ){
+                return;
+            }
+            PageFlowScene scene = (PageFlowScene)sourceObj;
+            if( CONNECT_WIDGET != null ){
+                CONNECT_WIDGET.removeFromParent();
+                CONNECT_WIDGET=null;
+            }
+        }
+    };
     
     public static final Action handleTab = new AbstractAction() {
         
@@ -192,13 +181,61 @@ public class MapActionUtility {
             
             PageFlowSceneElement nextElement = SceneElementComparator.getNextSelectableElement(scene);
             if( nextElement != null ){
+                if( CONNECT_WIDGET != null && scene.getConnectionLayer().getChildren().contains(CONNECT_WIDGET)){
+                    Anchor targetAnchor = null;
+                    if( nextElement instanceof Page ){
+                        targetAnchor = CONNECT_DECORATOR_DEFAULT.createTargetAnchor(scene.findWidget(nextElement));
+                    } else if ( nextElement instanceof Pin ){
+                        Widget pageWidget = scene.findWidget(((Pin) nextElement).getPageFlowNode());
+                        targetAnchor = CONNECT_DECORATOR_DEFAULT.createTargetAnchor(pageWidget);
+                        
+                    }
+                    if( targetAnchor != null ){
+                        CONNECT_WIDGET.setTargetAnchor(targetAnchor);
+                        scene.validate();
+                    }
+                }
                 Set<PageFlowSceneElement> set = new HashSet<PageFlowSceneElement>();
                 set.add(nextElement);
                 scene.setSelectedObjects(set);
+                
             }
         }
     };
     
+    
+    private static ConnectDecorator CONNECT_DECORATOR_DEFAULT = null;
+    private static PageFlowScene CONNECT_SCENE = null;
+    private static ConnectionWidget CONNECT_WIDGET= null;
+    // Handle Link Start Key Stroke
+    public static Action handleLinkStart = new AbstractAction() {
+        public void actionPerformed(ActionEvent e) {
+            Object sourceObj = e.getSource();
+            if( sourceObj instanceof PageFlowScene ){
+                PageFlowScene scene = (PageFlowScene)sourceObj;
+                List<PageFlowSceneElement> elements = new ArrayList(scene.getSelectedObjects());
+                if( elements.size() > 0 ) {
+                    PageFlowSceneElement selElement = elements.get(0);
+                    Pin selPin = null;
+                    if( selElement instanceof Page ){
+                        selPin = scene.getDefaultPin((Page)selElement);
+                    } else if ( selElement instanceof Pin ){
+                        selPin = (Pin)selElement;
+                    }
+                    if( selPin != null ){
+                        CONNECT_DECORATOR_DEFAULT = ActionFactory.createDefaultConnectDecorator();
+                        CONNECT_SCENE = scene;
+                        CONNECT_DECORATOR_DEFAULT.createTargetAnchor(scene.findWidget(selPin));
+                        CONNECT_WIDGET = CONNECT_DECORATOR_DEFAULT.createConnectionWidget(scene);
+                        CONNECT_WIDGET.setSourceAnchor(CONNECT_DECORATOR_DEFAULT.createSourceAnchor(scene.findWidget(selPin)));
+                        CONNECT_WIDGET.setTargetAnchor(CONNECT_DECORATOR_DEFAULT.createSourceAnchor(scene.findWidget(selPin)));
+                        scene.getConnectionLayer().addChild(CONNECT_WIDGET);
+                        scene.validate();
+                    }
+                }
+            }
+        }
+    };
     
     public static final Action handleOpenPage = new AbstractAction() {
         public void actionPerformed(ActionEvent e) {

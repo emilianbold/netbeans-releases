@@ -98,6 +98,10 @@ public class PageFlowScene extends GraphPinScene<Page,NavigationCaseEdge,Pin> {
     private LayerWidget backgroundLayer = new LayerWidget(this);
     private LayerWidget mainLayer = new LayerWidget(this);
     private LayerWidget connectionLayer = new LayerWidget(this);
+
+    public LayerWidget getConnectionLayer() {
+        return connectionLayer;
+    }
     private LayerWidget upperLayer = new LayerWidget(this);
     
     private Router router;

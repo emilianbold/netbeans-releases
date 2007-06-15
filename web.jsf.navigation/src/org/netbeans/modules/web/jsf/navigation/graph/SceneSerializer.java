@@ -137,13 +137,14 @@ public class SceneSerializer {
             
             for( String key : facesConfigScopeMap.keySet()){
                 Point location = facesConfigScopeMap.get(key);
-                Element nodeElement = document.createElement(NODE_ELEMENT);
-                setAttribute(document, nodeElement, NODE_ID_ATTR, key);
-                setAttribute(document, nodeElement, NODE_X_ATTR, Integer.toString(location.x));
-                setAttribute(document, nodeElement, NODE_Y_ATTR, Integer.toString(location.y));
-                sceneScopeElement.appendChild(nodeElement);
+                if ( location != null ) {
+                    Element nodeElement = document.createElement(NODE_ELEMENT);
+                    setAttribute(document, nodeElement, NODE_ID_ATTR, key);
+                    setAttribute(document, nodeElement, NODE_X_ATTR, Integer.toString(location.x));
+                    setAttribute(document, nodeElement, NODE_Y_ATTR, Integer.toString(location.y));
+                    sceneScopeElement.appendChild(nodeElement);
+                }
             }
-            
         }
         return sceneScopeElement;
         
@@ -200,8 +201,8 @@ public class SceneSerializer {
             deserializeV1(sceneData, file);
         } else if ( VERSION_VALUE_2.equals(getAttributeValue(sceneElement, VERSION_ATTR))) {
             
-            String lastUsedScope = getAttributeValue(sceneElement, SCENE_LAST_USED_SCOPE_ATTR);    
-           
+            String lastUsedScope = getAttributeValue(sceneElement, SCENE_LAST_USED_SCOPE_ATTR);
+            
             sceneData.setCurrentScope( PageFlowUtilities.getScope(lastUsedScope) );
             LOG.fine("Last Used Scope: " + lastUsedScope);
             // TODO: Save the Last Used Scope
