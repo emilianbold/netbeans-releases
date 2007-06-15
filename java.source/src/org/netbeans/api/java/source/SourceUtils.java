@@ -64,13 +64,10 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.queries.JavadocForBinaryQuery;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
-import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.ClasspathInfo.PathKind;
 import org.netbeans.api.java.source.JavaSource.Phase;
-import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.java.JavaDataLoader;
 import org.netbeans.modules.java.source.parsing.FileObjects;
-import org.netbeans.modules.java.source.pretty.VeryPretty;
 import org.netbeans.modules.java.source.save.Reformatter;
 import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
 import org.netbeans.modules.java.source.usages.Index;
@@ -248,9 +245,8 @@ public class SourceUtils {
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
                     try {
-                        info.getJavaSource().runModificationTask(new CancellableTask<WorkingCopy>() {
-                            public void cancel() {
-                            }
+                        info.getJavaSource().runModificationTask(new Task<WorkingCopy>() {
+
                             public void run(WorkingCopy copy) throws Exception {
                                 copy.toPhase(Phase.ELEMENTS_RESOLVED);
                                 copy.rewrite(copy.getCompilationUnit(), addImports(copy.getCompilationUnit(), Collections.singletonList(fqn), copy.getTreeMaker()));                                
@@ -731,7 +727,7 @@ out:                for (URL e : roots) {
         }
         try {
             final List<ElementHandle<TypeElement>> result = new LinkedList<ElementHandle<TypeElement>>();
-            js.runUserActionTask(new CancellableTask<CompilationController>() {            
+            js.runUserActionTask(new Task<CompilationController>() {            
                 public void run(final CompilationController control) throws Exception {
                     if (control.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED).compareTo (JavaSource.Phase.ELEMENTS_RESOLVED)>=0) {
                         new TreePathScanner<Void,Void> () {
@@ -766,8 +762,6 @@ out:                for (URL e : roots) {
                     return true;
                 }
 
-                public void cancel() {}
-
             }, true);
             return result;
         } catch (IOException ioe) {
@@ -789,7 +783,7 @@ out:                for (URL e : roots) {
         final boolean[] result = new boolean[]{false};
         JavaSource js = JavaSource.create(cpInfo);
         try {
-            js.runUserActionTask(new CancellableTask<CompilationController>() {
+            js.runUserActionTask(new Task<CompilationController>() {
 
                 public void run(CompilationController control) throws Exception {
                     TypeElement type = control.getElements().getTypeElement(qualifiedName);
@@ -804,8 +798,6 @@ out:                for (URL e : roots) {
                         }
                     }
                 }
-
-                public void cancel() {}
 
             }, true);
         } catch (IOException ioe) {
@@ -865,7 +857,7 @@ out:                for (URL e : roots) {
                 ClasspathInfo cpInfo = ClasspathInfo.create(bootPath, compilePath, srcPath);
                 final Set<ElementHandle<TypeElement>> classes = cpInfo.getClassIndex().getDeclaredTypes("", ClassIndex.NameKind.PREFIX, EnumSet.of(ClassIndex.SearchScope.SOURCE));
                 JavaSource js = JavaSource.create(cpInfo);
-                js.runUserActionTask(new CancellableTask<CompilationController>() {
+                js.runUserActionTask(new Task<CompilationController>() {
                     public void run(CompilationController control) throws Exception {
                         for (ElementHandle<TypeElement> cls : classes) {
                             TypeElement te = cls.resolve(control);
@@ -879,8 +871,6 @@ out:                for (URL e : roots) {
                             }
                         }
                     }
-
-                    public void cancel() {}                
                 }, false);
             } catch (IOException ioe) {
                 Exceptions.printStackTrace(ioe);

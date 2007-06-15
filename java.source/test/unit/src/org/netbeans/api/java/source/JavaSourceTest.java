@@ -489,7 +489,7 @@ public class JavaSourceTest extends NbTestCase {
 
             final boolean[] contentCorrect = new boolean[1];
 
-            js.runUserActionTask(new CancellableTask<CompilationController>() {
+            js.runUserActionTask(new Task<CompilationController>() {
                 public void run(CompilationController controler) {
                     try {
                         controler.toPhase(Phase.PARSED);
@@ -498,8 +498,6 @@ public class JavaSourceTest extends NbTestCase {
                     } catch (IOException ioe) {
                         ioe.printStackTrace();
                     }
-                }
-                public void cancel() {
                 }
             },true);
 
@@ -564,15 +562,13 @@ public class JavaSourceTest extends NbTestCase {
         });
         //not sure how to make this 100% reliable.
         //this task has to be the first run after the previous change to document.
-        js.runUserActionTask(new CancellableTask<CompilationController>() {
+        js.runUserActionTask(new Task<CompilationController>() {
             public void run(CompilationController controler) {
                 try {
                     controler.toPhase(Phase.PARSED);
                 } catch (IOException ioe) {
                     ioe.printStackTrace();
                 }
-            }
-            public void cancel() {
             }
         },true);
         
@@ -606,14 +602,10 @@ public class JavaSourceTest extends NbTestCase {
             synchronized (lock) {
                 js.revalidate();
                 Thread.sleep(2000);
-                js.runUserActionTask(new CancellableTask<CompilationController> () {
+                js.runUserActionTask(new Task<CompilationController> () {
                     public void run (CompilationController c) {
                         
-                    }
-                    
-                    public void cancel () {
-                        
-                    }
+                    }                    
                 },true);
             }
             
@@ -680,18 +672,14 @@ public class JavaSourceTest extends NbTestCase {
         final ClasspathInfo cpInfo = ClasspathInfo.create(bootPath,compilePath,null);
         final JavaSource js = JavaSource.create(cpInfo,testFile1);
         js.runUserActionTask(
-                new CancellableTask<CompilationController>() {
-            
-                    public void cancel() {
-                    }
+                new Task<CompilationController>() {            
                     
                     public void run(CompilationController parameter) throws Exception {
                         final Thread t = new Thread (new Runnable() {
                             public void run () {
                                 try {
-                                js.runUserActionTask(new CancellableTask<CompilationController>() {                            
-                                    public void cancel() {
-                                    }
+                                js.runUserActionTask(new Task<CompilationController>() {                            
+
                                     public void run(CompilationController parameter) throws Exception {
                                     }
                                 },true);
@@ -704,10 +692,8 @@ public class JavaSourceTest extends NbTestCase {
                         });
                         t.start();
                         Thread.sleep(1000);
-                        js.runUserActionTask (new CancellableTask<CompilationController>() {
+                        js.runUserActionTask (new Task<CompilationController>() {
                             
-                            public void cancel() {
-                            }
                             public void run(CompilationController parameter) throws Exception {
                             }
                         },true);
@@ -734,9 +720,7 @@ public class JavaSourceTest extends NbTestCase {
             
             public void run(CompilationInfo parameter) throws Exception {
                 if (!called) {
-                    js.runUserActionTask(new CancellableTask<CompilationController>() {
-                        public void cancel() {
-                        }
+                    js.runUserActionTask(new Task<CompilationController>() {
                         public void run(CompilationController parameter) throws Exception {
                         }
                     },true);
@@ -756,38 +740,29 @@ public class JavaSourceTest extends NbTestCase {
         final ClasspathInfo cpInfo = ClasspathInfo.create(bootPath,compilePath,null);
         final JavaSource js = JavaSource.create(cpInfo,testFile1);
         final int[] identityHashCodes = new int[3];
-        js.runUserActionTask(new CancellableTask<CompilationController> () {
+        js.runUserActionTask(new Task<CompilationController> () {
             
             public void run (CompilationController c) {
                 identityHashCodes[0] = System.identityHashCode(c.delegate);
             }
             
-            public void cancel () {
-                
-            }
         },true);
         
-        js.runUserActionTask(new CancellableTask<CompilationController> () {
+        js.runUserActionTask(new Task<CompilationController> () {
             
             public void run (CompilationController c) {
                 identityHashCodes[1] = System.identityHashCode(c.delegate);
             }
             
-            public void cancel () {
-                
-            }
         },false);
         
         
-        js.runUserActionTask(new CancellableTask<CompilationController> () {
+        js.runUserActionTask(new Task<CompilationController> () {
             
             public void run (CompilationController c) {
                 identityHashCodes[2] = System.identityHashCode(c.delegate);
             }
             
-            public void cancel () {
-                
-            }
         },false);
         
         assertEquals(identityHashCodes[0], identityHashCodes[1]);
@@ -833,45 +808,36 @@ public class JavaSourceTest extends NbTestCase {
         final JavaSource js = JavaSource.create(cpInfo,testFile1);
         final Object[] delegateRef = new Object[1];
         // 1)  Two consequent shared tasks have to share CompilationInfo
-        js.runUserActionTask(new CancellableTask<CompilationController>() {            
+        js.runUserActionTask(new Task<CompilationController>() {            
             
             public void run (CompilationController control) {
                 delegateRef[0] = control.delegate;
             }            
-            public void cancel () {
-                
-            }
         }, true);
         
-        js.runUserActionTask(new CancellableTask<CompilationController>() {            
+        js.runUserActionTask(new Task<CompilationController>() {            
             
             public void run (CompilationController control) {
                 assertTrue(delegateRef[0] == control.delegate);
             }            
-            public void cancel () {
-                
-            }
+
         }, true);
         
         //2) Task following the unshared task has to have new CompilationInfo
-        js.runUserActionTask(new CancellableTask<CompilationController>() {            
+        js.runUserActionTask(new Task<CompilationController>() {            
             
             public void run (CompilationController control) {
                 delegateRef[0] = control.delegate;
             }            
-            public void cancel () {
-                
-            }
+
         }, false);
         
-        js.runUserActionTask(new CancellableTask<CompilationController>() {            
+        js.runUserActionTask(new Task<CompilationController>() {            
             
             public void run (CompilationController control) {
                 assertTrue(delegateRef[0] != control.delegate);
             }            
-            public void cancel () {
-                
-            }
+
         }, true);
         
         //3) Shared task started from shared task has to have CompilationInfo from the parent
@@ -882,12 +848,11 @@ public class JavaSourceTest extends NbTestCase {
                 delegateRef[0] = control.delegate;
                 final Object[] delegateRef2 = new Object[] {control.delegate};
                 try {
-                    js.runUserActionTask(new CancellableTask<CompilationController> () {
+                    js.runUserActionTask(new Task<CompilationController> () {
                         public void run (CompilationController control) {
                             assertTrue (delegateRef2[0] == control.delegate);
                         }
 
-                        public void cancel () {}
                     }, true);
                 } catch (IOException ioe) {
                     RuntimeException re = new RuntimeException ();
@@ -898,19 +863,16 @@ public class JavaSourceTest extends NbTestCase {
             public void cancel () {}
         }, true);
         
-        js.runUserActionTask(new CancellableTask<CompilationController>() {            
+        js.runUserActionTask(new Task<CompilationController>() {            
             
             public void run (CompilationController controll) {
                 assertTrue(delegateRef[0] == controll.delegate);
             }            
-            public void cancel () {
-                
-            }
         }, true);
         
         //4) Shared task started from unshared task has to have CompilationInfo from the parent (unshared task)
         //   The shared task follong these tasks has to have new CompilationInfo
-        js.runUserActionTask(new CancellableTask<CompilationController>() {            
+        js.runUserActionTask(new Task<CompilationController>() {            
             
             public void run (CompilationController control) {
                 delegateRef[0] = control.delegate;
@@ -928,34 +890,29 @@ public class JavaSourceTest extends NbTestCase {
                     re.initCause(ioe);
                     throw re;
                 }
-            }            
-            public void cancel () {}
+            }
         }, false);
         
-        js.runUserActionTask(new CancellableTask<CompilationController>() {            
+        js.runUserActionTask(new Task<CompilationController>() {            
             
             public void run (CompilationController controll) {
                 assertTrue(delegateRef[0] != controll.delegate);
             }            
-            public void cancel () {
-                
-            }
         }, true);
         
         //5) Unshared task started from unshared task has to have new CompilationInfo
         //   The shared task following these tasks has to also have new CompilationInfo
         final Object[] delegateRef2 = new Object[1];
-        js.runUserActionTask(new CancellableTask<CompilationController>() {                        
+        js.runUserActionTask(new Task<CompilationController>() {                        
             public void run (CompilationController control) {
                 delegateRef[0] = control.delegate;
                 try {
-                    js.runUserActionTask(new CancellableTask<CompilationController> () {
+                    js.runUserActionTask(new Task<CompilationController> () {
                         public void run (CompilationController control) {
                             assertTrue (delegateRef[0] != control.delegate);
                             delegateRef2[0] = control.delegate;
                         }
 
-                        public void cancel () {}
                     }, false);
                 } catch (IOException ioe) {
                     RuntimeException re = new RuntimeException ();
@@ -966,34 +923,31 @@ public class JavaSourceTest extends NbTestCase {
             public void cancel () {}
         }, false);
         
-        js.runUserActionTask(new CancellableTask<CompilationController>() {            
+        js.runUserActionTask(new Task<CompilationController>() {            
             
             public void run (CompilationController controll) {
                 assertTrue(delegateRef[0] != controll.delegate);
                 assertTrue(delegateRef2[0] != controll.delegate);
             }            
-            public void cancel () {
-                
-            }
+
         }, true);
         
         //6)Shared task(3) started from unshared task(2) which is started from other unshared task (1)
         //  has to see the CompilationInfo from the task (2) which is not equal to CompilationInfo from (1)
-        js.runUserActionTask(new CancellableTask<CompilationController>() {                        
+        js.runUserActionTask(new Task<CompilationController>() {                        
             public void run (CompilationController control) {
                 delegateRef[0] = control.delegate;
                 try {
-                    js.runUserActionTask(new CancellableTask<CompilationController> () {
+                    js.runUserActionTask(new Task<CompilationController> () {
                         public void run (CompilationController control) {
                             assertTrue (delegateRef[0] != control.delegate);
                             delegateRef2[0] = control.delegate;
                             try {
-                                js.runUserActionTask(new CancellableTask<CompilationController> () {
+                                js.runUserActionTask(new Task<CompilationController> () {
                                     public void run (CompilationController control) {
                                         assertTrue (delegateRef[0] != control.delegate);
                                         assertTrue (delegateRef2[0] == control.delegate);                            
                                     }
-                                    public void cancel () {}
                                 }, true);
                             } catch (IOException ioe) {
                                 RuntimeException re = new RuntimeException ();
@@ -1001,7 +955,6 @@ public class JavaSourceTest extends NbTestCase {
                                 throw re;
                             }
                         }
-                        public void cancel () {}
                     }, false);
                 } catch (IOException ioe) {
                     RuntimeException re = new RuntimeException ();
@@ -1009,30 +962,27 @@ public class JavaSourceTest extends NbTestCase {
                     throw re;
                 }
             }            
-            public void cancel () {}
         }, false);
         
         //6)Task(4) started after unshared task(3) started from shared task(2) which is started from other shared task (1)
         //  has to have new CompilationInfo but the task (1) (2) (3) have to have the same CompilationInfo.
-        js.runUserActionTask(new CancellableTask<CompilationController>() {                        
+        js.runUserActionTask(new Task<CompilationController>() {                        
             public void run (CompilationController control) {
                 delegateRef[0] = control.delegate;
                 try {
-                    js.runUserActionTask(new CancellableTask<CompilationController> () {
+                    js.runUserActionTask(new Task<CompilationController> () {
                         public void run (CompilationController control) {
                             assertTrue (delegateRef[0] == control.delegate);
                             try {
-                                js.runUserActionTask(new CancellableTask<CompilationController> () {
+                                js.runUserActionTask(new Task<CompilationController> () {
                                     public void run (CompilationController control) {
                                         assertTrue (delegateRef[0] == control.delegate);
                                     }
-                                    public void cancel () {}
                                 }, false);
-                                js.runUserActionTask(new CancellableTask<CompilationController> () {
+                                js.runUserActionTask(new Task<CompilationController> () {
                                     public void run (CompilationController control) {
                                         assertTrue (delegateRef[0] != control.delegate);
                                     }
-                                    public void cancel () {}
                                 }, true);
                             } catch (IOException ioe) {
                                 RuntimeException re = new RuntimeException ();
@@ -1040,7 +990,6 @@ public class JavaSourceTest extends NbTestCase {
                                 throw re;
                             }
                         }
-                        public void cancel () {}
                     }, true);
                 } catch (IOException ioe) {
                     RuntimeException re = new RuntimeException ();
@@ -1048,7 +997,6 @@ public class JavaSourceTest extends NbTestCase {
                     throw re;
                 }
             }            
-            public void cancel () {}
         }, true);
         
     }
@@ -1117,24 +1065,22 @@ public class JavaSourceTest extends NbTestCase {
         
         final List<FileObject> files = new ArrayList<FileObject>();
         
-        js.runUserActionTask(new CancellableTask<CompilationController>() {
+        js.runUserActionTask(new Task<CompilationController>() {
             public void run(CompilationController cc) throws IOException {
                 files.add(cc.getFileObject());
                 cc.toPhase(Phase.RESOLVED);
             }
-            public void cancel() {}
         }, true);
         
         assertEquals(Arrays.asList(test2, test, test), files);
         
         files.clear();
         
-        js.runModificationTask(new CancellableTask<WorkingCopy>() {
+        js.runModificationTask(new Task<WorkingCopy>() {
             public void run(WorkingCopy cc) throws IOException {
                 files.add(cc.getFileObject());
                 cc.toPhase(Phase.RESOLVED);
             }
-            public void cancel() {}
         });
         
         assertEquals(Arrays.asList(test2, test, test), files);
@@ -1151,17 +1097,14 @@ public class JavaSourceTest extends NbTestCase {
         final ClasspathInfo cpInfo = ClasspathInfo.create(bootPath,compilePath,null);
         final JavaSource js = JavaSource.create(cpInfo,testFile1);        
         
-        class T implements CancellableTask<CompilationController> {
+        class T implements Task<CompilationController> {
             
             private final CountDownLatch latch;
             
             public T (final CountDownLatch latch) {
                 assert latch != null;
                 this.latch = latch;
-            }
-            
-            public void cancel() {
-            }
+            }           
 
             public void run(CompilationController parameter) throws Exception {
                 this.latch.countDown();
@@ -1240,9 +1183,7 @@ public class JavaSourceTest extends NbTestCase {
         final ClassPath compilePath = createCompilePath();
         final ClasspathInfo cpInfo = ClasspathInfo.create(bootPath,compilePath,null);
         final JavaSource js = JavaSource.create(cpInfo,testFile1);
-        js.runUserActionTask(new CancellableTask<CompilationController>() {
-            public void cancel() {
-            }
+        js.runUserActionTask(new Task<CompilationController>() {
 
             public void run(CompilationController c) throws Exception {
                 c.toPhase(Phase.RESOLVED);
@@ -1250,9 +1191,7 @@ public class JavaSourceTest extends NbTestCase {
                 List <? extends Tree> trees = ct.getTypeDecls();
                 assertEquals (1,trees.size());
                                 
-                js.runModificationTask(new CancellableTask<WorkingCopy>() {
-                    public void cancel() {
-                    }
+                js.runModificationTask(new Task<WorkingCopy>() {
 
                     public void run(WorkingCopy c) throws Exception {
                         c.toPhase(Phase.RESOLVED);
@@ -1273,9 +1212,7 @@ public class JavaSourceTest extends NbTestCase {
                 trees = ct.getTypeDecls();
                 assertEquals (1, trees.size());
                                                
-                js.runUserActionTask(new CancellableTask<CompilationController>() {
-                    public void cancel() {
-                    }
+                js.runUserActionTask(new Task<CompilationController>() {
 
                     public void run(CompilationController c) throws Exception {
                         c.toPhase(Phase.RESOLVED);
@@ -1395,17 +1332,14 @@ public class JavaSourceTest extends NbTestCase {
         }
     }
     
-    private static class CompileControlJob implements CancellableTask<CompilationController> {
+    private static class CompileControlJob implements Task<CompilationController> {
         
         private final CountDownLatch latch;
         boolean multiSource;
         
         public CompileControlJob (CountDownLatch latch) {
             this.latch = latch;
-        }
-        
-        public void cancel () {
-        }
+        }        
         
         public void run (CompilationController controler) {
             try {
@@ -1450,15 +1384,12 @@ public class JavaSourceTest extends NbTestCase {
 
     }
     
-    private static class WorkingCopyJob implements CancellableTask<WorkingCopy> {
+    private static class WorkingCopyJob implements Task<WorkingCopy> {
         
         private final CountDownLatch latch;
         
         public WorkingCopyJob (CountDownLatch latch) {
             this.latch = latch;
-        }
-        
-        public void cancel () {
         }
         
         public void run (WorkingCopy copy) throws IOException {
@@ -1490,7 +1421,7 @@ public class JavaSourceTest extends NbTestCase {
 
     }
     
-    private static class CompileControlJobWithOOM implements CancellableTask<CompilationController> {
+    private static class CompileControlJobWithOOM implements Task<CompilationController> {
         
         private final CountDownLatch latch;
         private final int oomFor;
@@ -1500,10 +1431,7 @@ public class JavaSourceTest extends NbTestCase {
         public CompileControlJobWithOOM (CountDownLatch latch, int oomFor) {
             this.latch = latch;
             this.oomFor = oomFor;
-        }
-        
-        public void cancel () {
-        }
+        }        
         
         public void run (CompilationController controler) {
             try {
@@ -1540,16 +1468,13 @@ public class JavaSourceTest extends NbTestCase {
     }
     
     
-    private static class EmptyCompileControlJob implements CancellableTask<CompilationController> {
+    private static class EmptyCompileControlJob implements Task<CompilationController> {
         
         private final CountDownLatch latch;
         
         public EmptyCompileControlJob (CountDownLatch latch) {
             this.latch = latch;
-        }
-        
-        public void cancel () {
-        }
+        }       
         
         public void run (CompilationController controler) {
             try {

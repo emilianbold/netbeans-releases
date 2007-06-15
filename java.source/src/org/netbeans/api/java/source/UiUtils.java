@@ -331,11 +331,8 @@ public final class  UiUtils {
         
         
         JavaSource js = JavaSource.forFileObject(fo);
-        js.runUserActionTask(new CancellableTask<CompilationController>() {
-            
-            public void cancel() {
-            }
-            
+        js.runUserActionTask(new Task<CompilationController>() {
+                        
             public void run(CompilationController info) {
                 try {
                     info.toPhase(JavaSource.Phase.RESOLVED);

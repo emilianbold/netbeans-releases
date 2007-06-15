@@ -88,7 +88,7 @@ public class AnonymousClassTest extends GeneratorTestMDRCompat {
             "    }}\n";
 
         JavaSource src = getJavaSource(testFile);
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -114,8 +114,6 @@ public class AnonymousClassTest extends GeneratorTestMDRCompat {
                 workingCopy.rewrite(nct.getClassBody(), make.addClassMember(nct.getClassBody(), m));
             }
             
-            public void cancel() {
-            }
         };
         src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
@@ -180,7 +178,7 @@ public class AnonymousClassTest extends GeneratorTestMDRCompat {
             "}\n";
 
         JavaSource src = getJavaSource(testFile);
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -201,8 +199,6 @@ public class AnonymousClassTest extends GeneratorTestMDRCompat {
                 workingCopy.rewrite(init, cast);
             }
             
-            public void cancel() {
-            }
         };
         src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);

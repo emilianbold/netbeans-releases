@@ -23,7 +23,7 @@ import java.io.File;
 import java.util.Collections;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
-import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.TestUtilities;
@@ -75,7 +75,7 @@ public class MethodBodyTest extends GeneratorTest {
             "}\n";
                  
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -101,8 +101,6 @@ public class MethodBodyTest extends GeneratorTest {
                 workingCopy.rewrite(block, make.addBlockStatement(block, est));
             }
             
-            public void cancel() {
-            }
         };
         testSource.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
@@ -133,7 +131,7 @@ public class MethodBodyTest extends GeneratorTest {
             "}\n";
                  
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -144,8 +142,6 @@ public class MethodBodyTest extends GeneratorTest {
                 workingCopy.rewrite(method.getBody(), newBody);
             }
             
-            public void cancel() {
-            }
         };
         testSource.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
@@ -179,7 +175,7 @@ public class MethodBodyTest extends GeneratorTest {
             "}\n";
                  
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -204,8 +200,6 @@ public class MethodBodyTest extends GeneratorTest {
                 workingCopy.rewrite(method.getBody(), treeMaker.addBlockStatement(method.getBody(), vt));
             }
             
-            public void cancel() {
-            }
         };
         testSource.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);

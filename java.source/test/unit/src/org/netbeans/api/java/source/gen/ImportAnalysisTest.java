@@ -33,7 +33,7 @@ import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
-import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.SourceUtils;
@@ -604,7 +604,7 @@ public class ImportAnalysisTest extends GeneratorTest {
     
     public void testAddImportThroughMethod1() throws IOException {
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -621,8 +621,6 @@ public class ImportAnalysisTest extends GeneratorTest {
                 }
             }
             
-            public void cancel() {
-            }
         };
         testSource.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
@@ -632,7 +630,7 @@ public class ImportAnalysisTest extends GeneratorTest {
     
     public void testAddImportThroughMethod2() throws IOException {
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -649,8 +647,6 @@ public class ImportAnalysisTest extends GeneratorTest {
                 }
             }
             
-            public void cancel() {
-            }
         };
         testSource.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
@@ -660,7 +656,7 @@ public class ImportAnalysisTest extends GeneratorTest {
     
     public void testAddImportThroughMethod3() throws IOException {
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -678,8 +674,6 @@ public class ImportAnalysisTest extends GeneratorTest {
                 }
             }
             
-            public void cancel() {
-            }
         };
         testSource.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
@@ -689,7 +683,7 @@ public class ImportAnalysisTest extends GeneratorTest {
     
     public void testAddImportThroughMethod4() throws IOException {
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -705,8 +699,6 @@ public class ImportAnalysisTest extends GeneratorTest {
                 }
             }
             
-            public void cancel() {
-            }
         };
         testSource.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
@@ -716,7 +708,7 @@ public class ImportAnalysisTest extends GeneratorTest {
 
     public void testAddImportThroughMethod5() throws IOException {
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -732,8 +724,6 @@ public class ImportAnalysisTest extends GeneratorTest {
                 }
             }
             
-            public void cancel() {
-            }
         };
         testSource.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);

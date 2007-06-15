@@ -90,9 +90,8 @@ public abstract class GeneratorTestMDRCompat extends NbTestCase {
         FileObject testSourceFO = FileUtil.toFileObject(testFile);
         assertNotNull(testSourceFO);
         JavaSource js = JavaSource.forFileObject(testSourceFO);
-        js.runModificationTask(new CancellableTask<WorkingCopy>() {
-            public void cancel() {
-            }
+        js.runModificationTask(new Task<WorkingCopy>() {
+
             public void run(WorkingCopy wc) throws IOException {
                 wc.toPhase(Phase.RESOLVED);
                 SourceUtilsTestUtil2.run(wc, transformer);

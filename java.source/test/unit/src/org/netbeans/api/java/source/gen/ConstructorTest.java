@@ -27,7 +27,7 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeKind;
 import org.netbeans.junit.NbTestSuite;
 import junit.textui.TestRunner;
-import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.TestUtilities;
@@ -59,7 +59,7 @@ public class ConstructorTest extends GeneratorTest {
         testFile = getFile(getSourceDir(), getSourcePckg() + "ConstructorTest.java");
         
         JavaSource src = getJavaSource(testFile);
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -93,8 +93,6 @@ public class ConstructorTest extends GeneratorTest {
                 }
             }
                 
-            public void cancel() {
-            }
         };
         src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
@@ -106,7 +104,7 @@ public class ConstructorTest extends GeneratorTest {
         testFile = getFile(getSourceDir(), getSourcePckg() + "ConstructorTest2.java");
         
         JavaSource src = getJavaSource(testFile);
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -134,8 +132,6 @@ public class ConstructorTest extends GeneratorTest {
                 workingCopy.rewrite(topLevel, newClass);
             }
                 
-            public void cancel() {
-            }
         };
         src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);

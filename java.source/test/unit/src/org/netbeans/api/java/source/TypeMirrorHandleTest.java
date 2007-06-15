@@ -105,9 +105,8 @@ public class TypeMirrorHandleTest extends NbTestCase {
         ClassPath empty = ClassPathSupport.createClassPath(new URL[0]);
         JavaSource js = JavaSource.create(ClasspathInfo.create(ClassPathSupport.createClassPath(SourceUtilsTestUtil.getBootClassPath().toArray(new URL[0])), empty, empty), testSource);
         
-        js.runUserActionTask(new CancellableTask<CompilationController>() {
-            public void cancel() {
-            }
+        js.runUserActionTask(new Task<CompilationController>() {
+
             public void run(CompilationController info) throws Exception {
                 info.toPhase(Phase.RESOLVED);
                 testCase(info, "java.util.Map");
@@ -125,9 +124,8 @@ public class TypeMirrorHandleTest extends NbTestCase {
         JavaSource js = JavaSource.create(ClasspathInfo.create(ClassPathSupport.createClassPath(SourceUtilsTestUtil.getBootClassPath().toArray(new URL[0])), empty, empty), testSource);
         final List<TypeMirrorHandle> handles = new ArrayList<TypeMirrorHandle>();
         
-        js.runUserActionTask(new CancellableTask<CompilationController>() {
-            public void cancel() {
-            }
+        js.runUserActionTask(new Task<CompilationController>() {
+
             public void run(CompilationController info) throws Exception {
                 info.toPhase(Phase.RESOLVED);
                 handles.add(TypeMirrorHandle.create(parse(info, "test.Test1")));
@@ -136,9 +134,8 @@ public class TypeMirrorHandleTest extends NbTestCase {
             }
         }, true);
         writeIntoFile(testSource, "package test; public class Test {}");
-        js.runUserActionTask(new CancellableTask<CompilationController>() {
-            public void cancel() {
-            }
+        js.runUserActionTask(new Task<CompilationController>() {
+
             public void run(CompilationController info) throws Exception {
                 info.toPhase(Phase.RESOLVED);
                 

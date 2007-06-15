@@ -25,7 +25,7 @@ import java.io.File;
 import java.util.EnumSet;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeKind;
-import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.TestUtilities;
 import org.netbeans.api.java.source.TreeMaker;
@@ -69,9 +69,7 @@ public class InterfaceTest extends GeneratorTestMDRCompat {
             "    public static final int CONSTANT = 0;\n" +
             "}\n";
         JavaSource src = getJavaSource(testFile);
-        src.runModificationTask(new CancellableTask<WorkingCopy>() {
-            public void cancel() {
-            }
+        src.runModificationTask(new Task<WorkingCopy>() {
 
             public void run(WorkingCopy wc) throws Exception {
                 wc.toPhase(JavaSource.Phase.RESOLVED);

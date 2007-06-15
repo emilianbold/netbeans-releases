@@ -57,9 +57,8 @@ public class WorkingCopyTest extends NbTestCase {
                 "}");
         FileObject fo = FileUtil.toFileObject(f);
         JavaSource javaSource = JavaSource.forFileObject(fo);
-        javaSource.runModificationTask(new CancellableTask<WorkingCopy>() {
-            public void cancel() {
-            }
+        javaSource.runModificationTask(new Task<WorkingCopy>() {
+
             public void run(WorkingCopy copy) throws Exception {
                 copy.toPhase(Phase.RESOLVED);
 
@@ -75,9 +74,8 @@ public class WorkingCopyTest extends NbTestCase {
             }
         }).commit();
 
-        javaSource.runUserActionTask(new CancellableTask<CompilationController>() {
-            public void cancel() {
-            }
+        javaSource.runUserActionTask(new Task<CompilationController>() {
+
             public void run(CompilationController copy) throws Exception {
                 copy.toPhase(Phase.RESOLVED);
 

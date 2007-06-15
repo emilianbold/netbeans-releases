@@ -22,7 +22,7 @@ import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.VariableTree;
 import java.io.File;
 
-import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.TestUtilities;
@@ -74,7 +74,7 @@ public class FieldGroupTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n";
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -84,8 +84,6 @@ public class FieldGroupTest extends GeneratorTestMDRCompat {
                 workingCopy.rewrite(vt, make.setLabel(vt, "ecko"));
             }
             
-            public void cancel() {
-            }
         };
         testSource.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
@@ -113,7 +111,7 @@ public class FieldGroupTest extends GeneratorTestMDRCompat {
             "    int a, b, c, d;\n" +
             "}\n";
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -121,10 +119,7 @@ public class FieldGroupTest extends GeneratorTestMDRCompat {
                 ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
                 VariableTree vt = (VariableTree) clazz.getMembers().get(1);
                 workingCopy.rewrite(vt, make.setLabel(vt, "ecko"));
-            }
-            
-            public void cancel() {
-            }
+            }            
         };
         testSource.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);

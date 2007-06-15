@@ -201,8 +201,7 @@ public class APIIsSelfContainedTest extends NbTestCase {
         
         JavaSource js = JavaSource.create(ClasspathInfo.create(bootPath, compilePath, srcPath)/*, source*/);
         
-        js.runUserActionTask(new CancellableTask<CompilationController>() {
-            public void cancel() {}
+        js.runUserActionTask(new Task<CompilationController>() {
             public void run(CompilationController copy) throws Exception {
                 PackageElement apiPackage = copy.getElements().getPackageElement("org.netbeans.api.java.source");
                 verifySelfContainedAPI(apiPackage);

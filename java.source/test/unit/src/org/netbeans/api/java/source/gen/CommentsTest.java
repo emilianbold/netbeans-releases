@@ -92,7 +92,7 @@ public class CommentsTest extends GeneratorTest {
 
         JavaSource src = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
         
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -115,8 +115,6 @@ public class CommentsTest extends GeneratorTest {
                 workingCopy.rewrite(method.getBody(), block);
             }
 
-            public void cancel() {
-            }
         };
         src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
@@ -143,7 +141,7 @@ public class CommentsTest extends GeneratorTest {
             );
         JavaSource src = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
         
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -155,8 +153,6 @@ public class CommentsTest extends GeneratorTest {
 //                System.err.println(s);
             }
 
-            public void cancel() {
-            }
         };
         src.runModificationTask(task).commit();
     }
@@ -188,7 +184,7 @@ public class CommentsTest extends GeneratorTest {
             "\n" +
             "}\n";
         JavaSource src = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        CancellableTask<WorkingCopy> task = new CancellableTask<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
             
             public void run(final WorkingCopy copy) throws Exception {
                 copy.toPhase(Phase.RESOLVED);
@@ -217,8 +213,6 @@ public class CommentsTest extends GeneratorTest {
                 copy.rewrite(node, clazz);
             }
             
-            public void cancel() {
-            }
         };
         src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
@@ -238,7 +232,7 @@ public class CommentsTest extends GeneratorTest {
             );
         
         JavaSource src = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        CancellableTask<WorkingCopy> task = new CancellableTask<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
             
             public void run(final WorkingCopy workingCopy) throws Exception {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -266,8 +260,6 @@ public class CommentsTest extends GeneratorTest {
                 workingCopy.rewrite(method, copy);
             }
             
-            public void cancel() {
-            }
         };
         src.runModificationTask(task).commit();
         System.err.println(TestUtilities.copyFileToString(testFile));
@@ -305,7 +297,7 @@ public class CommentsTest extends GeneratorTest {
 
         JavaSource src = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
         
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -321,8 +313,6 @@ public class CommentsTest extends GeneratorTest {
                 workingCopy.rewrite(method.getBody(), block);
             }
 
-            public void cancel() {
-            }
         };
         src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
@@ -369,7 +359,7 @@ public class CommentsTest extends GeneratorTest {
 
         JavaSource src = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
         
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy wc) throws IOException {
                 wc.toPhase(Phase.RESOLVED);
@@ -387,8 +377,6 @@ public class CommentsTest extends GeneratorTest {
                 wc.rewrite(clazz, make.addClassMember(clazz, method));
             }
 
-            public void cancel() {
-            }
         };
         src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
@@ -434,7 +422,7 @@ public class CommentsTest extends GeneratorTest {
 
         JavaSource src = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
         
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -458,8 +446,6 @@ public class CommentsTest extends GeneratorTest {
                 workingCopy.rewrite(method.getBody(), block);
             }
 
-            public void cancel() {
-            }
         };
         src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);

@@ -63,7 +63,7 @@ public class TypeParameterTest extends GeneratorTestMDRCompat {
             "}\n";
         JavaSource src = getJavaSource(testFile);
         
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -89,8 +89,6 @@ public class TypeParameterTest extends GeneratorTestMDRCompat {
                 }
             }
 
-            public void cancel() {
-            }
         };
         src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
@@ -119,7 +117,7 @@ public class TypeParameterTest extends GeneratorTestMDRCompat {
             "}\n";
         JavaSource src = getJavaSource(testFile);
         
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -137,8 +135,6 @@ public class TypeParameterTest extends GeneratorTestMDRCompat {
                 workingCopy.rewrite(wct.getBound(), make.Identifier("E"));
             }
 
-            public void cancel() {
-            }
         };
         src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
@@ -167,7 +163,7 @@ public class TypeParameterTest extends GeneratorTestMDRCompat {
             "}\n";
         JavaSource src = getJavaSource(testFile);
         
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -182,8 +178,6 @@ public class TypeParameterTest extends GeneratorTestMDRCompat {
                 workingCopy.rewrite(clazz, make.addClassImplementsClause(clazz, ptt));
             }
 
-            public void cancel() {
-            }
         };
         src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
@@ -210,7 +204,7 @@ public class TypeParameterTest extends GeneratorTestMDRCompat {
             "}\n";
         JavaSource src = getJavaSource(testFile);
         
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -226,8 +220,6 @@ public class TypeParameterTest extends GeneratorTestMDRCompat {
                 workingCopy.rewrite(clazz, make.addClassImplementsClause(clazz, ptt));
             }
 
-            public void cancel() {
-            }
         };
         src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);

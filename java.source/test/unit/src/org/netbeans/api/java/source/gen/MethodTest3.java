@@ -31,7 +31,7 @@ import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.java.source.transform.Transformer;
 import org.netbeans.junit.NbTestSuite;
 import junit.textui.TestRunner;
-import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.openide.filesystems.FileObject;
@@ -70,9 +70,8 @@ public class MethodTest3 extends GeneratorTest {
     public void testMethodThrows() throws IOException {
         FileObject fo = FileUtil.toFileObject(testFile);
         JavaSource js = JavaSource.forFileObject(fo);
-        js.runModificationTask(new CancellableTask<WorkingCopy>() {
-            public void cancel() {
-            }
+        js.runModificationTask(new Task<WorkingCopy>() {
+
             public void run(WorkingCopy wc) {
                 RemoveException remove = new RemoveException(0);
                 SourceUtilsTestUtil2.run(wc, remove);

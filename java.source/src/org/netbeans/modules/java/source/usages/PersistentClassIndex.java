@@ -29,7 +29,7 @@ import java.util.Set;
 import java.util.logging.Logger;
 import javax.lang.model.element.ElementKind;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
-import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
@@ -204,7 +204,7 @@ public class PersistentClassIndex extends ClassIndexImpl {
                 }
                 else {
                     try {
-                        js.runUserActionTask(new CancellableTask<CompilationController>() {
+                        js.runUserActionTask(new Task<CompilationController>() {
                             public void run (final CompilationController controller) {
                                 try {                            
                                     ClassIndexManager.getDefault().writeLock(
@@ -226,8 +226,6 @@ public class PersistentClassIndex extends ClassIndexImpl {
                                     Exceptions.printStackTrace(e);
                                 }
                             }
-
-                            public void cancel () {}
                         }, true);
                     } catch (IOException ioe) {
                         Exceptions.printStackTrace(ioe);

@@ -77,7 +77,7 @@ public class EnumTest extends GeneratorTest {
             "}\n";
         JavaSource src = getJavaSource(testFile);
         
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -95,8 +95,6 @@ public class EnumTest extends GeneratorTest {
                 }
             }
 
-            public void cancel() {
-            }
         };
         src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);

@@ -98,7 +98,7 @@ public class AddMethodToInterfaceTemplateTest extends GeneratorTest {
         final ElementHandle[] classHandle = new ElementHandle[1];
         final TreePathHandle[] methodTPHandle = new TreePathHandle[1];
         final TreePathHandle[] classTPHandle = new TreePathHandle[1];
-        CancellableTask userTask = new CancellableTask<CompilationController>() {
+        Task<CompilationController> userTask = new Task<CompilationController>() {
             // remember handles, no changes
 
             public void run(CompilationController javac) throws IOException {
@@ -113,9 +113,6 @@ public class AddMethodToInterfaceTemplateTest extends GeneratorTest {
                 classTPHandle[0] = TreePathHandle.create(classTreePath, javac);
                 classHandle[0] = ElementHandle.create(javac.getTrees().getElement(classTreePath));
             }
-
-            public void cancel() {
-            }
         };
         
         firstSrc.runUserActionTask(userTask, true);
@@ -124,7 +121,7 @@ public class AddMethodToInterfaceTemplateTest extends GeneratorTest {
         assertNotNull(methodTPHandle[0]);
         assertNotNull(classTPHandle[0]);
         
-        CancellableTask firstTask = new CancellableTask<WorkingCopy>() {
+        Task firstTask = new Task<WorkingCopy>() {
             // add implements to class
 
             public void run(WorkingCopy workingCopy) throws IOException {
@@ -135,8 +132,6 @@ public class AddMethodToInterfaceTemplateTest extends GeneratorTest {
                 workingCopy.rewrite(clazz, make.addClassImplementsClause(clazz, make.Identifier("Charles")));
             }
 
-            public void cancel() {
-            }
         };
         ModificationResult result = firstSrc.runModificationTask(firstTask);
         List<? extends Difference> diffs = result.getDifferences(testFO);
@@ -148,7 +143,7 @@ public class AddMethodToInterfaceTemplateTest extends GeneratorTest {
             difflist.add(d);
         }
 
-        CancellableTask<WorkingCopy> task = new CancellableTask<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
             // interface changes
             public void run(WorkingCopy wc) throws Exception {
                 wc.toPhase(JavaSource.Phase.RESOLVED);
@@ -169,8 +164,6 @@ public class AddMethodToInterfaceTemplateTest extends GeneratorTest {
                 wc.rewrite(interfaceTree, interfaceTreeCopy);
             }
 
-            public void cancel() {
-            }
         };
             
         FileObject folderFO = URLMapper.findFileObject(getWorkDir().toURL());

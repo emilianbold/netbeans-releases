@@ -79,7 +79,7 @@ public class OperatorsTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n";
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -92,8 +92,6 @@ public class OperatorsTest extends GeneratorTestMDRCompat {
                 workingCopy.rewrite(t, make.CompoundAssignment(Kind.OR_ASSIGNMENT, t.getVariable(), t.getExpression()));
             }
             
-            public void cancel() {
-            }
         };
         testSource.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
@@ -124,7 +122,7 @@ public class OperatorsTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n";
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -138,8 +136,6 @@ public class OperatorsTest extends GeneratorTestMDRCompat {
                 workingCopy.rewrite(bt, make.Binary(Kind.AND, bt.getLeftOperand(), bt.getRightOperand()));
             }
             
-            public void cancel() {
-            }
         };
         testSource.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
@@ -172,7 +168,7 @@ public class OperatorsTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n";
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -185,8 +181,6 @@ public class OperatorsTest extends GeneratorTestMDRCompat {
                 workingCopy.rewrite(ut, make.Unary(Kind.POSTFIX_DECREMENT, ut.getExpression()));
             }
             
-            public void cancel() {
-            }
         };
         testSource.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);

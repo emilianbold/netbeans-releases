@@ -25,7 +25,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.PrintStream;
 import java.util.List;
-import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.TestUtilities;
@@ -249,7 +249,7 @@ public class TreeMakerDemo extends GeneratorTestMDRCompat {
         final String statementText = 
                 "System.out.println(\"Test\");";
         
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -261,8 +261,6 @@ public class TreeMakerDemo extends GeneratorTestMDRCompat {
                 System.err.println(TreeMakerDemo.reverse(body));
             }
             
-            public void cancel() {
-            }
         };
 
         tutorialSource.runModificationTask(task).commit();

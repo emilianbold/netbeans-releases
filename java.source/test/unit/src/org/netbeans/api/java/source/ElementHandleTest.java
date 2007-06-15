@@ -132,7 +132,7 @@ public class ElementHandleTest extends NbTestCase {
         final ElementHandle[] genParList = new ElementHandle[1];
         final ElementHandle[] genParColsMin = new ElementHandle[1];
         
-        js.runUserActionTask(new CancellableTask<CompilationController>() {            
+        js.runUserActionTask(new Task<CompilationController>() {            
             public void run(CompilationController parameter) {
                 JavacElements elements = (JavacElements) parameter.getElements();
                 Element utilElement = elements.getPackageElement("java.util");
@@ -195,13 +195,10 @@ public class ElementHandleTest extends NbTestCase {
                 }
                 assertNotNull(genParColsMin[0]);
             }
-
-            public void cancel() {
-            }
             
         },true);
         
-        js.runUserActionTask(new CancellableTask<CompilationController>() {            
+        js.runUserActionTask(new Task<CompilationController>() {            
             public void run(CompilationController parameter) {
                 JavacElements elements = (JavacElements) parameter.getElements();
                 Element resolved = utilElementHandle[0].resolve(parameter);
@@ -282,9 +279,6 @@ public class ElementHandleTest extends NbTestCase {
                 resolved = genParColsMin[0].resolve(parameter);
                 assertEquals(tpe, resolved);
             }
-
-            public void cancel() {
-            }
             
         },true);
         
@@ -304,7 +298,7 @@ public class ElementHandleTest extends NbTestCase {
         final ElementHandle[] collectionAddHandle = new ElementHandle[1];
         final ElementHandle[] annonClassHandle = new ElementHandle[1];
         
-        js.runUserActionTask(new CancellableTask<CompilationController>() {            
+        js.runUserActionTask(new Task<CompilationController>() {            
             public void run(CompilationController parameter) {
                 JavacElements elements = (JavacElements) parameter.getElements();
                 Element utilElement = elements.getPackageElement("java.util");
@@ -351,13 +345,10 @@ public class ElementHandleTest extends NbTestCase {
                 annonClassHandle[0] = ElementHandle.create(annonClass);
                 assertNotNull (annonClassHandle[0]);
             }
-
-            public void cancel() {
-            }
             
         },true);
         
-        js.runUserActionTask(new CancellableTask<CompilationController>() {            
+        js.runUserActionTask(new Task<CompilationController>() {            
             public void run(CompilationController parameter) {
                 JavacElements elements = (JavacElements)parameter.getElements();
                 Element utilElement = elements.getPackageElement("java.util");
@@ -397,9 +388,6 @@ public class ElementHandleTest extends NbTestCase {
                 assertNotNull (annonClass);
                 assertTrue(annonClassHandle[0].signatureEquals(annonClass));
             }
-
-            public void cancel() {
-            }
             
         },true);
         
@@ -420,7 +408,7 @@ public class ElementHandleTest extends NbTestCase {
         final ElementHandle[] collectionAddHandle = new ElementHandle[1];
         final ElementHandle[] annonClassHandle = new ElementHandle[1];
         
-        js.runUserActionTask(new CancellableTask<CompilationController>() {            
+        js.runUserActionTask(new Task<CompilationController>() {            
             public void run(CompilationController parameter) {
                 JavacElements elements = (JavacElements) parameter.getElements();
                 Element utilElement = elements.getPackageElement("java.util");
@@ -466,9 +454,6 @@ public class ElementHandleTest extends NbTestCase {
                 assertNotNull (annonClass);
                 annonClassHandle[0] = ElementHandle.create(annonClass);
                 assertNotNull (annonClassHandle[0]);
-            }
-
-            public void cancel() {
             }
             
         },true);                
@@ -520,7 +505,7 @@ public class ElementHandleTest extends NbTestCase {
     public void testNames () throws Exception {
         final JavaSource js = JavaSource.create(ClasspathInfo.create(ClassPathProviderImpl.getDefault().findClassPath(data,ClassPath.BOOT), ClassPathProviderImpl.getDefault().findClassPath(data, ClassPath.COMPILE), null));
         assertNotNull(js);
-        js.runUserActionTask(new CancellableTask<CompilationController>() {            
+        js.runUserActionTask(new Task<CompilationController>() {            
             public void run(CompilationController parameter) {
                 final JavacElements elements = (JavacElements) parameter.getElements();
                 Element element = elements.getTypeElement (String.class.getName());
@@ -569,18 +554,13 @@ public class ElementHandleTest extends NbTestCase {
                 }
             }
             
-            public void cancel () {                
-            }
         },true);
     }
     
     public void testTypesRankNPE () throws Exception {
         final JavaSource js = JavaSource.create(ClasspathInfo.create(ClassPathProviderImpl.getDefault().findClassPath(data,ClassPath.BOOT), ClassPathProviderImpl.getDefault().findClassPath(data, ClassPath.COMPILE), null));
         assertNotNull(js);
-        js.runUserActionTask(new CancellableTask<CompilationController>() {
-
-            public void cancel() {
-            }
+        js.runUserActionTask(new Task<CompilationController>() {
 
             public void run(CompilationController parameter) throws Exception {
                 JavacElements elements = (JavacElements) parameter.getElements();

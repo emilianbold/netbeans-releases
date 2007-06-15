@@ -57,7 +57,7 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.SimpleAnnotationValueVisitor6;
 import javax.tools.Diagnostic;
-import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
@@ -864,9 +864,8 @@ public class SymbolDumperTest extends NbTestCase {
         final Symbol[] symbol = new Symbol[1];
         final CompilationInfo[] infoOut = new CompilationInfo[1];
         
-        js2.runUserActionTask(new CancellableTask<CompilationController>() {
-            public void cancel() {
-            }
+        js2.runUserActionTask(new Task<CompilationController>() {
+
             public void run(CompilationController parameter) {
                 try {
                     JavacTaskImpl task = (JavacTaskImpl) SourceUtilsTestUtil.getJavacTaskFor(parameter);
@@ -1073,9 +1072,8 @@ public class SymbolDumperTest extends NbTestCase {
         final String[] newSig = new String[1];
         final List[] errors = new List[1];
         
-        js2.runUserActionTask(new CancellableTask<CompilationController>() {
-            public void cancel() {
-            }
+        js2.runUserActionTask(new Task<CompilationController>() {
+
             public void run(CompilationController parameter) {
                 try {
                     parameter.toPhase(Phase.PARSED);
@@ -1142,9 +1140,8 @@ public class SymbolDumperTest extends NbTestCase {
         final Map<String, String>[] newSig = new Map[1];
         final List[] errors = new List[1];
         
-        js2.runUserActionTask(new CancellableTask<CompilationController>() {
-            public void cancel() {
-            }
+        js2.runUserActionTask(new Task<CompilationController>() {
+
             public void run(CompilationController parameter) {
                 try {
                     parameter.toPhase(Phase.PARSED);
@@ -1258,11 +1255,10 @@ public class SymbolDumperTest extends NbTestCase {
         
         final List[] errors = new List[1];
         
-        js2.runUserActionTask(new CancellableTask<CompilationController>() {
+        js2.runUserActionTask(new Task<CompilationController>() {
             private TypeElement firstClass;
             private TypeElement innerClass;
-            public void cancel() {
-            }
+
             public void run(CompilationController parameter) throws Exception {
                 CouplingAbort.wasCouplingError = false;
                 try {
@@ -1441,9 +1437,8 @@ public class SymbolDumperTest extends NbTestCase {
         ClasspathInfo cpInfo = ClasspathInfo.create(verifier);
         JavaSource js2 = JavaSource.create(cpInfo, verifier);
         
-        js2.runUserActionTask(new CancellableTask<CompilationController>() {
-            public void cancel() {
-            }
+        js2.runUserActionTask(new Task<CompilationController>() {
+
             public void run(CompilationController parameter) throws Exception {
                 JavacTaskImpl task = (JavacTaskImpl) SourceUtilsTestUtil.getJavacTaskFor(parameter);
                 Context context = task.getContext();

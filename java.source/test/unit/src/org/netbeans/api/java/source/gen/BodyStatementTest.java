@@ -24,7 +24,7 @@ import com.sun.source.tree.*;
 import java.io.IOException;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeKind;
-import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.JavaSource;
 import static org.netbeans.api.java.source.JavaSource.*;
 import org.netbeans.api.java.source.TestUtilities;
@@ -115,7 +115,7 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n";
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -143,8 +143,6 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
                 workingCopy.rewrite(method.getBody(), copy);
             }
             
-            public void cancel() {
-            }
         };
         testSource.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
@@ -176,7 +174,7 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n";
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -204,8 +202,6 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
                 workingCopy.rewrite(method.getBody(), copy);
             }
             
-            public void cancel() {
-            }
         };
         testSource.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
@@ -243,7 +239,7 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n";
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -267,8 +263,6 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
                 workingCopy.rewrite(identToRename, copy);
             }
             
-            public void cancel() {
-            }
         };
         testSource.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
@@ -302,7 +296,7 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n";
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -322,8 +316,6 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
                 workingCopy.rewrite(identToRename, copy);
             }
             
-            public void cancel() {
-            }
         };
         testSource.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
@@ -359,7 +351,7 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n";
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -379,8 +371,6 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
                 workingCopy.rewrite(identToRename, copy);
             }
             
-            public void cancel() {
-            }
         };
         testSource.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
@@ -432,7 +422,7 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
             "}\n" +
             "}\n";
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -458,8 +448,6 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
                 workingCopy.rewrite(anonClassTree, copy);
             }
             
-            public void cancel() {
-            }
         };
         testSource.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
@@ -511,7 +499,7 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n";
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -538,8 +526,6 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
                 workingCopy.rewrite(anonClassTree, copy);
             }
             
-            public void cancel() {
-            }
         };
         testSource.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
@@ -586,7 +572,7 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n";
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -616,8 +602,6 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
                 workingCopy.rewrite(ident, make.setLabel(ident, "newVar"));
             }
             
-            public void cancel() {
-            }
         };
         testSource.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
@@ -648,7 +632,7 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n";
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -661,8 +645,6 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
                 workingCopy.rewrite(assignment.getVariable(), mstCopy);
             }
             
-            public void cancel() {
-            }
         };
         testSource.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
@@ -693,7 +675,7 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n";
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -706,8 +688,6 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
                 workingCopy.rewrite(assignment.getExpression(), copy);
             }
             
-            public void cancel() {
-            }
         };
         testSource.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
@@ -738,7 +718,7 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n";
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -753,8 +733,6 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
                 workingCopy.rewrite(assignment.getExpression(), copy);
             }
             
-            public void cancel() {
-            }
         };
         testSource.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
@@ -785,7 +763,7 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n";
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -796,8 +774,6 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
                 workingCopy.rewrite(rejturn.getExpression(), make.Identifier("nullanen2"));
             }
             
-            public void cancel() {
-            }
         };
         testSource.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
@@ -828,7 +804,7 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n";
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -844,8 +820,6 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
                 workingCopy.rewrite(ident, make.Identifier("key2"));
             }
             
-            public void cancel() {
-            }
         };
         testSource.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
@@ -882,7 +856,7 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n";
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -907,8 +881,6 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
                 workingCopy.rewrite(left, make.setLabel(left, "counter"));
             }
             
-            public void cancel() {
-            }
         };
         testSource.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
@@ -945,7 +917,7 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n";
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -966,8 +938,6 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
                 workingCopy.rewrite(unary.getExpression(), make.setLabel(unary.getExpression(), "counter"));
             }
             
-            public void cancel() {
-            }
         };
         testSource.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
@@ -1005,7 +975,7 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
             "}\n";
                  
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -1028,8 +998,6 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
                 workingCopy.rewrite(mst.getExpression(), make.setLabel(mst.getExpression(), "object"));
             }
             
-            public void cancel() {
-            }
         };
         testSource.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
@@ -1071,7 +1039,7 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
             "}\n";
                  
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -1093,8 +1061,6 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
                 workingCopy.rewrite(mst.getExpression(), make.setLabel(mst.getExpression(), "zamek"));
             }
             
-            public void cancel() {
-            }
         };
         testSource.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
@@ -1136,7 +1102,7 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
             "}\n";
                  
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -1155,8 +1121,6 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
                 workingCopy.rewrite(mst.getExpression(), make.setLabel(mst.getExpression(), "vyjimka"));
             }
             
-            public void cancel() {
-            }
         };
         testSource.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
@@ -1191,7 +1155,7 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
             "}\n";
                  
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -1207,8 +1171,6 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
                 workingCopy.rewrite(ident, make.setLabel(ident, "bits"));
             }
             
-            public void cancel() {
-            }
         };
         testSource.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
@@ -1246,7 +1208,7 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
             "}\n";
                  
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -1268,8 +1230,6 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
                 workingCopy.rewrite(ident, make.setLabel(ident, "position"));
             }
             
-            public void cancel() {
-            }
         };
         testSource.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
@@ -1305,7 +1265,7 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
             "}\n";
                  
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -1331,8 +1291,6 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
                 workingCopy.rewrite(ident, make.setLabel(ident, "object"));
             }
             
-            public void cancel() {
-            }
         };
         testSource.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
@@ -1364,7 +1322,7 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
             "}\n";
                  
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -1382,8 +1340,6 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
                 workingCopy.rewrite(ident, make.setLabel(ident, "ada"));
             }
             
-            public void cancel() {
-            }
         };
         testSource.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
@@ -1415,7 +1371,7 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
             "}\n";
                  
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -1429,8 +1385,6 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
                 workingCopy.rewrite(ident, make.setLabel(ident, "EnpeEcko"));
             }
             
-            public void cancel() {
-            }
         };
         testSource.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
@@ -1462,7 +1416,7 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
             "}\n";
                  
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -1485,8 +1439,6 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
                 workingCopy.rewrite(ident, make.setLabel(ident, "alda"));
             }
             
-            public void cancel() {
-            }
         };
         testSource.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
@@ -1502,7 +1454,7 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
         TestUtilities.copyStringToFile(testFile, "package personal;\n\npublic class Test {\n    public Object method() {\n        cycle_start: for (int i = 0; i < 10; i++) {\n        }\n    }\n}\n");
         String golden = "package personal;\n\npublic class Test {\n    public Object method() {\n        zacatek_smycky: for (int i = 0; i < 10; i++) {\n        }\n    }\n}\n";
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        CancellableTask<WorkingCopy> task = new CancellableTask<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
             
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(org.netbeans.api.java.source.JavaSource.Phase.RESOLVED);
@@ -1514,8 +1466,6 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
                 workingCopy.rewrite(lst, make.setLabel(lst, "zacatek_smycky"));
             }
             
-            public void cancel() {
-            }
             
         };
         testSource.runModificationTask(task).commit();
@@ -1533,7 +1483,7 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
         TestUtilities.copyStringToFile(testFile, "package personal;\n\npublic class Test {\n    public Object method() {\n        cycle_start: for (int i = 0; i < 10; i++) {\n            continue cycle_start;\n        }\n    }\n}\n");
         String golden = "package personal;\n\npublic class Test {\n    public Object method() {\n        zacatek_smycky: for (int i = 0; i < 10; i++) {\n            continue zacatek_smycky;\n        }\n    }\n}\n";
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        CancellableTask<WorkingCopy> task = new CancellableTask<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
             
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(org.netbeans.api.java.source.JavaSource.Phase.RESOLVED);
@@ -1549,8 +1499,6 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
                 workingCopy.rewrite(ct, make.setLabel(ct, "zacatek_smycky"));
             }
             
-            public void cancel() {
-            }
         };
         testSource.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
@@ -1566,7 +1514,7 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
         TestUtilities.copyStringToFile(testFile, "package personal;\n\npublic class Test {\n    public Object method() {\n        cycle_start: for (int i = 0; i < 10; i++) {\n            break cycle_start;\n        }\n    }\n}\n");
         String golden = "package personal;\n\npublic class Test {\n    public Object method() {\n        zacatek_smycky: for (int i = 0; i < 10; i++) {\n            break zacatek_smycky;\n        }\n    }\n}\n";
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        CancellableTask<WorkingCopy> task = new CancellableTask<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
             
             public void run(WorkingCopy workingCopy)
                     throws IOException {
@@ -1583,8 +1531,6 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
                 workingCopy.rewrite(bt, make.setLabel(bt, "zacatek_smycky"));
             }
             
-            public void cancel() {
-            }
         };
         testSource.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
@@ -1621,7 +1567,7 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
             "}\n";
          
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        CancellableTask<WorkingCopy> task = new CancellableTask<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
             
             public void run(WorkingCopy workingCopy)
                     throws IOException {
@@ -1651,8 +1597,6 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
                 workingCopy.rewrite(it, make.setLabel(it, "DataRen"));
             }
             
-            public void cancel() {
-            }
         };
         testSource.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
@@ -1698,7 +1642,7 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
             "}\n";
                  
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(org.netbeans.api.java.source.JavaSource.Phase.RESOLVED);
@@ -1716,8 +1660,6 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
                 workingCopy.rewrite(ident, make.setLabel(ident, "renamed"));
             }
             
-            public void cancel() {
-            }
         };
         testSource.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
@@ -1754,7 +1696,7 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
             "}\n";
                  
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(org.netbeans.api.java.source.JavaSource.Phase.RESOLVED);
@@ -1773,8 +1715,6 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
                 workingCopy.rewrite(nat.getType(), make.Identifier("RenamedTest"));
             }
             
-            public void cancel() {
-            }
         };
         testSource.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
@@ -1808,7 +1748,7 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
             "}\n";
                  
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(org.netbeans.api.java.source.JavaSource.Phase.RESOLVED);
@@ -1827,8 +1767,6 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
                 workingCopy.rewrite(ident, make.Identifier("obj"));
             }
             
-            public void cancel() {
-            }
         };
         testSource.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
@@ -1862,7 +1800,7 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
             "}\n";
                  
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(org.netbeans.api.java.source.JavaSource.Phase.RESOLVED);
@@ -1879,8 +1817,6 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
                 workingCopy.rewrite(ident, make.Identifier("RenamedTest"));
             }
             
-            public void cancel() {
-            }
         };
         testSource.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
@@ -1912,7 +1848,7 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
             "}\n";
                  
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(org.netbeans.api.java.source.JavaSource.Phase.RESOLVED);
@@ -1928,8 +1864,6 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
                 workingCopy.rewrite(literal, make.Literal("Hrebejk"));
             }
             
-            public void cancel() {
-            }
         };
         testSource.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
@@ -1969,7 +1903,7 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n";
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(org.netbeans.api.java.source.JavaSource.Phase.RESOLVED);
@@ -1981,8 +1915,6 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
                 BlockTree block = method.getBody();
             }
             
-            public void cancel() {
-            }
         };
         testSource.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
@@ -2014,7 +1946,7 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n";
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(org.netbeans.api.java.source.JavaSource.Phase.RESOLVED);
@@ -2030,8 +1962,6 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
                 workingCopy.rewrite(mst.getExpression(), make.Identifier("RenamedTest"));
             }
             
-            public void cancel() {
-            }
         };
         testSource.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
@@ -2082,7 +2012,7 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n";
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(org.netbeans.api.java.source.JavaSource.Phase.RESOLVED);
@@ -2110,8 +2040,6 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
                 workingCopy.rewrite(cat.getVariable(), make.setLabel(cat.getVariable(), "ycko"));
             }
             
-            public void cancel() {
-            }
         };
         testSource.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
@@ -2142,7 +2070,7 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n";
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(org.netbeans.api.java.source.JavaSource.Phase.RESOLVED);
@@ -2158,8 +2086,6 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
                 workingCopy.rewrite(nct.getIdentifier(), make.Identifier("RenamedTest"));
             }
             
-            public void cancel() {
-            }
         };
         testSource.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
@@ -2190,7 +2116,7 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n";
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(org.netbeans.api.java.source.JavaSource.Phase.RESOLVED);
@@ -2216,8 +2142,6 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
                 workingCopy.rewrite(block, make.addBlockStatement(block, est));
             }
             
-            public void cancel() {
-            }
         };
         testSource.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
@@ -2247,7 +2171,7 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n";
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(org.netbeans.api.java.source.JavaSource.Phase.RESOLVED);
@@ -2259,8 +2183,6 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
                 workingCopy.rewrite(mit.getArguments().get(0), make.Identifier("abcde"));
             }
             
-            public void cancel() {
-            }
         };
         testSource.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);

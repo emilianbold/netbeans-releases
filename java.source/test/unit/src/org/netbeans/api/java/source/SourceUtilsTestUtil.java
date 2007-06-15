@@ -345,7 +345,7 @@ public final class SourceUtilsTestUtil extends ProxyLookup {
     }
     
     
-    private static class DeadlockTask implements CancellableTask<CompilationController> {
+    private static class DeadlockTask implements Task<CompilationController> {
         
         private final Phase phase;
         private CompilationInfo info;
@@ -362,10 +362,7 @@ public final class SourceUtilsTestUtil extends ProxyLookup {
             } catch (IOException ioe) {
                 ErrorManager.getDefault().notify(ioe);
             }
-        }
-        
-        public void cancel() {
-        }
+        }                
         
     }
     

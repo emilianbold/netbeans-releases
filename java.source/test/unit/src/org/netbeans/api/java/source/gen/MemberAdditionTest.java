@@ -48,7 +48,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.swing.text.Document;
-import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
@@ -77,9 +77,7 @@ public class MemberAdditionTest extends NbTestCase {
     public void testSynteticDefaultConstructor() throws Exception {
         performTest("SynteticDefaultConstructor");
         
-        source.runModificationTask(new CancellableTask<WorkingCopy>() {
-            public void cancel() {
-            }
+        source.runModificationTask(new Task<WorkingCopy>() {
             public void run(WorkingCopy copy) {
                 ClassTree topLevel = findTopLevelClass(copy);                
                 SourceUtilsTestUtil2.run(copy, new AddSimpleField(), topLevel);
@@ -105,9 +103,7 @@ public class MemberAdditionTest extends NbTestCase {
     public void testEmptyClass() throws Exception {
         performTest("EmptyClass");
 
-        source.runModificationTask(new CancellableTask<WorkingCopy>() {
-            public void cancel() {
-            }
+        source.runModificationTask(new Task<WorkingCopy>() {
             public void run(WorkingCopy copy) {
                 ClassTree topLevel = findTopLevelClass(copy);
                 SourceUtilsTestUtil2.run(copy, new AddSimpleField(), topLevel);
@@ -133,9 +129,7 @@ public class MemberAdditionTest extends NbTestCase {
     public void testClassImplementingList() throws Exception {
         performTest("ClassImplementingList");
 
-        source.runModificationTask(new CancellableTask<WorkingCopy>() {
-            public void cancel() {
-            }
+        source.runModificationTask(new Task<WorkingCopy>() {
             public void run(WorkingCopy copy) {
                 ClassTree topLevel = findTopLevelClass(copy);
                 SourceUtilsTestUtil2.run(copy, new AddSimpleField(), topLevel);
@@ -162,9 +156,7 @@ public class MemberAdditionTest extends NbTestCase {
     public void testClassWithInnerClass() throws Exception {
         performTest("ClassWithInnerClass");
 
-        source.runModificationTask(new CancellableTask<WorkingCopy>() {
-            public void cancel() {
-            }
+        source.runModificationTask(new Task<WorkingCopy>() {
             public void run(WorkingCopy copy) {
                 ClassTree topLevel = findTopLevelClass(copy);
                 

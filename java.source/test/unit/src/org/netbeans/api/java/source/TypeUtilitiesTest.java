@@ -54,8 +54,8 @@ public class TypeUtilitiesTest extends NbTestCase {
     public void testIsCastable() throws Exception {
         JavaSource js = JavaSource.create(ClasspathInfo.create(ClassPathSupport.createClassPath(SourceUtilsTestUtil.getBootClassPath().toArray(new URL[0])), ClassPathSupport.createClassPath(new URL[0]), ClassPathSupport.createClassPath(new URL[0])));
         
-        js.runUserActionTask(new CancellableTask<CompilationController>() {
-            public void cancel() {}
+        js.runUserActionTask(new Task<CompilationController>() {
+
             public void run(CompilationController info)  {
                 TypeElement jlStringElement = info.getElements().getTypeElement("java.lang.String");
                 TypeMirror jlString = info.getTypes().getDeclaredType(jlStringElement);

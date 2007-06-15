@@ -69,7 +69,7 @@ public class MethodBodyTextTest extends GeneratorTestMDRCompat {
     public void testSetBodyText() throws java.io.IOException, FileStateInvalidException {
         System.err.println("testSetBodyText");
         JavaSource src = getJavaSource(testFile);
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -86,8 +86,6 @@ public class MethodBodyTextTest extends GeneratorTestMDRCompat {
                 }
             }
 
-            public void cancel() {
-            }
         };
         src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
@@ -100,7 +98,7 @@ public class MethodBodyTextTest extends GeneratorTestMDRCompat {
     public void testCreateWithBodyText() throws java.io.IOException, FileStateInvalidException {
         JavaSource src = getJavaSource(testFile);
         
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -128,8 +126,6 @@ public class MethodBodyTextTest extends GeneratorTestMDRCompat {
                 }
             }
 
-            public void cancel() {
-            }
         };
         src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
@@ -141,7 +137,7 @@ public class MethodBodyTextTest extends GeneratorTestMDRCompat {
     
     public void testCreateReturnBooleanBodyText() throws java.io.IOException, FileStateInvalidException {
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -163,8 +159,6 @@ public class MethodBodyTextTest extends GeneratorTestMDRCompat {
                 workingCopy.rewrite(node, clazz);
             }
             
-            public void cancel() {
-            }
         };
         testSource.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
@@ -179,7 +173,7 @@ public class MethodBodyTextTest extends GeneratorTestMDRCompat {
         System.err.println("testModifyBodyText");
         JavaSource src = getJavaSource(testFile);
         
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -197,8 +191,6 @@ public class MethodBodyTextTest extends GeneratorTestMDRCompat {
                 }
             }
 
-            public void cancel() {
-            }
         };
         src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
@@ -242,7 +234,7 @@ public class MethodBodyTextTest extends GeneratorTestMDRCompat {
                  
         JavaSource src = getJavaSource(testFile);
         
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
                 CompilationUnitTree cut = workingCopy.getCompilationUnit();
@@ -276,8 +268,6 @@ public class MethodBodyTextTest extends GeneratorTestMDRCompat {
                 }
             }
 
-            public void cancel() {
-            }
         };
         src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
@@ -320,7 +310,7 @@ public class MethodBodyTextTest extends GeneratorTestMDRCompat {
                  
         JavaSource src = getJavaSource(testFile);
         
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
                 CompilationUnitTree cut = workingCopy.getCompilationUnit();
@@ -341,8 +331,6 @@ public class MethodBodyTextTest extends GeneratorTestMDRCompat {
                 workingCopy.rewrite(meth.getBody(), newMeth.getBody());
             }
 
-            public void cancel() {
-            }
         };
         src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
@@ -378,7 +366,7 @@ public class MethodBodyTextTest extends GeneratorTestMDRCompat {
                  
         JavaSource src = getJavaSource(testFile);
         
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
                 CompilationUnitTree cut = workingCopy.getCompilationUnit();
@@ -399,8 +387,6 @@ public class MethodBodyTextTest extends GeneratorTestMDRCompat {
                 workingCopy.rewrite(meth.getBody(), newMeth.getBody());
             }
 
-            public void cancel() {
-            }
         };
         src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
@@ -436,7 +422,7 @@ public class MethodBodyTextTest extends GeneratorTestMDRCompat {
                  
         JavaSource src = getJavaSource(testFile);
         
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
                 CompilationUnitTree cut = workingCopy.getCompilationUnit();
@@ -457,8 +443,6 @@ public class MethodBodyTextTest extends GeneratorTestMDRCompat {
                 workingCopy.rewrite(meth.getBody(), newMeth.getBody());
             }
 
-            public void cancel() {
-            }
         };
         src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
@@ -497,7 +481,7 @@ public class MethodBodyTextTest extends GeneratorTestMDRCompat {
       
         JavaSource src = getJavaSource(testFile);
         
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
                 CompilationUnitTree cut = workingCopy.getCompilationUnit();
@@ -518,8 +502,6 @@ public class MethodBodyTextTest extends GeneratorTestMDRCompat {
                 workingCopy.rewrite(meth.getBody(), newMeth.getBody());
             }
 
-            public void cancel() {
-            }
         };
         src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);

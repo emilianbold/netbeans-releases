@@ -23,7 +23,7 @@ import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.Tree;
 import java.io.IOException;
-import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.loaders.JavaDataSupport;
@@ -191,7 +191,7 @@ public final class JavaDataObject extends MultiDataObject {
     {
         JavaSource javaSource = JavaSource.forFileObject (fileToUpdate);
 
-        CancellableTask<WorkingCopy> task = new CancellableTask<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
             
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -217,10 +217,7 @@ public final class JavaDataObject extends MultiDataObject {
                         }
                     }
                 }
-            }
-                
-            public void cancel() {
-            }
+            }                
         };
         javaSource.runModificationTask(task).commit();
     }

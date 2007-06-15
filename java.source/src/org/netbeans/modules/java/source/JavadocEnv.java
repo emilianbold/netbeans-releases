@@ -46,7 +46,7 @@ import com.sun.tools.javadoc.PackageDocImpl;
 import java.io.IOException;
 import java.util.StringTokenizer;
 import javax.lang.model.element.Element;
-import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
@@ -225,9 +225,7 @@ public class JavadocEnv extends DocEnv {
                 if (js != null) {
                     final String[] ret = new String[1];
                     final ElementHandle<? extends Element> handle = ElementHandle.create(element);
-                    js.runUserActionTask(new CancellableTask<CompilationController>() {
-                        public void cancel() {
-                        }
+                    js.runUserActionTask(new Task<CompilationController>() {
                         public void run(CompilationController controller) throws Exception {
                             controller.toPhase(Phase.ELEMENTS_RESOLVED);
                             Element e = handle.resolve(controller);

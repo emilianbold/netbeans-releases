@@ -37,7 +37,7 @@ import java.util.EnumSet;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
-import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.TreeMaker;
@@ -94,7 +94,7 @@ public class TwoModificationsTest extends GeneratorTest {
             "    }\n" +
             "}\n";
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -171,8 +171,6 @@ public class TwoModificationsTest extends GeneratorTest {
                 }
             }
 
-            public void cancel() {
-            }
         };
         testSource.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
@@ -222,7 +220,7 @@ public class TwoModificationsTest extends GeneratorTest {
             "    \n" +
             "}\n";
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(org.netbeans.api.java.source.JavaSource.Phase.RESOLVED);
@@ -253,8 +251,6 @@ public class TwoModificationsTest extends GeneratorTest {
                 workingCopy.rewrite(block, bt);
             }
             
-            public void cancel() {
-            }
         };
         testSource.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
@@ -301,7 +297,7 @@ public class TwoModificationsTest extends GeneratorTest {
             "    \n" +
             "}\n";
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(org.netbeans.api.java.source.JavaSource.Phase.RESOLVED);
@@ -312,8 +308,6 @@ public class TwoModificationsTest extends GeneratorTest {
                 workingCopy.rewrite(method, make.setLabel(method, "textSetter"));
             }
             
-            public void cancel() {
-            }
         };
         testSource.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);

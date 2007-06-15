@@ -22,7 +22,7 @@ import com.sun.source.tree.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
-import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.*;
 import org.netbeans.api.java.source.TestUtilities;
@@ -78,7 +78,7 @@ public class NewClassTreeTest extends GeneratorTest {
             "    private static class X {}\n" +
             "}\n";
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -91,8 +91,6 @@ public class NewClassTreeTest extends GeneratorTest {
                 workingCopy.rewrite(nct, make.NewClass(null, Collections.<ExpressionTree>emptyList(), make.Identifier("X"), nct.getArguments(), null));
             }
             
-            public void cancel() {
-            }
         };
         testSource.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
@@ -118,7 +116,7 @@ public class NewClassTreeTest extends GeneratorTest {
             "    }\n" +
             "}\n";
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -131,8 +129,6 @@ public class NewClassTreeTest extends GeneratorTest {
                 workingCopy.rewrite(nct, make.NewClass(null, Collections.<ExpressionTree>emptyList(), nct.getIdentifier(), Collections.singletonList(make.Literal(null)), null));
             }
             
-            public void cancel() {
-            }
         };
         testSource.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);

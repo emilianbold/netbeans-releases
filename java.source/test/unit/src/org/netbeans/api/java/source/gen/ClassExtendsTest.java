@@ -25,7 +25,7 @@ import com.sun.source.tree.Tree;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
-import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.TreeMaker;
 import static org.netbeans.api.java.source.JavaSource.*;
@@ -79,7 +79,7 @@ public class ClassExtendsTest extends GeneratorTestMDRCompat {
             "}\n";
         JavaSource src = getJavaSource(testFile);
         
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -95,8 +95,6 @@ public class ClassExtendsTest extends GeneratorTestMDRCompat {
                 }
             }
 
-            public void cancel() {
-            }
         };
         src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
@@ -123,7 +121,7 @@ public class ClassExtendsTest extends GeneratorTestMDRCompat {
             "}\n";
         JavaSource src = getJavaSource(testFile);
         
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -148,8 +146,6 @@ public class ClassExtendsTest extends GeneratorTestMDRCompat {
                 }
             }
             
-            public void cancel() {
-            }
         };
         src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
@@ -176,7 +172,7 @@ public class ClassExtendsTest extends GeneratorTestMDRCompat {
             "}\n";
         JavaSource src = getJavaSource(testFile);
         
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -200,8 +196,6 @@ public class ClassExtendsTest extends GeneratorTestMDRCompat {
                 }
             }
             
-            public void cancel() {
-            }
         };
         src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);

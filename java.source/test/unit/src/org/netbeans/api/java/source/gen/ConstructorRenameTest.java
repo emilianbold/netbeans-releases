@@ -21,7 +21,7 @@ package org.netbeans.api.java.source.gen;
 import com.sun.source.tree.*;
 import java.io.File;
 import java.io.IOException;
-import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.TestUtilities;
@@ -81,7 +81,7 @@ public class ConstructorRenameTest extends GeneratorTest {
             "}\n";
 
         JavaSource src = getJavaSource(testFile);
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -97,8 +97,6 @@ public class ConstructorRenameTest extends GeneratorTest {
                 }
             }
             
-            public void cancel() {
-            }
         };
         src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
@@ -143,7 +141,7 @@ public class ConstructorRenameTest extends GeneratorTest {
             "}\n";
 
         JavaSource src = getJavaSource(testFile);
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -159,8 +157,6 @@ public class ConstructorRenameTest extends GeneratorTest {
                 }
             }
             
-            public void cancel() {
-            }
         };
         src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
@@ -183,7 +179,7 @@ public class ConstructorRenameTest extends GeneratorTest {
             "}\n";
 
         JavaSource src = getJavaSource(testFile);
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -199,8 +195,6 @@ public class ConstructorRenameTest extends GeneratorTest {
                 }
             }
             
-            public void cancel() {
-            }
         };
         src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);

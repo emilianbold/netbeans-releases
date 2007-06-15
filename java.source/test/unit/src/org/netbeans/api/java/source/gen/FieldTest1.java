@@ -118,7 +118,7 @@ public class FieldTest1 extends GeneratorTestMDRCompat {
     public void testFieldName() throws IOException {
         System.err.println("testFieldName");
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -126,10 +126,7 @@ public class FieldTest1 extends GeneratorTestMDRCompat {
                 ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
                 VariableTree var = (VariableTree) clazz.getMembers().get(3);
                 workingCopy.rewrite(var, make.setLabel(var, "thisIsTheNewName"));
-            }
-            
-            public void cancel() {
-            }
+            }            
         };
         testSource.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);

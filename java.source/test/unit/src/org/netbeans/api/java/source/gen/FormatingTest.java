@@ -60,7 +60,7 @@ public class FormatingTest extends GeneratorTestMDRCompat {
         final int[] counter = new int[] {0};
         Preferences preferences = FmtOptions.getPreferences(FmtOptions.getCurrentProfileId());
         preferences.putInt("rightMargin", 30);
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
                 TreeMaker maker = workingCopy.getTreeMaker();
@@ -74,8 +74,6 @@ public class FormatingTest extends GeneratorTestMDRCompat {
                 else
                     workingCopy.rewrite(workingCopy.getCompilationUnit(), maker.addCompUnitTypeDecl(workingCopy.getCompilationUnit(), clazz));
             }            
-            public void cancel() {
-            }
         };
         testSource.runModificationTask(task).commit();
 
@@ -195,7 +193,7 @@ public class FormatingTest extends GeneratorTestMDRCompat {
         final int[] counter = new int[] {0};
         Preferences preferences = FmtOptions.getPreferences(FmtOptions.getCurrentProfileId());
         preferences.putInt("rightMargin", 20);
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
                 TreeMaker maker = workingCopy.getTreeMaker();
@@ -213,8 +211,6 @@ public class FormatingTest extends GeneratorTestMDRCompat {
                 else
                     workingCopy.rewrite(workingCopy.getCompilationUnit(), maker.addCompUnitTypeDecl(workingCopy.getCompilationUnit(), clazz));
             }            
-            public void cancel() {
-            }
         };
         testSource.runModificationTask(task).commit();
 
@@ -292,7 +288,7 @@ public class FormatingTest extends GeneratorTestMDRCompat {
             );
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
         final int[] counter = new int[] {0};
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
                 TreeMaker maker = workingCopy.getTreeMaker();
@@ -301,8 +297,6 @@ public class FormatingTest extends GeneratorTestMDRCompat {
                 MethodTree method = maker.Method(mods, "test" + counter[0]++, maker.Identifier("int"), Collections.<TypeParameterTree>emptyList(), Collections.singletonList(maker.Variable(mods, "i", maker.Identifier("int"), null)), Collections.<ExpressionTree>emptyList(), "{return i;}", null);
                 workingCopy.rewrite(clazz, maker.addClassMember(clazz, method));
             }            
-            public void cancel() {
-            }
         };
         testSource.runModificationTask(task).commit();
 
@@ -362,7 +356,7 @@ public class FormatingTest extends GeneratorTestMDRCompat {
             );
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
         final int[] counter = new int[] {0};
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
                 TreeMaker maker = workingCopy.getTreeMaker();
@@ -370,8 +364,6 @@ public class FormatingTest extends GeneratorTestMDRCompat {
                 BlockTree block = maker.Block(Collections.<StatementTree>emptyList(), true);
                 workingCopy.rewrite(clazz, maker.addClassMember(clazz, block));
             }            
-            public void cancel() {
-            }
         };
         testSource.runModificationTask(task).commit();
 
@@ -425,7 +417,7 @@ public class FormatingTest extends GeneratorTestMDRCompat {
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
         final String stmt = 
             "for (int i = 0; i < 10; i++) System.out.println(\"TRUE\");";
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
                 ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
@@ -434,8 +426,6 @@ public class FormatingTest extends GeneratorTestMDRCompat {
                 StatementTree statement = workingCopy.getTreeUtilities().parseStatement(stmt, new SourcePositions[1]);
                 workingCopy.rewrite(block, workingCopy.getTreeMaker().addBlockStatement(block, statement));
             }            
-            public void cancel() {
-            }
         };
         testSource.runModificationTask(task).commit();
 
@@ -511,7 +501,7 @@ public class FormatingTest extends GeneratorTestMDRCompat {
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
         final String stmt = 
             "for (String s : args) System.out.println(s);";
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
                 ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
@@ -520,8 +510,6 @@ public class FormatingTest extends GeneratorTestMDRCompat {
                 StatementTree statement = workingCopy.getTreeUtilities().parseStatement(stmt, new SourcePositions[1]);
                 workingCopy.rewrite(block, workingCopy.getTreeMaker().addBlockStatement(block, statement));
             }            
-            public void cancel() {
-            }
         };
         testSource.runModificationTask(task).commit();
 
@@ -592,7 +580,7 @@ public class FormatingTest extends GeneratorTestMDRCompat {
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
         final String stmt = 
             "if (a) System.out.println(\"A\") else if (b) System.out.println(\"B\") else System.out.println(\"NONE\");";
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
                 ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
@@ -601,8 +589,6 @@ public class FormatingTest extends GeneratorTestMDRCompat {
                 StatementTree statement = workingCopy.getTreeUtilities().parseStatement(stmt, new SourcePositions[1]);
                 workingCopy.rewrite(block, workingCopy.getTreeMaker().addBlockStatement(block, statement));
             }            
-            public void cancel() {
-            }
         };
         testSource.runModificationTask(task).commit();
 
@@ -733,7 +719,7 @@ public class FormatingTest extends GeneratorTestMDRCompat {
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
         final String stmt = 
             "while (b) System.out.println(\"TRUE\");";
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
                 ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
@@ -742,8 +728,6 @@ public class FormatingTest extends GeneratorTestMDRCompat {
                 StatementTree statement = workingCopy.getTreeUtilities().parseStatement(stmt, new SourcePositions[1]);
                 workingCopy.rewrite(block, workingCopy.getTreeMaker().addBlockStatement(block, statement));
             }            
-            public void cancel() {
-            }
         };
         testSource.runModificationTask(task).commit();
 
@@ -814,7 +798,7 @@ public class FormatingTest extends GeneratorTestMDRCompat {
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
         final String stmt = 
             "switch (i) {case 0: System.out.println(i); break; default: System.out.println(\"DEFAULT\");}";
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
                 ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
@@ -823,8 +807,6 @@ public class FormatingTest extends GeneratorTestMDRCompat {
                 StatementTree statement = workingCopy.getTreeUtilities().parseStatement(stmt, new SourcePositions[1]);
                 workingCopy.rewrite(block, workingCopy.getTreeMaker().addBlockStatement(block, statement));
             }            
-            public void cancel() {
-            }
         };
         testSource.runModificationTask(task).commit();
 
@@ -920,7 +902,7 @@ public class FormatingTest extends GeneratorTestMDRCompat {
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
         final String stmt = 
             "do System.out.println(\"TRUE\"); while (b);\n";
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
                 ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
@@ -929,8 +911,6 @@ public class FormatingTest extends GeneratorTestMDRCompat {
                 StatementTree statement = workingCopy.getTreeUtilities().parseStatement(stmt, new SourcePositions[1]);
                 workingCopy.rewrite(block, workingCopy.getTreeMaker().addBlockStatement(block, statement));
             }            
-            public void cancel() {
-            }
         };
         testSource.runModificationTask(task).commit();
 
@@ -1012,7 +992,7 @@ public class FormatingTest extends GeneratorTestMDRCompat {
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
         final String stmt = 
             "synchronized (this) {System.out.println(\"TRUE\");}";
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
                 ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
@@ -1021,8 +1001,6 @@ public class FormatingTest extends GeneratorTestMDRCompat {
                 StatementTree statement = workingCopy.getTreeUtilities().parseStatement(stmt, new SourcePositions[1]);
                 workingCopy.rewrite(block, workingCopy.getTreeMaker().addBlockStatement(block, statement));
             }            
-            public void cancel() {
-            }
         };
         testSource.runModificationTask(task).commit();
 
@@ -1087,7 +1065,7 @@ public class FormatingTest extends GeneratorTestMDRCompat {
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
         final String stmt = 
             "try {System.out.println(\"TEST\");} catch(Exception e) {System.out.println(\"CATCH\");} finally {System.out.println(\"FINALLY\");}";
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
                 ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
@@ -1096,8 +1074,6 @@ public class FormatingTest extends GeneratorTestMDRCompat {
                 StatementTree statement = workingCopy.getTreeUtilities().parseStatement(stmt, new SourcePositions[1]);
                 workingCopy.rewrite(block, workingCopy.getTreeMaker().addBlockStatement(block, statement));
             }            
-            public void cancel() {
-            }
         };
         testSource.runModificationTask(task).commit();
 
@@ -1211,7 +1187,7 @@ public class FormatingTest extends GeneratorTestMDRCompat {
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
         final String stmt = 
             "for (int i = 0; i < x; i++) y += (y ^ 123) << 2;";
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
                 ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
@@ -1220,8 +1196,6 @@ public class FormatingTest extends GeneratorTestMDRCompat {
                 StatementTree statement = workingCopy.getTreeUtilities().parseStatement(stmt, new SourcePositions[1]);
                 workingCopy.rewrite(block, workingCopy.getTreeMaker().addBlockStatement(block, statement));
             }            
-            public void cancel() {
-            }
         };
         testSource.runModificationTask(task).commit();
 
@@ -1281,7 +1255,7 @@ public class FormatingTest extends GeneratorTestMDRCompat {
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
         final String stmt = 
             "if (cs instanceof String) {String s = (String)cs;}";
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
                 ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
@@ -1290,8 +1264,6 @@ public class FormatingTest extends GeneratorTestMDRCompat {
                 StatementTree statement = workingCopy.getTreeUtilities().parseStatement(stmt, new SourcePositions[1]);
                 workingCopy.rewrite(block, workingCopy.getTreeMaker().addBlockStatement(block, statement));
             }            
-            public void cancel() {
-            }
         };
         testSource.runModificationTask(task).commit();
 
@@ -1332,7 +1304,7 @@ public class FormatingTest extends GeneratorTestMDRCompat {
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
         final String stmt = 
             "label: System.out.println();";
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
                 ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
@@ -1341,8 +1313,6 @@ public class FormatingTest extends GeneratorTestMDRCompat {
                 StatementTree statement = workingCopy.getTreeUtilities().parseStatement(stmt, new SourcePositions[1]);
                 workingCopy.rewrite(block, workingCopy.getTreeMaker().addBlockStatement(block, statement));
             }            
-            public void cancel() {
-            }
         };
         testSource.runModificationTask(task).commit();
 

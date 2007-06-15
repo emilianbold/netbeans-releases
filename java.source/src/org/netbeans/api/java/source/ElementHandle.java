@@ -48,7 +48,7 @@ import org.netbeans.modules.java.source.usages.ClassFileUtil;
  * </p>
  * <pre>
  * final ElementHandle[] elementHandle = new ElementHandle[1];
- * javaSource.runUserActionTask(new CancellableTask&lt;CompilationController>() {
+ * javaSource.runUserActionTask(new Task&lt;CompilationController>() {
  *     public void run(CompilationController compilationController) {
  *         compilationController.toPhase(Phase.RESOLVED);
  *         CompilationUnitTree cu = compilationController.getTree();
@@ -59,7 +59,7 @@ import org.netbeans.modules.java.source.usages.ClassFileUtil;
  *    }
  * }, true);
  *
- * otherJavaSource.runUserActionTask(new CancellableTask&lt;CompilationController>() {
+ * otherJavaSource.runUserActionTask(new Task&lt;CompilationController>() {
  *     public void run(CompilationController compilationController) {
  *         compilationController.toPhase(Phase.RESOLVED);
  *         Element element = elementHandle[0].resolve(compilationController);

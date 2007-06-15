@@ -67,7 +67,7 @@ public class Method1Test extends GeneratorTestMDRCompat {
     public void testMethodModifiers() throws IOException {
         System.err.println("testMethodModifiers");
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -81,8 +81,6 @@ public class Method1Test extends GeneratorTestMDRCompat {
                 workingCopy.rewrite(origMods, make.Modifiers(njuMods));
             }
             
-            public void cancel() {
-            }
         };
         testSource.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
@@ -96,7 +94,7 @@ public class Method1Test extends GeneratorTestMDRCompat {
     public void testMethodName() throws IOException {
         System.err.println("testMethodName");
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -106,8 +104,6 @@ public class Method1Test extends GeneratorTestMDRCompat {
                 workingCopy.rewrite(method, make.setLabel(method, "druhaMetoda"));
             }
             
-            public void cancel() {
-            }
         };
         testSource.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
@@ -121,7 +117,7 @@ public class Method1Test extends GeneratorTestMDRCompat {
     public void testMethodParameters() throws IOException {
         System.err.println("testMethodParameters");
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -135,8 +131,6 @@ public class Method1Test extends GeneratorTestMDRCompat {
                 workingCopy.rewrite(method, njuMethod);
             }
             
-            public void cancel() {
-            }
         };
         testSource.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
@@ -150,7 +144,7 @@ public class Method1Test extends GeneratorTestMDRCompat {
     public void testMethodParameterChange() throws IOException {
         System.err.println("testMethodParameters");
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -168,8 +162,6 @@ public class Method1Test extends GeneratorTestMDRCompat {
                 workingCopy.rewrite(method, njuMethod);
             }
             
-            public void cancel() {
-            }
         };
         testSource.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
@@ -183,7 +175,7 @@ public class Method1Test extends GeneratorTestMDRCompat {
     public void testMethodThrows() throws IOException {
         System.err.println("testMethodThrows");
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -196,8 +188,6 @@ public class Method1Test extends GeneratorTestMDRCompat {
                 workingCopy.rewrite(method, njuMethod);
             }
             
-            public void cancel() {
-            }
         };
         testSource.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
@@ -211,7 +201,7 @@ public class Method1Test extends GeneratorTestMDRCompat {
     public void testMethodReturnType() throws IOException {
         System.err.println("testMethodReturnType");
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -223,8 +213,6 @@ public class Method1Test extends GeneratorTestMDRCompat {
                 workingCopy.rewrite(returnType, identifier);
             }
             
-            public void cancel() {
-            }
         };
         testSource.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);

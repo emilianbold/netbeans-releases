@@ -29,7 +29,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import javax.xml.validation.Validator;
-import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
@@ -93,9 +93,8 @@ public class CommentHandlerServiceTest extends NbTestCase {
         
         JavaSource js = JavaSource.forFileObject(source);
         
-        js.runUserActionTask(new CancellableTask<CompilationController>() {
-            public void cancel() {
-            }
+        js.runUserActionTask(new Task<CompilationController>() {
+
             public void run(CompilationController copy) throws Exception {
                 copy.toPhase(Phase.RESOLVED);
             }

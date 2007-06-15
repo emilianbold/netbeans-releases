@@ -26,7 +26,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.Modifier;
-import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.junit.NbTestSuite;
@@ -94,9 +94,8 @@ public class CompareTreeTest extends GeneratorTest {
     
     public void testMethodName() throws IOException {
         final TokenHierarchy[] cut = new TokenHierarchy[2];
-        getJavaSource(getTestFile()).runUserActionTask(new CancellableTask<CompilationController>() {
-            public void cancel() {
-            }
+        getJavaSource(getTestFile()).runUserActionTask(new Task<CompilationController>() {
+
             public void run(CompilationController cc) {
                 cut[0] = cc.getTokenHierarchy();
             }
@@ -113,9 +112,8 @@ public class CompareTreeTest extends GeneratorTest {
                 }
             }
         );
-        getJavaSource(getTestFile()).runUserActionTask(new CancellableTask<CompilationController>() {
-            public void cancel() {
-            }
+        getJavaSource(getTestFile()).runUserActionTask(new Task<CompilationController>() {
+
             public void run(CompilationController cc) {
                 cut[1] = cc.getTokenHierarchy();
             }

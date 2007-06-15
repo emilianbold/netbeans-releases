@@ -32,7 +32,7 @@ import java.util.List;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
-import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.TestUtilities;
 import org.netbeans.api.java.source.TreeMaker;
@@ -82,7 +82,7 @@ public class TutorialTest extends GeneratorTest {
         File tutorialFile = getFile(getSourceDir(), "/org/netbeans/test/codegen/Tutorial1.java");
         JavaSource tutorialSource = JavaSource.forFileObject(FileUtil.toFileObject(tutorialFile));
         
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 // working copy is used for modify source. When all is
@@ -171,8 +171,6 @@ public class TutorialTest extends GeneratorTest {
                 }
             }
 
-            public void cancel() {
-            }
         };
 
         // Now, we can start to process the changes. Because we want to modify
@@ -197,7 +195,7 @@ public class TutorialTest extends GeneratorTest {
         File tutorialFile = getFile(getSourceDir(), "/org/netbeans/test/codegen/Tutorial1.java");
         JavaSource tutorialSource = JavaSource.forFileObject(FileUtil.toFileObject(tutorialFile));
         
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -268,8 +266,6 @@ public class TutorialTest extends GeneratorTest {
                 }
             }
 
-            public void cancel() {
-            }
         };
 
         tutorialSource.runModificationTask(task).commit();
@@ -289,7 +285,7 @@ public class TutorialTest extends GeneratorTest {
         File tutorialFile = getFile(getSourceDir(), "/org/netbeans/test/codegen/Tutorial1.java");
         JavaSource tutorialSource = JavaSource.forFileObject(FileUtil.toFileObject(tutorialFile));
         
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -327,8 +323,6 @@ public class TutorialTest extends GeneratorTest {
                 }
             }
 
-            public void cancel() {
-            }
         };
 
         tutorialSource.runModificationTask(task).commit();
@@ -348,7 +342,7 @@ public class TutorialTest extends GeneratorTest {
         File tutorialFile = getFile(getSourceDir(), "/org/netbeans/test/codegen/Tutorial2.java");
         JavaSource tutorialSource = JavaSource.forFileObject(FileUtil.toFileObject(tutorialFile));
         
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -384,8 +378,6 @@ public class TutorialTest extends GeneratorTest {
                  workingCopy.rewrite(method, modified);
             }
 
-            public void cancel() {
-            }
         };
 
         tutorialSource.runModificationTask(task).commit();
@@ -405,7 +397,7 @@ public class TutorialTest extends GeneratorTest {
         File tutorialFile = getFile(getSourceDir(), "/org/netbeans/test/codegen/Tutorial2.java");
         JavaSource tutorialSource = JavaSource.forFileObject(FileUtil.toFileObject(tutorialFile));
         
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -432,8 +424,6 @@ public class TutorialTest extends GeneratorTest {
                  workingCopy.rewrite(clazz, copy);
             }
 
-            public void cancel() {
-            }
         };
 
         tutorialSource.runModificationTask(task).commit();
@@ -461,7 +451,7 @@ public class TutorialTest extends GeneratorTest {
             );
         JavaSource tutorialSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
         
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -492,8 +482,6 @@ public class TutorialTest extends GeneratorTest {
                 workingCopy.rewrite(method.getBody(), copy);
             }
             
-            public void cancel() {
-            }
         };
 
         tutorialSource.runModificationTask(task).commit();
@@ -524,7 +512,7 @@ public class TutorialTest extends GeneratorTest {
 //        final String statementText = "System.err.println(\"Not interested in.\");";
         final String statementText = "System.err.println(null);";
         
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -536,8 +524,6 @@ public class TutorialTest extends GeneratorTest {
                 System.err.println(TreeMakerDemo.reverse(body));
             }
             
-            public void cancel() {
-            }
         };
 
         tutorialSource.runModificationTask(task).commit();

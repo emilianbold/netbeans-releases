@@ -37,7 +37,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.Modifier;
-import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.TestUtilities;
@@ -100,7 +100,7 @@ public class ModifiersTest extends GeneratorTestMDRCompat {
                 "    }\n" +
                 "}\n";
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
             
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -115,8 +115,6 @@ public class ModifiersTest extends GeneratorTestMDRCompat {
                 workingCopy.rewrite(mods, make.Modifiers(Collections.<Modifier>singleton(Modifier.FINAL)));
             }
             
-            public void cancel() {
-            }
         };
         testSource.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
@@ -143,7 +141,7 @@ public class ModifiersTest extends GeneratorTestMDRCompat {
                 "    public abstract void taragui();\n" +
                 "}\n";
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
             
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -157,8 +155,6 @@ public class ModifiersTest extends GeneratorTestMDRCompat {
                 workingCopy.rewrite(mods, make.Modifiers(s));
             }
             
-            public void cancel() {
-            }
         };
         testSource.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
@@ -195,7 +191,7 @@ public class ModifiersTest extends GeneratorTestMDRCompat {
                 "    }\n" +
                 "}\n";
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
             
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -208,8 +204,6 @@ public class ModifiersTest extends GeneratorTestMDRCompat {
                 workingCopy.rewrite(mods, make.Modifiers(EnumSet.of(Modifier.PUBLIC, Modifier.STATIC)));
             }
             
-            public void cancel() {
-            }
         };
         testSource.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
@@ -246,7 +240,7 @@ public class ModifiersTest extends GeneratorTestMDRCompat {
                 "    }\n" +
                 "}\n";
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
             
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -259,8 +253,6 @@ public class ModifiersTest extends GeneratorTestMDRCompat {
                 workingCopy.rewrite(mods, make.Modifiers(Collections.<Modifier>emptySet()));
             }
             
-            public void cancel() {
-            }
         };
         testSource.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
@@ -297,7 +289,7 @@ public class ModifiersTest extends GeneratorTestMDRCompat {
                 "    }\n" +
                 "}\n";
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
             
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -310,8 +302,6 @@ public class ModifiersTest extends GeneratorTestMDRCompat {
                 workingCopy.rewrite(mods, make.Modifiers(Collections.<Modifier>singleton(Modifier.PUBLIC)));
             }
             
-            public void cancel() {
-            }
         };
         testSource.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
@@ -348,7 +338,7 @@ public class ModifiersTest extends GeneratorTestMDRCompat {
                 "    }\n" +
                 "}\n";
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
             
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -361,8 +351,6 @@ public class ModifiersTest extends GeneratorTestMDRCompat {
                 workingCopy.rewrite(mods, make.Modifiers(Collections.<Modifier>emptySet()));
             }
             
-            public void cancel() {
-            }
         };
         testSource.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
@@ -399,7 +387,7 @@ public class ModifiersTest extends GeneratorTestMDRCompat {
                 "    }\n" +
                 "}\n";
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
             
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -412,8 +400,6 @@ public class ModifiersTest extends GeneratorTestMDRCompat {
                 workingCopy.rewrite(mods, make.Modifiers(Collections.<Modifier>singleton(Modifier.STATIC)));
             }
             
-            public void cancel() {
-            }
         };
         testSource.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
@@ -450,7 +436,7 @@ public class ModifiersTest extends GeneratorTestMDRCompat {
                 "    }\n" +
                 "}\n";
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
             
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -463,8 +449,6 @@ public class ModifiersTest extends GeneratorTestMDRCompat {
                 workingCopy.rewrite(mods, make.Modifiers(Collections.<Modifier>singleton(Modifier.PROTECTED)));
             }
             
-            public void cancel() {
-            }
         };
         testSource.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
@@ -509,7 +493,7 @@ public class ModifiersTest extends GeneratorTestMDRCompat {
                 "    }\n" +
                 "}\n";
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
             
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -523,8 +507,6 @@ public class ModifiersTest extends GeneratorTestMDRCompat {
                 workingCopy.rewrite(ident, make.Identifier("Annotation"));
             }
             
-            public void cancel() {
-            }
         };
         testSource.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
@@ -568,7 +550,7 @@ public class ModifiersTest extends GeneratorTestMDRCompat {
                 "    }\n" +
                 "}\n";
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
             
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -584,8 +566,6 @@ public class ModifiersTest extends GeneratorTestMDRCompat {
                 workingCopy.rewrite(mods, make.Modifiers(mods.getFlags(), Collections.<AnnotationTree>singletonList(ann)));
             }
             
-            public void cancel() {
-            }
         };
         testSource.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
@@ -622,7 +602,7 @@ public class ModifiersTest extends GeneratorTestMDRCompat {
                 "public class Test {\n" +
                 "}\n";
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
             
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -634,8 +614,6 @@ public class ModifiersTest extends GeneratorTestMDRCompat {
                 workingCopy.rewrite(assignementTree.getVariable(), make.Identifier("value"));
             }
             
-            public void cancel() {
-            }
         };
         testSource.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
@@ -682,7 +660,7 @@ public class ModifiersTest extends GeneratorTestMDRCompat {
             "    public String test();\n" +
             "}\n";
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
             
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -694,8 +672,6 @@ public class ModifiersTest extends GeneratorTestMDRCompat {
                 workingCopy.rewrite(mods, make.Modifiers(flags, mods.getAnnotations()));
             }
             
-            public void cancel() {
-            }
         };
         testSource.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
