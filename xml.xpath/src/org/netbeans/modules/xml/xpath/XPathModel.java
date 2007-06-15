@@ -40,7 +40,7 @@ public interface XPathModel {
     
     /** BPEL4WS extensions wihtout the namespace prefix. */
     String[] VALID_BPWS_FUNCTION_NAMES = {
-        "getContainerData", "getContainerProperty", "getLinkStatus"
+        "getContainerData", "getContainerProperty", "getLinkStatus", "doXslTransform"
     };
 
     /**
