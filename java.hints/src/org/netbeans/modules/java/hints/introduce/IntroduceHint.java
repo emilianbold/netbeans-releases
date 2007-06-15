@@ -350,7 +350,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         int index = 0;
         TypeMirror methodReturnType = info.getTypes().getNoType(TypeKind.VOID);
         
-        if (methodEl.getKind() == ElementKind.METHOD || methodEl.getKind() == ElementKind.CONSTRUCTOR) {
+        if (methodEl != null && (methodEl.getKind() == ElementKind.METHOD || methodEl.getKind() == ElementKind.CONSTRUCTOR)) {
             ExecutableElement ee = (ExecutableElement) methodEl;
             
             scanner.localVariables.addAll(ee.getParameters());
@@ -614,7 +614,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
             public Void visitIdentifier(IdentifierTree node, Void p) {
                 Element e = info.getTrees().getElement(getCurrentPath());
                 
-                if (LOCAL_VARIABLES.contains(e.getKind())) {
+                if (e != null && LOCAL_VARIABLES.contains(e.getKind())) {
                     throw new Result();
                 }
                 
@@ -691,17 +691,19 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         public Void visitVariable(VariableTree node, Void p) {
             Element e = info.getTrees().getElement(getCurrentPath());
             
-            assert LOCAL_VARIABLES.contains(e.getKind());
-            
-            switch (phase) {
-                case PHASE_BEFORE_SELECTION:
-                    localVariables.add((VariableElement) e);
-                    break;
-                case PHASE_INSIDE_SELECTION:
-                    selectionLocalVariables.add((VariableElement) e);
-                    break;
+            if (e != null) {
+                assert LOCAL_VARIABLES.contains(e.getKind());
+
+                switch (phase) {
+                    case PHASE_BEFORE_SELECTION:
+                        localVariables.add((VariableElement) e);
+                        break;
+                    case PHASE_INSIDE_SELECTION:
+                        selectionLocalVariables.add((VariableElement) e);
+                        break;
+                }
             }
-            
+
             return super.visitVariable(node, p);
         }
 
@@ -710,7 +712,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
             if (phase == PHASE_INSIDE_SELECTION) {
                 Element e = info.getTrees().getElement(new TreePath(getCurrentPath(), node.getVariable()));
                 
-                if (LOCAL_VARIABLES.contains(e.getKind())) {
+                if (e != null && LOCAL_VARIABLES.contains(e.getKind())) {
                     selectionWrittenLocalVariables.add((VariableElement) e);
                 }
             }
@@ -723,7 +725,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
             if (phase == PHASE_INSIDE_SELECTION) {
                 Element e = info.getTrees().getElement(new TreePath(getCurrentPath(), node.getVariable()));
                 
-                if (LOCAL_VARIABLES.contains(e.getKind())) {
+                if (e != null && LOCAL_VARIABLES.contains(e.getKind())) {
                     selectionWrittenLocalVariables.add((VariableElement) e);
                 }
             }
@@ -735,18 +737,20 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         public Void visitIdentifier(IdentifierTree node, Void p) {
             Element e = info.getTrees().getElement(getCurrentPath());
             
-            if (LOCAL_VARIABLES.contains(e.getKind())) {
-                switch (phase) {
-                    case PHASE_INSIDE_SELECTION:
-                        if (localVariables.contains(e)) {
-                            usedLocalVariables.add((VariableElement) e);
-                        }
-                        break;
-                    case PHASE_AFTER_SELECTION:
-                        if (selectionLocalVariables.contains(e) || selectionWrittenLocalVariables.contains(e)) {
-                            usedSelectionLocalVariables.add((VariableElement) e);
-                        }
-                        break;
+            if (e != null) {
+                if (LOCAL_VARIABLES.contains(e.getKind())) {
+                    switch (phase) {
+                        case PHASE_INSIDE_SELECTION:
+                            if (localVariables.contains(e)) {
+                                usedLocalVariables.add((VariableElement) e);
+                            }
+                            break;
+                        case PHASE_AFTER_SELECTION:
+                            if (selectionLocalVariables.contains(e) || selectionWrittenLocalVariables.contains(e)) {
+                                usedSelectionLocalVariables.add((VariableElement) e);
+                            }
+                            break;
+                    }
                 }
             }
             return super.visitIdentifier(node, p);
