@@ -83,7 +83,24 @@ public class ProvidedExtensionsTest extends NbTestCase {
         super(testName);
     }
     
-
+    public void testImplsFileLock() throws IOException {
+        FileObject fo = FileUtil.toFileObject(getWorkDir());
+        assertNotNull(fo);
+        assertNotNull(iListener);
+        FileObject toLock = fo.createData(getName());
+        assertNotNull(toLock);
+        assertEquals(0, iListener.implsFileLockCalls);
+        FileLock fLock = toLock.lock();
+        try {
+            assertTrue(fLock.isValid());
+            assertEquals(0, iListener.implsFileUnlockCalls);                        
+            assertEquals(1, iListener.implsFileLockCalls);            
+        } finally {
+            fLock.releaseLock();
+            assertEquals(1, iListener.implsFileUnlockCalls);                                    
+        }        
+    }
+    
     public void testImplsBeforeChange() throws IOException {
         FileObject fo = FileUtil.toFileObject(getWorkDir());
         assertNotNull(fo);
@@ -398,6 +415,8 @@ public class ProvidedExtensionsTest extends NbTestCase {
         private int renameImplCalls;
         private int implsBeforeChangeCalls;
         private int implsCreateSuccessCalls;        
+        private int implsFileLockCalls;
+        private int implsFileUnlockCalls;
         
         private static  boolean implsMoveRetVal = true;
         private static boolean implsRenameRetVal = true;
@@ -412,8 +431,20 @@ public class ProvidedExtensionsTest extends NbTestCase {
             renameImplCalls = 0;
             implsBeforeChangeCalls = 0;
             implsCreateSuccessCalls = 0;
+            implsFileLockCalls = 0;
         }
 
+        public void fileLocked(FileObject fo) {
+            super.fileLocked(fo);
+            implsFileLockCalls++;
+        }
+
+        public void fileUnlocked(FileObject fo) {
+            super.fileUnlocked(fo);
+            implsFileUnlockCalls++;
+        }
+
+        
         public void createSuccess(FileObject fo) {
             super.createSuccess(fo);
             implsCreateSuccessCalls++;

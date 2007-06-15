@@ -125,4 +125,22 @@ public class ProvidedExtensions implements InterceptionListener {
      * @since 1.10
      */        
     public void beforeChange(FileObject fo) {}    
+    
+    /*
+     * Called by <code>MasterFileSystem</code> after <code>FileObject</code>
+     * is locked
+     * @see org.openide.filesystems.FileObject#lock
+     * @param fo file which was locked
+     * @since 1.11
+     */            
+    public void fileLocked(FileObject fo) {}    
+    
+    /*
+     * Called by <code>MasterFileSystem</code> after <code>FileLock</code>
+     * is released
+     * @see org.openide.filesystems.FileLock#releaseLock
+     * @param fo file which <code>FileLock</code> was released
+     * @since 1.11
+     */                
+    public void fileUnlocked(FileObject fo) {}        
 }

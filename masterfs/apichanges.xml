@@ -23,6 +23,27 @@ Microsystems, Inc. All Rights Reserved.
         <apidef name="masterfs">MasterFileSystem API</apidef>
     </apidefs>
     <changes>
+        <change id="added-filelock-notification-for-versioning-systems ">
+            <api name="masterfs"/>
+            <summary><code>ProvidedExtensions.fileLock</code> and <code>ProvidedExtensions.fileUnlock</code> was added.</summary>
+            <version major="1" minor="11"/>
+            <date day="15" month="6" year="2007"/>
+            <author login="rmatous"/>
+            <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+            <description>
+                <p>
+                    <code>ProvidedExtensions.fileLock</code> which is called after
+                    <code>MasterFileSystem</code> locks <code>FileObject</code>
+                </p>                
+                <p>
+                    <code>ProvidedExtensions.fileUnlock</code> which is called after
+                    <code>FileObject</code> is unlocked.
+                </p>                                
+            </description>
+            <class package="org.netbeans.modules.masterfs.providers" name="ProvidedExtensions"/>
+            <issue number="106479"/>
+        </change>                        
+        
         <change id="added-support-for-local-history">
             <api name="masterfs"/>
             <summary><code>ProvidedExtensions.beforeChange</code> was added.</summary>

@@ -147,4 +147,24 @@ public class ProvidedExtensionsProxy extends ProvidedExtensions {
             }
         }
     }
+
+    public void fileLocked(FileObject fo) {
+        for (Iterator it = annotationProviders.iterator(); it.hasNext();) {
+            AnnotationProvider provider = (AnnotationProvider) it.next();
+            InterceptionListener iListener = (provider != null) ?  provider.getInterceptionListener() : null;
+            if (iListener instanceof ProvidedExtensions) {
+                ((ProvidedExtensions)iListener).fileLocked(fo);
+            }
+        }
+    }
+
+    public void fileUnlocked(FileObject fo) {
+        for (Iterator it = annotationProviders.iterator(); it.hasNext();) {
+            AnnotationProvider provider = (AnnotationProvider) it.next();
+            InterceptionListener iListener = (provider != null) ?  provider.getInterceptionListener() : null;
+            if (iListener instanceof ProvidedExtensions) {
+                ((ProvidedExtensions)iListener).fileUnlocked(fo);
+            }
+        }
+    }        
 }
