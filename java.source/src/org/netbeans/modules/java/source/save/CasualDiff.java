@@ -294,7 +294,7 @@ public class CasualDiff {
             // before the closing curly.
             insertHint = endPos(oldT) - 1;
         } else {
-            insertHint = filterHidden(oldT.defs).get(0).getStartPosition();
+            insertHint = filterHidden(oldT.defs).get(0).getStartPosition()-1;
         }
         tokenSequence.move(insertHint);
         tokenSequence.moveNext();
