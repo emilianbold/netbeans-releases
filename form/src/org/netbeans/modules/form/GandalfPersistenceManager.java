@@ -4069,7 +4069,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
         buf.append(indent);
         if (binding.hasSubBindings() || !binding.getParameters().isEmpty()
                 || binding.isIncompletePathValueSpecified() || binding.isNullValueSpecified()
-                || binding.isConverterSpecified() || binding.isValidatorSpecified()) {
+                || binding.isConverterSpecified() || binding.isValidatorSpecified()
+                || binding.isNameSpecified()) {
             addElementOpenAttr(
                 buf,
                 XML_BINDING_PROPERTY,

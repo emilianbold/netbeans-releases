@@ -739,7 +739,18 @@ public class BindingDesignSupport {
             }
         }
         if (bindingDef.isNameSpecified()) {
-            // PENDING
+            BindingProperty prop = bindingDef.getTarget().getBindingProperty(bindingDef.getTargetPath());
+            FormProperty nameProp = prop.getNameProperty();
+            try {
+                Object value = nameProp.getRealValue();
+                if ((value != null) && (value instanceof String)) {
+                    // PENDING
+                }
+            } catch (IllegalAccessException iaex) {
+                iaex.printStackTrace();
+            } catch (InvocationTargetException itex) {
+                itex.printStackTrace();
+            }
         }
         if (bindingDef.hasSubBindings()) {
             for (MetaBinding sub : subBindings) {
