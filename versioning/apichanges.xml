@@ -85,6 +85,20 @@ is the proper place.
         
         <change>
             <api name="versioning_spi"/>
+            <summary>Added beforeEdit method to VCSInterceptor</summary>
+            <version major="1" minor="5"/>
+            <date day="15" month="6" year="2007"/>
+            <author login="msandor"/>
+            <compatibility addition="yes"/>
+            <description>
+                This is to properly support versioning systems that write-protect their files on local filesystem. They need a way to make
+                a file r/w automatically once something tries to write to it. This is especially needed for refactoring to work. Now they have
+                a chance to check-out a file in the beforeEdit() callback.
+            </description>
+        </change>
+        
+        <change>
+            <api name="versioning_spi"/>
             <summary>Initial version of SPI released</summary>
             <version major="1" minor="4"/>
             <date day="18" month="4" year="2007"/>

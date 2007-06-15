@@ -155,10 +155,21 @@ public abstract class VCSInterceptor {
     
     /**
      * Called before a file is changed.
+     * Each series of beforeChange/afterChange events is preceded by at least one beforeEdit event.
      * 
      * @param file to be changed file
      */
     public void beforeChange(File file) {
     }
     
+    /**
+     * Called before a file is about to enter Edit mode. In case the versioning system uses file locking 
+     * this is the time when to check-out (edit) the file and make it read/write. CVS would execute 'cvs edit' here. If
+     * you do not (wish to) support automatic file check-out, do nothing here. 
+     * Each series of beforeChange/afterChange events is preceded by at least one beforeEdit event.
+     * 
+     * @param file file that was just locked and is expected to change
+     */
+    public void beforeEdit(File file) {
+    }
 }
