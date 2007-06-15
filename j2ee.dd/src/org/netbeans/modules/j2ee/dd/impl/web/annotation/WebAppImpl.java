@@ -82,6 +82,7 @@ public class WebAppImpl implements WebApp, JavaContextListener {
     private ResourceEnvRef[] resourceEnvRefs = null;
     private EnvEntry[] envEntries = null;
     private MessageDestinationRef[] messageDestinationRefs = null;
+    private ServiceRef[] serviceRefs = null;
     private Servlet[] servlets = null;
 
     public WebAppImpl(AnnotationModelHelper helper, boolean merge) {
@@ -143,6 +144,13 @@ public class WebAppImpl implements WebApp, JavaContextListener {
             return;
         }
         messageDestinationRefs = CommonAnnotationHelper.getMessageDestinationRefs(helper);
+    }
+    
+    private void initServiceRefs() {
+        if (serviceRefs != null) {
+            return;
+        }
+        serviceRefs = CommonAnnotationHelper.getServiceRefs(helper);
     }
     
     private void initServlets() {
@@ -732,7 +740,8 @@ public class WebAppImpl implements WebApp, JavaContextListener {
         if (merge && ddRoot != null) {
             return ddRoot.getServiceRef(index);
         }
-        return null;
+        initServiceRefs();
+        return serviceRefs[index];
     }
 
     public void setServiceRef(ServiceRef[] value) throws VersionNotSupportedException {
@@ -743,14 +752,16 @@ public class WebAppImpl implements WebApp, JavaContextListener {
         if (merge && ddRoot != null) {
             return ddRoot.getServiceRef();
         }
-        return new ServiceRef[0];
+        initServiceRefs();
+        return serviceRefs;
     }
 
     public int sizeServiceRef() throws VersionNotSupportedException {
         if (merge && ddRoot != null) {
             return ddRoot.sizeServiceRef();
         }
-        return 0;
+        initServiceRefs();
+        return serviceRefs.length;
     }
 
     public int addServiceRef(ServiceRef valueInterface) throws VersionNotSupportedException {

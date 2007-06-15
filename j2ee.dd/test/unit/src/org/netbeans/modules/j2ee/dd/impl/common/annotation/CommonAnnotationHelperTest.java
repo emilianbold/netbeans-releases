@@ -247,8 +247,7 @@ public class CommonAnnotationHelperTest extends CommonTestCase {
      * Test for getting {@link javax.annotation.Resource @Resource}s (as <tt>ServiceRef</tt>) for the whole classpath.
      * @throws java.lang.Exception if any error occurs.
      */
-    // disabling because of lack of web-service implementation
-    public void xtestGetServiceRefsOnClasspath() throws Exception {
+    public void testGetServiceRefsOnClasspath() throws Exception {
         initClasses();
         final Set<String> resourceNames = new HashSet<String>(Arrays.asList("yourService"));
         createWebAppModel(false).runReadAction(new MetadataModelAction<WebAppMetadata, Void>() {
@@ -269,8 +268,7 @@ public class CommonAnnotationHelperTest extends CommonTestCase {
      * Test for getting {@link javax.annotation.Resource @Resource}s (as <tt>ServiceRef</tt>) for one class.
      * @throws java.lang.Exception if any error occurs.
      */
-    // disabling because of lack of web-service implementation
-    public void xtestGetServiceRefsInClass() throws Exception {
+    public void testGetServiceRefsInClass() throws Exception {
         initClass();
         final Set<String> resourceNames = new HashSet<String>(Arrays.asList("myService"));
 

@@ -51,7 +51,7 @@ public class WebAppTestCase extends JavaSourceTestCase {
 
     protected MetadataModel<WebAppMetadata> createModel(MetadataUnit metadataUnit) throws IOException, InterruptedException {
         RepositoryUpdater.getDefault().scheduleCompilationAndWait(srcFO, srcFO).await();
-        return WebAppMetadataModelFactory.createMetadataModel(metadataUnit);
+        return WebAppMetadataModelFactory.createMetadataModel(metadataUnit, true);
     }
 
     protected MetadataUnit createMetadataUnit(File deploymentDescriptor) {

@@ -65,6 +65,7 @@ public class MessageDrivenImpl implements MessageDriven {
     private ResourceEnvRef[] resourceEnvRefs = null;
     private EnvEntry[] envEntries = null;
     private MessageDestinationRef[] messageDestinationRefs = null;
+    private ServiceRef[] serviceRefs = null;
     
     public MessageDrivenImpl(AnnotationModelHelper helper, TypeElement typeElement) {
         this.helper = helper;
@@ -104,6 +105,13 @@ public class MessageDrivenImpl implements MessageDriven {
             return;
         }
         messageDestinationRefs = CommonAnnotationHelper.getMessageDestinationRefs(helper, typeElement);
+    }
+    
+    private void initServiceRefs() {
+        if (serviceRefs != null) {
+            return;
+        }
+        serviceRefs = CommonAnnotationHelper.getServiceRefs(helper, typeElement);
     }
     
     // <editor-fold desc="Model implementation">
@@ -174,6 +182,21 @@ public class MessageDrivenImpl implements MessageDriven {
     public int sizeMessageDestinationRef() throws VersionNotSupportedException {
         initMessageDestinationRefs();
         return messageDestinationRefs.length;
+    }
+    
+    public ServiceRef[] getServiceRef() throws VersionNotSupportedException {
+        initServiceRefs();
+        return serviceRefs;
+    }
+
+    public ServiceRef getServiceRef(int index) throws VersionNotSupportedException {
+        initServiceRefs();
+        return serviceRefs[index];
+    }
+
+    public int sizeServiceRef() throws VersionNotSupportedException {
+        initServiceRefs();
+        return serviceRefs.length;
     }
     // </editor-fold>
 
@@ -601,23 +624,11 @@ public class MessageDrivenImpl implements MessageDriven {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public ServiceRef getServiceRef(int index) throws VersionNotSupportedException {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
     public void setServiceRef(ServiceRef[] value) throws VersionNotSupportedException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public ServiceRef[] getServiceRef() throws VersionNotSupportedException {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
     public int removeServiceRef(ServiceRef value) throws VersionNotSupportedException {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public int sizeServiceRef() throws VersionNotSupportedException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 

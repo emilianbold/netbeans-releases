@@ -78,7 +78,7 @@ public class CommonTestCase extends JavaSourceTestCase {
                 ClassPath.getClassPath(srcFO, ClassPath.SOURCE),
                 withDD ? new File(getDataDir(), "web_org.xml") : null
                 );
-        return WebAppMetadataModelFactory.createMetadataModel(metadataUnit);
+        return WebAppMetadataModelFactory.createMetadataModel(metadataUnit, true);
     }
     
     public MetadataModel<AppClientMetadata> createAppClientModel() throws IOException, InterruptedException {

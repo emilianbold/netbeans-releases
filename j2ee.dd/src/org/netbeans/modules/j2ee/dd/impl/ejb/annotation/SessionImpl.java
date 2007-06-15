@@ -23,7 +23,6 @@ import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import javax.lang.model.element.AnnotationMirror;
@@ -44,7 +43,6 @@ import org.netbeans.modules.j2ee.dd.api.common.EnvEntry;
 import org.netbeans.modules.j2ee.dd.api.common.Icon;
 import org.netbeans.modules.j2ee.dd.api.common.MessageDestinationRef;
 import org.netbeans.modules.j2ee.dd.api.common.NameAlreadyUsedException;
-import org.netbeans.modules.j2ee.dd.api.common.PortComponentRef;
 import org.netbeans.modules.j2ee.dd.api.common.ResourceEnvRef;
 import org.netbeans.modules.j2ee.dd.api.common.ResourceRef;
 import org.netbeans.modules.j2ee.dd.api.common.SecurityRoleRef;
@@ -63,7 +61,6 @@ import org.netbeans.modules.j2ee.dd.api.ejb.Session;
 import org.netbeans.modules.j2ee.dd.impl.common.annotation.CommonAnnotationHelper;
 import org.netbeans.modules.j2ee.dd.impl.common.annotation.EjbLocalRefImpl;
 import org.netbeans.modules.j2ee.dd.impl.common.annotation.EjbRefImpl;
-import org.netbeans.modules.j2ee.dd.impl.common.annotation.ServiceRefImpl;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.AnnotationParser;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.ArrayValueHandler;
@@ -245,70 +242,14 @@ public class SessionImpl implements Session {
                 
     }
     
-    /** search for web service service references at fields
-     *  (the only reasonable usage of WebServiceRef)
-     */ 
     private void initServiceRefs() {
         
         if (serviceRefs != null) {
             return;
         }
-        final List<ServiceRef> resultServiceRefs = new ArrayList<ServiceRef>();
-        
-        // @WebServiceRef at field
-        for (VariableElement variableElement : ElementFilter.fieldsIn(typeElement.getEnclosedElements())) {
-            if (helper.hasAnnotation(variableElement.getAnnotationMirrors(), "javax.xml.ws.WebServiceRef")) { //NOI18N
-                createServiceReference(variableElement, resultServiceRefs);
-            }
-        }
-        // @Resource
-        List<ServiceRef> serviceRefsFromResources = Arrays.asList(CommonAnnotationHelper.getServiceRefs(helper, typeElement));
-        resultServiceRefs.addAll(serviceRefsFromResources);
-        serviceRefs = resultServiceRefs.toArray(new ServiceRef[resultServiceRefs.size()]);                
+        serviceRefs = CommonAnnotationHelper.getServiceRefs(helper, typeElement);
     }
-        
-    /**
-     * Creates service reference
-     */    
-    private void createServiceReference(Element element, List<ServiceRef> resultServiceRefs) {
-            
-            TypeMirror fieldTypeMirror = element.asType();
-            
-            if (TypeKind.DECLARED == fieldTypeMirror.getKind()) {
-                DeclaredType fieldDeclaredType = (DeclaredType) fieldTypeMirror;
-                Element fieldTypeElement = fieldDeclaredType.asElement();
-                if (ElementKind.INTERFACE == fieldTypeElement.getKind() || ElementKind.CLASS == fieldTypeElement.getKind() ) {
-                    TypeElement typeElement = (TypeElement) fieldTypeElement;
-                    ServiceRef newServiceRef = new ServiceRefImpl(element, typeElement, helper);
-                    // test if already exists
-                    ServiceRef existingServiceRef=null;
-                    for (ServiceRef sr:resultServiceRefs) {
-                        if (newServiceRef.getServiceRefName().equals(sr.getServiceRefName())) {
-                            existingServiceRef = sr;
-                        }
-                    }
-                    if (existingServiceRef!=null) {
-                        if (newServiceRef.sizePortComponentRef()>0) {
-                            PortComponentRef newPortComp = newServiceRef.getPortComponentRef(0);
-                            // eventiually add new PortComponentRef
-                            PortComponentRef[] portComps = existingServiceRef.getPortComponentRef();
-                            boolean foundPortComponent=false;
-                            for (PortComponentRef portComp:portComps) {
-                                if (portComp.getServiceEndpointInterface().equals(newPortComp.getServiceEndpointInterface())) {
-                                    foundPortComponent=true;
-                                }
-                            }
-                            if (!foundPortComponent) {
-                                existingServiceRef.addPortComponentRef(newPortComp);
-                            }
-                        }
-                    } else {
-                        resultServiceRefs.add(newServiceRef);
-                    }
-                }              
-            }
-    }
-
+    
     /**
      * Creates local or remote reference
      */

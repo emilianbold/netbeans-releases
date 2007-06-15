@@ -32,9 +32,13 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import org.netbeans.modules.j2ee.dd.api.common.EnvEntry;
 import org.netbeans.modules.j2ee.dd.api.common.MessageDestinationRef;
+import org.netbeans.modules.j2ee.dd.api.common.PortComponentRef;
 import org.netbeans.modules.j2ee.dd.api.common.ResourceEnvRef;
 import org.netbeans.modules.j2ee.dd.api.common.ResourceRef;
 import org.netbeans.modules.j2ee.dd.api.common.SecurityRole;
@@ -215,6 +219,8 @@ public class CommonAnnotationHelper {
     
     /**
      * Get all {@link ServiceRef}s for given class.
+     * Fields annotated by {@link javax.xml.ws.WebServiceRef @WebServiceRef}
+     * and {@link javax.annotation.Resource @Resource} are searched.
      * @param helper        annotation model helper.
      * @param typeElement   class that is searched.
      * @return              all found {@link ServiceRef}s.
@@ -223,21 +229,33 @@ public class CommonAnnotationHelper {
         assert helper != null;
         assert typeElement != null;
         
+        // @WebServiceRef
+        final List<ServiceRef> serviceRefs = getWebServiceRefs(helper, typeElement);
+        // @Resource
         List<ResourceImpl> resources = getResources(helper, typeElement);
-        return getServiceRefs(resources);
+        serviceRefs.addAll(getServiceRefs(resources));
+        
+        return serviceRefs.toArray(new ServiceRef[serviceRefs.size()]);
     }
     
     /**
      * Get all {@link ServiceRef}s
      * for given classpath (via given annotation model helper).
+     * Fields annotated by {@link javax.xml.ws.WebServiceRef @WebServiceRef}
+     * and {@link javax.annotation.Resource @Resource} are searched.
      * @param helper    annotation model helper.
      * @return          all found {@link ServiceRef}s.
      */
     public static ServiceRef[] getServiceRefs(final AnnotationModelHelper helper) {
         assert helper != null;
         
+        // @WebServiceRef
+        final List<ServiceRef> serviceRefs = getWebServiceRefs(helper);
+        // @Resource
         List<ResourceImpl> resources = getResources(helper);
-        return getServiceRefs(resources);
+        serviceRefs.addAll(getServiceRefs(resources));
+        
+        return serviceRefs.toArray(new ServiceRef[serviceRefs.size()]);
     }
     
     private static List<ResourceImpl> getResources(final AnnotationModelHelper helper, final TypeElement typeElement) {
@@ -262,7 +280,6 @@ public class CommonAnnotationHelper {
     }
     
     private static List<ResourceImpl> getResources(final AnnotationModelHelper helper) {
-        assert helper != null;
         
         final List<ResourceImpl> result = new ArrayList<ResourceImpl>();
         helper.getAnnotationScanner().findAnnotations(
@@ -272,6 +289,33 @@ public class CommonAnnotationHelper {
                     public void handleAnnotation(TypeElement typeElement, Element element, AnnotationMirror annotation) {
                         ResourceImpl resource = new ResourceImpl(element, typeElement, helper);
                         result.add(resource);
+                    }
+                });
+        return result;
+    }
+    
+    private static List<ServiceRef> getWebServiceRefs(final AnnotationModelHelper helper, final TypeElement typeElement) {
+        
+        final List<ServiceRef> result = new ArrayList<ServiceRef>();
+        
+        // fields
+        for (VariableElement field : ElementFilter.fieldsIn(typeElement.getEnclosedElements())) {
+            if (helper.hasAnnotation(field.getAnnotationMirrors(), "javax.xml.ws.WebServiceRef")) { //NOI18N
+                addServiceReference(result, field, helper);
+            }
+        }
+        return result;
+    }
+    
+    private static List<ServiceRef> getWebServiceRefs(final AnnotationModelHelper helper) {
+        
+        final List<ServiceRef> result = new ArrayList<ServiceRef>();
+        helper.getAnnotationScanner().findAnnotations(
+                
+                "javax.xml.ws.WebServiceRef", // NOI18N
+                EnumSet.of(ElementKind.FIELD),new AnnotationHandler() {
+                    public void handleAnnotation(TypeElement typeElement, Element element, AnnotationMirror annotation) {
+                        addServiceReference(result, element, helper);
                     }
                 });
         return result;
@@ -310,7 +354,7 @@ public class CommonAnnotationHelper {
         return elements.toArray(new MessageDestinationRef[elements.size()]);
     }
     
-    private static ServiceRef[] getServiceRefs(final List<ResourceImpl> resources) {
+    private static List<ServiceRef> getServiceRefs(final List<ResourceImpl> resources) {
         List<ServiceRef> elements = new ArrayList<ServiceRef>(resources.size());
         
         for (ResourceImpl resource : resources) {
@@ -318,7 +362,7 @@ public class CommonAnnotationHelper {
                 elements.add(new ServiceRefImpl(resource));
             }
         }
-        return elements.toArray(new ServiceRef[elements.size()]);
+        return elements;
     }
     
     private static ResourceEnvRef[] getResourceEnvRefs(final List<ResourceImpl> resources) {
@@ -333,5 +377,43 @@ public class CommonAnnotationHelper {
             }
         }
         return elements.toArray(new ResourceEnvRef[elements.size()]);
+    }
+    
+    private static void addServiceReference(final List<ServiceRef> serviceRefs, final Element element, final AnnotationModelHelper helper) {
+        TypeMirror fieldTypeMirror = element.asType();
+        if (fieldTypeMirror.getKind() == TypeKind.DECLARED) {
+            DeclaredType fieldDeclaredType = (DeclaredType) fieldTypeMirror;
+            Element fieldTypeElement = fieldDeclaredType.asElement();
+            
+            if (ElementKind.INTERFACE == fieldTypeElement.getKind() || ElementKind.CLASS == fieldTypeElement.getKind() ) {
+                TypeElement typeElement = (TypeElement) fieldTypeElement;
+                ServiceRef newServiceRef = new ServiceRefImpl(element, typeElement, helper);
+                // test if already exists
+                ServiceRef existingServiceRef = null;
+                for (ServiceRef sr : serviceRefs) {
+                    if (newServiceRef.getServiceRefName().equals(sr.getServiceRefName())) {
+                        existingServiceRef = sr;
+                    }
+                }
+                if (existingServiceRef != null) {
+                    if (newServiceRef.sizePortComponentRef() > 0) {
+                        PortComponentRef newPortComp = newServiceRef.getPortComponentRef(0);
+                        // eventiually add new PortComponentRef
+                        PortComponentRef[] portComps = existingServiceRef.getPortComponentRef();
+                        boolean foundPortComponent = false;
+                        for (PortComponentRef portComp : portComps) {
+                            if (portComp.getServiceEndpointInterface().equals(newPortComp.getServiceEndpointInterface())) {
+                                foundPortComponent = true;
+                            }
+                        }
+                        if (!foundPortComponent) {
+                            existingServiceRef.addPortComponentRef(newPortComp);
+                        }
+                    }
+                } else {
+                    serviceRefs.add(newServiceRef);
+                }
+            }
+        }
     }
 }
