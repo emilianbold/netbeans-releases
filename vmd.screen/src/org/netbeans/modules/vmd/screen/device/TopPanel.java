@@ -50,6 +50,9 @@ import java.awt.event.InputEvent;
 import java.io.IOException;
 import java.util.*;
 import java.util.List;
+import org.netbeans.modules.vmd.api.model.common.AcceptSuggestion;
+import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayDataFlavorSupport;
+import org.openide.util.Exceptions;
 
 
 /**
@@ -92,7 +95,7 @@ public class TopPanel extends JPanel {
                             innerDragingInProgress = false;
                             return;
                         }
-                        dragSource.startDrag(dgEvent, null, new InnerTransferable(dragedComponent), null);
+                        dragSource.startDrag(dgEvent, null,new ScreenDisplaylTransferable(dragedComponent), null);
                         innerDragingInProgress = true;
                     }
                 });
@@ -149,26 +152,29 @@ public class TopPanel extends JPanel {
         setDropTarget(new DropTarget(this,new DropTargetListener() {
             
             public void dragEnter(DropTargetDragEvent dtde) {
-                if (isAcceptable(dtde.getLocation(), dtde.getTransferable()))
+                AcceptSuggestion sugestion = getSugestions(dtde.getTransferable());
+                if (isAcceptable(dtde.getLocation(), dtde.getTransferable(), sugestion))
                     dtde.acceptDrag(DnDConstants.ACTION_COPY_OR_MOVE);
                 else
                     dtde.rejectDrag();
             }
             
             public void dragOver(final DropTargetDragEvent dtde) {
+                AcceptSuggestion sugestion = getSugestions(dtde.getTransferable());
                 if (innerDragingInProgress)
                     hoverDnD(dtde.getLocation());
                 else
                     hover(dtde.getLocation());
                 
-                if (isAcceptable(dtde.getLocation(), dtde.getTransferable()))
+                if (isAcceptable(dtde.getLocation(), dtde.getTransferable(),  sugestion))
                     dtde.acceptDrag(DnDConstants.ACTION_COPY_OR_MOVE);
                 else
                     dtde.rejectDrag();
             }
             
             public void dropActionChanged(DropTargetDragEvent dtde) {
-                if (isAcceptable(dtde.getLocation(), dtde.getTransferable()))
+                AcceptSuggestion sugestion = getSugestions(dtde.getTransferable());
+                if (isAcceptable(dtde.getLocation(), dtde.getTransferable(), sugestion))
                     dtde.acceptDrag(DnDConstants.ACTION_COPY_OR_MOVE);
                 else
                     dtde.rejectDrag();
@@ -179,7 +185,8 @@ public class TopPanel extends JPanel {
             }
             
             public void drop(DropTargetDropEvent dtde) {
-                if (isAcceptable(dtde.getLocation(), dtde.getTransferable())) {
+                AcceptSuggestion sugestion = getSugestions(dtde.getTransferable());
+                if (isAcceptable(dtde.getLocation(), dtde.getTransferable(), sugestion)) {
                     accept(dtde.getLocation(), dtde.getTransferable());
                     dtde.acceptDrop(DnDConstants.ACTION_COPY_OR_MOVE);
                 } else {
@@ -212,7 +219,7 @@ public class TopPanel extends JPanel {
             //            gr.fill (hoverShape.shape);
             if (innerDragingInProgress)
                 gr.setColor(COLOR_HOVER_DRAW_DND);
-            else 
+            else
                 gr.setColor(COLOR_HOVER_DRAW);
             gr.draw(hoverShape.shape);
             gr.translate(- hoverShape.x, - hoverShape.y);
@@ -330,7 +337,7 @@ public class TopPanel extends JPanel {
             repaint();
     }
     
-    public boolean isAcceptable(final Point point, final Transferable transferable) {
+    public boolean isAcceptable(final Point point, final Transferable transferable, final AcceptSuggestion suggestion) {
         final DesignDocument document = devicePanel.getController().getDocument();
         if (document == null)
             return false;
@@ -338,7 +345,7 @@ public class TopPanel extends JPanel {
         document.getTransactionManager().readAccess(new Runnable() {
             public void run() {
                 DesignComponent component = devicePanel.getDesignComponentAt(point);
-                ret[0] = AcceptSupport.isAcceptable(component, transferable, null);
+                ret[0] = AcceptSupport.isAcceptable(component, transferable, suggestion);
             }
         });
         return ret[0];
@@ -471,30 +478,36 @@ public class TopPanel extends JPanel {
             this.enableInjector = enableInjector;
         }
     }
+    //Not implemented
+    private ScreenDisplayDataFlavorSupport.Position getHorizontalPosition() {
+        return ScreenDisplayDataFlavorSupport.Position.SOUTH;
+    }
     
-    private class InnerTransferable implements Transferable {
-        
-        private DesignComponent comnponent;
-        
-        private InnerTransferable(DesignComponent component) {
-            this.comnponent = component;
-        }
-        
-        public DataFlavor[] getTransferDataFlavors() {
-            return new DataFlavor[]{DesignComponentDataFlavor.DESIGN_COMPONENT_DATA_FLAVOR};
-        }
-        
-        public boolean isDataFlavorSupported(DataFlavor flavor) {
-            if (flavor instanceof DesignComponentDataFlavor)
-                return true;
-            return false;
-        }
-        
-        public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException, IOException {
-            if (flavor instanceof DesignComponentDataFlavor)
-                return comnponent;
+    private ScreenDisplayDataFlavorSupport.Position getVerticalPosition() {
+        return ScreenDisplayDataFlavorSupport.Position.EAST;
+    }
+    
+    private AcceptSuggestion getSugestions(Transferable transferable) {
+        ScreenDisplaylTransferable sdt = null;
+        if (transferable instanceof ScreenDisplaylTransferable) {
+            sdt = (ScreenDisplaylTransferable) transferable;
+            sdt.updatePosition(getHorizontalPosition(), getVerticalPosition());
+        } else
             return null;
-        }
         
+        ScreenDisplayPresenter displayPresenter = null;
+        try {
+            DesignComponent component = (DesignComponent) sdt.getTransferData(org.netbeans.modules.vmd.api.model.common.DesignComponentDataFlavor.DESIGN_COMPONENT_DATA_FLAVOR);
+            if (component != null)
+                return null;
+            displayPresenter = component.getPresenter(ScreenDisplayPresenter.class);
+        } catch (UnsupportedFlavorException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        if (displayPresenter == null)
+            return null;
+        return displayPresenter.createSuggestion(transferable);
     }
 }

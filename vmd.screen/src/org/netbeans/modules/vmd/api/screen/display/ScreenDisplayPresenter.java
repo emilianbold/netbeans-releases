@@ -24,7 +24,9 @@ import org.netbeans.modules.vmd.api.model.Presenter;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.datatransfer.Transferable;
 import java.util.Collection;
+import org.netbeans.modules.vmd.api.model.common.AcceptSuggestion;
 
 /**
  * A base presenter for the device display component. This presenter occupies the whole device display visible in the screen editor and
@@ -88,6 +90,10 @@ public abstract class ScreenDisplayPresenter extends Presenter {
      */
     public boolean isDraggable() {
         return false;
+    }
+    
+    public AcceptSuggestion createSuggestion(Transferable transferable) {
+        return null;
     }
     
 }

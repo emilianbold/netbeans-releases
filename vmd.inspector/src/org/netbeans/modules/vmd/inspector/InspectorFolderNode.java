@@ -42,6 +42,7 @@ import org.netbeans.modules.vmd.api.io.DataEditorView;
 import org.netbeans.modules.vmd.api.io.DataObjectContext;
 import org.netbeans.modules.vmd.api.model.ComponentProducer;
 import org.netbeans.modules.vmd.api.model.common.AcceptPresenter;
+import org.netbeans.modules.vmd.api.model.common.AcceptSupport;
 import org.netbeans.modules.vmd.api.model.common.DesignComponentDataFlavor;
 import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
 import org.netbeans.modules.vmd.api.properties.common.PropertiesSupport;
@@ -130,7 +131,6 @@ final class InspectorFolderNode extends AbstractNode {
                 public void run() {
                     component = new WeakReference<DesignComponent>(document.getComponentByUID(componentID));
                     transferable = new NodeTransferable(component.get());
-                    //createPasteTypes(transferable, new ArrayList());
                 }
             });
         }
@@ -138,7 +138,6 @@ final class InspectorFolderNode extends AbstractNode {
     }
     
     protected void createPasteTypes(Transferable t, java.util.List s) {
-        System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> CreatePasteType" + this);
         super.createPasteTypes(t, s);
         PasteType paste = getDropType(t, DnDConstants.ACTION_COPY, -1 );
         if( null != paste )
@@ -159,32 +158,22 @@ final class InspectorFolderNode extends AbstractNode {
         final DesignComponent ifnc = transComponent;
         ifnc.getDocument().getTransactionManager().readAccess(new Runnable() {
             public void run() {
-                Map<AcceptPresenter, ComponentProducer> presentersMap = new HashMap<AcceptPresenter,ComponentProducer>();
-                if (component == null)
+                final Transferable trans = new NodeTransferable(ifnc);
+                if (component.get() != null && AcceptSupport.isAcceptable(component.get(),trans, null)) {
+                    pasteType = new PasteType() {
+                        public Transferable paste() throws IOException {
+                            ifnc.getDocument().getTransactionManager().writeAccess(new Runnable() {
+                                public void run() {
+                                    if (component.get() != null)
+                                        AcceptSupport.accept(component.get(), trans, null);
+                                }
+                            });
+                            return t;
+                        }
+                    };
                     return;
-                for ( AcceptPresenter presenter : component.get().getPresenters(AcceptPresenter.class) ){
-                    ComponentProducer producer = DocumentSupport.getComponentProducer(ifnc.getDocument(), ifnc.getType());
-                    presentersMap.put(presenter, producer);
-                }
-                for (final AcceptPresenter presenter : presentersMap.keySet()) {
-                    final Transferable trans = new NodeTransferable(ifnc);
-                    System.out.println(presenter);
-                    System.out.println(presenter.isAcceptable(trans, null));
-                    if (presenter.getKind() == AcceptPresenter.Kind.TRANSFERABLE &&  presenter.isAcceptable(trans, null)) {
-                        pasteType = new PasteType() {
-                            public Transferable paste() throws IOException {
-                                ifnc.getDocument().getTransactionManager().writeAccess(new Runnable() {
-                                    public void run() {
-                                        presenter.accept(trans, null);
-                                    }
-                                });
-                                return t;
-                            }
-                        };
-                        return;
-                    } else
-                        pasteType = null;
-                }
+                } else
+                    pasteType = null;
             }
         });
         
@@ -198,7 +187,7 @@ final class InspectorFolderNode extends AbstractNode {
     public boolean canCut() {
         return true;
     }
-
+    
     @Override
     public boolean canCopy() {
         return true;
@@ -208,7 +197,7 @@ final class InspectorFolderNode extends AbstractNode {
     public Transferable clipboardCopy() throws IOException {
         return transferable;
     }
-
+    
     @Override
     public Transferable clipboardCut() throws IOException {
         return transferable;
