@@ -19,23 +19,22 @@
 
 package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.entity;
 
+import java.io.IOException;
 import javax.swing.Action;
-import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
-import org.openide.actions.*;
 import org.openide.cookies.OpenCookie;
 import org.openide.loaders.DataObject;
-import org.openide.nodes.*;
 import org.openide.util.actions.SystemAction;
 import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action.AddCmpFieldAction;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.EntityMethodController;
 import org.netbeans.modules.j2ee.common.DDEditorNavigator;
+import org.openide.actions.OpenAction;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.nodes.AbstractNode;
 import org.openide.util.Exceptions;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
-
 
 /**
  *
@@ -43,19 +42,17 @@ import org.openide.util.lookup.InstanceContent;
  */
 public class CMPFieldsNode extends AbstractNode implements OpenCookie {
     private final EntityMethodController controller;
-    private final EjbJar ejbJar;
     private final FileObject ddFile;
     private Entity entity;
 
-    public CMPFieldsNode(EntityMethodController controller, Entity model, EjbJar jar, FileObject ddFile) {
-        this(new InstanceContent(), controller, model, jar, ddFile);
+    public CMPFieldsNode(EntityMethodController controller, Entity model, FileObject ddFile) throws IOException {
+        this(new InstanceContent(), controller, model, ddFile);
     }
     
-    private CMPFieldsNode(InstanceContent content, EntityMethodController controller, Entity model, EjbJar jar, FileObject ddFile) {
-        super(new CMFieldChildren(controller, model, jar, ddFile), new AbstractLookup(content));
+    private CMPFieldsNode(InstanceContent content, EntityMethodController controller, Entity model, FileObject ddFile) throws IOException {
+        super(new CMFieldChildren(controller, model, ddFile), new AbstractLookup(content));
         entity = model;
         this.controller = controller;
-        this.ejbJar = jar;
         this.ddFile = ddFile;
         content.add(this);
         //TODO: RETOUCHE

@@ -21,11 +21,17 @@ package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.entity;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.*;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.LinkedList;
+import java.util.List;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.j2ee.dd.api.common.CommonDDBean;
 import org.netbeans.modules.j2ee.dd.api.ejb.CmpField;
 import org.netbeans.modules.j2ee.dd.api.ejb.CmrField;
+import org.netbeans.modules.j2ee.dd.api.ejb.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbRelation;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbRelationshipRole;
@@ -33,7 +39,8 @@ import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
 import org.netbeans.modules.j2ee.dd.api.ejb.Relationships;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.EntityMethodController;
 import org.openide.filesystems.FileObject;
-import org.openide.nodes.*;
+import org.openide.nodes.Children;
+import org.openide.nodes.Node;
 
 
 
@@ -41,18 +48,16 @@ import org.openide.nodes.*;
  * @author Chris Webster
  */
 public class CMFieldChildren extends Children.Keys<CommonDDBean> implements PropertyChangeListener {
+    
     private final EntityMethodController controller;
     private final Entity model;
     private final EjbJar ejbJar;
     private final FileObject ddFile;
     
-    public CMFieldChildren(EntityMethodController controller,
-                           Entity model,
-                           EjbJar jar,
-                           FileObject ddFile) {
+    public CMFieldChildren(EntityMethodController controller, Entity model, FileObject ddFile) throws IOException {
         this.model = model;
         this.controller = controller;
-        this.ejbJar = jar;
+        this.ejbJar = DDProvider.getDefault().getDDRoot(ddFile); // EJB 2.1
         this.ddFile = ddFile;
     }
     

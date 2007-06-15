@@ -26,13 +26,18 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
 import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
-import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
+import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.EntityMethodController;
+import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.shared.EjbViewController;
+import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.shared.MethodsNode;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -47,13 +52,23 @@ public final class EntityChildren extends Children.Keys<EntityChildren.KEY> impl
     private final static int CMP = 2;
     
     protected enum KEY { REMOTE, LOCAL, CMP_FIELDS }
-    
+
+    private final JavaSource javaSource;
     private final String ejbClass;
-    private final MetadataModel<EjbJarMetadata> model;
+    private final EjbJar ejbModule;
+    private final EntityMethodController controller;
+    private final Entity model; // EJB 2.1
     
-    public EntityChildren(String ejbClass, MetadataModel<EjbJarMetadata> model) {
+    public EntityChildren(JavaSource javaSource, final String ejbClass, EjbJar ejbModule) throws IOException {
+        this.javaSource = javaSource;
         this.ejbClass = ejbClass;
-        this.model = model;
+        this.ejbModule = ejbModule;;
+        this.controller = new EntityMethodController(ejbClass, ejbModule.getMetadataModel());
+        this.model = ejbModule.getMetadataModel().runReadAction(new MetadataModelAction<EjbJarMetadata, Entity>() {
+            public Entity run(EjbJarMetadata metadata) throws Exception {
+                return (Entity) metadata.findByEjbClass(ejbClass);
+            }
+        });
     }
     
     protected void addNotify() {
@@ -70,7 +85,7 @@ public final class EntityChildren extends Children.Keys<EntityChildren.KEY> impl
     private void updateKeys() throws IOException {
         final boolean[] results = new boolean[] { false, false, false };
         
-        model.runReadAction(new MetadataModelAction<EjbJarMetadata, Void>() {
+        ejbModule.getMetadataModel().runReadAction(new MetadataModelAction<EjbJarMetadata, Void>() {
             public Void run(EjbJarMetadata metadata) throws Exception {
                 Entity entity = (Entity) metadata.findByEjbClass(ejbClass);
                 if (entity != null) {
@@ -106,27 +121,30 @@ public final class EntityChildren extends Children.Keys<EntityChildren.KEY> impl
     }
      
     protected Node[] createNodes(KEY key) {
-        //TODO: RETOUCHE
-//        if (key == KEY.LOCAL) {
-//            Children c = new MethodChildren(controller, model, controller.getLocalInterfaces(), true, ddFile);
-//            MethodsNode n = new MethodsNode(model, jar, srcPath, c, true);
-//            n.setIconBaseWithExtension("org/netbeans/modules/j2ee/ejbcore/resources/LocalMethodContainerIcon.gif");
-//            n.setDisplayName(NbBundle.getMessage(EjbViewController.class, "LBL_LocalMethods"));
-//            return new Node[] { n };
-//        }
-//        if (key == KEY.REMOTE) {
-//            Children c = new MethodChildren(controller, model, controller.getRemoteInterfaces(), false, ddFile);
-//            MethodsNode n = new MethodsNode(model, jar, srcPath, c, false);
-//            n.setIconBaseWithExtension("org/netbeans/modules/j2ee/ejbcore/resources/RemoteMethodContainerIcon.gif");
-//            n.setDisplayName(NbBundle.getMessage(EjbViewController.class, "LBL_RemoteMethods"));
-//            return new Node[] { n };
-//        }
-//        if (key == KEY.CMP_FIELDS) {
-//            CMPFieldsNode n = new CMPFieldsNode(controller,model,jar, ddFile);
-//            n.setIconBaseWithExtension("org/netbeans/modules/j2ee/ejbcore/resources/CMFieldContainerIcon.gif");
-//            n.setDisplayName(NbBundle.getMessage(EntityChildren.class, "LBL_CMPFields"));
-//            return new Node[] { n };
-//        }
+        if (key == KEY.LOCAL) {
+            Children children = new MethodChildren(javaSource, controller, model, controller.getLocalInterfaces(), true, ejbModule.getDeploymentDescriptor());
+            MethodsNode n = new MethodsNode(ejbClass, ejbModule, children, true);
+            n.setIconBaseWithExtension("org/netbeans/modules/j2ee/ejbcore/resources/LocalMethodContainerIcon.gif");
+            n.setDisplayName(NbBundle.getMessage(EjbViewController.class, "LBL_LocalMethods"));
+            return new Node[] { n };
+        }
+        if (key == KEY.REMOTE) {
+            Children children = new MethodChildren(javaSource, controller, model, controller.getRemoteInterfaces(), false, ejbModule.getDeploymentDescriptor());
+            MethodsNode n = new MethodsNode(ejbClass, ejbModule, children, false);
+            n.setIconBaseWithExtension("org/netbeans/modules/j2ee/ejbcore/resources/RemoteMethodContainerIcon.gif");
+            n.setDisplayName(NbBundle.getMessage(EjbViewController.class, "LBL_RemoteMethods"));
+            return new Node[] { n };
+        }
+        if (key == KEY.CMP_FIELDS) {
+            try {
+                CMPFieldsNode n = new CMPFieldsNode(controller, model, ejbModule.getDeploymentDescriptor());
+                n.setIconBaseWithExtension("org/netbeans/modules/j2ee/ejbcore/resources/CMFieldContainerIcon.gif");
+                n.setDisplayName(NbBundle.getMessage(EntityChildren.class, "LBL_CMPFields"));
+                return new Node[] { n };
+            } catch (IOException ioe) {
+                Exceptions.printStackTrace(ioe);
+            }
+        }
         return null;
     }
     

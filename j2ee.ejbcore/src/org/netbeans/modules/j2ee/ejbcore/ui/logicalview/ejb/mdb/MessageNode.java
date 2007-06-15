@@ -72,7 +72,7 @@ public class MessageNode extends AbstractNode implements OpenCookie {
             Exceptions.printStackTrace(ioe);
         }
         setName(ejbName + "");
-        controller = new EjbViewController(ejbClass, ejbModule, project);
+        controller = new EjbViewController(ejbClass, ejbModule);
         setDisplayName();
         nameChangeListener = new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent pce) {

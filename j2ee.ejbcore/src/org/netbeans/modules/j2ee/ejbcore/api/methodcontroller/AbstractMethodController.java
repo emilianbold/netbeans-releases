@@ -556,6 +556,9 @@ public abstract class AbstractMethodController extends EjbMethodController {
     }
 
     private boolean methodFindInClass(final String clazz, final MethodModel methodModel) throws IOException {
+        if (clazz == null) {
+            return false;
+        }
         FileObject ejbClassFO = model.runReadAction(new MetadataModelAction<EjbJarMetadata, FileObject>() {
             public FileObject run(EjbJarMetadata metadata) throws Exception {
                 return metadata.findResource(Utils.toResourceName(ejbClass));

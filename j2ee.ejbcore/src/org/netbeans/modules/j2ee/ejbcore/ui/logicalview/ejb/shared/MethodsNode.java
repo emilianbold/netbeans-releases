@@ -21,7 +21,6 @@ package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.shared;
 
 import java.io.IOException;
 import javax.swing.Action;
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
 import org.netbeans.modules.j2ee.dd.api.ejb.EntityAndSession;
@@ -53,15 +52,15 @@ public class MethodsNode extends AbstractNode implements OpenCookie {
     private final EjbViewController controller;
     private boolean local;
 
-    public MethodsNode(String ejbClass, EjbJar ejbModule, Project project, Children children, boolean local) {
-        this(new InstanceContent(), ejbClass, ejbModule, project, children, local);
+    public MethodsNode(String ejbClass, EjbJar ejbModule, Children children, boolean local) {
+        this(new InstanceContent(), ejbClass, ejbModule, children, local);
     }
     
-    private MethodsNode(InstanceContent content, String ejbClass, EjbJar ejbModule, Project project, Children children, boolean local) {
+    private MethodsNode(InstanceContent content, String ejbClass, EjbJar ejbModule, Children children, boolean local) {
         super(children, new AbstractLookup(content));
         this.ejbClass = ejbClass;
         this.model = ejbModule.getMetadataModel();
-        this.controller = new EjbViewController(ejbClass, ejbModule, project);
+        this.controller = new EjbViewController(ejbClass, ejbModule);
         this.local = local;
         content.add(this);
         if (controller.getBeanDo() != null) {

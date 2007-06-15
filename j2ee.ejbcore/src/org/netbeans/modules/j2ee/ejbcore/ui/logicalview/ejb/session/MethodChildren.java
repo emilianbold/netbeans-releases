@@ -19,8 +19,17 @@
 
 package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.session;
 
+import java.awt.Image;
+import java.io.IOException;
 import java.util.Collection;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.modules.j2ee.common.method.MethodModel;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.SessionMethodController;
+import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.shared.ComponentMethodModel;
+import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.shared.ComponentMethodViewStrategy;
+import org.openide.cookies.OpenCookie;
+import org.openide.filesystems.FileObject;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -28,18 +37,17 @@ import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.SessionMethodContr
  * @author Martin Adamek
  */
 
-//TODO: RETOUCHE
+public class MethodChildren extends ComponentMethodModel {
 
-public class MethodChildren /*extends ComponentMethodModel */{
-//    private ComponentMethodViewStrategy mvs;
+    private ComponentMethodViewStrategy mvs;
     private final SessionMethodController controller;
     private final boolean local;
     
-    public MethodChildren(SessionMethodController smc, Collection interfaces, boolean local) {
-//        super(smc.getBeanClass(), interfaces);
+    public MethodChildren(JavaSource javaSource, SessionMethodController smc, Collection interfaces, boolean local) {
+        super(javaSource, smc.getBeanClass(), interfaces);
         controller = smc;
         this.local = local;
-//        mvs = new SessionStrategy();
+        mvs = new SessionStrategy();
     }
 
     protected Collection getInterfaces() {
@@ -50,29 +58,32 @@ public class MethodChildren /*extends ComponentMethodModel */{
         }
     }
     
-//    public ComponentMethodViewStrategy createViewStrategy() {
-//        return mvs;
-//    }
-//
-//    private class SessionStrategy implements ComponentMethodViewStrategy {
-//        
-//        public void deleteImplMethod(Method me, JavaClass implClass, Collection interfaces) {
-//            controller.delete(me, local);
-//        }
-//
-//        public Image getBadge(Method me, Collection interfaces) {
-//            return null;
-//        }
-//
-//        public Image getIcon(Method me, java.util.Collection interfaces) {
-//            IconVisitor iv = new IconVisitor();
-//            return Utilities.loadImage(iv.getIconUrl(controller.getMethodTypeFromInterface(me)));
-//        }
-//
-//        public OpenCookie getOpenCookie(Method me, JavaClass implClass, Collection interfaces) {
-//            Method impl = controller.getPrimaryImplementation(me);
+    public ComponentMethodViewStrategy createViewStrategy() {
+        return mvs;
+    }
+
+    private class SessionStrategy implements ComponentMethodViewStrategy {
+        
+        public void deleteImplMethod(MethodModel me, String implClass, FileObject implClassFO, Collection interfaces) throws IOException {
+            controller.delete(me, local);
+        }
+
+        public Image getBadge(MethodModel me, Collection interfaces) {
+            return null;
+        }
+
+        public Image getIcon(MethodModel me, Collection interfaces) {
+            IconVisitor iv = new IconVisitor();
+            return Utilities.loadImage(iv.getIconUrl(controller.getMethodTypeFromInterface(me)));
+        }
+
+        public OpenCookie getOpenCookie(MethodModel me, String implClass, FileObject implClassFO, Collection interfaces) {
+            MethodModel impl = controller.getPrimaryImplementation(me);
+            // TODO: OpenCookie
 //            return (OpenCookie) JMIUtils.getCookie(impl, OpenCookie.class);
-//        }
-//        
-//    }
+            return null;
+        }
+
+    }
+
 }

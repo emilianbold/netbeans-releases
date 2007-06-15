@@ -68,7 +68,7 @@ public final class EntityMethodController extends AbstractMethodController {
         this.model = model;
         this.modifiersPublicAbstract.add(Modifier.PUBLIC);
         this.modifiersPublicAbstract.add(Modifier.ABSTRACT);
-        final String[] results = new String[2];
+        final String[] results = new String[4];
         this.ejbClass = ejbClass;
         try {
             model.runReadAction(new MetadataModelAction<EjbJarMetadata, FileObject>() {
@@ -102,7 +102,7 @@ public final class EntityMethodController extends AbstractMethodController {
         return getMethods(field.getCmrFieldName());
     }
 
-    public void deleteQueryMapping(ExecutableElement method, FileObject ddFileObject) throws IOException {
+    public void deleteQueryMapping(MethodModel method, FileObject ddFileObject) throws IOException {
 //        Query[] queries = model.getQuery();
 //        for (Query query : queries) {
 //            String methodName = query.getQueryMethod().getMethodName();

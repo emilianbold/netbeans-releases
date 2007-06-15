@@ -37,11 +37,11 @@ public final class EjbNodesFactoryImpl implements EjbNodesFactory {
     }
     
     public Node createSessionNode(String ejbClass, EjbJar ejbModule, Project project) {
-        return new SessionNode(ejbClass, ejbModule, project);
+        return SessionNode.create(ejbClass, ejbModule, project);
     }
     
     public Node createEntityNode(String ejbClass, EjbJar ejbModule, Project project) {
-        return new EntityNode(ejbClass, ejbModule, project);
+        return EntityNode.create(ejbClass, ejbModule, project);
     }
     
     public Node createMessageNode(String ejbClass, EjbJar ejbModule, Project project) {

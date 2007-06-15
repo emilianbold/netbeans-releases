@@ -17,13 +17,11 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-
 package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.session;
 
 import javax.swing.Action;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbReference;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action.DeleteEJBDialog;
-import org.openide.actions.*;
 import org.openide.loaders.DataObject;
 import org.openide.util.HelpCtx;
 import org.openide.util.Utilities;
@@ -34,6 +32,9 @@ import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.dd.api.ejb.Ejb;
@@ -43,14 +44,16 @@ import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.shared.EjbViewContro
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action.AddActionGroup;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action.GoToSourceActionGroup;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
+import org.openide.actions.DeleteAction;
+import org.openide.actions.OpenAction;
 import org.openide.cookies.OpenCookie;
+import org.openide.filesystems.FileObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
-
 
 /**
  * @author Chris Webster
@@ -62,12 +65,23 @@ public final class SessionNode extends AbstractNode implements OpenCookie {
     private final PropertyChangeListener nameChangeListener;
     private final EjbViewController ejbViewController;
     
-    public SessionNode(String ejbClass, EjbJar ejbModule, Project project) {
-        this(new InstanceContent(), ejbClass, ejbModule, project);
+    public static SessionNode create(String ejbClass, EjbJar ejbModule, Project project) {
+        JavaSource javaSource = null;
+        FileObject[] javaSources = ejbModule.getJavaSources();
+        if (javaSources.length > 0) {
+            ClasspathInfo cpInfo = ClasspathInfo.create(
+                    ClassPath.getClassPath(javaSources[0], ClassPath.BOOT),
+                    ClassPath.getClassPath(javaSources[0], ClassPath.COMPILE),
+                    ClassPath.getClassPath(javaSources[0], ClassPath.SOURCE)
+                    );
+            javaSource = JavaSource.create(cpInfo);
+        }
+        assert javaSource != null;
+        return new SessionNode(new InstanceContent(), javaSource, ejbClass, ejbModule);
     }
     
-    private SessionNode(InstanceContent instanceContent, final String ejbClass, EjbJar ejbModule, Project project) {
-        super(new SessionChildren(ejbClass, ejbModule.getMetadataModel()), new AbstractLookup(instanceContent));
+    private SessionNode(InstanceContent instanceContent, JavaSource javaSource, final String ejbClass, EjbJar ejbModule) {
+        super(new SessionChildren(javaSource, ejbClass, ejbModule), new AbstractLookup(instanceContent));
         setIconBaseWithExtension("org/netbeans/modules/j2ee/ejbcore/ui/logicalview/ejb/session/SessionNodeIcon.gif");
         String ejbName = null;
         try {
@@ -81,7 +95,7 @@ public final class SessionNode extends AbstractNode implements OpenCookie {
             Exceptions.printStackTrace(ioe);
         }
         setName(ejbName + "");
-        ejbViewController = new EjbViewController(ejbClass, ejbModule, project);
+        ejbViewController = new EjbViewController(ejbClass, ejbModule);
         setDisplayName();
         nameChangeListener = new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent pce) {

@@ -170,9 +170,9 @@ public final class MethodModelSupport {
      * @throws NullPointerException if any of the parameters is <code>null</code>.
      * @return true if method and methodModel have same signature, false otherwise
      */
-    public static boolean isSameMethod(CompilationInfo compilationInfo, ExecutableElement method, MethodModel methodModel) {
+    public static boolean isSameMethod(CompilationController controller, ExecutableElement method, MethodModel methodModel) {
         //TODO: RETOUCHE fix this method, see #90505
-        Parameters.notNull("compilationInfo", compilationInfo); // NOI18N
+        Parameters.notNull("compilationInfo", controller); // NOI18N
         Parameters.notNull("method", method); // NOI18N
         Parameters.notNull("methodModel", methodModel); // NOI18N
         if (!method.getSimpleName().contentEquals(methodModel.getName())) {
@@ -184,11 +184,9 @@ public final class MethodModelSupport {
         }
         for (int i = 0; i < methodParams.size(); i++) {
             VariableElement variableElement = methodParams.get(i);
-            TypeMirror variableElementType = variableElement.asType();
+            String variableElementType = getTypeName(controller, variableElement.asType());
             MethodModel.Variable variable = methodModel.getParameters().get(i);
-            TypeElement typeElement = (TypeElement) method.getEnclosingElement();
-            TypeMirror variableType = compilationInfo.getTreeUtilities().parseType(variable.getType(), typeElement);
-            if (!compilationInfo.getTypes().isSameType(variableElementType, variableType)) {
+            if (!variableElementType.equals(variable.getType())) {
                 return false;
             }
         }

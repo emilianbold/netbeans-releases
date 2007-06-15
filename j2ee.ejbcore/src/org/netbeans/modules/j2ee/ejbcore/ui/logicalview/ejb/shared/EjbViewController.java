@@ -29,13 +29,10 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbReference;
 import org.netbeans.modules.j2ee.common.source.AbstractTask;
 import org.netbeans.modules.j2ee.dd.api.common.EjbRef;
-import org.netbeans.modules.j2ee.dd.api.common.MessageDestination;
-import org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException;
 import org.netbeans.modules.j2ee.dd.api.ejb.AssemblyDescriptor;
 import org.netbeans.modules.j2ee.dd.api.ejb.ContainerTransaction;
 import org.netbeans.modules.j2ee.dd.api.ejb.DDProvider;
@@ -47,11 +44,9 @@ import org.netbeans.modules.j2ee.dd.api.ejb.EjbRelationshipRole;
 import org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans;
 import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
 import org.netbeans.modules.j2ee.dd.api.ejb.EntityAndSession;
-import org.netbeans.modules.j2ee.dd.api.ejb.MessageDriven;
 import org.netbeans.modules.j2ee.dd.api.ejb.Method;
 import org.netbeans.modules.j2ee.dd.api.ejb.MethodPermission;
 import org.netbeans.modules.j2ee.dd.api.ejb.Relationships;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.ejbcore.Utils;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -72,12 +67,10 @@ public final class EjbViewController {
     
     private final String ejbClass;
     private final org.netbeans.modules.j2ee.api.ejbjar.EjbJar ejbModule;
-    private final Project project;
     
-    public EjbViewController(String ejbClass, org.netbeans.modules.j2ee.api.ejbjar.EjbJar ejbModule, Project project) {
+    public EjbViewController(String ejbClass, org.netbeans.modules.j2ee.api.ejbjar.EjbJar ejbModule) {
         this.ejbClass = ejbClass;
         this.ejbModule = ejbModule;
-        this.project = project;
     }
     
     public String getDisplayName() {
@@ -108,27 +101,28 @@ public final class EjbViewController {
                 public Void run(EjbJarMetadata metadata) throws Exception {
                     EjbJar ejbJar = metadata.getRoot();
                     EnterpriseBeans beans = ejbJar.getEnterpriseBeans();
-                    J2eeModuleProvider j2eeModuleProvider = project.getLookup().lookup(J2eeModuleProvider.class);
-                    j2eeModuleProvider.getConfigSupport().ensureConfigurationReady();
-                    Ejb ejb = metadata.findByEjbClass(ejbClass);
-                    deleteTraces(ejb, ejbJar);
-                    // for MDBs remove message destination from assembly descriptor
-                    if (ejb instanceof MessageDriven) {
-                        try {
-                            AssemblyDescriptor assemblyDescriptor = ejbJar.getSingleAssemblyDescriptor();
-                            String mdLinkName = ((MessageDriven) ejb).getMessageDestinationLink();
-                            MessageDestination[] messageDestinations = assemblyDescriptor.getMessageDestination();
-                            for (MessageDestination messageDestination : messageDestinations) {
-                                if (messageDestination.getMessageDestinationName().equals(mdLinkName)) {
-                                    assemblyDescriptor.removeMessageDestination(messageDestination);
-                                    break;
-                                }
-                            }
-                        } catch (VersionNotSupportedException ex) {
-                            Exceptions.printStackTrace(ex);
-                        }
-                    }
-                    beans.removeEjb(ejb);
+                    // XXX get project (from EjbJar)
+//                    J2eeModuleProvider j2eeModuleProvider = project.getLookup().lookup(J2eeModuleProvider.class);
+//                    j2eeModuleProvider.getConfigSupport().ensureConfigurationReady();
+//                    Ejb ejb = metadata.findByEjbClass(ejbClass);
+//                    deleteTraces(ejb, ejbJar);
+//                    // for MDBs remove message destination from assembly descriptor
+//                    if (ejb instanceof MessageDriven) {
+//                        try {
+//                            AssemblyDescriptor assemblyDescriptor = ejbJar.getSingleAssemblyDescriptor();
+//                            String mdLinkName = ((MessageDriven) ejb).getMessageDestinationLink();
+//                            MessageDestination[] messageDestinations = assemblyDescriptor.getMessageDestination();
+//                            for (MessageDestination messageDestination : messageDestinations) {
+//                                if (messageDestination.getMessageDestinationName().equals(mdLinkName)) {
+//                                    assemblyDescriptor.removeMessageDestination(messageDestination);
+//                                    break;
+//                                }
+//                            }
+//                        } catch (VersionNotSupportedException ex) {
+//                            Exceptions.printStackTrace(ex);
+//                        }
+//                    }
+//                    beans.removeEjb(ejb);
                     return null;
                 }
             });
