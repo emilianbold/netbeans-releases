@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.autoupdate.ui;
 
-import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.logging.Logger;
@@ -111,7 +110,7 @@ public class InstalledTableModel extends UnitCategoryTableModel {
                 if (Utilities.modulesOnly ()) {
                     res = u.getCategoryName ();
                 } else {
-                    res = u.getDisplayDate ();
+                    res = u.getRelevantElement ().isEnabled ();
                 }
                 break;                
             case 3 :
@@ -140,7 +139,7 @@ public class InstalledTableModel extends UnitCategoryTableModel {
             res = String.class;
             break;            
         case 2 :
-            res = String.class;
+            res = (Utilities.modulesOnly ()) ?  String.class : Boolean.class;
             break;
         case 3 :
             res = Boolean.class;
@@ -164,7 +163,7 @@ public class InstalledTableModel extends UnitCategoryTableModel {
             if (Utilities.modulesOnly ()) {
                 return getBundle ("InstalledTableModel_Columns_Category");            
             } else {
-                return getBundle ("InstalledTableModel_Columns_InstallDate");
+                return getBundle ("InstalledTableModel_Columns_Enabled");                        
             }
         case 3 :
             return getBundle ("InstalledTableModel_Columns_Enabled");                        
@@ -187,7 +186,7 @@ public class InstalledTableModel extends UnitCategoryTableModel {
         case 1:
             return super.getMinWidth(header, col)*4;
         case 2:
-            return super.getMinWidth(header, col)*2;
+            return (Utilities.modulesOnly ()) ? super.getMinWidth(header, col)*2 : super.getMinWidth(header, col);
         }
         return super.getMinWidth(header, col);
     }
@@ -215,7 +214,7 @@ public class InstalledTableModel extends UnitCategoryTableModel {
                     if (Utilities.modulesOnly ()) {
                         return Unit.compareCategories(unit1, unit2);
                     } else {
-                        return Unit.compareSimpleFormatDates (unit1, unit2);
+                        return Unit.Installed.compareEnabledState(unit1, unit2);
                     }
                 } else if (getColumnName(3).equals(columnIdentifier)) {
                     return Unit.Installed.compareEnabledState(unit1, unit2);

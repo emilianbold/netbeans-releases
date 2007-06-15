@@ -80,10 +80,8 @@ public class UnitTable extends JTable {
     
     void setEnableRenderer (TableCellRenderer renderer) {
         enableRenderer = renderer;
-        if (Utilities.modulesOnly()) {
-            TableColumnModel columnModel = getColumnModel ();
-            columnModel.getColumn (3).setCellRenderer (renderer);
-        }
+        TableColumnModel columnModel = getColumnModel();
+        columnModel.getColumn(Utilities.modulesOnly() ? 3 : 2).setCellRenderer(renderer);
     }
     
     void resortByDefault () {
