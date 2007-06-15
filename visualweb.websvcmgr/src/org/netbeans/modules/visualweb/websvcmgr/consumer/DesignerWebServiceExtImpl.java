@@ -204,10 +204,7 @@ public class DesignerWebServiceExtImpl implements WebServiceManagerExt {
             Map<String, String> methodToDataProviderClassMap = new HashMap<String, String>();
             String className = port.getName() + "Client";
             String serviceClassName = wsMetadataDesc.getPackageName() + "." + wsMetadataDesc.getName();
-            
             String javaName = port.getJavaName();
-            
-            proxyBeanNames.put(port.getJavaName(), wsMetadataDesc.getPackageName() + "." + className);
             
             File webserviceClient = new File(sourceDir, className + ".java"); // NOI18N
             File webserviceClientBeanInfo = new File(dtSourceDir, className + "BeanInfo.java"); // NOI18N
@@ -291,11 +288,12 @@ public class DesignerWebServiceExtImpl implements WebServiceManagerExt {
                 beanInfoWriter.close();
                 
                 // Now generate the data provider classes
+                HashMap<String, String> methodToDataProviderTempMap = new HashMap<String,String>();
                 for( Iterator iter = beanWriter.getDataProviders().iterator(); iter.hasNext(); ) {
                     DataProviderInfo dp = (DataProviderInfo)iter.next();
                     
                     // update the Port method name to dpClassName mapping
-                    methodToDataProviderClassMap.put(Util.getMethodSignatureAsString(dp.getJavaMethod()),
+                    methodToDataProviderTempMap.put(Util.getMethodSignatureAsString(dp.getJavaMethod()),
                             wsMetadataDesc.getPackageName() + "." + dp.getClassName());
                     
                     try {
@@ -328,10 +326,17 @@ public class DesignerWebServiceExtImpl implements WebServiceManagerExt {
                     }
                 }
                 
-                // This will be persisted for next IDE session                
-                portDataProviderMap.put(port.getJavaName(), methodToDataProviderClassMap);
-                
                 copyIcons(dtSourceDir);
+                
+                // This will be persisted for next IDE session (all the persisted data
+                // needs to be recorded last to prevent errors from corrupting the data structure
+                portDataProviderMap.put(port.getName(), methodToDataProviderClassMap);
+                proxyBeanNames.put(port.getName(), wsMetadataDesc.getPackageName() + "." + className);
+                
+                for (String key : methodToDataProviderTempMap.keySet()) {
+                    String value = methodToDataProviderTempMap.get(key);
+                    methodToDataProviderClassMap.put(key, value);
+                }
                 
                 portsCreated++;
             } catch(IOException ioe) {

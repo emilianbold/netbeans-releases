@@ -178,10 +178,15 @@ public class DesignerWebServiceTransferManager implements WebServiceTransferMana
             // webservice port/method node is even dragged onto the designer 
             // without dropping
             WebServiceDescriptor wsDescriptor = getProxyDescriptorForProject(wsData);
-            addJarReferences( (wsDescriptor.getWsType() == wsDescriptor.JAX_WS_TYPE), WebServiceLibReferenceHelper.getActiveProject(), wsDescriptor);
             DesignerWebServiceExtData data =
                     (DesignerWebServiceExtData)wsDescriptor.getConsumerData().get(DesignerWebServiceExtImpl.CONSUMER_ID);
-            return data.getPortToProxyBeanNameMap().get(port.getJavaName());
+            String beanClassName = data.getPortToProxyBeanNameMap().get(port.getName());
+            
+            if (beanClassName != null) {
+                addJarReferences( (wsDescriptor.getWsType() == wsDescriptor.JAX_WS_TYPE), WebServiceLibReferenceHelper.getActiveProject(), wsDescriptor);
+            }
+            
+            return beanClassName;
         }
         
         public Result beanCreatedSetup(DesignBean designBean) {
@@ -230,12 +235,16 @@ public class DesignerWebServiceTransferManager implements WebServiceTransferMana
             // webservice port/method node is even dragged onto the designer
             // without dropping
             WebServiceDescriptor wsDescriptor = getProxyDescriptorForProject(wsData);
-            addJarReferences( (wsDescriptor.getWsType() == wsDescriptor.JAX_WS_TYPE), WebServiceLibReferenceHelper.getActiveProject(), wsDescriptor);
             String methodSig = Util.getMethodSignatureAsString(javaMethod);
-            
             DesignerWebServiceExtData data = 
                     (DesignerWebServiceExtData)wsDescriptor.getConsumerData().get(DesignerWebServiceExtImpl.CONSUMER_ID);
-            return data.getPortToDataProviderMap().get(port.getJavaName()).get(methodSig);
+            String beanClassName = data.getPortToDataProviderMap().get(port.getName()).get(methodSig);
+            
+            if (beanClassName != null) {
+                addJarReferences( (wsDescriptor.getWsType() == wsDescriptor.JAX_WS_TYPE), WebServiceLibReferenceHelper.getActiveProject(), wsDescriptor);
+            }
+            
+            return beanClassName;
         }
         
         public Result beanCreatedSetup(DesignBean designBean) {
