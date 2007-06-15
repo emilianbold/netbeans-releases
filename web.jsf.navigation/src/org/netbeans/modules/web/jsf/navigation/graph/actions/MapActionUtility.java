@@ -19,14 +19,8 @@
 
 package org.netbeans.modules.web.jsf.navigation.graph.actions;
 
-import java.awt.AWTException;
-import java.awt.EventQueue;
-import java.awt.Point;
-import java.awt.Robot;
 import java.awt.event.ActionEvent;
-import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
-import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.lang.Object;
 import java.util.HashSet;
