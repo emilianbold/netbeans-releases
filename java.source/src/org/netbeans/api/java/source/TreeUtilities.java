@@ -244,7 +244,14 @@ public final class TreeUtilities {
      * @return parsed {@link TypeMirror} or null if the given specification cannot be parsed
      */
     public TypeMirror parseType(String expr, TypeElement scope) {
-	return info.getJavacTask().parseType(expr, scope);
+        com.sun.tools.javac.tree.TreeMaker jcMaker = com.sun.tools.javac.tree.TreeMaker.instance(info.getJavacTask().getContext());
+        int oldPos = jcMaker.pos;
+        
+        try {
+            return info.getJavacTask().parseType(expr, scope);
+        } finally {
+            jcMaker.pos = oldPos;
+        }
     }
     
     /**Parses given statement.
@@ -254,7 +261,14 @@ public final class TreeUtilities {
      * @return parsed {@link StatementTree} or null?
      */
     public StatementTree parseStatement(String stmt, SourcePositions[] sourcePositions) {
-	return (StatementTree)info.getJavacTask().parseStatement(stmt, sourcePositions);
+        com.sun.tools.javac.tree.TreeMaker jcMaker = com.sun.tools.javac.tree.TreeMaker.instance(info.getJavacTask().getContext());
+        int oldPos = jcMaker.pos;
+        
+        try {
+            return (StatementTree)info.getJavacTask().parseStatement(stmt, sourcePositions);
+        } finally {
+            jcMaker.pos = oldPos;
+        }
     }
     
     /**Parses given expression.
@@ -264,7 +278,14 @@ public final class TreeUtilities {
      * @return parsed {@link ExpressionTree} or null?
      */
     public ExpressionTree parseExpression(String expr, SourcePositions[] sourcePositions) {
-        return (ExpressionTree)info.getJavacTask().parseExpression(expr, sourcePositions);
+        com.sun.tools.javac.tree.TreeMaker jcMaker = com.sun.tools.javac.tree.TreeMaker.instance(info.getJavacTask().getContext());
+        int oldPos = jcMaker.pos;
+        
+        try {
+            return (ExpressionTree) info.getJavacTask().parseExpression(expr, sourcePositions);
+        } finally {
+            jcMaker.pos = oldPos;
+        }
     }
     
     /**Parses given variable initializer.
@@ -274,7 +295,14 @@ public final class TreeUtilities {
      * @return parsed {@link ExpressionTree} or null?
      */
     public ExpressionTree parseVariableInitializer(String init, SourcePositions[] sourcePositions) {
-	return (ExpressionTree)info.getJavacTask().parseVariableInitializer(init, sourcePositions);
+        com.sun.tools.javac.tree.TreeMaker jcMaker = com.sun.tools.javac.tree.TreeMaker.instance(info.getJavacTask().getContext());
+        int oldPos = jcMaker.pos;
+        
+        try {
+            return (ExpressionTree)info.getJavacTask().parseVariableInitializer(init, sourcePositions);
+        } finally {
+            jcMaker.pos = oldPos;
+        }
     }
 
     /**Parses given static block.
@@ -284,7 +312,14 @@ public final class TreeUtilities {
      * @return parsed {@link BlockTree} or null?
      */
     public BlockTree parseStaticBlock(String block, SourcePositions[] sourcePositions) {
-	return (BlockTree)info.getJavacTask().parseStaticBlock(block, sourcePositions);
+        com.sun.tools.javac.tree.TreeMaker jcMaker = com.sun.tools.javac.tree.TreeMaker.instance(info.getJavacTask().getContext());
+        int oldPos = jcMaker.pos;
+        
+        try {
+            return (BlockTree)info.getJavacTask().parseStaticBlock(block, sourcePositions);
+        } finally {
+            jcMaker.pos = oldPos;
+        }
     }
 
     //XXX: parseAnnotationValue
