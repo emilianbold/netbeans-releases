@@ -32,7 +32,7 @@ public final class DDType {
     private static final String NAME_SUNCMPMAPPING = "sun-cmp-mappings.xml"; // NOI18N
     private static final String NAME_SUNEJBJAR = "sun-ejb-jar.xml"; // NOI18N
     private static final String NAME_SUNWEBAPP = "sun-web.xml"; // NOI18N
-    private static final String NAME_SUNRESOURCE = "sun-resource.xml"; // NOI18N
+    private static final String NAME_SUNRESOURCE = "sun-resources.xml"; // NOI18N
     
     // Type declarations for the different descriptor types.
     public static DDType DD_SUN_WEB_APP = new DDType(NAME_SUNWEBAPP, ModuleType.WAR, DDViewFactory.SunWebDDViewFactory.class);

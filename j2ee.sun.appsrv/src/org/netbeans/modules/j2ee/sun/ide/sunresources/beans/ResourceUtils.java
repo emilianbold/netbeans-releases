@@ -94,7 +94,7 @@ public class ResourceUtils implements WizardConstants{
     static final String[] sysConnpools = {"__CallFlowPool", "__TimerPool", "DerbyPool"}; //NOI18N
     static final String SAMPLE_DATASOURCE = "jdbc/sample";
     static final String SAMPLE_CONNPOOL = "SamplePool";
-    static final String SUN_RESOURCE_FILENAME = "sun-resource.xml"; //NOI18N
+    static final String SUN_RESOURCE_FILENAME = "sun-resources.xml"; //NOI18N
             
     /** Creates a new instance of ResourceUtils */
     public ResourceUtils() {
@@ -1406,7 +1406,7 @@ public class ResourceUtils implements WizardConstants{
     }
      
     /*
-     * Create a new sun-resource graph if none exists or obtain the existing 
+     * Create a new sun-resources graph if none exists or obtain the existing 
      * graph to add new resource.
      */     
     public static Resources getServerResourcesGraph(FileObject targetFolder){
@@ -1451,7 +1451,7 @@ public class ResourceUtils implements WizardConstants{
             FileSystem fs = targetFolder.getFileSystem();
             fs.runAtomicAction(new FileSystem.AtomicAction() {
                 public void run() throws java.io.IOException {
-                    FileObject newfile = resTargetFolder.createData("sun-resource", "xml"); //NOI18N
+                    FileObject newfile = resTargetFolder.createData("sun-resources", "xml"); //NOI18N
                     FileLock lock = newfile.lock();
                     Writer w = null;
                     try {
@@ -1472,7 +1472,7 @@ public class ResourceUtils implements WizardConstants{
     }
     
     /*
-     *  Get sun-resource.xml file if it exists in a given folder.
+     *  Get sun-resources.xml file if it exists in a given folder.
      *  Returns null if no file exists.
      */
     public static File getServerResourcesFile(FileObject targetFolder){
@@ -1493,9 +1493,9 @@ public class ResourceUtils implements WizardConstants{
     }
     
     /*
-     * Consolidates *.sun-resource into sun-resource.xml 
+     * Consolidates *.sun-resource into sun-resources.xml 
      * Called by SunResourceDataObject by the .sun-resource
-     * loader. sun-resource.xml is created once.
+     * loader. sun-resources.xml is created once.
      */
     public static void migrateResources(FileObject targetFolder){
         targetFolder = setUpExists(targetFolder);
