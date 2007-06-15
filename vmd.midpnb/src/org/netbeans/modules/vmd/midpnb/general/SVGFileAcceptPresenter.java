@@ -44,53 +44,64 @@ import org.openide.util.Exceptions;
  *
  * @author Anton Chechel
  */
+
 public class SVGFileAcceptPresenter extends FileAcceptPresenter {
-    
+
     public SVGFileAcceptPresenter() {
         super(SVGAnimatorWrapperCD.PROP_SVG_IMAGE, SVGImageCD.TYPEID, "svg");
     }
-    
-    public Result accept (Transferable transferable, AcceptSuggestion suggestion) {
+
+    public Result accept(Transferable transferable, AcceptSuggestion suggestion) {
         Result result = super.accept(transferable, suggestion);
         DesignComponent svgImage = result.getComponents().iterator().next();
-        final DesignComponent animator = getComponent();
+        DesignComponent animator = getComponent();
         FileObject fileObject = getNodeFile(transferable);
-        svgImage.writeProperty(SVGImageCD.PROP_RESOURCE_PATH , MidpTypes.createStringValue(fileObject.getPath()));
-        MidpDocumentSupport.getCategoryComponent(animator.getDocument(), ResourcesCategoryCD.TYPEID).addComponent(svgImage);
+        if (fileObject == null) {
+            return result;
+        }
         
+        String path = getFileClasspath(fileObject);
+        svgImage.writeProperty(SVGImageCD.PROP_RESOURCE_PATH, MidpTypes.createStringValue(path));
+        MidpDocumentSupport.getCategoryComponent(animator.getDocument(), ResourcesCategoryCD.TYPEID).addComponent(svgImage);
+
         if (animator.getType() == SVGMenuCD.TYPEID) {
-            InputStream inputStream = null;
-            try {
-                inputStream = getInputStream(transferable);
-                if (inputStream != null) {
-                    final String[] menuItems = SVGUtils.getMenuItems(inputStream);
-                    if (menuItems != null) {
-                        animator.getDocument().getTransactionManager().writeAccess( new Runnable() {
-                            public void run() {
-                                List<PropertyValue> list = new ArrayList<PropertyValue>(menuItems.length);
-                                
-                                for (String str : menuItems) {
-                                    DesignComponent es = animator.getDocument().createComponent(SVGMenuElementEventSourceCD.TYPEID);
-                                    es.writeProperty(SVGMenuElementEventSourceCD.PROP_STRING, MidpTypes.createStringValue(str));
-                                    list.add(PropertyValue.createComponentReference(es));
-                                    animator.addComponent(es);
-                                }
-                                animator.writeProperty(SVGMenuCD.PROP_ELEMENTS, PropertyValue.createArray(SVGMenuElementEventSourceCD.TYPEID, list));
+            parseSVGMenuItems(transferable, animator);
+        }
+
+        return result;
+    }
+
+    private void parseSVGMenuItems(Transferable transferable, final DesignComponent animator) {
+        InputStream inputStream = null;
+        try {
+            inputStream = getInputStream(transferable);
+            if (inputStream != null) {
+                final String[] menuItems = SVGUtils.getMenuItems(inputStream);
+                if (menuItems != null) {
+                    animator.getDocument().getTransactionManager().writeAccess(new Runnable() {
+
+                        public void run() {
+                            List<PropertyValue> list = new ArrayList<PropertyValue>(menuItems.length);
+                            for (String str : menuItems) {
+                                DesignComponent es = animator.getDocument().createComponent(SVGMenuElementEventSourceCD.TYPEID);
+                                es.writeProperty(SVGMenuElementEventSourceCD.PROP_STRING, MidpTypes.createStringValue(str));
+                                list.add(PropertyValue.createComponentReference(es));
+                                animator.addComponent(es);
                             }
-                        });
-                    }
+                            animator.writeProperty(SVGMenuCD.PROP_ELEMENTS, PropertyValue.createArray(SVGMenuElementEventSourceCD.TYPEID, list));
+                        }
+                    });
                 }
-            } finally {
-                if (inputStream != null) {
-                    try {
-                        inputStream.close();
-                    } catch (IOException ioe) {
-                        Exceptions.printStackTrace(ioe);
-                    }
+            }
+        } finally {
+            if (inputStream != null) {
+                try {
+                    inputStream.close();
+                } catch (IOException ioe) {
+                    Exceptions.printStackTrace(ioe);
                 }
             }
         }
-        
-        return result;
     }
+    
 }
