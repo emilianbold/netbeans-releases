@@ -16,7 +16,7 @@
                 <attr name="SystemFileSystem.icon"
                       urlvalue="nbresloc:/org/netbeans/modules/websvc/rest/resources/RESTServiceIcon.png"/> 
             </file>
-            <file name="GenericRESTServices">
+            <file name="RESTServicesFromPatterns">
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateCategory" stringvalue="web-types"/>
                 <attr name="templateWizardIterator" newvalue="org.netbeans.modules.websvc.rest.wizard.GenericRESTServicesIterator" />
@@ -34,6 +34,6 @@
             <file name="GoogleMapResource.java" url="/org/netbeans/modules/websvc/rest/codegen/resources/GoogleMapResource.template"/>
             <file name="GoogleMapRefConverter.java" url="/org/netbeans/modules/websvc/rest/codegen/resources/GoogleMapRefConverter.template"/>
         </folder>
-    </folder>   
+    </folder>
     
 </filesystem>
