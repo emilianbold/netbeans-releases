@@ -23,6 +23,22 @@ Microsystems, Inc. All Rights Reserved.
 <apidef name="explorer">Explorer API</apidef>
 </apidefs>
 <changes>
+
+     <change id="extendedDelete">
+        <api name="explorer"/>
+        <summary>Added an interface and a registration slot
+        for explorer delete action interceptors.</summary>
+        <version major="6" minor="10"/>
+        <date day="15" month="6" year="2007"/>
+        <author login="pnejedly"/>
+        <compatibility binary="compatible" source="compatible" deprecation="no" deletion="no"/>
+        <description>Added an interface ExtendedDelete that can be registered to
+        handle deletion of selected nodes instead of the default implementation.
+        </description>
+        <class package="org.openide.explorer" name="ExtendedDelete" link="yes"/>
+        <issue number="76722"/>
+    </change>
+
      <change id="descriptionAreaAndPopupConfig">
         <api name="explorer"/>
         <summary>Added setters to show/hide the description area and 

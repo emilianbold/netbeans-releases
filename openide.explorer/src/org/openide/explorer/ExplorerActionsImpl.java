@@ -538,6 +538,15 @@ final class ExplorerActionsImpl {
                 return;
             }
 
+            for (ExtendedDelete del : Lookup.getDefault().lookupAll(ExtendedDelete.class)) {
+                try {
+                    if (del.delete(sel)) return;
+                } catch (IOException e) {
+                    Exceptions.printStackTrace(e);
+                    return;
+                }
+            }
+            
             // perform action if confirmed
             if (!confirmDelete || doConfirm(sel)) {
                 // clear selected nodes
