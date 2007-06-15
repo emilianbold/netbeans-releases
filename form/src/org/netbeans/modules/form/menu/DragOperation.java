@@ -34,6 +34,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JSeparator;
 import javax.swing.SwingUtilities;
+import org.netbeans.modules.form.FormModel;
 import org.netbeans.modules.form.HandleLayer;
 import org.netbeans.modules.form.MetaComponentCreator;
 import org.netbeans.modules.form.RADComponent;
@@ -370,7 +371,6 @@ class DragOperation {
         MetaComponentCreator creator = menuEditLayer.formDesigner.getFormModel().getComponentCreator();
         RADVisualComponent precreated = creator.precreateVisualComponent(
                 paletteItem.getComponentClassSource());
-        
         JComponent newComponent = (JComponent) precreated.getBeanInstance();
         // if pre-creation failed then make new component manually
         if(newComponent == null) {
@@ -384,6 +384,7 @@ class DragOperation {
         }
         
         // add new component reference to the form
+        // i can probably remove both of these variables
         LayoutComponent layoutComponent = creator.getPrecreatedLayoutComponent();
         Object constraints = null;
         
@@ -426,6 +427,7 @@ class DragOperation {
         menuEditLayer.formDesigner.toggleSelectionMode();
         
     }
+    
     
     //josh: this is a very slow way to find the component under the mouse cursor.
     //there must be a faster way to do it

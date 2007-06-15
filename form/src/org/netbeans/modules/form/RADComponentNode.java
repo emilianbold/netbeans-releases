@@ -40,6 +40,8 @@ import org.openide.explorer.propertysheet.editors.NodeCustomizer;
 import org.netbeans.modules.form.actions.*;
 import org.netbeans.modules.form.layoutsupport.*;
 import org.netbeans.modules.form.editors.TableCustomizer;
+import org.netbeans.modules.form.menu.AddSubItemAction;
+import org.netbeans.modules.form.menu.MenuEditLayer;
 
 public class RADComponentNode extends FormNode
         implements RADComponentCookie, FormPropertyCookie {
@@ -183,6 +185,12 @@ public class RADComponentNode extends FormNode
                 actions.add(SystemAction.get(EncloseAction.class));
                 actions.add(null);
                 
+                if(MenuEditLayer.isMenuRelatedRADComponent(component)) {
+                    if(MenuEditLayer.isMenuRelatedContainer(component)) {
+                        actions.add(SystemAction.get(AddSubItemAction.class));
+                    }
+                }
+                
                 if (component instanceof RADVisualContainer) {
                     if (!((RADVisualContainer)component).hasDedicatedLayoutSupport()) {
                         actions.add(SystemAction.get(EditContainerAction.class));
@@ -192,7 +200,11 @@ public class RADComponentNode extends FormNode
                         actions.add(SystemAction.get(SelectLayoutAction.class));
                         actions.add(SystemAction.get(CustomizeLayoutAction.class));
                     }
-                    actions.add(SystemAction.get(AddAction.class));
+                    // only use the AddAction for non-menu containers
+                    if(!MenuEditLayer.isMenuRelatedContainer(component)) {
+                        actions.add(SystemAction.get(AddAction.class));
+                    }
+                    
                 }
                 if (getNewTypes().length != 0) {
                     actions.add(null);

@@ -175,6 +175,14 @@ public class MenuEditLayer extends JPanel {
         return isMenuRelatedComponentClass(comp.getBeanClass());
     }
     
+    public static boolean isMenuRelatedContainer(RADComponent comp) {
+        if(comp == null) return false;
+        Class clas = comp.getBeanClass();
+        if(clas == null) return false;
+        if(JMenu.class.isAssignableFrom(clas)) return true;
+        return false;
+    }
+    
     public static boolean isMenuRelatedComponentClass(Class clas) {
         if(clas == null) return false;
         if(JMenuItem.class.isAssignableFrom(clas)) return true;
@@ -816,6 +824,15 @@ public class MenuEditLayer extends JPanel {
         } catch (Exception ex) {
             ex.printStackTrace();
         }
+    }
+    
+    public static boolean addComponentToEndOfMenu(RADComponent targetContainer, PaletteItem paletteItem) {
+        FormModel model = targetContainer.getFormModel();
+        MetaComponentCreator creator = model.getComponentCreator();
+        RADVisualComponent precreated = creator.precreateVisualComponent(
+                paletteItem.getComponentClassSource());
+        JComponent newComponent = (JComponent) precreated.getBeanInstance();
+        return creator.addPrecreatedComponent(targetContainer, null);
     }
 
     //listens to see if this particular menu has been changed
