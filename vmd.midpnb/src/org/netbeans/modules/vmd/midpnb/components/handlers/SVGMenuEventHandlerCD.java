@@ -27,7 +27,6 @@ import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.handlers.EventHandlerCD;
 import org.netbeans.modules.vmd.midp.flow.FlowEventHandlerPinBadgePresenter;
 import org.netbeans.modules.vmd.midpnb.codegen.MidpCustomCodePresenterSupport;
-import org.netbeans.modules.vmd.midpnb.palette.MidpNbPaletteProvider;
 import org.openide.util.Utilities;
 import java.util.Arrays;
 import java.util.List;
@@ -52,10 +51,6 @@ public class SVGMenuEventHandlerCD extends ComponentDescriptor {
 
     public List<PropertyDescriptor> getDeclaredPropertyDescriptors () {
         return null;
-    }
-
-    public PaletteDescriptor getPaletteDescriptor () {
-        return new PaletteDescriptor (MidpNbPaletteProvider.CATEGORY_SVG, "SVG Menu Action", "SVG Menu Action", ICON_PATH, null);
     }
 
     protected List<? extends Presenter> createPresenters () {

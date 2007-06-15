@@ -27,6 +27,7 @@ import org.netbeans.modules.vmd.api.model.PaletteDescriptor;
 import org.netbeans.modules.vmd.api.model.TypeID;
 import org.netbeans.modules.vmd.midp.components.MidpJavaSupport;
 import org.netbeans.modules.vmd.midp.palette.MidpPaletteProvider;
+import org.netbeans.modules.vmd.midpnb.components.handlers.SVGMenuEventHandlerCD;
 import org.netbeans.modules.vmd.midpnb.components.items.TableItemCD;
 import org.netbeans.modules.vmd.midpnb.components.resources.SimpleCancellableTaskCD;
 import org.netbeans.modules.vmd.midpnb.components.resources.SimpleTableModelCD;
@@ -54,8 +55,8 @@ public abstract class CustomComponentProducer extends ComponentProducer {
         return true;
     }
     
-    public static final class SVGAnimatorWrapper extends CustomComponentProducer {
-        public SVGAnimatorWrapper() {
+    public static final class SVGAnimatorWrapperProducer extends CustomComponentProducer {
+        public SVGAnimatorWrapperProducer() {
             super(SVGAnimatorWrapperCD.TYPEID, new PaletteDescriptor(MidpNbPaletteProvider.CATEGORY_SVG, "SVG Animator Wrapper", "SVG Animator Wrapper", SVGAnimatorWrapperCD.ICON_PATH, SVGAnimatorWrapperCD.ICON_LARGE_PATH)); // NOI18N
         }
         
@@ -65,8 +66,8 @@ public abstract class CustomComponentProducer extends ComponentProducer {
         }
     }
     
-    public static final class SVGImage extends CustomComponentProducer {
-        public SVGImage() {
+    public static final class SVGImageProducer extends CustomComponentProducer {
+        public SVGImageProducer() {
             super(SVGImageCD.TYPEID, new PaletteDescriptor(MidpNbPaletteProvider.CATEGORY_SVG, "SVG Image", "SVG Image", SVGImageCD.ICON_PATH, null)); // NOI18N
         }
         
@@ -76,8 +77,19 @@ public abstract class CustomComponentProducer extends ComponentProducer {
         }
     }
     
-    public static final class TableItem extends CustomComponentProducer {
-        public TableItem() {
+    public static final class SVGMenuEventHandlerProducer extends CustomComponentProducer {
+        public SVGMenuEventHandlerProducer() {
+            super(SVGMenuEventHandlerCD.TYPEID, new PaletteDescriptor(MidpNbPaletteProvider.CATEGORY_SVG, "SVG Menu Action", "SVG Menu Action", SVGImageCD.ICON_PATH, null)); // NOI18N
+        }
+        
+        public boolean checkValidity(DesignDocument document) {
+            return MidpJavaSupport.checkValidity(document, "javax.microedition.m2g.SVGImage") && // NOI18N
+                   MidpJavaSupport.checkValidity(document, "javax.microedition.lcdui.Canvas"); // NOI18N
+        }
+    }
+    
+    public static final class TableItemProducer extends CustomComponentProducer {
+        public TableItemProducer() {
             super(TableItemCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_ITEMS, "Table Item", "Table Item", TableItemCD.ICON_PATH, null)); // NOI18N
         }
 
@@ -86,14 +98,14 @@ public abstract class CustomComponentProducer extends ComponentProducer {
         }
     }
     
-    public static final class SimpleCancellableTask extends CustomComponentProducer {
-        public SimpleCancellableTask() {
+    public static final class SimpleCancellableTaskProducer extends CustomComponentProducer {
+        public SimpleCancellableTaskProducer() {
             super(SimpleCancellableTaskCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_RESOURCES, "Simple Cancellable Task", "Simple Cancellable Task", SimpleTableModelCD.ICON_PATH, null)); // NOI18N
         }
     }
     
-    public static final class SimpleTableModel extends CustomComponentProducer {
-        public SimpleTableModel() {
+    public static final class SimpleTableModelProducer extends CustomComponentProducer {
+        public SimpleTableModelProducer() {
             super(SimpleTableModelCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_RESOURCES, "Simple Table Model", "Simple Table Model", SimpleCancellableTaskCD.ICON_PATH, null)); // NOI18N
         }
     }
