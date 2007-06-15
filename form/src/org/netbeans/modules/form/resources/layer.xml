@@ -277,6 +277,8 @@ Microsystems, Inc. All Rights Reserved.
 	</folder>
 
         <attr name="Classes/GUIForms" boolvalue="true"/>
+        <attr name="GUIForms/AWTForms" boolvalue="true" />
+        <attr name="AWTForms/JUnit" boolvalue="true"/>
         <folder name="GUIForms">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle"/>
             <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/form/resources/Forms.html"/>
@@ -356,126 +358,116 @@ Microsystems, Inc. All Rights Reserved.
             <file name="BeanForm.form" url="templates/SwingForms/BeanForm_form">
                 <attr name="template" boolvalue="true" />
             </file>
-            <file name="Package.shadow">
-                <attr name="originalFile" stringvalue="Templates/Classes/Package"/>
+            
+            <file name="Application.java" url="templates/Dialogs/Application_java">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle"/>
+                <attr name="template" boolvalue="true" />
+                <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/form/resources/Application.html"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/javax/swing/beaninfo/images/JFrameColor16.gif"/>
+                <attr name="SystemFileSystem.icon32" urlvalue="nbresloc:/javax/swing/beaninfo/images/JFrameColor32.gif"/>
+                <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.form.wizard.TemplateWizardIterator.create" />
+                <attr name="templateCategory" stringvalue="gui-java-application,java-forms"/>
             </file>
-            <folder name="AWTForms">
+            <file name="Application.form" url="templates/Dialogs/Application_form">
+                <attr name="template" boolvalue="true" />
+            </file>
+
+            <file name="MDIApplication.java" url="templates/Dialogs/MDIApplication_java">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle"/>
-                <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/form/resources/AWTForms.html"/>
-                
-                <attr name="Applet.java/Dialog.java" boolvalue="true" />
-                <attr name="Dialog.java/Frame.java" boolvalue="true" />
-                <attr name="Frame.java/Panel.java" boolvalue="true" />
-                <attr name="Panel.java/Package.shadow" boolvalue="true" />
-                
-                <file name="Applet.java" url="templates/AWTForms/Applet_java">
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle"/>
-                    <attr name="template" boolvalue="true" />
-                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/form/resources/Applet.html"/>
-                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/form/resources/applet.gif"/>
-                    <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.form.wizard.TemplateWizardIterator.create" />
-                    <attr name="templateCategory" stringvalue="java-forms,java-awt-forms"/>
-                </file>
-                <file name="Applet.form" url="templates/AWTForms/Applet_form">
-                    <attr name="template" boolvalue="true" />
-                </file>
+                <attr name="template" boolvalue="true" />
+                <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/form/resources/MDIApplication.html"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/javax/swing/beaninfo/images/JFrameColor16.gif"/>
+                <attr name="SystemFileSystem.icon32" urlvalue="nbresloc:/javax/swing/beaninfo/images/JFrameColor32.gif"/>
+                <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.form.wizard.TemplateWizardIterator.create" />
+                <attr name="templateCategory" stringvalue="gui-java-application,java-forms"/>
+            </file>
+            <file name="MDIApplication.form" url="templates/Dialogs/MDIApplication_form">
+                <attr name="template" boolvalue="true" />
+            </file>
 
-                <file name="Dialog.java" url="templates/AWTForms/Dialog_java">
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle"/>
-                    <attr name="template" boolvalue="true" />
-                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/form/resources/Dialog.html"/>
-                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/form/resources/dialog.gif"/>
-                    <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.form.wizard.TemplateWizardIterator.create" />
-                    <attr name="templateCategory" stringvalue="java-forms,java-awt-forms"/>
-                </file>
-                <file name="Dialog.form" url="templates/AWTForms/Dialog_form">
-                    <attr name="template" boolvalue="true" />
-                </file>
-
-                <file name="Frame.java" url="templates/AWTForms/Frame_java">
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle"/>
-                    <attr name="template" boolvalue="true" />
-                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/form/resources/Frame.html"/>
-                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/form/resources/frame.gif"/>
-                    <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.form.wizard.TemplateWizardIterator.create" />
-                    <attr name="templateCategory" stringvalue="java-forms,java-awt-forms"/>
-                </file>
-                <file name="Frame.form" url="templates/AWTForms/Frame_form">
-                    <attr name="template" boolvalue="true" />
-                </file>
-
-                <file name="Panel.java" url="templates/AWTForms/Panel_java">
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle"/>
-                    <attr name="template" boolvalue="true" />
-                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/form/resources/Panel.html"/>
-                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/form/beaninfo/awt/panel.gif"/>
-                    <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.form.wizard.TemplateWizardIterator.create" />
-                    <attr name="templateCategory" stringvalue="java-forms,java-awt-forms"/>
-                </file>
-                <file name="Panel.form" url="templates/AWTForms/Panel_form">
-                    <attr name="template" boolvalue="true" />
-                </file>
-                <file name="Package.shadow">
-                    <attr name="originalFile" stringvalue="Templates/Classes/Package"/>
-                </file>
-            </folder>
-
-            <folder name="Dialogs">
+            <file name="OkCancelDialog.java" url="templates/Dialogs/OkCancelDialog_java">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle"/>
-                <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/form/resources/Dialogs.html"/>                                
-
-                <file name="Application.java" url="templates/Dialogs/Application_java">
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle"/>
-                    <attr name="template" boolvalue="true" />
-                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/form/resources/Application.html"/>
-                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/javax/swing/beaninfo/images/JFrameColor16.gif"/>
-                    <attr name="SystemFileSystem.icon32" urlvalue="nbresloc:/javax/swing/beaninfo/images/JFrameColor32.gif"/>
-                    <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.form.wizard.TemplateWizardIterator.create" />
-                    <attr name="templateCategory" stringvalue="gui-java-application,java-forms"/>
-                </file>
-                <file name="Application.form" url="templates/Dialogs/Application_form">
-                    <attr name="template" boolvalue="true" />
-                </file>
-
-                <file name="MDIApplication.java" url="templates/Dialogs/MDIApplication_java">
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle"/>
-                    <attr name="template" boolvalue="true" />
-                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/form/resources/MDIApplication.html"/>
-                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/javax/swing/beaninfo/images/JFrameColor16.gif"/>
-                    <attr name="SystemFileSystem.icon32" urlvalue="nbresloc:/javax/swing/beaninfo/images/JFrameColor32.gif"/>
-                    <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.form.wizard.TemplateWizardIterator.create" />
-                    <attr name="templateCategory" stringvalue="gui-java-application,java-forms"/>
-                </file>
-                <file name="MDIApplication.form" url="templates/Dialogs/MDIApplication_form">
-                    <attr name="template" boolvalue="true" />
-                </file>
-
-                <file name="OkCancelDialog.java" url="templates/Dialogs/OkCancelDialog_java">
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle"/>
-                    <attr name="template" boolvalue="true" />
-                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/form/resources/OKCancelDialog.html"/>
-                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/javax/swing/beaninfo/images/JDialogColor16.gif"/>
-                    <attr name="SystemFileSystem.icon32" urlvalue="nbresloc:/javax/swing/beaninfo/images/JDialogColor32.gif"/>
-                    <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.form.wizard.TemplateWizardIterator.create" />
-                    <attr name="templateCategory" stringvalue="gui-java-application,java-forms"/>
-                </file>
-                <file name="OkCancelDialog.form" url="templates/Dialogs/OkCancelDialog_form">
-                    <attr name="template" boolvalue="true" />
-                </file>
-                <file name="Package.shadow">
-                    <attr name="originalFile" stringvalue="Templates/Classes/Package"/>
-                </file>
-            </folder>
-
+                <attr name="template" boolvalue="true" />
+                <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/form/resources/OKCancelDialog.html"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/javax/swing/beaninfo/images/JDialogColor16.gif"/>
+                <attr name="SystemFileSystem.icon32" urlvalue="nbresloc:/javax/swing/beaninfo/images/JDialogColor32.gif"/>
+                <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.form.wizard.TemplateWizardIterator.create" />
+                <attr name="templateCategory" stringvalue="gui-java-application,java-forms"/>
+            </file>
+            <file name="OkCancelDialog.form" url="templates/Dialogs/OkCancelDialog_form">
+                <attr name="template" boolvalue="true" />
+            </file>
+            
             <attr name="JApplet.java/JDialog.java" boolvalue="true" />
             <attr name="JDialog.java/JFrame.java" boolvalue="true" />
             <attr name="JFrame.java/JInternalFrame.java" boolvalue="true" />
             <attr name="JInternalFrame.java/JPanel.java" boolvalue="true" />
             <attr name="JPanel.java/BeanForm.java" boolvalue="true" />
-            <attr name="BeanForm.java/AWTForms" boolvalue="true" />
-            <attr name="AWTForms/Dialogs" boolvalue="true" />
-
+            <attr name="JApplet.java/JDialog.java" boolvalue="true" />
+            <attr name="JDialog.java/JFrame.java" boolvalue="true" />
+            <attr name="JFrame.java/JInternalFrame.java" boolvalue="true" />
+            <attr name="JInternalFrame.java/JPanel.java" boolvalue="true" />
+            <attr name="JPanel.java/BeanForm.java" boolvalue="true" />
+            <attr name="BeanForm.java/Application.java" boolvalue="true" />
+            
         </folder>
+        <folder name="AWTForms">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle"/>
+            <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/form/resources/AWTForms.html"/>
+
+            <attr name="Applet.java/Dialog.java" boolvalue="true" />
+            <attr name="Dialog.java/Frame.java" boolvalue="true" />
+            <attr name="Frame.java/Panel.java" boolvalue="true" />
+
+            <file name="Applet.java" url="templates/AWTForms/Applet_java">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle"/>
+                <attr name="template" boolvalue="true" />
+                <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/form/resources/Applet.html"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/form/resources/applet.gif"/>
+                <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.form.wizard.TemplateWizardIterator.create" />
+                <attr name="templateCategory" stringvalue="java-forms,java-awt-forms"/>
+            </file>
+            <file name="Applet.form" url="templates/AWTForms/Applet_form">
+                <attr name="template" boolvalue="true" />
+            </file>
+
+            <file name="Dialog.java" url="templates/AWTForms/Dialog_java">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle"/>
+                <attr name="template" boolvalue="true" />
+                <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/form/resources/Dialog.html"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/form/resources/dialog.gif"/>
+                <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.form.wizard.TemplateWizardIterator.create" />
+                <attr name="templateCategory" stringvalue="java-forms,java-awt-forms"/>
+            </file>
+            <file name="Dialog.form" url="templates/AWTForms/Dialog_form">
+                <attr name="template" boolvalue="true" />
+            </file>
+
+            <file name="Frame.java" url="templates/AWTForms/Frame_java">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle"/>
+                <attr name="template" boolvalue="true" />
+                <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/form/resources/Frame.html"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/form/resources/frame.gif"/>
+                <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.form.wizard.TemplateWizardIterator.create" />
+                <attr name="templateCategory" stringvalue="java-forms,java-awt-forms"/>
+            </file>
+            <file name="Frame.form" url="templates/AWTForms/Frame_form">
+                <attr name="template" boolvalue="true" />
+            </file>
+
+            <file name="Panel.java" url="templates/AWTForms/Panel_java">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle"/>
+                <attr name="template" boolvalue="true" />
+                <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/form/resources/Panel.html"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/form/beaninfo/awt/panel.gif"/>
+                <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.form.wizard.TemplateWizardIterator.create" />
+                <attr name="templateCategory" stringvalue="java-forms,java-awt-forms"/>
+            </file>
+            <file name="Panel.form" url="templates/AWTForms/Panel_form">
+                <attr name="template" boolvalue="true" />
+            </file>
+        </folder>
+
     </folder>
 
     <folder name="Shortcuts">

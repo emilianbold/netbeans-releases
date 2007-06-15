@@ -34,20 +34,19 @@ Microsystems, Inc. All Rights Reserved.
 
     <folder name="Templates">
         <folder name="GUIForms">
-            <folder name="Dialogs"> <!-- PENDING move on some reasonable place -->
-                <file name="MasterDetailForm.java" url="templates/MasterDetailForm_java">
-                    <attr name="template" boolvalue="true"/>
-                    <attr name="templateCategory" stringvalue="java-forms"/>
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.j2ee.wizard.Bundle"/>
-                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/form/j2ee/resources/QueryListResult.png"/>
-                    <attr name="SystemFileSystem.icon32" urlvalue="nbresloc:/org/netbeans/modules/form/j2ee/resources/QueryListResult32.png"/>
-                    <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.form.j2ee.wizard.MasterDetailWizard.create"/>
-                    <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/form/j2ee/resources/MasterDetail.html"/>
-                </file>
-                <file name="MasterDetailForm.form" url="templates/MasterDetailForm_form">
-                    <attr name="template" boolvalue="true"/>
-                </file>
-            </folder>
+            <file name="MasterDetailForm.java" url="templates/MasterDetailForm_java">
+                <attr name="template" boolvalue="true"/>
+                <attr name="templateCategory" stringvalue="java-forms"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.j2ee.wizard.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/form/j2ee/resources/QueryListResult.png"/>
+                <attr name="SystemFileSystem.icon32" urlvalue="nbresloc:/org/netbeans/modules/form/j2ee/resources/QueryListResult32.png"/>
+                <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.form.j2ee.wizard.MasterDetailWizard.create"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/form/j2ee/resources/MasterDetail.html"/>
+            </file>
+            <file name="MasterDetailForm.form" url="templates/MasterDetailForm_form">
+                <attr name="template" boolvalue="true"/>
+            </file>
+            <attr name="OkCancelDialog.java/MasterDetailForm.java" boolvalue="true" />
         </folder>
     </folder>
 
