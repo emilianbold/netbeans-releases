@@ -33,24 +33,12 @@ A <i>port</i> associates a binding with a network address, thus defining an indi
 
   <li><b>Binding Type.</b> Select the type of binding.</li>
 
-  <li><b>Binding Subtype.</b> The choices vary depending on the binding type.</li>
-
-  <ul>
-
-    <li><b>FTP.</b> If the binding type is FTP, then you must select FTP Message or FTP Transport as the binding subtype. 
-    Both subtypes provide basic FTP functionality, such as a directory from which to read or write files, filename pattern matching, and message correlation. 
-    Select FTP Message if you plan to rely on default values. 
-    Select FTP Transport if you want to add customizations such as specifying custom directories on the FTP server and specifying pre-transfer and post-transfer operations.</li>
-
-    <li><b>HTTP.</b> If the binding type is HTTP, then you must specify whether the binding uses the GET or POST verb and 
-    whether message parts are encoded into the HTTP request URI using the standard URI-encoding rules (<tt>urlEncoded</tt>) or using a replacement algorithm (<tt>urlReplacement</tt>).</li>
-
-    <li><b>SOAP.</b> If the binding type is SOAP, then you must specify whether the operations are RPC-oriented or document-oriented and 
-    how the message parts reference their types.</li>
-
-    <li>For other binding types, you typically have only one choice for the binding subtype.</li>
-
-  </ul>
+  <li><b>Binding Subtype.</b> The choices vary depending on the binding type. 
+    Many of the binding types have a single choice for the binding subtype. 
+    For information about the binding types that have multiple choices for the binding subtype, see 
+    <a href="../binding_subtype_FTP.html" title="WSDL Binding Types: FTP">WSDL Binding Types: FTP</a>, 
+    <a href="../binding_subtype_HTTP.html" title="WSDL Binding Types: HTTP">WSDL Binding Types: HTTP</a>, and 
+    <a href="../binding_subtype_SOAP.html" title="WSDL Binding Types: SOAP">WSDL Binding Types: SOAP</a>.</li>
 
   <li><b>Service Name.</b> Enter a name for the service.</li>
 
@@ -58,24 +46,9 @@ A <i>port</i> associates a binding with a network address, thus defining an indi
 
 </ul>
 
-<p>If the binding type is SOAP, 
-  then the wizard checks for comformance to various requirements of the 
-  Web Services Interoperability Organization (WS-I) Basic Profile Version 1.1. 
-  These requirements concern the RPC Literal and Document Literal binding subtypes. 
-  If your settings for message parts and the binding subtype do not conform to these requirements, 
-  then an error message appears at the bottom of the wizard page and the Finish button is disabled.</p>
-
 <p>When you click Finish, the WSDL file is created. The WSDL Editor appears in WSDL view. 
   The tree structure includes nodes for the port type, operation, messages, binding, service, and port that you specified in the wizard. 
   In addition, the binding node and the service node contain the appropriate binding-specific subnodes (for example, <tt>soap:binding</tt>).</p>
-
-<ul class="note">
-  <li>If you created a SOAP binding, then the port's <tt>soap:address</tt> node includes a Location property.
-    The Location property specifies the address of the port. 
-    The wizard generates a dummy value for the Location property. 
-    For "My Role" (inbound), the Location property must be unique; 
-    that is, the value must not conflict with any other WSDL files that are deployed to the same application server.</li>
-</ul>
 
 <dl>
 <dt><a name="seealso">See Also</a></dt>
