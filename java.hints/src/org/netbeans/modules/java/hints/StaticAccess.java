@@ -28,6 +28,7 @@ import java.util.Set;
 import java.util.prefs.Preferences;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 import javax.swing.JComponent;
@@ -93,6 +94,19 @@ public class StaticAccess extends AbstractHint {
             if (idt.getName().equals(type.getQualifiedName())) {
                 return null;
             }
+        }
+        
+        boolean foundStatic = false;
+        for (Element member : type.getEnclosedElements()) {
+            if (member.getSimpleName().equals(mst.getIdentifier())) {
+                if (member.getModifiers().contains(Modifier.STATIC)) {
+                    foundStatic = true;
+                    break;
+                }
+            }
+        }
+        if (!foundStatic) {
+            return null;
         }
         
         TreePath exprPath = info.getTrees().getPath(info.getCompilationUnit(), mst.getExpression());

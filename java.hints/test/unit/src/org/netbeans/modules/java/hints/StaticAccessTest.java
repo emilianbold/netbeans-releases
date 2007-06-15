@@ -131,6 +131,17 @@ public class StaticAccessTest extends TreeRuleTestBase {
             "0:74-0:77:verifier:Accessing static field"
         );
     }
+    public void testOkToCallEqualsOnString() throws Exception {
+        String before = "package test; class Test {" +
+            "public void run() {\n" +
+            "String s = null;\n" +
+            "boolean b = \"A\".e";
+        String after =         "quals(s);\n" +
+            "}" +
+            "}";
+        
+        performAnalysisTest("test/Test.java", before + after, before.length());
+    }
 
     protected List<ErrorDescription> computeErrors(CompilationInfo info, TreePath path) {
         SourceUtilsTestUtil.setSourceLevel(info.getFileObject(), sourceLevel);
