@@ -47,6 +47,7 @@ import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.Set;
@@ -1708,6 +1709,17 @@ public class WizardDescriptor extends DialogDescriptor {
             index = 0;
         }
 
+        /**
+         * Construct an iterator.
+         * @param panels the list of panels to use
+         * @since org.openide.dialogs 7.5
+         */
+        @SuppressWarnings("unchecked") // exists so that other code does not have to do it
+        public ArrayIterator(List<Panel<Data>> panels) {
+            this.panels = panels.toArray(new Panel[panels.size()]);
+            index = 0;
+        }
+
         /** Allows subclasses to initialize their arrays of panels when
         * constructed using default constructor.
         * (for example during deserialization.
@@ -2733,7 +2745,7 @@ public class WizardDescriptor extends DialogDescriptor {
             return new SettingsAndIterator<WizardDescriptor>(iterator, null, true);
         }
         public static SettingsAndIterator<Void> empty() {
-            return new SettingsAndIterator(new EmptyPanel(), (Void)null);
+            return new SettingsAndIterator<Void>(new EmptyPanel(), (Void)null);
         }
 
         public Iterator<Data> getIterator(WizardDescriptor caller) {

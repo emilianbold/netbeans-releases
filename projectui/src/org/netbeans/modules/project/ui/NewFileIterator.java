@@ -72,9 +72,7 @@ public class NewFileIterator implements WizardDescriptor.InstantiatingIterator<W
     private WizardDescriptor.Iterator<WizardDescriptor> getSimpleIterator () {
         if (simpleIterator == null) {
             assert panel != null;
-            @SuppressWarnings("unchecked") // XXX generic array construction, cannot avoid yet
-            WizardDescriptor.Iterator<WizardDescriptor> _simpleIterator = new WizardDescriptor.ArrayIterator<WizardDescriptor>(new WizardDescriptor.Panel[] {panel});
-            simpleIterator = _simpleIterator;
+            simpleIterator = new WizardDescriptor.ArrayIterator<WizardDescriptor>(Collections.singletonList(panel));
         }
         return simpleIterator;
     }

@@ -23,6 +23,21 @@ Microsystems, Inc. All Rights Reserved.
 <apidef name="dialogs">Dialogs API</apidef>
 </apidefs>
 <changes>
+    <change id="WizardDescriptor.ArrayIterator-generic-constructor">
+        <api name="dialogs"/>
+        <summary>Generics-friendly constructor added for <code>WizardDescriptor.ArrayIterator</code></summary>
+        <version major="7" minor="5"/>
+        <date day="15" month="6" year="2007"/>
+        <author login="jglick"/>
+        <compatibility addition="yes"/>
+        <description>
+            A constructor accepting <code>List&lt;Panel&lt;Data>></code> was added
+            to <code>ArrayIterator</code> to avoid the need for generic array construction
+            by client code.
+        </description>
+        <class package="org.openide" name="WizardDescriptor"/>
+        <issue number="106208"/>
+    </change>
     <change id="default-constructor-for-wizarddescriptor">
            <api name="dialogs"/>
            <summary>New <code>WizardDescriptor</code> constructor.</summary>
