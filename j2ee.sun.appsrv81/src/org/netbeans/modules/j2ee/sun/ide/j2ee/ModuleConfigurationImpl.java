@@ -108,11 +108,8 @@ public class ModuleConfigurationImpl implements DatasourceConfiguration, Deploym
     /** Called through j2eeserver when a new EJB resource may need to be added to the
      *  user's project.
      */
-    public void ensureResourceDefined(ComponentInterface ci, String jndiName) {
+    public void setCMPResource(String ejbName, String jndiName) throws ConfigurationException {
         checkConfiguration(config);
-        if(ci == null) {
-            throw new IllegalArgumentException("DDBean parameter cannot be null.");
-        }
 //        ((SunONEDeploymentConfiguration)config).ensureResourceDefinedForEjb(ci, jndiName);
     }
 

@@ -86,6 +86,32 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="setCMPResource">
+	    <api name="j2eeserver"/>
+	    <summary>
+                Replacing ensureResourceDefinedForEjb with setCMPResource.
+	    </summary>
+	    <version major="1" minor="30"/>
+	    <date day="15" month="6" year="2007"/>
+	    <author login="sherold"/>
+	    <compatibility binary="incompatible" source="incompatible" semantic="incompatible" addition="yes"/>
+	    <description>
+		<p>
+                    Removing J2eeModuleProvider.ConfigSupport.ensureResourceDefinedForEjb and
+                    EjbResourceConfiguration.ensureResourceDefined methods and replacing them
+                    with J2eeModuleProvider.ConfigSupport.setCMPResource and MappingConfiguration.setCMPResource.
+                </p>
+                <p>
+                    The main reason for this change is that the ComponentInterface parameter can 
+                    no longer be used since the metadata model was introduced, other reason is that
+                    the old name was confusing.
+		</p>
+	    </description>
+	    <class package="org.netbeans.modules.j2ee.deployment.devmodules.spi" name="J2eeModuleProvider"/>
+	    <class package="org.netbeans.modules.j2ee.deployment.plugins.spi.config" name="EjbResourceConfiguration"/>
+            <class package="org.netbeans.modules.j2ee.deployment.plugins.spi.config" name="MappingConfiguration"/>
+	    <issue number="99217"/>
+	</change>
 	<change id="MetadataModel">
 	    <api name="j2eeserver"/>
 	    <summary>

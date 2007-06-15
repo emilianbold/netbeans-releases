@@ -137,8 +137,6 @@ public abstract class JBDeploymentConfiguration
             String referenceName, String connectionFactoryName,
             String destName, MessageDestination.Type type) throws ConfigurationException {}
     
-    public void ensureResourceDefined(ComponentInterface ejb, String jndiName) throws ConfigurationException {}
-
 // -------------------------------------- EjbResourceConfiguration  -----------------------------------------
     
     public void bindEjbReference(String referenceName, String ejbName) throws ConfigurationException {}

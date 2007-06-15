@@ -281,64 +281,21 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
         }
     }
     
-    public void ensureResourceDefinedForEjb(String ejbname, String ejbtype, String jndiName) throws ConfigurationException {
-        if (ejbname == null) {
-            throw new NullPointerException("EJB name cannot be null"); // NOI18N
-        }
-        if (ejbtype == null) {
-            throw new NullPointerException("EJB type cannot be null"); // NOI18N
-        }
-        if (jndiName == null) {
-            throw new NullPointerException("JNDI name cannot be null"); // NOI18N
-        }
+    public void setCMPResource(String ejbName, String jndiName) throws ConfigurationException {
+        Parameters.notNull("ejbName", ejbName);     // NOI18N
+        Parameters.notNull("jndiName", jndiName);   // NOI18N
         if (server == null) {
             // the module has no target server
             return;
         }
-        ComponentInterface ejbBean = findDDBean(ejbname, ejbtype);
-        if (ejbBean != null) {
-            ModuleConfiguration config = getModuleConfiguration();
-            if (config == null) {
-                return;
-            }
-            EjbResourceConfiguration resourceConfiguration = config.getLookup().lookup(EjbResourceConfiguration.class);
-            resourceConfiguration.ensureResourceDefined(ejbBean, jndiName);
+        ModuleConfiguration config = getModuleConfiguration();
+        if (config == null) {
+            return;
         }
-    }
-    
-    /*
-     * @return DD bean of the specified EJB type with the specified EJB name in ejb-jar.xml 
-     * or null if no such DD bean exists.
-     */
-    private ComponentInterface findDDBean(String ejbname, String ejbtype) {
-        if (!J2eeModule.EJB.equals(provider.getJ2eeModule().getModuleType())) {
-            throw new IllegalArgumentException("Trying to get config bean for ejb on non ejb module!"); //NONI18N
+        MappingConfiguration mappingConfiguration = config.getLookup().lookup(MappingConfiguration.class);
+        if (mappingConfiguration != null) {
+            mappingConfiguration.setCMPResource(ejbName, jndiName);
         }
-        ComponentInterface ejbBean = null;
-        // TODO
-//        DDRoot ddroot = mds.getDDBeanRoot(J2eeModule.EJBJAR_XML);
-//        StandardDDImpl[] ddbeans = (StandardDDImpl[]) ddroot.getChildBean(
-//                "/enterprise-beans/" + ejbtype); //NOI18N
-//        for (int i=0; i<ddbeans.length; i++) {
-//            String ejbName = (String) ddbeans[i].proxy.bean.getValue("EjbName"); //NOI18N
-//            if (ejbname.equals(ejbName)) {
-//                ejbBean = ddbeans[i];
-//                break;
-//            }
-//        }
-//        if (ejbBean == null) {
-//            if (ddbeans != null) {
-//                for (int i=0; i<ddbeans.length; i++) {
-//                    String msg = ddbeans[i].proxy.bean.dumpBeanNode();
-//                    ErrorManager.getDefault().log(ErrorManager.ERROR, msg);
-//                }
-//            }
-//            Exception e = new Exception("Failed to lookup: "+ejbname+" type "+ejbtype);
-//            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-//            return null;
-//        }
-//        
-        return ejbBean;
     }
     
     public Set<Datasource> getDatasources() throws ConfigurationException {

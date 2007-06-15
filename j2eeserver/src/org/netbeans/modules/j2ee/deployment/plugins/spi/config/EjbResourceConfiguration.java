@@ -19,8 +19,6 @@
 
 package org.netbeans.modules.j2ee.deployment.plugins.spi.config;
 
-import java.io.File;
-import org.netbeans.modules.j2ee.dd.api.common.ComponentInterface;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 
 /**
@@ -33,16 +31,6 @@ import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
  * @author sherold 
  */
 public interface EjbResourceConfiguration {
-    
-    /**
-     * Ensure resource is defined for the specified EJB (for example entity bean).
-     *
-     * @param ejb       EJB in question
-     * @param jndiName  the JNDI name of the resource where the EJB is stored.
-     * 
-     * @throws ConfigurationException reports errors in setting the EJB resource.
-     */
-    void ensureResourceDefined(ComponentInterface ejb, String jndiName) throws ConfigurationException;
     
     /**
      * Binds EJB reference name with EJB name.
@@ -75,6 +63,4 @@ public interface EjbResourceConfiguration {
      */
     public void bindEjbReferenceForEjb(String ejbName, String ejbType,
             String referenceName, String referencedEjbName) throws ConfigurationException;
-    
-    
 }

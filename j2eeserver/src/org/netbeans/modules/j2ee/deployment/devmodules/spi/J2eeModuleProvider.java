@@ -286,16 +286,19 @@ public abstract class J2eeModuleProvider {
         public void setCMPMappingInfo(OriginalCMPMapping[] mappings) throws ConfigurationException;
         
         /**
-         * Ensure needed resources are automatically defined for the entity
-         * represented by given DDBean.
-         * @param ejbName   the EJB name
-         * @param ejbType   the DTD name for type of EJB: 'message-drive', 'entity', 'session'.
-         * @param jndiName  the JNDI name of the resource where the EJB is stored
+         * Sets the resource for the specified CMP bean. Some containers may not 
+         * support fine-grained per bean resource definition, in which case global 
+         * EJB module CMP resource is set.
+         *
+         * @param ejbName   name of the CMP bean.
+         * @param jndiName  the JNDI name of the resource.
          * 
-         * @throws ConfigurationException reports errors in setting the EJB resource.
+         * @throws ConfigurationException reports errors in setting the CMP resource.
+         * @throws NullPointerException if any of the parameters is <code>null</code>.
+         * 
+         * @since 1.30
          */
-        public void ensureResourceDefinedForEjb(String ejbName, String ejbType, String jndiName)
-        throws ConfigurationException;
+        void setCMPResource(String ejbName, String jndiName) throws ConfigurationException;
         
         /**
          * Tests whether data source creation is supported.
