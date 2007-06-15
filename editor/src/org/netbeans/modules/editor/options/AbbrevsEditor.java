@@ -30,6 +30,7 @@ import org.openide.util.NbBundle;
  * AbbrevsEditor is editor for Map of abbreviations.
  * Each abbreviation is pair of Strings.
  * @author  Petr Nejedly
+ * @deprecated Without any replacement.
  */
 
 public class AbbrevsEditor extends PropertyEditorSupport {

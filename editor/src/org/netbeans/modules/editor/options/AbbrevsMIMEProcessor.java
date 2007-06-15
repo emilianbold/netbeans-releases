@@ -22,6 +22,7 @@ package org.netbeans.modules.editor.options;
 /**
  *
  * @author  Martin Roskanin
+ * @deprecated Use Editor Settings Storage API instead.
  */
 public class AbbrevsMIMEProcessor extends MIMEProcessor{
 

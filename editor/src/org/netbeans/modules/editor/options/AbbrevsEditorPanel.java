@@ -43,6 +43,7 @@ import javax.swing.event.ListSelectionListener;
  * with empty abbrev field are simply ignored.
  *
  * @author  Petr Nejedly
+ * @deprecated Without any replacement.
  */
 
 public class AbbrevsEditorPanel extends javax.swing.JPanel {

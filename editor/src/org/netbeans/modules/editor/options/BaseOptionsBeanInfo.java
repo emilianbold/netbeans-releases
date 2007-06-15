@@ -182,6 +182,7 @@ public class BaseOptionsBeanInfo extends SimpleBeanInfo {
         
         String hidden[] = (usesNewOptions) ?
                 new String[] {
+                    BaseOptions.ABBREV_MAP_PROP,
                     BaseOptions.EXPAND_TABS_PROP,
                     BaseOptions.SPACES_PER_TAB_PROP,
                     BaseOptions.OPTIONS_VERSION_PROP,

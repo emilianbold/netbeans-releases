@@ -72,6 +72,8 @@ import java.util.HashSet;
 import java.awt.RenderingHints;
 import java.util.logging.Level;
 import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.api.editor.settings.CodeTemplateDescription;
+import org.netbeans.api.editor.settings.CodeTemplateSettings;
 import org.netbeans.modules.editor.NbEditorKit;
 import org.netbeans.modules.editor.impl.KitsTracker;
 import org.netbeans.modules.editor.lib.ColoringMap;
@@ -133,6 +135,7 @@ public class BaseOptions extends OptionSupport {
     
     protected static final String OPTIONS_VERSION_PROP = "optionsVersion"; // NOI18N
     
+    /** @deprecated Use Editor Settings Storage API instead. */
     public static final String ABBREV_MAP_PROP = "abbrevMap"; // NOI18N
     public static final String BASE = "base"; // NOI18N
     public static final String CARET_BLINK_RATE_PROP = "caretBlinkRate"; // NOI18N
@@ -226,16 +229,12 @@ public class BaseOptions extends OptionSupport {
     private transient boolean inReadExternal;
     
     private transient MIMEOptionNode mimeNode;
-    private transient Map defaultAbbrevsMap;
     private transient Map defaultMacrosMap;
     private transient Map defaultKeyBindingsMap;
     private transient MIMEOptionFolder settingsFolder;
     private transient Boolean usingNewOptions = null;
-    private transient FontColorSettings fontColorSettings;    
     private transient KeyBindingSettings keyBindingsSettings;    
-    private transient LookupListener lookupListener;
     
-    private transient boolean coloringsInitialized = false;
     private transient boolean keybindingsInitialized = false;
     private transient boolean loaded = false;
     
@@ -583,57 +582,61 @@ public class BaseOptions extends OptionSupport {
             Toolkit.getDefaultToolkit().beep();
     }
     
-    /** Gets Map of default Abbreviations as they are stored in
-     *  MIMEFolder/Defaults/abbreviations.xml */
-    public Map getDefaultAbbrevMap(){
-        loadDefaultAbbreviations();
-        return defaultAbbrevsMap;
+    /** 
+     * @return The same as <code>getAbbrevMap</code>.
+     * @deprecated Use Editor Settings API instead.
+     */
+    public Map<String, String> getDefaultAbbrevMap(){
+        return getAbbrevMap();
     }
     
-    /** Loads default abbreviations from MIMEFolder/Defaults/abbreviations.xml and
-     * stores them to defaultAbbrevsMap */
-    private void loadDefaultAbbreviations(){
-        if (defaultAbbrevsMap!=null) return;
-        MIMEOptionFolder mimeFolder = getMIMEFolder();
-        if (mimeFolder == null) return;
-        MIMEOptionFolder mof = mimeFolder.getFolder(OptionUtilities.DEFAULT_FOLDER);
-        if (mof == null) {
-            return;
-        }
+    /**
+     * @return All code templates available for this mime type.
+     * @deprecated Use Editor Settings API instead.
+     */
+    public Map<String, String> getAbbrevMap() {
+        MimePath mimePath = MimePath.parse(getCTImpl());
+        CodeTemplateSettings cts = MimeLookup.getLookup(mimePath).lookup(CodeTemplateSettings.class);
+        Map<String, String> map = new HashMap<String, String>();
         
-        MIMEOptionFile file = mof.getFile(AbbrevsMIMEProcessor.class, false);
-        if ((file!=null) && (!file.isLoaded())) {
-            file.loadSettings();
-            defaultAbbrevsMap = new HashMap(file.getAllProperties());
-        }
-    }
-    
-    public Map getAbbrevMap() {
-        loadDefaultAbbreviations();
-        loadSettings(AbbrevsMIMEProcessor.class);
-        Map settingsMap = (Map)super.getSettingValue(SettingsNames.ABBREV_MAP);
-        Map ret = (settingsMap == null) ? new HashMap() : new HashMap(settingsMap);
-        return ret;
-    }
-    
-    /** Sets new abbreviations map to initializer map and if saveToXML is true,
-     *  then new settings will be saved to XML file. */
-    public void setAbbrevMap(Map map, boolean saveToXML) {
-        Map diffMap = null;
-        if (saveToXML){
-            // we are going to save the diff-ed changes to XML, all default
-            // properties have to be available
-            loadDefaultAbbreviations();
-            diffMap = OptionUtilities.getMapDiff(getAbbrevMap(),map,true);
-            if (diffMap.size()>0){
-                // settings has changed, write changed settings to XML file
-                updateSettings(AbbrevsMIMEProcessor.class, diffMap);
+        if (cts != null) {
+            for(CodeTemplateDescription ctd : cts.getCodeTemplateDescriptions()) {
+                map.put(ctd.getAbbreviation(), ctd.getParametrizedText());
             }
         }
-        super.setSettingValue(SettingsNames.ABBREV_MAP, map, ABBREV_MAP_PROP);
+        
+        return map;
     }
     
-    /** Sets new abbreviations map and save the diff-ed changes to XML file*/
+    /** 
+     * Tries to update colorings for the mime type of this instance.
+     * 
+     * @param map The map with colorings.
+     * @param saveToXML Ignored.
+     * 
+     * @deprecated Use Editor Settings Storage API instead.
+     */
+    public void setAbbrevMap(Map<String, String> map, boolean saveToXML) {
+// XXX: try harder to preseve backwards compatibility of this method
+//        Map diffMap = null;
+//        if (saveToXML){
+//            // we are going to save the diff-ed changes to XML, all default
+//            // properties have to be available
+//            loadDefaultAbbreviations();
+//            diffMap = OptionUtilities.getMapDiff(getAbbrevMap(),map,true);
+//            if (diffMap.size()>0){
+//                // settings has changed, write changed settings to XML file
+//                updateSettings(AbbrevsMIMEProcessor.class, diffMap);
+//            }
+//        }
+//        super.setSettingValue(SettingsNames.ABBREV_MAP, map, ABBREV_MAP_PROP);
+    }
+    
+    /** 
+     * Calls <code>setAbbrevMap(map, true)</code>.
+     * 
+     * @deprecated Use Editor Settings Storage API instead.
+     */
     public void setAbbrevMap(Map map) {
         setAbbrevMap(map, true);
     }

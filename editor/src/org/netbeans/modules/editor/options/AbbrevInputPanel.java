@@ -26,8 +26,8 @@ import org.openide.util.NbBundle;
  * Input panel for pair of strings, one inline and one in editor
  *
  * @author  Petr Nejedly
+ * @deprecated Without any replacement.
  */
-
 public class AbbrevInputPanel extends javax.swing.JPanel {
 
     /** Creates new form AbbrevsInputPanel */
