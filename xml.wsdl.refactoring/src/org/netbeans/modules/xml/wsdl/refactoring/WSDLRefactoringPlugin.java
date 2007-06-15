@@ -156,12 +156,16 @@ public abstract class WSDLRefactoringPlugin extends ProgressProviderAdapter impl
                //special case of embedded schema import statements in WSDLModel
                //for embedded schema, group the RE impls by Foreign Model
                   SchemaModel mod=  (SchemaModel)comp.getModel();
-                  Component wsdlImport =mod.getSchema().getForeignParent();
-                  if(wsdlImport != null) {
-                      model = wsdlImport.getModel();
-                  } 
+                  if(mod != null) {
+                      Component wsdlImport =mod.getSchema().getForeignParent();
+                      if(wsdlImport != null) {
+                          model = wsdlImport.getModel();
+                      } 
+               }
            } else 
                model = comp.getModel();
+           if(model == null)
+               continue;
            Set<RefactoringElementImplementation> elementsInModel = results.get(model);
            if(elementsInModel == null){
                elementsInModel = new HashSet<RefactoringElementImplementation>();

@@ -67,7 +67,7 @@ public class XMLRefactoringTransaction implements Transaction {
     Model targetModel;
     boolean isLocal = false;
     ModelSource movedTargetModelSource;
-    
+    Map<Model, Set<RefactoringElementImplementation>> modelsInRefactoring;
     
     
     
@@ -91,7 +91,7 @@ public class XMLRefactoringTransaction implements Transaction {
         //System.out.println("COMMIT called");
         try {
            process();
-        } catch (IOException ioe) {
+           } catch (IOException ioe) {
             String msg = ioe.getMessage();
             NotifyDescriptor nd = new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE);
             DialogDisplayer.getDefault().notify(nd);
@@ -103,13 +103,14 @@ public class XMLRefactoringTransaction implements Transaction {
      * Rollbacks the refactoring changes for all the models
      */
     public void rollback() {
-       // System.out.println("ROLLBACK called");
+        //System.out.println("ROLLBACK called");
         UndoRedoProgress progress = new UndoRedoProgress();
 	progress.start();
 	try {
-	    Map<Model, Set<RefactoringElementImplementation>> modelsInRefactoring = getModels();
+	    if(modelsInRefactoring == null)
+                modelsInRefactoring = getModels();
             Set<Model> models = modelsInRefactoring.keySet();
-        
+            
             Set<Model> excludedFromSave = RefactoringUtil.getDirtyModels(models, targetModel);
             if(undoManagers != null ) {
                 for (UndoManager um : undoManagers.values()) {
@@ -127,7 +128,7 @@ public class XMLRefactoringTransaction implements Transaction {
             if(! isLocal)
                 RefactoringUtil.save(models, targetModel, excludedFromSave);
           
-                 
+            
       } catch (IOException ioe) {
             String msg = ioe.getMessage();
             NotifyDescriptor nd = new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE);
@@ -150,12 +151,13 @@ public class XMLRefactoringTransaction implements Transaction {
     
     
     private synchronized void process() throws IOException {
-       
-        Map<Model, Set<RefactoringElementImplementation>> modelsInRefactoring = getModels();
+        
+         if(modelsInRefactoring == null)
+             modelsInRefactoring = getModels();
         Set<Model> models = modelsInRefactoring.keySet();
         //put this code in shared utils
         Set<Model> excludedFromSave = RefactoringUtil.getDirtyModels(models, targetModel);
-                    
+        
         try {            
             if (! isLocal) {
                 if (target instanceof Model &&  ( (request instanceof RenameRefactoring) || (request instanceof MoveRefactoring)) ) {
@@ -309,7 +311,8 @@ public class XMLRefactoringTransaction implements Transaction {
        
        private void refreshCatalogModel( FileObject referencedFO) {
         //   Map<Model, Set<RefactoringElementImplementation>> modelsInRefactoring = SharedUtils.getModelMap(elements);
-           Map<Model, Set<RefactoringElementImplementation>> modelsInRefactoring = getModels();
+           if(modelsInRefactoring == null) 
+               modelsInRefactoring = getModels();
            Set<Model> models = modelsInRefactoring.keySet();
            for (Model ug : models) {
             FileObject referencingFO = ug.getModelSource().getLookup().lookup(FileObject.class);
@@ -371,7 +374,8 @@ public class XMLRefactoringTransaction implements Transaction {
        
     public String refactorForPreview(Model model){
         try {
-             Map<Model, Set<RefactoringElementImplementation>> modelsInRefactoring = getModels();
+             if(modelsInRefactoring == null )
+                 modelsInRefactoring = getModels();
              Model mod = null;
                      
              //This takes care of WSDL model with embedded schema imports
@@ -436,6 +440,8 @@ public class XMLRefactoringTransaction implements Transaction {
            } 
            if(model == null)
                model = comp.getModel();
+           if(model == null)
+               continue;
            Set<RefactoringElementImplementation> elementsInModel = results.get(model);
            if(elementsInModel == null){
                elementsInModel = new HashSet<RefactoringElementImplementation>();
