@@ -199,11 +199,12 @@ class LibResViewProvider  extends J2MEPhysicalViewProvider.ChildLookup
                         //Add new configurations
                         List<ProjectConfiguration> base=new ArrayList(nObj);
                         base.removeAll(oObj);
+                        Node n=null;
                         for (ProjectConfiguration cfg : base)
                         {
                             //new Configuration
                             final J2MEProject project=node.getLookup().lookup(J2MEProject.class);
-                            final Node n=new NodeFactory.CfgNode(
+                            n=new NodeFactory.CfgNode(
                                     new ConfigChildren(),
                                     Lookups.fixed(new Object[] {project, cfg, AbilitiesPanel.hintInstance}),
                                     cfg.getDisplayName(),PLATFORM_ICON,
@@ -222,7 +223,9 @@ class LibResViewProvider  extends J2MEPhysicalViewProvider.ChildLookup
                             node.getChildren().add(new Node[] {n});
                             n.setName(cfg.getDisplayName());
                         }
-
+                        if (n != null)
+                            n.setValue("bold",Boolean.TRUE);
+                        
                         //Remove configurations
                         base=new ArrayList(oObj);
                         base.removeAll(nObj);
