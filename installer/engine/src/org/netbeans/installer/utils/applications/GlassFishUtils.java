@@ -82,7 +82,7 @@ public class GlassFishUtils {
                 "--interactive=false",
                 "--adminport",
                 adminPort,
-                "--adminuser",
+                "--user",
                 username,
                 "--passwordfile",
                 passwordFile.getAbsolutePath(),
@@ -94,7 +94,8 @@ public class GlassFishUtils {
                 domainName
                 );
         
-        if (results.getStdOut().indexOf(COULD_NOT_CREATE_DOMAIN_MARKER) != -1) {
+        if (results.getStdOut().indexOf(COULD_NOT_CREATE_DOMAIN_MARKER) != -1 || 
+		results.getStdErr().indexOf(COULD_NOT_CREATE_DOMAIN_MARKER) != -1) {
             throw new DomainCreationException(CLI_130);
         }
         
