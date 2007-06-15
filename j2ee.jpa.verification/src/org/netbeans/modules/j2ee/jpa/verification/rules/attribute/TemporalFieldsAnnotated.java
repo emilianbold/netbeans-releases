@@ -20,11 +20,14 @@ package org.netbeans.modules.j2ee.jpa.verification.rules.attribute;
 
 import java.util.Arrays;
 import java.util.Collection;
+import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.j2ee.jpa.model.AttributeWrapper;
 import org.netbeans.modules.j2ee.jpa.verification.JPAEntityAttributeCheck;
 import org.netbeans.modules.j2ee.jpa.verification.JPAProblemContext;
 import org.netbeans.modules.j2ee.jpa.verification.common.Rule;
+import org.netbeans.modules.j2ee.jpa.verification.fixes.CreateTemporalAnnotationHint;
 import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.netbeans.spi.editor.hints.Fix;
 import org.openide.util.NbBundle;
 
 /**
@@ -40,9 +43,12 @@ public class TemporalFieldsAnnotated extends JPAEntityAttributeCheck {
         
         if (temporal == null || temporal.length() == 0){
             if (temporalTypes.contains(attrib.getInstanceVariable().asType().toString())){
+                Fix fix = new CreateTemporalAnnotationHint(ctx.getFileObject(),
+                        ElementHandle.create(attrib.getJavaElement()));
+                
                 return new ErrorDescription[]{Rule.createProblem(attrib.getJavaElement(), ctx,
                     NbBundle.getMessage(ValidColumnName.class,
-                    "MSG_TemporalAttrNotAnnotatedProperly"))};
+                    "MSG_TemporalAttrNotAnnotatedProperly"), fix)};
             }
         }
         
