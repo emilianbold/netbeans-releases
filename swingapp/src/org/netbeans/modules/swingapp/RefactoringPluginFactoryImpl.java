@@ -59,10 +59,6 @@ public class RefactoringPluginFactoryImpl implements RefactoringPluginFactory {
     }
 
     public RefactoringPlugin createInstance(AbstractRefactoring refactoring) {
-        if (!Boolean.getBoolean("form.refactoring")) { // NOI18N
-            return null;
-        }
-
         if (refactoring instanceof RenameRefactoring
                 || refactoring instanceof MoveRefactoring
                 || refactoring instanceof SingleCopyRefactoring) {

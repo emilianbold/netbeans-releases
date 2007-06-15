@@ -53,10 +53,6 @@ import org.openide.util.Lookup;
 public class RefactoringPluginFactoryImpl implements RefactoringPluginFactory {
 
     public RefactoringPlugin createInstance(AbstractRefactoring refactoring) {
-        if (!Boolean.getBoolean("form.refactoring")) { // NOI18N
-            return null;
-        }
-
         RefactoringInfo.ChangeType changeType = null;
         FileObject primaryFile = null;
         String oldName = null;

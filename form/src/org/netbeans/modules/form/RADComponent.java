@@ -468,13 +468,9 @@ public class RADComponent /*implements FormDesignValue, java.io.Serializable*/ {
      * @param name the new name for the variable
      */
     public void rename(String name){
-        if(Boolean.getBoolean("form.refactoring")){
-            RADComponentRenameRefactoringSupport rf = new RADComponentRenameRefactoringSupport(name);
-            rf.setComponent(this);
-            rf.doRenameRefactoring();
-            return;
-        }
-        setName(name);
+        RADComponentRenameRefactoringSupport rf = new RADComponentRenameRefactoringSupport(name);
+        rf.setComponent(this);
+        rf.doRenameRefactoring();
     }
 
     public void setStoredName(String name) {
