@@ -182,17 +182,14 @@ public final class ProjectEar extends J2eeApplicationProvider
         return metadataModel;
     }
 
-    // TODO MetadataModel: fix when the model is ready
     public <T> MetadataModel<T> getMetadataModel(Class<T> type) {
-        throw new NotImplementedException();
+        if (type == ApplicationMetadata.class) {
+            @SuppressWarnings("unchecked") // NOI18N
+            MetadataModel<T> model = (MetadataModel<T>)getMetadataModel();
+            return model;
+        }
+        return null;
     }
-//    public RootInterface getDeploymentDescriptor (String location) {
-//        if (!J2eeModule.APP_XML.equals(location)) {
-//            return null;
-//        }
-//        
-//        return getApplication();
-//    }
 
     /**
      * Get the metadata model of EAR project. The model is taken from deployment descriptor
