@@ -40,6 +40,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.visualweb.dataconnectivity.datasource.CurrentProject;
 import org.netbeans.modules.visualweb.dataconnectivity.ui.DatasourceUISettings;
 import org.netbeans.modules.visualweb.dataconnectivity.ui.MissingConnectionsAlertPanel;
+import org.netbeans.modules.visualweb.dataconnectivity.ui.UpdateDataSourcesDialog;
 import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectUtils;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.openide.DialogDescriptor;
@@ -235,12 +236,12 @@ public class ImportDataSource {
                 try {
                     MissingConnectionsAlertPanel alert = new MissingConnectionsAlertPanel();
                     JButton close = new JButton(
-                            NbBundle.getMessage(MissingConnectionsAlertPanel.class, "LBL_BrokenDatasourcesCustomizer_Close"));
+                            NbBundle.getMessage(MissingConnectionsAlertPanel.class, "LBL_UpdateDatasourcesCustomizer_Close"));
                     close.getAccessibleContext().setAccessibleDescription(
-                            NbBundle.getMessage(MissingConnectionsAlertPanel.class, "ACSD_BrokenDatasourcesCustomizer_Close"));
+                            NbBundle.getMessage(MissingConnectionsAlertPanel.class, "ACSD_UpdateDatasourcesCustomizer_Close"));
                     DialogDescriptor dd = new DialogDescriptor(
                             alert,
-                            NbBundle.getMessage(MissingConnectionsAlertPanel.class, "MSG_Broken_Datasources_Title"),
+                            NbBundle.getMessage(MissingConnectionsAlertPanel.class, "MSG_Update_Datasources_Title"),
                             true,
                             new Object[] {close},
                             close,
@@ -250,6 +251,35 @@ public class ImportDataSource {
                     dd.setMessageType(DialogDescriptor.WARNING_MESSAGE);
                     Dialog dlg = DialogDisplayer.getDefault().createDialog(dd);
                     dlg.setVisible(true);
+                } finally {
+                    synchronized (MissingConnectionsAlertPanel.class) {
+                        brokenAlertLastTime = System.currentTimeMillis();
+                        brokenAlertShown = false;
+                    }
+                }
+            }
+        });
+    }            
+    
+    
+     /**
+      * Show OK/Cancel dialog that starts the migration of user settings and updating the project's data
+      * sources.  After clicking ok the progress bar will show the progress.
+      */
+    public static synchronized void showUpdate() {
+        // Do not show alert if it is already shown or if it was shown
+        // in last BROKEN_ALERT_TIMEOUT milliseconds or if user do not wish it.
+        
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                try {
+                    UpdateDataSourcesDialog dialog = new UpdateDataSourcesDialog(new javax.swing.JFrame(), true);
+                    dialog.addWindowListener(new java.awt.event.WindowAdapter() {
+                        public void windowClosing(java.awt.event.WindowEvent e) {
+                            System.exit(0);
+                        }
+                    });
+                    dialog.setVisible(true);
                 } finally {
                     synchronized (MissingConnectionsAlertPanel.class) {
                         brokenAlertLastTime = System.currentTimeMillis();
