@@ -114,8 +114,6 @@ class ToDoCustomizer extends javax.swing.JPanel {
         jLabel1 = new javax.swing.JLabel();
         btnRemove = new javax.swing.JButton();
 
-        setOpaque(false);
-
         org.openide.awt.Mnemonics.setLocalizedText(btnAdd, org.openide.util.NbBundle.getMessage(ToDoCustomizer.class, "ToDoCustomizer.btnAdd.text")); // NOI18N
         btnAdd.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {

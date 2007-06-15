@@ -36,14 +36,14 @@ final class SvgcorePanel extends javax.swing.JPanel {
      */
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
+
         jLabel1 = new javax.swing.JLabel();
         pathTextField = new javax.swing.JTextField();
         jButtonBrowse = new javax.swing.JButton();
 
-        setBackground(java.awt.Color.white);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(SvgcorePanel.class, "LBL_AnimatorPath"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(SvgcorePanel.class, "LBL_AnimatorPath")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(jButtonBrowse, org.openide.util.NbBundle.getMessage(SvgcorePanel.class, "LBL_ButtonChange"));
+        org.openide.awt.Mnemonics.setLocalizedText(jButtonBrowse, org.openide.util.NbBundle.getMessage(SvgcorePanel.class, "LBL_ButtonChange")); // NOI18N
         jButtonBrowse.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButtonBrowseActionPerformed(evt);
