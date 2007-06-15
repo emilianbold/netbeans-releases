@@ -92,6 +92,10 @@ public class ConnPoolBean extends JdbcCP implements java.io.Serializable{
     
     public Resources getGraph(){
         Resources res = getResourceGraph();
+        return getBeanInGraph(res);
+    }    
+    
+    public Resources getBeanInGraph(Resources res){
         JdbcConnectionPool connPool = res.newJdbcConnectionPool();
         connPool.setDescription(getDescription());
         connPool.setName(getName());

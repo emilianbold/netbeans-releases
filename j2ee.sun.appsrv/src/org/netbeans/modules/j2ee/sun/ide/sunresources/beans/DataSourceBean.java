@@ -79,6 +79,10 @@ public class DataSourceBean extends JdbcDS implements java.io.Serializable {
     
     public Resources getGraph(){
         Resources res = getResourceGraph();
+        return getBeanInGraph(res);
+    }    
+    
+    public Resources getBeanInGraph(Resources res){
         JdbcResource datasource = res.newJdbcResource();
         datasource.setDescription(getDescription());
         datasource.setJndiName(getJndiName());

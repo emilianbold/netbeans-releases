@@ -79,6 +79,10 @@ public class PersistenceManagerBean extends PersistenceManagerResource implement
     
     public Resources getGraph(){
         Resources res = getResourceGraph();
+        return getBeanInGraph(res);
+    }    
+    
+    public Resources getBeanInGraph(Resources res){
         PersistenceManagerFactoryResource pmfresource = res.newPersistenceManagerFactoryResource();
         pmfresource.setDescription(getDescription());
         pmfresource.setJndiName(getJndiName());

@@ -54,6 +54,7 @@ import org.netbeans.modules.j2ee.sun.ide.sunresources.beans.JavaMailSessionBean;
 import org.netbeans.modules.j2ee.sun.ide.sunresources.beans.JavaMailSessionBeanDataNode;
 import org.netbeans.modules.j2ee.sun.ide.sunresources.beans.PersistenceManagerBean;
 import org.netbeans.modules.j2ee.sun.ide.sunresources.beans.PersistenceManagerBeanDataNode;
+import org.netbeans.modules.j2ee.sun.ide.sunresources.beans.ResourceUtils;
 
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
@@ -89,27 +90,8 @@ public class SunResourceDataObject extends XMLDataObject implements FileChangeLi
         pf.addFileChangeListener((FileChangeListener) WeakListeners.create(FileChangeListener.class, this, pf));
         
         resType = getResource(pf);
-//        init(pf);
     }
-    
-//    private void init(FileObject pf) {
-//        CookieSet cookies = getCookieSet();
-        // Add whatever capabilities you need, e.g.:
-        /*
-        cookies.add(new ExecSupport(getPrimaryEntry()));
-        // See Editor Support template in Editor API:
-        cookies.add(new SunResourceEditorSupport(this));
-        cookies.add(new CompilerSupport.Compile(getPrimaryEntry()));
-        cookies.add(new CompilerSupport.Build(getPrimaryEntry()));
-        cookies.add(new CompilerSupport.Clean(getPrimaryEntry()));
-        cookies.add(new OpenCookie() {
-            public void open() {
-                // do something...but usually you want to use OpenSupport instead
-            }
-        });
-         */
-//    }
-    
+       
     public <T extends Node.Cookie> T getCookie(Class<T> c) {
         Node.Cookie retValue = null;
         if (ValidateXMLCookie.class.isAssignableFrom(c)) {
@@ -170,6 +152,8 @@ public class SunResourceDataObject extends XMLDataObject implements FileChangeLi
        String type = null;
        try {
             if((! primaryFile.isFolder()) && primaryFile.isValid()){
+                ResourceUtils.migrateResources(primaryFile.getParent());
+                
                 InputStream in = primaryFile.getInputStream();
                 Resources resources = DDProvider.getDefault().getResourcesGraph(in);
                 
@@ -311,14 +295,5 @@ public class SunResourceDataObject extends XMLDataObject implements FileChangeLi
     public String getResourceType(){
         return resType;
     }
-    // If you made an Editor Support you will want to add these methods:
-     
-    /*public final void addSaveCookie(SaveCookie save) {
-        getCookieSet().add(save);
-    }
-     
-    public final void removeSaveCookie(SaveCookie save) {
-        getCookieSet().remove(save);
-    }*/
   
 }

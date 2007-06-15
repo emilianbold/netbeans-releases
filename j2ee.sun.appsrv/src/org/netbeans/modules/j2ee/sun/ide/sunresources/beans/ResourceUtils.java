@@ -25,6 +25,7 @@
 package org.netbeans.modules.j2ee.sun.ide.sunresources.beans;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.io.Writer;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -41,6 +42,7 @@ import java.util.Properties;
 import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.ResourceBundle;
 
 import javax.management.Attribute;
@@ -1490,7 +1492,79 @@ public class ResourceUtils implements WizardConstants{
         return serverResource;
     }
     
+    /*
+     * Consolidates *.sun-resource into sun-resource.xml 
+     * Called by SunResourceDataObject by the .sun-resource
+     * loader. sun-resource.xml is created once.
+     */
+    public static void migrateResources(FileObject targetFolder){
+        targetFolder = setUpExists(targetFolder);
+        File sunResource = getServerResourcesFile(targetFolder);
+        boolean exists = false;
+        if((sunResource == null) || (! sunResource.exists())){
+            File resourceDir = FileUtil.toFile(targetFolder);
+            File[] resources = resourceDir.listFiles(new ResourceFileFilter());
+            Resources newGraph = DDProvider.getDefault().getResourcesGraph();
+            try {
+                for(int i=0; i<resources.length; i++){
+                    FileInputStream in = new java.io.FileInputStream(resources[i]);
+                    Resources existResource = DDProvider.getDefault().getResourcesGraph(in);
+                    newGraph = getResourceGraphs(newGraph, existResource);
+                }
+                createFile(targetFolder, newGraph);
+            } catch (Exception ex) {
+                ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
+            }
+        }
+    }
+    
+    private static Resources getResourceGraphs(Resources consolidatedGraph, Resources existResource){
+        JdbcConnectionPool[] pools = existResource.getJdbcConnectionPool();
+        if(pools.length != 0){
+            ConnPoolBean currCPBean = ConnPoolBean.createBean(pools[0]);
+            currCPBean.getBeanInGraph(consolidatedGraph);
+        }
+        
+        JdbcResource[] dataSources = existResource.getJdbcResource();
+        if(dataSources.length != 0){
+            DataSourceBean currDSBean = DataSourceBean.createBean(dataSources[0]);
+            currDSBean.getBeanInGraph(consolidatedGraph);
+        }
 
+        MailResource[] mailResources = existResource.getMailResource();
+        if(mailResources.length != 0){
+            JavaMailSessionBean currMailBean = JavaMailSessionBean.createBean(mailResources[0]);
+            currMailBean.getBeanInGraph(consolidatedGraph);
+        }
+        
+        AdminObjectResource[] aoResources = existResource.getAdminObjectResource();
+        if(aoResources.length != 0){
+            JMSBean jmsBean = JMSBean.createBean(aoResources[0]);
+            jmsBean.getAdminObjectBeanInGraph(consolidatedGraph);
+        }
+        
+        ConnectorResource[] connResources = existResource.getConnectorResource();
+        ConnectorConnectionPool[] connPoolResources = existResource.getConnectorConnectionPool();
+        if(connResources.length != 0 && connPoolResources.length != 0){
+            JMSBean jmsBean = JMSBean.createBean(existResource);
+            jmsBean.getConnectorBeanInGraph(consolidatedGraph);
+        }
+        
+        PersistenceManagerFactoryResource[] pmfResources = existResource.getPersistenceManagerFactoryResource();
+        if(pmfResources.length != 0){
+            PersistenceManagerBean currPMFBean = PersistenceManagerBean.createBean(pmfResources[0]);
+            currPMFBean.getBeanInGraph(consolidatedGraph);
+        }
+
+        return consolidatedGraph;
+    }    
+    
+    private static class ResourceFileFilter implements FileFilter {
+        public boolean accept(File f) {
+            return f.isDirectory() ||
+                    f.getName().toLowerCase(Locale.getDefault()).endsWith(".sun-resource"); //NOI18N
+        }
+    }
     
     private final static char BLANK = ' ';
     private final static char DOT   = '.';

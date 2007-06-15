@@ -84,6 +84,10 @@ public class JavaMailSessionBean extends MailSessionResource implements java.io.
     
     public Resources getGraph(){
         Resources res = getResourceGraph();
+        return getBeanInGraph(res);
+    }    
+    
+    public Resources getBeanInGraph(Resources res){
         MailResource mlresource = res.newMailResource();
         mlresource.setDescription(getDescription());
         mlresource.setJndiName(getJndiName());

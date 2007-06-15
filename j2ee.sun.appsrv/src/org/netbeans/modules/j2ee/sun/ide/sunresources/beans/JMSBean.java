@@ -110,7 +110,11 @@ public class JMSBean extends JavaMsgServiceResource implements java.io.Serializa
     }
     
     public Resources getConnectorGraph(){
-         Resources res = getResourceGraph();
+        Resources res = getResourceGraph();
+        return getConnectorBeanInGraph(res);
+    }    
+    
+    public Resources getConnectorBeanInGraph(Resources res){
          ConnectorResource connresource = res.newConnectorResource();
          connresource.setDescription(getDescription());
          connresource.setEnabled(getIsEnabled());
@@ -139,7 +143,11 @@ public class JMSBean extends JavaMsgServiceResource implements java.io.Serializa
      }
     
      public Resources getAdminObjectGraph(){
-         Resources res = getResourceGraph();
+        Resources res = getResourceGraph();
+        return getAdminObjectBeanInGraph(res);
+    }    
+    
+    public Resources getAdminObjectBeanInGraph(Resources res){
          AdminObjectResource aoresource = res.newAdminObjectResource();
          aoresource.setDescription(getDescription());
          aoresource.setEnabled(getIsEnabled());
