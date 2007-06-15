@@ -128,11 +128,13 @@ public class TransformerUtils {
             ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Boolean>() {
                 public Boolean run() throws IOException {
                     FileLock lock1 = jaxWsBuildScriptXml.lock();
+                    OutputStream os = null;
                     try {
-                        OutputStream os = jaxWsBuildScriptXml.getOutputStream(lock1);
+                        os = jaxWsBuildScriptXml.getOutputStream(lock1);
                         os.write(resultData);
                     } finally {
                         lock1.releaseLock();
+                        if (os!=null) os.close();
                     }
                     return Boolean.TRUE;
                 }
