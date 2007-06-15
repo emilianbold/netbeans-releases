@@ -172,7 +172,7 @@ public class WSDLTreeViewMultiViewElement extends TopComponent
         
         //TODO: try to clean the category.
         categoryPane = null;
-        mToolbar.removeAll();
+        if (mToolbar != null) mToolbar.removeAll();
         mToolbar = null;
         removeAll();
     }
