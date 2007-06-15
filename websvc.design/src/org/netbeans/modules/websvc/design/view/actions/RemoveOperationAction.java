@@ -92,7 +92,7 @@ public class RemoveOperationAction extends AbstractAction{
             //TODO: methodName should be the equivalent operation name in the WSDL
             //i.e., should look at operationName annotation if present
             generatorHelper.removeWSOperation(wsdlModel, generatorHelper.
-                    getPortTypeName(implementationClass), methodName);
+                    getPortTypeNameFromImpl(implementationClass), methodName);
             generatorHelper.generateJavaArtifacts(service.getName(), implementationClass, methodName, true);
             
         } else{

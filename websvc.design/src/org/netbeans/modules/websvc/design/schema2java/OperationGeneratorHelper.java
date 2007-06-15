@@ -92,6 +92,7 @@ import org.openide.ErrorManager;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 
 /**
@@ -102,16 +103,18 @@ public class OperationGeneratorHelper {
     File wsdlFile;
     Map<String, String> types;
     Collection<GlobalSimpleType> primitives;
+    WSDLModel wsdlModel;
     
     /** Creates a new instance of MethodGeneratorHelper */
     public OperationGeneratorHelper(File wsdlFile) {
         this.wsdlFile=wsdlFile;
+        wsdlModel = WSDLUtils.getWSDLModel(FileUtil.toFileObject(wsdlFile), true);
         
     }
     
     /** This method adds new operation to the wsdl file
      */
-    public Operation addWsOperation(WSDLModel wsdlModel,
+    public Operation addWsOperation(
             String portTypeName,
             String operationName,
             List<ParamModel> parameterTypes,
@@ -617,31 +620,38 @@ public class OperationGeneratorHelper {
         JaxWsUtils.copyToSource(seiFile, seiClassName,srcRoot);
     }
     
-    public String getServiceEndpointInterface(FileObject implBean){
-        JavaSource javaSource = JavaSource.forFileObject(implBean);
-        final String[] endpointInterface = new String[1];
+    /**
+     * Obtains the value of an annotation's attribute if that attribute is present.
+     * @param clazz The Java source to parse
+     * @param annotationClass Fully qualified name of the annotation class
+     * @param attributeName Name of the attribute whose value is returned
+     * @return String Returns the string value of the attribute. Returns empty string if attribute is not found.
+     */
+    public String getAttributeValue(FileObject clazz, final String annotationClass, final String attributeName){
+        JavaSource javaSource = JavaSource.forFileObject(clazz);
+        final String[] attributeValue = new String[]{""};
         if (javaSource!=null) {
             CancellableTask<CompilationController> task = new CancellableTask<CompilationController>() {
                 public void run(CompilationController controller) throws IOException {
                     controller.toPhase(Phase.ELEMENTS_RESOLVED);
                     SourceUtils srcUtils = SourceUtils.newInstance(controller);
-                    TypeElement wsElement = controller.getElements().getTypeElement("javax.jws.WebService"); //NOI18N
+                    TypeElement wsElement = controller.getElements().getTypeElement(annotationClass);
                     if(srcUtils != null && wsElement != null){
                         List<? extends AnnotationMirror> annotations = srcUtils.getTypeElement().getAnnotationMirrors();
                         for (AnnotationMirror anMirror : annotations) {
                             Map<? extends ExecutableElement, ? extends AnnotationValue> expressions = anMirror.getElementValues();
                             for(ExecutableElement ex:expressions.keySet()) {
-                                if (ex.getSimpleName().contentEquals("endpointInterface")) {
+                                if (ex.getSimpleName().contentEquals(attributeName)) {
                                     String interfaceName =  (String)expressions.get(ex).getValue();
                                     if(interfaceName != null){
-                                        endpointInterface[0] = URLEncoder.encode(interfaceName,"UTF-8"); //NOI18N
+                                        attributeValue[0] = URLEncoder.encode(interfaceName,"UTF-8"); //NOI18N
                                         break;
                                     }
                                 }
                             }
                             
-                        } // end if
-                    } // end for
+                        }
+                    }
                 }
                 public void cancel() {}
             };
@@ -651,18 +661,39 @@ public class OperationGeneratorHelper {
                 ErrorManager.getDefault().notify(ex);
             }
         }
-        return endpointInterface[0];
+        return attributeValue[0];
     }
     
-    public String getPortTypeName(FileObject implBean){        
-        String seiName = getServiceEndpointInterface(implBean);
-        if(seiName != null){
-            int index = seiName.lastIndexOf(".");
-            if(index != -1){
-                seiName = seiName.substring(index + 1);
+    public String getServiceEndpointInterface(FileObject implBean){
+        return  getAttributeValue(implBean, "javax.jws.WebService", "endpointInterface");
+    }
+    
+    public String getPortTypeNameFromInterface(FileObject interfaceClass){
+        //if interface, use the @WebService.name attribute. If no such attribute
+        //use the simple name of the interface
+        String portTypeName = getAttributeValue(interfaceClass, "javax.jws.WebService", "name");
+        if(portTypeName.equals("")){
+            portTypeName = interfaceClass.getName();
+        }
+        return portTypeName;
+    }
+    
+    public String getPortTypeNameFromImpl(FileObject implClass){
+        
+        String seiName = getServiceEndpointInterface(implClass);
+        if(!seiName.equals("")){
+            ClassPath classPath = ClassPath.getClassPath(implClass, ClassPath.SOURCE);
+            FileObject seiFile = classPath.findResource(seiName.replace('.', '/') + ".java");
+            if(seiFile != null){
+                return getPortTypeNameFromInterface(seiFile);
             }
-        }        
-        return seiName;
+        }else{
+            String portTypeName = getAttributeValue(implClass, "javax.jws.WebService", "name");
+            if(!portTypeName.equals("")){
+                return portTypeName;
+            }
+        }
+        return implClass.getName();
     }
     
     
@@ -726,6 +757,10 @@ public class OperationGeneratorHelper {
         SchemaModel schemaModel = wsdlSchema.getSchemaModel();
         schemaModel.getSchema().setTargetNamespace(definitions.getTargetNamespace());
         return schemaModel;
+    }
+    
+    public void changeWSDLOperationName(String oldName, String newName){
+        Definitions definitions = wsdlModel.getDefinitions();
     }
 }
 
