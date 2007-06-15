@@ -61,6 +61,7 @@ import javax.swing.JToggleButton;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.editor.structure.api.DocumentElement;
+import org.netbeans.modules.mobility.svgcore.ExternalEditAction;
 import org.netbeans.modules.mobility.svgcore.export.SaveElementAsImage;
 import org.netbeans.modules.mobility.svgcore.export.SaveAnimationAsImageAction;
 import org.netbeans.modules.mobility.svgcore.export.SaveAsImageAction;
@@ -732,6 +733,7 @@ final public class SVGViewTopComponent extends CloneableTopComponent {
         basePanel.add( topComponent, BorderLayout.CENTER);
         m_sceneMgr.registerPopupActions( new Action[]{
             SystemAction.get(EditAction.class),
+            SystemAction.get(ExternalEditAction.class),
             null,
             SystemAction.get(SaveAsImageAction.class),
             SystemAction.get(SaveAnimationAsImageAction.class),
