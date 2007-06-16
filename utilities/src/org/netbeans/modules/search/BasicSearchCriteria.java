@@ -639,7 +639,7 @@ final class BasicSearchCriteria {
             detailNodes.add(new TextDetail.DetailNode(txtDetail));        
         }
         
-        return (Node[]) detailNodes.toArray(new Node[detailNodes.size()]);
+        return detailNodes.toArray(new Node[detailNodes.size()]);
     }
 
     /** Gets details map. */
@@ -665,7 +665,7 @@ final class BasicSearchCriteria {
      *          the specified object
      */
     public Node[] getDetails(Node node) {
-        DataObject dataObject = (DataObject)node.getCookie(DataObject.class);
+        DataObject dataObject = node.getCookie(DataObject.class);
         
         if(dataObject == null) 
             return null;
