@@ -14,6 +14,7 @@ var currentMimeType;
 var treeHook;
 var myTree;
 var topUrls = new Array();
+var paramNumber = 1;
 
 var expand = new Image();
 expand.src = "expand.gif";
@@ -297,6 +298,7 @@ function doShowContent(uri) {
 function doShowDynamicResource(uri, mName, mediaType) {
     updatepage('result', '');
     updatepage('resultheaders', '');
+    paramNumber = 1;
     var qmName = '';
     if(mediaType != null)
         qmName = qmName + "("+mediaType+")";
@@ -316,6 +318,7 @@ function doShowDynamicResource(uri, mName, mediaType) {
     str += "  <option value='text/plain'>text/plain</option>";
     str += "  <option value='text/html'>text/html</option>";    
     str += "</select>";
+    str += "&nbsp;&nbsp;<input value='MSG_TEST_RESBEANS_AddParamButton' type='button' onclick='addParam()'>";
     str += "<br/><br/>";
     str += getFormRep(null, uri, mName, mediaType);
     document.getElementById('testres').innerHTML = str;
@@ -327,10 +330,12 @@ function doShowDynamicResource(uri, mName, mediaType) {
 function doShowStaticResource(uri, r) {
     updatepage('result', '');
     updatepage('resultheaders', '');
+    paramNumber = 1;
     showBreadCrumbs(uri);
     var mName = getDefaultMethod();
     var mediaType = getDefaultMime();    
     var str = getMethodMimeTypeCombo(r);
+    //str += "&nbsp;&nbsp;<input value='MSG_TEST_RESBEANS_AddParamButton' onclick='addParam()'>";
     str += "<br/><br/>";
     str += getFormRep(null, uri, mName, mediaType);
     document.getElementById('testres').innerHTML = str;
@@ -360,10 +365,19 @@ function getFormRep(req, uri, mName, mediaType) {
     str += "<input name='path' value='"+uri+"' type='hidden'>";
     str += "<input id='method' name='method' value='"+mName+"' type='hidden'>";
     str += "<input id='mimeType' name='mimeType' value='"+mediaType+"' type='hidden'>";
-    str += "<input value='MSG_TEST_RESBEANS_TestButton' type='button' onclick='testResource()'>";
+    str += "<br/><input value='MSG_TEST_RESBEANS_TestButton' type='button' onclick='testResource()'>";
     str += "</form>";
     str += "</div>";
     return str;
+}
+function addParam() {
+    var str = "<span class=bld>MSG_TEST_RESBEANS_NewParamName:&nbsp;</span>"+
+        "<input id='newParamNames' name='param"+paramNumber+"' type='text' value='param"+paramNumber+"' size='25'>"+
+        "&nbsp;&nbsp;&nbsp;<span class=bld>MSG_TEST_RESBEANS_NewParamValue:&nbsp;</span>"+
+        "<input id='newParamValues' name='value"+paramNumber+"' type='text' value='value"+paramNumber+"' size='55'>"+"<br>";
+    var prevParam = document.getElementById("paramHook").innerHTML;
+    document.getElementById("paramHook").innerHTML = prevParam + "<br>" + str;
+    paramNumber++;
 }
 function showBreadCrumbs(uri) {
     var nav = document.getElementById('navigation');
@@ -440,11 +454,22 @@ function testResource() {
             var len = document.forms[0].params.length;
             for(j=0;j<len;j++) {
                 var param = document.forms[0].params[j]
-                if(len == 1 || len-j>1)
+                if(len == 1 || len-j == 1)
                     p += param.name+"="+param.value;
                 else
                     p += param.name+"="+param.value+"&";
             }
+        }
+    }
+    if(document.forms[0].newParamNames != null) {
+        var len = document.forms[0].newParamNames.length;
+        for(j=0;j<len;j++) {
+            var paramName = document.forms[0].newParamNames[j].value;
+            var paramValue = document.forms[0].newParamValues[j].value;
+            if(len == 1 || len-j == 1)
+                p += paramName+"="+paramValue;
+            else
+                p += paramName+"="+paramValue+"&";
         }
     }
     var params = null;
@@ -474,7 +499,7 @@ function testResource() {
     xmlHttpReq4.send(params);
 }
 function createIFrame(url) {
-    var c = '<iframe src="'+url+'" class="frame" width="600" height="150" align="left">'+
+    var c = '<iframe src="'+url+'" class="frame" width="600" height="400" align="left">'+
         '<p>See <a href="'+url+'">"'+url+'"</a>.</p>'+
         '</iframe>';
     return c;
