@@ -1471,6 +1471,10 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
     public void setRestartForDriverDeployment(boolean restart){
         this.driversdeployed = restart;
     }
+
+    public int getAppserverVersion() {
+        return ServerLocationManager.getAppServerPlatformVersion(getPlatformRoot());
+    }
     
     /** put a file inside this progress listener to get rid of it after
      * it has been used

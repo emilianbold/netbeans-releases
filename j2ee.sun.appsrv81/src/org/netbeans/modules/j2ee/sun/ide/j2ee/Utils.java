@@ -32,10 +32,12 @@ import java.util.ResourceBundle;
 
 import org.netbeans.modules.j2ee.deployment.common.api.SourceFileMap;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.sun.api.ServerLocationManager;
 import org.netbeans.modules.j2ee.sun.dd.api.DDProvider;
 import org.netbeans.modules.j2ee.sun.dd.api.serverresources.*;
 import org.netbeans.modules.j2ee.sun.api.ServerInterface;
 import org.netbeans.modules.j2ee.sun.api.SunDeploymentManagerInterface;
+import org.netbeans.modules.j2ee.sun.ide.sunresources.beans.RegistrationUtils;
 import org.netbeans.modules.j2ee.sun.ide.sunresources.beans.ResourceUtils;
 import org.openide.ErrorManager;
 
@@ -178,7 +180,12 @@ public class Utils {
         for(int i=0; i<resources.length; i++ ){
             File resource = resources[i];
             if((resource != null) && (!resource.isDirectory())){
-                Utils.registerIndvResources(mejb, resource);
+                SunDeploymentManagerInterface sunDm = (SunDeploymentManagerInterface)mejb.getDeploymentManager();
+                if(sunDm.getAppserverVersion() != ServerLocationManager.GF_V2){
+                    Utils.registerIndvResources(mejb, resource);
+                }else{
+                    RegistrationUtils.checkUpdateServerResources(mejb, resource);
+                }    
             }
         }
     }

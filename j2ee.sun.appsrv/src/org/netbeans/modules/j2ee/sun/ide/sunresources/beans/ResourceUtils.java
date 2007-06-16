@@ -338,7 +338,7 @@ public class ResourceUtils implements WizardConstants{
          }
      }
      
-     private static Map getResourceAttributeNames(ObjectName objName, ServerInterface mejb) throws Exception {
+     public static Map getResourceAttributeNames(ObjectName objName, ServerInterface mejb) throws Exception {
          try{
              Map attributeInfos = new java.util.HashMap();
              javax.management.MBeanInfo info = mejb.getMBeanInfo(objName);
@@ -1414,6 +1414,18 @@ public class ResourceUtils implements WizardConstants{
         targetFolder = setUpExists(targetFolder);               
         File sunResource = getServerResourcesFile(targetFolder);
         if(sunResource != null){
+            res = getServerResourcesGraph(sunResource);
+        }
+        return res;
+    }
+
+    /*
+     * Get the resources-graph for a sun-resource.xml
+     *
+     */     
+    public static Resources getServerResourcesGraph(File sunResource){
+        Resources res = null;
+        if(sunResource != null){
             java.io.FileInputStream in = null;
             try {
                 in = new java.io.FileInputStream(sunResource);
@@ -1430,7 +1442,7 @@ public class ResourceUtils implements WizardConstants{
         }
         return res;
     }
-
+    
     public static void createFile(FileObject targetFolder, final Resources res){
         targetFolder = setUpExists(targetFolder);
         File sunResource = getServerResourcesFile(targetFolder);

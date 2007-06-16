@@ -114,4 +114,6 @@ public interface SunDeploymentManagerInterface extends Node.Cookie{
     boolean grabInnerDM(boolean returnInsteadOfWaiting);
     
     void releaseInnerDM();
+    
+    int getAppserverVersion(); 
 }
