@@ -22,9 +22,9 @@ package org.netbeans.modules.compapp.projects.jbi.anttasks;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -33,7 +33,6 @@ import java.util.logging.Logger;
 import javax.xml.namespace.QName;
 
 import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.Transformer;
@@ -46,7 +45,6 @@ import org.apache.tools.ant.Task;
 import org.netbeans.modules.compapp.projects.jbi.MigrationHelper;
 import org.netbeans.modules.compapp.projects.jbi.descriptor.XmlUtil;
 import org.netbeans.modules.compapp.projects.jbi.descriptor.endpoints.model.Connection;
-import org.netbeans.modules.compapp.projects.jbi.descriptor.endpoints.model.ConnectionContainer;
 import org.netbeans.modules.compapp.projects.jbi.descriptor.endpoints.model.Endpoint;
 import org.netbeans.modules.compapp.projects.jbi.descriptor.endpoints.model.PtConnection;
 import org.netbeans.modules.compapp.projects.jbi.ui.customizer.JbiProjectProperties;
@@ -59,7 +57,6 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
 
 /**
  * Ant task to build jbiserver service assembly
@@ -69,18 +66,13 @@ import org.xml.sax.SAXException;
  */
 public class BuildServiceAssembly extends Task {
     
-    /**
-     * DOCUMENT ME!
-     */
-    String showLogOption = "false";
+    private String showLogOption = "false";
     
     private boolean showLog = false;
     
     private wsdlRepository mRepo;
     
     private Document jbiDocument;
-    
-    private byte[] endpoints;
     
     private Logger logger = Logger.getLogger(getClass().getName());
     
@@ -96,7 +88,7 @@ public class BuildServiceAssembly extends Task {
     private boolean ignoreJ2EEPorts = true;
     
     // binding component name list in BindingComponentInformation.xml
-    private List<String> bcNameList;
+    private List<String> bcNames;
     
     // service unit artifact zip file name list in AssemblyInformation.xml
     private List<String> suJarNames;
@@ -190,18 +182,17 @@ public class BuildServiceAssembly extends Task {
                 bDir.mkdirs();
             }
             
-            // Get all the bc names into bcNameList.
+            // Get all the bc names
             // Use ComponentInformation.xml instead of BindingComponentInformatino.xml
-            // to get all the binding components!
+            // to get all the binding component names!
             String ciFileLoc = confDirLoc + "ComponentInformation.xml";
-            loadBindingComponentInfo(ciFileLoc);
+            bcNames = loadBindingComponentNames(ciFileLoc);
             
             String asiFileLoc = confDirLoc + "AssemblyInformation.xml";
             loadAssemblyInfo(asiFileLoc);
             
             // generate the SE jar file list
-            // loop thru SE suprojects and copying SE deployment jars
-            
+            // loop thru SE suprojects and copying SE deployment jars            
             List<String> srcJarPaths = getJarList(jars);
             List<String> javaEEJarPaths = getJarList(javaeeJars);
             
@@ -211,15 +202,13 @@ public class BuildServiceAssembly extends Task {
                     createEndpointsFrom(srcJarPath);
                     continue;
                 }
-
-                String jarName = getShortName(srcJarPath); // e.x.: SynchronousSample.jar
                 
                 if ((srcJarPath.indexOf(':') < 0) && (!srcJarPath.startsWith("/"))) { // i.e., relative path
                     srcJarPath = projPath + srcJarPath;
-                }
-                
+                }                
                 File srcJarFile = new File(srcJarPath);
                 
+                String jarName = getShortName(srcJarPath); // e.x.: SynchronousSample.jar
                 if (!srcJarFile.exists()) {
                     log(" Error: Missing project Sub-Assembly: " + srcJarPath);
                 } else if (! suJarNames.contains(jarName)) {
@@ -231,35 +220,39 @@ public class BuildServiceAssembly extends Task {
                 }
             }
             
-            // resolve connections... and write out to connections.xml
-            // Todo: load this from connections.xml
-            ConnectionContainer cc = new ConnectionContainer();
-            Map<String, List[]> bcConnections = ResloveConnections(mRepo, cc);
+            CasaBuilder casaBuilder = new CasaBuilder(project, mRepo, this);
+            final Document oldCasaDocument = casaBuilder.getOldCasaDocument();
             
-            // todo: 02/08/07 need to merge Casa Connections in...
-            String casaFileLoc = confDirLoc + getCASAFileName();
-            CasaBuilder casaBuilder = new CasaBuilder(project, mRepo, this, casaFileLoc);
-            casaBuilder.mergeCasaConnection(cc, bcConnections);
+            // Resolve connections
+            ConnectionResolver connectionResolver = 
+                    new ConnectionResolver(this, showLog, saInternalRouting);          
+            connectionResolver.resolveConnections(mRepo, oldCasaDocument);
             
-            // System.out.println("bcs: " + bcs);
+            
+            // Write connections to connections.xml
             CreateSAConnections dd = new CreateSAConnections();
-            dd.buildDOMTree(cc, mRepo, p);
+            dd.buildDOMTree(connectionResolver, mRepo, p);
             dd.writeToFile(connectionsFileLoc);
             
             // Generate SA jbi.xml,
             generateServiceAssemblyDescriptor(
-                    cc, bcConnections, connectionsFileLoc, jbiFileLoc);
+                    connectionResolver, connectionsFileLoc, jbiFileLoc);
             
             // Todo: 08/22/06 merge catalogs
             MergeSeJarCatalogs(catalogDirLoc);
             
-            genericBCJar = new JarFile(genericBCJarFileLoc);
-                       
+            // Generate BC SU jbi.xml and BC SU jar file
+            genericBCJar = new JarFile(genericBCJarFileLoc);                                         
+            
+            // a map mapping binding component name (say, "sun-http-binding")
+            // to a list of two connection lists.  
+            Map<String, List<Connection>[]> bcConnections = 
+                    connectionResolver.getBCConnections();
+            
             List<String> bcsUsingCompAppWsdl = 
-                    getBindingComponentsUsingCompAppWsdl(bcConnections);
-                    
-            for (String bcName : bcConnections.keySet()) {
-                List<Connection>[] clist = bcConnections.get(bcName);
+                    getBindingComponentsUsingCompAppWsdl(bcConnections);            
+            for (String bcName : connectionResolver.getBCNames()) {
+//                List<Connection>[] clist = bcConnections.get(bcName);
                 String bcJarName = null;
                 for (int k = 0; k < suJarNames.size(); k++) {
                     String name = suJarNames.get(k);
@@ -273,21 +266,20 @@ public class BuildServiceAssembly extends Task {
                     log("Create " + bcJarName + " for binding component " + bcName);
                     
                     // Create standalone BC jbi.xml file under src/jbiServiceUnits/<bcName>/.
-                    createBCJBIDescriptor(bcJarName, clist, cc);
+                    createBCJBIDescriptor(bcJarName, bcName, connectionResolver);
                     
                     // Create build/<bcName>.jar
                     // ToDo: update bc jar endpoints.xml
                     // 1. copy BCjars for each needed BC
                     // 2. create jbi.xml
                     boolean isCompAppWSDLNeeded = bcsUsingCompAppWsdl.contains(bcName);
-                    createBCJar(bcJarName, clist, genericBCJar, cc, isCompAppWSDLNeeded);                    
+                    createBCJar(bcJarName, bcName, genericBCJar, connectionResolver, isCompAppWSDLNeeded);                    
                 } else {
                     log("ERROR: Cannot create binding component jar for " + bcName);
                 }
             }
             
-            Document casaDocument = casaBuilder.createCasaDocument(jbiDocument);  
-            XmlUtil.writeToFile(casaFileLoc, casaDocument);
+            casaBuilder.createCasaDocument(jbiDocument);  
             
         } catch (Exception e) {
             e.printStackTrace();
@@ -303,32 +295,7 @@ public class BuildServiceAssembly extends Task {
             }
         }
     }
-    
-    /*
-    private void clearDeletedBCEndpoints(List<Connection>[] clist, 
-            List<Endpoint> deletedBCEndpoints) {
-        for (int i = clist[0].size() - 1; i >= 0; i--) {
-            Connection connection = clist[0].get(i);
-            Endpoint consumes = connection.getConsume();
-            for (Endpoint e : deletedBCEndpoints) {
-                if (e.equals(consumes)) {
-                    clist[0].remove(connection);
-                    break;
-                }
-            }
-        }
-        for (int i = clist[1].size() - 1; i >= 0; i--) {
-            Connection connection = clist[1].get(i);
-            Endpoint provides = connection.getProvide();
-            for (Endpoint e : deletedBCEndpoints) {
-                if (e.equals(provides)) {
-                    clist[1].remove(connection);
-                    break;
-                }
-            }
-        }
-    }*/
-    
+        
     private List<String> getJarList(String commaSeparatedList){
         List<String>  ret = new ArrayList<String>();
         if (commaSeparatedList != null) {
@@ -443,14 +410,22 @@ public class BuildServiceAssembly extends Task {
     
     /**
      * Generates service assembly jbi.xml (based on the ASI.xml document).
+     * 
+     * @param cc
+     * @param outputBCNames   a set of BC names which exist in the SA jbi.xml
+     * @param conFileLoc
+     * @param jbiFileLoc
      */
-    private void generateServiceAssemblyDescriptor(ConnectionContainer cc,
-            Map<String, List[]> bcs, 
+    private void generateServiceAssemblyDescriptor(ConnectionResolver connectionResolver,
             String conFileLoc,
-            String jbiFileLoc) {        
+            String jbiFileLoc) {  
+        
+        Set<String> outputBCNames = connectionResolver.getBCNames();
+        
         try {
+            
             CreateSAConnections dd = new CreateSAConnections();
-            dd.buildDOMTree(cc, mRepo, getProject());
+            dd.buildDOMTree(connectionResolver, mRepo, getProject());
             dd.writeToFile(conFileLoc);
             
             NodeList sas = jbiDocument.getElementsByTagName("service-assembly");
@@ -465,15 +440,15 @@ public class BuildServiceAssembly extends Task {
                     if (cns != null && cns.getLength() > 0) {
                         Element cn = (Element) cns.item(0);
                         String compName = cn.getFirstChild().getNodeValue();
-                        if (bcNameList.contains(compName) &&  // is bc
-                                !bcs.containsKey(compName)) { // not being used
+                        if (bcNames.contains(compName) &&  // is bc
+                                !outputBCNames.contains(compName)) { // not being used
                             sa.removeChild(su);
                         }
                     }
                 }
                 
                 // 2. add connections
-                sa.appendChild(dd.createConnections(cc, jbiDocument));
+                sa.appendChild(dd.createConnections(connectionResolver, jbiDocument));
                 
                 // normalize the document
                 sa.normalize();
@@ -491,7 +466,7 @@ public class BuildServiceAssembly extends Task {
             NodeList rs = jbiDocument.getElementsByTagName("jbi");
             if ((rs != null) && (rs.getLength() > 0)) {
                 Element root = (Element) rs.item(0);
-                Map<String, String> map = cc.getNamespaceMap();
+                Map<String, String> map = connectionResolver.getNamespaceMap();
                 for (String key : map.keySet()) {
                     if (key != null) {
                         String value = map.get(key);
@@ -506,216 +481,15 @@ public class BuildServiceAssembly extends Task {
             log(" Build SA Descriptor Failed: " + e.toString());
         }
     }
-    
+        
     /**
-     * @return  a map mapping binding component name (say, "sun-http-binding")
-     *          to a list of two connection lists.
-     */
-    private Map<String, List[]> ResloveConnections(wsdlRepository repo,
-            ConnectionContainer cc) {
-        Map<String, PtConnection> ptConnectionMap = repo.getConnections(); // key is portType
-        HashMap<String, List[]> bcConnections = new HashMap<String, List[]>();
-        
-        // loop thru the Pt connections
-        for (String pt : ptConnectionMap.keySet()) {
-            PtConnection ptConnection = ptConnectionMap.get(pt);
-                if (showLog) {
-                log(ptConnection.dump());
-            }
-            
-            // check the number of ports
-            List<Port> ports = ptConnection.getPorts();
-            int numPorts = ports.size();
-            if (numPorts == 1) { // OK, only 1 external port...
-                Port p = ports.get(0);
-                List<Endpoint> providers = ptConnection.getProvides();
-                
-                // check the number of providers
-                int numProviders = providers.size();
-                if (numProviders > 1) { // report error... more than 1 providers
-                    log("***Warning: 1 port with " + numProviders + " providers ["
-                            + pt + "]");
-                    // todo: OK, we will just add the first one in...
-                }
-                
-                // Is there a binding for the port
-                String bcName = repo.getBindingComponentName(p);
-                QName ptQName = p.getBinding().get().getType().getQName();
-                if (bcName == null) { // report error.. no binding
-                    log("***Warning: PORT w/o address: " + ptQName);
-                } else {
-                    Object cmap = bcConnections.get(bcName);
-                    ArrayList[] clist = new ArrayList[2];
-                    if (cmap != null) {
-                        clist = ((ArrayList[]) cmap);
-                    } else {
-                        clist[0] = new ArrayList<Connection>();
-                        clist[1] = new ArrayList<Connection>();
-                    }
-                    
-                    // Create the endpoint for port
-                    Service sv = (Service) p.getParent();
-                    String tns = ((Definitions) sv.getParent()).getTargetNamespace();
-                    Endpoint port = new Endpoint(//"either",
-                            p.getName(),
-                            new QName(tns, sv.getName()),
-                            ptQName);
-                    
-                    // create a connection port -> provider
-                    Endpoint provide = null;
-                    if (numProviders > 0) {
-                        // 03/08/06 use the first one only...
-                        provide = providers.get(0);
-                        Connection c = new Connection(port, provide);
-                        cc.addConnection(c);
-                        clist[0].add(c);
-                        if (numProviders > 1) {
-                            dumpEndpoints(providers, "Provider");
-                        }
-                    }
-                    // loop thru consumers
-                    List<Endpoint> consumers = ptConnection.getConsumes();
-                    for (Endpoint consume : consumers) {
-                        // create a connection consumer -> port
-                        // todo: 03/23/06.. replace with consumer -> provider
-                        // instead
-                        Connection c = null;
-                        if ((provide != null) && saInternalRouting) {
-                            // create a direct connection consumer -> provide
-                            c = new Connection(consume, provide);
-                        } else {
-                            c = new Connection(consume, port);
-                            clist[1].add(c);
-                        }
-                        cc.addConnection(c);
-                    }
-                    
-                    bcConnections.put(bcName, clist);
-                }
-                
-            } else if (numPorts == 0) { // no external port...
-                // report unused wsdl port, or internal connection
-                log("***Warning: no wsdl port implementing portType [" + pt + "]");
-                
-                // resolve internal connections...
-                List<Endpoint> consumers = ptConnection.getConsumes();
-                List<Endpoint> providers = ptConnection.getProvides();
-                int numProviders = providers.size();
-                int numConsumers = consumers.size();
-                if ((numConsumers < 1) || (numProviders < 1)) {
-                    // no connection needed...
-                    
-                    // todo: 09/05/06 Create default binding/serivce/port for sole provider...
-                    // todo: 1. add port w/default binding/serverice
-                    // todo: 2. add connection port -> provider
-                    
-                } else if (numProviders == 1) { // OK...
-                    Endpoint provide = providers.get(0);
-                    for (Endpoint consume : consumers) {
-                        // create a connection consumer -> provider
-                        Connection c = new Connection(consume, provide);
-                        cc.addConnection(c);
-                    }
-                } else if (numProviders > 1) {
-                    // report error... more than 1 providers
-                    log("***Warning: " + numPorts + " ports, " +
-                            numConsumers + " consumers, " +
-                            numProviders + " providers. [" + pt + "]");
-                    dumpPorts(ports);
-                    dumpEndpoints(consumers, "Consumer");
-                    dumpEndpoints(providers, "Provider");
-                }
-                
-            } else { // more than 1 external port
-                // OK, if multiple ports, but only 1 provider 0 consumer...
-                // Q: Why do we have to have 0 consumer? If we can connect multiple
-                // ports to the sole provider, why can't we connect multiple
-                // consumers to the sole provider at the same time?
-                
-                List<Endpoint> consumers = ptConnection.getConsumes();
-                List<Endpoint> providers = ptConnection.getProvides();
-                int numProviders = providers.size();
-                int numConsumers = consumers.size();
-                if (numProviders > 1) {
-                    // report error... more than 1 providers
-                    log("***Warning: " + numPorts + " ports and " + numProviders
-                            + " providers [" + pt + "]");
-                    dumpPorts(ports);
-                    dumpEndpoints(providers, "Provider");
-                } else if (numConsumers > 0) {
-                    // report error... more than 1 consumers
-                    log("***Warning: 1 or more consumers with " + numPorts
-                            + " ports [" + pt + "]");
-                    dumpPorts(ports);
-                    dumpEndpoints(consumers, "Consumer");
-                } else if (numProviders == 1) {
-                    Endpoint provide = providers.get(0);
-                    for (Port p : ports) {
-                        String bcName = repo.getBindingComponentName(p);
-                        QName ptQName = p.getBinding().get().getType().getQName();
-                        if (bcName == null) {
-                            log("***Warning: PORT w/o address: " + ptQName);
-                        } else {
-                            Object cmap = bcConnections.get(bcName);
-                            ArrayList[] clist = new ArrayList[2];
-                            if (cmap != null) {
-                                clist = ((ArrayList[]) cmap);
-                            } else {
-                                clist[0] = new ArrayList<Connection>();
-                                clist[1] = new ArrayList<Connection>();
-                            }
-                            
-                            Service sv = (Service) p.getParent();
-                            String tns = ((Definitions) sv.getParent()).getTargetNamespace();
-                            Endpoint port = new Endpoint(p.getName(),
-                                    new QName(tns, sv.getName()),
-                                    ptQName);
-                            Connection c = new Connection(port, provide);
-                            cc.addConnection(c);
-                            clist[0].add(c);
-                            bcConnections.put(bcName, clist);
-                        }
-                    }
-                }
-            }
-        }
-        
-        if (showLog) {
-            log("\n-----------------------------------\n");
-            log(cc.dump());
-        }
-        
-        return bcConnections;
-    }
-    
-    private void dumpEndpoints(List<Endpoint> endpoints, String name) {
-        int psize = endpoints.size();
-        if (psize > 1) {
-            for (int k = 0; k < psize; k++) {
-                Endpoint pn = endpoints.get(k);
-                log("\t" + name + "[" + k + "]: : " + pn.getServiceQName() + ", "
-                        + pn.getEndpointName());
-            }
-        }
-    }
-    
-    private void dumpPorts(List<Port> ports) {
-        int psize = ports.size();
-        if (psize > 1) {
-            for (int k = 0; k < psize; k++) {
-                Port port = ports.get(k);
-                log("\tPort[" + k + "]: : " + port.getName() + ", "
-                        + port.getBinding().getQName());
-            }
-        }
-    }
-    
-    /**
-     * Loads binding component names from ComponentInformation.xml.
+     * Loads all the binding component names from ComponentInformation.xml.
      *
      * @param ciFileLoc    file location for ComponentInformation.xml
      */
-    private void loadBindingComponentInfo(String ciFileLoc) {
+    private List<String> loadBindingComponentNames(String ciFileLoc) {
+        List<String> ret = new ArrayList<String>();
+        
         try {
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             factory.setValidating(false);
@@ -724,7 +498,6 @@ public class BuildServiceAssembly extends Task {
                     factory.newDocumentBuilder().parse(new File(ciFileLoc));
             NodeList compInfoNodeList = document.getElementsByTagName("component-info");
             
-            bcNameList = new ArrayList<String>();
             for (int i = 0, isize = compInfoNodeList.getLength(); i < isize; i++) {
                 Element compInfo = (Element) compInfoNodeList.item(i);
                 Element typeElement = (Element) compInfo.getElementsByTagName("type").item(0);                
@@ -732,16 +505,14 @@ public class BuildServiceAssembly extends Task {
                 if (compType.equalsIgnoreCase("binding")) {
                     Element nameElement = (Element) compInfo.getElementsByTagName("name").item(0);
                     String compName = nameElement.getFirstChild().getNodeValue();
-                    bcNameList.add(compName);
+                    ret.add(compName);
                 }
             }
-        } catch (IOException e) {
-            log("IOException: A parsing error occurred; the xml input is not valid: " + ciFileLoc);
-        } catch (SAXException e) {
-            log("SAXException: A parsing error occurred; the xml input is not valid: " + ciFileLoc);
-        } catch (ParserConfigurationException e) {
-            log("ParserConfigurationException: A parsing error occurred; the xml input is not valid: " + ciFileLoc);
+        } catch (Exception e) {
+            log(e.getMessage() + " : " + ciFileLoc);
         }
+        
+        return ret;
     }
     
     private void loadAssemblyInfo(String asiFileLoc) {
@@ -759,12 +530,8 @@ public class BuildServiceAssembly extends Task {
                 String jarName = jarNode.getFirstChild().getNodeValue();
                 suJarNames.add(jarName);
             }
-        } catch (IOException e) {
-            log("IOException: A parsing error occurred; the xml input is not valid: " + asiFileLoc);
-        } catch (SAXException e) {
-            log("SAXException: A parsing error occurred; the xml input is not valid: " + asiFileLoc);
-        } catch (ParserConfigurationException e) {
-            log("ParserConfigurationException: A parsing error occurred; the xml input is not valid: " + asiFileLoc);
+        } catch (Exception e) {
+            log(e.getMessage() + " : " + asiFileLoc);
         }
     }
     
@@ -954,6 +721,7 @@ public class BuildServiceAssembly extends Task {
     /**
      * Gets the namespace from the qname.
      *
+     * @param el 
      * @param prefix name prefix of service
      *
      * @return namespace namespace of service
@@ -979,8 +747,8 @@ public class BuildServiceAssembly extends Task {
         return "";
     }
         
-    private void createBCJBIDescriptor(String outFile, List[] clist,
-            ConnectionContainer cc) {
+    private void createBCJBIDescriptor(String outFile, String bcName,
+            ConnectionResolver connectionResolver) {
         Project p = this.getProject();
         String projPath = p.getProperty("basedir") + File.separator;
         
@@ -997,7 +765,7 @@ public class BuildServiceAssembly extends Task {
         
         CreateSUDescriptor dd = new CreateSUDescriptor();
         try {
-            dd.buildDOMTree(cc, clist, mRepo);
+            dd.buildDOMTree(connectionResolver, bcName, mRepo);
             dd.writeToFile(bcSUDirLoc);
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -1011,13 +779,9 @@ public class BuildServiceAssembly extends Task {
     private String getCasaWSDLFileName() {
         return getProjectName() + ".wsdl";
     }
-    
-    private String getCASAFileName() {
-        return getProjectName() + ".casa";
-    }
-    
-    private void createBCJar(String outFile, List[] clist, 
-            JarFile genericBCJar, ConnectionContainer cc,
+        
+    private void createBCJar(String outFile, String bcName,
+            JarFile genericBCJar, ConnectionResolver connectionResolver,
             boolean isCompAppWSDLNeeded) 
             throws Exception {
         byte[] buffer = new byte[1024];
@@ -1073,7 +837,7 @@ public class BuildServiceAssembly extends Task {
             JarEntry jbientry = new JarEntry(SU_JBIXML_PATH);
             newJar.putNextEntry(jbientry);
             CreateSUDescriptor dd = new CreateSUDescriptor();
-            dd.buildDOMTree(cc, clist, mRepo);
+            dd.buildDOMTree(connectionResolver, bcName, mRepo);
             newJar.write(dd.writeToBytes());
             
             // create the catalog.xml
@@ -1100,54 +864,7 @@ public class BuildServiceAssembly extends Task {
             }
         }
     }
-    
-    /*
-    private boolean checkWSDLEndpointUsage(InputStream wsdlInputStream, 
-            Map<String, List[]> bcConnections, String bcName) {
-        
-        try {
-            DocumentBuilderFactory fact = DocumentBuilderFactory.newInstance();
-            DocumentBuilder builder = fact.newDocumentBuilder();
-            Document document = builder.parse(wsdlInputStream);
-            
-            String tns = document.getDocumentElement().getAttribute("targetNamespace");
-            
-            NodeList portNodeList = document.getElementsByTagName("port");
-            for (int i = 0; i < portNodeList.getLength(); i++) {
-                Element port = (Element) portNodeList.item(i);
-                String portName = port.getAttribute("name");
-                Element service = (Element) port.getParentNode();
-                
-                String serviceName = service.getAttribute("name");
-                QName serviceQName = new QName(tns, serviceName);
-                
-                List<Connection>[] clist = (List<Connection>[]) bcConnections.get(bcName);
-                for (Connection connection : clist[0]) {
-                    Endpoint e = connection.getConsume();              
-                    // we don't need to check interface name.
-                    if (e.getEndpointName().equals(portName) &&
-                            e.getServiceQName().equals(serviceQName)) {
-                        return true;
-                    }
-                }
-                
-                for (Connection connection : clist[1]) {
-                    Endpoint e = connection.getProvide();              
-                    // we don't need to check interface name.
-                    if (e.getEndpointName().equals(portName) &&
-                            e.getServiceQName().equals(serviceQName)) {
-                        return true;
-                    }
-                }
-            }
-            return false;
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        
-        return true;        
-    }*/
-    
+      
     private WSDLModel getCompAppWsdlModel() {
         String casaWsdlName = getCasaWSDLFileName();
         for (WSDLModel wsdlModel : mRepo.getWsdlCollection()) {
@@ -1158,42 +875,7 @@ public class BuildServiceAssembly extends Task {
         }
         return null;
     }
-    /*
-    private List<Endpoint> getEndpointsInServiceAssemblyDescriptor(String saJBIFile) {
-        
-        List<Endpoint> ret = new ArrayList<Endpoint>();
-        
-        try {
-            DocumentBuilderFactory fact = DocumentBuilderFactory.newInstance();
-            DocumentBuilder builder = fact.newDocumentBuilder();
-            Document document = builder.parse(new File(saJBIFile));
-            
-            NodeList consumerNodeList = document.getElementsByTagName("consumer");
-            for (int i = 0; i < consumerNodeList.getLength(); i++) {
-                Element consumer = (Element) consumerNodeList.item(i);
-                
-                QName serviceQName = XmlUtil.getAttributeNSName(consumer, "service-name"); // REFACTOR ME
-                String endpointName = consumer.getAttribute("endpoint-name");
-                Endpoint endpoint = new Endpoint(endpointName, serviceQName, null); // we don't care about interface name in the current use case
-                ret.add(endpoint);
-            }
-            
-            NodeList providerNodeList = document.getElementsByTagName("provider");
-            for (int i = 0; i < providerNodeList.getLength(); i++) {
-                Element provider = (Element) providerNodeList.item(i);
-                
-                QName serviceQName = XmlUtil.getAttributeNSName(provider, "service-name");
-                String endpointName = provider.getAttribute("endpoint-name");
-                Endpoint endpoint = new Endpoint(endpointName, serviceQName, null);
-                ret.add(endpoint);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        
-        return ret;
-    }*/
-    
+       
     private List<Endpoint> getEndpointsInWsdlModel(WSDLModel wsdlModel) {
         List<Endpoint> ret = new ArrayList<Endpoint>();
         
@@ -1215,7 +897,7 @@ public class BuildServiceAssembly extends Task {
     }
     
     private List<String> getBindingComponentsUsingCompAppWsdl(
-            Map<String, List[]> bcConnections) {
+            Map<String, List<Connection>[]> bcConnections) {
         
         List<String> ret = new ArrayList<String>();
         
@@ -1226,7 +908,7 @@ public class BuildServiceAssembly extends Task {
             for (String bcName : bcConnections.keySet()) {
                 List<Endpoint> bcEndpoints = new ArrayList<Endpoint>();
                 
-                List<Connection>[] clist = (List<Connection>[]) bcConnections.get(bcName);
+                List<Connection>[] clist = bcConnections.get(bcName);
                 for (Connection connection : clist[0]) {
                     Endpoint e = connection.getConsume();
                     bcEndpoints.add(e);

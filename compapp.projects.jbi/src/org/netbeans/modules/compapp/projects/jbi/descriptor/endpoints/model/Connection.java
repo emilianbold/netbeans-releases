@@ -31,12 +31,12 @@ public class Connection implements Serializable {
     /**
      * DOCUMENT ME!
      */
-    Endpoint consume;
+    private Endpoint consume;
 
     /**
      * DOCUMENT ME!
      */
-    Endpoint provide;
+    private Endpoint provide;
 
 
     /**
@@ -46,7 +46,6 @@ public class Connection implements Serializable {
      * @param provide
      */
     public Connection(Endpoint consume, Endpoint provide) {
-        super();
         this.consume = consume;
         this.provide = provide;
     }
@@ -57,7 +56,7 @@ public class Connection implements Serializable {
      * @return Returns the consume endpoint.
      */
     public Endpoint getConsume() {
-        return this.consume;
+        return consume;
     }
 
     /**
@@ -66,6 +65,23 @@ public class Connection implements Serializable {
      * @return Returns the provide endpoint.
      */
     public Endpoint getProvide() {
-        return this.provide;
+        return provide;
+    }
+
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final Connection other = (Connection) obj;
+        if (this.consume != other.consume && (this.consume == null || !this.consume.equals(other.consume))) {
+            return false;
+        }
+        if (this.provide != other.provide && (this.provide == null || !this.provide.equals(other.provide))) {
+            return false;
+        }
+        return true;
     }
 }
