@@ -85,6 +85,10 @@ public class DatabaseSettingsImporter {
     
     private static ResourceBundle rb = ResourceBundle.getBundle("org.netbeans.modules.visualweb.dataconnectivity.naming.Bundle", // NOI18N
             Locale.getDefault());
+    private static String[] destPaths = new String [] {"migrated"  + File.separator +  "context.xml", "migrated"  +
+            File.separator +  "2_0"  + File.separator +  "context.xml", "migrated"  + File.separator +  "2_1"  + File.separator +  "context.xml", 
+            "migrated"  + File.separator +  "5_5"  + File.separator +  "context.xml", "migrated"  + File.separator +  "5_5_1"  + File.separator +  "context.xml"};
+    
     
     private static final String HACK_WELCOME_FILE = "JSCreator_index.jsp"; // NOI18N
     
@@ -123,7 +127,7 @@ public class DatabaseSettingsImporter {
     private String locateDrivers() {
         String driverLocation;
         
-        driverLocation = System.getProperty("netbeans.user") + File.separator + File.separator + "jdbc-drivers"; // NOI18N
+        driverLocation = System.getProperty("netbeans.user") + File.separator +  "jdbc-drivers"; // NOI18N
         File driverDir = new File(driverLocation);
         if (driverDir == null)
             return ""; // NOI18N
@@ -136,14 +140,19 @@ public class DatabaseSettingsImporter {
     private File[] driversToRegister(String driversPath) {
         File driverDir = new File(driversPath);
         
-        File[] drivers = driverDir.listFiles(
-                new FilenameFilter() {
-            public boolean accept(File dir, String name) {
-                return name.endsWith(".jar") || name.endsWith(".zip"); // NOI18N
-            }
-        });
-        
-        return drivers;
+        if (driverDir != null) {
+            File[] drivers = driverDir.listFiles(
+                    new FilenameFilter() {
+                public boolean accept(File dir, String name) {
+                    return name.endsWith(".jar") || name.endsWith(".zip"); // NOI18N
+                }
+            });
+            
+            return drivers;
+        } else {
+            return null;
+        }
+
     }
     
     private void registerDriver(File driverJar) {
@@ -190,21 +199,24 @@ public class DatabaseSettingsImporter {
      * @return
      */
     public boolean locateAndRegisterConnections(boolean isStartup) {
-        File contextFile = null;
+        File contextFile;
         Set <File> contextFiles = null;
         
         if (isStartup) {
             contextFile = retrieveMigratedSettingsAtStartup();
             registerConnections(contextFile);
         } else {
-            contextFiles = locateMigratedSettings();
+            for (int i = 0; i < destPaths.length; i++) {
+                File ctxtFile = new File(System.getProperty("netbeans.user") + File.separator + "config" + File.separator + destPaths[i]);
+                if (ctxtFile.exists()) {
+                    contextFiles.add(ctxtFile);
+                }
+            }
+
             registerConnections(contextFiles);
         }
            
-        if (contextFile == null)
-            return false;
         
-               
         return true;
     }
     
@@ -237,7 +249,6 @@ public class DatabaseSettingsImporter {
         
         contextFileDirs = migratedDir.listFiles();
         for (File releaseDir : contextFileDirs) {
-            String rPath = releaseDir.getPath();            
             contextReleaseDirFiles.add(releaseDir);          
         }
         
@@ -247,45 +258,50 @@ public class DatabaseSettingsImporter {
     private void registerConnections(File contextFile) {
         dataSourcesInfo = createDataSourceInfoFromCtx(contextFile);
         
-        try {
-            Iterator it = dataSourcesInfo.iterator();
-            DataSourceInfo dsInfo = null;
-            boolean isDriverJavaDB = false;
-            DatabaseConnection dbconn = null;
-            JDBCDriver drvs = null;
-            JDBCDriver[] drvsArray = null;
-            
-            // From each Data Source, add a connection to DB Explorer
-            while (it.hasNext()) {
-                dsInfo = ((DataSourceInfo)it.next());
-                String username = dsInfo.getUsername();
-                String password = dsInfo.getPassword();
-                isDriverJavaDB = dsInfo.getDriverClassName().equals(DRIVER_CLASS_NET);
+        if (dataSourcesInfo != null) {
+            try {
+                Iterator it = dataSourcesInfo.iterator();
+                DataSourceInfo dsInfo = null;
+                boolean isDriverJavaDB = false;
+                DatabaseConnection dbconn = null;
+                JDBCDriver drvs = null;
+                JDBCDriver[] drvsArray = null;
                 
-                // To register a Derby connection, no need to check to see if Java DB driver had been registered
-                if (dsInfo.getDriverClassName().equals(DRIVER_CLASS_NET)) {
-                    if (!dsInfo.getName().equals("Travel")) {
-                        drvsArray = JDBCDriverManager.getDefault().getDrivers(DRIVER_CLASS_NET);
-                        dbconn = DatabaseConnection.create(drvsArray[0], dsInfo.getUrl(), username,  username.toUpperCase(), password,  true);
-                        ConnectionManager.getDefault().addConnection(dbconn);
-                    }                                       
-                } else {
-                    drvs = DataSourceResolver.getInstance().findMatchingDriver(dsInfo.getDriverClassName());
-                    if (drvs != null) {
-                        dbconn = DatabaseConnection.create(drvs, dsInfo.getUrl(), username,  username.toUpperCase(), password,  true);
-                        ConnectionManager.getDefault().addConnection(dbconn);
+                // From each Data Source, add a connection to DB Explorer
+                while (it.hasNext()) {
+                    dsInfo = ((DataSourceInfo)it.next());
+                    String username = dsInfo.getUsername();
+                    String password = dsInfo.getPassword();
+                    isDriverJavaDB = dsInfo.getDriverClassName().equals(DRIVER_CLASS_NET);
+                    
+                    // To register a Derby connection, no need to check to see if Java DB driver had been registered
+                    if (dsInfo.getDriverClassName().equals(DRIVER_CLASS_NET)) {
+                        if (!dsInfo.getName().equals("Travel")) {
+                            drvsArray = JDBCDriverManager.getDefault().getDrivers(DRIVER_CLASS_NET);
+                            dbconn = DatabaseConnection.create(drvsArray[0], dsInfo.getUrl(), username,  username.toUpperCase(), password,  true);
+                            ConnectionManager.getDefault().addConnection(dbconn);
+                        }
+                    } else {
+                        drvs = DataSourceResolver.getInstance().findMatchingDriver(dsInfo.getDriverClassName());
+                        if (drvs != null) {
+                            dbconn = DatabaseConnection.create(drvs, dsInfo.getUrl(), username,  username.toUpperCase(), password,  true);
+                            ConnectionManager.getDefault().addConnection(dbconn);
+                        }
                     }
                 }
-            }                        
-        } catch (DatabaseException de) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, de);
+            } catch (DatabaseException de) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, de);
+            }
         }
     }
     
     
     private void registerConnections(Set<File> contextFiles) {
-        Iterator it = contextFiles.iterator();
-        
+        if (contextFiles == null) {
+            return;
+        }
+            
+        Iterator it = contextFiles.iterator();                
         while (it.hasNext()) {
             dataSourcesInfo = createDataSourceInfoFromCtx((File)it.next());
             

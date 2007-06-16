@@ -33,7 +33,7 @@ import org.openide.util.Exceptions;
  */
 public class DerbyWaiter {
 
-    private static final String DRIVER_CLASS_NET = "org.apache.derby.jdbc.ClientDriver"; // NOI18N[
+    private static final String DRIVER_CLASS_NET = "org.apache.derby.jdbc.ClientDriver"; // NOI18N
 
     private boolean registered;  
     private boolean isMigration; // if user is migrating settings

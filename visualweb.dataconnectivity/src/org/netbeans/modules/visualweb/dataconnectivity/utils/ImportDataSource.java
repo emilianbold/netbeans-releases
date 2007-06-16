@@ -42,10 +42,12 @@ import org.netbeans.modules.visualweb.dataconnectivity.naming.DatabaseSettingsIm
 import org.netbeans.modules.visualweb.dataconnectivity.ui.DatasourceUISettings;
 import org.netbeans.modules.visualweb.dataconnectivity.ui.MissingConnectionsAlertPanel;
 import org.netbeans.modules.visualweb.dataconnectivity.ui.UpdateDataSourcesDialog;
-import org.netbeans.modules.visualweb.dataconnectivity.ui.WaitForUpdateDialog;
+import org.netbeans.modules.visualweb.dataconnectivity.ui.WaitForUpdatePanel;
 import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectUtils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.NotifyDescriptor;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.NbBundle;
 
@@ -85,32 +87,30 @@ public class ImportDataSource {
         if (currentUserdir == null) {
             currentUserdir =  InstalledFileLocator.getDefault().locate("config", null, false).getParentFile();
         }
-
+        
         return currentUserdir;
     }
-
+    
     public static boolean isMigrated() {
-        File migratedDir = new File (currentUserdir.getAbsolutePath() + File.separator + "migrated");
+        File migratedDir = new File(currentUserdir.getAbsolutePath() + File.separator + "migrated");
         if (migratedDir != null && migratedDir.exists() && migratedDir.isDirectory()) {
-           return true;
+            return true;
         }
         return false;
     }
-
+    
     public static boolean isMigrated(String path) {
-        File file = new File (currentUserdir.getAbsolutePath() + File.separator + path);    
+        File file = new File(currentUserdir.getAbsolutePath() + File.separator + path);
         return (file.exists());
     }
-
+    
     public static boolean isMigrated(int release) {
-        File file = new File (currentUserdir.getAbsolutePath() + File.separator + destPaths[release]);    
+        File file = new File(currentUserdir.getAbsolutePath() + File.separator + destPaths[release]);
         return (file.exists());
     }
     
     
     public static void prepareCopy() throws IOException {
-        
-        
         // Check if already migrated
         if (isMigrated()) {
             System.out.println("nothing to migrated");
@@ -126,7 +126,7 @@ public class ImportDataSource {
         
         // Get current NB user dir
         File nbUserDir = getCurrentUserdir();
-
+        
         // For each element in the srcPaths array, perform the copy
         // to the corresponding destPaths element
         for (int i = 0; i < srcPaths.length; i++) {
@@ -134,14 +134,14 @@ public class ImportDataSource {
             File dest = new File(nbUserDir.getAbsolutePath() + File.separator + destPaths[i]);
             System.out.println("src ["+i+"]:" + src.getAbsolutePath());
             System.out.println("dest ["+i+"]:" + dest.getAbsolutePath());
-
+            
             // For performance reason, if context.xml dest file already exists, skip
             // However, this should never happen now that we put under migrated dir
             if (dest.exists() && (i == CREATOR2 || i==CREATOR2U1 || i==VWP55 || i==VWP551)) {
-               i++;
-               System.out.println("this should never happen now");
+                i++;
+                System.out.println("this should never happen now");
             } else if (src.exists()) {
-
+                
                 // Check parent directory of dest if not exist, create
                 File parent = dest.getParentFile();
                 if (!parent.exists()) {
@@ -199,17 +199,17 @@ public class ImportDataSource {
         boolean legacyProject = false;
         
         if (project == null) {
-            project = CurrentProject.getInstance().getProject();           
+            project = CurrentProject.getInstance().getProject();
         }
-        // if project is a visualweb or creator project then find out whether it is a Creator 2 project        
+        // if project is a visualweb or creator project then find out whether it is a Creator 2 project
         if (JsfProjectUtils.getProjectVersion(project).equals("2.0") || JsfProjectUtils.getProjectVersion(project).equals("3.0")) { //NOI18N
             legacyProject = true;
         }
-               
+        
         return legacyProject;
     }
-     
-   /**
+    
+    /**
      * Show alert message box informing user that a project has missing
      * database connections. This method can be safely called from any thread, e.g. during
      * the project opening, and it will take care about showing message box only
@@ -225,7 +225,7 @@ public class ImportDataSource {
             return;
         }
         
-         if (brokenAlertShown
+        if (brokenAlertShown
                 || brokenAlertLastTime+BROKEN_ALERT_TIMEOUT > System.currentTimeMillis()) {
             return;
         }
@@ -259,15 +259,15 @@ public class ImportDataSource {
                 }
             }
         });
-    }            
+    }
     
     
-     /**
-      * Show OK/Cancel dialog that starts the migration of user settings and updating the project's data
-      * sources.  After clicking ok the progress bar will show the progress.
-      * @param project  Project from which the Update action occurred
-      */
-    public static synchronized void showUpdate(final Project project) {        
+    /**
+     * Show OK/Cancel dialog that starts the migration of user settings and updating the project's data
+     * sources.  After clicking ok the progress bar will show the progress.
+     * @param project  Project from which the Update action occurred
+     */
+    public static synchronized void showUpdate(final Project project) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 try {
@@ -286,36 +286,27 @@ public class ImportDataSource {
                 }
             }
         });
-    }            
+    }
     
-     /**
-      * Show OK/Cancel dialog that starts the migration of user settings and updating the project's data
-      * sources.  After clicking ok the progress bar will show the progress.
-      * @param project  Project from which the Update action occurred
-      */
-    public static synchronized void showUpdateWait(final Project project) {                
+    /**
+     * Show OK/Cancel dialog that starts the migration of user settings and updating the project's data
+     * sources.  After clicking ok the progress bar will show the progress.
+     * @param project  Project from which the Update action occurred
+     */
+    public static synchronized void showUpdateWait(final Project project) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 try {
-                    WaitForUpdateDialog pleaseWait = new WaitForUpdateDialog(project);
-                    DialogDescriptor dd = new DialogDescriptor(
-                            pleaseWait,
-                            NbBundle.getMessage(WaitForUpdateDialog.class, "MSG_WaitForUpdate_Title"),
-                            true,
-                            null,
-                            null,
-                            DialogDescriptor.DEFAULT_ALIGN,
-                            null,
-                            null);
-                    dd.setMessageType(DialogDescriptor.WARNING_MESSAGE);
-                    Dialog dlg = DialogDisplayer.getDefault().createDialog(dd);
-                    dlg.setVisible(true);
+                    WaitForUpdatePanel pleaseWait = new WaitForUpdatePanel(project);                    
+                    NotifyDescriptor nd = new NotifyDescriptor.Message(NbBundle.getMessage(WaitForUpdatePanel.class, "MSG_WaitForUpdate"), NotifyDescriptor.DEFAULT_OPTION);
+                    DialogDisplayer.getDefault().notify(nd);
+                    pleaseWait.setVisible(true);
                 } finally {
                     
                 }
             }
         });
-    }            
+    }
     
     public static void registerDatabaseSettings() {
         DatabaseSettingsImporter.getInstance().locateAndRegisterConnections(false);
