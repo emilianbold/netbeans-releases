@@ -39,12 +39,6 @@ Microsystems, Inc. All Rights Reserved.
                 <runtime-relative-path>ext/sqlx.jar</runtime-relative-path>
                 <binary-origin>release/modules/ext/sqlx.jar</binary-origin>
             </class-path-extension>
-            <extra-compilation-unit>
-                <package-root>${rowset.src}</package-root>
-	        <classpath>${module.classpath}</classpath>
-                <built-to>build/rowset_classes</built-to>
-                <built-to>${cluster}/modules/ext/sqlx.jar</built-to>
-            </extra-compilation-unit>
         </data>
     </configuration>
 </project>
