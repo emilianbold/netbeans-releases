@@ -19,14 +19,17 @@
 
 package org.netbeans.modules.websvc.design.view.widget;
 
-import java.awt.Color;
+import java.awt.Font;
 import java.awt.Image;
+import java.awt.Paint;
+import java.awt.Rectangle;
 import org.netbeans.api.visual.border.BorderFactory;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.websvc.design.javamodel.MethodModel;
+import org.netbeans.modules.websvc.design.view.layout.CenterRightLayout;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -35,8 +38,6 @@ import org.openide.util.Utilities;
  */
 public class FaultsWidget extends AbstractTitledWidget implements TabWidget {
     
-    private static final Color BORDER_COLOR = new Color(255,138,76);
-    private static final int GAP = 16;
     private static final Image IMAGE  = Utilities.loadImage
             ("org/netbeans/modules/websvc/design/view/resources/fault.png"); // NOI18N   
 
@@ -56,17 +57,22 @@ public class FaultsWidget extends AbstractTitledWidget implements TabWidget {
      * @param method  
      */
     public FaultsWidget(Scene scene, MethodModel method) {
-        super(scene,GAP,BORDER_COLOR);
+        super(scene,0,RADIUS,1,BORDER_COLOR_BLACK);
         this.method = method;
         createContent();
+    }
+    
+    protected Paint getTitlePaint(Rectangle bounds) {
+        return TITLE_COLOR_FAULT;
     }
     
     private void createContent() {
         model = new FaultsTableModel(method);
         populateContentWidget(getContentWidget());
-        headerLabelWidget = new ImageLabelWidget(getScene(), IMAGE, 
-                NbBundle.getMessage(OperationWidget.class, "LBL_Faults"), 
+        getHeaderWidget().setLayout(new CenterRightLayout(8));
+        headerLabelWidget = new ImageLabelWidget(getScene(), getIcon(), getTitle(), 
                 "("+method.getFaults().size()+")");
+        headerLabelWidget.getLabelWidget().setFont(getScene().getFont().deriveFont(Font.BOLD));
         getHeaderWidget().addChild(headerLabelWidget);
 
         buttons = new Widget(getScene());
@@ -84,8 +90,10 @@ public class FaultsWidget extends AbstractTitledWidget implements TabWidget {
             faultTable = new TableWidget(getScene(),model);
             parentWidget.addChild(faultTable);
         } else {
-            parentWidget.addChild(new LabelWidget(getScene(),
-                    NbBundle.getMessage(OperationWidget.class, "LBL_FaultsNone")));
+            LabelWidget noFaults = new LabelWidget(getScene(),
+                    NbBundle.getMessage(OperationWidget.class, "LBL_FaultsNone"));
+            noFaults.setAlignment(LabelWidget.Alignment.CENTER);
+            parentWidget.addChild(noFaults);
         }
     }
 
@@ -98,7 +106,8 @@ public class FaultsWidget extends AbstractTitledWidget implements TabWidget {
     }
 
     public Image getIcon() {
-        return IMAGE;
+        return null;
+        //return IMAGE;
     }
 
     public Widget getComponentWidget() {

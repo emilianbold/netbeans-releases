@@ -80,7 +80,7 @@ public class ImageLabelWidget extends Widget {
         }
         return false;
     }
-
+    
     public void setPaintAsDisabled(boolean flag) {
         if(labelWidget!=null) {
             labelWidget.setPaintAsDisabled(flag);
@@ -89,13 +89,13 @@ public class ImageLabelWidget extends Widget {
             imageWidget.setPaintAsDisabled(flag);
         }
     }
-
+    
     public void setLabelForeground(Color forground) {
         if(labelWidget!=null) {
             labelWidget.setForeground(forground);
         }
     }
-
+    
     public void setLabel(String label) {
         if(label==null) {
             if (labelWidget!=null) {
@@ -119,7 +119,7 @@ public class ImageLabelWidget extends Widget {
     public LabelWidget getLabelWidget() {
         return labelWidget;
     }
-
+    
     public void setImage(Image image) {
         if(image==null) {
             if (imageWidget!=null) {

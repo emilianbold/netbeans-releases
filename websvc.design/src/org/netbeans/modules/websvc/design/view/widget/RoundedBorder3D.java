@@ -28,6 +28,8 @@ import java.awt.geom.RoundRectangle2D;
  */
 public class RoundedBorder3D implements Border, MouseActions {
     
+    private static final Color SHADOW_COLOR = new Color(208,208,208);
+   
     private int radius;
     private int insetWidth;
     private int insetHeight;
@@ -57,7 +59,6 @@ public class RoundedBorder3D implements Border, MouseActions {
     public void paint(Graphics2D gr, Rectangle bounds) {
         if (drawColor != null) {
             Paint oldPaint = gr.getPaint();
-            gr.setPaint(drawColor);
             RoundRectangle2D rect = new RoundRectangle2D.Double(bounds.x+0.5f,
                     bounds.y + 0.5f, bounds.width - depth - 1, 
                     bounds.height - depth - 1, radius, radius);
@@ -66,7 +67,9 @@ public class RoundedBorder3D implements Border, MouseActions {
                     bounds.width - depth - 1, bounds.height - depth - 1, radius, radius);
             Area raisedArea = new Area(outerRect);
             raisedArea.subtract(new Area(rect));
+            gr.setPaint(SHADOW_COLOR);
             gr.fill(raisedArea);
+            gr.setPaint(drawColor);
             gr.draw(rect);
             gr.setPaint(oldPaint);
         }

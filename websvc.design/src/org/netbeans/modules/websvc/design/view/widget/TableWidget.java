@@ -20,9 +20,10 @@
 package org.netbeans.modules.websvc.design.view.widget;
 
 import java.awt.Color;
+import java.awt.Font;
+import javax.swing.BorderFactory;
 import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.action.TextFieldInplaceEditor;
-import org.netbeans.api.visual.border.BorderFactory;
 import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
@@ -34,6 +35,9 @@ import org.netbeans.modules.websvc.design.view.layout.TableLayout;
  */
 public class TableWidget extends Widget{
     
+    private static final Color HEADER_COLOR =  new Color(217,235,255);
+    private static final Color CELL_COLOR =  Color.WHITE;
+    public static final Color BORDER_COLOR =  Color.BLACK;
     private TableModel model;
     private final static int COLUMN_WIDTH = 100;
 
@@ -46,7 +50,6 @@ public class TableWidget extends Widget{
         super(scene);
         this.model = model;
         setLayout(new TableLayout(model.getColumnCount(), 0, 0,COLUMN_WIDTH));
-        setBorder(BorderFactory.createLineBorder(1,Color.LIGHT_GRAY));
         createTableHeader();
         createTable();
     }
@@ -55,9 +58,11 @@ public class TableWidget extends Widget{
         Scene scene = getScene();
         for (int i = 0; i<model.getColumnCount();i++) {
             LabelWidget columnHeader = new LabelWidget(scene, model.getColumnName(i));
-            columnHeader.setBorder(BorderFactory.createLineBorder(1,Color.LIGHT_GRAY));
+            if(i!=0) {
+                columnHeader.setBorder(BorderFactory.createMatteBorder(0, 1, 0, 0, BORDER_COLOR));
+            }
             columnHeader.setAlignment(LabelWidget.Alignment.CENTER);
-            columnHeader.setBackground(new Color(240,240,240));
+            columnHeader.setBackground(HEADER_COLOR);
             columnHeader.setOpaque(true);
             addChild(columnHeader);
         }
@@ -68,7 +73,11 @@ public class TableWidget extends Widget{
         for(int j=0; j<model.getRowCount();j++) {
             for (int i = 0; i<model.getColumnCount();i++) {
                 final LabelWidget cellWidget = new LabelWidget(scene, model.getValueAt(j, i));
-                cellWidget.setBorder(BorderFactory.createLineBorder(1,Color.LIGHT_GRAY));
+                cellWidget.setBorder(BorderFactory.createMatteBorder(1, i==0?0:1, 0, 0, BORDER_COLOR));
+                cellWidget.setFont(getScene().getFont().deriveFont(Font.BOLD));
+                cellWidget.setBackground(CELL_COLOR);
+                cellWidget.setOpaque(true);
+                cellWidget.setAlignment(LabelWidget.Alignment.CENTER);
                 if(model.isCellEditable(j, i)) {
                     final int row = j;
                     final int column = i;

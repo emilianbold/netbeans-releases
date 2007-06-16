@@ -20,18 +20,18 @@
 package org.netbeans.modules.websvc.design.view.widget;
 
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Image;
-import java.awt.Insets;
 import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.geom.GeneralPath;
 import java.awt.image.BufferedImage;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.xml.soap.SOAPMessage;
 import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.action.TextFieldInplaceEditor;
+import org.netbeans.api.visual.border.BorderFactory;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.model.ObjectScene;
 import org.netbeans.api.visual.widget.LabelWidget;
@@ -51,9 +51,6 @@ import org.openide.util.Utilities;
  */
 public class OperationWidget extends AbstractTitledWidget {
     
-    private static final Color BORDER_COLOR = new Color(153,153,255);
-    private static final int GAP = 16;
-
     private static final Image IMAGE_ONE_WAY  = Utilities.loadImage
             ("org/netbeans/modules/websvc/design/view/resources/oneway_operation.png"); // NOI18N   
     private static final Image IMAGE_REQUEST_RESPONSE  = Utilities.loadImage
@@ -85,7 +82,7 @@ public class OperationWidget extends AbstractTitledWidget {
      * @param operation
      */
     public OperationWidget(Scene scene, Service service, MethodModel operation) {
-        super(scene,GAP,BORDER_COLOR);
+        super(scene,RADIUS,BORDER_COLOR);
         this.service = service;
         this.operation=operation;
         
@@ -118,6 +115,7 @@ public class OperationWidget extends AbstractTitledWidget {
             image = IMAGE_NOTIFICATION;
         }
         headerLabelWidget = new ImageLabelWidget(getScene(), image, operation.getOperationName());
+        headerLabelWidget.getLabelWidget().setFont(getScene().getFont().deriveFont(Font.BOLD));
         final LabelWidget nameWidget = headerLabelWidget.getLabelWidget();
         nameWidget.getActions().addAction(ActionFactory.createInplaceEditorAction(
                 new TextFieldInplaceEditor(){
@@ -163,7 +161,8 @@ public class OperationWidget extends AbstractTitledWidget {
         getContentWidget().setLayout(LayoutFactory.createCardLayout(getContentWidget()));
 
         listWidget = new Widget(getScene());
-        listWidget.setLayout(LayoutFactory.createVerticalFlowLayout(LayoutFactory.SerialAlignment.JUSTIFY, GAP));
+        listWidget.setLayout(LayoutFactory.createVerticalFlowLayout(LayoutFactory.SerialAlignment.JUSTIFY, 0));
+        listWidget.setBorder(BorderFactory.createEmptyBorder(0,RADIUS));
         inputWidget = new ParametersWidget(getScene(),operation);
         outputWidget = new OutputWidget(getScene(),operation);
         faultWidget = new FaultsWidget(getScene(),operation);
@@ -174,6 +173,7 @@ public class OperationWidget extends AbstractTitledWidget {
         listWidget.addChild(descriptionWidget);
 
         tabbedWidget = new TabbedPaneWidget(getScene());
+        tabbedWidget.setBorder(BorderFactory.createEmptyBorder(1,RADIUS));
         tabbedWidget.addTab(inputWidget);
         tabbedWidget.addTab(outputWidget);
         tabbedWidget.addTab(faultWidget);

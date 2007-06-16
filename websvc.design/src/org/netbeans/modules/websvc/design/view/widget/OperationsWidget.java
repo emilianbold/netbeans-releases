@@ -20,14 +20,13 @@
 package org.netbeans.modules.websvc.design.view.widget;
 
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Image;
-import java.util.List;
 import javax.swing.Action;
-import javax.swing.ImageIcon;
 import javax.swing.JToolBar;
 import org.netbeans.api.visual.action.ActionFactory;
+import org.netbeans.api.visual.border.BorderFactory;
 import org.netbeans.api.visual.layout.LayoutFactory;
-import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.api.visual.model.ObjectScene;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
@@ -46,8 +45,6 @@ import org.openide.util.Utilities;
  */
 public class OperationsWidget extends AbstractTitledWidget {
     
-    private static final Color BORDER_COLOR = new Color(180,180,255);
-    private static final int GAP = 16;
     private static final Image IMAGE  = Utilities.loadImage
             ("org/netbeans/modules/websvc/design/view/resources/operation.png"); // NOI18N
     
@@ -66,7 +63,7 @@ public class OperationsWidget extends AbstractTitledWidget {
      * @param serviceModel
      */
     public OperationsWidget(ObjectScene scene, final Service service, ServiceModel serviceModel) {
-        super(scene,GAP,BORDER_COLOR);
+        super(scene,RADIUS,BORDER_COLOR);
         this.serviceModel = serviceModel;
         serviceModel.addServiceChangeListener(new ServiceChangeListener() {
             
@@ -100,7 +97,6 @@ public class OperationsWidget extends AbstractTitledWidget {
             
         });
         addAction = new AddOperationAction(service, serviceModel.getImplementationClass());
-        addAction.putValue(Action.SMALL_ICON, new ImageIcon(IMAGE));
         getActions().addAction(ActionFactory.createPopupMenuAction(
                 new DesignViewPopupProvider(new Action [] {
             addAction,
@@ -111,8 +107,9 @@ public class OperationsWidget extends AbstractTitledWidget {
     private void createContent(Service service) {
         if (serviceModel==null) return;
         
-        headerLabelWidget = new ImageLabelWidget(getScene(), IMAGE,
+        headerLabelWidget = new ImageLabelWidget(getScene(), null,
                 NbBundle.getMessage(OperationWidget.class, "LBL_Operations"));
+        headerLabelWidget.getLabelWidget().setFont(getScene().getFont().deriveFont(Font.BOLD));
         getHeaderWidget().addChild(headerLabelWidget);
         updateHeaderLabel();
         
@@ -127,7 +124,7 @@ public class OperationsWidget extends AbstractTitledWidget {
         
         getHeaderWidget().addChild(buttons);
         
-        
+        getContentWidget().setBorder(BorderFactory.createEmptyBorder(RADIUS));
         if(serviceModel.getOperations()!=null) {
             for(MethodModel operation:serviceModel.getOperations()) {
                 OperationWidget operationWidget = new OperationWidget(getScene(),service, operation);

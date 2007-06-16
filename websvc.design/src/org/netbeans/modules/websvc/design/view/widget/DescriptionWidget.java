@@ -21,15 +21,17 @@
 package org.netbeans.modules.websvc.design.view.widget;
 
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Image;
-import java.awt.event.ActionEvent;
-import javax.swing.AbstractAction;
+import java.awt.Paint;
+import java.awt.Rectangle;
 import org.netbeans.api.visual.border.BorderFactory;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.websvc.design.javamodel.JavadocModel;
 import org.netbeans.modules.websvc.design.javamodel.MethodModel;
+import org.netbeans.modules.websvc.design.view.layout.CenterRightLayout;
 import org.openide.util.NbBundle;
 
 /**
@@ -40,30 +42,37 @@ public class DescriptionWidget extends AbstractTitledWidget implements TabWidget
     
     private static final Color BORDER_COLOR = new Color(255,138,76);
     private static final int GAP = 16;
-
+    
     private MethodModel method;
     private transient JavadocModel model;
-
+    
     private transient Widget buttons;
     private transient ImageLabelWidget headerLabelWidget;
     private transient Widget tabComponent;
     
-    /** Creates a new instance of Description 
-     * @param scene 
-     * @param method 
+    /** Creates a new instance of Description
+     * @param scene
+     * @param method
      */
     public DescriptionWidget(Scene scene, MethodModel method) {
-        super(scene,GAP,BORDER_COLOR);
+        super(scene,0,RADIUS,0,BORDER_COLOR_BLACK);
         this.method = method;
         model = method.getJavadoc();
         createContent();
     }
     
+    protected Paint getTitlePaint(Rectangle bounds) {
+        return TITLE_COLOR_DESC;
+    }
+    
     private void createContent() {
         populateContentWidget(getContentWidget());
+        getContentWidget().setBorder(BorderFactory.createEmptyBorder(1));
+        getHeaderWidget().setLayout(new CenterRightLayout(8));
         headerLabelWidget = new ImageLabelWidget(getScene(), getIcon(), getTitle());
+        headerLabelWidget.getLabelWidget().setFont(getScene().getFont().deriveFont(Font.BOLD));
         getHeaderWidget().addChild(headerLabelWidget);
-
+        
         buttons = new Widget(getScene());
         buttons.setLayout(LayoutFactory.createHorizontalFlowLayout(
                 LayoutFactory.SerialAlignment.JUSTIFY, 8));
@@ -76,19 +85,19 @@ public class DescriptionWidget extends AbstractTitledWidget implements TabWidget
         descPaneWidget.setBorder(BorderFactory.createBevelBorder(false));
         parentWidget.addChild(descPaneWidget);
     }
-
+    
     public Object hashKey() {
         return method==null?null:method.getOperationName()+"_Description";
     }
-
+    
     public String getTitle() {
         return NbBundle.getMessage(DescriptionWidget.class, "LBL_Description");
     }
-
+    
     public Image getIcon() {
         return null;
     }
-
+    
     public Widget getComponentWidget() {
         if(tabComponent==null) {
             tabComponent = createContentWidget();

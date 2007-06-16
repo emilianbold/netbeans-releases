@@ -21,11 +21,10 @@ package org.netbeans.modules.websvc.design.view;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Point;
-import java.awt.event.ActionEvent;
 import java.awt.event.MouseWheelListener;
-import java.util.Set;
-import javax.swing.AbstractAction;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -35,16 +34,12 @@ import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.model.ObjectScene;
 import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.LayerWidget;
+import org.netbeans.api.visual.widget.SeparatorWidget;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
-import org.netbeans.modules.websvc.design.configuration.WSConfiguration;
-import org.netbeans.modules.websvc.design.configuration.WSConfigurationProvider;
-import org.netbeans.modules.websvc.design.configuration.WSConfigurationProviderRegistry;
 import org.netbeans.modules.websvc.design.javamodel.ServiceModel;
-import org.netbeans.modules.websvc.design.view.layout.LeftRightLayout;
 import org.netbeans.modules.websvc.design.view.widget.ButtonAction;
 import org.netbeans.modules.websvc.design.view.widget.OperationsWidget;
-import org.netbeans.modules.websvc.design.view.widget.ToggleButtonWidget;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -67,6 +62,7 @@ public class DesignView extends JPanel  {
     private Widget messageLayer;
     private Widget contentWidget;
     private OperationsWidget operationsWidget;
+    private boolean initialized = false;
     
     /**
      * Creates a new instance of GraphView.
@@ -81,34 +77,32 @@ public class DesignView extends JPanel  {
         this.serviceModel = ServiceModel.getServiceModel(implementationClass);
         
         scene = new ObjectScene();
+        JComponent sceneView = scene.createView();
         zoomer = new ZoomManager(scene);
         // add actions
-//        scene.getActions().addAction(ActionFactory.createZoomAction());
-//        scene.getActions().addAction(ActionFactory.createPanAction());
+        //        scene.getActions().addAction(ActionFactory.createZoomAction());
+        //        scene.getActions().addAction(ActionFactory.createPanAction());
         scene.getActions().addAction(ButtonAction.DEFAULT);
-        
         mMainLayer = new LayerWidget(scene);
         mMainLayer.setPreferredLocation(new Point(0, 0));
         mMainLayer.setLayout(LayoutFactory.createVerticalFlowLayout(
                 LayoutFactory.SerialAlignment.JUSTIFY, 12));
         String serviceName = service.getName();
         if (service.getWsdlUrl()!=null)
-            serviceName = service.getServiceName()+"["+service.getPortName()+"]";
+            serviceName = service.getServiceName()+" ["+service.getPortName()+"]";
         LabelWidget serviceWidget = new LabelWidget(scene,serviceName);
+        serviceWidget.setFont(scene.getFont().deriveFont(Font.BOLD));
+        serviceWidget.setForeground(Color.GRAY);
+        serviceWidget.setBorder(BorderFactory.createEmptyBorder(6,28,0,0));
+        SeparatorWidget lineWidget = new SeparatorWidget(scene, 
+                SeparatorWidget.Orientation.HORIZONTAL);
+        lineWidget.setForeground(Color.ORANGE);
         Widget headerWidget = new Widget(scene);
-        headerWidget.setLayout(LayoutFactory.createHorizontalFlowLayout(
-                LayoutFactory.SerialAlignment.JUSTIFY, 12));
-        headerWidget.setBorder(BorderFactory.createOpaqueBorder(12,24,12,12));
-        headerWidget.setBackground(new Color(180,180,255));
+        headerWidget.setLayout(LayoutFactory.createVerticalFlowLayout(
+                LayoutFactory.SerialAlignment.JUSTIFY, 6));
         headerWidget.setOpaque(true);
         headerWidget.addChild(serviceWidget);
-        
-        //if there are Configuration Providers, add their buttons
-        Set<WSConfigurationProvider> providers = getConfigProviders();
-        if(providers.size() > 0){
-            headerWidget.setLayout(new LeftRightLayout(32));
-            headerWidget.addChild(createConfigWidget(providers));
-        }
+        headerWidget.addChild(lineWidget);
         
         mMainLayer.addChild(headerWidget);
         scene.addChild(mMainLayer);
@@ -118,21 +112,41 @@ public class DesignView extends JPanel  {
         scene.addObject(messageLayerKey, messageLayer);
         
         contentWidget = new Widget(scene);
-        contentWidget.setBorder(BorderFactory.createEmptyBorder(0, 24, 0, 0));
+        contentWidget.setBorder(BorderFactory.createEmptyBorder(0, 20, 0, 20));
         contentWidget.setLayout(LayoutFactory.createVerticalFlowLayout(
                 LayoutFactory.SerialAlignment.JUSTIFY, 16));
         mMainLayer.addChild(contentWidget);
         //add operations widget
         operationsWidget = new OperationsWidget(scene,service, serviceModel);
         contentWidget.addChild(operationsWidget);
+        //add wsit widget
+        WsitWidget wsitWidget = new WsitWidget(scene,service, implementationClass);
+        contentWidget.addChild(wsitWidget);
         
-        JComponent sceneView = scene.createView();
         sceneView.removeMouseWheelListener((MouseWheelListener)sceneView);
-        JScrollPane panel = new JScrollPane(sceneView);
+        final JScrollPane panel = new JScrollPane(sceneView);
         panel.getVerticalScrollBar().setUnitIncrement(16);
         panel.getHorizontalScrollBar().setUnitIncrement(16);
         panel.setBorder(null);
         add(panel, BorderLayout.CENTER);
+        scene.addSceneListener(new ObjectScene.SceneListener() {
+            public void sceneRepaint() {
+            }
+            public void sceneValidating() {
+                
+            }
+            public void sceneValidated() {
+                if(!initialized) {
+                    int width = panel.getViewport().getWidth();
+                    if (width <= scene.getBounds().width) {
+                        contentWidget.setMinimumSize(new Dimension(width, 0));
+                    }
+                } else {
+                    scene.removeSceneListener(this);
+                }
+            }
+        });
+        
         
     }
     
@@ -171,43 +185,4 @@ public class DesignView extends JPanel  {
         // Ensure the graph widgets have the focus.
         return scene.getView().requestFocusInWindow();
     }
-    
-    class ConfigWidgetAction extends AbstractAction{
-        WSConfiguration config;
-        public ConfigWidgetAction(WSConfiguration config){
-            this.config = config;
-        }
-        public void actionPerformed(ActionEvent event) {
-            if(event.getActionCommand().equals(ToggleButtonWidget.ACTION_COMMAND_SELECTED)){
-                config.set();
-            }else{
-                config.unset();
-            }
-        }
-    }
-    
-    private Widget createConfigWidget(Set<WSConfigurationProvider> providers){
-        Widget configWidget = new Widget(scene);
-        configWidget.setLayout(LayoutFactory.createHorizontalFlowLayout(
-                LayoutFactory.SerialAlignment.JUSTIFY, 8));
-        configWidget.setOpaque(true);
-        configWidget.setBorder(BorderFactory.createRoundedBorder(10, 10, 10, 10,
-                Color.WHITE, null));
-        for(WSConfigurationProvider provider : providers){
-            WSConfiguration config = provider.getWSConfiguration(service, implementationClass);
-            if(config != null){
-                ToggleButtonWidget button = new ToggleButtonWidget(scene,config.getIcon(),null);
-                button.setAction(new ConfigWidgetAction(config));
-                button.setToolTipText(config.getDescription());
-                button.setSelected(config.isSet()); //TODO: need to refresh the widget to reflect state
-                configWidget.addChild(button);
-            }
-        }
-        return configWidget;
-    }
-    
-    private Set<WSConfigurationProvider> getConfigProviders(){
-        return WSConfigurationProviderRegistry.getDefault().getWSConfigurationProviders();
-    }
-    
 }

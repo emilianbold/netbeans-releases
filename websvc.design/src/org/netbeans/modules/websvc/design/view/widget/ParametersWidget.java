@@ -19,14 +19,17 @@
 
 package org.netbeans.modules.websvc.design.view.widget;
 
-import java.awt.Color;
+import java.awt.Font;
 import java.awt.Image;
+import java.awt.Paint;
+import java.awt.Rectangle;
 import org.netbeans.api.visual.border.BorderFactory;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.websvc.design.javamodel.MethodModel;
+import org.netbeans.modules.websvc.design.view.layout.CenterRightLayout;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -35,8 +38,6 @@ import org.openide.util.Utilities;
  */
 public class ParametersWidget extends AbstractTitledWidget implements TabWidget {
     
-    private static final Color BORDER_COLOR = new Color(128,128,255);
-    private static final int GAP = 16;
     private static final Image IMAGE  = Utilities.loadImage
             ("org/netbeans/modules/websvc/design/view/resources/input.png"); // NOI18N   
 
@@ -56,17 +57,22 @@ public class ParametersWidget extends AbstractTitledWidget implements TabWidget 
      * @param method 
      */
     public ParametersWidget(Scene scene, MethodModel method) {
-        super(scene,GAP,BORDER_COLOR);
+        super(scene,0,RADIUS,0,BORDER_COLOR_BLACK);
         this.method = method;
         createContent();
+    }
+    
+    protected Paint getTitlePaint(Rectangle bounds) {
+        return TITLE_COLOR_PARAMETER;
     }
     
     private void createContent() {
         model = new ParametersTableModel(method);
         populateContentWidget(getContentWidget());
-        headerLabelWidget = new ImageLabelWidget(getScene(), IMAGE, 
-                NbBundle.getMessage(OperationWidget.class, "LBL_Input"), 
+        getHeaderWidget().setLayout(new CenterRightLayout(8));
+        headerLabelWidget = new ImageLabelWidget(getScene(), getIcon(), getTitle(), 
                 "("+method.getParams().size()+")");
+        headerLabelWidget.getLabelWidget().setFont(getScene().getFont().deriveFont(Font.BOLD));
         getHeaderWidget().addChild(headerLabelWidget);
 
         buttons = new Widget(getScene());
@@ -74,6 +80,8 @@ public class ParametersWidget extends AbstractTitledWidget implements TabWidget 
                 LayoutFactory.SerialAlignment.JUSTIFY, 8));
 
         buttons.addChild(getExpanderWidget());
+        buttons.setOpaque(true);
+        buttons.setBackground(TITLE_COLOR_BRIGHT);
 
         getHeaderWidget().addChild(buttons);
 
@@ -82,10 +90,15 @@ public class ParametersWidget extends AbstractTitledWidget implements TabWidget 
     private void populateContentWidget(Widget parentWidget) {
         if(model.getRowCount()>0) {
             parameterTable = new TableWidget(getScene(),model);
+            parameterTable.setBorder(javax.swing.BorderFactory.createMatteBorder
+                    (1, 1, 0, 1, TableWidget.BORDER_COLOR));
             parentWidget.addChild(parameterTable);
         } else {
-            parentWidget.addChild(new LabelWidget(getScene(),
-                    NbBundle.getMessage(OperationWidget.class, "LBL_InputNone")));
+            LabelWidget noParamsWidget = new LabelWidget(getScene(),
+                    NbBundle.getMessage(OperationWidget.class, "LBL_InputNone"));
+            noParamsWidget.setAlignment(LabelWidget.Alignment.CENTER);
+            //noParamsWidget.setOpaque(true);
+            parentWidget.addChild(noParamsWidget);
         }
     }
 
@@ -98,7 +111,8 @@ public class ParametersWidget extends AbstractTitledWidget implements TabWidget 
     }
 
     public Image getIcon() {
-        return IMAGE;
+        return null;
+//        return IMAGE;
     }
 
     public Widget getComponentWidget() {
@@ -106,6 +120,9 @@ public class ParametersWidget extends AbstractTitledWidget implements TabWidget 
             tabComponent = createContentWidget();
             tabComponent.setBorder(BorderFactory.createEmptyBorder());
             populateContentWidget(tabComponent);
+            if(parameterTable!=null) {
+                parameterTable.setBorder(BorderFactory.createEmptyBorder(1));
+            }
         }
         return tabComponent;
     }
