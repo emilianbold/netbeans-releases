@@ -259,16 +259,16 @@ final class SearchScopeNodeSelection extends AbstractSearchScope
         List<Node> result = new ArrayList<Node>(nodes.length);
         
         /* Put all search roots into "bad nodes": */
-        for (int i = 0; i < nodes.length; i++) {
-            badNodes.put(nodes[i], Boolean.FALSE);
+        for (Node node : nodes) {
+            badNodes.put(node, Boolean.FALSE);
         }
         
         main_cycle:
-        for (int i = 0; i < nodes.length; i++) {
+        for (Node node : nodes) {
             path.clear();
             boolean isBad = false;
-            for (Node n = nodes[i].getParentNode(); n != null;
-                                                    n = n.getParentNode()) {
+            for (Node n = node.getParentNode(); n != null;
+                                                n = n.getParentNode()) {
                 if (badNodes.containsKey(n)) {
                     isBad = true;
                     break;
@@ -279,7 +279,7 @@ final class SearchScopeNodeSelection extends AbstractSearchScope
                 path.add(n);
             }
             if (isBad) {
-                badNodes.put(nodes[i], Boolean.TRUE);
+                badNodes.put(node, Boolean.TRUE);
 		for (Node n : path) {
                     badNodes.put(n, Boolean.TRUE);
 		}
@@ -287,10 +287,10 @@ final class SearchScopeNodeSelection extends AbstractSearchScope
                 for (Node n : path) {
                     goodNodes.put(n, Boolean.TRUE);
                 }
-                result.add(nodes[i]);
+                result.add(node);
             }
         }
-        return (Node[]) result.toArray(new Node[result.size()]);
+        return result.toArray(new Node[result.size()]);
     }
 
     @Override
