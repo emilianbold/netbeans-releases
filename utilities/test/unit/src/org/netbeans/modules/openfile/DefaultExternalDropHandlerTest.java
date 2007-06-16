@@ -86,12 +86,12 @@ public class DefaultExternalDropHandlerTest extends NbTestCase {
         Transferable t = new TransferableImpl( new ArrayList(), new DataFlavor[] { DataFlavor.imageFlavor, DataFlavor.stringFlavor } );
         assertNull( handler.getFileList( t ) );
 
-        ArrayList list = new ArrayList( 2 );
+        List<File> list = new ArrayList<File>( 2 );
         list.add( new File("//somedir/somefile.someext") );
         list.add( new File("c:\\somedir\\somefile.someext") );
         t = new TransferableImpl( list, new DataFlavor[] { DataFlavor.javaFileListFlavor, DataFlavor.stringFlavor } );
 
-        List extractedList = handler.getFileList( t );
+        List<File> extractedList = handler.getFileList( t );
         assertNotNull( extractedList );
         assertEquals( 2, extractedList.size() );
         for( Iterator i=list.iterator(); i.hasNext(); ) {
@@ -124,7 +124,7 @@ public class DefaultExternalDropHandlerTest extends NbTestCase {
     }
 
     public static class MockOpenFileImpl implements OpenFileImpl {
-        private Set/*<FileObject>*/ openedFiles = new HashSet();
+        private Set<File> openedFiles = new HashSet<File>();
 
         public boolean open(FileObject fileObject, int line) {
             if( null != fileObject ) {

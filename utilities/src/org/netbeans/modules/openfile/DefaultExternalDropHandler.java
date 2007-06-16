@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -28,7 +28,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
@@ -67,22 +66,22 @@ public class DefaultExternalDropHandler extends ExternalDropHandler {
         Transferable t = e.getTransferable();
         if( null == t )
             return false;
-        List fileList = getFileList( t );
+        List<File> fileList = getFileList( t );
 
         if( null != fileList && !fileList.isEmpty() ) {
-            for( Iterator i=fileList.iterator(); i.hasNext(); ) {
-                openFile( (File)i.next() );
+            for (File file : fileList) {
+                openFile(file);
             }
             return true;
         }
         return false;
     }
 
-    List getFileList( Transferable t ) {
+    List<File> getFileList( Transferable t ) {
         try {
             if( t.isDataFlavorSupported( DataFlavor.javaFileListFlavor ) ) {
                 //windows & mac
-                return (List)t.getTransferData( DataFlavor.javaFileListFlavor );
+                return (List<File>) t.getTransferData( DataFlavor.javaFileListFlavor );
             } else if( t.isDataFlavorSupported( getUriListDataFlavor() ) ) {
                 //linux
                 String uriList = (String)t.getTransferData( getUriListDataFlavor() );
@@ -116,8 +115,8 @@ public class DefaultExternalDropHandler extends ExternalDropHandler {
         return uriListDataFlavor;
     }
 
-    List textURIListToFileList( String data ) {
-        List list = new ArrayList(1);
+    List<File> textURIListToFileList( String data ) {
+        List<File> list = new ArrayList<File>(1);
         for( StringTokenizer st = new StringTokenizer(data, "\r\n");
             st.hasMoreTokens();) {
             String s = st.nextToken();
