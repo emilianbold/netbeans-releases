@@ -102,7 +102,18 @@ public class FacesRefactoringsPluginFactory implements RefactoringPluginFactory 
 		                }
 	            	}
             	}
-            	// else check for folder in web folder
+            	if (FacesRefactoringUtils.isFileUnderDocumentRoot(refactoredFileObject) &&
+                		(!FacesRefactoringUtils.isSpecialFolderName(refactoredFileObject.getNameExt()))) {
+	            	if (refactoring instanceof RenameRefactoring) {
+	                	// Ensure the modelling has happened
+	                	FacesModelSet.getInstance(refactoredFileObject);
+	                    return new FacesJspFileMoveRefactoringPlugin((RenameRefactoring)refactoring);
+	                } else if (refactoring instanceof MoveRefactoring) {
+	                	// Ensure the modelling has happened
+	                	FacesModelSet.getInstance(refactoredFileObject);
+	                    return new FacesJspFileMoveRefactoringPlugin((MoveRefactoring)refactoring);
+	                }
+            	}
             } else if (FacesRefactoringUtils.isFileInJsfProject(refactoredFileObject)) {
             	if (FacesRefactoringUtils.isOnSourceClasspath(refactoredFileObject)) {
             		// Ensure the modelling has happened

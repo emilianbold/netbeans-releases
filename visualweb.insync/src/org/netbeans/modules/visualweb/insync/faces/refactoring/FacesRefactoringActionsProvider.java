@@ -65,8 +65,12 @@ public class FacesRefactoringActionsProvider extends ActionsImplementationProvid
                 if (FacesRefactoringUtils.isVisualWebJspFile(fileObject)) {
                     // Yes. It can be Renamed 
                     return true;
+                } else if (fileObject.isFolder() && 
+                		FacesRefactoringUtils.isFileUnderDocumentRoot(fileObject) &&
+                		(!FacesRefactoringUtils.isSpecialFolderName(fileObject.getNameExt()))) {
+                	// this is a non special folder under web folder
+                	return true;
                 }
-                // Check for non special folders under web folder
             }
         }
         return false;
@@ -112,6 +116,11 @@ public class FacesRefactoringActionsProvider extends ActionsImplementationProvid
                 // Is this a VW Page?
                 if (FacesRefactoringUtils.isVisualWebJspFile(fileObject)) {
                     return true;
+                } else if (fileObject.isFolder() && 
+                		FacesRefactoringUtils.isFileUnderDocumentRoot(fileObject) &&
+                		(!FacesRefactoringUtils.isSpecialFolderName(fileObject.getNameExt()))) {
+                	// this is a non special folder under web folder
+                	return true;
                 }
             }
         }

@@ -23,15 +23,24 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.queries.VisibilityQuery;
+import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.MoveRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.RefactoringSession;
+import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.visualweb.insync.models.FacesModel;
 import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectConstants;
@@ -53,6 +62,9 @@ import org.openide.util.lookup.Lookups;
 public class FacesJspFileMoveRefactoringPlugin extends FacesRefactoringPlugin {
     
     private static final Logger LOGGER = Logger.getLogger(FacesJspFileMoveRefactoringPlugin.class.getName());
+	
+    private List<FileObject> filesToMove = new ArrayList<FileObject>();
+    private Map<FileObject, String> folderPostfix = new HashMap<FileObject, String>();
 
     /**
      * 
@@ -60,10 +72,46 @@ public class FacesJspFileMoveRefactoringPlugin extends FacesRefactoringPlugin {
      */
     public FacesJspFileMoveRefactoringPlugin(MoveRefactoring refactoring) {
         super(refactoring);
+        setup(refactoring.getRefactoringSource().lookupAll(FileObject.class), "", true);
+    }
+    
+    /**
+     * 
+     * @param refactoring 
+     */
+    public FacesJspFileMoveRefactoringPlugin(RenameRefactoring refactoring) {
+        super(refactoring);
+        setup(Collections.singleton(refactoring.getRefactoringSource().lookup(FileObject.class)), "", true);
     }
 
     private MoveRefactoring getMoveRefactoring() {
         return (MoveRefactoring) getRefactoring();
+    }
+    
+    private RenameRefactoring getRenameRefactoring() {
+    	return (RenameRefactoring) getRefactoring();
+    }
+    
+    private void setup(Collection fileObjects, String postfix, boolean recursively) {
+        for (Iterator i = fileObjects.iterator(); i.hasNext(); ) {
+            FileObject fo = (FileObject) i.next();
+            if (FacesRefactoringUtils.isVisualWebJspFile(fo)) {
+            	folderPostfix.put(fo, postfix);
+                filesToMove.add(fo);
+            } else if (!(fo.isFolder())) {
+            	folderPostfix.put(fo, postfix);
+            } else if (VisibilityQuery.getDefault().isVisible(fo)) {
+                //o instanceof DataFolder
+                //CVS folders are ignored
+                boolean addSlash = !"".equals(postfix);
+                Collection col = new ArrayList();
+                for (FileObject fo2: fo.getChildren()) {
+                    if (!fo2.isFolder() || (fo2.isFolder() && recursively)) 
+                        col.add(fo2);
+                }
+                setup(col, postfix +(addSlash?"/":"") +fo.getName(), recursively); // NOI18N
+            }
+        }
     }
     
     @Override

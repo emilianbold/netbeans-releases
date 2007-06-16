@@ -88,11 +88,8 @@ import com.sun.source.util.TreePath;
  */
 public class FacesJavaFileMoveRefactoringPlugin extends FacesRefactoringPlugin {
 	
-    private Map packagePostfix = new HashMap();
-    ArrayList<FileObject> filesToMove = new ArrayList();
-    HashMap<FileObject,ElementHandle> classes;
-    Map<FileObject, Set<FileObject>> whoReferences = new HashMap();
-    private FileObject[] origFilesToMove;
+    private List<FileObject> filesToMove = new ArrayList<FileObject>();
+    private Map<FileObject, String> packagePostfix = new HashMap<FileObject, String>();
 
     /**
      * 
@@ -135,7 +132,7 @@ public class FacesJavaFileMoveRefactoringPlugin extends FacesRefactoringPlugin {
                 //o instanceof DataFolder
                 //CVS folders are ignored
                 boolean addDot = !"".equals(postfix);
-                Collection col = new ArrayList();
+                Collection<FileObject> col = new ArrayList<FileObject>();
                 for (FileObject fo2: fo.getChildren()) {
                     if (!fo2.isFolder() || (fo2.isFolder() && recursively)) 
                         col.add(fo2);
