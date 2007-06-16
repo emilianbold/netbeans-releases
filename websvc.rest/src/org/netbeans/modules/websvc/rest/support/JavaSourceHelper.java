@@ -54,12 +54,15 @@ import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.websvc.rest.codegen.Constants;
 import org.openide.ErrorManager;
+import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Parameters;
 
 /**
@@ -414,6 +417,64 @@ public class JavaSourceHelper {
         return maker.insertClassMember(modifiedTree, 0, variableTree);
     }
     
+    public static void addFields(WorkingCopy copy, String[] names, Object[] types) {
+        Object[] initValues = new Object[types.length];
+        for (int i=0; i<types.length; i++) {
+            Object type = types[i];
+            if (String.class.equals(type) || String.class.getName().equals(type)) {
+                initValues[i] = "TODO - real value";
+            } else if (type instanceof Class && Number.class.isAssignableFrom((Class)type)) {
+                initValues[i] = 0;
+            } else {
+                initValues[i] = null;
+            }
+        }
+        addFields(copy, names, types, initValues);
+    }
+    
+    public static void addFields(WorkingCopy copy, 
+            String[] names, Object[] types, Object[] initialValues) {
+        
+        TreeMaker maker = copy.getTreeMaker();
+        ClassTree classTree = getTopLevelClassTree(copy);
+        ClassTree modifiedTree = classTree;
+        Modifier[] modifiers = Constants.PRIVATE;
+        String[] annotations = new String[0];
+        Object[] annotationAttrs = new Object[0];
+        
+        for (int i=0; i<names.length; i++) {
+            String name = names[i];
+            Object type = types[i];
+            Object initialValue = initialValues[i];
+            Tree typeTree = createTypeTree(copy, type);
+            
+            ModifiersTree modifiersTree = createModifiersTree(copy, modifiers,
+                    annotations, annotationAttrs);
+            ExpressionTree init = initialValue == null ? null : maker.Literal(initialValue);
+            VariableTree variableTree = maker.Variable(modifiersTree, name,
+                    typeTree, init);
+            modifiedTree = maker.insertClassMember(modifiedTree, 0, variableTree);
+        }        
+        copy.rewrite(classTree, modifiedTree);
+    }
+    
+    public static void addConstructor(WorkingCopy copy, String[] parameters, Object[] paramTypes) {
+        ClassTree classTree = getTopLevelClassTree(copy);
+        String bodyText = "{" + getThisFieldEqualParamStatements(parameters) + "}"; //NOI18N
+        String comment = "Create an instance of " + classTree.getSimpleName().toString();
+        ClassTree modifiedTree = addConstructor(copy, classTree, Constants.PUBLIC, parameters, paramTypes, bodyText, comment);
+        copy.rewrite(classTree, modifiedTree);
+    }
+
+    public static String getThisFieldEqualParamStatements(String[] params) {
+        StringBuilder sb = new StringBuilder();
+        String template = "if ($PARAM$ != null) { this.$PARAM$ = $PARAM$; }\n"; //NOI18N
+        for (int i=0; i<params.length; i++) {
+            sb.append(template.replace("$PARAM$", params[i])); //NOI18N
+        }
+        return sb.toString();
+    }
+    
     public static ClassTree addConstructor(WorkingCopy copy, ClassTree tree,
             Modifier[] modifiers, String[] parameters,
             Object[] paramTypes, String bodyText, String comment) {
@@ -690,4 +751,17 @@ public class JavaSourceHelper {
         return controller.getTrees().getTree(typeElement);
     }
 
+    public static void saveSource(FileObject[] files) throws IOException {
+        for (FileObject f : files) {
+            try {
+                DataObject dobj = DataObject.find(f);
+                SaveCookie sc = dobj.getCookie(SaveCookie.class);
+                if (sc != null) {
+                    sc.save();
+                }
+            } catch(DataObjectNotFoundException dex) {
+                // something really wrong but continue trying to save others
+            }
+        }
+    }
 }

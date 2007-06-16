@@ -58,6 +58,7 @@ public class GenericResourceBean {
     private String[] mimeTypes;
     private String[] representationTypes;
     private Set<HttpMethodType> methodTypes;
+    private boolean privateFieldForQueryParam;
 
    public GenericResourceBean(String name, String packageName, String uriTemplate) {
          this(name, packageName, uriTemplate, supportedMimeTypes, HttpMethodType.values());
@@ -171,5 +172,12 @@ public class GenericResourceBean {
             this.queryParamTypes = types;
         }
     }
-   
+
+    public boolean isPrivateFieldForQueryParam() {
+        return privateFieldForQueryParam;
+    }
+
+    public void setPrivateFieldForQueryParam(boolean privateFieldForQueryParam) {
+        this.privateFieldForQueryParam = privateFieldForQueryParam;
+    }
 }

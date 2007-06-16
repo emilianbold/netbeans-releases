@@ -45,6 +45,8 @@ public class Constants {
     
     public static final String URI_PARAM = REST_API_PACKAGE + "UriParam";  //NOI18N
     
+    public static final String QUERY_PARAM = REST_API_PACKAGE + "QueryParam";  //NOI18N
+    
     public static final String HTTP_RESPONSE = REST_API_PACKAGE + "response.HttpResponse"; //NOI18N
     
     public static final String CREATED = REST_API_PACKAGE + "response.Created";     //NOI18N

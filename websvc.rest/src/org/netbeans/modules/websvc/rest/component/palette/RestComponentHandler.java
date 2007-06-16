@@ -16,71 +16,78 @@
  */
 package org.netbeans.modules.websvc.rest.component.palette;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.editor.NbEditorUtilities;
+import org.netbeans.modules.websvc.rest.codegen.JAXWSwrapperRESTServiceGenerator;
 import org.netbeans.modules.websvc.rest.codegen.WADLResourceCodeGenerator;
-import org.netbeans.modules.websvc.rest.codegen.WSDLResourceCodeGenerator;
-import org.netbeans.modules.websvc.rest.component.palette.RestComponentData.Method;
-import org.netbeans.modules.websvc.rest.component.palette.RestComponentData.Service;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
+import org.netbeans.modules.websvc.rest.wizard.RESTServicesProgressPanel;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.text.ActiveEditorDrop;
 import org.openide.util.Lookup;
+import org.openide.util.RequestProcessor;
 
 /**
  *
  * @author Owner
  */
 public class RestComponentHandler implements ActiveEditorDrop {
+    private FileObject targetFO;
+    private RestComponentData data;
+    private RequestProcessor.Task generatorTask;
+    private boolean finishGenerate;
+    private RESTServicesProgressPanel progressPanel = new RESTServicesProgressPanel();
     
     public RestComponentHandler() {
     }
     
     public boolean handleTransfer(JTextComponent targetComponent) {
-        if (targetComponent == null)
+        targetFO = getTargetFile(targetComponent);
+        if (targetFO == null) {
             return false;
+        }
+        
+        final List<Exception> errors = new ArrayList<Exception>();
         
         Lookup pItem = RestPaletteFactory.getCurrentPaletteItem();
         Node n = pItem.lookup(Node.class);
+        final RestComponentData data = (RestComponentData) n.getValue("RestComponentData");
+        final String type = data.getService().getMethods().get(0).getType();
+        generatorTask = RequestProcessor.getDefault().create(new Runnable() {
+            public void run() {
+                try {
+                    if (RestComponentData.isWSDL(type)) {
+                        JAXWSwrapperRESTServiceGenerator codegen = new JAXWSwrapperRESTServiceGenerator(targetFO, data);
+                        codegen.generate();
+                    } else if (RestComponentData.isWADL(type)) {
+                        WADLResourceCodeGenerator codegen = new WADLResourceCodeGenerator(targetFO, data);
+                        codegen.generate();
+                    }
+                } catch(Exception ioe) {
+                    errors.add(ioe);
+                } finally {
+                    finishGenerate = true;
+                    finishProgress();
+                }
+            }
+        });
         
-        RestComponentData data = (RestComponentData) n.getValue("RestComponentData");
-        String componentName = data.getName();
-        String path = data.getCategoryPath();
-        Service service = data.getService();
-        String serviceName = service.getName();
-        List<Method> mList = service.getMethods();
-        String type = "";
-        String typeUrl = "";
-        String url = "";
-        if(!mList.isEmpty()) {
-            Method m = mList.get(0);
-            type = m.getType();
-            url = m.getUrl();
-        }
+        generatorTask.schedule(50);
+        finishGenerate = false;
+        startProgress();
         
-        String message = "Generating REST Service code for\n"+
-                "Component: "+componentName+"\n"+
-                "Path: "+path+"\n"+
-                "Type: "+type+"\n"+
-                type+" URL: "+url+"\n";
-        NotifyDescriptor descriptor = new NotifyDescriptor.Message(message);
-        DialogDisplayer.getDefault().notify(descriptor);
-        
-        DataObject d = NbEditorUtilities.getDataObject(targetComponent.getDocument());
-        FileObject targetFolder = d.getPrimaryFile().getParent();
-        if(RestComponentData.isWSDL(type)) {
-            FileObject targetFO = getTargetFile(targetComponent);
-            WSDLResourceCodeGenerator codegen = new WSDLResourceCodeGenerator(targetFO, data);
-            codegen.generate();
-        } else if(RestComponentData.isWADL(type)) {
-            FileObject targetFO = getTargetFile(targetComponent);
-            WADLResourceCodeGenerator codegen = new WADLResourceCodeGenerator(targetFO, data);
-            codegen.generate();
+        if (errors.size() > 0) {
+            for (Exception e : errors) {
+                Logger.getLogger(getClass().getName()).log(Level.FINE, "handleTransfer", e);
+                e.printStackTrace();
+            }
+            return false;
         }
         return true;
     }
@@ -98,5 +105,27 @@ public class RestComponentHandler implements ActiveEditorDrop {
             return null;
         
         return d.getPrimaryFile();
+    }
+    
+    /**
+     * Starts associated progress if not yet started. Allows to share
+     * progress with execution preparation phase (cache ops).
+     *
+     * @param details progress detail messag eor null
+     */
+    private void startProgress() {
+        //keep showing the dialog if user closes the dialog and transform is not finished
+        while(!finishGenerate) {
+            // clear/hide dialog if any
+            progressPanel.hideDialog();
+            
+            String msg = "";
+            progressPanel.createDialog(msg);
+            progressPanel.showDialog(msg);
+        }
+    }
+    
+    private void finishProgress() {
+        progressPanel.hideDialog();
     }
 }

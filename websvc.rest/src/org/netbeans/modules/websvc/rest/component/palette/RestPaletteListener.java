@@ -61,9 +61,7 @@ public class RestPaletteListener implements PropertyChangeListener {
     void associatePalette(DataObject d, PaletteController pc) {
         if( isRestJavaFile( d ) ) {
             CookieSet cookies = getCookieSet( d );
-            if( null != cookies ) {
-                cookies.assign( PaletteController.class, pc );
-            }
+            cookies.assign( PaletteController.class, pc );
         }
     }
     
@@ -85,6 +83,7 @@ public class RestPaletteListener implements PropertyChangeListener {
     }
     
     private boolean isRestJavaFile(DataObject d) {
+        return true; /*
         try {
             if(d == null)
                 return false;
@@ -99,6 +98,6 @@ public class RestPaletteListener implements PropertyChangeListener {
         } catch (IOException ex) {
         } catch (BadLocationException ex) {
         }
-        return false;
+        return false; */
     }
 }
