@@ -1488,6 +1488,15 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
         return sunDDRoot;
     }
 
+    public RootInterface getSunDDRoot(File sunDD, boolean create) throws IOException {
+        RootInterface sunDDRoot = null;
+        FileObject primarySunDDFO = getSunDD(sunDD, create);
+        if(primarySunDDFO != null) {
+            sunDDRoot = DDProvider.getDefault().getDDRoot(primarySunDDFO);
+        }
+        return sunDDRoot;
+    }
+    
     private FileObject getSunDD(File sunDDFile, boolean create) throws IOException {
         if(!sunDDFile.exists()) {
             if(create) {
