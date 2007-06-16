@@ -29,6 +29,7 @@ Microsystems, Inc. All Rights Reserved.
     <target name="library-init">
         <ant dir="library" target="jar" inheritAll="false"/>
         <mkdir dir="release/modules/ext"/>
+        <!-- WRONG! Never write to ${basedir}/release. Copy directly to ${cluster} instead. -->
         <copy todir="release/modules/ext">
             <fileset dir="library/dist" includes="*.jar"/>
             <fileset dir="../ravelibs/rowset/release/modules/ext" includes="*.jar"/>
