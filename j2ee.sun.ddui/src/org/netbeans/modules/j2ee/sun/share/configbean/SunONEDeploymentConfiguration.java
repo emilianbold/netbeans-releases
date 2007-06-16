@@ -2192,7 +2192,7 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
     public Set getDatasources() {
         Set datasources = new HashSet();
         ResourceConfiguratorInterface rci = getResourceConfigurator();
-        if(resourceDir != null && resourceDir.exists()) {
+        if((rci != null) && (resourceDir != null) && resourceDir.exists()) {
            datasources = rci.getResources(resourceDir);
         }
         return datasources;  
