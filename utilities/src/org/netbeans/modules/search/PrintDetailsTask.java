@@ -24,6 +24,7 @@ import java.lang.ref.Reference;
 import java.lang.reflect.Method;
 import org.openide.ErrorManager;
 import org.openide.nodes.Node;
+import org.openide.windows.OutputWriter;
 import org.openidex.search.SearchGroup;
 import org.openidex.search.SearchType;
 
@@ -124,7 +125,7 @@ public class PrintDetailsTask implements Runnable {
     
     /**
      */
-    public Reference getOutputWriterRef() {
+    public Reference<OutputWriter> getOutputWriterRef() {
         return displayer.getOutputWriterRef();
     }
 

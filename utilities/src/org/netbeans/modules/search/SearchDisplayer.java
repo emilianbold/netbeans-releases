@@ -48,7 +48,7 @@ public final class SearchDisplayer {
     /** writer to that tab */
     private OutputWriter ow = null;
     /** */
-    private Reference owRef = null;
+    private Reference<OutputWriter> owRef = null;
 
     /** Creates new SearchDisplayer */
     SearchDisplayer() {
@@ -61,16 +61,16 @@ public final class SearchDisplayer {
                                              "TITLE_SEARCH_RESULTS");   //NOI18N
         InputOutput searchIO = IOProvider.getDefault().getIO(tabName, false);
         ow = searchIO.getOut();
-        owRef = new WeakReference(ow);
+        owRef = new WeakReference<OutputWriter>(ow);
         
         searchIO.select();
     }
     
     /**
      */
-    static void clearOldOutput(final Reference outputWriterRef) {
+    static void clearOldOutput(final Reference<OutputWriter> outputWriterRef) {
         if (outputWriterRef != null) {
-            OutputWriter oldWriter = (OutputWriter) outputWriterRef.get();
+            OutputWriter oldWriter = outputWriterRef.get();
             if (oldWriter != null) {
                 try {
                     oldWriter.reset();
@@ -135,7 +135,7 @@ public final class SearchDisplayer {
     
     /**
      */
-    Reference getOutputWriterRef() {
+    Reference<OutputWriter> getOutputWriterRef() {
         return owRef;
     }
     

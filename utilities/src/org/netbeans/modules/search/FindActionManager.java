@@ -109,7 +109,7 @@ final class FindActionManager implements PropertyChangeListener, Runnable {
          * uninstallation (we do not want any instance/class from this module to
          * be in use by the time ModuleInstall.uninstalled() returns).
          */
-        Mutex.EVENT.readAccess(new Mutex.Action() {
+        Mutex.EVENT.readAccess(new Mutex.Action<Object>() {
             public Object run() {
                 cleanupWindowRegistry();
                 return null;

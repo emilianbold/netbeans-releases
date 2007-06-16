@@ -42,7 +42,8 @@ import org.openide.util.actions.SystemAction;
 public final class Manager {
     
     /** list of activated actions */
-    private static List activatedActions = new ArrayList(2);
+    private static List<SystemAction> activatedActions
+            = new ArrayList<SystemAction>(2);
     
     /**
      * Marks that the specified action is activated and informs whether

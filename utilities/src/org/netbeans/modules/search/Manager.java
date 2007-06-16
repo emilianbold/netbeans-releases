@@ -31,6 +31,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Task;
 import org.openide.util.TaskListener;
+import org.openide.windows.OutputWriter;
 import org.openidex.search.SearchGroup;
 import static org.netbeans.modules.search.ReplaceTask.ResultStatus.SUCCESS;
 import static org.netbeans.modules.search.ReplaceTask.ResultStatus.PRE_CHECK_FAILED;
@@ -111,7 +112,7 @@ final class Manager {
 
     private boolean searchWindowOpen = false;
     
-    private Reference outputWriterRef;
+    private Reference<OutputWriter> outputWriterRef;
     
 
     /**
