@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 2004 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 2004-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -29,8 +29,6 @@ import javax.swing.JPanel;
 import javax.swing.filechooser.FileFilter;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.filesystems.FileUtil;
-import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
@@ -60,7 +58,7 @@ class FileChooser extends JFileChooser {
         final File[] selectedFiles = getSelectedFiles();
 
         /* check the files: */
-        List/*<String>*/ errorMsgs = null;
+        List<String> errorMsgs = null;
         for (int i = 0; i < selectedFiles.length; i++) {
             String msgPatternRef = null;
             boolean isUNCPath = false;
@@ -81,7 +79,7 @@ class FileChooser extends JFileChooser {
             }
 
             if (errorMsgs == null) {
-                errorMsgs = new ArrayList(selectedFiles.length - i);
+                errorMsgs = new ArrayList<String>(selectedFiles.length - i);
             }
             errorMsgs.add(NbBundle.getMessage(FileChooser.class,
                                               msgPatternRef,
@@ -94,8 +92,8 @@ class FileChooser extends JFileChooser {
         } else {
             JPanel panel = new JPanel(new GridLayout(errorMsgs.size(), 0,
                                                      0, 2));        //gaps
-            for (java.util.Iterator i = errorMsgs.iterator(); i.hasNext(); ) {
-                panel.add(new JLabel((String) i.next()));
+            for (String errMsg : errorMsgs) {
+                panel.add(new JLabel(errMsg));
             }
             DialogDisplayer.getDefault().notify(
                     new NotifyDescriptor.Message(

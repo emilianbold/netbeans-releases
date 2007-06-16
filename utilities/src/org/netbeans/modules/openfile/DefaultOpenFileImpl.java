@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.openfile;
@@ -402,7 +402,7 @@ public class DefaultOpenFileImpl implements OpenFileImpl, Runnable {
     private final boolean openDataObjectByCookie(DataObject dataObject,
                                        int line) {
         
-        Class cookieClass;        
+        Class<? extends Node.Cookie> cookieClass;        
         Node.Cookie cookie;
         if( (    cookie = dataObject.getCookie(cookieClass = OpenCookie.class)) != null
              || (cookie = dataObject.getCookie(cookieClass = EditCookie.class)) != null
@@ -448,7 +448,7 @@ public class DefaultOpenFileImpl implements OpenFileImpl, Runnable {
             return false;
         }
 
-        Class cookieClass;        
+        Class<? extends Node.Cookie> cookieClass;        
         Node.Cookie cookie;
         
         if ( (line != -1 && ((cookie = dataObject.getCookie(cookieClass = EditorCookie.Observable.class)) != null
