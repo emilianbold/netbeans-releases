@@ -881,7 +881,7 @@ public final class AppClientProject implements Project, AntProjectListener, File
         //add targets here as required by the external plugins..
         public List<String> getExtensibleTargets() {
             String[] targets = new String[] {
-                "-do-init", "-init-check", "-post-clean", "jar", "-pre-pre-compile","-do-compile","-do-compile-single" //NOI18N
+                "-do-init", "-init-check", "-post-clean", "jar", "-pre-pre-compile","-do-compile","-do-compile-single", "-pre-dist" //NOI18N
             };
             return Arrays.asList(targets);
         }

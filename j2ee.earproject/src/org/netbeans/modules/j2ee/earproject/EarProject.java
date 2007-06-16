@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -23,6 +23,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
@@ -36,6 +37,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ant.AntArtifact;
+import org.netbeans.api.project.ant.AntBuildExtender;
 import org.netbeans.modules.j2ee.api.ejbjar.Ear;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.earproject.classpath.ClassPathProviderImpl;
@@ -49,6 +51,8 @@ import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.ant.AntArtifactProvider;
+import org.netbeans.spi.project.ant.AntBuildExtenderFactory;
+import org.netbeans.spi.project.ant.AntBuildExtenderImplementation;
 import org.netbeans.spi.project.support.LookupProviderSupport;
 import org.netbeans.spi.project.support.ant.AntBasedProjectType;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
@@ -105,6 +109,8 @@ public final class EarProject implements Project, AntProjectListener, FileChange
     private final UpdateHelper updateHelper;
     private final BrokenProjectSupport brokenProjectSupport;
     
+    private AntBuildExtender buildExtender;
+            
     EarProject(final AntProjectHelper helper, AntBasedProjectType abpt) throws IOException {
         this.helper = helper;
         this.abpt = abpt;
@@ -116,8 +122,9 @@ public final class EarProject implements Project, AntProjectListener, FileChange
         ear = EjbJarFactory.createEar(appModule);
         updateHelper = new UpdateHelper(this, this.helper, aux, this.genFilesHelper, UpdateHelper.createDefaultNotifier());
         brokenProjectSupport = new BrokenProjectSupport(this);
+        buildExtender = AntBuildExtenderFactory.createAntExtender(new EarExtenderImplementation());
         lookup = createLookup(aux);
-    }
+   }
     
     public UpdateHelper getUpdateHelper() {
         return updateHelper;
@@ -189,7 +196,8 @@ public final class EarProject implements Project, AntProjectListener, FileChange
             new AntArtifactProviderImpl(),
             UILookupMergerSupport.createPrivilegedTemplatesMerger(),
             UILookupMergerSupport.createRecommendedTemplatesMerger(),
-            LookupProviderSupport.createSourcesMerger()
+            LookupProviderSupport.createSourcesMerger(),
+            buildExtender,
         });
         return LookupProviderSupport.createCompositeLookup(base, "Projects/org-netbeans-modules-j2ee-earproject/Lookup"); //NOI18N
     }
@@ -555,4 +563,18 @@ public final class EarProject implements Project, AntProjectListener, FileChange
         
     }
     
+   private class EarExtenderImplementation implements AntBuildExtenderImplementation {
+        //add targets here as required by the external plugins..
+        public List<String> getExtensibleTargets() {
+            String[] targets = new String[] {
+                "pre-dist", //NOI18N
+            };
+            return Arrays.asList(targets);
+        }
+
+        public Project getOwningProject() {
+            return EarProject.this;
+        }
+
+    }
 }

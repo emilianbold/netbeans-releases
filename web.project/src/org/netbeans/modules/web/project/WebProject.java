@@ -1250,7 +1250,7 @@ public final class WebProject implements Project, AntProjectListener, FileChange
         //add targets here as required by the external plugins..
         public List<String> getExtensibleTargets() {
             String[] targets = new String[] {
-                "-do-init", "-init-check", "-post-clean", "jar", "-pre-pre-compile","-do-ws-compile","-do-compile","-do-compile-single", "-post-compile" //NOI18N
+                "-do-init", "-init-check", "-post-clean", "jar", "-pre-pre-compile","-do-ws-compile","-do-compile","-do-compile-single", "-post-compile", "-pre-dist", //NOI18N
             };
             return Arrays.asList(targets);
         }
