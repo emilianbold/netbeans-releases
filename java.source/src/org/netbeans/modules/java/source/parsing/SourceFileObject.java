@@ -363,22 +363,25 @@ public class SourceFileObject implements JavaFileObject, DocumentProvider {
             length[0] = j;
         }
         else {            
+            final CharSequence[] _text = new CharSequence[1];
             doc.render(new Runnable() {
                 public void run () {
-                  try {
-			CharSequence text = doc.getText(0, doc.getLength());
-                        if (filter != null) {
-                            text = filter.filterCharSequence(text);
-                        }
-                        int len = text.length();
-			result[0] = new char[len+1];
-			text.toString().getChars(0,len,result[0],0);
-                        length[0] = len;
+                    try {
+                        _text[0] = doc.getText(0, doc.getLength());
                     } catch (BadLocationException e) {
                         ErrorManager.getDefault().notify(e);
-                    }  
+                    }
                 }
-            });            
+            });
+            if (_text[0] != null) {
+                if (filter != null) {
+                    _text[0] = filter.filterCharSequence(_text[0]);
+                }
+                int len = _text[0].length();
+                result[0] = new char[len+1];
+                _text[0].toString().getChars(0,len,result[0],0);
+                length[0] = len;
+            }
         }
 	result[0][length[0]]='\n'; //NOI18N
 	CharBuffer charBuffer = CharBuffer.wrap (result[0],0,length[0]);

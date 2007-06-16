@@ -90,45 +90,59 @@ public class SimplifiedJSPServlet {
     
     public void process() throws BadLocationException{
         processCalled = true;
-        StringBuilder buffScriplets = new StringBuilder();
-        StringBuilder buffDeclarations = new StringBuilder();
+        final StringBuilder buffScriplets = new StringBuilder();
+        final StringBuilder buffDeclarations = new StringBuilder();
+        final BadLocationException[] ex = new BadLocationException[1];
         
-        TokenHierarchy tokenHierarchy = TokenHierarchy.get(doc);
-        TokenSequence tokenSequence = tokenHierarchy.tokenSequence(); //get top level token sequence
-        
-        if(!tokenSequence.moveNext()) {
-            return ; //no tokens in token sequence
-        }
-        
-        /**
-         * process java code blocks one by one
-         * note: We count on the fact the scripting language in JSP is Java
-         */
-        do{
-            Token token = tokenSequence.token();
-            
-            if (token.id() == JspTokenId.SCRIPTLET){
-                int blockStart = token.offset(tokenHierarchy);
-                int blockEnd = blockStart + token.length();
-                
-                JavaCodeType blockType = (JavaCodeType)token.getProperty(JspTokenId.SCRIPTLET_TOKEN_TYPE_PROPERTY);;
-                
-                String blockBody = doc.getText(blockStart, blockEnd - blockStart);
-                StringBuilder buff = blockType == JavaCodeType.DECLARATION ? buffDeclarations : buffScriplets;
-                int newBlockStart = buff.length();
-                
-                if (blockType == JavaCodeType.EXPRESSION){
-                    String exprPrefix = String.format("\t\tObject expr%1$d = ", expressionIndex ++); //NOI18N
-                    newBlockStart += exprPrefix.length();
-                    buff.append(exprPrefix + blockBody + ";\n");
-                } else{
-                    buff.append(blockBody + "\n");
+        doc.render(new Runnable() {
+            public void run() {
+                TokenHierarchy tokenHierarchy = TokenHierarchy.get(doc);
+                TokenSequence tokenSequence = tokenHierarchy.tokenSequence(); //get top level token sequence
+
+                if(!tokenSequence.moveNext()) {
+                    return ; //no tokens in token sequence
                 }
-                
-                CodeBlockData blockData = new CodeBlockData(blockStart, newBlockStart, blockEnd, blockType);
-                codeBlocks.add(blockData);
+
+                /**
+                 * process java code blocks one by one
+                 * note: We count on the fact the scripting language in JSP is Java
+                 */
+                do{
+                    Token token = tokenSequence.token();
+
+                    if (token.id() == JspTokenId.SCRIPTLET){
+                        int blockStart = token.offset(tokenHierarchy);
+                        int blockEnd = blockStart + token.length();
+
+                        JavaCodeType blockType = (JavaCodeType)token.getProperty(JspTokenId.SCRIPTLET_TOKEN_TYPE_PROPERTY);
+
+                        try {
+                            String blockBody = doc.getText(blockStart, blockEnd - blockStart);
+                            StringBuilder buff = blockType == JavaCodeType.DECLARATION ? buffDeclarations : buffScriplets;
+                            int newBlockStart = buff.length();
+
+                            if (blockType == JavaCodeType.EXPRESSION){
+                                String exprPrefix = String.format("\t\tObject expr%1$d = ", expressionIndex ++); //NOI18N
+                                newBlockStart += exprPrefix.length();
+                                buff.append(exprPrefix + blockBody + ";\n");
+                            } else{
+                                buff.append(blockBody + "\n");
+                            }
+
+                            CodeBlockData blockData = new CodeBlockData(blockStart, newBlockStart, blockEnd, blockType);
+                            codeBlocks.add(blockData);
+                        } catch (BadLocationException e) {
+                            ex[0] = e;
+                            return ;
+                        }
+                    }
+                } while (tokenSequence.moveNext());
             }
-        } while (tokenSequence.moveNext());
+        });
+        
+        if (ex[0] != null) {
+            throw ex[0];
+        }
         
         importStatements = createImportStatements();
         mergedDeclarations = buffDeclarations + "\n" + createBeanVarDeclarations();
