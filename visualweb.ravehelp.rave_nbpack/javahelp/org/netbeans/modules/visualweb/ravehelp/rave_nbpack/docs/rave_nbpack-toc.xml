@@ -13,7 +13,6 @@
 			<tocitem text="Importing a Java Studio Creator Project" target="projrave_projects_howtoprojects_import_creator_project" />
 			<tocitem text="About Accessibility" target="projrave_a11y_abouta11y" />
 			<tocitem text=" Keyboard Shortcuts">
-				<tocitem text="Dynamic Help Window Keyboard Shortcuts" target="projrave_a11y_dynamic_help_shortcuts" />
 				<tocitem text="Page Navigation Editor Keyboard Shortcuts" target="projrave_a11y_navigation_editor_shortcuts" />
 				<tocitem text="Palette Keyboard Shortcuts" target="projrave_a11y_component_palette_shortcuts" />
 				<tocitem text="Query Editor Keyboard Shortcuts" target="projrave_a11y_query_editor_shortcuts" />
@@ -27,7 +26,7 @@
 		<tocitem text="Starting With Visual Web Projects" expand="false">
 			<tocitem text="About Visual Web Projects" target="projrave_projects_aboutprojects" />
 			<tocitem text="Working With Visual Web Projects" target="projrave_projects_project_process" />
-			<tocitem text="Visual Web Project Tasks: Quick Reference" target="projrave_projects_howtoprojects_howtoprojects" />
+			<tocitem text="Visual Web Project Tasks: Quick Reference" target="projrave_projects_howtoprojects_projects_quickref" />
 			<tocitem text="Creating and Opening Visual Web Projects">
 				<tocitem text="Creating a Visual Web Project" target="projrave_projects_howtoprojects_create_project" />
 				<tocitem text="Setting the Main Project" target="projrave_projects_howtoprojects_proj_main" />
@@ -158,7 +157,7 @@
 			<tocitem text="JavaServer Faces Expression Language" target="projrave_jsp-jsfel_jsf_expression_language_intro" />
 		</tocitem>
 		<tocitem text="Reference" expand="false">
-			<tocitem text="Outline Window" target="projrave_ui_elements_project_nav_about_app_outline" />
+			<tocitem text="Navigator Window" target="projrave_ui_elements_navigator_win_about_navigator_win" />
 			<tocitem text="Properties Window" target="projrave_ui_elements_propsheets_propsheet_win" />
 			<tocitem text="Editors" mergetype="javax.help.SortMerge" expand="false">
 				<tocitem text="About the JSP Editor" target="projrave_ui_elements_editors_about_jsp_editor" />
@@ -184,16 +183,11 @@
 					<tocitem text="Projects Window" target="projrave_ui_elements_project_nav_portfoliological" />
 					<tocitem text="Project Node" target="projrave_ui_elements_project_nav_webapp_node" />
 					<tocitem text="Web Pages Node" target="projrave_ui_elements_project_nav_webforms_node" />
-					<tocitem text="Managed Beans Node" target="projrave_ui_elements_project_nav_man_beans_node" />
-					<tocitem text="Session Bean Node" target="projrave_ui_elements_project_nav_session_bean_node" />
-					<tocitem text="Request Bean Node" target="projrave_ui_elements_project_nav_request_bean_node" />
-					<tocitem text="Application Bean Node" target="projrave_ui_elements_project_nav_application_bean_node" />
 					<tocitem text="Source Packages Node" target="projrave_ui_elements_project_nav_java_sources_node" />
 					<tocitem text="Libraries Node" target="projrave_ui_elements_project_nav_references_node" />
 					<tocitem text="Component Libraries Node" target="projrave_ui_elements_project_nav_complib_node" />
 				</tocitem>
 				<tocitem text="Properties">
-					<tocitem text="Application Bean Node Properties" target="projrave_ui_elements_project_nav_node_prop_sheets_application_bean_node_props" />
 					<tocitem text="Dist Node Properties" target="projrave_ui_elements_project_nav_node_prop_sheets_dist_node_props" />
 					<tocitem text="Source Packages Node Properties" target="projrave_ui_elements_project_nav_node_prop_sheets_java_sources_node_props" />
 					<tocitem text="Managed Beans Node Properties" target="projrave_ui_elements_project_nav_node_prop_sheets_man_beans_node_props" />
@@ -202,8 +196,6 @@
 					<tocitem text="Project Properties: Libraries Category" target="projrave_ui_elements_project_nav_project_props_libraries" />
 					<tocitem text="Project Properties: Run Category" target="projrave_ui_elements_project_nav_project_props_run" />
 					<tocitem text="Project Properties: Sources Category" target="projrave_ui_elements_project_nav_project_props_sources" />
-					<tocitem text="Request Bean Node Properties" target="projrave_ui_elements_project_nav_node_prop_sheets_request_bean_node_props" />
-					<tocitem text="Session Bean Node Properties" target="projrave_ui_elements_project_nav_node_prop_sheets_session_bean_node_props" />
 					<tocitem text="Web Pages Node Properties" target="projrave_ui_elements_project_nav_node_prop_sheets_web_pages_node_props" />
 				</tocitem>
 				<tocitem text="Dialog Boxes">

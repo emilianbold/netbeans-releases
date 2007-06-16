@@ -7,7 +7,7 @@
 
 <helenProject version="1.0">
     <documents>
-		<directory title="/Users/james/VisWebCVS/visualweb/ravehelp/rave_nbpack/javahelp/org/netbeans/modules/visualweb/ravehelp/rave_nbpack/docs">
+		<directory title="C:/!MySunProjects/Rave/cvstree/visualweb/visualweb/ravehelp/rave_nbpack/javahelp/org/netbeans/modules/visualweb/ravehelp/rave_nbpack/docs">
 			<directory title="a11y">
 				<directory title="CVS">
 					<file title="Entries"/>
@@ -17,7 +17,6 @@
 				</directory>
 				<file title="abouta11y.html"/>
 				<file title="component_palette_shortcuts.html"/>
-				<file title="dynamic_help_shortcuts.html"/>
 				<file title="navigation_editor_shortcuts.html"/>
 				<file title="query_editor_shortcuts.html"/>
 			</directory>
@@ -126,7 +125,6 @@
 					<file title="Root"/>
 					<file title="Template"/>
 				</directory>
-				<file title="design_worksheet.html"/>
 				<file title="web_app_concepts.html"/>
 			</directory>
 			<directory title="glossary">
@@ -162,7 +160,6 @@
 				<file title="add-arrow.gif"/>
 				<file title="align.gif"/>
 				<file title="app_outline_icon.gif"/>
-				<file title="app_outline_win.gif"/>
 				<file title="app_outline_win_chkbxlist.gif"/>
 				<file title="app_outline_win_datatable.gif"/>
 				<file title="app_outline_win_form.gif"/>
@@ -283,6 +280,7 @@
 				<file title="msglisticon.gif"/>
 				<file title="multilinetexticon.gif"/>
 				<file title="multilistboxicon.gif"/>
+				<file title="navigator_win_graphic.gif"/>
 				<file title="new_project.gif"/>
 				<file title="opts_error-badge.gif"/>
 				<file title="opts_executable-badge.gif"/>
@@ -493,6 +491,13 @@
 					<file title="qe_results_pane.html"/>
 					<file title="qe_sql_pane.html"/>
 					<file title="visual_designer_popup.html"/>
+				</directory>
+				<directory title="navigator_win">
+					<file title="about_navigator_win.html"/>
+					<file title="application_bean_node.html"/>
+					<file title="navigator_win_popup.html"/>
+					<file title="request_bean_node.html"/>
+					<file title="session_bean_node.html"/>
 				</directory>
 				<directory title="options">
 					<directory title="CVS">
@@ -853,7 +858,6 @@
 						<file title="tree.html"/>
 						<file title="tree_node.html"/>
 					</directory>
-					<file title="app_outline_win_graphic.html"/>
 					<file title="code_clips_graphic.html"/>
 					<file title="palette.html"/>
 					<file title="palette_win_graphic.html"/>
@@ -872,25 +876,19 @@
 							<file title="Root"/>
 							<file title="Template"/>
 						</directory>
-						<file title="application_bean_node_props.html"/>
 						<file title="build_node_props.html"/>
 						<file title="dist_node_props.html"/>
 						<file title="java_sources_node_props.html"/>
 						<file title="man_beans_node_props.html"/>
 						<file title="page_nav_node_props.html"/>
-						<file title="request_bean_node_props.html"/>
-						<file title="session_bean_node_props.html"/>
 						<file title="web_pages_node_props.html"/>
 					</directory>
-					<file title="about_app_outline.html"/>
 					<file title="about_project_nav.html"/>
-					<file title="application_bean_node.html"/>
 					<file title="buildxml_node.html"/>
 					<file title="complib_node.html"/>
 					<file title="data_source_ref_node.html"/>
 					<file title="dist_node.html"/>
 					<file title="java_sources_node.html"/>
-					<file title="man_beans_node.html"/>
 					<file title="project_nav_win.html"/>
 					<file title="project_props_build.html"/>
 					<file title="project_props_libraries.html"/>
@@ -899,8 +897,6 @@
 					<file title="projectfilesystem.html"/>
 					<file title="projectlogical.html"/>
 					<file title="references_node.html"/>
-					<file title="request_bean_node.html"/>
-					<file title="session_bean_node.html"/>
 					<file title="webapp_node.html"/>
 					<file title="webforms_node.html"/>
 				</directory>
