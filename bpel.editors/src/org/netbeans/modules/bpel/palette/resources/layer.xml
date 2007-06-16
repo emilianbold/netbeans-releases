@@ -50,13 +50,10 @@
                         <attr name="originalFile" stringvalue="Actions/BpelNodes/org-netbeans-modules-bpel-nodes-actions-GoToDiagrammAction.instance"/>
                     </file>
                     <attr name="org-netbeans-modules-bpel-nodes-actions-GoToDiagrammAction.shadow/org-netbeans-modules-bpel-nodes-actions-separatorAfter.instance" boolvalue="false"/>
-                    <attr name="org-netbeans-modules-xml-core-actions-CollectXMLAction.instance/org-netbeans-modules-bpel-nodes-actions-separatorAfter.instance" boolvalue="true"/>
                     <file name="org-netbeans-modules-bpel-nodes-actions-separatorAfter.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                     </file>
                     <attr name="org-netbeans-modules-bpel-nodes-actions-separatorAfter.instance/SeparatorAfterFormat.instance" boolvalue="true"/>
-                    <attr name="org-netbeans-modules-bpel-nodes-actions-separatorAfter.instance/org-netbeans-modules-bpel-nodes-actions-GoToDiagrammAction.shadow" boolvalue="true"/>
-                    <attr name="org-netbeans-modules-bpel-nodes-actions-GoToDiagrammAction.shadow/SeparatorAfterFormat.instance" boolvalue="true"/>
                 </folder>
             </folder>
         </folder>
