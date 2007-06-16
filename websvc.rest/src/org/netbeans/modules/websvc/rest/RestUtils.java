@@ -19,9 +19,11 @@
 package org.netbeans.modules.websvc.rest;
 
 import java.io.IOException;
+import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.rest.spi.RestSupport;
+import org.netbeans.modules.websvc.rest.support.JavaSourceHelper;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -30,6 +32,9 @@ import org.openide.filesystems.FileObject;
  * @author Nam Nguyen
  */
 public class RestUtils {
+    
+    public static final String REST_CONNECTION = "RestConnection"; //NOI18N
+    public static final String REST_CONNECTION_TEMPLATE = "Templates/WebServices/RestConnection.java"; //NOI18N
     
     /**
      *  Makes sure project is ready for REST development.
@@ -60,4 +65,8 @@ public class RestUtils {
         return restSupport != null;
     }
 
+    public static JavaSource createRestConnection(FileObject folder, String pkgName) {
+        JavaSource source = JavaSourceHelper.createJavaSource(REST_CONNECTION_TEMPLATE, folder, pkgName, REST_CONNECTION);
+        return source;
+    }
 }

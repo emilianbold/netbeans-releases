@@ -16,34 +16,33 @@
  */
 package org.netbeans.modules.websvc.rest.component.palette;
 
-import javax.swing.Action;
-import org.netbeans.spi.palette.PaletteActions;
+import org.netbeans.spi.palette.PaletteFilter;
+import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 
 /**
  *
  * @author Owner
  */
-public class RestPaletteActions extends PaletteActions {
+public class RestPaletteFilter extends PaletteFilter {
     
-    public Action[] getImportActions() {
-        return new Action[0];
+    public boolean isValidItem(Lookup lookup) {
+        Node itemNode = (Node)lookup.lookup( Node.class );
+        return isItemVisibleInCurrentEditorContext( itemNode );
     }
     
-    public Action[] getCustomPaletteActions() {
-        return new Action[0];
+    public boolean isValidCategory(Lookup lookup) {
+        Node categoryNode = (Node)lookup.lookup( Node.class );
+        return isCategoryVisibleInCurrentEditorContext( categoryNode );
     }
     
-    public Action[] getCustomCategoryActions(Lookup category) {
-        return new Action[0];
+    private boolean isItemVisibleInCurrentEditorContext( Node item ) {
+        return true;
+        //return RestPaletteUtils.ready(TopComponent.getRegistry().getActivatedNodes());
     }
     
-    public Action[] getCustomItemActions(Lookup item) {
-        return new Action[0];
+    private boolean isCategoryVisibleInCurrentEditorContext( Node item ) {
+        return true;
+        //return RestPaletteUtils.ready(TopComponent.getRegistry().getActivatedNodes());
     }
-    
-    public Action getPreferredAction(Lookup item) {
-        return null;
-    }
-    
 }

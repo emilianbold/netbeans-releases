@@ -31,9 +31,18 @@
             <file name="JaxwsWrapperResource.java" url="/org/netbeans/modules/websvc/rest/codegen/resources/JaxwsWrapperResource.template"/>
             <file name="UriResolver.java" url="/org/netbeans/modules/websvc/rest/codegen/resources/UriResolver.template"/>
             <file name="PersistenceService.java" url="/org/netbeans/modules/websvc/rest/codegen/resources/PersistenceService.template"/>
+            <file name="RestConnection.java" url="/org/netbeans/modules/websvc/rest/codegen/resources/RestConnection.template"/>
             <file name="GoogleMapResource.java" url="/org/netbeans/modules/websvc/rest/codegen/resources/GoogleMapResource.template"/>
             <file name="GoogleMapRefConverter.java" url="/org/netbeans/modules/websvc/rest/codegen/resources/GoogleMapRefConverter.template"/>
+            <file name="YahooNewsResource.java" url="/org/netbeans/modules/websvc/rest/codegen/resources/YahooNewsResource.template"/>
+            <file name="YahooNewsRefConverter.java" url="/org/netbeans/modules/websvc/rest/codegen/resources/YahooNewsRefConverter.template"/>            
         </folder>
     </folder>
+    
+    <folder name="RestComponents">        
+        <file name="google-map.xml" url="/org/netbeans/modules/websvc/rest/component/google-map.xml" />
+        <file name="yahoo-ns.xml" url="/org/netbeans/modules/websvc/rest/component/yahoo-ns.xml" />
+        <file name="strikeiron.xml" url="/org/netbeans/modules/websvc/rest/component/strikeiron.xml" />
+    </folder>    
     
 </filesystem>
