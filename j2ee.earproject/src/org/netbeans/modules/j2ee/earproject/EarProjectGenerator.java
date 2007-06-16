@@ -526,14 +526,6 @@ public final class EarProjectGenerator {
         ep = h.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
         ep.setProperty(EarProjectProperties.J2EE_SERVER_INSTANCE, serverInstanceID);
         
-        // ant deployment support
-        try {
-            AntDeploymentHelper.writeDeploymentScript(new File(prjDir,
-                    EarProjectProperties.ANT_DEPLOY_BUILD_SCRIPT),
-                    J2eeModule.EAR, serverInstanceID);
-        } catch (IOException ioe) {
-            Logger.getLogger("global").log(Level.INFO, null, ioe);
-        }
         File deployAntPropsFile = AntDeploymentHelper.getDeploymentPropertiesFile(serverInstanceID);
         if (deployAntPropsFile != null) {
             ep.setProperty(EarProjectProperties.DEPLOY_ANT_PROPS_FILE, deployAntPropsFile.getAbsolutePath());
@@ -544,6 +536,14 @@ public final class EarProjectGenerator {
         h.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
         Project p = ProjectManager.getDefault().findProject(prjDirFO);
         ProjectManager.getDefault().saveProject(p);
+        // ant deployment support
+        try {
+            AntDeploymentHelper.writeDeploymentScript(new File(prjDir,
+                    EarProjectProperties.ANT_DEPLOY_BUILD_SCRIPT),
+                    J2eeModule.EAR, serverInstanceID);
+        } catch (IOException ioe) {
+            Logger.getLogger("global").log(Level.INFO, null, ioe);
+        }
         return h;
     }
     
