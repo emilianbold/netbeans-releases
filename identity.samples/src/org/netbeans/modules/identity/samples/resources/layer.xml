@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <!--
 The contents of this file are subject to the terms of the Common Development
 and Distribution License (the License). You may not use this file except in
@@ -18,21 +17,16 @@ enclosed by brackets [] replaced by your own identifying information:
 Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  Microsystems, Inc. All Rights Reserved.
 -->
-
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
     <folder name="Templates">
         <folder name="Project">
             <folder name="Samples">
-                <attr name="Standard/Identity" boolvalue="true"/>
-                <attr name="Enterprise/Identity" boolvalue="true"/>
-                <attr name="J2ME/Identity" boolvalue="true"/>
-                <attr name="SOA/Identity" boolvalue="true"/>
-                <attr name="Identity/Blueprints" boolvalue="true"/>
                 <folder name="Identity">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.identity.samples.resources.Bundle"/>
                     <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/identity/samples/resources/category.html"/>
                     <!-- StockQuoteClient Sample -->
+                    <attr name="position" intvalue="600"/>
                     <file name="StockQuoteClientSampleProject" url="StockQuoteClient.zip">
                         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/identity/samples/resources/projectIcon.gif"/>
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.identity.samples.resources.Bundle"/>

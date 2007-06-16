@@ -18,14 +18,13 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
-
 <filesystem>
     <folder name="Services">
         <!-- Recognize text/struts+xml: -->
         <folder name="MIMEResolver">
             <file name="org-netbeans-modules-web-struts-resources-mime-resolver.xml" url="mime-resolver.xml">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.struts.resources.Bundle" />
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/web/struts/resources/StrutsConfigIcon.png" />
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.struts.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/web/struts/resources/StrutsConfigIcon.png"/>
             </file>
         </folder>
     </folder>
@@ -34,10 +33,8 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="XML">
             <folder name="UserCatalogs">
                 <file name="org-netbeans-modules-web-struts-StrutsCatalog.instance">
-                    <attr name="instanceCreate" 
-                    newvalue="org.netbeans.modules.web.struts.StrutsCatalog"/>
-                    <attr name="instanceOf" 
-                    stringvalue="org.netbeans.modules.xml.catalog.spi.CatalogReader"/>
+                    <attr name="instanceCreate" newvalue="org.netbeans.modules.web.struts.StrutsCatalog"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.xml.catalog.spi.CatalogReader"/>
                 </file>
             </folder>
         </folder>
@@ -55,13 +52,13 @@ Microsystems, Inc. All Rights Reserved.
             <folder name="x-struts+xml">
                 <folder name="Popup"> 
                     <file name="org-netbeans-modules-web-struts-editor-StrutsPopupAction.instance">
+                        <attr name="position" intvalue="900"/>
                     </file>
-                    <attr name="org-netbeans-modules-web-struts-editor-StrutsPopupAction.instance/Separator0.instance" boolvalue="true"/>
                     <file name="Separator0.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="4100"/>
                     </file>
-                    <attr name="Separator0.instance/org-netbeans-modules-xml-text-syntax-XMLViewActions.instance" boolvalue="true"/>
-                </folder>
+                    </folder>
             </folder>
         </folder>
     </folder>
@@ -86,32 +83,30 @@ Microsystems, Inc. All Rights Reserved.
 
 
     <folder name="Templates">
-        <attr name="Struts/Classes" boolvalue="true"/>
-        <attr name="Struts/Persistence" boolvalue="true"/>
         <folder name="Struts">
-            <attr name="JSFManagedBean.java/StrutsAction.java" boolvalue="true"/>
-            <attr name="TagHandler.java/StrutsAction.java" boolvalue="true"/>
-            <attr name="StrutsAction.java/StrutsActionForm.java" boolvalue="true"/>
+            <attr name="position" intvalue="100"/>
             <file name="StrutsAction.java" url="templates/StrutsAction.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.struts.resources.Bundle"/>
+                <attr name="position" intvalue="100"/>
                 <attr name="template" boolvalue="true"/>
                 <!--<attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/JSP.html"/>
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.web.dd.wizards.PageIterator.createJspIterator"/>-->
                 <attr name="templateCategory" stringvalue="servlet-types"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/struts/resources/StrutsAction.html"/>
-                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.web.struts.wizards.ActionIterator"  />          
+                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.web.struts.wizards.ActionIterator"/>          
             </file>
             <file name="DispatchAction.java" url="templates/DispatchAction.template"/>
             <file name="MappingDispatchAction.java" url="templates/MappingDispatchAction.template"/>
             <file name="LookupDispatchAction.java" url="templates/LookupDispatchAction.template"/>
             <file name="StrutsActionForm.java" url="templates/StrutsActionForm.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.struts.resources.Bundle"/>
+                <attr name="position" intvalue="200"/>
                 <attr name="template" boolvalue="true"/>
                 <!--<attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/JSP.html"/>
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.web.dd.wizards.PageIterator.createJspIterator"/>-->
                 <attr name="templateCategory" stringvalue="servlet-types"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/struts/resources/StrutsFormBean.html"/>
-                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.web.struts.wizards.FormBeanIterator"  />          
+                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.web.struts.wizards.FormBeanIterator"/>          
             </file>
         </folder>
     </folder>
@@ -140,41 +135,52 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="text">
             <folder name="x-struts+xml">
                 <folder name="Actions">
-                    <file name="org-openide-actions-OpenAction.instance"/>
-                    <attr name="org-openide-actions-OpenAction.instance/org-openide-actions-FileSystemAction.instance" boolvalue="true"/>
-                    <file name="org-openide-actions-FileSystemAction.instance"/>
-                    <attr name="org-openide-actions-FileSystemAction.instance/sep-1.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-OpenAction.instance">
+                        <attr name="position" intvalue="100"/>
+                    </file>
+                    <file name="org-openide-actions-FileSystemAction.instance">
+                        <attr name="position" intvalue="200"/>
+                    </file>
                     <file name="sep-1.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="300"/>
                     </file>
-                    <attr name="sep-1.instance/org-openide-actions-CutAction.instance" boolvalue="true"/>
-                    <file name="org-openide-actions-CutAction.instance"/>
-                    <attr name="org-openide-actions-CutAction.instance/org-openide-actions-CopyAction.instance" boolvalue="true"/>
-                    <file name="org-openide-actions-CopyAction.instance"/>
-                    <attr name="org-openide-actions-CopyAction.instance/org-openide-actions-PasteAction.instance" boolvalue="true" />
-                    <file name="org-openide-actions-PasteAction.instance"/>
-                    <attr name="org-openide-actions-PasteAction.instance/sep-2.instance" boolvalue="true" />
+                    <file name="org-openide-actions-CutAction.instance">
+                        <attr name="position" intvalue="400"/>
+                    </file>
+                    <file name="org-openide-actions-CopyAction.instance">
+                        <attr name="position" intvalue="500"/>
+                    </file>
+                    <file name="org-openide-actions-PasteAction.instance">
+                        <attr name="position" intvalue="600"/>
+                    </file>
                     <file name="sep-2.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="700"/>
                     </file>
-                    <attr name="sep-2.instance/org-openide-actions-DeleteAction.instance" boolvalue="true"/>
-                    <file name="org-openide-actions-DeleteAction.instance"/>
-                    <attr name="org-openide-actions-DeleteAction.instance/org-openide-actions-RenameAction.instance" boolvalue="true"/>
-                    <file name="org-openide-actions-RenameAction.instance"/>
-                    <attr name="org-openide-actions-RenameAction.instance/sep-3.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-DeleteAction.instance">
+                        <attr name="position" intvalue="800"/>
+                    </file>
+                    <file name="org-openide-actions-RenameAction.instance">
+                        <attr name="position" intvalue="900"/>
+                    </file>
                     <file name="sep-3.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1000"/>
                     </file>
-                    <attr name="sep-3.instance/org-openide-actions-SaveAsTemplateAction.instance" boolvalue="true"/>
-                    <file name="org-openide-actions-SaveAsTemplateAction.instance"/>
-                    <attr name="org-openide-actions-SaveAsTemplateAction.instance/sep-4.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-SaveAsTemplateAction.instance">
+                        <attr name="position" intvalue="1100"/>
+                    </file>
                     <file name="sep-4.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1200"/>
                     </file>
-                    <attr name="sep-4.instance/org-openide-actions-ToolsAction.instance" boolvalue="true"/>
-                    <file name="org-openide-actions-ToolsAction.instance"/>
-                    <attr name="org-openide-actions-ToolsAction.instance/org-openide-actions-PropertiesAction.instance" boolvalue="true"/>
-                    <file name="org-openide-actions-PropertiesAction.instance"/>
+                    <file name="org-openide-actions-ToolsAction.instance">
+                        <attr name="position" intvalue="1300"/>
+                    </file>
+                    <file name="org-openide-actions-PropertiesAction.instance">
+                        <attr name="position" intvalue="1400"/>
+                    </file>
                 </folder>
             </folder>
         </folder>

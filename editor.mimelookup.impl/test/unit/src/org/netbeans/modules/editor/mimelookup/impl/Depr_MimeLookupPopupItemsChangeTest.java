@@ -44,11 +44,12 @@ public class Depr_MimeLookupPopupItemsChangeTest extends NbTestCase {
     private static final int WAIT_TIME = 5000;
     private String fsstruct [];
     
-    public Depr_MimeLookupPopupItemsChangeTest(java.lang.String testName) {
+    public Depr_MimeLookupPopupItemsChangeTest(String testName) {
         super(testName);
     }
     
-    protected void setUp() throws java.lang.Exception {
+    protected void setUp() throws Exception {
+        clearWorkDir();
         fsstruct = new String [] {
             "Editors/Popup/org-openide-actions-CutAction.instance", //NOI18N
             "Editors/Popup/org-openide-actions-CopyAction.instance", //NOI18N

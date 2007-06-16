@@ -26,18 +26,19 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.SyncFailedException;
-import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLStreamHandler;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Dictionary;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
@@ -53,6 +54,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileSystemView;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.TopologicalSortException;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 
@@ -1544,6 +1546,54 @@ public final class FileUtil extends Object {
         } else {
             chooser.setCurrentDirectory(currentDirectory);
         }
+    }
+
+    /**
+     * Sorts some sibling file objects.
+     * <p>Normally this is done by looking for numeric file attributes named <code>position</code>
+     * on the children; children with a lower position number are placed first.
+     * Now-deprecated relative ordering attributes of the form <code>earlier/later</code> may
+     * also be used; if the above attribute has a boolean value of <code>true</code>,
+     * then the file named <code>earlier</code> will be sorted somewhere (not necessarily directly)
+     * before the file named <code>later</code>. Numeric and relative attributes may also be mixed.</p>
+     * <p>The sort is <em>stable</em> at least to the extent that if there is no ordering information
+     * whatsoever, the returned list will be in the same order as the incoming collection.</p>
+     * @param children zero or more files (or folders); must all have the same {@link FileObject#getParent}
+     * @param logWarnings true to log warnings about relative ordering attributes or other semantic problems, false to keep quiet
+     * @return a sorted list of the same children
+     * @throws IllegalArgumentException in case there are duplicates, or nulls, or the files do not have a common parent
+     * @since org.openide.filesystems 7.2
+     * @see #setOrder
+     * @see <a href="http://wiki.netbeans.org/wiki/view/FolderOrdering103187">Specification</a>
+     */
+    public static List<FileObject> getOrder(Collection<FileObject> children, boolean logWarnings) throws IllegalArgumentException {
+        return Ordering.getOrder(children, logWarnings);
+    }
+
+    /**
+     * Imposes an order on some sibling file objects.
+     * After this call, if no other changes have intervened,
+     * {@link #getOrder} on these files should return a list in the same order.
+     * Beyond the fact that this call may manipulate the <code>position</code> attributes
+     * of files in the folder, and may delete deprecated relative ordering attributes on the folder,
+     * the exact means of setting the order is unspecified.
+     * @param children a list of zero or more files (or folders); must all have the same {@link FileObject#getParent}
+     * @throws IllegalArgumentException in case there are duplicates, or nulls, or the files do not have a common parent
+     * @throws IOException if new file attributes to order the children cannot be written out
+     * @since org.openide.filesystems 7.2
+     */
+    public static void setOrder(List<FileObject> children) throws IllegalArgumentException, IOException {
+        Ordering.setOrder(children);
+    }
+
+    /**
+     * Checks whether a change in a given file attribute would affect the result of {@link #getOrder}.
+     * @param an attribute change event
+     * @return true if the attribute in question might affect the order of some folder
+     * @since org.openide.filesystems 7.2
+     */
+    public static boolean affectsOrder(FileAttributeEvent event) {
+        return Ordering.affectsOrder(event);
     }
 
     static boolean assertDeprecatedMethod() {

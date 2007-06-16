@@ -30,13 +30,14 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="Menu">
         <folder name="Window">
             <folder name="Other">
-                <attr name="ShowGlobalActionTableAction.shadow/CssPreviewAction.shadow" boolvalue="true"/>
+                <attr name="position" intvalue="1700"/>
                 <file name="CssPreviewAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-css-visual-ui-preview-CssPreviewAction.instance"/>
+                    <attr name="position" intvalue="700"/>
                 </file>
-                <attr name="CssPreviewAction.shadow/StyleBuilderAction.shadow" boolvalue="true"/>
                 <file name="StyleBuilderAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-css-visual-ui-StyleBuilderAction.instance"/>
+                    <attr name="position" intvalue="800"/>
                 </file>
             </folder>
         </folder>
@@ -68,8 +69,8 @@ Microsystems, Inc. All Rights Reserved.
     
     <folder name="Templates">
         <folder name="Other">
-            <attr name="xhtml.xhtml/CascadeStyleSheet.css" boolvalue="true"/>
             <file name="CascadeStyleSheet.css" url="CascadeStyleSheet.css.template">
+                <attr name="position" intvalue="800"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.css.resources.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/css/resources/css.gif"/>
@@ -91,39 +92,49 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="text">
             <folder name="x-css">
                 <folder name="Actions">
-                    <file name="org-openide-actions-OpenAction.instance"/>
-                    <attr name="org-openide-actions-OpenAction.instance/org-openide-actions-FileSystemAction.instance" boolvalue="true"/>
-                    <file name="org-openide-actions-FileSystemAction.instance"/>
-                    <attr name="org-openide-actions-FileSystemAction.instance/sep-1.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-OpenAction.instance">
+                        <attr name="position" intvalue="100"/>
+                    </file>
+                    <file name="org-openide-actions-FileSystemAction.instance">
+                        <attr name="position" intvalue="200"/>
+                    </file>
                     <file name="sep-1.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="300"/>
                     </file>
-                    <attr name="sep-1.instance/org-openide-actions-CutAction.instance" boolvalue="true"/>
-                    <file name="org-openide-actions-CutAction.instance"/>
-                    <attr name="org-openide-actions-CutAction.instance/org-openide-actions-CopyAction.instance" boolvalue="true"/>
-                    <file name="org-openide-actions-CopyAction.instance"/>
-                    <attr name="org-openide-actions-CopyAction.instance/sep-2.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-CutAction.instance">
+                        <attr name="position" intvalue="400"/>
+                    </file>
+                    <file name="org-openide-actions-CopyAction.instance">
+                        <attr name="position" intvalue="500"/>
+                    </file>
                     <file name="sep-2.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="600"/>
                     </file>
-                    <attr name="sep-2.instance/org-openide-actions-DeleteAction.instance" boolvalue="true"/>
-                    <file name="org-openide-actions-DeleteAction.instance"/>
-                    <attr name="org-openide-actions-DeleteAction.instance/org-openide-actions-RenameAction.instance" boolvalue="true"/>
-                    <file name="org-openide-actions-RenameAction.instance"/>
-                    <attr name="org-openide-actions-RenameAction.instance/sep-3.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-DeleteAction.instance">
+                        <attr name="position" intvalue="700"/>
+                    </file>
+                    <file name="org-openide-actions-RenameAction.instance">
+                        <attr name="position" intvalue="800"/>
+                    </file>
                     <file name="sep-3.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="900"/>
                     </file>
-                    <attr name="sep-3.instance/org-openide-actions-SaveAsTemplateAction.instance" boolvalue="true"/>
-                    <file name="org-openide-actions-SaveAsTemplateAction.instance"/>
-                    <attr name="org-openide-actions-SaveAsTemplateAction.instance/sep-4.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-SaveAsTemplateAction.instance">
+                        <attr name="position" intvalue="1000"/>
+                    </file>
                     <file name="sep-4.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1100"/>
                     </file>
-                    <attr name="sep-4.instance/org-openide-actions-ToolsAction.instance" boolvalue="true"/>
-                    <file name="org-openide-actions-ToolsAction.instance"/>
-                    <attr name="org-openide-actions-ToolsAction.instance/org-openide-actions-PropertiesAction.instance" boolvalue="true"/>
-                    <file name="org-openide-actions-PropertiesAction.instance"/>
+                    <file name="org-openide-actions-ToolsAction.instance">
+                        <attr name="position" intvalue="1200"/>
+                    </file>
+                    <file name="org-openide-actions-PropertiesAction.instance">
+                        <attr name="position" intvalue="1300"/>
+                    </file>
                 </folder>
             </folder>
         </folder>
@@ -143,30 +154,37 @@ Microsystems, Inc. All Rights Reserved.
                 <folder name="Popup">
                     <file name="CssSeparator1.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="4100"/>
                     </file>
-                    <attr name="org-openide-actions-PasteAction.instance/CssSeparator1.instance" boolvalue="true"/>
-                    <file name="create-rule"/>
-                    <attr name="CssSeparator1.instance/create-rule" boolvalue="true"/>
-                    <file name="check-style"/>
-                    <attr name="create-rule/check-style" boolvalue="true"/>
-                    <file name="copy-html-style"/>
-                    <attr name="check-style/copy-html-style" boolvalue="true"/>
-                    <file name="copy-xml-style"/>
-                    <attr name="copy-html-style/copy-xml-style" boolvalue="true"/>
+                    <file name="create-rule">
+                        <attr name="position" intvalue="4200"/>
+                    </file>
+                    <file name="check-style">
+                        <attr name="position" intvalue="4300"/>
+                    </file>
+                    <file name="copy-html-style">
+                        <attr name="position" intvalue="4400"/>
+                    </file>
+                    <file name="copy-xml-style">
+                        <attr name="position" intvalue="4500"/>
+                    </file>
                     <file name="SeparatorFolding.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="4600"/>
                     </file>
-                    <attr name="copy-xml-style/SeparatorFolding.instance" boolvalue="true"/>
-                    <file name="generate-fold-popup"/>
-                    <attr name="SeparatorFolding.instance/generate-fold-popup" boolvalue="true"/>
-                    <file name="format"/>
-                    <attr name="generate-fold-popup/format" boolvalue="true"/>
-                </folder>
+                    <file name="generate-fold-popup">
+                        <attr name="position" intvalue="4700"/>
+                    </file>
+                    <file name="format">
+                        <attr name="position" intvalue="4800"/>
+                    </file>
+                    </folder>
                 <folder name="Toolbars">
                     <folder name="Default">
-                        <file name="create-rule"/>
-                        <attr name="create-rule/Separator1.instance" boolvalue="true"/>
-                    </folder>
+                        <file name="create-rule">
+                            <attr name="position" intvalue="900"/>
+                        </file>
+                        </folder>
                 </folder>
             </folder>
         </folder>

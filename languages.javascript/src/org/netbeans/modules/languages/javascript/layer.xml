@@ -30,17 +30,18 @@ Microsystems, Inc. All Rights Reserved.
     </folder>
     <folder name="Templates">
         <folder name="JSP_Servlet">
-            <attr name="CascadeStyleSheet.css/EmptyJavaScript.js" boolvalue="true"/>
-            <attr name="EmptyJavaScript.js/EmptyJSON.json" boolvalue="true"/>
+            <attr name="position" intvalue="900"/>
             <file name="EmptyJSON.json" url="EmptyJSON.json">
-                <attr name="template" boolvalue="true" />
+                <attr name="position" intvalue="700"/>
+                <attr name="template" boolvalue="true"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.languages.javascript.Bundle"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/languages/javascript/EmptyJSONFileDescription.html"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/languages/javascript/JavaScript.png"/>
                 <attr name="templateCategory" stringvalue="web-types"/>
             </file>            
             <file name="EmptyJavaScript.js" url="EmptyJavaScript.js">
-                <attr name="template" boolvalue="true" />
+                <attr name="position" intvalue="300"/>
+                <attr name="template" boolvalue="true"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.languages.javascript.Bundle"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/languages/javascript/EmptyJavaScriptFileDescription.html"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/languages/javascript/JavaScript.png"/>
@@ -49,14 +50,14 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
         <folder name="Other">
             <file name="EmptyJavaScript.js" url="EmptyJavaScript.js">
-                <attr name="template" boolvalue="true" />
+                <attr name="template" boolvalue="true"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.languages.javascript.Bundle"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/languages/javascript/EmptyJavaScriptFileDescription.html"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/languages/javascript/JavaScript.png"/>
                 <attr name="templateCategory" stringvalue="simple-files"/>
             </file>
             <file name="EmptyJSON.json" url="EmptyJSON.json">
-                <attr name="template" boolvalue="true" />
+                <attr name="template" boolvalue="true"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.languages.javascript.Bundle"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/languages/javascript/EmptyJSONFileDescription.html"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/languages/javascript/JavaScript.png"/>
@@ -77,27 +78,29 @@ Microsystems, Inc. All Rights Reserved.
                 <folder name="Popup">
                     <file name="org-netbeans-modules-refactoring-api-ui-WhereUsedAction.instance">
                          <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.whereUsedAction"/>
+                        <attr name="position" intvalue="700"/>
                     </file>
                     <file name="org-netbeans-modules-refactoring-api-ui-RSMEditorAction.instance">
                          <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.editorSubmenuAction"/>
+                        <attr name="position" intvalue="800"/>
                     </file>
                     <file name="SeparatorBeforeWhereUsedAction.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="600"/>
                     </file>
                     <file name="SeparatorAfterSelectInPopupAction.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                    </file>
-                    <attr name="SeparatorBeforeWhereUsedAction.instance/org-netbeans-modules-refactoring-api-ui-WhereUsedAction.instance" boolvalue="true"/>
-                    <attr name="org-netbeans-modules-refactoring-api-ui-WhereUsedAction.instance/org-netbeans-modules-refactoring-api-ui-RSMEditorAction.instance" boolvalue="true"/>        
-                    <attr name="org-netbeans-modules-refactoring-api-ui-RSMEditorAction.instance/SeparatorAfterSelectInPopupAction.instance" boolvalue="true"/>
-                </folder>
+                        <attr name="position" intvalue="900"/>
+                    </file>        
+                    </folder>
                 <folder name="FoldManager">
                     <file name="org-netbeans-modules-languages-features-LanguagesFoldManager$Factory.instance"/>
                 </folder>
                 <folder name="SideBar">
-                    <file name="org-netbeans-modules-languages-features-CodeFoldingSideBarFactory.instance"/>
-                    <attr name="org-netbeans-editor-GlyphGutter.instance/org-netbeans-modules-languages-features-CodeFoldingSideBarFactory.instance" boolvalue="true"/>
-                </folder>
+                    <file name="org-netbeans-modules-languages-features-CodeFoldingSideBarFactory.instance">
+                        <attr name="position" intvalue="1500"/>
+                    </file>
+                    </folder>
                 <file name="Settings.settings" url="LanguagesOptions.settings"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.languages.javascript.Bundle"/>
                 <file name="language.nbs" url="JavaScript.nbs">
@@ -114,9 +117,10 @@ Microsystems, Inc. All Rights Reserved.
                     <file name="org-netbeans-modules-languages-features-LanguagesFoldManager$Factory.instance"/>
                 </folder>
                 <folder name="SideBar">
-                    <file name="org-netbeans-modules-languages-features-CodeFoldingSideBarFactory.instance"/>
-                    <attr name="org-netbeans-editor-GlyphGutter.instance/org-netbeans-modules-languages-features-CodeFoldingSideBarFactory.instance" boolvalue="true"/>
-                </folder>
+                    <file name="org-netbeans-modules-languages-features-CodeFoldingSideBarFactory.instance">
+                        <attr name="position" intvalue="1500"/>
+                    </file>
+                    </folder>
                 <file name="Settings.settings" url="LanguagesOptions.settings"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.languages.javascript.Bundle"/>
                 <file name="language.nbs" url="JSON.nbs">

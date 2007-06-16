@@ -39,19 +39,22 @@ Microsystems, Inc. All Rights Reserved.
 	    <folder name="x-c++">
 		<folder name="Toolbars">
 		    <folder name="Default">
-			<file name="org-netbeans-modules-cnd-qnavigator-NavigateAction.instance"/>
-			<attr name="org-netbeans-modules-cnd-qnavigator-NavigateAction.instance/Separator0.instance" boolvalue="true"/>
-
-                        <attr name="stop-macro-recording/Separator-before-comment-c++.instance" boolvalue="true"/>
-                        <file name="Separator-before-comment-c++.instance">
-                            <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+			<file name="org-netbeans-modules-cnd-qnavigator-NavigateAction.instance">
+                            <attr name="position" intvalue="900"/>
                         </file>
 
-			<attr name="Separator-before-comment-c++.instance/comment" boolvalue="true"/>
-			<file name="comment"/>
+                        <file name="Separator-before-comment-c++.instance">
+                            <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                            <attr name="position" intvalue="19100"/>
+                        </file>
 
-			<attr name="comment/uncomment" boolvalue="true"/>
-			<file name="uncomment"/>                                                
+			<file name="comment">
+                            <attr name="position" intvalue="19200"/>
+                        </file>
+
+			<file name="uncomment">
+                            <attr name="position" intvalue="19300"/>
+                        </file>                                                
 		    </folder>
 		</folder>
 	    </folder>
@@ -63,23 +66,25 @@ Microsystems, Inc. All Rights Reserved.
                 -->
 		<folder name="Toolbars">
 		    <folder name="Default">
-			<file name="org-netbeans-modules-cnd-qnavigator-NavigateAction.instance"/>
-			<attr name="org-netbeans-modules-cnd-qnavigator-NavigateAction.instance/Separator0.instance" boolvalue="true"/>
-
-                        <attr name="stop-macro-recording/Separator-before-comment-c.instance" boolvalue="true"/>
-                        <file name="Separator-before-comment-c.instance">
-                            <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+			<file name="org-netbeans-modules-cnd-qnavigator-NavigateAction.instance">
+                            <attr name="position" intvalue="900"/>
                         </file>
 
-			<attr name="Separator-before-comment-c.instance/comment" boolvalue="true"/>
-			<file name="comment"/>
+                        <file name="Separator-before-comment-c.instance">
+                            <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                            <attr name="position" intvalue="19100"/>
+                        </file>
 
-			<attr name="comment/uncomment" boolvalue="true"/>
-			<file name="uncomment"/>                                                
+			<file name="comment">
+                            <attr name="position" intvalue="19200"/>
+                        </file>
+
+			<file name="uncomment">
+                            <attr name="position" intvalue="19300"/>
+                        </file>                                                
 		    </folder>
 		</folder>
 	    </folder>
 	</folder>
     </folder>
 </filesystem>
-

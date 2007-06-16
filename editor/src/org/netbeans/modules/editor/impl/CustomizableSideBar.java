@@ -268,7 +268,11 @@ public final class CustomizableSideBar {
         private boolean scrollable;
         
         SideBarPosition(FileObject fo) {
-            Object position = fo.getAttribute("position"); // NOI18N
+            Object position = fo.getAttribute("location"); // NOI18N
+            if (position == null) {
+                // Compatibility:
+                position = fo.getAttribute("position"); // NOI18N
+            }
             
             if (position != null && position instanceof String) {
                 String positionName = (String) position;

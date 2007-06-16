@@ -20,15 +20,12 @@ Microsystems, Inc. All Rights Reserved.
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
     <folder name="Menu">
-	<attr name="Window/Help" boolvalue="true"/>
-        <folder name="Help">
+	<folder name="Help">
           <file name="master-help.xml" url="master-help.xml">
               <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javahelp.resources.Bundle"/>
           </file>
-          <attr name="master-help.xml/HelpShortcuts" boolvalue="true"/>
           <attr name="HelpShortcuts\SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javahelp.resources.Bundle"/>
-          <attr name="HelpShortcuts/Separator1.instance" boolvalue="true"/>
-        </folder>
+          </folder>
     </folder>
     <folder name="Actions">
         <folder name="Help">
@@ -54,62 +51,40 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="xml">
         <folder name="entities">
             <folder name="Sun_Microsystems_Inc_">
-                <file name="DTD_JavaHelp_HelpSet_Version_1_0"
-                      url="nbres:/org/netbeans/modules/javahelp/resources/helpset_1_0.dtd">
-                    <attr name="hint.originalPublicID"
-                          stringvalue="-//Sun Microsystems Inc.//DTD JavaHelp HelpSet Version 1.0//EN"/>
+                <file name="DTD_JavaHelp_HelpSet_Version_1_0" url="nbres:/org/netbeans/modules/javahelp/resources/helpset_1_0.dtd">
+                    <attr name="hint.originalPublicID" stringvalue="-//Sun Microsystems Inc.//DTD JavaHelp HelpSet Version 1.0//EN"/>
                 </file>
-                <file name="DTD_JavaHelp_Map_Version_1_0"
-                      url="nbres:/org/netbeans/modules/javahelp/resources/map_1_0.dtd">
-                    <attr name="hint.originalPublicID"
-                          stringvalue="-//Sun Microsystems Inc.//DTD JavaHelp Map Version 1.0//EN"/>
+                <file name="DTD_JavaHelp_Map_Version_1_0" url="nbres:/org/netbeans/modules/javahelp/resources/map_1_0.dtd">
+                    <attr name="hint.originalPublicID" stringvalue="-//Sun Microsystems Inc.//DTD JavaHelp Map Version 1.0//EN"/>
                 </file>
-                <file name="DTD_JavaHelp_TOC_Version_1_0"
-                      url="nbres:/org/netbeans/modules/javahelp/resources/toc_1_0.dtd">
-                    <attr name="hint.originalPublicID"
-                          stringvalue="-//Sun Microsystems Inc.//DTD JavaHelp TOC Version 1.0//EN"/>
+                <file name="DTD_JavaHelp_TOC_Version_1_0" url="nbres:/org/netbeans/modules/javahelp/resources/toc_1_0.dtd">
+                    <attr name="hint.originalPublicID" stringvalue="-//Sun Microsystems Inc.//DTD JavaHelp TOC Version 1.0//EN"/>
                 </file>
-                <file name="DTD_JavaHelp_Index_Version_1_0"
-                      url="nbres:/org/netbeans/modules/javahelp/resources/index_1_0.dtd">
-                    <attr name="hint.originalPublicID"
-                          stringvalue="-//Sun Microsystems Inc.//DTD JavaHelp Index Version 1.0//EN"/>
+                <file name="DTD_JavaHelp_Index_Version_1_0" url="nbres:/org/netbeans/modules/javahelp/resources/index_1_0.dtd">
+                    <attr name="hint.originalPublicID" stringvalue="-//Sun Microsystems Inc.//DTD JavaHelp Index Version 1.0//EN"/>
                 </file>
-                <file name="DTD_JavaHelp_HelpSet_Version_2_0"
-                      url="nbres:/org/netbeans/modules/javahelp/resources/helpset_2_0.dtd">
-                    <attr name="hint.originalPublicID"
-                          stringvalue="-//Sun Microsystems Inc.//DTD JavaHelp HelpSet Version 2.0//EN"/>
+                <file name="DTD_JavaHelp_HelpSet_Version_2_0" url="nbres:/org/netbeans/modules/javahelp/resources/helpset_2_0.dtd">
+                    <attr name="hint.originalPublicID" stringvalue="-//Sun Microsystems Inc.//DTD JavaHelp HelpSet Version 2.0//EN"/>
                 </file>
-                <file name="DTD_JavaHelp_Map_Version_2_0"
-                      url="nbres:/org/netbeans/modules/javahelp/resources/map_2_0.dtd">
-                    <attr name="hint.originalPublicID"
-                          stringvalue="-//Sun Microsystems Inc.//DTD JavaHelp Map Version 2.0//EN"/>
+                <file name="DTD_JavaHelp_Map_Version_2_0" url="nbres:/org/netbeans/modules/javahelp/resources/map_2_0.dtd">
+                    <attr name="hint.originalPublicID" stringvalue="-//Sun Microsystems Inc.//DTD JavaHelp Map Version 2.0//EN"/>
                 </file>
-                <file name="DTD_JavaHelp_TOC_Version_2_0"
-                      url="nbres:/org/netbeans/modules/javahelp/resources/toc_2_0.dtd">
-                    <attr name="hint.originalPublicID"
-                          stringvalue="-//Sun Microsystems Inc.//DTD JavaHelp TOC Version 2.0//EN"/>
+                <file name="DTD_JavaHelp_TOC_Version_2_0" url="nbres:/org/netbeans/modules/javahelp/resources/toc_2_0.dtd">
+                    <attr name="hint.originalPublicID" stringvalue="-//Sun Microsystems Inc.//DTD JavaHelp TOC Version 2.0//EN"/>
                 </file>
-                <file name="DTD_JavaHelp_Index_Version_2_0"
-                      url="nbres:/org/netbeans/modules/javahelp/resources/index_2_0.dtd">
-                    <attr name="hint.originalPublicID"
-                          stringvalue="-//Sun Microsystems Inc.//DTD JavaHelp Index Version 2.0//EN"/>
+                <file name="DTD_JavaHelp_Index_Version_2_0" url="nbres:/org/netbeans/modules/javahelp/resources/index_2_0.dtd">
+                    <attr name="hint.originalPublicID" stringvalue="-//Sun Microsystems Inc.//DTD JavaHelp Index Version 2.0//EN"/>
                 </file>
-                <file name="DTD_JavaHelp_Favorites_Version_2_0"
-                      url="nbres:/org/netbeans/modules/javahelp/resources/favorites_2_0.dtd">
-                    <attr name="hint.originalPublicID"
-                          stringvalue="-//Sun Microsystems Inc.//DTD JavaHelp Favorites Version 2.0//EN"/>
+                <file name="DTD_JavaHelp_Favorites_Version_2_0" url="nbres:/org/netbeans/modules/javahelp/resources/favorites_2_0.dtd">
+                    <attr name="hint.originalPublicID" stringvalue="-//Sun Microsystems Inc.//DTD JavaHelp Favorites Version 2.0//EN"/>
                 </file>
             </folder>
             <folder name="NetBeans">
-                <file name="DTD_JavaHelp_Help_Set_Reference_1_0"
-                      url="nbres:/org/netbeans/modules/javahelp/resources/helpsetref-1_0.dtd">
-                    <attr name="hint.originalPublicID"
-                          stringvalue="-//NetBeans//DTD JavaHelp Help Set Reference 1.0//EN"/>
+                <file name="DTD_JavaHelp_Help_Set_Reference_1_0" url="nbres:/org/netbeans/modules/javahelp/resources/helpsetref-1_0.dtd">
+                    <attr name="hint.originalPublicID" stringvalue="-//NetBeans//DTD JavaHelp Help Set Reference 1.0//EN"/>
                 </file>
-                <file name="DTD_Help_Context_1_0"
-                      url="nbres:/org/netbeans/modules/javahelp/resources/helpcontext-1_0.dtd">
-                    <attr name="hint.originalPublicID"
-                          stringvalue="-//NetBeans//DTD Help Context 1.0//EN"/>
+                <file name="DTD_Help_Context_1_0" url="nbres:/org/netbeans/modules/javahelp/resources/helpcontext-1_0.dtd">
+                    <attr name="hint.originalPublicID" stringvalue="-//NetBeans//DTD Help Context 1.0//EN"/>
                 </file>
             </folder>
         </folder>

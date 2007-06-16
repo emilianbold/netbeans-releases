@@ -408,20 +408,51 @@ public final class CreatedModifiedFiles {
     }
     
     /**
-     * Order two entries in a project layer. i.e. creates an ordering
-     * <em>&lt;attr&gt;</em> element.
+     * Order a new entry in a project layer between two others.
      *
-     * @param layerPath folder path in a project's layer. Folders which don't
-     *        exist yet will be created. (e.g. <em>Loaders/text/x-java/Actions</em>).
-     * @param precedingItemName item to be before <em>followingItemName</em>
-     * @param followingItemName item to be after <em>precedingItemName</em>
+     * @param layerPath folder path in a project's layer. (e.g. <em>Loaders/text/x-java/Actions</em>).
+     * @param precedingItemName item to be before <em>newItemName</em> (may be null)
+     * @param newItemName the new item (must already exist!)
+     * @param followingItemName item to be after <em>newItemName</em> (may be null)
      */
-    public Operation orderLayerEntry(final String layerPath, final String precedingItemName,
+    public Operation orderLayerEntry(final String layerPath, final String precedingItemName, final String newItemName,
             final String followingItemName) {
         return layerModifications(new LayerOperation() {
             public void run(FileSystem layer) throws IOException {
-                FileObject f = FileUtil.createFolder(layer.getRoot(), layerPath);
-                f.setAttribute(precedingItemName + '/' + followingItemName, Boolean.TRUE);
+                FileObject f = layer.findResource(layerPath);
+                if (f == null) {
+                    throw new IOException("No such folder " + layerPath);
+                }
+                Integer beforePos = getPosition(f, precedingItemName);
+                Integer afterPos = getPosition(f, followingItemName);
+                if (beforePos != null && afterPos != null) {
+                    // won't work well if afterPos == beforePos + 1, but oh well
+                    f.getFileObject(newItemName).setAttribute("position", (beforePos + afterPos) / 2); // NOI18N
+                } else if (beforePos != null) {
+                    f.getFileObject(newItemName).setAttribute("position", beforePos + 100); // NOI18N
+                } else if (afterPos != null) {
+                    f.getFileObject(newItemName).setAttribute("position", afterPos - 100); // NOI18N
+                } else {
+                    // Fallback esp. for old platforms.
+                    if (precedingItemName != null) {
+                        f.setAttribute(precedingItemName + '/' + newItemName, true);
+                    }
+                    if (followingItemName != null) {
+                        f.setAttribute(newItemName + '/' + followingItemName, true);
+                    }
+                }
+            }
+            private Integer getPosition(FileObject folder, String name) {
+                if (name == null) {
+                    return null;
+                }
+                FileObject f = folder.getFileObject(name);
+                if (f == null) {
+                    return null;
+                }
+                Object pos = f.getAttribute("position"); // NOI18N
+                // ignore floats for now...
+                return pos instanceof Integer ? (Integer) pos : null;
             }
         }, Collections.<String>emptySet());
     }

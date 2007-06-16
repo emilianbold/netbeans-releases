@@ -17,16 +17,14 @@ The Original Software is NetBeans. The Initial Developer of the Original
 Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
-
-<!DOCTYPE filesystem PUBLIC '-//NetBeans//DTD Filesystem 1.1//EN' 'http://www.netbeans.org/dtds/filesystem-1_1.dtd'>
-
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
     <folder name="Menu">
         <folder name="Help">
-            <file name="org-netbeans-modules-welcome-ShowWelcomeAction.instance" />
-            <attr name="org-netbeans-modules-welcome-ShowWelcomeAction.instance/org-netbeans-core-actions-AboutAction.instance" boolvalue="true"/>
-	    <attr name="utilities-sep-5.instance/org-netbeans-modules-welcome-ShowWelcomeAction.instance" boolvalue="true"/>
-        </folder>
+            <file name="org-netbeans-modules-welcome-ShowWelcomeAction.instance">
+                <attr name="position" intvalue="1200"/>
+            </file>
+            </folder>
     </folder>
     <folder name="Actions">
         <folder name="Help">
@@ -40,11 +38,11 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="Windows2">
         <folder name="Modes">
             <folder name="editor">
-                <file name="Welcome.wstcref" url="Welcome.wstcref" />
+                <file name="Welcome.wstcref" url="Welcome.wstcref"/>
             </folder>
         </folder>
         <folder name="Components">
-            <file name="Welcome.settings" url="Welcome.settings" />
+            <file name="Welcome.settings" url="Welcome.settings"/>
         </folder>
    </folder>
  
@@ -53,34 +51,36 @@ Microsystems, Inc. All Rights Reserved.
 
             <file name="quickstart.url" url="nbresloc:/org/netbeans/modules/welcome/resources/quickstart.url">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.welcome.resources.Bundle"/>
+                <attr name="position" intvalue="100"/>
             </file>
 
             <file name="whatsnew.url" url="nbresloc:/org/netbeans/modules/welcome/resources/whatsnew.url">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.welcome.resources.Bundle"/>
+                <attr name="position" intvalue="300"/>
             </file>
 
             <folder name="Resources">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.welcome.resources.Bundle"/>
 
+                <attr name="position" intvalue="200"/>
                 <file name="docsandsupport.url" url="nbresloc:/org/netbeans/modules/welcome/resources/docsandsupport.url">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.welcome.resources.Bundle"/>
+                    <attr name="position" intvalue="100"/>
                 </file>
                 <file name="mailinglists.url" url="nbresloc:/org/netbeans/modules/welcome/resources/mailinglists.url">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.welcome.resources.Bundle"/>
+                    <attr name="position" intvalue="200"/>
                 </file>
                 <file name="platform.url" url="nbresloc:/org/netbeans/modules/welcome/resources/platform.url">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.welcome.resources.Bundle"/>
+                    <attr name="position" intvalue="300"/>
                 </file>
 
 
-                <attr name="docsandsupport.url/mailinglists.url" boolvalue="true"/>
-                <attr name="mailinglists.url/platform.url" boolvalue="true"/>
-            </folder>
+                </folder>
 
 
-	    <attr name="quickstart.url/whatsnew.url" boolvalue="true"/>
-	    <attr name="whatsnew.url/AddOns" boolvalue="true"/>
-	    <attr name="AddOns/Resources" boolvalue="true"/>
+	    
             
         </folder>
     </folder>
@@ -94,7 +94,7 @@ Microsystems, Inc. All Rights Reserved.
 
         <folder name="entities">
             <folder name="Netscape_Communications">
-                <file name="DTD_RSS_0_91" url="rss-0_91.dtd" >
+                <file name="DTD_RSS_0_91" url="rss-0_91.dtd">
                     <attr name="hint.originalPublicID" stringvalue="-//Netscape Communications//DTD RSS 0.91//EN"/>
                 </file>
             </folder>
@@ -104,4 +104,3 @@ Microsystems, Inc. All Rights Reserved.
 
     </folder>
 </filesystem>
-

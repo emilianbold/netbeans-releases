@@ -18,14 +18,14 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
-
 <filesystem>
     <folder name="org-netbeans-api-project-libraries">
         <folder name="LibraryTypeProviders">
             <file name="j2se_library_provider.instance">
                 <attr name="instanceOf" stringvalue="org.netbeans.spi.project.libraries.LibraryTypeProvider"/>
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.java.j2seplatform.libraries.J2SELibraryTypeProvider" />
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.java.j2seplatform.libraries.J2SELibraryTypeProvider"/>
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.j2seplatform.libraries.J2SELibraryTypeProvider.create"/>
+                <attr name="position" intvalue="100"/>
             </file>
         </folder>
     </folder>
@@ -60,7 +60,7 @@ Microsystems, Inc. All Rights Reserved.
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.j2seplatform.resources.Bundle"/>
                         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/j2seplatform/resources/platform.gif"/>
                         <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/java/j2seplatform/resources/templates/javaplatformdefinition.html"/>
-                        <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.java.platform.wizard.PlatformInstallIterator.create" />
+                        <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.java.platform.wizard.PlatformInstallIterator.create"/>
                     </file>
                 </folder>
             </folder>
@@ -70,7 +70,7 @@ Microsystems, Inc. All Rights Reserved.
 
     <folder name="xml">
         <folder name="entities">
-            <folder name="NetBeans" >
+            <folder name="NetBeans">
                 <file name="DTD_Java_PlatformDefinition_1_0" url="nbres:/org/netbeans/modules/java/j2seplatform/platformdefinition/platformdefinition.dtd">
                     <attr name="hint.originalPublicID" stringvalue="-//NetBeans//DTD Java PlatformDefinition 1.0//EN"/>
                 </file>

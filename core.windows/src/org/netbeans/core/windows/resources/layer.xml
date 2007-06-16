@@ -19,7 +19,6 @@ Microsystems, Inc. All Rights Reserved.
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
 <!-- XML Layer for core-windows -->
-
 <filesystem>
     <!--
     Use this folder and subfolders in your XML layer to define
@@ -78,107 +77,105 @@ Microsystems, Inc. All Rights Reserved.
     </folder>
 
     <folder name="Menu">
-        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
+        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
             
-        <attr name="Edit/View" boolvalue="true" />
         <folder name="View">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
+            <attr name="position" intvalue="300"/>
             <file name="Separator1.instance">
 	        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-	    </file>
-            <attr name="Separator1.instance/org-netbeans-core-actions-HTMLViewAction.instance" boolvalue="true"/>
+	        <attr name="position" intvalue="300"/>
+            </file>
 
             <file name="Separator2.instance">
               <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                <attr name="position" intvalue="600"/>
             </file>
             
-            <attr name="org-netbeans-core-actions-HTMLViewAction.instance/Separator2.instance" boolvalue="true"/>
             
-            <file name="org-netbeans-core-windows-actions-ToolbarsListAction.instance"/>
-            <attr name="Separator2.instance/org-netbeans-core-windows-actions-ToolbarsListAction.instance" boolvalue="true" />
+            
+            <file name="org-netbeans-core-windows-actions-ToolbarsListAction.instance">
+                <attr name="position" intvalue="700"/>
+            </file>
 
             <file name="Separator3.instance">
               <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                <attr name="position" intvalue="1100"/>
             </file>
-            <attr name="org-netbeans-core-windows-actions-ToolbarsListAction.instance/Separator3.instance" boolvalue="true" />
-            <attr name="org-netbeans-modules-versioning-system-cvss-ui-actions-ShowTextAnnotationsAction.shadow/Separator3.instance" boolvalue="true" />
             
             <file name="ToggleFullScreenAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-ToggleFullScreenAction.instance" />
+                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-ToggleFullScreenAction.instance"/>
+                <attr name="position" intvalue="1200"/>
             </file>
-            <attr name="Separator3.instance/ToggleFullScreenAction.shadow" boolvalue="true" />
-        </folder>
+            </folder>
         
         <folder name="GoTo">
             <file name="org-netbeans-core-windows-actions-RecentViewListAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-RecentViewListAction.instance"/>
+                <attr name="position" intvalue="600"/>
             </file>
-            <attr name="org-netbeans-core-windows-actions-RecentViewListAction.shadow/core-windows-SeparatorAfterRecentList.instance" boolvalue="true"/>
 
             <file name="core-windows-SeparatorAfterRecentList.instance">
                 <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                <attr name="position" intvalue="700"/>
             </file>
                         
         </folder>
 
-        <attr name="Tools/Window" boolvalue="true"/>
         <folder name="Window">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
 
-            <attr name="Output/SwitchToRecentDocumentAction.shadow" boolvalue="true"/>
-            <attr name="Debug/SwitchToRecentDocumentAction.shadow" boolvalue="true"/>
-            <attr name="Other/SwitchToRecentDocumentAction.shadow" boolvalue="true"/>
+            <attr name="position" intvalue="1200"/>
             <file name="SwitchToRecentDocumentAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-SwitchToRecentDocumentAction.instance"/>
+                <attr name="position" intvalue="1800"/>
             </file>
-            <attr name="SwitchToRecentDocumentAction.shadow/ProgressListAction.shadow" boolvalue="true"/>
-            <attr name="ProgressListAction.shadow/Separator3.instance" boolvalue="true"/>
-            <attr name="Debug/Separator3.instance" boolvalue="true"/>
             <file name="Separator3.instance">
 	        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-	    </file>
-            <attr name="Separator3.instance/CloseWindowAction.shadow" boolvalue="true"/>
+	        <attr name="position" intvalue="2000"/>
+            </file>
             <file name="CloseWindowAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-CloseWindowAction.instance"/>
+                <attr name="position" intvalue="2100"/>
             </file>
-            <attr name="CloseWindowAction.shadow/MaximizeWindowAction.shadow" boolvalue="true"/>
             <file name="MaximizeWindowAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-MaximizeWindowAction.instance"/>
+                <attr name="position" intvalue="2200"/>
             </file>
-            <attr name="MaximizeWindowAction.shadow/Separator4.instance" boolvalue="true"/>
-            <attr name="MaximizeWindowAction.shadow/org-netbeans-core-windows-actions-UndockAction.shadow" boolvalue="true"/>
             <file name="org-netbeans-core-windows-actions-UndockAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-UndockWindowAction.instance"/>
+                <attr name="position" intvalue="2300"/>
             </file>
-            <attr name="org-netbeans-core-windows-actions-UndockAction.shadow/Separator4.instance" boolvalue="true"/>
             <file name="Separator4.instance">
 	        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-	    </file>
-            <attr name="Separator4.instance/CloneDocumentAction.shadow" boolvalue="true"/>
+	        <attr name="position" intvalue="2400"/>
+            </file>
             <file name="CloneDocumentAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-CloneDocumentAction.instance"/>
+                <attr name="position" intvalue="2500"/>
             </file>
-            <attr name="CloneDocumentAction.shadow/CloseAllDocumentsAction.shadow" boolvalue="true"/>
             <file name="CloseAllDocumentsAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-CloseAllDocumentsAction.instance"/>
+                <attr name="position" intvalue="2600"/>
             </file>
-            <attr name="CloseAllDocumentsAction.shadow/CloseAllButThisAction.shadow" boolvalue="true"/>
             <file name="CloseAllButThisAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-CloseAllButThisAction.instance"/>
+                <attr name="position" intvalue="2700"/>
             </file>
-            <attr name="CloseAllButThisAction.shadow/DocumentsAction.shadow" boolvalue="true"/>
             <file name="DocumentsAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-DocumentsAction.instance"/>
+                <attr name="position" intvalue="2800"/>
             </file>
             
             <file name="Separator5.instance">
 	        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-	    </file>
-            <attr name="DocumentsAction.shadow/Separator5.instance" boolvalue="true" />
+	        <attr name="position" intvalue="2900"/>
+            </file>
             
-            <file name="org-netbeans-core-windows-actions-ResetWindowsAction.instance"/>
-            <attr name="Separator5.instance/org-netbeans-core-windows-actions-ResetWindowsAction.instance" boolvalue="true" />
-        </folder>
+            <file name="org-netbeans-core-windows-actions-ResetWindowsAction.instance">
+                <attr name="position" intvalue="3000"/>
+            </file>
+            </folder>
     </folder>
 
     <folder name="Toolbars">

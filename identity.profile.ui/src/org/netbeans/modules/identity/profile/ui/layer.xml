@@ -21,9 +21,10 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 <filesystem>
     <folder name="Services">
         <folder name="JavaHelp">
-            <file name="org-netbeans-modules-identity-profile-ui-resources-helpset.xml" url="resources/helpset.xml"/>
-            <attr name="org-netbeans-modules-usersguide-below-regular.txt/org-netbeans-modules-identity-profile-ui-resources-helpset.xml" boolvalue="true"/>
-        </folder>
+            <file name="org-netbeans-modules-identity-profile-ui-resources-helpset.xml" url="resources/helpset.xml">
+                <attr name="position" intvalue="2500"/>
+            </file>
+            </folder>
     </folder>
     
     <folder name="Templates">
@@ -36,4 +37,3 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
         </folder>
     </folder>
 </filesystem>
-

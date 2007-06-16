@@ -17,16 +17,15 @@ The Original Software is NetBeans. The Initial Developer of the Original
 Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
-
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
-
 <filesystem>
 
     <folder name="Services">
         <folder name="JavaHelp">
-            <file name="org-netbeans-modules-xml-schema-resources-helpset.xml" url="helpset.xml"/>
-            <attr name="org-netbeans-modules-usersguide-below-regular.txt/org-netbeans-modules-xml-schema-resources-helpset.xml" boolvalue="true"/>
-        </folder>
+            <file name="org-netbeans-modules-xml-schema-resources-helpset.xml" url="helpset.xml">
+                <attr name="position" intvalue="2000"/>
+            </file>
+            </folder>
     </folder>
     
     <!--
@@ -65,14 +64,14 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="Templates">
         <folder name="XML">
             <file name="XMLSchema.xsd" url="nbresloc:/org/netbeans/modules/xml/schema/resources/templates/XMLSchema.xml">
-                <attr name="template" boolvalue="true" />
+                <attr name="position" intvalue="500"/>
+                <attr name="template" boolvalue="true"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.schema.resources.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/schema/resources/xmlSchemaObject.gif" />
-                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/xml/schema/resources/templates/XMLSchema.html" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/schema/resources/xmlSchemaObject.gif"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/xml/schema/resources/templates/XMLSchema.html"/>
                 <attr name="templateCategory" stringvalue="XML"/>
             </file>
-            <attr name="XMLSchema.xsd/xml_entity.ent" boolvalue="true"/>
-        </folder> <!-- XML -->
+            </folder> <!-- XML -->
     </folder> <!-- Templates -->
                
 
@@ -87,7 +86,7 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="MIMEResolver">
             <file name="org-netbeans-modules-xml-schema-services-SchemaMIMEResolver.xml" url="schema-mime-resolver.xml">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.schema.resources.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/schema/resources/Schema_File.png" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/schema/resources/Schema_File.png"/>
             </file>
         </folder>
         
@@ -98,79 +97,93 @@ Microsystems, Inc. All Rights Reserved.
             <folder name="x-schema+xml">
                 <folder name="Actions">
 		    <file name="org-openide-actions-EditAction.instance_hidden"/>
-                    <file name="org-netbeans-modules-xml-schema-actions-SchemaViewOpenAction.instance"/>
-                    <file name="org-netbeans-modules-xml-schema-actions-SchemaSourceViewOpenAction.instance"/>
-                    <attr name="org-netbeans-modules-xml-schema-actions-SchemaViewOpenAction.instance/org-netbeans-modules-xml-schema-actions-SchemaSourceViewOpenAction.instance" boolvalue="true"/>
-                    <attr name="org-netbeans-modules-xml-schema-actions-SchemaSourceViewOpenAction.instance/sep-0.instance" boolvalue="true"/>
+                    <file name="org-netbeans-modules-xml-schema-actions-SchemaViewOpenAction.instance">
+                        <attr name="position" intvalue="100"/>
+                    </file>
+                    <file name="org-netbeans-modules-xml-schema-actions-SchemaSourceViewOpenAction.instance">
+                        <attr name="position" intvalue="200"/>
+                    </file>
                     <file name="sep-0.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="300"/>
                     </file>                    
-                    <attr name="sep-0.instance/org-netbeans-modules-xml-schema-actions-SchemaTransformAction.instance" boolvalue="true"/>
-                    <file name="org-netbeans-modules-xml-schema-actions-SchemaTransformAction.instance"/>                    
-                    <attr name="org-netbeans-modules-xml-schema-actions-SchemaTransformAction.instance/sep-1.instance" boolvalue="true"/>
+                    <file name="org-netbeans-modules-xml-schema-actions-SchemaTransformAction.instance">
+                        <attr name="position" intvalue="400"/>
+                    </file>                    
                     <file name="sep-1.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="500"/>
                     </file>
-                    <attr name="sep-1.instance/org-netbeans-modules-xml-core-actions-CollectXMLAction.instance" boolvalue="true"/>
-                    <file name="org-netbeans-modules-xml-core-actions-CollectXMLAction.instance"/>
-		    <attr name="org-netbeans-modules-xml-core-actions-CollectXMLAction.instance/sep-2.instance" boolvalue="true"/>
-                    <file name="sep-2.instance">
+                    <file name="org-netbeans-modules-xml-core-actions-CollectXMLAction.instance">
+                        <attr name="position" intvalue="600"/>
+                    </file>
+		    <file name="sep-2.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="700"/>
                     </file> 
-                    <attr name="sep-2.instance/org-netbeans-modules-xml-schema-refactoring-query-actions-QueryAction.instance" boolvalue="true"/>
-                    <file name="org-netbeans-modules-xml-schema-refactoring-query-actions-QueryAction.instance"/>
-		    <attr name="org-netbeans-modules-xml-schema-refactoring-query-actions-QueryAction.instance/sep-3.instance" boolvalue="true"/>
-                    <file name="sep-3.instance">
+                    <file name="org-netbeans-modules-xml-schema-refactoring-query-actions-QueryAction.instance">
+                        <attr name="position" intvalue="800"/>
+                    </file>
+		    <file name="sep-3.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="900"/>
                     </file> 
-                    <attr name="sep-3.instance/org-openide-actions-CutAction.instance" boolvalue="true"/>
-                    <file name="org-openide-actions-CutAction.instance"/>
-                    <attr name="org-openide-actions-CutAction.instance/org-openide-actions-CopyAction.instance" boolvalue="true"/>
-                    <file name="org-openide-actions-CopyAction.instance"/>
-                    <attr name="org-openide-actions-CopyAction.instance/org-openide-actions-PasteAction.instance" boolvalue="true" />
-                    <file name="org-openide-actions-PasteAction.instance"/>
-                    <attr name="org-openide-actions-PasteAction.instance/sep-4.instance" boolvalue="true" />
+                    <file name="org-openide-actions-CutAction.instance">
+                        <attr name="position" intvalue="1000"/>
+                    </file>
+                    <file name="org-openide-actions-CopyAction.instance">
+                        <attr name="position" intvalue="1100"/>
+                    </file>
+                    <file name="org-openide-actions-PasteAction.instance">
+                        <attr name="position" intvalue="1200"/>
+                    </file>
                     <file name="sep-4.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1300"/>
                     </file>
-                    <attr name="sep-4.instance/org-openide-actions-DeleteAction.instance" boolvalue="true"/>
-                    <file name="org-openide-actions-DeleteAction.instance"/>
-                    <attr name="org-openide-actions-DeleteAction.instance/RefactoringRename.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-DeleteAction.instance">
+                        <attr name="position" intvalue="1400"/>
+                    </file>
                     <file name="RefactoringRename.instance">
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.renameAction"/>
-                    </file>
-                    <attr name="RefactoringRename.instance/sep-5.instance" boolvalue="true"/>                    
+                        <attr name="position" intvalue="1500"/>
+                    </file>                    
                     <file name="sep-5.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1600"/>
                     </file>
-                    <attr name="sep-5.instance/org-openide-actions-SaveAsTemplateAction.instance" boolvalue="true"/>
-                    <file name="org-openide-actions-SaveAsTemplateAction.instance"/>
-                    <attr name="org-openide-actions-SaveAsTemplateAction.instance/sep-6.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-SaveAsTemplateAction.instance">
+                        <attr name="position" intvalue="1700"/>
+                    </file>
                     <file name="sep-6.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1800"/>
                     </file>                           
-                    <attr name="sep-6.instance/RefactoringWhereUsed.instance" boolvalue="true"/>
                     <file name="RefactoringWhereUsed.instance">
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.whereUsedAction"/>
+                        <attr name="position" intvalue="1900"/>
                     </file>                   
-                    <attr boolvalue="true" name="RefactoringWhereUsed.instance/RefactoringAll.instance"/>
                     <file name="RefactoringAll.instance">
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.popupSubmenuAction"/>
-                    </file>
-                    <attr name="RefactoringAll.instance/sep-7.instance" boolvalue="true"/>                                  
+                        <attr name="position" intvalue="2000"/>
+                    </file>                                  
                     <file name="sep-7.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="2100"/>
+                    </file>                    
+                    <file name="org-openide-actions-FileSystemAction.instance">
+                        <attr name="position" intvalue="2200"/>
                     </file>
-                    <attr name="sep-7.instance/org-openide-actions-FileSystemAction.instance" boolvalue="true"/>                    
-                    <file name="org-openide-actions-FileSystemAction.instance"/>
-                    <attr name="org-openide-actions-FileSystemAction.instance/sep-8.instance" boolvalue="true"/>
                     <file name="sep-8.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="2300"/>
                     </file>
-                    <attr name="sep-8.instance/org-openide-actions-ToolsAction.instance" boolvalue="true"/>
-                    <file name="org-openide-actions-ToolsAction.instance"/>
-                    <attr name="org-openide-actions-ToolsAction.instance/org-openide-actions-PropertiesAction.instance" boolvalue="true"/>
-                    <file name="org-openide-actions-PropertiesAction.instance"/>
+                    <file name="org-openide-actions-ToolsAction.instance">
+                        <attr name="position" intvalue="2400"/>
+                    </file>
+                    <file name="org-openide-actions-PropertiesAction.instance">
+                        <attr name="position" intvalue="2500"/>
+                    </file>
                     <file name="org-openide-actions-RenameAction.instance_hidden"/>
                 </folder>
             </folder>

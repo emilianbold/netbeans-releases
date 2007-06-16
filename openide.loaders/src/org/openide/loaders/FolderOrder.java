@@ -34,10 +34,6 @@ import org.openide.loaders.DataFolder.SortMode;
  * @author  Jaroslav Tulach
  */
 final class FolderOrder extends Object implements Comparator<DataObject> {
-    /** Separator of names of two files. The first file should be before
-     * the second one in partial ordering
-     */
-    private static final char SEP = '/';
     
     /** a static map with (FileObject, Reference (Folder))
      */
@@ -59,8 +55,6 @@ final class FolderOrder extends Object implements Comparator<DataObject> {
     private Map<String,Integer> order;
     /** file to store data in */
     private FileObject folder;
-    /** if true, partial orderings on disk should be ignored for files in the order */
-    private boolean ignorePartials;
     /** a reference to sort mode of this folder order */
     private SortMode sortMode;
     /** previous value of the order */
@@ -114,9 +108,6 @@ final class FolderOrder extends Object implements Comparator<DataObject> {
                     order.put (fo.getNameExt (), Integer.valueOf (i++));
                 }
             }
-            // Explicit order has been set, if written please clear affected
-            // order markings.
-            ignorePartials = true;
         } else {
             order = null;
         }
@@ -125,65 +116,6 @@ final class FolderOrder extends Object implements Comparator<DataObject> {
         
         
         // FolderList.changedFolderOrder (folder);
-    }
-
-    /**
-     * Get ordering constraints for this folder.
-     * Returns a map from data objects to lists of data objects they should precede.
-     * @param objects a collection of data objects known to be in the folder
-     * @return a constraint map, or null if there are no constraints
-     */
-    public synchronized Map<DataObject, List<DataObject>> getOrderingConstraints(Collection<DataObject> objects) {
-        final Set<String> partials = readPartials ();
-        if (partials.isEmpty ()) {
-            return null;
-        } else {
-            Map<String, DataObject> objectsByName = new HashMap<String, DataObject>();
-            for (DataObject d: objects) {
-                objectsByName.put(d.getPrimaryFile().getNameExt(), d);
-            }
-            Map<DataObject, List<DataObject>> m = new HashMap<DataObject, List<DataObject>>();
-            for (String constraint: partials) {
-                int idx = constraint.indexOf(SEP);
-                String a = constraint.substring(0, idx);
-                String b = constraint.substring(idx + 1);
-                if (ignorePartials && (order.containsKey(a) || order.containsKey(b))) {
-                    continue;
-                }
-                DataObject ad = objectsByName.get(a);
-                if (ad == null) {
-                    continue;
-                }
-                DataObject bd = objectsByName.get(b);
-                if (bd == null) {
-                    continue;
-                }
-                List<DataObject> l = m.get(ad);
-                if (l == null) {
-                    m.put(ad, l = new LinkedList<DataObject>());
-                }
-                l.add(bd);
-            }
-            return m;
-        }
-    }
-
-    /** Read the list of intended partial orders from disk.
-     * Each element is a string of the form "a<b" for a, b filenames
-     * with extension, where a should come before b.
-     */
-    private Set<String> readPartials () {
-        Enumeration<String> e = folder.getAttributes ();
-        Set<String> s = new HashSet<String> ();
-        while (e.hasMoreElements ()) {
-            String name = e.nextElement ();
-            if (name.indexOf (SEP) != -1) {
-                Object value = folder.getAttribute (name);
-                if ((value instanceof Boolean) && ((Boolean) value).booleanValue ())
-                    s.add (name);
-            }
-        }
-        return s;
     }
 
     /** Compares two data object or two nodes.
@@ -211,52 +143,13 @@ final class FolderOrder extends Object implements Comparator<DataObject> {
     public void write () throws IOException {
         // Let it throw the IOException:
         //if (folder.getFileSystem ().isReadOnly ()) return; // cannot write to read-only FS
-        if (order == null) {
-            // if we should clear the order
-            folder.setAttribute (DataFolder.EA_ORDER, null);
-        } else {
-            // Stores list of file names separated by /
-            java.util.Iterator<Map.Entry<String, Integer>> it = order.entrySet ().iterator ();
-            String[] filenames = new String[order.size ()];
-            while (it.hasNext ()) {
-                Map.Entry<String, Integer> en = it.next ();
-                String fo = en.getKey ();
-                int indx = en.getValue ().intValue ();
-                filenames[indx] = fo;
+        folder.setAttribute(DataFolder.EA_ORDER, null);
+        if (order != null) {
+            FileObject[] children = new FileObject[order.size()];
+            for (Map.Entry<String,Integer> entry : order.entrySet()) {
+                children[entry.getValue()] = folder.getFileObject(entry.getKey());
             }
-            StringBuffer buf = new StringBuffer (255);
-            for (int i = 0; i < filenames.length; i++) {
-                if (i > 0) {
-                    buf.append ('/');
-                }
-                buf.append (filenames[i]);
-            }
-
-            // Read *before* setting EA_ORDER, since org.netbeans.modules.apisupport.project.layers.WritableXMLFileSystem
-            // will kill off the partials when it gets that:
-            Set<String> p = ignorePartials ? readPartials() : null;
-            
-            folder.setAttribute (DataFolder.EA_ORDER, buf.toString ());
-
-            if (ignorePartials) {
-                // Reverse any existing partial orders among files explicitly
-                // mentioned in the order.
-                if (! p.isEmpty ()) {
-                    Set<String> f = new HashSet<String> ();
-                    for (String fo: order.keySet()) {
-                        f.add (fo);
-                    }
-                    for (String s: p) {
-                        int idx = s.indexOf (SEP);
-                        if (f.contains (s.substring (0, idx)) &&
-                            f.contains (s.substring (idx + 1))) {
-                            folder.setAttribute (s, null);
-                        }
-                    }
-                }
-                // Need not do this again for this order:
-                ignorePartials = false;
-            }
+            FileUtil.setOrder(Arrays.asList(children));
         }
     }
     

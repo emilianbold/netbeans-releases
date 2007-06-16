@@ -5,11 +5,10 @@
         <folder name="JavaHelp">
             <!-- Put this main helpset at the top -->
             <attr name="org-netbeans-modules-usersguide-above-regular.txt" boolvalue="true"/>
-            <attr name="org-netbeans-modules-usersguide-above-regular.txt/org-netbeans-modules-visualweb-ravehelp-rave_nbpack-helpset.xml" boolvalue="true"/>
-            <file name="org-netbeans-modules-visualweb-ravehelp-rave_nbpack-helpset.xml" url="helpsetref.xml"/>
+            <file name="org-netbeans-modules-visualweb-ravehelp-rave_nbpack-helpset.xml" url="helpsetref.xml">
+                <attr name="position" intvalue="1100"/>
+            </file>
             <!-- Ensure merging before 3rd-party helpsets -->
-            <attr name="org-netbeans-modules-visualweb-ravehelp-helpset.xml/org-netbeans-modules-usersguide-below-regular.txt" boolvalue="true"/>
-        </folder>
+            </folder>
     </folder>
 </filesystem>
-

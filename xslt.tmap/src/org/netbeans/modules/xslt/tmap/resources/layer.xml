@@ -5,41 +5,50 @@
         <folder name="text">
             <folder name="x-tmap+xml">
                 <folder name="Actions">
-                    <file name="org-openide-actions-OpenAction.instance"/>
-                    <attr name="org-openide-actions-OpenAction.instance/sep-1a.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-OpenAction.instance">
+                        <attr name="position" intvalue="100"/>
+                    </file>
                     <file name="sep-1a.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="200"/>
                     </file>
-                    <attr name="sep-1a.instance/org-openide-actions-FileSystemAction.instance" boolvalue="true"/>
-                    <file name="org-openide-actions-FileSystemAction.instance"/>
-                    <attr name="org-openide-actions-FileSystemAction.instance/sep-1.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-FileSystemAction.instance">
+                        <attr name="position" intvalue="300"/>
+                    </file>
                     <file name="sep-1.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="400"/>
                     </file>
-                    <attr name="sep-1.instance/org-netbeans-modules-xml-core-actions-CollectXMLAction.instance" boolvalue="true"/>
-                    <file name="org-netbeans-modules-xml-core-actions-CollectXMLAction.instance"/>
-                    <attr name="org-netbeans-modules-xml-core-actions-CollectXMLAction.instance/sep-2.instance" boolvalue="true" />
+                    <file name="org-netbeans-modules-xml-core-actions-CollectXMLAction.instance">
+                        <attr name="position" intvalue="500"/>
+                    </file>
                     <file name="sep-2.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="600"/>
                     </file>
-                    <attr name="sep-2.instance/org-openide-actions-CopyAction.instance" boolvalue="true"/>
-                    <file name="org-openide-actions-CopyAction.instance"/>
-                    <attr name="org-openide-actions-CopyAction.instance/org-openide-actions-PasteAction.instance" boolvalue="true"/>
-                    <file name="org-openide-actions-PasteAction.instance"/>
-                    <attr name="org-openide-actions-PasteAction.instance/sep-3.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-CopyAction.instance">
+                        <attr name="position" intvalue="700"/>
+                    </file>
+                    <file name="org-openide-actions-PasteAction.instance">
+                        <attr name="position" intvalue="800"/>
+                    </file>
                     <file name="sep-3.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="900"/>
                     </file>
-                    <attr name="sep-3.instance/org-openide-actions-SaveAsTemplateAction.instance" boolvalue="true"/>
-                    <file name="org-openide-actions-SaveAsTemplateAction.instance"/>
-                    <attr name="org-openide-actions-SaveAsTemplateAction.instance/sep-4.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-SaveAsTemplateAction.instance">
+                        <attr name="position" intvalue="1000"/>
+                    </file>
                     <file name="sep-4.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1100"/>
                     </file>
-                    <attr name="sep-4.instance/org-openide-actions-ToolsAction.instance" boolvalue="true"/>
-                    <file name="org-openide-actions-ToolsAction.instance"/>
-                    <attr name="org-openide-actions-ToolsAction.instance/org-openide-actions-PropertiesAction.instance" boolvalue="true"/>
-                    <file name="org-openide-actions-PropertiesAction.instance"/>
+                    <file name="org-openide-actions-ToolsAction.instance">
+                        <attr name="position" intvalue="1200"/>
+                    </file>
+                    <file name="org-openide-actions-PropertiesAction.instance">
+                        <attr name="position" intvalue="1300"/>
+                    </file>
                 </folder>
             </folder>
         </folder>
@@ -70,7 +79,7 @@
             <file name="TMapTemplate.xml" url="TMapTemplate.xml">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xslt.tmap.resources.Bundle"/>
                 <attr name="template" boolvalue="true"/>
-                <attr name="templateCategory" stringvalue="SOA" />
+                <attr name="templateCategory" stringvalue="SOA"/>
             </file>
         </folder>
     </folder>

@@ -22,7 +22,6 @@ package org.openide.loaders;
 import java.util.Date;
 import java.util.Enumeration;
 import org.openide.filesystems.FileObject;
-import org.openide.nodes.Node;
 
 /**
  * Compares objects in a folder.
@@ -62,18 +61,7 @@ class FolderComparator extends DataFolder.SortMode {
     /** Comparing method. Can compare two DataObjects
     * or two Nodes (if they have data object cookie)
     */
-    public int compare (Object o1, Object o2) {
-        DataObject obj1;
-        DataObject obj2;
-
-        if (o1 instanceof Node) {
-            obj1 = (DataObject)((Node)o1).getCookie (DataObject.class);
-            obj2 = (DataObject)((Node)o2).getCookie (DataObject.class);
-        } else {
-            obj1 = (DataObject)o1;
-            obj2 = (DataObject)o2;
-        }
-
+    public int compare(DataObject obj1, DataObject obj2) {
         switch (mode) {
         case NONE:
             return 0;

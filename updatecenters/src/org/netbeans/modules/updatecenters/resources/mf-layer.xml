@@ -27,8 +27,6 @@ Microsystems, Inc. All Rights Reserved.
 
     <folder name="AutoupdateType">
       <!-- this ordering left because backward compatibility with deserialized autoupdate types -->
-      <attr name="autoupdate_xml_type.settings/autoupdate_xml_type_1.settings" boolvalue="true" />
-      <attr name="autoupdate_xml_type_1.settings/autoupdate_xml_type_2.settings" boolvalue="true" />
 
       <file name="dev-update-provider.settings" url="dev-update-provider.settings">
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.updatecenters.resources.Bundle"/>

@@ -18,25 +18,26 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
-
 <filesystem>
     <folder name="Menu">
         <folder name="Source">
-            <attr name="SeparatorAfterUncomment.instance/org-netbeans-modules-mobility-editor-J2MEKit$PreprocessorMenuAction.instance" boolvalue="true"/>
-            <file name="org-netbeans-modules-mobility-editor-J2MEKit$PreprocessorMenuAction.instance"/>
+            <file name="org-netbeans-modules-mobility-editor-J2MEKit$PreprocessorMenuAction.instance">
+                <attr name="position" intvalue="1400"/>
+            </file>
         </folder>
     </folder>
     <folder name="Editors">
         <folder name="text">
             <folder name="x-java">		
                 <folder name="Popup">		
-                    <file name="generate-preprocessor-popup"/>
-                    <attr name="generate-preprocessor-popup/SeparatorAfterConfigs.instance" boolvalue="true"/>
+                    <file name="generate-preprocessor-popup">
+                        <attr name="position" intvalue="1040"/>
+                    </file>
                     <file name="SeparatorAfterConfigs.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1080"/>
                     </file>
-                    <attr name="SeparatorAfterConfigs.instance/generate-goto-popup" boolvalue="true"/>
-                </folder>
+                    </folder>
                 <folder name="CompletionProviders">
                     <file name="org-netbeans-modules-mobility-editor-PPCompletionProvider.instance"/>
                 </folder>

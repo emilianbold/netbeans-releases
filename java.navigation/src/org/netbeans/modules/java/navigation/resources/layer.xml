@@ -23,7 +23,9 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="Panels">
             <folder name="text">
                 <folder name="x-java">
-                    <file name="org-netbeans-modules-java-navigation-ClassMemberPanel.instance"/>
+                    <file name="org-netbeans-modules-java-navigation-ClassMemberPanel.instance">
+                        <attr name="position" intvalue="100"/>
+                    </file>
                     <!-- file name="org-netbeans-modules-java-navigation-InheritanceTreePanel.instance"/ -->
                 </folder>
             </folder>
@@ -40,22 +42,19 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="text">
             <folder name="x-java">
                 <folder name="Actions">
-                    <attr name="Separator4.instance/org-netbeans-modules-java-navigation-actions-InspectMembersAction.shadow" boolvalue="true"/>
-                    <attr name="RefactoringAll.instance/org-netbeans-modules-java-navigation-actions-InspectMembersAction.shadow" boolvalue="true"/>
-                    <attr name="SaveAsTemplateAction.instance/org-netbeans-modules-java-navigation-actions-InspectMembersAction.shadow" boolvalue="true"/>
                     <file name="org-netbeans-modules-java-navigation-actions-InspectMembersAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-java-navigation-actions-InspectMembersAction.instance"/>
+                        <attr name="position" intvalue="2400"/>
                     </file>
-                    <attr name="org-netbeans-modules-java-navigation-actions-InspectMembersAction.shadow/org-netbeans-modules-java-navigation-actions-InspectHierarchyAction.shadow" boolvalue="true"/>
                     <file name="org-netbeans-modules-java-navigation-actions-InspectHierarchyAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-java-navigation-actions-InspectHierarchyAction.instance"/>
+                        <attr name="position" intvalue="2500"/>
                     </file>
-                    <attr name="org-netbeans-modules-java-navigation-actions-InspectHierarchyAction.shadow/SeparatorJavaTools.instance" boolvalue="true"/>
                     <file name="SeparatorJavaTools.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="2600"/>
                     </file>
-                    <attr boolvalue="true" name="SeparatorJavaTools.instance/ToolsAction.instance" />
-                </folder>
+                    </folder>
             </folder>
         </folder>
     </folder>
@@ -64,20 +63,19 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="text">
             <folder name="x-java">
                 <folder name="Popup">                    
-                    <attr name="SeparatorAfterGoToHelp.instance/org-netbeans-modules-java-navigation-actions-InspectMembersAtCaretAction.shadow" boolvalue="true"/>
                     <file name="org-netbeans-modules-java-navigation-actions-InspectMembersAtCaretAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-java-navigation-actions-InspectMembersAtCaretAction.instance"/>
+                        <attr name="position" intvalue="1280"/>
                     </file>
-                    <attr name="org-netbeans-modules-java-navigation-actions-InspectMembersAtCaretAction.shadow/org-netbeans-modules-java-navigation-actions-InspectHierarchyAtCaretAction.shadow" boolvalue="true"/>
                     <file name="org-netbeans-modules-java-navigation-actions-InspectHierarchyAtCaretAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-java-navigation-actions-InspectHierarchyAtCaretAction.instance"/>
+                        <attr name="position" intvalue="1320"/>
                     </file>
-                    <attr name="org-netbeans-modules-java-navigation-actions-InspectHierarchyAtCaretAction.shadow/SeparatorJavaTools.instance" boolvalue="true"/>
                     <file name="SeparatorJavaTools.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1360"/>
                     </file>
-                    <attr name="SeparatorJavaTools.instance/org-netbeans-modules-refactoring-api-ui-WhereUsedAction.instance" boolvalue="true"/>
-                </folder>
+                    </folder>
             </folder>
         </folder>
     </folder>
@@ -97,36 +95,32 @@ Microsystems, Inc. All Rights Reserved.
 
     <folder name="Menu">
         <folder name="GoTo">
-            <attr name="org-netbeans-modules-editor-MainMenuAction$JumpForwardAction.instance/SeparatorBeforeInspectMembersAction.instance" boolvalue="true"/>
             <file name="SeparatorBeforeInspectMembersAction.instance">
                 <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                <attr name="position" intvalue="1400"/>
             </file>
-            <attr name="SeparatorBeforeInspectMembersAction.instance/org-netbeans-modules-java-navigation-actions-InspectMembersAction.shadow" boolvalue="true"/>
             <file name="org-netbeans-modules-java-navigation-actions-InspectMembersAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-java-navigation-actions-InspectMembersAction.instance"/>
+                <attr name="position" intvalue="1500"/>
             </file>
-            <attr name="org-netbeans-modules-java-navigation-actions-InspectMembersAction.shadow/org-netbeans-modules-java-navigation-actions-InspectHierarchyAction.shadow" boolvalue="true"/>
             <file name="org-netbeans-modules-java-navigation-actions-InspectHierarchyAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-java-navigation-actions-InspectHierarchyAction.instance"/>
+                <attr name="position" intvalue="1600"/>
             </file>
-            <attr name="org-netbeans-modules-java-navigation-actions-InspectHierarchyAction.shadow/SeparatorBeforeGoToLine.instance" boolvalue="true"/>
-        </folder>
+            </folder>
         <folder name="Window">
-            <attr name="Output/Other" boolvalue="true"/>
-            <attr name="Debug/Other" boolvalue="true"/>
-            <attr name="Versioning/Other" boolvalue="true"/>
             <folder name="Other">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.navigation.Bundle"/>
                 <file name="DeclarationAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-java-navigation-actions-DeclarationAction.instance"/>
+                    <attr name="position" intvalue="400"/>
                 </file>
-                <attr name="DeclarationAction.shadow/JavadocAction.shadow" boolvalue="true"/>
                 <file name="JavadocAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-java-navigation-actions-JavadocAction.instance"/>
+                    <attr name="position" intvalue="500"/>
                 </file>
             </folder>
-            <attr name="Other/SwitchToRecentDocumentAction.shadow" boolvalue="true"/>
-        </folder>
+            </folder>
     </folder>
     
     <folder name="Windows2">
@@ -164,4 +158,3 @@ Microsystems, Inc. All Rights Reserved.
     </folder>  
           
 </filesystem>
-

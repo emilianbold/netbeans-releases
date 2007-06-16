@@ -6,24 +6,29 @@
             <folder name="nbproject">
                 <folder name="build-impl.xml">
                     <folder name="init-subtargets">
-                        <attr name="cdc-init/ricoh-init" boolvalue="true"/>
-                        <file name="ricoh-init" url="ricoh-init"/>
+                        <file name="ricoh-init" url="ricoh-init">
+                            <attr name="position" intvalue="500"/>
+                        </file>
                     </folder>
                     <folder name="jar-subtargets">
-                        <attr name="update-jad/ricoh-build-dalp" boolvalue="true"/>
-                        <file name="ricoh-build-dalp" url="ricoh-build-dalp"/>
+                        <file name="ricoh-build-dalp" url="ricoh-build-dalp">
+                            <attr name="position" intvalue="1100"/>
+                        </file>
                     </folder>
                     <folder name="run-subtargets">
-                        <attr name="cldc-run/ricoh-run" boolvalue="true"/>
-                        <file name="ricoh-run" url="ricoh-run"/>
+                        <file name="ricoh-run" url="ricoh-run">
+                            <attr name="position" intvalue="200"/>
+                        </file>
                     </folder>
                     <folder name="debug-subtargets">
-                        <attr name="cldc-debug/ricoh-debug" boolvalue="true"/>
-                        <file name="ricoh-debug" url="ricoh-debug"/>
+                        <file name="ricoh-debug" url="ricoh-debug">
+                            <attr name="position" intvalue="200"/>
+                        </file>
                     </folder>
                     <folder name="clean-subtargets">
-                        <attr name="clean-j9/clean-ricoh" boolvalue="true"/>
-                        <file name="clean-ricoh" url="clean-ricoh"/>
+                        <file name="clean-ricoh" url="clean-ricoh">
+                            <attr name="position" intvalue="1100"/>
+                        </file>
                     </folder>
                 </folder>
             </folder>
@@ -32,10 +37,10 @@
     <folder name="Customizer">
         <folder name="org.netbeans.modules.kjava.j2meproject">
             <folder name="Jad">
-                <attr name="CDCGeneral/Ricoh" boolvalue="true"/>
                 <file name="Ricoh">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2me.cdc.project.ricoh.Bundle"/>
                     <attr name="customizerPanelClass" newvalue="org.netbeans.modules.j2me.cdc.project.ricoh.RicohProjectCategoryCustomizer"/>
+                    <attr name="position" intvalue="800"/>
                     <attr name="triggerPropertyName" stringvalue="platform.type"/>
                     <attr name="triggerPropertyValue" stringvalue="ricoh"/>
                 </file>
@@ -57,12 +62,11 @@
     </folder>    
     <folder name="Templates">
         <folder name="CDC">
-            <attr name="AWTXlet.java/RicohXlet.java" boolvalue="true"/>
-            <attr name="AGUIXlet.java/RicohXlet.java" boolvalue="true"/>
             <file name="RicohXlet.java" url="RicohXlet_java">
-                <attr name="template" boolvalue="true" />
-                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/ricoh/resources/RicohXlet.html" />
-                <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator" /> 
+                <attr name="position" intvalue="400"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/ricoh/resources/RicohXlet.html"/>
+                <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator"/> 
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2me.cdc.project.ricoh.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/ricoh/resources/class.gif"/>
                 <attr name="CDC" boolvalue="true"/>
@@ -73,13 +77,12 @@
     
     <folder name="RecommendedTemplates">
         <folder name="org.netbeans.modules.kjava.j2meproject">
-            <attr name="cdc/ricoh" boolvalue="true"/>
             <file name="ricoh">
                 <attr name="RecommendedTemplates" stringvalue="CDC/Ricoh"/>
                 <attr name="PriviledgedTemplates" stringvalue="Templates/CDC/RicohXlet.java"/>
+                <attr name="position" intvalue="300"/>
             </file>
-            <attr name="ricoh/core" boolvalue="true"/>
-        </folder>
+            </folder>
     </folder>
     
     <folder name="Templates">

@@ -8,19 +8,20 @@
                 <folder name="Popup">
                     <file name="org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.instance"/>
+                        <attr name="position" intvalue="1750"/>
                     </file>                    
-                    <file name="org-netbeans-modules-web-debug-actions-AddJspWatchAction.instance"/>
+                    <file name="org-netbeans-modules-web-debug-actions-AddJspWatchAction.instance">
+                        <attr name="position" intvalue="1625"/>
+                    </file>
                     <file name="SeparatorJSP.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1500"/>
                     </file>
                     <file name="SeparatorAfterToggle.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1875"/>
                     </file>
-                    <attr boolvalue="true" name="SeparatorJSP.instance/org-netbeans-modules-web-debug-actions-AddJspWatchAction.instance"/>
-                    <attr boolvalue="true" name="org-netbeans-modules-web-debug-actions-AddJspWatchAction.instance/org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.shadow"/>
-                    <attr boolvalue="true" name="org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.shadow/SeparatorAfterToggle.instance"/>
-                    <attr boolvalue="true" name="SeparatorAfterToggle.instance/org-openide-actions-CutAction.instance"/>
-                </folder>
+                    </folder>
                 <folder name="ToolTips">
                     <file name="org-netbeans-modules-web-debug-JspToolTipAnnotation.instance"/>
                 </folder>

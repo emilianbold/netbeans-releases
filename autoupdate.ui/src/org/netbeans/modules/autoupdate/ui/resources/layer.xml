@@ -4,17 +4,10 @@
   <folder name="Menu">
         <folder name="Tools">
             <!-- the following ordering attributes is necessary because of macosx where options action is not present in Tools menu -->
-            <attr name="org-netbeans-modules-favorites-templates-TemplatesAction.instance/Separator2.instance" boolvalue="true"/>
-            <attr name="ServerManagerAction.instance/Separator2.instance" boolvalue="true"/>
-            <attr name="org-netbeans-modules-favorites-templates-TemplatesAction.instance/org-netbeans-modules-autoupdate-catalog-ModuleCatalogAction.shadow" boolvalue="true"/>
-            <attr name="ServerManagerAction.instance/org-netbeans-modules-autoupdate-catalog-ModuleCatalogAction.shadow" boolvalue="true"/>
             
-            <attr boolvalue="true" name="org-netbeans-modules-autoupdate-catalog-ModuleCatalogAction.shadow/org-netbeans-modules-autoupdate-UpdateAction.shadow"/>
-            <attr boolvalue="true" name="Separator2.instance/org-netbeans-modules-autoupdate-ui-actions-PluginManagerAction.shadow"/>
-            <attr boolvalue="true" name="org-netbeans-modules-autoupdate-catalog-ModuleCatalogAction.shadow/org-netbeans-modules-autoupdate-ui-actions-PluginManagerAction.shadow"/>
-            <attr boolvalue="true" name="org-netbeans-modules-autoupdate-UpdateAction.shadow/org-netbeans-modules-autoupdate-ui-actions-PluginManagerAction.shadow"/>
             <file name="org-netbeans-modules-autoupdate-ui-actions-PluginManagerAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/System/org-netbeans-modules-autoupdate-ui-actions-PluginManagerAction.instance"/>
+                <attr name="position" intvalue="1400"/>
             </file>
         </folder>
   </folder>

@@ -51,53 +51,61 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="image">
             <folder name="svg+xml">
                 <folder name="Actions">
-                    <file name="org-openide-actions-OpenAction.instance"/>
-                    <attr name="org-openide-actions-OpenAction.instance/org-openide-actions-EditAction.instance" boolvalue="true"/>
-                    <file name="org-openide-actions-EditAction.instance"/>
-                    <attr name="org-openide-actions-EditAction.instance/org-netbeans-modules-mobility-svgcore-ExternalEditAction.instance" boolvalue="true"/>
-                    <file name="org-netbeans-modules-mobility-svgcore-ExternalEditAction.instance"/>
-                    <attr name="org-netbeans-modules-mobility-svgcore-ExternalEditAction.instance/org-openide-actions-FileSystemAction.instance" boolvalue="true"/>
-                    <file name="org-openide-actions-FileSystemAction.instance"/>
-                    <attr name="org-openide-actions-FileSystemAction.instance/sep-1.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-OpenAction.instance">
+                        <attr name="position" intvalue="100"/>
+                    </file>
+                    <file name="org-openide-actions-EditAction.instance">
+                        <attr name="position" intvalue="500"/>
+                    </file>
+                    <file name="org-netbeans-modules-mobility-svgcore-ExternalEditAction.instance">
+                        <attr name="position" intvalue="600"/>
+                    </file>
+                    <file name="org-openide-actions-FileSystemAction.instance">
+                        <attr name="position" intvalue="700"/>
+                    </file>
                     <file name="sep-1.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="800"/>
                     </file>
-                    <attr name="sep-1.instance/org-openide-actions-CutAction.instance" boolvalue="true"/>
-                    <attr name="sep-3.instance/org-openide-actions-SaveAsTemplateAction.instance" boolvalue="true"/>
-                    <attr name="org-openide-actions-SaveAsTemplateAction.instance/sep-4.instance" boolvalue="true"/>
                     <file name="sep-4.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="200"/>
                     </file>
-                    <attr name="sep-4.instance/org-openide-actions-ToolsAction.instance" boolvalue="true"/>
-                    <file name="org-openide-actions-ToolsAction.instance"/>
-                    <attr name="org-openide-actions-ToolsAction.instance/org-openide-actions-PropertiesAction.instance" boolvalue="true"/>
-                    <file name="org-openide-actions-PropertiesAction.instance"/>
-                    <attr name="sep-1.instance/org-netbeans-modules-mobility-svgcore-export-SaveAsImageAction.shadow" boolvalue="true"/>
+                    <file name="org-openide-actions-ToolsAction.instance">
+                        <attr name="position" intvalue="300"/>
+                    </file>
+                    <file name="org-openide-actions-PropertiesAction.instance">
+                        <attr name="position" intvalue="400"/>
+                    </file>
                     <file name="org-netbeans-modules-mobility-svgcore-export-SaveAsImageAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/Build/org-netbeans-modules-mobility-svgcore-export-SaveAsImageAction.instance"/>
+                        <attr name="position" intvalue="900"/>
                     </file>
-                    <attr name="org-netbeans-modules-mobility-svgcore-export-SaveAsImageAction.shadow/org-netbeans-modules-mobility-svgcore-export-SaveAnimationAsImageAction.shadow" boolvalue="true"/>
                     <file name="org-netbeans-modules-mobility-svgcore-export-SaveAnimationAsImageAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/Build/org-netbeans-modules-mobility-svgcore-export-SaveAnimationAsImageAction.instance"/>
+                        <attr name="position" intvalue="1000"/>
                     </file>
-                    <attr name="org-netbeans-modules-mobility-svgcore-export-SaveAnimationAsImageAction.shadow/org-netbeans-modules-mobility-svgcore-export-separatorAfter.instance" boolvalue="true"/>
                     <file name="org-netbeans-modules-mobility-svgcore-export-separatorAfter.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1100"/>
                     </file>
-                    <attr name="org-netbeans-modules-mobility-svgcore-export-separatorAfter.instance/org-openide-actions-CutAction.instance" boolvalue="true"/>
-                    <file name="org-openide-actions-CutAction.instance"/>
-                    <attr name="org-openide-actions-CutAction.instance/org-openide-actions-CopyAction.instance" boolvalue="true"/>
-                    <file name="org-openide-actions-CopyAction.instance"/>
-                    <attr name="org-openide-actions-CopyAction.instance/sep-2.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-CutAction.instance">
+                        <attr name="position" intvalue="1200"/>
+                    </file>
+                    <file name="org-openide-actions-CopyAction.instance">
+                        <attr name="position" intvalue="1300"/>
+                    </file>
                     <file name="sep-2.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1400"/>
                     </file>
-                    <attr name="sep-2.instance/org-openide-actions-DeleteAction.instance" boolvalue="true"/>
-                    <file name="org-openide-actions-DeleteAction.instance"/>
-                    <attr name="org-openide-actions-DeleteAction.instance/org-openide-actions-RenameAction.instance" boolvalue="true"/>
-                    <file name="org-openide-actions-RenameAction.instance"/>
-                    <attr name="org-openide-actions-RenameAction.instance/sep-3.instance" boolvalue="true"/>
-                </folder>
+                    <file name="org-openide-actions-DeleteAction.instance">
+                        <attr name="position" intvalue="1500"/>
+                    </file>
+                    <file name="org-openide-actions-RenameAction.instance">
+                        <attr name="position" intvalue="1600"/>
+                    </file>
+                    </folder>
             </folder>
         </folder>
     </folder>
@@ -116,67 +124,46 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="xml">
      <folder name="entities">
        <folder name="W3C">
-         <file name="DTD_SVG_1_1_Tiny"
-               url="nbres:/org/netbeans/modules/mobility/svgcore/resources/dtd/svg11-tiny.dtd">
-           <attr name="hint.originalPublicID"
-                 stringvalue="-//W3C//DTD SVG 1.1 Tiny//EN"/>
+         <file name="DTD_SVG_1_1_Tiny" url="nbres:/org/netbeans/modules/mobility/svgcore/resources/dtd/svg11-tiny.dtd">
+           <attr name="hint.originalPublicID" stringvalue="-//W3C//DTD SVG 1.1 Tiny//EN"/>
          </file>
-         <file name="svg-framework.mod"
-               url="nbres:/org/netbeans/modules/mobility/svgcore/resources/dtd/svg-framework.mod">
+         <file name="svg-framework.mod" url="nbres:/org/netbeans/modules/mobility/svgcore/resources/dtd/svg-framework.mod">
          </file>
-         <file name="svg-datatypes.mod"
-               url="nbres:/org/netbeans/modules/mobility/svgcore/resources/dtd/svg-datatypes.mod">
+         <file name="svg-datatypes.mod" url="nbres:/org/netbeans/modules/mobility/svgcore/resources/dtd/svg-datatypes.mod">
          </file>
-         <file name="svg-qname.mod"
-               url="nbres:/org/netbeans/modules/mobility/svgcore/resources/dtd/svg-qname.mod">
+         <file name="svg-qname.mod" url="nbres:/org/netbeans/modules/mobility/svgcore/resources/dtd/svg-qname.mod">
          </file>   
-         <file name="svg11-tiny-model.mod"
-               url="nbres:/org/netbeans/modules/mobility/svgcore/resources/dtd/svg11-tiny-model.mod">
+         <file name="svg11-tiny-model.mod" url="nbres:/org/netbeans/modules/mobility/svgcore/resources/dtd/svg11-tiny-model.mod">
          </file>    
-         <file name="svg11-tiny-attribs.mod"
-               url="nbres:/org/netbeans/modules/mobility/svgcore/resources/dtd/svg11-tiny-attribs.mod">
+         <file name="svg11-tiny-attribs.mod" url="nbres:/org/netbeans/modules/mobility/svgcore/resources/dtd/svg11-tiny-attribs.mod">
          </file>            
-         <file name="svg-core-attrib.mod"
-               url="nbres:/org/netbeans/modules/mobility/svgcore/resources/dtd/svg-core-attrib.mod">
+         <file name="svg-core-attrib.mod" url="nbres:/org/netbeans/modules/mobility/svgcore/resources/dtd/svg-core-attrib.mod">
          </file>    
-         <file name="svg-basic-paint-attrib.mod"
-               url="nbres:/org/netbeans/modules/mobility/svgcore/resources/dtd/svg-basic-paint-attrib.mod">
+         <file name="svg-basic-paint-attrib.mod" url="nbres:/org/netbeans/modules/mobility/svgcore/resources/dtd/svg-basic-paint-attrib.mod">
          </file>           
-         <file name="svg-xlink-attrib.mod"
-               url="nbres:/org/netbeans/modules/mobility/svgcore/resources/dtd/svg-xlink-attrib.mod">
+         <file name="svg-xlink-attrib.mod" url="nbres:/org/netbeans/modules/mobility/svgcore/resources/dtd/svg-xlink-attrib.mod">
          </file>           
-         <file name="svg-shape.mod"
-               url="nbres:/org/netbeans/modules/mobility/svgcore/resources/dtd/svg-shape.mod">
+         <file name="svg-shape.mod" url="nbres:/org/netbeans/modules/mobility/svgcore/resources/dtd/svg-shape.mod">
          </file>           
-         <file name="svg-image.mod"
-               url="nbres:/org/netbeans/modules/mobility/svgcore/resources/dtd/svg-image.mod">
+         <file name="svg-image.mod" url="nbres:/org/netbeans/modules/mobility/svgcore/resources/dtd/svg-image.mod">
          </file>           
-         <file name="svg-hyperlink.mod"
-               url="nbres:/org/netbeans/modules/mobility/svgcore/resources/dtd/svg-hyperlink.mod">
+         <file name="svg-hyperlink.mod" url="nbres:/org/netbeans/modules/mobility/svgcore/resources/dtd/svg-hyperlink.mod">
          </file>           
-         <file name="svg-extresources-attrib.mod"
-               url="nbres:/org/netbeans/modules/mobility/svgcore/resources/dtd/svg-extresources-attrib.mod">
+         <file name="svg-extresources-attrib.mod" url="nbres:/org/netbeans/modules/mobility/svgcore/resources/dtd/svg-extresources-attrib.mod">
          </file>           
-         <file name="svg-extensibility.mod"
-               url="nbres:/org/netbeans/modules/mobility/svgcore/resources/dtd/svg-extensibility.mod">
+         <file name="svg-extensibility.mod" url="nbres:/org/netbeans/modules/mobility/svgcore/resources/dtd/svg-extensibility.mod">
          </file>           
-         <file name="svg-conditional.mod"
-               url="nbres:/org/netbeans/modules/mobility/svgcore/resources/dtd/svg-conditional.mod">
+         <file name="svg-conditional.mod" url="nbres:/org/netbeans/modules/mobility/svgcore/resources/dtd/svg-conditional.mod">
          </file>           
-         <file name="svg-basic-structure.mod"
-               url="nbres:/org/netbeans/modules/mobility/svgcore/resources/dtd/svg-basic-structure.mod">
+         <file name="svg-basic-structure.mod" url="nbres:/org/netbeans/modules/mobility/svgcore/resources/dtd/svg-basic-structure.mod">
          </file>           
-         <file name="svg-basic-text.mod"
-               url="nbres:/org/netbeans/modules/mobility/svgcore/resources/dtd/svg-basic-text.mod">
+         <file name="svg-basic-text.mod" url="nbres:/org/netbeans/modules/mobility/svgcore/resources/dtd/svg-basic-text.mod">
          </file>           
-         <file name="svg-basic-graphics-attrib.mod"
-               url="nbres:/org/netbeans/modules/mobility/svgcore/resources/dtd/svg-basic-graphics-attrib.mod">
+         <file name="svg-basic-graphics-attrib.mod" url="nbres:/org/netbeans/modules/mobility/svgcore/resources/dtd/svg-basic-graphics-attrib.mod">
          </file>           
-         <file name="svg-basic-font.mod"
-               url="nbres:/org/netbeans/modules/mobility/svgcore/resources/dtd/svg-basic-font.mod">
+         <file name="svg-basic-font.mod" url="nbres:/org/netbeans/modules/mobility/svgcore/resources/dtd/svg-basic-font.mod">
          </file>           
-         <file name="svg-animation.mod"
-               url="nbres:/org/netbeans/modules/mobility/svgcore/resources/dtd/svg-animation.mod">
+         <file name="svg-animation.mod" url="nbres:/org/netbeans/modules/mobility/svgcore/resources/dtd/svg-animation.mod">
          </file>           
      </folder>
      </folder>

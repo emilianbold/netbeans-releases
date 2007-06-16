@@ -17,7 +17,6 @@ The Original Software is NetBeans. The Initial Developer of the Original
 Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
-
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
     <folder name="org-netbeans-api-project-libraries">
@@ -31,13 +30,13 @@ Microsystems, Inc. All Rights Reserved.
             <folder name="Standard">
                 <file name="desktopApp.xml">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.swingapp.resources.Bundle"/>
-                    <attr name="template" boolvalue="true" />
+                    <attr name="position" intvalue="500"/>
+                    <attr name="template" boolvalue="true"/>
                     <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/swingapp/resources/JavaDesktopApp.html"/>
                     <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/j2seproject/ui/resources/j2seProject.png"/>
-                    <attr name="instantiatingIterator" newvalue="org.netbeans.modules.swingapp.templates.NewAppWizardIterator" />
+                    <attr name="instantiatingIterator" newvalue="org.netbeans.modules.swingapp.templates.NewAppWizardIterator"/>
                 </file>
-                <attr name="emptyJ2SE.xml/desktopApp.xml" boolvalue="true" />
-            </folder>
+                </folder>
         </folder>
     </folder>
 
@@ -50,10 +49,10 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="Menu">
         <folder name="Window">
             <folder name="Other">
-                 <attr name="JavadocAction.shadow/ShowGlobalActionTableAction.shadow" boolvalue="true" />
                  <file name="ShowGlobalActionTableAction.shadow">
-                     <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-swingapp-actions-ShowGlobalActionTableAction.instance" />
-                 </file>
+                     <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-swingapp-actions-ShowGlobalActionTableAction.instance"/>
+                     <attr name="position" intvalue="600"/>
+                </file>
             </folder>
         </folder>
     </folder>
@@ -67,7 +66,7 @@ Microsystems, Inc. All Rights Reserved.
             </file>
             <file name="CRUDShellApp.zip" url="CRUDShellApp.zip">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.swingapp.resources.Bundle"/>
-                <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.form.j2ee.wizard.MasterDetailWizard.createForExisting" />
+                <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.form.j2ee.wizard.MasterDetailWizard.createForExisting"/>
                 <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/swingapp/resources/CRUDShellApp.html"/>
             </file>
         </folder>
@@ -80,7 +79,7 @@ Microsystems, Inc. All Rights Reserved.
             </folder>
         </folder>
         <folder name="Components">
-            <file name="GlobalActionTable.settings" url="components/GlobalActionTable.settings" />
+            <file name="GlobalActionTable.settings" url="components/GlobalActionTable.settings"/>
         </folder>
     </folder>
 
@@ -88,9 +87,10 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="org-netbeans-modules-java-j2seproject">
             <folder name="Customizer">
                 <folder name="Application">
-                    <attr name="AppFramework.instance/WebStart.instance" boolvalue="true"/>
+                    <attr name="position" intvalue="500"/>
                     <file name="AppFramework.instance">
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.swingapp.ProjectCustomizerProvider.create"/>
+                        <attr name="position" intvalue="100"/>
                     </file>
                 </folder>
             </folder>

@@ -989,7 +989,7 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
 
     /** Type-safe enumeration of sort modes for data folders.
     */
-    public abstract static class SortMode extends Object implements Comparator {
+    public abstract static class SortMode implements Comparator<DataObject> {
         /** Objects are unsorted. */
         public static final SortMode NONE = new FolderComparator (FolderComparator.NONE);
 

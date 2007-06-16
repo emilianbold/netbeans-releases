@@ -10,11 +10,10 @@
         <folder name="Window">
             <file name="org-netbeans-modules-tasklist-ui-TaskListAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-tasklist-ui-TaskListAction.instance"/>
+                <attr name="position" intvalue="1100"/>
             </file>
             
-            <attr name="org-netbeans-core-actions-GlobalPropertiesAction.shadow/org-netbeans-modules-tasklist-ui-TaskListAction.shadow" boolvalue="true" />
-            <attr name="org-netbeans-modules-tasklist-ui-TaskListAction.shadow/Form" boolvalue="true" />
-        </folder>
+            </folder>
     </folder>
 
     <folder name="Shortcuts">
@@ -45,6 +44,7 @@
                 <attr name="diplayNameKey" stringvalue="LBL_error_group"/>
                 <attr name="descriptionKey" stringvalue="HINT_error_group"/>
                 <attr name="iconKey" stringvalue="ICON_error"/>
+                <attr name="position" intvalue="100"/>
             </file>
             
             <file name="warning.instance">
@@ -55,14 +55,15 @@
                 <attr name="diplayNameKey" stringvalue="LBL_warning_group"/>
                 <attr name="descriptionKey" stringvalue="HINT_warning_group"/>
                 <attr name="iconKey" stringvalue="ICON_warning"/>
+                <attr name="position" intvalue="200"/>
             </file>
-            <attr name="error.instance/warning.instance" boolvalue="true"/>
-        </folder>
+            </folder>
         
         <folder name="ScanningScopes">
             <file name="DefaultScope.instance">
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.tasklist.impl.CurrentEditorScanningScope.create"/>
                 <attr name="instanceOf" stringvalue="org.netbeans.spi.tasklist.TaskScanningScope"/>
+                <attr name="position" intvalue="100"/>
             </file>
         </folder>
     </folder>

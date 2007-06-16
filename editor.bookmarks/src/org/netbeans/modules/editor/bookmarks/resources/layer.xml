@@ -18,7 +18,6 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
-
 <filesystem>
 
     <folder name="Actions">
@@ -38,26 +37,26 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
     </folder>
 
-    <folder name="Menu" >
-        <folder name="GoTo" >
-            <file name="org-netbeans-editor-bookmarks-ToggleBookmark.shadow" >
-                <attr name="originalFile" stringvalue="Actions/Edit/bookmark-toggle.instance" />
+    <folder name="Menu">
+        <folder name="GoTo">
+            <file name="org-netbeans-editor-bookmarks-ToggleBookmark.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/bookmark-toggle.instance"/>
+                <attr name="position" intvalue="1900"/>
             </file>
-            <attr name="org-openide-actions-GotoAction.shadow/org-netbeans-editor-bookmarks-ToggleBookmark.shadow" boolvalue="true" />
-            <attr name="org-netbeans-editor-bookmarks-ToggleBookmark.shadow/org-netbeans-editor-bookmarks-BookmarkNext.shadow" boolvalue="true" />
             
-            <file name="org-netbeans-editor-bookmarks-BookmarkNext.shadow" >
-                <attr name="originalFile" stringvalue="Actions/Edit/bookmark-next.instance" />
+            <file name="org-netbeans-editor-bookmarks-BookmarkNext.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/bookmark-next.instance"/>
+                <attr name="position" intvalue="2000"/>
             </file>
-            <attr name="org-netbeans-editor-bookmarks-BookmarkNext.shadow/org-netbeans-editor-bookmarks-BookmarkPrevious.shadow" boolvalue="true" />
             
-            <file name="org-netbeans-editor-bookmarks-BookmarkPrevious.shadow" >
-                <attr name="originalFile" stringvalue="Actions/Edit/bookmark-previous.instance" />
+            <file name="org-netbeans-editor-bookmarks-BookmarkPrevious.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/bookmark-previous.instance"/>
+                <attr name="position" intvalue="2100"/>
             </file>
-            <attr name="org-netbeans-editor-bookmarks-BookmarkPrevious.shadow/SeparatorAfterBookmarks.instance" boolvalue="true" />
             
             <file name="SeparatorAfterBookmarks.instance">
                 <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                <attr name="position" intvalue="2200"/>
             </file>
         </folder>
     </folder>
@@ -65,24 +64,23 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="Editors">
         <folder name="Toolbars">
             <folder name="Default">
-                <attr name="Separator-after-toggle-highlight-search.instance/bookmark-previous.shadow" boolvalue="true"/>
                 <file name="bookmark-previous.shadow">
                     <attr name="originalFile" stringvalue="Actions/Edit/bookmark-previous.instance"/>
+                    <attr name="position" intvalue="11000"/>
                 </file>
-                <attr name="bookmark-previous.shadow/bookmark-next.shadow" boolvalue="true"/>
                 <file name="bookmark-next.shadow">
                     <attr name="originalFile" stringvalue="Actions/Edit/bookmark-next.instance"/>
+                    <attr name="position" intvalue="12000"/>
                 </file>
-                <attr name="bookmark-next.shadow/bookmark-toggle.shadow" boolvalue="true"/>
                 <file name="bookmark-toggle.shadow">
                     <attr name="originalFile" stringvalue="Actions/Edit/bookmark-toggle.instance"/>
+                    <attr name="position" intvalue="13000"/>
                 </file>
-                <attr name="bookmark-toggle.shadow/Separator-after-bookmarks.instance" boolvalue="true"/>
                 <file name="Separator-after-bookmarks.instance">
                     <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    <attr name="position" intvalue="14000"/>
                 </file>
-                <attr name="Separator-after-bookmarks.instance/shift-line-left" boolvalue="true"/>
-            </folder>
+                </folder>
         </folder>
 
         <folder name="AnnotationTypes">

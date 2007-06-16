@@ -17,19 +17,16 @@ The Original Software is NetBeans. The Initial Developer of the Original
 Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
-
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
-
 <filesystem>
 
     <!-- register XML template folder -->
     <folder name="Templates">
         <!-- !?! order ?!? -->
-        <attr name="RMI/XML" boolvalue="true"/>
 
         <folder name="XML">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.api.xml.resources.Bundle"/>
-            <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/api/xml/resources/XML.html" />
+            <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/api/xml/resources/XML.html"/>
         </folder> <!-- XML -->
     </folder> <!-- Templates -->
   

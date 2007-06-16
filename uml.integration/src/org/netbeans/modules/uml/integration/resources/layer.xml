@@ -23,7 +23,7 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
         <folder name="UML">
             <folder name="Keyboard">
                 <folder name="AddToDiagram">
-                    <file name="org-netbeans-modules-uml-integration-netbeans-actions-AddToDiagramAction.instance" />
+                    <file name="org-netbeans-modules-uml-integration-netbeans-actions-AddToDiagramAction.instance"/>
                 </folder>
             </folder>
             <file name="org-netbeans-modules-uml-integration-netbeans-actions-ReverseEngineerAction.instance">
@@ -45,44 +45,45 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
             <folder name="Search">
                 <file name="org-netbeans-modules-uml-integration-ide-actions-FindInModelAction.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.integration.ide.actions.FindInModelAction"/>
+                    <attr name="position" intvalue="100"/>
                 </file>
                 <file name="org-netbeans-modules-uml-integration-ide-actions-ReplaceInModelAction.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.integration.ide.actions.ReplaceInModelAction"/>
+                    <attr name="position" intvalue="200"/>
                 </file>
-                <attr name="org-netbeans-modules-uml-integration-ide-actions-FindInModelAction.instance/org-netbeans-modules-uml-integration-ide-actions-ReplaceInModelAction.instance" boolvalue="true"/>
-            </folder>  
+                </folder>  
         </folder>
 
         <folder name="Window">
             <folder name="SelectDocumentNode">
                 <file name="org-netbeans-modules-uml-integration-ide-actions-SelectInModel.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.integration.ide.actions.SelectInModel"/>
+                    <attr name="position" intvalue="400"/>
                 </file>
-                <attr name="org-netbeans-modules-favorites-Select.instance/org-netbeans-modules-uml-integration-ide-actions-SelectInModel.instance" boolvalue="true"/>
-            </folder>
+                </folder>
         </folder>
     </folder>
     
     <folder name="Menu">
         <folder name="Edit">
-            <attr name="org-netbeans-modules-search-project-ProjectsSearchAction.instance/sep-before-find-in-model.instance" boolvalue="true"/>
             <file name="sep-before-find-in-model.instance">
                 <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                <attr name="position" intvalue="400"/>
             </file>
-            <attr name="sep-before-find-in-model.instance/org-netbeans-modules-uml-integration-ide-actions-FindInModelAction.instance" boolvalue="true"/>
             <file name="org-netbeans-modules-uml-integration-ide-actions-FindInModelAction.instance">
                 <attr name="originalFile" stringvalue="Actions/UML/Search/org-netbeans-modules-uml-integration-ide-actions-FindInModelAction.instance"/>
+                <attr name="position" intvalue="500"/>
             </file>
-            <attr name="org-netbeans-modules-uml-integration-ide-actions-FindInModelAction.instance/org-netbeans-modules-uml-integration-ide-actions-ReplaceInModelAction.instance" boolvalue="true"/>
             <file name="org-netbeans-modules-uml-integration-ide-actions-ReplaceInModelAction.instance">
                 <attr name="originalFile" stringvalue="Actions/UML/Search/org-netbeans-modules-uml-integration-ide-actions-ReplaceInModelAction.instance"/>
+                <attr name="position" intvalue="700"/>
             </file>
         </folder>   
         
         <folder name="GoTo">
-            <attr name="org-netbeans-modules-favorites-SelectInFavorites.shadow/org-netbeans-modules-uml-integration-ide-actions-SelectInModel.shadow" boolvalue="true"/>
             <file name="org-netbeans-modules-uml-integration-ide-actions-SelectInModel.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/SelectDocumentNode/org-netbeans-modules-uml-integration-ide-actions-SelectInModel.instance"/>
+                <attr name="position" intvalue="2900"/>
             </file>
         </folder>
     </folder>    
@@ -90,22 +91,20 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
     <!-- Projects -->
     <folder name="Projects">
         <folder name="Actions">
-            <attr name="Separator3.instance/org-netbeans-modules-uml-integration-netbeans-actions-ReverseEngineerAction.shadow" boolvalue="true"/>
             <file name="org-netbeans-modules-uml-integration-netbeans-actions-ReverseEngineerAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/UML/org-netbeans-modules-uml-integration-netbeans-actions-ReverseEngineerAction.instance"/>
+                <attr name="position" intvalue="100"/>
             </file>
-            <attr name="org-netbeans-modules-uml-integration-netbeans-actions-separatorAfter.instance/ToolsAction.instance" boolvalue="true"/>
-        </folder>
+            </folder>
     </folder>
     
     <!-- UMLProjects -->
     <folder name="UMLProjects">
         <folder name="Actions">
-            <attr name="org-netbeans-modules-project-ui-JavadocProject.shadow/org-netbeans-modules-uml-integration-netbeans-actions-ReverseEngineerAction.shadow" boolvalue="true"/>
             <file name="org-netbeans-modules-uml-integration-netbeans-actions-ReverseEngineerAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/UML/org-netbeans-modules-uml-integration-netbeans-actions-ReverseEngineerAction.instance"/>
+                <attr name="position" intvalue="100"/>
             </file>
-            <attr name="org-netbeans-modules-uml-integration-netbeans-actions-ReverseEngineerAction.shadow/SeparatorJavadoc.instance" boolvalue="true"/>
 <!--
             <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.integration.ide.codegen.GenCodeSwitchAction"/>
             <file name="org-netbeans-modules-uml-integration-netbeans-actions-ExportCodeAction.instance"/>
@@ -121,16 +120,15 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
         <folder name="text">
             <folder name="x-java">
                 <folder name="Popup">
-                    <attr name="SeparatorAfterFormat.instance/org-netbeans-modules-uml-integration-netbeans-actions-ReverseEngineerAction.shadow" boolvalue="true"/>
                     <file name="org-netbeans-modules-uml-integration-netbeans-actions-ReverseEngineerAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/UML/org-netbeans-modules-uml-integration-netbeans-actions-ReverseEngineerAction.instance"/>
+                        <attr name="position" intvalue="1640"/>
                     </file>
-                    <attr name="org-netbeans-modules-uml-integration-netbeans-actions-ReverseEngineerAction.shadow/org-netbeans-modules-uml-integration-netbeans-actions-separatorAfter.instance" boolvalue="true"/>
                     <file name="org-netbeans-modules-uml-integration-netbeans-actions-separatorAfter.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1680"/>
                     </file>
-                    <attr name="org-netbeans-modules-uml-integration-netbeans-actions-separatorAfter.instance/org-netbeans-modules-project-ui-RunSingle.shadow" boolvalue="true"/>
-                </folder>
+                    </folder>
             </folder>
         </folder>
     </folder>
@@ -160,33 +158,29 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
         <folder name="folder">
             <folder name="any">
                 <folder name="Actions">
-                    <attr name="RefactoringAll.instance/org-netbeans-modules-uml-integration-netbeans-actions-separatorBefore.instance" boolvalue="true"/>
                     <file name="org-netbeans-modules-uml-integration-netbeans-actions-separatorBefore.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1100"/>
                     </file>
-                    <attr name="org-netbeans-modules-uml-integration-netbeans-actions-separatorBefore.instance/org-netbeans-modules-uml-integration-netbeans-actions-ReverseEngineerAction.shadow" boolvalue="true"/>
                     <file name="org-netbeans-modules-uml-integration-netbeans-actions-ReverseEngineerAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/UML/org-netbeans-modules-uml-integration-netbeans-actions-ReverseEngineerAction.instance"/>
+                        <attr name="position" intvalue="1200"/>
                     </file>
-                    <attr name="org-netbeans-modules-uml-integration-netbeans-actions-ReverseEngineerAction.shadow/Separator3.instance" boolvalue="true"/>
-                </folder>
+                    </folder>
             </folder>
         </folder>
         <folder name="text">
             <folder name="x-java">
                 <folder name="Actions">
-                    <attr name="Separator3.instance/org-netbeans-modules-uml-integration-netbeans-actions-UpdateModelAction.shadow" boolvalue="true"/>
-                    <attr name="org-netbeans-modules-uml-integration-netbeans-actions-UpdateModelAction.shadow/org-netbeans-modules-uml-integration-netbeans-actions-separatorAfter.instance" boolvalue="true"/>
-                    <attr name="RefactoringSeparator-1.instance/org-netbeans-modules-uml-integration-netbeans-actions-ReverseEngineerAction.shadow" boolvalue="true"/>
                     <file name="org-netbeans-modules-uml-integration-netbeans-actions-ReverseEngineerAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/UML/org-netbeans-modules-uml-integration-netbeans-actions-ReverseEngineerAction.instance"/>
+                        <attr name="position" intvalue="2200"/>
                     </file>
-                    <attr name="org-netbeans-modules-uml-integration-netbeans-actions-ReverseEngineerAction.shadow/org-netbeans-modules-uml-integration-netbeans-actions-separatorAfter.instance" boolvalue="true"/>
                     <file name="org-netbeans-modules-uml-integration-netbeans-actions-separatorAfter.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="2300"/>
                     </file>
-                    <attr name="org-netbeans-modules-uml-integration-netbeans-actions-separatorAfter.instance/ToolsAction.instance" boolvalue="true"/>
-                </folder>
+                    </folder>
             </folder>
         </folder>
     </folder>

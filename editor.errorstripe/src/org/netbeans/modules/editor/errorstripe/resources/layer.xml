@@ -23,7 +23,7 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="Editors">
         <folder name="SideBar">
             <file name="org-netbeans-modules-editor-errorstripe-AnnotationViewFactory.instance">
-                <attr name="position" stringvalue="East" />
+                <attr name="location" stringvalue="East" />
                 <attr name="scrollable" boolvalue="false" />
             </file>
         </folder>

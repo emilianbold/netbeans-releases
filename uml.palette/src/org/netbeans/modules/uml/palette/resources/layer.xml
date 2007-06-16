@@ -947,96 +947,103 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.palette.ui.Bundle"/>
                 <folder name="Basic">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.palette.ui.Bundle"/>
+                    <attr name="position" intvalue="100"/>
                     <file name="ADInvocationNodePE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/ADInvocationNodePE.instance"/>
+                        <attr name="position" intvalue="100"/>
                     </file>   
-                    <attr name="ADInvocationNodePE.shadow/ADActivityEdgePE.shadow" boolvalue="true"/>
                     <file name="ADActivityEdgePE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/ADActivityEdgePE.instance"/>
+                        <attr name="position" intvalue="200"/>
                     </file>            
-                    <attr name="ADActivityEdgePE.shadow/ADComplexActivityPE.shadow" boolvalue="true"/>
                     <file name="ADComplexActivityPE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/ADComplexActivityPE.instance"/>
+                        <attr name="position" intvalue="300"/>
                     </file>    
-                    <attr name="ADComplexActivityPE.shadow/ADInitialNodePE.shadow" boolvalue="true"/>
                     <file name="ADInitialNodePE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/ADInitialNodePE.instance"/>
+                        <attr name="position" intvalue="400"/>
                     </file> 
-                    <attr name="ADInitialNodePE.shadow/ADActivityFinalNodePE.shadow" boolvalue="true"/>
                     <file name="ADActivityFinalNodePE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/ADActivityFinalNodePE.instance"/>
+                        <attr name="position" intvalue="500"/>
                     </file> 
-                    <attr name="ADActivityFinalNodePE.shadow/ADFlowFinalNodePE.shadow" boolvalue="true"/>
                     <file name="ADFlowFinalNodePE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/ADFlowFinalNodePE.instance"/>
+                        <attr name="position" intvalue="600"/>
                     </file>                    
-                </folder>
-                <attr name="Basic/Control" boolvalue="true"/>   
+                </folder>   
                 <folder name="Control">        
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.palette.ui.Bundle"/>
+                    <attr name="position" intvalue="200"/>
                     <file name="ADDecisionNodePE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/ADDecisionNodePE.instance"/>
+                        <attr name="position" intvalue="100"/>
                     </file> 
-                    <attr name="ADDecisionNodePE.shadow/ADForkNodePE.shadow" boolvalue="true"/>
                     <file name="ADForkNodePE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/ADForkNodePE.instance"/>
+                        <attr name="position" intvalue="200"/>
                     </file> 
-                    <attr name="ADForkNodePE.shadow/ADHorizontalForkNodePE.shadow" boolvalue="true"/>
                     <file name="ADHorizontalForkNodePE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/ADHorizontalForkNodePE.instance"/>
+                        <attr name="position" intvalue="300"/>
                     </file>   
                 </folder>
-                <attr name="Control/Data" boolvalue="true"/>
                 <folder name="Data">    
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.palette.ui.Bundle"/>
+                    <attr name="position" intvalue="300"/>
                     <file name="ADParameterUsagePE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/ADParameterUsagePE.instance"/>
+                        <attr name="position" intvalue="100"/>
                     </file>            
-                    <attr name="ADParameterUsagePE.shadow/ADDataStorePE.shadow" boolvalue="true"/>
                     <file name="ADDataStorePE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/ADDataStorePE.instance"/>
+                        <attr name="position" intvalue="200"/>
                     </file> 
-                    <attr name="ADDataStorePE.shadow/ADSignalNodePE.shadow" boolvalue="true"/>
                     <file name="ADSignalNodePE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/ADSignalNodePE.instance"/>
+                        <attr name="position" intvalue="300"/>
                     </file> 
-                    <attr name="ADSignalNodePE.shadow/ADPartitionPE.shadow" boolvalue="true"/>
                     <file name="ADPartitionPE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/ADPartitionPE.instance"/>
+                        <attr name="position" intvalue="400"/>
                     </file> 
                 </folder> 
-                <attr name="Data/Dependencies" boolvalue="true"/>     
+                     
                 <folder name="Dependencies">    
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.palette.ui.Bundle"/>
+                    <attr name="position" intvalue="400"/>
                     <file name="ADDependencyPE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/ADDependencyPE.instance"/>
+                        <attr name="position" intvalue="100"/>
                     </file>            
-                    <attr name="ADDependencyPE.shadow/ADRealizePE.shadow" boolvalue="true"/>
                     <file name="ADRealizePE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/ADRealizePE.instance"/>
+                        <attr name="position" intvalue="200"/>
                     </file> 
-                    <attr name="ADRealizePE.shadow/ADUsagePE.shadow" boolvalue="true"/>
                     <file name="ADUsagePE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/ADUsagePE.instance"/>
+                        <attr name="position" intvalue="300"/>
                     </file> 
-                    <attr name="ADUsagePE.shadow/ADPermissionPE.shadow" boolvalue="true"/>
                     <file name="ADPermissionPE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/ADPermissionPE.instance"/>
+                        <attr name="position" intvalue="400"/>
                     </file>                                                                                                                       
-                    <attr name="ADPermissionPE.shadow/ADAbstractionPE.shadow" boolvalue="true"/>
                     <file name="ADAbstractionPE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/ADAbstractionPE.instance"/>
+                        <attr name="position" intvalue="500"/>
                     </file>
-                </folder>
-                <attr name="Dependencies/Comments" boolvalue="true"/>        
+                </folder>        
                 <folder name="Comments">    
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.palette.ui.Bundle"/>
+                    <attr name="position" intvalue="500"/>
                     <file name="ADCommentPE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/ADCommentPE.instance"/>
+                        <attr name="position" intvalue="100"/>
                     </file>
-                    <attr name="ADCommentPE.shadow/ADLinkCommentPE.shadow" boolvalue="true"/>
                     <file name="ADLinkCommentPE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/ADLinkCommentPE.instance"/>
+                        <attr name="position" intvalue="200"/>
                     </file>                                     
                 </folder>
             </folder>  
@@ -1047,186 +1054,224 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
                 <folder name="Basic">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.palette.ui.Bundle"/>                    
                     
+                    <attr name="position" intvalue="100"/>
                     <file name="CDClassPaletteElement.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/CDClassPaletteElement.instance"/>                                               
+                        <attr name="position" intvalue="100"/>
                     </file>
-                    <attr name="CDClassPaletteElement.shadow/CDInterfacePaletteElement.shadow" boolvalue="true"/>
                     <file name="CDInterfacePaletteElement.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/CDInterfacePaletteElement.instance"/>
+                        <attr name="position" intvalue="200"/>
                     </file> 
-                    <attr name="CDInterfacePaletteElement.shadow/CDPackagePaletteElement.shadow" boolvalue="true"/>
                     <file name="CDPackagePaletteElement.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/CDPackagePaletteElement.instance"/>
+                        <attr name="position" intvalue="300"/>
                     </file> 
-                    <attr name="CDPackagePaletteElement.shadow/CDCollabLifeLinePaletteElement.shadow" boolvalue="true"/>
                     <file name="CDCollabLifeLinePaletteElement.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/CDCollabLifeLinePaletteElement.instance"/>
+                        <attr name="position" intvalue="400"/>
                     </file> 
-                    <attr name="CDCollabLifeLinePaletteElement.shadow/CDEnumerationPaletteElement.shadow" boolvalue="true"/>
                     <file name="CDEnumerationPaletteElement.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/CDEnumerationPaletteElement.instance"/>
+                        <attr name="position" intvalue="500"/>
                     </file>                                         
-                    <attr name="CDEnumerationPaletteElement.shadow/CDNodePaletteElement.shadow" boolvalue="true"/>                     
+                                         
                     <file name="CDNodePaletteElement.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/CDNodePaletteElement.instance"/>
+                        <attr name="position" intvalue="600"/>
                     </file> 
-                    <attr name="CDNodePaletteElement.shadow/CDDataTypePaletteElement.shadow" boolvalue="true"/>                     
+                                         
                     <file name="CDDataTypePaletteElement.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/CDDataTypePaletteElement.instance"/>
+                        <attr name="position" intvalue="700"/>
                     </file>                  
-                    <attr name="CDDataTypePaletteElement.shadow/CDArtifactPaletteElement.shadow" boolvalue="true"/>                     
+                                         
                     <file name="CDArtifactPaletteElement.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/CDArtifactPaletteElement.instance"/>
+                        <attr name="position" intvalue="800"/>
                     </file> 
-                    <attr name="CDArtifactPaletteElement.shadow/CDAliasedTypePaletteElement.shadow" boolvalue="true"/>                     
+                                         
                     <file name="CDAliasedTypePaletteElement.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/CDAliasedTypePaletteElement.instance"/>
+                        <attr name="position" intvalue="900"/>
                     </file>                       
-                    <attr name="CDAliasedTypePaletteElement.shadow/CDUtilityClassPaletteElement.shadow" boolvalue="true"/>                     
+                                         
                     <file name="CDUtilityClassPaletteElement.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/CDUtilityClassPaletteElement.instance"/>
+                        <attr name="position" intvalue="1000"/>
                     </file>                                         
-                    <attr name="CDUtilityClassPaletteElement.shadow/CDActorPaletteElement.shadow" boolvalue="true"/>                     
+                                         
                     <file name="CDActorPaletteElement.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/CDActorPaletteElement.instance"/>
+                        <attr name="position" intvalue="1100"/>
                     </file>   
-                    <attr name="CDActorPaletteElement.shadow/CDGeneralizationPaletteElement.shadow" boolvalue="true"/>     
+                         
                     <file name="CDGeneralizationPaletteElement.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/CDGeneralizationPaletteElement.instance"/>
+                        <attr name="position" intvalue="1200"/>
                     </file>   
-                    <attr name="CDGeneralizationPaletteElement.shadow/CDImplemenationPaletteElement.shadow" boolvalue="true"/>  
+                      
                     <file name="CDImplemenationPaletteElement.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/CDImplemenationPaletteElement.instance"/>
+                        <attr name="position" intvalue="1300"/>
                     </file>                    
-                    <attr name="CDImplemenationPaletteElement.shadow/CDNestedLinkPaletteElement.shadow" boolvalue="true"/>  
+                      
                     <file name="CDNestedLinkPaletteElement.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/CDNestedLinkPaletteElement.instance"/>
+                        <attr name="position" intvalue="1400"/>
                     </file>                                    
-                </folder>
-                <attr name="Basic/Robustness" boolvalue="true"/>                
+                </folder>                
                 <folder name="Robustness">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.palette.ui.Bundle"/>
+                    <attr name="position" intvalue="200"/>
                     <file name="CDBoundaryClassPaletteElement.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/CDBoundaryClassPaletteElement.instance"/>
+                        <attr name="position" intvalue="100"/>
                     </file> 
-                    <attr name="CDBoundaryClassPaletteElement.shadow/CDControlClassPaletteElement.shadow" boolvalue="true"/>
                     <file name="CDControlClassPaletteElement.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/CDControlClassPaletteElement.instance"/>
+                        <attr name="position" intvalue="200"/>
                     </file>                     
-                    <attr name="CDControlClassPaletteElement.shadow/CDEntityClassPaletteElement.shadow" boolvalue="true"/>                                                                                                    
+                                                                                                                        
                     <file name="CDEntityClassPaletteElement.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/CDEntityClassPaletteElement.instance"/>
+                        <attr name="position" intvalue="300"/>
                     </file>                    
                 </folder>
-                <attr name="Robustness/Dependencies" boolvalue="true"/>
                 <folder name="Dependencies">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.palette.ui.Bundle"/>
+                    <attr name="position" intvalue="300"/>
                     <file name="CDDependencyPaletteElement.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/CDDependencyPaletteElement.instance"/>
+                        <attr name="position" intvalue="100"/>
                     </file>                    
-                    <attr name="CDDependencyPaletteElement.shadow/CDRealizationPaletteElement.shadow" boolvalue="true"/>  
+                      
                     <file name="CDRealizationPaletteElement.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/CDRealizationPaletteElement.instance"/>
+                        <attr name="position" intvalue="200"/>
                     </file>                    
-                    <attr name="CDRealizationPaletteElement.shadow/CDUsagePaletteElement.shadow" boolvalue="true"/>  
+                      
                     <file name="CDUsagePaletteElement.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/CDUsagePaletteElement.instance"/>
+                        <attr name="position" intvalue="300"/>
                     </file>                    
-                    <attr name="CDUsagePaletteElement.shadow/CDPermissionPaletteElement.shadow" boolvalue="true"/>  
+                      
                     <file name="CDPermissionPaletteElement.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/CDPermissionPaletteElement.instance"/>
+                        <attr name="position" intvalue="400"/>
                     </file>                    
-                    <attr name="CDPermissionPaletteElement.shadow/CDAbstractionPaletteElement.shadow" boolvalue="true"/>  
+                      
                     <file name="CDAbstractionPaletteElement.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/CDAbstractionPaletteElement.instance"/>
+                        <attr name="position" intvalue="500"/>
                     </file>                    
                 </folder>                                
-                <attr name="Dependencies/Templates" boolvalue="true"/>                
+                                
                 <folder name="Templates">                
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.palette.ui.Bundle"/>
+                    <attr name="position" intvalue="400"/>
                     <file name="CDTemplateClassPaletteElement.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/CDTemplateClassPaletteElement.instance"/>
+                        <attr name="position" intvalue="100"/>
                     </file>                    
-                    <attr name="CDTemplateClassPaletteElement.shadow/CDDerivationClassifierPaletteElement.shadow" boolvalue="true"/>  
+                      
                     <file name="CDDerivationClassifierPaletteElement.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/CDDerivationClassifierPaletteElement.instance"/>
+                        <attr name="position" intvalue="200"/>
                     </file>                    
-                    <attr name="CDDerivationClassifierPaletteElement.shadow/CDDerivationEdgePaletteElement.shadow" boolvalue="true"/>  
+                      
                     <file name="CDDerivationEdgePaletteElement.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/CDDerivationEdgePaletteElement.instance"/>
+                        <attr name="position" intvalue="300"/>
                     </file>                 
                 </folder>
-                <attr name="Templates/Association" boolvalue="true"/>
                 <folder name="Association">                
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.palette.ui.Bundle"/>
+                    <attr name="position" intvalue="500"/>
                     <file name="CDAssociationPaletteElement.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/CDAssociationPaletteElement.instance"/>
+                        <attr name="position" intvalue="100"/>
                     </file>                    
-                    <attr name="CDAssociationPaletteElement.shadow/CDCompositionPaletteElement.shadow" boolvalue="true"/>  
+                      
                     <file name="CDCompositionPaletteElement.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/CDCompositionPaletteElement.instance"/>
+                        <attr name="position" intvalue="200"/>
                     </file>                    
-                    <attr name="CDCompositionPaletteElement.shadow/CDNavigableCompositionPaletteElement.shadow" boolvalue="true"/>  
+                      
                     <file name="CDNavigableCompositionPaletteElement.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/CDNavigableCompositionPaletteElement.instance"/>
+                        <attr name="position" intvalue="300"/>
                     </file>      
-                    <attr name="CDNavigableCompositionPaletteElement.shadow/CDAggregationPaletteElement.shadow" boolvalue="true"/>      
+                          
                     <file name="CDAggregationPaletteElement.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/CDAggregationPaletteElement.instance"/>
+                        <attr name="position" intvalue="400"/>
                     </file>                    
-                    <attr name="CDAggregationPaletteElement.shadow/CDNavigableAggregationPaletteElement.shadow" boolvalue="true"/>  
+                      
                     <file name="CDNavigableAggregationPaletteElement.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/CDNavigableAggregationPaletteElement.instance"/>
+                        <attr name="position" intvalue="500"/>
                     </file>                    
-                    <attr name="CDNavigableAggregationPaletteElement.shadow/CDNavigableAssociationPaletteElement.shadow" boolvalue="true"/>  
+                      
                     <file name="CDNavigableAssociationPaletteElement.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/CDNavigableAssociationPaletteElement.instance"/>
+                        <attr name="position" intvalue="600"/>
                     </file>                           
-                    <attr name="CDNavigableAssociationPaletteElement.shadow/CDAssociationClassPaletteElement.shadow" boolvalue="true"/>  
+                      
                     <file name="CDAssociationClassPaletteElement.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/CDAssociationClassPaletteElement.instance"/>
+                        <attr name="position" intvalue="700"/>
                     </file>                     
                 </folder>                
-                <attr name="Association/DesignPattern" boolvalue="true"/>
                 <folder name="DesignPattern">                
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.palette.ui.Bundle"/>
+                    <attr name="position" intvalue="600"/>
                     <file name="CDDesignPatternPaletteElement.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/CDDesignPatternPaletteElement.instance"/>
+                        <attr name="position" intvalue="100"/>
                     </file>                    
-                    <attr name="CDDesignPatternPaletteElement.shadow/CDRolePaletteElement.shadow" boolvalue="true"/>  
+                      
                     <file name="CDRolePaletteElement.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/CDRolePaletteElement.instance"/>
+                        <attr name="position" intvalue="200"/>
                     </file>                    
-                    <attr name="CDRolePaletteElement.shadow/CDInterfaceRolePaletteElement.shadow" boolvalue="true"/>  
+                      
                     <file name="CDInterfaceRolePaletteElement.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/CDInterfaceRolePaletteElement.instance"/>
+                        <attr name="position" intvalue="300"/>
                     </file>      
-                    <attr name="CDInterfaceRolePaletteElement.shadow/CDActorRolePaletteElement.shadow" boolvalue="true"/>      
+                          
                     <file name="CDActorRolePaletteElement.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/CDActorRolePaletteElement.instance"/>
+                        <attr name="position" intvalue="400"/>
                     </file>                    
-                    <attr name="CDActorRolePaletteElement.shadow/CDClassRolePaletteElement.shadow" boolvalue="true"/>  
+                      
                     <file name="CDClassRolePaletteElement.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/CDClassRolePaletteElement.instance"/>
+                        <attr name="position" intvalue="500"/>
                     </file>                    
-                    <attr name="CDClassRolePaletteElement.shadow/CDUseCaseRolePaletteElement.shadow" boolvalue="true"/>  
+                      
                     <file name="CDUseCaseRolePaletteElement.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/CDUseCaseRolePaletteElement.instance"/>
+                        <attr name="position" intvalue="600"/>
                     </file>                           
-                    <attr name="CDUseCaseRolePaletteElement.shadow/CDRoleBindingPaletteElement.shadow" boolvalue="true"/>  
+                      
                     <file name="CDRoleBindingPaletteElement.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/CDRoleBindingPaletteElement.instance"/>
+                        <attr name="position" intvalue="700"/>
                     </file>                     
                 </folder>  
-                <attr name="DesignPattern/Comments" boolvalue="true"/>
                 <folder name="Comments">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.palette.ui.Bundle"/>
+                    <attr name="position" intvalue="700"/>
                     <file name="CDCommentPaletteElement.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/CDCommentPaletteElement.instance"/>
+                        <attr name="position" intvalue="100"/>
                     </file>                     
-                    <attr name="CDCommentPaletteElement.shadow/CDLinkCommentPaletteElement.shadow" boolvalue="true"/>                      
+                                          
                     <file name="CDLinkCommentPaletteElement.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/CDLinkCommentPaletteElement.instance"/>
+                        <attr name="position" intvalue="200"/>
                     </file> 
                 </folder>                
             </folder>
@@ -1236,50 +1281,56 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.palette.ui.Bundle"/>
                 <folder name="Basic">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.palette.ui.Bundle"/>                                        
+                    <attr name="position" intvalue="100"/>
                     <file name="CLBDCollaborationLifeLinePE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/CLBDCollaborationLifeLinePE.instance"/>                                               
+                        <attr name="position" intvalue="100"/>
                     </file>
-                    <attr name="CLBDCollaborationLifeLinePE.shadow/CLBDActorPE.shadow" boolvalue="true"/>
                     <file name="CLBDActorPE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/CLBDActorPE.instance"/>
+                        <attr name="position" intvalue="200"/>
                     </file> 
-                    <attr name="CLBDActorPE.shadow/CLBDConnectorPE.shadow" boolvalue="true"/>
                     <file name="CLBDConnectorPE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/CLBDConnectorPE.instance"/>
+                        <attr name="position" intvalue="300"/>
                     </file>                     
                 </folder>
-                <attr name="Basic/Dependencies" boolvalue="true"/>
                 <folder name="Dependencies">    
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.palette.ui.Bundle"/>
+                    <attr name="position" intvalue="200"/>
                     <file name="CLBDDependencyPE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/CLBDDependencyPE.instance"/>
+                        <attr name="position" intvalue="100"/>
                     </file> 
-                    <attr name="CLBDDependencyPE.shadow/CLBDRealizePE.shadow" boolvalue="true"/>
                     <file name="CLBDRealizePE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/CLBDRealizePE.instance"/>
+                        <attr name="position" intvalue="200"/>
                     </file> 
-                    <attr name="CLBDRealizePE.shadow/CLBDUsagePE.shadow" boolvalue="true"/>
                     <file name="CLBDUsagePE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/CLBDUsagePE.instance"/>
+                        <attr name="position" intvalue="300"/>
                     </file> 
-                    <attr name="CLBDUsagePE.shadow/CLBDPermissionPE.shadow" boolvalue="true"/>
                     <file name="CLBDPermissionPE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/CLBDPermissionPE.instance"/>
+                        <attr name="position" intvalue="400"/>
                     </file>                     
-                    <attr name="CLBDPermissionPE.shadow/CLBDAbstractionPE.shadow" boolvalue="true"/>                                                                                                    
+                                                                                                                        
                     <file name="CLBDAbstractionPE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/CLBDAbstractionPE.instance"/>
+                        <attr name="position" intvalue="500"/>
                     </file> 
                 </folder>
-                <attr name="Dependencies/Comments" boolvalue="true"/>
                 <folder name="Comments">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.palette.ui.Bundle"/>
+                    <attr name="position" intvalue="300"/>
                     <file name="CLBDCommentPE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/CLBDCommentPE.instance"/>
+                        <attr name="position" intvalue="100"/>
                     </file>                     
-                    <attr name="CLBDCommentPE.shadow/CLBDLinkCommentPE.shadow" boolvalue="true"/> 
+                     
                     <file name="CLBDLinkCommentPE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/CLBDLinkCommentPE.instance"/>  
+                        <attr name="position" intvalue="200"/>
                     </file>   
                 </folder>
             </folder>
@@ -1289,22 +1340,24 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.palette.ui.Bundle"/>
                 <folder name="Basic">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.palette.ui.Bundle"/>                                        
+                    <attr name="position" intvalue="100"/>
                     <file name="CMPDComponentPE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/CMPDComponentPE.instance"/>                                               
+                        <attr name="position" intvalue="100"/>
                     </file>
-                    <attr name="CMPDComponentPE.shadow/CMPDClassPE.shadow" boolvalue="true"/>
                     <file name="CMPDClassPE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/CMPDClassPE.instance"/>
+                        <attr name="position" intvalue="200"/>
                     </file> 
-                    <attr name="CMPDClassPE.shadow/CMPDInterfacePE.shadow" boolvalue="true"/>
                     <file name="CMPDInterfacePE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/CMPDInterfacePE.instance"/>
+                        <attr name="position" intvalue="300"/>
                     </file> 
-                    <attr name="CMPDInterfacePE.shadow/CMPDPackagePE.shadow" boolvalue="true"/>
                     <file name="CMPDPackagePE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/CMPDPackagePE.instance"/>
+                        <attr name="position" intvalue="400"/>
                     </file> 
-                    <attr name="CMPDPackagePE.shadow/CMPDArtifactPE.shadow" boolvalue="true"/>
+                    
 
                     <!-- Praveen: Boundary, Entity, Control, Enumeration, node, datatype, aliased, utility, actor and deployment descriptor have been removed.
                     Trey and I discussed this. -->
@@ -1335,8 +1388,8 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
                     -->
                     <file name="CMPDArtifactPE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/CMPDArtifactPE.instance"/>
+                        <attr name="position" intvalue="500"/>
                     </file> 
-                    <attr name="CMPDArtifactPE.shadow/CMPDGeneralizationPE.shadow" boolvalue="true"/>
                     <!-- <file name="CMPDAliasedTypePE.shadow">
                     <attr name="originalFile" stringvalue="UML/Components/CMPDAliasedTypePE.instance"/>
                     </file> 
@@ -1355,133 +1408,142 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
                     -->               
                     <file name="CMPDGeneralizationPE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/CMPDGeneralizationPE.instance"/>
+                        <attr name="position" intvalue="600"/>
                     </file> 
-                    <attr name="CMPDGeneralizationPE.shadow/CMPDImplemenationPE.shadow" boolvalue="true"/>
                     <file name="CMPDImplemenationPE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/CMPDImplemenationPE.instance"/>
+                        <attr name="position" intvalue="700"/>
                     </file>                     
-                    <attr name="CMPDImplemenationPE.shadow/CMPDNestedLinkPE.shadow" boolvalue="true"/>                                                                                                    
+                                                                                                                        
                     <file name="CMPDNestedLinkPE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/CMPDNestedLinkPE.instance"/>
+                        <attr name="position" intvalue="800"/>
                     </file>                     
-                    <attr name="CMPDNestedLinkPE.shadow/CMPDDelegatePE.shadow" boolvalue="true"/>
                     <file name="CMPDDelegatePE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/CMPDDelegatePE.instance"/>
+                        <attr name="position" intvalue="900"/>
                     </file> 
-                    <attr name="CMPDDelegatePE.shadow/CMPDAssemblyConnectorPE.shadow" boolvalue="true"/>
                     <file name="CMPDAssemblyConnectorPE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/CMPDAssemblyConnectorPE.instance"/>
+                        <attr name="position" intvalue="1000"/>
                     </file>                                                                                                                                                      
                 </folder>
-                <attr name="Basic/Dependencies" boolvalue="true"/>
                 <folder name="Dependencies">    
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.palette.ui.Bundle"/>
+                    <attr name="position" intvalue="200"/>
                     <file name="CMPDDependencyPE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/CMPDDependencyPE.instance"/>
+                        <attr name="position" intvalue="100"/>
                     </file> 
-                    <attr name="CMPDDependencyPE.shadow/CMPDRealizePE.shadow" boolvalue="true"/>
                     <file name="CMPDRealizePE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/CMPDRealizePE.instance"/>
+                        <attr name="position" intvalue="200"/>
                     </file> 
-                    <attr name="CMPDRealizePE.shadow/CMPDUsagePE.shadow" boolvalue="true"/>
                     <file name="CMPDUsagePE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/CMPDUsagePE.instance"/>
+                        <attr name="position" intvalue="300"/>
                     </file>                     
-                    <attr name="CMPDUsagePE.shadow/CMPDPermissionPE.shadow" boolvalue="true"/>                                                                                                    
+                                                                                                                        
                     <file name="CMPDPermissionPE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/CMPDPermissionPE.instance"/>
+                        <attr name="position" intvalue="400"/>
                     </file> 
-                    <attr name="CMPDPermissionPE.shadow/CMPDAbstractionPE.shadow" boolvalue="true"/>
                     <file name="CMPDAbstractionPE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/CMPDAbstractionPE.instance"/>
+                        <attr name="position" intvalue="500"/>
                     </file> 
                 </folder>
-                <attr name="Dependencies/Templates" boolvalue="true"/>
                 <folder name="Templates">    
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.palette.ui.Bundle"/>
+                    <attr name="position" intvalue="300"/>
                     <file name="CMPDTemplatePE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/CMPDTemplatePE.instance"/>
+                        <attr name="position" intvalue="100"/>
                     </file> 
-                    <attr name="CMPDTemplatePE.shadow/CMPDDerivationClassifierPE.shadow" boolvalue="true"/>
                     <file name="CMPDDerivationClassifierPE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/CMPDDerivationClassifierPE.instance"/>
+                        <attr name="position" intvalue="200"/>
                     </file> 
-                    <attr name="CMPDDerivationClassifierPE.shadow/CMPDDerivationEdgePE.shadow" boolvalue="true"/>
                     <file name="CMPDDerivationEdgePE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/CMPDDerivationEdgePE.instance"/>
+                        <attr name="position" intvalue="300"/>
                     </file>                
                 </folder>                
-                <attr name="Templates/Association" boolvalue="true"/>
                 <folder name="Association">    
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.palette.ui.Bundle"/>
+                    <attr name="position" intvalue="400"/>
                     <file name="CMPDAssociationPE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/CMPDAssociationPE.instance"/>
+                        <attr name="position" intvalue="100"/>
                     </file> 
-                    <attr name="CMPDAssociationPE.shadow/CMPDCompositionPE.shadow" boolvalue="true"/>
                     <file name="CMPDCompositionPE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/CMPDCompositionPE.instance"/>
+                        <attr name="position" intvalue="200"/>
                     </file> 
-                    <attr name="CMPDCompositionPE.shadow/CMPDNavigableCompositionPE.shadow" boolvalue="true"/>
                     <file name="CMPDNavigableCompositionPE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/CMPDNavigableCompositionPE.instance"/>
+                        <attr name="position" intvalue="300"/>
                     </file>    
-                    <attr name="CMPDNavigableCompositionPE.shadow/CMPDAggregationPE.shadow" boolvalue="true"/>
                     <file name="CMPDAggregationPE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/CMPDAggregationPE.instance"/>
+                        <attr name="position" intvalue="400"/>
                     </file> 
-                    <attr name="CMPDAggregationPE.shadow/CMPDNavigableAggregationPE.shadow" boolvalue="true"/>
                     <file name="CMPDNavigableAggregationPE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/CMPDNavigableAggregationPE.instance"/>
+                        <attr name="position" intvalue="500"/>
                     </file>         
-                    <attr name="CMPDNavigableAggregationPE.shadow/CMPDNavigableAssociation.shadow" boolvalue="true"/>
                     <file name="CMPDNavigableAssociation.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/CMPDNavigableAssociation.instance"/>
+                        <attr name="position" intvalue="600"/>
                     </file>                                                 
-                    <attr name="CMPDNavigableAssociation.shadow/CMPDAssociationClassPE.shadow" boolvalue="true"/>
                     <file name="CMPDAssociationClassPE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/CMPDAssociationClassPE.instance"/>
+                        <attr name="position" intvalue="700"/>
                     </file>                      
                 </folder>    
-                <attr name="Association/DesignPattern" boolvalue="true"/>
                 <folder name="DesignPattern">    
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.palette.ui.Bundle"/>
+                    <attr name="position" intvalue="500"/>
                     <file name="CMPDDesignPatternPE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/CMPDDesignPatternPE.instance"/>
+                        <attr name="position" intvalue="100"/>
                     </file> 
-                    <attr name="CMPDDesignPatternPE.shadow/CMPDRolePE.shadow" boolvalue="true"/>
                     <file name="CMPDRolePE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/CMPDRolePE.instance"/>
+                        <attr name="position" intvalue="200"/>
                     </file> 
-                    <attr name="CMPDRolePE.shadow/CMPDInterfaceRolePE.shadow" boolvalue="true"/>
                     <file name="CMPDInterfaceRolePE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/CMPDInterfaceRolePE.instance"/>
+                        <attr name="position" intvalue="300"/>
                     </file>    
-                    <attr name="CMPDInterfaceRolePE.shadow/CMPDActorRolePE.shadow" boolvalue="true"/>
                     <file name="CMPDActorRolePE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/CMPDActorRolePE.instance"/>
+                        <attr name="position" intvalue="400"/>
                     </file> 
-                    <attr name="CMPDActorRolePE.shadow/CMPDClassRolePE.shadow" boolvalue="true"/>
                     <file name="CMPDClassRolePE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/CMPDClassRolePE.instance"/>
+                        <attr name="position" intvalue="500"/>
                     </file>         
-                    <attr name="CMPDClassRolePE.shadow/CMPDUseCaseRolePE.shadow" boolvalue="true"/>
                     <file name="CMPDUseCaseRolePE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/CMPDUseCaseRolePE.instance"/>
+                        <attr name="position" intvalue="600"/>
                     </file>                                                 
-                    <attr name="CMPDUseCaseRolePE.shadow/CMPDRoleBindingPE.shadow" boolvalue="true"/>
                     <file name="CMPDRoleBindingPE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/CMPDRoleBindingPE.instance"/>
+                        <attr name="position" intvalue="700"/>
                     </file>                      
                 </folder>          
-                <attr name="DesignPattern/Comments" boolvalue="true"/>
                 <folder name="Comments">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.palette.ui.Bundle"/>
+                    <attr name="position" intvalue="600"/>
                     <file name="CMPDCommentPE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/CMPDCommentPE.instance"/>
+                        <attr name="position" intvalue="100"/>
                     </file>                       
-                    <attr name="CMPDCommentPE.shadow/CMPDLinkCommentPE.shadow" boolvalue="true"/>                     
+                                         
                     <file name="CMPDLinkCommentPE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/CMPDLinkCommentPE.instance"/>  
+                        <attr name="position" intvalue="200"/>
                     </file>   
                 </folder>                                
             </folder>
@@ -1490,74 +1552,91 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
             <folder name="DeploymentDiagram">
                 <folder name="Basic">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.palette.ui.Bundle"/>
+                    <attr name="position" intvalue="100"/>
                     <file name="DDComponentPE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/DDComponentPE.instance"/>  
+                        <attr name="position" intvalue="100"/>
                     </file>   
-                    <attr name="DDComponentPE.shadow/DDInterfacePE.shadow" boolvalue="true"/>                                                                                                    
+                                                                                                                        
                     <file name="DDInterfacePE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/DDInterfacePE.instance"/>
+                        <attr name="position" intvalue="200"/>
                     </file>                         
-                    <attr name="DDInterfacePE.shadow/DDPackagePE.shadow" boolvalue="true"/>                                                                                                    
+                                                                                                                        
                     <file name="DDPackagePE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/DDPackagePE.instance"/>
+                        <attr name="position" intvalue="300"/>
                     </file> 
-                    <attr name="DDPackagePE.shadow/DDArtifactPE.shadow" boolvalue="true"/>                                                                                                    
+                                                                                                                        
                     <file name="DDArtifactPE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/DDArtifactPE.instance"/>
+                        <attr name="position" intvalue="400"/>
                     </file> 
-                    <attr name="DDArtifactPE.shadow/DDNodePE.shadow" boolvalue="true"/>                                                                                                    
+                                                                                                                        
                     <file name="DDNodePE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/DDNodePE.instance"/>
+                        <attr name="position" intvalue="500"/>
                     </file> 
-                    <attr name="DDNodePE.shadow/DDDeploymentSpecPE.shadow" boolvalue="true"/>                                                                                                    
+                                                                                                                        
                     <file name="DDDeploymentSpecPE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/DDDeploymentSpecPE.instance"/>
+                        <attr name="position" intvalue="600"/>
                     </file>              
-                    <attr name="DDDeploymentSpecPE.shadow/DDGeneralizationPE.shadow" boolvalue="true"/>                    
+                                        
                     <file name="DDGeneralizationPE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/DDGeneralizationPE.instance"/>  
+                        <attr name="position" intvalue="700"/>
                     </file>   
-                    <attr name="DDGeneralizationPE.shadow/DDImplementationPE.shadow" boolvalue="true"/>                                                                                         
+                                                                                                             
                     <file name="DDImplementationPE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/DDImplementationPE.instance"/>
+                        <attr name="position" intvalue="800"/>
                     </file>                         
-                    <attr name="DDImplementationPE.shadow/DDAssociationPE.shadow" boolvalue="true"/>  
+                      
                     <file name="DDAssociationPE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/DDAssociationPE.instance"/>
+                        <attr name="position" intvalue="900"/>
                     </file>                       
                 </folder>   
-                <attr name="Basic/Dependencies" boolvalue="true"/>
                 <folder name="Dependencies">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.palette.ui.Bundle"/>
+                    <attr name="position" intvalue="200"/>
                     <file name="DDDependencyPE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/DDDependencyPE.instance"/>
+                        <attr name="position" intvalue="100"/>
                     </file>  
-                    <attr name="DDDependencyPE.shadow/DDRealizePE.shadow" boolvalue="true"/>                                                                                                    
+                                                                                                                        
                     <file name="DDRealizePE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/DDRealizePE.instance"/>
+                        <attr name="position" intvalue="200"/>
                     </file>  
-                    <attr name="DDRealizePE.shadow/DDUsagePE.shadow" boolvalue="true"/>                                                                                                    
+                                                                                                                        
                     <file name="DDUsagePE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/DDUsagePE.instance"/>
+                        <attr name="position" intvalue="300"/>
                     </file>  
-                    <attr name="DDUsagePE.shadow/DDPermissionPE.shadow" boolvalue="true"/>                                                                                                    
+                                                                                                                        
                     <file name="DDPermissionPE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/DDPermissionPE.instance"/>
+                        <attr name="position" intvalue="400"/>
                     </file>  
-                    <attr name="DDPermissionPE.shadow/DDAbstractionPE.shadow" boolvalue="true"/>                                                                                                    
+                                                                                                                        
                     <file name="DDAbstractionPE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/DDAbstractionPE.instance"/>
+                        <attr name="position" intvalue="500"/>
                     </file>  
                 </folder>   
-                <attr name="Dependencies/Comments" boolvalue="true"/>
                 <folder name="Comments">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.palette.ui.Bundle"/>
+                    <attr name="position" intvalue="300"/>
                     <file name="DDCommentPE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/DDCommentPE.instance"/>
+                        <attr name="position" intvalue="100"/>
                     </file>                     
-                    <attr name="DDCommentPE.shadow/DDLinkCommentPE.shadow" boolvalue="true"/>                    
+                                        
                     <file name="DDLinkCommentPE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/DDLinkCommentPE.instance"/>  
+                        <attr name="position" intvalue="200"/>
                     </file>   
                 </folder>                                               
             </folder>
@@ -1566,50 +1645,61 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
             <folder name="SequenceDiagram">
                 <folder name="Basic">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.palette.ui.Bundle"/>
+                    <attr name="position" intvalue="100"/>
                     <file name="SDClassPE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/SDClassPE.instance"/>  
+                        <attr name="position" intvalue="100"/>
                     </file>   
-                    <attr name="SDClassPE.shadow/SDActorPE.shadow" boolvalue="true"/>                                                                                                    
+                                                                                                                        
                     <file name="SDActorPE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/SDActorPE.instance"/>
+                        <attr name="position" intvalue="200"/>
                     </file>                         
-                    <attr name="SDActorPE.shadow/SDSynchronousMessage.shadow" boolvalue="true"/>                                                                                                    
+                                                                                                                        
                     <file name="SDSynchronousMessage.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/SDSynchronousMessage.instance"/>
+                        <attr name="position" intvalue="300"/>
                     </file> 
-                    <attr name="SDSynchronousMessage.shadow/SDAsynchronousMessagePE.shadow" boolvalue="true"/>                                                                                                    
+                                                                                                                        
                     <file name="SDAsynchronousMessagePE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/SDAsynchronousMessagePE.instance"/>
+                        <attr name="position" intvalue="400"/>
                     </file> 
-                    <attr name="SDAsynchronousMessagePE.shadow/SDCreateMessagePE.shadow" boolvalue="true"/>                                                                                                    
+                                                                                                                        
                     <file name="SDCreateMessagePE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/SDCreateMessagePE.instance"/>
+                        <attr name="position" intvalue="500"/>
                     </file> 
-                    <attr name="SDCreateMessagePE.shadow/SDMesssageToSelfPE.shadow" boolvalue="true"/>                                                                                                    
+                                                                                                                        
                     <file name="SDMesssageToSelfPE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/SDMesssageToSelfPE.instance"/>
+                        <attr name="position" intvalue="600"/>
                     </file>                                                                                 
                 </folder>   
-                <attr name="Basic/Control" boolvalue="true"/>
                 <folder name="Control">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.palette.ui.Bundle"/>
+                    <attr name="position" intvalue="200"/>
                     <file name="SDDestroyLifelinePE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/SDDestroyLifelinePE.instance"/>  
+                        <attr name="position" intvalue="100"/>
                     </file>   
-                    <attr name="SDDestroyLifelinePE.shadow/SDCombinedFragmentPE.shadow" boolvalue="true"/>                                                                                                    
+                                                                                                                        
                     <file name="SDCombinedFragmentPE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/SDCombinedFragmentPE.instance"/>
+                        <attr name="position" intvalue="200"/>
                     </file>                         
                 </folder>   
-                <attr name="Control/Comments" boolvalue="true"/>
                 <folder name="Comments">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.palette.ui.Bundle"/>
+                    <attr name="position" intvalue="300"/>
                     <file name="SDCommentPE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/SDCommentPE.instance"/>
+                        <attr name="position" intvalue="100"/>
                     </file>                      
-                    <attr name="SDCommentPE.shadow/SDLinkCommentPE.shadow" boolvalue="true"/>                    
+                                        
                     <file name="SDLinkCommentPE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/SDLinkCommentPE.instance"/>  
+                        <attr name="position" intvalue="200"/>
                     </file>   
                 </folder>                                                           
             </folder>                                    
@@ -1618,94 +1708,112 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
             <folder name="StateDiagram">
                 <folder name="Basic">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.palette.ui.Bundle"/>
+                    <attr name="position" intvalue="100"/>
                     <file name="STDSimpleStatePE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/STDSimpleStatePE.instance"/>  
+                        <attr name="position" intvalue="100"/>
                     </file>   
-                    <attr name="STDSimpleStatePE.shadow/STDStateTransitionPE.shadow" boolvalue="true"/>                                                                                                    
+                                                                                                                        
                     <file name="STDStateTransitionPE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/STDStateTransitionPE.instance"/>
+                        <attr name="position" intvalue="200"/>
                     </file>                         
-                    <attr name="STDStateTransitionPE.shadow/STDPseudoInitialPE.shadow" boolvalue="true"/>                                                                                                    
+                                                                                                                        
                     <file name="STDPseudoInitialPE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/STDPseudoInitialPE.instance"/>
+                        <attr name="position" intvalue="300"/>
                     </file> 
-                    <attr name="STDPseudoInitialPE.shadow/STDFinalStatePE.shadow" boolvalue="true"/>                                                                                                    
+                                                                                                                        
                     <file name="STDFinalStatePE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/STDFinalStatePE.instance"/>
+                        <attr name="position" intvalue="400"/>
                     </file> 
-                    <attr name="STDFinalStatePE.shadow/STDFinalStateAbortedPE.shadow" boolvalue="true"/>                                                                                                    
+                                                                                                                        
                     <file name="STDFinalStateAbortedPE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/STDFinalStateAbortedPE.instance"/>
+                        <attr name="position" intvalue="500"/>
                     </file> 
-                    <attr name="STDFinalStateAbortedPE.shadow/STDPseudoStateJoinPE.shadow" boolvalue="true"/>                                                                                                    
+                                                                                                                        
                     <file name="STDPseudoStateJoinPE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/STDPseudoStateJoinPE.instance"/>
+                        <attr name="position" intvalue="600"/>
                     </file> 
-                    <attr name="STDPseudoStateJoinPE.shadow/STDPsuedoStateJoinHorizontalPE.shadow" boolvalue="true"/>                                                                                                    
+                                                                                                                        
                     <file name="STDPsuedoStateJoinHorizontalPE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/STDPsuedoStateJoinHorizontalPE.instance"/>
+                        <attr name="position" intvalue="700"/>
                     </file> 
-                    <attr name="STDPsuedoStateJoinHorizontalPE.shadow/STDCompositeStatePE.shadow" boolvalue="true"/>                                                                                                    
+                                                                                                                        
                     <file name="STDCompositeStatePE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/STDCompositeStatePE.instance"/>
+                        <attr name="position" intvalue="800"/>
                     </file> 
-                    <attr name="STDCompositeStatePE.shadow/STDPseudoStateChoicePE.shadow" boolvalue="true"/>                                                                                                    
+                                                                                                                        
                     <file name="STDPseudoStateChoicePE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/STDPseudoStateChoicePE.instance"/>
+                        <attr name="position" intvalue="900"/>
                     </file> 
-                    <attr name="STDPseudoStateChoicePE.shadow/STDPsuedoShallowHistoryPE.shadow" boolvalue="true"/>                                                                                                    
+                                                                                                                        
                     <file name="STDPsuedoShallowHistoryPE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/STDPsuedoShallowHistoryPE.instance"/>
+                        <attr name="position" intvalue="1000"/>
                     </file> 
-                    <attr name="STDPsuedoShallowHistoryPE.shadow/STDPseudoDeepHistoryPE.shadow" boolvalue="true"/>                                                                                                    
+                                                                                                                        
                     <file name="STDPseudoDeepHistoryPE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/STDPseudoDeepHistoryPE.instance"/>
+                        <attr name="position" intvalue="1100"/>
                     </file> 
-                    <attr name="STDPseudoDeepHistoryPE.shadow/STDPseudoEntryPointPE.shadow" boolvalue="true"/>                                                                                                    
+                                                                                                                        
                     <file name="STDPseudoEntryPointPE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/STDPseudoEntryPointPE.instance"/>
+                        <attr name="position" intvalue="1200"/>
                     </file> 
-                    <attr name="STDPseudoEntryPointPE.shadow/STDPseudoJunctionPE.shadow" boolvalue="true"/>                                                                                                    
+                                                                                                                        
                     <file name="STDPseudoJunctionPE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/STDPseudoJunctionPE.instance"/>
+                        <attr name="position" intvalue="1300"/>
                     </file> 
-                    <attr name="STDPseudoJunctionPE.shadow/STDSubMachinePE.shadow" boolvalue="true"/>                                                                                                    
+                                                                                                                        
                     <file name="STDSubMachinePE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/STDSubMachinePE.instance"/>
+                        <attr name="position" intvalue="1400"/>
                     </file>                                                                                                                                                                                                                                                 
                 </folder>   
-                <attr name="Basic/Dependencies" boolvalue="true"/>
                 <folder name="Dependencies">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.palette.ui.Bundle"/>
+                    <attr name="position" intvalue="200"/>
                     <file name="STDDependencyPE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/STDDependencyPE.instance"/>  
+                        <attr name="position" intvalue="100"/>
                     </file>   
-                    <attr name="STDDependencyPE.shadow/STDRealizePE.shadow" boolvalue="true"/>
                     <file name="STDRealizePE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/STDRealizePE.instance"/>
+                        <attr name="position" intvalue="200"/>
                     </file>                         
-                    <attr name="STDRealizePE.shadow/STDUsagePE.shadow" boolvalue="true"/>
                     <file name="STDUsagePE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/STDUsagePE.instance"/>
+                        <attr name="position" intvalue="300"/>
                     </file> 
-                    <attr name="STDUsagePE.shadow/STDPermissionPE.shadow" boolvalue="true"/>
                     <file name="STDPermissionPE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/STDPermissionPE.instance"/>
+                        <attr name="position" intvalue="400"/>
                     </file> 
-                    <attr name="STDPermissionPE.shadow/STDAbstractionPE.shadow" boolvalue="true"/>
                     <file name="STDAbstractionPE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/STDAbstractionPE.instance"/>
+                        <attr name="position" intvalue="500"/>
                     </file>                                                             
                 </folder>            
-                <attr name="Dependencies/Comments" boolvalue="true"/>
                 <folder name="Comments">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.palette.ui.Bundle"/>
+                    <attr name="position" intvalue="300"/>
                     <file name="STDCommentPE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/STDCommentPE.instance"/>
+                        <attr name="position" intvalue="100"/>
                     </file>                      
-                    <attr name="STDCommentPE.shadow/STDLinkCommentPE.shadow" boolvalue="true"/>                    
+                                        
                     <file name="STDLinkCommentPE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/STDLinkCommentPE.instance"/>  
+                        <attr name="position" intvalue="200"/>
                     </file>   
                 </folder> 
             </folder>
@@ -1714,66 +1822,73 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
             <folder name="UsecaseDiagram">
                 <folder name="Basic">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.palette.ui.Bundle"/>
+                    <attr name="position" intvalue="100"/>
                     <file name="UCDUseCasePE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/UCDUseCasePE.instance"/>  
+                        <attr name="position" intvalue="100"/>
                     </file>   
-                    <attr name="UCDUseCasePE.shadow/UCDPackagePE.shadow" boolvalue="true"/>                                                                                                    
+                                                                                                                        
                     <file name="UCDPackagePE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/UCDPackagePE.instance"/>
+                        <attr name="position" intvalue="200"/>
                     </file>                         
-                    <attr name="UCDPackagePE.shadow/UCDActorPE.shadow" boolvalue="true"/>                                                                                                    
+                                                                                                                        
                     <file name="UCDActorPE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/UCDActorPE.instance"/>
+                        <attr name="position" intvalue="300"/>
                     </file> 
-                    <attr name="UCDActorPE.shadow/UCDIncludePE.shadow" boolvalue="true"/>
                     <file name="UCDIncludePE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/UCDIncludePE.instance"/>  
+                        <attr name="position" intvalue="400"/>
                     </file>   
-                    <attr name="UCDIncludePE.shadow/UCDExtendPE.shadow" boolvalue="true"/>
                     <file name="UCDExtendPE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/UCDExtendPE.instance"/>
+                        <attr name="position" intvalue="500"/>
                     </file>                         
-                    <attr name="UCDExtendPE.shadow/UCDGeneralizePE.shadow" boolvalue="true"/>
                     <file name="UCDGeneralizePE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/UCDGeneralizePE.instance"/>
+                        <attr name="position" intvalue="600"/>
                     </file> 
-                    <attr name="UCDGeneralizePE.shadow/UCDAssociationPE.shadow" boolvalue="true"/>
                     <file name="UCDAssociationPE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/UCDAssociationPE.instance"/>
+                        <attr name="position" intvalue="700"/>
                     </file>                      
                 </folder>   
-                <attr name="Basic/Dependencies" boolvalue="true"/>
                 <folder name="Dependencies">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.palette.ui.Bundle"/>
+                    <attr name="position" intvalue="200"/>
                     <file name="UCDDependencyPE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/UCDDependencyPE.instance"/>
+                        <attr name="position" intvalue="100"/>
                     </file> 
-                    <attr name="UCDDependencyPE.shadow/UCDRealizePE.shadow" boolvalue="true"/>
                     <file name="UCDRealizePE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/UCDRealizePE.instance"/>
+                        <attr name="position" intvalue="200"/>
                     </file>                                                             
-                    <attr name="UCDRealizePE.shadow/UCDUsagePE.shadow" boolvalue="true"/>
                     <file name="UCDUsagePE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/UCDUsagePE.instance"/>
+                        <attr name="position" intvalue="300"/>
                     </file> 
-                    <attr name="UCDUsagePE.shadow/UCDPermissionPE.shadow" boolvalue="true"/>
                     <file name="UCDPermissionPE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/UCDPermissionPE.instance"/>
+                        <attr name="position" intvalue="400"/>
                     </file>  
-                    <attr name="UCDPermissionPE.shadow/UCDAbstractionPE.shadow" boolvalue="true"/>
                     <file name="UCDAbstractionPE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/UCDAbstractionPE.instance"/>
+                        <attr name="position" intvalue="500"/>
                     </file> 
                 </folder>            
-                <attr name="Dependencies/Comments" boolvalue="true"/>
                 <folder name="Comments">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.palette.ui.Bundle"/>
+                    <attr name="position" intvalue="300"/>
                     <file name="UCDCommentPE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/UCDCommentPE.instance"/>
+                        <attr name="position" intvalue="100"/>
                     </file>                       
-                    <attr name="UCDCommentPE.shadow/UCDLinkCommentPE.shadow" boolvalue="true"/>                    
+                                        
                     <file name="UCDLinkCommentPE.shadow">
                         <attr name="originalFile" stringvalue="UML/Components/UCDLinkCommentPE.instance"/>  
+                        <attr name="position" intvalue="200"/>
                     </file> 
                 </folder>             
             </folder>                                    

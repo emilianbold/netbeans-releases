@@ -521,6 +521,15 @@ public class LayerUtils {
             NbModuleProvider module = project.getLookup().lookup(NbModuleProvider.class);
             return module.getCodeNameBase().replace('.', '/') + "/layer.xml"; // NOI18N
         }
+
+        public @Override String toString() {
+            FileObject layer = getLayerFile();
+            if (layer != null) {
+                return FileUtil.getFileDisplayName(layer);
+            } else {
+                return FileUtil.getFileDisplayName(project.getProjectDirectory());
+            }
+        }
         
     }
     

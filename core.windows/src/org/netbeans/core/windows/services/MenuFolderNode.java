@@ -125,17 +125,13 @@ public final class MenuFolderNode extends DataFolder.FolderNode {
                 try {
                     FileObject newFO = mnFO.getFileObject(s);
                     if (newFO == null) {
-                        String lastName = getLastName();
-                        
+                        DataObject[] oldKids = folder.getChildren();
                         newFO = mnFO.createFolder (s);
-
                         // #13015. Set new item as last one.
-                        if(lastName != null) {
-                            mnFO.setAttribute(
-                                lastName + "/" + newFO.getNameExt(), // NOI18N
-                                Boolean.TRUE
-                            );
-                        }
+                        DataObject[] newKids = new DataObject[oldKids.length + 1];
+                        System.arraycopy(oldKids, 0, newKids, 0, oldKids.length);
+                        newKids[oldKids.length] = DataObject.find(newFO);
+                        folder.setOrder(newKids);
                     }
                 } catch (java.io.IOException e) {
                     Exceptions.printStackTrace(e);
@@ -150,8 +146,8 @@ public final class MenuFolderNode extends DataFolder.FolderNode {
             InstanceDataObject instData = InstanceDataObject.find
             (folder,null,"javax.swing.JSeparator"); // NOI18N
             
-            String lastName = getLastName();
             DataObject d; 
+            DataObject[] oldKids = folder.getChildren();
             
             if (instData == null) {
                 d = InstanceDataObject.create
@@ -161,34 +157,16 @@ public final class MenuFolderNode extends DataFolder.FolderNode {
             }
 
             // #13015. Set new item as last one.
-            if(lastName != null) {
-                folder.getPrimaryFile().setAttribute(
-                    lastName + "/" + d.getPrimaryFile().getNameExt(), // NOI18N
-                    Boolean.TRUE
-                );
-            }
+            DataObject[] newKids = new DataObject[oldKids.length + 1];
+            System.arraycopy(oldKids, 0, newKids, 0, oldKids.length);
+            newKids[oldKids.length] = d;
+            folder.setOrder(newKids);
         } catch (java.io.IOException e) {
             Exceptions.printStackTrace(e);
         }
     }
     //End
 
-    /** Gets name of last child.
-     * @return name of last menu or <code>null</code> if there is no one */
-    private String getLastName() {
-        String lastName = null;
-        Node[] ch = getChildren().getNodes();
-        if(ch.length > 0) {
-            Node last = ch[ch.length - 1];
-            DataObject d = (DataObject)last.getCookie(DataObject.class);
-            if(d != null) {
-                lastName = d.getPrimaryFile().getNameExt();
-            }
-        }
-        
-        return lastName;
-    }
-    
     /** Actions.
     * @return array of actions for this node
     */

@@ -609,23 +609,25 @@ folder. The call
 suffices to arbitrarily change folder order, but usually it is
 desirable to create the proper order declaratively in the XML. For
 this reason, <code>DataFolder</code> understands special attributes
-(set on the <code>FileObject</code> forming the folder) which provide
-<em>relative ordering constraints</em> on the objects in the folder.
+(set on the files in the folder) which order the objects in the folder.
 Specifically: if there are data objects A and B in the folder,
 represented by
 
 <a href="@org-openide-loaders@/org/openide/loaders/DataObject.html#getPrimaryFile()">primary files</a>
 
-<samp>afile</samp> and <samp>bfile</samp>, and there is an attribute
-on the folder containing them named <samp>afile/bfile</samp> whose
-value is <code>Boolean.TRUE</code>, then the folder will attempt to
+<samp>afile</samp> and <samp>bfile</samp>,
+and <samp>afile</samp> has an attribute named <code>position</code> whose numeric value is less
+than the corresponding attribute on <samp>bfile</samp>, then the folder will attempt to
 place A before B in its ordering. For example, the XML:
 
 <pre>
 &lt;<font class="function-name">folder</font> <font class="variable-name">name</font>=<font class="string">"SomeFolder"</font>&gt;
-    &lt;<font class="function-name">file</font> <font class="variable-name">name</font>=<font class="string">"first.txt"</font> <font class="variable-name">url</font>=<font class="string">"first.txt"</font>/&gt;
-    &lt;<font class="function-name">attr</font> <font class="variable-name">name</font>=<font class="string">"first.txt/second.txt"</font> <font class="variable-name">boolvalue</font>=<font class="string">"true"</font>/&gt;
-    &lt;<font class="function-name">file</font> <font class="variable-name">name</font>=<font class="string">"second.txt"</font> <font class="variable-name">url</font>=<font class="string">"second.txt"</font>/&gt;
+    &lt;<font class="function-name">file</font> <font class="variable-name">name</font>=<font class="string">"first.txt"</font> <font class="variable-name">url</font>=<font class="string">"first.txt"</font>&gt;
+        &lt;<font class="function-name">attr</font> <font class="variable-name">name</font>=<font class="string">"position"</font> <font class="variable-name">intvalue</font>=<font class="string">"100"</font>/&gt;
+    &lt;/<font class="function-name">file</font>&gt;
+    &lt;<font class="function-name">file</font> <font class="variable-name">name</font>=<font class="string">"second.txt"</font> <font class="variable-name">url</font>=<font class="string">"second.txt"</font>&gt;
+        &lt;<font class="function-name">attr</font> <font class="variable-name">name</font>=<font class="string">"position"</font> <font class="variable-name">intvalue</font>=<font class="string">"200"</font>/&gt;
+    &lt;/<font class="function-name">file</font>&gt;
 &lt;/<font class="function-name">folder</font>&gt;
 </pre>
 
@@ -634,36 +636,19 @@ will cause NetBeans to try to keep <samp>first.txt</samp> before
 
 <ol>
 
-<li>Modules may provide layers some of whose files specify relative
-constraints on files in the same folder position but installed by the
-core, or other modules. That is fine and the constraints will be
-honored - assuming the files being constrained both exist. Constraints
-for which one or both of the affected files do not exist, are simply
-ignored.
-
-<li>It is fine to provide multiple constraints from a single file, for
-example if there are several possible files it might need to be
-installed after; all relevant constraints will be attempted.
-
-<li>If constraints are contradictory, they may be ignored (and a
-warning issued).
-
 <li>If the user reorders the folder manually or
 <code>DataFolder.setOrder(DataObject[])</code> is called, the explicit
-order overrides the existing constraints. Subsequently added
+order overrides the existing positions. Subsequently added
 constraints might have an effect, however.
 
 <li>Only the names of <em>primary</em> files from data objects have
 any bearing on the ordering.
 
-<li>A constraint specifying that A comes before B does not force the
-folder to place it <em>immediately</em> before B. If you want to
-ensure that A in fact comes after some other files you know come
-before B, thus trying to make them adjacent, this must be done
-explicitly. Another module might explicitly interpose a file C between
-A and B.
-
 </ol>
+
+<p>There is also an older, now-deprecated system based on relative ordering attributes.</p>
+
+<p>More details are available in <a href="http://wiki.netbeans.org/wiki/view/FolderOrdering103187">wiki</a>.</p>
 
 <p>The resource path pointing to the layer is automatically localized
 by NetBeans every time the module is installed or restored; if there

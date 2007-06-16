@@ -22,44 +22,36 @@ Microsystems, Inc. All Rights Reserved.
 
   <folder name="Templates">
 
-    <attr name="Folder.shadow/Package.shadow" boolvalue="true"/>
     <folder name="Privileged">
-	<attr name="Folder/Package" boolvalue="true"/>
-        <file name="Package.shadow">
+	<file name="Package.shadow">
 	    <attr name="originalFile" stringvalue="Templates/Classes/Package"/>
 	    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.Bundle"/>
-        </file>
-	<attr name="Package.shadow/Main.shadow" boolvalue="true"/>
-        <file name="Main.shadow">
+            <attr name="position" intvalue="100"/>
+            </file>
+	<file name="Main.shadow">
 	    <attr name="originalFile" stringvalue="Templates/Classes/Main.java"/>
 	    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.Bundle"/>
-        </file>
-	<attr name="Main.shadow/Class.shadow" boolvalue="true"/>
-        <file name="Class.shadow">
+            <attr name="position" intvalue="200"/>
+            </file>
+	<file name="Class.shadow">
 	    <attr name="originalFile" stringvalue="Templates/Classes/Class.java"/>
 	    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.Bundle"/>
-        </file>
+            <attr name="position" intvalue="300"/>
+            </file>
     </folder>
 
-    <attr name="Folder/Classes" boolvalue="true"/>    
+        
     <folder name="Classes">
-      <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/java/project/resources/Classes.html"/>
+      <attr name="position" intvalue="1100"/>
+            <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/java/project/resources/Classes.html"/>
       <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.project.Bundle"/>
 
-      <attr name="Class.java/Empty.java" boolvalue="true"/>
-      <attr name="Empty.java/Interface.java" boolvalue="true"/>
-      <attr name="Interface.java/Enum.java" boolvalue="true"/>
-      <attr name="Enum.java/AnnotationType.java" boolvalue="true"/>
-      <attr name="AnnotationType.java/Exception.java" boolvalue="true"/>
-      <attr name="Exception.java/Main.java" boolvalue="true"/>
-      <attr name="Main.java/package-info.java" boolvalue="true"/>
-      <attr name="package-info.java/JApplet.java" boolvalue="true"/>
-      <attr name="JApplet.java/Applet.java" boolvalue="true"/>
-      <attr name="Applet.java/Package" boolvalue="true"/>
+      
       
       <file name="Applet.java" url="resources/Applet.template">
          <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator"/>
-         <attr name="templateCategory" stringvalue="java-classes"/>
+         <attr name="position" intvalue="1000"/>
+                <attr name="templateCategory" stringvalue="java-classes"/>
          <attr name="template" boolvalue="true"/>
          <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
          <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/java/project/resources/Applet.html"/>
@@ -68,7 +60,8 @@ Microsystems, Inc. All Rights Reserved.
       </file>
       <file name="JApplet.java" url="resources/JApplet.template">
          <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator"/>
-         <attr name="templateCategory" stringvalue="java-classes"/>
+         <attr name="position" intvalue="900"/>
+                <attr name="templateCategory" stringvalue="java-classes"/>
          <attr name="template" boolvalue="true"/>
          <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
          <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/java/project/resources/JApplet.html"/>
@@ -77,7 +70,8 @@ Microsystems, Inc. All Rights Reserved.
       </file>
       <file name="Class.java" url="resources/Class.template">         
          <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator"/>
-         <attr name="templateCategory" stringvalue="java-classes, java-classes-basic"/>
+         <attr name="position" intvalue="100"/>
+                <attr name="templateCategory" stringvalue="java-classes, java-classes-basic"/>
          <attr name="template" boolvalue="true"/>
          <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
          <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/java/project/resources/Class.html"/>
@@ -86,7 +80,8 @@ Microsystems, Inc. All Rights Reserved.
       </file>
       <file name="Main.java" url="resources/Main.template">
          <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator"/>
-         <attr name="templateCategory" stringvalue="java-main-class"/>
+         <attr name="position" intvalue="700"/>
+                <attr name="templateCategory" stringvalue="java-main-class"/>
          <attr name="template" boolvalue="true"/>
          <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
          <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/java/project/resources/Main.html"/>
@@ -95,7 +90,8 @@ Microsystems, Inc. All Rights Reserved.
       </file>
       <file name="Empty.java" url="resources/Empty.template">
          <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator"/>
-         <attr name="templateCategory" stringvalue="java-classes, java-classes-basic"/>
+         <attr name="position" intvalue="200"/>
+                <attr name="templateCategory" stringvalue="java-classes, java-classes-basic"/>
          <attr name="template" boolvalue="true"/>
          <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
          <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/java/project/resources/Empty.html"/>
@@ -104,7 +100,8 @@ Microsystems, Inc. All Rights Reserved.
       </file>
       <file name="Interface.java" url="resources/Interface.template">
          <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator"/>
-         <attr name="templateCategory" stringvalue="java-classes, java-classes-basic"/>
+         <attr name="position" intvalue="300"/>
+                <attr name="templateCategory" stringvalue="java-classes, java-classes-basic"/>
          <attr name="template" boolvalue="true"/>
          <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
          <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/java/project/resources/Interface.html"/>
@@ -113,7 +110,8 @@ Microsystems, Inc. All Rights Reserved.
       </file>
       <file name="Exception.java" url="resources/Exception.template">
          <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator"/>
-         <attr name="templateCategory" stringvalue="java-classes, java-classes-basic"/>
+         <attr name="position" intvalue="600"/>
+                <attr name="templateCategory" stringvalue="java-classes, java-classes-basic"/>
          <attr name="template" boolvalue="true"/>
          <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
          <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/java/project/resources/Exception.html"/>
@@ -123,13 +121,15 @@ Microsystems, Inc. All Rights Reserved.
       <file name="Package" url="resources/Package.template">
          <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.java.project.NewJavaFileWizardIterator.packageWizard"/>
          <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/spi/java/project/support/ui/package.gif"/>
-         <attr name="templateCategory" stringvalue="java-classes, java-classes-basic"/>
+         <attr name="position" intvalue="1100"/>
+                <attr name="templateCategory" stringvalue="java-classes, java-classes-basic"/>
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.project.Bundle"/>
         <attr name="template" boolvalue="true"/>
         <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/java/project/resources/Package.html"/>
       </file>        
       <file name="Enum.java" url="resources/Enum.template">
-         <attr name="template" boolvalue="true"/>
+         <attr name="position" intvalue="400"/>
+                <attr name="template" boolvalue="true"/>
          <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
          <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator"/>
          <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/java/project/resources/Enum.html"/>
@@ -138,7 +138,8 @@ Microsystems, Inc. All Rights Reserved.
          <attr name="javac.source" stringvalue="1.5"/>
       </file>
       <file name="AnnotationType.java" url="resources/AnnotationType.template">
-         <attr name="template" boolvalue="true"/>
+         <attr name="position" intvalue="500"/>
+                <attr name="template" boolvalue="true"/>
          <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
          <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator"/>
          <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/java/project/resources/AnnotationType.html"/>
@@ -148,7 +149,8 @@ Microsystems, Inc. All Rights Reserved.
       </file>
 
       <file name="package-info.java" url="resources/package-info.template">
-         <attr name="template" boolvalue="true"/>
+         <attr name="position" intvalue="800"/>
+                <attr name="template" boolvalue="true"/>
          <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
          <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.java.project.NewJavaFileWizardIterator.packageInfoWizard"/>
          <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/java/project/resources/package-info.html"/>
@@ -166,31 +168,30 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="text">
         <folder name="x-java">
             <folder name="Actions">
-              <attr boolvalue="true" name="OpenAction.instance/java-project-separator-1.instance"/>
               <file name="java-project-separator-1.instance">
                 <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-              </file>
-              <attr boolvalue="true" name="java-project-separator-1.instance/CompileFile.instance"/>
+                  <attr name="position" intvalue="200"/>
+                    </file>
               <file name="CompileFile.instance">
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.project.JavaProjectModule.compile"/>
-              </file>
-              <attr boolvalue="true" name="CompileFile.instance/java-project-separator-2.instance"/>
+                  <attr name="position" intvalue="800"/>
+                    </file>
               <file name="java-project-separator-2.instance">
                 <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-              </file>
-              <attr boolvalue="true" name="java-project-separator-2.instance/RunFile.instance"/>
+                  <attr name="position" intvalue="900"/>
+                    </file>
               <file name="RunFile.instance">
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.project.JavaProjectModule.run"/>
-              </file>
-              <attr boolvalue="true" name="RunFile.instance/DebugFile.instance"/>
+                  <attr name="position" intvalue="1000"/>
+                    </file>
               <file name="DebugFile.instance">
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.project.JavaProjectModule.debug"/>
-              </file>
-              <attr boolvalue="true" name="DebugFile.instance/java-project-separator-3.instance"/>
+                  <attr name="position" intvalue="1100"/>
+                    </file>
               <file name="java-project-separator-3.instance">
                 <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-              </file>
-              <attr boolvalue="true" name="java-project-separator-3.instance/FileSystemAction.instance"/>
+                  <attr name="position" intvalue="1300"/>
+                    </file>
 
             </folder>
         </folder>
@@ -198,8 +199,9 @@ Microsystems, Inc. All Rights Reserved.
   </folder>
   
     <folder name="ProjectsTabActions">
-        <attr name="sep-below-main-actions.instance/org-netbeans-modules-java-project-ChangePackageViewTypeAction.instance" boolvalue="true"/>
-        <file name="org-netbeans-modules-java-project-ChangePackageViewTypeAction.instance"/>
+        <file name="org-netbeans-modules-java-project-ChangePackageViewTypeAction.instance">
+            <attr name="position" intvalue="1600"/>
+        </file>
     </folder>
     
 </filesystem>

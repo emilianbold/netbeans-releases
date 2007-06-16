@@ -17,20 +17,17 @@ The Original Software is NetBeans. The Initial Developer of the Original
 Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
-
-<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN"
-                            "http://www.netbeans.org/dtds/filesystem-1_1.dtd" >
-
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
 
 <folder name="Plugins">
     <folder name="XML">
         <folder name="GrammarQueryManagers">
             <!-- register Ant grammar -->
-            <attr name="semantics-grammar-to-generic-grammar-separator/org-netbeans-modules-ant-grammar-AntGrammarQueryProvider.instance" boolvalue="true"/>
-            <file name="org-netbeans-modules-ant-grammar-AntGrammarQueryProvider.instance"/>
-            <attr name="org-netbeans-modules-ant-grammar-AntGrammarQueryProvider.instance/generic-grammar-to-universal-grammar-separator" boolvalue="true"/>
-        </folder>
+            <file name="org-netbeans-modules-ant-grammar-AntGrammarQueryProvider.instance">
+                    <attr name="position" intvalue="900"/>
+                </file>
+            </folder>
     </folder>
 </folder>
 

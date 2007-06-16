@@ -18,14 +18,13 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
-
 <filesystem>
 
     <folder name="Templates">
-        <attr name="API_Support/Other" boolvalue="true"/>
         <folder name="Other">
             <file name="properties.properties" url="sample.properties.template">
-                <attr name="template" boolvalue="true" />
+                <attr name="position" intvalue="500"/>
+                <attr name="template" boolvalue="true"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.properties.Bundle"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/properties/TemplateHelp.html"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/properties/propertiesObject.png"/>
@@ -46,70 +45,71 @@ Microsystems, Inc. All Rights Reserved.
                     -->
                     <file name="EditAction.instance">
                         <attr name="instanceClass" stringvalue="org.openide.actions.EditAction"/>
+                        <attr name="position" intvalue="100"/>
                     </file>
-                    <attr boolvalue="true" name="EditAction.instance/OpenAction.instance" />
                     <file name="OpenAction.instance">
                         <attr name="instanceClass" stringvalue="org.openide.actions.OpenAction"/>
+                        <attr name="position" intvalue="200"/>
                     </file>
-                    <attr boolvalue="true" name="OpenAction.instance/Separator1.instance" />
                     <file name="Separator1.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="300"/>
                     </file>
-                    <attr boolvalue="true" name="Separator1.instance/CutAction.instance" />
                     <file name="CutAction.instance">
                         <attr name="instanceClass" stringvalue="org.openide.actions.CutAction"/>
+                        <attr name="position" intvalue="400"/>
                     </file>
-                    <attr boolvalue="true" name="CutAction.instance/CopyAction.instance"/>
                     <file name="CopyAction.instance">
                         <attr name="instanceClass" stringvalue="org.openide.actions.CopyAction"/>
+                        <attr name="position" intvalue="500"/>
                     </file>
-                    <attr boolvalue="true" name="CopyAction.instance/PasteAction.instance"/>
                     <file name="PasteAction.instance">
                         <attr name="instanceClass" stringvalue="org.openide.actions.PasteAction"/>
+                        <attr name="position" intvalue="600"/>
                     </file>
-                    <attr boolvalue="true" name="PasteAction.instance/Separator2.instance"/>
                     <file name="Separator2.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="700"/>
                     </file>
-                    <attr boolvalue="true" name="Separator2.instance/DeleteAction.instance"/>
                     <file name="DeleteAction.instance">
-                        <attr name="instanceClass" stringvalue="org.openide.actions.DeleteAction" />
+                        <attr name="instanceClass" stringvalue="org.openide.actions.DeleteAction"/>
+                        <attr name="position" intvalue="800"/>
                     </file>
-                    <attr boolvalue="true" name="DeleteAction.instance/RenameAction.instance" />
                     <file name="RenameAction.instance">
-                        <attr name="instanceClass" stringvalue="org.openide.actions.RenameAction" />
+                        <attr name="instanceClass" stringvalue="org.openide.actions.RenameAction"/>
+                        <attr name="position" intvalue="900"/>
                     </file>
-                    <attr boolvalue="true" name="RenameAction.instance/Separator3.instance"/>
                     <file name="Separator3.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1000"/>
                     </file>
-                    <attr boolvalue="true" name="Separator3.instance/NewAction.instance"/>
                     <file name="NewAction.instance">
-                        <attr name="instanceClass" stringvalue="org.openide.actions.NewAction" />
+                        <attr name="instanceClass" stringvalue="org.openide.actions.NewAction"/>
+                        <attr name="position" intvalue="1100"/>
                     </file>
-                    <attr boolvalue="true" name="NewAction.instance/SaveAsTemplateAction.instance"/>
                     <file name="SaveAsTemplateAction.instance">
-                        <attr name="instanceClass" stringvalue="org.openide.actions.SaveAsTemplateAction" />
+                        <attr name="instanceClass" stringvalue="org.openide.actions.SaveAsTemplateAction"/>
+                        <attr name="position" intvalue="1200"/>
                     </file>
-                    <attr boolvalue="true" name="SaveAsTemplateAction.instance/Separator4.instance"/>
                     <file name="Separator4.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1300"/>
                     </file>
-                    <attr boolvalue="true" name="Separator4.instance/FileSystemAction.instance"/>
                     <file name="FileSystemAction.instance">
-                        <attr name="instanceClass" stringvalue="org.openide.actions.FileSystemAction" />
+                        <attr name="instanceClass" stringvalue="org.openide.actions.FileSystemAction"/>
+                        <attr name="position" intvalue="1400"/>
                     </file>
-                    <attr boolvalue="true" name="FileSystemAction.instance/Separator5.instance"/>
                     <file name="Separator5.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1500"/>
                     </file>
-                    <attr boolvalue="true" name="Separator5.instance/ToolsAction.instance"/>
                     <file name="ToolsAction.instance">
-                        <attr name="instanceClass" stringvalue="org.openide.actions.ToolsAction" />
+                        <attr name="instanceClass" stringvalue="org.openide.actions.ToolsAction"/>
+                        <attr name="position" intvalue="1600"/>
                     </file>
-                    <attr boolvalue="true" name="ToolsAction.instance/PropertiesAction.instance" />
                     <file name="PropertiesAction.instance">
-                        <attr name="instanceClass" stringvalue="org.openide.actions.PropertiesAction" />
+                        <attr name="instanceClass" stringvalue="org.openide.actions.PropertiesAction"/>
+                        <attr name="position" intvalue="1700"/>
                     </file>
                 </folder>
             </folder>

@@ -41,9 +41,9 @@ Microsystems, Inc. All Rights Reserved.
        <file name="ServerRegistry2.instance">
 <!--          <module name="org.netbeans.modules.j2eeserver/3" spec="1.0"/> -->
           <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.deployment.impl.ui.ServerRegistryNode"/>
-       </file>
-       <attr name="org-netbeans-modules-db-explorer-nodes-RootNode.instance/ServerRegistry2.instance" boolvalue="true"/>
-    </folder>
+           <attr name="position" intvalue="400"/>
+            </file>
+       </folder>
     <folder name="Services">
         <folder name="IDEConfiguration">
            <folder name="ServerAndExternalToolSettings">
@@ -60,12 +60,10 @@ Microsystems, Inc. All Rights Reserved.
         <!--Entity registration-->
             <folder name="org_netbeans_modules_j2ee">
                 <file name="DTD_ServerString_1_0" url="nbres:/org/netbeans/modules/j2ee/deployment/impl/server-string.dtd">
-                    <attr name="hint.originalPublicID"
-                    stringvalue="-//org_netbeans_modules_j2ee//DTD ServerString 1.0//EN"/>
+                    <attr name="hint.originalPublicID" stringvalue="-//org_netbeans_modules_j2ee//DTD ServerString 1.0//EN"/>
                 </file>
                 <file name="DTD_TargetModule_1_0" url="nbres:/org/netbeans/modules/j2ee/deployment/impl/target-module.dtd">
-                    <attr name="hint.originalPublicID"
-                    stringvalue="-//org_netbeans_modules_j2ee//DTD TargetModule 1.0//EN"/>
+                    <attr name="hint.originalPublicID" stringvalue="-//org_netbeans_modules_j2ee//DTD TargetModule 1.0//EN"/>
                 </file>
             </folder>
         </folder>
@@ -109,12 +107,10 @@ Microsystems, Inc. All Rights Reserved.
 
     <folder name="Menu">
         <folder name="Tools">
-            <attr name="LibrariesCustomizerAction.instance/ServerManagerAction.instance" boolvalue="true"/>
-            <attr name="org-netbeans-modules-apisupport-project-ui-platform-NbPlatformCustomizerAction.instance/ServerManagerAction.instance" boolvalue="true"/>
             <file name="ServerManagerAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.deployment.impl.ui.actions.ServerManagerAction"/>
+                <attr name="position" intvalue="800"/>
             </file>
-            <attr name="ServerManagerAction.instance/Separator2.instance" boolvalue="true"/>
-        </folder>
+            </folder>
     </folder>
 </filesystem>

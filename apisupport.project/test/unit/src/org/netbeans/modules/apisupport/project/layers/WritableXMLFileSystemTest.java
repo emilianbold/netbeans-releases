@@ -257,8 +257,10 @@ public class WritableXMLFileSystemTest extends LayerTestBase {
         f.createData("c");
         a.setAttribute("x", "v1");
         a.setAttribute("y", new URL("file:/v2"));
+        /*
         f.setAttribute("a/b", Boolean.TRUE);
         f.setAttribute("b/c", Boolean.TRUE);
+         */
         f.setAttribute("misc", "whatever");
         assertEquals("correct attrs written",
                 "    <folder name=\"f\">\n" +
@@ -267,9 +269,9 @@ public class WritableXMLFileSystemTest extends LayerTestBase {
                 "            <attr name=\"x\" stringvalue=\"v1\"/>\n" +
                 "            <attr name=\"y\" urlvalue=\"file:/v2\"/>\n" +
                 "        </file>\n" +
-                "        <attr name=\"a/b\" boolvalue=\"true\"/>\n" +
+                //"        <attr name=\"a/b\" boolvalue=\"true\"/>\n" +
                 "        <file name=\"b\"/>\n" +
-                "        <attr name=\"b/c\" boolvalue=\"true\"/>\n" +
+                //"        <attr name=\"b/c\" boolvalue=\"true\"/>\n" +
                 "        <file name=\"c\"/>\n" +
                 "    </folder>\n",
                 l.write());
@@ -322,7 +324,7 @@ public class WritableXMLFileSystemTest extends LayerTestBase {
                 l.write());
     }
     
-    public void testOpenideFolderOrder() throws Exception {
+    public void testFolderOrder() throws Exception {
         Layer l = new Layer("");
         FileSystem fs = l.read();
         FileObject r = fs.getRoot();
@@ -335,90 +337,24 @@ public class WritableXMLFileSystemTest extends LayerTestBase {
         DataFolder.findFolder(r).setOrder(new DataObject[] {DataObject.find(a), DataObject.find(b)});
         DataFolder.findFolder(f).setOrder(new DataObject[] {DataObject.find(c), DataObject.find(d), DataObject.find(e)});
         assertEquals("correct ordering XML",
-                "    <file name=\"a\"/>\n" +
-                "    <attr name=\"a/b\" boolvalue=\"true\"/>\n" +
-                "    <file name=\"b\"/>\n" +
+                "    <file name=\"a\">\n" +
+                "        <attr name=\"position\" intvalue=\"100\"/>\n" +
+                "    </file>\n" +
+                "    <file name=\"b\">\n" +
+                "        <attr name=\"position\" intvalue=\"200\"/>\n" +
+                "    </file>\n" +
                 "    <folder name=\"f\">\n" +
-                "        <file name=\"c\"/>\n" +
-                "        <attr name=\"c/d\" boolvalue=\"true\"/>\n" +
-                "        <file name=\"d\"/>\n" +
-                "        <attr name=\"d/e\" boolvalue=\"true\"/>\n" +
-                "        <file name=\"e\"/>\n" +
+                "        <file name=\"c\">\n" +
+                "            <attr name=\"position\" intvalue=\"100\"/>\n" +
+                "        </file>\n" +
+                "        <file name=\"d\">\n" +
+                "            <attr name=\"position\" intvalue=\"200\"/>\n" +
+                "        </file>\n" +
+                "        <file name=\"e\">\n" +
+                "            <attr name=\"position\" intvalue=\"300\"/>\n" +
+                "        </file>\n" +
                 "    </folder>\n",
                 l.write());
-        l = new Layer("");
-        fs = l.read();
-        r = fs.getRoot();
-        b = r.createData("b");
-        c = r.createFolder("c");
-        r.setAttribute("c/b", Boolean.TRUE);
-        r.setAttribute("d/c", Boolean.TRUE);
-        r.setAttribute("b/a", Boolean.TRUE);
-        assertEquals("ordering attrs reorder entries in a folder",
-                "    <attr name=\"d/c\" boolvalue=\"true\"/>\n" +
-                "    <folder name=\"c\"/>\n" +
-                "    <attr name=\"c/b\" boolvalue=\"true\"/>\n" +
-                "    <file name=\"b\"/>\n" +
-                "    <attr name=\"b/a\" boolvalue=\"true\"/>\n",
-                l.write());
-        l = new Layer("");
-        fs = l.read();
-        r = fs.getRoot();
-        FileObject main = r.createData("main");
-        FileObject before = r.createData("s-before");
-        r.setAttribute("pre/s-before", Boolean.TRUE);
-        r.setAttribute("s-before/main", Boolean.TRUE);
-        assertEquals(
-                "    <attr name=\"pre/s-before\" boolvalue=\"true\"/>\n" +
-                "    <file name=\"s-before\"/>\n" +
-                "    <attr name=\"s-before/main\" boolvalue=\"true\"/>\n" +
-                "    <file name=\"main\"/>\n",
-                l.write());
-        // XXX probably need even more sophisticated tests to really cover WXMLFS.resort!
-        l = new Layer("");
-        fs = l.read();
-        FileUtil.createData(fs.getRoot(), "f/two");
-        FileSystem ro = FileUtil.createMemoryFileSystem();
-        f = ro.getRoot().createFolder("f");
-        f.createData("one");
-        f.setAttribute("one/three", Boolean.TRUE);
-        f.createData("three");
-        f.createData("four");
-        f.setAttribute("three/four", Boolean.TRUE);
-        FileSystem merge = new MultiFileSystem(new FileSystem[] {fs, ro});
-        DataObject one = DataObject.find(merge.findResource("f/one"));
-        DataObject two = DataObject.find(merge.findResource("f/two"));
-        DataObject three = DataObject.find(merge.findResource("f/three"));
-        DataObject four = DataObject.find(merge.findResource("f/four"));
-        DataFolder.findFolder(merge.findResource("f")).setOrder(new DataObject[] {one, two, three, four});
-        assertEquals("correct insertion of new file into existing folder",
-                "    <folder name=\"f\">\n" +
-                "        <attr name=\"one/two\" boolvalue=\"true\"/>\n" +
-                "        <file name=\"two\"/>\n" +
-                "        <attr name=\"two/three\" boolvalue=\"true\"/>\n" +
-                "    </folder>\n",
-                l.write());
-        l = new Layer("");
-        fs = l.read();
-        FileUtil.createData(fs.getRoot(), "f/two");
-        merge = new MultiFileSystem(new FileSystem[] {fs, ro});
-        assertEquals(Boolean.TRUE, merge.findResource("f").getAttribute("one/three"));
-        one = DataObject.find(merge.findResource("f/one"));
-        two = DataObject.find(merge.findResource("f/two"));
-        three = DataObject.find(merge.findResource("f/three"));
-        four = DataObject.find(merge.findResource("f/four"));
-        DataFolder.findFolder(merge.findResource("f")).setOrder(new DataObject[] {four, three, two, one});
-        assertEquals("correct insertion of new file into existing folder w/ override of old order",
-                "    <folder name=\"f\">\n" +
-                "        <attr name=\"three/two\" boolvalue=\"true\"/>\n" +
-                "        <file name=\"two\"/>\n" +
-                "        <attr name=\"two/one\" boolvalue=\"true\"/>\n" +
-                //XXX cannot get this to work: "        <attr name=\"four/three\" boolvalue=\"true\"/>\n" +
-                "        <attr name=\"three/four\" boolvalue=\"false\"/>\n" +
-                "        <attr name=\"one/three\" boolvalue=\"false\"/>\n" +
-                "    </folder>\n",
-                l.write());
-        // XXX but inserting new item in a new position *twice* does not work... sigh... can it be fixed?
     }
     
     public void testDeleteFileOrFolder() throws Exception {

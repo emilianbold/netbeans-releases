@@ -23,9 +23,12 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="text">
             <folder name="x-c++">
                 <folder name="CompletionProviders">
-                    <file name="org-netbeans-modules-cnd-completion-cplusplus-CsmCompletionProvider.instance"/>
-                    <attr name="org-netbeans-modules-cnd-completion-cplusplus-CsmCompletionProvider.instance/org-netbeans-lib-editor-codetemplates-CodeTemplateCompletionProvider.instance" boolvalue="true"/>
-                    <file name="org-netbeans-lib-editor-codetemplates-CodeTemplateCompletionProvider.instance"/>
+                    <file name="org-netbeans-modules-cnd-completion-cplusplus-CsmCompletionProvider.instance">
+                        <attr name="position" intvalue="100"/>
+                    </file>
+                    <file name="org-netbeans-lib-editor-codetemplates-CodeTemplateCompletionProvider.instance">
+                        <attr name="position" intvalue="200"/>
+                    </file>
                 </folder>                
                 <folder name="HyperlinkProviders">
                     <file name="CsmHyperlinkProvider.instance">
@@ -40,16 +43,21 @@ Microsystems, Inc. All Rights Reserved.
                 
                 <folder name="Popup">
                     <folder name="goto">
-                        <file name="goto-declaration"/>
-                        <attr name="goto-declaration/goto" boolvalue="true"/>
-                    </folder>
+                        <attr name="position" intvalue="900"/>
+                        <file name="goto-declaration">
+                            <attr name="position" intvalue="100"/>
+                        </file>
+                        </folder>
                 </folder>
             </folder>
             <folder name="x-c">
                 <folder name="CompletionProviders">
-                    <file name="org-netbeans-modules-cnd-completion-cplusplus-CsmCompletionProvider.instance"/>
-                    <attr name="org-netbeans-modules-cnd-completion-cplusplus-CsmCompletionProvider.instance/org-netbeans-lib-editor-codetemplates-CodeTemplateCompletionProvider.instance" boolvalue="true"/>
-                    <file name="org-netbeans-lib-editor-codetemplates-CodeTemplateCompletionProvider.instance"/>
+                    <file name="org-netbeans-modules-cnd-completion-cplusplus-CsmCompletionProvider.instance">
+                        <attr name="position" intvalue="100"/>
+                    </file>
+                    <file name="org-netbeans-lib-editor-codetemplates-CodeTemplateCompletionProvider.instance">
+                        <attr name="position" intvalue="200"/>
+                    </file>
                 </folder>                
                 <folder name="HyperlinkProviders">
                     <file name="CsmHyperlinkProvider.instance">
@@ -64,9 +72,11 @@ Microsystems, Inc. All Rights Reserved.
                 
                 <folder name="Popup">
                     <folder name="goto">
-                        <file name="goto-declaration"/>
-                        <attr name="goto-declaration/goto" boolvalue="true"/>
-                    </folder>
+                        <attr name="position" intvalue="900"/>
+                        <file name="goto-declaration">
+                            <attr name="position" intvalue="100"/>
+                        </file>
+                        </folder>
                 </folder>
             </folder>            
         </folder>

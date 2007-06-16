@@ -22,8 +22,8 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="Templates">
         <folder name="Project">
             <folder name="Web">
-                <attr name="emptyWeb.xml/webfreeform.xml" boolvalue="true"/>
                 <file name="webfreeform.xml">
+                    <attr name="position" intvalue="300"/>
                     <attr name="template" boolvalue="true"/>
                     <attr name="instantiatingIterator" newvalue="org.netbeans.modules.web.freeform.ui.NewWebFreeformProjectWizardIterator"/>
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.freeform.resources.Bundle"/>
@@ -41,14 +41,14 @@ Microsystems, Inc. All Rights Reserved.
                 <file name="org-netbeans-modules-web-freeform-LookupProviderImpl.instance"/>
             </folder>
             <folder name="Customizer">
-                <file name="org-netbeans-modules-web-freeform-ui-WebLocationsCategoryProvider.instance"/>
-                <attr name="org-netbeans-modules-java-freeform-ui-SourceFoldersCategoryProvider.instance/org-netbeans-modules-web-freeform-ui-WebLocationsCategoryProvider.instance" boolvalue="true"/>
-                <attr name="org-netbeans-modules-web-freeform-ui-WebLocationsCategoryProvider.instance/org-netbeans-modules-java-freeform-ui-ClasspathCategoryProvider.instance" boolvalue="true"/>
+                <file name="org-netbeans-modules-web-freeform-ui-WebLocationsCategoryProvider.instance">
+                    <attr name="position" intvalue="300"/>
+                </file>
                 
-                <file name="org-netbeans-modules-web-freeform-ui-WebClasspathCategoryProvider.instance"/>
-                <attr name="org-netbeans-modules-java-freeform-ui-ClasspathCategoryProvider.instance/org-netbeans-modules-web-freeform-ui-WebClasspathCategoryProvider.instance" boolvalue="true"/>
-                <attr name="org-netbeans-modules-web-freeform-ui-WebClasspathCategoryProvider.instance/org-netbeans-modules-java-freeform-ui-OutputCategoryProvider.instance" boolvalue="true"/>
-            </folder>
+                <file name="org-netbeans-modules-web-freeform-ui-WebClasspathCategoryProvider.instance">
+                    <attr name="position" intvalue="500"/>
+                </file>
+                </folder>
         </folder>
     </folder>
     

@@ -22,13 +22,12 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="Templates">
         <folder name="Project">
             <folder name="J2EE">
-                <attr name="ejbfreeform.xml/DeployableProject.xml" boolvalue="true"/>
-                <attr name="importCar.xml/DeployableProject.xml" boolvalue="true"/>
                 <file name="DeployableProject.xml">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.archive.project.Bundle"/>
                     <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.j2ee.archive.wizard.DeployableWizardIterator.createIterator"/>
                     <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/archive/wizard/DeployableDescription.html"/>
                     <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/j2ee/archive/project/resources/application_assembler_16.gif"/>
+                    <attr name="position" intvalue="800"/>
                     <attr name="template" boolvalue="true"/>
                 </file>
             </folder>

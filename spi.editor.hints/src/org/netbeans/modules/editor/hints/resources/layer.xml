@@ -45,9 +45,10 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="text">
       <folder name="x-java">
         <folder name="GlyphGutterActions">
-            <file name="org-netbeans-modules-editor-hints-FixAction.instance"/>
-            <attr name="org-netbeans-modules-editor-hints-FixAction.instance/org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.shadow" boolvalue="true"/>
-        </folder>
+            <file name="org-netbeans-modules-editor-hints-FixAction.instance">
+                        <attr name="position" intvalue="200"/>
+                    </file>
+            </folder>
       </folder>
     </folder>
   </folder>

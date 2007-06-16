@@ -32,12 +32,11 @@ Microsystems, Inc. All Rights Reserved.
      <folder name="Menu">
         <folder name="Window">
             <folder name="Debug">
-                <attr name="org-netbeans-modules-debugger-ui-actions-CallStackViewAction.shadow/org-netbeans-modules-debugger-jpda-heapwalk-actions-ClassesCountsViewAction.shadow" boolvalue="true" />
                 <file name="org-netbeans-modules-debugger-jpda-heapwalk-actions-ClassesCountsViewAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-jpda-heapwalk-actions-ClassesCountsViewAction.instance"/>
+                    <attr name="position" intvalue="500"/>
                 </file>
-                <attr name="org-netbeans-modules-debugger-jpda-heapwalk-actions-ClassesCountsViewAction.shadow/org-netbeans-modules-debugger-ui-actions-BreakpointsViewAction.shadow" boolvalue="true" />
-            </folder>
+                </folder>
         </folder>
     </folder>
 
@@ -55,10 +54,10 @@ Microsystems, Inc. All Rights Reserved.
 
         <folder name="Modes">
             <folder name="debugger">
-                <attr name="threads.wstcref/classes.wstcref" boolvalue="true"/>
-                <file name="classes.wstcref" url="classesCounts.wstcref"/>
-                <attr name="classes.wstcref/sources.wstcref" boolvalue="true"/>
-            </folder>
+                <file name="classes.wstcref" url="classesCounts.wstcref">
+                    <attr name="position" intvalue="100"/>
+                </file>
+                </folder>
             <folder name="editor">
                 <file name="dbgInstances.wstcref" url="dbgInstances.wstcref"/>
             </folder>

@@ -58,10 +58,10 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
 
         <folder name="Palette">
-            <attr name="Resources/SVG" boolvalue="true"/>
             <folder name="SVG">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.vmd.components.svg.resources.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/vmd/components/svg/resources/category_svg_16.png "/>
+                <attr name="position" intvalue="600"/>
                 <file name="SvgImageDCI.shadow">
                     <attr name="originalFile" stringvalue="MVD/Components/SvgImageDCI.instance"/>
                     <attr name="isReadOnly" boolvalue="true"/>
@@ -91,4 +91,3 @@ Microsystems, Inc. All Rights Reserved.
     </folder>
     
 </filesystem>
-

@@ -22,17 +22,18 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="Actions">
         <folder name="Window">
             <file name="org-netbeans-modules-favorites-View.instance">
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.favorites.Actions.view" />
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.favorites.Actions.view"/>
             </file>
             <file name="org-netbeans-modules-favorites-Add.instance">
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.favorites.Actions.add" />
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.favorites.Actions.add"/>
             </file>
             <file name="org-netbeans-modules-favorites-Remove.instance">
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.favorites.Actions.remove" />
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.favorites.Actions.remove"/>
             </file>
             <folder name="SelectDocumentNode">
                 <file name="org-netbeans-modules-favorites-Select.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.favorites.Actions.select" />
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.favorites.Actions.select"/>
+                    <attr name="position" intvalue="300"/>
                 </file>
             </folder>
         </folder>
@@ -42,61 +43,59 @@ Microsystems, Inc. All Rights Reserved.
     </folder>
 
     <folder name="Menu">
-        <folder name="GoTo">
-            <attr name="org-netbeans-modules-project-ui-SelectInFiles.shadow/org-netbeans-modules-favorites-SelectInFavorites.shadow" boolvalue="true"/>            
+        <folder name="GoTo">            
             <file name="org-netbeans-modules-favorites-SelectInFavorites.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/SelectDocumentNode/org-netbeans-modules-favorites-Select.instance"/>
+                <attr name="position" intvalue="2800"/>
             </file>
         </folder>
-        <attr name="GoTo/Tools" boolvalue="true" />
         <folder name="Tools">
-            <file name="org-netbeans-modules-favorites-templates-TemplatesAction.instance"/>
-            <attr name="JavaPlatformsCustomizerAction.instance/org-netbeans-modules-favorites-templates-TemplatesAction.instance" boolvalue="true" />
-            <attr name="LibrariesCustomizerAction.instance/org-netbeans-modules-favorites-templates-TemplatesAction.instance" boolvalue="true" />
-            <attr name="org-netbeans-modules-favorites-templates-TemplatesAction.instance/Separator2.instance" boolvalue="true" />
-            <attr name="ServerManagerAction.instance/org-netbeans-modules-favorites-templates-TemplatesAction.instance" boolvalue="true"/>
-            <attr name="org-netbeans-modules-favorites-templates-TemplatesAction.instance/PaletteManager" boolvalue="true"/>
-        </folder>
+            <file name="org-netbeans-modules-favorites-templates-TemplatesAction.instance">
+                <attr name="position" intvalue="1000"/>
+            </file>
+            </folder>
       <folder name="Window">
-            <attr name="org-netbeans-modules-project-ui-physical-tab-action.shadow/ViewFavoritesTabAction.shadow" boolvalue="true" />
             <file name="ViewFavoritesTabAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-favorites-View.instance"/>
+                <attr name="position" intvalue="500"/>
             </file>
-            <attr name="ViewRuntimeTabAction.shadow/ViewFavoritesTabAction.shadow" boolvalue="true" />
-        </folder>
+            </folder>
     </folder>
     
     <!-- default workspaces, frames and their layout defined by core-->
     <folder name="Windows2">
         <folder name="Modes">
             <folder name="explorer">
-                <attr name="favorites.wstcref/Javadoc.wstcref" boolvalue="true" />
-                <attr name="favorites.wstcref/runtime.wstcref" boolvalue="true" />
-                <file name="favorites.wstcref" url="favorites.wstcref" />
+                <file name="favorites.wstcref" url="favorites.wstcref">
+                    <attr name="position" intvalue="300"/>
+                </file>
             </folder>
         </folder>
         <folder name="Components">
-            <file name="favorites.settings" url="component.settings" />
+            <file name="favorites.settings" url="component.settings"/>
         </folder>
     </folder>
     <folder name="Favorites">
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.favorites.Bundle"/>
         <file name="Home.shadow">
-            <attr name="originalFile" methodvalue="org.netbeans.modules.favorites.Favorites.getHome" />
-            <attr name="originalFileSystem" stringvalue="org.netbeans.modules.masterfs.MasterFileSystem" />
+            <attr name="originalFile" methodvalue="org.netbeans.modules.favorites.Favorites.getHome"/>
+            <attr name="originalFileSystem" stringvalue="org.netbeans.modules.masterfs.MasterFileSystem"/>
         </file>
     </folder>
 
-    <folder name="Templates" >
-        <folder name="Other" >
+    <folder name="Templates">
+        <folder name="Other">
+            <attr name="position" intvalue="2100"/>
             <folder name="Folder">
+                <attr name="position" intvalue="900"/>
                 <attr name="template" boolvalue="true"/>
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.favorites.Bundle" />
-                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/favorites/resources/templatesFolder.html" />
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.favorites.Bundle"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/favorites/resources/templatesFolder.html"/>
             </folder>
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.favorites.Bundle"/>
             <file name="file">
                 <![CDATA[]]>
+                <attr name="position" intvalue="600"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.favorites.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/favorites/resources/newFile.png"/>

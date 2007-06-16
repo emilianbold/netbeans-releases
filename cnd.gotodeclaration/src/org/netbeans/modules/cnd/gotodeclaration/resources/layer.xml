@@ -32,9 +32,9 @@ Microsystems, Inc. All Rights Reserved.
                     <folder name="goto">
                         <file name="org-netbeans-modules-cnd-gotodeclaration-actions-SearchAction.shadow">
                             <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-cnd-gotodeclaration-actions-SearchAction.instance"/>
+                            <attr name="position" intvalue="300"/>
                         </file>
-                        <attr name="goto/org-netbeans-modules-cnd-gotodeclaration-actions-SearchAction.shadow" boolvalue="true"/>
-                    </folder>
+                        </folder>
                 </folder>
             </folder>
             <folder name="x-c++">
@@ -42,9 +42,9 @@ Microsystems, Inc. All Rights Reserved.
                     <folder name="goto">
                         <file name="org-netbeans-modules-cnd-gotodeclaration-actions-SearchAction.shadow">
                             <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-cnd-gotodeclaration-actions-SearchAction.instance"/>
+                            <attr name="position" intvalue="300"/>
                         </file>
-                        <attr name="goto/org-netbeans-modules-cnd-gotodeclaration-actions-SearchAction.shadow" boolvalue="true"/>
-                    </folder>
+                        </folder>
                 </folder>
             </folder>
         </folder>
@@ -53,13 +53,13 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="GoTo">
             <file name="org-netbeans-modules-cnd-gotodeclaration-actions-SearchAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-cnd-gotodeclaration-actions-SearchAction.instance"/>
+                <attr name="position" intvalue="200"/>
             </file>
-            <attr name="org-netbeans-modules-cnd-gotodeclaration-actions-SearchAction.shadow/org-netbeans-modules-cnd-gotodeclaration-actions-separatorAfter.instance" boolvalue="true"/>
             <file name="org-netbeans-modules-cnd-gotodeclaration-actions-separatorAfter.instance">
                 <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                <attr name="position" intvalue="300"/>
             </file>
-            <attr name="org-netbeans-modules-cnd-gotodeclaration-actions-separatorAfter.instance/org-netbeans-modules-editor-java-JavaFastOpenAction.shadow" boolvalue="true"/>
-        </folder>
+            </folder>
         <folder name="Window"/>
     </folder>
     

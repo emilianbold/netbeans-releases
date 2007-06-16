@@ -1,3 +1,4 @@
+
 <!--
 The contents of this file are subject to the terms of the Common Development
 and Distribution License (the License). You may not use this file except in
@@ -17,24 +18,28 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
-
 <filesystem>
 
     <folder name="FormDesignerPalette">
         <folder name="J2EEComponents">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.j2ee.resources.Bundle"/>
-            <file name="EntityManager.palette_item" url="EntityManager.palette_item" />
-            <file name="Query.palette_item" url="Query.palette_item" />
-            <file name="QueryListResult.palette_item" url="QueryListResult.palette_item" />
-            <attr name="EntityManager.palette_item/Query.palette_item" boolvalue="true" />
-            <attr name="Query.palette_item/QueryListResult.palette_item" boolvalue="true" />
+            <attr name="position" intvalue="800"/>
+            <file name="EntityManager.palette_item" url="EntityManager.palette_item">
+                <attr name="position" intvalue="100"/>
+            </file>
+            <file name="Query.palette_item" url="Query.palette_item">
+                <attr name="position" intvalue="200"/>
+            </file>
+            <file name="QueryListResult.palette_item" url="QueryListResult.palette_item">
+                <attr name="position" intvalue="300"/>
+            </file>
+            </folder>
         </folder>
-        <attr name="Beans/J2EEComponents" boolvalue="true" />
-    </folder>
 
     <folder name="Templates">
         <folder name="GUIForms">
             <file name="MasterDetailForm.java" url="templates/MasterDetailForm_java">
+                <attr name="position" intvalue="200"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateCategory" stringvalue="java-forms"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.j2ee.wizard.Bundle"/>
@@ -46,8 +51,7 @@ Microsystems, Inc. All Rights Reserved.
             <file name="MasterDetailForm.form" url="templates/MasterDetailForm_form">
                 <attr name="template" boolvalue="true"/>
             </file>
-            <attr name="OkCancelDialog.java/MasterDetailForm.java" boolvalue="true" />
-        </folder>
+            </folder>
     </folder>
 
 </filesystem>

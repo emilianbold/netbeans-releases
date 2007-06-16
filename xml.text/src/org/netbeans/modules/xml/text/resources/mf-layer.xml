@@ -65,7 +65,7 @@ Microsystems, Inc. All Rights Reserved.
 
         <folder name="Hidden">
             <file name="org-netbeans-modules-xml-text-completion-ReloadActionPerformer.instance">
-                <attr name="instanceOf" stringvalue="org.netbeans.modules.xml.core.actions.XMLUpdateDocumentAction$Performer" />
+                <attr name="instanceOf" stringvalue="org.netbeans.modules.xml.core.actions.XMLUpdateDocumentAction$Performer"/>
             </file>
         </folder> <!-- Hidden -->
     </folder> <!-- Services -->
@@ -98,32 +98,38 @@ Microsystems, Inc. All Rights Reserved.
                 </folder>
 
                 <folder name="SideBar">
-                    <file name="org-netbeans-modules-xml-text-folding-XmlCodeFoldingSideBarFactory.instance"/>
-                    <attr name="org-netbeans-editor-GlyphGutter.instance/org-netbeans-modules-xml-text-folding-XmlCodeFoldingSideBarFactory.instance" boolvalue="true"/>
-                </folder>
+                    <file name="org-netbeans-modules-xml-text-folding-XmlCodeFoldingSideBarFactory.instance">
+                        <attr name="position" intvalue="1500"/>
+                    </file>
+                    </folder>
 
                 <folder name="Popup">
-                    <file name="org-netbeans-modules-xml-text-syntax-XMLViewActions.instance"/>
-                    <attr name="org-netbeans-modules-xml-text-syntax-XMLViewActions.instance/org-netbeans-modules-xml-core-actions-CollectXMLAction.instance" boolvalue="true"/>
+                    <file name="org-netbeans-modules-xml-text-syntax-XMLViewActions.instance">
+                        <attr name="position" intvalue="1400"/>
+                    </file>
                     <!-- implicit separator provided by above action group -->
-                    <file name="org-netbeans-modules-xml-core-actions-CollectXMLAction.instance"/>
-
-                    <file name="format"/>
-                    <file name="SeparatorAfterFormat.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    <file name="org-netbeans-modules-xml-core-actions-CollectXMLAction.instance">
+                        <attr name="position" intvalue="1600"/>
                     </file>
 
-                    <attr name="org-netbeans-modules-xml-core-actions-CollectXMLAction.instance/SeparatorAfterFormat.instance" boolvalue="true"/>
-                    <attr name="format/SeparatorAfterFormat.instance" boolvalue="true"/>
+                    <file name="format">
+                        <attr name="position" intvalue="1200"/>
+                    </file>
+                    <file name="SeparatorAfterFormat.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1800"/>
+                    </file>
 
-                    <attr name="SeparatorAfterFormat.instance/org-openide-actions-CutAction.instance" boolvalue="true"/>
+                    
+
                     <!-- Cut, Copy, Paste actions block -->
-                    <attr name="org-openide-actions-PasteAction.instance/ToolsSeparator.instance" boolvalue="true"/>
 
-                    <file name="ToolsSeparator.instance"><attr name="instanceClass" stringvalue="javax.swing.JSeparator"/></file>
-                    <attr name="ToolsSeparator.instance/org-openide-actions-ToolsAction.instance" boolvalue="true"/>
+                    <file name="ToolsSeparator.instance"><attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>    <attr name="position" intvalue="4100"/>
+                    </file>
 
-                    <file name="org-openide-actions-ToolsAction.instance"/>
+                    <file name="org-openide-actions-ToolsAction.instance">
+                        <attr name="position" intvalue="4200"/>
+                    </file>
                 </folder>
 
                 <folder name="CodeTemplates">
@@ -177,15 +183,17 @@ Microsystems, Inc. All Rights Reserved.
                     
                 <folder name="Popup">
 
-                    <attr name="org-openide-actions-PasteAction.instance/org-netbeans-modules-xml-core-actions-CollectDTDAction.instance" boolvalue="true"/>
                     <!-- implicit separator provided by below action group -->    
-                    <file name="org-netbeans-modules-xml-core-actions-CollectDTDAction.instance"/>
-                    <attr name="org-netbeans-modules-xml-core-actions-CollectDTDAction.instance/ToolsSeparator.instance" boolvalue="true"/>
+                    <file name="org-netbeans-modules-xml-core-actions-CollectDTDAction.instance">
+                        <attr name="position" intvalue="4100"/>
+                    </file>
 
-                    <file name="ToolsSeparator.instance"><attr name="instanceClass" stringvalue="javax.swing.JSeparator"/></file>
-                    <attr name="ToolsSeparator.instance/org-openide-actions-ToolsAction.instance" boolvalue="true"/>
+                    <file name="ToolsSeparator.instance"><attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>    <attr name="position" intvalue="4200"/>
+                    </file>
 
-                    <file name="org-openide-actions-ToolsAction.instance"/>
+                    <file name="org-openide-actions-ToolsAction.instance">
+                        <attr name="position" intvalue="4300"/>
+                    </file>
                 </folder>
 
                 <folder name="CodeTemplates">

@@ -26,10 +26,11 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.clientproject.ui.wizards.Bundle"/>
                 <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/clientproject/ui/resources/desktop.html"/>
 
-                <attr name="ejbfreeform.xml/emptyCar.xml" boolvalue="true"/>
-                <attr name="emptyCar.xml/importCar.xml" boolvalue="true"/>
                 
+                
+                <attr name="position" intvalue="400"/>
                 <file name="emptyCar.xml">
+                    <attr name="position" intvalue="600"/>
                     <attr name="template" boolvalue="true"/>
                     <attr name="instantiatingIterator" newvalue="org.netbeans.modules.j2ee.clientproject.ui.wizards.NewAppClientProjectWizardIterator"/>
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.clientproject.ui.wizards.Bundle"/>
@@ -38,6 +39,7 @@ Microsystems, Inc. All Rights Reserved.
                 </file>
         
                 <file name="importCar.xml">
+                    <attr name="position" intvalue="700"/>
                     <attr name="template" boolvalue="true"/>
                     <attr name="instantiatingIterator" newvalue="org.netbeans.modules.j2ee.clientproject.ui.wizards.ImportAppClientProjectWizardIterator"/>
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.clientproject.ui.wizards.Bundle"/>
@@ -61,33 +63,35 @@ Microsystems, Inc. All Rights Reserved.
             <folder name="Customizer">
                 <file name="Sources.instance">
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.j2ee.clientproject.ui.customizer.AppClientCompositePanelProvider.createSources"/>
+                    <attr name="position" intvalue="100"/>
                 </file>
-                <attr name="Sources.instance/Libraries.instance" boolvalue="true"/>
                 <file name="Libraries.instance">
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.j2ee.clientproject.ui.customizer.AppClientCompositePanelProvider.createLibraries"/>
+                    <attr name="position" intvalue="200"/>
                 </file>
-                <attr name="Libraries.instance/BuildCategory" boolvalue="true"/>
                 <folder name="BuildCategory">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.clientproject.ui.customizer.Bundle"/>
+                    <attr name="position" intvalue="300"/>
                     <file name="Build.instance">
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.j2ee.clientproject.ui.customizer.AppClientCompositePanelProvider.createBuild"/>
+                        <attr name="position" intvalue="100"/>
                     </file>
-                    <attr name="Build.instance/Jar.instance" boolvalue="true"/>
                     <file name="Jar.instance">
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.j2ee.clientproject.ui.customizer.AppClientCompositePanelProvider.createJar"/>
+                        <attr name="position" intvalue="200"/>
                     </file>
-                    <attr name="Jar.instance/Javadoc.instance" boolvalue="true"/>
                     <file name="Javadoc.instance">
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.j2ee.clientproject.ui.customizer.AppClientCompositePanelProvider.createJavadoc"/>
+                        <attr name="position" intvalue="300"/>
                     </file>
                 </folder>
-                <attr name="BuildCategory/Run.instance" boolvalue="true"/>
                 <file name="Run.instance">
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.j2ee.clientproject.ui.customizer.AppClientCompositePanelProvider.createRun"/>
+                    <attr name="position" intvalue="400"/>
                 </file>
-                <attr name="Run.instance/WebServiceCategory" boolvalue="true"/>
                 <folder name="WebServiceCategory">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.clientproject.ui.customizer.Bundle"/>
+                    <attr name="position" intvalue="500"/>
                     <file name="Client.instance">
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.j2ee.clientproject.ui.customizer.AppClientCompositePanelProvider.createWebServiceClients"/>
                     </file>

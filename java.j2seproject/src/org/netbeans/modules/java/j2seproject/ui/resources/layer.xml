@@ -22,13 +22,14 @@ Microsystems, Inc. All Rights Reserved.
 
     <folder name="Templates">
         <folder name="Project">
-            <attr name="Standard/Samples" boolvalue="true"/>
 
             <folder name="Standard">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.j2seproject.ui.wizards.Bundle"/>
                 <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/java/j2seproject/ui/resources/desktop.html"/>
 
+                <attr name="position" intvalue="100"/>
                 <file name="emptyJ2SE.xml">
+                    <attr name="position" intvalue="100"/>
                     <attr name="template" boolvalue="true"/>
                     <attr name="instantiatingIterator" newvalue="org.netbeans.modules.java.j2seproject.ui.wizards.NewJ2SEProjectWizardIterator"/>
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.j2seproject.ui.wizards.Bundle"/>
@@ -36,9 +37,10 @@ Microsystems, Inc. All Rights Reserved.
                     <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/java/j2seproject/ui/resources/emptyProject.html"/>
                 </file>
         
-                <attr name="emptyJ2SE.xml/emptyJ2SElibrary.xml" boolvalue="true"/>
+                
 
                 <file name="emptyJ2SElibrary.xml">
+                    <attr name="position" intvalue="200"/>
                     <attr name="template" boolvalue="true"/>
                     <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.java.j2seproject.ui.wizards.NewJ2SEProjectWizardIterator.library"/>
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.j2seproject.ui.wizards.Bundle"/>
@@ -46,9 +48,10 @@ Microsystems, Inc. All Rights Reserved.
                     <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/java/j2seproject/ui/resources/emptyLibrary.html"/>
                 </file>                
 
-                <attr name="emptyJ2SElibrary.xml/existingJ2SE.xml" boolvalue="true"/>
+                
 
                 <file name="existingJ2SE.xml">
+                    <attr name="position" intvalue="300"/>
                     <attr name="template" boolvalue="true"/>
                     <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.java.j2seproject.ui.wizards.NewJ2SEProjectWizardIterator.existing"/>
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.j2seproject.ui.wizards.Bundle"/>
@@ -70,31 +73,32 @@ Microsystems, Inc. All Rights Reserved.
             <folder name="Customizer">
                 <file name="Sources.instance">
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.j2seproject.ui.customizer.J2SECompositePanelProvider.createSources"/>
+                    <attr name="position" intvalue="100"/>
                 </file>
-                <attr name="Sources.instance/Libraries.instance" boolvalue="true"/>
                 <file name="Libraries.instance">
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.j2seproject.ui.customizer.J2SECompositePanelProvider.createLibraries"/>
+                    <attr name="position" intvalue="200"/>
                 </file>
-                <attr name="Libraries.instance/BuildCategory" boolvalue="true"/>
                 <folder name="BuildCategory">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.j2seproject.ui.customizer.Bundle"/>
+                    <attr name="position" intvalue="300"/>
                     <file name="Build.instance">
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.j2seproject.ui.customizer.J2SECompositePanelProvider.createBuild"/>
+                        <attr name="position" intvalue="100"/>
                     </file>
-                    <attr name="Build.instance/Jar.instance" boolvalue="true"/>
                     <file name="Jar.instance">
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.j2seproject.ui.customizer.J2SECompositePanelProvider.createJar"/>
+                        <attr name="position" intvalue="200"/>
                     </file>
-                    <attr name="Jar.instance/Javadoc.instance" boolvalue="true"/>
                     <file name="Javadoc.instance">
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.j2seproject.ui.customizer.J2SECompositePanelProvider.createJavadoc"/>
+                        <attr name="position" intvalue="300"/>
                     </file>
                 </folder>
-                <attr name="BuildCategory/Run.instance" boolvalue="true"/>
                 <file name="Run.instance">
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.j2seproject.ui.customizer.J2SECompositePanelProvider.createRun"/>
+                    <attr name="position" intvalue="400"/>
                 </file>
-                <attr name="Run.instance/Application" boolvalue="true"/>
                 <folder name="Application">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.j2seproject.ui.customizer.Bundle"/>
                     <file name="Self.instance">
@@ -104,9 +108,12 @@ Microsystems, Inc. All Rights Reserved.
             </folder>
             
             <folder name="Nodes">
-                <file name="org-netbeans-modules-java-j2seproject-ui-SourceNodeFactory.instance"/>
-                <attr name="org-netbeans-modules-java-j2seproject-ui-SourceNodeFactory.instance/org-netbeans-modules-java-j2seproject-ui-LibrariesNodeFactory.instance" boolvalue="true"/>
-                <file name="org-netbeans-modules-java-j2seproject-ui-LibrariesNodeFactory.instance"/>
+                <file name="org-netbeans-modules-java-j2seproject-ui-SourceNodeFactory.instance">
+                    <attr name="position" intvalue="200"/>
+                </file>
+                <file name="org-netbeans-modules-java-j2seproject-ui-LibrariesNodeFactory.instance">
+                    <attr name="position" intvalue="300"/>
+                </file>
             </folder>
             
             <folder name="Lookup"/>

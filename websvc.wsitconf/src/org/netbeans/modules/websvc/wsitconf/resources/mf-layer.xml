@@ -21,7 +21,7 @@
 <filesystem>
    <folder name="Templates">
         <folder name="WebServices">
-            <attr name="WebService/STSWizard" boolvalue="true"/>
+            <attr name="position" intvalue="1200"/>
             <file name="STSWizard.java">
              <attr name="template" boolvalue="true"/>
              <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.websvc.wsitconf.wizard.STSWizard.create"/>

@@ -22,10 +22,8 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="Templates">
         <folder name="Project">
             <folder name="Standard">
-                <attr name="emptyJ2SE.xml/j2sefreeform.xml" boolvalue="true"/>
-                <attr name="emptyJ2SElibrary.xml/j2sefreeform.xml" boolvalue="true"/>
-                <attr name="existingJ2SE.xml/j2sefreeform.xml" boolvalue="true"/>
                 <file name="j2sefreeform.xml">
+                    <attr name="position" intvalue="400"/>
                     <attr name="template" boolvalue="true"/>
                     <attr name="instantiatingIterator" newvalue="org.netbeans.modules.java.freeform.ui.NewJ2SEFreeformProjectWizardIterator"/>
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.freeform.resources.Bundle"/>
@@ -42,11 +40,15 @@ Microsystems, Inc. All Rights Reserved.
                 <file name="org-netbeans-modules-java-freeform-LookupProviderImpl.instance"/>
             </folder>
             <folder name="Customizer">
-                <file name="org-netbeans-modules-java-freeform-ui-SourceFoldersCategoryProvider.instance"/>
-                <attr name="org-netbeans-modules-java-freeform-ui-SourceFoldersCategoryProvider.instance/org-netbeans-modules-java-freeform-ui-ClasspathCategoryProvider.instance" boolvalue="true"/>
-                <file name="org-netbeans-modules-java-freeform-ui-ClasspathCategoryProvider.instance"/>
-                <attr name="org-netbeans-modules-java-freeform-ui-ClasspathCategoryProvider.instance/org-netbeans-modules-java-freeform-ui-OutputCategoryProvider.instance" boolvalue="true"/>
-                <file name="org-netbeans-modules-java-freeform-ui-OutputCategoryProvider.instance"/>
+                <file name="org-netbeans-modules-java-freeform-ui-SourceFoldersCategoryProvider.instance">
+                    <attr name="position" intvalue="200"/>
+                </file>
+                <file name="org-netbeans-modules-java-freeform-ui-ClasspathCategoryProvider.instance">
+                    <attr name="position" intvalue="400"/>
+                </file>
+                <file name="org-netbeans-modules-java-freeform-ui-OutputCategoryProvider.instance">
+                    <attr name="position" intvalue="600"/>
+                </file>
             </folder>
         </folder>
     </folder>

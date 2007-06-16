@@ -98,4 +98,31 @@ public class NamedFSServicesLookupTest extends NamedServicesLookupTest{
         assertEquals("inst/ordering/X", items.next().getId());
         assertEquals("inst/ordering/B", items.next().getId());
     }
+
+    public void testNumericOrdering() throws Exception {
+        FileObject inst = FileUtil.createData(root, "inst/ordering/X.instance");
+        inst.setAttribute("instanceCreate", Long.valueOf(1000));
+        inst.setAttribute("position", 3);
+        FileObject inst2 = FileUtil.createData(root, "inst/ordering/A.instance");
+        inst2.setAttribute("instanceCreate", Long.valueOf(500));
+        inst2.setAttribute("position", 1);
+        FileObject inst3 = FileUtil.createData(root, "inst/ordering/B.instance");
+        inst3.setAttribute("instanceCreate", Long.valueOf(1500));
+        inst3.setAttribute("position", 4);
+        FileObject inst4 = FileUtil.createData(root, "inst/ordering/C.instance");
+        inst4.setAttribute("instanceCreate", Long.valueOf(700));
+        inst4.setAttribute("position", 2);
+        Lookup l = Lookups.forPath("inst/ordering");
+        Iterator<? extends Long> lng = l.lookupAll(Long.class).iterator();
+        assertEquals(Long.valueOf(500), lng.next());
+        assertEquals(Long.valueOf(700), lng.next());
+        assertEquals(Long.valueOf(1000), lng.next());
+        assertEquals(Long.valueOf(1500), lng.next());
+        Iterator<? extends Lookup.Item<Long>> items = l.lookupResult(Long.class).allItems().iterator();
+        assertEquals("inst/ordering/A", items.next().getId());
+        assertEquals("inst/ordering/C", items.next().getId());
+        assertEquals("inst/ordering/X", items.next().getId());
+        assertEquals("inst/ordering/B", items.next().getId());
+    }
+
 }

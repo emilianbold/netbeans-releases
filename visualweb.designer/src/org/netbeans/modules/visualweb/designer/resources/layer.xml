@@ -17,7 +17,6 @@ The Original Software is NetBeans. The Initial Developer of the Original
 Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
-
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
 
@@ -51,9 +50,9 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="application">
             <folder name="x-designtime">
                 <folder name="Actions">
-                    <attr name="org-netbeans-modules-visualweb-insync-action-ViewJspSourceAction.shadow/DesignerSeparator1.instance" boolvalue="true"/>
                     <file name="DesignerSeparator1.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="500"/>
                     </file>
                     <!--<attr name="DesignerSeparator1.instance/org-netbeans-modules-visualweb-designer-action-InlineEditAction.shadow" boolvalue="true"/>
                     <file name="org-netbeans-modules-visualweb-designer-action-InlineEditAction.shadow">
@@ -61,9 +60,9 @@ Microsystems, Inc. All Rights Reserved.
                     </file>
                     <attr name="org-netbeans-modules-visualweb-designer-action-InlineEditAction.shadow/Separator1.instance" boolvalue="true"/>-->
                     
-                    <attr name="org-netbeans-modules-visualweb-insync-action-VirtualFormsAction.shadow/DesignerSeparator2.instance" boolvalue="true"/>
                     <file name="DesignerSeparator2.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1800"/>
                     </file>
                     <!--<attr name="DesignerSeparator2.instance/org-netbeans-modules-visualweb-designer-action-AlignAction.shadow" boolvalue="true"/>
                     <file name="org-netbeans-modules-visualweb-designer-action-AlignAction.shadow">
@@ -72,16 +71,16 @@ Microsystems, Inc. All Rights Reserved.
                     <attr name="org-netbeans-modules-visualweb-designer-action-AlignAction.shadow/org-netbeans-modules-visualweb-designer-action-BringToFrontAction.shadow" boolvalue="true"/>-->
                     <file name="org-netbeans-modules-visualweb-designer-action-BringToFrontAction.shadow">
                         <attr name="originalFile" stringvalue="/Actions/Designer/org-netbeans-modules-visualweb-designer-action-BringToFrontAction.instance"/>
+                        <attr name="position" intvalue="2000"/>
                     </file>
-                    <attr name="org-netbeans-modules-visualweb-designer-action-BringToFrontAction.shadow/org-netbeans-modules-visualweb-designer-action-SendToBackAction.shadow" boolvalue="true"/>
                     <file name="org-netbeans-modules-visualweb-designer-action-SendToBackAction.shadow">
                         <attr name="originalFile" stringvalue="/Actions/Designer/org-netbeans-modules-visualweb-designer-action-SendToBackAction.instance"/>
+                        <attr name="position" intvalue="2100"/>
                     </file>
-                    <attr name="org-netbeans-modules-visualweb-designer-action-SendToBackAction.shadow/Separator5.instance" boolvalue="true"/>
                     
-                    <attr name="org-netbeans-modules-visualweb-insync-action-BrowserPreviewAction.shadow/DesignerSeparator3.instance" boolvalue="true"/>
                     <file name="DesignerSeparator3.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="3100"/>
                     </file>
                     <!--
                     <attr name="DesignerSeparator3.instance/org-netbeans-modules-visualweb-designer-action-RefreshAction.shadow" boolvalue="true"/>
@@ -106,9 +105,9 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="application">
             <folder name="x-designer">
                 <folder name="Popup">
-                    <attr name="org-netbeans-modules-visualweb-insync-action-ViewJspSourceAction.shadow/DesignerSeparator1.instance" boolvalue="true"/>
                     <file name="DesignerSeparator1.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="600"/>
                     </file>
                     <!--<attr name="DesignerSeparator1.instance/org-netbeans-modules-visualweb-designer-action-InlineEditAction.shadow" boolvalue="true"/>
                     <file name="org-netbeans-modules-visualweb-designer-action-InlineEditAction.shadow">
@@ -117,6 +116,7 @@ Microsystems, Inc. All Rights Reserved.
                     <attr name="org-netbeans-modules-visualweb-designer-action-InlineEditAction.shadow/DesignerSeparator2.instance" boolvalue="true"/>-->
                     <file name="DesignerSeparator2.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="800"/>
                     </file>
                     <!--<attr name="DesignerSeparator2.instance/org-netbeans-modules-visualweb-designer-action-SelectParentAction.shadow" boolvalue="true"/>
                     <file name="org-netbeans-modules-visualweb-designer-action-SelectParentAction.shadow">
@@ -124,9 +124,9 @@ Microsystems, Inc. All Rights Reserved.
                     </file>
                     <attr name="org-netbeans-modules-visualweb-designer-action-SelectParentAction.shadow/Separator1.instance" boolvalue="true"/>-->
                     
-                    <attr name="org-netbeans-modules-visualweb-insync-action-VirtualFormsAction.shadow/DesignerSeparator3.instance" boolvalue="true"/>
                     <file name="DesignerSeparator3.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1800"/>
                     </file>
                     <!--<attr name="DesignerSeparator3.instance/org-netbeans-modules-visualweb-designer-action-AlignAction.shadow" boolvalue="true"/>
                     <file name="org-netbeans-modules-visualweb-designer-action-AlignAction.shadow">
@@ -135,16 +135,16 @@ Microsystems, Inc. All Rights Reserved.
                     <attr name="org-netbeans-modules-visualweb-designer-action-AlignAction.shadow/org-netbeans-modules-visualweb-designer-action-BringToFrontAction.shadow" boolvalue="true"/>-->
                     <file name="org-netbeans-modules-visualweb-designer-action-BringToFrontAction.shadow">
                         <attr name="originalFile" stringvalue="/Actions/Designer/org-netbeans-modules-visualweb-designer-action-BringToFrontAction.instance"/>
+                        <attr name="position" intvalue="2000"/>
                     </file>
-                    <attr name="org-netbeans-modules-visualweb-designer-action-BringToFrontAction.shadow/org-netbeans-modules-visualweb-designer-action-SendToBackAction.shadow" boolvalue="true"/>
                     <file name="org-netbeans-modules-visualweb-designer-action-SendToBackAction.shadow">
                         <attr name="originalFile" stringvalue="/Actions/Designer/org-netbeans-modules-visualweb-designer-action-SendToBackAction.instance"/>
+                        <attr name="position" intvalue="2100"/>
                     </file>
-                    <attr name="org-netbeans-modules-visualweb-designer-action-SendToBackAction.shadow/Separator5.instance" boolvalue="true"/>
                     
-                    <attr name="org-netbeans-modules-visualweb-insync-action-BrowserPreviewAction.shadow/DesignerSeparator4.instance" boolvalue="true"/>
                     <file name="DesignerSeparator4.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="3100"/>
                     </file>
                     <!--
                     <attr name="DesignerSeparator4.instance/org-netbeans-modules-visualweb-designer-action-RefreshAction.shadow" boolvalue="true"/>

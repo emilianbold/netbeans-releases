@@ -29,8 +29,11 @@ import org.openide.util.actions.SystemAction;
 
 import javax.swing.*;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Collections;
+import org.openide.loaders.DataObject;
 
 /**
  *
@@ -55,23 +58,7 @@ public class MidpPaletteProvider implements PaletteProvider {
 
     public void initPaletteCategories(String projectType, DataFolder rootFolder) {
         if (MidpDocumentSupport.PROJECT_TYPE_MIDP.equals(projectType)) {
-            // set soring order if need
-            if (rootFolder.getPrimaryFile().getChildren().length == 0) {
-                StringBuffer order = new StringBuffer();
-                for (int i = 0; i < paletteCategories.length; i++) {
-                    order.append(paletteCategories[i]);
-                    if (i < paletteCategories.length - 1) {
-                        order.append('/'); // NOI18N
-                    }
-                }
-
-                try {
-                    rootFolder.getPrimaryFile().setAttribute("OpenIDE-Folder-Order", order.toString()); // NOI18N
-                } catch (IOException e) {
-                    Debug.error("Can't set attribute for palette category directory: " + e);
-                }
-            }
-
+            List<DataObject> order = new ArrayList<DataObject>(Arrays.asList(rootFolder.getChildren()));
             // create category folders
             for (String categoryName : paletteCategories) {
                 try {
@@ -81,10 +68,16 @@ public class MidpPaletteProvider implements PaletteProvider {
                         categoryFolder.getPrimaryFile().setAttribute("SystemFileSystem.localizingBundle", "org.netbeans.modules.vmd.midp.palette.Bundle"); // NOI18N
                         categoryFolder.getPrimaryFile().setAttribute("SystemFileSystem.icon", "nbres:/org/netbeans/modules/vmd/midp/resource/components/category_" + categoryName + "_16.png"); // NOI18N
                         categoryFolder.getPrimaryFile().setAttribute("isExpanded", "true"); // NOI18N
+                        order.add(categoryFolder);
                     }
                 } catch (IOException e) {
                     Debug.error("Can't create directory for palette category: " + e);
                 }
+            }
+            try {
+                rootFolder.setOrder(order.toArray(new DataObject[order.size()]));
+            } catch (IOException e) {
+                Debug.error("Can't set attribute for palette category directory: " + e);
             }
         }
     }

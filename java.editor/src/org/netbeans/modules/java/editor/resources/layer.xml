@@ -18,7 +18,6 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
-
 <filesystem>
 
     <folder name="Actions">
@@ -39,20 +38,20 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-editor-java-JavaFastOpenAction.instance"/>            
             </file> -->
 
-            <attr name="org-openide-actions-GotoAction.instance/org-netbeans-modules-editor-java-JavaFastOpenAction.shadow" boolvalue="true"/>           
+                       
 
         </folder>
         <folder name="Source">
             <file name="org-netbeans-modules-java-editor-codegen-GenerateCodeAction$GlobalAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Source/org-netbeans-modules-java-editor-codegen-GenerateCodeAction$GlobalAction.instance"/>
+                <attr name="position" intvalue="100"/>
             </file>
-            <attr name="org-netbeans-modules-java-editor-codegen-GenerateCodeAction$GlobalAction.shadow/org-netbeans-modules-editor-java-JavaKit$JavaFixImports$GlobalAction.shadow" boolvalue="true"/>
 
             <file name="org-netbeans-modules-editor-java-JavaKit$JavaFixImports$GlobalAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Source/org-netbeans-modules-editor-java-JavaKit$JavaFixImports$GlobalAction.instance"/>
+                <attr name="position" intvalue="200"/>
             </file>
-            <attr name="org-netbeans-modules-editor-java-JavaKit$JavaFixImports$GlobalAction.shadow/SeparatorBeforeWordMatchInsert.instance" boolvalue="true"/>
-        </folder>
+            </folder>
     </folder>
                 
     <folder name="Shortcuts">
@@ -108,7 +107,7 @@ Microsystems, Inc. All Rights Reserved.
                         <folder name="Defaults">
                             <file name="org-netbeans-modules-editor-java-keybindings.xml" url="DefaultKeyBindings.xml"/> 
                             <file name="org-netbeans-modules-editor-java-keybindings-mac.xml" url="DefaultKeyBindings-Mac.xml"> 
-                                <attr name="nbeditor-settings-targetOS" stringvalue="OS_MAC" />
+                                <attr name="nbeditor-settings-targetOS" stringvalue="OS_MAC"/>
                             </file>
                         </folder>
                     </folder>
@@ -123,9 +122,10 @@ Microsystems, Inc. All Rights Reserved.
                 </folder>
                 
                 <folder name="SideBar">
-                    <file name="org-netbeans-modules-editor-java-NbJavaCodeFoldingSideBarFactory.instance"/>
-                    <attr name="org-netbeans-editor-GlyphGutter.instance/org-netbeans-modules-editor-java-NbJavaCodeFoldingSideBarFactory.instance" boolvalue="true"/>
-                </folder>
+                    <file name="org-netbeans-modules-editor-java-NbJavaCodeFoldingSideBarFactory.instance">
+                        <attr name="position" intvalue="1500"/>
+                    </file>
+                    </folder>
                 
                 <folder name="FoldManager">
                     <file name="org-netbeans-editor-CustomFoldManager$Factory.instance"/>
@@ -145,65 +145,78 @@ Microsystems, Inc. All Rights Reserved.
                 <folder name="Popup">
                     <folder name="goto">
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.editor.Bundle"/>
-                        <file name="goto-source"/>
-                        <file name="goto-declaration"/>
-                        <attr name="goto-source/goto-declaration" boolvalue="true"/>
-                        <file name="goto"/>
-                        <attr name="goto-declaration/goto" boolvalue="true"/>
+                        <file name="goto-source">
+                            <attr name="position" intvalue="100"/>
+                        </file>
+                        <file name="goto-declaration">
+                            <attr name="position" intvalue="200"/>
+                        </file>
+                        <file name="goto">
+                            <attr name="position" intvalue="500"/>
+                        </file>
                         
-                        <file name="goto-super-implementation"/>
-                        <attr name="goto-declaration/goto-super-implementation" boolvalue="true"/>
-                        <attr name="goto-super-implementation/goto" boolvalue="true"/>                    
+                        <file name="goto-super-implementation">
+                            <attr name="position" intvalue="300"/>
+                        </file>                    
                     </folder>
                     
-                    <attr name="goto/org-netbeans-modules-editor-NbSelectInPopupAction.instance" boolvalue="true"/>
                     
-                    <file name="goto-help"/>
+                    
+                    <file name="goto-help">
+                        <attr name="position" intvalue="1200"/>
+                    </file>
 
                     <file name="SeparatorAfterGoToHelp.instance">
 			<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1240"/>
                     </file>
-                    <attr name="goto-help/SeparatorAfterGoToHelp.instance" boolvalue="true"/>
 
-                    <file name="format"/>                    
-                    <attr name="SeparatorAfterGoToHelp.instance/format" boolvalue="true"/>                                        
+                    <file name="format">
+                        <attr name="position" intvalue="1480"/>
+                    </file>                    
+                                                            
 
-                    <attr name="format/fix-imports" boolvalue="true"/>
-                    <file name="fix-imports"/>
-                    <attr name="fix-imports/generate-code" boolvalue="true"/>
-                    <file name="generate-code"/>
-                    <attr name="generate-code/SeparatorAfterFormat.instance" boolvalue="true"/>
+                    <file name="fix-imports">
+                        <attr name="position" intvalue="1520"/>
+                    </file>
+                    <file name="generate-code">
+                        <attr name="position" intvalue="1560"/>
+                    </file>
                     
                     <file name="SeparatorBeforeCut.instance">
 			<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1960"/>
                     </file>
-                    <attr name="SeparatorBeforeCut.instance/org-openide-actions-CutAction.instance" boolvalue="true"/>
-                    <attr name="format/SeparatorBeforeCut.instance" boolvalue="true"/>
                     
                     <file name="SeparatorAfterPaste.instance">
 			<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="4100"/>
                     </file>
-                    <attr name="org-openide-actions-PasteAction.instance/SeparatorAfterPaste.instance" boolvalue="true"/>
                     
-                    <file name="generate-fold-popup"/>
-                    <attr name="SeparatorAfterPaste.instance/generate-fold-popup" boolvalue="true"/>
+                    <file name="generate-fold-popup">
+                        <attr name="position" intvalue="4200"/>
+                    </file>
 
                 </folder>
                 <folder name="Toolbars">
                     <folder name="Default">
-                        <attr name="stop-macro-recording/Separator-before-comment.instance" boolvalue="true"/>
                         <file name="Separator-before-comment.instance">
                             <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                            <attr name="position" intvalue="19100"/>
                         </file>
-                        <attr name="Separator-before-comment.instance/comment" boolvalue="true"/>
-                        <file name="comment"/>
-                        <attr name="comment/uncomment" boolvalue="true"/>
-                        <file name="uncomment"/>
+                        <file name="comment">
+                            <attr name="position" intvalue="19200"/>
+                        </file>
+                        <file name="uncomment">
+                            <attr name="position" intvalue="19300"/>
+                        </file>
                     </folder>
                 </folder>
                 
                 <folder name="CompletionProviders">
-                    <file name="org-netbeans-modules-editor-java-JavaCompletionProvider.instance"/>
+                    <file name="org-netbeans-modules-editor-java-JavaCompletionProvider.instance">
+                        <attr name="position" intvalue="100"/>
+                    </file>
                 </folder>
                 
                 <folder name="HyperlinkProviders">
@@ -227,18 +240,19 @@ Microsystems, Inc. All Rights Reserved.
                 </folder>                
 
                 <folder name="GlyphGutterActions">
-                    <file name="org-netbeans-modules-java-editor-overridden-IsOverriddenAnnotationAction.instance"/>
-                    <attr name="org-netbeans-modules-java-editor-overridden-IsOverriddenAnnotationAction.instance/org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.shadow" boolvalue="true"/>
-                </folder>
+                    <file name="org-netbeans-modules-java-editor-overridden-IsOverriddenAnnotationAction.instance">
+                        <attr name="position" intvalue="100"/>
+                    </file>
+                    </folder>
             </folder>
 
         </folder>
 
         <folder name="AnnotationTypes">
             <file name="org-netbeans-modules-editor-java-is_overridden.xml" url="is-overridden-annotation.xml"/>
-            <file name="org-netbeans-modules-editor-java-has_implementations.xml" url="has-implementations-annotation.xml" />
+            <file name="org-netbeans-modules-editor-java-has_implementations.xml" url="has-implementations-annotation.xml"/>
             <file name="org-netbeans-modules-editor-java-overrides.xml" url="overrides-annotation.xml"/>
-            <file name="org-netbeans-modules-editor-java-implements.xml" url="implements-annotation.xml" />
+            <file name="org-netbeans-modules-editor-java-implements.xml" url="implements-annotation.xml"/>
         </folder>
         
     </folder>

@@ -110,6 +110,8 @@ implements FileChangeListener, DataObject.Container {
      */
     transient private boolean folderCreated = false;
     
+    transient private FileChangeListener weakFCL = FileUtil.weakFileChangeListener(this, null);
+    
     /* -------------------------------------------------------------------- */
     /* -- Constructor (private) ------------------------------------------- */
     /* -------------------------------------------------------------------- */
@@ -122,7 +124,7 @@ implements FileChangeListener, DataObject.Container {
         if (attach) {
             // creates object that handles all elements in array and
             // assignes it to the
-            folder.addFileChangeListener (org.openide.filesystems.FileUtil.weakFileChangeListener (this, folder));
+            folder.addFileChangeListener(weakFCL);
         }
     }
 
@@ -289,12 +291,12 @@ implements FileChangeListener, DataObject.Container {
                         if (primaryFiles != null) {
                             // the old children
                             if (LOG) err.fine("changeComparator on " + folder + ": get old");
-                            List v = getObjects (null);
+                            List<DataObject> v = getObjects(null);
                             if (v.size () != 0) {
                                 // the new children - also are stored to be returned next time from getChildrenList ()
                                 order = null;
                                 if (LOG) err.fine("changeComparator: get new");
-                                List r = getObjects (null);
+                                List<DataObject> r = getObjects (null);
                                 if (LOG) err.fine("changeComparator: fire change");
                                 fireChildrenChange (r, v);
                             }
@@ -484,12 +486,11 @@ implements FileChangeListener, DataObject.Container {
                 changeComparator();
                 return;
             }
-            
-            if (DataFolder.EA_ORDER.equals(fe.getName()) ||
-            DataFolder.EA_SORT_MODE.equals(fe.getName()) ||
-            -1 != fe.getName().indexOf("/")) {
+            if (DataFolder.EA_ORDER.equals(fe.getName()) || DataFolder.EA_SORT_MODE.equals(fe.getName())) {
                 changeComparator();
             }
+        } else if (FileUtil.affectsOrder(fe)) {
+            changeComparator();
         }
     }
         
@@ -544,38 +545,23 @@ implements FileChangeListener, DataObject.Container {
      * @param c a comparator and maybe partial comparator to use
      * @return the sorted list (may or may not be the same)
      */
-    private /*static*/ List<DataObject> carefullySort (List<DataObject> l, FolderOrder c) {
+    private List<DataObject> carefullySort(List<DataObject> l, FolderOrder c) {
         final boolean LOG = err.isLoggable(Level.FINE);
         if (LOG) err.fine("carefullySort on " + folder);
-        // Not quite right: topologicalSort will not guarantee that these are left alone,
-        // even if the constraints do not mention files in the existing folder order.
-        // Adding constraints between adjacent pairs in the existing folder order is
-        // not good either, since that could produce an inconsistency relative to
-        // the explicitly specified constraints. E.g. you have:
-        // {a, b, c, d, e, x, y} Folder-Order=[a, b, c, d, e] c/x c/y x/d y/d
-        // This will currently produce the order: [a, b, c, e, x, y, d]
-        // If you had the existing folder order [a, b, d, c, e], then trying to make
-        // the sort stabler would just cause it to fail. XXX could try to add in the
-        // stabilizing constraints first, and if that fails, try again without them...
         Collections.sort (l, c);
-        Map<DataObject, List<DataObject>> constraints = c.getOrderingConstraints(l);
-        if (constraints == null) {
-            return l;
-        } else {
-            if (LOG) err.fine("carefullySort: partial orders");
-            
-            try {
-                return Utilities.topologicalSort(l, constraints);
-            } catch (TopologicalSortException ex) {
-                List<DataObject> corrected = NbCollections.checkedListByCopy(ex.partialSort(), DataObject.class, true);
-                if (err.isLoggable(Level.WARNING)) {
-                    err.warning("Note: folder " + folder + " cannot be consistently sorted due to ordering conflicts."); // NOI18N
-                    err.log(Level.WARNING, null, ex);
-                    err.warning("Using partial sort: " + corrected); // NOI18N
-                }
-                return corrected;
-            }
+        Map<FileObject,DataObject> files = new LinkedHashMap<FileObject,DataObject>(l.size());
+        for (DataObject d : l) {
+            FileObject f = d.getPrimaryFile();
+            f.removeFileChangeListener(weakFCL);
+            f.addFileChangeListener(weakFCL);
+            files.put(f, d);
         }
+        List<FileObject> sorted = FileUtil.getOrder(files.keySet(), true);
+        List<DataObject> dobs = new ArrayList<DataObject>(sorted.size());
+        for (FileObject f : sorted) {
+            dobs.add(files.get(f));
+        }
+        return dobs;
     }
 
     /** Creates list of primary files from the list of data objects.
@@ -847,7 +833,7 @@ implements FileChangeListener, DataObject.Container {
     * @param add added data objects
     * @param removed removed data objects
     */
-    private void fireChildrenChange (Collection add, Collection removed) {
+    private void fireChildrenChange(Collection<?> add, Collection<?> removed) {
         if (pcs != null) {
             if (!add.isEmpty() || !removed.isEmpty()) {
                 pcs.firePropertyChange (PROP_CHILDREN, null, null);

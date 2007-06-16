@@ -31,12 +31,14 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="Menu">
         <folder name="Window">
             <folder name="Versioning">
+                <attr name="position" intvalue="1600"/>
                 <file name="SeparatorVersioningOutput.instance">
                     <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    <attr name="position" intvalue="300"/>
                 </file>
-                <attr name="SeparatorVersioningOutput.instance/org-netbeans-modules-versioning-util-OpenVersioningOutputAction.shadow" boolvalue="true"/>
                 <file name="org-netbeans-modules-versioning-util-OpenVersioningOutputAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Versioning/org-netbeans-modules-versioning-util-OpenVersioningOutputAction.instance"/>
+                    <attr name="position" intvalue="400"/>
                 </file>
             </folder>
         </folder>
@@ -49,8 +51,9 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
         <folder name="Modes">
             <folder name="output">
-                <attr name="output.wstcref/versioning_output.wstcref" boolvalue="true"/>
-                <file name="versioning_output.wstcref" url="modes/output/versioning_output.wstcref"/>
+                <file name="versioning_output.wstcref" url="modes/output/versioning_output.wstcref">
+                    <attr name="position" intvalue="400"/>
+                </file>
             </folder>
         </folder>
     </folder>

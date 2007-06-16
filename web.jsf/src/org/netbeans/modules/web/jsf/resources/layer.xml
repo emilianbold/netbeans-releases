@@ -23,8 +23,8 @@ Microsystems, Inc. All Rights Reserved.
         <!-- Recognize text/x-jsf+xml: -->
         <folder name="MIMEResolver">
             <file name="org-netbeans-modules-web-jsf-resources-mime-resolver.xml" url="mime-resolver.xml">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.resources.Bundle" />
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/web/jsf/resources/JSFConfigIcon.png" />
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/web/jsf/resources/JSFConfigIcon.png"/>
             </file>
         </folder>
     </folder>
@@ -53,9 +53,10 @@ Microsystems, Inc. All Rights Reserved.
             </folder>
             <folder name="GrammarQueryManagers">
                 <!-- register semantics grammar for faces-config.xml(1.2) due to code completion -->
-                <file name="org-netbeans-modules-web-jsf-JSFGrammarQueryManager.instance"/>
-                <attr name="org-netbeans-modules-web-jsf-JSFGrammarQueryManager.instance/semantics-grammar-to-generic-grammar-separator" boolvalue="true"/>
-            </folder> <!-- GrammarQueryManagers -->
+                <file name="org-netbeans-modules-web-jsf-JSFGrammarQueryManager.instance">
+                    <attr name="position" intvalue="400"/>
+                </file>
+                </folder> <!-- GrammarQueryManagers -->
         </folder>
     </folder>
     <folder name="Editors">
@@ -70,13 +71,14 @@ Microsystems, Inc. All Rights Reserved.
             </folder>
             <folder name="x-jsf+xml">
                 <folder name="Popup"> 
-                    <file name="org-netbeans-modules-web-jsf-editor-JSFPopupAction.instance"/>
-                    <attr name="org-netbeans-modules-web-jsf-editor-JSFPopupAction.instance/Separator0.instance" boolvalue="true"/>
+                    <file name="org-netbeans-modules-web-jsf-editor-JSFPopupAction.instance">
+                        <attr name="position" intvalue="3500"/>
+                    </file>
                     <file name="Separator0.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="4100"/>
                     </file>
-                    <attr name="Separator0.instance/org-netbeans-modules-xml-text-syntax-XMLViewActions.instance" boolvalue="true"/>
-                </folder>
+                    </folder>
             </folder>
             <folder name="x-jsp">
                 <folder name="CompletionProviders">
@@ -103,12 +105,12 @@ Microsystems, Inc. All Rights Reserved.
     </folder>
     
     <folder name="Templates">
-        <attr name="JSP_Servlet/JSF" boolvalue="true"/>
         <folder name="JSF">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.resources.Bundle"/>
-            <attr name="TagHandler.java/JSFManagedBean.java" boolvalue="true"/>
+            <attr name="position" intvalue="1000"/>
             <file name="JSFManagedBean.java" url="templates/JSFManagedBean.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.resources.Bundle"/>
+                <attr name="position" intvalue="500"/>
                 <attr name="templateCategory" stringvalue="web-types"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
@@ -143,56 +145,65 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="JSPPalette">
         <folder name="JSF">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.palette.Bundle"/>
+            <attr name="position" intvalue="400"/>
             <file name="JsfForm.xml" url="nbresloc:/org/netbeans/modules/web/jsf/palette/items/resources/JsfForm.xml"/>
             <file name="JsfTable.xml" url="nbresloc:/org/netbeans/modules/web/jsf/palette/items/resources/JsfTable.xml"/>
         </folder>
-        <attr name="HTML/JSF" boolvalue="true"/>
-        <attr name="HTML_Forms/JSF" boolvalue="true"/>
-        <attr name="JSP/JSF" boolvalue="true"/>
-        <attr name="JSF/Database" boolvalue="true"/>
-    </folder>
+        </folder>
     
     <folder name="Loaders">
         <folder name="text">
             <folder name="x-jsf+xml">
                 <folder name="Actions">
-                    <file name="org-openide-actions-OpenAction.instance"/>
-                    <attr name="org-openide-actions-OpenAction.instance/org-openide-actions-EditAction.instance" boolvalue="true"/>
-                    <file name="org-openide-actions-EditAction.instance"/>
-                    <attr name="org-openide-actions-EditAction.instance/org-openide-actions-FileSystemAction.instance" boolvalue="true"/>
-                    <file name="org-openide-actions-FileSystemAction.instance"/>
-                    <attr name="org-openide-actions-FileSystemAction.instance/sep-1.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-OpenAction.instance">
+                        <attr name="position" intvalue="100"/>
+                    </file>
+                    <file name="org-openide-actions-EditAction.instance">
+                        <attr name="position" intvalue="200"/>
+                    </file>
+                    <file name="org-openide-actions-FileSystemAction.instance">
+                        <attr name="position" intvalue="300"/>
+                    </file>
                     <file name="sep-1.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="400"/>
                     </file>
-                    <attr name="sep-1.instance/org-openide-actions-CutAction.instance" boolvalue="true"/>
-                    <file name="org-openide-actions-CutAction.instance"/>
-                    <attr name="org-openide-actions-CutAction.instance/org-openide-actions-CopyAction.instance" boolvalue="true"/>
-                    <file name="org-openide-actions-CopyAction.instance"/>
-                    <attr name="org-openide-actions-CopyAction.instance/org-openide-actions-PasteAction.instance" boolvalue="true"/>
-                    <file name="org-openide-actions-PasteAction.instance"/>
-                    <attr name="org-openide-actions-PasteAction.instance/sep-2.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-CutAction.instance">
+                        <attr name="position" intvalue="500"/>
+                    </file>
+                    <file name="org-openide-actions-CopyAction.instance">
+                        <attr name="position" intvalue="600"/>
+                    </file>
+                    <file name="org-openide-actions-PasteAction.instance">
+                        <attr name="position" intvalue="700"/>
+                    </file>
                     <file name="sep-2.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="800"/>
                     </file>
-                    <attr name="sep-2.instance/org-openide-actions-DeleteAction.instance" boolvalue="true"/>
-                    <file name="org-openide-actions-DeleteAction.instance"/>
-                    <attr name="org-openide-actions-DeleteAction.instance/org-openide-actions-RenameAction.instance" boolvalue="true"/>
-                    <file name="org-openide-actions-RenameAction.instance"/>
-                    <attr name="org-openide-actions-RenameAction.instance/sep-3.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-DeleteAction.instance">
+                        <attr name="position" intvalue="900"/>
+                    </file>
+                    <file name="org-openide-actions-RenameAction.instance">
+                        <attr name="position" intvalue="1000"/>
+                    </file>
                     <file name="sep-3.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1100"/>
                     </file>
-                    <attr name="sep-3.instance/org-openide-actions-SaveAsTemplateAction.instance" boolvalue="true"/>
-                    <file name="org-openide-actions-SaveAsTemplateAction.instance"/>
-                    <attr name="org-openide-actions-SaveAsTemplateAction.instance/sep-4.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-SaveAsTemplateAction.instance">
+                        <attr name="position" intvalue="1200"/>
+                    </file>
                     <file name="sep-4.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1300"/>
                     </file>
-                    <attr name="sep-4.instance/org-openide-actions-ToolsAction.instance" boolvalue="true"/>
-                    <file name="org-openide-actions-ToolsAction.instance"/>
-                    <attr name="org-openide-actions-ToolsAction.instance/org-openide-actions-PropertiesAction.instance" boolvalue="true"/>
-                    <file name="org-openide-actions-PropertiesAction.instance"/>
+                    <file name="org-openide-actions-ToolsAction.instance">
+                        <attr name="position" intvalue="1400"/>
+                    </file>
+                    <file name="org-openide-actions-PropertiesAction.instance">
+                        <attr name="position" intvalue="1500"/>
+                    </file>
                 </folder>
             </folder>
         </folder>

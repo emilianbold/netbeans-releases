@@ -22,15 +22,11 @@ Microsystems, Inc. All Rights Reserved.
     
     <folder name="Editors">
         <folder name="SideBar">
-            <file name="org-netbeans-modules-versioning-diff-DiffSidebarFactory.instance"/>
+            <file name="org-netbeans-modules-versioning-diff-DiffSidebarFactory.instance">
+                <attr name="position" intvalue="4000"/>
+            </file>
             <!-- place in between line numbers sidebar and folding sidebar #57544 -->
-            <attr name="org-netbeans-editor-GlyphGutter.instance/org-netbeans-modules-versioning-diff-DiffSidebarFactory.instance" boolvalue="true"/>
-            <attr name="org-netbeans-modules-subversion-ui-blame-AnnotationBarManager.instance/org-netbeans-modules-versioning-diff-DiffSidebarFactory.instance" boolvalue="true"/>
-            <attr name="org-netbeans-modules-versioning-diff-DiffSidebarFactory.instance/org-netbeans-modules-editor-java-NbJavaCodeFoldingSideBarFactory.instance" boolvalue="true"/>
-            <attr name="org-netbeans-modules-versioning-diff-DiffSidebarFactory.instance/org-netbeans-modules-html-editor-folding-HTMLCodeFoldingSideBarFactory.instance" boolvalue="true"/>
-            <attr name="org-netbeans-modules-versioning-diff-DiffSidebarFactory.instance/org-netbeans-modules-xml-text-folding-XmlCodeFoldingSideBarFactory.instance" boolvalue="true"/>
-            <attr name="org-netbeans-modules-versioning-diff-DiffSidebarFactory.instance/org-netbeans-modules-web-core-syntax-folding-JspCodeFoldingSideBarFactory.instance" boolvalue="true"/>
-        </folder>
+            </folder>
 
         <folder name="UpToDateStatusProvider">
             <file name="org-netbeans-modules-versioning-diff-DiffMarkProviderCreator.instance">
@@ -61,20 +57,17 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="View">
             <file name="org-netbeans-modules-versioning-diff-ShowDiffSidebarAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Tools/org-netbeans-modules-versioning-diff-ShowDiffSidebarAction.instance"/>
+                <attr name="position" intvalue="900"/>
             </file>
             <file name="org-netbeans-modules-versioning-ShowTextAnnotationsAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Versioning/org-netbeans-modules-versioning-ShowTextAnnotationsAction.instance"/>
+                <attr name="position" intvalue="1000"/>
             </file>            
-            <attr name="org-netbeans-modules-editor-MainMenuAction$ShowToolBarAction.instance/org-netbeans-modules-versioning-diff-ShowDiffSidebarAction.shadow" boolvalue="true"/>
-            <attr name="org-netbeans-modules-versioning-diff-ShowDiffSidebarAction.shadow/org-netbeans-modules-versioning-ShowTextAnnotationsAction.shadow" boolvalue="true"/>
-            <attr name="org-netbeans-modules-versioning-diff-ShowDiffSidebarAction.shadow/ToggleFullScreenAction.shadow" boolvalue="true"/>
-            <attr name="org-netbeans-modules-versioning-ShowTextAnnotationsAction.shadow/ToggleFullScreenAction.shadow" boolvalue="true"/>
-        </folder>
+            </folder>
 
-        <attr name="RunProject/Versioning" boolvalue="true" />
-        <attr name="Versioning/Tools" boolvalue="true" />
         <folder name="Versioning">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.versioning.Bundle" />
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.versioning.Bundle"/>
+            <attr name="position" intvalue="900"/>
             <file name="org-netbeans-modules-versioning-VersioningMainMenu.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.versioning.VersioningMainMenu"/>
             </file>
@@ -83,11 +76,9 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="Window">
             <folder name="Versioning">
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/versioning/resources/window-versioning.png"/>
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.versioning.Bundle" />
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.versioning.Bundle"/>
             </folder>
-            <attr name="org-netbeans-modules-web-monitor-client-MonitorAction.shadow/Versioning" boolvalue="true"/>
-            <attr name="Versioning/InspectorAction.shadow" boolvalue="true"/>
-        </folder>
+            </folder>
         
     </folder>
     

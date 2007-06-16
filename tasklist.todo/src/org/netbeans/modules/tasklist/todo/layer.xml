@@ -11,10 +11,10 @@
                 <attr name="diplayNameKey" stringvalue="LBL_todo_group"/>
                 <attr name="descriptionKey" stringvalue="HINT_todo_group"/>
                 <attr name="iconKey" stringvalue="ICON_todo"/>
+                <attr name="position" intvalue="300"/>
             </file>
             
-            <attr name="warning.instance/todo.instance" boolvalue="true"/>
-        </folder>
+            </folder>
         
         <folder name="Scanners">
             <file name="TodoScanner.instance">

@@ -26,22 +26,17 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 	</folder>
 
     <!-- templates -->
-    <folder name="Templates">
-    	<attr name="Classes/JUnit" boolvalue="true"/>
-    	<attr name="JarPackager/JUnit" boolvalue="true"/>    	
-    	<attr name="JUnit/Ant" boolvalue="true"/>
-    	<attr name="JUnit/Other" boolvalue="true"/>          
+    <folder name="Templates">    	
+    	          
         <folder name="JUnit">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.junit.Bundle"/>
+            <attr name="position" intvalue="1700"/>
             <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/junit/resources/templates/JUnitFolder.html"/>
-            <attr name="EmptyJUnitTest.java/SimpleJUnitTest.java" boolvalue="true"/>
-            <attr name="TestSuite.java/Package.shadow" boolvalue="true"/>
-            <attr name="SimpleJUnitTest.java/TestSuite.java" boolvalue="true"/>
-            <attr name="SimpleJUnitTest.java/Package.shadow" boolvalue="true"/>
             
             <!-- JUnit wizards -->
             
             <file name="EmptyJUnitTest.java">
+                <attr name="position" intvalue="100"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="simple" boolvalue="false"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.junit.Bundle"/> 
@@ -52,6 +47,7 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
             </file>
             
             <file name="SimpleJUnitTest.java">
+                <attr name="position" intvalue="300"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="simple" boolvalue="false"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.junit.Bundle"/> 
@@ -62,6 +58,7 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
             </file>
             
             <file name="TestSuite.java">
+                <attr name="position" intvalue="400"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="simple" boolvalue="false"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.junit.Bundle"/> 
@@ -74,6 +71,7 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
             <!-- JUnit 3.x templates -->
             
             <file name="EmptyJUnit3Test.java" url="templates/EmptyJUnit3Test.java.template">
+                <attr name="position" intvalue="200"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.junit.Bundle"/> 
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/junit/resources/templates/EmptyJUnitTest.html"/>
@@ -81,8 +79,8 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/junit/resources/JUnitLogo.png"/>
                 <attr name="templateCategory" stringvalue="invisible"/>
             </file>
-            <attr boolvalue="true" name="EmptyJUnit3Test.java/SimpleJUnit3Test.java"/>
             <file name="SimpleJUnit3Test.java" url="templates/SimpleJUnit3Test.java.template">
+                <attr name="position" intvalue="500"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.junit.Bundle"/> 
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/junit/resources/templates/SimpleJUnitTest.html"/>
@@ -90,8 +88,8 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/junit/resources/JUnitLogo.png"/>
                 <attr name="templateCategory" stringvalue="invisible"/>
             </file>
-            <attr boolvalue="true" name="SimpleJUnit3Test.java/JUnit3TestSuite.java"/>
             <file name="JUnit3TestSuite.java" url="templates/JUnit3TestSuite.java.template">
+                <attr name="position" intvalue="600"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.junit.Bundle"/> 
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/junit/resources/templates/TestSuite.html"/>
@@ -102,8 +100,8 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
             
             <!-- JUnit 4.x templates -->
             
-            <attr boolvalue="true" name="JUnit3TestSuite.java/EmptyJUnit4Test.java"/>
             <file name="EmptyJUnit4Test.java" url="templates/EmptyJUnit4Test.java.template">
+                <attr name="position" intvalue="700"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.junit.Bundle"/> 
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/junit/resources/templates/EmptyJUnitTest.html"/>
@@ -111,8 +109,8 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/junit/resources/JUnitLogo.png"/>
                 <attr name="templateCategory" stringvalue="invisible"/>
             </file>
-            <attr boolvalue="true" name="EmptyJUnit4Test.java/SimpleJUnit4Test.java"/>
             <file name="SimpleJUnit4Test.java" url="templates/SimpleJUnit4Test.java.template">
+                <attr name="position" intvalue="800"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.junit.Bundle"/> 
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/junit/resources/templates/SimpleJUnitTest.html"/>
@@ -120,8 +118,8 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/junit/resources/JUnitLogo.png"/>
                 <attr name="templateCategory" stringvalue="invisible"/>
             </file>
-            <attr boolvalue="true" name="SimpleJUnit4Test.java/JUnit4TestSuite.java"/>
             <file name="JUnit4TestSuite.java" url="templates/JUnit4TestSuite.java.template">
+                <attr name="position" intvalue="900"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.junit.Bundle"/> 
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/junit/resources/templates/TestSuite.html"/>
@@ -132,6 +130,7 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
             
             <file name="Package.shadow">
                 <attr name="originalFile" stringvalue="Templates/Classes/Package"/>
+                <attr name="position" intvalue="1000"/>
             </file>
         </folder>
     </folder>
@@ -142,13 +141,11 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
             <folder name="x-java">
                 <folder name="Popup">
                     <folder name="goto">
-                        <attr name="goto-super-implementation/GoToOppositeAction.shadow" boolvalue="true"/>
-                        <attr name="goto-declaration/GoToOppositeAction.shadow" boolvalue="true"/>
                         <file name="GoToOppositeAction.shadow">
                             <attr name="originalFile" stringvalue="Actions/JUnitTests/org-netbeans-modules-junit-GoToOppositeAction.instance"/>
+                            <attr name="position" intvalue="400"/>
                         </file>
-                        <attr name="GoToOppositeAction.shadow/goto" boolvalue="true"/>
-                    </folder>
+                        </folder>
                 </folder>
             </folder>
         </folder>
@@ -158,8 +155,8 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
     <folder name="Actions">
         <folder name="JUnitTests">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.junit.Bundle"/>
-            <file name="org-netbeans-modules-junit-GoToOppositeAction.instance" />
-            <file name="org-netbeans-modules-junit-CreateTestAction.instance" />
+            <file name="org-netbeans-modules-junit-GoToOppositeAction.instance"/>
+            <file name="org-netbeans-modules-junit-CreateTestAction.instance"/>
         </folder>
        
         <folder name="Window">
@@ -174,20 +171,18 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
         <folder name="GoTo">
             <file name="org-netbeans-modules-junit-GoToOppositeAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/JUnitTests/org-netbeans-modules-junit-GoToOppositeAction.instance"/>            
-            </file>
-            <attr name="org-netbeans-modules-java-actions-GoToType/org-netbeans-modules-junit-GoToOppositeAction.shadow" boolvalue="true"/>   
-            <attr name="org-netbeans-modules-junit-GoToOppositeAction.shadow/org-netbeans-core-windows-actions-RecentViewListAction.shadow" boolvalue="true"/>   
-            <attr name="org-netbeans-modules-jumpto-file-FileSearchAction.shadow/org-netbeans-modules-junit-GoToOppositeAction.shadow" boolvalue="true"/>   
+                <attr name="position" intvalue="400"/>
+            </file>   
+               
+               
         </folder>
         <folder name="Window">
             <folder name="Output">
-                <attr name="ResultViewOpenAction.shadow/ResultWindowOpenAction.shadow" boolvalue="true"/>
-                <attr name="FindUsagesOpenAction.shadow/ResultWindowOpenAction.shadow" boolvalue="true"/>
                 <file name="ResultWindowOpenAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-junit-output-ResultWindowOpenAction.instance"/>
+                    <attr name="position" intvalue="400"/>
                 </file> <!-- ResultWindowOpenAction -->
-                <attr name="ResultWindowOpenAction.shadow/RefactoringPreviewOpenAction.shadow" boolvalue="true"/>
-            </folder>
+                </folder>
         </folder> <!-- Window -->
     </folder>
     

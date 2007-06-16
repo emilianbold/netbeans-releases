@@ -29,12 +29,8 @@ Microsystems, Inc. All Rights Reserved.
 -->    
     <folder name="Templates">
         <folder name="JSP_Servlet">
-            <attr name="ApplicationBean.java/ServiceLocator.java" boolvalue="true"/>
-            <attr name="TagHandler.java/ServiceLocator.java" boolvalue="true"/>
-            <attr name="JSFManagedBean.java/ServiceLocator.java" boolvalue="true"/>
-            <attr name="StrutsActionForm.java/ServiceLocator.java" boolvalue="true"/>
-            <attr name="ServiceLocator.java/CachingServiceLocator.java" boolvalue="true"/>
             <file name="CachingServiceLocator.java" url="CachingServiceLocator.template">
+                <attr name="position" intvalue="1400"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="instantiatingIterator" newvalue="org.netbeans.modules.j2ee.ejbcore.patterns.ServiceLocatorWizard"/>
@@ -43,6 +39,7 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.ejbcore.patterns.Bundle"/>
             </file>
             <file name="ServiceLocator.java" url="ServiceLocator.template">
+                <attr name="position" intvalue="1300"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="instantiatingIterator" newvalue="org.netbeans.modules.j2ee.ejbcore.patterns.ServiceLocatorWizard"/>
@@ -51,17 +48,13 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.ejbcore.patterns.Bundle"/>
             </file>
         </folder>
-        <attr name="JSP_Servlet/J2EE" boolvalue="true"/>
         <folder name="J2EE">
             
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.ejbcore.resources.Bundle"/>
-            <attr name="Session/Entity" boolvalue="true"/>
-            <attr name="Entity/RelatedCMP" boolvalue="true"/>
-            <attr name="RelatedCMP/Message" boolvalue="true"/>
-            <attr name="Message/ServiceLocator.java" boolvalue="true"/>
             
             <!-- Templates accessible from Tools | TemplateManager -->
 
+            <attr name="position" intvalue="1300"/>
             <folder name="EJB21">
                 <file name="SessionEjbClass.java" url="templates/EJB21SessionEjbClass.template">
                     <attr name="template" boolvalue="true"/>
@@ -234,6 +227,7 @@ Microsystems, Inc. All Rights Reserved.
             <!-- End Templates accessible from Tools | TemplateManager -->
             
             <file name="Session">
+                <attr name="position" intvalue="100"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.j2ee.ejbcore.ejb.wizard.session.SessionEJBWizard.create"/>
                 <attr name="templateCategory" stringvalue="ejb-types"/>
@@ -243,6 +237,7 @@ Microsystems, Inc. All Rights Reserved.
             </file>
 
             <file name="Message">
+                <attr name="position" intvalue="400"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="instantiatingIterator" newvalue="org.netbeans.modules.j2ee.ejbcore.ejb.wizard.mdb.MessageEJBWizard"/>
                 <attr name="templateCategory" stringvalue="ejb-types-server"/>
@@ -252,6 +247,7 @@ Microsystems, Inc. All Rights Reserved.
             </file>
             
             <file name="Entity">
+                <attr name="position" intvalue="200"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.j2ee.ejbcore.ejb.wizard.entity.EntityEJBWizard.create"/>
                 <attr name="templateCategory" stringvalue="ejb-types_2_1"/>
@@ -260,8 +256,8 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/j2ee/ejbcore/ui/logicalview/ejb/entity/EntityNodeIcon.gif"/>
             </file>
             
-            <attr name="ServiceLocator.java/CachingServiceLocator.java" boolvalue="true"/>
             <file name="CachingServiceLocator.java" url="CachingServiceLocator.template">
+                <attr name="position" intvalue="600"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="instantiatingIterator" newvalue="org.netbeans.modules.j2ee.ejbcore.patterns.ServiceLocatorWizard"/>
@@ -271,6 +267,7 @@ Microsystems, Inc. All Rights Reserved.
             </file>
             
             <file name="RelatedCMP">
+                <attr name="position" intvalue="300"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateCategory" stringvalue="j2ee-14-types"/>
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.j2ee.persistence.wizard.fromdb.RelatedCMPWizard.createForCMP"/>
@@ -280,6 +277,7 @@ Microsystems, Inc. All Rights Reserved.
             </file>
             
             <file name="ServiceLocator.java" url="ServiceLocator.template">
+                <attr name="position" intvalue="500"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="instantiatingIterator" newvalue="org.netbeans.modules.j2ee.ejbcore.patterns.ServiceLocatorWizard"/>
@@ -302,14 +300,16 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="Editors">
         <folder name="text">
             <folder name="x-java">
-                <folder name="Popup">
-                    <attr name="generate-goto-popup/org-netbeans-modules-j2ee-ejbcore-ui-logicalview-ejb-action-EJBActionGroup.instance" boolvalue="true"/> 
-                    <attr name="org-netbeans-modules-editor-NbSelectInPopupAction.instance/org-netbeans-modules-j2ee-ejbcore-ui-logicalview-ejb-action-EJBActionGroup.instance" boolvalue="true"/>
-                    <attr name="org-netbeans-modules-j2ee-ejbcore-ui-logicalview-ejb-action-EJBActionGroup.instance/org-netbeans-modules-refactoring-ui-WhereUsedAction.instance" boolvalue="true"/>        
-                    <attr name="org-netbeans-modules-j2ee-ejbcore-ui-logicalview-ejb-action-EJBActionGroup.instance/org-netbeans-modules-j2ee-ejbcore-ui-logicalview-entres-EnterpriseRefActionGroup.instance" boolvalue="true"/>        
-                    <attr name="org-netbeans-modules-j2ee-ejbcore-ui-logicalview-entres-EnterpriseRefActionGroup.instance/org-netbeans-modules-refactoring-ui-WhereUsedAction.instance" boolvalue="true"/>        
-                    <file name="org-netbeans-modules-j2ee-ejbcore-ui-logicalview-ejb-action-EJBActionGroup.instance"/>
-                    <file name="org-netbeans-modules-j2ee-ejbcore-ui-logicalview-entres-EnterpriseRefActionGroup.instance"/>
+                <folder name="Popup"> 
+                            
+                            
+                            
+                    <file name="org-netbeans-modules-j2ee-ejbcore-ui-logicalview-ejb-action-EJBActionGroup.instance">
+                        <attr name="position" intvalue="1120"/>
+                    </file>
+                    <file name="org-netbeans-modules-j2ee-ejbcore-ui-logicalview-entres-EnterpriseRefActionGroup.instance">
+                        <attr name="position" intvalue="3500"/>
+                    </file>
                 </folder>
                 <folder name="Hints">                   
                     <file name="org-netbeans-modules-j2ee-ejbcore-hints-EjbHintsProvider.instance"/>

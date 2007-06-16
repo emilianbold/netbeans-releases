@@ -4,38 +4,51 @@
     <folder name="CreatorDesignerPalette">
         <!--<attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.webui.designtime.resources.Bundle"/>-->
         <!-- Sorting -->        
-        <attr name="Layout/Advanced" boolvalue="true"/>    
+            
         
         <folder name="Layout">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.webui.designtime.resources.Bundle"/>
             
-            <attr name="Tab.comp_palette_item/Jsp_Directive_Include.comp_palette_item" boolvalue="true"/>  
-            <attr name="Jsp_Directive_Include.comp_palette_item/PageAlert.comp_palette_item" boolvalue="true"/>  
+              
+              
             
-            <file name="Jsp_Directive_Include.comp_palette_item" url="resources/Jsp_Directive_Include.comp_palette_item"/>   
+            <file name="Jsp_Directive_Include.comp_palette_item" url="resources/Jsp_Directive_Include.comp_palette_item">
+                <attr name="position" intvalue="700"/>
+            </file>   
         </folder>        
         <folder name="Advanced">
             
-            <!-- Begin Sort -->
-            <attr name="Markup.comp_palette_item/Script.comp_palette_item" boolvalue="true"/> 
-            <attr name="Script.comp_palette_item/EncodingComponent.comp_palette_item" boolvalue="true"/>
-            <attr name="EncodingComponent.comp_palette_item/F_LoadBundle.comp_palette_item" boolvalue="true"/> 
-            <attr name="F_LoadBundle.comp_palette_item/F_Converter.comp_palette_item" boolvalue="true"/> 
-            <attr name="F_Converter.comp_palette_item/F_Validator.comp_palette_item" boolvalue="true"/>             
-            <attr name="F_Validator.comp_palette_item/F_ActionListener.comp_palette_item" boolvalue="true"/>          
-            <attr name="F_ActionListener.comp_palette_item/F_ValueChangeListener.comp_palette_item" boolvalue="true"/> 
-            <attr name="F_ValueChangeListener.comp_palette_item/F_Verbatim.comp_palette_item" boolvalue="true"/> 
-            <attr name="F_Verbatim.comp_palette_item/UIParameter.comp_palette_item" boolvalue="true"/> 
-            <attr name="UIParameter.comp_palette_item/Link.comp_palette_item" boolvalue="true"/>  
-            <attr name="Link.comp_palette_item/Meta.comp_palette_item" boolvalue="true"/>   
+            <!-- Begin Sort --> 
+             
+             
+                         
+                      
+             
+             
+             
+              
+               
             <!-- End Sort -->
             
-            <file name="F_LoadBundle.comp_palette_item" url="resources/F_LoadBundle.comp_palette_item"/> 
-            <file name="F_Converter.comp_palette_item" url="resources/F_Converter.comp_palette_item"/>        
-            <file name="F_Validator.comp_palette_item" url="resources/F_Validator.comp_palette_item"/> 
-            <file name="F_ActionListener.comp_palette_item" url="resources/F_ActionListener.comp_palette_item"/>   
-            <file name="F_ValueChangeListener.comp_palette_item" url="resources/F_ValueChangeListener.comp_palette_item"/>    
-            <file name="F_Verbatim.comp_palette_item" url="resources/F_Verbatim.comp_palette_item"/> 
+            <attr name="position" intvalue="600"/>
+            <file name="F_LoadBundle.comp_palette_item" url="resources/F_LoadBundle.comp_palette_item">
+                <attr name="position" intvalue="400"/>
+            </file> 
+            <file name="F_Converter.comp_palette_item" url="resources/F_Converter.comp_palette_item">
+                <attr name="position" intvalue="500"/>
+            </file>        
+            <file name="F_Validator.comp_palette_item" url="resources/F_Validator.comp_palette_item">
+                <attr name="position" intvalue="600"/>
+            </file> 
+            <file name="F_ActionListener.comp_palette_item" url="resources/F_ActionListener.comp_palette_item">
+                <attr name="position" intvalue="700"/>
+            </file>   
+            <file name="F_ValueChangeListener.comp_palette_item" url="resources/F_ValueChangeListener.comp_palette_item">
+                <attr name="position" intvalue="800"/>
+            </file>    
+            <file name="F_Verbatim.comp_palette_item" url="resources/F_Verbatim.comp_palette_item">
+                <attr name="position" intvalue="900"/>
+            </file> 
         </folder>
     </folder>
     
@@ -45,36 +58,49 @@
 
         <folder name="Advanced">
             
-            <!-- Begin Sort -->
-            <attr name="Markup.comp_palette_item/Script.comp_palette_item" boolvalue="true"/> 
-            <attr name="Script.comp_palette_item/EncodingComponent.comp_palette_item" boolvalue="true"/>
-            <attr name="EncodingComponent.comp_palette_item/F_LoadBundle.comp_palette_item" boolvalue="true"/> 
-            <attr name="F_LoadBundle.comp_palette_item/F_Converter.comp_palette_item" boolvalue="true"/> 
-            <attr name="F_Converter.comp_palette_item/F_Validator.comp_palette_item" boolvalue="true"/>             
-            <attr name="F_Validator.comp_palette_item/F_ActionListener.comp_palette_item" boolvalue="true"/>          
-            <attr name="F_ActionListener.comp_palette_item/F_ValueChangeListener.comp_palette_item" boolvalue="true"/> 
-            <attr name="F_ValueChangeListener.comp_palette_item/F_Verbatim.comp_palette_item" boolvalue="true"/> 
-            <attr name="F_Verbatim.comp_palette_item/UIParameter.comp_palette_item" boolvalue="true"/> 
-            <attr name="UIParameter.comp_palette_item/Link.comp_palette_item" boolvalue="true"/>  
-            <attr name="Link.comp_palette_item/Meta.comp_palette_item" boolvalue="true"/>   
+            <!-- Begin Sort --> 
+             
+             
+                         
+                      
+             
+             
+             
+              
+               
             <!-- End Sort -->
             
-            <file name="F_LoadBundle.comp_palette_item" url="resources/F_LoadBundle.comp_palette_item"/> 
-            <file name="F_Converter.comp_palette_item" url="resources/F_Converter.comp_palette_item"/>        
-            <file name="F_Validator.comp_palette_item" url="resources/F_Validator.comp_palette_item"/> 
-            <file name="F_ActionListener.comp_palette_item" url="resources/F_ActionListener.comp_palette_item"/>   
-            <file name="F_ValueChangeListener.comp_palette_item" url="resources/F_ValueChangeListener.comp_palette_item"/>    
-            <file name="F_Verbatim.comp_palette_item" url="resources/F_Verbatim.comp_palette_item"/> 
+            <attr name="position" intvalue="700"/>
+            <file name="F_LoadBundle.comp_palette_item" url="resources/F_LoadBundle.comp_palette_item">
+                <attr name="position" intvalue="400"/>
+            </file> 
+            <file name="F_Converter.comp_palette_item" url="resources/F_Converter.comp_palette_item">
+                <attr name="position" intvalue="500"/>
+            </file>        
+            <file name="F_Validator.comp_palette_item" url="resources/F_Validator.comp_palette_item">
+                <attr name="position" intvalue="600"/>
+            </file> 
+            <file name="F_ActionListener.comp_palette_item" url="resources/F_ActionListener.comp_palette_item">
+                <attr name="position" intvalue="700"/>
+            </file>   
+            <file name="F_ValueChangeListener.comp_palette_item" url="resources/F_ValueChangeListener.comp_palette_item">
+                <attr name="position" intvalue="1000"/>
+            </file>    
+            <file name="F_Verbatim.comp_palette_item" url="resources/F_Verbatim.comp_palette_item">
+                <attr name="position" intvalue="1100"/>
+            </file> 
         </folder>
         
         
         <folder name="Layout">
            <!-- <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.webui.designtime.resources.Bundle"/> -->
             
-            <attr name="WoodstockTab.comp_palette_item/Jsp_Directive_Include.comp_palette_item" boolvalue="true"/>  
-            <attr name="Jsp_Directive_Include.comp_palette_item/WoodstockPageAlert.comp_palette_item" boolvalue="true"/>  
+              
+              
             
-            <file name="Jsp_Directive_Include.comp_palette_item" url="resources/Jsp_Directive_Include.comp_palette_item"/>   
+            <file name="Jsp_Directive_Include.comp_palette_item" url="resources/Jsp_Directive_Include.comp_palette_item">
+                <attr name="position" intvalue="700"/>
+            </file>   
         </folder> 
     </folder>
     

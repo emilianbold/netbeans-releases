@@ -38,7 +38,6 @@ Contributor(s): Andrei Badea, Leon Chiver
 
     <!-- Register the menu item -->
     <folder name="Menu">
-        <attr name="View/Navigation" boolvalue="true" />
 
         <folder name="GoTo">
             <file name="org-netbeans-modules-jumpto-type-GoToType.shadow">
@@ -46,10 +45,11 @@ Contributor(s): Andrei Badea, Leon Chiver
             </file>
             <file name="org-netbeans-modules-jumpto-file-FileSearchAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Tools/org-netbeans-modules-jumpto-file-FileSearchAction.instance"/>
+                <attr name="position" intvalue="100"/>
             </file>
             
-            <attr name="org-netbeans-modules-jumpto-file-FileSearchAction.shadow/org-netbeans-modules-java-actions-GoToType.shadow" boolvalue="true"/>            
-            <attr name="org-netbeans-modules-jumpto-file-FileSearchAction.shadow/org-netbeans-core-windows-actions-RecentViewListAction.shadow" boolvalue="true"/>                
+                        
+                            
         </folder>
     </folder>
       
@@ -68,11 +68,12 @@ Contributor(s): Andrei Badea, Leon Chiver
           <folder name="x-java">
               <folder name="Popup">
                   <folder name="goto">
-                      <file name="org-netbeans-modules-jumpto-type-GoToType.shadow">
+                      <attr name="position" intvalue="900"/>
+                        <file name="org-netbeans-modules-jumpto-type-GoToType.shadow">
                           <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-jumpto-type-GoToType.instance"/>
-                      </file>
-                      <attr name="goto/org-netbeans-modules-jumpto-type-GoToType.shadow" boolvalue="true" />
-                  </folder>
+                          <attr name="position" intvalue="600"/>
+                        </file>
+                      </folder>
               </folder>
           </folder>
       </folder>
@@ -90,4 +91,3 @@ Contributor(s): Andrei Badea, Leon Chiver
     </folder>
     
 </filesystem>
-

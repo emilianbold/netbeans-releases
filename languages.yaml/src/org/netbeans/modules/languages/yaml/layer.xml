@@ -36,14 +36,11 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
     </folder>
     <folder name="Templates">
-        <attr name="API_Support/Scripting" boolvalue="true"/>
         <folder name="Ruby">
-            <attr name="RhtmlTemplate.rhtml/EmptyYAML.yml" boolvalue="true"/>
-            <attr name="class.rb/EmptyYAML.yml" boolvalue="true"/>
-            <attr name="main.rb/EmptyYAML.yml" boolvalue="true"/>
             <file name="EmptyYAML.yml" url="EmptyYAML.yml">
-                <attr name="template" boolvalue="true" />
-                <attr name="templateCategory" stringvalue="ruby" />
+                <attr name="position" intvalue="400"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="templateCategory" stringvalue="ruby"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.languages.yaml.Bundle"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/languages/yaml/EmptyYAMLFileDescription.html"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/languages/yaml/yaml_files_16.png"/>

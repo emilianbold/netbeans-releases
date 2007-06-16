@@ -17,15 +17,13 @@ The Original Software is NetBeans. The Initial Developer of the Original
 Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
-
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
     <folder name="CreatorDesignerPalette">        
         <!--<attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.dataprovider.designtime.resources.Bundle"/>-->
         
         <!-- Sorting  -->      
-        <attr name="Advanced/DataProviders" boolvalue="true"/>
-        <attr name="DataProviders/AdvancedDataProviders" boolvalue="true"/>
+        
         
         <folder name="DataProviders">
             <attr name="isReadonly" boolvalue="true"/>
@@ -33,68 +31,96 @@ Microsystems, Inc. All Rights Reserved.
             
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.dataprovider.designtime.resources.Bundle"/>
             <!--Sorting   -->            
-            <attr name="CachedRowSetDataProvider.comp_palette_item/ObjectDataProvider.comp_palette_item" boolvalue="true"/>   
-            <attr name="ObjectDataProvider.comp_palette_item/ObjectListDataProvider.comp_palette_item" boolvalue="true"/>  
-            <attr name="ObjectListDataProvider.comp_palette_item/ObjectArrayDataProvider.comp_palette_item" boolvalue="true"/>    
-            <attr name="ObjectArrayDataProvider.comp_palette_item/ListDataProvider.comp_palette_item" boolvalue="true"/>
-            <attr name="ListDataProvider.comp_palette_item/MapDataProvider.comp_palette_item" boolvalue="true"/>
+               
+              
+                
             
             
-            <file name="CachedRowSetDataProvider.comp_palette_item" url="resources/CachedRowSetDataProvider.comp_palette_item"/>   
-            <file name="ObjectDataProvider.comp_palette_item" url="resources/ObjectDataProvider.comp_palette_item"/>   
-            <file name="ListDataProvider.comp_palette_item" url="resources/ListDataProvider.comp_palette_item"/>   
-            <file name="MapDataProvider.comp_palette_item" url="resources/MapDataProvider.comp_palette_item"/>
-            <file name="ObjectArrayDataProvider.comp_palette_item" url="resources/ObjectArrayDataProvider.comp_palette_item"/>
-            <file name="ObjectListDataProvider.comp_palette_item" url="resources/ObjectListDataProvider.comp_palette_item"/>
+            
+            <attr name="position" intvalue="700"/>
+            <file name="CachedRowSetDataProvider.comp_palette_item" url="resources/CachedRowSetDataProvider.comp_palette_item">
+                <attr name="position" intvalue="100"/>
+            </file>   
+            <file name="ObjectDataProvider.comp_palette_item" url="resources/ObjectDataProvider.comp_palette_item">
+                <attr name="position" intvalue="200"/>
+            </file>   
+            <file name="ListDataProvider.comp_palette_item" url="resources/ListDataProvider.comp_palette_item">
+                <attr name="position" intvalue="500"/>
+            </file>   
+            <file name="MapDataProvider.comp_palette_item" url="resources/MapDataProvider.comp_palette_item">
+                <attr name="position" intvalue="600"/>
+            </file>
+            <file name="ObjectArrayDataProvider.comp_palette_item" url="resources/ObjectArrayDataProvider.comp_palette_item">
+                <attr name="position" intvalue="400"/>
+            </file>
+            <file name="ObjectListDataProvider.comp_palette_item" url="resources/ObjectListDataProvider.comp_palette_item">
+                <attr name="position" intvalue="300"/>
+            </file>
         </folder> 
         
         <folder name="AdvancedDataProviders">
             <attr name="isExpanded" boolvalue="false"/>
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.dataprovider.designtime.resources.Bundle"/>
             <attr name="isReadonly" boolvalue="true"/>
-            <!--Sorting -->
-            <attr name="TableRowDataProvider.comp_palette_item/FilteredTableDataProvider.comp_palette_item" boolvalue="true"/>   
-            <attr name="FilteredTableDataProvider.comp_palette_item/BasicTableDataSorter.comp_palette_item" boolvalue="true"/>  
-            <attr name="BasicTableDataSorter.comp_palette_item/FieldKeySortCriteria.comp_palette_item" boolvalue="true"/>    
-            <attr name="FieldKeySortCriteria.comp_palette_item/FieldIdSortCriteria.comp_palette_item" boolvalue="true"/>
-            <attr name="FieldIdSortCriteria.comp_palette_item/BasicTableDataFilter.comp_palette_item" boolvalue="true"/> 
+            <!--Sorting -->   
+              
+                
+             
             <!--
             <attr name="FieldIdSortCriteria.comp_palette_item/ValueBindingSortCriteria.comp_palette_item" boolvalue="true"/> 
             <attr name="ValueBindingSortCriteria.comp_palette_item/ValueExpressionsSortCriteria.comp_palette_item" boolvalue="true"/>   
             <attr name="ValueExpressionsSortCriteria.comp_palette_item/BasicTableDataFilter.comp_palette_item" boolvalue="true"/>
-            -->
-            <attr name="BasicTableDataFilter.comp_palette_item/CompareFilterCriteria.comp_palette_item" boolvalue="true"/>
-            <attr name="CompareFilterCriteria.comp_palette_item/RegexFilterCriteria.comp_palette_item" boolvalue="true"/>         
+            -->         
             
-            <attr name="RegexFilterCriteria.comp_palette_item/NestedFilterCriteria.comp_palette_item" boolvalue="true"/>
-            <attr name="NestedFilterCriteria.comp_palette_item/BasicTransactionalDataProvider.comp_palette_item" boolvalue="true"/>
+            
             
             <!-- <attr name="NestedFilterCriteria.comp_palette_item/ValueBindingFilterCriteria.comp_palette_item" boolvalue="true"/>
             <attr name="ValueBindingFilterCriteria.comp_palette_item/ValueExpressionFilterCriteria.comp_palette_item" boolvalue="true"/>
             <attr name="ValueExpressionFilterCriteria.comp_palette_item/BasicTransactionalDataProvider.comp_palette_item" boolvalue="true"/>       
             -->    
-            <attr name="BasicTransactionalDataProvider.comp_palette_item/BasicTransactionalTableDataProvider.comp_palette_item" boolvalue="true"/>
             <!--End Sorting -->
             
-            <file name="TableRowDataProvider.comp_palette_item" url="resources/TableRowDataProvider.comp_palette_item"/>    
-            <file name="FilteredTableDataProvider.comp_palette_item" url="resources/FilteredTableDataProvider.comp_palette_item"/>    
-            <file name="BasicTableDataSorter.comp_palette_item" url="resources/BasicTableDataSorter.comp_palette_item"/>    
-            <file name="FieldKeySortCriteria.comp_palette_item" url="resources/FieldKeySortCriteria.comp_palette_item"/>    
-            <file name="FieldIdSortCriteria.comp_palette_item" url="resources/FieldIdSortCriteria.comp_palette_item"/>    
-            <file name="BasicTableDataFilter.comp_palette_item" url="resources/BasicTableDataFilter.comp_palette_item"/>    
-            <file name="CompareFilterCriteria.comp_palette_item" url="resources/CompareFilterCriteria.comp_palette_item"/>    
-            <file name="RegexFilterCriteria.comp_palette_item" url="resources/RegexFilterCriteria.comp_palette_item"/>    
-            <file name="NestedFilterCriteria.comp_palette_item" url="resources/NestedFilterCriteria.comp_palette_item"/>    
-            <file name="BasicTransactionalDataProvider.comp_palette_item" url="resources/BasicTransactionalDataProvider.comp_palette_item"/>   
-            <file name="BasicTransactionalTableDataProvider.comp_palette_item" url="resources/BasicTransactionalTableDataProvider.comp_palette_item"/>          
+            <attr name="position" intvalue="800"/>
+            <file name="TableRowDataProvider.comp_palette_item" url="resources/TableRowDataProvider.comp_palette_item">
+                <attr name="position" intvalue="100"/>
+            </file>    
+            <file name="FilteredTableDataProvider.comp_palette_item" url="resources/FilteredTableDataProvider.comp_palette_item">
+                <attr name="position" intvalue="200"/>
+            </file>    
+            <file name="BasicTableDataSorter.comp_palette_item" url="resources/BasicTableDataSorter.comp_palette_item">
+                <attr name="position" intvalue="300"/>
+            </file>    
+            <file name="FieldKeySortCriteria.comp_palette_item" url="resources/FieldKeySortCriteria.comp_palette_item">
+                <attr name="position" intvalue="400"/>
+            </file>    
+            <file name="FieldIdSortCriteria.comp_palette_item" url="resources/FieldIdSortCriteria.comp_palette_item">
+                <attr name="position" intvalue="500"/>
+            </file>    
+            <file name="BasicTableDataFilter.comp_palette_item" url="resources/BasicTableDataFilter.comp_palette_item">
+                <attr name="position" intvalue="800"/>
+            </file>    
+            <file name="CompareFilterCriteria.comp_palette_item" url="resources/CompareFilterCriteria.comp_palette_item">
+                <attr name="position" intvalue="900"/>
+            </file>    
+            <file name="RegexFilterCriteria.comp_palette_item" url="resources/RegexFilterCriteria.comp_palette_item">
+                <attr name="position" intvalue="1000"/>
+            </file>    
+            <file name="NestedFilterCriteria.comp_palette_item" url="resources/NestedFilterCriteria.comp_palette_item">
+                <attr name="position" intvalue="1100"/>
+            </file>    
+            <file name="BasicTransactionalDataProvider.comp_palette_item" url="resources/BasicTransactionalDataProvider.comp_palette_item">
+                <attr name="position" intvalue="1400"/>
+            </file>   
+            <file name="BasicTransactionalTableDataProvider.comp_palette_item" url="resources/BasicTransactionalTableDataProvider.comp_palette_item">
+                <attr name="position" intvalue="1500"/>
+            </file>          
         </folder>
     </folder>
     <folder name="CreatorDesignerPalette5">        
         <!--<attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.dataprovider.designtime.resources.Bundle"/>-->
         
         <!-- Sorting  -->      
-        <attr name="Advanced/DataProviders" boolvalue="true"/>
-        <attr name="DataProviders/AdvancedDataProviders" boolvalue="true"/>
+        
         
         <folder name="DataProviders">            
             <attr name="isExpanded" boolvalue="false"/>
@@ -102,19 +128,31 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.dataprovider.designtime.resources.Bundle"/> 
             
             <!--Sorting   -->            
-            <attr name="CachedRowSetDataProvider.comp_palette_item/ObjectDataProvider.comp_palette_item" boolvalue="true"/>   
-            <attr name="ObjectDataProvider.comp_palette_item/ObjectListDataProvider.comp_palette_item" boolvalue="true"/>  
-            <attr name="ObjectListDataProvider.comp_palette_item/ObjectArrayDataProvider.comp_palette_item" boolvalue="true"/>    
-            <attr name="ObjectArrayDataProvider.comp_palette_item/ListDataProvider.comp_palette_item" boolvalue="true"/>
-            <attr name="ListDataProvider.comp_palette_item/MapDataProvider.comp_palette_item" boolvalue="true"/>
+               
+              
+                
             
             
-            <file name="CachedRowSetDataProvider.comp_palette_item" url="resources/CachedRowSetDataProvider.comp_palette_item"/>   
-            <file name="ObjectDataProvider.comp_palette_item" url="resources/ObjectDataProvider.comp_palette_item"/>   
-            <file name="ListDataProvider.comp_palette_item" url="resources/ListDataProvider.comp_palette_item"/>   
-            <file name="MapDataProvider.comp_palette_item" url="resources/MapDataProvider.comp_palette_item"/>
-            <file name="ObjectArrayDataProvider.comp_palette_item" url="resources/ObjectArrayDataProvider.comp_palette_item"/>
-            <file name="ObjectListDataProvider.comp_palette_item" url="resources/ObjectListDataProvider.comp_palette_item"/>
+            
+            <attr name="position" intvalue="800"/>
+            <file name="CachedRowSetDataProvider.comp_palette_item" url="resources/CachedRowSetDataProvider.comp_palette_item">
+                <attr name="position" intvalue="100"/>
+            </file>   
+            <file name="ObjectDataProvider.comp_palette_item" url="resources/ObjectDataProvider.comp_palette_item">
+                <attr name="position" intvalue="200"/>
+            </file>   
+            <file name="ListDataProvider.comp_palette_item" url="resources/ListDataProvider.comp_palette_item">
+                <attr name="position" intvalue="500"/>
+            </file>   
+            <file name="MapDataProvider.comp_palette_item" url="resources/MapDataProvider.comp_palette_item">
+                <attr name="position" intvalue="600"/>
+            </file>
+            <file name="ObjectArrayDataProvider.comp_palette_item" url="resources/ObjectArrayDataProvider.comp_palette_item">
+                <attr name="position" intvalue="400"/>
+            </file>
+            <file name="ObjectListDataProvider.comp_palette_item" url="resources/ObjectListDataProvider.comp_palette_item">
+                <attr name="position" intvalue="300"/>
+            </file>
         </folder> 
         
         <folder name="AdvancedDataProviders">
@@ -122,105 +160,142 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.dataprovider.designtime.resources.Bundle"/>
             <attr name="isReadonly" boolvalue="true"/>
             
-            <!--Sorting -->
-            <attr name="TableRowDataProvider.comp_palette_item/FilteredTableDataProvider.comp_palette_item" boolvalue="true"/>   
-            <attr name="FilteredTableDataProvider.comp_palette_item/BasicTableDataSorter.comp_palette_item" boolvalue="true"/>  
-            <attr name="BasicTableDataSorter.comp_palette_item/FieldKeySortCriteria.comp_palette_item" boolvalue="true"/>    
-            <attr name="FieldKeySortCriteria.comp_palette_item/FieldIdSortCriteria.comp_palette_item" boolvalue="true"/>
-            <attr name="FieldIdSortCriteria.comp_palette_item/BasicTableDataFilter.comp_palette_item" boolvalue="true"/> 
+            <!--Sorting -->   
+              
+                
+             
             <!--
             <attr name="FieldIdSortCriteria.comp_palette_item/ValueBindingSortCriteria.comp_palette_item" boolvalue="true"/> 
             <attr name="ValueBindingSortCriteria.comp_palette_item/ValueExpressionsSortCriteria.comp_palette_item" boolvalue="true"/>   
             <attr name="ValueExpressionsSortCriteria.comp_palette_item/BasicTableDataFilter.comp_palette_item" boolvalue="true"/>
-            -->
-            <attr name="BasicTableDataFilter.comp_palette_item/CompareFilterCriteria.comp_palette_item" boolvalue="true"/>
-            <attr name="CompareFilterCriteria.comp_palette_item/RegexFilterCriteria.comp_palette_item" boolvalue="true"/>         
+            -->         
             
-            <attr name="RegexFilterCriteria.comp_palette_item/NestedFilterCriteria.comp_palette_item" boolvalue="true"/>
-            <attr name="NestedFilterCriteria.comp_palette_item/BasicTransactionalDataProvider.comp_palette_item" boolvalue="true"/>
+            
             
             <!-- <attr name="NestedFilterCriteria.comp_palette_item/ValueBindingFilterCriteria.comp_palette_item" boolvalue="true"/>
             <attr name="ValueBindingFilterCriteria.comp_palette_item/ValueExpressionFilterCriteria.comp_palette_item" boolvalue="true"/>
             <attr name="ValueExpressionFilterCriteria.comp_palette_item/BasicTransactionalDataProvider.comp_palette_item" boolvalue="true"/>       
             -->    
-            <attr name="BasicTransactionalDataProvider.comp_palette_item/BasicTransactionalTableDataProvider.comp_palette_item" boolvalue="true"/>
             <!--End Sorting -->
             
-            <file name="TableRowDataProvider.comp_palette_item" url="resources/TableRowDataProvider.comp_palette_item"/>    
-            <file name="FilteredTableDataProvider.comp_palette_item" url="resources/FilteredTableDataProvider.comp_palette_item"/>    
-            <file name="BasicTableDataSorter.comp_palette_item" url="resources/BasicTableDataSorter.comp_palette_item"/>    
-            <file name="FieldKeySortCriteria.comp_palette_item" url="resources/FieldKeySortCriteria.comp_palette_item"/>    
-            <file name="FieldIdSortCriteria.comp_palette_item" url="resources/FieldIdSortCriteria.comp_palette_item"/>    
-            <file name="BasicTableDataFilter.comp_palette_item" url="resources/BasicTableDataFilter.comp_palette_item"/>    
-            <file name="CompareFilterCriteria.comp_palette_item" url="resources/CompareFilterCriteria.comp_palette_item"/>    
-            <file name="RegexFilterCriteria.comp_palette_item" url="resources/RegexFilterCriteria.comp_palette_item"/>    
-            <file name="NestedFilterCriteria.comp_palette_item" url="resources/NestedFilterCriteria.comp_palette_item"/>    
-            <file name="BasicTransactionalDataProvider.comp_palette_item" url="resources/BasicTransactionalDataProvider.comp_palette_item"/>   
-            <file name="BasicTransactionalTableDataProvider.comp_palette_item" url="resources/BasicTransactionalTableDataProvider.comp_palette_item"/>          
+            <attr name="position" intvalue="900"/>
+            <file name="TableRowDataProvider.comp_palette_item" url="resources/TableRowDataProvider.comp_palette_item">
+                <attr name="position" intvalue="100"/>
+            </file>    
+            <file name="FilteredTableDataProvider.comp_palette_item" url="resources/FilteredTableDataProvider.comp_palette_item">
+                <attr name="position" intvalue="200"/>
+            </file>    
+            <file name="BasicTableDataSorter.comp_palette_item" url="resources/BasicTableDataSorter.comp_palette_item">
+                <attr name="position" intvalue="300"/>
+            </file>    
+            <file name="FieldKeySortCriteria.comp_palette_item" url="resources/FieldKeySortCriteria.comp_palette_item">
+                <attr name="position" intvalue="400"/>
+            </file>    
+            <file name="FieldIdSortCriteria.comp_palette_item" url="resources/FieldIdSortCriteria.comp_palette_item">
+                <attr name="position" intvalue="500"/>
+            </file>    
+            <file name="BasicTableDataFilter.comp_palette_item" url="resources/BasicTableDataFilter.comp_palette_item">
+                <attr name="position" intvalue="600"/>
+            </file>    
+            <file name="CompareFilterCriteria.comp_palette_item" url="resources/CompareFilterCriteria.comp_palette_item">
+                <attr name="position" intvalue="700"/>
+            </file>    
+            <file name="RegexFilterCriteria.comp_palette_item" url="resources/RegexFilterCriteria.comp_palette_item">
+                <attr name="position" intvalue="800"/>
+            </file>    
+            <file name="NestedFilterCriteria.comp_palette_item" url="resources/NestedFilterCriteria.comp_palette_item">
+                <attr name="position" intvalue="900"/>
+            </file>    
+            <file name="BasicTransactionalDataProvider.comp_palette_item" url="resources/BasicTransactionalDataProvider.comp_palette_item">
+                <attr name="position" intvalue="1000"/>
+            </file>   
+            <file name="BasicTransactionalTableDataProvider.comp_palette_item" url="resources/BasicTransactionalTableDataProvider.comp_palette_item">
+                <attr name="position" intvalue="1100"/>
+            </file>          
         </folder>
     </folder>
     
     <folder name="CreatorJavaPalette">        
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.dataprovider.designtime.codeclips.Bundle"/>
-        <attr name="DatabaseandWebServices/ApplicationData" boolvalue="true"/>
         
         <folder name="DatabaseandWebServices">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.dataprovider.designtime.codeclips.Bundle"/>
             <attr name="isExpanded" boolvalue="true"/>
             <attr name="isReadonly" boolvalue="true"/>
             
-            <!-- Ordering -->
-            <attr name="DatabaseFirst.xml/DatabaseLast.xml" boolvalue="true"/>
-            <attr name="DatabaseLast.xml/DatabaseNext.xml" boolvalue="true"/>            
-            <attr name="DatabaseNext.xml/DatabasePrevious.xml" boolvalue="true"/>
-            <attr name="DatabasePrevious.xml/SetValueFromDB.xml" boolvalue="true"/>
-            <attr name="SetValueFromDB.xml/DatabaseUpdate.xml" boolvalue="true"/>
-            <attr name="DatabaseUpdate.xml/PrimaryKeyMethod.xml" boolvalue="true"/>
-            <attr name="PrimaryKeyMethod.xml/DatabaseInsertRow.xml" boolvalue="true"/>
-            <attr name="DatabaseInsertRow.xml/DatabaseDeleteRow.xml" boolvalue="true"/>
+            <!-- Ordering -->            
             <!-- End Ordering -->
             
-            <file name="DatabaseFirst.xml" url="codeclips/DatabaseFirst.xml"/>
-            <file name="DatabaseLast.xml" url="codeclips/DatabaseLast.xml"/>
-            <file name="DatabaseNext.xml" url="codeclips/DatabaseNext.xml"/>
-            <file name="DatabasePrevious.xml" url="codeclips/DatabasePrevious.xml"/>
-            <file name="SetValueFromDB.xml" url="codeclips/SetValueFromDB.xml"/>
-            <file name="DatabaseUpdate.xml" url="codeclips/DatabaseUpdate.xml"/>
-            <file name="PrimaryKeyMethod.xml" url="codeclips/PrimaryKeyMethod.xml"/>
-            <file name="DatabaseInsertRow.xml" url="codeclips/DatabaseInsertRow.xml"/>
-            <file name="DatabaseDeleteRow.xml" url="codeclips/DatabaseDeleteRow.xml"/>
+            <attr name="position" intvalue="100"/>
+            <file name="DatabaseFirst.xml" url="codeclips/DatabaseFirst.xml">
+                <attr name="position" intvalue="100"/>
+            </file>
+            <file name="DatabaseLast.xml" url="codeclips/DatabaseLast.xml">
+                <attr name="position" intvalue="200"/>
+            </file>
+            <file name="DatabaseNext.xml" url="codeclips/DatabaseNext.xml">
+                <attr name="position" intvalue="300"/>
+            </file>
+            <file name="DatabasePrevious.xml" url="codeclips/DatabasePrevious.xml">
+                <attr name="position" intvalue="400"/>
+            </file>
+            <file name="SetValueFromDB.xml" url="codeclips/SetValueFromDB.xml">
+                <attr name="position" intvalue="500"/>
+            </file>
+            <file name="DatabaseUpdate.xml" url="codeclips/DatabaseUpdate.xml">
+                <attr name="position" intvalue="600"/>
+            </file>
+            <file name="PrimaryKeyMethod.xml" url="codeclips/PrimaryKeyMethod.xml">
+                <attr name="position" intvalue="700"/>
+            </file>
+            <file name="DatabaseInsertRow.xml" url="codeclips/DatabaseInsertRow.xml">
+                <attr name="position" intvalue="800"/>
+            </file>
+            <file name="DatabaseDeleteRow.xml" url="codeclips/DatabaseDeleteRow.xml">
+                <attr name="position" intvalue="900"/>
+            </file>
         </folder>
     </folder>
     
     <folder name="CreatorJavaPalette5">        
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.dataprovider.designtime.codeclips.Bundle"/>
-        <attr name="DatabaseandWebServices/ApplicationData" boolvalue="true"/>
         
         <folder name="DatabaseandWebServices">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.dataprovider.designtime.codeclips.Bundle"/>
             <attr name="isExpanded" boolvalue="true"/>
             <attr name="isReadonly" boolvalue="true"/>
             
-            <!-- Ordering -->
-            <attr name="DatabaseFirst.xml/DatabaseLast.xml" boolvalue="true"/>
-            <attr name="DatabaseLast.xml/DatabaseNext.xml" boolvalue="true"/>            
-            <attr name="DatabaseNext.xml/DatabasePrevious.xml" boolvalue="true"/>
-            <attr name="DatabasePrevious.xml/SetValueFromDB.xml" boolvalue="true"/>
-            <attr name="SetValueFromDB.xml/DatabaseUpdate.xml" boolvalue="true"/>
-            <attr name="DatabaseUpdate.xml/PrimaryKeyMethod.xml" boolvalue="true"/>
-            <attr name="PrimaryKeyMethod.xml/DatabaseInsertRow.xml" boolvalue="true"/>
-            <attr name="DatabaseInsertRow.xml/DatabaseDeleteRow.xml" boolvalue="true"/>
+            <!-- Ordering -->            
             <!-- End Ordering -->
             
-            <file name="DatabaseFirst.xml" url="codeclips/DatabaseFirst.xml"/>
-            <file name="DatabaseLast.xml" url="codeclips/DatabaseLast.xml"/>
-            <file name="DatabaseNext.xml" url="codeclips/DatabaseNext.xml"/>
-            <file name="DatabasePrevious.xml" url="codeclips/DatabasePrevious.xml"/>
-            <file name="SetValueFromDB.xml" url="codeclips/SetValueFromDB.xml"/>
-            <file name="DatabaseUpdate.xml" url="codeclips/DatabaseUpdate.xml"/>
-            <file name="PrimaryKeyMethod.xml" url="codeclips/PrimaryKeyMethod.xml"/>
-            <file name="DatabaseInsertRow.xml" url="codeclips/DatabaseInsertRow.xml"/>
-            <file name="DatabaseDeleteRow.xml" url="codeclips/DatabaseDeleteRow.xml"/>
+            <attr name="position" intvalue="100"/>
+            <file name="DatabaseFirst.xml" url="codeclips/DatabaseFirst.xml">
+                <attr name="position" intvalue="100"/>
+            </file>
+            <file name="DatabaseLast.xml" url="codeclips/DatabaseLast.xml">
+                <attr name="position" intvalue="200"/>
+            </file>
+            <file name="DatabaseNext.xml" url="codeclips/DatabaseNext.xml">
+                <attr name="position" intvalue="300"/>
+            </file>
+            <file name="DatabasePrevious.xml" url="codeclips/DatabasePrevious.xml">
+                <attr name="position" intvalue="400"/>
+            </file>
+            <file name="SetValueFromDB.xml" url="codeclips/SetValueFromDB.xml">
+                <attr name="position" intvalue="500"/>
+            </file>
+            <file name="DatabaseUpdate.xml" url="codeclips/DatabaseUpdate.xml">
+                <attr name="position" intvalue="600"/>
+            </file>
+            <file name="PrimaryKeyMethod.xml" url="codeclips/PrimaryKeyMethod.xml">
+                <attr name="position" intvalue="700"/>
+            </file>
+            <file name="DatabaseInsertRow.xml" url="codeclips/DatabaseInsertRow.xml">
+                <attr name="position" intvalue="800"/>
+            </file>
+            <file name="DatabaseDeleteRow.xml" url="codeclips/DatabaseDeleteRow.xml">
+                <attr name="position" intvalue="900"/>
+            </file>
         </folder>
     </folder>
     

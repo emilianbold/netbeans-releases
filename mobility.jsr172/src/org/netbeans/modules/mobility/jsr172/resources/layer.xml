@@ -21,12 +21,12 @@ Microsystems, Inc. All Rights Reserved.
 <filesystem>
     <folder name="Templates">
         <folder name="MIDP">
-            <attr name="E2EWebApplication.wsclient/Jsr172Application.wsclient" boolvalue="true"/>
-            <file name="Jsr172Application.wsclient" url="templates/MIDP/Jsr172Application_wsclient.template" >
+            <file name="Jsr172Application.wsclient" url="templates/MIDP/Jsr172Application_wsclient.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.jsr172.wizard.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbres:org/netbeans/modules/mobility/jsr172/resources/e2eclienticon.gif"/>
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.mobility.jsr172.wizard.WebServiceClientWizardIterator.singleton"/>
                 <attr name="instantiatingWizardURL" urlvalue="nbresloc:org/netbeans/modules/mobility/jsr172/resources/descriptions/MIDP/JSR172_wsclient.html"/>
+                <attr name="position" intvalue="900"/>
                 <attr boolvalue="true" name="template"/>
                 <attr name="MIDP" boolvalue="true"/>
                 <attr name="templateCategory" stringvalue="MIDP"/>
@@ -35,12 +35,10 @@ Microsystems, Inc. All Rights Reserved.
     </folder>
     <folder name="RecommendedTemplates">
         <folder name="org.netbeans.modules.kjava.j2meproject">
-            <attr name="core/jsr172" boolvalue="true"/>
-            <attr name="e2e/jsr172" boolvalue="true"/>
             <file name="jsr172">
                 <attr name="PriviledgedTemplates" stringvalue="Templates/MIDP/Jsr172Application.wsclient"/>
+                <attr name="position" intvalue="600"/>
             </file>
         </folder>
     </folder>
 </filesystem>
-

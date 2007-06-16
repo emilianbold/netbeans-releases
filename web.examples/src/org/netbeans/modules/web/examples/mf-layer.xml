@@ -1,19 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
-
 <filesystem>
     <folder name="Templates">
         <folder name="Project">
-            <attr name="Web/Samples" boolvalue="true"/>
-            <attr name="Standard/Samples" boolvalue="true"/>
-            <attr name="Mobile/Samples" boolvalue="true"/>
             <folder name="Samples">
-                <attr name="Standard/Web" boolvalue="true"/>
-                <attr name="Web/Blueprints" boolvalue="true"/>
                 <folder name="Web">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.examples.Bundle"/>
                     <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/examples/descriptions/webSamplesCategory.html"/>
+                    <attr name="position" intvalue="200"/>
                     <file name="jstl.zip" url="jstl.zip">
+                        <attr name="position" intvalue="100"/>
                         <attr name="template" boolvalue="true"/>
                         <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/examples/descriptions/jstl.html"/>
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.examples.Bundle"/>
@@ -22,6 +18,7 @@
                         <attr name="prjType" stringvalue="web"/>
                     </file>
                     <file name="servlets.zip" url="servlets.zip">
+                        <attr name="position" intvalue="300"/>
                         <attr name="template" boolvalue="true"/>
                         <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/examples/descriptions/servlets.html"/>
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.examples.Bundle"/>
@@ -30,6 +27,7 @@
                         <attr name="prjType" stringvalue="web"/>
                     </file>
                     <file name="jsp.zip" url="jsp.zip">
+                        <attr name="position" intvalue="200"/>
                         <attr name="template" boolvalue="true"/>
                         <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/examples/descriptions/jsp.html"/>
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.examples.Bundle"/>
@@ -37,9 +35,7 @@
                         <attr name="instantiatingIterator" newvalue="org.netbeans.modules.web.examples.WebSampleProjectIterator"/>
                         <attr name="prjType" stringvalue="web"/>
                     </file>
-                    <attr boolvalue="true" name="jstl.zip/jsp.zip"/>
-                    <attr boolvalue="true" name="jsp.zip/servlets.zip"/>
-                </folder>
+                    </folder>
             </folder>
         </folder>
     </folder>

@@ -6,21 +6,26 @@
             <folder name="nbproject">
                 <folder name="build-impl.xml">
                     <folder name="init-subtargets">
-                        <attr name="savaje-init/nokiaS80-init" boolvalue="true"/>
-                        <file name="nokiaS80-init" url="nokiaS80-init"/>
+                        <file name="nokiaS80-init" url="nokiaS80-init">
+                            <attr name="position" intvalue="800"/>
+                        </file>
                     </folder>
                     <folder name="jar-subtargets">
-                        <attr name="create-jad/nokiaS80-create-manifest" boolvalue="true"/>
-                        <file name="nokiaS80-create-manifest" url="nokiaS80-create-manifest"/>
-                        <attr name="nokiaS80-create-manifest/do-jar" boolvalue="true"/>
-                    </folder>
+                        <file name="nokiaS80-create-manifest" url="nokiaS80-create-manifest">
+                            <attr name="position" intvalue="500"/>
+                        </file>
+                        </folder>
                     <folder name="run-subtargets">
-                        <attr name="savaje-run/nokiaS80-run" boolvalue="true"/>
-                        <file name="nokiaS80-run" url="nokiaS80-run"/>
+                        <attr name="position" intvalue="1700"/>
+                        <file name="nokiaS80-run" url="nokiaS80-run">
+                            <attr name="position" intvalue="500"/>
+                        </file>
                     </folder>
                     <folder name="debug-subtargets">
-                        <attr name="savaje-debug/nokiaS80-debug" boolvalue="true"/>
-                        <file name="nokiaS80-debug" url="nokiaS80-debug"/>
+                        <attr name="position" intvalue="2000"/>
+                        <file name="nokiaS80-debug" url="nokiaS80-debug">
+                            <attr name="position" intvalue="500"/>
+                        </file>
                     </folder>
                 </folder>
             </folder>
@@ -29,10 +34,10 @@
     <folder name="Customizer">
         <folder name="org.netbeans.modules.kjava.j2meproject">
             <folder name="Jad">
-                <attr name="CDCGeneral/NokiaS80" boolvalue="true"/>
                 <file name="NokiaS80">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2me.cdc.project.nokiaS80.Bundle"/>
                     <attr name="customizerPanelClass" newvalue="org.netbeans.modules.j2me.cdc.project.nokiaS80.NokiaS80ProjectCategoryCustomizer"/>
+                    <attr name="position" intvalue="900"/>
                     <attr name="triggerPropertyName" stringvalue="platform.type"/>
                     <attr name="triggerPropertyValue" stringvalue="nokiaS80"/>
                 </file>

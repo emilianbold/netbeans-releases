@@ -36,8 +36,7 @@
     <folder name="Plugins">
     	<folder name="XML">
     		<folder name="GrammarQueryManagers">
-    			<file
-    				name="org-netbeans-modules-websvc-wsdl-WSSchemaGrammarQueryMgr.instance_hidden" />
+    			<file name="org-netbeans-modules-websvc-wsdl-WSSchemaGrammarQueryMgr.instance_hidden"/>
 
     		</folder>
     	</folder>
@@ -50,62 +49,74 @@
                 <folder name="Actions">
 		    <file name="org-openide-actions-EditAction.instance_hidden"/>
 		    <file name="org-openide-actions-FileSystemAction.instance_hidden"/>
-                    <file name="org-netbeans-modules-xml-wsdl-ui-actions-WSDLViewOpenAction.instance"/>                 
-                    <file name="org-netbeans-modules-xml-wsdl-ui-actions-WSDLSourceViewOpenAction.instance"/>
-                    <attr name="org-netbeans-modules-xml-wsdl-ui-actions-WSDLViewOpenAction.instance/org-netbeans-modules-xml-wsdl-ui-actions-WSDLSourceViewOpenAction.instance" boolvalue="true"/>
-                    <attr name="org-netbeans-modules-xml-wsdl-ui-actions-WSDLSourceViewOpenAction.instance/sep-0.instance" boolvalue="true"/>
+                    <file name="org-netbeans-modules-xml-wsdl-ui-actions-WSDLViewOpenAction.instance">
+                        <attr name="position" intvalue="100"/>
+                    </file>                 
+                    <file name="org-netbeans-modules-xml-wsdl-ui-actions-WSDLSourceViewOpenAction.instance">
+                        <attr name="position" intvalue="400"/>
+                    </file>
                     <file name="sep-0.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="500"/>
                     </file>
-                    <attr name="sep-0.instance/org-netbeans-modules-xml-core-actions-CollectXMLAction.instance" boolvalue="true"/>
-                    <file name="org-netbeans-modules-xml-core-actions-CollectXMLAction.instance"/>
-                    <attr name="org-netbeans-modules-xml-core-actions-CollectXMLAction.instance/sep-1.instance" boolvalue="true"/>
+                    <file name="org-netbeans-modules-xml-core-actions-CollectXMLAction.instance">
+                        <attr name="position" intvalue="600"/>
+                    </file>
                     <file name="sep-1.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="700"/>
                     </file> 
-                    <attr name="sep-1.instance/org-openide-actions-CutAction.instance" boolvalue="true"/>
-                    <file name="org-openide-actions-CutAction.instance"/>
-                    <attr name="org-openide-actions-CutAction.instance/org-openide-actions-CopyAction.instance" boolvalue="true"/>
-                    <file name="org-openide-actions-CopyAction.instance"/>
-                    <attr name="org-openide-actions-CopyAction.instance/org-openide-actions-PasteAction.instance" boolvalue="true"/>
-                    <file name="org-openide-actions-PasteAction.instance"/>
-                    <attr name="org-openide-actions-PasteAction.instance/sep-2.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-CutAction.instance">
+                        <attr name="position" intvalue="800"/>
+                    </file>
+                    <file name="org-openide-actions-CopyAction.instance">
+                        <attr name="position" intvalue="900"/>
+                    </file>
+                    <file name="org-openide-actions-PasteAction.instance">
+                        <attr name="position" intvalue="1000"/>
+                    </file>
                     <file name="sep-2.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1100"/>
                     </file>
-                    <attr name="sep-2.instance/org-openide-actions-DeleteAction.instance" boolvalue="true"/>
-                    <file name="org-openide-actions-DeleteAction.instance"/>
-                    <attr name="org-openide-actions-DeleteAction.instance/org-openide-actions-RenameAction.instance" boolvalue="true"/>
-                    <file name="org-openide-actions-RenameAction.instance"/>
-                    <attr name="org-openide-actions-RenameAction.instance/sep-3.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-DeleteAction.instance">
+                        <attr name="position" intvalue="1200"/>
+                    </file>
+                    <file name="org-openide-actions-RenameAction.instance">
+                        <attr name="position" intvalue="1300"/>
+                    </file>
                     <file name="sep-3.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1400"/>
                     </file>
-                    <attr name="sep-3.instance/org-openide-actions-SaveAsTemplateAction.instance" boolvalue="true"/>
-                    <file name="org-openide-actions-SaveAsTemplateAction.instance"/>
-                    <attr name="org-openide-actions-SaveAsTemplateAction.instance/sep-4.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-SaveAsTemplateAction.instance">
+                        <attr name="position" intvalue="1500"/>
+                    </file>
                     <file name="sep-4.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1600"/>
                     </file>
                     
-                     <attr boolvalue="true" name="sep-4.instance/RefactoringWhereUsed.instance"/>
-                    <file name="RefactoringWhereUsed.instance">
+                     <file name="RefactoringWhereUsed.instance">
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.whereUsedAction"/>
-                   </file>
+                       <attr name="position" intvalue="1700"/>
+                    </file>
                    
-                    <attr boolvalue="true" name="RefactoringWhereUsed.instance/RefactoringAll.instance"/>
                     <file name="RefactoringAll.instance">
                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.popupSubmenuAction"/>
-                   </file>
-                   <attr name="RefactoringAll.instance/sep-5.instance" boolvalue="true"/>
+                       <attr name="position" intvalue="1800"/>
+                    </file>
                    
                     <file name="sep-5.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1900"/>
                     </file>
-                    <attr name="sep-5.instance/org-openide-actions-ToolsAction.instance" boolvalue="true"/>
-                    <file name="org-openide-actions-ToolsAction.instance"/>
-                    <attr name="org-openide-actions-ToolsAction.instance/org-openide-actions-PropertiesAction.instance" boolvalue="true"/>
-                    <file name="org-openide-actions-PropertiesAction.instance"/>
+                    <file name="org-openide-actions-ToolsAction.instance">
+                        <attr name="position" intvalue="2000"/>
+                    </file>
+                    <file name="org-openide-actions-PropertiesAction.instance">
+                        <attr name="position" intvalue="2100"/>
+                    </file>
                 </folder>
             </folder>
         </folder>
@@ -118,7 +129,9 @@
         <folder name="text">
     		<folder name="x-wsdl+xml">
     			<folder name="Popup">
-    				<file name="org-netbeans-modules-xml-xam-ui-actions-GoToAction.instance" />
+    				<file name="org-netbeans-modules-xml-xam-ui-actions-GoToAction.instance">
+                        <attr name="position" intvalue="4100"/>
+                    </file>
     			</folder>
     		</folder>
     	</folder>
@@ -127,9 +140,10 @@
         <folder name="Panels">
             <folder name="text">
                 <folder name="x-wsdl+xml">
-                    <file name="org-netbeans-modules-xml-wsdl-ui-navigator-WSDLNavigatorPanel.instance"/>
-                    <attr name="org-netbeans-modules-xml-wsdl-ui-navigator-WSDLNavigatorPanel.instance/org-netbeans-modules-xml-text-navigator-XMLNavigatorPanel.instance" boolvalue="true"/>
-                </folder>
+                    <file name="org-netbeans-modules-xml-wsdl-ui-navigator-WSDLNavigatorPanel.instance">
+                        <attr name="position" intvalue="100"/>
+                    </file>
+                    </folder>
             </folder>
         </folder>
     </folder>
@@ -138,34 +152,27 @@
         <!-- Override the wsdl wizard from websvc/core -->
     	<folder name="WebServices">
     		<file name="WSDL.wsdl" url="WSDL.template">
-    			<attr name="template" boolvalue="true" />
-    			<attr name="instantiatingIterator"
-    				newvalue="org.netbeans.modules.xml.wsdl.ui.wizard.NewWSDLWizardIterator" />
-    			<attr name="instantiatingWizardURL"
-    				urlvalue="nbresloc:/org/netbeans/modules/xml/wsdl/ui/wizard/newWSDL.html" />
-    			<attr name="SystemFileSystem.localizingBundle"
-    				stringvalue="org.netbeans.modules.websvc.wsdl.wizard.Bundle" />
-    			<attr name="SystemFileSystem.icon"
-    				urlvalue="nbresloc:/org/netbeans/modules/websvc/wsdl/resources/wsdl16.gif" />
-    			<attr name="templateCategory" stringvalue="wsdl" />
+    			<attr name="position" intvalue="100"/>
+                <attr name="template" boolvalue="true"/>
+    			<attr name="instantiatingIterator" newvalue="org.netbeans.modules.xml.wsdl.ui.wizard.NewWSDLWizardIterator"/>
+    			<attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/xml/wsdl/ui/wizard/newWSDL.html"/>
+    			<attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.wsdl.wizard.Bundle"/>
+    			<attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/websvc/wsdl/resources/wsdl16.gif"/>
+    			<attr name="templateCategory" stringvalue="wsdl"/>
     		</file>
-    		<file name="WSDL_import.wsdl" url="WSDL_import.template" />
+    		<file name="WSDL_import.wsdl" url="WSDL_import.template"/>
     	</folder>
 
     	<folder name="XML">
     		<file name="WSDL.wsdl" url="WSDL.template">
-    			<attr name="template" boolvalue="true" />
-    			<attr name="instantiatingIterator"
-    				newvalue="org.netbeans.modules.xml.wsdl.ui.wizard.NewWSDLWizardIterator" />
-    			<attr name="templateWizardURL"
-    				urlvalue="nbresloc:/org/netbeans/modules/xml/wsdl/ui/wizard/newWSDL.html" />
-    			<attr name="SystemFileSystem.localizingBundle"
-    				stringvalue="org.netbeans.modules.xml.wsdl.ui.netbeans.module.resources.Bundle" />
-    			<attr name="SystemFileSystem.icon"
-    				urlvalue="nbresloc:/org/netbeans/modules/xml/wsdl/ui/netbeans/module/resources/wsdl16.gif" />
-    			<attr name="templateCategory" stringvalue="XML" />
+    			<attr name="template" boolvalue="true"/>
+    			<attr name="instantiatingIterator" newvalue="org.netbeans.modules.xml.wsdl.ui.wizard.NewWSDLWizardIterator"/>
+    			<attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/xml/wsdl/ui/wizard/newWSDL.html"/>
+    			<attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.wsdl.ui.netbeans.module.resources.Bundle"/>
+    			<attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/wsdl/ui/netbeans/module/resources/wsdl16.gif"/>
+    			<attr name="templateCategory" stringvalue="XML"/>
     		</file>
-    		<file name="WSDL_import.wsdl" url="WSDL_import.template" />
+    		<file name="WSDL_import.wsdl" url="WSDL_import.template"/>
     	</folder>
     </folder>
     <folder name="Windows2">
@@ -180,12 +187,12 @@
     <folder name="WSDLPalette">
     	<folder name="WSDLComponents">
 	    	<attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.wsdl.ui.view.grapheditor.palette.resources.Bundle"/>
-    		<attr name="helpId" stringvalue="PALETTE_ITEM_HELP_ID_WSDL_OPERATIONS" />
+    		<attr name="helpId" stringvalue="PALETTE_ITEM_HELP_ID_WSDL_OPERATIONS"/>
     		<file name="RequestReply.xml" url="../../../view/grapheditor/palette/resources/RequestReply.xml"> 
-    			<attr name="helpId" stringvalue="PALETTE_ITEM_HELP_ID_REQUESTREPLY" />
+    			<attr name="helpId" stringvalue="PALETTE_ITEM_HELP_ID_REQUESTREPLY"/>
 	    	</file>
 	    	<file name="OneWay.xml" url="../../../view/grapheditor/palette/resources/OneWay.xml"> 
-    			<attr name="helpId" stringvalue="PALETTE_ITEM_HELP_ID_ONEWAYY" />
+    			<attr name="helpId" stringvalue="PALETTE_ITEM_HELP_ID_ONEWAYY"/>
     		</file>
 	    	<!-- file name="Notification.xml" url="../../../view/grapheditor/palette/resources/Notification.xml"> 
     			<attr name="helpId" stringvalue="PALETTE_ITEM_HELP_ID_NOTIFICATION" />
@@ -194,10 +201,10 @@
     			<attr name="helpId" stringvalue="PALETTE_ITEM_HELP_ID_SOLICITRESPONSE" />
     		</file-->    	
     		<file name="PartnerLinkType.xml" url="../../../view/grapheditor/palette/resources/PartnerLinkType.xml"> 
-    			<attr name="helpId" stringvalue="PALETTE_ITEM_HELP_ID_PARTNERLINKTYPE" />
+    			<attr name="helpId" stringvalue="PALETTE_ITEM_HELP_ID_PARTNERLINKTYPE"/>
     		</file>
 	    	<file name="Message.xml" url="../../../view/grapheditor/palette/resources/Message.xml"> 
-    			<attr name="helpId" stringvalue="PALETTE_ITEM_HELP_ID_MESSAGE" />
+    			<attr name="helpId" stringvalue="PALETTE_ITEM_HELP_ID_MESSAGE"/>
     		</file>
     	</folder>
     </folder>

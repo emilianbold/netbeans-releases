@@ -40,11 +40,12 @@ public class MimeLookupTest extends NbTestCase {
     private static final int WAIT_TIME_FIRING = 1500;
     final int resultChangedCount[] = new int[1];
     
-    public MimeLookupTest(java.lang.String testName) {
+    public MimeLookupTest(String testName) {
         super(testName);
     }
     
-    protected void setUp() throws java.lang.Exception {
+    protected void setUp() throws Exception {
+        clearWorkDir();
         String fsstruct [] = new String [] {
             "Editors/text/xml/text/html/java-lang-StringBuffer.instance", //NOI18N
             "Editors/text/jsp/testLookup/org-netbeans-modules-editor-mimelookup-impl-TestLookupObject.instance", //NOI18N

@@ -22,8 +22,10 @@ Microsystems, Inc. All Rights Reserved.
         <node key="name"                    context="ACTION" type="property"/>
         <node key="performer"               context="ACTION" type="property"/>
         <node key="enabled"                 context="ACTION" type="property"/>
+        <!-- XXX seems to be unused currently; perhaps replace with numeric 'position' key?
         <node key="install_after"           context="ACTION" type="property"/>
         <node key="install_before"          context="ACTION" type="property"/>
+        -->
         <node key="separator_before"        context="ACTION" type="property"/>
         <node key="separator_after"         context="ACTION" type="property"/>
     <node key="AST"                         context="root" type="keyword" library="Feature name."/>

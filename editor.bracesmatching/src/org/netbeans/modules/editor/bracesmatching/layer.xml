@@ -18,7 +18,6 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
-
 <filesystem>
     <folder name="Editors">
         <folder name="FontsColors">
@@ -26,7 +25,7 @@ Microsystems, Inc. All Rights Reserved.
                 <folder name="Defaults">
                     <file name="org-netbeans-modules-editor-bracesmatching-fontsColors.xml" url="fontsColors.xml">
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.editor.bracesmatching.Bundle"/>
-                        <attr name="nbeditor-settings-ColoringType" stringvalue="highlight" />
+                        <attr name="nbeditor-settings-ColoringType" stringvalue="highlight"/>
                     </file>
                 </folder>
             </folder>
@@ -41,11 +40,13 @@ Microsystems, Inc. All Rights Reserved.
 
         <file name="org-netbeans-modules-editor-bracesmatching-BracesMatchHighlighting$Factory.instance"/>
         
-        <file name="org-netbeans-modules-editor-bracesmatching-LegacyEssMatcher.instance"/>
-        <attr name="org-netbeans-modules-editor-bracesmatching-LegacyEssMatcher.instance/org-netbeans-modules-editor-bracesmatching-DefaultMatcher.instance" boolvalue="true"/>
+        <file name="org-netbeans-modules-editor-bracesmatching-LegacyEssMatcher.instance">
+            <attr name="position" intvalue="100"/>
+        </file>
         <file name="org-netbeans-modules-editor-bracesmatching-DefaultMatcher.instance">
             <attr name="instanceOf" stringvalue="org.netbeans.spi.editor.bracesmatching.BracesMatcherFactory"/>
             <attr name="instanceCreate" methodvalue="org.netbeans.spi.editor.bracesmatching.support.BracesMatcherSupport.defaultMatcherFactory"/>
+            <attr name="position" intvalue="200"/>
         </file>
     </folder>
 </filesystem>

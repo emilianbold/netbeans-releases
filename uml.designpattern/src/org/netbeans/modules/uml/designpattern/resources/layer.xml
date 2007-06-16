@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <!--
 The contents of this file are subject to the terms of the Common Development
 and Distribution License (the License). You may not use this file except in
@@ -18,7 +17,6 @@ enclosed by brackets [] replaced by your own identifying information:
 Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  Microsystems, Inc. All Rights Reserved.
 -->
-
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
 <filesystem>
    <folder name="Actions">
@@ -52,15 +50,12 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
    
    <folder name="Menu">
       <folder name="Window">
-         <attr name="Output/Other" boolvalue="true"/>
-         <attr name="Debug/Other" boolvalue="true"/>
-         <attr name="Versioning/Other" boolvalue="true"/>
          <folder name="Other">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.designpattern.Bundle"/>
-            <attr name="ModelingDocumentation.shadow/DesignCenter.shadow" boolvalue="true"/> 
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.designpattern.Bundle"/> 
             <file name="DesignCenter.shadow">
                <attr name="originalFile" stringvalue="Actions/Modeling/org-netbeans-modules-uml-designpattern-DesignCenterAction.instance"/>    		
-            </file>
+                <attr name="position" intvalue="200"/>
+                </file>
          </folder>
       </folder>
    </folder> 
@@ -74,7 +69,7 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
    <folder name="UML">
       <folder name="designcenter">
          <file name="org.netbeans.modules.uml.designpattern.DesignPatternCatalog.instance">
-            <attr name="id" stringvalue="org.netbeans.modules.uml.ui.products.ad.addesigncentergui.designpatternaddin" />
+            <attr name="id" stringvalue="org.netbeans.modules.uml.ui.products.ad.addesigncentergui.designpatternaddin"/>
          </file>
       </folder>
    </folder>
@@ -89,12 +84,12 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
             </folder>
 -->
             <folder name="explorer">
-                <file name="designpattern.wstcref" url="windowmanager/designpattern/designpattern.wstcref" />
+                <file name="designpattern.wstcref" url="windowmanager/designpattern/designpattern.wstcref"/>
             </folder>
         </folder>
 
         <folder name="Components">
-                <file name="designpattern.settings" url="components/designpattern.settings" />
+                <file name="designpattern.settings" url="components/designpattern.settings"/>
         </folder>
 
       <folder name="Groups">         

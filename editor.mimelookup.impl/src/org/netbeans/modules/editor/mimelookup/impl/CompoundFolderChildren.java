@@ -23,53 +23,49 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
-import org.openide.util.NbCollections;
-import org.openide.util.TopologicalSortException;
-import org.openide.util.Utilities;
+import org.openide.filesystems.FileRenameEvent;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.MultiFileSystem;
+import org.openide.filesystems.Repository;
 
 /**
  *
- * @author vita
+ * @author vita, Jesse Glick
  */
-public final class CompoundFolderChildren {
+public final class CompoundFolderChildren implements FileChangeListener {
 
     public static final String PROP_CHILDREN = "FolderChildren.PROP_CHILDREN"; //NOI18N
 
-    private static final String HIDDEN_SUFFIX = "_hidden"; //NOI18N
     private static final String HIDDEN_ATTR_NAME = "hidden"; //NOI18N
     
     private static final Logger LOG = Logger.getLogger(CompoundFolderChildren.class.getName());
     
     private final String LOCK = new String("CompoundFolderChildren.LOCK"); //NOI18N
-    private FolderChildren [] layers = null;
-    private List<FileObject> children = Collections.emptyList();
+    private final List<String> prefixes;
+    private final boolean includeSubfolders;
+    private List<FileObject> children;
+    private FileObject mergedLayers; // just hold a strong ref so listeners remain active
+    private final FileChangeListener weakFCL = FileUtil.weakFileChangeListener(this, null);
     
-    private PCL listener = new PCL();
     private PropertyChangeSupport pcs = new PropertyChangeSupport(this);
 
     public CompoundFolderChildren(String [] paths) {
         this(paths, true);
     }
     
-    /** Creates a new instance of FolderPathLookup */
     public CompoundFolderChildren(String [] paths, boolean includeSubfolders) {
-        this.layers = new FolderChildren [paths.length];
-        for (int i = 0; i < paths.length; i++) {
-            this.layers[i] = new FolderChildren(paths[i], includeSubfolders);
-            this.layers[i].addPropertyChangeListener(listener);
+        prefixes = new ArrayList<String>();
+        for (String path : paths) {
+            prefixes.add(path.endsWith("/") ? path : path + "/"); // NOI18N
         }
-        
+        this.includeSubfolders = includeSubfolders;
         rebuild();
     }
     
@@ -89,135 +85,91 @@ public final class CompoundFolderChildren {
     
     private void rebuild() {
         PropertyChangeEvent event = null;
-        
         synchronized (LOCK) {
-            // Collect all children
-            List<FileObject> visibleFiles = new ArrayList<FileObject>();
-            Map<String,FileObject> visible = new HashMap<String,FileObject>();
-            Map<String,FileObject> hidden = new HashMap<String,FileObject>();
-            
-            for (int i = 0; i < layers.length; i++) {
-                List layerKids = layers[i].getChildren();
-                for (Iterator j = layerKids.iterator(); j.hasNext(); ) {
-                    FileObject f = (FileObject) j.next();
-                    String name = realName(f);
-                    
-                    if (isHidden(f)) {
-                        if (!hidden.containsKey(name)) {
-                            hidden.put(name, f);
+            List<FileObject> folders = new ArrayList<FileObject>(prefixes.size());
+            List<FileSystem> layers = new ArrayList<FileSystem>(prefixes.size());
+            FileSystem sfs = Repository.getDefault().getDefaultFileSystem();
+            for (final String prefix : prefixes) {
+                FileObject layer = sfs.findResource(prefix);
+                if (layer != null && layer.isFolder()) {
+                    folders.add(layer);
+                    layers.add(new MultiFileSystem(new FileSystem[] {sfs}) {
+                        protected @Override FileObject findResourceOn(FileSystem fs, String res) {
+                            return fs.findResource(prefix + res);
                         }
-                    }
-
-                    if (!hidden.containsKey(name)) {
-                        if (!visible.containsKey(name)) {
-                            visible.put(name, f);
-                            visibleFiles.add(f);
+                    });
+                } else {
+                    // Listen to nearest enclosing parent, in case it is created.
+                    // XXX would be simpler to use FileChangeSupport but that is in ant/project for now.
+                    String parentPath = prefix;
+                    while (true) {
+                        assert parentPath.length() > 0;
+                        parentPath = parentPath.substring(0, Math.max(0, parentPath.lastIndexOf('/')));
+                        FileObject parent = sfs.findResource(parentPath);
+                        if (parent != null) {
+                            parent.removeFileChangeListener(weakFCL);
+                            parent.addFileChangeListener(weakFCL);
+                            break;
                         }
                     }
                 }
             }
-
-            // Collect all edges
-            Map<FileObject,Set<FileObject>> edges = new HashMap<FileObject,Set<FileObject>>();
-            for (int i = 0; i < layers.length; i++) {
-                Map layerAttrs = layers[i].getFolderAttributes();
-                for (Iterator j = layerAttrs.keySet().iterator(); j.hasNext(); ) {
-                    String attrName = (String) j.next();
-                    Object attrValue = layerAttrs.get(attrName);
-                    
-                    // Check whether the attribute affects sorting
-                    int slashIdx = attrName.indexOf('/'); //NOI18N
-                    if (slashIdx == -1 || !(attrValue instanceof Boolean)) {
-                        continue;
-                    }
-
-                    // Get the file names
-                    String name1 = attrName.substring(0, slashIdx);
-                    String name2 = attrName.substring(slashIdx + 1);
-                    if (!((Boolean) attrValue).booleanValue()) {
-                        // Swap the names
-                        String s = name1;
-                        name1 = name2;
-                        name2 = s;
-                    }
-                    
-                    // Get the files and add them among the edges
-                    FileObject from = visible.get(name1);
-                    FileObject to = visible.get(name2);
-                    
-                    if (from != null && to != null) {
-                        Set<FileObject> vertices = edges.get(from);
-                        if (vertices == null) {
-                            vertices = new HashSet<FileObject>();
-                            edges.put(from, vertices);
-                        }
-                        vertices.add(to);
-                    }
+            mergedLayers = new MultiFileSystem(layers.toArray(new FileSystem[layers.size()])).getRoot();
+            mergedLayers.addFileChangeListener(this); // need not be weak since only we hold this FS
+            List<FileObject> unsorted = new ArrayList<FileObject>();
+            for (FileObject f : mergedLayers.getChildren()) {
+                if ((includeSubfolders || f.isData()) && !Boolean.TRUE.equals(f.getAttribute(HIDDEN_ATTR_NAME))) {
+                    f.addFileChangeListener(this);
+                    unsorted.add(f);
                 }
             }
-            
-            // Sort the children
-            List<FileObject> sorted;
-            
-            try {
-                sorted = Utilities.topologicalSort(visibleFiles, edges);
-            } catch (TopologicalSortException e) {
-                LOG.log(Level.WARNING, "Can't sort folder children.", e); //NOI18N
-                sorted = NbCollections.checkedListByCopy(e.partialSort(), FileObject.class, true);
+            List<FileObject> sorted = new ArrayList<FileObject>(unsorted.size());
+            for (FileObject merged : FileUtil.getOrder(unsorted, true)) {
+                String name = merged.getNameExt();
+                FileObject original = null;
+                for (FileObject folder : folders) {
+                    original = folder.getFileObject(name);
+                    if (original != null) {
+                        break;
+                    }
+                }
+                assert original != null : "Should have equivalent to " + name + " among " + folders;
+                sorted.add(original);
             }
-            
-            if (!children.equals(sorted)) {
+            if (children != null && !sorted.equals(children)) {
                 event = new PropertyChangeEvent(this, PROP_CHILDREN, children, sorted);
-                children = sorted;
             }
+            children = sorted;
         }
-        
         if (event != null) {
             pcs.firePropertyChange(event);
         }
     }
 
-    private boolean isHidden(FileObject fo) {
-        if (fo.getNameExt().endsWith(HIDDEN_SUFFIX)) {
-            return true;
-        }
-        
-        for (Enumeration e = fo.getAttributes(); e.hasMoreElements(); ) {
-            String name = (String)e.nextElement();
-            if (HIDDEN_ATTR_NAME.equals(name)) {
-                Object value = fo.getAttribute(name);
-                if ((value instanceof Boolean) && ((Boolean) value).booleanValue()){
-                    return true;
-                }
-            }
-        }
-        
-        return false;
+    public void fileFolderCreated(FileEvent fe) {
+        rebuild();
     }
-    
-    private String realName(FileObject fo) {
-        String nameExt = fo.getNameExt();
-        if (nameExt.endsWith(HIDDEN_SUFFIX)) {
-            return nameExt.substring(0, nameExt.length() - HIDDEN_SUFFIX.length());
-        } else {
-            return nameExt;
-        }
-    }
-    
-    private class PCL implements PropertyChangeListener {
-        public void propertyChange(PropertyChangeEvent evt) {
-            // TODO: This should be optimized for ignoring changes coming from a layer,
-            // which didn't contribute the file in the final result.
-            if (evt.getPropertyName() != null &&
-                FolderChildren.PROP_CHILD_CHANGED.equals(evt.getPropertyName()))
-            {
-                // The content of a child changed
-                pcs.firePropertyChange(new PropertyChangeEvent(CompoundFolderChildren.this, PROP_CHILDREN, null, null));
-            } else {
-                // The list of children or their sorting changed
-                rebuild();
-            }
-        }
 
-    } // End of FolderListener class
+    public void fileDataCreated(FileEvent fe) {
+        rebuild();
+    }
+
+    public void fileChanged(FileEvent fe) {
+        pcs.firePropertyChange(PROP_CHILDREN, null, null);
+    }
+
+    public void fileDeleted(FileEvent fe) {
+        rebuild();
+    }
+
+    public void fileRenamed(FileRenameEvent fe) {
+        rebuild();
+    }
+
+    public void fileAttributeChanged(FileAttributeEvent fe) {
+        if (FileUtil.affectsOrder(fe)) {
+            rebuild();
+        }
+    }
+
 }

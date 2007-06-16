@@ -26,21 +26,25 @@ Microsystems, Inc. All Rights Reserved.
             <file name="master-help.xml_hidden"/>
             <file name="org-netbeans-modules-usersguide-master.xml" url="master.xml">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.usersguide.Bundle"/>
+                <attr name="position" intvalue="200"/>
             </file>
-            <attr name="org-netbeans-modules-usersguide-master.xml/Separator1.instance" boolvalue="true"/>
-        </folder>
+            </folder>
     </folder>
 
     <folder name="Services">
         <folder name="JavaHelp">
             <!-- Now the help set. -->
-            <file name="org-netbeans-modules-usersguide-helpset.xml" url="helpset.xml"/>
-            <attr name="org-netbeans-modules-usersguide-helpset.xml/org-netbeans-modules-usersguide-above-regular.txt" boolvalue="true"/>
+            <file name="org-netbeans-modules-usersguide-helpset.xml" url="helpset.xml">
+                <attr name="position" intvalue="100"/>
+            </file>
             <!-- Only a marker: above regular helpsets, below IDE help. -->
-            <file name="org-netbeans-modules-usersguide-above-regular.txt"/>
-            <attr name="org-netbeans-modules-usersguide-above-regular.txt/org-netbeans-modules-usersguide-below-regular.txt" boolvalue="true"/>
+            <file name="org-netbeans-modules-usersguide-above-regular.txt">
+                <attr name="position" intvalue="200"/>
+            </file>
             <!-- Only a marker: below regular helpsets, above third-party helpsets. -->
-            <file name="org-netbeans-modules-usersguide-below-regular.txt"/>
+            <file name="org-netbeans-modules-usersguide-below-regular.txt">
+                <attr name="position" intvalue="1600"/>
+            </file>
         </folder>
     </folder>
 

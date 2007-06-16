@@ -18,18 +18,19 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
-
 <filesystem>
 
     <folder name="Templates">
         <folder name="Other">
             <file name="html.html" url="templates/html.html">
+                <attr name="position" intvalue="700"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/html/TemplateHelp.html"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.html.Bundle"/>
                 <attr name="templateCategory" stringvalue="simple-files"/>
             </file>
             <file name="xhtml.xhtml" url="templates/xhtml.xhtml">
+                <attr name="position" intvalue="400"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/html/XhtmlTemplateHelp.html"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.html.Bundle"/>
@@ -52,67 +53,68 @@ Microsystems, Inc. All Rights Reserved.
             <folder name="html">
                 <folder name="Actions">
                     <file name="OpenAction.instance">
-                        <attr name="instanceClass" stringvalue="org.openide.actions.OpenAction" />
+                        <attr name="instanceClass" stringvalue="org.openide.actions.OpenAction"/>
+                        <attr name="position" intvalue="100"/>
                     </file>
-                    <attr boolvalue="true" name="OpenAction.instance/ViewAction.instance" />
                     <file name="ViewAction.instance">
-                        <attr name="instanceClass" stringvalue="org.openide.actions.ViewAction" />
+                        <attr name="instanceClass" stringvalue="org.openide.actions.ViewAction"/>
+                        <attr name="position" intvalue="200"/>
                     </file>
-                    <attr boolvalue="true" name="ViewAction.instance/html-project-separator-1.instance" />
                     <file name="html-project-separator-1.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="300"/>
                     </file>
-                    <attr boolvalue="true" name="html-project-separator-1.instance/FileSystemAction.instance" />
                     <file name="FileSystemAction.instance">
-                        <attr name="instanceClass" stringvalue="org.openide.actions.FileSystemAction" />
+                        <attr name="instanceClass" stringvalue="org.openide.actions.FileSystemAction"/>
+                        <attr name="position" intvalue="800"/>
                     </file>
-                    <attr boolvalue="true" name="FileSystemAction.instance/html-project-separator-3.instance" />
                     <file name="html-project-separator-3.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="900"/>
                     </file>
-                    <attr boolvalue="true" name="html-project-separator-3.instance/CutAction.instance" />
                     <file name="CutAction.instance">
-                        <attr name="instanceClass" stringvalue="org.openide.actions.CutAction" />
+                        <attr name="instanceClass" stringvalue="org.openide.actions.CutAction"/>
+                        <attr name="position" intvalue="1000"/>
                     </file>
-                    <attr boolvalue="true" name="CutAction.instance/CopyAction.instance" />
                     <file name="CopyAction.instance">
-                        <attr name="instanceClass" stringvalue="org.openide.actions.CopyAction" />
+                        <attr name="instanceClass" stringvalue="org.openide.actions.CopyAction"/>
+                        <attr name="position" intvalue="1100"/>
                     </file>
-                    <attr boolvalue="true" name="CopyAction.instance/PasteAction.instance" />
                     <file name="PasteAction.instance">
-                        <attr name="instanceClass" stringvalue="org.openide.actions.PasteAction" />
+                        <attr name="instanceClass" stringvalue="org.openide.actions.PasteAction"/>
+                        <attr name="position" intvalue="1200"/>
                     </file>
-                    <attr boolvalue="true" name="PasteAction.instance/html-project-separator-4.instance" />
                     <file name="html-project-separator-4.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1300"/>
                     </file>
-                    <attr boolvalue="true" name="html-project-separator-4.instance/DeleteAction.instance" />
                     <file name="DeleteAction.instance">
-                        <attr name="instanceClass" stringvalue="org.openide.actions.DeleteAction" />
+                        <attr name="instanceClass" stringvalue="org.openide.actions.DeleteAction"/>
+                        <attr name="position" intvalue="1400"/>
                     </file>
-                    <attr boolvalue="true" name="DeleteAction.instance/RenameAction.instance" />
                     <file name="RenameAction.instance">
-                        <attr name="instanceClass" stringvalue="org.openide.actions.RenameAction" />
+                        <attr name="instanceClass" stringvalue="org.openide.actions.RenameAction"/>
+                        <attr name="position" intvalue="1500"/>
                     </file>
-                    <attr boolvalue="true" name="RenameAction.instance/html-project-separator-5.instance" />
                     <file name="html-project-separator-5.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1600"/>
                     </file>
-                    <attr boolvalue="true" name="html-project-separator-5.instance/SaveAsTemplateAction.instance" />
                     <file name="SaveAsTemplateAction.instance">
-                        <attr name="instanceClass" stringvalue="org.openide.actions.SaveAsTemplateAction" />
+                        <attr name="instanceClass" stringvalue="org.openide.actions.SaveAsTemplateAction"/>
+                        <attr name="position" intvalue="1700"/>
                     </file>
-                    <attr boolvalue="true" name="SaveAsTemplateAction.instance/html-project-separator-6.instance" />
                     <file name="html-project-separator-6.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1800"/>
                     </file>
-                    <attr boolvalue="true" name="html-project-separator-6.instance/ToolsAction.instance" />
                     <file name="ToolsAction.instance">
-                        <attr name="instanceClass" stringvalue="org.openide.actions.ToolsAction" />
+                        <attr name="instanceClass" stringvalue="org.openide.actions.ToolsAction"/>
+                        <attr name="position" intvalue="1900"/>
                     </file>
-                    <attr boolvalue="true" name="ToolsAction.instance/PropertiesAction.instance" />
                     <file name="PropertiesAction.instance">
-                        <attr name="instanceClass" stringvalue="org.openide.actions.PropertiesAction" />
+                        <attr name="instanceClass" stringvalue="org.openide.actions.PropertiesAction"/>
+                        <attr name="position" intvalue="2000"/>
                     </file>
                 </folder>
             </folder>
@@ -122,7 +124,8 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="Menu">
         <folder name="Tools">
             <folder name="PaletteManager">
-                <file name="org-netbeans-modules-html-palette-HTMLPaletteCustomizerAction.instance" />
+                <attr name="position" intvalue="1200"/>
+                <file name="org-netbeans-modules-html-palette-HTMLPaletteCustomizerAction.instance"/>
             </folder>
         </folder>
     </folder>
@@ -132,44 +135,64 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="HTML">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.html.palette.Bundle"/>
 
-            <file name="TABLE.xml" url="nbresloc:/org/netbeans/modules/html/palette/items/resources/TABLE.xml" />
-            <file name="OL.xml" url="nbresloc:/org/netbeans/modules/html/palette/items/resources/OL.xml" />
-            <file name="UL.xml" url="nbresloc:/org/netbeans/modules/html/palette/items/resources/UL.xml" />
-            <file name="IMG.xml" url="nbresloc:/org/netbeans/modules/html/palette/items/resources/IMG.xml" />
-            <file name="A.xml" url="nbresloc:/org/netbeans/modules/html/palette/items/resources/A.xml" />
-            <file name="META.xml" url="nbresloc:/org/netbeans/modules/html/palette/items/resources/META.xml" />
+            <attr name="position" intvalue="100"/>
+            <file name="TABLE.xml" url="nbresloc:/org/netbeans/modules/html/palette/items/resources/TABLE.xml">
+                <attr name="position" intvalue="100"/>
+            </file>
+            <file name="OL.xml" url="nbresloc:/org/netbeans/modules/html/palette/items/resources/OL.xml">
+                <attr name="position" intvalue="200"/>
+            </file>
+            <file name="UL.xml" url="nbresloc:/org/netbeans/modules/html/palette/items/resources/UL.xml">
+                <attr name="position" intvalue="300"/>
+            </file>
+            <file name="IMG.xml" url="nbresloc:/org/netbeans/modules/html/palette/items/resources/IMG.xml">
+                <attr name="position" intvalue="400"/>
+            </file>
+            <file name="A.xml" url="nbresloc:/org/netbeans/modules/html/palette/items/resources/A.xml">
+                <attr name="position" intvalue="500"/>
+            </file>
+            <file name="META.xml" url="nbresloc:/org/netbeans/modules/html/palette/items/resources/META.xml">
+                <attr name="position" intvalue="600"/>
+            </file>
 
-            <attr name="TABLE.xml/OL.xml" boolvalue="true" />
-            <attr name="OL.xml/UL.xml" boolvalue="true" />
-            <attr name="UL.xml/IMG.xml" boolvalue="true" />
-            <attr name="IMG.xml/A.xml" boolvalue="true" />
-            <attr name="A.xml/META.xml" boolvalue="true" />
+            
 
         </folder>
 
         <folder name="HTML_Forms">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.html.palette.Bundle"/>
 
-            <file name="FORM.xml" url="nbresloc:/org/netbeans/modules/html/palette/items/resources/FORM.xml" />
-            <file name="INPUT.xml" url="nbresloc:/org/netbeans/modules/html/palette/items/resources/INPUT.xml" />
-            <file name="TEXTAREA.xml" url="nbresloc:/org/netbeans/modules/html/palette/items/resources/TEXTAREA.xml" />
-            <file name="SELECT.xml" url="nbresloc:/org/netbeans/modules/html/palette/items/resources/SELECT.xml" />
-            <file name="CHECKBOX.xml" url="nbresloc:/org/netbeans/modules/html/palette/items/resources/CHECKBOX.xml" />
-            <file name="RADIO.xml" url="nbresloc:/org/netbeans/modules/html/palette/items/resources/RADIO.xml" />
-            <file name="FILESEL.xml" url="nbresloc:/org/netbeans/modules/html/palette/items/resources/FILESEL.xml" />
-            <file name="BUTTON.xml" url="nbresloc:/org/netbeans/modules/html/palette/items/resources/BUTTON.xml" />
+            <attr name="position" intvalue="200"/>
+            <file name="FORM.xml" url="nbresloc:/org/netbeans/modules/html/palette/items/resources/FORM.xml">
+                <attr name="position" intvalue="100"/>
+            </file>
+            <file name="INPUT.xml" url="nbresloc:/org/netbeans/modules/html/palette/items/resources/INPUT.xml">
+                <attr name="position" intvalue="200"/>
+            </file>
+            <file name="TEXTAREA.xml" url="nbresloc:/org/netbeans/modules/html/palette/items/resources/TEXTAREA.xml">
+                <attr name="position" intvalue="300"/>
+            </file>
+            <file name="SELECT.xml" url="nbresloc:/org/netbeans/modules/html/palette/items/resources/SELECT.xml">
+                <attr name="position" intvalue="400"/>
+            </file>
+            <file name="CHECKBOX.xml" url="nbresloc:/org/netbeans/modules/html/palette/items/resources/CHECKBOX.xml">
+                <attr name="position" intvalue="500"/>
+            </file>
+            <file name="RADIO.xml" url="nbresloc:/org/netbeans/modules/html/palette/items/resources/RADIO.xml">
+                <attr name="position" intvalue="600"/>
+            </file>
+            <file name="FILESEL.xml" url="nbresloc:/org/netbeans/modules/html/palette/items/resources/FILESEL.xml">
+                <attr name="position" intvalue="700"/>
+            </file>
+            <file name="BUTTON.xml" url="nbresloc:/org/netbeans/modules/html/palette/items/resources/BUTTON.xml">
+                <attr name="position" intvalue="800"/>
+            </file>
 
-            <attr name="FORM.xml/INPUT.xml" boolvalue="true" />
-            <attr name="INPUT.xml/TEXTAREA.xml" boolvalue="true" />
-            <attr name="TEXTAREA.xml/SELECT.xml" boolvalue="true" />
-            <attr name="SELECT.xml/CHECKBOX.xml" boolvalue="true" />
-            <attr name="CHECKBOX.xml/RADIO.xml" boolvalue="true" />
-            <attr name="RADIO.xml/FILESEL.xml" boolvalue="true" />
-            <attr name="FILESEL.xml/BUTTON.xml" boolvalue="true" />
+            
 
         </folder>
 
-        <attr name="HTML/HTML_Forms" boolvalue="true" />
+        
 
     </folder>
   

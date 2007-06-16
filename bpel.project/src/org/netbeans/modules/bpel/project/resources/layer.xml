@@ -18,7 +18,6 @@
  Microsystems, Inc. All Rights Reserved.
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
-
 <filesystem>
     <folder name="Templates">
         <folder name="Project">
@@ -26,7 +25,9 @@
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.bpel.project.wizards.Bundle"/>
                 <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/bpel/project/resources/ejbjar.html"/>
 
+                <attr name="position" intvalue="700"/>
                 <file name="emptyBpelpro.xml">
+                    <attr name="position" intvalue="100"/>
                     <attr name="template" boolvalue="true"/>
                     <attr name="templateWizardIterator" newvalue="org.netbeans.modules.bpel.project.wizards.NewBpelproProjectWizardIterator"/>
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.bpel.project.wizards.Bundle"/>
@@ -35,15 +36,10 @@
                 </file>
 
                 <!-- sorting -->
-                <attr name="emptyBpelpro.xml/emptyJbi.xml" boolvalue="true"/>
-            </folder>
+                </folder>
 
             <!-- sorting -->
-            <attr name="J2EE/SOA" boolvalue="true"/>
-            <attr name="J2ME/SOA" boolvalue="true"/>
-            <attr name="SOA/Samples" boolvalue="true"/>
-            <attr name="SOA/APISupport" boolvalue="true"/>
-        </folder>
+            </folder>
     </folder>
 
     <folder name="SeeBeyondJbiComponents">

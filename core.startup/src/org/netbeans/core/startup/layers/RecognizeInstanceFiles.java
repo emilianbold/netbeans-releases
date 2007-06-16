@@ -23,15 +23,11 @@ package org.netbeans.core.startup.layers;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.Enumeration;
-import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.openide.util.NamedServicesProvider;
@@ -46,7 +42,6 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.util.Lookup;
-import org.openide.util.TopologicalSortException;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.Lookups;
@@ -85,33 +80,29 @@ public final class RecognizeInstanceFiles extends NamedServicesProvider {
             this.path = path;
             this.lkp = lkp;
             this.content = cnt;
-            try {
-                items = Utilities.topologicalSort(items, new OrderAttribsMap(items));
-            } catch (TopologicalSortException ex) {
-                @SuppressWarnings("unchecked")
-                List<FOItem> l = (List<FOItem>)ex.partialSort();
-                items = l;
-            }
-            this.content.setPairs(items);
-            
+            this.content.setPairs(order(items));
             FileSystem fs = Repository.getDefault().getDefaultFileSystem();
             this.weakL = FileUtil.weakFileChangeListener(this, fs);
             fs.addFileChangeListener(weakL);
         }
         
+        private static List<FOItem> order(List<FOItem> items) {
+            Map<FileObject,FOItem> m = new LinkedHashMap<FileObject,FOItem>();
+            for (FOItem item : items) {
+                m.put(item.fo, item);
+            }
+            List<FileObject> files = FileUtil.getOrder(m.keySet(), true);
+            List<FOItem> r = new ArrayList<FOItem>(files.size());
+            for (FileObject f : files) {
+                r.add(m.get(f));
+            }
+            return r;
+        }
+        
         private void refresh() {
             List<FOItem> items = new ArrayList<FOItem>();
             Lookup[] delegates = computeDelegates(path, items, lkp);
-        
-            try {
-                items = Utilities.topologicalSort(items, new OrderAttribsMap(items));
-            } catch (TopologicalSortException ex) {
-                @SuppressWarnings("unchecked")
-                List<FOItem> l = (List<FOItem>)ex.partialSort();
-                items = l;
-            }
-            
-            this.content.setPairs(items);
+            this.content.setPairs(order(items));
             this.setLookups(delegates);
         }
         
@@ -289,93 +280,4 @@ public final class RecognizeInstanceFiles extends NamedServicesProvider {
 
     } // end of FOItem
     
-    private static final class OrderAttribsMap implements Map<FOItem,List<FOItem>> {
-        private final List<FOItem> all;
-
-        public OrderAttribsMap(List<FOItem> all) {
-            this.all = all;
-        }
-        
-        public int size() {
-            throw new UnsupportedOperationException();
-        }
-
-        public boolean isEmpty() {
-            throw new UnsupportedOperationException();
-        }
-
-        public boolean containsKey(Object key) {
-            throw new UnsupportedOperationException();
-        }
-
-        public boolean containsValue(Object value) {
-            throw new UnsupportedOperationException();
-        }
-
-        public List<FOItem> get(Object key) {
-            if (key instanceof FOItem) {
-                FOItem fi = (FOItem)key;
-                FileObject folder = fi.fo.getParent();
-                if (folder == null) {
-                    return null;
-                }
-                Set<String> afterMeNames = new HashSet<String>();
-                for (Enumeration<String> it = folder.getAttributes(); it.hasMoreElements();) {
-                    String attr = it.nextElement();
-                    int slash = attr.indexOf('/');
-                    if (slash == -1) {
-                        continue;
-                    }
-                    if (
-                        fi.fo.getNameExt().equals(attr.substring(0, slash)) &&
-                        Boolean.TRUE.equals(folder.getAttribute(attr))
-                    ) {
-                        afterMeNames.add(attr.substring(slash + 1));
-                    }
-                }
-                if (afterMeNames.isEmpty()) {
-                    return null;
-                }
-                
-                List<FOItem> afterMe = new ArrayList<FOItem>();
-                for (FOItem foItem : all) {
-                    if (afterMeNames.contains(foItem.fo.getNameExt())) {
-                        afterMe.add(foItem);
-                    }
-                }
-                return afterMe;
-            }
-            return null;
-        }
-
-        public List<FOItem> put(FOItem key,
-                                List<FOItem> value) {
-            throw new UnsupportedOperationException();
-        }
-
-        public List<FOItem> remove(Object key) {
-            throw new UnsupportedOperationException();
-        }
-
-        public void putAll(Map<? extends FOItem, ? extends List<FOItem>> t) {
-            throw new UnsupportedOperationException();
-        }
-
-        public void clear() {
-            throw new UnsupportedOperationException();
-        }
-
-        public Set<FOItem> keySet() {
-            throw new UnsupportedOperationException();
-        }
-
-        public Collection<List<FOItem>> values() {
-            throw new UnsupportedOperationException();
-        }
-
-        public Set<Entry<FOItem, List<FOItem>>> entrySet() {
-            throw new UnsupportedOperationException();
-        }
-        
-    }
 }

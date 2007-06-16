@@ -123,8 +123,8 @@ mime path.
 <h3>Ordering and hiding files</h3>
 
 <p>When registering instances in the mime path folders it is possible to use
-folder attributes to order the files the same way as you would do it in any other
-folder in a module XML layer. The attributes however will be resolved after all
+<code>position</code> attributes to order the files the same way as you would do it in any other
+files in a module XML layer. The attributes however will be resolved after all
 the folders belonging to a mime path are merged. Therefore it is possible to
 use attributes that define position relatively to a file in a parent (embedding)
 mime type.
@@ -133,18 +133,15 @@ mime type.
 <pre>
 &lt;folder name="Editors"&gt;
   &lt;folder name="Popup"&gt;
-    &lt;file name="org-openide-actions-CutActoin.instance" /&gt;
-
-    &lt;attr name="org-openide-actions-CutActoin.instance/org-openide-actions-CopyActoin.instance" booleanValue="true" /&gt;
-    &lt;file name="org-openide-actions-CopyActoin.instance" /&gt;
-
-    &lt;attr name="org-openide-actions-CopyActoin.instance/org-openide-actions-PasteActoin.instance" booleanValue="true" /&gt;
-    &lt;file name="org-openide-actions-PasteActoin.instance" /&gt;
+    &lt;file name="org-openide-actions-CutAction.instance">&lt;attr name="position" intvalue="100"/>&lt;/file>
+    &lt;file name="org-openide-actions-CopyAction.instance">&lt;attr name="position" intvalue="200"/>&lt;/file>
+    &lt;file name="org-openide-actions-PasteAction.instance">&lt;attr name="position" intvalue="300"/>&lt;/file>
   &lt;/folder&gt;
   &lt;folder name="text"&gt;
     &lt;folder name="x-java"&gt;
-      &lt;attr name="org-openide-actions-PasteActoin.instance/org-netbeans-modules-project-ui-RunSingle.instance" booleanValue="true" /&gt;
-      &lt;file name="org-netbeans-modules-project-ui-RunSingle" /&gt;
+      &lt;folder name="Popup">
+        &lt;file name="org-netbeans-modules-project-ui-RunSingle">&lt;attr name="position" intvalue="400"/>&lt;/file>
+      &lt;/folder&gt;
     &lt;/folder&gt;
   &lt;/folder&gt;
 &lt;/folder&gt;
@@ -161,13 +158,13 @@ The example below hides the editor's global CopyAction in documents with the
 <pre>
 &lt;folder name="Editors"&gt;
   &lt;folder name="Popup"&gt;
-    &lt;file name="org-openide-actions-CutActoin.instance" /&gt;
-    &lt;file name="org-openide-actions-CopyActoin.instance" /&gt;
-    &lt;file name="org-openide-actions-PasteActoin.instance" /&gt;
+    &lt;file name="org-openide-actions-CutAction.instance" /&gt;
+    &lt;file name="org-openide-actions-CopyAction.instance" /&gt;
+    &lt;file name="org-openide-actions-PasteAction.instance" /&gt;
   &lt;/folder&gt;
   &lt;folder name="text"&gt;
     &lt;folder name="x-java"&gt;
-      &lt;file name="org-openide-actions-CopyActoin.instance" &gt;
+      &lt;file name="org-openide-actions-CopyAction.instance" &gt;
         &lt;attr name="hidden" booleanValue="true" /&gt;
       &lt;/file&gt;
     &lt;/folder&gt;

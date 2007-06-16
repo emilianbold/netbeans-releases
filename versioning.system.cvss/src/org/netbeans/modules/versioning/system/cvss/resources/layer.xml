@@ -23,7 +23,7 @@ Microsystems, Inc. All Rights Reserved.
 
     <folder name="Actions">
         <folder name="Repository">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.versioning.system.cvss.resources.Bundle" />
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.versioning.system.cvss.resources.Bundle"/>
 
             <file name="org-netbeans-modules-versioning-system-cvss-ui-actions-status-OpenVersioningAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.versioning.system.cvss.ui.actions.status.OpenVersioningAction"/>
@@ -86,9 +86,9 @@ Microsystems, Inc. All Rights Reserved.
             
         <folder name="Window">
             <folder name="Versioning">            
-                <attr name="org-netbeans-modules-versioning-system-cvss-ui-actions-status-OpenVersioningAction.shadow/SeparatorVersioningOutput.instance" boolvalue="true"/>
                 <file name="org-netbeans-modules-versioning-system-cvss-ui-actions-status-OpenVersioningAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Repository/org-netbeans-modules-versioning-system-cvss-ui-actions-status-OpenVersioningAction.instance"/>
+                    <attr name="position" intvalue="100"/>
                 </file>
             </folder>
         </folder>
@@ -96,30 +96,32 @@ Microsystems, Inc. All Rights Reserved.
 
     <folder name="Services">
         <folder name="JavaHelp">
-            <file name="org-netbeans-modules-versioning-system-cvss-resources-helpset.xml" url="helpset-decl.xml"/>
-            <attr name="org-netbeans-modules-usersguide-below-regular.txt/org-netbeans-modules-versioning-system-cvss-resources-helpset.xml" boolvalue="true"/>
-        </folder>
+            <file name="org-netbeans-modules-versioning-system-cvss-resources-helpset.xml" url="helpset-decl.xml">
+                <attr name="position" intvalue="1800"/>
+            </file>
+            </folder>
     </folder>
 
     <folder name="Windows2">
         <folder name="Components">
-            <file name="synchronize.settings" url="components/synchronize.settings" />
+            <file name="synchronize.settings" url="components/synchronize.settings"/>
         </folder>
         <folder name="Modes">
             <folder name="output">
-                <attr name="synchronize.wstcref/output.wstcref" boolvalue="true"/>
-                <file name="synchronize.wstcref" url="modes/output/synchronize.wstcref" />
+                <file name="synchronize.wstcref" url="modes/output/synchronize.wstcref">
+                    <attr name="position" intvalue="200"/>
+                </file>
             </folder>
         </folder>
     </folder>
 
     <folder name="Editors">
         <folder name="SideBar">
-            <file name="org-netbeans-modules-versioning-system-cvss-ui-actions-annotate-AnnotationBarManager.instance"/>
+            <file name="org-netbeans-modules-versioning-system-cvss-ui-actions-annotate-AnnotationBarManager.instance">
+                <attr name="position" intvalue="2000"/>
+            </file>
             <!-- place in between line numbers sidebar and folding sidebar #57544 -->
-            <attr name="org-netbeans-editor-GlyphGutter.instance/org-netbeans-modules-versioning-system-cvss-ui-actions-annotate-AnnotationBarManager.instance" boolvalue="true"/>
-            <attr name="org-netbeans-modules-versioning-system-cvss-ui-actions-annotate-AnnotationBarManager.instance/org-netbeans-modules-editor-java-NbJavaCodeFoldingSideBarFactory.instance" boolvalue="true"/>
-        </folder>
+            </folder>
         
         <folder name="AnnotationTypes">
             <file name="org-netbeans-modules-versioning-system-cvss-Annotation.xml" url="cvs_annotation.xml"/>

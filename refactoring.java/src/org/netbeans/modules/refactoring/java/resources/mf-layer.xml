@@ -21,38 +21,36 @@ Microsystems, Inc. All Rights Reserved.
 <filesystem>
     <folder name="Menu">
         <folder name="Refactoring">
-            <attr name="CopyAction.instance/FirstSeparator.instance" boolvalue="true"/>
             <file name="FirstSeparator.instance">
                 <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                <attr name="position" intvalue="400"/>
             </file>
-            <attr name="FirstSeparator.instance/org-netbeans-modules-refactoring-java-api-ui-PullUpAction.instance" boolvalue="true"/>
-            <attr name="org-netbeans-modules-refactoring-java-api-ui-PullUpAction.instance/org-netbeans-modules-refactoring-java-api-ui-PushDownAction.instance" boolvalue="true"/>
-          <file name="org-netbeans-modules-refactoring-java-api-ui-PullUpAction.instance">
+            <file name="org-netbeans-modules-refactoring-java-api-ui-PullUpAction.instance">
              <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.java.api.ui.JavaRefactoringActionsFactory.pullUpAction"/>
-          </file>
-          <attr name="org-netbeans-modules-refactoring-java-api-ui-PushDownAction.instance/org-netbeans-modules-refactoring-java-api-ui-ExtractInterfaceAction.instance" boolvalue="true"/>
+              <attr name="position" intvalue="500"/>
+            </file>
           <file name="org-netbeans-modules-refactoring-java-api-ui-PushDownAction.instance">
              <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.java.api.ui.JavaRefactoringActionsFactory.pushDownAction"/>
-          </file>
-            <attr name="org-netbeans-modules-refactoring-java-api-ui-ExtractInterfaceAction.instance/org-netbeans-modules-refactoring-java-api-ui-ExtractSuperclassAction.instance" boolvalue="true"/>
+              <attr name="position" intvalue="600"/>
+            </file>
             <file name="org-netbeans-modules-refactoring-java-api-ui-ExtractInterfaceAction.instance">
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.java.api.ui.JavaRefactoringActionsFactory.extractInterfaceAction"/>
+                <attr name="position" intvalue="700"/>
             </file>
-            <attr name="org-netbeans-modules-refactoring-java-api-ui-ExtractSuperclassAction.instance/org-netbeans-modules-refactoring-java-api-ui-UseSuperTypeAction.instance" boolvalue="true"/>
             <file name="org-netbeans-modules-refactoring-java-api-ui-ExtractSuperclassAction.instance">
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.java.api.ui.JavaRefactoringActionsFactory.extractSuperclassAction"/>
+                <attr name="position" intvalue="800"/>
             </file>
-         <attr name="org-netbeans-modules-refactoring-java-api-ui-UseSuperTypeAction.instance/org-netbeans-modules-refactoring-java-api-ui-InnerToOuterAction.instance" boolvalue="true"/>
-            <file name="org-netbeans-modules-refactoring-java-api-ui-UseSuperTypeAction.instance">
+         <file name="org-netbeans-modules-refactoring-java-api-ui-UseSuperTypeAction.instance">
                  <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.java.api.ui.JavaRefactoringActionsFactory.useSuperTypeAction"/>
+                <attr name="position" intvalue="900"/>
             </file>
-            <attr name="org-netbeans-modules-refactoring-java-api-ui-UseSuperTypeAction.instance/org-netbeans-modules-refactoring-java-api-ui-InnerToOuterAction.instance" boolvalue="true"/>
             <file name="org-netbeans-modules-refactoring-java-api-ui-InnerToOuterAction.instance">
                  <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.java.api.ui.JavaRefactoringActionsFactory.innerToOuterAction"/>
+                <attr name="position" intvalue="1000"/>
             </file>
             -->
-         <attr name="org-netbeans-modules-refactoring-java-api-ui-InnerToOuterAction.instance/LastSeparator.instance" boolvalue="true"/>
-            <file name="org-netbeans-modules-refactoring-java-api-ui-ChangeParametersAction.instance">
+         <file name="org-netbeans-modules-refactoring-java-api-ui-ChangeParametersAction.instance">
                  <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.java.api.ui.JavaRefactoringActionsFactory.changeParametersAction"/>
             </file>
 
@@ -64,15 +62,15 @@ Microsystems, Inc. All Rights Reserved.
                 <folder name="Popup">
                     <file name="org-netbeans-modules-refactoring-api-ui-WhereUsedAction.instance">
                          <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.whereUsedAction"/>
+                        <attr name="position" intvalue="1400"/>
                     </file>
                     <file name="org-netbeans-modules-refactoring-api-ui-RSMEditorAction.instance">
                          <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.editorSubmenuAction"/>
+                        <attr name="position" intvalue="1440"/>
                     </file>
                     
-                    <attr name="SeparatorAfterGoToHelp.instance/org-netbeans-modules-refactoring-api-ui-WhereUsedAction.instance" boolvalue="true"/>
-                    <attr name="org-netbeans-modules-refactoring-api-ui-WhereUsedAction.instance/org-netbeans-modules-refactoring-api-ui-RSMEditorAction.instance" boolvalue="true"/>        
-                    <attr name="org-netbeans-modules-refactoring-api-ui-RSMEditorAction.instance/format" boolvalue="true"/>
-                </folder>
+                            
+                    </folder>
             </folder>
         </folder>
     </folder>
@@ -80,21 +78,18 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="text">
         <folder name="x-java">
             <folder name="Actions">
-              <attr boolvalue="true" name="DeleteAction.instance/SaveAsTemplateAction.instance"/>
-              <attr boolvalue="true" name="SaveAsTemplateAction.instance/RefactoringWhereUsed.instance"/>
-              <attr boolvalue="true" name="Separator4.instance/RefactoringWhereUsed.instance"/>
               <file name="RefactoringWhereUsed.instance">
                   <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.whereUsedAction"/>
-              </file>
-              <attr boolvalue="true" name="RefactoringWhereUsed.instance/RefactoringAll.instance"/>
+                  <attr name="position" intvalue="1900"/>
+                    </file>
               <file name="RefactoringAll.instance">
                   <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.popupSubmenuAction"/>
-              </file>
-              <attr boolvalue="true" name="RefactoringAll.instance/RefactoringSeparator-1.instance"/>
+                  <attr name="position" intvalue="2000"/>
+                    </file>
               <file name="RefactoringSeparator-1.instance">
                 <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-              </file>
-              <attr boolvalue="true" name="RefactoringSeparator-1.instance/ToolsAction.instance"/>
+                  <attr name="position" intvalue="2100"/>
+                    </file>
               <file name="RenameAction.instance_hidden"/>
             </folder>
         </folder>
@@ -103,11 +98,10 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="folder">
         <folder name="any">
             <folder name="Actions">
-              <attr boolvalue="true" name="DeleteAction.instance/RefactoringAll.instance"/>
               <file name="RefactoringAll.instance">
                   <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.popupSubmenuAction"/>
-              </file>
-              <attr boolvalue="true" name="RefactoringAll.instance/Separator3.instance"/>
+                  <attr name="position" intvalue="1000"/>
+                    </file>
               <file name="RenameAction.instance_hidden"/>
             </folder>
         </folder>

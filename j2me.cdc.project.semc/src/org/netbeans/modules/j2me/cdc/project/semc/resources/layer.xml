@@ -6,30 +6,34 @@
             <folder name="nbproject">
                 <folder name="build-impl.xml">
                     <folder name="init-subtargets">
-                        <attr name="ricoh-init/semc-init" boolvalue="true"/>
-                        <file name="semc-init" url="semc-init"/>
+                        <file name="semc-init" url="semc-init">
+                            <attr name="position" intvalue="600"/>
+                        </file>
                     </folder>
                     <folder name="jar-subtargets">
-                        <attr name="nokiaS80-create-manifest/semc-build-j9" boolvalue="true"/>
-                        <file name="semc-build-j9" url="semc-build-j9"/>
-                        <attr name="semc-build-j9/do-jar" boolvalue="true"/>
-                    </folder>
+                        <file name="semc-build-j9" url="semc-build-j9">
+                            <attr name="position" intvalue="600"/>
+                        </file>
+                        </folder>
                    <folder name="build-subtargets">
-                        <attr name="override-jad/semc-sis" boolvalue="true"/>
-                        <file name="semc-sis" url="semc-sis"/>
-                        <attr name="semc-sis/increment-app-version" boolvalue="true"/>
-                    </folder>
+                        <file name="semc-sis" url="semc-sis">
+                            <attr name="position" intvalue="300"/>
+                        </file>
+                        </folder>
                     <folder name="run-subtargets">
-                        <attr name="ricoh-run/semc-run" boolvalue="true"/>
-                        <file name="semc-run" url="semc-run"/>
+                        <file name="semc-run" url="semc-run">
+                            <attr name="position" intvalue="300"/>
+                        </file>
                     </folder>
                     <folder name="debug-subtargets">
-                        <attr name="ricoh-debug/semc-debug" boolvalue="true"/>
-                        <file name="semc-debug" url="semc-debug"/>
+                        <file name="semc-debug" url="semc-debug">
+                            <attr name="position" intvalue="300"/>
+                        </file>
                     </folder>
                     <folder name="clean-subtargets">
-                        <attr name="clean-ricoh/clean-semc" boolvalue="true"/>
-                        <file name="clean-semc" url="clean-semc"/>
+                        <file name="clean-semc" url="clean-semc">
+                            <attr name="position" intvalue="1200"/>
+                        </file>
                     </folder>
                 </folder>
             </folder>
@@ -38,10 +42,10 @@
     <folder name="Customizer">
         <folder name="org.netbeans.modules.kjava.j2meproject">
             <folder name="Jad">
-                <attr name="CDCGeneral/SEMC" boolvalue="true"/>
                 <file name="SEMC">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2me.cdc.project.semc.Bundle"/>
                     <attr name="customizerPanelClass" newvalue="org.netbeans.modules.j2me.cdc.project.semc.SemcProjectCategoryCustomizer"/>
+                    <attr name="position" intvalue="600"/>
                     <attr name="triggerPropertyName" stringvalue="platform.type"/>
                     <attr name="triggerPropertyValue" stringvalue="semc"/>
                 </file>

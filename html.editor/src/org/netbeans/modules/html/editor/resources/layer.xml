@@ -18,7 +18,6 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
-
 <filesystem>
 
     <folder name="DTDs">
@@ -134,34 +133,40 @@ Microsystems, Inc. All Rights Reserved.
                 </file>
 
                 <folder name="Popup">
-                    <file name="format"/>
+                    <file name="format">
+                        <attr name="position" intvalue="1333"/>
+                    </file>
                     <file name="SeparatorAfterFormat.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1666"/>
                     </file>
-                    <attr name="format/SeparatorAfterFormat.instance" boolvalue="true"/>
-                    <attr name="SeparatorAfterFormat.instance/org-openide-actions-CutAction.instance" boolvalue="true"/>
 
-                    <attr name="SeparatorAfterFormat.instance/org-openide-actions-PasteAction.instance" boolvalue="true"/>
+                    
                     
                     <file name="SeparatorFolding.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="4100"/>
                     </file>
                                         
-                    <attr name="org-openide-actions-PasteAction.instance/SeparatorFolding.instance" boolvalue="true"/>
                     
-                    <file name="generate-fold-popup"/>
-                    <attr name="SeparatorFolding.instance/generate-fold-popup" boolvalue="true"/>
+                    
+                    <file name="generate-fold-popup">
+                        <attr name="position" intvalue="4200"/>
+                    </file>
                     
                     
                     <file name="SeparatorAfterFolding.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="4300"/>
                     </file>
                     
-                    <file name="dump-tokens"/>
+                    <file name="dump-tokens">
+                        <attr name="position" intvalue="4400"/>
+                    </file>
                     
-                    <attr name="generate-fold-popup/SeparatorAfterFolding.instance" boolvalue="true"/>
                     
-                    <attr name="SeparatorAfterFolding.instance/dump-tokens" boolvalue="true"/>
+                    
+                    
                     
                 </folder>
             </folder>

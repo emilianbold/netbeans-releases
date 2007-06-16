@@ -31,12 +31,12 @@ import org.netbeans.junit.NbTestCase;
  */
 public class ClassInfoStorageTest extends NbTestCase {
 
-    /** Creates a new instance of ClassPathsTest */
     public ClassInfoStorageTest(String name) {
         super(name);
     }
 
-    protected void setUp() throws java.lang.Exception {
+    protected void setUp() throws Exception {
+        clearWorkDir();
         // Set up the default lookup, repository, etc.
         EditorTestLookup.setLookup(new String[0], getWorkDir(), new Object[] {},
             getClass().getClassLoader(),
@@ -64,7 +64,7 @@ public class ClassInfoStorageTest extends NbTestCase {
 
     public void testAddingMapper() throws Exception {
         ClassInfoStorage.Info info = ClassInfoStorage.getInstance().getInfo(DummySetting.class.getName());
-        assertTrue("There should be no mapper registered", isEmpty(info));
+        assertTrue("There should be no mapper registered: " + info, isEmpty(info));
         
         L listener = new L();
         ClassInfoStorage.getInstance().addPropertyChangeListener(listener);
@@ -116,7 +116,7 @@ public class ClassInfoStorageTest extends NbTestCase {
         }
 
         info = ClassInfoStorage.getInstance().getInfo(DummySetting.class.getName());
-        assertTrue("There should be no mapper registered", isEmpty(info));
+        assertTrue("There should be no mapper registered: " + info, isEmpty(info));
     }
     
     private void checkInfo(ClassInfoStorage.Info info, String extraPath, Class infoClass, Class instanceProviderClass) {

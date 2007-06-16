@@ -19,17 +19,18 @@ Microsystems, Inc. All Rights Reserved.
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
-    <folder name="Navigator" >
-      <folder name="Panels" >
-        <folder name="text" >
-          <folder name="x-java" >
-            <file name="org-netbeans-modules-java-debug-TreeNavigatorProviderImpl.instance" />
-            <file name="org-netbeans-modules-java-debug-ElementNavigatorProviderImpl.instance" />
-            <attr name="org-netbeans-modules-java-navigation-ClassMemberPanel.instance/org-netbeans-modules-java-debug-TreeNavigatorProviderImpl.instance" boolvalue="true"/>
-            <attr name="org-netbeans-modules-java-debug-TreeNavigatorProviderImpl.instance/org-netbeans-modules-java-debug-ElementNavigatorProviderImpl.instance" boolvalue="true"/>
-          </folder>
+    <folder name="Navigator">
+      <folder name="Panels">
+        <folder name="text">
+          <folder name="x-java">
+            <file name="org-netbeans-modules-java-debug-TreeNavigatorProviderImpl.instance">
+                        <attr name="position" intvalue="200"/>
+                    </file>
+            <file name="org-netbeans-modules-java-debug-ElementNavigatorProviderImpl.instance">
+                        <attr name="position" intvalue="300"/>
+                    </file>
+            </folder>
         </folder>
       </folder>
     </folder>
 </filesystem>
-

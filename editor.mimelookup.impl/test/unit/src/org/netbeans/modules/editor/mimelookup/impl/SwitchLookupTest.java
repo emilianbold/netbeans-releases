@@ -39,7 +39,8 @@ public class SwitchLookupTest extends NbTestCase {
         super(name);
     }
 
-    protected void setUp() throws java.lang.Exception {
+    protected void setUp() throws Exception {
+        clearWorkDir();
         // Set up the default lookup, repository, etc.
         EditorTestLookup.setLookup(new String[0], getWorkDir(), new Object[] {},
             getClass().getClassLoader(), 

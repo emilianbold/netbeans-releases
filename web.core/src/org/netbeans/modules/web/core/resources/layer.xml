@@ -18,35 +18,20 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
-
 <filesystem>
   <folder name="WarmUp">
         <file name="org-netbeans-modules-web-core-JspEditorWarmUpTask.instance"/>
   </folder>
   <folder name="Templates">
-    <attr name="JSP_Servlet/Classes" boolvalue="true"/>
     <folder name="JSP_Servlet">
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle"/>
-        <attr name="templateWizardURL"
-              urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/Web.html"/>
-      <attr name="JSP.jsp/Servlet.java" boolvalue="true"/>
-      <attr name="Servlet.java/SimpleFilter.java" boolvalue="true"/>
-      <attr name="SimpleFilter.java/ServletListener.java" boolvalue="true"/>
-      <attr name="ServletListener.java/TagLibrary.tld" boolvalue="true"/>
-      <attr name="TagLibrary.tld/TagFile.tag" boolvalue="true"/>
-      <attr name="TagFile.tag/TagHandler.java" boolvalue="true"/>
-      <attr name="TagHandler.java/Html.html" boolvalue="true"/>
-      <attr name="XHtml.xhtml/CascadeStyleSheet.css" boolvalue="true"/>
-      <attr name="CascadeStyleSheet.css/TagLibrary.tld" boolvalue="true"/>
-      <attr name="TagLibrary.tld/TagFile.tag" boolvalue="true"/>
+        <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/Web.html"/>
       <file name="JSP.jsp" url="templates/JSP.template">
-        <attr name="template" boolvalue="true"/>
-        <attr name="templateWizardURL" 
-              urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/JSP.html"/>
-        <attr name="SystemFileSystem.localizingBundle"
-                    stringvalue="org.netbeans.modules.web.core.Bundle"/>
-        <attr name="templateWizardIterator" 
-              methodvalue="org.netbeans.modules.web.wizards.PageIterator.createJspIterator"/>
+        <attr name="position" intvalue="400"/>
+                <attr name="template" boolvalue="true"/>
+        <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/JSP.html"/>
+        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle"/>
+        <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.web.wizards.PageIterator.createJspIterator"/>
         <attr name="templateCategory" stringvalue="web-types"/>
       </file>
       <!--  JSP Document --> 
@@ -57,11 +42,11 @@ Microsystems, Inc. All Rights Reserved.
       <file name="JSPFX.jspf" url="templates/JSPDocX.template"/>
       <!-- Tag File -->
       <file name="TagFile.tag" url="templates/TagFile.template">
-        <attr name="template" boolvalue="true"/>
+        <attr name="position" intvalue="1000"/>
+                <attr name="template" boolvalue="true"/>
         <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/TagFile.html"/>
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle"/>
-        <attr name="templateWizardIterator" 
-            methodvalue="org.netbeans.modules.web.wizards.PageIterator.createTagIterator"/>
+        <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.web.wizards.PageIterator.createTagIterator"/>
         <attr name="templateCategory" stringvalue="servlet-types"/>
       </file>
       <!--  Tag File Document --> 
@@ -71,7 +56,8 @@ Microsystems, Inc. All Rights Reserved.
       <file name="TagFileFX.tagf" url="templates/TagFileFX.template"/>
       <!-- Servlet --> 
       <file name="Servlet.java" url="templates/Servlet.template">
-          <attr name="template" boolvalue="true"/>
+          <attr name="position" intvalue="500"/>
+                <attr name="template" boolvalue="true"/>
           <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
           <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/Servlet.html"/>
           <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.web.wizards.ServletIterator.createServletIterator"/>
@@ -81,35 +67,36 @@ Microsystems, Inc. All Rights Reserved.
       </file>
       <!-- use template description from HTML module -->
       <file name="Html.html" url="nbresloc:/org/netbeans/modules/html/templates/html.html">
-         <attr name="template" boolvalue="true" />
-         <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/html/TemplateHelp.html" />
+         <attr name="position" intvalue="1200"/>
+                <attr name="template" boolvalue="true"/>
+         <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/html/TemplateHelp.html"/>
          <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle"/>
-         <attr name="templateWizardIterator" 
-                methodvalue="org.netbeans.modules.web.wizards.PageIterator.createHtmlIterator"/>
+         <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.web.wizards.PageIterator.createHtmlIterator"/>
          <attr name="templateCategory" stringvalue="web-types"/>
       </file>
       
       <file name="XHtml.xhtml" url="nbresloc:/org/netbeans/modules/html/templates/xhtml.xhtml">
-         <attr name="template" boolvalue="true" />
-         <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/html/XhtmlTemplateHelp.html" />
+         <attr name="position" intvalue="100"/>
+                <attr name="template" boolvalue="true"/>
+         <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/html/XhtmlTemplateHelp.html"/>
          <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle"/>
-         <attr name="templateWizardIterator" 
-                methodvalue="org.netbeans.modules.web.wizards.PageIterator.createXHtmlIterator"/>
+         <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.web.wizards.PageIterator.createXHtmlIterator"/>
          <attr name="templateCategory" stringvalue="web-types"/>
       </file>
       <file name="CascadeStyleSheet.css" url="nbresloc:/org/netbeans/modules/css/resources/CascadeStyleSheet.css.template">
-         <attr name="template" boolvalue="true" />
-         <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/css/resources/CSS_template.html" />
-         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/css/resources/css.gif" />
+         <attr name="position" intvalue="200"/>
+                <attr name="template" boolvalue="true"/>
+         <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/css/resources/CSS_template.html"/>
+         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/css/resources/css.gif"/>
          <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle"/>
-         <attr name="templateWizardIterator" 
-                methodvalue="org.netbeans.modules.web.wizards.PageIterator.createXCssIterator"/>
+         <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.web.wizards.PageIterator.createXCssIterator"/>
          <attr name="templateCategory" stringvalue="web-types"/>
       </file>
 
       <!-- Servlet Listener --> 
       <file name="ServletListener.java" url="templates/ServletListener.template">
-          <attr name="template" boolvalue="true"/>
+          <attr name="position" intvalue="800"/>
+                <attr name="template" boolvalue="true"/>
           <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
           <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/ServletListener.html"/>
           <attr name="templateWizardIterator" newvalue="org.netbeans.modules.web.wizards.ListenerIterator"/>
@@ -118,18 +105,19 @@ Microsystems, Inc. All Rights Reserved.
       </file>
       <!-- Tag Library 2.0--> 
       <file name="TagLibrary.tld" url="templates/BlankTagLibrary.template">
-          <attr name="template" boolvalue="true"/>
+          <attr name="position" intvalue="900"/>
+                <attr name="template" boolvalue="true"/>
           <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/TagLibrary.html"/>
           <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle"/>
-          <attr name="templateWizardIterator" 
-                methodvalue="org.netbeans.modules.web.wizards.PageIterator.createTagLibraryIterator"/>
+          <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.web.wizards.PageIterator.createTagLibraryIterator"/>
           <attr name="templateCategory" stringvalue="servlet-types"/>
       </file>
       <!--  Tag Library 1.2 --> 
       <file name="TagLibrary_1_2.tld" url="templates/BlankTagLibrary_1_2.template"/>
       <!-- Filters --> 
       <file name="SimpleFilter.java" url="templates/SimpleFilter.template">
-        <attr name="template" boolvalue="true"/>
+        <attr name="position" intvalue="600"/>
+                <attr name="template" boolvalue="true"/>
         <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
         <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/SimpleFilter.html"/>
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle"/>
@@ -139,7 +127,8 @@ Microsystems, Inc. All Rights Reserved.
       <file name="AdvancedFilter.java" url="templates/AdvancedFilter.template"/>
       <!-- Tag Handlers --> 
       <file name="TagHandler.java" url="templates/SimpleTagHandler.template">
-        <attr name="template" boolvalue="true"/>
+        <attr name="position" intvalue="1100"/>
+                <attr name="template" boolvalue="true"/>
         <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
         <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/TagHandler.html"/>
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle"/>
@@ -174,8 +163,8 @@ Microsystems, Inc. All Rights Reserved.
     <!-- Recognize text/x-jsp -->
     <folder name="MIMEResolver">
       <file name="org-netbeans-modules-web-core-resources-mime-resolver.xml" url="mime-resolver.xml">
-        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle" />
-        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/servletSettings.gif" />
+        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle"/>
+        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/servletSettings.gif"/>
       </file>
     </folder>
 
@@ -190,12 +179,12 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="text">
             <folder name="x-jsp">
                 <file name="org-netbeans-modules-web-core-jsploader-JspContextInfoImpl.instance">
-                    <attr name="instanceCreate" newvalue="org.netbeans.modules.web.core.jsploader.JspContextInfoImpl" />
+                    <attr name="instanceCreate" newvalue="org.netbeans.modules.web.core.jsploader.JspContextInfoImpl"/>
                 </file>
             </folder>
             <folder name="x-tag">
                 <file name="org-netbeans-modules-web-core-jsploader-JspContextInfoImpl.instance">
-                    <attr name="instanceCreate" newvalue="org.netbeans.modules.web.core.jsploader.JspContextInfoImpl" />
+                    <attr name="instanceCreate" newvalue="org.netbeans.modules.web.core.jsploader.JspContextInfoImpl"/>
                 </file>
             </folder>
         </folder>
@@ -213,6 +202,7 @@ Microsystems, Inc. All Rights Reserved.
 
                     <file name="org-netbeans-modules-project-ui-RunSingle.instance">
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.project.ui.actions.Actions.runSingle"/>
+                        <attr name="position" intvalue="1250"/>
                     </file>
                     
                     <!--<attr name="Separator5.instance/org-netbeans-modules-project-ui-RunSingle.instance" boolvalue="true"/>
@@ -235,25 +225,26 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="XML">
             <folder name="UserCatalogs">
                 <file name="org-netbeans-modules-web-taglib-TaglibCatalog.instance">
-                    <attr name="instanceCreate" 
-                        newvalue="org.netbeans.modules.web.taglib.TaglibCatalog"/>
-                    <attr name="instanceOf" 
-                        stringvalue="org.netbeans.modules.xml.catalog.spi.CatalogReader"/>
+                    <attr name="instanceCreate" newvalue="org.netbeans.modules.web.taglib.TaglibCatalog"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.xml.catalog.spi.CatalogReader"/>
                 </file>
             </folder>
             <folder name="GrammarQueryManagers">
                 <!-- register semantics grammar for jsp_taglibrary2_0 due to code completion -->
-                <file name="org-netbeans-modules-web-taglib-TaglibGrammarQueryManager.instance"/>
-                <attr name="org-netbeans-modules-web-taglib-TaglibGrammarQueryManager.instance/semantics-grammar-to-generic-grammar-separator" boolvalue="true"/>
-            </folder> <!-- GrammarQueryManagers -->
+                <file name="org-netbeans-modules-web-taglib-TaglibGrammarQueryManager.instance">
+                    <attr name="position" intvalue="200"/>
+                </file>
+                </folder> <!-- GrammarQueryManagers -->
         </folder>
     </folder>
 
     <folder name="Menu">
         <folder name="Tools">
             <folder name="PaletteManager">
-                <file name="org-netbeans-modules-html-palette-HTMLPaletteCustomizerAction.instance_hidden" />
-                <file name="org-netbeans-modules-web-core-palette-JSPPaletteCustomizerAction.instance" />
+                <file name="org-netbeans-modules-html-palette-HTMLPaletteCustomizerAction.instance_hidden"/>
+                <file name="org-netbeans-modules-web-core-palette-JSPPaletteCustomizerAction.instance">
+                    <attr name="position" intvalue="100"/>
+                </file>
             </folder>
         </folder>
     </folder>
@@ -263,44 +254,63 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="HTML.shadow">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.palette.Bundle"/>
             <attr name="originalFile" stringvalue="HTMLPalette/HTML"/>
+            <attr name="position" intvalue="100"/>
         </folder>
         
         <folder name="HTML_Forms.shadow">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.palette.Bundle"/>
             <attr name="originalFile" stringvalue="HTMLPalette/HTML_Forms"/>
+            <attr name="position" intvalue="200"/>
         </folder>
 
         <folder name="JSP">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.palette.Bundle"/>
 
-            <file name="UseBean.xml" url="nbresloc:/org/netbeans/modules/web/core/palette/items/resources/UseBean.xml" />
-            <file name="GetProperty.xml" url="nbresloc:/org/netbeans/modules/web/core/palette/items/resources/GetProperty.xml" />
-            <file name="SetProperty.xml" url="nbresloc:/org/netbeans/modules/web/core/palette/items/resources/SetProperty.xml" />
-            <file name="Choose.xml" url="nbresloc:/org/netbeans/modules/web/core/palette/items/resources/Choose.xml" />
-            <file name="If.xml" url="nbresloc:/org/netbeans/modules/web/core/palette/items/resources/If.xml" />
-            <file name="ForEach.xml" url="nbresloc:/org/netbeans/modules/web/core/palette/items/resources/ForEach.xml" />
+            <attr name="position" intvalue="300"/>
+            <file name="UseBean.xml" url="nbresloc:/org/netbeans/modules/web/core/palette/items/resources/UseBean.xml">
+                <attr name="position" intvalue="100"/>
+            </file>
+            <file name="GetProperty.xml" url="nbresloc:/org/netbeans/modules/web/core/palette/items/resources/GetProperty.xml">
+                <attr name="position" intvalue="200"/>
+            </file>
+            <file name="SetProperty.xml" url="nbresloc:/org/netbeans/modules/web/core/palette/items/resources/SetProperty.xml">
+                <attr name="position" intvalue="300"/>
+            </file>
+            <file name="Choose.xml" url="nbresloc:/org/netbeans/modules/web/core/palette/items/resources/Choose.xml">
+                <attr name="position" intvalue="400"/>
+            </file>
+            <file name="If.xml" url="nbresloc:/org/netbeans/modules/web/core/palette/items/resources/If.xml">
+                <attr name="position" intvalue="500"/>
+            </file>
+            <file name="ForEach.xml" url="nbresloc:/org/netbeans/modules/web/core/palette/items/resources/ForEach.xml">
+                <attr name="position" intvalue="600"/>
+            </file>
 
-            <attr name="UseBean.xml/GetProperty.xml" boolvalue="true" />
-            <attr name="GetProperty.xml/SetProperty.xml" boolvalue="true" />
-            <attr name="SetProperty.xml/Choose.xml" boolvalue="true" />
-            <attr name="Choose.xml/If.xml" boolvalue="true" />
-            <attr name="If.xml/ForEach.xml" boolvalue="true" />
+            
 
         </folder>
 
         <folder name="Database">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.palette.Bundle"/>
 
-            <file name="Query.xml" url="nbresloc:/org/netbeans/modules/web/core/palette/items/resources/Query.xml" />
-            <file name="Report.xml" url="nbresloc:/org/netbeans/modules/web/core/palette/items/resources/Report.xml" />
-            <file name="Insert.xml" url="nbresloc:/org/netbeans/modules/web/core/palette/items/resources/Insert.xml" />
-            <file name="Update.xml" url="nbresloc:/org/netbeans/modules/web/core/palette/items/resources/Update.xml" />
-            <file name="Delete.xml" url="nbresloc:/org/netbeans/modules/web/core/palette/items/resources/Delete.xml" />
+            <attr name="position" intvalue="500"/>
+            <file name="Query.xml" url="nbresloc:/org/netbeans/modules/web/core/palette/items/resources/Query.xml">
+                <attr name="position" intvalue="100"/>
+            </file>
+            <file name="Report.xml" url="nbresloc:/org/netbeans/modules/web/core/palette/items/resources/Report.xml">
+                <attr name="position" intvalue="200"/>
+            </file>
+            <file name="Insert.xml" url="nbresloc:/org/netbeans/modules/web/core/palette/items/resources/Insert.xml">
+                <attr name="position" intvalue="300"/>
+            </file>
+            <file name="Update.xml" url="nbresloc:/org/netbeans/modules/web/core/palette/items/resources/Update.xml">
+                <attr name="position" intvalue="400"/>
+            </file>
+            <file name="Delete.xml" url="nbresloc:/org/netbeans/modules/web/core/palette/items/resources/Delete.xml">
+                <attr name="position" intvalue="500"/>
+            </file>
 
-            <attr name="Query.xml/Report.xml" boolvalue="true" />
-            <attr name="Report.xml/Insert.xml" boolvalue="true" />
-            <attr name="Insert.xml/Update.xml" boolvalue="true" />
-            <attr name="Update.xml/Delete.xml" boolvalue="true" />
+            
         
         </folder>
 <!--        
@@ -309,9 +319,6 @@ Microsystems, Inc. All Rights Reserved.
 
         </folder>
 -->
-        <attr name="HTML.shadow/HTML_Forms.shadow" boolvalue="true" />
-        <attr name="HTML_Forms.shadow/JSP" boolvalue="true" />
-        <attr name="JSP/Database" boolvalue="true" />
 <!--        
         <attr name="Database/Enterprise" boolvalue="true" />
 -->
@@ -323,196 +330,199 @@ Microsystems, Inc. All Rights Reserved.
             <folder name="x-jsp">
                 <folder name="Actions">
                   <file name="OpenAction.instance">
-                    <attr name="instanceClass" stringvalue="org.openide.actions.OpenAction" />
-                  </file>
-                  <attr boolvalue="true" name="OpenAction.instance/jsp-project-separator-3.instance" />
+                    <attr name="instanceClass" stringvalue="org.openide.actions.OpenAction"/>
+                      <attr name="position" intvalue="100"/>
+                    </file>
                   <file name="jsp-project-separator-3.instance">
-                    <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
-                  </file>
-                  <attr boolvalue="true" name="jsp-project-separator-3.instance/FileSystemAction.instance" />
+                    <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                      <attr name="position" intvalue="900"/>
+                    </file>
                   <file name="FileSystemAction.instance">
-                    <attr name="instanceClass" stringvalue="org.openide.actions.FileSystemAction" />
-                  </file>
-                  <attr boolvalue="true" name="FileSystemAction.instance/jsp-project-separator-4.instance" />
+                    <attr name="instanceClass" stringvalue="org.openide.actions.FileSystemAction"/>
+                      <attr name="position" intvalue="1000"/>
+                    </file>
                   <file name="jsp-project-separator-4.instance">
-                    <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
-                  </file>
-                  <attr boolvalue="true" name="jsp-project-separator-4.instance/CutAction.instance" />
+                    <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                      <attr name="position" intvalue="1100"/>
+                    </file>
                   <file name="CutAction.instance">
-                    <attr name="instanceClass" stringvalue="org.openide.actions.CutAction" />
-                  </file>
-                  <attr boolvalue="true" name="CutAction.instance/CopyAction.instance" />
+                    <attr name="instanceClass" stringvalue="org.openide.actions.CutAction"/>
+                      <attr name="position" intvalue="1200"/>
+                    </file>
                   <file name="CopyAction.instance">
-                    <attr name="instanceClass" stringvalue="org.openide.actions.CopyAction" />
-                  </file>
-                  <attr boolvalue="true" name="CopyAction.instance/PasteAction.instance" />
+                    <attr name="instanceClass" stringvalue="org.openide.actions.CopyAction"/>
+                      <attr name="position" intvalue="1300"/>
+                    </file>
                   <file name="PasteAction.instance">
-                    <attr name="instanceClass" stringvalue="org.openide.actions.PasteAction" />
-                  </file>
-                  <attr boolvalue="true" name="PasteAction.instance/jsp-project-separator-5.instance" />
+                    <attr name="instanceClass" stringvalue="org.openide.actions.PasteAction"/>
+                      <attr name="position" intvalue="1400"/>
+                    </file>
                   <file name="jsp-project-separator-5.instance">
-                    <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
-                  </file>
-                  <attr boolvalue="true" name="jsp-project-separator-5.instance/NewAction.instance" />
+                    <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                      <attr name="position" intvalue="1500"/>
+                    </file>
                   <file name="NewAction.instance">
-                    <attr name="instanceClass" stringvalue="org.openide.actions.NewAction" />
-                  </file>
-                  <attr boolvalue="true" name="NewAction.instance/DeleteAction.instance" />
+                    <attr name="instanceClass" stringvalue="org.openide.actions.NewAction"/>
+                      <attr name="position" intvalue="1600"/>
+                    </file>
                   <file name="DeleteAction.instance">
-                    <attr name="instanceClass" stringvalue="org.openide.actions.DeleteAction" />
-                  </file>
-                  <attr boolvalue="true" name="DeleteAction.instance/RenameAction.instance" />
+                    <attr name="instanceClass" stringvalue="org.openide.actions.DeleteAction"/>
+                      <attr name="position" intvalue="1700"/>
+                    </file>
                   <file name="RenameAction.instance">
-                    <attr name="instanceClass" stringvalue="org.openide.actions.RenameAction" />
-                  </file>
-                  <attr boolvalue="true" name="RenameAction.instance/jsp-project-separator-6.instance" />
+                    <attr name="instanceClass" stringvalue="org.openide.actions.RenameAction"/>
+                      <attr name="position" intvalue="1800"/>
+                    </file>
                   <file name="jsp-project-separator-6.instance">
-                    <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
-                  </file>
-                  <attr boolvalue="true" name="jsp-project-separator-6.instance/SaveAsTemplateAction.instance" />
+                    <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                      <attr name="position" intvalue="1900"/>
+                    </file>
                   <file name="SaveAsTemplateAction.instance">
-                    <attr name="instanceClass" stringvalue="org.openide.actions.SaveAsTemplateAction" />
-                  </file>
-                  <attr boolvalue="true" name="SaveAsTemplateAction.instance/jsp-project-separator-7.instance" />
+                    <attr name="instanceClass" stringvalue="org.openide.actions.SaveAsTemplateAction"/>
+                      <attr name="position" intvalue="2000"/>
+                    </file>
                   <file name="jsp-project-separator-7.instance">
-                    <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
-                  </file>
-                  <attr boolvalue="true" name="jsp-project-separator-7.instance/ToolsAction.instance" />
+                    <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                      <attr name="position" intvalue="2100"/>
+                    </file>
                   <file name="ToolsAction.instance">
-                    <attr name="instanceClass" stringvalue="org.openide.actions.ToolsAction" />
-                  </file>
-                  <attr boolvalue="true" name="ToolsAction.instance/PropertiesAction.instance" />
+                    <attr name="instanceClass" stringvalue="org.openide.actions.ToolsAction"/>
+                      <attr name="position" intvalue="2200"/>
+                    </file>
                   <file name="PropertiesAction.instance">
-                    <attr name="instanceClass" stringvalue="org.openide.actions.PropertiesAction" />
-                  </file>
+                    <attr name="instanceClass" stringvalue="org.openide.actions.PropertiesAction"/>
+                      <attr name="position" intvalue="2300"/>
+                    </file>
               </folder>
             </folder>
             <!-- x-tld action -->
              <folder name="x-tld">
                 <folder name="Actions">
                   <file name="OpenAction.instance">
-                    <attr name="instanceClass" stringvalue="org.openide.actions.OpenAction" />
-                  </file>
-                  <attr boolvalue="true" name="OpenAction.instance/tld-separator-3.instance" />
+                    <attr name="instanceClass" stringvalue="org.openide.actions.OpenAction"/>
+                      <attr name="position" intvalue="100"/>
+                    </file>
                   <file name="tld-separator-3.instance">
-                    <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
-                  </file>
-                  <attr boolvalue="true" name="tld-separator-3.instance/FileSystemAction.instance" />
+                    <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                      <attr name="position" intvalue="200"/>
+                    </file>
                   <file name="FileSystemAction.instance">
-                    <attr name="instanceClass" stringvalue="org.openide.actions.FileSystemAction" />
-                  </file>
-                  <attr boolvalue="true" name="FileSystemAction.instance/tld-separator-4.instance" />
+                    <attr name="instanceClass" stringvalue="org.openide.actions.FileSystemAction"/>
+                      <attr name="position" intvalue="300"/>
+                    </file>
                   <file name="tld-separator-4.instance">
-                    <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
-                  </file>
-                  <attr boolvalue="true" name="tld-separator-4.instance/CutAction.instance" />
+                    <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                      <attr name="position" intvalue="400"/>
+                    </file>
                   <file name="CutAction.instance">
-                    <attr name="instanceClass" stringvalue="org.openide.actions.CutAction" />
-                  </file>
-                  <attr boolvalue="true" name="CutAction.instance/CopyAction.instance" />
+                    <attr name="instanceClass" stringvalue="org.openide.actions.CutAction"/>
+                      <attr name="position" intvalue="500"/>
+                    </file>
                   <file name="CopyAction.instance">
-                    <attr name="instanceClass" stringvalue="org.openide.actions.CopyAction" />
-                  </file>
-                  <attr boolvalue="true" name="CopyAction.instance/PasteAction.instance" />
+                    <attr name="instanceClass" stringvalue="org.openide.actions.CopyAction"/>
+                      <attr name="position" intvalue="600"/>
+                    </file>
                   <file name="PasteAction.instance">
-                    <attr name="instanceClass" stringvalue="org.openide.actions.PasteAction" />
-                  </file>
-                  <attr boolvalue="true" name="PasteAction.instance/tld-separator-5.instance" />
+                    <attr name="instanceClass" stringvalue="org.openide.actions.PasteAction"/>
+                      <attr name="position" intvalue="700"/>
+                    </file>
                   <file name="tld-separator-5.instance">
-                    <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
-                  </file>
-                  <attr boolvalue="true" name="tld-separator-5.instance/DeleteAction.instance" />
+                    <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                      <attr name="position" intvalue="800"/>
+                    </file>
                   <file name="DeleteAction.instance">
-                    <attr name="instanceClass" stringvalue="org.openide.actions.DeleteAction" />
-                  </file>
-                  <attr boolvalue="true" name="DeleteAction.instance/RenameAction.instance" />
+                    <attr name="instanceClass" stringvalue="org.openide.actions.DeleteAction"/>
+                      <attr name="position" intvalue="900"/>
+                    </file>
                   <file name="RenameAction.instance">
-                    <attr name="instanceClass" stringvalue="org.openide.actions.RenameAction" />
-                  </file>
-                  <attr boolvalue="true" name="RenameAction.instance/tld-separator-6.instance" />
+                    <attr name="instanceClass" stringvalue="org.openide.actions.RenameAction"/>
+                      <attr name="position" intvalue="1000"/>
+                    </file>
                   <file name="tld-separator-6.instance">
-                    <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
-                  </file>
-                  <attr boolvalue="true" name="tld-separator-6.instance/SaveAsTemplateAction.instance" />
+                    <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                      <attr name="position" intvalue="1100"/>
+                    </file>
                   <file name="SaveAsTemplateAction.instance">
-                    <attr name="instanceClass" stringvalue="org.openide.actions.SaveAsTemplateAction" />
-                  </file>
-                  <attr boolvalue="true" name="SaveAsTemplateAction.instance/tld-separator-7.instance" />
+                    <attr name="instanceClass" stringvalue="org.openide.actions.SaveAsTemplateAction"/>
+                      <attr name="position" intvalue="1200"/>
+                    </file>
                   <file name="tld-separator-7.instance">
-                    <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
-                  </file>
-                  <attr boolvalue="true" name="tld-separator-7.instance/ToolsAction.instance" />
+                    <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                      <attr name="position" intvalue="1300"/>
+                    </file>
                   <file name="ToolsAction.instance">
-                    <attr name="instanceClass" stringvalue="org.openide.actions.ToolsAction" />
-                  </file>
-                  <attr boolvalue="true" name="ToolsAction.instance/PropertiesAction.instance" />
+                    <attr name="instanceClass" stringvalue="org.openide.actions.ToolsAction"/>
+                      <attr name="position" intvalue="1400"/>
+                    </file>
                   <file name="PropertiesAction.instance">
-                    <attr name="instanceClass" stringvalue="org.openide.actions.PropertiesAction" />
-                  </file>
+                    <attr name="instanceClass" stringvalue="org.openide.actions.PropertiesAction"/>
+                      <attr name="position" intvalue="1500"/>
+                    </file>
               </folder>
             </folder>
             <!-- x-jsp-servlet action -->
              <folder name="x-jsp-servlet">
                 <folder name="Actions">
                   <file name="OpenAction.instance">
-                    <attr name="instanceClass" stringvalue="org.openide.actions.OpenAction" />
-                  </file>
-                  <attr boolvalue="true" name="OpenAction.instance/jspservlet-separator-3.instance" />
+                    <attr name="instanceClass" stringvalue="org.openide.actions.OpenAction"/>
+                      <attr name="position" intvalue="100"/>
+                    </file>
                   <file name="jspservlet-separator-3.instance">
-                    <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
-                  </file>
-                  <attr boolvalue="true" name="jspservlet-separator-3.instance/FileSystemAction.instance" />
+                    <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                      <attr name="position" intvalue="200"/>
+                    </file>
                   <file name="FileSystemAction.instance">
-                    <attr name="instanceClass" stringvalue="org.openide.actions.FileSystemAction" />
-                  </file>
-                  <attr boolvalue="true" name="FileSystemAction.instance/jspservlet-separator-4.instance" />
+                    <attr name="instanceClass" stringvalue="org.openide.actions.FileSystemAction"/>
+                      <attr name="position" intvalue="300"/>
+                    </file>
                   <file name="jspservlet-separator-4.instance">
-                    <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
-                  </file>
-                  <attr boolvalue="true" name="jspservlet-separator-4.instance/CutAction.instance" />
+                    <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                      <attr name="position" intvalue="400"/>
+                    </file>
                   <file name="CutAction.instance">
-                    <attr name="instanceClass" stringvalue="org.openide.actions.CutAction" />
-                  </file>
-                  <attr boolvalue="true" name="CutAction.instance/CopyAction.instance" />
+                    <attr name="instanceClass" stringvalue="org.openide.actions.CutAction"/>
+                      <attr name="position" intvalue="500"/>
+                    </file>
                   <file name="CopyAction.instance">
-                    <attr name="instanceClass" stringvalue="org.openide.actions.CopyAction" />
-                  </file>
-                  <attr boolvalue="true" name="CopyAction.instance/PasteAction.instance" />
+                    <attr name="instanceClass" stringvalue="org.openide.actions.CopyAction"/>
+                      <attr name="position" intvalue="600"/>
+                    </file>
                   <file name="PasteAction.instance">
-                    <attr name="instanceClass" stringvalue="org.openide.actions.PasteAction" />
-                  </file>
-                  <attr boolvalue="true" name="PasteAction.instance/jspservlet-separator-5.instance" />
+                    <attr name="instanceClass" stringvalue="org.openide.actions.PasteAction"/>
+                      <attr name="position" intvalue="700"/>
+                    </file>
                   <file name="jspservlet-separator-5.instance">
-                    <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
-                  </file>
-                  <attr boolvalue="true" name="jspservlet-separator-5.instance/DeleteAction.instance" />
+                    <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                      <attr name="position" intvalue="800"/>
+                    </file>
                   <file name="DeleteAction.instance">
-                    <attr name="instanceClass" stringvalue="org.openide.actions.DeleteAction" />
-                  </file>
-                  <attr boolvalue="true" name="DeleteAction.instance/RenameAction.instance" />
+                    <attr name="instanceClass" stringvalue="org.openide.actions.DeleteAction"/>
+                      <attr name="position" intvalue="900"/>
+                    </file>
                   <file name="RenameAction.instance">
-                    <attr name="instanceClass" stringvalue="org.openide.actions.RenameAction" />
-                  </file>
-                  <attr boolvalue="true" name="RenameAction.instance/jspservlet-separator-6.instance" />
+                    <attr name="instanceClass" stringvalue="org.openide.actions.RenameAction"/>
+                      <attr name="position" intvalue="1000"/>
+                    </file>
                   <file name="jspservlet-separator-6.instance">
-                    <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
-                  </file>
-                  <attr boolvalue="true" name="jspservlet-separator-6.instance/SaveAsTemplateAction.instance" />
+                    <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                      <attr name="position" intvalue="1100"/>
+                    </file>
                   <file name="SaveAsTemplateAction.instance">
-                    <attr name="instanceClass" stringvalue="org.openide.actions.SaveAsTemplateAction" />
-                  </file>
-                  <attr boolvalue="true" name="SaveAsTemplateAction.instance/jspservlet-separator-7.instance" />
+                    <attr name="instanceClass" stringvalue="org.openide.actions.SaveAsTemplateAction"/>
+                      <attr name="position" intvalue="1200"/>
+                    </file>
                   <file name="jspservlet-separator-7.instance">
-                    <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
-                  </file>
-                  <attr boolvalue="true" name="jspservlet-separator-7.instance/ToolsAction.instance" />
+                    <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                      <attr name="position" intvalue="1300"/>
+                    </file>
                   <file name="ToolsAction.instance">
-                    <attr name="instanceClass" stringvalue="org.openide.actions.ToolsAction" />
-                  </file>
-                  <attr boolvalue="true" name="ToolsAction.instance/PropertiesAction.instance" />
+                    <attr name="instanceClass" stringvalue="org.openide.actions.ToolsAction"/>
+                      <attr name="position" intvalue="1400"/>
+                    </file>
                   <file name="PropertiesAction.instance">
-                    <attr name="instanceClass" stringvalue="org.openide.actions.PropertiesAction" />
-                  </file>
+                    <attr name="instanceClass" stringvalue="org.openide.actions.PropertiesAction"/>
+                      <attr name="position" intvalue="1500"/>
+                    </file>
               </folder>
             </folder>
         </folder>

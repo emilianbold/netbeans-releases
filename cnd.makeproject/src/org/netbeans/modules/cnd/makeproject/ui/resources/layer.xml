@@ -23,13 +23,13 @@ Microsystems, Inc. All Rights Reserved.
 
     <folder name="Templates">
         <folder name="Project">
-            <attr name="Standard/Native" boolvalue="true"/>
-            <attr name="Native/Samples" boolvalue="true"/>
             <folder name="Native">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.makeproject.ui.wizards.Bundle"/>
                 <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/makeproject/ui/resources/desktop.html"/>
 
+                <attr name="position" intvalue="300"/>
                 <file name="makefile.xml">
+                    <attr name="position" intvalue="100"/>
                     <attr name="template" boolvalue="true"/>
                     <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.cnd.makeproject.ui.wizards.NewMakeProjectWizardIterator.makefile"/>
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.makeproject.ui.wizards.Bundle"/>
@@ -38,6 +38,7 @@ Microsystems, Inc. All Rights Reserved.
                 </file>
 
                 <file name="newApplication.xml">
+                    <attr name="position" intvalue="200"/>
                     <attr name="template" boolvalue="true"/>
                     <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.cnd.makeproject.ui.wizards.NewMakeProjectWizardIterator.newApplication"/>
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.makeproject.ui.wizards.Bundle"/>
@@ -46,6 +47,7 @@ Microsystems, Inc. All Rights Reserved.
                 </file>
 
                 <file name="newDynamicLibrary.xml">
+                    <attr name="position" intvalue="300"/>
                     <attr name="template" boolvalue="true"/>
                     <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.cnd.makeproject.ui.wizards.NewMakeProjectWizardIterator.newDynamicLibrary"/>
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.makeproject.ui.wizards.Bundle"/>
@@ -54,6 +56,7 @@ Microsystems, Inc. All Rights Reserved.
                 </file>                
 
                 <file name="newStaticLibrary.xml">
+                    <attr name="position" intvalue="400"/>
                     <attr name="template" boolvalue="true"/>
                     <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.cnd.makeproject.ui.wizards.NewMakeProjectWizardIterator.newStaticLibrary"/>
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.makeproject.ui.wizards.Bundle"/>
@@ -61,10 +64,7 @@ Microsystems, Inc. All Rights Reserved.
                     <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/makeproject/ui/resources/newStaticLibrary.html"/>
                 </file>
 	    
-                <attr name="makefile.xml/newApplication.xml" boolvalue="true"/>
-                <attr name="newApplication.xml/newDynamicLibrary.xml" boolvalue="true"/>
-                <attr name="newDynamicLibrary.xml/newStaticLibrary.xml" boolvalue="true"/>
-            </folder>
+                </folder>
 
             <folder name="Samples">
                 <folder name="Native">
@@ -97,6 +97,7 @@ Microsystems, Inc. All Rights Reserved.
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.makeproject.ui.wizards.Bundle"/>
 
                         <file name="args.zip" url="samples/args.zip">
+                            <attr name="position" intvalue="100"/>
                             <attr name="template" boolvalue="true"/>
                             <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/makeproject/ui/resources/samples/args.html"/>
                             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.makeproject.ui.wizards.Bundle"/>
@@ -105,6 +106,7 @@ Microsystems, Inc. All Rights Reserved.
                         </file>
 
                         <file name="mp.zip" url="samples/mp.zip">
+                            <attr name="position" intvalue="200"/>
                             <attr name="template" boolvalue="true"/>
                             <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/makeproject/ui/resources/samples/mp.html"/>
                             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.makeproject.ui.wizards.Bundle"/>
@@ -113,6 +115,7 @@ Microsystems, Inc. All Rights Reserved.
                         </file>
                         
                         <file name="welcome.zip" url="samples/welcome.zip">
+                            <attr name="position" intvalue="300"/>
                             <attr name="template" boolvalue="true"/>
                             <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/makeproject/ui/resources/samples/welcome.html"/>
                             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.makeproject.ui.wizards.Bundle"/>
@@ -121,6 +124,7 @@ Microsystems, Inc. All Rights Reserved.
                         </file>
                         
                         <file name="io.zip" url="samples/io.zip">
+                            <attr name="position" intvalue="400"/>
                             <attr name="template" boolvalue="true"/>
                             <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/makeproject/ui/resources/samples/io.html"/>
                             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.makeproject.ui.wizards.Bundle"/>
@@ -128,10 +132,7 @@ Microsystems, Inc. All Rights Reserved.
                             <attr name="instantiatingIterator" newvalue="org.netbeans.modules.cnd.makeproject.ui.wizards.MakeSampleProjectIterator"/>
                         </file>
 
-                        <attr name="args.zip/mp.zip" boolvalue="true"/>
-                        <attr name="mp.zip/welcome.zip" boolvalue="true"/>
-                        <attr name="welcome.zip/io.zip" boolvalue="true"/>
-                    </folder>
+                        </folder>
                 </folder>
             </folder>
         </folder>
@@ -184,32 +185,31 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="BuildProject">
             <file name="org-netbeans-modules-cnd-makeproject-api-actions-BatchBuildAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-cnd-makeproject-api-actions-BatchBuildAction.instance"/>
+                <attr name="position" intvalue="400"/>
             </file>
             
-            <attr name="org-netbeans-modules-project-ui-RebuildMainProject.shadow/org-netbeans-modules-cnd-makeproject-api-actions-BatchBuildAction.shadow" boolvalue="true"/>
-            <attr name="org-netbeans-modules-cnd-makeproject-api-actions-BatchBuildAction.shadow/SeparatorMainProject.instance" boolvalue="true"/> 
+             
 
         </folder>
         <folder name="File">
             <file name="org-netbeans-modules-cnd-makeproject-api-actions-AddExistingItemAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-cnd-makeproject-api-actions-AddExistingItemAction.instance"/>
+                <attr name="position" intvalue="300"/>
             </file>
             
-            <attr name="org-netbeans-modules-project-ui-NewFile.shadow/org-netbeans-modules-cnd-makeproject-api-actions-AddExistingItemAction.shadow" boolvalue="true"/>
-            <attr name="org-netbeans-modules-cnd-makeproject-api-actions-AddExistingItemAction.shadow/SeparatorNew.instance" boolvalue="true"/>
-        </folder>
+            </folder>
     </folder>
     
     <folder name="OptionsDialog">
         <folder name="CPlusPlus">
-            <attr name="ToolsPanelController.instance/ProjectOptionsPanelController.instance" boolvalue="true"/>
             <file name="ProjectOptionsPanelController.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.makeproject.ui.options.ProjectOptionsPanelController"/>
+                <attr name="position" intvalue="200"/>
             </file>
             
-            <attr name="ProjectOptionsPanelController.instance/CodeAssistancePanelController.instance" boolvalue="true"/>
             <file name="CodeAssistancePanelController.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.makeproject.ui.options.CodeAssistancePanelController"/>
+                <attr name="position" intvalue="300"/>
             </file>
         </folder>
     </folder>
@@ -219,14 +219,14 @@ Microsystems, Inc. All Rights Reserved.
             <folder name="x-executable+elf">
                 <folder name="Actions">
                     <file name="RunDialogAction.instance">
-                        <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.makeproject.api.actions.RunDialogAction" />
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.makeproject.api.actions.RunDialogAction"/>
+                        <attr name="position" intvalue="100"/>
                     </file>
-                    <attr boolvalue="true" name="RunDialogAction.instance/Separator0.instance" />
                     <file name="Separator0.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="200"/>
                     </file>
-                    <attr boolvalue="true" name="Separator0.instance/FileSystemAction.instance" />
-                </folder>
+                    </folder>
             </folder>
         </folder>
     </folder>

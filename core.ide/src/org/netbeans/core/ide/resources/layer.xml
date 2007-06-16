@@ -55,17 +55,16 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
         
         <folder name="GoTo">
-            <attr name="SeparatorAfterBookmarks.instance/org-netbeans-core-actions-JumpNextAction.shadow" boolvalue="true"/>
             <file name="org-netbeans-core-actions-JumpNextAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/System/org-netbeans-core-actions-JumpNextAction.instance"/>
+                <attr name="position" intvalue="2300"/>
             </file>
-            <attr name="org-netbeans-core-actions-JumpNextAction.shadow/org-netbeans-core-actions-JumpPrevAction.shadow" boolvalue="true"/>
             
             <file name="org-netbeans-core-actions-JumpPrevAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/System/org-netbeans-core-actions-JumpPrevAction.instance"/>
+                <attr name="position" intvalue="2400"/>
             </file>
-            <attr name="org-netbeans-core-actions-JumpPrevAction.shadow/SeparatorBeforeSelectIn.instance" boolvalue="true"/>
-        </folder>
+            </folder>
     </folder>
     
     <folder name="UI">
@@ -111,10 +110,11 @@ Microsystems, Inc. All Rights Reserved.
              the changes if appropriate -->
         <file name="Standard.xml" url="Standard.xml">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
+            <attr name="position" intvalue="300"/>
         </file>
-        <attr name="Standard.xml/Debugging.xml" boolvalue="true"/>
         <file name="Debugging.xml" url="Debugging.xml">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
+            <attr name="position" intvalue="400"/>
         </file>
  
     </folder> <!-- Toolbars -->

@@ -26,6 +26,7 @@
 
             <file name="VisualMIDlet.java" url="templates/emptyvisualmidlet_java.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.vmd.midp.resources.Bundle"/>
+                <attr name="position" intvalue="400"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:org/netbeans/modules/vmd/midp/resources/templates/emptyvisualmidlet.html"/>
                 <attr name="template" boolvalue="true"/>
         		<attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
@@ -38,10 +39,11 @@
                 <attr name="template" boolvalue="true"/>
             </file>
 
-            <attr name="VisualMIDlet.java/VisualDesign.java" boolvalue="true"/>
+            
 
             <file name="VisualDesign.java" url="templates/emptyvisualdesign_java.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.vmd.midp.resources.Bundle"/>
+                <attr name="position" intvalue="500"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:org/netbeans/modules/vmd/midp/resources/templates/emptyvisualdesign.html"/>
                 <attr name="template" boolvalue="true"/>
         		<attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>

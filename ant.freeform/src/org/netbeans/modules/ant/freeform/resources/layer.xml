@@ -24,9 +24,10 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="org-netbeans-modules-ant-freeform">
             <folder name="Lookup"/>
             <folder name="Customizer">
-                <file name="org-netbeans-modules-ant-freeform-ui-TargetMappingCategoryProvider.instance"/>
-                <attr name="org-netbeans-modules-java-freeform-ui-OutputCategoryProvider.instance/org-netbeans-modules-ant-freeform-ui-TargetMappingCategoryProvider.instance" boolvalue="true"/>
-            </folder>    
+                <file name="org-netbeans-modules-ant-freeform-ui-TargetMappingCategoryProvider.instance">
+                    <attr name="position" intvalue="700"/>
+                </file>
+                </folder>    
             <folder name="Nodes">
                 <file name="org-netbeans-modules-ant-freeform-ui-FolderNodeFactory.instance"/>
             </folder>    

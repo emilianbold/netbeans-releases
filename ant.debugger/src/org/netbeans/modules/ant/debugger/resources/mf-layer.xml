@@ -18,7 +18,6 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
-
 <filesystem>
     <folder name="Editors">
         <folder name="text">
@@ -34,13 +33,14 @@ Microsystems, Inc. All Rights Reserved.
                     <file name="org-netbeans-modules-ant-debugger-ToolTipAnnotation.instance"/>
                 </folder>
                 <folder name="Popup">
-                    <attr name="org-openide-actions-ToolsAction.instance/AfterToolsSeparator.instance" boolvalue="true"/>
-                    <file name="AfterToolsSeparator.instance"><attr name="instanceClass" stringvalue="javax.swing.JSeparator"/></file>
-                    <attr name="AfterToolsSeparator.instance/org-netbeans-modules-debugger-ui-actions-AddWatchAction.instance" boolvalue="true"/>
-                    <file name="org-netbeans-modules-debugger-ui-actions-AddWatchAction.instance"/>                    
-                    <attr name="org-netbeans-modules-debugger-ui-actions-AddWatchAction.instance/org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.shadow" boolvalue="true"/>
+                    <file name="AfterToolsSeparator.instance"><attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>    <attr name="position" intvalue="3333"/>
+                    </file>
+                    <file name="org-netbeans-modules-debugger-ui-actions-AddWatchAction.instance">
+                        <attr name="position" intvalue="3666"/>
+                    </file>                    
                     <file name="org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.instance"/>
+                        <attr name="position" intvalue="4100"/>
                     </file>
                 </folder>
             </folder>
@@ -55,10 +55,10 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="text">
             <folder name="x-ant+xml">
                 <folder name="Actions">
-                    <attr name="org-apache-tools-ant-module-nodes-RunTargetsAction.instance/org-netbeans-modules-ant-debugger-RunTargetsAction.instance" boolvalue="true"/>
-                    <file name="org-netbeans-modules-ant-debugger-RunTargetsAction.instance"/>
-                    <attr name="org-netbeans-modules-ant-debugger-RunTargetsAction.instance/org-openide-actions-FileSystemAction.instance" boolvalue="true"/>
-                </folder>
+                    <file name="org-netbeans-modules-ant-debugger-RunTargetsAction.instance">
+                        <attr name="position" intvalue="300"/>
+                    </file>
+                    </folder>
             </folder>
         </folder>
     </folder>
@@ -66,63 +66,64 @@ Microsystems, Inc. All Rights Reserved.
     <!-- Main menu -->
      <folder name="Menu">
         <folder name="RunProject">
-            <attr name="SeparatorRun.instance/org-netbeans-modules-debugger-ui-actions-KillAction.shadow" boolvalue="true" />
             <file name="org-netbeans-modules-debugger-ui-actions-KillAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-KillAction.instance"/>
+                <attr name="position" intvalue="700"/>
             </file>
-            <attr name="org-netbeans-modules-debugger-ui-actions-KillAction.shadow/Separator11.instance" boolvalue="true" />
             <file name="Separator11.instance">
                 <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                <attr name="position" intvalue="800"/>
             </file>
 
-            <attr name="Separator11.instance/org-netbeans-modules-debugger-ui-actions-ContinueAction.shadow" boolvalue="true" />
             <file name="org-netbeans-modules-debugger-ui-actions-ContinueAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-ContinueAction.instance"/>
+                <attr name="position" intvalue="1000"/>
             </file>
-            <attr name="org-netbeans-modules-debugger-ui-actions-ContinueAction.shadow/org-netbeans-modules-debugger-ui-actions-StepOverAction.shadow" boolvalue="true" />
             <file name="org-netbeans-modules-debugger-ui-actions-StepOverAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-StepOverAction.instance"/>
+                <attr name="position" intvalue="1200"/>
             </file>
-            <attr name="org-netbeans-modules-debugger-ui-actions-StepOverAction.shadow/org-netbeans-modules-debugger-ui-actions-StepIntoAction.shadow" boolvalue="true" />
             <file name="org-netbeans-modules-debugger-ui-actions-StepIntoAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-StepIntoAction.instance"/>
+                <attr name="position" intvalue="1400"/>
             </file>
-            <attr name="org-netbeans-modules-debugger-ui-actions-StepIntoAction.shadow/org-netbeans-modules-debugger-ui-actions-StepOutAction.shadow" boolvalue="true" />
             <file name="org-netbeans-modules-debugger-ui-actions-StepOutAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-StepOutAction.instance"/>
+                <attr name="position" intvalue="1500"/>
             </file>
-            <attr name="org-netbeans-modules-debugger-ui-actions-StepOutAction.shadow/Separator3.instance" boolvalue="true" />
             <file name="Separator3.instance">
                 <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                <attr name="position" intvalue="1800"/>
             </file>
-            <attr name="Separator3.instance/org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.shadow" boolvalue="true" />
             <file name="org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.instance"/>
+                <attr name="position" intvalue="2300"/>
             </file>
         </folder>
     </folder>
     
     <folder name="Toolbars">
         <folder name="Debug">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.ant.debugger.Bundle" />
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.ant.debugger.Bundle"/>
             <file name="org-netbeans-modules-debugger-ui-actions-KillAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-KillAction.instance"/>
+                <attr name="position" intvalue="100"/>
             </file>
-            <attr name="org-netbeans-modules-debugger-ui-actions-KillAction.shadow/org-netbeans-modules-debugger-ui-actions-ContinueAction.shadow" boolvalue="true" />
             <file name="org-netbeans-modules-debugger-ui-actions-ContinueAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-ContinueAction.instance"/>
+                <attr name="position" intvalue="300"/>
             </file>
-            <attr name="org-netbeans-modules-debugger-ui-actions-ContinueAction.shadow/org-netbeans-modules-debugger-ui-actions-StepOverAction.shadow" boolvalue="true" />
             <file name="org-netbeans-modules-debugger-ui-actions-StepOverAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-StepOverAction.instance"/>
+                <attr name="position" intvalue="400"/>
             </file>
-            <attr name="org-netbeans-modules-debugger-ui-actions-StepOverAction.shadow/org-netbeans-modules-debugger-ui-actions-StepIntoAction.shadow" boolvalue="true" />
             <file name="org-netbeans-modules-debugger-ui-actions-StepIntoAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-StepIntoAction.instance"/>
+                <attr name="position" intvalue="600"/>
             </file>
-            <attr name="org-netbeans-modules-debugger-ui-actions-StepIntoAction.shadow/org-netbeans-modules-debugger-ui-actions-StepOutAction.shadow" boolvalue="true" />
             <file name="org-netbeans-modules-debugger-ui-actions-StepOutAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-StepOutAction.instance"/>
+                <attr name="position" intvalue="700"/>
             </file>
         </folder>
     </folder>

@@ -21,17 +21,17 @@ Microsystems, Inc. All Rights Reserved.
 <filesystem>
     <folder name="Templates">
         <folder name="Project">
-            <attr name="Standard/Web" boolvalue="true"/>
-            <attr name="Web/Samples" boolvalue="true"/>
 
             <folder name="Web">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.project.ui.wizards.Bundle"/>
                 <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/project/ui/resources/web.html"/>
 
-                <attr name="emptyWeb.xml/importWeb.xml" boolvalue="true"/>
+                
 
                 <!-- Add template for the J2SE project -->
+                <attr name="position" intvalue="200"/>
                 <file name="emptyWeb.xml">
+                    <attr name="position" intvalue="100"/>
                     <attr name="template" boolvalue="true"/>
                     <attr name="templateWizardIterator" newvalue="org.netbeans.modules.web.project.ui.wizards.NewWebProjectWizardIterator"/>
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.project.ui.wizards.Bundle"/>
@@ -39,7 +39,8 @@ Microsystems, Inc. All Rights Reserved.
                     <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/project/ui/resources/emptyProject.html"/>
                 </file>
                 <file name="importWeb.xml">
-                   <attr name="template" boolvalue="true"/>
+                   <attr name="position" intvalue="200"/>
+                    <attr name="template" boolvalue="true"/>
                    <attr name="templateWizardIterator" newvalue="org.netbeans.modules.web.project.ui.wizards.ImportWebProjectWizardIterator"/>
                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.project.ui.wizards.Bundle"/>
                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/web/project/ui/resources/webProjectIcon.gif"/>
@@ -61,54 +62,52 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="text">
             <folder name="x-jsp">
                 <folder name="Actions">
-                  <attr boolvalue="true" name="OpenAction.instance/EditServletAction.instance" />
                   <file name="EditServletAction.instance">
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.web.core.jsploader.EditServletAction" />
-                  </file>
-                  <attr boolvalue="true" name="EditServletAction.instance/jsp-project-separator-1.instance" />
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.web.core.jsploader.EditServletAction"/>
+                      <attr name="position" intvalue="200"/>
+                    </file>
                   <file name="jsp-project-separator-1.instance">
-                    <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
-                  </file>
-                  <attr boolvalue="true" name="jsp-project-separator-1.instance/CompileFile.instance" />
+                    <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                      <attr name="position" intvalue="300"/>
+                    </file>
                   <file name="CompileFile.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.web.project.WebProjectModule.compile" />
-                  </file>
-                  <attr boolvalue="true" name="CompileFile.instance/jsp-project-separator-2.instance" />
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.web.project.WebProjectModule.compile"/>
+                      <attr name="position" intvalue="400"/>
+                    </file>
                   <file name="jsp-project-separator-2.instance">
-                    <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
-                  </file>
-                  <attr boolvalue="true" name="jsp-project-separator-2.instance/RunFile.instance" />
+                    <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                      <attr name="position" intvalue="500"/>
+                    </file>
                   <file name="RunFile.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.web.project.WebProjectModule.run" />
-                  </file>
-                  <attr boolvalue="true" name="RunFile.instance/DebugFile.instance" />
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.web.project.WebProjectModule.run"/>
+                      <attr name="position" intvalue="600"/>
+                    </file>
                   <file name="DebugFile.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.web.project.WebProjectModule.debug" />
-                  </file>
-                  <attr boolvalue="true" name="DebugFile.instance/jsp-project-separator-3.instance" />
-              </folder>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.web.project.WebProjectModule.debug"/>
+                      <attr name="position" intvalue="700"/>
+                    </file>
+                  </folder>
             </folder>
 
             <folder name="html">
                 <folder name="Actions">
-                  <attr boolvalue="true" name="OpenAction.instance/webHtml-project-separator-1.instance" />
                   <file name="webHtml-project-separator-1.instance">
-                    <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
-                  </file>
-                  <attr boolvalue="true" name="webHtml-project-separator-1.instance/RunFile.instance" />
+                    <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                      <attr name="position" intvalue="400"/>
+                    </file>
                   <file name="RunFile.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.web.project.WebProjectModule.htmlRun" />
-                  </file>
-                  <attr boolvalue="true" name="RunFile.instance/DebugFile.instance" />
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.web.project.WebProjectModule.htmlRun"/>
+                      <attr name="position" intvalue="500"/>
+                    </file>
                   <file name="DebugFile.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.web.project.WebProjectModule.htmlDebug" />
-                  </file>
-                  <attr boolvalue="true" name="DebugFile.instance/webHtml-project-separator-2.instance" />
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.web.project.WebProjectModule.htmlDebug"/>
+                      <attr name="position" intvalue="600"/>
+                    </file>
                   <file name="webHtml-project-separator-2.instance">
-                    <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
-                  </file>
-                  <attr boolvalue="true" name="webHtml-project-separator-2.instance/FileSystemAction.instance" />
-                </folder>
+                    <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                      <attr name="position" intvalue="700"/>
+                    </file>
+                  </folder>
             </folder>
         </folder>
     </folder>   
@@ -119,57 +118,66 @@ Microsystems, Inc. All Rights Reserved.
             <folder name="Customizer">
                 <file name="Sources.instance">
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.web.project.ui.customizer.WebCompositePanelProvider.createSources"/>
+                    <attr name="position" intvalue="100"/>
                 </file>
-                <attr name="Sources.instance/Frameworks.instance" boolvalue="true"/>
                 <file name="Frameworks.instance">
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.web.project.ui.customizer.WebCompositePanelProvider.createFrameworks"/>
+                    <attr name="position" intvalue="200"/>
                 </file>
-                <attr name="Frameworks.instance/Libraries.instance" boolvalue="true"/>
                 <file name="Libraries.instance">
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.web.project.ui.customizer.WebCompositePanelProvider.createLibraries"/>
+                    <attr name="position" intvalue="300"/>
                 </file>
-                <attr name="Libraries.instance/BuildCategory" boolvalue="true"/>
                 <folder name="BuildCategory">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.project.ui.customizer.Bundle"/>
+                    <attr name="position" intvalue="400"/>
                     <file name="Build.instance">
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.web.project.ui.customizer.WebCompositePanelProvider.createBuild"/>
+                        <attr name="position" intvalue="100"/>
                     </file>
-                    <attr name="Build.instance/War.instance" boolvalue="true"/>
                     <file name="War.instance">
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.web.project.ui.customizer.WebCompositePanelProvider.createWar"/>
+                        <attr name="position" intvalue="200"/>
                     </file>
-                    <attr name="War.instance/Javadoc.instance" boolvalue="true"/>
                     <file name="Javadoc.instance">
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.web.project.ui.customizer.WebCompositePanelProvider.createJavadoc"/>
+                        <attr name="position" intvalue="300"/>
                     </file>
                 </folder>
-                <attr name="BuildCategory/Run.instance" boolvalue="true"/>
                 <file name="Run.instance">
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.web.project.ui.customizer.WebCompositePanelProvider.createRun"/>
+                    <attr name="position" intvalue="500"/>
                 </file>
-                <attr name="Run.instance/WebServiceCategory" boolvalue="true"/>
                 <folder name="WebServiceCategory">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.project.ui.customizer.Bundle"/>
+                    <attr name="position" intvalue="600"/>
                     <file name="Service.instance">
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.web.project.ui.customizer.WebCompositePanelProvider.createWebServices"/>
+                        <attr name="position" intvalue="100"/>
                     </file>
-                    <attr name="Service.instance/Client.instance" boolvalue="true"/>
                     <file name="Client.instance">
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.web.project.ui.customizer.WebCompositePanelProvider.createWebServiceClients"/>
+                        <attr name="position" intvalue="200"/>
                     </file>
                 </folder>
             </folder>
 
             <folder name="Nodes">
-                <file name="org-netbeans-modules-web-project-ui-DocBaseNodeFactory.instance"/>
-                <attr name="org-netbeans-modules-web-project-ui-DocBaseNodeFactory.instance/org-netbeans-modules-web-project-ui-ConfFilesNodeFactory.instance" boolvalue="true"/>
-                <file name="org-netbeans-modules-web-project-ui-ConfFilesNodeFactory.instance"/>
-                <attr name="org-netbeans-modules-web-project-ui-ConfFilesNodeFactory.instance/org-netbeans-modules-web-project-ui-SetupDirNodeFactory.instance" boolvalue="true"/>
-                <file name="org-netbeans-modules-web-project-ui-SetupDirNodeFactory.instance"/>
-                <attr name="org-netbeans-modules-web-project-ui-SetupDirNodeFactory.instance/org-netbeans-modules-web-project-ui-SourceNodeFactory.instance" boolvalue="true"/>
-                <file name="org-netbeans-modules-web-project-ui-SourceNodeFactory.instance"/>
-                <attr name="org-netbeans-modules-web-project-ui-SourceNodeFactory.instance/org-netbeans-modules-web-project-ui-LibrariesNodeFactory.instance" boolvalue="true"/>
-                <file name="org-netbeans-modules-web-project-ui-LibrariesNodeFactory.instance"/>
+                <file name="org-netbeans-modules-web-project-ui-DocBaseNodeFactory.instance">
+                    <attr name="position" intvalue="200"/>
+                </file>
+                <file name="org-netbeans-modules-web-project-ui-ConfFilesNodeFactory.instance">
+                    <attr name="position" intvalue="500"/>
+                </file>
+                <file name="org-netbeans-modules-web-project-ui-SetupDirNodeFactory.instance">
+                    <attr name="position" intvalue="600"/>
+                </file>
+                <file name="org-netbeans-modules-web-project-ui-SourceNodeFactory.instance">
+                    <attr name="position" intvalue="700"/>
+                </file>
+                <file name="org-netbeans-modules-web-project-ui-LibrariesNodeFactory.instance">
+                    <attr name="position" intvalue="800"/>
+                </file>
             </folder>
             
             <folder name="Lookup"/>

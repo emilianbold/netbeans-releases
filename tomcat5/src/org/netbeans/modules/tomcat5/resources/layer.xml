@@ -17,9 +17,7 @@ The Original Software is NetBeans. The Initial Developer of the Original
 Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
-
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
-
 <filesystem>
 
     <folder name="J2EE">
@@ -134,13 +132,12 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
         <folder name="JavaHelp">
           <!-- Merge after Core IDE Help: -->
-          <attr name="org-netbeans-modules-usersguide-above-regular.txt/org-netbeans-modules-tomcat5-helpset.xml" boolvalue="true"/>
           <!-- Merge after Web Services Help: -->
-          <attr name="com-sun-forte4j-webdesigner-docs-helpset.xml/org-netbeans-modules-tomcat5-helpset.xml" boolvalue="true"/>
-          <file name="org-netbeans-modules-tomcat5-helpset.xml" url="helpset-decl.xml"/>
+          <file name="org-netbeans-modules-tomcat5-helpset.xml" url="helpset-decl.xml">
+                <attr name="position" intvalue="600"/>
+            </file>
           <!-- Merge before 3rd party help: -->
-          <attr name="org-netbeans-modules-tomcat5-helpset.xml/org-netbeans-modules-usersguide-below-regular.txt" boolvalue="true"/>
-        </folder>
+          </folder>
 
     </folder>
     

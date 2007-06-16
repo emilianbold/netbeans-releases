@@ -21,12 +21,9 @@ Microsystems, Inc. All Rights Reserved.
 <filesystem>
     <folder name="Menu">
         <folder name="Tools">
-            <attr name="LibrariesCustomizerAction.instance/org-netbeans-modules-visualweb-complib-ui-ComponentLibraryManagerAction.instance" boolvalue="true"/>
-            <attr name="LibrariesCustomizerAction.instance/org-netbeans-modules-visualweb-complib-ui-SharedComplibAction.instance" boolvalue="true"/>
-            <attr name="org-netbeans-modules-visualweb-complib-ui-ComponentLibraryManagerAction.instance/ServerManagerAction.instance" boolvalue="true"/>
-            <attr name="org-netbeans-modules-visualweb-complib-ui-SharedComplibAction.instance/ServerManagerAction.instance" boolvalue="true"/>
-            <attr name="org-netbeans-modules-visualweb-complib-ui-ComponentLibraryManagerAction.instance/org-netbeans-modules-visualweb-complib-ui-SharedComplibAction.instance" boolvalue="true"/>
-            <file name="org-netbeans-modules-visualweb-complib-ui-ComponentLibraryManagerAction.instance"/>
+            <file name="org-netbeans-modules-visualweb-complib-ui-ComponentLibraryManagerAction.instance">
+                <attr name="position" intvalue="700"/>
+            </file>
             <!-- Temporary UI -->
             <!--
             <file name="org-netbeans-modules-visualweb-complib-ui-SharedComplibAction.instance"/>

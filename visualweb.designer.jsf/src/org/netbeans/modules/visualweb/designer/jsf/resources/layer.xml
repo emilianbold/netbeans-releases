@@ -17,7 +17,6 @@ The Original Software is NetBeans. The Initial Developer of the Original
 Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
-
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
     <folder name="Actions">
@@ -39,28 +38,25 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="application">
             <folder name="x-designtime">
                 <folder name="Actions">
-                    <attr name="DesignerSeparator1.instance/org-netbeans-modules-visualweb-designer-jsf-action-InlineEditAction.shadow" boolvalue="true"/>
                     <file name="org-netbeans-modules-visualweb-designer-jsf-action-InlineEditAction.shadow">
                         <attr name="originalFile" stringvalue="/Actions/JSFSupport/org-netbeans-modules-visualweb-designer-jsf-action-InlineEditAction.instance"/>
+                        <attr name="position" intvalue="600"/>
                     </file>
-                    <attr name="org-netbeans-modules-visualweb-designer-jsf-action-InlineEditAction.shadow/Separator1.instance" boolvalue="true"/>
                     
-                    <attr name="DesignerSeparator2.instance/org-netbeans-modules-visualweb-designer-jsf-action-AlignAction.shadow" boolvalue="true"/>
                     <file name="org-netbeans-modules-visualweb-designer-jsf-action-AlignAction.shadow">
                         <attr name="originalFile" stringvalue="/Actions/JSFSupport/org-netbeans-modules-visualweb-designer-jsf-action-AlignAction.instance"/>
+                        <attr name="position" intvalue="1900"/>
                     </file>
-                    <attr name="org-netbeans-modules-visualweb-designer-jsf-action-AlignAction.shadow/org-netbeans-modules-visualweb-designer-action-BringToFrontAction.shadow" boolvalue="true"/>
                     
-                    <attr name="DesignerSeparator3.instance/org-netbeans-modules-visualweb-designer-jsf-action-RefreshAction.shadow" boolvalue="true"/>
                     <file name="org-netbeans-modules-visualweb-designer-jsf-action-RefreshAction.shadow">
                         <attr name="originalFile" stringvalue="/Actions/JSFSupport/org-netbeans-modules-visualweb-designer-jsf-action-RefreshAction.instance"/>
+                        <attr name="position" intvalue="3200"/>
                     </file>
-                    <attr name="org-netbeans-modules-visualweb-designer-jsf-action-RefreshAction.shadow/org-netbeans-modules-visualweb-designer-jsf-action-TargetResolutionAction.shadow" boolvalue="true"/>
                     <file name="org-netbeans-modules-visualweb-designer-jsf-action-TargetResolutionAction.shadow">
                         <attr name="originalFile" stringvalue="/Actions/JSFSupport/org-netbeans-modules-visualweb-designer-jsf-action-TargetResolutionAction.instance"/>
+                        <attr name="position" intvalue="3300"/>
                     </file>
-                    <attr name="org-netbeans-modules-visualweb-designer-jsf-action-TargetResolutionAction.shadow/Separator8.instance" boolvalue="true"/>
-                </folder>
+                    </folder>
             </folder>
         </folder>
     </folder>
@@ -70,44 +66,40 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="application">
             <folder name="x-designer">
                 <folder name="Popup">
-                    <attr name="DesignerSeparator1.instance/org-netbeans-modules-visualweb-designer-jsf-action-InlineEditAction.shadow" boolvalue="true"/>
                     <file name="org-netbeans-modules-visualweb-designer-jsf-action-InlineEditAction.shadow">
                         <attr name="originalFile" stringvalue="/Actions/JSFSupport/org-netbeans-modules-visualweb-designer-jsf-action-InlineEditAction.instance"/>
+                        <attr name="position" intvalue="700"/>
                     </file>
-                    <attr name="org-netbeans-modules-visualweb-designer-jsf-action-InlineEditAction.shadow/DesignerSeparator2.instance" boolvalue="true"/>
                     
-                    <attr name="DesignerSeparator2.instance/org-netbeans-modules-visualweb-designer-jsf-action-SelectParentAction.shadow" boolvalue="true"/>
                     <file name="org-netbeans-modules-visualweb-designer-jsf-action-SelectParentAction.shadow">
                         <attr name="originalFile" stringvalue="/Actions/JSFSupport/org-netbeans-modules-visualweb-designer-jsf-action-SelectParentAction.instance"/>
+                        <attr name="position" intvalue="900"/>
                     </file>
-                    <attr name="org-netbeans-modules-visualweb-designer-jsf-action-SelectParentAction.shadow/Separator1.instance" boolvalue="true"/>
                     
-                    <attr name="DesignerSeparator3.instance/org-netbeans-modules-visualweb-designer-jsf-action-AlignAction.shadow" boolvalue="true"/>
                     <file name="org-netbeans-modules-visualweb-designer-jsf-action-AlignAction.shadow">
                         <attr name="originalFile" stringvalue="/Actions/JSFSupport/org-netbeans-modules-visualweb-designer-jsf-action-AlignAction.instance"/>
+                        <attr name="position" intvalue="1900"/>
                     </file>
-                    <attr name="org-netbeans-modules-visualweb-designer-jsf-action-AlignAction.shadow/org-netbeans-modules-visualweb-designer-action-BringToFrontAction.shadow" boolvalue="true"/>
                     
-                    <attr name="DesignerSeparator4.instance/org-netbeans-modules-visualweb-designer-jsf-action-RefreshAction.shadow" boolvalue="true"/>
                     <file name="org-netbeans-modules-visualweb-designer-jsf-action-RefreshAction.shadow">
                         <attr name="originalFile" stringvalue="/Actions/JSFSupport/org-netbeans-modules-visualweb-designer-jsf-action-RefreshAction.instance"/>
+                        <attr name="position" intvalue="3200"/>
                     </file>
-                    <attr name="org-netbeans-modules-visualweb-designer-jsf-action-RefreshAction.shadow/org-netbeans-modules-visualweb-designer-jsf-action-TargetResolutionAction.shadow" boolvalue="true"/>
                     <file name="org-netbeans-modules-visualweb-designer-jsf-action-TargetResolutionAction.shadow">
                         <attr name="originalFile" stringvalue="/Actions/JSFSupport/org-netbeans-modules-visualweb-designer-jsf-action-TargetResolutionAction.instance"/>
+                        <attr name="position" intvalue="3300"/>
                     </file>
-                    <attr name="org-netbeans-modules-visualweb-designer-jsf-action-TargetResolutionAction.shadow/Separator8.instance" boolvalue="true"/>
-                </folder>
+                    </folder>
                 
                 <folder name="Toolbars">
                     <folder name="Default">
-                        <attr name="org-netbeans-modules-visualweb-insync-action-BrowserPreviewAction.shadow/org-netbeans-modules-visualweb-designer-jsf-action-RefreshAction.shadow" boolvalue="true"/>
                         <file name="org-netbeans-modules-visualweb-designer-jsf-action-RefreshAction.shadow">
                             <attr name="originalFile" stringvalue="/Actions/JSFSupport/org-netbeans-modules-visualweb-designer-jsf-action-RefreshAction.instance"/>
+                            <attr name="position" intvalue="200"/>
                         </file>
-                        <attr name="org-netbeans-modules-visualweb-designer-jsf-action-RefreshAction.shadow/org-netbeans-modules-visualweb-designer-jsf-action-VirtualFormsSupportAction.shadow" boolvalue="true"/>
                         <file name="org-netbeans-modules-visualweb-designer-jsf-action-VirtualFormsSupportAction.shadow">
                             <attr name="originalFile" stringvalue="/Actions/JSFSupport/org-netbeans-modules-visualweb-designer-jsf-action-VirtualFormsSupportAction.instance"/>
+                            <attr name="position" intvalue="300"/>
                         </file>
                         <!--
                         <attr name="org-netbeans-modules-visualweb-designer-jsf-action-VirtualFormsSupportAction.shadow/org-netbeans-modules-visualweb-designer-jsf-action-AjaxTransactionsSupportAction.shadow" boolvalue="true"/>
@@ -116,13 +108,13 @@ Microsystems, Inc. All Rights Reserved.
                         </file>
                         <attr name="org-netbeans-modules-visualweb-designer-jsf-action-AjaxTransactionsSupportAction.shadow/org-netbeans-modules-visualweb-designer-jsf-action-TargetResolutionAction.shadow" boolvalue="true"/>
                         -->
-                        <attr name="org-netbeans-modules-visualweb-designer-jsf-action-VirtualFormsSupportAction.shadow/org-netbeans-modules-visualweb-designer-jsf-action-TargetResolutionAction.shadow" boolvalue="true"/>
                         <file name="org-netbeans-modules-visualweb-designer-jsf-action-TargetResolutionAction.shadow">
                             <attr name="originalFile" stringvalue="/Actions/JSFSupport/org-netbeans-modules-visualweb-designer-jsf-action-TargetResolutionAction.instance"/>
+                            <attr name="position" intvalue="400"/>
                         </file>
-                        <attr name="org-netbeans-modules-visualweb-designer-jsf-action-TargetResolutionAction.shadow/org-netbeans-modules-visualweb-designer-jsf-action-DecorationsAction.shadow" boolvalue="true"/>
                         <file name="org-netbeans-modules-visualweb-designer-jsf-action-DecorationsAction.shadow">
                             <attr name="originalFile" stringvalue="/Actions/JSFSupport/org-netbeans-modules-visualweb-designer-jsf-action-DecorationsAction.instance"/>
+                            <attr name="position" intvalue="500"/>
                         </file>
                     </folder>
                 </folder>
@@ -140,15 +132,14 @@ Microsystems, Inc. All Rights Reserved.
 
     <folder name="Windows2">
         <folder name="Groups">
-            <file name="jsfdesigner.wsgrp" url="groups/jsfdesigner.wsgrp" />
+            <file name="jsfdesigner.wsgrp" url="groups/jsfdesigner.wsgrp"/>
             <folder name="jsfdesigner">
                 <!-- XXX Shouldn't be here, but (probably) in core/ui module -->
-                <file name="properties.wstcgrp" url="groups/jsfdesigner/properties.wstcgrp" />
+                <file name="properties.wstcgrp" url="groups/jsfdesigner/properties.wstcgrp"/>
                 <!-- XXX Shouldn't be here, but (probably) in core/navigator module -->
-                <file name="navigatorTC.wstcgrp" url="groups/jsfdesigner/navigatorTC.wstcgrp" />
+                <file name="navigatorTC.wstcgrp" url="groups/jsfdesigner/navigatorTC.wstcgrp"/>
             </folder>
         </folder>
     </folder>
     
 </filesystem>
-

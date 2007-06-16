@@ -23,12 +23,11 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="Menu">
 	<!-- <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.classview.resources.Bundle"/> -->
 	<folder name="Window">
-	    <attr name="org-netbeans-modules-navigator-ShowNavigatorAction.instance/org.netbeans.modules.cnd.classview-ClassViewAction.shadow" boolvalue="true"/>
 	    <file name="org.netbeans.modules.cnd.classview-ClassViewAction.shadow">
 		<attr name="originalFile" stringvalue="Actions/View/org.netbeans.modules.cnd.classview-ClassViewAction.instance"/>
-	    </file>
-	    <attr name="org.netbeans.modules.cnd.classview-ClassViewAction.shadow/ViewRuntimeTabAction.shadow" boolvalue="true"/>
-        </folder>
+	        <attr name="position" intvalue="300"/>
+            </file>
+	    </folder>
     </folder>
 
 
@@ -44,9 +43,9 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="Windows2">
 	<folder name="Modes">
 	    <folder name="navigator">
-		<attr name="classview.wstcref/Javadoc.wstcref" boolvalue="true"/>
-		<attr name="classview.wstcref/runtime.wstcref" boolvalue="true"/>
-		<file name="classview.wstcref" url="classview.wstcref"/>
+		<file name="classview.wstcref" url="classview.wstcref">
+                    <attr name="position" intvalue="100"/>
+                </file>
 	    </folder>
 	</folder>
 	<folder name="Components">

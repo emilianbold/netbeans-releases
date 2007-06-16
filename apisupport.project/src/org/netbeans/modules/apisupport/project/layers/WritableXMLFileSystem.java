@@ -626,6 +626,20 @@ final class WritableXMLFileSystem extends AbstractFileSystem
                     return Boolean.valueOf(attr.getValue());
                 } else if ((attr = sub.getAttribute("urlvalue")) != null) { // NOI18N
                     return new URL(attr.getValue());
+                } else if ((attr = sub.getAttribute("charvalue")) != null) { // NOI18N
+                    return new Character(attr.getValue().charAt(0));
+                } else if ((attr = sub.getAttribute("bytevalue")) != null) { // NOI18N
+                    return Byte.valueOf(attr.getValue());
+                } else if ((attr = sub.getAttribute("shortvalue")) != null) { // NOI18N
+                    return Short.valueOf(attr.getValue());
+                } else if ((attr = sub.getAttribute("intvalue")) != null) { // NOI18N
+                    return Integer.valueOf(attr.getValue());
+                } else if ((attr = sub.getAttribute("longvalue")) != null) { // NOI18N
+                    return Long.valueOf(attr.getValue());
+                } else if ((attr = sub.getAttribute("floatvalue")) != null) { // NOI18N
+                    return Float.valueOf(attr.getValue());
+                } else if ((attr = sub.getAttribute("doublevalue")) != null) { // NOI18N
+                    return Double.valueOf(attr.getValue());
                 } else if ((attr = sub.getAttribute("newvalue")) != null) { // NOI18N
                     String clazz = attr.getValue();
                     if (literal) {
@@ -778,60 +792,11 @@ final class WritableXMLFileSystem extends AbstractFileSystem
          */
     }
     
-    private final Set orderAbsorbers = new HashSet(); // Set<String>
     public void writeAttribute(String name, String attrName, Object v) throws IOException {
-        //System.err.println("wA: " + name + " " + attrName + " " + v/* + " orderAbsorbers=" + orderAbsorbers*/);
+        //System.err.println("wA: " + name + " " + attrName + " " + v);
         if (v != null && v.getClass().getName().equals("org.openide.filesystems.MultiFileObject$VoidValue")) { // NOI18N
             // XXX is this legitimate? Definitely not pretty. But needed for testOpenideFolderOrder to pass.
             v = null;
-        }
-        if (v == null && attrName.indexOf('/') != -1) {
-            String mebbeOrder = name + '/' + attrName; // NOI18N
-            if (orderAbsorbers.remove(mebbeOrder)) {
-                //System.err.println("  absorbed");
-                return; // see below
-            }
-            // Was not absorbed; we really needed to cancel this ordering.
-            v = Boolean.FALSE;
-        }
-        if (name.indexOf('/') == -1) {
-            // Cancel this hack - something else has happened.
-            Iterator it = orderAbsorbers.iterator();
-            while (it.hasNext()) {
-                String n = (String) it.next();
-                if (n.startsWith(name + '/')) {
-                    it.remove();
-                }
-            }
-        }
-        if (attrName.equals("OpenIDE-Folder-Order") && (v instanceof String)) { // NOI18N
-            // This is a special case. We do not want to store a fully fixed order in a layer.
-            // Rather, compute some reasonable orderings from it.
-            java.util.List<String> order = Collections.list(NbCollections.checkedEnumerationByFilter(new StringTokenizer((String) v, "/"), String.class, true)); // NOI18N
-            if (!order.isEmpty()) {
-                // XXX this is not really right. We just cannot know which attrs were already defined
-                // in the merged FS from other layers. So this will fail to store needed attrs sometimes.
-                // But better that than storing too many.
-                Set<String> myOwn = new HashSet(Arrays.asList(children(name)));
-                Iterator it = order.iterator();
-                String prev = (String) it.next();
-                while (it.hasNext()) {
-                    String next = (String) it.next();
-                    if (myOwn.contains(prev) || myOwn.contains(next)) {
-                        writeAttribute(name, prev + '/' + next, Boolean.TRUE); // NOI18N
-                    }
-                    prev = next;
-                }
-            }
-            // FolderOrder.write tries to cancel old orders immediately after writing!
-            // Don't let it. We don't know exactly what they might be, but we can guess.
-            for (int i = 0; i < order.size() - 1; i++) {
-                for (int j = i + 1; j < order.size(); j++) {
-                    orderAbsorbers.add(name + '/' + (String) order.get(i) + '/' + (String) order.get(j));
-                }
-            }
-            //System.err.println("orderAbsorbers=" + orderAbsorbers);
-            return;
         }
         TreeElement el = findElement(name);
         if (el == null) {
@@ -963,7 +928,6 @@ final class WritableXMLFileSystem extends AbstractFileSystem
             }
         }
         if (adding) {
-            // XXX if an ordering attr, try to put it next to file; else for folders, put it before any file
             appendWithIndent(el, attr);
         }
         // Deal with serial comments now.
@@ -1096,11 +1060,13 @@ final class WritableXMLFileSystem extends AbstractFileSystem
                 parent.appendChild(new TreeText("\n" + spaces(depth * INDENT_STEP))); // NOI18N
             }
             parent.normalize();
+            /* XXX could check for adding position attr and resort parent of parent?
             TreeElement childe = (TreeElement) child;
             if (childe.getQName().equals("attr") && childe.getAttribute("name").getValue().indexOf('/') != -1) { // NOI18N
                 // Check for ordering attributes, which we have to handle specially.
                 resort(parent);
             }
+             */
         } catch (InvalidArgumentException e) {
             assert false : e;
         }
@@ -1109,8 +1075,7 @@ final class WritableXMLFileSystem extends AbstractFileSystem
      * Find the proper location for a newly inserted element.
      * Rules:
      * 1. <file> or <folder> must be added in alphabetical order w.r.t. existing ones.
-     * 2. <attr> w/o '/' in name must be added to top of element in alpha order w.r.t. existing ones.
-     * 3. <attr> w/ '/' should be added wherever - will rearrange everything later...
+     * 2. <attr> must be added to top of element in alpha order w.r.t. existing ones.
      * Returns a position to insert before (null for end).
      */
     private static TreeChild insertBefore(TreeElement parent, TreeChild child) throws ReadOnlyException {
@@ -1136,9 +1101,6 @@ final class WritableXMLFileSystem extends AbstractFileSystem
             return null;
         } else if (childe.getQName().equals("attr")) { // NOI18N
             String name = childe.getAttribute("name").getValue(); // NOI18N
-            int slash = name.indexOf('/');
-            if (slash == -1) {
-                // Regular attribute.
                 Iterator it = parent.getChildNodes(TreeElement.class).iterator();
                 while (it.hasNext()) {
                     TreeElement kid = (TreeElement) it.next();
@@ -1157,53 +1119,17 @@ final class WritableXMLFileSystem extends AbstractFileSystem
                     }
                 }
                 return null;
-            } else {
-                // Ordering attribute. Will be ordered later, so skip it now.
-                return null;
-                /*
-                String former = name.substring(0, slash);
-                String latter = name.substring(slash + 1);
-                TreeElement formerMatch = findElementIn(parent, former);
-                TreeElement latterMatch = findElementIn(parent, latter);
-                if (formerMatch == null) {
-                    if (latterMatch == null) {
-                        // OK, just stick it somewhere.
-                        return positionForRegularAttr(parent, name);
-                    } else {
-                        return latterMatch;
-                    }
-                } else { // formerMatch != null
-                    if (latterMatch == null) {
-                        return null; // XXX OK?
-                    } else {
-                        int formerIdx = parent.indexOf(formerMatch);
-                        int latterIdx = parent.indexOf(latterMatch);
-                        if (formerIdx > latterIdx) {
-                            // Out of order. Swap them.
-                            // XXX does this need to be smarter?
-                            parent.removeChild(formerMatch);
-                            parent.removeChild(latterMatch);
-                            parent.insertChildAt(formerMatch, latterIdx);
-                            parent.insertChildAt(latterMatch, formerIdx);
-                        }
-                        return latterMatch;
-                    }
-                }
-                 */
-            }
         } else {
             throw new AssertionError("Weird child: " + childe.getQName());
         }
     }
     /**
      * Resort all files and folders and attributes in a folder context. The order is:
-     * 1. Files and folders are alpha-sorted if they have no relative attrs.
-     * 2. But existing relative attrs change that order. Unordered files/folders go at the end.
-     * 3. Most attributes are alpha-sorted at the top.
-     * 4. Relative attrs are sorted between files or folders they order, if possible.
-     * 5. Relative attrs with one missing referent are ordered right after the existing referent.
-     * 6. Relative attrs with both missing referents are ordered after other attrs.
+     * 1. Attributes are alpha-sorted at the top.
+     * 2. Files and folders are alpha-sorted if they have no position.
+     * 3. Files with positions are sorted numerically above files without.
      */
+    /* XXX not important yet
     private static void resort(TreeElement parent) throws ReadOnlyException {
         class Item {
             public TreeElement child;
@@ -1322,6 +1248,7 @@ final class WritableXMLFileSystem extends AbstractFileSystem
             parent.insertChildAt(item.child, index);
         }
     }
+     */
     private static String spaces(int size) {
         char[] chars = new char[size];
         for (int i = 0; i < size; i++) {

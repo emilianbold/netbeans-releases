@@ -250,5 +250,10 @@ public final class ClassInfoStorage {
             
             return hashCode;
         }
+
+        public @Override String toString() {
+            return "ClassInfoStorage.Info[className=" + className + ",extraPath=" + extraPath + ",instanceProviderClass=" + instanceProviderClass + "]"; // NOI18N
+        }
+
     } // End of Info class
 }

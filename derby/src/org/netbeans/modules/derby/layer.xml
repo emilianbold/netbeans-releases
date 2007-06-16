@@ -32,9 +32,8 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="Tools">
             <file name="DerbyDatabaseAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.derby.DerbyDatabaseAction"/>
+                <attr name="position" intvalue="1800"/>
             </file>
-            <attr name="DerbyDatabaseAction.instance/javadoc-Search-Doc-Action.instance" boolvalue="true"/>
-        </folder>
+            </folder>
     </folder>
 </filesystem>
-

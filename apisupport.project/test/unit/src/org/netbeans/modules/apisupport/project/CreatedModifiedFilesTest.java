@@ -33,6 +33,7 @@ import java.io.PrintWriter;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -294,21 +295,6 @@ public class CreatedModifiedFilesTest extends LayerTestBase {
         assertEquals("cnb", "org.apache.tools.ant.module", antDep.getModuleEntry().getCodeNameBase());
     }
     
-    public void testOrderLayerEntry() throws Exception {
-        // also tested in testCreateLayerEntry where is also tested generated content
-        NbModuleProject project = TestBase.generateStandaloneModule(getWorkDir(), "module1");
-        
-        CreatedModifiedFiles cmf = new CreatedModifiedFiles(project);
-        
-        Operation op = cmf.orderLayerEntry("Loaders/text/x-java/Actions",
-                "IAmSecond.instance", "IAmThird.instance");
-        
-        assertRelativePath("src/org/example/module1/resources/layer.xml", op.getModifiedPaths());
-        
-        cmf.add(op);
-        cmf.run();
-    }
-    
     public void testCreateLayerEntry() throws Exception {
         NbModuleProject project = TestBase.generateStandaloneModule(getWorkDir(), "module1");
         
@@ -318,7 +304,7 @@ public class CreatedModifiedFilesTest extends LayerTestBase {
                 null,
                 null,
                 null, 
-                null);
+                Collections.<String,Object>singletonMap("position", 400));
         layerOp.run();
         
         layerOp = cmf.createLayerEntry(
@@ -330,17 +316,26 @@ public class CreatedModifiedFilesTest extends LayerTestBase {
         cmf.add(layerOp);
         assertRelativePath("src/org/example/module1/resources/layer.xml", layerOp.getModifiedPaths());
         
-        layerOp = cmf.orderLayerEntry("Menu/Tools",
-                "org-example-module1-BeepAction.instance",
-                "org-example-module1-BlareAction.instance");
-        cmf.add(layerOp);
-        
         layerOp = cmf.createLayerEntry(
                 "Menu/Tools/org-example-module1-BlareAction.instance",
                 null,
                 null,
                 null, 
                 null);
+        cmf.add(layerOp);
+        
+        layerOp = cmf.createLayerEntry(
+                "Menu/Tools/org-example-module1-DrumAction.instance",
+                null,
+                null,
+                null, 
+                Collections.<String,Object>singletonMap("position", 405));
+        cmf.add(layerOp);
+        
+        layerOp = cmf.orderLayerEntry("Menu/Tools",
+                "org-example-module1-BeepAction.instance",
+                "org-example-module1-BlareAction.instance",
+                "org-example-module1-DrumAction.instance");
         cmf.add(layerOp);
         
         layerOp = cmf.createLayerEntry(
@@ -351,6 +346,12 @@ public class CreatedModifiedFilesTest extends LayerTestBase {
                 null);
         cmf.add(layerOp);
 
+        layerOp = cmf.orderLayerEntry("Services",
+                null,
+                "org-example-module1-Other.settings",
+                "org-example-module1-Module1UI.settings");
+        cmf.add(layerOp);
+        
         layerOp = cmf.createLayerEntry(
                 "Services/org-example-module1-Tokenized.settings",
                 createFile(HTML_CONTENT),
@@ -386,12 +387,19 @@ public class CreatedModifiedFilesTest extends LayerTestBase {
             "<filesystem>",
                     "<folder name=\"Menu\">",
                     "<folder name=\"Tools\">",
-                    "<file name=\"org-example-module1-BeepAction.instance\"/>",
-                    "<attr name=\"org-example-module1-BeepAction.instance/org-example-module1-BlareAction.instance\" boolvalue=\"true\"/>",
-                    "<file name=\"org-example-module1-BlareAction.instance\"/>",
+                    "<file name=\"org-example-module1-BeepAction.instance\">",
+                    "<attr name=\"position\" intvalue=\"400\"/>",
+                    "</file>",
+                    "<file name=\"org-example-module1-BlareAction.instance\">",
+                    "<attr name=\"position\" intvalue=\"402\"/>",
+                    "</file>",
+                    "<file name=\"org-example-module1-DrumAction.instance\">",
+                    "<attr name=\"position\" intvalue=\"405\"/>",
+                    "</file>",
                     "</folder>",
                     "</folder>",
                     "<folder name=\"Services\">",
+                    "<attr name=\"org-example-module1-Other.settings/org-example-module1-Module1UI.settings\" boolvalue=\"true\"/>",
                     "<file name=\"org-example-module1-LocalizedAndTokened.settings\" url=\"org-example-module1-LocalizedAndTokenedSettings.xml\">",
                     "<attr name=\"SystemFileSystem.localizingBundle\" stringvalue=\"org.example.module1.resources.Bundle\"/>",
                     "</file>",

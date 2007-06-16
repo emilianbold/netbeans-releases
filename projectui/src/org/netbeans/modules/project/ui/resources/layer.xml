@@ -22,10 +22,10 @@ Microsystems, Inc. All Rights Reserved.
 
     <folder name="Actions">
         <folder name="Build">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.project.ui.Bundle" />
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.project.ui.Bundle"/>
         </folder>
         <folder name="Project">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.project.ui.Bundle" />
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.project.ui.Bundle"/>
             <!-- Project operations -->
             <file name="org-netbeans-modules-project-ui-NewProject.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.project.ui.actions.NewProject"/>
@@ -127,21 +127,22 @@ Microsystems, Inc. All Rights Reserved.
         
         <folder name="Window">
             <folder name="SelectDocumentNode">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.project.ui.Bundle" />
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.project.ui.Bundle"/>
                 <!-- Searching nodes in projects/files tab -->
                 
                 <file name="org-netbeans-modules-project-ui-SelectInProjects.instance">
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.project.ui.actions.SelectNodeAction.inProjects"/>
+                    <attr name="position" intvalue="100"/>
                 </file>
 
-                <attr name="org-netbeans-modules-project-ui-SelectInProjects.instance/org-netbeans-modules-project-ui-SelectInFiles.instance" boolvalue="true"/>
+                
                 
                 <file name="org-netbeans-modules-project-ui-SelectInFiles.instance">
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.project.ui.actions.SelectNodeAction.inFiles"/>
+                    <attr name="position" intvalue="200"/>
                 </file>
                 
-                <attr name="org-netbeans-modules-project-ui-SelectInFiles.instance/org-netbeans-modules-favorites-Select.instance" boolvalue="true"/>
-            </folder>
+                </folder>
         </folder>
         
     </folder>
@@ -157,12 +158,13 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="Project">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.project.ui.Bundle"/>
             <!-- Project type providers should register their templates here -->
-            <attr name="simple" boolvalue="false" /> <!-- do not show this in regular temlate wizard -->
+            <attr name="simple" boolvalue="false"/> <!-- do not show this in regular temlate wizard -->
             <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/project/ui/resources/ProjectTemplates.html"/>
 
             <!-- Samples folder -->
             <folder name="Samples">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.project.ui.Bundle"/>
+                <attr name="position" intvalue="1000"/>
             </folder>
 
             <!-- Generic import folder -->
@@ -172,36 +174,19 @@ Microsystems, Inc. All Rights Reserved.
             </folder>
         </folder>        
 
-        <attr name="XML/Ant" boolvalue="true"/>
-        <attr name="JUnit/XML" boolvalue="true"/>
-        <attr name="Beans/JUnit" boolvalue="true"/>
-        <attr name="GUIForms/Beans" boolvalue="true"/>
-        <attr name="Classes/GUIForms" boolvalue="true"/>
-        <attr name="JSP_Servlet/Classes" boolvalue="true"/>
+        
 
-        <attr name="XML/Other" boolvalue="true"/>
-        <attr name="Ant/Other" boolvalue="true"/>
-        <attr name="JUnit/Other" boolvalue="true"/>
-        <attr name="Beans/Other" boolvalue="true"/>
-        <attr name="Classes/Other" boolvalue="true"/>
-        <attr name="GUIForms/Other" boolvalue="true"/>
-        <attr name="JSP_Servlet/Other" boolvalue="true"/>
+        
 
         <folder name="Other">
 
-            <attr name="properties.properties/html.html" boolvalue="true"/>
-            <attr name="properties.properties/file" boolvalue="true"/>
-            <attr name="html.html/bookmark.url" boolvalue="true"/>
-            <attr name="html.html/text.txt" boolvalue="true"/>
-            <attr name="bookmark.url/text.txt" boolvalue="true"/>
-            <attr name="text.txt/file" boolvalue="true"/>
-            <attr name="file/Folder" boolvalue="true"/>
+            
 
             <folder name="Folder">
                 <attr name="template" boolvalue="true"/>
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.project.ui.Bundle" />
-                <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/project/ui/resources/templatesFolder.html" />
-                <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.project.ui.NewFileIterator.folderIterator" />
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.project.ui.Bundle"/>
+                <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/project/ui/resources/templatesFolder.html"/>
+                <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.project.ui.NewFileIterator.folderIterator"/>
                 <attr name="templateCategory" stringvalue="simple-files"/>
             </folder>
         </folder>
@@ -229,17 +214,21 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="Modes">
             <file name="explorer.wsmode" url="explorer-override.wsmode"/>
             <folder name="explorer">            
-                <file name="projectTabLogical_tc.wstcref" url="projectsLogical.wstcref"/>
-                <attr name="projectTabLogical_tc.wstcref/projectTab_tc.wstcref" boolvalue="true" />
-                <file name="projectTab_tc.wstcref" url="projects.wstcref"/>
-                <attr name="projectTab_tc.wstcref/favorites.wstcref" boolvalue="true" />
-                <file name="runtime.wstcref" url="runtime-override.wstcref" />
+                <file name="projectTabLogical_tc.wstcref" url="projectsLogical.wstcref">
+                    <attr name="position" intvalue="100"/>
+                </file>
+                <file name="projectTab_tc.wstcref" url="projects.wstcref">
+                    <attr name="position" intvalue="200"/>
+                </file>
+                <file name="runtime.wstcref" url="runtime-override.wstcref">
+                    <attr name="position" intvalue="400"/>
+                </file>
             </folder>
         </folder>    
             
         <folder name="Components">
-	    <file name="projectTabLogical_tc.settings" url="projectsLogical.settings" />
-            <file name="projectTab_tc.settings" url="projects.settings" />
+	    <file name="projectTabLogical_tc.settings" url="projectsLogical.settings"/>
+            <file name="projectTab_tc.settings" url="projects.settings"/>
         </folder>
         
     </folder>
@@ -251,201 +240,223 @@ Microsystems, Inc. All Rights Reserved.
             
             <file name="org-netbeans-modules-project-ui-NewProject.shadow">
                 <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-NewProject.instance"/>
+                <attr name="position" intvalue="100"/>
             </file>            
             
-            <attr name="org-netbeans-modules-project-ui-NewProject.shadow/org-netbeans-modules-project-ui-NewFile.shadow" boolvalue="true" />
+            
                                     
             <file name="org-netbeans-modules-project-ui-NewFile.shadow">
                 <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-NewFile.instance"/>
+                <attr name="position" intvalue="200"/>
             </file>
                  
-            <attr name="org-netbeans-modules-project-ui-NewFile.shadow/SeparatorNew.instance" boolvalue="true" />
+            
             
             <file name="SeparatorNew.instance">
                 <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>                 
+                <attr name="position" intvalue="400"/>
             </file>
             
             <!-- Open and Close actions -->
                         
-            <attr name="SeparatorNew.instance/org-netbeans-modules-project-ui-OpenProject.shadow" boolvalue="true" />
+            
             
             <file name="org-netbeans-modules-project-ui-OpenProject.shadow">
                 <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-OpenProject.instance"/>
+                <attr name="position" intvalue="500"/>
             </file>
                         
-            <attr name="org-netbeans-modules-project-ui-OpenProject.shadow/org-netbeans-modules-project-ui-RecentProjects.shadow" boolvalue="true" />
+            
             
             <file name="org-netbeans-modules-project-ui-RecentProjects.shadow">
                 <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-RecentProjects.instance"/>
+                <attr name="position" intvalue="600"/>
             </file>
             
-            <attr name="org-netbeans-modules-project-ui-RecentProjects.shadow/org-netbeans-modules-project-ui-CloseProject.shadow" boolvalue="true" />
+            
             
             <file name="org-netbeans-modules-project-ui-CloseProject.shadow">
                 <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-CloseProject.instance"/>
+                <attr name="position" intvalue="700"/>
             </file>
             
-            <attr name="org-netbeans-modules-project-ui-CloseProject.shadow/org-netbeans-modules-openfile-OpenFileAction.instance" boolvalue="true" />
+            
 
-            <attr name="org-netbeans-modules-openfile-OpenFileAction.instance/SeparatorOpen.instance" boolvalue="true" />
+            
                                                 
             <file name="SeparatorOpen.instance">
                 <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>                 
+                <attr name="position" intvalue="1000"/>
             </file>
             
-            <attr name="SeparatorOpen.instance/org-netbeans-modules-project-ui-groups-GroupsMenu.shadow" boolvalue="true"/>
             <file name="org-netbeans-modules-project-ui-groups-GroupsMenu.shadow">
                 <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-groups-GroupsMenu.instance"/>
+                <attr name="position" intvalue="1100"/>
             </file>
-            <attr name="org-netbeans-modules-project-ui-groups-GroupsMenu.shadow/org-netbeans-modules-project-ui-SetMainProject.shadow" boolvalue="true"/>
             
             <!-- SetMain and customize -->
             
             <file name="org-netbeans-modules-project-ui-SetMainProject.shadow">
                 <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-SetMainProject.instance"/>
+                <attr name="position" intvalue="1200"/>
             </file>
                                     
-            <attr name="org-netbeans-modules-project-ui-SetMainProject.shadow/org-netbeans-modules-project-ui-CustomizeProject.shadow" boolvalue="true" />            
+                        
             
             <file name="org-netbeans-modules-project-ui-CustomizeProject.shadow">
                 <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-CustomizeProject.instance"/>
+                <attr name="position" intvalue="1300"/>
             </file>
             
-            <attr name="org-netbeans-modules-project-ui-CustomizeProject.shadow/SeparatorPrj.instance" boolvalue="true" />            
-            <attr name="org-netbeans-modules-project-ui-CustomizeProject.shadow/Separator2.instance" boolvalue="true" />            
+                        
+                        
 
         </folder>
         
         <folder name="GoTo">
             <file name="SeparatorBeforeSelectIn.instance">
                 <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-            </file>
-            <attr name="SeparatorBeforeSelectIn.instance/org-netbeans-modules-project-ui-SelectInProjects.shadow" boolvalue="true"/>            
+                <attr name="position" intvalue="2500"/>
+            </file>            
             
             <file name="org-netbeans-modules-project-ui-SelectInProjects.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/SelectDocumentNode/org-netbeans-modules-project-ui-SelectInProjects.instance"/>
-            </file>
-            <attr name="org-netbeans-modules-project-ui-SelectInProjects.shadow/org-netbeans-modules-project-ui-SelectInFiles.shadow" boolvalue="true"/>            
+                <attr name="position" intvalue="2600"/>
+            </file>            
             
             <file name="org-netbeans-modules-project-ui-SelectInFiles.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/SelectDocumentNode/org-netbeans-modules-project-ui-SelectInFiles.instance"/>
+                <attr name="position" intvalue="2700"/>
             </file>
         </folder>
         
-        <attr name="View/BuildProject" boolvalue="true" />
-        <attr name="Refactoring/BuildProject" boolvalue="true" />
+        
         
         <folder name="BuildProject">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.project.ui.Bundle" />
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.project.ui.Bundle"/>
         
+            <attr name="position" intvalue="700"/>
             <file name="org-netbeans-modules-project-ui-BuildMainProject.shadow">
                 <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-BuildMainProject.instance"/>
+                <attr name="position" intvalue="100"/>
             </file>
             
             
-            <attr name="org-netbeans-modules-project-ui-BuildMainProject.shadow/org-netbeans-modules-project-ui-RebuildMainProject.shadow" boolvalue="true"/>            
+                        
             
             <file name="org-netbeans-modules-project-ui-RebuildMainProject.shadow">
                 <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-RebuildMainProject.instance"/>
+                <attr name="position" intvalue="200"/>
             </file>
             
 
-            <attr name="org-netbeans-modules-project-ui-RebuildMainProject.shadow/org-netbeans-modules-project-ui-actions-ActiveConfigAction.shadow" boolvalue="true"/>
+            
 
             <file name="org-netbeans-modules-project-ui-actions-ActiveConfigAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-actions-ActiveConfigAction.instance"/>
+                <attr name="position" intvalue="300"/>
             </file>
 
-            <attr name="org-netbeans-modules-project-ui-actions-ActiveConfigAction.shadow/SeparatorMainProject.instance" boolvalue="true"/>
+            
 
             <file name="SeparatorMainProject.instance">
                 <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                <attr name="position" intvalue="500"/>
             </file>
             
-            <attr name="SeparatorMainProject.instance/org-netbeans-modules-project-ui-JavadocProject.shadow" boolvalue="true"/>
+            
                                 
             <file name="org-netbeans-modules-project-ui-JavadocProject.shadow">
                 <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-JavadocProject.instance"/>
+                <attr name="position" intvalue="600"/>
             </file>
                        
-            <attr name="org-netbeans-modules-project-ui-JavadocProject.shadow/SeparatorJavadoc.instance" boolvalue="true"/>
+            
             
             <file name="SeparatorJavadoc.instance">
                 <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                <attr name="position" intvalue="700"/>
             </file>
                  
-            <attr name="SeparatorJavadoc.instance/org-netbeans-modules-project-ui-CompileSingle.shadow" boolvalue="true" />
+            
             
             <file name="org-netbeans-modules-project-ui-CompileSingle.shadow">
                 <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-CompileSingle.instance"/>
+                <attr name="position" intvalue="800"/>
             </file>
 
             
-            <attr name="org-netbeans-modules-project-ui-CompileSingle.shadow/SeparatorCompileSingle.instance" boolvalue="true" />
+            
             
             <file name="SeparatorCompileSingle.instance">
                 <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                <attr name="position" intvalue="900"/>
             </file>
             
-            <attr name="SeparatorCompileSingle.instance/org-netbeans-core-actions-JumpNextAction.shadow" boolvalue="true" />
-        </folder>
+            </folder>
         
-        <attr name="BuildProject/RunProject" boolvalue="true" />        
+                
         
         <folder name="RunProject">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.project.ui.Bundle" />
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.project.ui.Bundle"/>
         
+            <attr name="position" intvalue="800"/>
             <file name="org-netbeans-modules-project-ui-RunMainProject.shadow">
                 <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-RunMainProject.instance"/>
+                <attr name="position" intvalue="100"/>
             </file>
             
-            <attr name="org-netbeans-modules-project-ui-RunMainProject.shadow/org-netbeans-modules-project-ui-TestProject.shadow" boolvalue="true" />                             
+                                         
                 
             <file name="org-netbeans-modules-project-ui-TestProject.shadow">
                     <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-TestProject.instance"/>
+                <attr name="position" intvalue="300"/>
             </file>
             
-            <attr name="org-netbeans-modules-project-ui-TestProject.shadow/RunOther" boolvalue="true" />                             
+                                         
             
                     
             <folder name="RunOther">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.project.ui.Bundle" />
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/project/ui/resources/empty.gif" />
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.project.ui.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/project/ui/resources/empty.gif"/>
                                                 
                 <file name="org-netbeans-modules-project-ui-RunSingle.shadow">
                     <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-RunSingle.instance"/>
+                    <attr name="position" intvalue="100"/>
                 </file>
 
-                <attr name="org-netbeans-modules-project-ui-RunSingle.shadow/org-netbeans-modules-project-ui-TestSingle.shadow" boolvalue="true" />                
+                                
                 <file name="org-netbeans-modules-project-ui-TestSingle.shadow">
                     <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-TestSingle.instance"/>
+                    <attr name="position" intvalue="300"/>
                 </file>
             
            </folder>     
 
-           <attr name="RunOther/SeparatorRun.instance" boolvalue="true" />
-                <file name="SeparatorRun.instance">
+           <file name="SeparatorRun.instance">
                     <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                </file>
+                    <attr name="position" intvalue="500"/>
+            </file>
                                    
         </folder>
         
-        <attr name="RunProject/Versioning" boolvalue="true"/>
-        <attr name="RunProject/Tools" boolvalue="true" />        
+                
         
         <folder name="Window"> <!-- Add project tab into the Window menu -->
             
             <file name="org-netbeans-modules-project-ui-logical-tab-action.shadow">
                 <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-logical-tab-action.instance"/>
+                <attr name="position" intvalue="100"/>
             </file>
         
-            <attr name="org-netbeans-modules-project-ui-logical-tab-action.shadow/org-netbeans-modules-project-ui-physical-tab-action.shadow" boolvalue="true" />
+            
 
             <file name="org-netbeans-modules-project-ui-physical-tab-action.shadow">
                 <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-physical-tab-action.instance"/>
+                <attr name="position" intvalue="200"/>
             </file>
         
-            <attr name="org-netbeans-modules-project-ui-physical-tab-action.shadow/ViewFilesystemsTabAction.shadow" boolvalue="true"/>
+            
             
         </folder>
         
@@ -458,24 +469,24 @@ Microsystems, Inc. All Rights Reserved.
 
             <file name="org-netbeans-modules-project-ui-NewFile.shadow">
                 <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-NewFile.instance"/>
+                <attr name="position" intvalue="400"/>
             </file>
 
             <file name="org-netbeans-modules-project-ui-NewProject.shadow">
                 <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-NewProject.instance"/>
+                <attr name="position" intvalue="200"/>
             </file>
 
             <file name="org-netbeans-modules-project-ui-OpenProject.shadow">
                 <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-OpenProject.instance"/>
+                <attr name="position" intvalue="100"/>
             </file>
             
-            <attr name="org-netbeans-modules-project-ui-OpenProject.shadow/org-netbeans-modules-openfile-OpenFileAction.instance" boolvalue="true"/>
-            <attr name="org-netbeans-modules-project-ui-NewFile.shadow/org-netbeans-modules-openfile-NewProject.shadow" boolvalue="true"/>
-            <attr name="org-netbeans-modules-project-ui-NewProject.shadow/org-netbeans-modules-openfile-OpenProject.shadow" boolvalue="true"/>
-            <attr name="org-netbeans-modules-project-ui-NewProject.shadow/org-openide-actions-SaveAllAction.instance" boolvalue="true"/> 
+             
         </folder>
     
         <folder name="Build">            
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.project.ui.Bundle" />
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.project.ui.Bundle"/>
 
             <!-- Dynamically inserted; see ActiveConfigAction$DynLayer
             <file name="org-netbeans-modules-project-ui-actions-ActiveConfigAction.shadow">
@@ -483,22 +494,26 @@ Microsystems, Inc. All Rights Reserved.
             </file>
             -->
 
-            <attr name="org-netbeans-modules-project-ui-actions-ActiveConfigAction.shadow/org-netbeans-modules-project-ui-BuildMainProject.shadow" boolvalue="true"/>
+            
 
+            <attr name="position" intvalue="100"/>
             <file name="org-netbeans-modules-project-ui-BuildMainProject.shadow">
                 <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-BuildMainProject.instance"/>
+                <attr name="position" intvalue="100"/>
             </file>
         
-            <attr name="org-netbeans-modules-project-ui-BuildMainProject.shadow/org-netbeans-modules-project-ui-RebuildMainProject.shadow" boolvalue="true"/>
+            
             
             <file name="org-netbeans-modules-project-ui-RebuildMainProject.shadow">
                 <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-RebuildMainProject.instance"/>
+                <attr name="position" intvalue="200"/>
             </file>
             
-            <attr name="org-netbeans-modules-project-ui-RebuildMainProject.shadow/org-netbeans-modules-project-ui-RunMainProject.shadow" boolvalue="true"/>
+            
 
             <file name="org-netbeans-modules-project-ui-RunMainProject.shadow">
                 <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-RunMainProject.instance"/>
+                <attr name="position" intvalue="300"/>
             </file>
 
         </folder>
@@ -569,13 +584,11 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="text">
             <folder name="x-java">
                 <folder name="Popup">
-                    <attr name="format/org-netbeans-modules-project-ui-RunSingle.shadow" boolvalue="true"/>
-                    <attr name="SeparatorAfterFormat.instance/org-netbeans-modules-project-ui-RunSingle.shadow" boolvalue="true"/>
                     <file name="org-netbeans-modules-project-ui-RunSingle.shadow">
                         <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-RunSingle.instance"/>
+                        <attr name="position" intvalue="1720"/>
                     </file>
-                    <attr name="org-netbeans-modules-project-ui-RunSingle.shadow/SeparatorBeforeCut.instance" boolvalue="true"/>
-                </folder>
+                    </folder>
             </folder>
         </folder>
     </folder>
@@ -584,14 +597,15 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="folder">
             <folder name="any">
                 <folder name="Actions">
-                    <file name="org-netbeans-modules-project-ui-actions-OpenProjectFolderAction.instance"/>
-                    <attr name="org-netbeans-modules-project-ui-actions-OpenProjectFolderAction.instance/NewProjectFile.instance" boolvalue="true"/>
-                    <file name="NewTemplateAction.instance_hidden" />
+                    <file name="org-netbeans-modules-project-ui-actions-OpenProjectFolderAction.instance">
+                        <attr name="position" intvalue="100"/>
+                    </file>
+                    <file name="NewTemplateAction.instance_hidden"/>
                     <file name="NewProjectFile.instance">
                         <attr name="instanceClass" stringvalue="org.netbeans.modules.project.ui.actions.NewFile$WithSubMenu"/>
+                        <attr name="position" intvalue="200"/>
                     </file>
-                    <attr boolvalue="true" name="NewProjectFile.instance/FindAction.instance" />
-                </folder>
+                    </folder>
             </folder>
         </folder>
     </folder>
@@ -609,58 +623,59 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="ProjectsTabActions"> <!-- #57068; cf. ProjectsRootNode.ACTIONS_FOLDER -->
         <file name="org-netbeans-modules-project-ui-NewProject.shadow">
             <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-NewProject.instance"/>
+            <attr name="position" intvalue="100"/>
         </file>
-        <attr name="org-netbeans-modules-project-ui-NewProject.shadow/org-netbeans-modules-project-ui-NewFile.shadow" boolvalue="true"/>
         <file name="org-netbeans-modules-project-ui-NewFile.shadow">
             <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-NewFile.instance"/>
+            <attr name="position" intvalue="200"/>
         </file>
-        <attr name="org-netbeans-modules-project-ui-NewFile.shadow/sep-1.instance" boolvalue="true"/>
         <file name="sep-1.instance">
             <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+            <attr name="position" intvalue="300"/>
         </file>
-        <attr name="sep-1.instance/org-netbeans-modules-project-ui-OpenProject.shadow" boolvalue="true"/>
         <file name="org-netbeans-modules-project-ui-OpenProject.shadow">
             <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-OpenProject.instance"/>
+            <attr name="position" intvalue="400"/>
         </file>
-        <attr name="org-netbeans-modules-project-ui-OpenProject.shadow/org-netbeans-modules-project-ui-RecentProjects.shadow" boolvalue="true"/>
         <file name="org-netbeans-modules-project-ui-RecentProjects.shadow">
             <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-RecentProjects.instance"/>
+            <attr name="position" intvalue="500"/>
         </file>
-        <attr name="org-netbeans-modules-project-ui-RecentProjects.shadow/org-netbeans-modules-project-ui-groups-GroupsMenu.shadow" boolvalue="true"/>
         <file name="org-netbeans-modules-project-ui-groups-GroupsMenu.shadow">
             <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-groups-GroupsMenu.instance"/>
+            <attr name="position" intvalue="600"/>
         </file>
-        <attr name="org-netbeans-modules-project-ui-groups-GroupsMenu.shadow/sep-2.instance" boolvalue="true"/>
         <file name="sep-2.instance">
             <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+            <attr name="position" intvalue="700"/>
         </file>
-        <attr name="sep-2.instance/org-netbeans-modules-project-ui-BuildMainProject.shadow" boolvalue="true"/>
         <file name="org-netbeans-modules-project-ui-BuildMainProject.shadow">
             <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-BuildMainProject.instance"/>
+            <attr name="position" intvalue="800"/>
         </file>
-        <attr name="org-netbeans-modules-project-ui-BuildMainProject.shadow/org-netbeans-modules-project-ui-RebuildMainProject.shadow" boolvalue="true"/>
         <file name="org-netbeans-modules-project-ui-RebuildMainProject.shadow">
             <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-RebuildMainProject.instance"/>
+            <attr name="position" intvalue="900"/>
         </file>
-        <attr name="org-netbeans-modules-project-ui-RebuildMainProject.shadow/sep-3.instance" boolvalue="true"/>
         <file name="sep-3.instance">
             <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+            <attr name="position" intvalue="1000"/>
         </file>
-        <attr name="sep-3.instance/org-netbeans-modules-project-ui-RunMainProject.shadow" boolvalue="true"/>
         <file name="org-netbeans-modules-project-ui-RunMainProject.shadow">
             <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-RunMainProject.instance"/>
+            <attr name="position" intvalue="1100"/>
         </file>
-        <attr name="org-netbeans-modules-project-ui-RunMainProject.shadow/sep-4.instance" boolvalue="true"/>
         <file name="sep-4.instance">
             <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+            <attr name="position" intvalue="1300"/>
         </file>
-        <attr name="sep-4.instance/org-netbeans-modules-project-ui-SetMainProject.instance" boolvalue="true"/>
         <file name="org-netbeans-modules-project-ui-SetMainProject.instance">
             <attr name="instanceClass" stringvalue="org.netbeans.modules.project.ui.actions.SetMainProject$PopupWithoutContext"/>
+            <attr name="position" intvalue="1400"/>
         </file>
-        <attr name="org-netbeans-modules-project-ui-SetMainProject.instance/sep-below-main-actions.instance" boolvalue="true"/>
         <file name="sep-below-main-actions.instance">
             <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+            <attr name="position" intvalue="1500"/>
         </file>
     </folder>
         

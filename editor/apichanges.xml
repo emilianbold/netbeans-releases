@@ -82,6 +82,24 @@ is the proper place.
 
     <changes>
 
+        <change id="SideBar.location">
+            <api name="editor"/>
+            <summary>Change of attribute name for <code>SideBar</code> instances to <code>location</code></summary>
+            <version major="1" minor="33"/>
+            <date day="16" month="6" year="2007"/>
+            <author login="jglick"/>
+            <compatibility modification="yes" semantic="compatible" deprecation="yes"/>
+            <description>
+                <p>
+                    The position of <code>SideBar</code> instances (<code>East</code> etc.)
+                    used to be given by the <code>position</code> attribute.
+                    Since that clashes with folder ordering, this attribute was deprecated
+                    in favor of <code>location</code>. The old attribute is still read as a backup.
+                </p>
+            </description>
+            <issue number="103187"/>
+        </change>
+
         <change id="Editors-Toolbars-Default">
             <api name="editor"/>
             <summary>Deprecating Editors/text/base/Toolbars/Default</summary>

@@ -17,26 +17,22 @@ The Original Software is NetBeans. The Initial Developer of the Original
 Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
-
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
-
 <filesystem>
 
     <!-- Templates -->
     <folder name="Templates">
 
         <folder name="XML">
-            <attr name="XMLWizard.xml/XMLCatalog.xml" boolvalue="true"/>
-            <attr name="stylesheet.xsl/XMLCatalog.xml" boolvalue="true"/>
-            <attr name="emptyDTD.dtd/XMLCatalog.xml" boolvalue="true"/>
             <file name="XMLCatalog.xml" url="templates/XMLCatalog.xml">
-                <attr name="template" boolvalue="true" />
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.catalog.resources.Bundle" />
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/core/resources/xmlObject.gif" />
-                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/xml/catalog/resources/templates/XMLCatalog.html" />
+                <attr name="position" intvalue="400"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.catalog.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/core/resources/xmlObject.gif"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/xml/catalog/resources/templates/XMLCatalog.html"/>
                 <attr name="templateCategory" stringvalue="oasis-XML-catalogs"/>
             </file>                        
-            <attr name="XMLCatalog.xml/xml_entity.ent" boolvalue="true"/>
+            
             
         </folder>
     </folder>
@@ -50,19 +46,20 @@ Microsystems, Inc. All Rights Reserved.
             </file>
             <file name="org-netbeans-modules-xml-catalog-impl-sun-SunCatalogProvider.instance">
                 <attr name="instanceOf" stringvalue="org.netbeans.modules.xml.catalog.spi.CatalogProvider"/>
+                <attr name="position" intvalue="100"/>
             </file>
-            <attr name="org-netbeans-modules-xml-catalog-impl-sun-SunCatalogProvider.instance/org-netbeans-modules-xml-catalog-impl-SystemCatalogProvider.instance" boolvalue="true"/>
             <file name="org-netbeans-modules-xml-catalog-impl-SystemCatalogProvider.instance">
                 <attr name="instanceOf" stringvalue="org.netbeans.modules.xml.catalog.spi.CatalogProvider"/>
+                <attr name="position" intvalue="200"/>
             </file>
-            <attr name="org-netbeans-modules-xml-catalog-impl-SystemCatalogProvider.instance/org-netbeans-modules-xml-catalog-impl-XCatalogProvider.instance" boolvalue="true"/>
             <file name="org-netbeans-modules-xml-catalog-impl-XCatalogProvider.instance">
                 <attr name="instanceOf" stringvalue="org.netbeans.modules.xml.catalog.spi.CatalogProvider"/>
+                <attr name="position" intvalue="300"/>
             </file>
 
             <!-- Store mounted catalogs per project. -->
             <file name="org-netbeans-modules-xml-catalog-settings-CatalogSettings.settings" url="ProjectSettings.xml">
-                <attr name="SystemFileSystem.layer" stringvalue="project" />
+                <attr name="SystemFileSystem.layer" stringvalue="project"/>
             </file>
         </folder>
     </folder>
@@ -94,14 +91,10 @@ Microsystems, Inc. All Rights Reserved.
     
     <folder name="Menu">
         <folder name="Tools">
-            <file name="org-netbeans-modules-xml-catalog-CatalogAction.instance"/>
-            <attr name="JavaPlatformsCustomizerAction.instance/org-netbeans-modules-xml-catalog-CatalogAction.instance" boolvalue="true" />
-            <attr name="LibrariesCustomizerAction.instance/org-netbeans-modules-xml-catalog-CatalogAction.instance" boolvalue="true" />
-            <attr name="org-netbeans-modules-xml-catalog-CatalogAction.instance/Separator2.instance" boolvalue="true" />
-            <attr name="ServerManagerAction.instance/org-netbeans-modules-xml-catalog-CatalogAction.instance" boolvalue="true"/>
-            <attr name="org-netbeans-modules-favorites-templates-TemplatesAction.instance/org-netbeans-modules-xml-catalog-CatalogAction.instance" boolvalue="true"/>
-            <attr name="org-netbeans-modules-xml-catalog-CatalogAction.instance/PaletteManager" boolvalue="true"/>
-        </folder>
+            <file name="org-netbeans-modules-xml-catalog-CatalogAction.instance">
+                <attr name="position" intvalue="1100"/>
+            </file>
+            </folder>
     </folder>
     
     <folder name="Plugins">

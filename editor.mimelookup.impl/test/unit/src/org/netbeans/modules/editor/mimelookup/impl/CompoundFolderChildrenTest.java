@@ -223,6 +223,34 @@ public class CompoundFolderChildrenTest extends NbTestCase {
         assertEquals("Wrong third file", fileName2, ((FileObject) files.get(2)).getNameExt());
     }
 
+    public void testSortingPositional() throws Exception {
+        // Create files
+        String fileName1 = "file-1.instance";
+        String fileName2 = "file-2.instance";
+        String fileName3 = "file-3.instance";
+        TestUtilities.createFile(getWorkDir(), "Tmp/A/B/C/D/" + fileName1);
+        TestUtilities.createFile(getWorkDir(), "Tmp/A/B/" + fileName2);
+        TestUtilities.createFile(getWorkDir(), "Tmp/A/" + fileName3);
+
+        // Set the sorting attributes
+        FileObject layer1 = Repository.getDefault().getDefaultFileSystem().findResource("Tmp/A/B/C/D");
+        FileObject layer2 = Repository.getDefault().getDefaultFileSystem().findResource("Tmp/A/B");
+        FileObject layer3 = Repository.getDefault().getDefaultFileSystem().findResource("Tmp/A");
+
+        layer1.getFileObject(fileName1).setAttribute("position", 300);
+        layer2.getFileObject(fileName2).setAttribute("position", 100);
+        layer3.getFileObject(fileName3).setAttribute("position", 200);
+        
+        // Create compound children
+        CompoundFolderChildren cfch = new CompoundFolderChildren(new String [] { "Tmp/A/B/C/D", "Tmp/A/B", "Tmp/A" }, false);
+        List files = cfch.getChildren();
+
+        assertEquals("Wrong number of files", 3, files.size());
+        assertEquals("Wrong first file", fileName2, ((FileObject) files.get(0)).getNameExt());
+        assertEquals("Wrong second file", fileName3, ((FileObject) files.get(1)).getNameExt());
+        assertEquals("Wrong third file", fileName1, ((FileObject) files.get(2)).getNameExt());
+    }
+
     // test events
 
     private FileObject findFileByName(List files, String nameExt) {
@@ -249,4 +277,148 @@ public class CompoundFolderChildrenTest extends NbTestCase {
             lastEvent = null;
         }
     } // End of L class
+
+    /* TBD whether any of the following, originally from FolderChildrenTest, are still applicable:
+    public void testSimple() throws Exception {
+        String fileName = "org-netbeans-modules-editor-mimelookup-DummyClass2LayerFolder.instance";
+        TestUtilities.createFile(getWorkDir(), "Tmp/A/B/C/D/" + fileName);
+
+        FolderChildren fch = new FolderChildren("Tmp/A/B/C/D");
+        List files = fch.getChildren();
+        
+        assertEquals("Wrong number of files", 1, files.size());
+        assertEquals("Wrong file", fileName, ((FileObject) files.get(0)).getNameExt());
+        
+        fch = new FolderChildren("Tmp/X/Y/Z");
+        files = fch.getChildren();
+
+        assertEquals("Wrong number of files", 0, files.size());
+    }
+
+    public void testAddingFolders() throws Exception {
+        String fileName = "org-netbeans-modules-editor-mimelookup-DummyClass2LayerFolder.instance";
+        FolderChildren fch = new FolderChildren("Tmp/A/B/C/D");
+        List files = fch.getChildren();
+
+        assertEquals("Wrong number of files", 0, files.size());
+        
+        TestUtilities.createFile(getWorkDir(), "Tmp/A/B/C/D/" + fileName);
+        
+        files = fch.getChildren();
+        assertEquals("Wrong number of files", 1, files.size());
+        assertEquals("Wrong file", fileName, ((FileObject) files.get(0)).getNameExt());
+    }
+
+    public void testRemovingFolders() throws Exception {
+        String fileName = "org-netbeans-modules-editor-mimelookup-DummyClass2LayerFolder.instance";
+        TestUtilities.createFile(getWorkDir(), "Tmp/A/B/C/D/" + fileName);
+
+        FolderChildren fch = new FolderChildren("Tmp/A/B/C/D");
+        List files = fch.getChildren();
+
+        assertEquals("Wrong number of files", 1, files.size());
+        assertEquals("Wrong file", fileName, ((FileObject) files.get(0)).getNameExt());
+        
+        TestUtilities.deleteFile(getWorkDir(), "Tmp/A/");
+        
+        files = fch.getChildren();
+        assertEquals("Wrong number of files", 0, files.size());
+    }
+    
+    public void testMultipleAddRemove() throws Exception {
+        for (int i = 0; i < 7; i++) {
+            testAddingFolders();
+            testRemovingFolders();
+        }
+    }
+    
+    public void testChangeEvents() throws Exception {
+        String fileName = "org-netbeans-modules-editor-mimelookup-DummyClass2LayerFolder.instance";
+        FolderChildren fch = new FolderChildren("Tmp/A/B/C/D");
+        L listener = new L();
+        fch.addPropertyChangeListener(listener);
+        
+        List files = fch.getChildren();
+        assertEquals("Wrong number of events", 0, listener.changeEventsCnt);
+        assertEquals("Wrong number of files", 0, files.size());
+        
+        TestUtilities.createFile(getWorkDir(), "Tmp/A/B/C/D/" + fileName);
+
+        assertEquals("Wrong number of events", 1, listener.changeEventsCnt);
+        assertEquals("Wrong event", FolderChildren.PROP_CHILDREN, listener.lastEvent.getPropertyName());
+        files = fch.getChildren();
+        assertEquals("Wrong number of files", 1, files.size());
+        assertEquals("Wrong file", fileName, ((FileObject) files.get(0)).getNameExt());
+
+        listener.reset();
+        
+        TestUtilities.deleteFile(getWorkDir(), "Tmp/A/");
+
+        assertEquals("Wrong number of events", 1, listener.changeEventsCnt);
+        assertEquals("Wrong event", FolderChildren.PROP_CHILDREN, listener.lastEvent.getPropertyName());
+        files = fch.getChildren();
+        assertEquals("Wrong number of files", 0, files.size());
+    }
+
+    public void testEventsWithMultipleChanges() throws Exception {
+        for (int i = 0; i < 11; i++) {
+            testChangeEvents();
+        }
+    }
+
+    public void testEmptyFolder() throws Exception {
+        FolderChildren fch = new FolderChildren("Tmp/A/B/C/D");
+        L listener = new L();
+        fch.addPropertyChangeListener(listener);
+        
+        List files = fch.getChildren();
+        assertEquals("Wrong number of events", 0, listener.changeEventsCnt);
+        assertEquals("Wrong number of files", 0, files.size());
+        
+        TestUtilities.createFile(getWorkDir(), "Tmp/A/B/C/D/");
+
+        assertEquals("Wrong number of events", 0, listener.changeEventsCnt);
+        files = fch.getChildren();
+        assertEquals("Wrong number of files", 0, files.size());
+
+        listener.reset();
+        
+        TestUtilities.deleteFile(getWorkDir(), "Tmp/A/");
+
+        assertEquals("Wrong number of events", 0, listener.changeEventsCnt);
+        files = fch.getChildren();
+        assertEquals("Wrong number of files", 0, files.size());
+    }
+
+    public void testAttributeChanges() throws Exception {
+        TestUtilities.createFile(getWorkDir(), "Tmp/A/B/C/D/");
+        FolderChildren fch = new FolderChildren("Tmp/A/B/C/D");
+        L listener = new L();
+        fch.addPropertyChangeListener(listener);
+        
+        List files = fch.getChildren();
+        assertEquals("Wrong number of events", 0, listener.changeEventsCnt);
+        assertEquals("Wrong number of files", 0, files.size());
+        
+        FileObject f = Repository.getDefault().getDefaultFileSystem().findResource("Tmp/A/B/C/D");
+        assertNotNull("Can't find the folder", f);
+        
+        f.setAttribute("attrName", "attrValue");
+        
+        assertEquals("Wrong number of events", 1, listener.changeEventsCnt);
+        assertEquals("Wrong event", FolderChildren.PROP_ATTRIBUTES, listener.lastEvent.getPropertyName());
+        files = fch.getChildren();
+        assertEquals("Wrong number of files", 0, files.size());
+
+        listener.reset();
+        
+        f.setAttribute("attrName", null);
+
+        assertEquals("Wrong number of events", 1, listener.changeEventsCnt);
+        assertEquals("Wrong event", FolderChildren.PROP_ATTRIBUTES, listener.lastEvent.getPropertyName());
+        files = fch.getChildren();
+        assertEquals("Wrong number of files", 0, files.size());
+    }
+     */
+
 }

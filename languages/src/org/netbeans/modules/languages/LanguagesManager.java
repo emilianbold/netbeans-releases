@@ -21,7 +21,6 @@ package org.netbeans.modules.languages;
 
 import org.netbeans.api.languages.LanguageDefinitionNotFoundException;
 import org.netbeans.api.languages.ParseException;
-import org.netbeans.modules.languages.Utils;
 import org.netbeans.modules.languages.features.ActionCreator;
 import org.netbeans.api.languages.LanguageDefinitionNotFoundException;
 import org.netbeans.modules.languages.features.ColorsManager;
@@ -39,13 +38,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 import java.io.OutputStream;
 import java.util.HashSet;
-
+import java.util.List;
 
 /**
  *
@@ -133,7 +131,7 @@ public class LanguagesManager extends org.netbeans.api.languages.LanguagesManage
     
     private void languageChanged (String mimeType) {
         mimeTypeToLanguage.remove (mimeType);
-        Vector<LanguagesManagerListener> v = (Vector<LanguagesManagerListener>) listeners.clone ();
+        Vector<LanguagesManagerListener> v = new Vector<LanguagesManagerListener>(listeners);
         Iterator<LanguagesManagerListener> it = v.iterator ();
         while (it.hasNext ()) {
             LanguagesManagerListener l = it.next ();
@@ -188,9 +186,9 @@ public class LanguagesManager extends org.netbeans.api.languages.LanguagesManage
                 l.getFeatures("FOLD").size () > 0
             ) {
                 FileUtil.createData (root, "FoldManager/org-netbeans-modules-languages-features-LanguagesFoldManager$Factory.instance");
-                FileUtil.createData (root, "SideBar/org-netbeans-modules-languages-features-CodeFoldingSideBarFactory.instance");
-                FileObject fo = root.getFileObject ("SideBar");
-                fo.setAttribute ("org-netbeans-editor-GlyphGutter.instance/org-netbeans-modules-languages-features-CodeFoldingSideBarFactory.instance", Boolean.TRUE);
+                FileUtil.createData(root, "SideBar/org-netbeans-modules-languages-features-CodeFoldingSideBarFactory.instance").
+                        // Can tune position to whatever seems right; at least put after org-netbeans-editor-GlyphGutter.instance:
+                        setAttribute("position", 1000);
             }
 
             // init error stripe
@@ -220,12 +218,10 @@ public class LanguagesManager extends org.netbeans.api.languages.LanguagesManage
                 createSeparator(
                         toolbarDefault,
                         "Separator-before-comment",
-                        "stop-macro-recording",
-                        "comment"
+                        3000 // can tune to whatever; want after stop-macro-recording
                 );
-                FileUtil.createData (toolbarDefault, "comment");
-                toolbarDefault.setAttribute ("comment/uncomment", Boolean.TRUE);
-                FileUtil.createData (toolbarDefault, "uncomment");
+                FileUtil.createData(toolbarDefault, "comment").setAttribute("position", 3100);
+                FileUtil.createData(toolbarDefault, "uncomment").setAttribute("position", 3200);
                 
                 if (root.getFileObject("Keybindings/NetBeans/Defaults/keybindings.xml") == null) {
                     fs.runAtomicAction (new AtomicAction () {
@@ -265,79 +261,66 @@ public class LanguagesManager extends org.netbeans.api.languages.LanguagesManage
     }
 
     private static void initPopupMenu (FileObject root, Language l) throws IOException {
+            List<Feature> actions = l.getFeatures("ACTION");
+            // Could probably use fixed anchor points if these positions settle down:
+            int selectInPos = findPositionOfDefaultPopupAction("org-netbeans-modules-editor-NbSelectInPopupAction.instance", 1000);
+            int increment = (findPositionOfDefaultPopupAction("org-openide-actions-CutAction.instance", 2000) - selectInPos) / (actions.size() + 3);
             FileObject popup = FileUtil.createFolder (root, "Popup");
-            createSeparator (popup, "SeparatorAfterSelectInPopupAction", "org-netbeans-modules-editor-NbSelectInPopupAction.instance", null);
-            List<Feature> actions = l.getFeatures ("ACTION");
-            String lastAction = "SeparatorAfterSelectInPopupAction.instance";
+            int pos = selectInPos + increment;
+            createSeparator(popup, "SeparatorAfterSelectInPopupAction", pos);
             boolean actionAdded = false;
-            Iterator<Feature> it = actions.iterator ();
-            while (it.hasNext ()) {
-                Feature action = it.next ();
+            for (Feature action : actions) {
                 if (action.getBoolean ("explorer", false))
                     continue;
                 actionAdded = true;
+                pos += increment;
                 String name = action.getSelector ().getAsString ();
                 String displayName= l.localize((String)action.getValue ("name"));
                 String performer = action.getMethodName ("performer");
                 String enabler = action.getMethodName ("enabled");
+                /* XXX disabled for now; could use numeric position key if desired:
                 String installAfter = (String) action.getValue ("install_after");
                 String installBefore = (String) action.getValue ("install_before");
+                 */
                 boolean separatorBefore = action.getBoolean ("separator_before", false);
                 boolean separatorAfter = action.getBoolean ("separator_after", false);
                 FileObject fobj = FileUtil.createData (popup, name + ".instance"); // NOI18N
                 fobj.setAttribute("instanceCreate", new ActionCreator (new Object[] {displayName, performer, enabler})); // NOI18N
                 fobj.setAttribute("instanceClass", "org.netbeans.modules.languages.features.GenericAction"); // NOI18N
+                fobj.setAttribute("position", pos);
                 if (separatorBefore) {
-                    createSeparator (popup, name + "_separator_before", installBefore, name + ".instance");
-                    popup.setAttribute (name + "_separator_before/" + name + ".instance", Boolean.TRUE);
-                } else
-                if (installBefore != null)
-                    popup.setAttribute (installBefore + "/" + name + ".instance", Boolean.TRUE);
-                else
-                popup.setAttribute (lastAction + "/" + name + ".instance", Boolean.TRUE);
+                    createSeparator(popup, name + "_separator_before", pos - increment / 3);
+                }
                 if (separatorAfter) {
-                    createSeparator (popup, name + "_separator_after", installAfter, name + ".instance");
-                    popup.setAttribute (name + "_separator_after/" + name + ".instance", Boolean.TRUE);
-                } else
-                if (installAfter != null)
-                    popup.setAttribute (installAfter + "/" + name + ".instance", Boolean.TRUE);
-                if (installAfter == null && installBefore == null)
-                    lastAction = name + ".instance";
+                    createSeparator(popup, name + "_separator_after", pos + increment / 3);
+                }
             }
-            //popup.setAttribute (lastAction + "/org-netbeans-modules-languages-features-FormatAction.instance", Boolean.TRUE);
-            //FileUtil.createData (popup, "org-netbeans-modules-languages-features-FormatAction.instance");
-            
+            //FileUtil.createData (popup, "org-netbeans-modules-languages-features-FormatAction.instance").setAttribute("position", ...);
             if (actionAdded) {
-                createSeparator (popup, "SeparatorBeforeCut", lastAction, "org-openide-actions-CutAction.instance");
+                createSeparator(popup, "SeparatorBeforeCut", pos + increment);
             }
-            createSeparator (popup, "SeparatorAfterPaste", "org-openide-actions-PasteAction.instance", "generate-fold-popup");
-            FileUtil.createData (popup, "generate-fold-popup");
+            FileUtil.createData (popup, "generate-fold-popup").setAttribute("position", findPositionOfDefaultPopupAction("org-openide-actions-PasteAction.instance", 3000) + 50);
             // init actions
     }
-    
-    private String spacesToDashes(String text) {
-        StringBuffer buf = new StringBuffer();
-        int length = text.length();
-        for (int x = 0; x < length; x++) {
-            char c = text.charAt(x);
-            buf.append(Character.isWhitespace(c) ? '_' : c);
+    private static int findPositionOfDefaultPopupAction(String name, int fallback) {
+        FileObject f = Repository.getDefault().getDefaultFileSystem().findResource("Editors/Popup/" + name);
+        if (f != null) {
+            Object pos = f.getAttribute("position");
+            if (pos instanceof Integer) {
+                return (Integer) pos;
+            }
         }
-        return buf.toString();
+        return fallback;
     }
-
+    
     private static void createSeparator (
         FileObject      folder,
         String          name,
-        String          after,
-        String          before
+        int position
     ) throws IOException {
-        name += ".instance";
-        FileObject separator = FileUtil.createData (folder, name);
+        FileObject separator = FileUtil.createData(folder, name + ".instance");
         separator.setAttribute ("instanceClass", "javax.swing.JSeparator");
-        if (after != null)
-            folder.setAttribute (after + "/" + name, Boolean.TRUE);
-        if (before != null)
-            folder.setAttribute (name + "/" + before, Boolean.TRUE);
+        separator.setAttribute("position", position);
     }
     
     

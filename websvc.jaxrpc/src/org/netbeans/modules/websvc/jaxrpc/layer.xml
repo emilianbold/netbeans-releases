@@ -18,22 +18,23 @@
         <!-- Web Service References node in J2SE Project -->
         <folder name="org-netbeans-modules-java-j2seproject">
             <folder name="Nodes">
-                <attr name="org-netbeans-modules-java-j2seproject-ui-LibrariesNodeFactory.instance/org-netbeans-modules-websvc-jaxrpc-nodes-JaxRpcNodeFactory.instance" boolvalue="true"/>
-                <file name="org-netbeans-modules-websvc-jaxrpc-nodes-JaxRpcNodeFactory.instance"/>
+                <file name="org-netbeans-modules-websvc-jaxrpc-nodes-JaxRpcNodeFactory.instance">
+                    <attr name="position" intvalue="400"/>
+                </file>
             </folder>
             <folder name="Customizer">
-                <attr name="Application/Client.instance" boolvalue="true"/>
                 <file name="Client.instance">
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.websvc.jaxrpc.project.customizer.JaxRpcCompositePanelProvider.createJaxRpcClients"/>
+                    <attr name="position" intvalue="600"/>
                 </file>
             </folder>
         </folder>
         <folder name="org-netbeans-modules-web-project">
             <folder name="Nodes">
-                <attr name="org-netbeans-modules-web-project-ui-DocBaseNodeFactory.instance/org-netbeans-modules-websvc-jaxrpc-nodes-JaxRpcWebServiceNodeFactory.instance" boolvalue="true"/>
-                <file name="org-netbeans-modules-websvc-jaxrpc-nodes-JaxRpcWebServiceNodeFactory.instance"/>
-                <attr name="org-netbeans-modules-websvc-jaxrpc-nodes-JaxRpcWebServiceNodeFactory.instance/org-netbeans-modules-web-project-ui-ConfFilesNodeFactory.instance" boolvalue="true"/>
-            </folder>
+                <file name="org-netbeans-modules-websvc-jaxrpc-nodes-JaxRpcWebServiceNodeFactory.instance">
+                    <attr name="position" intvalue="300"/>
+                </file>
+                </folder>
         </folder>
     </folder>
 

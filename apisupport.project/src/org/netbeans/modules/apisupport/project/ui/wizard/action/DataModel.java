@@ -212,9 +212,8 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         
         // create layer entry for toolbar button
         if (toolbarEnabled) {
-            generateOrder(toolbar, toolbarPosition.getBefore(), shadow);
             generateShadow(toolbar + "/" + shadow, instanceFullPath); // NOI18N
-            generateOrder(toolbar, shadow, toolbarPosition.getAfter());
+            generateOrder(toolbar, toolbarPosition.getBefore(), shadow, toolbarPosition.getAfter());
         }
         
         // create layer entry for keyboard shortcut
@@ -249,34 +248,25 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
             final boolean separatorBefore,
             final boolean separatorAfter,
             final Position position) {
+        generateShadow(parentPath + "/" + shadow, instanceFullPath); // NOI18N
+        generateOrder(parentPath, position.getBefore(), shadow, position.getAfter());
         if (separatorBefore) {
             String sepName = dashedPkgName + "-separatorBefore.instance"; // NOI18N
             generateSeparator(parentPath, sepName);
-            generateOrder(parentPath, position.getBefore(), sepName);
-            generateOrder(parentPath, sepName, shadow);
-        } else {
-            generateOrder(parentPath, position.getBefore(), shadow);
+            generateOrder(parentPath, position.getBefore(), sepName, shadow);
         }
-        generateShadow(parentPath + "/" + shadow, instanceFullPath); // NOI18N
         if (separatorAfter) {
             String sepName = dashedPkgName + "-separatorAfter.instance"; // NOI18N
             generateSeparator(parentPath, sepName);
-            generateOrder(parentPath, shadow, sepName);
-            generateOrder(parentPath, sepName, position.getAfter());
-        } else {
-            generateOrder(parentPath, shadow, position.getAfter());
+            generateOrder(parentPath, shadow, sepName, position.getAfter());
         }
     }
     
     /**
-     * Just a helper convenient mehtod for cleaner code. If either
-     * <em>before</em> or <em>after</em> is <code>null</code>, nothing will be
-     * generated.
+     * Just a helper convenient method for cleaner code.
      */
-    private void generateOrder(String layerPath, String before, String after) {
-        if (before != null && after != null) {
-            cmf.add(cmf.orderLayerEntry(layerPath, before, after));
-        }
+    private void generateOrder(String layerPath, String before, String nue, String after) {
+        cmf.add(cmf.orderLayerEntry(layerPath, before, nue, after));
     }
     
     /** Checks whether a proposed class exists. */

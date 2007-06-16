@@ -24,13 +24,11 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="AutoupdateType">
  
             <!-- this ordering left because backward compatibility with deserialized autoupdate types -->
-            <attr name="autoupdate_xml_type.settings/j2meplatform_update_xml_type.settings" boolvalue="true" />
-            <attr name="autoupdate_xml_type_1.settings/j2meplatform_update_xml_type.settings" boolvalue="true" />
-            <attr name="autoupdate_xml_type_2.settings/j2meplatform_update_xml_type.settings" boolvalue="true" />
  
             <file name="j2meplatform_update_xml_type.settings" url="j2meplatform_update_xml_type.settings">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.cldcplatform.catalog.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/mobility/cldcplatform/resources/platform.gif"/>
+                <attr name="position" intvalue="100"/>
                 <attr name="url_key" stringvalue="URL_Platform_Catalog"/>
                 <attr name="enabled" boolvalue="true"/>
             </file>
@@ -43,4 +41,3 @@ Microsystems, Inc. All Rights Reserved.
  
     <folder name="platform_installers"/>
 </filesystem>
-

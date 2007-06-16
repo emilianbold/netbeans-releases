@@ -18,12 +18,12 @@
  Microsystems, Inc. All Rights Reserved.
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
-
 <filesystem>
     <folder name="Templates">
         <folder name="Project">
             <folder name="SOA">
                 <file name="emptyJbi.xml">
+                    <attr name="position" intvalue="200"/>
                     <attr name="template" boolvalue="true"/>
                     <attr name="templateWizardIterator" newvalue="org.netbeans.modules.compapp.projects.jbi.ui.wizards.NewJbiProjectWizardIterator"/>
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.compapp.projects.jbi.ui.wizards.Bundle"/>

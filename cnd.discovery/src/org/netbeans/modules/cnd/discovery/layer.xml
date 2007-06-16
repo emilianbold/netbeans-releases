@@ -23,7 +23,6 @@
  Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  Microsystems, Inc. All Rights Reserved.
 -->
-
 <filesystem>
 
     <folder name="Actions">
@@ -38,10 +37,9 @@
         <folder name="Actions">
             <file name="org.netbeans.modules.cnd.discovery.wizard.DiscoveryWizardAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/View/org.netbeans.modules.cnd.discovery.wizard.DiscoveryWizardAction.instance"/>
+                <attr name="position" intvalue="200"/>
             </file>
-            <attr name="org.netbeans.modules.cnd.modelui.switcher.SwitchProjectAction.shadow/org.netbeans.modules.cnd.discovery.wizard.DiscoveryWizardAction.shadow" boolvalue="true" />
-            <attr name="org.netbeans.modules.cnd.discovery.wizard.DiscoveryWizardAction.shadow/org-netbeans-modules-openfile-OpenFileAction.instance" boolvalue="true" />
-       </folder>
+            </folder>
    </folder>     
 
 </filesystem>

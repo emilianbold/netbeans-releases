@@ -1,3 +1,4 @@
+
 <!--
 The contents of this file are subject to the terms of the Common Development
 and Distribution License (the License). You may not use this file except in
@@ -16,7 +17,6 @@ enclosed by brackets [] replaced by your own identifying information:
 Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  Microsystems, Inc. All Rights Reserved.
 -->
-
 <filesystem>
 
    <folder name="Actions">
@@ -27,15 +27,12 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 
    <folder name="Menu">
       <folder name="Window">
-         <attr name="Output/Other" boolvalue="true"/>
-         <attr name="Debug/Other" boolvalue="true"/>
-         <attr name="Versioning/Other" boolvalue="true"/>
          <folder name="Other">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.documentation.ui.Bundle"/>
-            <attr name="ModelingDocumentation.shadow/DesignCenter.shadow" boolvalue="true"/> 
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.documentation.ui.Bundle"/> 
             <file name="ModelingDocumentation.shadow">
                <attr name="originalFile" stringvalue="Actions/Modeling/org-netbeans-modules-uml-documentation-ui-DocumentViewAction.instance"/>    		
-            </file>
+                <attr name="position" intvalue="100"/>
+                </file>
          </folder>
       </folder>
    </folder> 

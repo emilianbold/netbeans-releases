@@ -18,7 +18,6 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
-
 <filesystem>
     <folder name="org-netbeans-api-java">
         <folder name="platform">
@@ -26,13 +25,15 @@ Microsystems, Inc. All Rights Reserved.
                 <file name="j2me_platforms.instance">
                     <attr name="instanceOf" stringvalue="org.netbeans.spi.java.platform.PlatformInstall"/>
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.mobility.cldcplatform.wizard.Installer.create"/>
+                    <attr name="position" intvalue="100"/>
                 </file>
 
-                <attr name="j2me_platforms.instance/j2me_custom_platform.instance" boolvalue="true"/>
+                
 
                 <file name="j2me_custom_platform.instance">
                     <attr name="instanceOf" stringvalue="org.netbeans.spi.java.platform.PlatformInstall"/>
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.mobility.cldcplatform.customwizard.Installer.create"/>
+                    <attr name="position" intvalue="200"/>
                 </file>
             </folder>
         </folder>
@@ -47,7 +48,7 @@ Microsystems, Inc. All Rights Reserved.
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.cldcplatform.resources.Bundle"/>
                         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/mobility/cldcplatform/resources/platform.gif"/>
                         <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/mobility/cldcplatform/resources/templates/j2meplatformdefinition.html"/>
-                        <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.java.platform.wizard.PlatformInstallIterator.create" />
+                        <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.java.platform.wizard.PlatformInstallIterator.create"/>
                     </file>
                 </folder>
             </folder>
@@ -57,7 +58,7 @@ Microsystems, Inc. All Rights Reserved.
 
     <folder name="xml">
         <folder name="entities">
-            <folder name="NetBeans" >
+            <folder name="NetBeans">
                 <file name="DTD_J2ME_PlatformDefinition_1_0" url="nbresloc:/org/netbeans/modules/mobility/cldcplatform/j2me-platformdefinition-1_0.dtd">
                     <attr name="hint.originalPublicID" stringvalue="-//NetBeans//DTD J2ME PlatformDefinition 1.0//EN"/>
                 </file>

@@ -29,8 +29,6 @@ import org.openide.filesystems.FileUtil;
 import org.openide.modules.ModuleInfo;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.NbBundle;
-import org.openide.util.TopologicalSortException;
-import org.openide.util.Utilities;
 import org.xml.sax.*;
 import org.xml.sax.helpers.DefaultHandler;
 
@@ -66,10 +64,6 @@ class ModeParser {
     
     /** Name of extended attribute for order of children */
     private static final String EA_ORDER = "WinSys-TCRef-Order"; // NOI18N
-    
-    /** Separator of names of two files. The first file should be before
-     * the second one in partial ordering. */
-    private static final char SEP = '/';
     
     private static final boolean DEBUG = Debug.isLoggable(ModeParser.class);
     
@@ -529,126 +523,12 @@ class ModeParser {
             StringBuilder buf = new StringBuilder(255);
             for (int i = 0; i < tcRefNames.length; i++) {
                 if (i > 0) {
-                    buf.append(SEP);
+                    buf.append('/');
                 }
                 buf.append(tcRefNames[i]);
             }
             //if (DEBUG) Debug.log(ModeParser.class, "-- ModeParser.writeOrder buf:" + buf);
             localModeFolder.setAttribute(EA_ORDER, buf.toString ());
-        }
-    }
-    
-    /** Read the list of intended partial orders from disk.
-     * Each element is a string of the form "a<b" for a, b filenames
-     * with extension, where a should come before b.
-     */
-    private Set<String> readPartials () {
-        //if (DEBUG) Debug.log(ModeParser.class, "++ ++");
-        //if (DEBUG) Debug.log(ModeParser.class, "++ ModeParser.readPartials ENTER");
-        Set<String> s = new HashSet<String>(19);
-        
-        //Partials are defined only in module folder
-        if (moduleParentFolder == null) {
-            return s;
-        }
-        FileObject moduleModeFolder = moduleParentFolder.getFileObject(modeName);
-        if (moduleModeFolder == null) {
-            //if (DEBUG) Debug.log(ModeParser.class, "++ ModeParser.readPartials LEAVE 1");
-            return s;
-        }
-        
-        Enumeration e = moduleModeFolder.getAttributes();
-        while (e.hasMoreElements()) {
-            String name = (String) e.nextElement();
-            if (name.indexOf(SEP) != -1) {
-                Object value = moduleModeFolder.getAttribute(name);
-                if ((value instanceof Boolean) && ((Boolean) value).booleanValue()) {
-                    int ind = name.indexOf(SEP);
-                    //Remove file extension 'wstcref'.
-                    String name1 = name.substring(0, ind);
-                    String name2 = name.substring(ind + 1);
-                    //if (DEBUG) Debug.log(ModeParser.class, "name1:" + name1 + " name2:" + name2);
-                    int indExt = name1.indexOf('.');
-                    if (indExt != -1) {
-                        name1 = name1.substring(0, indExt);
-                    }
-                    indExt = name2.indexOf('.');
-                    if (indExt != -1) {
-                        name2 = name2.substring(0, indExt);
-                    }
-                    //if (DEBUG) Debug.log(ModeParser.class, "++ ModeParser.readPartials name BEFORE:" + name);
-                    name = name1 + SEP + name2;
-                    s.add(name);
-                    //if (DEBUG) Debug.log(ModeParser.class, "++ ModeParser.readPartials name AFTER:" + name);
-                }
-            }
-        }
-        //if (DEBUG) Debug.log(ModeParser.class, "++ ModeParser.readPartials LEAVE 2");
-        //if (DEBUG) Debug.log(ModeParser.class, "++");
-        return s;
-    }
-    
-    /**
-     * Get ordering constraints for this folder.
-     * Returns a map from data objects to lists of data objects they should precede.
-     * @param objects a collection of data objects known to be in the folder
-     * @return a constraint map, or null if there are no constraints
-     */
-    private Map<TCRefParser,List<TCRefParser>> getOrderingConstraints (List<TCRefParser> tcRefParsers) {
-        //if (DEBUG) Debug.log(ModeParser.class, "getOrderingConstraints ENTER");
-        final Set<String> partials = readPartials();
-        if (partials.isEmpty()) {
-            //if (DEBUG) Debug.log(ModeParser.class, "getOrderingConstraints LEAVE 1");
-            return null;
-        } else {
-            //Remove items from partials which are in ordering
-            if (tcRefOrder != null) {
-                //if (DEBUG) Debug.log(ModeParser.class, "getOrderingConstraints CLEAN partials");
-                Iterator it = partials.iterator();
-                while (it.hasNext()) {
-                    String constraint = (String) it.next();
-                    //if (DEBUG) Debug.log(ModeParser.class, "getOrderingConstraints CLEAN constraint:" + constraint);
-                    int idx = constraint.indexOf(SEP);
-                    String a = constraint.substring(0, idx);
-                    String b = constraint.substring(idx + 1);
-                    //if (DEBUG) Debug.log(ModeParser.class, "getOrderingConstraints CLEAN a:" + a + " b:" + b);
-                    if (tcRefOrder.containsKey(a) && tcRefOrder.containsKey(b)) {
-                        //if (DEBUG) Debug.log(ModeParser.class, "getOrderingConstraints REMOVE:" + constraint);
-                        it.remove();
-                    } /*else {
-                        if (DEBUG) Debug.log(ModeParser.class, "getOrderingConstraints KEEP:" + constraint);
-                    }*/
-                }
-            }
-            Map<String, TCRefParser> objectsByName = new HashMap<String, TCRefParser>(19);
-            for (int i = 0; i < tcRefParsers.size(); i++) {
-                TCRefParser tcRefParser = tcRefParsers.get(i);
-                objectsByName.put(tcRefParser.getName(), tcRefParser);
-            }
-            Map<TCRefParser,List<TCRefParser>> m = new HashMap<TCRefParser,List<TCRefParser>>(19);
-            for (String constraint: partials) {
-                int idx = constraint.indexOf(SEP);
-                String a = constraint.substring(0, idx);
-                String b = constraint.substring(idx + 1);
-                if ((tcRefOrder != null) && (tcRefOrder.containsKey(a) && tcRefOrder.containsKey(b))) {
-                    continue;
-                }
-                TCRefParser ad = objectsByName.get(a);
-                if (ad == null) {
-                    continue;
-                }
-                TCRefParser bd = objectsByName.get(b);
-                if (bd == null) {
-                    continue;
-                }
-                List<TCRefParser> l = m.get(ad);
-                if (l == null) {
-                    m.put(ad, l = new LinkedList<TCRefParser>());
-                }
-                l.add(bd);
-            }
-            //if (DEBUG) Debug.log(ModeParser.class, "getOrderingConstraints LEAVE 2");
-            return m;
         }
     }
     
@@ -659,21 +539,33 @@ class ModeParser {
      * @return the sorted list (may or may not be the same)
      */
     private List<TCRefParser> carefullySort (List<TCRefParser> l) {
-        Map<TCRefParser, List<TCRefParser>> constraints = getOrderingConstraints(l);
-        if (constraints == null) {
+        if (tcRefOrder != null && !tcRefOrder.isEmpty()) {
+            // XXX could perhaps be more precise, but this is likely close enough
             return l;
-        } else {
-            try {
-                return Utilities.topologicalSort(l, constraints);
-            } catch (TopologicalSortException ex) {
-                @SuppressWarnings("unchecked")
-                List<TCRefParser> corrected = ex.partialSort();
-                PersistenceManager.LOG.log(Level.WARNING,"Note: Mode " + getName() // NOI18N
-                + " cannot be consistently sorted due to ordering conflicts.", ex); // NOI18N
-                PersistenceManager.LOG.log(Level.WARNING,"Using partial sort: " + corrected); // NOI18N
-                return corrected;
-            }
         }
+        if (moduleParentFolder == null) {
+            return l;
+        }
+        FileObject moduleModeFolder = moduleParentFolder.getFileObject(modeName);
+        if (moduleModeFolder == null) {
+            //if (DEBUG) Debug.log(ModeParser.class, "++ ModeParser.readPartials LEAVE 1");
+            return l;
+        }
+        Map<FileObject,TCRefParser> m = new LinkedHashMap<FileObject,TCRefParser>();
+        for (TCRefParser p : l) {
+            FileObject f = moduleModeFolder.getFileObject(p.getName() + '.' + PersistenceManager.TCREF_EXT);
+            if (f == null) {
+                // ???
+                return l;
+            }
+            m.put(f, p);
+        }
+        List<FileObject> files = FileUtil.getOrder(m.keySet(), true);
+        List<TCRefParser> tcs = new ArrayList<TCRefParser>(m.size());
+        for (FileObject f : files) {
+            tcs.add(m.get(f));
+        }
+        return tcs;
     }
     //////////////////////////////////////////////////////////////////
     // END Code to keep order of TopComponents in Mode.

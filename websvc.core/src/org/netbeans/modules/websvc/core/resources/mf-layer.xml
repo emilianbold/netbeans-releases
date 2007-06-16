@@ -23,33 +23,24 @@ Microsystems, Inc. All Rights Reserved.
         <file name="default-binding-handler.xml" url="default-binding-handler.xml"/>
     </folder>
     <folder name="Templates">
-        <attr name="Classes/WebServices" boolvalue="true"/>
         <folder name="WebServices">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.core.client.wizard.Bundle"/>
-            <attr name="WebServiceClient/MessageHandler" boolvalue="true"/>
             <file name="WebServiceClient">
+                <attr name="position" intvalue="200"/>
                 <attr name="template" boolvalue="true"/>
-                <attr name="instantiatingIterator"
-                    methodvalue="org.netbeans.modules.websvc.core.client.wizard.WebServiceClientWizardIterator.create" />
+                <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.websvc.core.client.wizard.WebServiceClientWizardIterator.create"/>
                 <attr name="templateCategory" stringvalue="web-service-clients"/>
-                <attr name="templateWizardURL"
-                    urlvalue="nbresloc:/org/netbeans/modules/websvc/core/client/resources/WebServiceClient.html"/>
-                <attr name="SystemFileSystem.localizingBundle"
-                    stringvalue="org.netbeans.modules.websvc.core.client.wizard.Bundle"/>
-                <attr name="SystemFileSystem.icon"
-                    urlvalue="nbresloc:/org/netbeans/modules/websvc/core/client/resources/WebServiceClientTemplate.png"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/websvc/core/client/resources/WebServiceClient.html"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.core.client.wizard.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/websvc/core/client/resources/WebServiceClientTemplate.png"/>
             </file>
-            <attr name="MessageHandler/WSDL.wsdl" boolvalue="true"/>
-            <file name="WSDL.wsdl" url = "WSDL.template">
+            <file name="WSDL.wsdl" url="WSDL.template">
+                <attr name="position" intvalue="100"/>
                 <attr name="template" boolvalue="true"/>
-                <attr name="templateWizardIterator" 
-                    newvalue="org.netbeans.modules.websvc.wsdl.wizard.WsdlIterator"/>
-                <attr name="templateWizardURL"
-                    urlvalue="nbresloc:/org/netbeans/modules/websvc/wsdl/resources/WSDL.html"/>
-                <attr name="SystemFileSystem.localizingBundle"
-                    stringvalue="org.netbeans.modules.websvc.wsdl.wizard.Bundle"/>
-                <attr name="SystemFileSystem.icon"
-                    urlvalue="nbresloc:/org/netbeans/modules/websvc/wsdl/resources/wsdl16.gif"/>
+                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.websvc.wsdl.wizard.WsdlIterator"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/websvc/wsdl/resources/WSDL.html"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.wsdl.wizard.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/websvc/wsdl/resources/wsdl16.gif"/>
                 <attr name="templateCategory" stringvalue="wsdl"/>
             </file>
             <file name="WSDL_import.wsdl" url="WSDL_import.template"/>
@@ -59,54 +50,42 @@ Microsystems, Inc. All Rights Reserved.
          <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.core.dev.wizard.Bundle"/>
          <file name="WebService.java" url="nbres:/org/netbeans/modules/websvc/core/dev/resources/WebService.template">         
              <attr name="template" boolvalue="true"/>
-             <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.websvc.core.dev.wizard.NewWebServiceWizardIterator.create" />
+             <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.websvc.core.dev.wizard.NewWebServiceWizardIterator.create"/>
              <attr name="templateCategory" stringvalue="web-services"/>
-             <attr name="templateWizardURL"
-                          urlvalue="nbresloc:/org/netbeans/modules/websvc/core/dev/resources/WebService.html"/>
-             <attr name="SystemFileSystem.localizingBundle"
-                          stringvalue="org.netbeans.modules.websvc.core.dev.wizard.Bundle"/>
-             <attr name="SystemFileSystem.icon"
-                urlvalue="nbresloc:/org/netbeans/modules/websvc/core/dev/resources/XMLServiceDataIcon.png"/> 
+             <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/websvc/core/dev/resources/WebService.html"/>
+             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.core.dev.wizard.Bundle"/>
+             <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/websvc/core/dev/resources/XMLServiceDataIcon.png"/> 
          </file>
           <!--  EJB Web Service --> 
           <file name="EjbWebService.java" url="nbres:/org/netbeans/modules/websvc/core/dev/resources/EjbWebService.template"/>
 
          <file name="WebServiceFromWSDL.java">
              <attr name="template" boolvalue="true"/>
-             <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.websvc.core.dev.wizard.NewWebServiceFromWSDLWizardIterator.create" />
+             <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.websvc.core.dev.wizard.NewWebServiceFromWSDLWizardIterator.create"/>
              <attr name="templateCategory" stringvalue="web-services"/>
-             <attr name="templateWizardURL"
-                          urlvalue="nbresloc:/org/netbeans/modules/websvc/core/dev/resources/WebServiceFromWSDL.html"/>
-             <attr name="SystemFileSystem.localizingBundle"
-                          stringvalue="org.netbeans.modules.websvc.core.dev.wizard.Bundle"/>
-             <attr name="SystemFileSystem.icon"
-                urlvalue="nbresloc:/org/netbeans/modules/websvc/core/dev/resources/XMLServiceDataIcon.png"/> 
+             <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/websvc/core/dev/resources/WebServiceFromWSDL.html"/>
+             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.core.dev.wizard.Bundle"/>
+             <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/websvc/core/dev/resources/XMLServiceDataIcon.png"/> 
          </file>
 
          <attr name="WebService/MessageHandler" boolvalue="true"/>
          <file name="MessageHandler.java" url="nbres:/org/netbeans/modules/websvc/core/dev/resources/MessageHandler.template">         
              <attr name="template" boolvalue="true"/>
-             <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.websvc.core.dev.wizard.MessageHandlerWizard.create" />
+             <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.websvc.core.dev.wizard.MessageHandlerWizard.create"/>
              <attr name="templateCategory" stringvalue="web-services"/>
-             <attr name="templateWizardURL"
-                          urlvalue="nbresloc:/org/netbeans/modules/websvc/core/dev/resources/MessageHandler.html"/>
-             <attr name="SystemFileSystem.localizingBundle"
-                          stringvalue="org.netbeans.modules.websvc.core.dev.wizard.Bundle"/>
-             <attr name="SystemFileSystem.icon"
-                urlvalue="nbresloc:/org/netbeans/modules/websvc/core/dev/resources/XMLServiceDataIcon.png"/> 
+             <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/websvc/core/dev/resources/MessageHandler.html"/>
+             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.core.dev.wizard.Bundle"/>
+             <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/websvc/core/dev/resources/XMLServiceDataIcon.png"/> 
          </file>
 
          <attr name="WebService/LogicalHandler" boolvalue="true"/>
          <file name="LogicalHandler.java" url="nbres:/org/netbeans/modules/websvc/core/dev/resources/LogicalHandler.template">         
              <attr name="template" boolvalue="true"/>
-             <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.websvc.core.dev.wizard.LogicalHandlerWizard.create" />
+             <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.websvc.core.dev.wizard.LogicalHandlerWizard.create"/>
              <attr name="templateCategory" stringvalue="web-services"/>
-             <attr name="templateWizardURL"
-                          urlvalue="nbresloc:/org/netbeans/modules/websvc/core/dev/resources/LogicalHandler.html"/>
-             <attr name="SystemFileSystem.localizingBundle"
-                          stringvalue="org.netbeans.modules.websvc.core.dev.wizard.Bundle"/>
-             <attr name="SystemFileSystem.icon"
-                urlvalue="nbresloc:/org/netbeans/modules/websvc/core/dev/resources/XMLServiceDataIcon.png"/> 
+             <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/websvc/core/dev/resources/LogicalHandler.html"/>
+             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.core.dev.wizard.Bundle"/>
+             <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/websvc/core/dev/resources/XMLServiceDataIcon.png"/> 
          </file>
        </folder><!-- Web Services -->
     </folder>
@@ -131,9 +110,10 @@ Microsystems, Inc. All Rights Reserved.
             </folder>
             <folder name="GrammarQueryManagers">
                 <!-- register semantics grammar for wscompile-config (1.1) due to code completion -->
-                <file name="org-netbeans-modules-websvc-wsdl-WSSchemaGrammarQueryMgr.instance"/>
-                <attr name="org-netbeans-modules-websvc-wsdl-WSSchemaGrammarQueryMgr.instance/semantics-grammar-to-generic-gramseparator" boolvalue="true"/>
-            </folder> <!-- GrammarQueryManagers -->
+                <file name="org-netbeans-modules-websvc-wsdl-WSSchemaGrammarQueryMgr.instance">
+                    <attr name="position" intvalue="500"/>
+                </file>
+                </folder> <!-- GrammarQueryManagers -->
         </folder>
     </folder>
     <folder name="Services">
@@ -149,34 +129,42 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="text">
             <folder name="x-wsdl+xml">
                 <folder name="Actions">
-                    <file name="org-openide-actions-EditAction.instance"/>
-                    <attr name="org-openide-actions-EditAction.instance/org-openide-actions-FileSystemAction.instance" boolvalue="true"/>
-                    <file name="org-openide-actions-FileSystemAction.instance"/>
-                    <attr name="org-openide-actions-FileSystemAction.instance/sep-1.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-EditAction.instance">
+                        <attr name="position" intvalue="200"/>
+                    </file>
+                    <file name="org-openide-actions-FileSystemAction.instance">
+                        <attr name="position" intvalue="300"/>
+                    </file>
                     <file name="sep-1.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="700"/>
                     </file>
-                    <attr name="sep-1.instance/org-openide-actions-CutAction.instance" boolvalue="true"/>
-                    <file name="org-openide-actions-CutAction.instance"/>
-                    <attr name="org-openide-actions-CutAction.instance/org-openide-actions-CopyAction.instance" boolvalue="true"/>
-                    <file name="org-openide-actions-CopyAction.instance"/>
-                    <attr name="org-openide-actions-CopyAction.instance/org-openide-actions-PasteAction.instance" boolvalue="true" />
-                    <file name="org-openide-actions-PasteAction.instance"/>
-                    <attr name="org-openide-actions-PasteAction.instance/sep-2.instance" boolvalue="true" />
+                    <file name="org-openide-actions-CutAction.instance">
+                        <attr name="position" intvalue="800"/>
+                    </file>
+                    <file name="org-openide-actions-CopyAction.instance">
+                        <attr name="position" intvalue="900"/>
+                    </file>
+                    <file name="org-openide-actions-PasteAction.instance">
+                        <attr name="position" intvalue="1000"/>
+                    </file>
                     <file name="sep-2.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1100"/>
                     </file>
-                    <attr name="sep-2.instance/org-openide-actions-DeleteAction.instance" boolvalue="true"/>
-                    <file name="org-openide-actions-DeleteAction.instance"/>
-                    <attr name="org-openide-actions-DeleteAction.instance/sep-3.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-DeleteAction.instance">
+                        <attr name="position" intvalue="1200"/>
+                    </file>
                     <file name="sep-3.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1400"/>
                     </file>
-                    <attr name="sep-3.instance/org-openide-actions-SaveAsTemplateAction.instance" boolvalue="true"/>
-                    <file name="org-openide-actions-SaveAsTemplateAction.instance"/>
-                    <attr name="org-openide-actions-SaveAsTemplateAction.instance/sep-4.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-SaveAsTemplateAction.instance">
+                        <attr name="position" intvalue="1500"/>
+                    </file>
                     <file name="sep-4.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1600"/>
                     </file>
                      <!--                   
                     <attr name="sep-4.instance/org-netbeans-modules-xml-tools-actions-CheckAction.instance" boolvalue="true"/>
@@ -187,11 +175,14 @@ Microsystems, Inc. All Rights Reserved.
                     -->
                     <file name="sep-5.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1900"/>
                     </file> 
-                    <attr name="sep-5.instance/org-openide-actions-ToolsAction.instance" boolvalue="true"/>
-                    <file name="org-openide-actions-ToolsAction.instance"/>
-                    <attr name="org-openide-actions-ToolsAction.instance/org-openide-actions-PropertiesAction.instance" boolvalue="true"/>
-                    <file name="org-openide-actions-PropertiesAction.instance"/>
+                    <file name="org-openide-actions-ToolsAction.instance">
+                        <attr name="position" intvalue="2000"/>
+                    </file>
+                    <file name="org-openide-actions-PropertiesAction.instance">
+                        <attr name="position" intvalue="2100"/>
+                    </file>
                 </folder>
             </folder>
         </folder>
@@ -234,8 +225,9 @@ Microsystems, Inc. All Rights Reserved.
                 <file name="org.netbeans.modules.websvc.core.jaxws.projects.J2SEWSSupportLookupProvider.instance"/>
             </folder>
             <folder name="Nodes">
-                <attr name="org-netbeans-modules-java-j2seproject-ui-LibrariesNodeFactory.instance/org-netbeans-modules-websvc-core-jaxws-nodes-WebServicesNodeFactory.instance" boolvalue="true"/>
-                <file name="org-netbeans-modules-websvc-core-jaxws-nodes-WebServicesNodeFactory.instance"/>
+                <file name="org-netbeans-modules-websvc-core-jaxws-nodes-WebServicesNodeFactory.instance">
+                    <attr name="position" intvalue="500"/>
+                </file>
             </folder>
         </folder>
         <folder name="org-netbeans-modules-web-project">
@@ -243,18 +235,19 @@ Microsystems, Inc. All Rights Reserved.
                 <file name="org.netbeans.modules.websvc.core.jaxws.projects.WebWSSupportLookupProvider.instance"/>
             </folder>  
             <folder name="Nodes">
-                <attr name="org-netbeans-modules-web-project-ui-DocBaseNodeFactory.instance/org-netbeans-modules-websvc-core-jaxws-nodes-WebServicesNodeFactory.instance" boolvalue="true"/>
-                <file name="org-netbeans-modules-websvc-core-jaxws-nodes-WebServicesNodeFactory.instance"/>
-                <attr name="org-netbeans-modules-websvc-core-jaxws-nodes-WebServicesNodeFactory.instance/org-netbeans-modules-web-project-ui-ConfFilesNodeFactory.instance" boolvalue="true"/>
-            </folder>
+                <file name="org-netbeans-modules-websvc-core-jaxws-nodes-WebServicesNodeFactory.instance">
+                    <attr name="position" intvalue="400"/>
+                </file>
+                </folder>
         </folder>
         <folder name="org-netbeans-modules-j2ee-ejbjarproject">
             <folder name="Lookup">
                 <file name="org.netbeans.modules.websvc.core.jaxws.projects.EjbWSSupportLookupProvider.instance"/>
             </folder>
             <folder name="Nodes">
-                <attr name="org-netbeans-modules-j2ee-ejbjarproject-ui-LibrariesNodeFactory.instance/org-netbeans-modules-websvc-core-jaxws-nodes-WebServicesNodeFactory.instance" boolvalue="true"/>
-                <file name="org-netbeans-modules-websvc-core-jaxws-nodes-WebServicesNodeFactory.instance"/>
+                <file name="org-netbeans-modules-websvc-core-jaxws-nodes-WebServicesNodeFactory.instance">
+                    <attr name="position" intvalue="600"/>
+                </file>
             </folder>
         </folder>
     </folder>

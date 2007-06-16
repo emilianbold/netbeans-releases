@@ -21,12 +21,12 @@ Microsystems, Inc. All Rights Reserved.
 <filesystem>
     <folder name="Templates">
         <folder name="MIDP">
-            <attr name="HelloMidlet.java/E2EWebApplication.wsclient" boolvalue="true"/>
-            <file name="E2EWebApplication.wsclient" url="templates/MIDP/E2EWebApplication_wsclient.template" >
+            <file name="E2EWebApplication.wsclient" url="templates/MIDP/E2EWebApplication_wsclient.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.end2end.ui.wizard.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbres:org/netbeans/modules/mobility/end2end/resources/e2eclienticon.png"/>
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.mobility.end2end.ui.wizard.GenericServiceIterator.singleton"/>
                 <attr name="instantiatingWizardURL" urlvalue="nbresloc:org/netbeans/modules/mobility/end2end/resources/descriptions/MIDP/E2EWebApplication_wsclient.html"/>
+                <attr name="position" intvalue="800"/>
                 <attr boolvalue="true" name="template"/>
                 <attr name="MIDP" boolvalue="true"/>
                 <attr name="templateCategory" stringvalue="MIDP"/>
@@ -35,9 +35,9 @@ Microsystems, Inc. All Rights Reserved.
     </folder>
     <folder name="RecommendedTemplates">
         <folder name="org.netbeans.modules.kjava.j2meproject">
-            <attr name="core/e2e" boolvalue="true"/>
             <file name="e2e">
                 <attr name="PriviledgedTemplates" stringvalue="Templates/MIDP/E2EWebApplication.wsclient"/>
+                <attr name="position" intvalue="500"/>
             </file>
         </folder>
     </folder>
@@ -70,4 +70,3 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
     </folder>    
 </filesystem>
-

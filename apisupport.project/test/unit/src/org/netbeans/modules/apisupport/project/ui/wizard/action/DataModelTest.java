@@ -26,10 +26,12 @@ import org.netbeans.modules.apisupport.project.CreatedModifiedFilesTest;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.TestBase;
 import org.netbeans.modules.apisupport.project.layers.LayerTestBase;
+import org.netbeans.modules.apisupport.project.layers.LayerUtils;
 import org.netbeans.modules.apisupport.project.ui.wizard.action.DataModel.Position;
 import org.netbeans.modules.project.uiapi.ProjectChooserFactory;
 import org.openide.WizardDescriptor;
-import org.openide.WizardDescriptor.Panel;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  * Tests {@link DataModel}.
@@ -49,7 +51,13 @@ public class DataModelTest extends LayerTestBase {
     
     public void testDataModelGenarationForAlwaysEnabledActions() throws Exception {
         NbModuleProject project = TestBase.generateStandaloneModule(getWorkDir(), "module1");
-        WizardDescriptor wd = new WizardDescriptor(new Panel[] {});
+        LayerUtils.LayerHandle handle = LayerUtils.layerForProject(project);
+        FileObject root = handle.layer(true).getRoot();
+        FileUtil.createData(root, "Menu/Help/Tutorials/quick-start.url").setAttribute("position", 100);
+        FileUtil.createData(root, "Menu/Help/Tutorials/prj-import-guide.url").setAttribute("position", 200);
+        FileUtil.createData(root, "Toolbars/Edit/org-openide-actions-FindAction.instance").setAttribute("position", 600);
+
+        WizardDescriptor wd = new WizardDescriptor() {};
         wd.putProperty(ProjectChooserFactory.WIZARD_KEY_PROJECT, project);
         DataModel data = new DataModel(wd);
         
@@ -97,19 +105,24 @@ public class DataModelTest extends LayerTestBase {
                     "<folder name=\"Menu\">",
                     "<folder name=\"Help\">",
                     "<folder name=\"Tutorials\">",
-                    "<attr name=\"quick-start.url/org-example-module1-separatorBefore.instance\" boolvalue=\"true\"/>",
-                    "<file name=\"org-example-module1-separatorBefore.instance\">",
-                    "<attr name=\"instanceClass\" stringvalue=\"javax.swing.JSeparator\"/>",
-                    "</file>",
-                    "<attr name=\"org-example-module1-separatorBefore.instance/org-example-module1-BeepAction.shadow\" boolvalue=\"true\"/>",
                     "<file name=\"org-example-module1-BeepAction.shadow\">",
                     "<attr name=\"originalFile\" stringvalue=\"Actions/Tools/org-example-module1-BeepAction.instance\"/>",
+                    "<attr name=\"position\" intvalue=\"150\"/>",
                     "</file>",
-                    "<attr name=\"org-example-module1-BeepAction.shadow/org-example-module1-separatorAfter.instance\" boolvalue=\"true\"/>",
                     "<file name=\"org-example-module1-separatorAfter.instance\">",
                     "<attr name=\"instanceClass\" stringvalue=\"javax.swing.JSeparator\"/>",
+                    "<attr name=\"position\" intvalue=\"175\"/>",
                     "</file>",
-                    "<attr name=\"org-example-module1-separatorAfter.instance/prj-import-guide.url\" boolvalue=\"true\"/>",
+                    "<file name=\"org-example-module1-separatorBefore.instance\">",
+                    "<attr name=\"instanceClass\" stringvalue=\"javax.swing.JSeparator\"/>",
+                    "<attr name=\"position\" intvalue=\"125\"/>",
+                    "</file>",
+                    "<file name=\"prj-import-guide.url\">",
+                    "<attr name=\"position\" intvalue=\"200\"/>",
+                    "</file>",
+                    "<file name=\"quick-start.url\">",
+                    "<attr name=\"position\" intvalue=\"100\"/>",
+                    "</file>",
                     "</folder>",
                     "</folder>",
                     "</folder>",
@@ -120,9 +133,12 @@ public class DataModelTest extends LayerTestBase {
                     "</folder>",
                     "<folder name=\"Toolbars\">",
                     "<folder name=\"Edit\">",
-                    "<attr name=\"org-openide-actions-FindAction.instance/org-example-module1-BeepAction.shadow\" boolvalue=\"true\"/>",
                     "<file name=\"org-example-module1-BeepAction.shadow\">",
                     "<attr name=\"originalFile\" stringvalue=\"Actions/Tools/org-example-module1-BeepAction.instance\"/>",
+                    "<attr name=\"position\" intvalue=\"700\"/>",
+                    "</file>",
+                    "<file name=\"org-openide-actions-FindAction.instance\">",
+                    "<attr name=\"position\" intvalue=\"600\"/>",
                     "</file>",
                     "</folder>",
                     "</folder>",
@@ -135,7 +151,7 @@ public class DataModelTest extends LayerTestBase {
     
     public void testDataModelGenarationForConditionallyEnabledActions() throws Exception {
         NbModuleProject project = TestBase.generateStandaloneModule(getWorkDir(), "module1");
-        WizardDescriptor wd = new WizardDescriptor(new Panel[] {});
+        WizardDescriptor wd = new WizardDescriptor() {};
         wd.putProperty(ProjectChooserFactory.WIZARD_KEY_PROJECT, project);
         DataModel data = new DataModel(wd);
         
@@ -195,14 +211,15 @@ public class DataModelTest extends LayerTestBase {
                     "<folder name=\"text\">",
                     "<folder name=\"x-java\">",
                     "<folder name=\"Popup\">",
+                    "<attr name=\"org-example-module1-BeepAction.shadow/generate-goto-popup\" boolvalue=\"true\"/>",
+                    "<attr name=\"org-example-module1-BeepAction.shadow/org-example-module1-separatorAfter.instance\" boolvalue=\"true\"/>",
+                    "<attr name=\"org-example-module1-separatorAfter.instance/generate-goto-popup\" boolvalue=\"true\"/>",
                     "<file name=\"org-example-module1-BeepAction.shadow\">",
                     "<attr name=\"originalFile\" stringvalue=\"Actions/Tools/org-example-module1-BeepAction.instance\"/>",
                     "</file>",
-                    "<attr name=\"org-example-module1-BeepAction.shadow/org-example-module1-separatorAfter.instance\" boolvalue=\"true\"/>",
                     "<file name=\"org-example-module1-separatorAfter.instance\">",
                     "<attr name=\"instanceClass\" stringvalue=\"javax.swing.JSeparator\"/>",
                     "</file>",
-                    "<attr name=\"org-example-module1-separatorAfter.instance/generate-goto-popup\" boolvalue=\"true\"/>",
                     "</folder>",
                     "</folder>",
                     "</folder>",
@@ -211,14 +228,15 @@ public class DataModelTest extends LayerTestBase {
                     "<folder name=\"text\">",
                     "<folder name=\"x-java\">",
                     "<folder name=\"Actions\">",
+                    "<attr name=\"org-example-module1-BeepAction.shadow/OpenAction.instance\" boolvalue=\"true\"/>",
+                    "<attr name=\"org-example-module1-BeepAction.shadow/org-example-module1-separatorAfter.instance\" boolvalue=\"true\"/>",
+                    "<attr name=\"org-example-module1-separatorAfter.instance/OpenAction.instance\" boolvalue=\"true\"/>",
                     "<file name=\"org-example-module1-BeepAction.shadow\">",
                     "<attr name=\"originalFile\" stringvalue=\"Actions/Tools/org-example-module1-BeepAction.instance\"/>",
                     "</file>",
-                    "<attr name=\"org-example-module1-BeepAction.shadow/org-example-module1-separatorAfter.instance\" boolvalue=\"true\"/>",
                     "<file name=\"org-example-module1-separatorAfter.instance\">",
                     "<attr name=\"instanceClass\" stringvalue=\"javax.swing.JSeparator\"/>",
                     "</file>",
-                    "<attr name=\"org-example-module1-separatorAfter.instance/OpenAction.instance\" boolvalue=\"true\"/>",
                     "</folder>",
                     "</folder>",
                     "</folder>",
@@ -226,19 +244,21 @@ public class DataModelTest extends LayerTestBase {
                     "<folder name=\"Menu\">",
                     "<folder name=\"Help\">",
                     "<folder name=\"Tutorials\">",
-                    "<attr name=\"quick-start.url/org-example-module1-separatorBefore.instance\" boolvalue=\"true\"/>",
-                    "<file name=\"org-example-module1-separatorBefore.instance\">",
-                    "<attr name=\"instanceClass\" stringvalue=\"javax.swing.JSeparator\"/>",
-                    "</file>",
+                    "<attr name=\"org-example-module1-BeepAction.shadow/org-example-module1-separatorAfter.instance\" boolvalue=\"true\"/>",
+                    "<attr name=\"org-example-module1-BeepAction.shadow/prj-import-guide.url\" boolvalue=\"true\"/>",
+                    "<attr name=\"org-example-module1-separatorAfter.instance/prj-import-guide.url\" boolvalue=\"true\"/>",
                     "<attr name=\"org-example-module1-separatorBefore.instance/org-example-module1-BeepAction.shadow\" boolvalue=\"true\"/>",
+                    "<attr name=\"quick-start.url/org-example-module1-BeepAction.shadow\" boolvalue=\"true\"/>",
+                    "<attr name=\"quick-start.url/org-example-module1-separatorBefore.instance\" boolvalue=\"true\"/>",
                     "<file name=\"org-example-module1-BeepAction.shadow\">",
                     "<attr name=\"originalFile\" stringvalue=\"Actions/Tools/org-example-module1-BeepAction.instance\"/>",
                     "</file>",
-                    "<attr name=\"org-example-module1-BeepAction.shadow/org-example-module1-separatorAfter.instance\" boolvalue=\"true\"/>",
                     "<file name=\"org-example-module1-separatorAfter.instance\">",
                     "<attr name=\"instanceClass\" stringvalue=\"javax.swing.JSeparator\"/>",
                     "</file>",
-                    "<attr name=\"org-example-module1-separatorAfter.instance/prj-import-guide.url\" boolvalue=\"true\"/>",
+                    "<file name=\"org-example-module1-separatorBefore.instance\">",
+                    "<attr name=\"instanceClass\" stringvalue=\"javax.swing.JSeparator\"/>",
+                    "</file>",
                     "</folder>",
                     "</folder>",
                     "</folder>",

@@ -21,9 +21,9 @@
 <filesystem>
     <folder name="Services">
          <folder name="JavaHelp">
-             <file name="org-netbeans-modules-jdbc-jdbchelp-helpset.xml" url="helpset.xml"/>
-             <attr name="org-netbeans-modules-bpel-bpelhelp-helpset.xml/org-netbeans-modules-jdbc-jdbchelp-helpset.xml" boolvalue="true"/>
-         </folder>
+             <file name="org-netbeans-modules-jdbc-jdbchelp-helpset.xml" url="helpset.xml">
+                <attr name="position" intvalue="2600"/>
+            </file>
+             </folder>
     </folder>
 </filesystem>
-

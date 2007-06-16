@@ -18,8 +18,6 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
-
-
 <filesystem>
 
     <folder name="Actions">
@@ -58,7 +56,7 @@ Microsystems, Inc. All Rights Reserved.
             </folder>
         </folder>
         <folder name="Debug">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
             <file name="org-netbeans-modules-debugger-ui-actions-AddWatchAction.instance"/>
             <file name="org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.debugger.ui.actions.DebuggerAction"/>
@@ -106,7 +104,7 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="instanceOf" stringvalue="javax.swing.Action"/>
             </file>    
 
-            <file name="org-netbeans-modules-debugger-ui-actions-DebugMainProjectAction.instance" />
+            <file name="org-netbeans-modules-debugger-ui-actions-DebugMainProjectAction.instance"/>
             <file name="org-netbeans-modules-debugger-ui-actions-DebugFileAction.instance">
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.debugger.ui.actions.DebuggerAction.createDebugFileAction"/>
             </file>
@@ -114,8 +112,8 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.debugger.ui.actions.DebuggerAction.createDebugTestFileAction"/>
             </file>
             
-            <file name="org-netbeans-modules-debugger-ui-actions-ConnectAction.instance" />
-            <file name="org-netbeans-modules-debugger-ui-actions-AddBreakpointAction.instance" />
+            <file name="org-netbeans-modules-debugger-ui-actions-ConnectAction.instance"/>
+            <file name="org-netbeans-modules-debugger-ui-actions-AddBreakpointAction.instance"/>
             <file name="org-netbeans-modules-debugger-ui-actions-PauseAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.debugger.ui.actions.DebuggerAction"/>
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.debugger.ui.actions.DebuggerAction.createPauseAction"/>
@@ -147,74 +145,69 @@ Microsystems, Inc. All Rights Reserved.
     
     <folder name="Menu">
         <folder name="RunProject">
-            <attr name="org-netbeans-modules-project-ui-RunMainProject.shadow/org-netbeans-modules-debugger-ui-actions-DebugMainProjectAction.shadow" boolvalue="true" />
             <file name="org-netbeans-modules-debugger-ui-actions-DebugMainProjectAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-DebugMainProjectAction.instance"/>
+                <attr name="position" intvalue="200"/>
             </file>
-            <attr name="org-netbeans-modules-debugger-ui-actions-DebugMainProjectAction.shadow/org-netbeans-modules-project-ui-TestProject.shadow" boolvalue="true" />
             
             <folder name="RunOther">
-                <attr name="org-netbeans-modules-project-ui-RunSingle.shadow/org-netbeans-modules-debugger-ui-actions-DebugFileAction.shadow" boolvalue="true" />
+                <attr name="position" intvalue="400"/>
                 <file name="org-netbeans-modules-debugger-ui-actions-DebugFileAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-DebugFileAction.instance"/>
+                    <attr name="position" intvalue="200"/>
                 </file>
-                <attr name="org-netbeans-modules-debugger-ui-actions-DebugFileAction.shadow/org-netbeans-modules-project-ui-TestSingle.shadow" boolvalue="true" />
-                <attr name="org-netbeans-modules-project-ui-TestSingle.shadow/org-netbeans-modules-debugger-ui-actions-DebugTestFileAction.shadow" boolvalue="true" />
                 <file name="org-netbeans-modules-debugger-ui-actions-DebugTestFileAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-DebugTestFileAction.instance"/>
+                    <attr name="position" intvalue="400"/>
                 </file>
             </folder>
         </folder>
         
         <folder name="Window">
-            <attr name="Output/Debug" boolvalue="true" />
-            <attr name="Navigator/Debug" boolvalue="true" />
             <folder name="Debug">
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/openide/resources/actions/empty.gif" />
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.debugger.resources.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/openide/resources/actions/empty.gif"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.debugger.resources.Bundle"/>
 
+                <attr name="position" intvalue="1400"/>
                 <file name="org-netbeans-modules-debugger-ui-actions-LocalsViewAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-ui-actions-LocalsViewAction.instance"/>
+                    <attr name="position" intvalue="100"/>
                 </file>
-                <attr name="org-netbeans-modules-debugger-ui-actions-LocalsViewAction.shadow/org-netbeans-modules-debugger-ui-actions-WatchesViewAction.shadow" boolvalue="true" />
 
                 <file name="org-netbeans-modules-debugger-ui-actions-WatchesViewAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-ui-actions-WatchesViewAction.instance"/>
+                    <attr name="position" intvalue="300"/>
                 </file>
-                <attr name="org-netbeans-modules-debugger-ui-actions-WatchesViewAction.shadow/org-netbeans-modules-debugger-ui-actions-CallStackViewAction.shadow" boolvalue="true" />
 
                 <file name="org-netbeans-modules-debugger-ui-actions-CallStackViewAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-ui-actions-CallStackViewAction.instance"/>
+                    <attr name="position" intvalue="400"/>
                 </file>
-                <attr name="org-netbeans-modules-debugger-ui-actions-CallStackViewAction.shadow/org-netbeans-modules-debugger-ui-actions-BreakpointsViewAction.shadow" boolvalue="true" />
 
                 <file name="org-netbeans-modules-debugger-ui-actions-BreakpointsViewAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-ui-actions-BreakpointsViewAction.instance"/>
+                    <attr name="position" intvalue="600"/>
                 </file>
-                <attr name="org-netbeans-modules-debugger-ui-actions-BreakpointsViewAction.shadow/org-netbeans-modules-debugger-ui-actions-SessionsViewAction.shadow" boolvalue="true" />
 
                 <file name="org-netbeans-modules-debugger-ui-actions-SessionsViewAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-ui-actions-SessionsViewAction.instance"/>
+                    <attr name="position" intvalue="700"/>
                 </file>
-                <attr name="org-netbeans-modules-debugger-ui-actions-SessionsViewAction.shadow/org-netbeans-modules-debugger-ui-actions-ThreadsViewAction.shadow" boolvalue="true" />
 
                 <file name="org-netbeans-modules-debugger-ui-actions-ThreadsViewAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-ui-actions-ThreadsViewAction.instance"/>
+                    <attr name="position" intvalue="800"/>
                 </file>
             </folder>
-            <attr name="Debug/Versioning" boolvalue="true" />
-            <attr name="Debug/Other" boolvalue="true" />
-            <attr name="Debug/Separator3.instance" boolvalue="true" />
-        </folder>
+            </folder>
     </folder>
     
     <folder name="ProjectsTabActions">
-        <attr name="org-netbeans-modules-project-ui-RunMainProject.shadow/org-netbeans-modules-debugger-ui-actions-DebugMainProjectAction.shadow" boolvalue="true"/>
         <file name="org-netbeans-modules-debugger-ui-actions-DebugMainProjectAction.shadow">
             <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-DebugMainProjectAction.instance"/>
+            <attr name="position" intvalue="1200"/>
         </file>
-        <attr name="org-netbeans-modules-debugger-ui-actions-DebugMainProjectAction.shadow/sep-4.instance" boolvalue="true"/>
-    </folder>
+        </folder>
 
     <folder name="Shortcuts">
         <file name="F5.shadow">
@@ -287,40 +280,47 @@ Microsystems, Inc. All Rights Reserved.
 
     <folder name="Windows2">
         <folder name="Components">
-            <file name="localsView.settings" url="components/locals.settings" />
-            <file name="watchesView.settings" url="components/watches.settings" />
-            <file name="sessionsView.settings" url="components/sessions.settings" />
-            <file name="threadsView.settings" url="components/threads.settings" />
-            <file name="callstackView.settings" url="components/callstack.settings" />
-            <file name="breakpointsView.settings" url="components/breakpoints.settings" />
+            <file name="localsView.settings" url="components/locals.settings"/>
+            <file name="watchesView.settings" url="components/watches.settings"/>
+            <file name="sessionsView.settings" url="components/sessions.settings"/>
+            <file name="threadsView.settings" url="components/threads.settings"/>
+            <file name="callstackView.settings" url="components/callstack.settings"/>
+            <file name="breakpointsView.settings" url="components/breakpoints.settings"/>
         </folder>
 
         <folder name="Modes">
-            <file name="debugger.wsmode" url="modes/debugger.wsmode" />
+            <file name="debugger.wsmode" url="modes/debugger.wsmode"/>
             <folder name="debugger">
-                <file name="watchesView.wstcref" url="modes/debugger/watches.wstcref" />
-                <attr name="watchesView.wstcref/localsView.wstcref" boolvalue="true"/>
-                <file name="localsView.wstcref" url="modes/debugger/locals.wstcref" />
-                <attr name="localsView.wstcref/callstackView.wstcref" boolvalue="true"/>
-                <file name="callstackView.wstcref" url="modes/debugger/callstack.wstcref" />
-                <attr name="callstackView.wstcref/breakpointsView.wstcref" boolvalue="true"/>
-                <file name="breakpointsView.wstcref" url="modes/debugger/breakpoints.wstcref" />
-                <attr name="breakpointsView.wstcref/sessionsView.wstcref" boolvalue="true"/>
-                <file name="sessionsView.wstcref" url="modes/debugger/sessions.wstcref" />
-                <attr name="sessionsView.wstcref/threadsView.wstcref" boolvalue="true"/>
-                <file name="threadsView.wstcref" url="modes/debugger/threads.wstcref" />
+                <file name="watchesView.wstcref" url="modes/debugger/watches.wstcref">
+                    <attr name="position" intvalue="300"/>
+                </file>
+                <file name="localsView.wstcref" url="modes/debugger/locals.wstcref">
+                    <attr name="position" intvalue="700"/>
+                </file>
+                <file name="callstackView.wstcref" url="modes/debugger/callstack.wstcref">
+                    <attr name="position" intvalue="800"/>
+                </file>
+                <file name="breakpointsView.wstcref" url="modes/debugger/breakpoints.wstcref">
+                    <attr name="position" intvalue="900"/>
+                </file>
+                <file name="sessionsView.wstcref" url="modes/debugger/sessions.wstcref">
+                    <attr name="position" intvalue="1000"/>
+                </file>
+                <file name="threadsView.wstcref" url="modes/debugger/threads.wstcref">
+                    <attr name="position" intvalue="1100"/>
+                </file>
             </folder>
         </folder>
         
         <folder name="Groups">
-            <file name="debugger.wsgrp" url="groups/debugger.wsgrp" />
+            <file name="debugger.wsgrp" url="groups/debugger.wsgrp"/>
             <folder name="debugger">
-                <file name="localsView.wstcgrp" url="groups/debugger/locals.wstcgrp" />
-                <file name="watchesView.wstcgrp" url="groups/debugger/watches.wstcgrp" />
-                <file name="sessionsView.wstcgrp" url="groups/debugger/sessions.wstcgrp" />
-                <file name="threadsView.wstcgrp" url="groups/debugger/threads.wstcgrp" />
-                <file name="callstackView.wstcgrp" url="groups/debugger/callstack.wstcgrp" />
-                <file name="breakpointsView.wstcgrp" url="groups/debugger/breakpoints.wstcgrp" />
+                <file name="localsView.wstcgrp" url="groups/debugger/locals.wstcgrp"/>
+                <file name="watchesView.wstcgrp" url="groups/debugger/watches.wstcgrp"/>
+                <file name="sessionsView.wstcgrp" url="groups/debugger/sessions.wstcgrp"/>
+                <file name="threadsView.wstcgrp" url="groups/debugger/threads.wstcgrp"/>
+                <file name="callstackView.wstcgrp" url="groups/debugger/callstack.wstcgrp"/>
+                <file name="breakpointsView.wstcgrp" url="groups/debugger/breakpoints.wstcgrp"/>
             </folder>
         </folder>
 
@@ -328,10 +328,10 @@ Microsystems, Inc. All Rights Reserved.
     
     <folder name="Toolbars">
         <folder name="Build">
-            <attr name="org-netbeans-modules-project-ui-RunMainProject.shadow/org-netbeans-modules-debugger-ui-actions-DebugMainProjectAction.shadow" boolvalue="true"/>
 
             <file name="org-netbeans-modules-debugger-ui-actions-DebugMainProjectAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-DebugMainProjectAction.instance"/>
+                <attr name="position" intvalue="400"/>
             </file>
         </folder>
     </folder>

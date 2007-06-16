@@ -18,7 +18,6 @@
   Microsystems, Inc. All Rights Reserved.
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
-
 <filesystem>
     <!-- # 100900
     <folder name="Toolbars">
@@ -40,21 +39,20 @@
         <folder name="File">
             <file name="org-netbeans-modules-print-impl-action-PageSetupAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/File/org-netbeans-modules-print-impl-action-PageSetupAction.instance"/>
+                <attr name="position" intvalue="2100"/>
             </file>
             
             <file name="org-netbeans-modules-print-impl-action-PrintAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/File/org-netbeans-modules-print-impl-action-PrintAction.instance"/>
+                <attr name="position" intvalue="2200"/>
             </file>
 
             <file name="org-netbeans-modules-print-impl-action-PreviewAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/File/org-netbeans-modules-print-impl-action-PreviewAction.instance"/>
+                <attr name="position" intvalue="2300"/>
             </file>
 
             <!-- sorting -->
-            <attr name="org-openide-actions-SaveAllAction.instance/org-netbeans-modules-print-impl-action-PageSetupAction.shadow" boolvalue="true"/>
-            <attr name="org-netbeans-modules-print-impl-action-PageSetupAction.shadow/org-netbeans-modules-print-impl-action-PrintAction.shadow" boolvalue="true"/>
-            <attr name="org-netbeans-modules-print-impl-action-PrintAction.shadow/org-netbeans-modules-print-impl-action-PreviewAction.shadow" boolvalue="true"/>
-            <attr name="org-netbeans-modules-print-impl-action-PreviewAction.shadow/org-netbeans-modules-editor-ExportHtmlAction.instance" boolvalue="true"/>
 
             <!-- hide -->
             <file name="org-openide-actions-PageSetupAction.instance_hidden"/>

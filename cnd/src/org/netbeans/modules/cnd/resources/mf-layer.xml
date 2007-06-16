@@ -22,23 +22,23 @@ Microsystems, Inc. All Rights Reserved.
 
     <folder name="Menu">
         <folder name="Help">
-            <attr name="using-netbeans.url/NetBeansCCDevelopmentPack.url" boolvalue="true"/>
             <file name="NetBeansCCDevelopmentPack.url" url="nbresloc:/org/netbeans/modules/cnd/resources/NetBeansCCDevelopmentPack.url">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
+                <attr name="position" intvalue="100"/>
             </file>
 	</folder> <!-- Help -->
     </folder> <!-- Menu -->
 
-    <folder name="OptionsDialog">
-        <attr name="Keymaps.instance/CndOptionsCategory.instance" boolvalue="true"/> 
+    <folder name="OptionsDialog"> 
         <file name="CndOptionsCategory.instance">
             <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.ui.options.CndOptionsCategory"/>
-        </file>
-        <attr name="CndOptionsCategory.instance/Advanced.instance" boolvalue="true"/> 
+            <attr name="position" intvalue="700"/>
+        </file> 
         <folder name="CPlusPlus">
             <file name="ToolsPanelController.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.ui.options.ToolsPanelController"/>
                 <attr name="instanceOf" stringvalue="org.netbeans.spi.options.OptionsPanelController"/>
+                <attr name="position" intvalue="100"/>
             </file>
         </folder>     
         <folder name="PreviewExamples">
@@ -77,38 +77,40 @@ Microsystems, Inc. All Rights Reserved.
                 </folder>
 
 		<folder name="SideBar">
-		    <file name="org-netbeans-modules-cnd-editor-CppCodeFoldingSideBarFactory.instance"/>
-		    <attr name="org-netbeans-editor-GlyphGutter.instance/org-netbeans-modules-cnd-editor-CppCodeFoldingSideBarFactory.instance" boolvalue="true"/>
-		</folder>
+		    <file name="org-netbeans-modules-cnd-editor-CppCodeFoldingSideBarFactory.instance">
+                        <attr name="position" intvalue="2500"/>
+                    </file>
+		    </folder>
 
 		<folder name="FoldManager">
 		    <file name="org-netbeans-modules-cnd-editor-CppFoldManager$Factory.instance"/>
 		</folder>
                 <folder name="Popup">
-                    <attr name="org-openide-actions-GotoAction.instance/goto" boolvalue="true"/>
                     <folder name="goto">
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
-                        <file name="goto"/> <!-- action Go To Line... -->
+                        <file name="goto">
+                            <attr name="position" intvalue="200"/>
+                        </file> <!-- action Go To Line... -->
                     </folder>
-                    <attr name="goto/org-netbeans-modules-editor-NbSelectInPopupAction.instance" boolvalue="true"/>
-                    <attr name="org-netbeans-modules-editor-NbSelectInPopupAction.instance/SeparatorBeforeFormat.instance" boolvalue="true"/>
-                    <attr name="SeparatorBeforeFormat.instance/format" boolvalue="true"/>
-                    <attr name="format/SeparatorAfterFormat.instance" boolvalue="true"/>
-                    <attr name="SeparatorAfterFormat.instance/org-netbeans-modules-cnd-debugger-gdb-actions-ToggleBreakpointAction.shadow" boolvalue="true"/>
-                    <attr name="org-openide-actions-PasteAction.instance/SeparatorAfterPaste.instance" boolvalue="true"/>
-                    <attr name="SeparatorAfterPaste.instance/generate-fold-popup" boolvalue="true"/>
 
                     <file name="SeparatorBeforeFormat.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1142"/>
                     </file>
-                    <file name="format"/>                    
+                    <file name="format">
+                        <attr name="position" intvalue="1284"/>
+                    </file>                    
                     <file name="SeparatorAfterFormat.instance">
 			<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1426"/>
                     </file>
                     <file name="SeparatorAfterPaste.instance">
 			<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="4100"/>
                     </file>
-                    <file name="generate-fold-popup"/>
+                    <file name="generate-fold-popup">
+                        <attr name="position" intvalue="4200"/>
+                    </file>
                 </folder>
 	    </folder>
 
@@ -133,38 +135,40 @@ Microsystems, Inc. All Rights Reserved.
                 </folder>
 
 		<folder name="SideBar">
-		    <file name="org-netbeans-modules-cnd-editor-CppCodeFoldingSideBarFactory.instance"/>
-		    <attr name="org-netbeans-editor-GlyphGutter.instance/org-netbeans-modules-cnd-editor-CppCodeFoldingSideBarFactory.instance" boolvalue="true"/>
-		</folder>
+		    <file name="org-netbeans-modules-cnd-editor-CppCodeFoldingSideBarFactory.instance">
+                        <attr name="position" intvalue="2500"/>
+                    </file>
+		    </folder>
 
 		<folder name="FoldManager">
 		    <file name="org-netbeans-modules-cnd-editor-CppFoldManager$Factory.instance"/>
 		</folder>
                 <folder name="Popup">
-                    <attr name="org-openide-actions-GotoAction.instance/goto" boolvalue="true"/>
                     <folder name="goto">
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
-                        <file name="goto"/> <!-- action Go To Line... -->
+                        <file name="goto">
+                            <attr name="position" intvalue="200"/>
+                        </file> <!-- action Go To Line... -->
                     </folder>
-                    <attr name="goto/org-netbeans-modules-editor-NbSelectInPopupAction.instance" boolvalue="true"/>
-                    <attr name="org-netbeans-modules-editor-NbSelectInPopupAction.instance/SeparatorBeforeFormat.instance" boolvalue="true"/>
-                    <attr name="SeparatorBeforeFormat.instance/format" boolvalue="true"/>
-                    <attr name="format/SeparatorAfterFormat.instance" boolvalue="true"/>
-                    <attr name="SeparatorAfterFormat.instance/org-netbeans-modules-cnd-debugger-gdb-actions-ToggleBreakpointAction.shadow" boolvalue="true"/>
-                    <attr name="org-openide-actions-PasteAction.instance/SeparatorAfterPaste.instance" boolvalue="true"/>
-                    <attr name="SeparatorAfterPaste.instance/generate-fold-popup" boolvalue="true"/>
 
                     <file name="SeparatorBeforeFormat.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1142"/>
                     </file>
-                    <file name="format"/>                    
+                    <file name="format">
+                        <attr name="position" intvalue="1284"/>
+                    </file>                    
                     <file name="SeparatorAfterFormat.instance">
 			<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1426"/>
                     </file>
                     <file name="SeparatorAfterPaste.instance">
 			<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="4100"/>
                     </file>
-                    <file name="generate-fold-popup"/>
+                    <file name="generate-fold-popup">
+                        <attr name="position" intvalue="4200"/>
+                    </file>
                 </folder>
 	    </folder>
 
@@ -186,19 +190,22 @@ Microsystems, Inc. All Rights Reserved.
                 
 		<folder name="Toolbars">
 		    <folder name="Default">
-			<file name="org-netbeans-modules-cnd-editor-parser-NavigateAction.instance"/>
-			<attr name="org-netbeans-modules-cnd-editor-parser-NavigateAction.instance/Separator0.instance" boolvalue="true"/>
-
-                        <attr name="stop-macro-recording/Separator-before-comment-fortran.instance" boolvalue="true"/>
-                        <file name="Separator-before-comment-fortran.instance">
-                            <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+			<file name="org-netbeans-modules-cnd-editor-parser-NavigateAction.instance">
+                            <attr name="position" intvalue="900"/>
                         </file>
 
-			<attr name="Separator-before-comment-fortran.instance/comment" boolvalue="true"/>
-			<file name="comment"/>
+                        <file name="Separator-before-comment-fortran.instance">
+                            <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                            <attr name="position" intvalue="19100"/>
+                        </file>
 
-			<attr name="comment/uncomment" boolvalue="true"/>
-			<file name="uncomment"/>                                                
+			<file name="comment">
+                            <attr name="position" intvalue="19200"/>
+                        </file>
+
+			<file name="uncomment">
+                            <attr name="position" intvalue="19300"/>
+                        </file>                                                
 		    </folder>
 		</folder>
 
@@ -259,8 +266,9 @@ Microsystems, Inc. All Rights Reserved.
 	</folder>
 
 	<folder name="JavaHelp">
-	    <attr name="org-netbeans-modules-usersguide-below-regular.txt/org-netbeans-modules-cnd-helpset.xml" boolvalue="true"/>
-            <file name="org-netbeans-modules-cnd-helpset.xml" url="helpset-decl.xml"/>
+	    <file name="org-netbeans-modules-cnd-helpset.xml" url="helpset-decl.xml">
+                <attr name="position" intvalue="2100"/>
+            </file>
         </folder> <!-- JavaHelp -->
 
         <folder name="IndentEngine">
@@ -307,28 +315,30 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="Templates">
         <folder name="cFiles">
 	    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
-      	    <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/cFiles.html"/>
+      	    <attr name="position" intvalue="400"/>
+            <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/cFiles.html"/>
 	    
 	    <file name="file.c" url="templates/c/empty-c.template">
 		<attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
+                <attr name="position" intvalue="100"/>
                 <attr name="template" boolvalue="true"/>
               	<attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/empty-c.html"/>
 		<attr name="templateWizardIterator" newvalue="org.netbeans.modules.cnd.editor.CCFSrcFileIterator"/>
 		<attr name="templateCategory" stringvalue="c-types"/>
             </file>
 
-	    <attr name="file.c/main.c" boolvalue="true"/>
 	    <file name="main.c" url="templates/c/simple-c.template">
 		<attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
+                <attr name="position" intvalue="200"/>
                 <attr name="template" boolvalue="true"/>
               	<attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/simple-c.html"/>
 		<attr name="templateWizardIterator" newvalue="org.netbeans.modules.cnd.editor.CCFSrcFileIterator"/>
 		<attr name="templateCategory" stringvalue="c-types"/>
             </file>
 
-	    <attr name="main.c/file.h" boolvalue="true"/>
 	    <file name="file.h" url="templates/c/simple-h.template">
 		<attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
+                <attr name="position" intvalue="300"/>
                 <attr name="template" boolvalue="true"/>
               	<attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/simple-c-h.html"/>
 		<attr name="templateWizardIterator" newvalue="org.netbeans.modules.cnd.editor.CCFSrcFileIterator"/>
@@ -336,10 +346,10 @@ Microsystems, Inc. All Rights Reserved.
             </file>
         </folder> <!-- End cFiles folder -->
 
-        <attr name="cFiles/cppFiles" boolvalue="true"/>
         <folder name="cppFiles">
 	    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
-      	    <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/cppFiles.html"/>
+      	    <attr name="position" intvalue="500"/>
+            <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/cppFiles.html"/>
 
 	    <file name="file.cc" url="templates/cpp/empty-cc.template">
 	        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
@@ -349,18 +359,18 @@ Microsystems, Inc. All Rights Reserved.
 		<attr name="templateCategory" stringvalue="cpp-types"/>
             </file>
 
-	    <attr name="file.cc.c/main.cc" boolvalue="true"/>
-            <file name="main.cc" url="templates/cpp/simple-cc.template">
+	    <file name="main.cc" url="templates/cpp/simple-cc.template">
 	        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
+                <attr name="position" intvalue="100"/>
                 <attr name="template" boolvalue="true"/>
               	<attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/simple-cc.html"/>
 		<attr name="templateWizardIterator" newvalue="org.netbeans.modules.cnd.editor.CCFSrcFileIterator"/>
 		<attr name="templateCategory" stringvalue="cpp-types"/>
             </file>
 
-	    <attr name="main.cc/file.h" boolvalue="true"/>
-            <file name="file.h" url="templates/cpp/header-h.template">
+	    <file name="file.h" url="templates/cpp/header-h.template">
 	        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
+                <attr name="position" intvalue="200"/>
                 <attr name="template" boolvalue="true"/>
               	<attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/simple-cc-h.html"/>
 		<attr name="templateWizardIterator" newvalue="org.netbeans.modules.cnd.editor.CCFSrcFileIterator"/>
@@ -369,10 +379,10 @@ Microsystems, Inc. All Rights Reserved.
 
         </folder> <!-- End cppFiles folder -->
 
-        <attr name="cppFiles/fortranFiles" boolvalue="true"/>
         <folder name="fortranFiles">
 	    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
-      	    <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/fortranFiles.html"/>
+      	    <attr name="position" intvalue="600"/>
+            <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/fortranFiles.html"/>
 
 	    <file name="fortranEmptyFile.f90" url="templates/fortran/empty-f90.template">
 		<attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
@@ -404,10 +414,10 @@ Microsystems, Inc. All Rights Reserved.
             </file>
         </folder> <!-- End fortranFiles folder -->
 
-        <attr name="fortranFiles/shells" boolvalue="true"/>
         <folder name="shells">
 	    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
-      	    <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/shells.html"/>
+      	    <attr name="position" intvalue="700"/>
+            <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/shells.html"/>
 
 	    <file name="shell.bash" url="templates/shell/simple-shell.template">
 		<attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
@@ -446,23 +456,23 @@ Microsystems, Inc. All Rights Reserved.
             </file>
         </folder> <!-- End cFiles folder -->
 
-        <attr name="shells/MakeTemplates" boolvalue="true"/>
-	<folder name="MakeTemplates">
+        <folder name="MakeTemplates">
 	    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
-	    <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/makefiles.html"/>
+	    <attr name="position" intvalue="800"/>
+            <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/makefiles.html"/>
 	    
-	    <attr name="ComplexMakefile/SimpleMakefiles" boolvalue="true"/>
 	    <file name="ComplexMakefile">
-		<attr name="template" boolvalue="true"/>
+		<attr name="position" intvalue="100"/>
+                <attr name="template" boolvalue="true"/>
 		<attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
 		<attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/complexMakefile.html"/> 
 		<attr name="templateWizardIterator" newvalue="org.netbeans.modules.cnd.makewizard.MakefileWizardComplex"/>
 		<attr name="templateCategory" stringvalue="makefile-types"/>
 	    </file>
 	    <folder name="SimpleMakefiles">
-		<attr name="ComplexMakefile/SimpleMakefiles" boolvalue="true"/>
 		<attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
-		<attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/simpleMakefiles.html"/> 
+		<attr name="position" intvalue="200"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/simpleMakefiles.html"/> 
 		<file name="ExecutableMakefile">
 		    <attr name="template" boolvalue="true"/>
 		    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
@@ -486,55 +496,55 @@ Microsystems, Inc. All Rights Reserved.
 		</file>
 	    </folder>
 	</folder>
-        <attr name="MakeTemplates/XML" boolvalue="true"/>
-    </folder> <!-- Templates -->
+        </folder> <!-- Templates -->
     
     <folder name="Loaders">
         <folder name="application">
             <folder name="x-executable+elf">
                 <folder name="Actions">
                     <file name="FileSystemAction.instance">
-                        <attr name="instanceClass" stringvalue="org.openide.actions.FileSystemAction" />
+                        <attr name="instanceClass" stringvalue="org.openide.actions.FileSystemAction"/>
+                        <attr name="position" intvalue="300"/>
                     </file>
-                    <attr boolvalue="true" name="FileSystemAction.instance/Separator1.instance" />
                     <file name="Separator1.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="400"/>
                     </file>
-                    <attr boolvalue="true" name="Separator1.instance/CutAction.instance" />
                     <file name="CutAction.instance">
-                        <attr name="instanceClass" stringvalue="org.openide.actions.CutAction" />
+                        <attr name="instanceClass" stringvalue="org.openide.actions.CutAction"/>
+                        <attr name="position" intvalue="500"/>
                     </file>
-                    <attr boolvalue="true" name="CutAction.instance/CopyAction.instance" />
                     <file name="CopyAction.instance">
-                        <attr name="instanceClass" stringvalue="org.openide.actions.CopyAction" />
+                        <attr name="instanceClass" stringvalue="org.openide.actions.CopyAction"/>
+                        <attr name="position" intvalue="600"/>
                     </file>
-                    <attr boolvalue="true" name="CopyAction.instance/PasteAction.instance" />
                     <file name="PasteAction.instance">
-                        <attr name="instanceClass" stringvalue="org.openide.actions.PasteAction" />
+                        <attr name="instanceClass" stringvalue="org.openide.actions.PasteAction"/>
+                        <attr name="position" intvalue="700"/>
                     </file>
-                    <attr boolvalue="true" name="PasteAction.instance/Separator2.instance" />
                     <file name="Separator2.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="800"/>
                     </file>
-                    <attr boolvalue="true" name="Separator2.instance/DeleteAction.instance" />
                     <file name="DeleteAction.instance">
-                        <attr name="instanceClass" stringvalue="org.openide.actions.DeleteAction" />
+                        <attr name="instanceClass" stringvalue="org.openide.actions.DeleteAction"/>
+                        <attr name="position" intvalue="900"/>
                     </file>
-                    <attr boolvalue="true" name="DeleteAction.instance/RenameAction.instance" />
                     <file name="RenameAction.instance">
-                        <attr name="instanceClass" stringvalue="org.openide.actions.RenameAction" />
+                        <attr name="instanceClass" stringvalue="org.openide.actions.RenameAction"/>
+                        <attr name="position" intvalue="1000"/>
                     </file>
-                    <attr boolvalue="true" name="RenameAction.instance/Separator3.instance" />
                     <file name="Separator3.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1100"/>
                     </file>
-                    <attr boolvalue="true" name="Separator3.instance/ToolsAction.instance" />
                     <file name="ToolsAction.instance">
-                        <attr name="instanceClass" stringvalue="org.openide.actions.ToolsAction" />
+                        <attr name="instanceClass" stringvalue="org.openide.actions.ToolsAction"/>
+                        <attr name="position" intvalue="1200"/>
                     </file>
-                    <attr boolvalue="true" name="ToolsAction.instance/PropertiesAction.instance" />
                     <file name="PropertiesAction.instance">
-                        <attr name="instanceClass" stringvalue="org.openide.actions.PropertiesAction" />
+                        <attr name="instanceClass" stringvalue="org.openide.actions.PropertiesAction"/>
+                        <attr name="position" intvalue="1300"/>
                     </file>
                 </folder> <!-- Actions -->
             </folder> <!-- x-executable+elf -->
@@ -544,59 +554,60 @@ Microsystems, Inc. All Rights Reserved.
             <folder name="x-cnd-sourcefile">
                 <folder name="Actions">
                     <file name="OpenAction.instance">
-                        <attr name="instanceClass" stringvalue="org.openide.actions.OpenAction" />
+                        <attr name="instanceClass" stringvalue="org.openide.actions.OpenAction"/>
+                        <attr name="position" intvalue="400"/>
                     </file>
-                    <attr boolvalue="true" name="OpenAction.instance/FileSystemAction.instance" />
                     <file name="FileSystemAction.instance">
-                        <attr name="instanceClass" stringvalue="org.openide.actions.FileSystemAction" />
+                        <attr name="instanceClass" stringvalue="org.openide.actions.FileSystemAction"/>
+                        <attr name="position" intvalue="500"/>
                     </file>
-                    <attr boolvalue="true" name="FileSystemAction.instance/Separator1.instance" />
                     <file name="Separator1.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="600"/>
                     </file>
-                    <attr boolvalue="true" name="Separator1.instance/CutAction.instance" />
                     <file name="CutAction.instance">
-                        <attr name="instanceClass" stringvalue="org.openide.actions.CutAction" />
+                        <attr name="instanceClass" stringvalue="org.openide.actions.CutAction"/>
+                        <attr name="position" intvalue="700"/>
                     </file>
-                    <attr boolvalue="true" name="CutAction.instance/CopyAction.instance" />
                     <file name="CopyAction.instance">
-                        <attr name="instanceClass" stringvalue="org.openide.actions.CopyAction" />
+                        <attr name="instanceClass" stringvalue="org.openide.actions.CopyAction"/>
+                        <attr name="position" intvalue="800"/>
                     </file>
-                    <attr boolvalue="true" name="CopyAction.instance/PasteAction.instance" />
                     <file name="PasteAction.instance">
-                        <attr name="instanceClass" stringvalue="org.openide.actions.PasteAction" />
+                        <attr name="instanceClass" stringvalue="org.openide.actions.PasteAction"/>
+                        <attr name="position" intvalue="900"/>
                     </file>
-                    <attr boolvalue="true" name="PasteAction.instance/Separator2.instance"/>
                     <file name="Separator2.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1000"/>
                     </file>
-                    <attr boolvalue="true" name="Separator2.instance/DeleteAction.instance" />
                     <file name="DeleteAction.instance">
-                        <attr name="instanceClass" stringvalue="org.openide.actions.DeleteAction" />
+                        <attr name="instanceClass" stringvalue="org.openide.actions.DeleteAction"/>
+                        <attr name="position" intvalue="1100"/>
                     </file>
-                    <attr boolvalue="true" name="DeleteAction.instance/RenameAction.instance" />
                     <file name="RenameAction.instance">
-                        <attr name="instanceClass" stringvalue="org.openide.actions.RenameAction" />
+                        <attr name="instanceClass" stringvalue="org.openide.actions.RenameAction"/>
+                        <attr name="position" intvalue="1200"/>
                     </file>
-                    <attr boolvalue="true" name="RenameAction.instance/Separator3.instance" />
                     <file name="Separator3.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1300"/>
                     </file>
-                    <attr boolvalue="true" name="Separator3.instance/SaveAsTemplateAction.instance"/>
                     <file name="SaveAsTemplateAction.instance">
-                        <attr name="instanceClass" stringvalue="org.openide.actions.SaveAsTemplateAction" />
+                        <attr name="instanceClass" stringvalue="org.openide.actions.SaveAsTemplateAction"/>
+                        <attr name="position" intvalue="1400"/>
                     </file>
-                    <attr boolvalue="true" name="SaveAsTemplateAction.instance/Separator4.instance/" />
                     <file name="Separator4.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="100"/>
                     </file>
-                    <attr boolvalue="true" name="Separator4.instance/ToolsAction.instance" />
                     <file name="ToolsAction.instance">
-                        <attr name="instanceClass" stringvalue="org.openide.actions.ToolsAction" />
+                        <attr name="instanceClass" stringvalue="org.openide.actions.ToolsAction"/>
+                        <attr name="position" intvalue="200"/>
                     </file>
-                    <attr boolvalue="true" name="ToolsAction.instance/PropertiesAction.instance" />
                     <file name="PropertiesAction.instance">
-                        <attr name="instanceClass" stringvalue="org.openide.actions.PropertiesAction" />
+                        <attr name="instanceClass" stringvalue="org.openide.actions.PropertiesAction"/>
+                        <attr name="position" intvalue="300"/>
                     </file>
                 </folder> <!-- Actions -->
             </folder> <!-- x-cnd-sourcefile -->
@@ -604,75 +615,76 @@ Microsystems, Inc. All Rights Reserved.
             <folder name="x-make">
                 <folder name="Actions">
                     <file name="OpenAction.instance">
-                        <attr name="instanceClass" stringvalue="org.openide.actions.OpenAction" />
+                        <attr name="instanceClass" stringvalue="org.openide.actions.OpenAction"/>
+                        <attr name="position" intvalue="300"/>
                     </file>
-                    <attr boolvalue="true" name="OpenAction.instance/FileSystemAction.instance" />
                     <file name="FileSystemAction.instance">
-                        <attr name="instanceClass" stringvalue="org.openide.actions.FileSystemAction" />
+                        <attr name="instanceClass" stringvalue="org.openide.actions.FileSystemAction"/>
+                        <attr name="position" intvalue="500"/>
                     </file>
-                    <attr boolvalue="true" name="FileSystemAction.instance/Separator1.instance" />
                     <file name="Separator1.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="600"/>
                     </file>
-                    <attr boolvalue="true" name="Separator1.instance/MakeAction.instance" />
                     <file name="MakeAction.instance">
-                        <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.actions.MakeAction" />
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.actions.MakeAction"/>
+                        <attr name="position" intvalue="700"/>
                     </file>
-                    <attr boolvalue="true" name="MakeAction.instance/MakeCleanAction.instance" />
                     <file name="MakeCleanAction.instance">
-                        <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.actions.MakeCleanAction" />
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.actions.MakeCleanAction"/>
+                        <attr name="position" intvalue="800"/>
                     </file>
-                    <attr boolvalue="true" name="MakeCleanAction.instance/MakeTargetAction.instance" />
                     <file name="MakeTargetAction.instance">
-                        <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.actions.MakeTargetAction" />
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.actions.MakeTargetAction"/>
+                        <attr name="position" intvalue="900"/>
                     </file>
-                    <attr boolvalue="true" name="MakeTargetAction.instance/Separator2.instance" />
                     <file name="Separator2.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1000"/>
                     </file>
-                    <attr boolvalue="true" name="Separator2.instance/CutAction.instance" />
                     <file name="CutAction.instance">
-                        <attr name="instanceClass" stringvalue="org.openide.actions.CutAction" />
+                        <attr name="instanceClass" stringvalue="org.openide.actions.CutAction"/>
+                        <attr name="position" intvalue="1100"/>
                     </file>
-                    <attr boolvalue="true" name="CutAction.instance/CopyAction.instance" />
                     <file name="CopyAction.instance">
-                        <attr name="instanceClass" stringvalue="org.openide.actions.CopyAction" />
+                        <attr name="instanceClass" stringvalue="org.openide.actions.CopyAction"/>
+                        <attr name="position" intvalue="1200"/>
                     </file>
-                    <attr boolvalue="true" name="CopyAction.instance/PasteAction.instance" />
                     <file name="PasteAction.instance">
-                        <attr name="instanceClass" stringvalue="org.openide.actions.PasteAction" />
+                        <attr name="instanceClass" stringvalue="org.openide.actions.PasteAction"/>
+                        <attr name="position" intvalue="1300"/>
                     </file>
-                    <attr boolvalue="true" name="PasteAction.instance/Separator3.instance"/>
                     <file name="Separator3.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1400"/>
                     </file>
-                    <attr boolvalue="true" name="Separator3.instance/DeleteAction.instance" />
                     <file name="DeleteAction.instance">
-                        <attr name="instanceClass" stringvalue="org.openide.actions.DeleteAction" />
+                        <attr name="instanceClass" stringvalue="org.openide.actions.DeleteAction"/>
+                        <attr name="position" intvalue="1500"/>
                     </file>
-                    <attr boolvalue="true" name="DeleteAction.instance/RenameAction.instance" />
                     <file name="RenameAction.instance">
-                        <attr name="instanceClass" stringvalue="org.openide.actions.RenameAction" />
+                        <attr name="instanceClass" stringvalue="org.openide.actions.RenameAction"/>
+                        <attr name="position" intvalue="1600"/>
                     </file>
-                    <attr boolvalue="true" name="RenameAction.instance/Separator4.instance" />
                     <file name="Separator4.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1700"/>
                     </file>
-                    <attr boolvalue="true" name="Separator4.instance/SaveAsTemplateAction.instance"/>
                     <file name="SaveAsTemplateAction.instance">
-                        <attr name="instanceClass" stringvalue="org.openide.actions.SaveAsTemplateAction" />
+                        <attr name="instanceClass" stringvalue="org.openide.actions.SaveAsTemplateAction"/>
+                        <attr name="position" intvalue="1800"/>
                     </file>
-                    <attr boolvalue="true" name="SaveAsTemplateAction.instance/Separator5.instance/" />
                     <file name="Separator5.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="100"/>
                     </file>
-                    <attr boolvalue="true" name="Separator5.instance/ToolsAction.instance" />
                     <file name="ToolsAction.instance">
-                        <attr name="instanceClass" stringvalue="org.openide.actions.ToolsAction" />
+                        <attr name="instanceClass" stringvalue="org.openide.actions.ToolsAction"/>
+                        <attr name="position" intvalue="200"/>
                     </file>
-                    <attr boolvalue="true" name="ToolsAction.instance/PropertiesAction.instance" />
                     <file name="PropertiesAction.instance">
-                        <attr name="instanceClass" stringvalue="org.openide.actions.PropertiesAction" />
+                        <attr name="instanceClass" stringvalue="org.openide.actions.PropertiesAction"/>
+                        <attr name="position" intvalue="400"/>
                     </file>
                 </folder> <!-- Actions -->
             </folder> <!-- x-make -->
@@ -680,67 +692,68 @@ Microsystems, Inc. All Rights Reserved.
             <folder name="x-shell">
                 <folder name="Actions">
                     <file name="OpenAction.instance">
-                        <attr name="instanceClass" stringvalue="org.openide.actions.OpenAction" />
+                        <attr name="instanceClass" stringvalue="org.openide.actions.OpenAction"/>
+                        <attr name="position" intvalue="300"/>
                     </file>
-                    <attr boolvalue="true" name="OpenAction.instance/Separator1.instance" />
                     <file name="Separator1.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="500"/>
                     </file>
-                    <attr boolvalue="true" name="Separator1.instance/ShellRunAction.instance" />
                     <file name="ShellRunAction.instance">
-                        <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.actions.ShellRunAction" />
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.actions.ShellRunAction"/>
+                        <attr name="position" intvalue="600"/>
                     </file>
-                    <attr boolvalue="true" name="ShellRunAction.instance/FileSystemAction.instance" />
                     <file name="FileSystemAction.instance">
-                        <attr name="instanceClass" stringvalue="org.openide.actions.FileSystemAction" />
+                        <attr name="instanceClass" stringvalue="org.openide.actions.FileSystemAction"/>
+                        <attr name="position" intvalue="700"/>
                     </file>
-                    <attr boolvalue="true" name="FileSystemAction.instance/Separator2.instance" />
                     <file name="Separator2.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="800"/>
                     </file>
-                    <attr boolvalue="true" name="Separator2.instance/CutAction.instance" />
                     <file name="CutAction.instance">
-                        <attr name="instanceClass" stringvalue="org.openide.actions.CutAction" />
+                        <attr name="instanceClass" stringvalue="org.openide.actions.CutAction"/>
+                        <attr name="position" intvalue="900"/>
                     </file>
-                    <attr boolvalue="true" name="CutAction.instance/CopyAction.instance" />
                     <file name="CopyAction.instance">
-                        <attr name="instanceClass" stringvalue="org.openide.actions.CopyAction" />
+                        <attr name="instanceClass" stringvalue="org.openide.actions.CopyAction"/>
+                        <attr name="position" intvalue="1000"/>
                     </file>
-                    <attr boolvalue="true" name="CopyAction.instance/PasteAction.instance" />
                     <file name="PasteAction.instance">
-                        <attr name="instanceClass" stringvalue="org.openide.actions.PasteAction" />
+                        <attr name="instanceClass" stringvalue="org.openide.actions.PasteAction"/>
+                        <attr name="position" intvalue="1100"/>
                     </file>
-                    <attr boolvalue="true" name="PasteAction.instance/Separator3.instance"/>
                     <file name="Separator3.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1200"/>
                     </file>
-                    <attr boolvalue="true" name="Separator3.instance/DeleteAction.instance" />
                     <file name="DeleteAction.instance">
-                        <attr name="instanceClass" stringvalue="org.openide.actions.DeleteAction" />
+                        <attr name="instanceClass" stringvalue="org.openide.actions.DeleteAction"/>
+                        <attr name="position" intvalue="1300"/>
                     </file>
-                    <attr boolvalue="true" name="DeleteAction.instance/RenameAction.instance" />
                     <file name="RenameAction.instance">
-                        <attr name="instanceClass" stringvalue="org.openide.actions.RenameAction" />
+                        <attr name="instanceClass" stringvalue="org.openide.actions.RenameAction"/>
+                        <attr name="position" intvalue="1400"/>
                     </file>
-                    <attr boolvalue="true" name="RenameAction.instance/Separator4.instance" />
                     <file name="Separator4.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1500"/>
                     </file>
-                    <attr boolvalue="true" name="Separator4.instance/SaveAsTemplateAction.instance"/>
                     <file name="SaveAsTemplateAction.instance">
-                        <attr name="instanceClass" stringvalue="org.openide.actions.SaveAsTemplateAction" />
+                        <attr name="instanceClass" stringvalue="org.openide.actions.SaveAsTemplateAction"/>
+                        <attr name="position" intvalue="1600"/>
                     </file>
-                    <attr boolvalue="true" name="SaveAsTemplateAction.instance/Separator5.instance/" />
                     <file name="Separator5.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="100"/>
                     </file>
-                    <attr boolvalue="true" name="Separator5.instance/ToolsAction.instance" />
                     <file name="ToolsAction.instance">
-                        <attr name="instanceClass" stringvalue="org.openide.actions.ToolsAction" />
+                        <attr name="instanceClass" stringvalue="org.openide.actions.ToolsAction"/>
+                        <attr name="position" intvalue="200"/>
                     </file>
-                    <attr boolvalue="true" name="ToolsAction.instance/PropertiesAction.instance" />
                     <file name="PropertiesAction.instance">
-                        <attr name="instanceClass" stringvalue="org.openide.actions.PropertiesAction" />
+                        <attr name="instanceClass" stringvalue="org.openide.actions.PropertiesAction"/>
+                        <attr name="position" intvalue="400"/>
                     </file>
                 </folder> <!-- Actions -->
             </folder> <!-- x-shell -->

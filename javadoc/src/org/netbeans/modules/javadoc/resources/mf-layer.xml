@@ -18,16 +18,15 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
-
 <filesystem>
 
   <!-- Contribute actions to main menu -->
   <folder name="Menu">
 	<folder name="Help">
-            <attr name="Tutorials/org-netbeans-modules-javadoc-search-IndexOverviewAction.instance" boolvalue="true"/>
-            <file name="org-netbeans-modules-javadoc-search-IndexOverviewAction.instance"/>
-            <attr name="org-netbeans-modules-javadoc-search-IndexOverviewAction.instance/org-netbeans-modules-j2ee-blueprints-ShowBluePrintsAction.instance" boolvalue="true"/>
-        </folder>
+            <file name="org-netbeans-modules-javadoc-search-IndexOverviewAction.instance">
+                <attr name="position" intvalue="1100"/>
+            </file>
+            </folder>
         <!-- 
       <folder name="Tools">
           <file name="javadoc-Search-Doc-Action.instance">
@@ -90,15 +89,16 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javadoc.search.Bundle"/>
             <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/javadoc/resources/searchDoc.gif"/>
             <attr name="helpID" stringvalue="org.netbeans.modules.javadoc.search.JavaDocSearchType"/>
-            <attr name="org-netbeans-modules-javadoc-search-Jdk12SearchType_japan.settings/org-netbeans-modules-javadoc-search-Jdk12SearchType.settings" boolvalue="true"/>
 
             <file name="org-netbeans-modules-javadoc-search-Jdk12SearchType.settings" url="javadoc_search.settings">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javadoc.search.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/javadoc/resources/searchDoc.gif"/>
+                <attr name="position" intvalue="200"/>
             </file>
             <file name="org-netbeans-modules-javadoc-search-Jdk12SearchType_japan.settings" url="javadoc_japan_search.settings">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javadoc.search.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/javadoc/resources/searchDoc.gif"/>
+                <attr name="position" intvalue="100"/>
             </file>
         </folder>  
     </folder>
@@ -107,12 +107,12 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="rules">
             <folder name="hints">
                 <folder name="javadoc">
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javadoc.hints.Bundle" />
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javadoc.hints.Bundle"/>
                     <file name="CreateJavadoc.instance">
-                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.javadoc.hints.JavadocHintProvider.createCreateJavadoc" />
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.javadoc.hints.JavadocHintProvider.createCreateJavadoc"/>
                     </file>
                     <file name="ErrorInJavadoc.instance">
-                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.javadoc.hints.JavadocHintProvider.createErrorInJavadoc" />
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.javadoc.hints.JavadocHintProvider.createErrorInJavadoc"/>
                     </file>
                 </folder>
             </folder>

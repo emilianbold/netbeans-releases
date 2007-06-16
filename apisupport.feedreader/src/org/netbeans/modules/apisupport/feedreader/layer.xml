@@ -22,9 +22,6 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="Templates">
         <folder name="Project">
             <folder name="Samples">
-                <attr name="Standard/ApiSupport" boolvalue="true"/>
-                <attr name="Web/ApiSupport" boolvalue="true"/>
-                <attr name="Blueprints/ApiSupport" boolvalue="true"/>
                 <folder name="ApiSupport">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.apisupport.feedreader.Bundle"/>
                     <file name="FeedReaderProject.zip" url="FeedReaderProject.zip">

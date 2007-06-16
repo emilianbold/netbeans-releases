@@ -27,59 +27,53 @@ Microsystems, Inc. All Rights Reserved.
         <attr name="hidden" methodvalue="org.netbeans.modules.extbrowser.SimpleExtBrowser.isHidden"/>
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.extbrowser.Bundle"/>
         <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/extbrowser/resources/extbrowser.gif"/>
-      </file>
+          <attr name="position" intvalue="600"/>
+            </file>
 
       <!-- Present on Windows or if running on JDK 6 and Desktop.isDesktopSupported returns true -->
       <file name="SystemDefaultBrowser.settings" url="SystemDefaultBrowser.xml">
         <attr name="hidden" methodvalue="org.netbeans.modules.extbrowser.SystemDefaultBrowser.isHidden"/>
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.extbrowser.Bundle"/>
         <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/extbrowser/resources/extbrowser.gif"/>
-      </file>
+          <attr name="position" intvalue="100"/>
+            </file>
 
       <file name="IExplorerBrowser.settings" url="IExplorerBrowser.xml">
         <attr name="hidden" methodvalue="org.netbeans.modules.extbrowser.IExplorerBrowser.isHidden"/>
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.extbrowser.Bundle"/>
         <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/extbrowser/resources/extbrowser.gif"/>
-      </file>
+          <attr name="position" intvalue="200"/>
+            </file>
 
       <!-- Present on Unix & Windows -->
       <file name="NetscapeBrowser.settings" url="NetscapeBrowser.xml">
         <attr name="hidden" methodvalue="org.netbeans.modules.extbrowser.NetscapeBrowser.isHidden"/>
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.extbrowser.Bundle"/>
         <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/extbrowser/resources/extbrowser.gif"/>
-      </file>
+          <attr name="position" intvalue="500"/>
+            </file>
 
       <file name="MozillaBrowser.settings" url="MozillaBrowser.xml">
         <attr name="hidden" methodvalue="org.netbeans.modules.extbrowser.MozillaBrowser.isHidden"/>
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.extbrowser.Bundle"/>
         <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/extbrowser/resources/extbrowser.gif"/>
-      </file>
+          <attr name="position" intvalue="400"/>
+            </file>
 
       <file name="FirefoxBrowser.settings" url="FirefoxBrowser.xml">
         <attr name="hidden" methodvalue="org.netbeans.modules.extbrowser.FirefoxBrowser.isHidden"/>
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.extbrowser.Bundle"/>
         <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/extbrowser/resources/extbrowser.gif"/>
-      </file>
+          <attr name="position" intvalue="300"/>
+            </file>
 
       <!-- Default system browser should be first on Windows -->
-      <attr name="SystemDefaultBrowser.settings/SimpleExtBrowser.settings" boolvalue="true"/>
-      <attr name="SystemDefaultBrowser.settings/MozillaBrowser.settings" boolvalue="true"/>
-      <attr name="SystemDefaultBrowser.settings/NetscapeBrowser.settings" boolvalue="true"/>
-      <attr name="SystemDefaultBrowser.settings/IExplorerBrowser.settings" boolvalue="true"/>
-      <attr name="SystemDefaultBrowser.settings/FirefoxBrowser.settings" boolvalue="true"/>
 
       <!-- Browsers order -->
-      <attr name="MozillaBrowser.settings/SimpleExtBrowser.settings" boolvalue="true"/>
-      <attr name="NetscapeBrowser.settings/SimpleExtBrowser.settings" boolvalue="true"/>
-      <attr name="IExplorerBrowser.settings/SimpleExtBrowser.settings" boolvalue="true"/>
-      <attr name="FirefoxBrowser.settings/SimpleExtBrowser.settings" boolvalue="true"/>
 
-      <attr name="IExplorerBrowser.settings/FirefoxBrowser.settings" boolvalue="true"/>
-      <attr name="FirefoxBrowser.settings/MozillaBrowser.settings" boolvalue="true"/>
-      <attr name="MozillaBrowser.settings/NetscapeBrowser.settings" boolvalue="true"/>
+      
 
       <!-- Other browsers order -->
-      <attr name="SimpleExtBrowser.settings/SwingBrowser.settings" boolvalue="true"/>
             
      </folder>
   </folder>

@@ -18,7 +18,6 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
-
 <filesystem>
     <folder name="Editors">
         <folder name="AnnotationTypes">
@@ -45,7 +44,7 @@ Microsystems, Inc. All Rights Reserved.
                         <folder name="Defaults">
                             <file name="org-netbeans-modules-web-core-syntax-keybindings.xml" url="DefaultKeyBindings.xml"/> 
                             <file name="org-netbeans-modules-web-core-syntax-keybindings-mac.xml" url="DefaultKeyBindings-Mac.xml"> 
-                                <attr name="nbeditor-settings-targetOS" stringvalue="OS_MAC" />
+                                <attr name="nbeditor-settings-targetOS" stringvalue="OS_MAC"/>
                             </file>
                         </folder>
                     </folder>
@@ -68,9 +67,10 @@ Microsystems, Inc. All Rights Reserved.
                     <file name="org-netbeans-modules-web-core-syntax-folding-JspFoldManagerFactory.instance"/>
                 </folder>
                 <folder name="SideBar">
-                    <file name="org-netbeans-modules-web-core-syntax-folding-JspCodeFoldingSideBarFactory.instance"/>
-                    <attr name="org-netbeans-editor-GlyphGutter.instance/org-netbeans-modules-web-core-syntax-folding-JspCodeFoldingSideBarFactory.instance" boolvalue="true"/>
-                </folder>
+                    <file name="org-netbeans-modules-web-core-syntax-folding-JspCodeFoldingSideBarFactory.instance">
+                        <attr name="position" intvalue="2500"/>
+                    </file>
+                    </folder>
                 <file name="Settings.settings" url="../settings/JSPOptions.settings"/>
                 <file name="EditorKit.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.web.core.syntax.JSPKit"/>
@@ -89,37 +89,44 @@ Microsystems, Inc. All Rights Reserved.
                             <attr name="instanceCreate" methodvalue="org.netbeans.modules.editor.java.JavaFastOpenAction.getInstance"/>
                         </file>
                         <attr name="goto/org-netbeans-modules-editor-java-JavaFastOpenAction.instance" boolvalue="true"/>-->
+                        <attr name="position" intvalue="900"/>
                     </folder>    
                     
-                    <attr name="goto/org-netbeans-modules-editor-NbSelectInPopupAction.instance" boolvalue="true"/>
                     
-                    <file name="format"/>
-                    <attr name="goto/format" boolvalue="true"/>
-                    <file name="org-openide-actions-PropertiesAction.instance"/>
+                    
+                    <file name="format">
+                        <attr name="position" intvalue="1125"/>
+                    </file>
+                    <file name="org-openide-actions-PropertiesAction.instance">
+                        <attr name="position" intvalue="4200"/>
+                    </file>
                     <file name="Separator5.instance">
 			<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1375"/>
                     </file>
                     <file name="SeparatorProperties.instance">
 			<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="4100"/>
                     </file>
-                    <attr name="format/Separator5.instance" boolvalue="true"/>
-                    <attr name="org-openide-actions-PasteAction.instance/SeparatorProperties.instance" boolvalue="true"/>
-                    <attr name="SeparatorProperties.instance/org-openide-actions-PropertiesAction.instance" boolvalue="true"/>
                     
                     <file name="SeparatorFolding.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="4300"/>
                     </file>
                     
-                    <attr name="org-openide-actions-PropertiesAction.instance/SeparatorFolding.instance" boolvalue="true"/>
                     
-                    <file name="generate-fold-popup"/>
-                    <attr name="SeparatorFolding.instance/generate-fold-popup" boolvalue="true"/>
                     
-                    <file name="dump-tokens"/>
+                    <file name="generate-fold-popup">
+                        <attr name="position" intvalue="4400"/>
+                    </file>
                     
-                    <attr name="generate-fold-popup/SeparatorAfterFolding.instance" boolvalue="true"/>
+                    <file name="dump-tokens">
+                        <attr name="position" intvalue="4500"/>
+                    </file>
                     
-                    <attr name="SeparatorAfterFolding.instance/dump-tokens" boolvalue="true"/>
+                    
+                    
+                    
                     
                 </folder>
                 <folder name="HyperlinkProviders">
@@ -158,35 +165,39 @@ Microsystems, Inc. All Rights Reserved.
                         </file>
                         <attr name="goto/org-netbeans-modules-editor-java-JavaFastOpenAction.instance" boolvalue="true"/>
                         -->
+                        <attr name="position" intvalue="900"/>
                     </folder> 
                     
-                    <attr name="goto/org-netbeans-modules-editor-NbSelectInPopupAction.instance" boolvalue="true"/>
                     
-                    <file name="format"/>
-                    <attr name="goto/format" boolvalue="true"/>
-                    <attr name="format/org-openide-actions-CutAction.instance" boolvalue="true"/>
                     
-                    <file name="org-openide-actions-PropertiesAction.instance"/>
+                    <file name="format">
+                        <attr name="position" intvalue="1333"/>
+                    </file>
+                    
+                    <file name="org-openide-actions-PropertiesAction.instance">
+                        <attr name="position" intvalue="4200"/>
+                    </file>
                     <file name="Separator5.instance">
 			<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1666"/>
                     </file>
                     <file name="SeparatorProperties.instance">
 			<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="4100"/>
                     </file>
-                    <attr name="format/Separator5.instance" boolvalue="true"/>
-                    <attr name="org-openide-actions-PasteAction.instance/SeparatorProperties.instance" boolvalue="true"/>
-                    <attr name="SeparatorProperties.instance/org-openide-actions-PropertiesAction.instance" boolvalue="true"/>
                     
                     
                     
                     <file name="SeparatorFolding.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="4300"/>
                     </file>
                     
-                    <attr name="org-openide-actions-PropertiesAction.instance/SeparatorFolding.instance" boolvalue="true"/>
                     
-                    <file name="generate-fold-popup"/>
-                    <attr name="SeparatorFolding.instance/generate-fold-popup" boolvalue="true"/>
+                    
+                    <file name="generate-fold-popup">
+                        <attr name="position" intvalue="4400"/>
+                    </file>
                     
                     
                 </folder>

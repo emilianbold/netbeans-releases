@@ -92,9 +92,9 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="Menu"> 
         <folder name="Window">
             <folder name="Versioning">            
-                <attr name="org-netbeans-modules-subversion-ui-status-OpenVersioningAction.shadow/SeparatorVersioningOutput.instance" boolvalue="true"/>
                 <file name="org-netbeans-modules-subversion-ui-status-OpenVersioningAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Subversion/org-netbeans-modules-subversion-ui-status-OpenVersioningAction.instance"/>
+                    <attr name="position" intvalue="200"/>
                 </file>
             </folder>
         </folder>
@@ -102,9 +102,10 @@ Microsystems, Inc. All Rights Reserved.
 
     <folder name="Services">
         <folder name="JavaHelp">
-            <file name="org-netbeans-modules-subversion-resources-helpset.xml" url="helpset-decl.xml"/>
-            <attr name="org-netbeans-modules-versioning-system-cvss-resources-helpset.xml/org-netbeans-modules-subversion-resources-helpset.xml" boolvalue="true"/>
-        </folder>
+            <file name="org-netbeans-modules-subversion-resources-helpset.xml" url="helpset-decl.xml">
+                <attr name="position" intvalue="1900"/>
+            </file>
+            </folder>
     </folder>
     
     <folder name="Windows2">
@@ -113,19 +114,20 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
         <folder name="Modes">
             <folder name="output">
-                <attr name="svnversioning.wstcref/output.wstcref" boolvalue="true"/>
-                <file name="svnversioning.wstcref" url="svn_wstcref.xml"/>
+                <file name="svnversioning.wstcref" url="svn_wstcref.xml">
+                    <attr name="position" intvalue="100"/>
+                </file>
             </folder>
         </folder>
     </folder>
 
     <folder name="Editors">
         <folder name="SideBar">
-            <file name="org-netbeans-modules-subversion-ui-blame-AnnotationBarManager.instance"/>
+            <file name="org-netbeans-modules-subversion-ui-blame-AnnotationBarManager.instance">
+                <attr name="position" intvalue="3000"/>
+            </file>
             <!-- place in between line numbers sidebar and folding sidebar #57544 -->
-            <attr name="org-netbeans-editor-GlyphGutter.instance/org-netbeans-modules-subversion-ui-blame-AnnotationBarManager.instance" boolvalue="true"/>
-            <attr name="org-netbeans-modules-subversion-ui-blame-AnnotationBarManager.instance/org-netbeans-modules-editor-java-NbJavaCodeFoldingSideBarFactory.instance" boolvalue="true"/>
-        </folder>
+            </folder>
         <folder name="AnnotationTypes">
             <file name="org-netbeans-modules-subversion-Annotation.xml" url="svn_annotation.xml"/>
         </folder>

@@ -112,16 +112,14 @@ public final class ToolbarFolderNode extends DataFolder.FolderNode implements Pr
                 try {
                     FileObject newFO = tbFO.getFileObject(s);
                     if (newFO == null) {
-                        String lastName = getLastName();
+                        DataObject[] oldKids = folder.getChildren();
                         newFO = tbFO.createFolder (s);
                         
                         // #13015. Set new item as last one.
-                        if(lastName != null) {
-                            tbFO.setAttribute(
-                                lastName + "/" +newFO.getNameExt(),
-                                Boolean.TRUE
-                            );
-                        }
+                        DataObject[] newKids = new DataObject[oldKids.length + 1];
+                        System.arraycopy(oldKids, 0, newKids, 0, oldKids.length);
+                        newKids[oldKids.length] = DataObject.find(newFO);
+                        folder.setOrder(newKids);
                     } else {
                         NotifyDescriptor.Message msg = new NotifyDescriptor.Message( 
                                 MessageFormat.format( bundle.getString("MSG_ToolbarExists"), new Object[] { s } ) ); // NOI18N
@@ -132,22 +130,6 @@ public final class ToolbarFolderNode extends DataFolder.FolderNode implements Pr
                 }
             }
         }
-    }
-
-    /** Gets name of last child.
-     * @return name of last menu or <code>null</code> if there is no one */
-    private String getLastName() {
-        String lastName = null;
-        Node[] ch = getChildren().getNodes();
-        if(ch.length > 0) {
-            Node last = ch[ch.length - 1];
-            DataObject d = (DataObject)last.getCookie(DataObject.class);
-            if(d != null) {
-                lastName = d.getPrimaryFile().getNameExt();
-            }
-        }
-        
-        return lastName;
     }
 
     /** Actions.
@@ -452,7 +434,7 @@ public final class ToolbarFolderNode extends DataFolder.FolderNode implements Pr
                 InstanceDataObject instData = InstanceDataObject.find
                 (folder,null,"javax.swing.JToolBar$Separator"); // NOI18N
 
-                String lastName = getLastName();
+                DataObject[] oldKids = folder.getChildren();
                 DataObject d;
 
                 if (instData == null) {
@@ -464,33 +446,15 @@ public final class ToolbarFolderNode extends DataFolder.FolderNode implements Pr
                 }
 
                 // #13015. Set new item as last one.
-                if(lastName != null) {
-                    folder.getPrimaryFile().setAttribute(
-                        lastName + "/" + d.getPrimaryFile().getNameExt(), // NOI18N
-                        Boolean.TRUE
-                    );
-                }
+                DataObject[] newKids = new DataObject[oldKids.length + 1];
+                System.arraycopy(oldKids, 0, newKids, 0, oldKids.length);
+                newKids[oldKids.length] = d;
+                folder.setOrder(newKids);
             } catch (java.io.IOException e) {
                 Exceptions.printStackTrace(e);
             }
         }
         //End
-
-        /** Gets name of last child.
-         * @return name of last menu or <code>null</code> if there is no one */
-        private String getLastName() {
-            String lastName = null;
-            Node[] ch = getChildren().getNodes();
-            if(ch.length > 0) {
-                Node last = ch[ch.length - 1];
-                DataObject d = (DataObject)last.getCookie(DataObject.class);
-                if(d != null) {
-                    lastName = d.getPrimaryFile().getNameExt();
-                }
-            }
-
-            return lastName;
-        }
 
         /** Actions.
         * @return array of actions for this node

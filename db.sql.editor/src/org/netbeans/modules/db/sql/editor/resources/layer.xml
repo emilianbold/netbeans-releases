@@ -68,30 +68,32 @@ Microsystems, Inc. All Rights Reserved.
                     
                 <folder name="Toolbars">
                     <folder name="Default">
-                        <file name="org-netbeans-modules-db-sql-editor-ui-actions-ConnectionAction.instance"/>
-                        <attr name="org-netbeans-modules-db-sql-editor-ui-actions-ConnectionAction.instance/sql-separator-2.instance" boolvalue="true"/>
+                        <file name="org-netbeans-modules-db-sql-editor-ui-actions-ConnectionAction.instance">
+                            <attr name="position" intvalue="600"/>
+                        </file>
                         <file name="sql-separator-2.instance">
                             <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                            <attr name="position" intvalue="700"/>
                         </file>
-                        <attr name="sql-separator-2.instance/org-netbeans-modules-db-sql-editor-ui-actions-RunSQLAction.shadow" boolvalue="true"/>
                         <file name="org-netbeans-modules-db-sql-editor-ui-actions-RunSQLAction.shadow">
                             <attr name="originalFile" stringvalue="Actions/System/org-netbeans-modules-db-sql-editor-ui-actions-RunSQLAction.instance"/>
+                            <attr name="position" intvalue="800"/>
                         </file>
-                        <attr name="org-netbeans-modules-db-sql-editor-ui-actions-RunSQLAction.shadow/org-netbeans-modules-db-sql-editor-ui-actions-SelectInExplorerAction.instance" boolvalue="true"/>
-                        <file name="org-netbeans-modules-db-sql-editor-ui-actions-SelectInExplorerAction.instance"/>
-                        <attr name="org-netbeans-modules-db-sql-editor-ui-actions-SelectInExplorerAction.instance/Separator0.instance" boolvalue="true"/>
-                    </folder>
+                        <file name="org-netbeans-modules-db-sql-editor-ui-actions-SelectInExplorerAction.instance">
+                            <attr name="position" intvalue="900"/>
+                        </file>
+                        </folder>
                 </folder>
                 <folder name="Popup">
                     <file name="org-netbeans-modules-db-sql-editor-ui-actions-RunSQLSelectionAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/System/org-netbeans-modules-db-sql-editor-ui-actions-RunSQLSelectionAction.instance"/>
+                        <attr name="position" intvalue="800"/>
                     </file>
-                    <attr name="org-netbeans-modules-db-sql-editor-ui-actions-RunSQLSelectionAction.shadow/sql-separator-1.instance" boolvalue="true"/>
                     <file name="sql-separator-1.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="900"/>
                     </file>
-                    <attr name="sql-separator-1.instance/org-netbeans-modules-editor-NbSelectInPopupAction.instance" boolvalue="true"/>
-                </folder>
+                    </folder>
             </folder>
         </folder>
     </folder>

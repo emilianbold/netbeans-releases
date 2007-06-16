@@ -17,22 +17,20 @@ The Original Software is NetBeans. The Initial Developer of the Original
 Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
-
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
     <folder name="CreatorDesignerPalette">
         
         <!-- Sorting -->        
-        <attr name="Layout/Converters" boolvalue="true"/>
-        <attr name="Validators/Converters" boolvalue="true"/>       
-        <attr name="Converters/Standard" boolvalue="true"/>
-        <attr name="Standard/Advanced" boolvalue="true"/>
+               
+        
         
         <folder name="Layout">
             <attr name="isExpanded" boolvalue="true"/>            
-            <attr name="isReadonly" boolvalue="true"/>
-            <attr name="HtmlPanelGrid.comp_palette_item/PanelGroup.comp_palette_item" boolvalue="true"/>  
-            <file name="HtmlPanelGrid.comp_palette_item" url="resources/HtmlPanelGrid.comp_palette_item"/>
+            <attr name="isReadonly" boolvalue="true"/>  
+            <file name="HtmlPanelGrid.comp_palette_item" url="resources/HtmlPanelGrid.comp_palette_item">
+                <attr name="position" intvalue="100"/>
+            </file>
             <!--<item kind="bean" name="javax.faces.component.html.HtmlPanelGrid"/>-->
         </folder>
         
@@ -41,6 +39,7 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="isExpanded" boolvalue="true"/>
             
             
+            <attr name="position" intvalue="400"/>
             <file name="BigDecimalConverter.comp_palette_item" url="resources/BigDecimalConverter.comp_palette_item"/>   
             <file name="BigIntegerConverter.comp_palette_item" url="resources/BigIntegerConverter.comp_palette_item"/>       
             <file name="BooleanConverter.comp_palette_item" url="resources/BooleanConverter.comp_palette_item"/>            
@@ -65,6 +64,7 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="isExpanded" boolvalue="true"/>       
             <attr name="isReadonly" boolvalue="true"/>
             
+            <attr name="position" intvalue="300"/>
             <file name="DoubleRangeValidator.comp_palette_item" url="resources/DoubleRangeValidator.comp_palette_item"/>        
             <file name="LengthValidatord.comp_palette_item" url="resources/LengthValidator.comp_palette_item"/>        
             <file name="LongRangeValidator.comp_palette_item" url="resources/LongRangeValidator.comp_palette_item"/>
@@ -75,31 +75,39 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="isExpanded" boolvalue="false"/>       
             <attr name="isReadonly" boolvalue="true"/>
             
-            <file name="HtmlPanelGrid.comp_palette_item" url="resources/HtmlPanelGrid.comp_palette_item"/>
-            <file name="HtmlPanelGroup.comp_palette_item" url="resources/HtmlPanelGroup.comp_palette_item"/>
-            <file name="HtmlForm.comp_palette_item" url="resources/HtmlForm.comp_palette_item"/>
+            <file name="HtmlPanelGrid.comp_palette_item" url="resources/HtmlPanelGrid.comp_palette_item">
+                <attr name="position" intvalue="2200"/>
+            </file>
+            <file name="HtmlPanelGroup.comp_palette_item" url="resources/HtmlPanelGroup.comp_palette_item">
+                <attr name="position" intvalue="2100"/>
+            </file>
+            <file name="HtmlForm.comp_palette_item" url="resources/HtmlForm.comp_palette_item">
+                <attr name="position" intvalue="2300"/>
+            </file>
         </folder>
         
         <folder name="Advanced">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.jsfsupport.designtime.resources.Bundle"/>
             <attr name="isReadonly" boolvalue="true"/>
             
-            <!-- Begin Sort -->
-            <attr name="Markup.comp_palette_item/Script.comp_palette_item" boolvalue="true"/> 
-            <attr name="Script.comp_palette_item/EncodingComponent.comp_palette_item" boolvalue="true"/>
-            <attr name="EncodingComponent.comp_palette_item/F_LoadBundle.comp_palette_item" boolvalue="true"/> 
-            <attr name="F_LoadBundle.comp_palette_item/F_Converter.comp_palette_item" boolvalue="true"/> 
-            <attr name="F_Converter.comp_palette_item/F_Validator.comp_palette_item" boolvalue="true"/>             
-            <attr name="F_Validator.comp_palette_item/F_ActionListener.comp_palette_item" boolvalue="true"/>          
-            <attr name="F_ActionListener.comp_palette_item/F_ValueChangeListener.comp_palette_item" boolvalue="true"/> 
-            <attr name="F_ValueChangeListener.comp_palette_item/F_Verbatim.comp_palette_item" boolvalue="true"/> 
-            <attr name="F_Verbatim.comp_palette_item/UIParameter.comp_palette_item" boolvalue="true"/> 
-            <attr name="UIParameter.comp_palette_item/Link.comp_palette_item" boolvalue="true"/>  
-            <attr name="Link.comp_palette_item/Meta.comp_palette_item" boolvalue="true"/>   
+            <!-- Begin Sort --> 
+             
+             
+                         
+                      
+             
+             
+             
+              
+               
             <!-- End Sort -->
             
-            <file name="EncodingComponent.comp_palette_item" url="resources/EncodingComponent.comp_palette_item"/>
-            <file name="UIParameter.comp_palette_item" url="resources/UIParameter.comp_palette_item"/>
+            <file name="EncodingComponent.comp_palette_item" url="resources/EncodingComponent.comp_palette_item">
+                <attr name="position" intvalue="300"/>
+            </file>
+            <file name="UIParameter.comp_palette_item" url="resources/UIParameter.comp_palette_item">
+                <attr name="position" intvalue="1000"/>
+            </file>
             
         </folder>
     </folder>
@@ -108,24 +116,31 @@ Microsystems, Inc. All Rights Reserved.
         <!--<attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.jsfsupport.designtime.resources.Bundle"/> -->
         
         <!-- Sorting -->        
-        <attr name="Validators/Converters" boolvalue="true"/>       
-        <attr name="Converters/Standard" boolvalue="true"/>
-        <attr name="Standard/Advanced" boolvalue="true"/>
+               
+        
         
         <folder name="Standard">
             <!--<attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.jsfsupport.designtime.resources.Bundle"/>-->
             <attr name="isExpanded" boolvalue="false"/>       
             <attr name="isReadonly" boolvalue="true"/>
             
-            <file name="HtmlPanelGrid.comp_palette_item" url="resources/HtmlPanelGrid.comp_palette_item"/>
-            <file name="HtmlPanelGroup.comp_palette_item" url="resources/HtmlPanelGroup.comp_palette_item"/>
-            <file name="HtmlForm.comp_palette_item" url="resources/HtmlForm.comp_palette_item"/>
+            <file name="HtmlPanelGrid.comp_palette_item" url="resources/HtmlPanelGrid.comp_palette_item">
+                <attr name="position" intvalue="2100"/>
+            </file>
+            <file name="HtmlPanelGroup.comp_palette_item" url="resources/HtmlPanelGroup.comp_palette_item">
+                <attr name="position" intvalue="2000"/>
+            </file>
+            <file name="HtmlForm.comp_palette_item" url="resources/HtmlForm.comp_palette_item">
+                <attr name="position" intvalue="2200"/>
+            </file>
         </folder>        
         
         <folder name="Layout">                
             <attr name="isReadonly" boolvalue="true"/>   
-            <attr name="HtmlPanelGrid.comp_palette_item/WoodstockPanelGroup.comp_palette_item" boolvalue="true"/>  
-            <file name="HtmlPanelGrid.comp_palette_item" url="resources/HtmlPanelGrid.comp_palette_item"/>
+              
+            <file name="HtmlPanelGrid.comp_palette_item" url="resources/HtmlPanelGrid.comp_palette_item">
+                <attr name="position" intvalue="100"/>
+            </file>
         </folder>
         
         <folder name="Converters">
@@ -133,6 +148,7 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="isExpanded" boolvalue="true"/>       
             <attr name="isReadonly" boolvalue="true"/>
             
+            <attr name="position" intvalue="500"/>
             <file name="BigDecimalConverter.comp_palette_item" url="resources/BigDecimalConverter.comp_palette_item"/>  
             <file name="BigIntegerConverter.comp_palette_item" url="resources/BigIntegerConverter.comp_palette_item"/>      
             <file name="BooleanConverter.comp_palette_item" url="resources/BooleanConverter.comp_palette_item"/>            
@@ -140,8 +156,12 @@ Microsystems, Inc. All Rights Reserved.
             <file name="CalendarConverter.comp_palette_item" url="resources/CalendarConverter.comp_palette_item"/>            
             <file name="CharacterConverter.comp_palette_item" url="resources/CharacterConverter.comp_palette_item"/>
             <file name="DateTimeConverter.comp_palette_item" url="resources/DateTimeConverter.comp_palette_item"/>
-            <file name="DoubleConverter.comp_palette_item" url="resources/DoubleConverter.comp_palette_item"/>
-            <file name="FloatConverter.comp_palette_item" url="resources/FloatConverter.comp_palette_item"/>
+            <file name="DoubleConverter.comp_palette_item" url="resources/DoubleConverter.comp_palette_item">
+                <attr name="position" intvalue="100"/>
+            </file>
+            <file name="FloatConverter.comp_palette_item" url="resources/FloatConverter.comp_palette_item">
+                <attr name="position" intvalue="300"/>
+            </file>
             <file name="IntegerConverter.comp_palette_item" url="resources/IntegerConverter.comp_palette_item"/>
             <file name="LongConverter.comp_palette_item" url="resources/LongConverter.comp_palette_item"/>
             <file name="NumberConverter.comp_palette_item" url="resources/NumberConverter.comp_palette_item"/>
@@ -156,6 +176,7 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="isExpanded" boolvalue="true"/>       
             <attr name="isReadonly" boolvalue="true"/>
             
+            <attr name="position" intvalue="400"/>
             <file name="DoubleRangeValidator.comp_palette_item" url="resources/DoubleRangeValidator.comp_palette_item"/>        
             <file name="LengthValidatord.comp_palette_item" url="resources/LengthValidator.comp_palette_item"/>        
             <file name="LongRangeValidator.comp_palette_item" url="resources/LongRangeValidator.comp_palette_item"/>
@@ -167,21 +188,14 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="isReadonly" boolvalue="true"/>
             
             <!-- Begin Sort -->
-            <attr name="Markup.comp_palette_item/Script.comp_palette_item" boolvalue="true"/>
-            <attr name="Script.comp_palette_item/EncodingComponent.comp_palette_item" boolvalue="true"/>
-            <attr name="EncodingComponent.comp_palette_item/F_LoadBundle.comp_palette_item" boolvalue="true"/>
-            <attr name="F_LoadBundle.comp_palette_item/F_Converter.comp_palette_item" boolvalue="true"/>
-            <attr name="F_Converter.comp_palette_item/F_Validator.comp_palette_item" boolvalue="true"/>
-            <attr name="F_Validator.comp_palette_item/F_ActionListener.comp_palette_item" boolvalue="true"/>
-            <attr name="F_ActionListener.comp_palette_item/F_ValueChangeListener.comp_palette_item" boolvalue="true"/>
-            <attr name="F_ValueChangeListener.comp_palette_item/F_Verbatim.comp_palette_item" boolvalue="true"/>
-            <attr name="F_Verbatim.comp_palette_item/UIParameter.comp_palette_item" boolvalue="true"/>
-            <attr name="UIParameter.comp_palette_item/Link.comp_palette_item" boolvalue="true"/>
-            <attr name="Link.comp_palette_item/Meta.comp_palette_item" boolvalue="true"/>
             <!-- End Sort -->
 
-            <file name="EncodingComponent.comp_palette_item" url="resources/EncodingComponent.comp_palette_item"/>
-            <file name="UIParameter.comp_palette_item" url="resources/UIParameter.comp_palette_item"/>
+            <file name="EncodingComponent.comp_palette_item" url="resources/EncodingComponent.comp_palette_item">
+                <attr name="position" intvalue="100"/>
+            </file>
+            <file name="UIParameter.comp_palette_item" url="resources/UIParameter.comp_palette_item">
+                <attr name="position" intvalue="1200"/>
+            </file>
             
         </folder>
     </folder>

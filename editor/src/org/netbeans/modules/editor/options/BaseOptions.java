@@ -1470,46 +1470,11 @@ public class BaseOptions extends OptionSupport {
         
     /** Retrieves the actions from XML file */
     public void initPopupMenuItems(){
-        List orderedPopupFiles = getOrderedMultiPropertyFolderFiles("Popup"); //NOI18N
+        //List orderedPopupFiles = getOrderedMultiPropertyFolderFiles("Popup"); //NOI18N
         //if (orderedPopupFiles.size() >0){
         //    super.setSettingValue(ExtSettingsNames.POPUP_MENU_ACTION_NAME_LIST,
         //        OptionUtilities.getPopupStrings(orderedPopupFiles)); //NOI18N
         //}
-    }
-    
-    public List getOrderedMultiPropertyFolderFiles(String folderName){
-        if (!BASE.equals(getTypeName())){
-            MIMEOptionFolder mimeFolder = getMIMEFolder();
-            if (mimeFolder != null){
-                MultiPropertyFolder mpf = mimeFolder.getMPFolder(folderName,false); //NOI18N
-                if (mpf!=null){
-                    DataFolder df = mpf.getDataFolder();
-                    List mimeFolderAttribs = new ArrayList();
-                    for (Enumeration e = df.getPrimaryFile().getAttributes() ; e.hasMoreElements() ;) {
-                        mimeFolderAttribs.add(e.nextElement());
-                    }
-
-                    // merge folders only if mime folder has some relevant info
-                    if ( (mpf.getProperties().size()!=0) || (mimeFolderAttribs.size() != 0)) {
-                        
-                        // We are going to merge global items and mime popup items ...
-                        // Firstly merge popup items
-                        Set mergedItems = new HashSet(OptionUtilities.getGlobalMenuItems(folderName));
-
-                        mergedItems.addAll(mpf.getProperties());
-                        
-                        // Then merge attribs
-                        Set mergedAttribs = new HashSet(OptionUtilities.getGlobalAttribs(folderName));
-                        mergedAttribs.addAll(mimeFolderAttribs);
-                        
-                        // Sort it in accordance with merged Attribs
-                        return OptionUtilities.arrangeMergedFolderObjects(mergedItems, mergedAttribs);
-                    }
-                }
-            }
-        }
-
-        return OptionUtilities.getGlobalMenuItems(folderName);
     }
     
     public IndentEngine getIndentEngine() {

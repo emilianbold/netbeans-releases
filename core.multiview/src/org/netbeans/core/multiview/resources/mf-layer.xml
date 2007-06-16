@@ -17,16 +17,14 @@ The Original Software is NetBeans. The Initial Developer of the Original
 Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
-
-<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN"
-                            "http://www.netbeans.org/dtds/filesystem-1_1.dtd" >
-
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
     <folder name="Menu">
         <folder name="View">
-            <file name="org-netbeans-core-multiview-EditorsAction.instance"/>
-            <attr name="org-netbeans-core-multiview-EditorsAction.instance/org-netbeans-core-windows-actions-ToolbarsListAction.instance" boolvalue="true" />
-        </folder>
+            <file name="org-netbeans-core-multiview-EditorsAction.instance">
+                <attr name="position" intvalue="100"/>
+            </file>
+            </folder>
     </folder>
     <!--    folder name="Actions">
         <folder name="Window">

@@ -6,13 +6,13 @@
             <file name="MainProjectScope.instance">
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.tasklist.projectint.MainProjectScanningScope.create"/>
                 <attr name="instanceOf" stringvalue="org.netbeans.spi.tasklist.TaskScanningScope"/>
+                <attr name="position" intvalue="200"/>
             </file>
             <file name="OpenedProjectsScope.instance">
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.tasklist.projectint.OpenedProjectsScanningScope.create"/>
                 <attr name="instanceOf" stringvalue="org.netbeans.spi.tasklist.TaskScanningScope"/>
+                <attr name="position" intvalue="300"/>
             </file>
-            <attr name="DefaultScope.instance/MainProjectScope.instance" boolvalue="true"/>
-            <attr name="MainProjectScope.instance/OpenedProjectsScope.instance" boolvalue="true"/>
-        </folder>
+            </folder>
     </folder>
 </filesystem>

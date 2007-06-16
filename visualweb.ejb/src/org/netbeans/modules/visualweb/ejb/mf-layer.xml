@@ -17,7 +17,6 @@ The Original Software is NetBeans. The Initial Developer of the Original
 Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
-
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
     <folder name="ServerNavigator"/>
@@ -67,11 +66,10 @@ Microsystems, Inc. All Rights Reserved.
     
     <folder name="UI">
         <folder name="Runtime">
-            <file name="org-netbeans-modules-visualweb-ejb-nodes-EjbRootNode.instance" url="org-netbeans-modules-visualweb-ejb-nodes-EjbRootNode.instance"/>
-            <attr name="org-netbeans-modules-visualweb-websvcmgr-nodes-WebServicesRootNode.instance/org-netbeans-modules-visualweb-ejb-nodes-EjbRootNode.instance" boolvalue="true"/>
-            <attr name="org-netbeans-modules-db-explorer-nodes-RootNode.instance/org-netbeans-modules-visualweb-ejb-nodes-EjbRootNode.instance" boolvalue="true"/>
-            <attr name="org-netbeans-modules-visualweb-ejb-nodes-EjbRootNode.instance/ServerRegistry2.instance" boolvalue="true"/>
-        </folder>
+            <file name="org-netbeans-modules-visualweb-ejb-nodes-EjbRootNode.instance" url="org-netbeans-modules-visualweb-ejb-nodes-EjbRootNode.instance">
+                <attr name="position" intvalue="300"/>
+            </file>
+            </folder>
     </folder>
     <folder name="org-netbeans-api-project-libraries">
         <folder name="Libraries">
@@ -81,37 +79,47 @@ Microsystems, Inc. All Rights Reserved.
     
     <folder name="CreatorJavaPalette">       
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.ejb.codeclips.Bundle"/>
-        <attr name="JavaBasics/EnterpriseJavaBeans" boolvalue="true"/>
         
         <folder name="EnterpriseJavaBeans">   
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.ejb.codeclips.Bundle"/>
             
-            <!-- Ordering -->
-            <attr name="GetFirstPerson.xml/FirstPersonSelected.xml" boolvalue="true"/>  
-            <attr name="FirstPersonSelected.xml/DropDownProcessValueChanged.xml" boolvalue="true"/>  
+            <!-- Ordering -->  
+              
             <!-- End Ordering -->
 
-            <file name="DropDownProcessValueChanged.xml" url="codeclips/DropDownProcessValueChanged.xml"/>
-            <file name="FirstPersonSelected.xml" url="codeclips/FirstPersonSelected.xml"/>
-            <file name="GetFirstPerson.xml" url="codeclips/GetFirstPerson.xml"/>
+            <attr name="position" intvalue="500"/>
+            <file name="DropDownProcessValueChanged.xml" url="codeclips/DropDownProcessValueChanged.xml">
+                <attr name="position" intvalue="300"/>
+            </file>
+            <file name="FirstPersonSelected.xml" url="codeclips/FirstPersonSelected.xml">
+                <attr name="position" intvalue="200"/>
+            </file>
+            <file name="GetFirstPerson.xml" url="codeclips/GetFirstPerson.xml">
+                <attr name="position" intvalue="100"/>
+            </file>
         </folder>
     </folder>
     
    <folder name="CreatorJavaPalette5">       
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.ejb.codeclips.Bundle"/>
-        <attr name="JavaBasics/EnterpriseJavaBeans" boolvalue="true"/>
         
         <folder name="EnterpriseJavaBeans">   
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.ejb.codeclips.Bundle"/>
             
-            <!-- Ordering -->
-            <attr name="GetFirstPerson.xml/FirstPersonSelected.xml" boolvalue="true"/>  
-            <attr name="FirstPersonSelected.xml/DropDownProcessValueChanged.xml" boolvalue="true"/>  
+            <!-- Ordering -->  
+              
             <!-- End Ordering -->
 
-            <file name="DropDownProcessValueChanged.xml" url="codeclips/DropDownProcessValueChanged.xml"/>
-            <file name="FirstPersonSelected.xml" url="codeclips/FirstPersonSelected.xml"/>
-            <file name="GetFirstPerson.xml" url="codeclips/GetFirstPerson.xml"/>
+            <attr name="position" intvalue="500"/>
+            <file name="DropDownProcessValueChanged.xml" url="codeclips/DropDownProcessValueChanged.xml">
+                <attr name="position" intvalue="300"/>
+            </file>
+            <file name="FirstPersonSelected.xml" url="codeclips/FirstPersonSelected.xml">
+                <attr name="position" intvalue="200"/>
+            </file>
+            <file name="GetFirstPerson.xml" url="codeclips/GetFirstPerson.xml">
+                <attr name="position" intvalue="100"/>
+            </file>
         </folder>
     </folder>
 </filesystem>

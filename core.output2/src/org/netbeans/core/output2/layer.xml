@@ -26,20 +26,15 @@ Microsystems, Inc. All Rights Reserved.
     </folder>
     <folder name="Menu">
         <folder name="Window">
-            <attr name="org-netbeans-core-actions-GlobalPropertiesAction.shadow/Output" boolvalue="true" />
-            <attr name="org-netbeans-modules-tasklist-ui-TaskListAction.shadow/Output" boolvalue="true" />
             <folder name="Output">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.output2.Bundle"/>
+                <attr name="position" intvalue="1200"/>
                 <file name="org-netbeans-core-output2-OutputWindowAction.shadow">
                   <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-output2-OutputWindowAction.instance"/>
+                    <attr name="position" intvalue="100"/>
                 </file>
-                <attr name="org-netbeans-core-output2-OutputWindowAction.shadow/ResultViewOpenAction.shadow" boolvalue="true"/>
-                <attr name="org-netbeans-core-output2-OutputWindowAction.shadow/FindUsagesOpenAction.shadow" boolvalue="true"/>
-                <attr name="org-netbeans-core-output2-OutputWindowAction.shadow/ResultWindowOpenAction.shadow" boolvalue="true"/>
+                </folder>
             </folder>
-            <attr name="Output/Navigator" boolvalue="true" />
-            <attr name="Output/Versioning" boolvalue="true" />
-        </folder>
     </folder>
     <folder name="Shortcuts">
         <file name="D-4.shadow">
@@ -49,19 +44,21 @@ Microsystems, Inc. All Rights Reserved.
     
     <folder name="Windows2">
         <folder name="Modes">
-            <file name="output.wsmode" url="resources/output.wsmode" />
+            <file name="output.wsmode" url="resources/output.wsmode"/>
             <folder name="output">
-                <file name="output.wstcref" url="resources/output.wstcref" />
+                <file name="output.wstcref" url="resources/output.wstcref">
+                    <attr name="position" intvalue="300"/>
+                </file>
             </folder>
         </folder>
         
         <folder name="Components">
-            <file name="output.settings" url="resources/output.settings" />
+            <file name="output.settings" url="resources/output.settings"/>
         </folder>
         
         <folder name="Groups">
             <folder name="debugger">
-                <file name="output.wstcgrp" url="resources/output.wstcgrp" />
+                <file name="output.wstcgrp" url="resources/output.wstcgrp"/>
             </folder>
         </folder>
     </folder>

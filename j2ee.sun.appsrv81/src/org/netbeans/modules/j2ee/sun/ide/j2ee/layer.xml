@@ -18,7 +18,6 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  Microsystems, Inc. All Rights Reserved.
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
-
 <filesystem>
 	<folder name="J2EE">
            <folder name="SunAppServer">
@@ -198,22 +197,19 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
      <!-- Register the HelpSet in lookup: -->
      <folder name="JavaHelp">
         <!-- Merge after Core IDE Help: -->
-        <attr name="org-netbeans-modules-usersguide-above-regular.txt/com-sun-enterprise-tools-studio-j2ee-helpset.xml" boolvalue="true"/>
         <!-- Merge it after the Server Plugin Integration online help: -->
-        <attr name="org-netbeans-modules-j2ee-server-above-regular.txt/com-sun-enterprise-tools-studio-j2ee-helpset.xml"
-                   boolvalue="true"/>
         <!-- The following file supplies the IDE with the name of the helpset: -->
-        <file name="com-sun-enterprise-tools-studio-j2ee-helpset.xml" url="com-sun-enterprise-tools-studio-j2ee-helpset.xml"/>
+        <file name="com-sun-enterprise-tools-studio-j2ee-helpset.xml" url="com-sun-enterprise-tools-studio-j2ee-helpset.xml">
+                <attr name="position" intvalue="1000"/>
+            </file>
         <!-- Merge it before the last group of helpset TOC entries: -->
-        <attr name="com-sun-enterprise-tools-studio-j2ee-helpset.xml/org-netbeans-modules-usersguide-below-regular.txt" 
-                   boolvalue="true"/>
- <attr name="org-netbeans-modules-usersguide-above-regular.txt/com-sun-jdo-modules-persistence-mapping-core-helpset.xml" boolvalue="true"/>
- <file name="com-sun-jdo-modules-persistence-mapping-core-helpset.xml" url="helpset-decl.xml"/>
- <attr name="com-sun-jdo-modules-persistence-mapping-core-helpset.xml/org-netbeans-modules-usersguide-below-regular.txt" boolvalue="true"/>      </folder>
+        <file name="com-sun-jdo-modules-persistence-mapping-core-helpset.xml" url="helpset-decl.xml">
+                <attr name="position" intvalue="1400"/>
+            </file>      </folder>
      
     <folder name="MIMEResolver">
       <file name="org-netbeans-modules-j2ee-sun-ide-j2ee-mime-resolver.xml" url="mime-resolver.xml">
-        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.sun.ide.j2ee.Bundle" />
+        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.sun.ide.j2ee.Bundle"/>
         <!---attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/j2ee/sun/ide/resources/..." /-->
       </file>
      </folder>    
@@ -262,24 +258,23 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
             <folder name="UserCatalogs">
             
                 <file name="org-netbeans-modules-j2ee-sun-ide-j2ee-RunTimeDDCatalog.instance">
-                    <attr name="instanceCreate" 
-                        methodvalue="org.netbeans.modules.j2ee.sun.ide.j2ee.RunTimeDDCatalog.getRunTimeDDCatalog"/>
-                    <attr name="instanceOf" 
-                        stringvalue="org.netbeans.modules.xml.catalog.spi.CatalogReader"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.j2ee.sun.ide.j2ee.RunTimeDDCatalog.getRunTimeDDCatalog"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.xml.catalog.spi.CatalogReader"/>
                 </file>
             </folder>
             <folder name="GrammarQueryManagers">
                 <!-- register semantics grammar for ejb-jar.xml(2.1)  due to code completion -->
-                <file name="org-netbeans-modules-j2ee-sun-ide-j2ee-RunTimeDDCatalog.instance"/>
-                <attr name="org-netbeans-modules-j2ee-sun-ide-j2ee-RunTimeDDCatalog.instance/semantics-grammar-to-generic-grammar-separator" boolvalue="true"/>
-            </folder> <!-- GrammarQueryManagers -->
+                <file name="org-netbeans-modules-j2ee-sun-ide-j2ee-RunTimeDDCatalog.instance">
+                    <attr name="position" intvalue="300"/>
+                </file>
+                </folder> <!-- GrammarQueryManagers -->
 
             
         </folder>
      </folder>
      
      <folder name="WarmUp">
-         <file name="org.netbeans.modules.j2ee.sun.ide.WarmUp.instance" /> 
+         <file name="org.netbeans.modules.j2ee.sun.ide.WarmUp.instance"/> 
      </folder>
     <folder name="Editors">
         <folder name="AnnotationTypes">
