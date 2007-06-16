@@ -200,7 +200,7 @@ public class DatabaseSettingsImporter {
      */
     public boolean locateAndRegisterConnections(boolean isStartup) {
         File contextFile;
-        Set <File> contextFiles = null;
+        Set <File> contextFiles = new HashSet<File>();
         
         if (isStartup) {
             contextFile = retrieveMigratedSettingsAtStartup();

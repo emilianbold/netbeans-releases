@@ -56,19 +56,20 @@ import org.openide.util.NbBundle;
  * Creator 2u1 settings to NB 6.0 so that Creator projects can be opened in
  * NB 6.0 smoothly (without unresolved references).
  *
- * @author cnguyencasj
+ * @author cnguyencasj, jbaker
  */
 
 public class ImportDataSource {
     
     private static File curImportDir = null;
-    private static String[] srcPaths = new String [] {".Creator/2_0/context.xml", ".Creator/2_0/jdbc-drivers", ".Creator/2_1/context.xml", ".Creator/2_1/jdbc-drivers", ".netbeans/5.5/context.xml", ".netbeans/5.5/jdbc-drivers", ".netbeans/5.5.1/context.xml", ".netbeans/5.5.1/jdbc-drivers"};
-    private static String[] destPaths = new String [] {"migrated/2_0/context.xml", "jdbc-drivers", "migrated/2_1/context.xml", "jdbc-drivers", "migrated/5_5/context.xml", "jdbc-drivers", "migrated/5_5_1/context.xml", "jdbc-drivers"};
+    private static String[] srcPaths = new String [] {".Creator/2_0/context.xml", ".Creator/2_0/jdbc-drivers", ".Creator/2_1/context.xml", ".Creator/2_1/jdbc-drivers", ".netbeans/5.5/context.xml", ".netbeans/5.5/jdbc-drivers", ".netbeans/5.5.1/context.xml", ".netbeans/5.5.1/jdbc-drivers"}; //NOI18N
+    private static String[] destPaths = new String [] {"migrated/2_0/context.xml", "jdbc-drivers", "migrated/2_1/context.xml", "jdbc-drivers", "migrated/5_5/context.xml", "jdbc-drivers", "migrated/5_5_1/context.xml", "jdbc-drivers"}; //NOI18N
     private static File currentUserdir = getCurrentUserdir();
     private static final int CREATOR2 = 0;
     private static final int CREATOR2U1 = 2;
     private static final int VWP55 = 4;
     private static final int VWP551 = 6;
+    private static final String config = "config"; //NOI18N
     
     /** Last time in ms when the Broken References alert was shown. */
     private static long brokenAlertLastTime = 0;
@@ -85,14 +86,14 @@ public class ImportDataSource {
     
     private static File getCurrentUserdir() {
         if (currentUserdir == null) {
-            currentUserdir =  InstalledFileLocator.getDefault().locate("config", null, false).getParentFile();
+            currentUserdir =  InstalledFileLocator.getDefault().locate("config", null, false).getParentFile(); //NOI18N
         }
         
         return currentUserdir;
     }
     
     public static boolean isMigrated() {
-        File migratedDir = new File(currentUserdir.getAbsolutePath() + File.separator + "migrated");
+        File migratedDir = new File(currentUserdir.getAbsolutePath() + File.separator + config + File.separator + "migrated"); //NOI18N
         if (migratedDir != null && migratedDir.exists() && migratedDir.isDirectory()) {
             return true;
         }
@@ -105,7 +106,7 @@ public class ImportDataSource {
     }
     
     public static boolean isMigrated(int release) {
-        File file = new File(currentUserdir.getAbsolutePath() + File.separator + destPaths[release]);
+        File file = new File(currentUserdir.getAbsolutePath() + File.separator + config + File.separator + destPaths[release]);
         return (file.exists());
     }
     
@@ -113,12 +114,12 @@ public class ImportDataSource {
     public static void prepareCopy() throws IOException {
         // Check if already migrated
         if (isMigrated()) {
-            System.out.println("nothing to migrated");
+            System.out.println("nothing to migrated"); //NOI18N
             return;
         }
         
         // User Home Dir
-        String userHome = System.getProperty("user.home");
+        String userHome = System.getProperty("user.home"); //NOI18N
         if (userHome == null) {
             // cannot locate the old user dirs if this is null
             return;
@@ -131,15 +132,20 @@ public class ImportDataSource {
         // to the corresponding destPaths element
         for (int i = 0; i < srcPaths.length; i++) {
             File src = new File(userHome + File.separator + srcPaths[i]);
-            File dest = new File(nbUserDir.getAbsolutePath() + File.separator + destPaths[i]);
-            System.out.println("src ["+i+"]:" + src.getAbsolutePath());
-            System.out.println("dest ["+i+"]:" + dest.getAbsolutePath());
+            File dest;
+            if (destPaths[i].equals("jdbc-drivers")) { //NOI18N
+                dest = new File(nbUserDir.getAbsolutePath() + File.separator + destPaths[i]);
+            } else {
+                dest = new File(nbUserDir.getAbsolutePath() + File.separator + config + File.separator + destPaths[i]);
+            }
+            System.out.println("src ["+i+"]:" + src.getAbsolutePath()); //NOI18N
+            System.out.println("dest ["+i+"]:" + dest.getAbsolutePath()); //NOI18N
             
             // For performance reason, if context.xml dest file already exists, skip
             // However, this should never happen now that we put under migrated dir
             if (dest.exists() && (i == CREATOR2 || i==CREATOR2U1 || i==VWP55 || i==VWP551)) {
                 i++;
-                System.out.println("this should never happen now");
+                System.out.println("this should never happen now"); //NOI18N
             } else if (src.exists()) {
                 
                 // Check parent directory of dest if not exist, create
@@ -151,7 +157,7 @@ public class ImportDataSource {
                     copyDirectory(src,dest);
                 } else if (src.isFile()){
                     boolean append = false;
-                    if (dest.getName().equals("build.properties")) {
+                    if (dest.getName().equals("build.properties")) { //NOI18N
                         append = true;
                     }
                     copy(src,dest, append);
@@ -195,7 +201,6 @@ public class ImportDataSource {
      * @return return true if project is a legacy project
      */
     public static boolean isLegacyProject(Project project) {
-        Project currentProj = CurrentProject.getInstance().getProject();
         boolean legacyProject = false;
         
         if (project == null) {
@@ -236,19 +241,19 @@ public class ImportDataSource {
                 try {
                     MissingConnectionsAlertPanel alert = new MissingConnectionsAlertPanel();
                     JButton close = new JButton(
-                            NbBundle.getMessage(MissingConnectionsAlertPanel.class, "LBL_UpdateDatasourcesCustomizer_Close"));
+                            NbBundle.getMessage(MissingConnectionsAlertPanel.class, "LBL_UpdateDatasourcesCustomizer_Close")); //NOI18N
                     close.getAccessibleContext().setAccessibleDescription(
-                            NbBundle.getMessage(MissingConnectionsAlertPanel.class, "ACSD_UpdateDatasourcesCustomizer_Close"));
+                            NbBundle.getMessage(MissingConnectionsAlertPanel.class, "ACSD_UpdateDatasourcesCustomizer_Close")); //NOI18N
                     DialogDescriptor dd = new DialogDescriptor(
                             alert,
-                            NbBundle.getMessage(MissingConnectionsAlertPanel.class, "MSG_Update_Datasources_Title"),
+                            NbBundle.getMessage(MissingConnectionsAlertPanel.class, "MSG_Update_Datasources_Title"), //NOI18N
                             true,
                             new Object[] {close},
                             close,
                             DialogDescriptor.DEFAULT_ALIGN,
                             null,
                             null);
-                    dd.setMessageType(DialogDescriptor.WARNING_MESSAGE);
+                    dd.setMessageType(DialogDescriptor.WARNING_MESSAGE); //NOI18N
                     Dialog dlg = DialogDisplayer.getDefault().createDialog(dd);
                     dlg.setVisible(true);
                 } finally {
@@ -298,7 +303,7 @@ public class ImportDataSource {
             public void run() {
                 try {
                     WaitForUpdatePanel pleaseWait = new WaitForUpdatePanel(project);                    
-                    NotifyDescriptor nd = new NotifyDescriptor.Message(NbBundle.getMessage(WaitForUpdatePanel.class, "MSG_WaitForUpdate"), NotifyDescriptor.DEFAULT_OPTION);
+                    NotifyDescriptor nd = new NotifyDescriptor.Message(NbBundle.getMessage(WaitForUpdatePanel.class, "MSG_WaitForUpdate"), NotifyDescriptor.DEFAULT_OPTION); //NOI18N
                     DialogDisplayer.getDefault().notify(nd);
                     pleaseWait.setVisible(true);
                 } finally {
