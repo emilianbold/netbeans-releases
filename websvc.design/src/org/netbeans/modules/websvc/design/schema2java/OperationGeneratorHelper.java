@@ -94,6 +94,12 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
+import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
+import org.netbeans.modules.websvc.design.javamodel.MethodModel;
+import org.netbeans.modules.xml.schema.model.ComplexType;
+import org.netbeans.modules.xml.schema.model.ComplexTypeDefinition;
+import org.netbeans.modules.xml.schema.model.SequenceDefinition;
+
 
 /**
  *
@@ -627,7 +633,7 @@ public class OperationGeneratorHelper {
      * @param attributeName Name of the attribute whose value is returned
      * @return String Returns the string value of the attribute. Returns empty string if attribute is not found.
      */
-    public String getAttributeValue(FileObject clazz, final String annotationClass, final String attributeName){
+    public static String getAttributeValue(FileObject clazz, final String annotationClass, final String attributeName){
         JavaSource javaSource = JavaSource.forFileObject(clazz);
         final String[] attributeValue = new String[]{""};
         if (javaSource!=null) {
@@ -664,11 +670,11 @@ public class OperationGeneratorHelper {
         return attributeValue[0];
     }
     
-    public String getServiceEndpointInterface(FileObject implBean){
+    public static String getServiceEndpointInterface(FileObject implBean){
         return  getAttributeValue(implBean, "javax.jws.WebService", "endpointInterface");
     }
     
-    public String getPortTypeNameFromInterface(FileObject interfaceClass){
+    public static String getPortTypeNameFromInterface(FileObject interfaceClass){
         //if interface, use the @WebService.name attribute. If no such attribute
         //use the simple name of the interface
         String portTypeName = getAttributeValue(interfaceClass, "javax.jws.WebService", "name");
@@ -678,7 +684,7 @@ public class OperationGeneratorHelper {
         return portTypeName;
     }
     
-    public String getPortTypeNameFromImpl(FileObject implClass){
+    public static String getPortTypeNameFromImpl(FileObject implClass){
         
         String seiName = getServiceEndpointInterface(implClass);
         if(!seiName.equals("")){
@@ -759,8 +765,172 @@ public class OperationGeneratorHelper {
         return schemaModel;
     }
     
-    public void changeWSDLOperationName(String oldName, String newName){
+    public static void changeWSDLOperationName(Service service, MethodModel methodModel, String newOperationName){
+        String oldOperationName = methodModel.getOperationName();
+        File wsdlFile = getWSDLFile(service, methodModel);
+        WSDLModel wsdlModel = WSDLUtils.getWSDLModel(FileUtil.toFileObject(wsdlFile), true);
+        PortType portType = null;
+        Operation operation = null;
+        String portTypeName = getPortTypeNameFromImpl(methodModel.getImplementationClass());
         Definitions definitions = wsdlModel.getDefinitions();
+        Collection<PortType> portTypes = definitions.getPortTypes();
+        for(PortType pt : portTypes){
+            if( pt.getName().equals(portTypeName)){
+                portType = pt;
+                break;
+            }
+        }
+        if(portType != null){
+            Collection<Operation> operations = portType.getOperations();
+            for(Operation op : operations){
+                if(op.getName().equals(oldOperationName)){
+                    operation = op;
+                    try{
+                        wsdlModel.startTransaction();
+                        operation.setName(newOperationName);
+                    }finally{
+                        wsdlModel.endTransaction();
+                    }
+                    break;
+                }
+            }
+            
+            //Need to maintain wrapped style
+            if(operation != null){
+                if(isWrapperQualified(operation, oldOperationName)){
+                    Input input = operation.getInput();
+                    if(input != null){
+                        NamedComponentReference<Message> messageRef = input.getMessage();
+                        Message message = messageRef.get();
+                        Part part = message.getParts().iterator().next();
+                        NamedComponentReference<GlobalElement> elementRef = part.getElement();
+                        GlobalElement element = elementRef.get();
+                        SchemaModel schemaModel = element.getModel();
+                        //create a new Global Element
+                        GlobalElement gb = null;
+                        try{
+                            schemaModel.startTransaction();
+                            gb = schemaModel.getFactory().createGlobalElement();
+                            gb.setName(newOperationName);
+                            //get the type that the previous GlobalElement refers to:
+                            NamedComponentReference<? extends GlobalType> typeRef = element.getType();
+                            GlobalType gt = typeRef.get();
+                            NamedComponentReference<GlobalType> gtRef = gb.createReferenceTo(gt, GlobalType.class);
+                            gb.setType(gtRef);
+                            schemaModel.getSchema().addElement(gb);
+                        }finally{
+                            schemaModel.endTransaction();
+                        }
+                        try{
+                            wsdlModel.startTransaction();
+                            message.removePart(part);
+                            Part newPart = wsdlModel.getFactory().createPart();
+                            newPart.setName(newOperationName + "Part");
+                            NamedComponentReference<GlobalElement> gbRef = newPart.createSchemaReference(gb, GlobalElement.class);
+                            newPart.setElement(gbRef);
+                            message.addPart(newPart);
+                        }finally{
+                            wsdlModel.endTransaction();
+                        }
+                        
+                    }
+                }
+            }
+            
+            //Change the names in the binding section too
+            Collection<Binding> bindings = definitions.getBindings();
+            if(bindings.size() == 0) return;
+            Binding binding = null;
+            for(Binding b: bindings){
+                NamedComponentReference<PortType> portTypeRef = b.getType();
+                PortType pt = portTypeRef.get();
+                if(portType.getName().equals(pt.getName())){
+                    binding = b;
+                    break;
+                }
+            }
+            if(binding != null){
+                Collection<BindingOperation>bindingOps = binding.getBindingOperations();
+                for(BindingOperation bindingOp : bindingOps){
+                    if(bindingOp.getName().equals(oldOperationName)){
+                        try{
+                            wsdlModel.startTransaction();
+                            bindingOp.setName(newOperationName);
+                        }finally{
+                            wsdlModel.endTransaction();
+                        }
+                        break;
+                    }
+                }
+            }
+            
+        }
+    }
+    
+    private static boolean isWrapperQualified(Operation operation, String oldName){
+        Input input = operation.getInput();
+        Output output = operation.getOutput();
+        if(input == null && output == null) return true;
+        if(input != null){
+            Message inputMessage = operation.getInput().getMessage().get();
+            if(inputMessage != null){
+                if(! isWrapperQualified(inputMessage, oldName, true)){
+                    return false;
+                }
+            }
+        }
+        if(output != null){
+            Message outputMessage = operation.getOutput().getMessage().get();
+            if(outputMessage != null){
+                if(! isWrapperQualified(outputMessage, oldName, false)){
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+    
+    private static boolean isWrapperQualified(Message message, String oldName, boolean isInput){
+        if(message.getParts().size() != 1){
+            return false;
+        }
+        NamedComponentReference<GlobalElement> geRef = message.getParts().iterator().next().getElement();
+        GlobalElement ge = geRef.get();
+        if(isInput){
+            if(!ge.getName().equals(oldName)){
+                return false;
+            }
+        }
+        NamedComponentReference<? extends GlobalType> typeRef = ge.getType();
+        GlobalType gt = typeRef.get();
+        if(!( gt  instanceof ComplexType)){
+            return false;
+        }
+        ComplexType ct = (ComplexType)gt;
+        ComplexTypeDefinition ctdef = ct.getDefinition();
+        if(!(ctdef instanceof SequenceDefinition)){
+            return false;
+        }
+        return true;
+    }
+    
+    private static File getWSDLFile(Service service, MethodModel methodModel){
+        String localWsdlUrl = service.getLocalWsdlFile();
+        if (localWsdlUrl!=null) { //WS from e
+            JAXWSSupport support = JAXWSSupport.getJAXWSSupport(methodModel.getImplementationClass());
+            if (support!=null) {
+                FileObject localWsdlFolder = support.getLocalWsdlFolderForService(service.getName(),false);
+                if (localWsdlFolder!=null) {
+                    File wsdlFolder = FileUtil.toFile(localWsdlFolder);
+                    return  new File(wsdlFolder.getAbsolutePath()+File.separator+localWsdlUrl);
+                }
+            }
+        }
+        return null;
+    }
+    
+    private void addMethodCustomization(Operation operation, String javaName){
+        
     }
 }
 

@@ -39,6 +39,7 @@ import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.modules.websvc.design.javamodel.MethodModel;
+import org.netbeans.modules.websvc.design.schema2java.OperationGeneratorHelper;
 import org.netbeans.modules.websvc.design.view.DesignView;
 import org.netbeans.modules.websvc.design.view.DesignViewPopupProvider;
 import org.netbeans.modules.websvc.design.view.actions.RemoveOperationAction;
@@ -128,6 +129,7 @@ public class OperationWidget extends AbstractTitledWidget {
             }
             
             public void setText(Widget widget, String text) {
+                OperationGeneratorHelper.changeWSDLOperationName(service, operation, text);
                 operation.setOperationName(text);
                 nameWidget.setLabel(text);
             }
