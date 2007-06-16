@@ -411,6 +411,30 @@ public class CasaWrapperModel extends CasaModelImpl {
                     "The two endpoints cannot be connected because of their incompatible interfaces."); 
         }
         
+        // Adjust the incompatible BC interface first, if necessary.
+        boolean endpoint1Defined = isEndpointDefined(consumes);
+        boolean endpoint2Defined = isEndpointDefined(provides);
+        if (endpoint1Defined && endpoint2Defined) {
+            QName consumesInterfaceQName = consumes.getInterfaceQName();
+            QName providesInterfaceQName = provides.getInterfaceQName();
+            if (!consumesInterfaceQName.equals(providesInterfaceQName)) {
+                CasaPort casaPort1 = getCasaPort(consumes);
+                CasaPort casaPort2 = getCasaPort(provides);
+                boolean isFreeEditablePort1 = casaPort1 != null && 
+                        isEditable(casaPort1) &&
+                        getConnections(casaPort1, false).size() == 0; // the flag here doesn't matter
+                boolean isFreeEditablePort2 = casaPort2 != null && 
+                        isEditable(casaPort2) &&
+                        getConnections(casaPort2, false).size() == 0; // the flag here doesn't matter                
+                if (isFreeEditablePort1 && !isFreeEditablePort2) {
+                    setEndpointInterfaceQName(consumes, null);
+                } else {
+                    assert !isFreeEditablePort1 && isFreeEditablePort2;
+                    setEndpointInterfaceQName(provides, null);
+                }
+            }
+        }
+        
         CasaConnection connection = getCasaConnection(consumes, provides);
         
         if (connection == null) {
@@ -631,11 +655,11 @@ public class CasaWrapperModel extends CasaModelImpl {
                 
             CasaPort casaPort = getCasaPort(endpointRef);
             if (casaPort != null) {
-                if (isDefinedInCompApp(casaPort)) {
-                    if (getConnections(casaPort, false).size() == 1) { // this is the only visible connection left
-                        setEndpointInterfaceQName(endpointRef, null);
-                    }
-                }
+//                if (isDefinedInCompApp(casaPort)) {
+//                    if (getConnections(casaPort, false).size() == 1) { // this is the only visible connection left
+//                        setEndpointInterfaceQName(endpointRef, null);
+//                    }
+//                }
             } else {
                 CasaServiceEngineServiceUnit sesu = 
                         getCasaEngineServiceUnit(endpointRef);
@@ -778,7 +802,7 @@ public class CasaWrapperModel extends CasaModelImpl {
     
     /**
      * Tests if the two given endpoints can be connected or not.
-     * Two endpoints can be connected if and only if all of the following
+     * Two endpoints can be connected if and only if ALL of the following
      * conditions hold true:
      * <UL>
      * <LI> one endpoint is a Consumes and the other is a Provides;
@@ -786,7 +810,8 @@ public class CasaWrapperModel extends CasaModelImpl {
      *      endpoint (there could be existing visible connections involving
      *      the Provides endpoint though);
      * <LI> at least one of the two endpoints has a defined interface;
-     * <LI> the two endpoints don't have incompatible defined interfaces;     
+     * <LI> if the two endpoints have incompatible defined interfaces, then
+     *      one and only one endpoint must be a free editable BC port;     
      * <LI> the two endpoint cannot be both external endpoints;
      * <LI> the two endpoints don't belong to the same binding component;
      * </UL>
@@ -848,8 +873,21 @@ public class CasaWrapperModel extends CasaModelImpl {
             QName consumesInterfaceQName = endpointRef1.getInterfaceQName();
             QName providesInterfaceQName = endpointRef2.getInterfaceQName();
             if (!consumesInterfaceQName.equals(providesInterfaceQName)) {
-                return NbBundle.getMessage(this.getClass(), 
-                        "MSG_CANNOT_CONNECT_INCOMPATIBLE_ENDPOINTS"); // NOI18N
+                boolean isFreeEditablePort1 = casaPort1 != null && 
+                        isEditable(casaPort1) &&
+                        getConnections(casaPort1, false).size() == 0; // the flag here doesn't matter
+                boolean isFreeEditablePort2 = casaPort2 != null && 
+                        isEditable(casaPort2) &&
+                        getConnections(casaPort2, false).size() == 0; // the flag here doesn't matter
+                // Two incompatible endpoints are connectable if and only if
+                // one and only one is a free editable BC port.
+                if (isFreeEditablePort1 && !isFreeEditablePort2 ||
+                        !isFreeEditablePort1 && isFreeEditablePort2 ) {
+                    ;
+                } else {
+                    return NbBundle.getMessage(this.getClass(),
+                            "MSG_CANNOT_CONNECT_INCOMPATIBLE_ENDPOINTS"); // NOI18N
+                }
             }
         }
         
