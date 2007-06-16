@@ -313,7 +313,7 @@ public class Utilities {
         if (modulesOnly ()) {
             return new UpdateManager.TYPE [] { UpdateManager.TYPE.MODULE };
         } else {
-            return new UpdateManager.TYPE []  { UpdateManager.TYPE.FEATURE, UpdateManager.TYPE.CUSTOM_HANDLED_COMPONENT };
+            return new UpdateManager.TYPE []  { UpdateManager.TYPE.FEATURE, UpdateManager.TYPE.STANDALONE_MODULE, UpdateManager.TYPE.CUSTOM_HANDLED_COMPONENT };
         }
     }
     

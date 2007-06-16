@@ -179,6 +179,7 @@ public abstract class OperationSupportImpl {
                         moduleInfos.add (((ModuleUpdateElementImpl) updateElementImpl).getModuleInfo ());
                         affectedModules.add (updateElementImpl.getUpdateUnit ());
                         break;
+                    case STANDALONE_MODULE :
                     case FEATURE :
                         for (ModuleUpdateElementImpl moduleImpl : ((FeatureUpdateElementImpl) updateElementImpl).getContainedModuleElements ()) {
                             moduleInfos.add (moduleImpl.getModuleInfo ());

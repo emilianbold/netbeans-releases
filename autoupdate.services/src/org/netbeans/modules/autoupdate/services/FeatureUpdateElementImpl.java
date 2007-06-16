@@ -55,9 +55,11 @@ public class FeatureUpdateElementImpl extends UpdateElementImpl {
     private FeatureItem featureItem;
     private Logger log = null;
     private Set<ModuleUpdateElementImpl> moduleElementsImpl;
+    private UpdateManager.TYPE type;
     
-    public FeatureUpdateElementImpl (FeatureItem item, String providerName) {
+    public FeatureUpdateElementImpl (FeatureItem item, String providerName, UpdateManager.TYPE type) {
         super (item, providerName);
+        this.type = type;
         codeName = item.getCodeName ();
         String itemSpec = item.getSpecificationVersion ();
         if (itemSpec == null) {
@@ -193,7 +195,7 @@ public class FeatureUpdateElementImpl extends UpdateElementImpl {
     }
     
     public UpdateManager.TYPE getType () {
-        return UpdateManager.TYPE.FEATURE;
+        return type;
     }
 
     public boolean isEnabled () {
@@ -231,6 +233,7 @@ public class FeatureUpdateElementImpl extends UpdateElementImpl {
                     if (el != null) {
                         assert Trampoline.API.impl (el) instanceof ModuleUpdateElementImpl : "Impl of " + el + " is instanceof ModuleUpdateElementImpl.";
                         ModuleUpdateElementImpl impl = (ModuleUpdateElementImpl) Trampoline.API.impl (el);
+                        impl.addParentFeature (this);
                         res.add (impl);
                     }
                 }

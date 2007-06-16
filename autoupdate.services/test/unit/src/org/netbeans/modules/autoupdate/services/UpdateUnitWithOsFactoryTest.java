@@ -30,6 +30,7 @@ import java.util.Map;
 import org.netbeans.api.autoupdate.UpdateUnit;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.autoupdate.updateprovider.AutoupdateCatalogProvider;
+import org.netbeans.modules.autoupdate.updateprovider.ModuleItem;
 import org.netbeans.spi.autoupdate.UpdateItem;
 import org.netbeans.spi.autoupdate.UpdateProvider;
 import org.openide.modules.ModuleInfo;
@@ -79,7 +80,7 @@ public class UpdateUnitWithOsFactoryTest extends NbTestCase {
         assertFalse ("Some modules are installed.", updates.isEmpty ());
         assertTrue (testModuleName + " found in parsed items.", updates.keySet ().contains (testModuleName + "_" + testModuleVersion));
         
-        Map<String, UpdateUnit> newImpls = UpdateUnitFactory.getDefault ().appendUpdateItems (unitImpls, p);
+        Map<String, UpdateUnit> newImpls = UpdateUnitFactory.getDefault ().appendUpdateItems (unitImpls, p, new HashMap<ModuleItem, String> ());
         assertNotNull ("Some units found.", newImpls);
         assertFalse ("Some units found.", newImpls.isEmpty ());
         
@@ -112,7 +113,7 @@ public class UpdateUnitWithOsFactoryTest extends NbTestCase {
         assertFalse ("Some modules are installed.", updates.isEmpty ());
         assertTrue (testModuleName + " found in parsed items.", updates.keySet ().contains (testModuleName + "_" + testModuleVersion));
         
-        Map<String, UpdateUnit> newImpls = UpdateUnitFactory.getDefault ().appendUpdateItems (unitImpls, p);
+        Map<String, UpdateUnit> newImpls = UpdateUnitFactory.getDefault ().appendUpdateItems (unitImpls, p, new HashMap<ModuleItem, String> ());
         assertNotNull ("Some units found.", newImpls);
         assertFalse ("Some units found.", newImpls.isEmpty ());
         

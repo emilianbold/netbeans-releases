@@ -39,9 +39,11 @@ public class FeatureUpdateUnitImpl extends UpdateUnitImpl {
     private UpdateElement installedElement = null;
     private UpdateElement updateElement = null;
     private boolean initialized = false;
+    private UpdateManager.TYPE type;
 
-    public FeatureUpdateUnitImpl (String codename) {
+    public FeatureUpdateUnitImpl (String codename, UpdateManager.TYPE type) {
         super (codename);
+        this.type = type;
     }
 
     @Override
@@ -75,7 +77,7 @@ public class FeatureUpdateUnitImpl extends UpdateUnitImpl {
     }
 
     public TYPE getType () {
-        return UpdateManager.TYPE.FEATURE;
+        return type;
     }
     
     private void initializeFeature () {
@@ -114,7 +116,10 @@ public class FeatureUpdateUnitImpl extends UpdateUnitImpl {
         if (res != null) {
             // create new one element contains all installed modules
             FeatureItem item = ArtificialFeaturesProvider.createFeatureItem (getCodeName (), installedModules, featureImpl);
-            FeatureUpdateElementImpl featureElementImpl = new FeatureUpdateElementImpl (item, res.getSource ());
+            FeatureUpdateElementImpl featureElementImpl = new FeatureUpdateElementImpl (
+                    item,
+                    res.getSource (),
+                    featureImpl.getType ());
             installedElement = Trampoline.API.createUpdateElement (featureElementImpl);
             featureElementImpl.setUpdateUnit (res.getUpdateUnit ());
         }
@@ -122,7 +127,10 @@ public class FeatureUpdateUnitImpl extends UpdateUnitImpl {
         // add also new update element
         if (! featureElements.isEmpty () && ! availableModules.isEmpty ()) {
             FeatureItem item = ArtificialFeaturesProvider.createFeatureItem (getCodeName (), availableModules, featureImpl);
-            FeatureUpdateElementImpl featureElementImpl = new FeatureUpdateElementImpl (item, featureElements.get (0).getSource ());
+            FeatureUpdateElementImpl featureElementImpl = new FeatureUpdateElementImpl (
+                    item,
+                    featureElements.get (0).getSource (),
+                    featureImpl.getType ());
             updateElement = Trampoline.API.createUpdateElement (featureElementImpl);
             featureElementImpl.setUpdateUnit (featureElements.get (0).getUpdateUnit ());
             addUpdate (updateElement);

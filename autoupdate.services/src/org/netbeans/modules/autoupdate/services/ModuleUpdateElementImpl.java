@@ -24,7 +24,9 @@ import org.netbeans.modules.autoupdate.updateprovider.InstallInfo;
 import org.netbeans.modules.autoupdate.updateprovider.InstalledModuleItem;
 import org.netbeans.modules.autoupdate.updateprovider.ModuleItem;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.autoupdate.UpdateManager;
@@ -50,6 +52,7 @@ public class ModuleUpdateElementImpl extends UpdateElementImpl {
     private ModuleInfo moduleInfo;
     private ModuleItem item;
     private String date;
+    private Set<FeatureUpdateElementImpl> parentFeatures = null;
     
     public ModuleUpdateElementImpl (ModuleItem item, String providerName) {
         super (item, providerName);
@@ -150,6 +153,21 @@ public class ModuleUpdateElementImpl extends UpdateElementImpl {
     public boolean isEnabled () {
         return getModuleInfo ().isEnabled ();
     }            
+    
+    public boolean addParentFeature (FeatureUpdateElementImpl feature) {
+        if (parentFeatures == null) {
+            parentFeatures = new HashSet<FeatureUpdateElementImpl> ();
+        }
+        return parentFeatures.add (feature);
+    }
+    
+    public Set<FeatureUpdateElementImpl> getParentFeatures () {
+        return parentFeatures;
+    }
+    
+    public boolean isStandalone () {
+        return parentFeatures == null || parentFeatures.isEmpty ();
+    }
     
     @Override
     public boolean equals(Object obj) {

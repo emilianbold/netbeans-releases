@@ -28,11 +28,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.api.autoupdate.UpdateElement;
+import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.api.autoupdate.UpdateUnit;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.autoupdate.updateprovider.AutoupdateCatalogProvider;
 import org.netbeans.modules.autoupdate.updateprovider.AutoupdateInfoParserTest;
 import org.netbeans.modules.autoupdate.updateprovider.LocalNBMsProvider;
+import org.netbeans.modules.autoupdate.updateprovider.ModuleItem;
 import org.netbeans.spi.autoupdate.UpdateItem;
 import org.netbeans.spi.autoupdate.UpdateProvider;
 import org.openide.modules.ModuleInfo;
@@ -72,30 +74,124 @@ public class UpdateUnitFactoryTest extends NbTestCase {
         assertNotNull ("Some modules are installed.", modules);
         assertFalse ("Some modules are installed.", modules.isEmpty ());
         
-        Map<String, UpdateUnit> newImpls = UpdateUnitFactory.getDefault ().appendUpdateItems (unitImpls,InstalledModuleProvider.getDefault ());
+        Map standaloneModules = new HashMap<ModuleItem, String> ();
+        Map<String, UpdateUnit> newImpls = UpdateUnitFactory.getDefault ().appendUpdateItems (
+                unitImpls,
+                InstalledModuleProvider.getDefault (),
+                standaloneModules);
+        UpdateUnitFactory.getDefault ().appendStandaloneModules (newImpls, standaloneModules);
         assertNotNull ("Some units found.", newImpls);
         assertFalse ("Some units found.", newImpls.isEmpty ());
         
-        assertEquals ("Same size of installed modules and UpdateUnit (except FeatureElement).", modules.size (), newImpls.size ());
+        int modulesC = 0;
+        int features = 0;
+        int standalone = 0;
+        
+        for (UpdateUnit unit : newImpls.values ()) {
+            switch (unit.getType ()) {
+            case MODULE :
+                modulesC ++;
+                break;
+            case STANDALONE_MODULE :
+                standalone ++;
+                break;
+            case LOCALIZATION :
+            case FEATURE :
+                features ++;
+                break;
+            }
+        }
+        assertEquals ("Same size of installed modules and UpdateUnit (except FeatureElement).", modules.size (), modulesC);
+        assertEquals ("Same size of installed modules and standalone modules.", modules.size (), standalone);
     }
     
     public void testAppendUpdateItems () throws IOException {
         Map<String, UpdateUnit> unitImpls = new HashMap<String, UpdateUnit> ();
         Map<String, UpdateItem> updates = p.getUpdateItems ();
-        assertNotNull ("Some modules are installed.", updates);
-        assertFalse ("Some modules are installed.", updates.isEmpty ());
+        assertNotNull ("Some upadtes are present.", updates);
+        assertFalse ("Some upadtes are present.", updates.isEmpty ());
         
-        Map<String, UpdateUnit> newImpls = UpdateUnitFactory.getDefault ().appendUpdateItems (unitImpls, p);
+        Map<String, UpdateUnit> newImpls = UpdateUnitFactory.getDefault ().appendUpdateItems (unitImpls, p, new HashMap<ModuleItem, String> ());
         assertNotNull ("Some units found.", newImpls);
         assertFalse ("Some units found.", newImpls.isEmpty ());
         
-        assertEquals ("Same size of installed modules and UpdateUnit", updates.size (), newImpls.size ());
+        int modules = 0;
+        int features = 0;
+        int standalone = 0;
+        int installed = 0;
+        
+        for (UpdateUnit unit : newImpls.values ()) {
+            switch (unit.getType ()) {
+            case MODULE :
+                modules ++;
+                if (unit.getInstalled () != null) {
+                    installed ++;
+                }
+                break;
+            case STANDALONE_MODULE :
+                standalone ++;
+                break;
+            case LOCALIZATION :
+            case FEATURE :
+                features ++;
+                break;
+            }
+        }
+        assertEquals ("Same size of upadtes (modules + features) and UpdateUnit", updates.size () - installed, modules + features);
+    }
+    
+    public void testFeatueVsStandaloneModules () throws IOException {
+        String testSpec = "org.netbeans.bootstrap";
+        Map<String, UpdateUnit> unitImpls = new HashMap<String, UpdateUnit> ();
+        Map<String, UpdateItem> updates = p.getUpdateItems ();
+        assertNotNull ("Some upadtes are present.", updates);
+        assertFalse ("Some upadtes are present.", updates.isEmpty ());
+        
+        Map<String, UpdateUnit> newImpls = UpdateUnitFactory.getDefault ().appendUpdateItems (unitImpls, p, new HashMap<ModuleItem, String> ());
+        assertNotNull ("Some units found.", newImpls);
+        assertFalse ("Some units found.", newImpls.isEmpty ());
+        
+        int modules = 0;
+        int features = 0;
+        int standalone = 0;
+        int installed = 0;
+        
+        UpdateUnit testUnitModule;
+        
+        for (UpdateUnit unit : newImpls.values ()) {
+            if (unit.getCodeName ().indexOf (testSpec) == -1) {
+                continue;
+            }
+            switch (unit.getType ()) {
+            case MODULE :
+                modules ++;
+                break;
+            case STANDALONE_MODULE :
+                standalone ++;
+                //fail ("No STANDALONE_MODULE for " + testSpec);
+                break;
+            case LOCALIZATION :
+            case FEATURE :
+                assertNotNull ("Module " + testSpec + " is installed.", unit.getInstalled ());
+                features ++;
+                break;
+            }
+        }
+        /*System.out.println("MODULE: " + modules);
+        System.out.println("STANDALONE_MODULE: " + standalone);
+        System.out.println("FEATURE: " + features);
+        System.out.println("INSTALLED: " + installed);*/
+        assertTrue (testSpec + " feature found.", features > 0);
     }
     
     public void testGroupInstalledAndUpdates () {
         Map<String, UpdateUnit> unitImpls = new HashMap<String, UpdateUnit> ();
-        Map<String, UpdateUnit> installedImpls = UpdateUnitFactory.getDefault ().appendUpdateItems (unitImpls,InstalledModuleProvider.getDefault ());
-        Map<String, UpdateUnit> updatedImpls = UpdateUnitFactory.getDefault ().appendUpdateItems (installedImpls, p);
+        Map<String, UpdateUnit> installedImpls = UpdateUnitFactory.getDefault ().appendUpdateItems (
+                unitImpls,
+                InstalledModuleProvider.getDefault (),
+                new HashMap<ModuleItem, String> ());
+        Map<String, UpdateUnit> updatedImpls = UpdateUnitFactory.getDefault ().appendUpdateItems (
+                installedImpls, p, new HashMap<ModuleItem, String> ());
         boolean isInstalledAndHasUpdates = false;
         for (String id : updatedImpls.keySet ()) {
             UpdateUnit impl = updatedImpls.get (id);
@@ -114,7 +210,7 @@ public class UpdateUnitFactoryTest extends NbTestCase {
         assertNotNull ("LocalNBMsProvider found for file " + NBM_FILE, localFilesProvider);
         Map<String, UpdateUnit> units = UpdateUnitFactory.getDefault().getUpdateUnits (localFilesProvider);
         assertNotNull ("UpdateUnit found in provider " + localFilesProvider.getDisplayName (), units);
-        assertEquals ("Provider providers only once unit in provider (XXX added a artificial feature!)" + localFilesProvider.getName (), 2, units.size ());
+        assertEquals ("Provider providers only once unit in provider" + localFilesProvider.getName (), 1, units.size ());
         String id = units.keySet ().iterator ().next ();
         assertNotNull (localFilesProvider.getName () + " gives UpdateUnit.", units.get (id));
         UpdateUnit u = units.get (id);

@@ -242,6 +242,7 @@ public class InstallSupportImpl {
                     case MODULE :
                         moduleImpls.add ((ModuleUpdateElementImpl) toUpdateImpl);
                         break;
+                    case STANDALONE_MODULE :
                     case FEATURE :
                         affectedFeatureImpls.add ((FeatureUpdateElementImpl) toUpdateImpl);
                         moduleImpls.addAll (((FeatureUpdateElementImpl) toUpdateImpl).getContainedModuleElements ());
@@ -390,6 +391,7 @@ public class InstallSupportImpl {
         case MODULE :
             res = trusted.contains (impl);
             break;
+        case STANDALONE_MODULE :
         case FEATURE :
             FeatureUpdateElementImpl toUpdateFeatureImpl = (FeatureUpdateElementImpl) impl;
             Set<ModuleUpdateElementImpl> moduleImpls = toUpdateFeatureImpl.getContainedModuleElements ();
@@ -417,6 +419,7 @@ public class InstallSupportImpl {
         case MODULE :
             res = signed.contains (impl);
             break;
+        case STANDALONE_MODULE :
         case FEATURE :
             FeatureUpdateElementImpl toUpdateFeatureImpl = (FeatureUpdateElementImpl) impl;
             Set<ModuleUpdateElementImpl> moduleImpls = toUpdateFeatureImpl.getContainedModuleElements ();
@@ -456,6 +459,7 @@ public class InstallSupportImpl {
         case MODULE :
             res += doDownload (toUpdateImpl, progress, aggregateDownload, totalSize);
             break;
+        case STANDALONE_MODULE :
         case FEATURE :
             FeatureUpdateElementImpl toUpdateFeatureImpl = (FeatureUpdateElementImpl) toUpdateImpl;
             Set<ModuleUpdateElementImpl> moduleImpls = toUpdateFeatureImpl.getContainedModuleElements ();
@@ -520,6 +524,7 @@ public class InstallSupportImpl {
         case MODULE :
             doValidate (toUpdateImpl, progress, verified);
             break;
+        case STANDALONE_MODULE :
         case FEATURE :
             FeatureUpdateElementImpl toUpdateFeatureImpl = (FeatureUpdateElementImpl) toUpdateImpl;
             Set<ModuleUpdateElementImpl> moduleImpls = toUpdateFeatureImpl.getContainedModuleElements ();
@@ -740,6 +745,7 @@ public class InstallSupportImpl {
             case MODULE :
                 res.add (getDestination ((ModuleUpdateElementImpl) toUpdateImpl));
                 break;
+            case STANDALONE_MODULE :
             case FEATURE :
                 FeatureUpdateElementImpl toUpdateFeatureImpl = (FeatureUpdateElementImpl) toUpdateImpl;
                 Set<ModuleUpdateElementImpl> moduleImpls = toUpdateFeatureImpl.getContainedModuleElements ();

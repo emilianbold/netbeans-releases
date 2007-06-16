@@ -34,9 +34,11 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.autoupdate.UpdateElement;
+import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.api.autoupdate.UpdateUnit;
 import org.netbeans.api.autoupdate.UpdateUnitProvider;
 import org.netbeans.modules.autoupdate.updateprovider.ArtificialFeaturesProvider;
@@ -64,30 +66,23 @@ public class UpdateUnitFactory {
     
     public Map<String, UpdateUnit> getUpdateUnits () {
         List<UpdateUnitProvider> updates = UpdateUnitProviderImpl.getUpdateUnitProviders (true);
+        Map<ModuleItem, String> possibleStandaloneModules = new HashMap<ModuleItem, String> ();
         
         // append installed units
-        Map<String, UpdateUnit> mappedImpl = appendUpdateItems (new HashMap<String, UpdateUnit> (), InstalledModuleProvider.getDefault ());
-        
-        try {
-            // append units from ArtificialFeaturesProvider
-            mappedImpl = appendUpdateItems (mappedImpl, new ArtificialFeaturesProvider (InstalledModuleProvider.getDefault ().getUpdateItems ().values ()));
-        } catch (IOException ioe) {
-            log.log (Level.INFO, "Cannot read UpdateItems from InstalledModuleProvider " + InstalledModuleProvider.getDefault (), ioe);
-        }
+        Map<String, UpdateUnit> mappedImpl = appendUpdateItems (
+                new HashMap<String, UpdateUnit> (),
+                InstalledModuleProvider.getDefault (),
+                possibleStandaloneModules);
         
         for (UpdateUnitProvider up : updates) {
             UpdateUnitProviderImpl impl = Trampoline.API.impl (up);
             
             // append units from provider
-            mappedImpl = appendUpdateItems (mappedImpl, impl.getUpdateProvider ());
-            
-            // append units from ArtificialFeaturesProvider
-            try {
-                mappedImpl = appendUpdateItems (mappedImpl, new ArtificialFeaturesProvider (impl.getUpdateProvider ().getUpdateItems ().values ()));
-            } catch (IOException ioe) {
-                log.log (Level.INFO, "Cannot read UpdateItems from ArtificialFeaturesProvider.", ioe);
-            }
+            mappedImpl = appendUpdateItems (mappedImpl, impl.getUpdateProvider (), possibleStandaloneModules);
         }
+        
+        // append standalone modules at the end when all features are known
+        appendStandaloneModules (mappedImpl, possibleStandaloneModules);
         
         return mappedImpl;
     }
@@ -97,6 +92,8 @@ public class UpdateUnitFactory {
         // prepare items accessible in provider
         Collection<UpdateItem> itemsFromProvider = null;
         Collection<UpdateItem> artificialItems = null;
+        Map<ModuleItem, String> possibleStandaloneModules = new HashMap<ModuleItem, String> ();
+        Map<ModuleItem, String> realStandaloneModules = new HashMap<ModuleItem, String> ();
         
         try {
             itemsFromProvider = provider.getUpdateItems ().values();
@@ -105,39 +102,35 @@ public class UpdateUnitFactory {
             itemsFromProvider = Collections.emptySet ();
         }
         
-        try {
-            artificialItems = new ArtificialFeaturesProvider (itemsFromProvider).getUpdateItems ().values ();
-        } catch(IOException ioe) {
-            log.log (Level.INFO, "Cannot read UpdateItems from ArtificialFeaturesProvider.", ioe);
-            artificialItems = Collections.emptySet ();
-        }
-        
-        Collection<UpdateItem> items = new HashSet<UpdateItem> (itemsFromProvider);
-        items.addAll (artificialItems);
-        
         // check installed units
-        Map<String, UpdateUnit> temp  = appendUpdateItems (new HashMap<String, UpdateUnit> (), InstalledModuleProvider.getDefault ());
+        Map<String, UpdateUnit> temp  = appendUpdateItems (
+                new HashMap<String, UpdateUnit> (),
+                InstalledModuleProvider.getDefault (),
+                possibleStandaloneModules);
         
         // append units from provider
-        temp = appendUpdateItems (temp, provider);
+        temp = appendUpdateItems (temp, provider, possibleStandaloneModules);
         
-        // append units from ArtificialFeaturesProvider
-        temp = appendUpdateItems (temp, new ArtificialFeaturesProvider (itemsFromProvider));
-        
-        assert items != null : provider + " UpdateProvider cannot returns null items.";
+        assert itemsFromProvider != null : provider + " UpdateProvider cannot returns null items.";
         Map<String, UpdateUnit> retval = new HashMap<String, UpdateUnit>();
-        for (UpdateItem updateItem : items) {
+        for (UpdateItem updateItem : itemsFromProvider) {
             UpdateItemImpl itemImpl = Trampoline.SPI.impl(updateItem);
             UpdateUnit unit = temp.get (itemImpl.getCodeName ());
             if (unit != null) {
                 retval.put (itemImpl.getCodeName (), unit);
             }            
+            if (possibleStandaloneModules.get (itemImpl) != null && itemImpl instanceof ModuleItem) {
+                realStandaloneModules.put ((ModuleItem) itemImpl, itemImpl.getCodeName ());
+            }
         }
+        
+        // append standalone modules at the end when all features are known
+        appendStandaloneModules (retval, realStandaloneModules);
         
         return retval;
     }
     
-    Map<String, UpdateUnit> appendUpdateItems (Map<String, UpdateUnit> originalUnits, UpdateProvider provider) {
+    Map<String, UpdateUnit> appendUpdateItems (Map<String, UpdateUnit> originalUnits, UpdateProvider provider, Map<ModuleItem, String> possibleStandaloneModules) {
         assert originalUnits != null : "Map of original UnitImpl cannot be null";
 
         Map<String, UpdateItem> items;
@@ -150,6 +143,8 @@ public class UpdateUnitFactory {
         
         assert items != null : "UpdateProvider[" + provider.getName () + "] should return non-null items.";
         
+        Set<String> includedModules = new HashSet<String> ();
+        
         // append updates
         for (String simpleItemId : items.keySet ()) {
 
@@ -158,15 +153,25 @@ public class UpdateUnitFactory {
 
             UpdateElement updateEl = null;
             if (itemImpl instanceof InstalledModuleItem) {
-                updateEl = Trampoline.API.createUpdateElement (new ModuleUpdateElementImpl ((InstalledModuleItem) itemImpl, null));
+                ModuleUpdateElementImpl impl = new ModuleUpdateElementImpl ((InstalledModuleItem) itemImpl, null);
+                updateEl = Trampoline.API.createUpdateElement (impl);
+                possibleStandaloneModules.put ((ModuleItem) itemImpl, impl.getCodeName ());
             } else if (itemImpl instanceof ModuleItem) {
-                updateEl = Trampoline.API.createUpdateElement (new ModuleUpdateElementImpl ((ModuleItem) itemImpl, provider.getDisplayName ()));
+                ModuleUpdateElementImpl impl = new ModuleUpdateElementImpl ((ModuleItem) itemImpl, provider.getDisplayName ());
+                updateEl = Trampoline.API.createUpdateElement (impl);
+                possibleStandaloneModules.put ((ModuleItem) itemImpl, impl.getCodeName ());
             } else if (itemImpl instanceof LocalizationItem) {
                 updateEl = Trampoline.API.createUpdateElement (new LocalizationUpdateElementImpl ((LocalizationItem) itemImpl, provider.getDisplayName ()));
             } else if (itemImpl instanceof NativeComponentItem) {
                 updateEl = Trampoline.API.createUpdateElement (new NativeComponentUpdateElementImpl ((NativeComponentItem) itemImpl, provider.getDisplayName ()));
             } else if (itemImpl instanceof FeatureItem) {
-                updateEl = Trampoline.API.createUpdateElement (new FeatureUpdateElementImpl ((FeatureItem) itemImpl, provider.getDisplayName ()));
+                FeatureUpdateElementImpl impl = new FeatureUpdateElementImpl (
+                        (FeatureItem) itemImpl,
+                        provider.getDisplayName (),
+                        UpdateManager.TYPE.FEATURE);
+                updateEl = Trampoline.API.createUpdateElement (impl);
+                // XXX: intialize contained modules
+                includedModules.addAll (((FeatureItem) itemImpl).getModuleCodeNames ());
             } else {
                 assert false : "Unknown type of UpdateElement " + updateEl;
             }
@@ -175,6 +180,31 @@ public class UpdateUnitFactory {
             if (updateEl != null) {
                 addElement (originalUnits, updateEl, provider);
             }
+        }
+        
+        return originalUnits;
+    }
+    
+    Map<String, UpdateUnit> appendStandaloneModules (Map<String, UpdateUnit> originalUnits, Map<ModuleItem, String> standaloneModules) {
+        // add standalone modules beside features
+        for (ModuleItem module : standaloneModules.keySet ()) {
+            FeatureItem standaloneModule = 
+                    new FeatureItem (
+                        "standalone module " + module.getCodeName (), // NOI18N
+                        module.getSpecificationVersion (),
+                        Collections.singleton (module.getCodeName ()),
+                        module.getModuleInfo ().getDisplayName(),
+                        (String) module.getModuleInfo ().getLocalizedAttribute ("OpenIDE-Module-Long-Description"), // NOI18N
+                        module.getCategory ());
+            UpdateElement updateEl = Trampoline.API.createUpdateElement (
+                    new FeatureUpdateElementImpl (
+                    standaloneModule,
+                    ArtificialFeaturesProvider.getDummy ().getName (),
+                    UpdateManager.TYPE.STANDALONE_MODULE));
+
+            log.log (Level.FINE, "Generate standalone module for " + updateEl);
+
+            addElement (originalUnits, updateEl, ArtificialFeaturesProvider.getDummy ());
         }
 
         return originalUnits;
@@ -216,8 +246,9 @@ public class UpdateUnitFactory {
             case MODULE :
                 unitImpl = new ModuleUpdateUnitImpl (element.getCodeName ());
                 break;
+            case STANDALONE_MODULE :
             case FEATURE :
-                unitImpl = new FeatureUpdateUnitImpl (element.getCodeName ());
+                unitImpl = new FeatureUpdateUnitImpl (element.getCodeName (), elImpl.getType ());
                 break;
             case CUSTOM_HANDLED_COMPONENT :
                 unitImpl = new NativeComponentUpdateUnitImpl (element.getCodeName ());

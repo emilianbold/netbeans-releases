@@ -19,7 +19,9 @@
 
 package org.netbeans.modules.autoupdate.updateprovider;
 
+import java.util.HashSet;
 import java.util.Set;
+import org.openide.modules.Dependency;
 
 /**
  *
@@ -30,6 +32,7 @@ public class FeatureItem extends UpdateItemImpl {
     private String codeName;
     private String specificationVersion;
     private Set<String> dependenciesToModules;
+    private Set<String> moduleCodeNames;
     private String displayName;
     private String description;
     private String category;
@@ -70,6 +73,26 @@ public class FeatureItem extends UpdateItemImpl {
     
     public Set<String> getDependenciesToModules () {
         return this.dependenciesToModules;
+    }
+    
+    public Set<String> getModuleCodeNames () {
+        if (moduleCodeNames == null) {
+            moduleCodeNames = new HashSet<String> ();
+            for (String depSpec : dependenciesToModules) {
+                Set<Dependency> deps = Dependency.create (Dependency.TYPE_MODULE, depSpec);
+                assert deps.size () == 1 : "Only one dependency for " + depSpec;
+                Dependency dep = deps.iterator ().next ();
+                assert Dependency.TYPE_MODULE == dep.getType () : "Only Dependency.TYPE_MODULE supported, but " + dep;
+                String name = dep.getName ();
+                // trim release impl.
+                if (name.indexOf ('/') != -1) {
+                    int to = name.indexOf ('/');
+                    name = name.substring (0, to);
+                }
+                moduleCodeNames.add (name);
+            }
+        }
+        return moduleCodeNames;
     }
     
     public String getAgreement() {

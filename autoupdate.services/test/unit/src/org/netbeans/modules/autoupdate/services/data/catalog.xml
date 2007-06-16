@@ -2,10 +2,9 @@
 <!DOCTYPE module_updates PUBLIC "-//NetBeans//DTD Autoupdate Catalog 3.0//EN" "http://www.netbeans.org/dtds/autoupdate-catalog-3_0.dtd">
 <module_updates timestamp="00/00/19/08/03/2006">
 
-<feature name="Collaboration"
+<feature codename="Collaboration"
          homepage="http://rechtacek.org"
          moduleauthor="Sun Microsystems"
-         releasedate="2006/04/10"
          module-dependencies="  com.sun.collablet/1,
                                 com.sun.collablet.moxc/1,
                                 org.netbeans.libs.xmlbeans,
@@ -21,6 +20,10 @@
          version="1.0"
          description="Developer collaboration feature"/>
 
+<feature codename="feature org.netbeans.bootstrap"
+         module-dependencies="org.netbeans.bootstrap"
+         description="Description of org.openide.util"/>
+         
 <module_group name="Collaboration">
 
 <module codenamebase="com.sun.collablet.moxc" homepage="http://collab.netbeans.org/" distribution="http://www.netbeans.org/download/nbms/alpha/dev/1.18/com-sun-collablet-moxc.nbm" license="standard-nbm-license.txt" downloadsize="10519" needsrestart="false" moduleauthor="" releasedate="2006/02/23">

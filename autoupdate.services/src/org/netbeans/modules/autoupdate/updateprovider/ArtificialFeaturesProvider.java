@@ -31,6 +31,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.Module;
 import org.netbeans.modules.autoupdate.services.FeatureUpdateElementImpl;
+import org.netbeans.modules.autoupdate.services.UpdateElementImpl;
 import org.netbeans.modules.autoupdate.services.Utilities;
 import org.netbeans.spi.autoupdate.UpdateItem;
 import org.netbeans.spi.autoupdate.UpdateProvider;
@@ -50,6 +51,15 @@ public class ArtificialFeaturesProvider implements UpdateProvider {
         
     private final Collection<UpdateItem> originalItems;
     private static final Logger log = Logger.getLogger (ArtificialFeaturesProvider.class.getName ());
+    
+    private static ArtificialFeaturesProvider DUMMY;
+    
+    public static ArtificialFeaturesProvider getDummy () {
+        if (DUMMY == null) {
+            DUMMY = new ArtificialFeaturesProvider (null);
+        }
+        return DUMMY;
+    }
     
     public ArtificialFeaturesProvider (final Collection<UpdateItem> items) {
         originalItems = items;
@@ -139,7 +149,7 @@ public class ArtificialFeaturesProvider implements UpdateProvider {
         throw new UnsupportedOperationException("Not supported yet.");
     }
     
-    public static FeatureItem createFeatureItem (String codeName, Set<ModuleInfo> modules, FeatureUpdateElementImpl original) {
+    public static FeatureItem createFeatureItem (String codeName, Set<ModuleInfo> modules, UpdateElementImpl original) {
         Set<String> containsModules = new HashSet<String> ();
         String versionN = "";
         String descriptionN = "";
@@ -158,7 +168,7 @@ public class ArtificialFeaturesProvider implements UpdateProvider {
         String displayName = original == null || original.getDisplayName () == null || original.getDisplayName ().length () == 0 ? codeName :
             original.getDisplayName ();
 
-        String version = original == null || original.getSpecificationVersion() == null? versionN :
+        String version = original == null || original.getSpecificationVersion() == null ? versionN :
             original.getSpecificationVersion ().toString ();
 
         return new FeatureItem (codeName, version, containsModules, displayName, description, null);

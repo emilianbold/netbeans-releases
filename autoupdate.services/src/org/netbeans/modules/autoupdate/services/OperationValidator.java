@@ -130,6 +130,7 @@ abstract class OperationValidator {
                 Module m =  Utilities.toModule (((ModuleUpdateElementImpl) impl).getModuleInfo ());
                 res = ModuleDeleterImpl.getInstance ().canDelete (m);
                 break;
+            case STANDALONE_MODULE :
             case FEATURE :
                 for (ModuleInfo info : ((FeatureUpdateElementImpl) impl).getModuleInfos ()) {
                     Module module = Utilities.toModule (info);
@@ -251,6 +252,7 @@ abstract class OperationValidator {
                 Module module =  Utilities.toModule (((ModuleUpdateElementImpl) impl).getModuleInfo ());
                 res = Utilities.canEnable (module);
                 break;
+            case STANDALONE_MODULE :
             case FEATURE :
                 for (ModuleInfo info : ((FeatureUpdateElementImpl) impl).getModuleInfos ()) {
                     Module m =  Utilities.toModule (info);
@@ -303,6 +305,7 @@ abstract class OperationValidator {
                 Module module =  Utilities.toModule (((ModuleUpdateElementImpl) impl).getModuleInfo ());
                 res = Utilities.canDisable (module);
                 break;
+            case STANDALONE_MODULE :
             case FEATURE :
                 for (ModuleInfo info : ((FeatureUpdateElementImpl) impl).getModuleInfos ()) {
                     Module m =  Utilities.toModule (info);

@@ -423,6 +423,7 @@ public class Utilities {
             final Set<Dependency> brokenDeps = DependencyChecker.findBrokenDependencies (deps, extendedModules);
             retval = findRequiredModules (brokenDeps, extendedModules);
             break;
+        case STANDALONE_MODULE :
         case FEATURE :
             FeatureUpdateElementImpl feature = (FeatureUpdateElementImpl) el;
             for (ModuleUpdateElementImpl module : feature.getContainedModuleElements ()) {
@@ -444,6 +445,7 @@ public class Utilities {
         case MODULE :
             mInfos = el.getModuleInfos ();
             break;
+        case STANDALONE_MODULE :
         case FEATURE :
             mInfos = el.getModuleInfos ();
             break;

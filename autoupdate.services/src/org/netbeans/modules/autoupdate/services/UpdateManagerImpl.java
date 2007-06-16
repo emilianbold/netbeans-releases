@@ -37,7 +37,7 @@ import org.netbeans.spi.autoupdate.UpdateProvider;
  */
 public class UpdateManagerImpl extends Object {
     private static final UpdateManagerImpl INSTANCE = new UpdateManagerImpl();
-    private static final UpdateManager.TYPE[] DEFAULT_TYPES = new UpdateManager.TYPE [] {  UpdateManager.TYPE.FEATURE };
+    private static final UpdateManager.TYPE[] DEFAULT_TYPES = new UpdateManager.TYPE [] {  UpdateManager.TYPE.FEATURE, UpdateManager.TYPE.STANDALONE_MODULE };
     
     private Reference<Map<String, UpdateUnit>> updateUnitsRef = null;
     private List<UpdateUnit> holderUnits; // XXX: temporary only
