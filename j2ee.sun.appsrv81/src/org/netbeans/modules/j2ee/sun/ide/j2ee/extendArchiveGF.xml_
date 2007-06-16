@@ -27,7 +27,7 @@ Microsystems, Inc. All Rights Reserved.
         <echo message="Default target is not set."/>
     </target>
     
-    <target name="-init-extend-archive" depends="-init-check">
+    <target name="-init-extend-archive" depends="init">
         <available file="${resource.dir}" property="has.resources"/>
     </target>
     
