@@ -99,7 +99,8 @@ public abstract class BaseCasaProperty extends Node.Property {
 
     @Override
     public boolean supportsDefaultValue () {
-        return true;
+        //return true;
+        return canWrite();
     }
 
     @Override

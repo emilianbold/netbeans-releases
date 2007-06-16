@@ -20,7 +20,9 @@ import java.awt.Component;
 import java.awt.event.ActionListener;
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorSupport;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.KeyStroke;
@@ -32,6 +34,7 @@ import org.openide.explorer.propertysheet.InplaceEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.explorer.propertysheet.PropertyModel;
 import org.openide.util.NbBundle;
+import javax.xml.namespace.QName;
 
 /**
  *
@@ -56,10 +59,8 @@ public class PortTypeEditor extends PropertyEditorSupport
             String propertyName) {
         mPropertyName = propertyName;
         mPortType = initialPortType;
-        
         mAllPortTypes = model.getPortTypes();
     }
-    
     /*
     public boolean supportsCustomEditor() {
         return true;
@@ -137,16 +138,31 @@ public class PortTypeEditor extends PropertyEditorSupport
         private PropertyEditor editor = null;
         List<PortType> mPortTypes;
         PortType mPortType;
+        
+        Map mapPTtoQName = new HashMap<PortType, QName>();
 
         private Inplace(List<PortType> portTypes, PortType portType) {
             mPortTypes = portTypes;
             mPortType = portType;
-        
+
+            
+            mPortTypesComboBox.addItem(NbBundle.getMessage(PortTypeEditorPanel.class, "CLEAR_INTERFACE_DEFINITION")); // NOI18N
+            boolean bPTFound = false;
+            QName qName;
             for(PortType pt : portTypes) {
-                mPortTypesComboBox.addItem(pt.getName());
+                qName = new QName(pt.getModel().getDefinitions().getTargetNamespace(), pt.getName());
+                mPortTypesComboBox.addItem(qName);
+                mapPTtoQName.put(pt, qName);
+                if(portType.equals(pt)) {
+                    bPTFound = true;
+                }
             }
             if(portType != null) {
-                mPortTypesComboBox.setSelectedItem(portType.getName());
+                if(bPTFound) {
+                    mPortTypesComboBox.setSelectedItem(mapPTtoQName.get(portType));
+                } else {
+                    mPortTypesComboBox.setSelectedIndex(0);
+                }
             }
         }
 
@@ -163,14 +179,24 @@ public class PortTypeEditor extends PropertyEditorSupport
             //avoid memory leaks:
             editor = null;
             model = null;
+            mapPTtoQName = null;
         }
 
         public Object getValue() {
-            return mPortTypes.get(mPortTypesComboBox.getSelectedIndex());
+            PortType retPortType = null;
+            int iIndex = mPortTypesComboBox.getSelectedIndex();
+            if(iIndex >= 1) {
+                retPortType = mPortTypes.get(iIndex - 1);
+            }
+            return retPortType;
         }
 
         public void setValue(Object object) {
-            mPortTypesComboBox.setSelectedItem(((PortType) object).getName());
+            if(object != null) {
+                mPortTypesComboBox.setSelectedItem(mapPTtoQName.get(object));
+            } else {
+                mPortTypesComboBox.setSelectedIndex(0);
+            }
         }
 
         public boolean supportsTextEntry() {
@@ -178,7 +204,7 @@ public class PortTypeEditor extends PropertyEditorSupport
         }
 
         public void reset() {
-            //??
+            
         }
 
         public KeyStroke[] getKeyStrokes() {

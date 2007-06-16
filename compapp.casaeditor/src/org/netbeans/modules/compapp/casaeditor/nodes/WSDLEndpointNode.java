@@ -23,7 +23,6 @@ import java.awt.Image;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.compapp.casaeditor.Constants;
-import org.netbeans.modules.compapp.casaeditor.nodes.actions.WSDLEndpointAction;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaPort;
 import org.netbeans.modules.compapp.casaeditor.properties.PropertyUtils;
@@ -35,7 +34,6 @@ import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
-import org.openide.util.actions.SystemAction;
 
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaComponent;
 import org.netbeans.modules.compapp.casaeditor.model.jbi.impl.JBIAttributes;
@@ -107,7 +105,10 @@ public class WSDLEndpointNode extends CasaNode {
         
         Sheet.Set identificationProperties =
                 getPropertySet(sheet, PropertyUtils.PropertiesGroups.IDENTIFICATION_SET);
-        
+
+        Node.Property portTypeDefinition = new PortTypeProperty(this); 
+        identificationProperties.put(portTypeDefinition);
+
         PropertyUtils.installEndpointNameProperty(
                 identificationProperties, this, casaPort,
                 JBIAttributes.ENDPOINT_NAME.getName(),
@@ -126,8 +127,6 @@ public class WSDLEndpointNode extends CasaNode {
         };
         identificationProperties.put(componentNameSupport);
 
-        Node.Property portTypeDefinition = new PortTypeProperty(this); 
-        identificationProperties.put(portTypeDefinition);
 
         
         // Add all concrete child properties, as a convenience to the user.

@@ -49,40 +49,67 @@ public class PortTypeProperty extends BaseCasaProperty {
 
     @Override
     public boolean canWrite() {
-        return true;
-    }
-
-    public Object getValue() throws IllegalAccessException, InvocationTargetException {
+        boolean bRetValue = false;
         CasaComponent component = getComponent();
         if(component instanceof CasaPort) {
-            return getModel().getCasaPortType((CasaPort) component).getName();
-        } else {
-            return Constants.EMPTY_STRING;
+            CasaWrapperModel model = (CasaWrapperModel) component.getModel();
+            bRetValue = model.isEditable((CasaPort) component);
         }
+        return bRetValue;
+    }
+    
+    @Override
+    public boolean supportsDefaultValue () {
+        return false;
+    }
 
+
+    public Object getValue() throws IllegalAccessException, InvocationTargetException {
+        Object retValue = Constants.EMPTY_STRING;
+        CasaComponent component = getComponent();
+        if(component instanceof CasaPort) {
+            CasaEndpointRef endPointRef = getEndPointRef((CasaPort) component);
+            if(endPointRef != null) {
+                retValue = endPointRef.getInterfaceQName();
+            } else {
+                retValue = getModel().getCasaPortType((CasaPort) component).getName();
+            }
+            //return getModel().getCasaPortType((CasaPort) component).getName();
+        } 
+        return retValue;
     }
 
     public void setValue(Object val) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
         CasaComponent component = getComponent();
         if (component instanceof CasaPort) {
-            if(val != null && val instanceof PortType) {
-                PortType pt = (PortType) val;
-                QName qName = new QName(pt.getModel().getDefinitions().getTargetNamespace(), pt.getName());
-                CasaPort casaPort = (CasaPort) component;
-                CasaEndpointRef endPointRef = casaPort.getConsumes();
-                if (endPointRef == null) {
-                    endPointRef = casaPort.getProvides();
-                }
-                if(endPointRef != null) {
+            CasaEndpointRef endPointRef = getEndPointRef((CasaPort) component); 
+            if(endPointRef != null) {
+                if(val != null && val instanceof PortType) {
+                    PortType pt = (PortType) val;
+                    QName qName = new QName(pt.getModel().getDefinitions().getTargetNamespace(), pt.getName());
                     getModel().setEndpointInterfaceQName(endPointRef, qName);
+                } else {
+                    getModel().setEndpointInterfaceQName(endPointRef, null);
                 }
             }
         } 
     }
 
+    private CasaEndpointRef getEndPointRef(CasaPort casaPort) {
+        CasaEndpointRef endPointRef = casaPort.getConsumes();
+        if (endPointRef == null) {
+            endPointRef = casaPort.getProvides();
+        }
+        return endPointRef;
+    }
     public PropertyEditor getPropertyEditor() {
+        PortType pt = null;
+        CasaComponent component = getComponent();
+        if (component instanceof CasaPort) {
+            pt = getModel().getCasaPortType((CasaPort) component);
+        }
         return new PortTypeEditor((CasaWrapperModel)getComponent().getModel(),
-                                   null,
+                                   pt,
                                    NbBundle.getMessage(getClass(), "PROP_PortTypeDefinition")  // NOI18N
                                   );
     }
