@@ -449,17 +449,17 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
         }
 
         FindDialogMemory memory = FindDialogMemory.getDefault();
-        String[] entries;
+        List<String> entries;
 
         entries = memory.getFileNamePatterns();
-        if (entries.length != 0) {
-            cboxFileNamePattern.setModel(new DefaultComboBoxModel(entries));
+        if (!entries.isEmpty()) {
+            cboxFileNamePattern.setModel(new ListComboBoxModel(entries));
         }
 
         if (cboxReplacement != null) {
             entries = memory.getReplacementExpressions();
-            if (entries.length != 0) {
-                cboxReplacement.setModel(new DefaultComboBoxModel(entries));
+            if (!entries.isEmpty()) {
+                cboxReplacement.setModel(new ListComboBoxModel(entries));
             }
         }
     }

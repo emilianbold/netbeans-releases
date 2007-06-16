@@ -19,6 +19,9 @@
 
 package org.netbeans.modules.search;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import org.openidex.search.SearchType;
 
 /**
@@ -32,12 +35,8 @@ public final class FindDialogMemory {
 
     /** maximum count of stored file name patterns */
     private static final int maxFileNamePatternCount = 10;
-    /** */
-    private static final String[] noFileNamePatterns = new String[0];
     /** maximum count of stored replacement expressions */
     private static final int maxReplExprCount = 10;
-    /** */
-    private static final String[] noReplExpressions = new String[0];
 
     /** singleton instance of this class */
     private static FindDialogMemory singleton;
@@ -50,22 +49,12 @@ public final class FindDialogMemory {
      * storage of last used file name patterns
      * (initially {@code null})
      */
-    private String[] fileNamePatterns;
-    /**
-     * current number of stored
-     * {@link #fileNamePatterns file name patterns}
-     */
-    private int fileNamePatternCount = 0;
+    private List<String> fileNamePatterns;
     /**
      * storage of last used replacement expressions
      * (initially {@code null})
      */
-    private String[] replExpressions;
-    /**
-     * current number of stored
-     * {@link #replExpressions replacement expressions}
-     */
-    private int replExprCount = 0;
+    private List<String> replExpressions;
     
     /** Creates a new instance of FindDialogMemory */
     private FindDialogMemory() { }
@@ -101,37 +90,39 @@ public final class FindDialogMemory {
      * @param  pattern  pattern to be stored
      */
     void storeFileNamePattern(String pattern) {
-        if (fileNamePatternCount == 0) {
-            assert fileNamePatterns == null;
-            fileNamePatterns = new String[maxFileNamePatternCount];
-        } else if (fileNamePatternCount == maxFileNamePatternCount) {
-            System.arraycopy(fileNamePatterns, 1,
-                             fileNamePatterns, 0,
-                             --fileNamePatternCount);
+        if (fileNamePatterns == null) {
+            fileNamePatterns = new ArrayList<String>(maxFileNamePatternCount);
+            fileNamePatterns.add(pattern);
+            return;
         }
-        fileNamePatterns[fileNamePatternCount++] = pattern;
+
+        assert !fileNamePatterns.isEmpty();
+
+        int index = fileNamePatterns.indexOf(pattern);
+        if (index != -1) {
+            if (index == fileNamePatterns.size() - 1) {
+                return;
+            }
+
+            fileNamePatterns.remove(index);
+        } else if (fileNamePatterns.size() == maxFileNamePatternCount) {
+            fileNamePatterns.remove(0);
+        }
+        fileNamePatterns.add(pattern);
     }
 
     /**
-     * Returns last used file name patterns in order from the
-     * most recently used ones to the oldest ones.
+     * Returns last used file name patterns in order
+     * from the oldest ones to the most recently used ones.
      *
-     * @return  last used file name patterns, or an empty array
-     *          if no file name patterns are available
+     * @return  list of the last used file name patterns, or an empty list
+     *          if no file name patterns are stored
      */
-    String[] getFileNamePatterns() {
-        String[] result;
-        if (fileNamePatternCount == 0) {
-            result = noFileNamePatterns;
-        } else {
-            result = new String[fileNamePatternCount];
-            int srcIndex = fileNamePatternCount - 1;
-            int dstIndex = 0;
-            do {
-                result[dstIndex++] = fileNamePatterns[srcIndex--];
-            } while (srcIndex != -1);
-        }
-        return result;
+    List<String> getFileNamePatterns() {
+        assert fileNamePatterns == null || !fileNamePatterns.isEmpty();
+
+        return (fileNamePatterns != null) ? fileNamePatterns
+                                          : Collections.<String>emptyList();
     }
 
     /**
@@ -143,37 +134,39 @@ public final class FindDialogMemory {
      * @param  expression  replacement expression to be stored
      */
     void storeReplacementExpression(String expression) {
-        if (replExprCount == 0) {
-            assert replExpressions == null;
-            replExpressions = new String[maxReplExprCount];
-        } else if (replExprCount == maxReplExprCount) {
-            System.arraycopy(replExpressions, 1,
-                             replExpressions, 0,
-                             --replExprCount);
+        if (replExpressions == null) {
+            replExpressions = new ArrayList<String>(maxReplExprCount);
+            replExpressions.add(expression);
+            return;
         }
-        replExpressions[replExprCount++] = expression;
+
+        assert !replExpressions.isEmpty();
+
+        int index = replExpressions.indexOf(expression);
+        if (index != -1) {
+            if (index == replExpressions.size() - 1) {
+                return;
+            }
+
+            replExpressions.remove(index);
+        } else if (replExpressions.size() == maxReplExprCount) {
+            replExpressions.remove(0);
+        }
+        replExpressions.add(expression);
     }
 
     /**
-     * Returns last used replacement expressions in order from the
-     * most recently used ones to the oldest ones.
+     * Returns last used replacement expressions in order
+     * from the oldest ones to the most recently used ones.
      *
-     * @return  last used replacement expressions, or an empty array
-     *          if no replacement expressions are available
+     * @return  list of last used replacement expressions, or an empty list
+     *          if no replacement expressions are stored
      */
-    String[] getReplacementExpressions() {
-        String[] result;
-        if (replExprCount == 0) {
-            result = noReplExpressions;
-        } else {
-            result = new String[replExprCount];
-            int srcIndex = replExprCount - 1;
-            int dstIndex = 0;
-            do {
-                result[dstIndex++] = replExpressions[srcIndex--];
-            } while (srcIndex != -1);
-        }
-        return result;
+    List<String> getReplacementExpressions() {
+        assert replExpressions == null || !replExpressions.isEmpty();
+
+        return (replExpressions != null) ? replExpressions
+                                          : Collections.<String>emptyList();
     }
 
 }
