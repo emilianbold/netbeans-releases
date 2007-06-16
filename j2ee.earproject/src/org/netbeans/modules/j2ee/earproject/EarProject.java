@@ -117,12 +117,12 @@ public final class EarProject implements Project, AntProjectListener, FileChange
         eval = createEvaluator();
         AuxiliaryConfiguration aux = helper.createAuxiliaryConfiguration();
         refHelper = new ReferenceHelper(helper, aux, helper.getStandardPropertyEvaluator());
-        genFilesHelper = new GeneratedFilesHelper(helper);
+        buildExtender = AntBuildExtenderFactory.createAntExtender(new EarExtenderImplementation());
+        genFilesHelper = new GeneratedFilesHelper(helper,buildExtender);
         appModule = new ProjectEar(this);
         ear = EjbJarFactory.createEar(appModule);
         updateHelper = new UpdateHelper(this, this.helper, aux, this.genFilesHelper, UpdateHelper.createDefaultNotifier());
         brokenProjectSupport = new BrokenProjectSupport(this);
-        buildExtender = AntBuildExtenderFactory.createAntExtender(new EarExtenderImplementation());
         lookup = createLookup(aux);
    }
     
