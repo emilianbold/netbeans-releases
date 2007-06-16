@@ -324,7 +324,7 @@ public class RestComponentData {
         }
         
         public String getPortName() {
-            return portname;
+            return portName;
         }
         
         public List<Method> getMethods() {
@@ -334,7 +334,6 @@ public class RestComponentData {
         private void addMethod(Method m) {
             methodList.add(m);
         }
-        private String portname;
     }
     
     public class Method {
