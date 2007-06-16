@@ -107,6 +107,7 @@ public class wsdlRepository {
     
     // move me to some utility class
     /**
+     * @param project 
      * @return a map mapping binding component namespace to binding component name.
      */
     public static Map<String, String> buildBindingComponentMap(Project project) {
