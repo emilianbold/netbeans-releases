@@ -47,8 +47,8 @@ Microsystems, Inc. All Rights Reserved.
     <fontcolor name="mod-local-variable-declaration"> 
         <!-- font style="bold"/ -->
     </fontcolor> 
-    <fontcolor name="mod-parameter-declaration">
-        <!-- font style="bold"/ -->
+    <fontcolor name="mod-parameter-declaration" foreColor="337d6c" default="identifier">
+        <font style="bold"/>
     </fontcolor> 
     
     <fontcolor name="mod-method-declaration" >
@@ -72,7 +72,7 @@ Microsystems, Inc. All Rights Reserved.
     
     <fontcolor name="mod-field" default="field"/> <!-- "54A054" -->        
     <fontcolor name="mod-local-variable"/>
-    <fontcolor name="mod-parameter"/>
+    <fontcolor name="mod-parameter" foreColor="337d6c" default="identifier"/>
     <fontcolor name="mod-method" />
     <fontcolor name="mod-constructor" />
     <fontcolor name="mod-class" />

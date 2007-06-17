@@ -34,7 +34,8 @@ Microsystems, Inc. All Rights Reserved.
     <fontcolor name="whitespace" foreColor="black"/>
     
     <!-- OO languages -->    
-    <fontcolor name="field" foreColor="ff8C8C4B" default="identifier"/>
+    <!-- fontcolor name="field" foreColor="ff676740" default="identifier"/ -->
+    <fontcolor name="field" foreColor="ff989800" default="identifier"/>
     <fontcolor name="method" default="identifier"/>
         
     <!-- Tag based languages -->    
