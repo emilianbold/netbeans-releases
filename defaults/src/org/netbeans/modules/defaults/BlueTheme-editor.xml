@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+The contents of this file are subject to the terms of the Common Development
+and Distribution License (the License). You may not use this file except in
+compliance with the License.
+
+You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+or http://www.netbeans.org/cddl.txt.
+
+When distributing Covered Code, include this CDDL Header Notice in each file
+and include the License file at http://www.netbeans.org/cddl.txt.
+If applicable, add the following below the CDDL Header, with the fields
+enclosed by brackets [] replaced by your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<!DOCTYPE fontscolors PUBLIC "-//NetBeans//DTD Editor Fonts and Colors settings 1.1//EN" "http://www.netbeans.org/dtds/EditorFontsColors-1_1.dtd">
+
+<fontscolors>
+    <fontcolor name="block-search" bgColor="ffe0e8f1"/>
+    <fontcolor name="code-folding" foreColor="white" bgColor="253E5A"/>
+    <fontcolor name="code-folding-bar" foreColor="253E5A"/>
+    <fontcolor name="guarded" bgColor="darkGray"/>
+    <fontcolor name="highlight-caret-row" bgColor="253E5A"/>
+    <fontcolor name="highlight-match-brace" bgColor="38566F" foreColor="white">
+        <font style="bold" />
+    </fontcolor>
+    <fontcolor name="highlight-search" bgColor="38566F"/>
+    <fontcolor name="inc-search" bgColor="38566F"/>
+    <fontcolor name="line-number" foreColor="white"/>
+    <fontcolor name="selection" bgColor="38566F"/>
+    <fontcolor name="status-bar" foreColor="FFFFFF" bgColor="121E31"/>
+    <fontcolor name="status-bar-bold" bgColor="red"/>
+    <fontcolor name="caret-color-insert-mode" foreColor="white" bgColor="white"/>
+    <fontcolor name="text-limit-line-color" foreColor="253E5A"/>
+</fontscolors>

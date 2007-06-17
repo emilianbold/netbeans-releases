@@ -1164,6 +1164,20 @@ Microsystems, Inc. All Rights Reserved.
                     </file>
                 </folder>
             </folder>
+            
+            <folder name="BlueTheme">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults.Bundle"/>
+                <folder name="Defaults">
+                    <file name="org-netbeans-modules-defaults-token-colorings.xml" url="BlueTheme-fontsColorsDefaults.xml">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults.Bundle"/>
+                    </file>
+                    <file name="org-netbeans-modules-defaults-highlight-colorings.xml" url="BlueTheme-editor.xml">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults.Bundle"/>
+                        <attr name="nbeditor-settings-ColoringType" stringvalue="highlight"/>
+                    </file>
+                </folder>
+            </folder>
+            
         </folder>
         
         <folder name="Keybindings">
@@ -1249,6 +1263,13 @@ Microsystems, Inc. All Rights Reserved.
                             </file>
                         </folder>
                     </folder>
+                    <folder name="BlueTheme">
+                        <folder name="Defaults">
+                            <file name="org-netbeans-modules-editor-html-colorings.xml" url="BlueTheme-HTML-fontsColors.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults.Bundle"/>
+                            </file>
+                        </folder>
+                    </folder>
                 </folder>
             </folder>
             
@@ -1261,7 +1282,14 @@ Microsystems, Inc. All Rights Reserved.
                             </file>
                         </folder>
                     </folder>
-                </folder>
+                    <folder name="BlueTheme">
+                        <folder name="Defaults">
+                            <file name="org-netbeans-modules-editor-plain-token-colorings.xml" url="BlueTheme-plain-fontsColors.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults.Bundle"/>
+                            </file>
+                        </folder>
+                    </folder>
+                </folder>                
             </folder>
             
             <folder name="x-java">
@@ -1279,8 +1307,7 @@ Microsystems, Inc. All Rights Reserved.
                                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults.Bundle"/>
                             </file>
                         </folder>
-                    </folder>
-                    
+                    </folder>                    
                     <folder name="NetBeansEarth">
                         <folder name="Defaults">
                             <file name="org-netbeans-modules-editor-java-token-colorings.xml" url="NetBeansEarth-Java-fontsColors.xml">
@@ -1288,7 +1315,13 @@ Microsystems, Inc. All Rights Reserved.
                             </file>
                         </folder>
                     </folder>
-                    
+                    <folder name="BlueTheme">
+                        <folder name="Defaults">
+                            <file name="org-netbeans-modules-editor-java-token-colorings.xml" url="BlueTheme-Java-fontsColors.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults.Bundle"/>
+                            </file>
+                        </folder>
+                    </folder>
                 </folder>
             </folder>
             
@@ -1297,6 +1330,13 @@ Microsystems, Inc. All Rights Reserved.
                     <folder name="CityLights">
                         <folder name="Defaults">
                             <file name="org-netbeans-modules-web-core-syntax-token-colorings.xml" url="CityLights-JSP-fontsColors.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults.Bundle"/>
+                            </file>
+                        </folder>
+                    </folder>
+                    <folder name="NetBeans55">
+                        <folder name="Defaults">
+                            <file name="org-netbeans-modules-web-core-syntax-token-colorings.xml" url="NetBeans55-JSP-fontsColors.xml">
                                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults.Bundle"/>
                             </file>
                         </folder>
@@ -1335,6 +1375,13 @@ Microsystems, Inc. All Rights Reserved.
                     <folder name="NetBeansEarth">
                         <folder name="Defaults">
                             <file name="org-netbeans-modules-xml-text-token-colorings.xml" url="NetBeansEarth-XML-fontsColors.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults.Bundle"/>
+                            </file>
+                        </folder>
+                    </folder>
+                    <folder name="BlueTheme">
+                        <folder name="Defaults">
+                            <file name="org-netbeans-modules-xml-text-token-colorings.xml" url="BlueTheme-XML-fontsColors.xml">
                                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults.Bundle"/>
                             </file>
                         </folder>

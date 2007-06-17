@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+The contents of this file are subject to the terms of the Common Development
+and Distribution License (the License). You may not use this file except in
+compliance with the License.
+
+You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+or http://www.netbeans.org/cddl.txt.
+
+When distributing Covered Code, include this CDDL Header Notice in each file
+and include the License file at http://www.netbeans.org/cddl.txt.
+If applicable, add the following below the CDDL Header, with the fields
+enclosed by brackets [] replaced by your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<!DOCTYPE fontscolors PUBLIC "-//NetBeans//DTD Editor Fonts and Colors settings 1.1//EN" "http://www.netbeans.org/dtds/EditorFontsColors-1_1.dtd">
+
+<fontscolors>
+    <fontcolor name="xml-EOL" default="whitespace"/>
+    <fontcolor name="xml-attribute" default="identifier"/>
+    <fontcolor name="xml-cdata-section" foreColor="yellow" default="default"/>
+    <fontcolor name="xml-comment" foreColor="red" default="comment"/>
+    <fontcolor name="xml-doctype" foreColor="lightGray" default="default"/>
+    <fontcolor name="xml-error" default="error"/>
+    <fontcolor name="xml-operator" default="default"/>
+    <fontcolor name="xml-pi-content" foreColor="lightGray" default="default"/>
+    <fontcolor name="xml-pi-end" foreColor="lightGray" default="default"/>
+    <fontcolor name="xml-pi-start" foreColor="lightGray" default="default"/>
+    <fontcolor name="xml-pi-target" foreColor="lightGray" default="default"/>
+    <fontcolor name="xml-ref" foreColor="cyan" default="default"/>
+    <fontcolor name="xml-tag" foreColor="orange" default="default"/>
+    <fontcolor name="xml-text" default="default"/>
+    <fontcolor name="xml-value" default="string"/>
+    <fontcolor name="xml-ws" default="whitespace"/>
+</fontscolors>
