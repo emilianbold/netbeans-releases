@@ -23,18 +23,12 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.lang.reflect.Field;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.enterprise.deploy.shared.ModuleType;
 import javax.enterprise.deploy.spi.DeploymentManager;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.AntDeploymentProvider;
-import org.netbeans.modules.j2ee.sun.api.ServerLocationManager;
 import org.netbeans.modules.j2ee.sun.api.SunDeploymentManagerInterface;
 import org.netbeans.modules.j2ee.sun.ide.dm.SunDeploymentManager;
-import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
 /**
@@ -50,37 +44,14 @@ public class AntDeploymentProviderImpl implements AntDeploymentProvider {
     }
 
     public void writeDeploymentScript(OutputStream os, Object moduleType) throws IOException {
-        InputStream is;
-        boolean addExtension = false;
-        SunDeploymentManagerInterface sdmi = 
-                (SunDeploymentManagerInterface) dm;
-        is = AntDeploymentProviderImpl.class.getResourceAsStream("ant-deploy.xml"); // NOI18N
-        if (ServerLocationManager.getAppServerPlatformVersion(sdmi.getPlatformRoot()) >= ServerLocationManager.GF_V2) {
-            addExtension = true;
-        }
+        InputStream is = AntDeploymentProviderImpl.class.getResourceAsStream("ant-deploy.xml"); // NOI18N
             
         try {
             FileUtil.copy(is, os);
         } finally {
             is.close();
         }
-        
-        try {
-            Project proj = getProjectFromOutputStream(os);
-            // more great naming conventions...
-            String target = ModuleType.EAR.equals(moduleType) ? "pre-dist" : "-pre-dist";
-            if (addExtension) {
-                BuildExtension.copyTemplate(proj);
-                BuildExtension.extendBuildXml(proj,target);
-            } else {
-                BuildExtension.abbreviateBuildXml(proj,target);
-            }
-        } catch (IOException ioe) {
-                Logger.getLogger(AntDeploymentProviderImpl.class.getName()).log(Level.INFO, null,ioe);      //NOI18N
-            throw ioe;
-                
-            }
-        }
+    }
     
 
     public File getDeploymentPropertiesFile() {
@@ -94,32 +65,6 @@ public class AntDeploymentProviderImpl implements AntDeploymentProvider {
             }
         }
         return file;
-    }
-    
-    private Project getProjectFromOutputStream(OutputStream os) {        
-        Project p = null;
-        try {
-            Class osClass = os.getClass();
-            Field field = osClass.getDeclaredField("val$f");
-            System.out.println("field = " + field);
-            if(field != null) {
-                field.setAccessible(true);
-                Object obj = field.get(os);
-                if(obj instanceof File) {
-                    File f = (File) obj;
-                    System.out.println("F = " + f.getPath());
-                    FileObject fo = FileUtil.toFileObject(f);
-                    if(fo != null) {
-                        p = FileOwnerQuery.getOwner(fo);
-                    }
-                }
-            }
-            System.out.println("Done.");
-        } catch(Exception ex) {
-                Logger.getLogger(AntDeploymentProviderImpl.class.getName()).log(Level.INFO, null,ex);      //NOI18N
-        }
-        return p;
-    }
-    
+    }    
 
 }
