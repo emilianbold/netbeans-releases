@@ -24,7 +24,7 @@ pack_component()
 cd $NB_ALL/nbbuild
 
 #Pack the distrubutions
-find netbeans | egrep -v "netbeans/(extra|testtools)" | zip -q $DIST/zip/$BASENAME-full.zip -@
+find netbeans | egrep -v "netbeans/(extra|testtools|cnd)" | zip -q $DIST/zip/$BASENAME-full.zip -@
 find netbeans | egrep -v "netbeans/(extra|testtools|mobility|enterprise|visualweb|uml|ruby|cnd|soa)" | zip -q $DIST/zip/$BASENAME-basic.zip -@
 find netbeans | egrep -v "netbeans/(extra|testtools|uml|ruby|cnd|soa)" | zip -q $DIST/zip/$BASENAME-standard.zip -@
 
