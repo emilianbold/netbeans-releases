@@ -36,6 +36,7 @@
             <file name="GoogleMapRefConverter.java" url="/org/netbeans/modules/websvc/rest/codegen/resources/GoogleMapRefConverter.template"/>
             <file name="YahooNewsResource.java" url="/org/netbeans/modules/websvc/rest/codegen/resources/YahooNewsResource.template"/>
             <file name="YahooNewsRefConverter.java" url="/org/netbeans/modules/websvc/rest/codegen/resources/YahooNewsRefConverter.template"/>            
+            <file name="RefConverter.java" url="/org/netbeans/modules/websvc/rest/codegen/resources/RefConverter.template"/>            
         </folder>
     </folder>
     

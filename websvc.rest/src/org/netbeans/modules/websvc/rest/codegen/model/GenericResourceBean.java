@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.websvc.rest.codegen.Constants;
 import org.netbeans.modules.websvc.rest.codegen.model.GenericResourceBean.HttpMethodType;
+import org.netbeans.modules.websvc.rest.wizard.Util;
 
 /**
  * Meta model for generic REST resource class.
@@ -32,6 +33,7 @@ import org.netbeans.modules.websvc.rest.codegen.model.GenericResourceBean.HttpMe
  * @author nam
  */
 public class GenericResourceBean {
+    public static final String RESOURCE_SUFFIX = "Resource";
     public static enum HttpMethodType { GET, PUT, POST, DELETE }
     public static final String[] supportedMimeTypes = new String[] { 
         Constants.MIME_TYPE_XML,  // first one is default
@@ -91,7 +93,17 @@ public class GenericResourceBean {
     public String getName() {
         return name;
     }
+    
+    public String getShortName() {
+        if (name.endsWith(RESOURCE_SUFFIX)) {
+            return name.substring(0, name.length()-8);
+        }
+        return name;
+    }
 
+    public String getUriWhenUsedAsSubResource() {
+        return Util.lowerFirstChar(getShortName())+"/";
+    }
     public void setPackageName(String name) {
         packageName = name;
     }

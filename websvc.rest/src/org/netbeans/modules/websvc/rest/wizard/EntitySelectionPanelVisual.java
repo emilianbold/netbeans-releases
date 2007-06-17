@@ -342,7 +342,7 @@ public class EntitySelectionPanelVisual extends javax.swing.JPanel implements Ab
             
             if (value instanceof JavaSource) {
                 JavaSource source = (JavaSource) value;
-                String simpleName = JavaSourceHelper.getClassName(source);
+                String simpleName = JavaSourceHelper.getClassNameQuietly(source);
                 String packageName = JavaSourceHelper.getPackageName(source);
                 text = simpleName + " (" +  packageName + ")";
             }

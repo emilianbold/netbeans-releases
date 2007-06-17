@@ -32,14 +32,20 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.rmi.CORBA.Util;
 import org.netbeans.api.java.source.Comment;
@@ -144,45 +150,20 @@ public class JavaSourceHelper {
      * @param source
      * @return
      */
-    public static String getClassName(JavaSource source) {
-        final String[] className = new String[1];
-        
+    public static String getClassNameQuietly(JavaSource source) {
         try {
-            source.runUserActionTask(new AbstractTask<CompilationController>() {
-                public void run(CompilationController controller) throws IOException {
-                    controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                    ClassTree tree = getTopLevelClassTree(controller);
-                    if (tree != null) {
-                        className[0] = tree.getSimpleName().toString();
-                    } else {
-                        
-                    }
-                    
-                }
-            }, true);
-        } catch (IOException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            return getClassName(source);
+        } catch(IOException ioe) {
+            Logger.getLogger(JavaSourceHelper.class.getName()).log(Level.WARNING, ioe.getLocalizedMessage());
         }
-        
-        return className[0];
+        return null;
+    }
+    public static String getClassName(JavaSource source) throws IOException {
+        return getTypeElement(source).getSimpleName().toString();
     }
     
-    public static String getClassType(JavaSource source) {
-        final String[] className = new String[1];
-        
-        try {
-            source.runUserActionTask(new AbstractTask<CompilationController>() {
-                public void run(CompilationController controller) throws IOException {
-                    ClassTree tree = getTopLevelClassTree(controller);
-                    className[0] = controller.getCompilationUnit().getPackageName().toString() +
-                            "." + tree.getSimpleName().toString();
-                }
-            }, true);
-        } catch (IOException ex) {
-            
-        }
-        
-        return className[0];
+    public static String getClassType(JavaSource source) throws IOException {
+        return getTypeElement(source).getQualifiedName().toString();
     }
     
     public static String getPackageName(JavaSource source) {
@@ -274,7 +255,7 @@ public class JavaSourceHelper {
         
         return null;
     }
-
+    
     public static MethodTree getMethodByName(CompilationController controller, String methodName) {
         TypeElement classElement = getTopLevelClassElement(controller);
         List<ExecutableElement> methods = ElementFilter.methodsIn(classElement.getEnclosedElements());
@@ -422,7 +403,7 @@ public class JavaSourceHelper {
         for (int i=0; i<types.length; i++) {
             Object type = types[i];
             if (String.class.equals(type) || String.class.getName().equals(type)) {
-                initValues[i] = "TODO - real value";
+                initValues[i] = "";
             } else if (type instanceof Class && Number.class.isAssignableFrom((Class)type)) {
                 initValues[i] = 0;
             } else {
@@ -432,7 +413,7 @@ public class JavaSourceHelper {
         addFields(copy, names, types, initValues);
     }
     
-    public static void addFields(WorkingCopy copy, 
+    public static void addFields(WorkingCopy copy,
             String[] names, Object[] types, Object[] initialValues) {
         
         TreeMaker maker = copy.getTreeMaker();
@@ -454,7 +435,7 @@ public class JavaSourceHelper {
             VariableTree variableTree = maker.Variable(modifiersTree, name,
                     typeTree, init);
             modifiedTree = maker.insertClassMember(modifiedTree, 0, variableTree);
-        }        
+        }
         copy.rewrite(classTree, modifiedTree);
     }
     
@@ -465,7 +446,7 @@ public class JavaSourceHelper {
         ClassTree modifiedTree = addConstructor(copy, classTree, Constants.PUBLIC, parameters, paramTypes, bodyText, comment);
         copy.rewrite(classTree, modifiedTree);
     }
-
+    
     public static String getThisFieldEqualParamStatements(String[] params) {
         StringBuilder sb = new StringBuilder();
         String template = "if ($PARAM$ != null) { this.$PARAM$ = $PARAM$; }\n"; //NOI18N
@@ -675,7 +656,7 @@ public class JavaSourceHelper {
         
         return Comment.create(Style.JAVADOC, -2, -2, -2, text);
     }
-
+    
     /**
      * Finds the first public top-level type in the compilation unit given by the
      * given <code>CompilationController</code>.
@@ -686,7 +667,7 @@ public class JavaSourceHelper {
      */
     public static ClassTree findPublicTopLevelClass(CompilationController controller) throws IOException {
         controller.toPhase(Phase.ELEMENTS_RESOLVED);
-
+        
         final String mainElementName = controller.getFileObject().getName();
         for (Tree tree : controller.getCompilationUnit().getTypeDecls()) {
             if (tree.getKind() != Tree.Kind.CLASS) {
@@ -703,25 +684,25 @@ public class JavaSourceHelper {
         }
         return null;
     }
-
+    
     public static boolean isInjectionTarget(CompilationController controller) throws IOException {
         Parameters.notNull("controller", controller); // NOI18N
-
+        
         ClassTree classTree = findPublicTopLevelClass(controller);
         if (classTree == null) {
             throw new IllegalArgumentException();
         }
-
+        
         return isInjectionTarget(controller, getTypeElement(controller, classTree));
     }
-
+    
     public static boolean isInjectionTarget(CompilationController controller, TypeElement typeElement) {
         FileObject fo = controller.getFileObject();
         Project project = FileOwnerQuery.getOwner(fo);
         if (ElementKind.INTERFACE != typeElement.getKind()) {
             List<? extends AnnotationMirror> annotations = typeElement.getAnnotationMirrors();
             boolean found = false;
-
+            
             for (AnnotationMirror m : annotations) {
                 Name qualifiedName = ((TypeElement)m.getAnnotationType().asElement()).getQualifiedName();
                 if (qualifiedName.contentEquals("javax.jws.WebService")) { //NOI18N
@@ -742,7 +723,7 @@ public class JavaSourceHelper {
         TreePath classTreePath = controller.getTrees().getPath(controller.getCompilationUnit(), classTree);
         return (TypeElement) controller.getTrees().getElement(classTreePath);
     }
-
+    
     public static TypeElement getTypeElement(CompilationController controller, TreePath treePath) {
         return (TypeElement) controller.getTrees().getElement(treePath);
     }
@@ -750,7 +731,7 @@ public class JavaSourceHelper {
     public static ClassTree getClassTree(CompilationController controller, TypeElement typeElement) {
         return controller.getTrees().getTree(typeElement);
     }
-
+    
     public static void saveSource(FileObject[] files) throws IOException {
         for (FileObject f : files) {
             try {
@@ -763,5 +744,73 @@ public class JavaSourceHelper {
                 // something really wrong but continue trying to save others
             }
         }
+    }
+    
+    public static boolean isOfAnnotationType(AnnotationMirror am, String annotationType) {
+        return am.getAnnotationType().asElement().getSimpleName().contentEquals(annotationType);
+    }
+    
+    public static AnnotationMirror findAnnotation(List<? extends AnnotationMirror> anmirs, String annotationString) {
+        for (AnnotationMirror am : anmirs) {
+            if (isOfAnnotationType(am, annotationString)) {
+                return am;
+            }
+        }
+        return null;
+    }
+    
+    public static boolean annotationHasAttributeValue(AnnotationMirror am, String attr, String value) {
+        return value.equals(am.getElementValues().get(attr));
+    }
+    
+    public static boolean annotationHasAttributeValue(AnnotationMirror am, String value) {
+        for (AnnotationValue av : am.getElementValues().values()) {
+            if (value.equals(av.getValue())) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    public static TypeElement getXmlRepresentationClass(TypeElement typeElement) {
+        List<ExecutableElement> methods = ElementFilter.methodsIn(typeElement.getEnclosedElements());
+        for (ExecutableElement method : methods) {
+            List<? extends AnnotationMirror> anmirs = method.getAnnotationMirrors();
+            
+            AnnotationMirror mirrorHttpMethod = findAnnotation(anmirs, Constants.HTTP_METHOD_ANNOTATION);
+            AnnotationMirror mirrorProduceMime = findAnnotation(anmirs, Constants.PRODUCE_MIME_ANNOTATION);
+            
+            if (annotationHasAttributeValue(mirrorHttpMethod, Constants.HTTP_GET_METHOD) &&
+                    annotationHasAttributeValue(mirrorProduceMime, Constants.MIME_TYPE_XML)) {
+                TypeMirror tm = method.getReturnType();
+                if (tm.getKind() == TypeKind.DECLARED) {
+                    return (TypeElement) ((DeclaredType) tm).asElement();
+                }
+            }
+        }
+        return null;
+    }
+    
+    public static TypeElement getTypeElement(JavaSource source) throws IOException {
+        final TypeElement[] results = new TypeElement[1];
+        
+        source.runUserActionTask(new AbstractTask<CompilationController>() {
+            public void run(CompilationController controller) throws IOException {
+                controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                results[0] = getTopLevelClassElement(controller);
+            }
+        }, true);
+        
+        return results[0];
+    }
+    
+    public static JavaSource forTypeElement(TypeElement typeElement, Project project) throws IOException {
+        for (JavaSource js : getJavaSources(project)) {
+            String className = getClassType(js);
+            if (typeElement.getQualifiedName().contentEquals(className)) {
+                return js;
+            }
+        }
+        return null;
     }
 }

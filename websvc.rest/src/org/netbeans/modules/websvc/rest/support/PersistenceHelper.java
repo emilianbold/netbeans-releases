@@ -69,7 +69,7 @@ public class PersistenceHelper {
         return null;
     }
     
-    public static void addEntityClasses(Project project, List<JavaSource> entityClasses) {
+    public static void addEntityClasses(Project project, List<JavaSource> entityClasses) throws IOException {
         List<String> classNames = new ArrayList<String>();
         
         for (JavaSource source : entityClasses) {

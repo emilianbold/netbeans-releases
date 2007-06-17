@@ -31,6 +31,7 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.queries.UnitTestForSourceQuery;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
@@ -111,6 +112,14 @@ public class SourceGroupSupport {
         } else {
             return ""; // NOI18N
         }
+    }
+
+    public static String packageForFolder(FileObject folder) {
+        Project project = FileOwnerQuery.getOwner(folder);
+        SourceGroup[] sources = ProjectUtils.getSources(project).getSourceGroups(
+                JavaProjectConstants.SOURCES_TYPE_JAVA);
+        SourceGroup sg = getFolderSourceGroup(sources, folder);
+        return getPackageForFolder(sg, folder);
     }
 
     public static FileObject getFolderForPackage(SourceGroup sourceGroup, String pgkName) throws IOException {
