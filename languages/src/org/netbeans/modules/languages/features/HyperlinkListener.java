@@ -31,6 +31,7 @@ import javax.swing.JEditorPane;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
+import org.netbeans.api.languages.ASTItem;
 
 import org.netbeans.api.languages.ASTPath;
 import org.netbeans.api.languages.Highlighting;
@@ -178,7 +179,9 @@ MouseListener {
                 }
                 if (item == null) {
                     FileObject fileObject = NbEditorUtilities.getFileObject (doc);
-                    String name = ((ASTToken) path.getLeaf ()).getIdentifier ();
+                    ASTItem leaf = path.getLeaf ();
+                    if (!(leaf instanceof ASTToken)) return;
+                    String name = ((ASTToken) leaf).getIdentifier ();
                     Map<FileObject,List<DatabaseDefinition>> map = Index.getGlobalItem (fileObject, name);
                     if (!map.isEmpty ()) {
                         final FileObject fo = map.keySet ().iterator ().next ();
