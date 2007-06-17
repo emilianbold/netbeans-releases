@@ -42,7 +42,7 @@ import org.openide.filesystems.FileUtil;
  * @author Erno Mononen
  */
 public class EntityAssociationResolverTest extends SourceTestSupport {
-
+    
     private static final String PKG  = "entities.";
     private static final String CUSTOMER = PKG + "Customer";
     private static final String ORDER = PKG +  "Order";
@@ -86,20 +86,20 @@ public class EntityAssociationResolverTest extends SourceTestSupport {
     
     public void testGetTarget() throws Exception {
         EntityAssociationResolver resolver = new EntityAssociationResolver(getTreePathHandle("customer", ORDER), createModel());
-        List<EntityAssociationResolver.Reference> orderRefs = resolver.getTarget();
-        for(EntityAssociationResolver.Reference ref : orderRefs){
-            assertEquals(CUSTOMER, ref.getClassName());
-            assertEquals("orders", ref.getPropertyName());
-            assertEquals("customer", ref.getSourceProperty());
-        }
-
-        EntityAssociationResolver resolver2 = new EntityAssociationResolver(getTreePathHandle("department", EMPLOYEE), createModel());
-        List<EntityAssociationResolver.Reference> employeesRefs = resolver2.getTarget();
-        for(EntityAssociationResolver.Reference ref : employeesRefs){
-            assertEquals(DEPARTMENT, ref.getClassName());
-            assertEquals("employees", ref.getPropertyName());
-            assertEquals("department", ref.getSourceProperty());
-        }
+        List<EntityAssociationResolver.Reference> orderRefs = resolver.getReferringProperties();
+        assertEquals(2, orderRefs.size());
+        
+        EntityAssociationResolver.Reference fieldRef = orderRefs.get(0);
+        assertEquals(CUSTOMER, fieldRef.getClassName());
+        assertEquals("orders", fieldRef.getPropertyName());
+        assertEquals("customer", fieldRef.getSourceProperty());
+        
+        EntityAssociationResolver.Reference propertyRef = orderRefs.get(1);
+        assertEquals(CUSTOMER, propertyRef.getClassName());
+        assertEquals("getOrders", propertyRef.getPropertyName());
+        assertEquals("customer", propertyRef.getSourceProperty());
+        
+        
     }
     
     public void testResolveReferences() throws Exception {

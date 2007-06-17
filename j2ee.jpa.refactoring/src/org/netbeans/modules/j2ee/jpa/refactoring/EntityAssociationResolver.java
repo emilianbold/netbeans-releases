@@ -22,12 +22,14 @@ package org.netbeans.modules.j2ee.jpa.refactoring;
 
 
 import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ParameterizedTypeTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -42,11 +44,12 @@ import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.OneToMany;
+import org.netbeans.modules.j2ee.persistence.api.metadata.orm.OneToOne;
 import org.openide.util.Parameters;
 
 /**
- * This class resolves non-type safe associations between entities. Entities 
- * might have non-type safe associations via annotations that 
+ * This class resolves non-type safe associations between entities. Entities
+ * might have non-type safe associations via annotations that
  * can have attributes such as "mappedBy" that specifies a field in another
  * entity.
  *
@@ -70,16 +73,16 @@ public class EntityAssociationResolver {
     private final MetadataModel<EntityMappingsMetadata> entityMappingsModel;
     /**
      * The property being refactored.
-     */ 
+     */
     private final TreePathHandle refactoringSource;
     
     /**
-     * Constructs a new EntityAssociationResolver. 
-     * 
+     * Constructs a new EntityAssociationResolver.
+     *
      * @param refactoringSource the property being refactored.
-     * @param entityMappingsModel 
-     * 
-     */ 
+     * @param entityMappingsModel
+     *
+     */
     public EntityAssociationResolver(TreePathHandle refactoringSource, MetadataModel<EntityMappingsMetadata> entityMappingsModel) {
         Parameters.notNull("entityMappingsModel", entityMappingsModel); //NO18N
         Parameters.notNull("refactoringSource", refactoringSource); //NO18N
@@ -90,13 +93,13 @@ public class EntityAssociationResolver {
     
     /**
      * Resolves the references to the property being refactored.
-     * 
+     *
      * @return the references or an empty list if there were none.
-     */ 
+     */
     public List<EntityAnnotationReference> resolveReferences() throws IOException{
         
         final List<EntityAnnotationReference> result = new ArrayList<EntityAnnotationReference>();
-        final List<Reference> references = getTarget();
+        final List<Reference> references = getReferringProperties();
         
         entityMappingsModel.runReadAction(new MetadataModelAction<EntityMappingsMetadata, Void>(){
             
@@ -107,7 +110,7 @@ public class EntityAssociationResolver {
                     if (entity == null){
                         continue;
                     }
-                    result.addAll(getOneToMany(entity, reference));
+                    result.addAll(getOneToX(entity, reference));
                 }
                 return null;
             }
@@ -116,17 +119,36 @@ public class EntityAssociationResolver {
         return result;
     }
     
-    private List<EntityAnnotationReference> getOneToMany(Entity entity, Reference reference) throws IOException{
+    private List<EntityAnnotationReference> getOneToX(Entity entity, Reference reference) throws IOException{
+        
         List<EntityAnnotationReference> result = new ArrayList<EntityAnnotationReference>();
+        boolean fieldAccess = Entity.FIELD_ACCESS.equals(entity.getAccess());
+        
+        TreePathHandle handle = RefactoringUtil.getTreePathHandle(reference.getPropertyName(), reference.getClassName(), refactoringSource.getFileObject());
         for (OneToMany oneToMany : entity.getAttributes().getOneToMany()){
-            if (oneToMany.getName().equals(reference.getPropertyName())){
-                TreePathHandle handle = RefactoringUtil.getTreePathHandle(reference.getPropertyName(), reference.getClassName(), refactoringSource.getFileObject());
+            if (isMatching(oneToMany.getName(), fieldAccess, reference)){
                 result.add(new EntityAnnotationReference(reference.getClassName(),
                         ONE_TO_MANY, MAPPED_BY, reference.getSourceProperty(), handle));
             }
         }
         
+        for (OneToOne oneToOne : entity.getAttributes().getOneToOne()){
+            if (isMatching(oneToOne.getName(), fieldAccess, reference)){
+                result.add(new EntityAnnotationReference(reference.getClassName(),
+                        ONE_TO_ONE, MAPPED_BY, reference.getSourceProperty(), handle));
+            }
+        }
         return result;
+    }
+    
+    private boolean isMatching(String propertyName, boolean fieldAccess, Reference reference){
+        if (fieldAccess && reference.isField()){
+            return propertyName.equals(reference.getPropertyName());
+        }
+        if (!fieldAccess && !reference.isField()){
+            return propertyName.equals(RefactoringUtil.getPropertyName(reference.getPropertyName()));
+        }
+        return false;
     }
     
     private Entity getByClass(Entity[] entities, String clazz){
@@ -138,15 +160,51 @@ public class EntityAssociationResolver {
         return null;
     }
     
-    List<Reference> getTarget() throws IOException{
+    /**
+     * Gets the references to the properties that might have an annotation containing a reference
+     * to the property that is being refactored.
+     * 
+     * @return a list of <code>Reference<code>s representing the referring properties.
+     */ 
+    List<Reference> getReferringProperties() throws IOException{
         
         final List<Reference> result = new ArrayList<Reference>();
         
         JavaSource source = JavaSource.forFileObject(refactoringSource.getFileObject());
         
+        //TODO: should not be an anonymous class
         source.runUserActionTask(new CancellableTask<CompilationController>(){
             
             public void cancel() {
+            }
+            
+            private List<IdentifierTree> getTypeArgs(ParameterizedTypeTree ptt){
+                List<IdentifierTree> result = new ArrayList<IdentifierTree>();
+                for (Tree typeArg : ptt.getTypeArguments()){
+                    IdentifierTree it = (IdentifierTree) typeArg;
+                    result.add(it);
+                }
+                return result;
+            }
+            
+            private List<IdentifierTree> getIdentifier(VariableTree vt){
+                if (Tree.Kind.PARAMETERIZED_TYPE == vt.getType().getKind()){
+                    return getTypeArgs((ParameterizedTypeTree) vt.getType());
+                }
+                if (Tree.Kind.IDENTIFIER == vt.getType().getKind()){
+                    return Collections.<IdentifierTree>singletonList((IdentifierTree)vt.getType());
+                }
+                return Collections.<IdentifierTree>emptyList();
+            }
+            
+            private List<IdentifierTree> getIdentifier(MethodTree mt){
+                if (Tree.Kind.PARAMETERIZED_TYPE == mt.getReturnType().getKind()){
+                    return getTypeArgs((ParameterizedTypeTree) mt.getReturnType());
+                }
+                if (Tree.Kind.IDENTIFIER == mt.getReturnType().getKind()){
+                    return Collections.<IdentifierTree>singletonList((IdentifierTree)mt.getReturnType());
+                }
+                return Collections.<IdentifierTree>emptyList();
             }
             
             public void run(CompilationController info) throws Exception {
@@ -158,28 +216,37 @@ public class EntityAssociationResolver {
                 String targetClass = refactoringTargetProperty.asType().toString();
                 
                 TypeElement te = info.getElements().getTypeElement(targetClass);
+                if (te == null){
+                    //TODO:
+                    // seem to be possible, for methods type.toString returns "()f.q.N"
+                    // either incorrect usage or a bug  
+                    return;
+                }
                 for (Element element : te.getEnclosedElements()){
+                    Tree propertyTree = info.getTrees().getTree(element);
+                    if (propertyTree == null){
+                        continue;
+                    }
+                    List<IdentifierTree> identifiers = new ArrayList<IdentifierTree>();
+                    boolean field = false;
                     if (element.getKind().equals(ElementKind.FIELD)){
-                        Tree propertyTree = info.getTrees().getTree(element);
+                        field = true;
                         if (Tree.Kind.VARIABLE == propertyTree.getKind()){
-                            VariableTree vtt = (VariableTree) propertyTree;
-                            // handle generic collections
-                            if (Tree.Kind.PARAMETERIZED_TYPE == vtt.getType().getKind()){
-                                ParameterizedTypeTree ptt = (ParameterizedTypeTree) vtt.getType();
-                                for (Tree typeArg : ptt.getTypeArguments()){
-                                    IdentifierTree it = (IdentifierTree) typeArg;
-                                    TypeMirror type = info.getTreeUtilities().parseType(it.getName().toString(), te);
-                                    if (sourceClass.equals(type.toString())){
-                                        result.add(new Reference(element.getSimpleName().toString(),
-                                                propertyName,
-                                                targetClass));
-                                    }
-                                }
-                            } 
-
+                            VariableTree vt = (VariableTree) propertyTree;
+                            identifiers = getIdentifier(vt);
                         }
-                    } else if  (element.getKind().equals(ElementKind.METHOD)){
-                        //TODO: implement property access
+                    } else if (element.getKind().equals(ElementKind.METHOD)){
+                        MethodTree mt = (MethodTree) propertyTree;
+                        identifiers = getIdentifier(mt);
+                    }
+                    for (IdentifierTree it : identifiers){
+                        TypeMirror type = info.getTreeUtilities().parseType(it.getName().toString(), te);
+                        if (sourceClass.equals(type.toString())){
+                            result.add(new Reference(element.getSimpleName().toString(),
+                                    propertyName,
+                                    targetClass,
+                                    field));
+                        }
                     }
                 }
             }
@@ -188,26 +255,35 @@ public class EntityAssociationResolver {
         return result;
     }
     
+    /**
+     * Encapsulates information of a referring property.
+     */ 
     static class Reference {
         
         /**
          * The FQN of the class to which the property being refactored points to.
-         */ 
+         */
         private final String className;
         /**
          * The name of the property in the target class that possibly has a reference
          * to the property being refactored.
-         */ 
+         */
         private final String propertyName;
         /**
          * The name of the property that is being refactored.
-         */ 
+         */
         private final String sourceProperty;
+        /**
+         * Specifies whether the property to which the <code>propertyName</code> points
+         * is a field or a method.
+         */
+        private final boolean field;
         
-        public Reference(String propertyName, String sourceProperty, String clazz){
+        public Reference(String propertyName, String sourceProperty, String clazz, boolean field){
             this.propertyName = propertyName;
             this.sourceProperty = sourceProperty;
             this.className = clazz;
+            this.field = field;
         }
         
         /**
@@ -231,7 +307,15 @@ public class EntityAssociationResolver {
             return sourceProperty;
         }
         
+        /**
+         * @see #field
+         */
+        public boolean isField() {
+            return field;
+        }
+        
         
     }
 }
+
 
