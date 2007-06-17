@@ -25,11 +25,11 @@ import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
+import org.netbeans.api.db.explorer.DatabaseMetaDataTransfer;
 import org.netbeans.modules.db.explorer.ConnectionList;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
-import org.netbeans.modules.db.explorer.DbMetaDataTransferProvider;
+import org.netbeans.modules.db.explorer.DatabaseMetaDataTransferAccessor;
 import org.netbeans.modules.db.explorer.infos.ConnectionNodeInfo;
-import org.openide.util.Lookup;
 
 import org.openide.util.NbBundle;
 import org.openide.nodes.Node;
@@ -365,21 +365,14 @@ public class ConnectionNode extends DatabaseNode {
     }
 
     public Transferable clipboardCopy() throws IOException {
-        Transferable result;
-        final DbMetaDataTransferProvider dbTansferProvider = (DbMetaDataTransferProvider)Lookup.getDefault().lookup(DbMetaDataTransferProvider.class);
-        if (dbTansferProvider != null) {
-            ExTransferable exTransferable = ExTransferable.create(super.clipboardCopy());
-            ConnectionNodeInfo cni = (ConnectionNodeInfo)getInfo().getParent(DatabaseNode.CONNECTION);
-            final DatabaseConnection dbconn = ConnectionList.getDefault().getConnection(cni.getDatabaseConnection());
-            exTransferable.put(new ExTransferable.Single(dbTansferProvider.getConnectionDataFlavor()) {
-                protected Object getData() {
-                    return dbTansferProvider.createConnectionData(dbconn.getDatabaseConnection(), dbconn.findJDBCDriver());
-                }
-            });
-            result = exTransferable;
-        } else {
-            result = super.clipboardCopy();
-        }
+        ExTransferable result = ExTransferable.create(super.clipboardCopy());
+        ConnectionNodeInfo cni = (ConnectionNodeInfo)getInfo().getParent(DatabaseNode.CONNECTION);
+        final DatabaseConnection dbconn = ConnectionList.getDefault().getConnection(cni.getDatabaseConnection());
+        result.put(new ExTransferable.Single(DatabaseMetaDataTransfer.CONNECTION_FLAVOR) {
+            protected Object getData() {
+                return DatabaseMetaDataTransferAccessor.DEFAULT.createConnectionData(dbconn.getDatabaseConnection(), dbconn.findJDBCDriver());
+            }
+        });
         return result;
     }
 

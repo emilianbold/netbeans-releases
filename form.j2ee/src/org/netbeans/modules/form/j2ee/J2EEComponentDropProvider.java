@@ -21,7 +21,7 @@ package org.netbeans.modules.form.j2ee;
 
 import java.awt.datatransfer.Transferable;
 
-import org.netbeans.modules.db.api.explorer.DatabaseMetaDataTransfer;
+import org.netbeans.api.db.explorer.DatabaseMetaDataTransfer;
 import org.netbeans.modules.form.FormModel;
 import org.netbeans.modules.form.NewComponentDrop;
 import org.netbeans.modules.form.NewComponentDropProvider;

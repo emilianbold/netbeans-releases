@@ -29,11 +29,9 @@ import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.api.db.explorer.JDBCDriverManager;
 import org.netbeans.modules.db.explorer.ConnectionList;
-import org.netbeans.modules.db.explorer.DbMetaDataTransferProvider;
 import org.netbeans.modules.db.explorer.infos.ConnectionNodeInfo;
 import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
 import org.netbeans.modules.db.test.TestBase;
-import org.openide.util.Lookup;
 
 /**
  *
@@ -46,8 +44,6 @@ public class ColumnNodeTest extends TestBase {
     }
 
     public void testClipboardCopy() throws Exception {
-        assertNotNull("ColumnNode.clipboardCopy() needs an impl of DbMetaDataTransferProvider in the default lookup", Lookup.getDefault().lookup(DbMetaDataTransferProvider.class));
-
         JDBCDriver driver = JDBCDriver.create("foo", "Foo", "org.example.Foo", new URL[0]);
         JDBCDriverManager.getDefault().addDriver(driver);
         DatabaseConnection dbconn = DatabaseConnection.create(driver, "url", "user", "schema", "pwd", false);
@@ -68,7 +64,7 @@ public class ColumnNodeTest extends TestBase {
         for (int i = 0; i < flavors.length; i++) {
             mimeTypes.add(flavors[i].getMimeType());
         }
-        assertTrue(mimeTypes.contains("application/x-java-netbeans-dbexplorer-column; class=org.netbeans.modules.db.api.explorer.DatabaseMetaDataTransfer$Column"));
+        assertTrue(mimeTypes.contains("application/x-java-netbeans-dbexplorer-column; class=org.netbeans.api.db.explorer.DatabaseMetaDataTransfer$Column"));
         assertTrue(mimeTypes.contains("application/x-java-openide-nodednd; mask=1; class=org.openide.nodes.Node"));
     }
 }

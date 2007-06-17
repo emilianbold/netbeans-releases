@@ -24,6 +24,8 @@ import java.io.IOException;
 
 import java.util.*;
 import java.text.MessageFormat;
+import org.netbeans.api.db.explorer.DatabaseMetaDataTransfer;
+import org.netbeans.modules.db.explorer.DatabaseMetaDataTransferAccessor;
 
 import org.openide.*;
 import org.openide.util.NbBundle;
@@ -33,7 +35,6 @@ import org.netbeans.lib.ddl.impl.*;
 import org.netbeans.modules.db.*;
 import org.netbeans.modules.db.explorer.*;
 import org.netbeans.modules.db.explorer.infos.*;
-import org.openide.util.Lookup;
 import org.openide.util.datatransfer.ExTransferable;
 
 
@@ -64,21 +65,14 @@ public class ViewNode extends DatabaseNode {
     }
 
     public Transferable clipboardCopy() throws IOException {
-        Transferable result;
-        final DbMetaDataTransferProvider dbTansferProvider = (DbMetaDataTransferProvider)Lookup.getDefault().lookup(DbMetaDataTransferProvider.class);
-        if (dbTansferProvider != null) {
-            ExTransferable exTransferable = ExTransferable.create(super.clipboardCopy());
-            ConnectionNodeInfo cni = (ConnectionNodeInfo)getInfo().getParent(DatabaseNode.CONNECTION);
-            final DatabaseConnection dbconn = ConnectionList.getDefault().getConnection(cni.getDatabaseConnection());
-            exTransferable.put(new ExTransferable.Single(dbTansferProvider.getViewDataFlavor()) {
-                protected Object getData() {
-                    return dbTansferProvider.createViewData(dbconn.getDatabaseConnection(), dbconn.findJDBCDriver(), getInfo().getName());
-                }
-            });
-            result = exTransferable;
-        } else {
-            result = super.clipboardCopy();
-        }
+        ExTransferable result = ExTransferable.create(super.clipboardCopy());
+        ConnectionNodeInfo cni = (ConnectionNodeInfo)getInfo().getParent(DatabaseNode.CONNECTION);
+        final DatabaseConnection dbconn = ConnectionList.getDefault().getConnection(cni.getDatabaseConnection());
+        result.put(new ExTransferable.Single(DatabaseMetaDataTransfer.VIEW_FLAVOR) {
+            protected Object getData() {
+                return DatabaseMetaDataTransferAccessor.DEFAULT.createViewData(dbconn.getDatabaseConnection(), dbconn.findJDBCDriver(), getInfo().getName());
+            }
+        });
         return result;
     }
 }

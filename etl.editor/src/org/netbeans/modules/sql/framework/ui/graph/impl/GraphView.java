@@ -75,7 +75,7 @@ public abstract class GraphView extends JGoView implements IGraphView {
     private static final int VIEW_SCALE = 2;
     private static final int PAGE_SCALE = 3;
 
-    private static final String NETBEANS_DBTABLE_MIMETYPE = "application/x-java-netbeans-dbexplorer-table;class=org.netbeans.modules.db.api.explorer.DatabaseMetaDataTransfer$Table";
+    private static final String NETBEANS_DBTABLE_MIMETYPE = "application/x-java-netbeans-dbexplorer-table;class=org.netbeans.api.db.explorer.DatabaseMetaDataTransfer$Table";
 
     protected static DataFlavor[] mDataFlavorArray = new DataFlavor[2];
 

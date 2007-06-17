@@ -37,9 +37,9 @@ import org.netbeans.modules.db.test.TestBase;
  *
  * @author Andrei Badea
  */
-public class TableNodeTest extends TestBase {
+public class ViewNodeTest extends TestBase {
 
-    public TableNodeTest(String testName) {
+    public ViewNodeTest(String testName) {
         super(testName);
     }
 
@@ -49,21 +49,21 @@ public class TableNodeTest extends TestBase {
         DatabaseConnection dbconn = DatabaseConnection.create(driver, "url", "user", "schema", "pwd", false);
         ConnectionManager.getDefault().addConnection(dbconn);
 
-        TableNode tableNode = new TableNode();
+        ViewNode viewNode = new ViewNode();
         ConnectionNodeInfo connNodeInfo = (ConnectionNodeInfo)DatabaseNodeInfo.createNodeInfo(null, DatabaseNodeInfo.CONNECTION);
         connNodeInfo.setDatabaseConnection(ConnectionList.getDefault().getConnections()[0]);
-        DatabaseNodeInfo tableNodeInfo = DatabaseNodeInfo.createNodeInfo(connNodeInfo, DatabaseNode.TABLE);
-        tableNode.setInfo(tableNodeInfo);
+        DatabaseNodeInfo ViewNodeInfo = DatabaseNodeInfo.createNodeInfo(connNodeInfo, DatabaseNode.VIEW);
+        viewNode.setInfo(ViewNodeInfo);
 
-        assertTrue(tableNode.canCopy());
+        assertTrue(viewNode.canCopy());
 
-        Transferable transferable = (Transferable)tableNode.clipboardCopy();
+        Transferable transferable = (Transferable)viewNode.clipboardCopy();
         Set mimeTypes = new HashSet();
         DataFlavor[] flavors = transferable.getTransferDataFlavors();
         for (int i = 0; i < flavors.length; i++) {
             mimeTypes.add(flavors[i].getMimeType());
         }
-        assertTrue(mimeTypes.contains("application/x-java-netbeans-dbexplorer-table; class=org.netbeans.api.db.explorer.DatabaseMetaDataTransfer$Table"));
+        assertTrue(mimeTypes.contains("application/x-java-netbeans-dbexplorer-view; class=org.netbeans.api.db.explorer.DatabaseMetaDataTransfer$View"));
         assertTrue(mimeTypes.contains("application/x-java-openide-nodednd; mask=1; class=org.openide.nodes.Node"));
     }
 }

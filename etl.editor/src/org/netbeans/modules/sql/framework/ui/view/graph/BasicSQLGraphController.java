@@ -48,6 +48,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 import org.openide.windows.WindowManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
+import org.netbeans.api.db.explorer.DatabaseMetaDataTransfer;
 import org.netbeans.modules.etl.ui.DataObjectProvider;
 import org.netbeans.modules.etl.ui.ETLDataObject;
 import org.netbeans.modules.etl.ui.ETLEditorSupport;
@@ -104,7 +105,6 @@ import org.netbeans.modules.sql.framework.ui.model.CollabSQLUIModel;
 import org.netbeans.modules.sql.framework.ui.model.SQLUIModel;
 import org.netbeans.modules.sql.framework.ui.view.join.JoinMainDialog;
 import org.netbeans.modules.sql.framework.ui.view.join.JoinUtility;
-import org.netbeans.modules.db.api.explorer.DatabaseMetaDataTransfer;
 
 import com.sun.sql.framework.exception.BaseException;
 import com.sun.sql.framework.utils.Logger;
@@ -115,7 +115,7 @@ import com.sun.sql.framework.utils.Logger;
  */
 public class BasicSQLGraphController implements IGraphController {
     
-    private static final String NETBEANS_DBTABLE_MIMETYPE = "application/x-java-netbeans-dbexplorer-table;class=org.netbeans.modules.db.api.explorer.DatabaseMetaDataTransfer$Table";
+    private static final String NETBEANS_DBTABLE_MIMETYPE = "application/x-java-netbeans-dbexplorer-table;class=org.netbeans.api.db.explorer.DatabaseMetaDataTransfer$Table";
     
     private static final String LOG_CATEGORY = BasicSQLGraphController.class.getName();
     

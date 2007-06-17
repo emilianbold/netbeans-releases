@@ -20,9 +20,9 @@ package org.netbeans.modules.form.j2ee;
 
 import java.awt.dnd.DropTargetDragEvent;
 import javax.swing.ImageIcon;
+import org.netbeans.api.db.explorer.DatabaseMetaDataTransfer;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.db.api.explorer.DatabaseMetaDataTransfer;
 import org.netbeans.modules.form.FormEditor;
 import org.netbeans.modules.form.FormModel;
 import org.netbeans.modules.form.NewComponentDrop;

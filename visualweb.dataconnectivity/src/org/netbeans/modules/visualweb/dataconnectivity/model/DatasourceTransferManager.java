@@ -40,8 +40,8 @@ import java.awt.datatransfer.Transferable;
 import java.sql.SQLException;
 
 import org.netbeans.api.db.explorer.DatabaseConnection;
+import org.netbeans.api.db.explorer.DatabaseMetaDataTransfer;
 import org.netbeans.api.db.explorer.JDBCDriver;
-import org.netbeans.modules.db.api.explorer.DatabaseMetaDataTransfer;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;

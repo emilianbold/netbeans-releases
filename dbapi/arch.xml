@@ -120,14 +120,6 @@ Microsystems, Inc. All Rights Reserved.
     The code completion is the only client of this module at this moment.
    </p>
   </usecase>
-  <usecase id="metadata-transfer" name="Drag and drop support for database tables">
-   <p>
-    The Creator pack needs to drag tables from the Database Explorer to 
-    a visual editor. An API is provided in <code>DatabaseMetaDataTransfer</code>
-    containing a <code>DataFlavor</code> for database tables and a <code>Table</code>
-    class encapsulating details about the dragged table.
-   </p>
-  </usecase>
   <usecase id="sql-keywords" name="Determining whether an identifier is an SQL-99 keyword">
    <p>
     The SQL editor and the J2EE verifier need to determine whether an identifier
@@ -717,14 +709,6 @@ Microsystems, Inc. All Rights Reserved.
     and looked up by the Database Explorer is registered in <code>META-INF/services</code>.
    </p>
   </api>
-  <api group="lookup" name="org.netbeans.modules.db.explorer.DbMetaDataTransferProvider" 
-       type="import" category="private">
-   <p>
-    An implementation of the <code>DbMetaDataTransferProvider</code> interface defined
-    and looked up by by the Database Explorer is registered in <code>Services</code> 
-    folder in the layer.
-   </p>
-  </api>
  </answer>
 
 
@@ -954,10 +938,6 @@ Microsystems, Inc. All Rights Reserved.
    The module provides its own layer containing the <code>Databases/MetaDataListeners</code>
    folder in which the clients register their implementations of 
    <code>MetaDataListener</code>.
-  </p>
-  <p>
-   The module also registers an implementation of the <code>DbMetaDataTransferProvider</code>
-   interface in the Database Explorer in the <code>Services</code> folder of its layer.
   </p>
  </answer>
 

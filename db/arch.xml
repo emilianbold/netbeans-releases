@@ -288,6 +288,14 @@ Microsystems, Inc. All Rights Reserved.
     and a <em>New Database Connection</em> item which will display the dialog for adding a new database connection when selected.
    </p>
   </usecase>
+  <usecase id="metadata-transfer" name="Drag and drop support for database objects">
+   <p>
+    A component might need to allow database tables from the Database Explorer to 
+    be dragged to a visual editor. An API is provided in <code>DatabaseMetaDataTransfer</code>
+    containing <code>DataFlavor</code>s for database objects and nested classes
+    encapsulating those database objects during a drag and drop transfer.
+   </p>
+  </usecase>
  </answer>
 
 

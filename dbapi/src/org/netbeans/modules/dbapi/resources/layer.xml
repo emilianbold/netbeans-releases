@@ -22,12 +22,5 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="Databases">
         <folder name="MetaDataListeners"/>
     </folder>
-
-    <folder name="Services">
-        <file name="DbMetaDataTransferProviderImpl.instance">
-            <attr name="instanceOf" stringvalue="org.netbeans.modules.db.explorer.DbMetaDataTransferProvider"/>
-            <attr name="instanceCreate" methodvalue="org.netbeans.modules.db.api.explorer.DatabaseMetaDataTransfer.getProvider"/>
-        </file>
-    </folder>
 </filesystem>
 

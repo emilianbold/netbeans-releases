@@ -84,6 +84,21 @@ is the proper place.
     <changes>
         <change>
             <api name="database_explorer_api"/>
+            <summary>Addded support for dragging and dropping nodes from the Database Explorer</summary>
+            <version major="1" minor="21"/>
+            <date day="17" month="6" year="2007"/>
+            <author login="abadea"/>
+            <compatibility addition="yes"/>
+            <description>
+                This change adds a <code>DatabaseMetaDataTransfer</code> class which
+                contains <code>DataFlavor</code>s for database objects and nested classes
+                representing those database objects during a drag and drop transfer.
+            </description>
+            <class package="org.netbeans.api.db.explorer" name="DatabaseMetaDataTransfer"/>
+            <issue number="96200"/>
+        </change>
+        <change>
+            <api name="database_explorer_api"/>
             <summary>Addded a method to open the NewConnectionDialog with an user and password pre-filled and methods which open the NewConnectionDialog and return the newly added database connection</summary>
             <version major="1" minor="19"/>
             <date day="20" month="7" year="2006"/>
