@@ -61,7 +61,7 @@ final class SearchScopeNodeSelection extends AbstractSearchScope
 
     @Override
     protected boolean checkIsApplicable() {
-        return checkIsApplicable(TopComponent.getRegistry().getCurrentNodes());
+        return checkIsApplicable(TopComponent.getRegistry().getActivatedNodes());
     }
 
     /**
