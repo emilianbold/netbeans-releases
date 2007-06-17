@@ -23,6 +23,7 @@ import java.lang.reflect.Method;
 import javax.swing.text.BadLocationException;
 import org.netbeans.spi.palette.PaletteController;
 import org.openide.cookies.EditorCookie;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.MultiDataObject;
 import org.openide.nodes.CookieSet;
@@ -40,8 +41,8 @@ public class RestPaletteListener implements PropertyChangeListener {
     PaletteController pc = null;
     
     public void propertyChange(PropertyChangeEvent evt) {
-        System.out.println("evt: "+evt.getPropertyName()+" "+
-                evt.getOldValue()+" "+evt.getNewValue());
+        /*System.out.println("evt: "+evt.getPropertyName()+" "+
+                evt.getOldValue()+" "+evt.getNewValue());*/
         if(evt.getPropertyName().equals(TopComponent.Registry.PROP_ACTIVATED )) {
             if(pc == null)
                 pc = RestPaletteFactory.createPalette();
@@ -83,21 +84,20 @@ public class RestPaletteListener implements PropertyChangeListener {
     }
     
     private boolean isRestJavaFile(DataObject d) {
-        return true; /*
         try {
-            if(d == null)
+            if(d == null || ! "java".equals(d.getPrimaryFile().getExt())) //NOI18N
                 return false;
             EditorCookie ec = d.getCookie(EditorCookie.class);
             if(ec == null)
                 return false;
-            javax.swing.text.Document doc = ec.openDocument();
+            javax.swing.text.Document doc = ec.getDocument();
             if (doc != null) {
                 return doc.getText(0, doc.getLength()).
                         indexOf(REST_TEMPLATE) != -1;
             }
-        } catch (IOException ex) {
-        } catch (BadLocationException ex) {
         }
-        return false; */
+        catch (BadLocationException ex) {
+        }
+        return false;
     }
 }
