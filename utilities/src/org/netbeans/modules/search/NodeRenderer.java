@@ -26,19 +26,24 @@ import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.Rectangle;
 import java.beans.BeanInfo;
+import java.io.CharConversionException;
 import javax.swing.ImageIcon;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JTree;
+import javax.swing.UIDefaults;
 import javax.swing.UIManager;
 import javax.swing.tree.TreeCellRenderer;
 import javax.swing.tree.TreePath;
 import org.openide.awt.HtmlRenderer;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
+import org.openide.xml.XMLUtil;
 
 /**
  * 
@@ -126,10 +131,19 @@ final class NodeRenderer extends JComponent implements TreeCellRenderer {
             final boolean valid = matchingObj.isObjectValid();
             if (valid) {
                 final Node node = dataObj.getNodeDelegate();
-                text = node.getHtmlDisplayName();
-                isHtml = (text != null);
-                if (!isHtml) {
-                    text = node.getDisplayName();
+                FileObject fileFolder = dataObj.getPrimaryFile().getParent();
+                String folderPath = FileUtil.getFileDisplayName(fileFolder);
+                try {
+                    text = node.getHtmlDisplayName();
+                    isHtml = true;
+                    if (text == null) {
+                        text = XMLUtil.toElementContent(node.getDisplayName());
+                    }
+                    text = text + " <font color='!"+ getFilePathColor() +"'>"
+                           + XMLUtil.toElementContent(folderPath);
+                } catch (CharConversionException ex) {
+                    text = node.getDisplayName() + ' ' + '(' + folderPath + ')';
+                    isHtml = false;
                 }
                 iconImage = node.getIcon(BeanInfo.ICON_COLOR_16x16);
             } else {
@@ -198,6 +212,23 @@ final class NodeRenderer extends JComponent implements TreeCellRenderer {
         } else {
             return stringDisplayer;
         }
+    }
+
+    /** name of the color to be used for displaying path to the found file */
+    private String filePathColorName;
+
+    /** @see  #filePathColor */
+    private String getFilePathColor() {
+        if (filePathColorName == null) {
+            UIDefaults uiDefaults = UIManager.getDefaults();
+            if (uiDefaults.getColor("Tree.selectionBackground").equals( //NOI18N
+                    uiDefaults.getColor("controlShadow"))) {            //NOI18N
+                filePathColorName = "Tree.selectionBorderColor";        //NOI18N
+            } else {
+                filePathColorName = "controlShadow";                    //NOI18N
+            }
+        }
+        return filePathColorName;
     }
     
     @Override
