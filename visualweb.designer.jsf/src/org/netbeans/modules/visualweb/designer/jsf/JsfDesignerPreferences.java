@@ -21,7 +21,6 @@ package org.netbeans.modules.visualweb.designer.jsf;
 import java.beans.IntrospectionException;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
-import org.netbeans.modules.visualweb.api.designer.Designer;
 import org.openide.nodes.BeanNode;
 import org.openide.util.NbPreferences;
 import org.openide.util.WeakListeners;

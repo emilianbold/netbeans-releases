@@ -317,6 +317,7 @@ Microsystems, Inc. All Rights Reserved.
                 <friend>org.netbeans.modules.visualweb.j2ee15classloaderprovider</friend>
                 <friend>org.netbeans.modules.visualweb.jsfsupport.designtime</friend>
                 <friend>org.netbeans.modules.visualweb.project.jsfproject</friend>
+                <friend>org.netbeans.modules.visualweb.designer.jsf</friend>
                 <friend>org.netbeans.modules.visualweb.sql</friend>
                 <package>org.netbeans.modules.visualweb.dataconnectivity</package>
                 <package>org.netbeans.modules.visualweb.dataconnectivity.datasource</package>

@@ -122,14 +122,12 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
     </folder>
     
-    <folder name="UI">
-        <folder name="Services">
-            <file name="org-netbeans-modules-visualweb-designer-jsf-JsfDesignerPreferencesNode.instance">
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.visualweb.designer.jsf.JsfDesignerPreferences.createViewNode"/>
-            </file>
+    <folder name="OptionsDialog">
+        <folder name="Advanced">
+            <file name="org-netbeans-modules-visualweb-designer-jsf-JsfDesignerAdvancedOptions.instance"/>
         </folder>
     </folder>
-
+    
     <folder name="Windows2">
         <folder name="Groups">
             <file name="jsfdesigner.wsgrp" url="groups/jsfdesigner.wsgrp"/>

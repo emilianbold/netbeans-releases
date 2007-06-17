@@ -104,24 +104,4 @@ migration -->
 	</file>
     </folder> <!-- Services -->
     
-    <folder name="UI">
-<!-- shortfin -->
-<!-- removed from shortfine for now, since we won't have data sources
-      <folder name="Runtime">
-        <file name="org-netbeans-modules-visualweb-dataconnectivity-explorer-DataSourceRootNode.instance"/>
--->
-<!-- removed from shortfin for now, since we won't have a bundled database
-        <file name="org-netbeans-modules-visualweb-dataconnectivity-explorer-IdeServerNode.instance" />
-        <attr name="ServerInstance3.instance/org-netbeans-modules-visualweb-dataconnectivity-explorer-IdeServerNode.instance" boolvalue="true" />
-      </folder>
--->
-<!-- /shortfin -->
-
-    <!-- settings categories UI presentation -->
-        <folder name="Services">
-            <file name="org-netbeans-modules-visualweb-dataconnectivity-DataconnectivitySettings.shadow">
-                <attr name="originalFile" stringvalue="Services/org-netbeans-modules-visualweb-dataconnectivity-DataconnectivitySettings.settings"/>
-            </file>
-        </folder> <!-- Services -->
-    </folder> <!-- UI -->
 </filesystem>
