@@ -38,7 +38,7 @@ import java.io.File;
  * @author Maros Sandor
  */
 public class UpdateAction extends AbstractSystemAction {
-    
+
     protected String getBaseName(Node [] activatedNodes) {
         return "CTL_MenuItem_Update";  // NOI18N
     }
@@ -88,4 +88,8 @@ public class UpdateAction extends AbstractSystemAction {
         return false;
     }
     
+    @Override
+    protected String iconResource() {
+        return "org/netbeans/modules/versioning/system/cvss/resources/icons/update.png"; // NOI18N
+    }
 }

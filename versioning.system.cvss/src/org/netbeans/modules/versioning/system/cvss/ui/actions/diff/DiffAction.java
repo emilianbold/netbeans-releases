@@ -76,4 +76,8 @@ public class DiffAction extends AbstractSystemAction {
         return false;
     }
 
+    @Override
+    protected String iconResource() {
+        return "org/netbeans/modules/versioning/system/cvss/resources/icons/diff.png"; // NOI18N
+    }
 }

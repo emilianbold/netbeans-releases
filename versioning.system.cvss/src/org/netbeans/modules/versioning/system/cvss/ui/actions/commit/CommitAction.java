@@ -276,4 +276,8 @@ public class CommitAction extends AbstractSystemAction {
         return AddExecutor.splitCommand(cmd, CvsVersioningSystem.getInstance(), null);
 
     }
+    @Override
+    protected String iconResource() {
+        return "org/netbeans/modules/versioning/system/cvss/resources/icons/commit.png"; // NOI18N
+    }
 }

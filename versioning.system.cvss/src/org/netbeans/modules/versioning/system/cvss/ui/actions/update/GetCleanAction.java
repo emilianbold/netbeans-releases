@@ -230,4 +230,8 @@ public class GetCleanAction extends AbstractSystemAction {
             // ignore
         }
     }
+    @Override
+    protected String iconResource() {
+        return "org/netbeans/modules/versioning/system/cvss/resources/icons/get_clean.png"; // NOI18N
+    }
 }

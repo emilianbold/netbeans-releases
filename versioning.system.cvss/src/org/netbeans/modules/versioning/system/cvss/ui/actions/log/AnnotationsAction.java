@@ -188,4 +188,8 @@ public class AnnotationsAction extends AbstractSystemAction {
         return null;
 
     }
+    @Override
+    protected String iconResource() {
+        return "org/netbeans/modules/versioning/system/cvss/resources/icons/annotate.png"; // NOI18N
+    }
 }
