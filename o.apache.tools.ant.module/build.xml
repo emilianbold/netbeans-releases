@@ -33,7 +33,7 @@ Microsystems, Inc. All Rights Reserved.
                 <path path="${src-bridge.cp}"/>
             </classpath>
         </depend>
-        <javac srcdir="src-bridge" destdir="build/bridge-classes" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}" source="1.5" includeantruntime="false">
+        <javac srcdir="src-bridge" destdir="build/bridge-classes" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}" source="1.5" target="1.5" includeantruntime="false">
             <classpath>
                 <path path="${src-bridge.cp}"/>
             </classpath>
