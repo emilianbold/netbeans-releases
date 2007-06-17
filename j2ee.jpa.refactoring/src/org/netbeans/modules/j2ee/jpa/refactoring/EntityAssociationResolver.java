@@ -163,9 +163,9 @@ public class EntityAssociationResolver {
     /**
      * Gets the references to the properties that might have an annotation containing a reference
      * to the property that is being refactored.
-     * 
+     *
      * @return a list of <code>Reference<code>s representing the referring properties.
-     */ 
+     */
     List<Reference> getReferringProperties() throws IOException{
         
         final List<Reference> result = new ArrayList<Reference>();
@@ -187,24 +187,15 @@ public class EntityAssociationResolver {
                 return result;
             }
             
-            private List<IdentifierTree> getIdentifier(VariableTree vt){
-                if (Tree.Kind.PARAMETERIZED_TYPE == vt.getType().getKind()){
-                    return getTypeArgs((ParameterizedTypeTree) vt.getType());
+            private List<IdentifierTree> getIdentifier(Tree tree){
+                if (Tree.Kind.PARAMETERIZED_TYPE == tree.getKind()){
+                    return getTypeArgs((ParameterizedTypeTree) tree);
                 }
-                if (Tree.Kind.IDENTIFIER == vt.getType().getKind()){
-                    return Collections.<IdentifierTree>singletonList((IdentifierTree)vt.getType());
-                }
-                return Collections.<IdentifierTree>emptyList();
-            }
-            
-            private List<IdentifierTree> getIdentifier(MethodTree mt){
-                if (Tree.Kind.PARAMETERIZED_TYPE == mt.getReturnType().getKind()){
-                    return getTypeArgs((ParameterizedTypeTree) mt.getReturnType());
-                }
-                if (Tree.Kind.IDENTIFIER == mt.getReturnType().getKind()){
-                    return Collections.<IdentifierTree>singletonList((IdentifierTree)mt.getReturnType());
+                if (Tree.Kind.IDENTIFIER == tree.getKind()){
+                    return Collections.<IdentifierTree>singletonList((IdentifierTree)tree);
                 }
                 return Collections.<IdentifierTree>emptyList();
+                
             }
             
             public void run(CompilationController info) throws Exception {
@@ -219,7 +210,7 @@ public class EntityAssociationResolver {
                 if (te == null){
                     //TODO:
                     // seem to be possible, for methods type.toString returns "()f.q.N"
-                    // either incorrect usage or a bug  
+                    // either incorrect usage or a bug
                     return;
                 }
                 for (Element element : te.getEnclosedElements()){
@@ -233,11 +224,11 @@ public class EntityAssociationResolver {
                         field = true;
                         if (Tree.Kind.VARIABLE == propertyTree.getKind()){
                             VariableTree vt = (VariableTree) propertyTree;
-                            identifiers = getIdentifier(vt);
+                            identifiers = getIdentifier(vt.getType());
                         }
                     } else if (element.getKind().equals(ElementKind.METHOD)){
                         MethodTree mt = (MethodTree) propertyTree;
-                        identifiers = getIdentifier(mt);
+                        identifiers = getIdentifier(mt.getReturnType());
                     }
                     for (IdentifierTree it : identifiers){
                         TypeMirror type = info.getTreeUtilities().parseType(it.getName().toString(), te);
@@ -257,7 +248,7 @@ public class EntityAssociationResolver {
     
     /**
      * Encapsulates information of a referring property.
-     */ 
+     */
     static class Reference {
         
         /**
