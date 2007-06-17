@@ -37,6 +37,7 @@ import org.netbeans.modules.refactoring.api.WhereUsedQuery;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
 import org.netbeans.modules.refactoring.spi.RefactoringPluginFactory;
 import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.modules.web.refactoring.rename.TldRename;
 import org.netbeans.modules.web.refactoring.rename.WebXmlMove;
 import org.netbeans.modules.web.refactoring.rename.WebXmlPackageRename;
 import org.netbeans.modules.web.refactoring.rename.WebXmlRename;
@@ -59,18 +60,24 @@ public class WebRefactoringFactory implements RefactoringPluginFactory{
     
     public RefactoringPlugin createInstance(AbstractRefactoring refactoring) {
         
-        NonRecursiveFolder folder = refactoring.getRefactoringSource().lookup(NonRecursiveFolder.class);
+        NonRecursiveFolder pkg = refactoring.getRefactoringSource().lookup(NonRecursiveFolder.class);
+        FileObject sourceFO = refactoring.getRefactoringSource().lookup(FileObject.class);
         TreePathHandle handle = resolveTreePathHandle(refactoring);
         
-        boolean javaPackage = folder != null && RefactoringUtil.isOnSourceClasspath(folder.getFolder());
+        boolean javaPackage = pkg != null && RefactoringUtil.isOnSourceClasspath(pkg.getFolder());
+        boolean folder = sourceFO != null && sourceFO.isFolder();
         
-        FileObject sourceFO = null;
-        if (handle == null){
-            sourceFO = refactoring.getRefactoringSource().lookup(NonRecursiveFolder.class).getFolder();
-        } else {
-            sourceFO = handle.getFileObject();
+        if (sourceFO == null){
+            if (handle != null){
+                sourceFO = handle.getFileObject();
+            } else if (pkg != null){
+                sourceFO = pkg.getFolder();
+            }
         }
         
+        if (sourceFO == null){
+            return null;
+        }
         WebModule wm = WebModule.getWebModule(sourceFO);
         if (wm == null){
             return null;
@@ -78,15 +85,16 @@ public class WebRefactoringFactory implements RefactoringPluginFactory{
         FileObject ddFile = wm.getDeploymentDescriptor();
         WebApp webApp = getWebApp(ddFile);
         String clazz = resolveClass(handle);
-
+        
         List<WebRefactoring> refactorings = new ArrayList<WebRefactoring>();
         
         if (refactoring instanceof RenameRefactoring){
             RenameRefactoring rename = (RenameRefactoring) refactoring;
-            if (javaPackage){
+            if (javaPackage || folder){
                 refactorings.add(new WebXmlPackageRename(ddFile, webApp, sourceFO, rename));
             } else {
-            refactorings.add(new WebXmlRename(clazz, rename, webApp, ddFile));
+                refactorings.add(new WebXmlRename(clazz, rename, webApp, ddFile));
+                refactorings.add(new TldRename(clazz, rename, sourceFO));
             }
         } if (refactoring instanceof SafeDeleteRefactoring){
             SafeDeleteRefactoring safeDelete = (SafeDeleteRefactoring) refactoring;
@@ -122,7 +130,7 @@ public class WebRefactoringFactory implements RefactoringPluginFactory{
         }
         
         FileObject sourceFO = refactoring.getRefactoringSource().lookup(FileObject.class);
-        if (sourceFO == null){
+        if (sourceFO == null || !RefactoringUtil.isJavaFile(sourceFO)){
             return null;
         }
         final TreePathHandle[] result = new TreePathHandle[1];

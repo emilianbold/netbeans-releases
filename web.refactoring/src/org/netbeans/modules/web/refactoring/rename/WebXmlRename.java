@@ -21,6 +21,7 @@ import java.util.List;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
+import org.netbeans.modules.web.refactoring.RefactoringUtil;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -44,9 +45,7 @@ public class WebXmlRename extends BaseWebXmlRename{
     }
 
     private String getNewFQN(){
-        String newName = rename.getNewName();
-        int lastDot = oldFqn.lastIndexOf('.');
-        return (lastDot <= 0) ? newName : oldFqn.substring(0, lastDot + 1) + newName;
+        return RefactoringUtil.renameClass(oldFqn, rename.getNewName());
     }
 
     protected AbstractRefactoring getRefactoring() {

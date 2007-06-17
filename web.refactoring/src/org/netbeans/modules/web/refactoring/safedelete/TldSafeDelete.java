@@ -85,16 +85,6 @@ public class TldSafeDelete extends TldRefactoring{
             write();
         }
 
-        private void write() {
-            try {
-                TLDDataObject tdo = (TLDDataObject) DataObject.find(tldFile);
-                if (tdo != null) {
-                    tdo.write(taglib);
-                }
-            } catch (IOException ioe) {
-                Exceptions.printStackTrace(ioe);
-            }
-        }
     }
     
 }

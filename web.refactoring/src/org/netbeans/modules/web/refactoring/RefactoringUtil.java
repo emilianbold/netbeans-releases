@@ -27,6 +27,7 @@ import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Parameters;
 
 /**
  * Utility methods for refactoring operations.
@@ -93,6 +94,22 @@ public class RefactoringUtil {
         
     }
     
+    /**
+     * Constructs a new fully qualified name for the given <code>newName</code>.
+     *
+     * @param originalFullyQualifiedName the old fully qualified name of the class.
+     * @param newName the new unqualified name of the class.
+     *
+     * @return the new fully qualified name of the class.
+     */
+    public static String renameClass(String originalFullyQualifiedName, String newName){
+        Parameters.notEmpty("originalFullyQualifiedName", originalFullyQualifiedName); //NO18N
+        Parameters.notEmpty("newName", newName); //NO18N
+        int lastDot = originalFullyQualifiedName.lastIndexOf('.');
+        return (lastDot <= 0) ? newName : originalFullyQualifiedName.substring(0, lastDot + 1) + newName;
+    }
+    
+    
     // copied from o.n.m.java.refactoring.RetoucheUtils
     public static boolean isOnSourceClasspath(FileObject fo) {
         Project p = FileOwnerQuery.getOwner(fo);
@@ -111,5 +128,7 @@ public class RefactoringUtil {
         }
         return false;
     }
+    
+    
     
 }
