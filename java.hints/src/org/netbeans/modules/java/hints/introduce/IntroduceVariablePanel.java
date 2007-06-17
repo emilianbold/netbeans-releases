@@ -202,6 +202,8 @@ public class IntroduceVariablePanel extends javax.swing.JPanel {
     private javax.swing.JCheckBox replaceAll;
     // End of variables declaration//GEN-END:variables
     
+    private Set<Modifier> testAccess;
+    
     public String getVariableName() {
         return name.getText();
     }
@@ -219,6 +221,8 @@ public class IntroduceVariablePanel extends javax.swing.JPanel {
     }
     
     public Set<Modifier> getAccess() {
+        if (testAccess != null) return testAccess;
+        
         Set<Modifier> set;
         int val;
         if( accessPublic.isSelected() ) {
@@ -251,4 +255,7 @@ public class IntroduceVariablePanel extends javax.swing.JPanel {
         this.replaceAll.setSelected(replaceAll);
     }
 
+    void setAccess(Set<Modifier> access) {
+        testAccess = access;
+    }
 }

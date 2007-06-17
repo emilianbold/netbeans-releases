@@ -929,6 +929,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
             final String name = panel.getVariableName();
             final boolean replaceAll = panel.isReplaceAll();
             final boolean declareFinal = panel.isDeclareFinal();
+            final Set<Modifier> access = kind == IntroduceKind.CREATE_CONSTANT ? panel.getAccess() : null;
             js.runModificationTask(new CancellableTask<WorkingCopy>() {
                 public void cancel() {}
                 public void run(WorkingCopy parameter) throws Exception {
@@ -963,7 +964,11 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                                 return ; //TODO...
                             }
                             
-                            mods = make.Modifiers(EnumSet.of(Modifier.FINAL, Modifier.STATIC, Modifier.PRIVATE));
+                            Set<Modifier> localAccess = EnumSet.copyOf(access);
+                            
+                            localAccess.addAll(EnumSet.of(Modifier.FINAL, Modifier.STATIC));
+                            
+                            mods = make.Modifiers(localAccess);
                             
                             VariableTree constant = make.Variable(mods, name, make.Type(tm), expressionCopy);
                             ClassTree nueClass = GeneratorUtils.insertClassMember(parameter, pathToClass, constant);
@@ -1363,7 +1368,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                     
                     nueStatements.addAll(statements.getStatements().subList(to + 1, statements.getStatements().size()));
                     
-                    ModifiersTree mods = make.Modifiers(EnumSet.of(Modifier.PRIVATE));
+                    ModifiersTree mods = make.Modifiers(access);
                     List<VariableTree> formalArguments = new LinkedList<VariableTree>();
                     Iterator<TypeMirrorHandle> argType = parameterTypes.iterator();
                     Iterator<String> argName = parameterNames.iterator();

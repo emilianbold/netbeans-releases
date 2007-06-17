@@ -229,6 +229,22 @@ public class IntroduceHintTest extends NbTestCase {
                        1, 0);
     }
     
+    public void testConstantFix106490a() throws Exception {
+        performFixTest("package test; public class Test {int y = 3 + 4; int z = 3 + 4;}",
+                       66 - 25, 71 - 25,
+                       "package test; public class Test { public static final int name = 3 + 4; int y = name; int z = name;}",
+                       new DialogDisplayerImpl(null, true, false, DialogDescriptor.OK_OPTION, EnumSet.of(Modifier.PUBLIC)),
+                       1, 0);
+    }
+    
+    public void testConstantFix106490b() throws Exception {
+        performFixTest("package test; public class Test {int y = 3 + 4; int z = 3 + 4;}",
+                       66 - 25, 71 - 25,
+                       "package test; public class Test { static final int name = 3 + 4; int y = name; int z = name;}",
+                       new DialogDisplayerImpl(null, true, false, DialogDescriptor.OK_OPTION, EnumSet.noneOf(Modifier.class)),
+                       1, 0);
+    }
+    
     public void testIntroduceFieldFix1() throws Exception {
         performCheckFixesTest("package test; public class Test {int y = 3 + 4; int z = 3 + 4;}",
                        73 - 32, 78 - 32,
@@ -512,6 +528,20 @@ public class IntroduceHintTest extends NbTestCase {
                         new DialogDisplayerImpl(null, null, null, null));
     }
     
+    public void testIntroduceMethodFix106490a() throws Exception {
+        performFixTest("package test; public class Test {public int test(int y) {while (true) {if (--y <= 0) { return 1; } else { return 2; }}}}",
+                       96 - 25, 142 - 25,
+                       "package test; public class Test { public int name(int y) { if (--y <= 0) { return 1; } else { return 2; } } public int test(int y) {while (true) {return name(y); }}}",
+                       new DialogDisplayerImpl3("name", EnumSet.of(Modifier.PUBLIC), DialogDescriptor.OK_OPTION));
+    }
+    
+    public void testIntroduceMethodFix106490b() throws Exception {
+        performFixTest("package test; public class Test {public int test(int y) {while (true) {if (--y <= 0) { return 1; } else { return 2; }}}}",
+                       96 - 25, 142 - 25,
+                       "package test; public class Test {public int test(int y) {while (true) {return name(y); }} int name(int y) { if (--y <= 0) { return 1; } else { return 2; } } }",
+                       new DialogDisplayerImpl3("name", EnumSet.noneOf(Modifier.class), DialogDescriptor.OK_OPTION));
+    }
+    
     protected void prepareTest(String code) throws Exception {
         clearWorkDir();
         
@@ -643,13 +673,19 @@ public class IntroduceHintTest extends NbTestCase {
         private String name;
         private Boolean replaceAll;
         private Boolean declareFinal;
+        private Set<Modifier> modifiers;
         private Object result;
 
         public DialogDisplayerImpl(String name, Boolean replaceAll, Boolean declareFinal, Object result) {
+            this(name, replaceAll, declareFinal, result, EnumSet.of(Modifier.PRIVATE));
+        }
+        
+        public DialogDisplayerImpl(String name, Boolean replaceAll, Boolean declareFinal, Object result, Set<Modifier> modifiers) {
             this.name = name;
             this.replaceAll = replaceAll;
             this.declareFinal = declareFinal;
             this.result = result;
+            this.modifiers = modifiers;
         }
         
         public Object notify(NotifyDescriptor descriptor) {
@@ -665,6 +701,10 @@ public class IntroduceHintTest extends NbTestCase {
             
             if (declareFinal != null) {
                 panel.setDeclareFinal(declareFinal);
+            }
+            
+            if (modifiers != null) {
+                panel.setAccess(modifiers);
             }
             
             return result;
