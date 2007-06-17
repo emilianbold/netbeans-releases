@@ -67,9 +67,16 @@ public class TopPanel extends JPanel {
     
     //    private static final Color COLOR_HOVER_FILL = new Color (0xB9, 0xDF, 0xC0, 128);
     private static final Color COLOR_HOVER_DRAW = MainPanel.HOVER_COLOR;
-    private static final Color COLOR_HOVER_DRAW_DND = Color.GREEN;
-    
+    private static final Color COLOR_DRAW_DND_LINE = Color.RED;
+    //private static final Color COLOR_DRAW_DND_SHAPE = Color.GREEN;
     private static final Stroke STROKE = new BasicStroke(2.0f);
+    private static final Stroke STROKE_DND_SHAPE = new BasicStroke(1.0f);
+    private static final Stroke STROKE_DND_LINE = new BasicStroke(3.0f,
+            BasicStroke.CAP_SQUARE,
+            BasicStroke.JOIN_MITER,
+            2.0f,
+            new float[] {5.0f,10.0f},
+            0.0f);
     
     private static final Image IMAGE_INJECT = Utilities.loadImage("org/netbeans/modules/vmd/screen/resources/inject.png"); // NOI18N
     
@@ -83,7 +90,8 @@ public class TopPanel extends JPanel {
     private DragSource dragSource;
     private DesignComponent dragedComponent;
     private boolean innerDragingInProgress;
-
+    //private boolean outerGraggingInProgress;
+    
     public TopPanel(final DevicePanel devicePanel) {
         this.devicePanel = devicePanel;
         setOpaque(false);
@@ -98,8 +106,8 @@ public class TopPanel extends JPanel {
                             innerDragingInProgress = false;
                             return;
                         }
-                        dragSource.startDrag(dgEvent, null,new ScreenDisplaylTransferable(dragedComponent), null);
                         innerDragingInProgress = true;
+                        dragSource.startDrag(dgEvent, null,new ScreenDisplaylTransferable(dragedComponent), null);
                     }
                 });
             }
@@ -155,6 +163,7 @@ public class TopPanel extends JPanel {
         setDropTarget(new DropTarget(this,new DropTargetListener() {
             
             public void dragEnter(DropTargetDragEvent dtde) {
+                //outerGraggingInProgress = true;
                 updatePosition(dtde.getLocation());
                 AcceptSuggestion suggestion = getSugestion(dtde.getTransferable());
                 if (isAcceptable(dtde.getLocation(), dtde.getTransferable(), suggestion))
@@ -166,28 +175,25 @@ public class TopPanel extends JPanel {
             public void dragOver(final DropTargetDragEvent dtde) {
                 updatePosition(dtde.getLocation());
                 AcceptSuggestion suggestion = getSugestion(dtde.getTransferable());
-                if (innerDragingInProgress)
-                    hoverDnD(dtde.getLocation());
-                else
-                    hover(dtde.getLocation());
-                
-                if (isAcceptable(dtde.getLocation(), dtde.getTransferable(),  suggestion))
+                if (isAcceptable(dtde.getLocation(), dtde.getTransferable(),  suggestion)) {
                     dtde.acceptDrag(DnDConstants.ACTION_COPY_OR_MOVE);
-                else
+                    hoverDnD(dtde.getLocation());
+                } else
                     dtde.rejectDrag();
             }
             
             public void dropActionChanged(DropTargetDragEvent dtde) {
                 updatePosition(dtde.getLocation());
                 AcceptSuggestion suggestion = getSugestion(dtde.getTransferable());
-                if (isAcceptable(dtde.getLocation(), dtde.getTransferable(), suggestion))
+                if (isAcceptable(dtde.getLocation(), dtde.getTransferable(), suggestion)) {
                     dtde.acceptDrag(DnDConstants.ACTION_COPY_OR_MOVE);
-                else
+                } else
                     dtde.rejectDrag();
             }
             
             public void dragExit(DropTargetEvent dte) {
                 innerDragingInProgress = false;
+                hover(lastHoverPoint);
             }
             
             public void drop(DropTargetDropEvent dtde) {
@@ -200,6 +206,7 @@ public class TopPanel extends JPanel {
                     dtde.rejectDrop();
                 }
                 innerDragingInProgress = false;
+                hover(lastHoverPoint);
             }
         }));
     }
@@ -224,12 +231,32 @@ public class TopPanel extends JPanel {
             gr.translate(hoverShape.x, hoverShape.y);
             //            gr.setColor (COLOR_HOVER_FILL);
             //            gr.fill (hoverShape.shape);
-            if (innerDragingInProgress)
-                gr.setColor(COLOR_HOVER_DRAW_DND);
-            else
+            
+            
+            if (innerDragingInProgress) {
+                gr.translate(- hoverShape.x, - hoverShape.y);
+                gr.setColor(COLOR_DRAW_DND_LINE);
+                gr.setStroke(STROKE_DND_LINE);
+                gr.setColor(COLOR_DRAW_DND_LINE);
+                int space = 3;
+                if (verticalPosition == Position.SOUTH) {
+                    int x1 = (int) hoverShape.x + space;
+                    int y1 = hoverShape.y + (int) hoverShape.shape.getBounds().getHeight();
+                    int x2 = (int) hoverShape.x + (int) hoverShape.shape.getBounds().getWidth() - space;
+                    int y2 = (int) hoverShape.y + (int) hoverShape.shape.getBounds().getHeight();
+                    gr.drawLine(x1, y1 , x2, y2);
+                } else if (verticalPosition == Position.NORTH) {
+                    int x1 = (int) hoverShape.x + space;
+                    int y1 = hoverShape.y;
+                    int x2 = (int) hoverShape.x + (int) hoverShape.shape.getBounds().getWidth() - space;
+                    int y2 = (int) hoverShape.y;
+                    gr.drawLine(x1, y1 , x2, y2);
+                }
+            } else {
                 gr.setColor(COLOR_HOVER_DRAW);
-            gr.draw(hoverShape.shape);
-            gr.translate(- hoverShape.x, - hoverShape.y);
+                gr.draw(hoverShape.shape);
+                gr.translate(- hoverShape.x, - hoverShape.y);
+            }
         }
         
         gr.setStroke(previousStroke);
@@ -344,7 +371,7 @@ public class TopPanel extends JPanel {
             repaint();
     }
     
-     private Position[] updatePosition (final Point point) {
+    private Position[] updatePosition(final Point point) {
         //lastHoverPoint = point != null ? point : null;
         final DesignDocument document = devicePanel.getController().getDocument();
         if (document != null)
@@ -534,7 +561,7 @@ public class TopPanel extends JPanel {
             ScreenDisplayDataFlavorSupport.HORIZONTAL_POSITION_DATA_FLAVOR,
             ScreenDisplayDataFlavorSupport.VERTICAL_POSITION_DATA_FLAVOR
         });
-
+        
         private WeakReference<DesignComponent> component;
         
         public ScreenDisplaylTransferable(DesignComponent component) {

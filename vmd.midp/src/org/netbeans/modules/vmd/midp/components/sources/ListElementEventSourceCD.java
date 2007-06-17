@@ -50,6 +50,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import org.netbeans.modules.vmd.midp.components.resources.ImageFileAcceptPresenter;
+import org.netbeans.modules.vmd.midp.general.MoveArrayAcceptPresenter;
 
 /**
  * @author David Kaspar
@@ -111,6 +112,7 @@ public final class ListElementEventSourceCD extends ComponentDescriptor {
             // inspector
             InspectorPositionPresenter.create(new ComponentsCategoryPC(MidpInspectorSupport.TYPEID_ELEMENTS)),
             // accept
+            new MoveArrayAcceptPresenter(ListCD.PROP_ELEMENTS, ListElementEventSourceCD.TYPEID),
             new ImageFileAcceptPresenter(ImageCD.PROP_IMAGE, ImageCD.TYPEID, "jpg", "png", "gif"),
             MidpAcceptTrensferableKindPresenter.createFontAcceptPresenter(),
             MidpAcceptTrensferableKindPresenter.createImageAcceptPresenter(),

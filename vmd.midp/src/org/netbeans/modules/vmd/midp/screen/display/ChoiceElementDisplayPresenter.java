@@ -36,9 +36,17 @@ import org.openide.util.Utilities;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import org.netbeans.modules.vmd.api.model.common.AcceptSuggestion;
+import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayDataFlavorSupport;
+import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayDataFlavorSupport.Position;
+import org.netbeans.modules.vmd.midp.general.MoveArrayAcceptSuggestion;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -143,4 +151,30 @@ public class ChoiceElementDisplayPresenter extends ScreenDisplayPresenter {
                 );
     }
 
+    @Override
+    public boolean isDraggable() {
+        return true;
+    }
+    
+    @Override
+    public AcceptSuggestion createSuggestion(Transferable transferable) {
+        if (!(transferable.isDataFlavorSupported(ScreenDisplayDataFlavorSupport.HORIZONTAL_POSITION_DATA_FLAVOR)))
+            return null;
+        if (!(transferable.isDataFlavorSupported(ScreenDisplayDataFlavorSupport.VERTICAL_POSITION_DATA_FLAVOR)))
+            return null;
+        
+        Position horizontalPosition = null;
+        Position verticalPosition = null;
+        
+        try {
+            horizontalPosition = (Position) transferable.getTransferData(ScreenDisplayDataFlavorSupport.HORIZONTAL_POSITION_DATA_FLAVOR);
+            verticalPosition = (Position) transferable.getTransferData(ScreenDisplayDataFlavorSupport.VERTICAL_POSITION_DATA_FLAVOR);
+        } catch (UnsupportedFlavorException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return new MoveArrayAcceptSuggestion(horizontalPosition, verticalPosition);
+    }
+    
 }

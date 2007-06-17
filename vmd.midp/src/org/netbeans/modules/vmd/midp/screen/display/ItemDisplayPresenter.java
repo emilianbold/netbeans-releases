@@ -19,6 +19,7 @@
  */
 package org.netbeans.modules.vmd.midp.screen.display;
 
+import org.netbeans.modules.vmd.midp.general.MoveArrayAcceptSuggestion;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.common.AcceptSuggestion;
 import org.netbeans.modules.vmd.api.model.presenters.actions.ActionsSupport;
@@ -153,7 +154,7 @@ public class ItemDisplayPresenter extends ScreenDisplayPresenter {
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
-        return new ItemAcceptSuggestion(horizontalPosition, verticalPosition);
+        return new MoveArrayAcceptSuggestion(horizontalPosition, verticalPosition);
     }
     
 }

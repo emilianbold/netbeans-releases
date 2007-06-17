@@ -54,7 +54,7 @@ import org.netbeans.modules.vmd.midp.screen.display.ItemDisplayPresenter;
 
 import java.util.*;
 import org.netbeans.modules.vmd.api.inspector.InspectorFolderComponentPresenter;
-import org.netbeans.modules.vmd.midp.screen.ItemMoveArrayAcceptPresenter;
+import org.netbeans.modules.vmd.midp.general.MoveArrayAcceptPresenter;
 
 
 /**
@@ -175,7 +175,7 @@ public class ItemCD extends ComponentDescriptor {
                 MidpInspectorSupport.createComponentCommandsCategory(createOrderingArrayController(), CommandCD.TYPEID),
                 // accept
                 new AcceptItemCommandPresenter (),
-                new ItemMoveArrayAcceptPresenter(),
+                new MoveArrayAcceptPresenter(FormCD.PROP_ITEMS, ItemCD.TYPEID),
                 // action
                 EditDependencyPresenter.createEditablePresenter(),
                 // code
@@ -203,6 +203,7 @@ public class ItemCD extends ComponentDescriptor {
                 // screen
                 new ItemDisplayPresenter (),
                 new DisplayableResourceCategoriesPresenter()
+        
         );
     }
     
