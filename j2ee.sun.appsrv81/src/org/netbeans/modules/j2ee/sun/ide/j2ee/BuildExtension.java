@@ -58,6 +58,14 @@ public class BuildExtension {
         }
     }
     
+    static void removeTemplate(Project proj) throws IOException {
+        FileObject projDir = proj.getProjectDirectory();
+        FileObject jnlpBuildFile = projDir.getFileObject("nbproject/extendArchiveGF.xml"); // NOI18N
+        if (jnlpBuildFile != null) {
+            jnlpBuildFile.delete();
+        }
+    }
+
     static void extendBuildXml(Project proj, String target) throws IOException {
         FileObject projDir = proj.getProjectDirectory();
         final FileObject buildXmlFO = projDir.getFileObject("build.xml"); // NOI18N
@@ -66,9 +74,8 @@ public class BuildExtension {
             return;
         }
         File buildXmlFile = FileUtil.toFile(buildXmlFO);
-        Document xmlDoc = null;
         try {
-            xmlDoc = XMLUtil.parse(new InputSource(buildXmlFile.toURI().toString()), false, true, null, null);
+            XMLUtil.parse(new InputSource(buildXmlFile.toURI().toString()), false, true, null, null);
         } catch (SAXException ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -94,9 +101,8 @@ public class BuildExtension {
             return;
         }
         File buildXmlFile = FileUtil.toFile(buildXmlFO);
-        Document xmlDoc = null;
         try {
-            xmlDoc = XMLUtil.parse(new InputSource(buildXmlFile.toURI().toString()), false, true, null, null);
+            XMLUtil.parse(new InputSource(buildXmlFile.toURI().toString()), false, true, null, null);
         } catch (SAXException ex) {
             Exceptions.printStackTrace(ex);
         }
