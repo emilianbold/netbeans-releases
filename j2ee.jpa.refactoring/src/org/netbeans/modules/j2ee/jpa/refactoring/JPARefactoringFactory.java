@@ -49,10 +49,11 @@ public class JPARefactoringFactory implements RefactoringPluginFactory{
     public RefactoringPlugin createInstance(AbstractRefactoring refactoring) {
         
         FileObject targetFile = refactoring.getRefactoringSource().lookup(FileObject.class);
-        NonRecursiveFolder folder = refactoring.getRefactoringSource().lookup(NonRecursiveFolder.class);
+        NonRecursiveFolder pkg = refactoring.getRefactoringSource().lookup(NonRecursiveFolder.class);
         TreePathHandle handle = refactoring.getRefactoringSource().lookup(TreePathHandle.class);
-                
-        boolean javaPackage = folder != null && RefactoringUtil.isOnSourceClasspath(folder.getFolder());
+        
+        boolean folder = targetFile != null && targetFile.isFolder();
+        boolean javaPackage = pkg != null && RefactoringUtil.isOnSourceClasspath(pkg.getFolder());
         boolean javaFile = targetFile != null && RefactoringUtil.isJavaFile(targetFile);
         boolean javaMember = handle != null;
         
@@ -62,7 +63,7 @@ public class JPARefactoringFactory implements RefactoringPluginFactory{
             RenameRefactoring rename = (RenameRefactoring) refactoring;
             if (javaFile){
                 refactorings.add(new PersistenceXmlRename(rename));
-            } else if (javaPackage){
+            } else if (javaPackage || folder){
                 refactorings.add(new PersistenceXmlPackageRename(rename));
             } else if (javaMember){
                 refactorings.add(new EntityRename(rename));
