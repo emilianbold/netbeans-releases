@@ -22,6 +22,7 @@ package org.netbeans.lib.editor.codetemplates.api;
 import java.util.List;
 import javax.swing.text.JTextComponent;
 import org.netbeans.lib.editor.codetemplates.CodeTemplateManagerOperation;
+import org.netbeans.lib.editor.codetemplates.ParametrizedTextParser;
 
 /**
  * Code template is represented by a parametrized text
@@ -46,6 +47,8 @@ public final class CodeTemplate {
     private final String parametrizedText;
     
     private final List<String> contexts;
+    
+    private String singleLineText = null;
     
     CodeTemplate(CodeTemplateManagerOperation managerOperation,
     String abbreviation, String description, String parametrizedText, List<String> contexts) {
@@ -120,6 +123,21 @@ public final class CodeTemplate {
         return managerOperation;
     }
 
+    /* package */ String getSingleLineText() {
+        if (singleLineText == null) {
+            String singleLine;
+            int nlInd = parametrizedText.indexOf('\n'); //NOI18N
+            if (nlInd != -1) {
+                singleLine = parametrizedText.substring(0, nlInd) + "..."; // NOI18N
+            } else {
+                singleLine = parametrizedText;
+            }
+            
+            singleLineText = ParametrizedTextParser.parseToHtml(new StringBuffer(), singleLine).toString();
+        }
+        return singleLineText;
+    }
+    
     @Override
     public String toString() {
         return "abbrev='" + getAbbreviation() + "', parametrizedText='" + getParametrizedText() + "'"; // NOI18N

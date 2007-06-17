@@ -144,7 +144,9 @@ public final class CodeTemplateManager {
         ) {
             return new CodeTemplate(managerOperation, abbreviation, description, parametrizedText, contexts);
         }
-        
-    }
 
+        public String getSingleLineText(CodeTemplate codeTemplate) {
+            return codeTemplate.getSingleLineText();
+        }
+    } // End of ApiAccessor class
 }

@@ -19,8 +19,6 @@
 
 package org.netbeans.lib.editor.codetemplates;
 
-import javax.swing.text.JTextComponent;
-import org.netbeans.api.editor.settings.CodeTemplateDescription;
 import org.netbeans.lib.editor.codetemplates.spi.CodeTemplateInsertRequest;
 import org.netbeans.lib.editor.codetemplates.spi.CodeTemplateParameter;
 
@@ -37,10 +35,12 @@ public abstract class CodeTemplateSpiPackageAccessor {
     private static CodeTemplateSpiPackageAccessor INSTANCE;
     
     public static CodeTemplateSpiPackageAccessor get() {
-        try {
-            Class clazz = Class.forName(CodeTemplateInsertRequest.class.getName());
-        } catch (ClassNotFoundException e) {
-            // ignore
+        if (INSTANCE == null) {
+            try {
+                Class clazz = Class.forName(CodeTemplateInsertRequest.class.getName());
+            } catch (ClassNotFoundException e) {
+                // ignore
+            }
         }
         
         assert INSTANCE != null : "There is no SPI package accessor available!"; //NOI18N

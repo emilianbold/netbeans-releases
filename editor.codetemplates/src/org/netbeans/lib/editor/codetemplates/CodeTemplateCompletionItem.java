@@ -51,71 +51,19 @@ public final class CodeTemplateCompletionItem implements CompletionItem {
     
     private final CodeTemplate codeTemplate;
     
-    private String leftText;
     private String rightText;
-    
-    public static String toHtmlText(String text) {
-        StringBuffer htmlText = null;
-        for (int i = 0; i < text.length(); i++) {
-            String rep; // replacement string
-            char ch = text.charAt(i);
-            switch (ch) {
-                case '<':
-                    rep = "&lt;"; // NOI18N
-                    break;
-                case '>':
-                    rep = "&gt;"; // NOI18N
-                    break;
-                case '\n':
-                    rep = "<br>"; // NOI18N
-                    break;
-                default:
-                    rep = null;
-                    break;
-            }
-
-            if (rep != null) {
-                if (htmlText == null) {
-                    // Expect 20% of text to be html tags text
-                    htmlText = new StringBuffer(120 * text.length() / 100);
-                    if (i > 0) {
-                        htmlText.append(text.substring(0, i));
-                    }
-                }
-                htmlText.append(rep);
-
-            } else { // no replacement
-                if (htmlText != null) {
-                    htmlText.append(ch);
-                }
-            }
-        }
-        return (htmlText != null) ? htmlText.toString() : text;
-    }
     
     public CodeTemplateCompletionItem(CodeTemplate codeTemplate) {
         this.codeTemplate = codeTemplate;
     }
     
     private String getLeftText() {
-        if (leftText == null) {
-            String parametrizedText = codeTemplate.getParametrizedText();
-            String singleLine;
-            int nlInd = parametrizedText.indexOf('\n'); //NOI18N
-            if (nlInd != -1) {
-                singleLine = parametrizedText.substring(0, nlInd) + "..."; // NOI18N
-            } else {
-                singleLine = parametrizedText;
-            }
-            
-            leftText = parseToHtml(new StringBuffer(), singleLine).toString();
-        }
-        return leftText;
+        return CodeTemplateApiPackageAccessor.get().getSingleLineText(codeTemplate);
     }
     
     private String getRightText() {
         if (rightText == null) {
-            rightText = toHtmlText(codeTemplate.getAbbreviation());
+            rightText = ParametrizedTextParser.toHtmlText(codeTemplate.getAbbreviation());
         }
         return rightText;
     }
@@ -191,7 +139,7 @@ public final class CodeTemplateCompletionItem implements CompletionItem {
     }        
     
     public CharSequence getSortText() {
-        return "";
+        return ""; //NOI18N
     }
 
     public CharSequence getInsertPrefix() {
@@ -203,14 +151,6 @@ public final class CodeTemplateCompletionItem implements CompletionItem {
         return insertPrefix;
     }
 
-    private static StringBuffer parseToHtml(StringBuffer sb, String parametrizedText) {
-        // Parametrized text - parsed; parameters in bold
-        ParametrizedTextParser parser = new ParametrizedTextParser(null, parametrizedText);
-        parser.parse();
-        parser.appendHtmlText(sb);
-        return sb;
-    }
-    
     private static final class DocQuery extends AsyncCompletionQuery {
         
         private CodeTemplate codeTemplate;
@@ -222,8 +162,8 @@ public final class CodeTemplateCompletionItem implements CompletionItem {
         protected void query(CompletionResultSet resultSet, Document doc, int caretOffset) {
             StringBuffer sb = new StringBuffer(); // NOI18N
 
-            sb.append("<html><pre>");
-            parseToHtml(sb, codeTemplate.getParametrizedText());
+            sb.append("<html><pre>"); //NOI18N
+            ParametrizedTextParser.parseToHtml(sb, codeTemplate.getParametrizedText());
             sb.append("</pre>"); // NOI18N
 
             String desc = codeTemplate.getDescription();
@@ -236,7 +176,7 @@ public final class CodeTemplateCompletionItem implements CompletionItem {
             sb.append("<p>"); //NOI18N
             sb.append(NbBundle.getMessage(CodeTemplateCompletionItem.class, 
                 "DOC_ITEM_Abbreviation", //NOI18N
-                toHtmlText(codeTemplate.getAbbreviation()), 
+                ParametrizedTextParser.toHtmlText(codeTemplate.getAbbreviation()), 
                 operation.getExpandKeyStrokeText()
             ));
             sb.append("<p>"); //NOI18N

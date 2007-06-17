@@ -36,10 +36,12 @@ public abstract class CodeTemplateApiPackageAccessor {
     private static CodeTemplateApiPackageAccessor INSTANCE;
 
     public static CodeTemplateApiPackageAccessor get() {
-        try {
-            Class clazz = Class.forName(CodeTemplateManager.class.getName());
-        } catch (ClassNotFoundException e) {
-            // ignore
+        if (INSTANCE == null) {
+            try {
+                Class clazz = Class.forName(CodeTemplateManager.class.getName());
+            } catch (ClassNotFoundException e) {
+                // ignore
+            }
         }
         
         assert INSTANCE != null : "There is no API package accessor available!"; //NOI18N
@@ -75,4 +77,5 @@ public abstract class CodeTemplateApiPackageAccessor {
         String parametrizedText,
         List<String> contexts);
 
+    public abstract String getSingleLineText(CodeTemplate codeTemplate);
 }

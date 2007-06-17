@@ -129,11 +129,54 @@ public final class ParametrizedTextParser {
         return insertTextBuffer.toString();
     }
     
-    private static String toHtmlText(String text) {
-        return CodeTemplateCompletionItem.toHtmlText(text);
+    public static StringBuffer parseToHtml(StringBuffer sb, String parametrizedText) {
+        // Parametrized text - parsed; parameters in bold
+        ParametrizedTextParser parser = new ParametrizedTextParser(null, parametrizedText);
+        parser.parse();
+        parser.appendHtmlText(sb);
+        return sb;
+    }
+
+    public static String toHtmlText(String text) {
+        StringBuffer htmlText = null;
+        for (int i = 0; i < text.length(); i++) {
+            String rep; // replacement string
+            char ch = text.charAt(i);
+            switch (ch) {
+                case '<':
+                    rep = "&lt;"; // NOI18N
+                    break;
+                case '>':
+                    rep = "&gt;"; // NOI18N
+                    break;
+                case '\n':
+                    rep = "<br>"; // NOI18N
+                    break;
+                default:
+                    rep = null;
+                    break;
+            }
+
+            if (rep != null) {
+                if (htmlText == null) {
+                    // Expect 20% of text to be html tags text
+                    htmlText = new StringBuffer(120 * text.length() / 100);
+                    if (i > 0) {
+                        htmlText.append(text.substring(0, i));
+                    }
+                }
+                htmlText.append(rep);
+
+            } else { // no replacement
+                if (htmlText != null) {
+                    htmlText.append(ch);
+                }
+            }
+        }
+        return (htmlText != null) ? htmlText.toString() : text;
     }
     
-    public void appendHtmlText(StringBuffer htmlTextBuffer) {
+    private void appendHtmlText(StringBuffer htmlTextBuffer) {
         htmlTextBuffer.append(toHtmlText(parametrizedTextFragments.get(0)));
         
         int fragIndex = 1;

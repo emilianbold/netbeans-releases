@@ -62,7 +62,7 @@ public class SurroundWithFix implements Fix {
     }
 
     public String getText() {
-        return SURROUND_WITH + template.getDescription();
+        return SURROUND_WITH + CodeTemplateApiPackageAccessor.get().getSingleLineText(template);
     }
 
     public ChangeInfo implement() {
