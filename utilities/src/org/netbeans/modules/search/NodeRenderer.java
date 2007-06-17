@@ -139,8 +139,9 @@ final class NodeRenderer extends JComponent implements TreeCellRenderer {
                     if (text == null) {
                         text = XMLUtil.toElementContent(node.getDisplayName());
                     }
-                    text = text + " <font color='!"+ getFilePathColor() +"'>"
-                           + XMLUtil.toElementContent(folderPath);
+                    text = text
+                       + " <font color='!" + getFilePathColor() + "'>"  //NOI18N
+                       + XMLUtil.toElementContent(folderPath);
                 } catch (CharConversionException ex) {
                     text = node.getDisplayName() + ' ' + '(' + folderPath + ')';
                     isHtml = false;
