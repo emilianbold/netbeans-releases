@@ -72,7 +72,16 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
     </folder>
     
-     <folder name="Windows2">
+    <folder name="org-netbeans-modules-form">
+        <!-- form class loader type registration -->
+        <folder name="classloader">
+            <folder name="system">
+                <file name="SwingAppSystemClasses.txt" url="SwingAppSystemClasses.txt" />
+            </folder>
+        </folder>
+    </folder>
+
+    <folder name="Windows2">
         <folder name="Modes">
             <folder name="output">       <!-- "output" is defined in core/ui -->
                 <file name="GlobalActionTable.wstcref" url="windowmanager/globallist/GlobalActionTable.wstcref"/>

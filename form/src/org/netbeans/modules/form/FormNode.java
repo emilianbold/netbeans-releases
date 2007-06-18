@@ -23,6 +23,7 @@ import java.awt.Component;
 import java.awt.Window;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import javax.swing.Action;
 
 import org.openide.nodes.*;
 import org.openide.cookies.*;
@@ -39,6 +40,8 @@ import org.openide.loaders.DataObject;
 public class FormNode extends AbstractNode implements FormCookie {
 
     private FormModel formModel;
+
+    protected Action[] actions;
 
     protected FormNode(Children children, FormModel formModel) {
         super(children);
@@ -78,11 +81,10 @@ public class FormNode extends AbstractNode implements FormCookie {
     }
 
     public javax.swing.Action[] getActions(boolean context) {
-        if (systemActions == null) // from AbstractNode
-            systemActions = new SystemAction[] {
-                SystemAction.get(PropertiesAction.class) 
-            };
-        return systemActions;
+        if (actions == null) {
+            actions = new Action[] { SystemAction.get(PropertiesAction.class) };
+        }
+        return actions;
     }
 
     public Component getCustomizer() {

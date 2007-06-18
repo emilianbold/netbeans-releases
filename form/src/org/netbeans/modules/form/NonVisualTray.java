@@ -50,8 +50,7 @@ public class NonVisualTray extends JPanel implements ExplorerManager.Provider {
     public NonVisualTray(FormModel formModel) {        
         this.formModel = formModel;
         manager = new ExplorerManager();        
-        FormRootNode rootNode = (FormRootNode)FormEditor.getFormEditor(formModel).getFormRootNode();
-        Node othersNode = rootNode.getOthersNode();
+        Node othersNode = FormEditor.getFormEditor(formModel).getOthersContainerNode();
         manager.setRootContext(new NonVisualNode(othersNode, new NonVisualChildren(othersNode)));
         Listener listener = new Listener();
         manager.addPropertyChangeListener(listener);

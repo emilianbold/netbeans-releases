@@ -20,8 +20,11 @@
 package org.netbeans.modules.form;
 
 import java.awt.*;
+import java.lang.reflect.Method;
 import javax.swing.*;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.beans.binding.BindingContext;
 
@@ -48,7 +51,7 @@ import org.netbeans.modules.form.layoutdesign.support.SwingLayoutBuilder;
 public class VisualReplicator { //implements VisualMapper
 
 //    Object topClonedComponent;
-    private RADVisualComponent topMetaComponent;
+    private RADComponent topMetaComponent;
 
     private Map idToClone = new HashMap();
     private Map cloneToId = new HashMap();
@@ -58,38 +61,25 @@ public class VisualReplicator { //implements VisualMapper
     private BindingContext bindingContext;
     private BindingDesignSupport bindingSupport;
 
-    private int designRestrictions;
+    private boolean designRestrictions;
 
-    // design restrictions flags
-    static final int ATTACH_FAKE_PEERS = 1;
-    static final int DISABLE_FOCUSING = 2;
-
-    // restrictions
-    private Class requiredTopClass;
-    private Class[] forbiddenClasses;
+    private ViewConverter[] converters;
 
     // ---------
 
-    public VisualReplicator() {
-    }
-
-    public VisualReplicator(Class requiredClass,
-                            Class[] forbiddenClasses,
-                            int designRestrictions,
-                            BindingDesignSupport bindingSupport)
-    {
-        setRequiredTopVisualClass(requiredClass);
-        setForbiddenTopVisualClasses(forbiddenClasses);
-        setDesignRestrictions(designRestrictions);
-//        this.layoutBuilder = layoutBuilder;
-		this.bindingSupport = bindingSupport;
+    public VisualReplicator(boolean designRestrictions,
+                            ViewConverter[] converters,
+                            BindingDesignSupport bindingSupport) {
+        this.designRestrictions = designRestrictions;
+        this.converters = converters;
+        this.bindingSupport = bindingSupport;
     }
 
     // ---------
     // mapping
 
-    public Object getClonedComponent(RADComponent metacomponent) {
-        return idToClone.get(metacomponent.getId());
+    public Object getClonedComponent(RADComponent metacomp) {
+        return metacomp != null ? idToClone.get(metacomp.getId()) : null;
     }
 
     public Object getClonedComponent(String id) {
@@ -120,7 +110,7 @@ public class VisualReplicator { //implements VisualMapper
 
             builder = new SwingLayoutBuilder(getFormModel().getLayoutModel(),
                                              contDelegate, containerId,
-                                             getDesignRestrictions() != 0);
+                                             getDesignRestrictions());
             layoutBuilders.put(containerId, builder);
         }
         return builder;
@@ -141,11 +131,11 @@ public class VisualReplicator { //implements VisualMapper
 //        return topClonedComponent;
 //    }
 
-    public RADVisualComponent getTopMetaComponent() {
+    public RADComponent getTopMetaComponent() {
         return topMetaComponent;
     }
 
-    public void setTopMetaComponent(RADVisualComponent metacomponent) {
+    public void setTopMetaComponent(RADComponent metacomponent) {
 //        topClonedComponent = null;
         topMetaComponent = metacomponent;
         idToClone.clear();
@@ -154,28 +144,8 @@ public class VisualReplicator { //implements VisualMapper
         bindingContext = null;
     }
 
-    public int getDesignRestrictions() {
+    public boolean getDesignRestrictions() {
         return designRestrictions;
-    }
-
-    public void setDesignRestrictions(int restrictions) {
-        designRestrictions = restrictions;
-    }
-
-    public Class getRequiredTopVisualClass() {
-        return requiredTopClass;
-    }
-
-    public void setRequiredTopVisualClass(Class requiredClass) {
-        requiredTopClass = requiredClass;
-    }
-
-    public Class[] getForbiddenTopVisualClasses() {
-        return forbiddenClasses;
-    }
-
-    public void setForbiddenTopVisualClasses(Class[] forbiddenClasses) {
-        this.forbiddenClasses = forbiddenClasses;
     }
 
     // --------
@@ -206,12 +176,14 @@ public class VisualReplicator { //implements VisualMapper
             Set<Map.Entry> entries = mapToClones.entrySet();
             for (Map.Entry entry : entries) {
                 String id = (String)entry.getKey();
-                RADComponent comp = formModel.getMetaComponent(id);
-                if (needsConversion(comp)) {
-                    mapToClones.put(id, comp.getBeanInstance());
+                Object comp = entry.getValue();
+                RADComponent rc = formModel.getMetaComponent(id);
+                if (rc != null && (comp == null || !rc.getBeanClass().isAssignableFrom(comp.getClass()))) {
+                    // was converted
+                    entry.setValue(rc.getBeanInstance());
                 }
             }
-            if (bindingSupport != null) { // this is an updated view (designer)
+            if (getDesignRestrictions()) { // this is an updated view (designer)
                 bindingSupport.establishUpdatedBindings(
                         metacomp, true, mapToClones, getBindingContext(), false);
                 // BindingDesignSupport will unbind and remove these bindings
@@ -538,7 +510,7 @@ public class VisualReplicator { //implements VisualMapper
         // keep double buffering turned off for JComponent in fake peer container
         // and also keep debugGraphicsOptions turned off
         if (targetComp instanceof JComponent
-            && (getDesignRestrictions() & ATTACH_FAKE_PEERS) != 0
+            && getDesignRestrictions() // & ATTACH_FAKE_PEERS) != 0
             && (("doubleBuffered".equals(property.getName()) // NOI18N
                  && hasAwtParent(metacomp))
               || "debugGraphicsOptions".equals(property.getName()))) // NOI18N
@@ -564,23 +536,9 @@ public class VisualReplicator { //implements VisualMapper
         }
         // Mnemonics support - end -
 
-        java.lang.reflect.Method writeMethod =
-            property.getPropertyDescriptor().getWriteMethod();
+        Method writeMethod = FormUtils.getPropertyWriteMethod(property, targetComp.getClass());
         if (writeMethod == null)
             return;
-
-        if (!writeMethod.getDeclaringClass().isAssignableFrom(
-                                               targetComp.getClass()))
-        {   // try to use same method of different (target) class
-            try {
-                writeMethod = targetComp.getClass().getMethod(
-                                  writeMethod.getName(), 
-                                  writeMethod.getParameterTypes());
-            }
-            catch (Exception ex) { // ignore
-                return;
-            }
-        }
 
         try {
             Object value = property.getValue();
@@ -635,10 +593,10 @@ public class VisualReplicator { //implements VisualMapper
         if (newBinding != null && bindingSupport != null) {
             RADComponent metaTarget = newBinding.getTarget();
             // Converted components may not have the right properties to bind to
-            Object target = needsConversion(metaTarget) ? metaTarget.getBeanInstance() : getClonedComponent(metaTarget);
+            Object target = isConverted(metaTarget) ? metaTarget.getBeanInstance() : getClonedComponent(metaTarget);
             if (target != null) {
                 RADComponent metaSource = newBinding.getSource();
-                Object source = needsConversion(metaSource) ? metaSource.getBeanInstance() : getClonedComponent(metaSource);
+                Object source = isConverted(metaSource) ? metaSource.getBeanInstance() : getClonedComponent(metaSource);
                 if (source == null) // source not cloned - let's use the bean instance directly
                     source = newBinding.getSource().getBeanInstance();
                 bindingSupport.addBinding(newBinding, source, target, getBindingContext(), false);
@@ -654,54 +612,43 @@ public class VisualReplicator { //implements VisualMapper
                                   java.util.List relativeProperties)
         throws Exception
     {
-        Object clone; // mapped clone instance
-        Object compClone = null; // clone of the component, might appear under 'clone'
+        Object clone = null; // cloned instance to return
+        Object compClone = null; // clone of the component itself, might be "inside"
+            // the returned clone - e.g. JPanel enclosed in JFrame by a converter
 
-        if (needsConversion(metacomp)) { // clone with conversion
-            clone = cloneComponentWithConversion(
-                    metacomp,
-                    metacomp == getTopMetaComponent() ? requiredTopClass : null,
-                    relativeProperties);
-
-            if (clone instanceof RootPaneContainer
-                && !(metacomp.getBeanInstance() instanceof RootPaneContainer))
-            {   // the cloned component was put to the content pane
-                compClone = ((RootPaneContainer)clone).getContentPane().getComponent(0);
+        for (ViewConverter converter : converters) {
+            ViewConverter.Convert convert = converter.convert(
+                        metacomp.getBeanInstance(),
+                        metacomp == getTopMetaComponent(),
+                        getDesignRestrictions());
+            if (convert != null) {
+                clone = convert.getConverted();
+                compClone = convert.getEnclosed();
+                FormUtils.copyPropertiesToBean(metacomp.getKnownBeanProperties(),
+                                               compClone != null ? compClone : clone,
+                                               relativeProperties);
+                break;
             }
         }
-        else if ("java.awt.ScrollPane".equals(metacomp.getBeanClass().getName()) // NOI18N
-            && ((getDesignRestrictions() & ATTACH_FAKE_PEERS) != 0)
-            && (System.getProperty("java.version").startsWith("1.4"))) // NOI18N
-        {   // Issue 36629 - ScrollPane attempts to place
-            // components with a lightweight peer into a Panel
-            clone = new java.awt.ScrollPane() {
-                        public void addNotify() {
-                            if (getComponentCount()>0) {
-                                Component comp = getComponent(0);
-                                remove(0);
-                                super.addNotify();
-                                FakePeerSupport.attachFakePeer(comp);
-                                add(comp);
-                            }
-                        }
-                    };
-        }
-        else { // just clone the bean
+
+        if (clone == null) { // no converter applied, clone the standard way
             clone = metacomp.cloneBeanInstance(relativeProperties);
         }
 
-        if (clone == null)
+        if (clone == null) {
             return null;
+        }
 
-        if (compClone == null)
+        if (compClone == null) {
             compClone = clone;
+        }
 
         idToClone.put(metacomp.getId(), compClone);
         cloneToId.put(compClone, metacomp.getId());
 
-        if (compClone instanceof java.beans.DesignMode)
-            ((java.beans.DesignMode)compClone).setDesignTime(
-                                                 getDesignRestrictions() != 0);
+        if (compClone instanceof java.beans.DesignMode) {
+            ((java.beans.DesignMode)compClone).setDesignTime(getDesignRestrictions());
+        }
 
         if (metacomp instanceof RADVisualContainer) {
             RADVisualContainer metacont = (RADVisualContainer) metacomp;
@@ -768,30 +715,24 @@ public class VisualReplicator { //implements VisualMapper
             }
         }
 
-        if (clone instanceof Component) {
-            int restrictions = getDesignRestrictions();
-            if ((restrictions & ATTACH_FAKE_PEERS) != 0) {
-                FakePeerSupport.attachFakePeer((Component)clone);
-                if (clone instanceof Container)
-                    FakePeerSupport.attachFakePeerRecursively((Container)clone);
+        if (clone instanceof Component && getDesignRestrictions()) {
+            FakePeerSupport.attachFakePeer((Component)clone);
+            if (clone instanceof Container)
+                FakePeerSupport.attachFakePeerRecursively((Container)clone);
 
-                if (clone instanceof JComponent) {
-                    // turn off double buffering for JComponent in fake peer container
-                    if (hasAwtParent(metacomp))
-                        setDoubleBufferedRecursively((JComponent)clone, false);
-                    // make sure debug graphics options is turned off
-                    ((JComponent)clone).setDebugGraphicsOptions(
-                                            DebugGraphics.NONE_OPTION);
-                }
+            if (clone instanceof JComponent) {
+                // turn off double buffering for JComponent in fake peer container
+                if (hasAwtParent(metacomp))
+                    setDoubleBufferedRecursively((JComponent)clone, false);
+                // make sure debug graphics options is turned off
+                ((JComponent)clone).setDebugGraphicsOptions(
+                                        DebugGraphics.NONE_OPTION);
             }
+            disableFocusing((Component)clone);
 
-            if ((restrictions & DISABLE_FOCUSING) != 0) {
-                disableFocusing((Component)clone);
-
-                // patch for JDK 1.4 - hide glass pane of JInternalFrame
-                if (clone instanceof JInternalFrame)
-                    ((JInternalFrame)clone).getGlassPane().setVisible(false);
-            }
+            // patch for JDK 1.4 - hide glass pane of JInternalFrame
+            if (clone instanceof JInternalFrame)
+                ((JInternalFrame)clone).getGlassPane().setVisible(false);
         }
 
         // Mnemonics support - start -
@@ -816,7 +757,12 @@ public class VisualReplicator { //implements VisualMapper
 
         return clone;
     }
-    
+
+    private boolean isConverted(RADComponent metacomp) {
+        Object comp = getClonedComponent(metacomp);
+        return comp != null && !metacomp.getBeanClass().isAssignableFrom(comp.getClass());
+    }
+
     private void setupContainerLayout(SwingLayoutBuilder layoutBuilder, Component[] comps, String[] compIds) {
         Throwable th = null;
         try {
@@ -830,21 +776,6 @@ public class VisualReplicator { //implements VisualMapper
             ErrorManager.getDefault().notify(th);
             getFormModel().forceUndoOfCompoundEdit();            
         }
-    }
-
-    private boolean needsConversion(RADComponent metacomp) {
-        Class beanClass = metacomp.getBeanClass();
-
-        if (forbiddenClasses != null) {
-            for (int i=0; i < forbiddenClasses.length; i++) {
-                if (forbiddenClasses[i].isAssignableFrom(beanClass))
-                    return true;
-            }
-        }
-
-        return metacomp == getTopMetaComponent()
-               && requiredTopClass != null
-               && !requiredTopClass.isAssignableFrom(beanClass);
     }
 
     private static void disableFocusing(Component comp) {
@@ -892,73 +823,6 @@ public class VisualReplicator { //implements VisualMapper
             else
                 ((Menu)menu).addSeparator();
         }
-    }
-
-    // Special non-recursive method for cloning a component with conversion
-    // to another class (e.g. JFrame -> JPanel).
-    private static Component cloneComponentWithConversion(
-                                        RADComponent metacomp,
-                                        Class requiredClass,
-                                        java.util.List relativeProperties)
-    throws Exception {
-        Class beanClass = metacomp.getBeanClass();
-
-        if (requiredClass == null) {
-            // required class not specified, do some default conversions
-            if (RootPaneContainer.class.isAssignableFrom(beanClass)
-                    || Frame.class.isAssignableFrom(beanClass))
-                requiredClass = JRootPane.class;
-            else if (Window.class.isAssignableFrom(beanClass)
-                     || Panel.class.isAssignableFrom(beanClass))
-                requiredClass = Panel.class;
-            else if (Component.class.isAssignableFrom(beanClass))
-                requiredClass = JPanel.class;
-            else if (MenuComponent.class.isAssignableFrom(beanClass))
-                requiredClass = convertMenuClassToSwing(beanClass);
-            else
-                requiredClass = Object.class;
-        }
-
-        Component component =
-            (Component) CreationFactory.createDefaultInstance(requiredClass);
-
-        if (component instanceof RootPaneContainer) {
-            if (!RootPaneContainer.class.isAssignableFrom(beanClass)
-                && !Window.class.isAssignableFrom(beanClass) // AWT
-                && !java.applet.Applet.class.isAssignableFrom(beanClass))
-            {   // conversion to RootPaneContainer is required => add the
-                // clone to the content pane
-                Component clone = (Component)
-                    metacomp.cloneBeanInstance(relativeProperties);
-                ((RootPaneContainer)component).getContentPane().add(clone);
-                return component;
-            }
-        }
-        else if (component instanceof JRootPane) {
-            // RootPaneContainer or Frame converted to JRootPane
-            Class contentClass =
-                RootPaneContainer.class.isAssignableFrom(beanClass) ?
-                    JPanel.class : Panel.class;
-            Container contentCont =
-                (Container) CreationFactory.createDefaultInstance(contentClass);
-
-            // set the content pane
-            ((JRootPane)component).setContentPane(contentCont);
-        }
-        else if (MenuItem.class.isAssignableFrom(beanClass)
-                 && JMenuItem.class.isAssignableFrom(requiredClass)) {
-            ((JMenuItem)component).setText(
-                            ((MenuItem)metacomp.getBeanInstance()).getLabel());
-            
-            ((JMenuItem)component).setFont(
-                            ((MenuItem)metacomp.getBeanInstance()).getFont());
-        }
-
-        // just try to copy all possible properties
-        FormUtils.copyPropertiesToBean(metacomp.getKnownBeanProperties(),
-                                       component,
-                                       relativeProperties);
-        return component;
     }
 
     // mapping of AWT menu component to a Swing equivalent
@@ -1034,8 +898,7 @@ public class VisualReplicator { //implements VisualMapper
                     Object targetComp =
                         getClonedComponent(property.getRADComponent());
 
-                    java.lang.reflect.Method writeMethod =
-                        property.getPropertyDescriptor().getWriteMethod();
+                    Method writeMethod = FormUtils.getPropertyWriteMethod(property, targetComp.getClass());
                     if (writeMethod != null) {
                         writeMethod.invoke(targetComp,
                                            new Object[] { propertyComp });
@@ -1062,6 +925,86 @@ public class VisualReplicator { //implements VisualMapper
             RADComponent[] subcomps = ((ComponentContainer)metacomp).getSubBeans();
             for (int i=0; i < subcomps.length; i++)
                 removeMapping(subcomps[i]);
+        }
+    }
+
+    // -----
+
+    public static class DefaultConverter implements ViewConverter {
+        public Convert convert(Object component, boolean root, boolean designRestrictions) {
+            Class compClass = component.getClass();
+            Class convClass = null;
+            if (designRestrictions) { // convert windows and AWT menus for design view
+                if (RootPaneContainer.class.isAssignableFrom(compClass)
+                        || Frame.class.isAssignableFrom(compClass)) {
+                    convClass = JRootPane.class;
+                } else if (Window.class.isAssignableFrom(compClass)
+                           || java.applet.Applet.class.isAssignableFrom(compClass)) {
+                    convClass = Panel.class;
+                } else if (MenuComponent.class.isAssignableFrom(compClass)) {
+                    convClass = convertMenuClassToSwing(compClass);
+                }
+            } else if (root) { // need to enclose in JFrame/Frame for preview
+                if (RootPaneContainer.class.isAssignableFrom(compClass)
+                        || JComponent.class.isAssignableFrom(compClass)) { // Swing
+                    if (!JFrame.class.isAssignableFrom(compClass)
+                            && !JDialog.class.isAssignableFrom(compClass)) {
+                        convClass = JFrame.class;
+                    }
+                } else if (Component.class.isAssignableFrom(compClass)) { // AWT
+                    if (!Frame.class.isAssignableFrom(compClass)
+                            || !Dialog.class.isAssignableFrom(compClass)) {
+                        convClass = Frame.class;
+                    }
+                }
+            }
+            if (convClass == null) {
+                return null; // no conversion needed
+            }
+
+            try {
+                Component converted = (Component) CreationFactory.createDefaultInstance(convClass);
+                Component enclosed = null;
+
+                if (converted instanceof JFrame) {
+                    if (JComponent.class.isAssignableFrom(compClass)) {
+                        enclosed = (Component) CreationFactory.createDefaultInstance(compClass);
+                        ((JFrame)converted).getContentPane().add(enclosed);
+                    }
+                } else if (converted instanceof JRootPane) { // RootPaneContainer or Frame converted to JRootPane
+                    Container contentCont = (Container) CreationFactory.createDefaultInstance(
+                            RootPaneContainer.class.isAssignableFrom(compClass) ? JPanel.class : Panel.class);
+                    ((JRootPane)converted).setContentPane(contentCont);
+                } else if (MenuItem.class.isAssignableFrom(compClass)) { // converted AWT menu
+                    ((JMenuItem)converted).setText(((MenuItem)component).getLabel());
+                    ((JMenuItem)converted).setFont(((MenuItem)component).getFont());
+                }
+
+                return new ConvertResult(converted, enclosed);
+            } catch (Exception ex) { // some instance creation failed, very unlikely to happen
+                Logger.getLogger(VisualReplicator.class.getName()).log(Level.INFO, null, ex);
+                return null;
+            }
+        }
+
+        public boolean canVisualize(Class componentClass) {
+            return false; // not able to visualize non-visual components
+              // AWT menus are converted, but never used as the root in the design view
+        }
+    }
+
+    private static class ConvertResult implements ViewConverter.Convert {
+        private Object converted;
+        private Object enclosed;
+        ConvertResult(Object converted, Object enclosed) {
+            this.converted = converted;
+            this.enclosed = enclosed;
+        }
+        public Object getConverted() {
+            return converted;
+        }
+        public Object getEnclosed() {
+            return enclosed;
         }
     }
 }

@@ -112,6 +112,11 @@ public class FormEditor {
         return formRootNode;
     }
 
+    public final FormNode getOthersContainerNode() {
+        FormNode othersNode = formRootNode.getOthersNode();
+        return othersNode != null ? othersNode : formRootNode;
+    }
+
     /** @return the FormModel of this form, null if the form is not loaded */
     public final FormModel getFormModel() {
         return formModel;
@@ -700,10 +705,11 @@ public class FormEditor {
 
                         if (type == FormModelEvent.COMPONENT_REMOVED) {
                             FormNode select;
-                            if (cont instanceof RADComponent)
+                            if (cont instanceof RADComponent) {
                                 select = ((RADComponent)cont).getNodeReference();
-                            else
-                                select = formRootNode.getOthersNode();
+                             } else {
+                                select = getOthersContainerNode();
+                             }
 
                             if (!(nodeToSelect instanceof RADComponentNode)) {
                                 if (nodeToSelect != formRootNode)
@@ -765,21 +771,19 @@ public class FormEditor {
     /** Updates (sub)nodes of a container (in Component Inspector) after
      * a change has been made (like component added or removed). */
     void updateNodeChildren(ComponentContainer metacont) {
-        FormNode node;
+        FormNode node = null;
 
-        if (metacont == null || metacont == formModel.getModelContainer())
-            node = formRootNode != null ?
-                       formRootNode.getOthersNode() : null;
-
-        else if (metacont instanceof RADComponent)
+        if (metacont == null || metacont == formModel.getModelContainer()) {
+            node = (formRootNode != null ? getOthersContainerNode() : null);
+        } else if (metacont instanceof RADComponent) {
             node = ((RADComponent)metacont).getNodeReference();
+        }
 
-        else node = null;
-
-        if (node != null)
+        if (node != null) {
             node.updateChildren();
+        }
     }
-    
+
     private void attachDataObjectListener() {
         if (dataObjectListener != null)
             return;

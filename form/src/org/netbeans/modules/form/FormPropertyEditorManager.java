@@ -176,8 +176,9 @@ final public class FormPropertyEditorManager extends Object
         }
 
         // 5th - experimental: add ComponentChooserEditor for Components
-        if (java.awt.Component.class.isAssignableFrom(type))
+        if (!type.equals(Object.class)) {
             editorsList.add(ComponentChooserEditor.class);
+        }
 
         // 6th - add the RADConnectionPropertyEditor for all values
         editorsList.add(RADConnectionPropertyEditor.class);

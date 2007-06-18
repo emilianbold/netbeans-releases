@@ -724,9 +724,7 @@ class JavaCodeGenerator extends CodeGenerator {
                     return JavaCodeGenerator.this.canGenerate && !component.isReadOnly();
                 }
             });
-        }
-        else if (Component.class.isAssignableFrom(component.getBeanClass()))
-        {
+        } else if (component instanceof RADVisualComponent) {
             propList.add(new PropertySupport.ReadOnly(
                 FormDesigner.PROP_DESIGNER_SIZE,
                 Dimension.class,

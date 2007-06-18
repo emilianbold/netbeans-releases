@@ -19,11 +19,18 @@
 
 package org.netbeans.modules.form;
 
+import java.awt.datatransfer.Transferable;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import javax.swing.Action;
 import org.openide.nodes.*;
 import org.openide.actions.PropertiesAction;
 import org.openide.util.actions.SystemAction;
 
 import org.netbeans.modules.form.actions.*;
+import org.openide.actions.PasteAction;
+import org.openide.actions.ReorderAction;
 
 /**
  * This class represents the root node of the form (displayed as root in
@@ -56,14 +63,25 @@ class FormRootNode extends FormNode {
         return false;
     }
 
-    public javax.swing.Action[] getActions(boolean context) {
-        if (systemActions == null) // from AbstractNode
-            systemActions = new SystemAction[] {
-                SystemAction.get(ReloadAction.class),
-                null,
-                SystemAction.get(PropertiesAction.class) 
-            };
-        return systemActions;
+    public Action[] getActions(boolean context) {
+        if (actions == null) { // from AbstractNode
+            List<Action> l = new ArrayList<Action>();
+            if (isModifiableContainer()) {
+                l.add(SystemAction.get(AddAction.class));
+                l.add(null);
+                l.add(SystemAction.get(PasteAction.class));
+                l.add(null);
+                l.add(SystemAction.get(ReorderAction.class));
+                l.add(null);
+            }
+            l.add(SystemAction.get(ReloadAction.class));
+            l.add(null);
+            for (Action a : super.getActions(context)) {
+                l.add(a);
+            }
+            actions = l.toArray(new Action[l.size()]);
+        }
+        return actions;
     }
 
     void updateName(String name) {
@@ -128,30 +146,78 @@ class FormRootNode extends FormNode {
         return allProperties;
     }
 
+    protected void createPasteTypes(Transferable t, java.util.List s) {
+        if (isModifiableContainer()) {
+            CopySupport.createPasteTypes(t, s, getFormModel(), null);
+        }
+    }
+
+    /**
+     * Returns whether "other components" can be added under this node (i.e.
+     * there is no Other Components node, the components appear directly under
+     * root node).
+     */
+    private boolean isModifiableContainer() {
+        return !getFormModel().isReadOnly() && !shouldHaveOthersNode(getFormModel());
+    }
+
+    /**
+     * Returns true if the Other Components node should be used, or false if all
+     * the "other" components should be shown directly under the root node. The
+     * latter is the case when the root component either does not exists (the
+     * form class extends Object) or if it is not a visual container. Here all
+     * the components can be presented on the same level. OTOH if the root
+     * component is a visual container (e.g. extends JPanel or JFrame), then it
+     * has its hierarchy (the node can be expanded) and it seems better to have
+     * the other components presented separately under Other Components node.
+     */
+    private static boolean shouldHaveOthersNode(FormModel formModel) {
+        return formModel.getTopRADComponent() instanceof RADVisualContainer;
+    }
+
     // ----------------
 
-    static class RootChildren extends Children.Keys {
+    /**
+     * The children nodes of the root node can have 3 variants:
+     */
+    static class RootChildren extends FormNodeChildren {
 
         static final Object OTHERS_ROOT = new Object();
-        static final Object MAIN_VISUAL_ROOT = new Object();
 
         private FormModel formModel;
         private FormOthersNode othersNode;
 
         protected RootChildren(FormModel formModel) {
             this.formModel = formModel;
-            setKeys(formModel.getTopRADComponent() != null ?
-                        new Object[] { OTHERS_ROOT, MAIN_VISUAL_ROOT } :
-                        new Object[] { OTHERS_ROOT } );
+            updateKeys();
+        }
+
+        // FormNodeChildren implementation
+        protected void updateKeys() {
+            othersNode = null;
+
+            List keys = new LinkedList();
+            boolean otherComps = shouldHaveOthersNode(formModel);
+            if (otherComps) {
+                keys.add(OTHERS_ROOT);
+            }
+            RADComponent rootComp = formModel.getTopRADComponent();
+            if (rootComp != null) {
+                keys.add(rootComp);
+            }
+            if (!otherComps) {
+                keys.addAll(formModel.getOtherComponents());
+            }
+            setKeys(keys.toArray());
         }
 
         protected Node[] createNodes(Object key) {
             Node node;
-            if (key == MAIN_VISUAL_ROOT)
-                node = new RADComponentNode(formModel.getTopRADComponent());
-            else // OTHERS_ROOT
+            if (key == OTHERS_ROOT) {
                 node = othersNode = new FormOthersNode(formModel);
-
+            } else {
+                node = new RADComponentNode((RADComponent)key);
+            }
             node.getChildren().getNodes(); // enforce subnodes creation
             return new Node[] { node };
         }

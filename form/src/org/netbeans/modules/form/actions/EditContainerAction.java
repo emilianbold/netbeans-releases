@@ -30,9 +30,6 @@ import org.netbeans.modules.form.*;
  */
 public class EditContainerAction extends NodeAction {
 
-    private static EditFormAction editFormAction = (EditFormAction)
-                       SharedClassObject.findObject(EditFormAction.class, true);
-
     private static String name;
 
     protected void performAction(Node[] activatedNodes) {
@@ -41,15 +38,12 @@ public class EditContainerAction extends NodeAction {
                                             .getCookie(RADComponentCookie.class);
             RADComponent metacomp = radCookie == null ? null :
                                       radCookie.getRADComponent();
-            if (metacomp instanceof RADVisualContainer) {
+            if (isEditableComponent(metacomp)) {
                 FormDesigner designer = FormEditor.getFormDesigner(metacomp.getFormModel());
                 if (designer != null) {
                     designer.setTopDesignComponent((RADVisualComponent)metacomp, true);
                     designer.requestActive();
                 }
-
-                editFormAction.setEnabled(
-                    metacomp.getFormModel().getTopRADComponent() != metacomp);
             }
         }
     }
@@ -64,8 +58,12 @@ public class EditContainerAction extends NodeAction {
                                             .getCookie(RADComponentCookie.class);
             RADComponent metacomp = radCookie == null ? null :
                                       radCookie.getRADComponent();
-            return metacomp instanceof RADVisualContainer
-                   && FormEditor.getFormDesigner(metacomp.getFormModel()) != null;
+            if (isEditableComponent(metacomp)) {
+                FormDesigner designer = FormEditor.getFormDesigner(metacomp.getFormModel());
+                if (designer != null && metacomp != designer.getTopDesignComponent()) {
+                    return true;
+                }
+            }
         }
         return false;
     }
@@ -79,6 +77,19 @@ public class EditContainerAction extends NodeAction {
 
     public HelpCtx getHelpCtx() {
         return new HelpCtx("gui.containers.designing"); // NOI18N
+    }
+
+    public static boolean isEditableComponent(RADComponent metacomp) {
+        if (metacomp instanceof RADVisualComponent) {
+            RADVisualComponent visComp = (RADVisualComponent) metacomp;
+            RADVisualContainer parent = visComp.getParentContainer();
+            // can design visual container, or a visual component with no parent
+            // can't design menus except the entire menu bar
+            return parent == null
+                   || (visComp instanceof RADVisualContainer
+                       && (!visComp.isMenuComponent() || parent.getContainerMenu() == visComp));
+        }
+        return false;
     }
 
 }

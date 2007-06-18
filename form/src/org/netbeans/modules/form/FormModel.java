@@ -98,7 +98,7 @@ public class FormModel
             throw new IllegalStateException("Form type already initialized."); // NOI18N
 
         RADComponent topComp;
-        if (java.awt.Component.class.isAssignableFrom(formClass)) {
+        if (FormUtils.isVisualizableClass(formClass)) {
             if (FormUtils.isContainer(formClass)) {
                 topComp = new RADVisualFormContainer();
             }
@@ -231,17 +231,20 @@ public class FormModel
     public List<RADComponent> getNonVisualComponents() {
         List<RADComponent> list = new ArrayList<RADComponent>(otherComponents.size());
         for (RADComponent metacomp : otherComponents) {
-            if (!java.awt.Component.class.isAssignableFrom(metacomp.getBeanClass()))
+            if (!(metacomp instanceof RADVisualComponent)) {
                 list.add(metacomp);
+            }
         }
         return list;
     }
 
     public List<RADComponent> getVisualComponents() {
         List<RADComponent> list = new ArrayList(idToComponents.size());
-        for (RADComponent metacomp : idToComponents.values()) {
-            if (java.awt.Component.class.isAssignableFrom(metacomp.getBeanClass()))
+        for (Map.Entry<String,RADComponent> e : idToComponents.entrySet()) {
+            RADComponent metacomp = e.getValue();
+            if (metacomp instanceof RADVisualComponent) {
                 list.add(metacomp);
+            }
         }
         return list;
     }

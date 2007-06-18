@@ -206,10 +206,10 @@ public class NewAppWizardIterator implements WizardDescriptor.InstantiatingItera
         // remember project location in ProjectChooser
         ProjectChooser.setProjectsFolder(projectDirectory.getParentFile());
 
-        FileObject mainFrameFO = AppProjectGenerator.getGeneratedFile(
-                projectFolderFO, "src/applicationpackage/ShellFrame.java", // NOI18N
+        FileObject mainFormFO = AppProjectGenerator.getGeneratedFile(
+                projectFolderFO, "src/applicationpackage/ShellView.java", // NOI18N
                 templateNames, substNames);
-        wizard.putProperty("mainFrame", mainFrameFO); // NOI18N
+        wizard.putProperty("mainForm", mainFormFO); // NOI18N
 
         Set resultSet = new HashSet();
         Set subResults = null;
@@ -222,8 +222,8 @@ public class NewAppWizardIterator implements WizardDescriptor.InstantiatingItera
         resultSet.add(projectFolderFO);
         if (subResults != null)
             resultSet.addAll(subResults);
-        if ((appShellIterator == null) && (mainFrameFO != null)) {
-            resultSet.add(mainFrameFO);
+        if ((appShellIterator == null) && (mainFormFO != null)) {
+            resultSet.add(mainFormFO);
         }
 
         return resultSet;

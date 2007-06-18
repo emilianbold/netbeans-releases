@@ -53,7 +53,6 @@ public class RADComponentNode extends FormNode
             FormUtils.getBundleString("FMT_UnnamedComponentNodeName")); // NOI18N
     
     private RADComponent component;
-    private Action[] actions;
     private boolean highlightDisplayName;
     
     public RADComponentNode(RADComponent component) {
@@ -127,8 +126,9 @@ public class RADComponentNode extends FormNode
     }
     
     public Action getPreferredAction() {
-        if (component instanceof RADVisualContainer)
+        if (EditContainerAction.isEditableComponent(component)) {
             return SystemAction.get(EditContainerAction.class);
+        }
         //        if (component.getEventHandlers().getDefaultEvent() != null)
         return SystemAction.get(DefaultRADAction.class);
         
@@ -136,7 +136,7 @@ public class RADComponentNode extends FormNode
     }
     
     public Action[] getActions(boolean context) {
-        if (actions == null) { // from AbstractNode
+        if (actions == null) {
             ArrayList actions = new ArrayList(20);
             RADComponent topComp = component.getFormModel().getTopRADComponent();
             
@@ -156,6 +156,18 @@ public class RADComponentNode extends FormNode
                 
                 actions.add(SystemAction.get(CopyAction.class));
             } else {
+                if (InPlaceEditLayer.supportsEditingFor(component.getBeanClass(), false)) {
+                    actions.add(SystemAction.get(InPlaceEditAction.class));
+                }
+                if (component != topComp) {
+                    actions.add(SystemAction.get(ChangeVariableNameAction.class));
+                } else {
+                    actions.add(SystemAction.get(TestAction.class));
+                }
+                actions.add(SystemAction.get(BindAction.class));
+                actions.add(SystemAction.get(EventsAction.class));
+                actions.add(null);
+                
                 java.util.List actionProps = component.getActionProperties();
                 Iterator iter = actionProps.iterator();
                 while (iter.hasNext()) {
@@ -163,52 +175,14 @@ public class RADComponentNode extends FormNode
                     Action action = new PropertyAction(prop);
                     actions.add(action);
                 }
-                if (InPlaceEditLayer.supportsEditingFor(component.getBeanClass(), false)) {
-                    actions.add(SystemAction.get(InPlaceEditAction.class));
-                }
-                if (component != topComp) {
-                    actions.add(SystemAction.get(ChangeVariableNameAction.class));
-                }
-                if (component == topComp) {
-                    actions.add(SystemAction.get(TestAction.class));
-                }
-                actions.add(SystemAction.get(BindAction.class));
-                actions.add(SystemAction.get(EventsAction.class));
-                actions.add(null);
-                
-                actions.add(SystemAction.get(AlignAction.class));
-                actions.add(SystemAction.get(SetAnchoringAction.class));
-                actions.add(SystemAction.get(SetResizabilityAction.class));
-                actions.add(SystemAction.get(ChooseSameSizeAction.class));
-                actions.add(SystemAction.get(DefaultSizeAction.class));
-                actions.add(SystemAction.get(CustomizeEmptySpaceAction.class));
-                actions.add(SystemAction.get(EncloseAction.class));
-                actions.add(null);
-                
-                if(MenuEditLayer.isMenuRelatedRADComponent(component)) {
-                    if(MenuEditLayer.isMenuRelatedContainer(component)) {
-                        actions.add(SystemAction.get(AddSubItemAction.class));
-                    }
-                }
-                
-                if (component instanceof RADVisualContainer) {
-                    if (!((RADVisualContainer)component).hasDedicatedLayoutSupport()) {
-                        actions.add(SystemAction.get(EditContainerAction.class));
-                        if (topComp != null && component != topComp) {
-                            actions.add(SystemAction.get(EditFormAction.class));
-                        }
-                        actions.add(SystemAction.get(SelectLayoutAction.class));
-                        actions.add(SystemAction.get(CustomizeLayoutAction.class));
-                    }
-                    // only use the AddAction for non-menu containers
-                    if(!MenuEditLayer.isMenuRelatedContainer(component)) {
-                        actions.add(SystemAction.get(AddAction.class));
-                    }
-                    
-                }
-                if (getNewTypes().length != 0) {
-                    actions.add(null);
-                    actions.add(SystemAction.get(NewAction.class));
+                addSeparator(actions);
+
+                if (component instanceof ComponentContainer) {
+                    addContainerActions(actions);
+                    addLayoutActions(actions);
+                } else {
+                    addLayoutActions(actions);
+                    addContainerActions(actions);
                 }
                 if (component != topComp) {
                     actions.add(SystemAction.get(MoveUpAction.class));
@@ -217,7 +191,7 @@ public class RADComponentNode extends FormNode
                 if (component instanceof ComponentContainer) {
                     actions.add(SystemAction.get(ReorderAction.class));
                 }
-                actions.add(null);
+                addSeparator(actions);
                 
                 if (component != topComp) {
                     actions.add(SystemAction.get(CutAction.class));
@@ -246,7 +220,53 @@ public class RADComponentNode extends FormNode
         
         return actions;
     }
-    
+
+    private void addLayoutActions(List actions) {
+        if (component.getParentComponent() instanceof RADVisualContainer) {
+            actions.add(SystemAction.get(AlignAction.class));
+            actions.add(SystemAction.get(SetAnchoringAction.class));
+            actions.add(SystemAction.get(SetResizabilityAction.class));
+            actions.add(SystemAction.get(ChooseSameSizeAction.class));
+            actions.add(SystemAction.get(DefaultSizeAction.class));
+            actions.add(SystemAction.get(CustomizeEmptySpaceAction.class));
+            actions.add(SystemAction.get(EncloseAction.class));
+            actions.add(null);
+        }
+    }
+
+    private void addContainerActions(List actions) {
+        if (component instanceof RADVisualContainer) {
+            if (!((RADVisualContainer)component).hasDedicatedLayoutSupport()) {
+                actions.add(SystemAction.get(SelectLayoutAction.class));
+                actions.add(SystemAction.get(CustomizeLayoutAction.class));
+            }
+            if(MenuEditLayer.isMenuRelatedContainer(component)) {
+                actions.add(SystemAction.get(AddSubItemAction.class));
+            } else { // only use the AddAction for non-menu containers
+                actions.add(SystemAction.get(AddAction.class));
+            }
+        }
+        if (getNewTypes().length != 0) {
+            actions.add(null);
+            actions.add(SystemAction.get(NewAction.class));
+        }
+        if (EditContainerAction.isEditableComponent(component)) {
+            actions.add(SystemAction.get(EditContainerAction.class));
+        }
+        if (DesignParentAction.isParentEditableComponent(component)) {
+            actions.add(SystemAction.get(DesignParentAction.class));
+        }
+
+        addSeparator(actions);
+    }
+
+    private static void addSeparator(List actions) {
+        int n = actions.size();
+        if (n > 0 && actions.get(n-1) != null) {
+            actions.add(null);
+        }
+    }
+
     /** Set the system name. Fires a property change event.
      * Also may change the display name according to {@link #displayFormat}.
      *

@@ -21,7 +21,9 @@ package org.netbeans.modules.form.actions;
 
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Vector;
 import javax.swing.*;
 
@@ -42,25 +44,29 @@ import org.openide.util.SharedClassObject;
 
 public class DesignParentAction extends NodeAction {
     
-    private static EditFormAction editFormAction = (EditFormAction)
-            SharedClassObject.findObject(EditFormAction.class, true);
-    
     protected boolean enable(Node[] nodes) {
         boolean ret = false;
-        if(nodes!=null&&nodes.length==1&&nodes[0] instanceof RADComponentNode){
-            RADComponentNode ln = (RADComponentNode)nodes[0];
-            RADComponent lc = ln.getRADComponent();
-            if(lc.getParentComponent()!=null){
-                ret = true;
-            }else{
-                ret = false;
-            }
-        }else{
-            ret = false;
+        if (nodes != null && nodes.length == 1){
+            RADComponentCookie radCookie = nodes[0].getCookie(RADComponentCookie.class);
+            RADComponent comp = (radCookie != null) ? radCookie.getRADComponent() : null;
+            ret = (comp != null) && isParentEditableComponent(comp);
         }
         return ret;
     }
-    
+
+    public static boolean isParentEditableComponent(RADComponent comp) {
+        RADComponent parent = comp.getParentComponent();
+        if (EditContainerAction.isEditableComponent(parent)) {
+            return true;
+        }
+        // if not having parent, consider the top component
+        if (parent == null) {
+            RADComponent topComp = comp.getFormModel().getTopRADComponent();
+            return comp != topComp && EditContainerAction.isEditableComponent(topComp);
+        }
+        return false;
+    }
+
     public String getName() {
         return NbBundle.getMessage(DesignParentAction.class, "ACT_DesignParentAction"); // NOI18N
     }
@@ -91,55 +97,56 @@ public class DesignParentAction extends NodeAction {
     
     private void createSubmenu(JMenu menu) {
         Node[] nodes = getActivatedNodes();
-        Vector<DesignParentMenuItem> pmis = new Vector<DesignParentMenuItem>(10);
-        List components = FormUtils.getSelectedLayoutComponents(nodes);
-        if ((components == null) || (components.size() > 1)) {
-            return;
-        }
-        RADComponent lc = (RADComponent)components.get(0);
-        RADComponent pc = lc.getParentComponent();
-        boolean isp = false;
-        while(pc!=null){
-            DesignParentMenuItem mi = new DesignParentMenuItem(pc);
-            isp = pc.getParentComponent()==null||pc==pc.getParentComponent();
-            if(isp){
-                mi.setText(NbBundle.getMessage(DesignParentAction.class, "ACT_DesignParentTopMenuItemName")); // NOI18N
+        if (nodes != null && nodes.length == 1) {
+            RADComponentCookie radCookie = nodes[0].getCookie(RADComponentCookie.class);
+            RADComponent comp = (radCookie != null) ? radCookie.getRADComponent() : null;
+            if (comp != null) {
+                List<JMenuItem> list = new ArrayList<JMenuItem>();
+                RADComponent topComp = comp.getFormModel().getTopRADComponent();
+                boolean topCompIncluded = false;
+                RADComponent parent = comp.getParentComponent();
+                while (parent != null) {
+                    list.add(new DesignParentMenuItem(parent, parent == topComp, getMenuItemListener()));
+                    if (parent == topComp) {
+                        topCompIncluded = true;
+                    }
+                    parent = parent.getParentComponent();
+                }
+                if (!topCompIncluded && topComp != null) {
+                    list.add(new DesignParentMenuItem(topComp, true, getMenuItemListener()));
+                }
+                for (ListIterator<JMenuItem> it=list.listIterator(list.size()); it.hasPrevious(); ) {
+                    menu.add(it.previous());
+                }
             }
-            pmis.add(mi);
-            mi.addActionListener(getMenuItemListener());
-            pc = pc.getParentComponent();
-            if(isp){
-                pc=null;
-            }
-        }
-        for(int i = pmis.size()-1; i>=0; i--){
-            menu.add(pmis.elementAt(i));
         }
     }
-    
     
     private ActionListener getMenuItemListener() {
         if (menuItemListener == null)
             menuItemListener = new DesignParentMenuItemListener();
         return menuItemListener;
     }
-    
-    class DesignParentMenuItem extends JMenuItem {
+
+    private static FormDesigner getDesigner(RADComponent comp) {
+        return FormEditor.getFormDesigner(comp.getFormModel());
+    }
+
+    private static class DesignParentMenuItem extends JMenuItem {
         private RADComponent radc = null;
-        public DesignParentMenuItem(RADComponent c){
+        public DesignParentMenuItem(RADComponent c, boolean top, ActionListener l){
             radc = c;
-            if(c!=null){
-                this.setText(c.getName());
-            }
-        }
-        public void setRADComponent(RADComponent radc){
-            this.radc = radc;
+            setText(top ? NbBundle.getMessage(DesignParentAction.class, "ACT_DesignParentTopMenuItemName") // NOI18N
+                          : c.getName());
+            addActionListener(l);
+            FormDesigner designer = getDesigner(c);
+            setEnabled(designer != null && c != designer.getTopDesignComponent());
         }
         public RADComponent getRADComponent(){
             return this.radc;
         }
     }
-    
+
     private static class DesignParentMenuItemListener implements ActionListener {
         public void actionPerformed(ActionEvent evt) {
             
@@ -150,21 +157,14 @@ public class DesignParentAction extends NodeAction {
             
             DesignParentMenuItem mi = (DesignParentMenuItem)source;
             
-            RADComponent lc = (RADComponent)mi.getRADComponent();
-            FormModel fm = lc.getFormModel();
-            FormDesigner fd = FormEditor.getFormDesigner(fm);
-            if (lc instanceof RADVisualContainer) {
-                FormDesigner designer = FormEditor.getFormDesigner(lc.getFormModel());
-                if (designer != null) {
-                    designer.setTopDesignComponent((RADVisualComponent)lc, true);
-                    designer.requestActive();
-                }
-                
-                editFormAction.setEnabled(
-                        lc.getFormModel().getTopRADComponent() != lc);
+            RADComponent lc = mi.getRADComponent();
+            FormDesigner designer = getDesigner(lc);
+            if (designer != null) {
+                designer.setTopDesignComponent((RADVisualComponent)lc, true);
+                designer.requestActive();
             }
         }
     }
-    
+
     private ActionListener menuItemListener;
 }

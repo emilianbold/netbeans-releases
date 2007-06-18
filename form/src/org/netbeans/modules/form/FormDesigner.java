@@ -263,12 +263,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
             formModelListener = new FormListener();
         formModel.addFormModelListener(formModelListener);
 
-        replicator = new VisualReplicator(
-            null,
-            new Class[] { Window.class,
-                          java.applet.Applet.class,
-                          MenuComponent.class },
-            VisualReplicator.ATTACH_FAKE_PEERS | VisualReplicator.DISABLE_FOCUSING,
+        replicator = new VisualReplicator(true, FormUtils.getViewConverters(), 
             FormEditor.getBindingSupport(formModel));
 
         resetTopDesignComponent(false);
@@ -294,7 +289,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
         //force the menu edit layer to be created
         getMenuEditLayer();
     }
-    
+
     void reset(FormEditor formEditor) {
         if (initialized) {
             clearSelection();
@@ -452,8 +447,8 @@ public class FormDesigner extends TopComponent implements MultiViewElement
             setSelectedComponent(topDesignComponent);
             updateWholeDesigner();
         }
-    }    
-    
+    }
+
     private void highlightTopDesignComponentName(boolean bl) {
         if(topDesignComponent!=null) {
             RADComponentNode node = topDesignComponent.getNodeReference();
@@ -464,19 +459,17 @@ public class FormDesigner extends TopComponent implements MultiViewElement
     }
     
     public void resetTopDesignComponent(boolean update) {
-        setTopDesignComponent(
-            formModel.getTopRADComponent() instanceof RADVisualComponent ?
-                    (RADVisualComponent) formModel.getTopRADComponent() : null,
-            update);
+        RADComponent top = formModel.getTopRADComponent();
+        setTopDesignComponent(top instanceof RADVisualComponent ? (RADVisualComponent)top : null,
+                              update);
     }
 
     /** Tests whether top designed container is some parent of given component
      * (whether the component is in the tree under top designed container).
      */
-    public boolean isInDesignedTree(RADComponent metacomp) {
-        return topDesignComponent != null
-               && (topDesignComponent == metacomp
-                   || topDesignComponent.isParentComponent(metacomp));
+    public boolean isInDesigner(RADVisualComponent metacomp) {
+        Object comp = replicator.getClonedComponent(metacomp);
+        return comp instanceof Component ? componentLayer.isAncestorOf((Component)comp) : false;
     }
 
     void updateWholeDesigner() {
@@ -527,8 +520,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
         componentLayer.repaint();
     }
 
-    public static Container createFormView(final RADVisualComponent metacomp,
-                                           final Class contClass,
+    public static Container createFormView(final RADComponent metacomp,
                                            final Class previewLaf)
         throws Exception
     {
@@ -540,8 +532,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
             result = (Container) FormLAF.executeWithLookAndFeel(
             new Mutex.ExceptionAction () {
                 public Object run() throws Exception {
-                    VisualReplicator r = new VisualReplicator(
-                        contClass, null, 0, null);
+                    VisualReplicator r = new VisualReplicator(false, FormUtils.getViewConverters(), null);
                     r.setTopMetaComponent(metacomp);
                     Object container = r.createClone();
                     if (container instanceof RootPaneContainer) {
@@ -601,13 +592,10 @@ public class FormDesigner extends TopComponent implements MultiViewElement
         return defaultLocale;
     }
 
-    Container getTopVisualContainer() {
-        RADVisualComponent topComp = replicator.getTopMetaComponent();
-        if (!(topComp instanceof RADVisualContainer))
-            return null;
-
-        return ((RADVisualContainer)topComp).getContainerDelegate(
-                             replicator.getClonedComponent(topComp));
+    Component getTopDesignComponentView() {
+        return topDesignComponent != null
+                ? (Component) replicator.getClonedComponent(topDesignComponent)
+                : null;
     }
 
     // NOTE: does not create a new Point instance
@@ -654,7 +642,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
         if (component == null)
             return null;
 
-        Component top = getTopVisualContainer();
+        Component top = getTopDesignComponentView();
 
         int dx = 0;
         int dy = 0;
@@ -809,10 +797,14 @@ public class FormDesigner extends TopComponent implements MultiViewElement
                 || !((RADVisualFormContainer)topDesignComponent).hasExplicitSize()))
         {   // new layout container defining designer size
             // designer size not defined explicitly - check minimum size
-            Component topComp = (Component) getComponent(topDesignComponent);
-            Component topCont = getTopVisualContainer(); // container delegate
-            if (topCont == null)
+            Component topComp = getTopDesignComponentView();
+            Component topCont = null;
+            if (topDesignComponent instanceof RADVisualContainer) {
+                topCont = ((RADVisualContainer)topDesignComponent).getContainerDelegate(topComp);
+            }
+            if (topCont == null) {
                 topCont = topComp;
+            }
             // can't rely on minimum size of the container wrap - e.g. menu bar
             // returns wrong min height
             int wDiff = topComp.getWidth() - topCont.getWidth();
@@ -961,12 +953,12 @@ public class FormDesigner extends TopComponent implements MultiViewElement
             if (!visualComp.isMenuComponent()) {
                 RADVisualContainer metacont = visualComp.getParentContainer();
                 if ((metacont != null) && JScrollPane.class.isAssignableFrom(metacont.getBeanInstance().getClass())
-                     && isInDesignedTree(metacont))
+                     && isInDesigner(metacont))
                 {   // substitute with scroll pane...
                     return metacont;
                 }
                 // otherwise just check if it is visible in the designer
-                return isInDesignedTree(visualComp) ? visualComp : null;
+                return isInDesigner(visualComp) ? visualComp : null;
             }
         }
         return null;
@@ -1099,16 +1091,18 @@ public class FormDesigner extends TopComponent implements MultiViewElement
      * when TAB (forward true) or Shift+TAB (forward false) is pressed. 
      * @return the next or previous component for selection
      */
-    RADVisualComponent getNextVisualComponent(boolean forward) {
-        RADVisualComponent currentComp = null;
+    RADComponent getNextVisualComponent(boolean forward) {
+        RADComponent currentComp = null;
         int n = selectedComponents.size();
         if (n > 0) {
             if (n > 1)
                 return null;
-            Object sel = selectedComponents.get(0);
-            if (sel instanceof RADVisualComponent)
-                currentComp = (RADVisualComponent) sel;
-            else return null;
+            RADComponent sel = (RADComponent) selectedComponents.get(0);
+            if (sel instanceof RADVisualComponent) {
+                currentComp = sel;
+            } else {
+                return null;
+            }
         }
 
         return getNextVisualComponent(currentComp, forward);
@@ -1116,32 +1110,29 @@ public class FormDesigner extends TopComponent implements MultiViewElement
 
     /** @return the next or prevoius component to component comp
      */
-    RADVisualComponent getNextVisualComponent(RADVisualComponent comp,
-                                              boolean forward)
-    {
+    RADComponent getNextVisualComponent(RADComponent comp, boolean forward) {
         if (comp == null)
             return topDesignComponent;
         if (getComponent(comp) == null)
             return null;
 
         RADVisualContainer cont;
-        RADVisualComponent[] subComps;
+        RADComponent[] subComps;
 
         if (forward) {
             // try the first sub-component
-            if (comp instanceof RADVisualContainer) {
-                subComps = ((RADVisualContainer)comp).getSubComponents();
-                if (subComps.length > 0)
-                    return subComps[0];
+            subComps = getVisualSubComponents(comp);
+            if (subComps.length > 0) {
+                return subComps[0];
             }
 
             // try the next component (or the next of the parent then)
             if (comp == topDesignComponent)
                 return topDesignComponent;
-            cont = comp.getParentContainer();
-            if (cont == null)
-                return null; // should not happen
-
+            cont = (RADVisualContainer)comp.getParentComponent();
+            if (cont == null) {
+                return null;
+            }
             int i = cont.getIndexOf(comp);
             while (i >= 0) {
                 subComps = cont.getSubComponents();
@@ -1151,7 +1142,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
                 if (cont == topDesignComponent)
                     break;
                 comp = cont; // one level up
-                cont = comp.getParentContainer();
+                cont = (RADVisualContainer)comp.getParentComponent();
                 if (cont == null)
                     return null; // should not happen
                 i = cont.getIndexOf(comp);
@@ -1162,9 +1153,10 @@ public class FormDesigner extends TopComponent implements MultiViewElement
         else { // backward
             // take the previuos component
             if (comp != topDesignComponent) {
-                cont = comp.getParentContainer();
-                if (cont == null)
-                    return null; // should not happen
+                cont = (RADVisualContainer)comp.getParentComponent();
+                if (cont == null) {
+                    return null;
+                }
                 int i = cont.getIndexOf(comp);
                 if (i >= 0) { // should be always true
                     if (i == 0) return cont; // the opposite to the 1st forward step
@@ -1177,20 +1169,25 @@ public class FormDesigner extends TopComponent implements MultiViewElement
 
             // find the last subcomponent of it
             do {
-                if (comp instanceof RADVisualContainer) {
-                    subComps = ((RADVisualContainer)comp).getSubComponents();
-                    if (subComps.length > 0) { // one level down
-                        comp = subComps[subComps.length-1];
-                        continue;
-                    }
+                subComps = getVisualSubComponents(comp);
+                if (subComps.length > 0) {
+                    comp = subComps[subComps.length-1];
+                    continue;
+                } else {
+                    break;
                 }
-                break;
             }
             while (true);
             return comp;
         }
     }
-    
+
+    private RADComponent[] getVisualSubComponents(RADComponent metacomp) {
+        return metacomp instanceof RADVisualContainer ?
+            ((RADVisualContainer)metacomp).getSubComponents() : new RADComponent[0];
+        // TBD components set as properties
+    }
+
     /**
      * Aligns selected components in the specified direction.
      *
@@ -1357,7 +1354,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
 
         if (comp.isShowing())
             return; // component is showing
-        if (!isInDesignedTree(metacomp))
+        if (!isInDesigner(metacomp))
             return; // component is not in designer
 
         Component topComp = (Component) getComponent(topDesignComponent);
@@ -2209,8 +2206,10 @@ public class FormDesigner extends TopComponent implements MultiViewElement
                         return;
                     }
                     else {
-                        replicator.removeComponent(ev.getComponent(), ev.getContainer(),
-                                                   !topDesignComponent.isParentComponent(removed));
+                        boolean removeMapping = (topDesignComponent != null)
+                                 ? topDesignComponent.isParentComponent(removed)
+                                 : true;
+                        replicator.removeComponent(ev.getComponent(), ev.getContainer(), removeMapping);
                         updateDone = true;
                     }
                     // Note: BindingDesignSupport takes care of removing bindings

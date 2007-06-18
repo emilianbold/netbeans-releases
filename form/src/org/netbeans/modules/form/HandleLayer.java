@@ -232,17 +232,18 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
 
         if (parent != null && component.isShowing()) {
             Rectangle selRect = component.getBounds();
-            RADComponent metacont = metacomp.getParentComponent();
+            RADVisualContainer metacont = metacomp.getParentComponent() instanceof RADVisualContainer
+                    ? (RADVisualContainer)metacomp.getParentComponent() : null;
             convertRectangleFromComponent(selRect, parent);
             Rectangle visible = new Rectangle(0, 0, parent.getWidth(), parent.getHeight());
             visible = convertVisibleRectangleFromComponent(visible, parent);
 
-            if (inLayout && formDesigner.isInDesignedTree(metacont)
-                && metacont instanceof RADVisualContainer
-                && ((RADVisualContainer)metacont).getLayoutSupport() == null)
+            if (inLayout
+                && metacont != null && metacont.getLayoutSupport() == null
+                && formDesigner.isInDesigner(metacont))
             {   // component in free design container - layout designer may want to paint something
-                Container topCont = formDesigner.getTopVisualContainer();
-                Point convertPoint = convertPointFromComponent(0, 0, topCont);
+                Component topComp = formDesigner.getTopDesignComponentView();
+                Point convertPoint = convertPointFromComponent(0, 0, topComp);
                 g.translate(convertPoint.x, convertPoint.y);
                 LayoutDesigner layoutDesigner = formDesigner.getLayoutDesigner();
                 Color oldColor = g.getColor();
@@ -391,7 +392,7 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
                 e.consume();
                 return;
             }
-        } else if ((keyCode == 525) // PENDING replace by KeyEvent.VK_CONTEXT_MENU on JDK 5
+        } else if ((keyCode == KeyEvent.VK_CONTEXT_MENU)
                 || ((keyCode == KeyEvent.VK_F10) && e.isShiftDown())) { // Shift F10 invokes context menu
             Point p = null;
             java.util.List selected = formDesigner.getSelectedComponents();
@@ -701,8 +702,7 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
     private void selectOtherComponentsNode() {
         FormEditor formEditor = formDesigner.getFormEditor();
         ComponentInspector ci = ComponentInspector.getInstance();
-        Node[] selectedNode = new Node[] {
-            ((FormRootNode)formEditor.getFormRootNode()).getOthersNode() };
+        Node[] selectedNode = new Node[] { formEditor.getOthersContainerNode() };
         
         try {
             ci.setSelectedNodes(selectedNode, formEditor);
@@ -837,10 +837,8 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
                         return null; // components in different containers
                 }
                 else {
-                    if (metacont == null
-                        || !formDesigner.getTopDesignComponent().isParentComponent(metacomp))
-                    {   // out of visible tree
-                        return null;
+                    if (metacont == null || !formDesigner.isInDesigner((RADVisualComponent)metacomp)) {
+                        return null; // out of visible tree
                     }
                     parent = metacont;
                     if (metacont.getLayoutSupport() == null) { // new layout
@@ -1138,18 +1136,19 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
     }
 
     private boolean selectedComponentsInSameVisibleContainer() {
-        RADComponent parent = null;
+        RADVisualContainer parent = null;
         Iterator selected = formDesigner.getSelectedComponents().iterator();
         while (selected.hasNext()) {
-            RADComponent comp = formDesigner.componentToLayoutComponent((RADComponent)selected.next());
+            RADVisualComponent comp = formDesigner.componentToLayoutComponent((RADComponent)selected.next());
             if (comp == null)
                 return false; // not visible in designer
             if (parent == null) {
-                parent = comp.getParentComponent();
-                if (!formDesigner.isInDesignedTree(parent))
+                parent = comp.getParentContainer();
+                if (!formDesigner.isInDesigner(parent)) {
                     return false; // not visible in designer
+                }
             }
-            else if (comp.getParentComponent() != parent) {
+            else if (comp.getParentContainer() != parent) {
                 return false; // different parent
             }
         }
@@ -1840,10 +1839,10 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
 
         // ctor for adding new
         ComponentDrag() {
-            if (formDesigner.getTopVisualContainer() == null) {
+            if (formDesigner.getTopDesignComponentView() == null) {
                 convertPoint = new Point(0,0);
             } else {
-                convertPoint = convertPointFromComponent(0, 0, formDesigner.getTopVisualContainer());
+                convertPoint = convertPointFromComponent(0, 0, formDesigner.getTopDesignComponentView());
             }
         }
 
@@ -1882,12 +1881,12 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
         }
 
         final RADVisualContainer getSourceContainer() {
-            return movingComponents != null && formDesigner.getTopDesignComponent() != movingComponents[0] ?
+            return movingComponents.length > 0 && formDesigner.getTopDesignComponent() != movingComponents[0] ?
                    movingComponents[0].getParentContainer() : null;
         }
 
         final boolean isTopComponent() {
-            return movingComponents != null && formDesigner.getTopDesignComponent() == movingComponents[0];
+            return movingComponents.length == 0 || formDesigner.getTopDesignComponent() == movingComponents[0];
         }
 
         final boolean isDraggableLayoutComponent() {

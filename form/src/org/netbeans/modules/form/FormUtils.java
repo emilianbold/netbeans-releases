@@ -635,7 +635,7 @@ public class FormUtils
     {
         for (int i = 0; i < props.length; i++) {
             RADProperty prop = props[i];
-            if (!prop.isChanged())
+            if (!prop.isChanged() || !prop.canWriteToTarget())
                 continue;
 
             try {
@@ -652,12 +652,10 @@ public class FormUtils
                     }
                 }
 
-                Method writeMethod = prop.getPropertyDescriptor().getWriteMethod();
-                if (writeMethod == null
-                    || !prop.canWriteToTarget()
-                    || !writeMethod.getDeclaringClass().isAssignableFrom(
-                                                             targetBean.getClass()))
+                Method writeMethod = getPropertyWriteMethod(prop, targetBean.getClass()); //prop.getPropertyDescriptor().getWriteMethod();
+                if (writeMethod == null) {
                     continue;
+                }
 
                 Object value = prop.getValue();
                 Object newValue = null;
@@ -679,6 +677,22 @@ public class FormUtils
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
             }
         }
+    }
+
+    public static Method getPropertyWriteMethod(RADProperty property, Class targetClass) {
+        Method method = property.getPropertyDescriptor().getWriteMethod();
+        if (method != null
+            && targetClass != null
+            && !method.getDeclaringClass().isAssignableFrom(targetClass)) {
+            // try to use find the same method in the target class
+            try {
+                method = targetClass.getMethod(method.getName(), 
+                                               method.getParameterTypes());
+            } catch (Exception ex) { // ignore
+                method = null;
+            }
+        }
+        return method;
     }
 
     // ---------
@@ -779,6 +793,40 @@ public class FormUtils
 //        containerBeans.remove(beanClass.getName());
 //        formSettings.setContainerBeans(containerBeans);
 //    }
+
+    public static boolean isVisualizableClass(Class cls) {
+        if (java.awt.Component.class.isAssignableFrom(cls)) {
+            return true;
+        }
+        for (ViewConverter c : getViewConverters()) {
+            if (c.canVisualize(cls)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    static ViewConverter[] getViewConverters() {
+        Lookup.Result<ViewConverter> result = Lookup.getDefault().lookupResult(ViewConverter.class);
+        Collection<? extends ViewConverter> all = result.allInstances();
+        ViewConverter[] converters = new ViewConverter[all.size()];
+        int i = all.size();
+        for (ViewConverter c : all) {
+            converters[--i] = c;
+        }
+        return converters;
+    }
+
+    static ComponentConverter[] getClassConverters() {
+        Lookup.Result<ComponentConverter> result = Lookup.getDefault().lookupResult(ComponentConverter.class);
+        Collection<? extends ComponentConverter> all = result.allInstances();
+        ComponentConverter[] converters = new ComponentConverter[all.size()];
+        int i = all.size();
+        for (ComponentConverter c : all) {
+            converters[--i] = c;
+        }
+        return converters;
+    }
 
     // ---------
 
@@ -1101,7 +1149,7 @@ public class FormUtils
                         visCont = visCont.getParentContainer();
                     }
 
-                    if (isInTopDesignComponent(visComp) && (visCont!= null)
+                    if (isVisualInDesigner(visComp) && (visCont!= null)
                             && (visCont.getLayoutSupport() == null)
                             && !visComp.isMenuComponent()) {
                         components.add(visComp);
@@ -1116,13 +1164,14 @@ public class FormUtils
         return components;
     }
 
-    public static boolean isInTopDesignComponent(RADComponent comp) {
-        FormDesigner designer = FormEditor.getFormDesigner(comp.getFormModel());
-        RADVisualComponent topDesigned = designer.getTopDesignComponent();
-        while ((comp != null) && (comp != topDesigned)) {
-            comp = comp.getParentComponent();
+    public static boolean isVisualInDesigner(RADComponent comp) {
+        if (comp instanceof RADVisualComponent) {
+            FormDesigner designer = FormEditor.getFormDesigner(comp.getFormModel());
+            if (designer != null) {
+                return designer.isInDesigner((RADVisualComponent)comp);
+            }
         }
-        return (comp == topDesigned);
+        return false;
     }
     
     private static Set superClasses(Class beanClass) {

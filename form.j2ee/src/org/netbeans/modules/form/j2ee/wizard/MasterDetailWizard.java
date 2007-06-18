@@ -252,7 +252,7 @@ public class MasterDetailWizard implements WizardDescriptor.InstantiatingIterato
     public Set instantiate() throws IOException {
         if (delegateIterator == null) {
             // postpone the instantiation until the project is opened
-            final FileObject file = (FileObject) wizard.getProperty("mainFrame"); // NOI18N
+            final FileObject file = (FileObject) wizard.getProperty("mainForm"); // NOI18N
             final File projDir = (File)wizard.getProperty("projdir");
             OpenProjects.getDefault().addPropertyChangeListener(new PropertyChangeListener() {
                 public void propertyChange(PropertyChangeEvent evt) {
@@ -304,7 +304,7 @@ public class MasterDetailWizard implements WizardDescriptor.InstantiatingIterato
             }
             else {
                 resultSet = new HashSet();
-                javaFile = (FileObject) wizard.getProperty("mainFrame"); // NOI18N
+                javaFile = (FileObject) wizard.getProperty("mainForm"); // NOI18N
                 resultSet.add(javaFile);
             }
             javaFile.setAttribute("justCreatedByNewWizard", Boolean.TRUE); // NOI18N

@@ -112,7 +112,7 @@ final public class GridBagCustomizer extends JPanel implements Customizer
         containerProxy.removeAll();
         
         FormDesigner designer = FormEditor.getFormDesigner(formModel);
-        if (!designer.isInDesignedTree(radContainer)) {
+        if (!designer.isInDesigner(radContainer)) {
             designer.setTopDesignComponent(radContainer, true);
             // terrible hack - wait for designer update
             invokeLater(2, new Runnable() {

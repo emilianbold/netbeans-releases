@@ -21,6 +21,8 @@ package org.netbeans.modules.form;
 
 import java.util.ArrayList;
 import java.awt.datatransfer.*;
+import java.util.List;
+import javax.swing.Action;
 
 import org.openide.nodes.*;
 import org.openide.actions.*;
@@ -45,28 +47,24 @@ class FormOthersNode extends FormNode {
         setName(FormUtils.getBundleString("CTL_NonVisualComponents")); // NOI18N
     }
 
-    public javax.swing.Action[] getActions(boolean context) {
-        if (systemActions == null) { // from AbstractNode
-            ArrayList actions = new ArrayList(10);
-
+    public Action[] getActions(boolean context) {
+        if (actions == null) { // from AbstractNode
+            List<Action> l = new ArrayList<Action>();
             if (!getFormModel().isReadOnly()) {
-                actions.add(SystemAction.get(AddAction.class));
-                actions.add(null);
-                actions.add(SystemAction.get(PasteAction.class));
-                actions.add(null);
-                actions.add(SystemAction.get(ReorderAction.class));
-                actions.add(null);
+                l.add(SystemAction.get(AddAction.class));
+                l.add(null);
+                l.add(SystemAction.get(PasteAction.class));
+                l.add(null);
+                l.add(SystemAction.get(ReorderAction.class));
+                l.add(null);
             }
-
-            javax.swing.Action[] superActions = super.getActions(context);
-            for (int i=0; i < superActions.length; i++)
-                actions.add(superActions[i]);
-
-            systemActions = new SystemAction[actions.size()];
-            actions.toArray(systemActions);
+            for (Action a : super.getActions(context)) {
+                l.add(a);
+            }
+            actions = l.toArray(new Action[l.size()]);
         }
 
-        return systemActions;
+        return actions;
     }
 
     protected void createPasteTypes(Transferable t, java.util.List s) {

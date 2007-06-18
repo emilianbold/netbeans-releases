@@ -38,6 +38,7 @@ import com.sun.source.util.TreePath;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.util.Elements;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
@@ -326,14 +327,31 @@ public class GandalfPersistenceManager extends PersistenceManager {
                 declaredSuperclassName = getSuperClassName(javaFile);
             }
 
-            Class superclass = declaredSuperclassName != null ?
-                FormUtils.loadClass(declaredSuperclassName, formFile) : Object.class;
-            formBaseClass = checkDeclaredSuperclass(superclass, formInfoName);
-
-            if (formBaseClass != superclass && !underTest)
-                System.err.println(FormUtils.getFormattedBundleString(
-                    "FMT_IncompatibleFormTypeWarning", // NOI18N
-                    new Object[] { javaFile.getName() }));
+            if (declaredSuperclassName != null) {
+                Class designClass = getFormDesignClass(declaredSuperclassName);
+                if (designClass == null) {
+                    Class superclass = FormUtils.loadClass(declaredSuperclassName, formFile);
+                    designClass = getFormDesignClass(superclass);
+                    if (designClass == null) {
+                        formBaseClass = checkDeclaredSuperclass(superclass, formInfoName);
+                        if (formBaseClass != superclass && !underTest) {
+                            System.err.println(FormUtils.getFormattedBundleString(
+                                "FMT_IncompatibleFormTypeWarning", // NOI18N
+                                new Object[] { javaFile.getName() }));
+                        }
+                    } else {
+                        formBaseClass = designClass;
+                        if (!superclass.isAssignableFrom(designClass)) {
+                            System.err.println("WARNING: Design class not compatible with declared form base class:"); // NOI18N
+                            System.err.println("-> "+designClass.getName() + " is not subclass of " + superclass.getName()); // NOI18N
+                        }
+                    }
+                } else {
+                    formBaseClass = designClass;
+                }
+            } else {
+                formBaseClass = Object.class;
+            }
 
             formModel.setFormBaseClass(formBaseClass);
         }
@@ -494,7 +512,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
                             TreePath superTPath = controller.getTrees().getPath(controller.getCompilationUnit(), superT);
                             Element superEl = controller.getTrees().getElement(superTPath);
                             if (superEl != null && superEl.getKind() == ElementKind.CLASS) {
-                                result[0] = ((TypeElement) superEl).getQualifiedName().toString();
+                                result[0] = controller.getElements().getBinaryName((TypeElement)superEl).toString(); // .getQualifiedName()
                                 break;
                             }
                         }
@@ -633,9 +651,11 @@ public class GandalfPersistenceManager extends PersistenceManager {
                     newComponent = new RADComponent();
                 }                
             } else {
-                if (java.awt.Component.class.isAssignableFrom(compClass))
+                if (FormUtils.isVisualizableClass(compClass)) {
                     newComponent = new RADVisualComponent();
-                else newComponent = new RADComponent();                
+                } else {
+                    newComponent = new RADComponent();
+                }                
             }            
         }
         else if (XML_MENU_COMPONENT.equals(nodeName)) {
@@ -5952,6 +5972,26 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
     private static Class getCompatibleFormClass(Class formBaseClass) {
         return getClassForKnownFormInfo(getFormInfoForKnownClass(formBaseClass));
+    }
+
+    private Class getFormDesignClass(String declaredSuperclassName) {
+        for (ComponentConverter c : FormUtils.getClassConverters()) {
+            Class convClass = c.getDesignClass(declaredSuperclassName);
+            if (convClass != null) {
+                return convClass;
+            }
+        }
+        return null;
+    }
+
+    private Class getFormDesignClass(Class declaredSuperclass) {
+        for (ComponentConverter c : FormUtils.getClassConverters()) {
+            Class convClass = c.getDesignClass(declaredSuperclass);
+            if (convClass != null) {
+                return convClass;
+            }
+        }
+        return null;
     }
 
     private class ConnectedProperties {        

@@ -99,25 +99,13 @@ public class TestAction extends CallableSystemAction implements Runnable {
             topComp instanceof RADVisualFormContainer ?
                 (RADVisualFormContainer) topComp : null;
 
-        // a JFrame or Frame will be used (depending on form is Swing or AWT)
-        Object formInstance = topComp.getBeanInstance();
-        Class frameClass = formInstance instanceof JComponent
-                           || formInstance instanceof JFrame
-                           || formInstance instanceof JDialog
-                           || formInstance instanceof JApplet
-                           || formInstance instanceof JWindow
-                           || (!(formInstance instanceof Window)
-                               && !(formInstance instanceof Panel)) ?
-            JFrame.class : Frame.class;
-
         try {
             if (selectedLaf == null) {
                 selectedLaf = UIManager.getLookAndFeel().getClass();
             }
 
             // create a copy of form
-            final Frame frame = (Frame)
-                FormDesigner.createFormView(topComp, frameClass, selectedLaf);
+            final Frame frame = (Frame) FormDesigner.createFormView(topComp, selectedLaf);
 
             // set title
             String title = frame.getTitle();

@@ -485,14 +485,15 @@ public class MetaComponentCreator {
             }
         }
 
-        if (Component.class.isAssignableFrom(beanClass)) {
+        if (FormUtils.isVisualizableClass(beanClass)) {
             // visual component
             if (targetComp == null) {
                 return TARGET_VISUAL;
             }
 
             if (java.awt.Window.class.isAssignableFrom(beanClass)
-                    || java.applet.Applet.class.isAssignableFrom(beanClass)) {
+                    || java.applet.Applet.class.isAssignableFrom(beanClass)
+                    || !java.awt.Component.class.isAssignableFrom(beanClass)) { // visualized component without parent
                 return defaultToOthers ? TARGET_VISUAL : NO_TARGET;
             }
 
