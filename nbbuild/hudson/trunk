@@ -53,19 +53,23 @@ BASENAME=netbeans-$BUILD_TAG
 mkdir -p $DIST/zip/moduleclusters
 mkdir -p $DIST/contrib
 
-find netbeans | egrep -v "netbeans/(extra|testtools)" | zip -q $DIST/zip/$BASENAME-full.zip -@ || exit
+find netbeans | egrep -v "netbeans/(extra|testtools|cnd)" | zip -q $DIST/zip/$BASENAME-full.zip -@ || exit
 
-find netbeans | egrep -v "netbeans/(extra|testtools|mobility|enterprise|visualweb|uml|ruby|soa)" | zip -q $DIST/zip/$BASENAME-basic.zip -@ || exit
-find netbeans | egrep -v "netbeans/(extra|testtools|uml|ruby|soa)" | zip -q $DIST/zip/$BASENAME-standard.zip -@ || exit
-find netbeans | egrep -v "netbeans/(extra|testtools|xml|java|apisupport|harness|profiler|mobility|enterprise|visualweb|uml|soa)" | zip -q $DIST/contrib/$BASENAME-rubyide.zip -@ || exit
+find netbeans | egrep -v "netbeans/(extra|testtools|mobility|enterprise|visualweb|uml|ruby|soa|cnd)" | zip -q $DIST/zip/$BASENAME-basic.zip -@ || exit
+find netbeans | egrep -v "netbeans/(extra|testtools|uml|ruby|soa|cnd)" | zip -q $DIST/zip/$BASENAME-standard.zip -@ || exit
+find netbeans | egrep -v "netbeans/(extra|testtools|xml|java|apisupport|harness|profiler|mobility|enterprise|visualweb|uml|soa|cnd)" | zip -q $DIST/contrib/$BASENAME-rubyide.zip -@ || exit
 
 cd netbeans
 expat='^extra/|^testtools/'
-for c in platform ide java apisupport harness enterprise profiler uml visualweb ruby mobility soa xml; do
+for c in platform ide java apisupport harness enterprise profiler uml visualweb ruby mobility soa xml cnd; do
     zip -q -r $DIST/zip/moduleclusters/$BASENAME-${c}.zip ${c}* || exit
     expat="$expat|^$c[0-9]*/"
 done
 find * | egrep -v "$expat" | zip -q $DIST/zip/moduleclusters/$BASENAME-nb6.0-etc.zip -@ || exit
+
+# XXX because cnd is not included in -full.zip yet, we copy its cluster zip to
+# the top level dir to make it easier for users to find
+cp -p $DIST/zip/moduleclusters/$BASENAME-cnd.zip $DIST/zip/
 
 cd ../..
 generated=nbbuild/build/generated
