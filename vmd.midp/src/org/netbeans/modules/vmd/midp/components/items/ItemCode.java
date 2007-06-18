@@ -153,6 +153,8 @@ public class ItemCode {
                     section.getWriter ().write (" | Item.LAYOUT_VSHRINK"); // NOI18N
                 if ((value & ItemCD.VALUE_LAYOUT_EXPAND) != 0)
                     section.getWriter ().write (" | Item.LAYOUT_EXPAND"); // NOI18N
+                if ((value & ItemCD.VALUE_LAYOUT_VEXPAND) != 0)
+                    section.getWriter ().write (" | Item.LAYOUT_VEXPAND"); // NOI18N
                 if ((value & ItemCD.VALUE_LAYOUT_2) != 0)
                     section.getWriter ().write (" | Item.LAYOUT_2"); // NOI18N
                 return;
