@@ -180,6 +180,8 @@ public class FileBuilder
    public void completed()
 	throws IOException
    {
+
+       removeInvalid(mods);
        String charset = REIntegrationUtil.getEncoding(newFile);
        processNewFile(newFile, charset);
 
@@ -535,6 +537,38 @@ public class FileBuilder
 	    }
 	}
 
+    }
+
+
+    private void removeInvalid(List<ModDesc> mods) 
+    {
+	if (mods == null) 
+	{
+	    return;
+	}
+	ArrayList<ModDesc> deletes = new ArrayList<ModDesc>();
+	for(ModDesc m: mods) 
+	{
+	    boolean valid = true;
+	    if (m.type != ModDesc.REMOVE) {
+		if (m.newStart < 0 || m.newEnd < 0) 
+		{
+		    valid = false;
+		}
+	    }
+	    if (m.oldStart < 0 || m.oldEnd < 0 || m.oldEdPoint < 0) 
+	    {
+		valid = false;
+	    }
+	    if (!valid) 
+	    {
+		deletes.add(m);
+	    }
+	}
+	for(ModDesc d: deletes) 
+	{
+	    mods.remove(d);
+	}
     }
 
 

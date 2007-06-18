@@ -883,7 +883,7 @@ public class Merger implements IUMLParserEventsSink {
     
     public void onError(IErrorEvent data, IResultCell cell) {
 	errorHappened = true;
-	System.out.println("\nPARSER ERROR\n");
+	System.out.println("\nPARSER ERROR\n");	
     }
 
     // end of interface IUMLParserEventsSink

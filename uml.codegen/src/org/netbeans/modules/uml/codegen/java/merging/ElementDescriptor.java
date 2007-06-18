@@ -107,7 +107,33 @@ public class ElementDescriptor
     */
    public long getEndPos()
    {
-      return getPosition("EndPosition");
+       long pos = getPosition("EndPosition");
+       if (pos == -1) {
+	   if (tokenDescriptors == null || tokenDescriptors.size() == 0)
+	   {
+	       tokenDescriptors = getTokenDescriptors();
+	   }
+	   if (tokenDescriptors != null)
+	   {
+	       for(ITokenDescriptor desc : tokenDescriptors)
+	       {
+		   long length = desc.getLength();
+		   long spos = desc.getPosition();
+		   if (spos > -1) 
+		   {
+		       if (length > -1) 
+		       {
+			   spos += length;
+		       }
+		       if (spos > pos) 
+		       {
+			   pos = spos;
+		       }
+		   }
+	       }
+	   }
+       }
+       return pos;
    }
    
    /**

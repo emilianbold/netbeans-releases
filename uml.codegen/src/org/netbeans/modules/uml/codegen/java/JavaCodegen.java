@@ -165,9 +165,7 @@ public class JavaCodegen implements ICodeGenerator
 		{
 		    task.log(task.TERSE, getBundleMessage("MSG_ErrorNoTemplatesDefinedForElement")); // NOI18N
 		    errorsCount++;
-		    //continue;
-		    domainTemplates = new ArrayList<DomainTemplate>();
-		    domainTemplates.add(new DomainTemplate("Enum", "{name}", "java", "", "CompilationUnit.java"));
+		    continue;
   		} else {
 		    task.log(task.TERSE, ""); // NOI18N
 		}
