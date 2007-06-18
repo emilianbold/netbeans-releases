@@ -139,12 +139,15 @@ public class GameEditorView implements DataEditorView, EditorManagerListener {
             comboGlobal.setRenderer(new DefaultListCellRenderer() {
                 public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
                     DefaultListCellRenderer retValue = (DefaultListCellRenderer) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-                    if (value instanceof  String) {
+					if (value instanceof GlobalRepository) {
+						retValue.setFont(retValue.getFont().deriveFont(Font.BOLD));
+					}
+					else if (value instanceof String) {
                         retValue.setFont(retValue.getFont().deriveFont(Font.BOLD));
+                        retValue.setText("  " + retValue.getText());
                     }
                     else {
-                        //this is a hack - instead use an empty image 16x16
-                        retValue.setText("  " + retValue.getText());
+                        retValue.setText("    " + retValue.getText());
                     }
                     return retValue;
                 }

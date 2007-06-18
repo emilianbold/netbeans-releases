@@ -19,8 +19,9 @@
 
 package org.netbeans.modules.vmd.game.editor.tiledlayer;
 
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import org.netbeans.modules.vmd.game.model.TiledLayer;
-import org.netbeans.modules.vmd.game.view.ImagePreviewComponent;
 
 /**
  *
@@ -29,12 +30,23 @@ import org.netbeans.modules.vmd.game.view.ImagePreviewComponent;
 public class TiledLayerNavigator extends javax.swing.JPanel {
     
     private TiledLayer tiledLayer;
-	private ImagePreviewComponent imagePreviewComponent;
+	private TiledLayerPreviewPanel preview;
     
     /** Creates new form SpritePreview */
     public TiledLayerNavigator(TiledLayer tiledLayer) {
         this.tiledLayer = tiledLayer;
         initComponents();
+        textFieldLayerName.setText(this.tiledLayer.getName());
+        textFieldImage.setText(this.tiledLayer.getImageResource().getRelativeResourcePath());
+        textFieldRows.setText(Integer.toString(this.tiledLayer.getRowCount()));
+        textFieldCols.setText(Integer.toString(this.tiledLayer.getColumnCount()));
+		this.preview = new TiledLayerPreviewPanel(tiledLayer, false);
+		this.panelTiledLayer.add(preview);
+		this.panelTiledLayer.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent e) {
+                preview.refresh();
+            }
+		});
     }
 	
     /** This method is called from within the constructor to
@@ -44,101 +56,104 @@ public class TiledLayerNavigator extends javax.swing.JPanel {
      */
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
+
         labelSprite = new javax.swing.JLabel();
-        textFieldSprite = new javax.swing.JTextField();
+        textFieldLayerName = new javax.swing.JTextField();
         panelTiledLayer = new javax.swing.JPanel();
         labelFrames = new javax.swing.JLabel();
-        textFieldFrames = new javax.swing.JTextField();
+        textFieldRows = new javax.swing.JTextField();
         labelDelay = new javax.swing.JLabel();
-        textFieldDelay = new javax.swing.JTextField();
+        textFieldCols = new javax.swing.JTextField();
         jLabel1 = new javax.swing.JLabel();
-        jTextField1 = new javax.swing.JTextField();
+        textFieldImage = new javax.swing.JTextField();
 
         setBackground(new java.awt.Color(255, 255, 255));
         setMinimumSize(new java.awt.Dimension(10, 180));
+
         labelSprite.setText("TiledLayer:");
 
-        textFieldSprite.setBackground(new java.awt.Color(255, 255, 255));
-        textFieldSprite.setEditable(false);
-        textFieldSprite.setText(this.tiledLayer.getName());
-        textFieldSprite.setBorder(null);
-
-        panelTiledLayer.setLayout(new java.awt.BorderLayout());
+        textFieldLayerName.setBackground(new java.awt.Color(255, 255, 255));
+        textFieldLayerName.setEditable(false);
+        textFieldLayerName.setText(this.tiledLayer.getName());
+        textFieldLayerName.setBorder(null);
 
         panelTiledLayer.setBackground(new java.awt.Color(255, 255, 255));
-        this.imagePreviewComponent = new ImagePreviewComponent(true);
-        this.panelTiledLayer.add(this.imagePreviewComponent);
-        //XXX Removed getPreviewImage() in Previewable
-        //this.imagePreviewComponent.setImage(this.tiledLayer.getPreviewImage());
+        panelTiledLayer.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(99, 114, 136)));
+        panelTiledLayer.setToolTipText("Click here to refresh preview.");
+        panelTiledLayer.setLayout(new java.awt.BorderLayout());
 
         labelFrames.setText("Rows:");
 
-        textFieldFrames.setBackground(new java.awt.Color(255, 255, 255));
-        textFieldFrames.setEditable(false);
-        textFieldFrames.setHorizontalAlignment(javax.swing.JTextField.LEFT);
-        textFieldFrames.setText(Integer.toString(this.tiledLayer.getRowCount()));
-        textFieldFrames.setBorder(null);
+        textFieldRows.setBackground(new java.awt.Color(255, 255, 255));
+        textFieldRows.setEditable(false);
+        textFieldRows.setHorizontalAlignment(javax.swing.JTextField.LEFT);
+        textFieldRows.setText(Integer.toString(this.tiledLayer.getRowCount()));
+        textFieldRows.setBorder(null);
 
         labelDelay.setText("Cols:");
 
-        textFieldDelay.setBackground(new java.awt.Color(255, 255, 255));
-        textFieldDelay.setEditable(false);
-        textFieldDelay.setHorizontalAlignment(javax.swing.JTextField.LEFT);
-        textFieldDelay.setText(Integer.toString(this.tiledLayer.getColumnCount()));
-        textFieldDelay.setBorder(null);
+        textFieldCols.setBackground(new java.awt.Color(255, 255, 255));
+        textFieldCols.setEditable(false);
+        textFieldCols.setHorizontalAlignment(javax.swing.JTextField.LEFT);
+        textFieldCols.setText(Integer.toString(this.tiledLayer.getColumnCount()));
+        textFieldCols.setBorder(null);
 
         jLabel1.setText("Image:");
 
-        jTextField1.setBackground(new java.awt.Color(255, 255, 255));
-        jTextField1.setEditable(false);
-        jTextField1.setText(this.tiledLayer.getImageResource().getURL().toString());
-        jTextField1.setBorder(null);
+        textFieldImage.setBackground(new java.awt.Color(255, 255, 255));
+        textFieldImage.setEditable(false);
+        textFieldImage.setText(this.tiledLayer.getImageResource().getURL().toString());
+        textFieldImage.setBorder(null);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                .addContainerGap()
+            .add(layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .add(labelFrames))
+                    .add(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(labelFrames)
+                            .add(jLabel1))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                                .add(textFieldFrames, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 28, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(labelDelay, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 31, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(textFieldDelay, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 83, Short.MAX_VALUE))
-                            .add(jTextField1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 166, Short.MAX_VALUE)))
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                            .add(textFieldRows, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 89, Short.MAX_VALUE)
+                            .add(textFieldCols, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 89, Short.MAX_VALUE)
+                            .add(textFieldImage, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 89, Short.MAX_VALUE)))
+                    .add(layout.createSequentialGroup()
+                        .add(12, 12, 12)
+                        .add(labelDelay, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 31, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(layout.createSequentialGroup()
+                        .addContainerGap()
                         .add(labelSprite)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(textFieldSprite, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 140, Short.MAX_VALUE))
-                    .add(panelTiledLayer, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 219, Short.MAX_VALUE))
+                        .add(textFieldLayerName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 63, Short.MAX_VALUE))
+                    .add(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .add(panelTiledLayer, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 142, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+            .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(labelSprite)
-                    .add(textFieldSprite, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(textFieldLayerName, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(panelTiledLayer, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 213, Short.MAX_VALUE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(panelTiledLayer, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 69, Short.MAX_VALUE)
+                .add(12, 12, 12)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(labelFrames)
+                    .add(textFieldRows, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(3, 3, 3)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(labelDelay)
-                    .add(textFieldFrames, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(textFieldDelay, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(textFieldCols, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jTextField1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(textFieldImage, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(jLabel1))
                 .addContainerGap())
         );
@@ -147,14 +162,14 @@ public class TiledLayerNavigator extends javax.swing.JPanel {
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     public javax.swing.JLabel jLabel1;
-    public javax.swing.JTextField jTextField1;
     public javax.swing.JLabel labelDelay;
     public javax.swing.JLabel labelFrames;
     public javax.swing.JLabel labelSprite;
     public javax.swing.JPanel panelTiledLayer;
-    public javax.swing.JTextField textFieldDelay;
-    public javax.swing.JTextField textFieldFrames;
-    public javax.swing.JTextField textFieldSprite;
+    public javax.swing.JTextField textFieldCols;
+    public javax.swing.JTextField textFieldImage;
+    public javax.swing.JTextField textFieldLayerName;
+    public javax.swing.JTextField textFieldRows;
     // End of variables declaration//GEN-END:variables
     
 }

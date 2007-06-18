@@ -30,7 +30,6 @@ import org.netbeans.modules.vmd.game.model.Layer;
 import org.netbeans.modules.vmd.game.model.Scene;
 import org.netbeans.modules.vmd.game.model.SceneListener;
 import org.netbeans.modules.vmd.game.model.Scene.LayerInfo;
-import org.netbeans.modules.vmd.game.model.Sprite;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 

@@ -30,6 +30,8 @@ public interface Editable {
 	public ImageResourceInfo getImageResourceInfo();
 
 	public JComponent getNavigator();
+	
+	public String getName();
 
 	public class ImageResourceInfo {
 		private ImageResource imgRes;

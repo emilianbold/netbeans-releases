@@ -20,8 +20,8 @@
 package org.netbeans.modules.vmd.game;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dialog;
-import java.awt.GridBagLayout;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -74,7 +74,7 @@ import org.netbeans.modules.vmd.game.model.TiledLayer;
 import org.netbeans.modules.vmd.game.model.TiledLayerCD;
 import org.netbeans.modules.vmd.game.model.TiledLayerListener;
 import org.netbeans.modules.vmd.game.nbdialog.SelectImageForLayerDialog;
-import org.netbeans.modules.vmd.game.view.GameComponentOverviewPanel;
+import org.netbeans.modules.vmd.game.view.GameDesignOverviewPanel;
 import org.netbeans.modules.vmd.midp.components.MidpProjectSupport;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.openide.DialogDescriptor;
@@ -182,22 +182,7 @@ public class GameController implements DesignDocumentAwareness, GlobalRepository
 						GameController.this.modelComponent(root);
 						GameController.this.registerAllListeners();
 						gameDesign.addGlobalRepositoryListener(GameController.this);
-						gameDesign.getMainView().requestEditing(new Editable() {
-                            public JComponent getEditor() {
-								JPanel top = new JPanel(new BorderLayout());
-								JPanel midle = new JPanel(new GridBagLayout());
-								midle.add(new GameComponentOverviewPanel(gameDesign));
-								top.add(midle, BorderLayout.NORTH);
-								top.add(new JPanel(), BorderLayout.CENTER);
-								return new JScrollPane(top);
-                            }
-                            public ImageResourceInfo getImageResourceInfo() {
-								return null;
-                            }
-                            public JComponent getNavigator() {
-								return null;
-                            }
-						});
+						gameDesign.getMainView().requestEditing(gameDesign);
 					}
 				}
 			});

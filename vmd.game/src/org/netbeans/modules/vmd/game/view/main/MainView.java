@@ -53,12 +53,13 @@ public class MainView implements GlobalRepositoryListener, EditorManager {
 	private void initComponents() {
 		this.rootPanel = new JPanel();
 		this.rootPanel.setLayout(new BorderLayout());
-		
+		this.rootPanel.setBackground(Color.WHITE);
 
 		//editor components
 		this.mainEditorPanel = new JPanel();
 		this.mainEditorPanel.setLayout(new GridBagLayout());
 		this.mainEditorPanel.setBorder(null);
+		this.mainEditorPanel.setBackground(Color.WHITE);
 		
 		this.resourceImageView = new ResourceImageEditor();
 
@@ -73,7 +74,7 @@ public class MainView implements GlobalRepositoryListener, EditorManager {
 	private void initLayout() {
 		
 		//layout the main edit panel
-		this.mainEditorPanel.setLayout(new GridLayout(1, 1));
+		this.mainEditorPanel.setLayout(new BorderLayout());
 		
 		//layout the main window
 		this.mainSplit = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, false, this.previewExplorerSplit, this.mainEditorPanel);

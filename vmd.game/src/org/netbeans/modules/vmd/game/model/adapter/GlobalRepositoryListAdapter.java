@@ -33,7 +33,7 @@ import org.netbeans.modules.vmd.game.model.TiledLayer;
  */
 public class GlobalRepositoryListAdapter extends AbstractListModel implements GlobalRepositoryListener {
 	
-	private static final int ADDITIONAL_LIST_ITEM_COUNT = 3;
+	private static final int ADDITIONAL_LIST_ITEM_COUNT = 4;
 	private static final String ADDITIONAL_LIST_ITEM_SCENES_LABEL = "Scenes";
 	private static final String ADDITIONAL_LIST_ITEM_TILEDLAYERS_LABEL = "Tiled Layers";
 	private static final String ADDITIONAL_LIST_ITEM_SPRITES_LABEL = "Sprites";
@@ -70,6 +70,10 @@ public class GlobalRepositoryListAdapter extends AbstractListModel implements Gl
 		int offset = 0;
 		
 		if (index == 0)
+			return this.gameDesign;
+		offset += 1;
+
+		if (index == 1)
 			return ADDITIONAL_LIST_ITEM_SCENES_LABEL;
 		offset += 1;
 		
@@ -97,32 +101,32 @@ public class GlobalRepositoryListAdapter extends AbstractListModel implements Gl
 
 	//GlobalRepositoryListener
 	public void sceneAdded(Scene scene, int index) {
-		int offset = 1;
+		int offset = 2;
 		this.fireIntervalAdded(this, index + offset, index + offset);
 	}
 
 	public void sceneRemoved(Scene scene, int index) {
-		int offset = 1;
+		int offset = 2;
 		this.fireIntervalRemoved(this, index + offset, index + offset);
 	}
 
 	public void tiledLayerAdded(TiledLayer tiledLayer, int index) {
-		int offset = 1 + this.gameDesign.getScenes().size() + 1;
+		int offset = 2 + this.gameDesign.getScenes().size() + 1;
 		this.fireIntervalAdded(this, index + offset, index + offset);
 	}
 
 	public void tiledLayerRemoved(TiledLayer tiledLayer, int index) {
-		int offset = 1 + this.gameDesign.getScenes().size() + 1;
+		int offset = 2 + this.gameDesign.getScenes().size() + 1;
 		this.fireIntervalRemoved(this, index + offset, index + offset);
 	}
 
 	public void spriteAdded(Sprite sprite, int index) {
-		int offset = 1 + this.gameDesign.getScenes().size() + 1 + this.gameDesign.getTiledLayers().size() + 1;
+		int offset = 2 + this.gameDesign.getScenes().size() + 1 + this.gameDesign.getTiledLayers().size() + 1;
 		this.fireIntervalAdded(this, index + offset, index + offset);
 	}
 
 	public void spriteRemoved(Sprite sprite, int index) {
-		int offset = 1 + this.gameDesign.getScenes().size() + 1 + this.gameDesign.getTiledLayers().size() + 1;
+		int offset = 2 + this.gameDesign.getScenes().size() + 1 + this.gameDesign.getTiledLayers().size() + 1;
 		this.fireIntervalRemoved(this, index + offset, index + offset);
 	}
 	

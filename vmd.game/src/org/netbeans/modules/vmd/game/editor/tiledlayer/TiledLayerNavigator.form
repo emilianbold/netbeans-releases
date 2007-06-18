@@ -23,33 +23,36 @@
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" attributes="0">
-              <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" alignment="0" attributes="0">
-                      <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                          <Component id="jLabel1" alignment="1" max="32767" attributes="1"/>
+                  <Group type="102" attributes="0">
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="labelFrames" alignment="0" min="-2" max="-2" attributes="1"/>
+                          <Component id="jLabel1" alignment="0" min="-2" max="-2" attributes="1"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Group type="102" alignment="0" attributes="0">
-                              <Component id="textFieldFrames" min="-2" pref="28" max="-2" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="labelDelay" min="-2" pref="31" max="-2" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="textFieldDelay" pref="83" max="32767" attributes="0"/>
-                          </Group>
-                          <Component id="jTextField1" pref="166" max="32767" attributes="0"/>
+                          <Component id="textFieldRows" alignment="0" pref="89" max="32767" attributes="1"/>
+                          <Component id="textFieldCols" alignment="0" pref="89" max="32767" attributes="1"/>
+                          <Component id="textFieldImage" alignment="0" pref="89" max="32767" attributes="0"/>
                       </Group>
                   </Group>
-                  <Group type="102" alignment="1" attributes="0">
+                  <Group type="102" alignment="0" attributes="0">
+                      <EmptySpace min="12" pref="12" max="12" attributes="0"/>
+                      <Component id="labelDelay" min="-2" pref="31" max="-2" attributes="0"/>
+                  </Group>
+                  <Group type="102" alignment="0" attributes="0">
+                      <EmptySpace max="-2" attributes="0"/>
                       <Component id="labelSprite" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="textFieldSprite" pref="140" max="32767" attributes="0"/>
+                      <Component id="textFieldLayerName" pref="63" max="32767" attributes="0"/>
                   </Group>
-                  <Component id="panelTiledLayer" alignment="0" pref="219" max="32767" attributes="2"/>
+                  <Group type="102" alignment="0" attributes="0">
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="panelTiledLayer" pref="142" max="32767" attributes="2"/>
+                  </Group>
               </Group>
-              <EmptySpace min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -59,20 +62,23 @@
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="labelSprite" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="textFieldSprite" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="textFieldLayerName" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="panelTiledLayer" pref="213" max="32767" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
+              <Component id="panelTiledLayer" pref="69" max="32767" attributes="0"/>
+              <EmptySpace min="-2" pref="12" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="labelFrames" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="textFieldRows" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace min="-2" pref="3" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="labelDelay" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="textFieldFrames" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="textFieldDelay" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="textFieldCols" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="jTextField1" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="textFieldImage" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="jLabel1" alignment="0" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
@@ -86,8 +92,11 @@
         <Property name="text" type="java.lang.String" value="TiledLayer:"/>
       </Properties>
     </Component>
-    <Component class="javax.swing.JTextField" name="textFieldSprite">
+    <Component class="javax.swing.JTextField" name="textFieldLayerName">
       <Properties>
+        <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+          <Color blue="ff" green="ff" red="ff" type="rgb"/>
+        </Property>
         <Property name="editable" type="boolean" value="false"/>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
           <Connection code="this.tiledLayer.getName()" type="code"/>
@@ -102,10 +111,15 @@
         <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
           <Color blue="ff" green="ff" red="ff" type="rgb"/>
         </Property>
+        <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+          <Border info="org.netbeans.modules.form.compat2.border.LineBorderInfo">
+            <LineBorder>
+              <Color PropertyName="color" blue="88" green="72" red="63" type="rgb"/>
+            </LineBorder>
+          </Border>
+        </Property>
+        <Property name="toolTipText" type="java.lang.String" value="Click here to refresh preview."/>
       </Properties>
-      <AuxValues>
-        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="this.imagePreviewComponent = new ImagePreviewComponent(true);&#xa;this.panelTiledLayer.add(this.imagePreviewComponent);&#xa;//XXX Removed getPreviewImage() in Previewable&#xa;//this.imagePreviewComponent.setImage(this.tiledLayer.getPreviewImage());&#xa;"/>
-      </AuxValues>
 
       <Layout class="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout"/>
     </Container>
@@ -114,8 +128,11 @@
         <Property name="text" type="java.lang.String" value="Rows:"/>
       </Properties>
     </Component>
-    <Component class="javax.swing.JTextField" name="textFieldFrames">
+    <Component class="javax.swing.JTextField" name="textFieldRows">
       <Properties>
+        <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+          <Color blue="ff" green="ff" red="ff" type="rgb"/>
+        </Property>
         <Property name="editable" type="boolean" value="false"/>
         <Property name="horizontalAlignment" type="int" value="2"/>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
@@ -131,8 +148,11 @@
         <Property name="text" type="java.lang.String" value="Cols:"/>
       </Properties>
     </Component>
-    <Component class="javax.swing.JTextField" name="textFieldDelay">
+    <Component class="javax.swing.JTextField" name="textFieldCols">
       <Properties>
+        <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+          <Color blue="ff" green="ff" red="ff" type="rgb"/>
+        </Property>
         <Property name="editable" type="boolean" value="false"/>
         <Property name="horizontalAlignment" type="int" value="2"/>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
@@ -148,8 +168,11 @@
         <Property name="text" type="java.lang.String" value="Image:"/>
       </Properties>
     </Component>
-    <Component class="javax.swing.JTextField" name="jTextField1">
+    <Component class="javax.swing.JTextField" name="textFieldImage">
       <Properties>
+        <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+          <Color blue="ff" green="ff" red="ff" type="rgb"/>
+        </Property>
         <Property name="editable" type="boolean" value="false"/>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
           <Connection code="this.tiledLayer.getImageResource().getURL().toString()" type="code"/>

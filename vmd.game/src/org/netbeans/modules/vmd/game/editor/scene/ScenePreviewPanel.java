@@ -59,8 +59,8 @@ public class ScenePreviewPanel extends JComponent implements SceneListener {
 		g.fillRect(0, 0, this.getWidth(), this.getHeight());
 		
 		Rectangle bounds = scene.getAllLayersBounds();
-		double ratioW = (double) this.getWidth() / (double) bounds.getWidth();
-		double ratioH = (double) this.getHeight() / (double) bounds.getHeight();
+		double ratioW = (double) this.getWidth() / bounds.getWidth();
+		double ratioH = (double) this.getHeight() / bounds.getHeight();
 		double ratio = Math.min(ratioW, ratioH);
 		
 		//center

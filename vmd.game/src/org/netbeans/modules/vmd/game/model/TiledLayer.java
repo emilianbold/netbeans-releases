@@ -419,20 +419,16 @@ public class TiledLayer extends Layer {
 		
 	public JComponent getPreview() {
 		if (this.preview == null) {
-            return this.preview = new TiledLayerPreviewPanel(this);
+            return this.preview = new TiledLayerPreviewPanel(this, true);
         }
 		return this.preview;
 	}
 
 	public JComponent getNavigator() {
-		/*
 		if (this.navigator == null) {
             return this.navigator = new TiledLayerNavigator(this);
         }
 		return this.navigator;
-		 */
-		
-		return this.getPreview();
 	}
 	
 	public void paint(Graphics2D g) {

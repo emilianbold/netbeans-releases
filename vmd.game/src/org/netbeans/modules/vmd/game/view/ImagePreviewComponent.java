@@ -34,7 +34,6 @@ public class ImagePreviewComponent extends JComponent {
 
 	public static final boolean DEBUG = false;
 
-	private boolean scaled = false;
 	private boolean centeredH = true;
 	private boolean centeredV = true;
 	
@@ -48,13 +47,6 @@ public class ImagePreviewComponent extends JComponent {
 
 	public ImagePreviewComponent (boolean scaled) {
 		this.setDoubleBuffered(true);
-		this.scaled = scaled;
-		this.addMouseListener(new MouseAdapter() {
-            public void mouseClicked(MouseEvent e) {
-                ImagePreviewComponent.this.scaled = !ImagePreviewComponent.this.scaled;
-				ImagePreviewComponent.this.repaint();
-            }
-		});
 		this.addComponentListener(new ComponentAdapter() {
 			public void componentResized(ComponentEvent e) {
 				if (DEBUG) System.out.println("resized - updating preview");
@@ -68,9 +60,6 @@ public class ImagePreviewComponent extends JComponent {
 		Dimension d = new Dimension(previewable.getWidth(), previewable.getHeight());
 		this.setMinimumSize(d);
 		this.setPreferredSize(d);
-		if (!this.scaled) {
-			this.setMaximumSize(d);
-		}
 		this.repaint();
 	}
 

@@ -20,6 +20,7 @@
 package org.netbeans.modules.vmd.game.model;
 
 import java.awt.Dialog;
+import java.awt.Graphics2D;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -96,9 +97,7 @@ public interface SequenceContainer extends Editable {
 	public String getNextSequenceName(String prefix);
 	
 	public GlobalRepository getGameDesign();
-	/**
-	 * Default implementation of SequenceContainer.
-	 */
+
 	public static class SequenceContainerImpl implements  SequenceContainer {
 		
 		public static final boolean DEBUG = false;
@@ -406,8 +405,7 @@ public interface SequenceContainer extends Editable {
 			public void actionPerformed(ActionEvent e) {
 				SequenceContainerImpl.this.remove(this.sequence);
 			}
-		}
-		
+		}		
 	}
 	
 }

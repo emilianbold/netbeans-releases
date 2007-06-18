@@ -23,6 +23,8 @@ import javax.swing.JComponent;
 
 public interface Previewable {
 
+	public String getName();
+
 	public JComponent getPreview();
 	
 	public void paint(Graphics2D g, int x, int y);

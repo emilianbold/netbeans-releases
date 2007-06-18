@@ -123,7 +123,6 @@ public class SceneLayerNavigator extends JTable {
 		
 		
 		this.setShowVerticalLines(false);
-		//this.setPreferredSize(new Dimension(400, 200));
 		this.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		
 	}

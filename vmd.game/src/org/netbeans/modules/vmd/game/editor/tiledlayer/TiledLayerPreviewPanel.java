@@ -36,32 +36,32 @@ public class TiledLayerPreviewPanel extends JComponent implements TiledLayerList
 
 	private TiledLayer tiledLayer;
 	
-    public TiledLayerPreviewPanel(TiledLayer tl) {
+    public TiledLayerPreviewPanel(TiledLayer tl, boolean autoUpdate) {
 		this.tiledLayer = tl;
 		this.addComponentListener(new ComponentAdapter() {
 			public void componentResized(ComponentEvent e) {
 				TiledLayerPreviewPanel.this.repaint();
 			}
 		});
-		this.tiledLayer.addTiledLayerListener(this);
+		if (autoUpdate) {
+			this.tiledLayer.addTiledLayerListener(this);
+		}
     }
+	
+	public void refresh() {
+		this.repaint();
+	}
 	
     protected void paintComponent(Graphics graphics) {
 		Graphics2D g = (Graphics2D) graphics;
 		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		g.setColor(Color.WHITE);
 		g.fillRect(0, 0, this.getWidth(), this.getHeight());
-		
-		//System.out.println("panel width: " + this.getWidth() + ", height: " + this.getHeight());
-		//System.out.println("layer width: " + this.tiledLayer.getWidth() + ", height: " + this.tiledLayer.getHeight());
-		
-		
+				
 		double ratioW = (double) this.getWidth() / (double) this.tiledLayer.getWidth();
 		double ratioH = (double) this.getHeight() / (double) this.tiledLayer.getHeight();
 		double ratio = Math.min(ratioW, ratioH);
-		
-		//System.out.println("ratioW: " + ratioW + ", ratioH: " + ratioH);
-		
+				
 		//center
 		double x = 0;
 		double y = 0;

@@ -44,4 +44,8 @@ public class StaticTile extends Tile {
 		this.getImageResource().paint(this.getIndex(), g, x, y, getWidth(), getHeight(), scaledWidth, scaledHeight, this.zeroBasedIndex);
     }
 
+    public String getName() {
+        return Integer.toString(this.getIndex());
+    }
+
 }

@@ -18,6 +18,8 @@
  */
 package org.netbeans.modules.vmd.game.model;
 
+import java.awt.BorderLayout;
+import java.awt.Color;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.URL;
@@ -28,14 +30,21 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import javax.swing.JComponent;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.event.EventListenerList;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
+import org.netbeans.modules.vmd.game.view.GameDesignNavigator;
+import org.netbeans.modules.vmd.game.view.GameDesignOverviewPanel;
 import org.netbeans.modules.vmd.game.view.main.MainView;
 
-public class GlobalRepository implements PropertyChangeListener {
+public class GlobalRepository implements PropertyChangeListener, Editable {
 
 	private DesignDocument designDocument;
 	private MainView mainView;
+	private GameDesignOverviewPanel editor;
+	private JScrollPane editorScroll;
 	
 	public static final boolean DEBUG = false;
 	
@@ -44,7 +53,7 @@ public class GlobalRepository implements PropertyChangeListener {
 	private HashMap<String, Layer> layers = new HashMap<String, Layer>();
 	private ArrayList<TiledLayer> tiledLayers = new ArrayList<TiledLayer>();
 	private ArrayList<Sprite> sprites = new ArrayList<Sprite>();
-	private ArrayList scenes = new ArrayList();	
+	private ArrayList<Scene> scenes = new ArrayList<Scene>();	
 	private Map<String, ImageResource> imgResourceMap = new HashMap<String, ImageResource>();	
 	
 	
@@ -372,7 +381,29 @@ public class GlobalRepository implements PropertyChangeListener {
 	}
 	
 	public String toString() {
-		return "[Global Repository]";
+		return this.getName();
 	}
+
+    public JComponent getEditor() {
+		JPanel top = new JPanel(new BorderLayout());
+		JScrollPane scroll = new JScrollPane();
+		scroll.setViewportView(new GameDesignOverviewPanel(this));
+		scroll.getViewport().setBackground(Color.WHITE);
+		top.add(scroll, BorderLayout.CENTER);
+		return top;
+    }
+
+    public ImageResourceInfo getImageResourceInfo() {
+        return null;
+    }
+
+    public JComponent getNavigator() {
+        //return new GameDesignNavigator(this);
+		return null;
+    }
+
+    public String getName() {
+        return "Game Design";
+    }
 	
 }
