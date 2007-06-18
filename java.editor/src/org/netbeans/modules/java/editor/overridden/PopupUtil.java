@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -49,11 +49,11 @@ public final class PopupUtil  {
     
     // private static MyFocusListener mfl = new MyFocusListener();
     
-    private static final String CLOSE_KEY = "CloseKey";
+    private static final String CLOSE_KEY = "CloseKey"; //NOI18N
     private static final Action CLOSE_ACTION = new CloseAction();
     private static final KeyStroke ESC_KEY_STROKE = KeyStroke.getKeyStroke( KeyEvent.VK_ESCAPE, 0 ); 
         
-    private static final String POPUP_NAME = "popupComponent";
+    private static final String POPUP_NAME = "popupComponent"; //NOI18N
     private static JDialog popupWindow;
     private static HideAWTListener hideListener = new HideAWTListener();
     

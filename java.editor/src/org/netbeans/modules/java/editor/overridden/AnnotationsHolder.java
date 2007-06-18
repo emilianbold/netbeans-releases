@@ -82,7 +82,7 @@ public class AnnotationsHolder implements PropertyChangeListener {
             }
         });
         
-        Logger.getLogger("TIMER").log(Level.FINE, "Overridden AnnotationsHolder", new Object[] {file, this});
+        Logger.getLogger("TIMER").log(Level.FINE, "Overridden AnnotationsHolder", new Object[] {file, this}); //NOI18N
      }
     
     public void propertyChange(PropertyChangeEvent evt) {

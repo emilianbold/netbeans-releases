@@ -61,19 +61,19 @@ class IsOverriddenAnnotation extends Annotation {
         switch(type) {
             case IS_OVERRIDDEN:
 
-                return "org-netbeans-modules-editor-java-is_overridden";
+                return "org-netbeans-modules-editor-java-is_overridden"; //NOI18N
             case HAS_IMPLEMENTATION:
 
-                return "org-netbeans-modules-editor-java-has_implementations";
+                return "org-netbeans-modules-editor-java-has_implementations"; //NOI18N
             case IMPLEMENTS:
 
-                return "org-netbeans-modules-editor-java-implements";
+                return "org-netbeans-modules-editor-java-implements"; //NOI18N
             case OVERRIDES:
 
-                return "org-netbeans-modules-editor-java-overrides";
+                return "org-netbeans-modules-editor-java-overrides"; //NOI18N
             default:
 
-                throw new IllegalStateException("Currently not implemented: " + type);
+                throw new IllegalStateException("Currently not implemented: " + type); //NOI18N
         }
     }
     
@@ -86,7 +86,7 @@ class IsOverriddenAnnotation extends Annotation {
     }
     
     public String toString() {
-        return "[IsOverriddenAnnotation: " + shortDescription + "]";
+        return "[IsOverriddenAnnotation: " + shortDescription + "]"; //NOI18N
     }
     
     public Position getPosition() {
@@ -102,7 +102,7 @@ class IsOverriddenAnnotation extends Annotation {
         
         Collections.sort(elementNames);
         
-        return "IsOverriddenAnnotation: type=" + type.name() + ", elements:" + elementNames.toString();
+        return "IsOverriddenAnnotation: type=" + type.name() + ", elements:" + elementNames.toString(); //NOI18N
     }
     
     void mouseClicked(JTextComponent c, Point p) {
@@ -143,7 +143,7 @@ class IsOverriddenAnnotation extends Annotation {
                 caption = shortDescription;
                 break;
             default:
-                throw new IllegalStateException("Currently not implemented: " + type);
+                throw new IllegalStateException("Currently not implemented: " + type); //NOI18N
         }
         
         PopupUtil.showPopup(new IsOverriddenPopup(caption, declarations), caption, position.x, position.y, true, 0);

@@ -85,7 +85,7 @@ public final class IsOverriddenAnnotationAction extends AbstractAction {
         
         if (file == null) {
             if (ErrorManager.getDefault().isLoggable(ErrorManager.WARNING)) {
-                ErrorManager.getDefault().log(ErrorManager.WARNING, "component=" + component + " does not have a file specified in the document.");
+                ErrorManager.getDefault().log(ErrorManager.WARNING, "component=" + component + " does not have a file specified in the document."); //NOI18N
             }
             return null;
         }
@@ -93,7 +93,7 @@ public final class IsOverriddenAnnotationAction extends AbstractAction {
         AnnotationsHolder ah = AnnotationsHolder.get(file);
 
         if (ah == null) {
-            IsOverriddenAnnotationHandler.LOG.log(Level.INFO, "component=" + component + " does not have attached a IsOverriddenAnnotationHandler");
+            IsOverriddenAnnotationHandler.LOG.log(Level.INFO, "component=" + component + " does not have attached a IsOverriddenAnnotationHandler"); //NOI18N
 
             return null;
         }

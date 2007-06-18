@@ -68,6 +68,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.text.NbDocument;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.TopologicalSortException;
 import org.openide.util.Utilities;
@@ -86,7 +87,7 @@ public class IsOverriddenAnnotationHandler implements CancellableTask<Compilatio
     
     IsOverriddenAnnotationHandler(FileObject file) {
         this.file = file;
-        Logger.getLogger("TIMER").log(Level.FINE, "IsOverriddenAnnotationHandler", new Object[] {file, this});
+        Logger.getLogger("TIMER").log(Level.FINE, "IsOverriddenAnnotationHandler", new Object[] {file, this}); //NOI18N
     }
     
     public StyledDocument getDocument() {
@@ -99,7 +100,7 @@ public class IsOverriddenAnnotationHandler implements CancellableTask<Compilatio
             
             return ec.getDocument();
         } catch (IOException e) {
-            LOG.log(Level.INFO, "Cannot find DataObject for file: " + FileUtil.getFileDisplayName(file), e);
+            LOG.log(Level.INFO, "Cannot find DataObject for file: " + FileUtil.getFileDisplayName(file), e); //NOI18N
             return null;
         }
     }
@@ -112,7 +113,7 @@ public class IsOverriddenAnnotationHandler implements CancellableTask<Compilatio
         StyledDocument doc = getDocument();
         
         if (doc == null) {
-            LOG.log(Level.INFO, "Cannot get document!");
+            LOG.log(Level.INFO, "Cannot get document!"); //NOI18N
             return ;
         }
         
@@ -132,7 +133,7 @@ public class IsOverriddenAnnotationHandler implements CancellableTask<Compilatio
                 visitor = null;
             }
             
-            Logger.getLogger("TIMER").log(Level.FINE, "Overridden in",
+            Logger.getLogger("TIMER").log(Level.FINE, "Overridden in", //NOI18N
                     new Object[] {file, System.currentTimeMillis() - startTime});
         }
     }
@@ -160,7 +161,7 @@ public class IsOverriddenAnnotationHandler implements CancellableTask<Compilatio
                 Set<FileObject> reverseSourceRootsInt = new HashSet<FileObject>(ReverseSourceRootsLookup.reverseSourceRootsLookup(thisSourceRoot));
                 long endTime = System.currentTimeMillis();
                 
-                Logger.getLogger("TIMER").log(Level.FINE, "Find Reverse Source Roots",
+                Logger.getLogger("TIMER").log(Level.FINE, "Find Reverse Source Roots", //NOI18N
                     new Object[] {thisFile, endTime - startTime});
                 
                 synchronized (o) {
@@ -232,7 +233,7 @@ public class IsOverriddenAnnotationHandler implements CancellableTask<Compilatio
         
         long endTime1 = System.currentTimeMillis();
         
-        Logger.getLogger("TIMER").log(Level.FINE, "Overridden Scanner",
+        Logger.getLogger("TIMER").log(Level.FINE, "Overridden Scanner", //NOI18N
                     new Object[] {file, endTime1 - startTime1});
         
         Set<FileObject> reverseSourceRoots;
@@ -251,7 +252,7 @@ public class IsOverriddenAnnotationHandler implements CancellableTask<Compilatio
             reverseSourceRoots = null;
         }
         
-        LOG.log(Level.FINE, "reverseSourceRoots: {0}", reverseSourceRoots);
+        LOG.log(Level.FINE, "reverseSourceRoots: {0}", reverseSourceRoots); //NOI18N
         
         List<IsOverriddenAnnotation> annotations = new ArrayList<IsOverriddenAnnotation>();
         
@@ -259,7 +260,7 @@ public class IsOverriddenAnnotationHandler implements CancellableTask<Compilatio
             if (isCanceled())
                 return null;
             
-            LOG.log(Level.FINE, "type: {0}", td.getQualifiedName());
+            LOG.log(Level.FINE, "type: {0}", td.getQualifiedName()); //NOI18N
             
             final Map<Name, List<ExecutableElement>> name2Method = new HashMap<Name, List<ExecutableElement>>();
             
@@ -280,7 +281,7 @@ public class IsOverriddenAnnotationHandler implements CancellableTask<Compilatio
                     continue;
                 
                 if (LOG.isLoggable(Level.FINE)) {
-                    LOG.log(Level.FINE, "method: {0}", ee.toString());
+                    LOG.log(Level.FINE, "method: {0}", ee.toString()); //NOI18N
                 }
                 
                 List<ExecutableElement> lee = name2Method.get(ee.getSimpleName());
@@ -316,15 +317,15 @@ public class IsOverriddenAnnotationHandler implements CancellableTask<Compilatio
                     
                     for (ElementDescription ed : overrides) {
                         if (newline) {
-                            tooltip.append("\n");
+                            tooltip.append("\n"); //NOI18N
                         }
                         
                         newline = true;
                         
                         if (ed.getModifiers().contains(Modifier.ABSTRACT)) {
-                            tooltip.append("Implements: " + ed.getDisplayName());
+                            tooltip.append(NbBundle.getMessage(IsOverriddenAnnotationHandler.class, "TP_Implements", ed.getDisplayName()));
                         } else {
-                            tooltip.append("Overrides: " + ed.getDisplayName());
+                            tooltip.append(NbBundle.getMessage(IsOverriddenAnnotationHandler.class, "TP_Overrides", ed.getDisplayName()));
                             wasOverrides = true;
                         }
                     }
@@ -340,17 +341,17 @@ public class IsOverriddenAnnotationHandler implements CancellableTask<Compilatio
                 
                 
                 if (resolved == null) {
-                    Logger.getLogger("global").log(Level.SEVERE, "IsOverriddenAnnotationHandler: resolved == null!");
+                    Logger.getLogger("global").log(Level.SEVERE, "IsOverriddenAnnotationHandler: resolved == null!"); //NOI18N
                     continue;
                 }
                 
                 if (resolved.getKind().isInterface()) {
-                    typeOverridden = "Has Implementations";
+                    typeOverridden = NbBundle.getMessage(IsOverriddenAnnotationHandler.class, "CAP_HasImplementations");
                     typeType = AnnotationType.HAS_IMPLEMENTATION;
                 }
                 
                 if (resolved.getKind().isClass()) {
-                    typeOverridden = "Is Overridden:";
+                    typeOverridden = NbBundle.getMessage(IsOverriddenAnnotationHandler.class, "CAP_IsOverridden");
                     typeType = AnnotationType.IS_OVERRIDDEN;
                 }
                 
@@ -366,9 +367,9 @@ public class IsOverriddenAnnotationHandler implements CancellableTask<Compilatio
                     return null;
                 }
                 
-                Logger.getLogger("TIMER").log(Level.FINE, "Overridden Users Class Index",
+                Logger.getLogger("TIMER").log(Level.FINE, "Overridden Users Class Index", //NOI18N
                     new Object[] {file, classIndexTime[0]});
-                Logger.getLogger("TIMER").log(Level.FINE, "Overridden Users",
+                Logger.getLogger("TIMER").log(Level.FINE, "Overridden Users", //NOI18N
                     new Object[] {file, endTime - startTime});
                 
                 for (Map.Entry<FileObject, Set<ElementHandle<TypeElement>>> data : users.entrySet()) {
@@ -408,9 +409,9 @@ public class IsOverriddenAnnotationHandler implements CancellableTask<Compilatio
                     String tooltip = null;
                     
                     if (mods.contains(Modifier.ABSTRACT)) {
-                        tooltip = "Has Implementations";
+                        tooltip = NbBundle.getMessage(IsOverriddenAnnotationHandler.class, "TP_HasImplementations");
                     } else {
-                        tooltip = "Is Overridden";
+                        tooltip = NbBundle.getMessage(IsOverriddenAnnotationHandler.class, "TP_IsOverridden");
                     }
                     
                     IsOverriddenAnnotation ann = new IsOverriddenAnnotation(doc, pos, mods.contains(Modifier.ABSTRACT) ? AnnotationType.HAS_IMPLEMENTATION : AnnotationType.IS_OVERRIDDEN, tooltip, overriding.get(original));
@@ -484,7 +485,7 @@ public class IsOverriddenAnnotationHandler implements CancellableTask<Compilatio
         try {
             Utilities.topologicalSort(sourceRoots, edges);
         } catch (TopologicalSortException ex) {
-            LOG.log(Level.WARNING, "internal error", ex);
+            LOG.log(Level.WARNING, "internal error", ex); //NOI18N
             return null;
         }
         
@@ -559,7 +560,7 @@ public class IsOverriddenAnnotationHandler implements CancellableTask<Compilatio
                                         
                                         overriddingMethods.add(new ElementDescription(controller, overrider));
                                     } else {
-                                        Logger.getLogger("global").log(Level.SEVERE, "IsOverriddenAnnotationHandler: originalMethod == null!");
+                                        Logger.getLogger("global").log(Level.SEVERE, "IsOverriddenAnnotationHandler: originalMethod == null!"); //NOI18N
                                     }
                                 }
                             }

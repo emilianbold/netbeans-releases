@@ -35,6 +35,7 @@ import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.ui.ElementIcons;
 import org.netbeans.modules.editor.java.Utilities;
 import org.openide.filesystems.FileObject;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -91,7 +92,7 @@ public class ElementDescription {
 	@Override
         public String visitType(TypeElement e, Boolean p) {
             if (e.getQualifiedName() == null || e.getSimpleName() == null) {
-                return "annonymous inner";
+                return NbBundle.getMessage(ElementDescription.class, "NAME_AnnonynmousInner");
             }
             
             return p ? e.getQualifiedName().toString() : e.getSimpleName().toString();
@@ -102,29 +103,29 @@ public class ElementDescription {
             StringBuffer sb = new StringBuffer();
             
             sb.append(e.getEnclosingElement().accept(this, p));
-            sb.append(".");
+            sb.append("."); //NOI18N
             sb.append(e.getSimpleName());
-            sb.append("(");
+            sb.append("("); //NOI18N
             
             boolean addComma = false;
             
             for (VariableElement ve : e.getParameters()) {
                 if (addComma)
-                    sb.append(", ");
+                    sb.append(", "); //NOI18N
                 
                 addComma = true;
                 
                 sb.append(ve.accept(this, p));
             }
             
-            sb.append(")");
+            sb.append(")"); //NOI18N
             
             return sb.toString();
         }
         
         @Override
         public String visitVariable(VariableElement ve, Boolean p) {
-            return Utilities.getTypeName(ve.asType(), false) + " " + ve.getSimpleName();
+            return Utilities.getTypeName(ve.asType(), false) + " " + ve.getSimpleName(); //NOI18N
         }
         
         @Override
