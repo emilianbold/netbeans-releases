@@ -15,7 +15,7 @@ enclosed by brackets [] replaced by your own identifying information:
 "Portions Copyrighted [year] [name of copyright owner]"
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -31,7 +31,7 @@ Microsystems, Inc. All Rights Reserved.
 
 <mconfig name="core unit test config">
     <!-- Tests which should be run before commit to validate IDE, needs IDE mode for ValidateLayer suites -->
-    <testbag testattribs="commit" executor="ide" name="Before Commit Validation in IDE">
+    <testbag testattribs="commit" executor="ide" name="Before Commit Validation in IDE" timeout="300000">
         <testset dir="unit/src">
             <patternset>
                 <!-- this includes all tests testing layers -->
