@@ -172,7 +172,7 @@ public class TestKit {
         //
         nfwo = NewFileWizardOperator.invoke();
         nfwo.selectProject(projectName);
-        nfwo.selectCategory("Java GUI Forms");
+        nfwo.selectCategory("Swing GUI Forms");
         nfwo.selectFileType("JFrame Form");
         nfwo.next();
         nfnlso = new NewFileNameLocationStepOperator();
