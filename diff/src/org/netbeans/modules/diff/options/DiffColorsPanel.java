@@ -46,6 +46,10 @@ import java.util.*;
  */
 public class DiffColorsPanel extends javax.swing.JPanel implements ActionListener, FontsColorsController, PropertyChangeListener {
     
+    private static final String ATTR_NAME_ADDED = "added";
+    private static final String ATTR_NAME_DELETED = "deleted";
+    private static final String ATTR_NAME_CHANGED = "changed";
+
     private ColorModel colorModel = null;
     private boolean		listen = false;
     private String              currentProfile;
@@ -110,7 +114,12 @@ public class DiffColorsPanel extends javax.swing.JPanel implements ActionListene
     public void applyChanges() {
         if (colorModel == null) return;
         for(String profile : toBeSaved) {
-            colorModel.setHighlightings(profile, getCategories(profile));
+            Vector<AttributeSet> colors = getCategories(profile);
+            for (AttributeSet color : colors) {
+                if (ATTR_NAME_ADDED.equals(color.getAttribute(StyleConstants.NameAttribute))) DiffModuleConfig.getDefault().setAddedColor((Color) color.getAttribute(StyleConstants.Background)); 
+                if (ATTR_NAME_CHANGED.equals(color.getAttribute(StyleConstants.NameAttribute))) DiffModuleConfig.getDefault().setChangedColor((Color) color.getAttribute(StyleConstants.Background)); 
+                if (ATTR_NAME_DELETED.equals(color.getAttribute(StyleConstants.NameAttribute))) DiffModuleConfig.getDefault().setDeletedColor((Color) color.getAttribute(StyleConstants.Background)); 
+            }
         }
         toBeSaved = new HashSet<String>();
         profileToCategories = new HashMap<String, Vector<AttributeSet>>();
@@ -164,7 +173,7 @@ public class DiffColorsPanel extends javax.swing.JPanel implements ActionListene
         AttributeSet category = categories.get(lCategories.getSelectedIndex());
         SimpleAttributeSet c = new SimpleAttributeSet(category);
         
-        Color color = org.netbeans.modules.diff.options.ColorComboBox.getColor(cbBackground);
+        Color color = ColorComboBox.getColor(cbBackground);
         if (color != null) {
             c.addAttribute(StyleConstants.Background, color);
         } else {
@@ -245,19 +254,19 @@ public class DiffColorsPanel extends javax.swing.JPanel implements ActionListene
         
         sas = new SimpleAttributeSet();
         StyleConstants.setBackground(sas, DiffModuleConfig.getDefault().getAddedColor());
-        sas.addAttribute(StyleConstants.NameAttribute, "added");
+        sas.addAttribute(StyleConstants.NameAttribute, ATTR_NAME_ADDED);
         sas.addAttribute(EditorStyleConstants.DisplayName, NbBundle.getMessage(DiffOptionsPanel.class, "LBL_AddedColor"));
         attrs.add(sas);
 
         sas = new SimpleAttributeSet();
         StyleConstants.setBackground(sas, DiffModuleConfig.getDefault().getDeletedColor());
-        sas.addAttribute(StyleConstants.NameAttribute, "deleted");
+        sas.addAttribute(StyleConstants.NameAttribute, ATTR_NAME_DELETED);
         sas.addAttribute(EditorStyleConstants.DisplayName, NbBundle.getMessage(DiffOptionsPanel.class, "LBL_DeletedColor"));
         attrs.add(sas);
 
         sas = new SimpleAttributeSet();
         StyleConstants.setBackground(sas, DiffModuleConfig.getDefault().getChangedColor());
-        sas.addAttribute(StyleConstants.NameAttribute, "changed");
+        sas.addAttribute(StyleConstants.NameAttribute, ATTR_NAME_CHANGED);
         sas.addAttribute(EditorStyleConstants.DisplayName, NbBundle.getMessage(DiffOptionsPanel.class, "LBL_ChangedColor"));
         attrs.add(sas);
         
