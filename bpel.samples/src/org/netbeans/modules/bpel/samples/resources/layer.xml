@@ -22,8 +22,6 @@
     <folder name="Templates">
         <folder name="Project">
             <folder name="Samples">
-                <!-- sorting -->
-
                 <folder name="SOA">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.bpel.samples.resources.Bundle"/>
                     <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/bpel/samples/resources/category.html"/>
@@ -58,8 +56,6 @@
                         <attr name="position" intvalue="300"/>
                         <attr name="template" boolvalue="true"/>
                     </file>
-
-                    <!-- sorting -->
 
                     <!-- BluePrints -->
                     <folder name="BPELBluePrints">
@@ -110,9 +106,7 @@
                             <attr name="position" intvalue="500"/>
                             <attr name="template" boolvalue="true"/>
                         </file>      
-
-                        <!-- sorting -->
-                        </folder>
+                    </folder>
                 </folder>
             </folder>
         </folder>

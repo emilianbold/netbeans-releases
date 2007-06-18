@@ -1,31 +1,30 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
- The contents of this file are subject to the terms of the Common Development
- and Distribution License (the License). You may not use this file except in
- compliance with the License.
- 
- You can obtain a copy of the License at http://www.netbeans.org/cddl.html
- or http://www.netbeans.org/cddl.txt.
- 
- When distributing Covered Code, include this CDDL Header Notice in each file
- and include the License file at http://www.netbeans.org/cddl.txt.
- If applicable, add the following below the CDDL Header, with the fields
- enclosed by brackets [] replaced by your own identifying information:
- "Portions Copyrighted [year] [name of copyright owner]"
- 
- The Original Software is NetBeans. The Initial Developer of the Original
- Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- Microsystems, Inc. All Rights Reserved.
+  The contents of this file are subject to the terms of the Common Development
+  and Distribution License (the License). You may not use this file except in
+  compliance with the License.
+  
+  You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+  or http://www.netbeans.org/cddl.txt.
+  
+  When distributing Covered Code, include this CDDL Header Notice in each file
+  and include the License file at http://www.netbeans.org/cddl.txt.
+  If applicable, add the following below the CDDL Header, with the fields
+  enclosed by brackets [] replaced by your own identifying information:
+  "Portions Copyrighted [year] [name of copyright owner]"
+  
+  The Original Software is NetBeans. The Initial Developer of the Original
+  Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+  Microsystems, Inc. All Rights Reserved.
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
-    
     <folder name="XsltPalette">
         <folder name="Operator">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xslt.mapper.palette.Bundle"/>
             <attr name="metainfo" stringvalue="XPathMetainfo/Operator"/>
-
             <attr name="position" intvalue="100"/>
+
             <file name="equal.xml" url="nbresloc:/org/netbeans/modules/xslt/mapper/palette/equal.xml">
                 <attr name="metainfo" stringvalue="XPathMetainfo/Operator/equal"/>
                 <attr name="position" intvalue="100"/>
@@ -72,9 +71,7 @@
                 <attr name="metainfo" stringvalue="XPathMetainfo/Operator/negative"/>
                 <attr name="position" intvalue="1000"/>
             </file>
-            
-            <!-- sorting -->
-            </folder>
+        </folder>
         
         <folder name="String">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xslt.mapper.palette.Bundle"/>
@@ -125,9 +122,7 @@
                 <attr name="metainfo" stringvalue="XPathMetainfo/String/string-length"/>
                 <attr name="position" intvalue="1100"/>
             </file>
-            
-            <!-- sorting -->
-            </folder>
+        </folder>
 
         <folder name="Number">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xslt.mapper.palette.Bundle"/>
@@ -158,9 +153,7 @@
                 <attr name="metainfo" stringvalue="XPathMetainfo/Number/number-literal"/>
                 <attr name="position" intvalue="600"/>
             </file>
-
-            <!-- sorting -->
-            </folder>
+        </folder>
 
         <folder name="Boolean">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xslt.mapper.palette.Bundle"/>
@@ -195,9 +188,7 @@
                 <attr name="metainfo" stringvalue="XPathMetainfo/Boolean/and"/>
                 <attr name="position" intvalue="700"/>
             </file>
-
-            <!-- sorting -->
-            </folder>
+        </folder>
 
         <folder name="Nodes">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xslt.mapper.palette.Bundle"/>
@@ -232,47 +223,11 @@
                 <attr name="metainfo" stringvalue="XPathMetainfo/Nodes/xpath_expression"/>
                 <attr name="position" intvalue="700"/>
             </file>
-<!-- 
-            <file name="predicate.xml" url="nbresloc:/org/netbeans/modules/xslt/mapper/palette/predicate.xml">
-                <attr name="metainfo" stringvalue="XPathMetainfo/Nodes/predicate"/>
-            </file>
- -->                        
-
-            <!-- sorting -->
-            
         </folder>
-
-<!--        
-        <folder name="Datetime">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xslt.mapper.palette.Bundle"/>
-            <attr name="metainfo" stringvalue="XPathMetainfo/Datetime"/>
-            
-            <file name="current-dateTime.xml" url="nbresloc:/org/netbeans/modules/xslt/mapper/palette/current-dateTime.xml">
-                <attr name="metainfo" stringvalue="XPathMetainfo/Datetime/current-dateTime"/>
-            </file>
-            <file name="current-date.xml" url="nbresloc:/org/netbeans/modules/xslt/mapper/palette/current-date.xml">
-                <attr name="metainfo" stringvalue="XPathMetainfo/Datetime/current-date"/>
-            </file>
-            <file name="current-time.xml" url="nbresloc:/org/netbeans/modules/xslt/mapper/palette/current-time.xml">
-                <attr name="metainfo" stringvalue="XPathMetainfo/Datetime/current-time"/>
-            </file>
-            <file name="duration-literal.xml" url="nbresloc:/org/netbeans/modules/xslt/mapper/palette/duration-literal.xml">
-                <attr name="metainfo" stringvalue="XPathMetainfo/Datetime/duration-literal"/>
-            </file>
-
-            <attr name="current-dateTime.xml/current-date.xml" boolvalue="true"/>
-            <attr name="current-date.xml/current-time.xml" boolvalue="true"/>
-            <attr name="current-time.xml/duration-literal.xml" boolvalue="true"/>
-        </folder>
--->
-        <!-- sorting -->
-<!--    <attr name="Nodes/Datetime" boolvalue="true"/> -->
     </folder>
     
     <folder name="XPathMetainfo">
-        <!-- commented last two categories -->
         <attr name="TotalCategories" intvalue="5"/>
-
 
         <folder name="Operator">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xslt.mapper.palette.Bundle"/>
@@ -563,11 +518,7 @@
                 <attr name="A11yDesc" stringvalue="A11yDesc_Operator_negative"/>
                 <attr name="position" intvalue="900"/>
             </file>
-            
-            
-
         </folder>
-  
   
         <folder name="String">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xslt.mapper.palette.Bundle"/>
@@ -831,11 +782,7 @@
                 <attr name="A11yDesc" stringvalue="A11yDesc_String_string-length"/>
                 <attr name="position" intvalue="700"/>
             </file>
-            
-            
-
         </folder>
-  
   
         <folder name="Number">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xslt.mapper.palette.Bundle"/>
@@ -961,7 +908,6 @@
                 <attr name="A11yDesc" stringvalue="A11yDesc_Number_number-literal"/>
             </file>
         </folder>
-  
   
         <folder name="Boolean">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xslt.mapper.palette.Bundle"/>
@@ -1115,11 +1061,7 @@
                 <attr name="A11yDesc" stringvalue="A11yDesc_Operator_and"/>
                 <attr name="position" intvalue="400"/>
             </file>
-            
-            
-
         </folder>
-  
   
         <folder name="Nodes">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xslt.mapper.palette.Bundle"/>
@@ -1258,32 +1200,8 @@
                 <attr name="A11yName" stringvalue="A11yName_Nodes_xpath_expression"/>
                 <attr name="A11yDesc" stringvalue="A11yDesc_Nodes_xpath_expression"/>
             </file>
-<!--            
-            <file name="predicate">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xslt.mapper.palette.Bundle" />
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:org/netbeans/modules/xslt/mapper/palette/icons/predicate16.png" />
-                <attr name="Class" stringvalue="Nodes" />
-                <attr name="Method" stringvalue="predicate" />
-                <attr name="Function" stringvalue="predicate" />
-                <attr name="InputNum" stringvalue="1" />
-                <attr name="InputParam1" stringvalue="node-set?" />
-                <attr name="InputType1"  stringvalue="node-set" />
-                <attr name="InputTooltip1"  stringvalue="TOOLTIP_Nodes_predicate_inputParm1" />
-                <attr name="OutputNum" stringvalue="1" />
-                <attr name="OutputParam1" stringvalue="return node-set" />
-                <attr name="OutputType1" stringvalue="node-set" />
-                <attr name="OutputTooltip1"  stringvalue="TOOLTIP_Nodes_predicate_outputParm" />
-                <attr name="Tooltip" stringvalue="TOOLTIP_Nodes_predicate" />
-                <attr name="LocalName" stringvalue="LBL_Nodes_predicate" />
-                <attr name="Checked" boolvalue="true" />
-                <attr name="IsPredicate" boolvalue="true" />
-                <attr name="A11yName" stringvalue="A11yName_Nodes_predicate"/>
-                <attr name="A11yDesc" stringvalue="A11yDesc_Nodes_predicate"/>
-            </file>
-  -->
         </folder>
 
-  
         <folder name="Datetime">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xslt.mapper.palette.Bundle"/>
             <attr name="Icon" stringvalue="Category_Datetime_Icon"/>
@@ -1362,15 +1280,6 @@
                 <attr name="A11yDesc" stringvalue="A11yDesc_Datetime_duration-literal"/>
                 <attr name="position" intvalue="100"/>
             </file>
-
-            
-     
         </folder>
-
-   
-        
-  
-   
     </folder>
-    
 </filesystem>
