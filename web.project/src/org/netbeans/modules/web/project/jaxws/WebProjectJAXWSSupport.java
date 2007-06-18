@@ -312,16 +312,18 @@ public class WebProjectJAXWSSupport extends ProjectJAXWSSupport /*implements JAX
             endpoints.addEnpoint(endpoint);
             FileLock lock = null;
             OutputStream os = null;
-            try{
-                lock = sunjaxwsFile.lock();
-                os = sunjaxwsFile.getOutputStream(lock);
-                endpoints.write(os);
-            }finally{
-                if(lock != null)
-                    lock.releaseLock();
-                
-                if(os != null)
-                    os.close();
+            synchronized (this) {
+                try{
+                    lock = sunjaxwsFile.lock();
+                    os = sunjaxwsFile.getOutputStream(lock);
+                    endpoints.write(os);
+                }finally{
+                    if(lock != null)
+                        lock.releaseLock();
+
+                    if(os != null)
+                        os.close();
+                }
             }
         }else{
             String mes = NbBundle.getMessage(WebProjectJAXWSSupport.class, "MSG_CannotFindWEB-INF"); // NOI18N
@@ -370,13 +372,15 @@ public class WebProjectJAXWSSupport extends ProjectJAXWSSupport /*implements JAX
                 FileLock lock = null;
                 //if there are no more services, delete the file
                 JaxWsModel jaxWsModel = (JaxWsModel)project.getLookup().lookup(JaxWsModel.class);
-                if(jaxWsModel.getServices().length == 0){
-                    try{
-                        lock = sunjaxwsFile.lock();
-                        sunjaxwsFile.delete(lock);
-                    } finally{
-                        if(lock != null){
-                            lock.releaseLock();
+                if(jaxWsModel.getServices().length == 0) {
+                    synchronized(this) {
+                        try{
+                            lock = sunjaxwsFile.lock();
+                            sunjaxwsFile.delete(lock);
+                        } finally{
+                            if(lock != null){
+                                lock.releaseLock();
+                            }
                         }
                     }
                 } else{
@@ -386,16 +390,18 @@ public class WebProjectJAXWSSupport extends ProjectJAXWSSupport /*implements JAX
                     if(endpoint != null){
                         endpoints.removeEndpoint(endpoint);
                         OutputStream os = null;
-                        try{
-                            lock = sunjaxwsFile.lock();
-                            os = sunjaxwsFile.getOutputStream(lock);
-                            endpoints.write(os);
-                        }finally{
-                            if(lock != null){
-                                lock.releaseLock();
-                            }
-                            if(os != null){
-                                os.close();
+                        synchronized(this) {
+                            try{
+                                lock = sunjaxwsFile.lock();
+                                os = sunjaxwsFile.getOutputStream(lock);
+                                endpoints.write(os);
+                            }finally{
+                                if(lock != null){
+                                    lock.releaseLock();
+                                }
+                                if(os != null){
+                                    os.close();
+                                }
                             }
                         }
                     }
