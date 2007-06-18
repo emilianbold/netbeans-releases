@@ -20,6 +20,7 @@
 
 package org.netbeans.installer.utils;
 
+import com.sun.java.swing.plaf.windows.WindowsProgressBarUI;
 import java.awt.HeadlessException;
 import java.awt.Toolkit;
 import java.security.Principal;
@@ -36,6 +37,7 @@ import org.netbeans.installer.utils.helper.UiMode;
 import static javax.swing.JOptionPane.YES_NO_OPTION;
 import static javax.swing.JOptionPane.YES_OPTION;
 import static javax.swing.JOptionPane.NO_OPTION;
+import javax.swing.JProgressBar;
 import org.netbeans.installer.utils.exceptions.InitializationException;
 
 /**
@@ -227,7 +229,7 @@ public final class UiUtils {
         try {
             LogManager.log("... initializing L&F");
             LogManager.indent();
-             switch (UiMode.getCurrentUiMode()) {
+            switch (UiMode.getCurrentUiMode()) {
                 case SWING:
                     String className = System.getProperty(LAF_CLASS_NAME_PROPERTY);
                     if (className == null) {
@@ -245,15 +247,25 @@ public final class UiUtils {
                             
                             UIManager.setLookAndFeel(className);
                             
-                            // workaround for the issue with further using JFileChooser
-                            // in case of missing system icons
-                            // Java Issue :
-                            // http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6210674
-                            // NBI Issue :
-                            // http://www.netbeans.org/issues/show_bug.cgi?id=105065
-                            new JFileChooser();   
-                            
-                            Toolkit.getDefaultToolkit();
+                            if(SystemUtils.isWindows()) {
+                                // workaround for the issue with further using JFileChooser
+                                // in case of missing system icons
+                                // Java Issue :
+                                // http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6210674
+                                // NBI Issue :
+                                // http://www.netbeans.org/issues/show_bug.cgi?id=105065
+                                LogManager.log("... creating JFileChooser object to check possible issues with UI");
+                                new JFileChooser();
+                                LogManager.log("... getting default Toolkit to check possible issues with UI");
+                                Toolkit.getDefaultToolkit();
+                                
+                                // workaround for JDK issue with JProgressBar using StyleXP
+                                // http://www.netbeans.org/issues/show_bug.cgi?id=106876
+                                // http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6337517
+                                LogManager.log("... creating JProgressBar object to check possible issues with UI");
+                                new JProgressBar().getMaximumSize();
+                                LogManager.log("... all UI checks done");
+                            }                            
                         } catch (Throwable e) {
                             // we're catching Exception here as pretty much anything can happen
                             // while setting the look and feel and we have no control over it
@@ -268,7 +280,7 @@ public final class UiUtils {
                                     System.err.println(cause.getMessage());
                                 }
                             }
-                            LogManager.log("... could not activate defined L&F, initializing cross-platfrom one", e);                            
+                            LogManager.log("... could not activate defined L&F, initializing cross-platfrom one", e);
                             String cpLapName = UIManager.getCrossPlatformLookAndFeelClassName();
                             LogManager.log("... cross-platform L&F class-name : " + cpLapName);
                             UIManager.setLookAndFeel(cpLapName);
@@ -290,7 +302,7 @@ public final class UiUtils {
             }
         } finally {
             LogManager.unindent();
-            LogManager.log("... initializing L&F finished");            
+            LogManager.log("... initializing L&F finished");
             lookAndFeelInitialized = true;
         }
     }
