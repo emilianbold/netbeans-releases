@@ -20,11 +20,6 @@ Microsystems, Inc. All Rights Reserved.
 <!DOCTYPE fontscolors PUBLIC "-//NetBeans//DTD Editor Fonts and Colors settings 1.1//EN" "http://www.netbeans.org/dtds/EditorFontsColors-1_1.dtd">
 
 <fontscolors>
-<!-- XXX:
-    This should be removed from ide/defaults
-    <fontcolor name="highlight-match-brace" foreColor="white" bgColor="ffff32d2"/>
--->
-    
     <fontcolor name="nbeditor-bracesMatching-match" bgColor="ff4BFF0F"/>
     <fontcolor name="nbeditor-bracesMatching-mismatch" bgColor="red"/>
 </fontscolors>
