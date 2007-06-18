@@ -40,7 +40,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
@@ -244,8 +244,7 @@ public abstract class CreateClassFix implements Fix {
             DataObject od = classTemplateDO.createFromTemplate(DataFolder.findFolder(pack), simpleName);
             FileObject target = od.getPrimaryFile();
             
-            JavaSource.forFileObject(target).runModificationTask(new CancellableTask<WorkingCopy>() {
-                public void cancel() {}
+            JavaSource.forFileObject(target).runModificationTask(new Task<WorkingCopy>() {
                 public void run(WorkingCopy parameter) throws Exception {
                     parameter.toPhase(Phase.RESOLVED);
                     
@@ -290,9 +289,8 @@ public abstract class CreateClassFix implements Fix {
             //use the original cp-info so it is "sure" that the target can be resolved:
             JavaSource js = JavaSource.create(cpInfo, targetFile);
             
-            js.runModificationTask(new CancellableTask<WorkingCopy>() {
-                public void cancel() {
-                }
+            js.runModificationTask(new Task<WorkingCopy>() {
+
                 public void run(final WorkingCopy working) throws IOException {
                     working.toPhase(Phase.RESOLVED);
                     TypeElement targetType = target.resolve(working);

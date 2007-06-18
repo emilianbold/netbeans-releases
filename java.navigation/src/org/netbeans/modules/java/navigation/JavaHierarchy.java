@@ -22,7 +22,7 @@ package org.netbeans.modules.java.navigation;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.Trees;
-import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
@@ -53,10 +53,7 @@ public final class JavaHierarchy {
 
             if (javaSource != null) {
                 try {
-                    javaSource.runUserActionTask(new CancellableTask<CompilationController>() {
-                            public void cancel() {
-                            }
-
+                    javaSource.runUserActionTask(new Task<CompilationController>() {
                             public void run(
                                 CompilationController compilationController)
                                 throws Exception {

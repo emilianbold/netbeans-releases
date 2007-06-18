@@ -27,7 +27,7 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.api.java.lexer.JavaTokenId;
-import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.TreePathHandle;
@@ -286,7 +286,7 @@ public class EmptyStatements extends AbstractHint {
     }
     */ 
     
-    private static class EmptyStatementFix implements Fix, CancellableTask<WorkingCopy> {
+    private static class EmptyStatementFix implements Fix, Task<WorkingCopy> {
 
         
         FileObject file;
@@ -315,10 +315,6 @@ public class EmptyStatements extends AbstractHint {
                 Exceptions.printStackTrace(e);
             }
             return null;
-        }
-
-        public void cancel() {
-            
         }
 
         public void run(WorkingCopy copy) throws Exception {

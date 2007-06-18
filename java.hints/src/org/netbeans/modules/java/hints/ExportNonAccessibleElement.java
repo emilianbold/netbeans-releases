@@ -55,7 +55,7 @@ import javax.lang.model.type.WildcardType;
 import javax.swing.JComponent;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.ModificationResult;
@@ -317,9 +317,7 @@ implements ElementVisitor<Boolean,Void>, TypeVisitor<Boolean,Void> {
         private static final Set<Kind> DECLARATION = EnumSet.of(Kind.CLASS, Kind.METHOD, Kind.VARIABLE);
         
         public ChangeInfo implement() throws IOException {
-            ModificationResult result = JavaSource.forFileObject(file).runModificationTask(new CancellableTask<WorkingCopy>() {
-                public void cancel() {
-                }
+            ModificationResult result = JavaSource.forFileObject(file).runModificationTask(new Task<WorkingCopy>() {
 
                 public void run(WorkingCopy wc) throws Exception {
                     wc.toPhase(JavaSource.Phase.RESOLVED);

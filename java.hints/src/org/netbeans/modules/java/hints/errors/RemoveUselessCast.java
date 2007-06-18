@@ -25,7 +25,7 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
@@ -93,7 +93,7 @@ public final class RemoveUselessCast implements ErrorRule<Void> {
         
         public ChangeInfo implement() {
             try {
-                js.runModificationTask(new CancellableTask<WorkingCopy>() {
+                js.runModificationTask(new Task<WorkingCopy>() {
                     public void run(WorkingCopy copy) throws IOException {
                         copy.toPhase(Phase.RESOLVED);
                         TreePath path = handle.resolve(copy);
@@ -104,7 +104,7 @@ public final class RemoveUselessCast implements ErrorRule<Void> {
                             copy.rewrite(tct, tct.getExpression());
                         }
                     }
-                    public void cancel() {}
+
                 }).commit();
             } catch (IOException e) {
                 Exceptions.printStackTrace(e);

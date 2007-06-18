@@ -37,7 +37,7 @@ import javax.swing.Icon;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
@@ -134,9 +134,7 @@ public final class JavaHierarchyModel extends DefaultTreeModel {
 
         if (javaSource != null) {
             try {
-                javaSource.runUserActionTask(new CancellableTask<CompilationController>() {
-                        public void cancel() {
-                        }
+                javaSource.runUserActionTask(new Task<CompilationController>() {
 
                         public void run(
                             CompilationController compilationController)
@@ -327,9 +325,7 @@ public final class JavaHierarchyModel extends DefaultTreeModel {
 
             if (javaSource != null) {
                 try {
-                    javaSource.runUserActionTask(new CancellableTask<CompilationController>() {
-                            public void cancel() {
-                            }
+                    javaSource.runUserActionTask(new Task<CompilationController>() {
 
                             public void run(CompilationController compilationController)
                                 throws Exception {
@@ -521,9 +517,7 @@ public final class JavaHierarchyModel extends DefaultTreeModel {
                                         JavaSource javaSource = JavaSource.forFileObject(implementorfileObject);
                                         if (javaSource != null) {
                                             try {
-                                                javaSource.runUserActionTask(new CancellableTask<CompilationController>() {
-                                                        public void cancel() {
-                                                        }
+                                                javaSource.runUserActionTask(new Task<CompilationController>() {
 
                                                         public void run(CompilationController compilationController)
                                                             throws Exception {

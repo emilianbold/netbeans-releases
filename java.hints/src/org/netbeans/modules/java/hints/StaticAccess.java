@@ -34,7 +34,7 @@ import javax.lang.model.type.TypeMirror;
 import javax.swing.JComponent;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.ModificationResult;
@@ -182,7 +182,7 @@ public class StaticAccess extends AbstractHint {
         return null;
     }    
 
-    static final class FixImpl implements Fix, CancellableTask<WorkingCopy> {
+    static final class FixImpl implements Fix, Task<WorkingCopy> {
         private final TreePathHandle expr;
         private final TreePathHandle type;
         private final FileObject file;
@@ -206,9 +206,6 @@ public class StaticAccess extends AbstractHint {
         
         @Override public String toString() {
             return "FixStaticAccess"; // NOI18N
-        }
-
-        public void cancel() {
         }
 
         public void run(WorkingCopy copy) throws Exception {

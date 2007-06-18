@@ -24,7 +24,7 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import java.io.IOException;
 import javax.lang.model.type.TypeMirror;
-import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.JavaSource.Phase;
@@ -57,9 +57,7 @@ final class ChangeTypeFix implements Fix {
     
     public ChangeInfo implement() {
         try {
-            js.runModificationTask(new CancellableTask<WorkingCopy>() {
-                public void cancel() {
-                }
+            js.runModificationTask(new Task<WorkingCopy>() {
                 public void run(final WorkingCopy working) throws IOException {
                     working.toPhase(Phase.RESOLVED);
                     TypeMirror[] tm = new TypeMirror[1];

@@ -37,7 +37,7 @@ import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.ClasspathInfo.PathKind;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
@@ -231,8 +231,7 @@ public class WrongPackageSuggestion extends AbstractHint {
             JavaSource js = JavaSource.forFileObject(file);
             
             try {
-                js.runModificationTask(new CancellableTask<WorkingCopy>() {
-                    public void cancel() {}
+                js.runModificationTask(new Task<WorkingCopy>() {
                     
                     public void run(WorkingCopy copy) throws Exception {
                         copy.toPhase(Phase.PARSED);

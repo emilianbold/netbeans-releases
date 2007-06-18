@@ -21,7 +21,7 @@ import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 import java.io.File;
 import java.io.IOException;
-import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.TestUtilities;
@@ -187,7 +187,7 @@ public class ConvertAnonymousToInnerTest extends NbTestCase {
         File testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile, test);
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        Task task = new Task<WorkingCopy>() {
             
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -197,8 +197,6 @@ public class ConvertAnonymousToInnerTest extends NbTestCase {
                 ConvertAnonymousToInner.convertAnonymousToInner(workingCopy, nct);
             }
             
-            public void cancel() {
-            }
         };
         testSource.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);

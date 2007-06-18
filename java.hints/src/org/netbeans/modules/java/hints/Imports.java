@@ -35,7 +35,7 @@ import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 import java.util.regex.Pattern;
 import javax.swing.JComponent;
-import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.TreeMaker;
@@ -393,7 +393,7 @@ public class Imports extends AbstractHint implements  PreferenceChangeListener {
         
     }
 
-    private static class ImportsFix implements Fix, CancellableTask<WorkingCopy> {
+    private static class ImportsFix implements Fix, Task<WorkingCopy> {
 
         FileObject file;
         List<TreePathHandle> tphList;
@@ -425,9 +425,6 @@ public class Imports extends AbstractHint implements  PreferenceChangeListener {
             return null;
         }
 
-        public void cancel() {
-            // Does nothing
-        }
 
         public void run(WorkingCopy copy) throws Exception {
             copy.toPhase(JavaSource.Phase.PARSED);            

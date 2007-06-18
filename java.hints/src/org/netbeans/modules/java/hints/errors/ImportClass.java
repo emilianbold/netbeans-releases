@@ -35,7 +35,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.TypeElement;
-import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
@@ -292,7 +292,7 @@ public final class ImportClass implements ErrorRule<ImportCandidatesHolder> {
         public ChangeInfo implement() {
             JavaSource js = JavaSource.forFileObject(file);            
             
-            CancellableTask task = new CancellableTask<WorkingCopy>() {
+            Task task = new Task<WorkingCopy>() {
                 
                     public void run(WorkingCopy copy) throws Exception {
                         if (copy.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0)
@@ -308,8 +308,6 @@ public final class ImportClass implements ErrorRule<ImportCandidatesHolder> {
                         SourceUtils.resolveImport(copy, new TreePath(copy.getCompilationUnit()), fqn);
                     }
                     
-                    public void cancel() {
-                    }
             };
             try {
                 js.runModificationTask(task).commit();

@@ -19,7 +19,7 @@ package org.netbeans.modules.java.hints;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
-import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.modules.java.hints.infrastructure.HintAction;
@@ -45,8 +45,8 @@ public class ConvertAnonymousToInnerAction extends HintAction {
         
         if (selection[0] == selection[1]) {
             try {
-                js.runUserActionTask(new CancellableTask<CompilationController>() {
-                    public void cancel() {}
+                js.runUserActionTask(new Task<CompilationController>() {
+
                     public void run(CompilationController parameter) throws Exception {
                         parameter.toPhase(JavaSource.Phase.RESOLVED);
                         TreePath path = parameter.getTreeUtilities().pathFor(selection[0]);

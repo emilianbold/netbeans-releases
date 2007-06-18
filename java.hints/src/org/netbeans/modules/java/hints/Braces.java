@@ -35,7 +35,7 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.api.java.lexer.JavaTokenId;
-import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.TreeMaker;
@@ -267,7 +267,7 @@ public class Braces extends AbstractHint {
         return false;
     }
     
-    private static class BracesFix implements Fix, CancellableTask<WorkingCopy> {
+    private static class BracesFix implements Fix, Task<WorkingCopy> {
 
         
         FileObject file;
@@ -295,10 +295,6 @@ public class Braces extends AbstractHint {
                 Exceptions.printStackTrace(e);
             }
             return null;
-        }
-
-        public void cancel() {
-            
         }
 
         public void run(WorkingCopy copy) throws Exception {

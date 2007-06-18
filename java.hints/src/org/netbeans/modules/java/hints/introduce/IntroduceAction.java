@@ -19,7 +19,7 @@ package org.netbeans.modules.java.hints.introduce;
 import java.util.EnumMap;
 import java.util.Map;
 import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.modules.java.hints.infrastructure.HintAction;
@@ -68,8 +68,7 @@ public final class IntroduceAction extends HintAction {
         final Map<IntroduceKind, String> errorMessages = new EnumMap<IntroduceKind, String>(IntroduceKind.class);
         
         try {
-            js.runUserActionTask(new CancellableTask<CompilationController>() {
-                public void cancel() {}
+            js.runUserActionTask(new Task<CompilationController>() {
                 public void run(CompilationController parameter) throws Exception {
                     parameter.toPhase(Phase.RESOLVED);
                     IntroduceHint.computeError(parameter, span[0], span[1], fixes, errorMessages);

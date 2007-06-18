@@ -42,7 +42,7 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
@@ -91,9 +91,8 @@ public class AddParameterOrLocalFix implements Fix {
             //use the original cp-info so it is "sure" that the proposedType can be resolved:
             JavaSource js = JavaSource.forFileObject(file);
             
-            js.runModificationTask(new CancellableTask<WorkingCopy>() {
-                public void cancel() {
-                }
+            js.runModificationTask(new Task<WorkingCopy>() {
+                
                 public void run(final WorkingCopy working) throws IOException {
                     working.toPhase(Phase.RESOLVED);
                     

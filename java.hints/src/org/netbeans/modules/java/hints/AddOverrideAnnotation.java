@@ -41,7 +41,7 @@ import javax.swing.JComponent;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.java.queries.SourceLevelQuery;
-import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
@@ -187,8 +187,7 @@ public class AddOverrideAnnotation extends AbstractHint {
             try {
                 JavaSource js = JavaSource.forFileObject(file);
                 
-                js.runModificationTask(new CancellableTask<WorkingCopy>() {
-                    public void cancel() {}
+                js.runModificationTask(new Task<WorkingCopy>() {
                     public void run(WorkingCopy copy) throws IOException {
                         copy.toPhase(Phase.RESOLVED); //XXX: performance
                         TreePath path = handle.resolve(copy);

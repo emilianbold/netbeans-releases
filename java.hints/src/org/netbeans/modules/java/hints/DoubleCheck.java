@@ -36,7 +36,7 @@ import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.ModificationResult;
@@ -231,7 +231,7 @@ public class DoubleCheck extends AbstractHint {
         return null;
     }
     
-    private static final class FixImpl implements Fix, CancellableTask<WorkingCopy> {
+    private static final class FixImpl implements Fix, Task<WorkingCopy> {
         private TreePathHandle synchHandle;
         private TreePathHandle ifHandle;
         private FileObject file;
@@ -257,8 +257,6 @@ public class DoubleCheck extends AbstractHint {
             return "FixDoubleCheck"; // NOI18N
         }
 
-        public void cancel() {
-        }
 
         public void run(WorkingCopy wc) throws Exception {
             wc.toPhase(JavaSource.Phase.RESOLVED);

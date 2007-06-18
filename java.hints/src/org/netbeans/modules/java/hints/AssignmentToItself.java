@@ -27,7 +27,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.Element;
-import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.WorkingCopy;
@@ -107,7 +107,7 @@ public class AssignmentToItself extends AbstractHint {
         return NbBundle.getMessage(AssignmentToItself.class, "DSC_ATI"); // NOI18N
     }
 
-    private static class ATIFix implements Fix, CancellableTask<WorkingCopy> {
+    private static class ATIFix implements Fix, Task<WorkingCopy> {
 
         private static final int REMOVE = 0;
         private static final int QUALIFY = 1;
@@ -149,10 +149,6 @@ public class AssignmentToItself extends AbstractHint {
                 Exceptions.printStackTrace(e);
             }
             return null;
-        }
-
-        public void cancel() {
-            // Does nothing
         }
 
         public void run(WorkingCopy workingCopy) throws Exception {

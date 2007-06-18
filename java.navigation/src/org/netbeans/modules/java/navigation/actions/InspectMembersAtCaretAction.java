@@ -23,7 +23,7 @@ import com.sun.source.util.TreePath;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 
-import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
@@ -91,9 +91,7 @@ public final class InspectMembersAtCaretAction extends BaseAction {
         }
 
         try {
-            javaSource.runUserActionTask(new CancellableTask<CompilationController>() {
-                    public void cancel() {
-                    }
+            javaSource.runUserActionTask(new Task<CompilationController>() {
 
                     public void run(
                         CompilationController compilationController)

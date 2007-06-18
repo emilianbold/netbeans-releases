@@ -20,7 +20,7 @@
 package org.netbeans.modules.java.navigation;
 
 import com.sun.javadoc.Doc;
-import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
@@ -131,9 +131,7 @@ public final class JavaMembersModel extends DefaultTreeModel {
 
         if (javaSource != null) {
             try {
-                javaSource.runUserActionTask(new CancellableTask<CompilationController>() {
-                        public void cancel() {
-                        }
+                javaSource.runUserActionTask(new Task<CompilationController>() {
 
                         public void run(
                             CompilationController compilationController)

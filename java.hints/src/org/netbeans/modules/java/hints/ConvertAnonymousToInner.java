@@ -45,7 +45,7 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
-import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
@@ -127,7 +127,7 @@ public class ConvertAnonymousToInner extends AbstractHint {
         return NbBundle.getMessage(ConvertAnonymousToInner.class, "DESC_ConvertAnonymousToInner");
     }
     
-    private static class FixImpl implements Fix, CancellableTask<WorkingCopy> {
+    private static class FixImpl implements Fix, Task<WorkingCopy> {
         
         private TreePathHandle tph;
         private JavaSource js;
@@ -167,8 +167,6 @@ public class ConvertAnonymousToInner extends AbstractHint {
             
             return null;
         }
-
-        public void cancel() {}
 
         public void run(WorkingCopy parameter) throws Exception {
             parameter.toPhase(Phase.RESOLVED);

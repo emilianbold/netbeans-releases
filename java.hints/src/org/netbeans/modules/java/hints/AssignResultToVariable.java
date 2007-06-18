@@ -42,7 +42,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Position;
 import javax.swing.text.Position.Bias;
-import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementUtilities.ElementAcceptor;
 import org.netbeans.api.java.source.JavaSource;
@@ -151,8 +151,7 @@ public class AssignResultToVariable extends AbstractHint {
         public ChangeInfo implement() {
             try {
                 final String[] name = new String[1];
-                ModificationResult result = JavaSource.forFileObject(file).runModificationTask(new CancellableTask<WorkingCopy>() {
-                    public void cancel() {}
+                ModificationResult result = JavaSource.forFileObject(file).runModificationTask(new Task<WorkingCopy>() {
                     
                     public void run(WorkingCopy copy) throws Exception {
                         copy.toPhase(Phase.RESOLVED);

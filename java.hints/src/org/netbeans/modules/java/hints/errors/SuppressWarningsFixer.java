@@ -43,7 +43,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
-import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
@@ -146,8 +146,8 @@ public class SuppressWarningsFixer implements ErrorRule<Void> {
             try {
                 JavaSource js = JavaSource.forFileObject(file);
                 
-                js.runModificationTask(new CancellableTask<WorkingCopy>() {
-                    public void cancel() {}
+                js.runModificationTask(new Task<WorkingCopy>() {
+
                     public void run(WorkingCopy copy) throws IOException {
                         copy.toPhase(Phase.RESOLVED); //XXX: performance
                         TreePath path = handle.resolve(copy);

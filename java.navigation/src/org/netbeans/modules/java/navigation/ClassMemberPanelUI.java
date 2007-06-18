@@ -25,7 +25,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.KeyStroke;
 import javax.swing.event.ChangeEvent;
 import javax.swing.tree.TreePath;
-import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
@@ -280,7 +280,7 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
         
     }
     
-    private static class JavaDocCalculator implements CancellableTask<CompilationController> {
+    private static class JavaDocCalculator implements Task<CompilationController> {
 
         private ElementHandle<? extends Element> handle;
         private ElementJavadoc doc;
@@ -289,8 +289,6 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
             this.handle = handle;
         }
 
-        public void cancel() {
-        }
 
         public void run(CompilationController cc) throws Exception {
             cc.toPhase( JavaSource.Phase.UP_TO_DATE );

@@ -36,7 +36,7 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.util.ElementFilter;
 import javax.swing.text.BadLocationException;
-import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
@@ -162,9 +162,8 @@ public final class ImplementAllAbstractMethods implements ErrorRule<Void> {
                 
                 while (repeat[0]) {
                     repeat[0] = false;
-                    js.runModificationTask(new CancellableTask<WorkingCopy>() {
-                        public void cancel() {
-                        }
+                    js.runModificationTask(new Task<WorkingCopy>() {
+
                         public void run(final WorkingCopy copy) throws IOException {
                             copy.toPhase(Phase.RESOLVED);
                             analyze(js, offset, copy, new Performer() {

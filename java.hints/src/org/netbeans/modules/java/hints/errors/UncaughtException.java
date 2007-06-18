@@ -42,7 +42,7 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeKind;
-import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
@@ -203,9 +203,8 @@ public final class UncaughtException implements ErrorRule<Void> {
         
         public ChangeInfo implement() {
             try {
-                js.runModificationTask(new CancellableTask<WorkingCopy>() {
-                    public void cancel() {
-                    }
+                js.runModificationTask(new Task<WorkingCopy>() {
+
                     public void run(WorkingCopy wc) throws Exception {
                         wc.toPhase(Phase.RESOLVED);
                         Tree tree = wc.getTrees().getTree(method.resolve(wc));
@@ -244,9 +243,8 @@ public final class UncaughtException implements ErrorRule<Void> {
         
         public ChangeInfo implement() {
             try {
-                js.runModificationTask(new CancellableTask<WorkingCopy>() {
-                    public void cancel() {
-                    }
+                js.runModificationTask(new Task<WorkingCopy>() {
+
                     public void run(WorkingCopy wc) throws Exception {
                         wc.toPhase(Phase.RESOLVED);
                         TreePath currentPath = wc.getTreeUtilities().pathFor(offset + 1);

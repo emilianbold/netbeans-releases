@@ -32,7 +32,7 @@ import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.Modifier;
-import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
@@ -111,7 +111,7 @@ public class MakeVariableFinal implements ErrorRule<Void> {
             JavaSource js = JavaSource.forFileObject(file);
             
             try {
-                js.runModificationTask(new CancellableTask<WorkingCopy>() {
+                js.runModificationTask(new Task<WorkingCopy>() {
                     public void run(WorkingCopy wc) throws IOException {
                         wc.toPhase(Phase.RESOLVED);
                         TreePath tp = variable.resolve(wc);
@@ -130,7 +130,6 @@ public class MakeVariableFinal implements ErrorRule<Void> {
                         
                         wc.rewrite(mt, newMod);
                     }
-                    public void cancel() {}
                 }).commit();
             } catch (IOException e) {
                 Exceptions.printStackTrace(e);

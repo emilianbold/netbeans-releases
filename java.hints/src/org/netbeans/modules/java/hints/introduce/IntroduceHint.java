@@ -66,6 +66,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
@@ -930,8 +931,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
             final boolean replaceAll = panel.isReplaceAll();
             final boolean declareFinal = panel.isDeclareFinal();
             final Set<Modifier> access = kind == IntroduceKind.CREATE_CONSTANT ? panel.getAccess() : null;
-            js.runModificationTask(new CancellableTask<WorkingCopy>() {
-                public void cancel() {}
+            js.runModificationTask(new Task<WorkingCopy>() {
                 public void run(WorkingCopy parameter) throws Exception {
                     parameter.toPhase(Phase.RESOLVED);
                     
@@ -1077,8 +1077,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
             final boolean declareFinal = panel.isDeclareFinal();
             final Set<Modifier> access = panel.getAccess();
             final int initializeIn = panel.getInitializeIn();
-            js.runModificationTask(new CancellableTask<WorkingCopy>() {
-                public void cancel() {}
+            js.runModificationTask(new Task<WorkingCopy>() {
                 public void run(WorkingCopy parameter) throws Exception {
                     parameter.toPhase(Phase.RESOLVED);
                     
@@ -1261,8 +1260,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
             final String name = panel.getMethodName();
             final Set<Modifier> access = panel.getAccess();
             
-            js.runModificationTask(new CancellableTask<WorkingCopy>() {
-                public void cancel() {}
+            js.runModificationTask(new Task<WorkingCopy>() {
                 public void run(WorkingCopy copy) throws Exception {
                     copy.toPhase(Phase.RESOLVED);
                     
