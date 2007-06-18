@@ -32,12 +32,9 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.jpa.verification.JPAProblemContext;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.persistence.api.EntityClassScope;
-import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
-import org.netbeans.modules.j2ee.persistence.api.PersistenceScopes;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Embeddable;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappingsMetadata;
@@ -188,22 +185,6 @@ public class ModelUtils {
         }
         
         return null;
-    }
-    
-    public static PersistenceScope getDefaultPersistenceScope(Project project){
-        
-        PersistenceScopes scopes = PersistenceScopes.getPersistenceScopes(project);
-        
-        if (scopes == null){
-            return null; // project of this type doesn't provide a list of persistence scopes
-        }
-        
-        //TODO: a workaround for 102643, remove it when the issue is fixed
-        if (scopes.getPersistenceScopes().length == 0){
-            return null;
-        }
-        
-        return scopes.getPersistenceScopes()[0];
     }
     
     public static MetadataModel<EntityMappingsMetadata> getModel(FileObject sourceFile){
