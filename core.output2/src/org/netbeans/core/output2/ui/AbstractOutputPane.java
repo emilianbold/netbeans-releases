@@ -639,6 +639,7 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
                     }
                     g.setColor(component.getCaretColor());
                     g.drawLine(r.x, r.y, r.x, r.y + r.height - 1);
+                    g.drawLine(r.x+1, r.y, r.x+1, r.y + r.height - 1);
 
                 } catch (BadLocationException e) {
                     // can't render I guess
