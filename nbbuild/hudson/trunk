@@ -34,9 +34,12 @@ rm -rf $DIST/
 
 ant -Dbuildnum=$BUILD_TAG -f nbbuild/build.xml build-nozip || exit
 
+# XXX xtest hangs forever if cnd is included in the build, workaround for now.
+mv nbbuild/netbeans/cnd1 nbbuild/netbeans/cnd1-temp
 ant -f nbbuild/build.xml commit-validation
 # Do not halt if there were failures, but do collect results for Hudson:
 ant -f nbbuild/build.xml commit-validation-junit-format
+mv nbbuild/netbeans/cnd1-temp nbbuild/netbeans/cnd1
 
 # we can't afford to run build-nbms in hudson builds, on deadlock.netbeans.org it takes 6 minutes from a typical 15 min build run
 # mkdir -p $DIST/nbms
