@@ -59,15 +59,21 @@ public class SaveAsImageAction extends CookieAction{
                 project = (J2MEProject) p;
             }
                 
-            SVGRasterizerPanel panel = new SVGRasterizerPanel(ScreenSizeHelper.getCurrentDeviceScreenSize(doj.getPrimaryFile(), null), project != null);
+            //SVGRasterizerPanel panel = new SVGRasterizerPanel(ScreenSizeHelper.getCurrentDeviceScreenSize(doj.getPrimaryFile(), null), project != null);
+            SVGAnimationRasterizerPanel panel = new SVGAnimationRasterizerPanel(ScreenSizeHelper.getCurrentDeviceScreenSize(primaryFile, null), project != null,false);
             DialogDescriptor dd = new DialogDescriptor(panel, NbBundle.getMessage(SaveAnimationAsImageAction.class, "TITLE_ImageExport"));
             DialogDisplayer.getDefault().createDialog(dd).setVisible(true);
             int imageWidth = panel.getImageWidth();
             int imageHeigth = panel.getImageHeigth();
+            AnimationRasterizer.ImageType imageType = panel.getSelectedImageFormat();
+            float compressionQuality = panel.getCompressionQuality();
+            boolean progressive = panel.isProgressive();
             boolean forAllConfig = panel.isForAllConfigurations();
 
             if (dd.getValue() == DialogDescriptor.OK_OPTION){
-                ImageRasterizerHelper.export(doj.getPrimaryFile(), project, imageWidth, imageHeigth, 0.0f, 0.0f, 1, forAllConfig);
+                AnimationRasterizer.export(doj.getPrimaryFile(), project, imageWidth, imageHeigth, 
+                        imageType,progressive,compressionQuality,
+                        0.0f, 0.0f, 1, true, forAllConfig);
             }
         }
     }

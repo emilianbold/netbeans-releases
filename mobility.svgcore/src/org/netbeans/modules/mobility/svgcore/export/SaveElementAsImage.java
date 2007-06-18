@@ -94,11 +94,15 @@ public final class SaveElementAsImage extends CookieAction{// implements Present
             project = (J2MEProject) p;
         }
 
-        SVGRasterizerPanel panel = new SVGRasterizerPanel(ScreenSizeHelper.getCurrentDeviceScreenSize(primaryFile, null), project != null);
+        //SVGRasterizerPanel panel = new SVGRasterizerPanel(ScreenSizeHelper.getCurrentDeviceScreenSize(primaryFile, null), project != null);
+        SVGAnimationRasterizerPanel panel = new SVGAnimationRasterizerPanel(ScreenSizeHelper.getCurrentDeviceScreenSize(primaryFile, null), project != null,false);
         DialogDescriptor dd = new DialogDescriptor(panel, NbBundle.getMessage(SaveAnimationAsImageAction.class, "TITLE_ImageExport"));
         DialogDisplayer.getDefault().createDialog(dd).setVisible(true);
         int imageWidth = panel.getImageWidth();
         int imageHeigth = panel.getImageHeigth();
+        AnimationRasterizer.ImageType imageType = panel.getSelectedImageFormat();
+        float compressionQuality = panel.getCompressionQuality();
+        boolean progressive = panel.isProgressive();        
         boolean forAllConfig = panel.isForAllConfigurations();
 
         if (dd.getValue() == DialogDescriptor.OK_OPTION){
@@ -144,7 +148,9 @@ public final class SaveElementAsImage extends CookieAction{// implements Present
             bbox.setX(allBBox.getX() + allBBox.getWidth());
             svg.setRectTrait("viewBox", bbox);
 
-            ImageRasterizerHelper.exportElement(primaryFile, project, svgImage, elt.getId(), imageWidth, imageHeigth, 0.0f, 0.0f, 1, forAllConfig);
+            AnimationRasterizer.exportElement(primaryFile, project, svgImage, elt.getId(), imageWidth, imageHeigth, 
+                                                imageType,progressive,compressionQuality,
+                                                0.0f, 0.0f, 1, true, forAllConfig);
     
             svg.setRectTrait("viewBox", viewBox);
             elt.setMatrixTrait("transform", origTxf);

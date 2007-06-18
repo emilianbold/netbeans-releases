@@ -61,18 +61,24 @@ public class SaveAnimationAsImageAction extends CookieAction {
                 project = (J2MEProject) p;
             }
                 
-            SVGAnimationRasterizerPanel panel = new SVGAnimationRasterizerPanel(ScreenSizeHelper.getCurrentDeviceScreenSize(doj.getPrimaryFile(), null), project != null);
+            SVGAnimationRasterizerPanel panel = new SVGAnimationRasterizerPanel(ScreenSizeHelper.getCurrentDeviceScreenSize(doj.getPrimaryFile(), null), project != null, true);
             DialogDescriptor dd = new DialogDescriptor(panel, NbBundle.getMessage(SaveAnimationAsImageAction.class, "TITLE_AnimationExport"));
             DialogDisplayer.getDefault().createDialog(dd).setVisible(true);
             int imageWidth = panel.getImageWidth();
             int imageHeigth = panel.getImageHeigth();
+            AnimationRasterizer.ImageType imageType = panel.getSelectedImageFormat();
+            float compressionQuality = panel.getCompressionQuality();
+            boolean progressive = panel.isProgressive();
             float startTime = panel.getStartTime();
             float endTime = panel.getEndTime();
             int numberOfSteps = panel.getNumberOfSteps();
-            boolean forAllConfig = panel.isForAllConfigurations();
+            boolean inSingleImage = panel.isInSingleImage();
+            boolean forAllConfig = panel.isForAllConfigurations();            
 
             if (dd.getValue() == DialogDescriptor.OK_OPTION){
-                ImageRasterizerHelper.export(doj.getPrimaryFile(), project, imageWidth, imageHeigth, startTime, endTime, numberOfSteps, forAllConfig);
+                AnimationRasterizer.export(doj.getPrimaryFile(), project, imageWidth, imageHeigth,
+                                        imageType,progressive,compressionQuality,
+                                        startTime, endTime, numberOfSteps, inSingleImage, forAllConfig);
             }
         }
     }
