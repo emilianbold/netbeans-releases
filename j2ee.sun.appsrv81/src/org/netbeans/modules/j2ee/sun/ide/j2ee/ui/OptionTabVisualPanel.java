@@ -113,8 +113,8 @@ public class OptionTabVisualPanel extends javax.swing.JPanel {
                             .add(startupTimeoutLabel))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(deploymentTimeoutValue, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 67, Short.MAX_VALUE)
-                            .add(startupTimeoutValue, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 67, Short.MAX_VALUE)))
+                            .add(deploymentTimeoutValue, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 69, Short.MAX_VALUE)
+                            .add(startupTimeoutValue, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 69, Short.MAX_VALUE)))
                     .add(enableDirectoryDeployment)
                     .add(enableDriverDeployment))
                 .addContainerGap())
@@ -154,7 +154,7 @@ private void enableDriverDeploymentActionPerformed(java.awt.event.ActionEvent ev
             if (0 <= tval) {
                 dmp.setDeploymentTimeout(tval);
                 if (sval.charAt(0) == '0') {
-                    startupTimeoutValue.setText(tval+"");   // NOI18N                  
+                    deploymentTimeoutValue.setText(tval+"");   // NOI18N                  
                 }
             } else {
                 deploymentTimeoutValue.setText(val+"");     // NOI18N    
