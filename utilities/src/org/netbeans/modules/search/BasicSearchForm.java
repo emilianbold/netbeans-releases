@@ -40,7 +40,6 @@ import java.util.logging.Logger;
 import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
-import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -96,7 +95,8 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
     BasicSearchForm(Map<SearchScope, Boolean> searchScopes,
                     SearchScope preferredSearchScope,
 		    BasicSearchCriteria criteria,
-		    boolean searchAndReplace) {
+		    boolean searchAndReplace,
+                    boolean usePreviousValues) {
         this.searchCriteria = (criteria != null)
                               ? criteria
                               : new BasicSearchCriteria();
@@ -105,8 +105,19 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
         initComponents(searchAndReplace);
         initAccessibility();
         initHistory();
-	initValues();
         initInteraction();
+
+        /*
+         * Interaction must be already set up when we set values, otherwise
+         * state of the dialog might not be corresponding to the values,
+         * e.g. the Find dialog could be disabled although valid values
+         * are entered.
+         */
+        if (usePreviousValues) {
+            initPreviousValues();
+        } else {
+            initValuesFromHistory();
+        }
     }
 
     /** This method is called from within the constructor to
@@ -332,7 +343,7 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
      * Fills text and sets values of check-boxes according to the current
      * search criteria.
      */
-    private void initValues() {
+    private void initPreviousValues() {
         String textPattern = searchCriteria.getTextPatternExpr();
         cboxTextToFind.setSelectedItem(textPattern);
         textToFindEditor.setText(textPattern);
@@ -399,6 +410,34 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
             }
         }
 
+        /**
+         * Listener that selects all text in a text field when the text field
+         * gains permanent focus.
+         */
+        class TextFieldFocusListener implements FocusListener {
+
+            public void focusGained(FocusEvent e) {
+                if (!e.isTemporary()) {
+                    JTextComponent textComp = (JTextComponent) e.getSource();
+                    if (textComp.getText().length() != 0) {
+                        textComp.selectAll();
+                    }
+                }
+            }
+
+            public void focusLost(FocusEvent e) {
+                /* do nothing */
+            }
+
+        }
+
+        final TextFieldFocusListener focusListener = new TextFieldFocusListener();
+        textToFindEditor.addFocusListener(focusListener);
+        fileNamePatternEditor.addFocusListener(focusListener);
+        if (replacementPatternEditor != null) {
+            replacementPatternEditor.addFocusListener(focusListener);
+        }
+        
         textToFindEditor.getDocument().addDocumentListener(
                 new PatternChangeListener(cboxTextToFind));
         fileNamePatternEditor.getDocument().addDocumentListener(
@@ -443,9 +482,7 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
                     itemsList.add(searchExpression);
                 }
             }
-            String[] items = new String[itemsList.size()];
-            itemsList.toArray(items);
-            cboxTextToFind.setModel(new DefaultComboBoxModel(items));
+            cboxTextToFind.setModel(new ListComboBoxModel(itemsList));
         }
 
         FindDialogMemory memory = FindDialogMemory.getDefault();
@@ -453,14 +490,34 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
 
         entries = memory.getFileNamePatterns();
         if (!entries.isEmpty()) {
-            cboxFileNamePattern.setModel(new ListComboBoxModel(entries));
+            cboxFileNamePattern.setModel(new ListComboBoxModel(entries, true));
         }
 
         if (cboxReplacement != null) {
             entries = memory.getReplacementExpressions();
             if (!entries.isEmpty()) {
-                cboxReplacement.setModel(new ListComboBoxModel(entries));
+                cboxReplacement.setModel(new ListComboBoxModel(entries, true));
             }
+        }
+    }
+    
+    /**
+     */
+    private void initValuesFromHistory() {
+        if (cboxTextToFind.getItemCount() != 0) {
+            cboxTextToFind.setSelectedIndex(0);
+            textToFindEditor.setText(
+                    cboxTextToFind.getSelectedItem().toString());
+        }
+        if (cboxFileNamePattern.getItemCount() != 0) {
+            cboxFileNamePattern.setSelectedIndex(0);
+            fileNamePatternEditor.setText(
+                    cboxFileNamePattern.getSelectedItem().toString());
+        }
+        if (cboxReplacement != null && cboxReplacement.getItemCount() != 0) {
+            cboxReplacement.setSelectedIndex(0);
+            replacementPatternEditor.setText(
+                    cboxReplacement.getSelectedItem().toString());
         }
     }
     
@@ -480,7 +537,7 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
 
         return textToFindEditor.requestFocusInWindow();
     }
-    
+
     /**
      * Sets proper color of text pattern.
      */

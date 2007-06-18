@@ -152,7 +152,8 @@ public final class SearchPanel extends JPanel
         basicCriteriaPanel = new BasicSearchForm(searchScopes,
                                                  preferredSearchScope,
                                                  basicSearchCriteria,
-                                                 searchAndReplace);
+                                                 searchAndReplace,
+                                                 activateWithPreviousValues);
         basicCriteriaPanel.setUsabilityChangeListener(this);
         
         /* Create search type panels: */

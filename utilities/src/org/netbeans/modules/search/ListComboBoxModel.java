@@ -32,9 +32,15 @@ final class ListComboBoxModel implements ComboBoxModel {
 
     private final List<? extends Object> elements;
     private final int maxIndex;
+    private final boolean reverseOrder;
     private Object selectedItem;
 
     public ListComboBoxModel(List<? extends Object> elements) {
+        this(elements, false);
+    }
+
+    public ListComboBoxModel(List<? extends Object> elements,
+                             final boolean reverseOrder) {
         if (elements == null) {
             throw new IllegalArgumentException(
                     "the list of elements must not be null");           //NOI18N
@@ -45,6 +51,7 @@ final class ListComboBoxModel implements ComboBoxModel {
         }
         this.elements = elements;
         this.maxIndex = elements.size() - 1;
+        this.reverseOrder = reverseOrder;
     }
 
     public void setSelectedItem(Object item) {
@@ -60,7 +67,8 @@ final class ListComboBoxModel implements ComboBoxModel {
     }
 
     public Object getElementAt(int index) {
-        return elements.get(maxIndex - index);
+        return elements.get(reverseOrder ? maxIndex - index
+                                         : index);
     }
 
     public void addListDataListener(ListDataListener l) {
