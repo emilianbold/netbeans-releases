@@ -427,7 +427,7 @@ public class NbRenameRefactoringPlugin extends AbstractRefactoringPlugin {
             if (content != null) {
                 String longName = oldName;
                 if (newName == null) {
-                    System.out.println("new name=" + rename.getNewName());
+//                    System.out.println("new name=" + rename.getNewName());
                     newName = rename.getNewName();
                     newName = newName.replace('.', '/') + ".class"; //NOI18N
                 }
@@ -471,7 +471,7 @@ public class NbRenameRefactoringPlugin extends AbstractRefactoringPlugin {
             if (content != null) {
                 String longName = oldName;
                 if (newName == null) {
-                    System.out.println("new name=" + rename.getNewName());
+//                    System.out.println("new name=" + rename.getNewName());
                     newName = rename.getNewName();
                 }
                 longName = longName.replaceAll("[.]", "\\."); // NOI18N

@@ -62,8 +62,6 @@ ould operate on.
                 return new NbWhereUsedRefactoringPlugin(refactoring);
             }
         }
-        System.out.println("halde=" + handle);
-        System.out.println("fle=" + file);
         if (refactoring instanceof RenameRefactoring) {
             if (handle!=null || ((file!=null) && RetoucheUtils.isJavaFile(file))) {
                 //rename java file, class, method etc..
