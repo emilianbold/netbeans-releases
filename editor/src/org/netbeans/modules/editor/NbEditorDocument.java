@@ -163,8 +163,9 @@ NbDocument.Printable, NbDocument.CustomEditor, NbDocument.CustomToolbar, NbDocum
             formatter = (Formatter)Settings.getValue(getKitClass(), FORMATTER);
             f = formatter;
         }
-
-        return (f != null) ? f : super.getFormatter();
+        putProperty("defaultFormatter", f);
+        // The super implementation will inspect "defaultFormatter" property
+        return super.getFormatter();
     }
 
     /** Add annotation to the document. For annotation of whole line
