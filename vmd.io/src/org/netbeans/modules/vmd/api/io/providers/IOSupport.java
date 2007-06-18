@@ -25,6 +25,7 @@ import org.netbeans.modules.vmd.api.model.Debug;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.io.CodeResolver;
 import org.netbeans.modules.vmd.io.DataObjectContextImpl;
+import org.netbeans.modules.vmd.io.DocumentLoad;
 import org.netbeans.modules.vmd.io.editor.EditorViewDescription;
 import org.netbeans.modules.vmd.io.editor.EditorViewFactorySupport;
 import org.openide.filesystems.FileObject;
@@ -192,5 +193,14 @@ public final class IOSupport {
         CodeResolver resolver = resolvers.get(activatedView.getContext().getDataObject());
         resolver.viewActivated(activatedView);
     }
-    
+
+    /**
+     * Loads the document and resolves the project type of the document.
+     * @param context the context
+     * @return the project type
+     */
+    public static String resolveProjectType (DataObjectContext context) {
+        return DocumentLoad.loadProjectType (context);
+    }
+
 }

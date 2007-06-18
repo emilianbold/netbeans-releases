@@ -58,10 +58,12 @@ public class SVGAnimatorWrapperCD extends ComponentDescriptor {
     public static final String ICON_LARGE_PATH = "org/netbeans/modules/vmd/midpnb/resources/svg_animator_wrapper_64.png"; // NOI18N
     
     public static final String PROP_SVG_IMAGE = "svgImage"; //NOI18N
-    public static final String PROP_START_ANIM_IMMEDIATELY = "startAnimationImmideately"; //NOI18N
+    public static final String PROP_START_ANIM_IMMEDIATELY = "startAnimationImmediately"; //NOI18N
     public static final String PROP_TIME_INCREMENT = "animationTimeIncrement"; //NOI18N
     public static final String PROP_RESET_ANIMATION_WHEN_STOPPED = "resetAnimationWhenStopped"; //NOI18N
-    
+
+    public static final String PROP_OLD_START_ANIM_IMMEDIATELY = "startAnimationImmideately"; //NOI18N
+
     public static final String[] MIDP_NB_SVG_LIBRARY = {"nb_svg_midp_components"}; //NOI18N
     
     static {

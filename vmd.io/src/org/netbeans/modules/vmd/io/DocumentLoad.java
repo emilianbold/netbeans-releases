@@ -21,11 +21,15 @@ package org.netbeans.modules.vmd.io;
 import org.netbeans.modules.vmd.api.io.DataObjectContext;
 import org.netbeans.modules.vmd.api.io.DataSerializer;
 import org.netbeans.modules.vmd.api.io.providers.IOSupport;
+import org.netbeans.modules.vmd.api.io.serialization.ComponentElement;
+import org.netbeans.modules.vmd.api.io.serialization.PropertyElement;
+import org.netbeans.modules.vmd.api.io.serialization.DocumentSerializationController;
 import org.netbeans.modules.vmd.api.model.*;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.xml.XMLUtil;
+import org.openide.util.Lookup;
 import org.w3c.dom.*;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
@@ -41,6 +45,10 @@ import java.util.*;
  */
 // TODO - check for design and document version
 public class DocumentLoad {
+
+    private static Collection<? extends DocumentSerializationController> getDocumentSerializationControllers () {
+        return Lookup.getDefault ().lookupAll (DocumentSerializationController.class);
+    }
 
     public static boolean load (DataObjectContext context, DesignDocument loadingDocument) {
         final Node rootNode;
@@ -66,7 +74,7 @@ public class DocumentLoad {
             return false;
         }
 
-        loadDocumentVersion1 (loadingDocument, documentNode);
+        loadDocumentVersion1 (context, loadingDocument, documentNode);
 
         Collection<? extends DataSerializer> serializers = DocumentSave.customDataSerializers.allInstances ();
         for (Node node : getChildNode (rootNode)) {
@@ -81,35 +89,41 @@ public class DocumentLoad {
         return true;
     }
 
-    private static void loadDocumentVersion1 (final DesignDocument loadingDocument, Node documentNode) {
-        final HashMap<Long, HierarchyElement> hierarchy = new HashMap<Long, HierarchyElement> ();
+    private static void loadDocumentVersion1 (final DataObjectContext context, final DesignDocument loadingDocument, Node documentNode) {
+        ArrayList<ComponentElement> componentElements = new ArrayList<ComponentElement> ();
         if (documentNode != null)
             for (Node child : getChildNode (documentNode))
                 if (isComponentNode (child))
-                    collectStructure (hierarchy, child, Long.MIN_VALUE);
+                    collectStructure (componentElements, child, Long.MIN_VALUE);
 
+        for (DocumentSerializationController controller : getDocumentSerializationControllers ())
+            controller.approveComponents (context, loadingDocument, componentElements);
+
+        final HashMap<Long, ComponentElement> hierarchy = new HashMap<Long, ComponentElement> ();
         HashSet<TypeID> typeids = new HashSet<TypeID> ();
-        for (HierarchyElement element : hierarchy.values ())
+        for (ComponentElement element : componentElements) {
+            hierarchy.put (element.getUID (), element);
             typeids.add (element.getTypeID ());
+        }
 
         loadingDocument.getDescriptorRegistry ().assertComponentDescriptors (typeids);
 
         loadingDocument.getTransactionManager ().writeAccess (new Runnable() {
             public void run () {
-                loadDocumentCore (loadingDocument, hierarchy);
+                loadDocumentCore (context, loadingDocument, hierarchy);
             }
         });
     }
 
-    private static void loadDocumentCore (DesignDocument loadingDocument, HashMap<Long, HierarchyElement> hierarchy) {
-        ArrayList<HierarchyElement> list = new ArrayList<HierarchyElement> (hierarchy.values ());
-        Collections.sort (list, new Comparator<HierarchyElement>() {
-            public int compare (HierarchyElement o1, HierarchyElement o2) {
+    private static void loadDocumentCore (DataObjectContext context, DesignDocument loadingDocument, HashMap<Long, ComponentElement> hierarchy) {
+        ArrayList<ComponentElement> list = new ArrayList<ComponentElement> (hierarchy.values ());
+        Collections.sort (list, new Comparator<ComponentElement>() {
+            public int compare (ComponentElement o1, ComponentElement o2) {
                 return (int) (o1.getUID () - o2.getUID ());
             }
         });
 
-        for (HierarchyElement element : list) {
+        for (ComponentElement element : list) {
             long componentid = element.getUID ();
             loadingDocument.setPreferredComponentID (componentid);
             if (loadingDocument.getDescriptorRegistry ().getComponentDescriptor (element.getTypeID ()) == null) {
@@ -121,7 +135,7 @@ public class DocumentLoad {
             assert component.getComponentDescriptor () != null;
         }
 
-        for (HierarchyElement element : hierarchy.values ()) {
+        for (ComponentElement element : hierarchy.values ()) {
             long parentuid = element.getParentuid ();
             DesignComponent parent = loadingDocument.getComponentByUID (parentuid);
             DesignComponent component = loadingDocument.getComponentByUID (element.getUID ());
@@ -132,24 +146,39 @@ public class DocumentLoad {
                     continue;
                 parent.addComponent (component);
             }
+        }
+
+        for (ComponentElement element : hierarchy.values ()) {
+            DesignComponent component = loadingDocument.getComponentByUID (element.getUID ());
+            if (component == null)
+                continue;
 
             ComponentDescriptor descriptor = component.getComponentDescriptor ();
             if (descriptor == null)
                 continue;
 
             Node[] propertyNodes = getChildNode (element.getNode ());
+            ArrayList<PropertyElement> propertyElements = new ArrayList<PropertyElement> ();
             for (Node propertyNode : propertyNodes) {
                 if (! isPropertyNode (propertyNode))
                     continue;
                 String propertyName = getAttributeValue (propertyNode, DocumentSave.NAME_ATTR);
+                TypeID typeid = TypeID.createFrom (getAttributeValue (propertyNode, DocumentSave.TYPEID_ATTR));
+                String serialized = getAttributeValue (propertyNode, DocumentSave.VALUE_ATTR);
+                propertyElements.add (PropertyElement.create (propertyName, typeid, serialized));
+            }
+
+            for (DocumentSerializationController controller : getDocumentSerializationControllers ())
+                controller.approveProperties (context, loadingDocument, component, propertyElements);
+
+            for (PropertyElement propertyElement : propertyElements) {
+                String propertyName = propertyElement.getPropertyName ();
                 if (descriptor.getPropertyDescriptor (propertyName) == null) {
                     Debug.warning  ("Missing property descriptor", component, propertyName);
                 }
-                TypeID typeid = TypeID.createFrom (getAttributeValue (propertyNode, DocumentSave.TYPEID_ATTR));
-                String serialized = getAttributeValue (propertyNode, DocumentSave.VALUE_ATTR);
                 PropertyValue value;
                 try {
-                    value = PropertyValue.deserialize (serialized, loadingDocument, typeid);
+                    value = PropertyValue.deserialize (propertyElement.getSerialized (), loadingDocument, propertyElement.getTypeID ());
                 } catch (Exception e) {
                     Debug.warning ("Error while deserializing property value", component, propertyName); // NOI18N
                     throw Debug.error (e);
@@ -163,15 +192,15 @@ public class DocumentLoad {
             loadingDocument.setRootComponent (componentByUID);
     }
 
-    private static void collectStructure (HashMap<Long, HierarchyElement> hierarchy, Node node, long parent) {
+    private static void collectStructure (Collection<ComponentElement> componentElements, Node node, long parent) {
         long componentid = Long.parseLong (getAttributeValue (node, DocumentSave.COMPONENTID_ATTR));
         TypeID typeid = TypeID.createFrom (getAttributeValue (node, DocumentSave.TYPEID_ATTR));
-        hierarchy.put (componentid, new HierarchyElement (parent, componentid, typeid, node));
+        componentElements.add (ComponentElement.create (parent, componentid, typeid, node));
 
         Node[] children = getChildNode (node);
         for (Node child : children)
             if (isComponentNode (child))
-                collectStructure (hierarchy, child, componentid);
+                collectStructure (componentElements, child, componentid);
     }
 
     private static boolean isDocumentNode (Node child) {
@@ -201,20 +230,20 @@ public class DocumentLoad {
         return null;
     }
 
-    static void createEmpty (DesignDocument loadingDocument) {
-        final TypeID type = new TypeID (TypeID.Kind.COMPONENT, "#Root");
-        final DescriptorRegistry descriptorRegistry = loadingDocument.getDescriptorRegistry ();
-        final boolean[] ret = new boolean[1];
-        descriptorRegistry.readAccess (new Runnable() {
-            public void run () {
-                ret[0] = descriptorRegistry.getComponentDescriptor (type) != null;
-            }
-        });
-        if (ret[0]) {
-            DesignComponent root = loadingDocument.createComponent (type);
-            loadingDocument.setRootComponent (root);
-        }
-    }
+//    static void createEmpty (DataObjectContext context, DesignDocument loadingDocument) {
+//        final TypeID type = ProjectTypeInfo.getProjectTypeInfoFor (context.getProjectType ()).getRootCDTypeID ();
+//        final DescriptorRegistry descriptorRegistry = loadingDocument.getDescriptorRegistry ();
+//        final boolean[] ret = new boolean[1];
+//        descriptorRegistry.readAccess (new Runnable() {
+//            public void run () {
+//                ret[0] = descriptorRegistry.getComponentDescriptor (type) != null;
+//            }
+//        });
+//        if (ret[0]) {
+//            DesignComponent root = loadingDocument.createComponent (type);
+//            loadingDocument.setRootComponent (root);
+//        }
+//    }
 
     private static Node getRootNode (final FileObject fileObject) throws IOException {
         synchronized (DocumentSave.sync) {
@@ -281,38 +310,6 @@ public class DocumentLoad {
             Debug.warning (e);
         }
         return null;
-    }
-
-    private static class HierarchyElement {
-
-        private long parentuid;
-        private long uid;
-        private TypeID typeid;
-        private Node node;
-
-        public HierarchyElement (long parentuid, long uid, TypeID typeid, Node node) {
-            this.parentuid = parentuid;
-            this.uid = uid;
-            this.typeid = typeid;
-            this.node = node;
-        }
-
-        public long getParentuid () {
-            return parentuid;
-        }
-
-        public long getUID () {
-            return uid;
-        }
-
-        public TypeID getTypeID () {
-            return typeid;
-        }
-
-        public Node getNode () {
-            return node;
-        }
-
     }
 
     public static String loadProjectType (DataObjectContext context) {

@@ -166,6 +166,7 @@
             <public-packages>
                 <package>org.netbeans.modules.vmd.api.io</package>
                 <package>org.netbeans.modules.vmd.api.io.providers</package>
+                <package>org.netbeans.modules.vmd.api.io.serialization</package>
             </public-packages>
         </data>
     </configuration>

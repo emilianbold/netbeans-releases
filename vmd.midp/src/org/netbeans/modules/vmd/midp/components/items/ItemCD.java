@@ -20,6 +20,7 @@
 package org.netbeans.modules.vmd.midp.components.items;
 
 import org.netbeans.modules.vmd.api.codegen.CodeSetterPresenter;
+import org.netbeans.modules.vmd.api.inspector.InspectorFolderComponentPresenter;
 import org.netbeans.modules.vmd.api.inspector.InspectorOrderingController;
 import org.netbeans.modules.vmd.api.inspector.InspectorPositionPresenter;
 import org.netbeans.modules.vmd.api.inspector.common.ArrayPropertyOrderingController;
@@ -46,6 +47,7 @@ import org.netbeans.modules.vmd.midp.components.general.ClassCD;
 import org.netbeans.modules.vmd.midp.components.general.RootCode;
 import org.netbeans.modules.vmd.midp.components.listeners.ItemCommandListenerCD;
 import org.netbeans.modules.vmd.midp.components.sources.ItemCommandEventSourceCD;
+import org.netbeans.modules.vmd.midp.general.MoveArrayAcceptPresenter;
 import org.netbeans.modules.vmd.midp.inspector.controllers.ComponentsCategoryPC;
 import org.netbeans.modules.vmd.midp.inspector.folders.MidpInspectorSupport;
 import org.netbeans.modules.vmd.midp.propertyeditors.*;
@@ -53,8 +55,6 @@ import org.netbeans.modules.vmd.midp.screen.DisplayableResourceCategoriesPresent
 import org.netbeans.modules.vmd.midp.screen.display.ItemDisplayPresenter;
 
 import java.util.*;
-import org.netbeans.modules.vmd.api.inspector.InspectorFolderComponentPresenter;
-import org.netbeans.modules.vmd.midp.general.MoveArrayAcceptPresenter;
 
 
 /**
@@ -91,9 +91,11 @@ public class ItemCD extends ComponentDescriptor {
     public static final String PROP_PREFERRED_WIDTH = "preferredWidth"; // NOI18N
     public static final String PROP_COMMANDS = "commands"; // NOI18N
     public static final String PROP_DEFAULT_COMMAND = "defaultCommand"; //NOI18N
-    public static final String PROP_ITEM_COMMAND_LISTENER = "itemCommandlistener"; //NOI18N
+    public static final String PROP_ITEM_COMMAND_LISTENER = "itemCommandListener"; //NOI18N
 
     public static final String PROP_APPEARANCE_MODE = "appearanceMode"; // NOI18N
+
+    public static final String PROP_OLD_ITEM_COMMAND_LISTENER = "itemCommandlistener"; //NOI18N
 
     private static final String ICON_PATH = "org/netbeans/modules/vmd/midp/resources/components/item_16.png"; // NOI18N
 
