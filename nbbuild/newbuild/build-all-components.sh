@@ -53,7 +53,7 @@ fi
 
 cd nbbuild
 #Build catalog for NBMs
-ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f build.xml generate-uc-catalog -Dnbms.location=${DIST}/uc -Dcatalog.file=${DIST}/uc/catalog.xml -Dcatalog.base.url="http://bits.netbeans.org/download/6.0/nightly/latest/nbms"
+ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f build.xml generate-uc-catalog -Dnbms.location=${DIST}/uc -Dcatalog.file=${DIST}/uc/catalog.xml -Dcatalog.base.url="http://bits.netbeans.org/download/6.0/nightly/latest/uc"
 ERROR_CODE=$?
 cd ..
 
