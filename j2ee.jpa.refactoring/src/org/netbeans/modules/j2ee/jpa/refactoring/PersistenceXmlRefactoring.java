@@ -144,7 +144,7 @@ public abstract class PersistenceXmlRefactoring implements JPARefactoring{
         final boolean[] result = new boolean[] { false };
         
         FileObject refactoringSource = getRefactoringSource();
-        if (refactoringSource != null) {
+        if (refactoringSource != null && RefactoringUtil.isJavaFile(refactoringSource)) {
             JavaSource source = JavaSource.forFileObject(refactoringSource);
             try{
                 source.runUserActionTask(new CancellableTask<CompilationController>(){
