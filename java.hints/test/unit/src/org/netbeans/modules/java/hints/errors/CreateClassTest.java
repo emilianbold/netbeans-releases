@@ -152,6 +152,13 @@ public class CreateClassTest extends ErrorHintsTestBase {
                        );
     }
     
+    public void testCreateFromTopLevelClass() throws Exception {
+        performAnalysisTest("test/Test.java",
+                       "package test; public class Test implements UU {}",
+                       69 - 25,
+                       "CreateClass:test.UU:[]:INTERFACE");
+    }
+    
     protected List<Fix> computeFixes(CompilationInfo info, int pos, TreePath path) throws IOException {
         List<Fix> fixes = new CreateElement().analyze(info, pos);
         List<Fix> result=  new LinkedList<Fix>();

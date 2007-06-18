@@ -73,7 +73,7 @@ public final class CreateElement implements ErrorRule<Void> {
     }
     
     public Set<String> getCodes() {
-        return new HashSet<String>(Arrays.asList("compiler.err.cant.resolve.location", "compiler.err.cant.apply.symbol", "compiler.err.cant.resolve.location"));
+        return new HashSet<String>(Arrays.asList("compiler.err.cant.resolve.location", "compiler.err.cant.apply.symbol", "compiler.err.cant.resolve"));
     }
     
     public List<Fix> run(CompilationInfo info, String diagnosticKey, int offset, TreePath treePath, Data<Void> data) {
@@ -353,6 +353,10 @@ public final class CreateElement implements ErrorRule<Void> {
             
             if (tm == null || containsErrorsOrTypevarsRecursively(tm)) {
                 return null;
+            }
+            
+            if (tm.getKind() == TypeKind.NULL) {
+                tm = info.getElements().getTypeElement("java.lang.Object").asType();
             }
             
             argumentTypes.add(tm);

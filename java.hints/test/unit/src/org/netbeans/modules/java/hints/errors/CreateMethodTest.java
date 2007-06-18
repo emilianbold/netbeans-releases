@@ -77,6 +77,13 @@ public class CreateMethodTest extends ErrorHintsTestBase {
                        "package test; public class Test {public void test() {Int i = null; i.test(1);} public static interface Int{ public void test(int i); }}");
     }
     
+    public void testCreateMethod106255() throws Exception {
+        performFixTest("test/Test.java",
+                       "package test; public class Test {public void test() {test2(null);}}", 82 - 25,
+                       "CreateMethodFix:test2(java.lang.Object object)void:test.Test",
+                       "package test; public class Test {public void test() {test2(null);} private void test2(Object object) { throw new UnsupportedOperationException(\"Not yet implemented\"); } }");
+    }
+    
     protected List<Fix> computeFixes(CompilationInfo info, int pos, TreePath path) throws IOException {
         List<Fix> fixes = new CreateElement().analyze(info, pos);
         List<Fix> result=  new LinkedList<Fix>();
