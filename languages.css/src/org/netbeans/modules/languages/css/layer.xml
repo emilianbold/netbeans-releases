@@ -34,6 +34,12 @@ Microsystems, Inc. All Rights Reserved.
                     <attr name="icon" stringvalue="org/netbeans/modules/languages/css/css.gif"/>
                 </file>
             </folder>
+            <folder name="x-css-inlined">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.languages.css.Bundle"/>
+                <file name="language.nbs" url="CSS_inlined.nbs">
+                    <attr name="icon" stringvalue="org/netbeans/modules/languages/css/css.gif"/>
+                </file>
+            </folder>
         </folder>
     </folder>
 </filesystem>

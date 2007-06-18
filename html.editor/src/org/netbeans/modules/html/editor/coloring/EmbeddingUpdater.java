@@ -49,6 +49,7 @@ public class EmbeddingUpdater implements SyntaxParserListener {
     
     //XXX update mimetype once Hanz fixes the mimetype in CSS editor module
     private static final String CSS_MIMETYPE = "text/x-css"; //NOI18N
+    private static final String CSS_INLINED_MIMETYPE = "text/x-css-inlined"; //NOI18N
     
     private static final String HTML_SCRIPT_TAG_NAME = "script"; //NOI18N
     private static final String CSS_SCRIPT_TAG_NAME = "style"; //NOI18N
@@ -109,7 +110,7 @@ public class EmbeddingUpdater implements SyntaxParserListener {
         for(SyntaxElement.TagAttribute tagattr : sel.getAttributes()) {
             if("style".equalsIgnoreCase(tagattr.getName())) { //NOI18N
                 //XXX we need to look for it just in certain html tags
-                createEmbedding(CSS_MIMETYPE, tagattr);
+                createEmbedding(CSS_INLINED_MIMETYPE, tagattr);
             } else if(tagattr.getName().startsWith("on") || tagattr.getName().startsWith("ON")) {
                 //XXX very simple algorithm for finding "onclick" like attributes
                 //should be restricted according to the html specification
