@@ -90,6 +90,16 @@ public class GenericResourceBean {
         return supportedMimeTypes;
     }
     
+    public static String getDefaultRepresetationClass(String mime) {
+        if (mime.equals(Constants.MIME_TYPE_XML) || 
+            mime.equals(Constants.MIME_TYPE_TEXT) || 
+            mime.equals(Constants.MIME_TYPE_TEXT_HTML) ||
+            mime.equals(Constants.MIME_TYPE_JASON)) {
+            return String.class.getName();
+        }
+        return String.class.getName();
+    }
+    
     public String getName() {
         return name;
     }
@@ -163,10 +173,16 @@ public class GenericResourceBean {
     }
 
     public String[] getQueryParams() {
+        if (queryParams == null) {
+            queryParams = new String[0];
+        }
         return queryParams;
     }
 
     public String[] getQueryParamTypes() {
+        if (queryParamTypes == null) {
+            queryParamTypes = new String[0];
+        }
         return queryParamTypes;
     }
 
