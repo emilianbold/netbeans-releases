@@ -40,6 +40,7 @@ import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.modules.form.FormDesignerOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
+import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jemmy.operators.Operator;
 
@@ -158,7 +159,10 @@ public abstract class ExtJellyTestCase extends JellyTestCase {
                     "|Source Packages|" + TEST_PACKAGE_NAME + "|" + fileName + ".java");  // NOI18N
             DeleteAction act = new DeleteAction();
             act.performPopup(node);
-            new NbDialogOperator(DELETE_OBJECT_CONFIRM).yes();
+            
+            //new NbDialogOperator(DELETE_OBJECT_CONFIRM).yes();
+            NbDialogOperator op = new NbDialogOperator("Safe Delete");
+            new JButtonOperator(op,"Refactor").clickMouse();
         }
     }
     
