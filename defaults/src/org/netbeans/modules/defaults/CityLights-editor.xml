@@ -25,7 +25,8 @@ Microsystems, Inc. All Rights Reserved.
     <fontcolor name="code-folding-bar" foreColor="white"/>
     <fontcolor name="guarded" bgColor="darkGray"/>
     <fontcolor name="highlight-caret-row" bgColor="darkGray"/>
-    <fontcolor name="highlight-match-brace" foreColor="white"/>
+    <fontcolor name="nbeditor-bracesMatching-match" bgColor="green" foreColor="white" />
+    <fontcolor name="nbeditor-bracesMatching-mismatch" bgColor="red" foreColor="white"/>
     <fontcolor name="highlight-search" bgColor="fff6f88b"/>
     <fontcolor name="inc-search" bgColor="ffff9900"/>
     <fontcolor name="line-number" foreColor="white"/>
