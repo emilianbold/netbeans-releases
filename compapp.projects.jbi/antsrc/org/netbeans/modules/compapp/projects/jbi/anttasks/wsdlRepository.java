@@ -345,7 +345,9 @@ public class wsdlRepository {
                                 if (bcNs != null) {
                                     String bcName = bcNsMap.get(bcNs);
                                     if (bcName != null) {
-                                        port2BC.put(p, bcName);
+                                        port2BC.put(p, bcName); p.getBinding().getQName();
+                                    } else {
+                                        System.out.println("***WARNING: Missing WSDL extension plug-in for \"" + bcNs + "\".");
                                     }
                                 }
                             }
