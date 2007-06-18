@@ -1487,6 +1487,6 @@ public class CasaBuilder implements JbiConstants, CasaConstants {
     }
     
     private void debugLog(String msg) {
-        task.log(msg); //, Project.MSG_DEBUG);
+        task.log(msg, Project.MSG_DEBUG);
     }
 }

@@ -440,58 +440,7 @@ public class ConnectionResolver implements CasaConstants {
         }
         return map;
     }
-    
-    /**
-     * Adds a connection to a BC's connection list.
-     */ /*
-    private static void addToBcConnections(String bcName, Connection connection,
-            Map<String, List<Connection>[]> bcConnections, boolean isConsumes) {
-        if (bcName != null && connection != null) {
-            List<Connection>[] cmap = bcConnections.get(bcName);
-            List<Connection>[] clist = new ArrayList[2];
-            if (cmap != null) {
-                clist = cmap;
-            } else {
-                clist[0] = new ArrayList<Connection>(); // port on consume...
-                clist[1] = new ArrayList<Connection>(); // port on provide...
-            }
-            if (isConsumes) {
-                clist[0].add(connection);
-            } else {
-                clist[1].add(connection);
-            }
-            bcConnections.put(bcName, clist);
-        }
-    }*/
-    
-    /**
-     * Removes a connection from a BC's connection list.
-     */ /*
-    private static void removeFromBcConnections(String bcName, Connection connection,
-            Map<String, List<Connection>[]> bcConnections, boolean isConsumes) {
-        if (bcName != null && connection != null) {
-            List<Connection>[] cmap = bcConnections.get(bcName);
-            List<Connection>[] clist = new ArrayList[2];
-            if (cmap != null) {
-                clist = cmap;
-            } else {
-                clist[0] = new ArrayList<Connection>(); // port on consume...
-                clist[1] = new ArrayList<Connection>(); // port on provide...
-            }
-            List<Connection> list = isConsumes ? clist[0] : clist[1];            
-            if (list != null) {
-                for (Connection con : list) {
-                    if (con.equals(connection)) {
-                        list.remove(con);
-                        break;
-                    }
-                }
-            }
-            
-            bcConnections.put(bcName, clist);
-        }
-    }
-    */
+        
     private void dumpEndpoints(List<Endpoint> endpoints, String type) {
         for (int k = 0; k < endpoints.size(); k++) {
             Endpoint e = endpoints.get(k);
