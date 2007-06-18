@@ -25,13 +25,7 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
-//retouche:
-//import org.netbeans.modules.j2ee.metadata.JAXWSMetadataProvider;
-//import org.netbeans.modules.j2ee.metadata.MetadataUnit;
 import org.netbeans.modules.schema2beans.BaseBean;
-import org.netbeans.modules.websvc.jaxwsmodel.project.metadata.JAXWSNNMergerProvider;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -44,7 +38,6 @@ import org.openide.filesystems.FileSystem.AtomicAction;
 public final class JaxWsModel {
     private org.netbeans.modules.websvc.jaxwsmodel.project_config1_0.JaxWs jaxws;
     private FileObject fo;
-    private boolean nninitialized = false;
     private Object initLock = new Object();
     private List<ServiceListener> serviceListeners;
     
@@ -59,8 +52,6 @@ public final class JaxWsModel {
     }
     
     public Service[] getServices() {
-        //init annotations provider
-        initNNProvider();
         
         org.netbeans.modules.websvc.jaxwsmodel.project_config1_0.Services services = jaxws.getServices();
         if (services==null) return new Service[]{};
@@ -79,30 +70,6 @@ public final class JaxWsModel {
     
     public Boolean getJsr109(){
         return jaxws.getJsr109();
-    }
-    
-    private void initNNProvider() {
-        synchronized (initLock) {
-            if(!nninitialized) {
-                if(fo != null) {
-                    //retouche:
-//                    try {
-//                        Project project = FileOwnerQuery.getOwner(fo);
-//                        MetadataUnit mu = findJAXWSMetadata(project);
-//                        if(mu != null) {
-//                            //init the NN listener if there is JAXWSMetadataProvider instance in the project lookup
-//                            JAXWSNNMergerProvider.getDefault().initNNMerger(this, mu);
-//                        }
-                        //set nninitialized to true even there is no JAXWSMetadataProvider in the project lookup
-                        //so next time initNNProvider is called it will not try to find it - which cannot happen
-                        nninitialized = true;
-                        //retouche:
-//                    }catch(IOException e) {
-//                        ErrorManager.getDefault().notify(e);
-//                    }
-                }
-            }
-        }
     }
     
     public Service findServiceByName(String name) {
