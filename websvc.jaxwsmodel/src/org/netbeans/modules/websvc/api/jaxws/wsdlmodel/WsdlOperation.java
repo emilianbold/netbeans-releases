@@ -33,6 +33,7 @@ public class WsdlOperation {
     public static final int TYPE_ASYNC_POLLING=1;
     public static final int TYPE_ASYNC_CALLBACK=2;
     
+    private String operationName;
     private Operation operation;
     /** Creates a new instance of WsdlOperation */
     public WsdlOperation(Operation operation) {
@@ -44,7 +45,9 @@ public class WsdlOperation {
     }
     
     public String getName() {
-        String operationName = operation.getName().getLocalPart();
+        if (operationName == null) {
+            operationName = operation.getName().getLocalPart();
+        }
         String postfix=null;
         switch (getOperationType()) {
             case TYPE_NORMAL:break;
@@ -91,6 +94,17 @@ public class WsdlOperation {
             return TYPE_ASYNC_CALLBACK;
         } else return TYPE_NORMAL;
         
+    }
+
+    public String getOperationName() {
+        if (operationName == null) {
+            operationName = operation.getName().getLocalPart();
+        }
+        return operationName;
+    }
+    
+    public void setOperationName(String operationName) {
+        this.operationName = operationName;
     }
     
 }

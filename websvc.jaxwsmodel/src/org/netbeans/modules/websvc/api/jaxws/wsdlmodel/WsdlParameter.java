@@ -27,6 +27,8 @@ import com.sun.tools.ws.processor.model.java.JavaParameter;
  */
 public class WsdlParameter {
     private JavaParameter parameter;
+    private String name;
+    
     /** Creates a new instance of WsdlParameter */
     public WsdlParameter(JavaParameter parameter) {
         this.parameter=parameter;
@@ -37,7 +39,14 @@ public class WsdlParameter {
     }
     
     public String getName() {
-        return parameter.getName();
+        if (name == null) {
+            name = parameter.getName();
+        }
+        return name;
+    }
+    
+    public void setName(String name) {
+        this.name=name;
     }
     
     public String getTypeName() {
