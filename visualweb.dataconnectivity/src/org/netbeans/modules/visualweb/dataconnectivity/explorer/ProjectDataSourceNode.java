@@ -24,7 +24,6 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 import org.netbeans.modules.visualweb.dataconnectivity.actions.AddProjectDataSourceAction;
-import org.netbeans.modules.visualweb.dataconnectivity.actions.RefreshProjectDataSourceAction;
 import org.netbeans.modules.visualweb.dataconnectivity.actions.ResolveProjectDataSourceAction;
 import org.netbeans.modules.visualweb.dataconnectivity.project.datasource.ProjectDataSourcesListener;
 import org.netbeans.modules.visualweb.dataconnectivity.project.datasource.ProjectDataSourceTracker;

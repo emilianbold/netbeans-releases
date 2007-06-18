@@ -126,14 +126,7 @@ public class ProjectDataSourceNodeChildren extends Children.Keys implements Proj
             final Image icon =  Utilities.loadImage("org/netbeans/modules/visualweb/dataconnectivity/resources/datasource_container.png"); // NOI18N
             final Image disconnectedIcon =  Utilities.loadImage("org/netbeans/modules/visualweb/dataconnectivity/resources/disconnected.png"); // NOI18N            
             Image brokenBadgedImage = Utilities.mergeImages(icon, disconnectedIcon, 8, 0);
-            Image datasourceImage = Utilities.loadImage("org/netbeans/modules/visualweb/dataconnectivity/resources/datasource.png");  // NOI18N
-            
-            // Create the popup menu:
-            public Action[] getActions(boolean context) {
-                return new Action[] {
-                    SystemAction.get(RemoveProjectDataSourceAction.class),
-                };
-            }
+            Image datasourceImage = Utilities.loadImage("org/netbeans/modules/visualweb/dataconnectivity/resources/datasource.png");  // NOI18N                        
             
             public Image getIcon(int type) {
                 
