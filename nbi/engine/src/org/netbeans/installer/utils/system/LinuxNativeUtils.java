@@ -29,14 +29,24 @@ import org.netbeans.installer.utils.SystemUtils;
  * @author Kirill Sorokin
  */
 public class LinuxNativeUtils extends UnixNativeUtils {
-    public static final String LIBRARY_PATH_LINUX = 
+    public static final String LIBRARY_PREFIX_LINUX = 
             NATIVE_JNILIB_RESOURCE_SUFFIX + 
-            "linux/" + //NOI18N
+            "linux/" ; //NOI18N
+            
+    public static final String LIBRARY_I386 =
             "linux.so"; //NO18N
+    public static final String LIBRARY_AMD64 = 
+            "linux-amd64.so"; //NO18N
+    
+    
     public static final String[] FORBIDDEN_DELETING_FILES_LINUX = {};
     
     LinuxNativeUtils() {
-        loadNativeLibrary(LIBRARY_PATH_LINUX);
+        String library = System.getProperty("os.arch").equals("amd64") ? 
+                    LIBRARY_AMD64 : LIBRARY_I386;
+        
+        loadNativeLibrary(LIBRARY_PREFIX_LINUX + library);
+        
         initializeForbiddenFiles(FORBIDDEN_DELETING_FILES_LINUX);
     }
     

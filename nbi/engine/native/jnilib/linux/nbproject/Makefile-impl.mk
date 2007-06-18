@@ -6,7 +6,7 @@
 #
 # This makefile implements macros and targets common to all configurations.
 #
-
+# NOCDDL
 
 
 # Building and Cleaning subprojects are done by default, but can be controlled with the SUB
@@ -31,7 +31,7 @@ ACTIVECONF=Debug
 CONF=${ACTIVECONF}
 
 # All Configurations
-ALLCONFS=Debug Release 
+ALLCONFS=Debug Release Debug_amd64 
 
 
 # build
@@ -111,7 +111,3 @@ ALLCONFS=Debug Release
 	@echo "The active configuration (${ACTIVECONF}) is being used if the configuration is not specified."
 	@echo ""
 
-
-# Enable dependency checking
-.KEEP_STATE:
-.KEEP_STATE_FILE:.make.state.${CONF}
