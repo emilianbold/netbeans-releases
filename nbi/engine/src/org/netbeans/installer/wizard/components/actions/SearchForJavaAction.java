@@ -22,6 +22,7 @@ package org.netbeans.installer.wizard.components.actions;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -215,13 +216,25 @@ public class SearchForJavaAction extends WizardAction {
     }
     
     private void fetchLocationsFromFilesystem(final List<File> locations) {
-        String[] candidateLocations = JAVA_FILESYSTEM_LOCATIONS;
-        if (SystemUtils.isWindows()) {
-            candidateLocations = SystemUtils.substract(
-                    Arrays.asList(candidateLocations),
-                    Arrays.asList(JAVA_FILESYSTEM_EXCLUDES_WINDOWS)).toArray(
-                    new String[0]);
+        List <String> candidateLocations = new ArrayList <String> ();
+        
+        for(String location : JAVA_FILESYSTEM_LOCATIONS_COMMON) {
+            candidateLocations.add(location);
         }
+        String [] platformLocations;
+        
+        if (SystemUtils.isWindows()) {
+            platformLocations = JAVA_FILESYSTEM_LOCATIONS_WINDOWS;
+        } else if(SystemUtils.isMacOS()) {
+            platformLocations = JAVA_FILESYSTEM_LOCATIONS_MACOSX;
+        } else {
+            platformLocations = JAVA_FILESYSTEM_LOCATIONS_UNIX;
+        }
+        
+        for(String location : platformLocations) {
+            candidateLocations.add(location);
+        }
+        
         
         for (String location: candidateLocations) {
             final File parent = SystemUtils.resolvePath(location);
@@ -386,13 +399,14 @@ public class SearchForJavaAction extends WizardAction {
         "JDK" // NOI18N
     };
     
-    public static final String[] JAVA_FILESYSTEM_LOCATIONS = new String[] {
+    public static final String[] JAVA_FILESYSTEM_LOCATIONS_COMMON = new String[] {
         "$S{java.home}", // NOI18N
         "$S{java.home}/..", // NOI18N
-        
         "$N{install}", // NOI18N
-        "$N{install}/Java", // NOI18N
-        
+        "$N{install}/Java" // NOI18N
+    };
+    
+    public static final String[] JAVA_FILESYSTEM_LOCATIONS_UNIX = new String[] {
         "$N{home}", // NOI18N
         "$N{home}/java", // NOI18N
         "$N{home}/jdk", // NOI18N
@@ -402,22 +416,36 @@ public class SearchForJavaAction extends WizardAction {
         "/usr/jdk", // NOI18N
         "/usr/jdk/instances", // NOI18N
         "/usr/java", // NOI18N
+        "/usr/java/jdk", // NOI18N
+        "/usr/j2se", // NOI18N
+        "/usr/j2sdk", // NOI18N  
+        
         
         "/usr/local", // NOI18N
         "/usr/local/jdk", // NOI18N
         "/usr/local/jdk/instances", // NOI18N
         "/usr/local/java", // NOI18N
+        "/usr/local/j2se", // NOI18N
+        "/usr/local/j2sdk", // NOI18N  
         
         "/export", // NOI18N
         "/export/jdk", // NOI18N
         "/export/jdk/instances", // NOI18N
         "/export/java", // NOI18N
+        "/export/j2se",  // NOI18N
+        "/export/j2sdk", // NOI18N
         
         "/opt", // NOI18N
         "/opt/jdk", // NOI18N
         "/opt/jdk/instances", // NOI18N
         "/opt/java", // NOI18N
+        "/opt/j2se",  // NOI18N
+        "/opt/j2sdk", // NOI18N
         
+        "/usr/lib/jvm", // NOI18N        
+    };
+    
+    public static final String[] JAVA_FILESYSTEM_LOCATIONS_MACOSX = new String[] {
         "/Library/Java", // NOI18N
         "/System/Library/Frameworks/JavaVM.framework/Versions/1.5", // NOI18N
         "/System/Library/Frameworks/JavaVM.framework/Versions/1.5.0", // NOI18N
@@ -427,36 +455,7 @@ public class SearchForJavaAction extends WizardAction {
         "/System/Library/Frameworks/JavaVM.framework/Versions/1.7.0" // NOI18N
     };
     
-    public static final String[] JAVA_FILESYSTEM_EXCLUDES_WINDOWS = new String[] {
-        "$N{home}", // NOI18N
-        "$N{home}/Java", // NOI18N
+    public static final String[] JAVA_FILESYSTEM_LOCATIONS_WINDOWS = new String[] {
         
-        "/usr", // NOI18N
-        "/usr/jdk", // NOI18N
-        "/usr/jdk/instances", // NOI18N
-        "/usr/java", // NOI18N
-        
-        "/usr/local", // NOI18N
-        "/usr/local/jdk", // NOI18N
-        "/usr/local/jdk/instances", // NOI18N
-        "/usr/local/java", // NOI18N
-        
-        "/export", // NOI18N
-        "/export/jdk", // NOI18N
-        "/export/jdk/instances", // NOI18N
-        "/export/java", // NOI18N
-        
-        "/opt", // NOI18N
-        "/opt/jdk", // NOI18N
-        "/opt/jdk/instances", // NOI18N
-        "/opt/java", // NOI18N
-        
-        "/Library/Java", // NOI18N
-        "/System/Library/Frameworks/JavaVM.framework/Versions/1.5", // NOI18N
-        "/System/Library/Frameworks/JavaVM.framework/Versions/1.5.0", // NOI18N
-        "/System/Library/Frameworks/JavaVM.framework/Versions/1.6", // NOI18N
-        "/System/Library/Frameworks/JavaVM.framework/Versions/1.6.0", // NOI18N
-        "/System/Library/Frameworks/JavaVM.framework/Versions/1.7", // NOI18N
-        "/System/Library/Frameworks/JavaVM.framework/Versions/1.7.0" // NOI18N
     };
 }
