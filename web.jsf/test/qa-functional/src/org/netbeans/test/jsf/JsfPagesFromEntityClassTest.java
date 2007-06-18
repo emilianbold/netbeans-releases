@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.test.jsf;
@@ -24,16 +24,14 @@ import org.netbeans.jellytools.NewFileNameLocationStepOperator;
 import org.netbeans.jellytools.NewFileWizardOperator;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.NewFileNameLocationStepOperator;
-import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.modules.web.nodes.WebPagesNode;
-import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.jemmy.operators.JLabelOperator;
 
 /** Test creation of JSF pages from entity classes. We expect web application
- * with JSF framework is created.
+ * with JSF framework is created. This feature has beed dropped from NB6.0
+ * (see issue 92009). We can test only creation of Entity Class and Persistence Unit.
  *
  * @author Lukasz Grela
  * @author Jiri Skrivanek
@@ -48,7 +46,6 @@ public class JsfPagesFromEntityClassTest extends JellyTestCase{
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
         suite.addTest(new JsfPagesFromEntityClassTest("testCreateEntityClassAndPU"));
-        suite.addTest(new JsfPagesFromEntityClassTest("testCreateJSFPagesFromEntityClass"));
         return suite;
     }
     
@@ -81,31 +78,6 @@ public class JsfPagesFromEntityClassTest extends JellyTestCase{
         new JButtonOperator(persistenceDialog, "Create").push();
         
         locationOper.finish();
-    }
-
-    /** Create JSF Pages from entity class. */
-    public void testCreateJSFPagesFromEntityClass(){
-        NewFileWizardOperator jsf_pages = NewFileWizardOperator.invoke();
-        jsf_pages.selectCategory("Persistence");
-        jsf_pages.selectFileType("JSF Pages from Entity Class");
-        jsf_pages.close();
-        // TODO - review next code when issue 91200 is fixed
-        /*
-        jsf_pages.next();
-        NbDialogOperator dialog = new NbDialogOperator("New JSF Pages from Entity Class");
-        new JButtonOperator(dialog,2).push();
-        new JButtonOperator(dialog,Bundle.getStringTrimmed("org.openide.Bundle", "CTL_NEXT")).push();
-        new JButtonOperator(dialog,Bundle.getStringTrimmed("org.openide.Bundle", "CTL_FINISH")).push();
-         
-        // verify
-        new ProjectsTabOperator().getProjectRootNode(PROJECT_NAME);
-        WebPagesNode webPages = new WebPagesNode(PROJECT_NAME);
-        new Node(webPages, "newEntity|Detail.jsp");
-        new Node(webPages, "newEntity|Edit.jsp");
-        new Node(webPages, "newEntity|List.jsp");
-        new Node(webPages, "newEntity|New.jsp");
-
-         */
     }
 }
 

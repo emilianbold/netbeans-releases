@@ -28,7 +28,6 @@ Microsystems, Inc. All Rights Reserved.
                <!-- Safe delete not yet implemented (#77310) -->
                <exclude name="org/netbeans/test/jsf/JsfFunctionalTest.class/testManagedBeanDelete"/>
                <include name="org/netbeans/test/jsf/JsfPagesFromEntityClassTest.class"/>
-               <include name="org/netbeans/test/jsf/JsfPagesFromEntityClassTest.class/testCreateJSFPagesFromEntityClass" expectedFail="JSF Pages from Entity Class not yet implemented."/>
                <!-- Add when 91417 fixed.
                <include name="**/CompletionTest.class"/>
                -->

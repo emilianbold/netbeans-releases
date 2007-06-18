@@ -153,10 +153,15 @@ public class JsfFunctionalTest extends JellyTestCase{
     /** Test JSF Managed Bean Wizard. */
     public void testManagedBeanWizard(){
         NewFileWizardOperator projectWizard = NewFileWizardOperator.invoke();
+        // "Java Server Faces"
+        String category = Bundle.getStringTrimmed(
+                "org/netbeans/modules/web/jsf/resources/Bundle",
+                "Templates/JSF");
+        // "JSF Managed Bean"
         String filetype = Bundle.getStringTrimmed(
                 "org/netbeans/modules/web/jsf/resources/Bundle",
-                "Templates/JSP_Servlet/JSFManagedBean.java");
-        projectWizard.selectCategory("Web");
+                "Templates/JSF/JSFManagedBean.java");
+        projectWizard.selectCategory(category);
         projectWizard.selectFileType(filetype);
         projectWizard.next();
         NewJSFBeanStepOperator bean = new NewJSFBeanStepOperator();
