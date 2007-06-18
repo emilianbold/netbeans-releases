@@ -365,7 +365,7 @@ public class PersistentObjectManagerTest extends PersistenceTestCase {
             this.helper = helper;
         }
 
-        public List<EntityImpl> createInitialObjects() {
+        public List<EntityImpl> createInitialObjects() throws InterruptedException {
             final List<EntityImpl> result = new ArrayList<EntityImpl>();
             helper.getAnnotationScanner().findAnnotatedTypes("javax.persistence.Entity", new TypeAnnotationHandler() {
                 public void typeAnnotation(TypeElement type, AnnotationMirror annotation) {

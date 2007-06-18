@@ -21,6 +21,7 @@ package org.netbeans.modules.j2ee.dd.impl.common.annotation;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
@@ -101,11 +102,15 @@ public class CommonAnnotationHelper {
                 return null;
             }
         }, null);
-        helper.getAnnotationScanner().findAnnotatedTypes("javax.annotation.security.DeclareRoles", new TypeAnnotationHandler() { // NOI18N
-            public void typeAnnotation(TypeElement typeElement, AnnotationMirror annotation) {
-                parser.parse(annotation);
-            }
-        });
+        try {
+            helper.getAnnotationScanner().findAnnotatedTypes("javax.annotation.security.DeclareRoles", new TypeAnnotationHandler() { // NOI18N
+                public void typeAnnotation(TypeElement typeElement, AnnotationMirror annotation) {
+                    parser.parse(annotation);
+                }
+            });
+        } catch (InterruptedException e) {
+            return new SecurityRole[0];
+        }
         return result.toArray(new SecurityRole[result.size()]);
     }
     
@@ -282,15 +287,18 @@ public class CommonAnnotationHelper {
     private static List<ResourceImpl> getResources(final AnnotationModelHelper helper) {
         
         final List<ResourceImpl> result = new ArrayList<ResourceImpl>();
-        helper.getAnnotationScanner().findAnnotations(
-                
-                "javax.annotation.Resource", // NOI18N
-                EnumSet.of(ElementKind.CLASS, ElementKind.METHOD, ElementKind.FIELD),new AnnotationHandler() {
-                    public void handleAnnotation(TypeElement typeElement, Element element, AnnotationMirror annotation) {
-                        ResourceImpl resource = new ResourceImpl(element, typeElement, helper);
-                        result.add(resource);
-                    }
-                });
+        try {
+            helper.getAnnotationScanner().findAnnotations(
+                    "javax.annotation.Resource", // NOI18N
+                    EnumSet.of(ElementKind.CLASS, ElementKind.METHOD, ElementKind.FIELD),new AnnotationHandler() {
+                        public void handleAnnotation(TypeElement typeElement, Element element, AnnotationMirror annotation) {
+                            ResourceImpl resource = new ResourceImpl(element, typeElement, helper);
+                            result.add(resource);
+                        }
+                    });
+        } catch (InterruptedException e) {
+            return Collections.emptyList();
+        }
         return result;
     }
     
@@ -310,14 +318,17 @@ public class CommonAnnotationHelper {
     private static List<ServiceRef> getWebServiceRefs(final AnnotationModelHelper helper) {
         
         final List<ServiceRef> result = new ArrayList<ServiceRef>();
-        helper.getAnnotationScanner().findAnnotations(
-                
-                "javax.xml.ws.WebServiceRef", // NOI18N
-                EnumSet.of(ElementKind.FIELD),new AnnotationHandler() {
-                    public void handleAnnotation(TypeElement typeElement, Element element, AnnotationMirror annotation) {
-                        addServiceReference(result, element, helper);
-                    }
-                });
+        try {
+            helper.getAnnotationScanner().findAnnotations(
+                    "javax.xml.ws.WebServiceRef", // NOI18N
+                    EnumSet.of(ElementKind.FIELD),new AnnotationHandler() {
+                        public void handleAnnotation(TypeElement typeElement, Element element, AnnotationMirror annotation) {
+                            addServiceReference(result, element, helper);
+                        }
+                    });
+        } catch (InterruptedException e) {
+            return Collections.emptyList();
+        }
         return result;
     }
     

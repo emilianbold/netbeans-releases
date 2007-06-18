@@ -21,6 +21,7 @@ package org.netbeans.modules.j2ee.metadata.model.api.support.annotation;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -97,7 +98,14 @@ public class PersistentObjectManager<T extends PersistentObject> implements Java
             } else {
                 LOGGER.log(Level.FINE, "intializing"); // NOI18N
             }
-            List<T> objects = provider.createInitialObjects();
+            List<T> objects;
+            try {
+                objects = provider.createInitialObjects();
+            } catch (InterruptedException e) {
+                LOGGER.log(Level.FINE, "initializing temporarily (createInitialObjects() throwed InterruptedException)"); // NOI18N
+                temporary = true;
+                objects = Collections.emptyList();
+            }
             LOGGER.log(Level.FINE, "created initial objects {0}", objects); // NOI18N
             objectList.add(objects);
             initialized = true;

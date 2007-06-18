@@ -364,7 +364,7 @@ public class EntityMappingsImpl implements EntityMappings {
 
     private final class EntityProvider implements ObjectProvider<EntityImpl> {
 
-        public List<EntityImpl> createInitialObjects() {
+        public List<EntityImpl> createInitialObjects() throws InterruptedException {
             final List<EntityImpl> result = new ArrayList<EntityImpl>();
             helper.getAnnotationScanner().findAnnotatedTypes("javax.persistence.Entity", new TypeAnnotationHandler() { // NOI18N
                 public void typeAnnotation(TypeElement type, AnnotationMirror annotation) {

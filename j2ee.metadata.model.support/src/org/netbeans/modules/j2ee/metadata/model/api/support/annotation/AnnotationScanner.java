@@ -70,8 +70,11 @@ public class AnnotationScanner {
      *         <code>annotation</code> parameter set to an {@link AnnotationMirror}
      *         (of type <code>searchedTypeName</code>) which that type is annotated with.
      *         Cannot be null.
+     * @throws InterruptedException when the search was interrupted (for 
+     *         example because {@link org.netbeans.api.java.source.ClassIndex#getElements}
+     *         was interrupted).
      */
-    public void findAnnotatedTypes(final String searchedTypeName, final TypeAnnotationHandler handler) {
+    public void findAnnotatedTypes(final String searchedTypeName, final TypeAnnotationHandler handler) throws InterruptedException {
         Parameters.notNull("searchedTypeName", searchedTypeName); // NOI18N
         Parameters.notNull("handler", handler); // NOI18N
         LOGGER.log(Level.FINE, "findAnnotatedTypes called with {0}", searchedTypeName); // NOI18N
@@ -83,6 +86,9 @@ public class AnnotationScanner {
         }
         ElementHandle<TypeElement> searchedTypeHandle = ElementHandle.create(searchedType);
         final Set<ElementHandle<TypeElement>> elementHandles = helper.getClasspathInfo().getClassIndex().getElements(searchedTypeHandle, EnumSet.of(SearchKind.TYPE_REFERENCES), EnumSet.of(SearchScope.SOURCE, SearchScope.DEPENDENCIES));
+        if (elementHandles == null) {
+            throw new InterruptedException("ClassIndex.getElements() was interrupted"); // NOI18N
+        }
         TypeMirror searchedTypeMirror = searchedType.asType();
         for (ElementHandle<TypeElement> elementHandle : elementHandles) {
             LOGGER.log(Level.FINE, "found element {0}", elementHandle.getQualifiedName()); // NOI18N
@@ -119,8 +125,11 @@ public class AnnotationScanner {
      *         <code>annotation</code> parameter set to an {@link AnnotationMirror}
      *         (of type <code>searchedTypeName</code>) which that type is annotated with.
      *         Cannot be null.
+     * @throws InterruptedException when the search was interrupted (for 
+     *         example because {@link org.netbeans.api.java.source.ClassIndex#getElements}
+     *         was interrupted).
      */
-    public void findAnnotations(final String searchedTypeName, Set<ElementKind> kinds, final AnnotationHandler handler) {
+    public void findAnnotations(final String searchedTypeName, Set<ElementKind> kinds, final AnnotationHandler handler) throws InterruptedException {
         Parameters.notNull("searchedTypeName", searchedTypeName); // NOI18N
         Parameters.notNull("kinds", kinds); // NOI18N
         Parameters.notNull("handler", handler); // NOI18N
@@ -140,6 +149,9 @@ public class AnnotationScanner {
                 searchedTypeHandle,
                 EnumSet.of(SearchKind.TYPE_REFERENCES),
                 EnumSet.of(SearchScope.SOURCE, SearchScope.DEPENDENCIES));
+        if (elementHandles == null) {
+            throw new InterruptedException("ClassIndex.getElements() was interrupted"); // NOI18N
+        }
         TypeMirror searchedTypeMirror = searchedType.asType();
         Set<ElementKind> nonTypeKinds = EnumSet.copyOf(kinds);
         nonTypeKinds.removeAll(TYPE_KINDS);

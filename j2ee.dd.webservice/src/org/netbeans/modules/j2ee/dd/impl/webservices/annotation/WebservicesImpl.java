@@ -22,6 +22,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.lang.InterruptedException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -329,7 +330,7 @@ public class WebservicesImpl implements Webservices {
     
     private final class WebserviceProvider implements ObjectProvider<WebserviceDescriptionImpl> {
         
-        public List<WebserviceDescriptionImpl> createInitialObjects() {
+        public List<WebserviceDescriptionImpl> createInitialObjects() throws InterruptedException {
             final List<WebserviceDescriptionImpl> result = new ArrayList<WebserviceDescriptionImpl>();
             helper.getAnnotationScanner().findAnnotatedTypes("javax.jws.WebService",new TypeAnnotationHandler() { // NOI18N
                 public void typeAnnotation(TypeElement type, AnnotationMirror annotation) {

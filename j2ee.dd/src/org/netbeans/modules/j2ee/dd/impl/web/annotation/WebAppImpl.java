@@ -168,16 +168,21 @@ public class WebAppImpl implements WebApp, JavaContextListener {
         }
         assert ddRoot != null;
         final List<Servlet> servletList = new ArrayList<Servlet>();
-        helper.getAnnotationScanner().findAnnotatedTypes("javax.annotation.security.RunAs", new TypeAnnotationHandler() { // NOI18N
-            public void typeAnnotation(TypeElement type, AnnotationMirror annotation) {
-                for (Servlet servlet : ddRoot.getServlet()) {
-                    if (type.getQualifiedName().contentEquals(servlet.getServletClass())) {
-                        RunAs runAs = new RunAsImpl(helper, annotation);
-                        servletList.add(new ServletImpl(servlet.getServletName(), servlet.getServletClass(), runAs));
+        try {
+            helper.getAnnotationScanner().findAnnotatedTypes("javax.annotation.security.RunAs", new TypeAnnotationHandler() { // NOI18N
+                public void typeAnnotation(TypeElement type, AnnotationMirror annotation) {
+                    for (Servlet servlet : ddRoot.getServlet()) {
+                        if (type.getQualifiedName().contentEquals(servlet.getServletClass())) {
+                            RunAs runAs = new RunAsImpl(helper, annotation);
+                            servletList.add(new ServletImpl(servlet.getServletName(), servlet.getServletClass(), runAs));
+                        }
                     }
                 }
-            }
-        });
+            });
+        } catch (InterruptedException e) {
+            servlets = new Servlet[0];
+            return;
+        }
         servlets = servletList.toArray(new Servlet[servletList.size()]);
     }
     

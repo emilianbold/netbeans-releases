@@ -56,26 +56,34 @@ public class EnterpriseBeansImpl implements EnterpriseBeans {
 
     public Session[] getSession() {
         final List<Session> result = new ArrayList<Session>();
-        helper.getAnnotationScanner().findAnnotatedTypes("javax.ejb.Stateless", new TypeAnnotationHandler() { // NOI18N
-            public void typeAnnotation(TypeElement typeElement, AnnotationMirror annotation) {
-                result.add(new SessionImpl(SessionImpl.Kind.STATELESS, helper, typeElement));
-            }
-        });
-        helper.getAnnotationScanner().findAnnotatedTypes("javax.ejb.Stateful", new TypeAnnotationHandler() { // NOI18N
-            public void typeAnnotation(TypeElement typeElement, AnnotationMirror annotation) {
-                result.add(new SessionImpl(SessionImpl.Kind.STATEFUL, helper, typeElement));
-            }
-        });
+        try {
+            helper.getAnnotationScanner().findAnnotatedTypes("javax.ejb.Stateless", new TypeAnnotationHandler() { // NOI18N
+                public void typeAnnotation(TypeElement typeElement, AnnotationMirror annotation) {
+                    result.add(new SessionImpl(SessionImpl.Kind.STATELESS, helper, typeElement));
+                }
+            });
+            helper.getAnnotationScanner().findAnnotatedTypes("javax.ejb.Stateful", new TypeAnnotationHandler() { // NOI18N
+                public void typeAnnotation(TypeElement typeElement, AnnotationMirror annotation) {
+                    result.add(new SessionImpl(SessionImpl.Kind.STATEFUL, helper, typeElement));
+                }
+            });
+        } catch (InterruptedException e) {
+            return new Session[0];
+        }
         return result.toArray(new Session[result.size()]);
     }
 
     public MessageDriven[] getMessageDriven() {
         final List<MessageDriven> result = new ArrayList<MessageDriven>();
-        helper.getAnnotationScanner().findAnnotatedTypes("javax.ejb.MessageDriven", new TypeAnnotationHandler() { // NOI18N
-            public void typeAnnotation(TypeElement typeElement, AnnotationMirror annotation) {
-                result.add(new MessageDrivenImpl(helper, typeElement));
-            }
-        });
+        try {
+            helper.getAnnotationScanner().findAnnotatedTypes("javax.ejb.MessageDriven", new TypeAnnotationHandler() { // NOI18N
+                public void typeAnnotation(TypeElement typeElement, AnnotationMirror annotation) {
+                    result.add(new MessageDrivenImpl(helper, typeElement));
+                }
+            });
+        } catch (InterruptedException e) {
+            return new MessageDriven[0];
+        }
         return result.toArray(new MessageDriven[result.size()]);
     }
 

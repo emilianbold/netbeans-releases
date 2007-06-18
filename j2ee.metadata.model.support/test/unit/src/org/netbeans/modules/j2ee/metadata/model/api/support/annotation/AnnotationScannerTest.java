@@ -27,6 +27,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -72,13 +73,14 @@ public class AnnotationScannerTest extends PersistenceTestCase {
         ClasspathInfo cpi = ClasspathInfo.create(srcFO);
         final AnnotationModelHelper helper = AnnotationModelHelper.create(cpi);
         final Set<String> types = new HashSet<String>();
-        helper.runJavaSourceTask(new Runnable() {
-            public void run() {
+        helper.runJavaSourceTask(new Callable<Void>() {
+            public Void call() throws InterruptedException {
                 helper.getAnnotationScanner().findAnnotatedTypes("javax.persistence.Entity", new TypeAnnotationHandler() {
                     public void typeAnnotation(TypeElement typeElement, AnnotationMirror annotationMirror) {
                         types.add(typeElement.getQualifiedName().toString());
                     }
                 });
+                return null;
             }
         });
         assertEquals(2, types.size());
@@ -109,8 +111,8 @@ public class AnnotationScannerTest extends PersistenceTestCase {
         final int[] entityCount = { 0 };
         final long initialScanDoneTime[] = { 0L };
         final List<ElementHandle<TypeElement>> typeHandles  = new ArrayList<ElementHandle<TypeElement>>();
-        helper.runJavaSourceTask(new Runnable() {
-            public void run() {
+        helper.runJavaSourceTask(new Callable<Void>() {
+            public Void call() throws InterruptedException {
                 helper.getAnnotationScanner().findAnnotatedTypes("javax.persistence.Entity", new TypeAnnotationHandler() {
                     public void typeAnnotation(TypeElement typeElement, AnnotationMirror annotationMirror) {
                         typeHandles.add(ElementHandle.create(typeElement));
@@ -118,6 +120,7 @@ public class AnnotationScannerTest extends PersistenceTestCase {
                     }
                 });
                 initialScanDoneTime[0] = System.nanoTime();
+                return null;
             }
         });
         assertEquals(ENTITY_COUNT, entityCount[0]);
@@ -156,8 +159,8 @@ public class AnnotationScannerTest extends PersistenceTestCase {
         final AnnotationModelHelper helper = AnnotationModelHelper.create(createClasspathInfoForScanningAnnotations());
         final Set<String> elements = new HashSet<String>();
         
-        helper.runJavaSourceTask(new Runnable() {
-            public void run() {
+        helper.runJavaSourceTask(new Callable<Void>() {
+            public Void call() throws InterruptedException{
                 helper.getAnnotationScanner().findAnnotations(
                         "javax.annotation.Resource",
                         EnumSet.of(ElementKind.CLASS, ElementKind.METHOD, ElementKind.FIELD),
@@ -166,6 +169,7 @@ public class AnnotationScannerTest extends PersistenceTestCase {
                                 elements.add(element.getSimpleName().toString());
                             }
                         });
+                return null;
             }
         });
         assertEquals(3, elements.size());
@@ -178,8 +182,8 @@ public class AnnotationScannerTest extends PersistenceTestCase {
         final AnnotationModelHelper helper = AnnotationModelHelper.create(createClasspathInfoForScanningAnnotations());
         final Set<String> elements = new HashSet<String>();
         
-        helper.runJavaSourceTask(new Runnable() {
-            public void run() {
+        helper.runJavaSourceTask(new Callable<Void>() {
+            public Void call() throws InterruptedException {
                 helper.getAnnotationScanner().findAnnotations(
                         "javax.annotation.Resource",
                         EnumSet.of(ElementKind.METHOD, ElementKind.FIELD),
@@ -188,6 +192,7 @@ public class AnnotationScannerTest extends PersistenceTestCase {
                                 elements.add(element.getSimpleName().toString());
                             }
                         });
+                return null;
             }
         });
         assertEquals(2, elements.size());
@@ -199,8 +204,8 @@ public class AnnotationScannerTest extends PersistenceTestCase {
         final AnnotationModelHelper helper = AnnotationModelHelper.create(createClasspathInfoForScanningAnnotations());
         final Set<String> elements = new HashSet<String>();
         
-        helper.runJavaSourceTask(new Runnable() {
-            public void run() {
+        helper.runJavaSourceTask(new Callable<Void>() {
+            public Void call() throws InterruptedException {
                 helper.getAnnotationScanner().findAnnotations(
                         "javax.annotation.Resource",
                         EnumSet.of(ElementKind.CLASS),
@@ -210,6 +215,7 @@ public class AnnotationScannerTest extends PersistenceTestCase {
                                 elements.add(element.getSimpleName().toString());
                             }
                         });
+                return null;
             }
         });
         assertEquals(1, elements.size());
@@ -220,8 +226,8 @@ public class AnnotationScannerTest extends PersistenceTestCase {
         final AnnotationModelHelper helper = AnnotationModelHelper.create(createClasspathInfoForScanningAnnotations());
         final Set<String> elements = new HashSet<String>();
         
-        helper.runJavaSourceTask(new Runnable() {
-            public void run() {
+        helper.runJavaSourceTask(new Callable<Void>() {
+            public Void call() throws InterruptedException {
                 helper.getAnnotationScanner().findAnnotations(
                         "javax.annotation.Resource",
                         EnumSet.of(ElementKind.METHOD),
@@ -231,6 +237,7 @@ public class AnnotationScannerTest extends PersistenceTestCase {
                                 elements.add(element.getSimpleName().toString());
                             }
                         });
+                return null;
             }
         });
         assertEquals(1, elements.size());
@@ -241,8 +248,8 @@ public class AnnotationScannerTest extends PersistenceTestCase {
         final AnnotationModelHelper helper = AnnotationModelHelper.create(createClasspathInfoForScanningAnnotations());
         final Set<String> elements = new HashSet<String>();
         
-        helper.runJavaSourceTask(new Runnable() {
-            public void run() {
+        helper.runJavaSourceTask(new Callable<Void>() {
+            public Void call() throws InterruptedException {
                 helper.getAnnotationScanner().findAnnotations(
                         "javax.annotation.Resource",
                         EnumSet.of(ElementKind.FIELD),
@@ -252,6 +259,7 @@ public class AnnotationScannerTest extends PersistenceTestCase {
                                 elements.add(element.getSimpleName().toString());
                             }
                         });
+                return null;
             }
         });
         assertEquals(1, elements.size());

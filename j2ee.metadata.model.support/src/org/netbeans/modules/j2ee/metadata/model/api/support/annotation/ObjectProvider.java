@@ -28,7 +28,7 @@ import javax.lang.model.element.TypeElement;
  */
 public interface ObjectProvider<T> {
 
-    List<T> createInitialObjects();
+    List<T> createInitialObjects() throws InterruptedException;
 
     List<T> createObjects(TypeElement type);
 
