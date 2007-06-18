@@ -37,7 +37,7 @@ public class DebugProjectAction extends Action {
     private static final String debugProjectMenu = 
             Bundle.getStringTrimmed("org.netbeans.modules.project.ui.Bundle", "Menu/RunProject")+
             "|"+
-            Bundle.getStringTrimmed("org.netbeans.modules.project.ui.actions.Bundle", "LBL_DebugMainProjectAction_Name");
+            Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "LBL_DebugMainProjectAction_Name");
     private static final KeyStroke keystroke = KeyStroke.getKeyStroke(KeyEvent.VK_F5, 0);
 
     /** creates new DebugProjectAction instance */    
