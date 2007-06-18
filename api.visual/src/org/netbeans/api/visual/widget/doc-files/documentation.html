@@ -730,7 +730,7 @@ The possible solution could be to temporarily assign the desired layout to the w
 Therefore <code>SceneLayout</code> class has been introduced. When the SceneLayout is invoked by the developer, it starts listening on the scene to be validated (using <code>SceneListener</code>). When the <code>SceneListener.sceneValidated</code> method is called then the listener is removed and <code>SceneLayout.performLayout</code> method is invoked.
 
 <p>
-There is a <code>SceneLayout.createDevolveWidgetLayout</code> method that creates a SceneLayout with <code>performLayout</code> method implementation which temporarily sets the desired layout and invokes the specified layout at the end of scene validation process. This allows you use a <code>LayerWidget</code> with default AbsoluteLayout, so the widgets inside will be able to freely move using <code>MoveAction</code> and from time to time (e.g. started by user action) the layer widget will be layout using the specified temporary layout to organize the layer.
+There is a <code>LayoutFactory.createDevolveWidgetLayout</code> method that creates a SceneLayout with <code>performLayout</code> method implementation which temporarily sets the desired layout and invokes the specified layout at the end of scene validation process. This allows you use a <code>LayerWidget</code> with default AbsoluteLayout, so the widgets inside will be able to freely move using <code>MoveAction</code> and from time to time (e.g. started by user action) the layer widget will be layout using the specified temporary layout to organize the layer.
 
 <h2><a name="WidgetAction">WidgetAction</a></h2>
 
