@@ -108,13 +108,13 @@ is the proper place.
         </change>
         <change id="JavaSource-Cleanup1">
             <api name="general"/>
-            <summary>Removal of obsolette, duplicated and deprecated methods from java/source</summary>
+            <summary>Removal of obsolete, duplicated and deprecated methods from java/source</summary>
             <version major="0" minor="19"/>
             <date day="15" month="6" year="2007"/>
             <author login="jlahoda"/>
             <compatibility addition="no" binary="incompatible" deletion="yes" deprecation="yes" modification="no" semantic="incompatible" source="incompatible"/>
             <description>
-                Removal of a few obsolette, duplicated and deprecated methods from java/source.
+                Removal of a few obsolete, duplicated and deprecated methods from java/source.
             </description>
             <issue number="106719" />
         </change>
