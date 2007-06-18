@@ -26,12 +26,17 @@ import java.awt.Rectangle;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.List;
+import javax.swing.BorderFactory;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JTable;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
+import org.netbeans.api.autoupdate.UpdateManager;
 
 /**
  *
@@ -51,6 +56,11 @@ public class UnitTable extends JTable {
         //setFillsViewportHeight(true);        
         setIntercellSpacing (new Dimension (0, 0));
         revalidate ();
+    }
+
+    @Override
+    public TableCellRenderer getCellRenderer(int row, int column) {
+        return model.isExpansionControlAtRow(row) ? new MoreRenderer() : super.getCellRenderer(row, column);
     }
 
     @Override
@@ -75,6 +85,8 @@ public class UnitTable extends JTable {
     void resetEnableRenderer () {
         if (enableRenderer != null) {
             setEnableRenderer (enableRenderer);
+            TableCellRenderer defaultRenderer = getDefaultRenderer(String.class);
+            
         }
     }
     
@@ -111,6 +123,11 @@ public class UnitTable extends JTable {
         if (u != null && !u.canBeMarked ()) {
             c.setForeground (Color.gray);
         } else {
+            if (vColIndex == 1 && u != null && UpdateManager.TYPE.FEATURE.equals(u.updateUnit.getType())) {
+                c.setFont(getFont().deriveFont(java.awt.Font.BOLD));
+            } else {
+                c.setFont(getFont());
+            }
             if (isRowSelected(rowIndex)) {
                 c.setForeground(getSelectionForeground());
             } else {
@@ -118,11 +135,16 @@ public class UnitTable extends JTable {
             }
         }
         if (!isCellSelected (rowIndex, vColIndex)) {
-            if (rowIndex % 2 == 0) {
+            if (rowIndex % 2 == 0 && !model.isExpansionControlAtRow(rowIndex)) {
                 c.setBackground (bgColorDarker);
             } else {
                 c.setBackground (bgColor);
             }
+        } else if (model.isExpansionControlAtRow(rowIndex)) {
+            c.setBackground (getBackground ());
+            c.setForeground(getForeground());
+            JComponent jc = (JComponent)c;
+            jc.setBorder(BorderFactory.createEmptyBorder());
         }
         
         return c;
@@ -169,7 +191,7 @@ public class UnitTable extends JTable {
                             }
                         } finally {
                             if (u != null) {
-                                List<Unit> units = model.getUnitData ();
+                                List<Unit> units = model.getVisibletData();
                                 int row = (u != null) ? units.indexOf (u) : -1;
                                 if (row > -1) {
                                     Unit u2 = model.getUnitAtRow (row);
@@ -217,5 +239,34 @@ public class UnitTable extends JTable {
                 sortingRenderer.defaultColumnSelected ();
             }
         }
-    }
+    }        
+    
+    private class MoreRenderer extends DefaultTableCellRenderer {
+        
+        @Override
+        public Component getTableCellRendererComponent (JTable table, Object value,
+                              boolean isSelected, boolean hasFocus, int row, int column) {
+            
+            Component res = super.getTableCellRendererComponent (table, value, isSelected, hasFocus, row, column);
+            
+            if (res == null || value == null) {
+                return res;
+            }
+            if (column == 1 && res instanceof JLabel) {
+                JLabel original = (JLabel)res;
+                StringBuilder text = new StringBuilder();
+                if (isSelected || hasFocus) {
+                    text.append("<b>").append(model.getExpansionControlText()).append("</b>");//NOI18N                    
+                } else {
+                    text.append(model.getExpansionControlText());
+                }
+                setEnabled(isSelected);
+                original.setText("<html>" + "<a href=\"\">" + text.toString() + "</a></html>");//NOI18N
+            } else if (column != 1) {
+                res = new JLabel();
+            }
+            
+            return res;
+        }
+    }    
 }

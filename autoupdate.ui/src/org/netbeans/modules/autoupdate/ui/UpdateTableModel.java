@@ -53,61 +53,55 @@ public class UpdateTableModel extends UnitCategoryTableModel {
     }
     
     @Override
-    public void setValueAt (Object anValue, int row, int col) {
+    public void setValueAt(Object anValue, int row, int col) {
+        if (isExpansionControlAtRow(row)) return;//NOI18N                
         // second column is editable but doesn't want to edit its value
         if (col == 1) {
             return ;
         }
-        super.setValueAt (anValue, row, col);
-        if (! isCategoryAtRow (row)) {
-            //assert getCategoryAtRow (row).isExpanded ();
-            Unit.Update u = (Unit.Update) getUnitAtRow (row);
-            assert anValue instanceof Boolean : anValue + " must be instanceof Boolean.";
-            boolean beforeMarked = u.isMarked ();
-            u.setMarked (!beforeMarked);
-            if (u.isMarked () != beforeMarked) {
-                fireButtonsChange ();
-            } else {
-                //TODO: message should contain spec.version
-                String message = NbBundle.getMessage (UpdateTableModel.class, "NotificationAlreadyPreparedToIntsall", u.getDisplayName ()); // NOI18N
-                DialogDisplayer.getDefault ().notify (new NotifyDescriptor.Message (message));
-            }
+        super.setValueAt(anValue, row, col);
+        Unit.Update u = (Unit.Update) getUnitAtRow(row);
+        assert anValue instanceof Boolean : anValue + " must be instanceof Boolean.";
+        boolean beforeMarked = u.isMarked();
+        u.setMarked(!beforeMarked);
+        if (u.isMarked() != beforeMarked) {
+            fireButtonsChange();
+        } else {
+            //TODO: message should contain spec.version
+            String message = NbBundle.getMessage(UpdateTableModel.class, "NotificationAlreadyPreparedToIntsall", u.getDisplayName()); // NOI18N
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message));
         }
     }
     
-    public Object getValueAt (int row, int col) {
+    public Object getValueAt(int row, int col) {
         Object res = null;
-        
-        if (isCategoryAtRow (row)) {
-            res = col == 0 ? getCategoryAtRow (row) : null;
-        } else {
-            //assert getCategoryAtRow (row).isExpanded ();
-            Unit.Update u = (Unit.Update) getUnitAtRow (row);
-            switch (col) {
-            case 0 :
-                res = u.isMarked () ? Boolean.TRUE : Boolean.FALSE;
-                break;
-            case 1 :
-                res = u.getDisplayName ();
-                break;
-            case 2 :
-                if (Utilities.modulesOnly ()) {
-                    res = u.getCategoryName ();
-                } else {
-                    res = u.getDisplayDate ();
-                }
-                break;
-            case 3 :
-                res = u.getInstalledVersion ();
-                break;
-            case 4 :
-                res = u.getAvailableVersion ();
-                break;
-            case 5 :
-                res = Utilities.getDownloadSizeAsString (u.getCompleteSize ());
-                break;
+        if (isExpansionControlAtRow(row)) return "";//NOI18N
+        Unit.Update u = (Unit.Update) getUnitAtRow(row);
+        switch (col) {
+        case 0 :
+            res = u.isMarked() ? Boolean.TRUE : Boolean.FALSE;
+            break;
+        case 1 :
+            res = u.getDisplayName();
+            break;
+        case 2 :
+            if (Utilities.modulesOnly()) {
+                res = u.getCategoryName();
+            } else {
+                res = u.getDisplayDate();
             }
+            break;
+        case 3 :
+            res = u.getInstalledVersion();
+            break;
+        case 4 :
+            res = u.getAvailableVersion();
+            break;
+        case 5 :
+            res = Utilities.getDownloadSizeAsString(u.getCompleteSize());
+            break;
         }
+        
         return res;
     }
     

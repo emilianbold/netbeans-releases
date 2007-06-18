@@ -52,55 +52,51 @@ public class AvailableTableModel extends UnitCategoryTableModel {
     @Override
     public void setValueAt(Object anValue, int row, int col) {
         // second column is editable but doesn't want to edit its value
+        if (isExpansionControlAtRow(row)) return;//NOI18N        
         if (col == 1) {
             return ;
         }
-        super.setValueAt (anValue, row, col);
-        if (! isCategoryAtRow (row)) {
-            if (anValue == null) {
-                return ;
-            }
-            //assert getCategoryAtRow (row).isExpanded ();
-            Unit.Available u = (Unit.Available) getUnitAtRow (row);
-            assert anValue instanceof Boolean : anValue + " must be instanceof Boolean.";
-            boolean beforeMarked = u.isMarked();
-            u.setMarked(!beforeMarked);
-            if (u.isMarked() != beforeMarked) {
-                fireButtonsChange ();
-            }
+        super.setValueAt(anValue, row, col);
+        if (anValue == null) {
+            return ;
+        }
+        //assert getCategoryAtRow (row).isExpanded ();
+        Unit.Available u = (Unit.Available) getUnitAtRow(row);
+        assert anValue instanceof Boolean : anValue + " must be instanceof Boolean.";
+        boolean beforeMarked = u.isMarked();
+        u.setMarked(!beforeMarked);
+        if (u.isMarked() != beforeMarked) {
+            fireButtonsChange();
         }
     }
 
     public Object getValueAt(int row, int col) {
         Object res = null;
+        if (isExpansionControlAtRow(row)) return "";//NOI18N
         
-        if (isCategoryAtRow (row)) {
-            res = col == 0 ? getCategoryAtRow (row) : null;
-        } else {
-            //assert getCategoryAtRow (row).isExpanded ();
-            Unit.Available u = (Unit.Available) getUnitAtRow (row);
-            switch (col) {
-            case 0 :
-                res = u.isMarked () ? Boolean.TRUE : Boolean.FALSE;
-                break;
-            case 1 :
-                res = u.getDisplayName ();
-                break;
-            case 2 :
-                if (Utilities.modulesOnly ()) {
-                    res = u.getCategoryName ();
-                } else {
-                    res = u.getDisplayDate ();
-                }
-                break;                
-            case 3 :
-                res = u.getAvailableVersion ();
-                break;
-            case 4 :
-                res = Utilities.getDownloadSizeAsString (u.getCompleteSize ());
-                break;
+        Unit.Available u = (Unit.Available) getUnitAtRow(row);
+        switch (col) {
+        case 0 :
+            res = u.isMarked() ? Boolean.TRUE : Boolean.FALSE;
+            break;
+        case 1 :
+            res = u.getDisplayName();
+            break;
+        case 2 :
+            if (Utilities.modulesOnly()) {
+                res = u.getCategoryName();
+            } else {
+                res = u.getDisplayDate();
             }
+            break;
+        case 3 :
+            res = u.getAvailableVersion();
+            break;
+        case 4 :
+            res = Utilities.getDownloadSizeAsString(u.getCompleteSize());
+            break;
         }
+        
         return res;
     }
 

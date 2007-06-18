@@ -55,72 +55,59 @@ public class InstalledTableModel extends UnitCategoryTableModel {
         setData(Utilities.makeInstalledCategories (units));
     }
 
-    /*public String getToolTipText(int row, int col) { 
-        Unit.Installed u = (Unit.Installed)getUnitAtRow(row);
-        boolean isEnabled = u.getRelevantElement ().isEnabled ();
-        OperationContainer<OperationSupport> container = isEnabled ? Containers.forDisable() : Containers.forEnable();
-        return (col > 0 && u != null && u.isOperationAllowed(u.updateUnit, u.getRelevantElement(), container)) ? 
-            NbBundle.getMessage(UnitCategoryTableModel.class, "UnitTab_TooltipOthers_Text_INSTALLED", (String)getValueAt(row, 1)) //NOI18N
-                : super.getToolTipText(row, col);
-    }*/
-    
     @Override
-    public void setValueAt (Object anValue, int row, int col) {
+    public void setValueAt(Object anValue, int row, int col) {
         super.setValueAt(anValue, row, col);
-        if (! isCategoryAtRow(row)) {
-            if (col == 1) {
-                // second column handles buttons
-                return ;
-            }
-            assert col == 0 : "First column.";
-            if (anValue == null) {
-                return ;
-            }
-            //assert getCategoryAtRow(row).isExpanded();
-            Unit.Installed u = (Unit.Installed) getUnitAtRow(row);
-            assert anValue instanceof Boolean : anValue + " must be instanceof Boolean.";
-            boolean beforeMarked = u.isMarked ();
-            u.setMarked (! beforeMarked);
-            if (u.isMarked () != beforeMarked) {
-                fireButtonsChange ();
-            } else {
-                //TODO: message should contain spec.version
-                String message = NbBundle.getMessage(UpdateTableModel.class,"NotificationAlreadyPreparedToIntsall",u.getDisplayName());
-                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message));
-            }
+        
+        if (col == 1) {
+            // second column handles buttons
+            return ;
         }
+        assert col == 0 : "First column.";
+        if (anValue == null) {
+            return ;
+        }
+        //assert getCategoryAtRow(row).isExpanded();
+        Unit.Installed u = (Unit.Installed) getUnitAtRow(row);
+        assert anValue instanceof Boolean : anValue + " must be instanceof Boolean.";
+        boolean beforeMarked = u.isMarked();
+        u.setMarked(! beforeMarked);
+        if (u.isMarked() != beforeMarked) {
+            fireButtonsChange();
+        } else {
+            //TODO: message should contain spec.version
+            String message = NbBundle.getMessage(UpdateTableModel.class,"NotificationAlreadyPreparedToIntsall",u.getDisplayName());
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message));
+        }
+        
     }
     
     public Object getValueAt(int row, int col) {
         Object res = null;
         
-        if (isCategoryAtRow(row)) {
-            res = col == 0 ? getCategoryAtRow(row) : null;
-        } else {
-            //assert getCategoryAtRow(row).isExpanded();
-            Unit.Installed u = (Unit.Installed) getUnitAtRow(row);
-            switch (col) {
-            case 0 :
-                res = u.isMarked() ? Boolean.TRUE : Boolean.FALSE;
-                break;
-            case 1 :
-                res = u.getDisplayName();
-                break;
-            case 2 :
-                if (Utilities.modulesOnly ()) {
-                    res = u.getCategoryName ();
-                } else {
-                    res = u.getRelevantElement ().isEnabled ();
-                }
-                break;                
-            case 3 :
-                res = u.getRelevantElement ().isEnabled ();
-                break;                                
-            case 4 :
-                res = u.getInstalledVersion();
-                break;
+        Unit.Installed u = (Unit.Installed) getUnitAtRow(row);
+        switch (col) {
+        case 0 :
+            res = u.isMarked() ? Boolean.TRUE : Boolean.FALSE;
+            break;
+        case 1 :
+            res = u.getDisplayName();
+            break;
+        case 2 :
+            if (Utilities.modulesOnly()) {
+                res = u.getCategoryName();
+            } else {
+                res = u.getRelevantElement().isEnabled();
             }
+            break;
+        case 3 :
+            res = u.getRelevantElement().isEnabled();
+            break;
+        case 4 :
+            res = u.getInstalledVersion();
+            break;
         }
+        
         return res;
     }
 

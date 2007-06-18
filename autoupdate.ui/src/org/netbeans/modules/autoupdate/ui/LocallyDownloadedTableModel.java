@@ -45,7 +45,7 @@ public class LocallyDownloadedTableModel extends UnitCategoryTableModel {
     
     public final void setUnits(final List<UpdateUnit> unused) {
         List<UpdateUnit> units = getLocalDownloadSupport().getUpdateUnits();
-        List<Unit> oldUnits = getUnitData();        
+        List<Unit> oldUnits = getVisibletData();        
         setData(makeCategories(units));
         computeInstalled(units, oldUnits);
     }
@@ -57,7 +57,7 @@ public class LocallyDownloadedTableModel extends UnitCategoryTableModel {
     private void computeInstalled(List<UpdateUnit> units, List<Unit> oldUnits) {
         installed.clear();
         installed.addAll(units);
-        List<Unit> newUnits = getUnitData();
+        List<Unit> newUnits = getVisibletData();
         List<UpdateUnit> newUpdateUnits = new ArrayList<UpdateUnit>();
         for (Unit unit : newUnits) {
             newUpdateUnits.add(unit.updateUnit);
@@ -87,25 +87,22 @@ public class LocallyDownloadedTableModel extends UnitCategoryTableModel {
         
     @Override
     public void setValueAt(Object anValue, int row, int col) {
-        super.setValueAt (anValue, row, col);
-        if (! isCategoryAtRow (row)) {
-            if (anValue == null) {
-                return ;
-            }
-            if (! (anValue instanceof Boolean)) {
-                return ;
-            }
-            //assert getCategoryAtRow (row).isExpanded ();
-            Unit u = getUnitAtRow (row);
-            if (u != null) {
-                assert anValue instanceof Boolean : anValue + " must be instanceof Boolean.";
-                boolean beforeMarked = u.isMarked();
-                u.setMarked(!beforeMarked);
-                if (u.isMarked() != beforeMarked) {
-                    fireButtonsChange ();
-                } else {
-                    assert false : u.getDisplayName();
-                }
+        super.setValueAt(anValue, row, col);
+        if (anValue == null) {
+            return ;
+        }
+        if (! (anValue instanceof Boolean)) {
+            return ;
+        }
+        Unit u = getUnitAtRow(row);
+        if (u != null) {
+            assert anValue instanceof Boolean : anValue + " must be instanceof Boolean.";
+            boolean beforeMarked = u.isMarked();
+            u.setMarked(!beforeMarked);
+            if (u.isMarked() != beforeMarked) {
+                fireButtonsChange();
+            } else {
+                assert false : u.getDisplayName();
             }
         }
     }
@@ -113,39 +110,34 @@ public class LocallyDownloadedTableModel extends UnitCategoryTableModel {
     
     public Object getValueAt(int row, int col) {
         Object res = null;
-        
-        if (isCategoryAtRow (row)) {
-            res = col == 0 ? getCategoryAtRow (row) : null;
-        } else {
-            //assert getCategoryAtRow (row).isExpanded ();
-            Unit u = getUnitAtRow (row);
-            boolean isAvailable = (u instanceof Unit.Available);
-            switch (col) {
-            case 0 :
-                res = u.isMarked () ? Boolean.TRUE : Boolean.FALSE;
-                break;
-            case 1 :
-                res = u.getDisplayName ();
-                break;
-            case 2 :
-                res = u.getCategoryName();
-                break;                                
-            case 3 :
-                if (isAvailable) {
-                    res = ((Unit.Available)u).getAvailableVersion ();
-                } else {
-                    res = ((Unit.Update)u).getAvailableVersion ();
-                }
-                break;
-            case 4 :
-                if (isAvailable) {
-                    res = ((Unit.Available)u).getSize();
-                } else {
-                    res = ((Unit.Update)u).getSize();
-                }                
-                break;
+        Unit u = getUnitAtRow(row);
+        boolean isAvailable = (u instanceof Unit.Available);
+        switch (col) {
+        case 0 :
+            res = u.isMarked() ? Boolean.TRUE : Boolean.FALSE;
+            break;
+        case 1 :
+            res = u.getDisplayName();
+            break;
+        case 2 :
+            res = u.getCategoryName();
+            break;
+        case 3 :
+            if (isAvailable) {
+                res = ((Unit.Available)u).getAvailableVersion();
+            } else {
+                res = ((Unit.Update)u).getAvailableVersion();
             }
+            break;
+        case 4 :
+            if (isAvailable) {
+                res = ((Unit.Available)u).getSize();
+            } else {
+                res = ((Unit.Update)u).getSize();
+            }
+            break;
         }
+        
         return res;
     }
     

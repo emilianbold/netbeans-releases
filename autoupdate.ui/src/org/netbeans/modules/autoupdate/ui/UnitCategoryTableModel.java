@@ -24,43 +24,52 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import javax.swing.SwingUtilities;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.JTableHeader;
+import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.api.autoupdate.UpdateUnit;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 
 /**
  *
  * @author Jiri Rechtacek, Radek Matous
  */
 public abstract class UnitCategoryTableModel extends AbstractTableModel {
-    List<UnitCategory> data = Collections.emptyList ();
+    private static final String EXPAND_STATE = "ExpandState";//NOI18N
     private List<Unit> unitData = Collections.emptyList ();
+    private List<Unit> featuretData = Collections.emptyList ();    
+    private List<Unit> standAloneModules = Collections.emptyList ();    
     
     private List<UpdateUnitListener> listeners = new ArrayList<UpdateUnitListener> ();
     private String filter = "";//NOI18N
     private Comparator<Unit> unitCmp;
-    private Comparator<UnitCategory> categoryCmp;
-    private boolean showCategories = false;
     
-    
+    //null == NOT_EXPANDABLE, true == EXPANDED, false == COLLAPSED
+    private Boolean isExpanded = null; 
+        
     public static enum Type {
-        INSTALLED,
-        UPDATE,
-        AVAILABLE,
-        LOCAL
+        INSTALLED,UPDATE,AVAILABLE,LOCAL
     }
-    
+            
     /** Creates a new instance of CategoryTableModel */
     public UnitCategoryTableModel () {
     }
     
-    List<Unit> getUnitData () {
-        return new ArrayList<Unit>(unitData);
+    List<Unit> getVisibletData () {
+        List<Unit> retval = Collections.emptyList();
+        if (isCollapsed()) {
+            retval = getFeatureList();
+        } else {
+            retval = unitData;
+        }        
+        return retval;
     }
+    
 
     static Map<String, Boolean> captureState(List<Unit> units) {
         Map<String,Boolean> retval = new HashMap<String, Boolean>();
@@ -153,72 +162,51 @@ public abstract class UnitCategoryTableModel extends AbstractTableModel {
         }
     }
     
-    private Comparator<UnitCategory> getDefaultCategoryComparator () {
-        return new Comparator<UnitCategory> () {
-            public int compare (UnitCategory uc1, UnitCategory uc2) {
-                String o1 = uc1.getCategoryName ();
-                String o2 = uc2.getCategoryName ();
-                return Utilities.getCategoryComparator ().compare (o1, o2);
-            }
-        };
-    }
-    
     public final void sort (Object columnIdentifier, boolean sortAscending) {
         if (columnIdentifier == null) {
-            setUnitComparator (getDefaultComparator (), false);
+            setUnitComparator (getDefaultComparator ());
         } else {
-            setUnitComparator (getComparator (columnIdentifier, sortAscending), false);
+            setUnitComparator (getComparator (columnIdentifier, sortAscending));
         }
         fireTableDataChanged ();
     }
     
-    private final void setData (List<UnitCategory> data, boolean showCategories, Comparator<UnitCategory> categoryCmp, Comparator<Unit> unitCmp) {
-        this.categoryCmp = categoryCmp != null ? categoryCmp : getDefaultCategoryComparator ();
+    private final void setData (List<UnitCategory> data,  Comparator<Unit> unitCmp) {
         this.unitCmp = unitCmp != null ? unitCmp : getDefaultComparator ();
-        this.showCategories = showCategories;
-        assert !showCategories;
-        this.data = data;
-        this.unitData = Collections.emptyList ();
-        if (showCategories) {
-            if (categoryCmp != null) {
-                Collections.sort (this.data,categoryCmp);
-            }
-            if (unitCmp != null) {
-                for (UnitCategory unitCategory : data) {
-                    Collections.sort (unitCategory.units,unitCmp);
-                }
-            }
-        } else {
+        featuretData = null;
+        if (data != null) {
+            this.unitData = Collections.emptyList ();
             this.unitData = new ArrayList<Unit>();
             for (UnitCategory unitCategory : data) {
-                this.unitData.addAll (unitCategory.getUnits ());
+                this.unitData.addAll(unitCategory.getUnits());
+            }  
+            standAloneModules = new ArrayList();
+            for (Unit u : unitData) {                
+                if (UpdateManager.TYPE.STANDALONE_MODULE.equals(u.updateUnit.getType())) {
+                    standAloneModules.add(u);
+                }
             }
-            if (unitCmp != null) {
-                Collections.sort (this.unitData,unitCmp);
-            }
+            boolean exp = isExpandableType (getType()) && !Utilities.modulesOnly() && !standAloneModules.isEmpty();
+            if (exp) {
+                isExpanded = NbPreferences.forModule(UnitCategoryTableModel.class).getBoolean(EXPAND_STATE, false);
+            } else {
+                isExpanded = null;
+            }            
+        } else {
+            assert unitData != null;
         }
+        if (unitCmp != null) {
+            Collections.sort(unitData,unitCmp);
+        }                
         this.fireTableDataChanged ();
     }
     
-    public void setUnitComparator (Comparator<Unit> comparator, boolean showCategories) {
-        setData (data, showCategories, categoryCmp,comparator);
-    }
-    
     public void setUnitComparator (Comparator<Unit> comparator) {
-        setUnitComparator (comparator, showCategories);
+        setData (null, comparator);
     }
-    
-    
-    public void setCategoryComparator (Comparator<UnitCategory> comparator, boolean showCategories) {
-        setData (data, showCategories, comparator,unitCmp);
-    }
-    
-    public void setShowCategoriesEnabled (boolean showCategories) {
-        setData (data, showCategories, categoryCmp,unitCmp);
-    }
-    
+        
     public final void setData (List<UnitCategory> data) {
-        setData (data, showCategories, categoryCmp, unitCmp);
+        setData (data, unitCmp);
     }
     
     public void setFilter (final String filter, final Runnable runAfterwards) {
@@ -241,26 +229,7 @@ public abstract class UnitCategoryTableModel extends AbstractTableModel {
             return this.filter == null ? "" : this.filter;
         }
     }
-    
-    public void expandAll () {
-        if (showCategories) {
-            List<UnitCategory> data = getCategories ();
-            for (UnitCategory unitCategory : data) {
-                unitCategory.setExpanded (true);
-            }
-        }
-    }
-    
-    public void collapseAll () {
-        if (showCategories) {
-            List<UnitCategory> data = getCategories ();
-            for (UnitCategory unitCategory : data) {
-                unitCategory.setExpanded (false);
-            }
-        }
-    }
-    
-    
+        
     public void addUpdateUnitListener (UpdateUnitListener l) {
         listeners.add (l);
     }
@@ -282,17 +251,12 @@ public abstract class UnitCategoryTableModel extends AbstractTableModel {
             l.buttonsChanged ();
         }
     }
-    
-    private List<UnitCategory> getCategories () {
-        assert showCategories;
-        return new ArrayList<UnitCategory>(data);
-    }
-    
+        
     private List<Unit> getVisibleUnits () {
-        assert !showCategories;
         String filter = getFilter ();
         List<Unit> retval = new ArrayList<Unit>();
-        for (Unit unit : unitData) {
+        List<Unit> units = getVisibletData();
+        for (Unit unit : units) {
             if (unit.isVisible (filter)) {
                 retval.add (unit);
             }
@@ -300,163 +264,109 @@ public abstract class UnitCategoryTableModel extends AbstractTableModel {
         return retval;
     }
     
-    private List<UnitCategory> getVisibleCategories () {
-        assert showCategories;
-        String filter = getFilter ();
-        List<UnitCategory> retval = new ArrayList<UnitCategory>();
-        for (UnitCategory unitCategory : data) {
-            if (unitCategory.isVisible (filter)) {
-                retval.add (unitCategory);
-            }
-        }
-        return retval;
-    }
     
     public int getRowCount () {
-        if (showCategories) {
-            List<UnitCategory> data = getVisibleCategories ();
-            int size = data.size ();
-            String filter = getFilter ();
-            for (UnitCategory c : data) {
-                if (c.isExpanded () && c.isVisible (filter)) size += getUnits (c).size ();
-            }
-            return size;
-        }
-        return getVisibleUnits ().size ();
+        int retval = getVisibleUnits ().size ();
+        return (retval > 0 && isExpansionControlPresent()) ? (retval + 1) : retval;
     }
     
     public int getRawItemCount () {
-        int size = 0;
-        if (showCategories) {
-            for (UnitCategory c : getCategories ()) {
-                size += c.getUnits ().size ();
-            }
-        } else {
-            size = unitData.size ();
-        }
-        
-        return size;
+        return unitData.size ();
     }
     
-    public int getItemCount () {
-        int size = 0;
-        if (showCategories) {
-            List<UnitCategory> data = getVisibleCategories ();
+    public int getItemCount () {        
+        return getVisibleUnits ().size ();
+    }
+    
+    
+    public Collection<Unit> getMarkedUnits() {
+        List<Unit> markedUnits = new ArrayList<Unit> ();
+        List<Unit> units = getVisibletData();
+
+        for (Unit u : units) {
+            if (u.isMarked()) {
+                markedUnits.add(u);
+            }
+        }
+        return markedUnits;
+    }
             
-            for (UnitCategory c : data) {
-                size += getUnits (c).size ();
-            }
-        } else {
-            size = getVisibleUnits ().size ();
+    public Unit getUnitAtRow (int row) {
+        return getVisibleUnits ().size () <= row ? null : getVisibleUnits ().get (row);
+    }
+    
+    public boolean isExpansionControlAtRow (int row) {
+        return ((row + 1) == getRowCount()) && isExpansionControlPresent();
+    }
+    
+    public String getExpansionControlText() {
+        assert isExpansionControlPresent();
+        String bundleKey = isExpanded() ? "Less_Command_Text" : "More_Command_Text";//NOI18N
+        return NbBundle.getMessage(UnitCategoryTableModel.class, bundleKey, getStandAloneModules().size());
+    }
+    
+    public boolean isExpandable () {        
+        return isExpanded != null;
+    }
+    
+    public boolean isExpansionControlPresent() {
+        return isExpandable () && !getFeatureList().isEmpty();
+    }
+
+    public void setExpanded (Boolean expanded) {        
+        this.isExpanded = expanded;
+        featuretData = null;
+        if (expanded != null) {
+            NbPreferences.forModule(UnitCategoryTableModel.class).putBoolean(EXPAND_STATE, expanded);
         }
-        
-        return size;
+        fireUpdataUnitChange();
     }
     
-    private List<Unit> getUnits (UnitCategory category) {
-        assert showCategories;
-        String filter = getFilter ();
-        return filter.length () == 0 ? category.getUnits () :
-            category.getVisibleUnits (filter, !Type.INSTALLED.equals (getType ()));
-    }
-    
-    public Collection<Unit> getMarkedUnits () {
-        List<Unit> units = new ArrayList<Unit> ();
-        if (showCategories) {
-            for (UnitCategory c : data) {
-                for (Unit u : c.getUnits ()) {
-                    if (u.isMarked ()) {
-                        units.add (u);
-                    }
-                }
-            }
-        } else {
-            for (Unit u : unitData) {
-                if (u.isMarked ()) {
-                    units.add (u);
-                }
-            }
-        }
-        return units;
-    }
-    
-    private int getCategorySize (UnitCategory c) {
-        assert showCategories;
-        int retval = 0;
-        String filter = getFilter ();
-        if (c.isVisible (filter)) {
-            retval = c.isExpanded () ? getUnits (c).size () + 1 : 1;
-        } else {
-            retval = 0;
+    public boolean isExpanded () {        
+        boolean retval = isExpandable();
+        if (retval) {
+            retval = isExpanded != null && isExpanded;
         }
         return retval;
     }
     
-    protected UnitCategory getCategoryAtRow (int row) {
-        if (showCategories) {
-            int categoryRow = 0;
-            List<UnitCategory> data = getVisibleCategories ();
-            
-            for (UnitCategory c : data) {
-                int size = getCategorySize (c);
-                if (row >= categoryRow && row < categoryRow + size) {
-                    return c;
-                }
-                categoryRow += size;
-            }
-            assert false : "No UpdateCategory on row " + row;
+    public boolean isCollapsed () {
+        boolean retval = isExpandable();
+        if (retval) {
+            retval = isExpanded != null && !isExpanded;
         }
-        return null;
+        return retval;
     }
     
-    public Unit getUnitAtRow (int row) {
-        if (showCategories) {
-            int unitRow = 0;
-            List<UnitCategory> data = getVisibleCategories ();
-            
-            for (UnitCategory c : data) {
-                int size = getCategorySize (c);
-                if (row > unitRow && row <= unitRow + size) {
-                    if (! c.isExpanded ()) assert false : "No Unit at row " + row + ", but Category " + c;
-                    int idx = row - unitRow - 1;
-                    return (idx < getUnits (c).size ()) ? getUnits (c).get (idx) : null;
-                }
-                unitRow += size;
-            }
-            
-            return null;
+    private List<Unit> getFeatureList() {
+        if (featuretData == null) {
+            featuretData = new ArrayList(unitData);
+            featuretData.removeAll(getStandAloneModules());
+            if (unitCmp != null) {
+                Collections.sort(featuretData,unitCmp);
+            }            
         }
-        return getVisibleUnits ().size () <= row ? null : getVisibleUnits ().get (row);
+        return featuretData;
     }
     
-    public void toggleCategoryExpanded (int row) {
-        assert showCategories;
-        getCategoryAtRow (row).toggleExpanded ();
-        fireTableDataChanged ();
+    private List<Unit> getStandAloneModules() {
+        List<Unit> retval = standAloneModules;
+        if (retval == null) {
+            retval = Collections.emptyList();
+        }        
+        return retval;
     }
-    
-    public boolean isCategoryAtRow (int row) {
-        return showCategories ? isCategoryAtRow (row, data) : false;
+            
+    public static boolean isExpandableType (Type type) {
+        return type.equals(UnitCategoryTableModel.Type.AVAILABLE) || 
+                type.equals(UnitCategoryTableModel.Type.UPDATE);
     }
-    
-    private boolean isCategoryAtRow (int row,List<UnitCategory> data) {
-        int accumulatedRow = 0;
-        if (showCategories) {
-            for (UnitCategory c : data) {
-                int size = getCategorySize (c);
-                if (row >= accumulatedRow && row < accumulatedRow + size) {
-                    return row == accumulatedRow;
-                } else {
-                    accumulatedRow += size;
-                }
-            }
-        }
-        
-        return false;
-    }
-    
+            
     @Override
     public boolean isCellEditable (int row, int col) {
+        if (isExpansionControlAtRow(row)) {
+            return false;
+        }
         return col == 0 && Boolean.class.equals (getColumnClass (col));
     }
     

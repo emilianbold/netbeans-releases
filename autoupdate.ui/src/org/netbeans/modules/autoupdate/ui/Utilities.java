@@ -309,14 +309,14 @@ public class Utilities {
         return retval;
     }    
 
-    public static UpdateManager.TYPE[] getUnitTypes () {
-        if (modulesOnly ()) {
+    public static UpdateManager.TYPE[] getUnitTypes() {
+        if (modulesOnly()) {
             return new UpdateManager.TYPE [] { UpdateManager.TYPE.MODULE };
         } else {
             return new UpdateManager.TYPE []  { UpdateManager.TYPE.FEATURE, UpdateManager.TYPE.STANDALONE_MODULE, UpdateManager.TYPE.CUSTOM_HANDLED_COMPONENT };
         }
     }
-    
+        
     public static boolean isGlobalInstallation() {
         return getPreferences ().getBoolean (PLUGIN_MANAGER_SHARED_INSTALLATION, false);
     }

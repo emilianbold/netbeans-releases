@@ -94,10 +94,10 @@ public class UnitTab extends javax.swing.JPanel {
     private final RequestProcessor.Task searchTask = RP.create (new Runnable (){
         public void run () {
             if (filter != null) {
-                final Map<String, Boolean> state = UnitCategoryTableModel.captureState (model.getUnitData ());
+                final Map<String, Boolean> state = UnitCategoryTableModel.captureState (model.getVisibletData ());
                 Runnable runAftreWards = new Runnable (){
                     public void run () {
-                        UnitCategoryTableModel.restoreState (model.getUnitData (), state, model.isMarkedAsDefault ());
+                        UnitCategoryTableModel.restoreState (model.getVisibletData (), state, model.isMarkedAsDefault ());
                         refreshState ();
                     }
                 };
@@ -346,10 +346,9 @@ public class UnitTab extends javax.swing.JPanel {
         if (row == -1) {
             details.setUnit (null);
         } else {
-            Unit u = model.isCategoryAtRow (row) ? null : model.getUnitAtRow (row);
+            Unit u = model.isExpansionControlAtRow(row) ? null : model.getUnitAtRow (row);
             if (u == null) {
-                UnitCategory category = model.getCategoryAtRow (row);
-                details.setUnitCategory (category);
+                //TODO: add details about more ... or les ...
             } else {
                 details.setUnit (u, action);
             }
@@ -369,6 +368,12 @@ public class UnitTab extends javax.swing.JPanel {
                     popupActionsSupport.rowChanged (-1);
                 } else {
                     int selectedRow = lsm.getMinSelectionIndex ();
+                    if (model.isExpansionControlAtRow(selectedRow)) {
+                        model.setExpanded(!model.isExpanded());
+                        popupActionsSupport.rowChanged (-1);
+                        return;
+                    }
+                    
                     popupActionsSupport.rowChanged (selectedRow);
                     //selectedRow is selected
                     Action action = null;
@@ -493,12 +498,12 @@ public class UnitTab extends javax.swing.JPanel {
                 manager.initTask.waitFinished ();
                 setWaitingState (true);
                 final int row = getSelectedRow ();
-                final Map<String, Boolean> state = UnitCategoryTableModel.captureState (model.getUnitData ());
+                final Map<String, Boolean> state = UnitCategoryTableModel.captureState (model.getVisibletData ());
                 Utilities.presentRefreshProviders (manager, force);
                 SwingUtilities.invokeLater (new Runnable () {
                     public void run () {
                         fireUpdataUnitChange ();
-                        UnitCategoryTableModel.restoreState (model.getUnitData (), state, model.isMarkedAsDefault ());
+                        UnitCategoryTableModel.restoreState (model.getVisibletData (), state, model.isMarkedAsDefault ());
                         restoreSelectedRow (row);
                         refreshState ();
                         setWaitingState (false);
@@ -835,7 +840,7 @@ public class UnitTab extends javax.swing.JPanel {
         public void performerImpl () {
             boolean wizardFinished = false;
             final int row = getSelectedRow ();
-            final Map<String, Boolean> state = UnitCategoryTableModel.captureState (model.getUnitData ());
+            final Map<String, Boolean> state = UnitCategoryTableModel.captureState (model.getVisibletData ());
             UninstallUnitWizard wizard = new UninstallUnitWizard ();
             try {
                 wizardFinished = wizard.invokeWizard ();
@@ -843,7 +848,7 @@ public class UnitTab extends javax.swing.JPanel {
                 Containers.forUninstall ().removeAll ();
                 fireUpdataUnitChange ();
                 if (!wizardFinished) {
-                    UnitCategoryTableModel.restoreState (model.getUnitData (), state, model.isMarkedAsDefault ());
+                    UnitCategoryTableModel.restoreState (model.getVisibletData (), state, model.isMarkedAsDefault ());
                 }
                 restoreSelectedRow(row);
                 refreshState ();
@@ -860,14 +865,14 @@ public class UnitTab extends javax.swing.JPanel {
         public void performerImpl () {
             boolean wizardFinished = false;
             final int row = getSelectedRow();
-            final Map<String, Boolean> state = UnitCategoryTableModel.captureState (model.getUnitData ());
+            final Map<String, Boolean> state = UnitCategoryTableModel.captureState (model.getVisibletData());
             try {
                 wizardFinished = new InstallUnitWizard ().invokeWizard (OperationType.UPDATE);
             } finally {
                 //must be called before restoreState
                 fireUpdataUnitChange ();
                 if (!wizardFinished) {
-                    UnitCategoryTableModel.restoreState (model.getUnitData (), state, model.isMarkedAsDefault ());
+                    UnitCategoryTableModel.restoreState (model.getVisibletData (), state, model.isMarkedAsDefault ());
                 }
                 restoreSelectedRow(row);                
                 refreshState ();
@@ -884,13 +889,13 @@ public class UnitTab extends javax.swing.JPanel {
         public void performerImpl () {
             boolean wizardFinished = false;
             final int row = getSelectedRow();
-            final Map<String, Boolean> state = UnitCategoryTableModel.captureState (model.getUnitData ());
+            final Map<String, Boolean> state = UnitCategoryTableModel.captureState (model.getVisibletData());
             try {
                 wizardFinished = new InstallUnitWizard ().invokeWizard (OperationType.INSTALL);
             } finally {
                 fireUpdataUnitChange ();
                 if (!wizardFinished) {
-                    UnitCategoryTableModel.restoreState (model.getUnitData (), state, model.isMarkedAsDefault ());
+                    UnitCategoryTableModel.restoreState (model.getVisibletData (), state, model.isMarkedAsDefault ());
                 }
                 restoreSelectedRow(row);
                 refreshState ();
@@ -906,14 +911,14 @@ public class UnitTab extends javax.swing.JPanel {
         public void performerImpl () {
             boolean wizardFinished = false;
             final int row = getSelectedRow();
-            final Map<String, Boolean> state = UnitCategoryTableModel.captureState (model.getUnitData ());
+            final Map<String, Boolean> state = UnitCategoryTableModel.captureState (model.getVisibletData ());
             
             try {
                 wizardFinished = new InstallUnitWizard ().invokeWizard (OperationType.LOCAL_DOWNLOAD);
             } finally {
                 fireUpdataUnitChange ();
                 if (!wizardFinished) {
-                    UnitCategoryTableModel.restoreState (model.getUnitData (), state, model.isMarkedAsDefault ());
+                    UnitCategoryTableModel.restoreState (model.getVisibletData (), state, model.isMarkedAsDefault ());
                 }
                 restoreSelectedRow(row);                
                 refreshState ();
@@ -933,7 +938,7 @@ public class UnitTab extends javax.swing.JPanel {
             boolean retval = false;
             if (Utilities.modulesOnly ()) {
                 String category = u.getCategoryName ();
-                List<Unit> units = model.getUnitData ();
+                List<Unit> units = model.getVisibletData ();
                 for (Unit unit : units) {
                     if (unit != null && category.equals (unit.getCategoryName ()) && !unit.isMarked ()) {
                         retval = true;
@@ -1023,7 +1028,7 @@ public class UnitTab extends javax.swing.JPanel {
             
             if (Utilities.modulesOnly ()) {
                 String category = uu.getCategoryName ();
-                List<Unit> units = model.getUnitData ();
+                List<Unit> units = model.getVisibletData ();
                 for (Unit u : units) {
                     if ((u != null) && (u instanceof Unit.Installed) && category.equals (u.getCategoryName ())) {
                         Unit.Installed installed = (Unit.Installed)u;
@@ -1133,7 +1138,7 @@ public class UnitTab extends javax.swing.JPanel {
             
             if (Utilities.modulesOnly ()) {
                 String category = uu.getCategoryName ();
-                List<Unit> units = model.getUnitData ();
+                List<Unit> units = model.getVisibletData ();
                 for (Unit u : units) {
                     if ((u != null) && (u instanceof Unit.Installed) && category.equals (u.getCategoryName ())) {
                         Unit.Installed installed = (Unit.Installed)u;
@@ -1197,7 +1202,7 @@ public class UnitTab extends javax.swing.JPanel {
             
             if (Utilities.modulesOnly ()) {
                 String category = u.getCategoryName ();
-                List<Unit> units = model.getUnitData ();
+                List<Unit> units = model.getVisibletData ();
                 for (Unit uu : units) {
                     if (uu != null && category.equals (uu.getCategoryName ()) && uu.isMarked ()) {
                         retval = true;
@@ -1323,13 +1328,13 @@ public class UnitTab extends javax.swing.JPanel {
         
         public void performerImpl () {
             if (getLocalDownloadSupport ().selectNbmFiles ()) {
-                final Map<String, Boolean> state = UnitCategoryTableModel.captureState (model.getUnitData ());
+                final Map<String, Boolean> state = UnitCategoryTableModel.captureState (model.getVisibletData ());
                 final Runnable addUpdates = new Runnable (){
                     public void run () {
                         SwingUtilities.invokeLater (new Runnable () {
                             public void run () {
                                 fireUpdataUnitChange();
-                                UnitCategoryTableModel.restoreState (model.getUnitData (), state, model.isMarkedAsDefault ());
+                                UnitCategoryTableModel.restoreState (model.getVisibletData (), state, model.isMarkedAsDefault ());
                                 LocallyDownloadedTableModel downloadedTableModel = ((LocallyDownloadedTableModel)model);
                                 List<UpdateUnit> installed = downloadedTableModel.getAlreadyInstalled ();
                                 if (!installed.isEmpty ())  {

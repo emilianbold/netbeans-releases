@@ -42,14 +42,6 @@ public class UnitDetails extends DetailsPanel{
     public UnitDetails() {
     }
 
-    public void setUnitCategory(UnitCategory unitCategory) {
-        String text = "<b>" + getBundle ("UnitDetails_Category") + "</b>" + unitCategory.getCategoryName() + "<br>"; // NOI18N
-        
-        
-        getDetails().setText(text);
-        getDetails().setCaretPosition(0);        
-    }
-
     public void setUnit(Unit u) {
         setUnit(u, null);
     }
