@@ -964,9 +964,9 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                                 return ; //TODO...
                             }
                             
-                            Set<Modifier> localAccess = EnumSet.copyOf(access);
+                            Set<Modifier> localAccess = EnumSet.of(Modifier.FINAL, Modifier.STATIC);
                             
-                            localAccess.addAll(EnumSet.of(Modifier.FINAL, Modifier.STATIC));
+                            localAccess.addAll(access);
                             
                             mods = make.Modifiers(localAccess);
                             
@@ -1273,6 +1273,8 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                         return ; //TODO...
                     }
                     
+                    Scope s = copy.getTrees().getScope(block);
+                    boolean isStatic = copy.getTreeUtilities().isStaticContext(s);
                     BlockTree statements = (BlockTree) block.getLeaf();
                     List<StatementTree> nueStatements = new LinkedList<StatementTree>();
                     
@@ -1368,7 +1370,15 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                     
                     nueStatements.addAll(statements.getStatements().subList(to + 1, statements.getStatements().size()));
                     
-                    ModifiersTree mods = make.Modifiers(access);
+                    Set<Modifier> modifiers = EnumSet.noneOf(Modifier.class);
+                    
+                    if (isStatic) {
+                        modifiers.add(Modifier.STATIC);
+                    }
+                    
+                    modifiers.addAll(access);
+                    
+                    ModifiersTree mods = make.Modifiers(modifiers);
                     List<VariableTree> formalArguments = new LinkedList<VariableTree>();
                     Iterator<TypeMirrorHandle> argType = parameterTypes.iterator();
                     Iterator<String> argName = parameterNames.iterator();

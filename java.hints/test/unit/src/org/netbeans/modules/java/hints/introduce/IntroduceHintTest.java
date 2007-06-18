@@ -542,6 +542,13 @@ public class IntroduceHintTest extends NbTestCase {
                        new DialogDisplayerImpl3("name", EnumSet.noneOf(Modifier.class), DialogDescriptor.OK_OPTION));
     }
     
+    public void testIntroduceMethodFixStatic() throws Exception {
+        performFixTest("package test; public class Test {public static int test(int y) {y += 5; return y;}}",
+                       89 - 25, 96 - 25,
+                       "package test; public class Test {public static int test(int y) { y = name(y); return y;} private static int name(int y) { y += 5; return y; } }",
+                       new DialogDisplayerImpl3("name", EnumSet.of(Modifier.PRIVATE), DialogDescriptor.OK_OPTION));
+    }
+    
     protected void prepareTest(String code) throws Exception {
         clearWorkDir();
         
