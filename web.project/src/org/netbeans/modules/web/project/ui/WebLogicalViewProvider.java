@@ -658,13 +658,11 @@ public class WebLogicalViewProvider implements LogicalViewProvider {
                 ConnectionManager.getDefault().addConnectionListener(this);
                 
                 // For now make sure BrokenDatasourceAction only applies to visualweb/Creator projects
-                // The if-statement here can be expanded to support other types of projects
-                if (!isVisualWebLegacyProject()) {
-                    putValue(Action.NAME,
-                            NbBundle.getMessage(WebLogicalViewProvider.class,
-                            "LBL_Fix_Broken_Datasource_Action")); //NOI18N
-                    checkMissingDatabaseConnection();
-                }
+                // The if-statement here can be expanded to support other types of projects                
+                putValue(Action.NAME,
+                        NbBundle.getMessage(WebLogicalViewProvider.class,
+                        "LBL_Fix_Broken_Datasource_Action")); //NOI18N
+                checkMissingDatabaseConnection();                
             }
             
             // Used to check to see if project is a visualweb or Creator project
@@ -718,34 +716,31 @@ public class WebLogicalViewProvider implements LogicalViewProvider {
             private void doCheckMissingDatabaseConnection() {
                 boolean old = brokenDatasource;
                 
-                // Only mark visualweb 6 projects if they are broken
-                if (!isVisualWebLegacyProject()) {
-                    // if the project has any broken data sources then set the brokenDatasource flag to true
-                    if (!BrokenDatasourceSupport.getBrokenDatasources(project).isEmpty()) {
-                        brokenDatasource = true;
-                    } else {
-                        brokenDatasource = false;
-                    }
-                    
-                    if (old != brokenDatasource) {
-                        // make changes in EDT thread
-                        javax.swing.SwingUtilities.invokeLater(new Runnable() {
-                            public void run() {
-                                setEnabled(brokenDatasource);
-                                fireIconChange();
-                                fireOpenedIconChange();
-                                fireDisplayNameChange(null, null);
-                                if (brokenDatasource && !firstTime) {
-                                    BrokenDatasourceSupport.showAlert();
-                                    firstTime = true;
-                                }
+                // if the project has any broken data sources then set the brokenDatasource flag to true
+                if (!BrokenDatasourceSupport.getBrokenDatasources(project).isEmpty()) {
+                    brokenDatasource = true;
+                } else {
+                    brokenDatasource = false;
+                }
+                
+                if (old != brokenDatasource) {
+                    // make changes in EDT thread
+                    javax.swing.SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            setEnabled(brokenDatasource);
+                            fireIconChange();
+                            fireOpenedIconChange();
+                            fireDisplayNameChange(null, null);
+                            if (brokenDatasource && !firstTime && !isVisualWebLegacyProject()) {
+                                BrokenDatasourceSupport.showAlert();
+                                firstTime = true;
                             }
-                        });
-                    }
-                                        
-                    if (!brokenDatasource) {
-                        ConnectionManager.getDefault().removeConnectionListener(this);
-                    }                    
+                        }
+                    });
+                }
+                
+                if (!brokenDatasource) {
+                    ConnectionManager.getDefault().removeConnectionListener(this);
                 }
             }
             
