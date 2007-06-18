@@ -90,7 +90,15 @@ class DependencyChecker extends Object {
         return false;
     }
     
+    static boolean checkDependencyModuleAllowEqual (Dependency dep, ModuleInfo module) {
+        return checkDependencyModule (dep, module, true);
+    }
+    
     static boolean checkDependencyModule (Dependency dep, ModuleInfo module) {
+        return checkDependencyModule (dep, module, false);
+    }
+    
+    private static boolean checkDependencyModule (Dependency dep, ModuleInfo module, boolean allowEqual) {
 
         boolean ok = false;
         
@@ -102,6 +110,8 @@ class DependencyChecker extends Object {
                         ok = false;
                     } else if (new SpecificationVersion (dep.getVersion ()).compareTo (module.getSpecificationVersion ()) > 0) {
                         ok = false;
+                    } else if (allowEqual && new SpecificationVersion (dep.getVersion ()).compareTo (module.getSpecificationVersion ()) == 0) {
+                        ok = true;
                     } else {
                         ok = true;
                     }
@@ -141,6 +151,8 @@ class DependencyChecker extends Object {
                                 ok = false;
                             } else if (new SpecificationVersion (dep.getVersion ()).compareTo (module.getSpecificationVersion ()) > 0) {
                                 ok = false;
+                            } else if (allowEqual && new SpecificationVersion (dep.getVersion ()).compareTo (module.getSpecificationVersion ()) > 0) {
+                                ok = true;
                             } else {
                                 ok = true;
                             }

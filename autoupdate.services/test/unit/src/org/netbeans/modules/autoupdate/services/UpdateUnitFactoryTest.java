@@ -25,8 +25,10 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.api.autoupdate.UpdateUnit;
@@ -75,10 +77,12 @@ public class UpdateUnitFactoryTest extends NbTestCase {
         assertFalse ("Some modules are installed.", modules.isEmpty ());
         
         Map standaloneModules = new HashMap<ModuleItem, String> ();
+        Set installedModules = new HashSet<String> ();
         Map<String, UpdateUnit> newImpls = UpdateUnitFactory.getDefault ().appendUpdateItems (
                 unitImpls,
                 InstalledModuleProvider.getDefault (),
-                standaloneModules);
+                standaloneModules,
+                installedModules);
         UpdateUnitFactory.getDefault ().appendStandaloneModules (newImpls, standaloneModules);
         assertNotNull ("Some units found.", newImpls);
         assertFalse ("Some units found.", newImpls.isEmpty ());
@@ -111,7 +115,11 @@ public class UpdateUnitFactoryTest extends NbTestCase {
         assertNotNull ("Some upadtes are present.", updates);
         assertFalse ("Some upadtes are present.", updates.isEmpty ());
         
-        Map<String, UpdateUnit> newImpls = UpdateUnitFactory.getDefault ().appendUpdateItems (unitImpls, p, new HashMap<ModuleItem, String> ());
+        Map<String, UpdateUnit> newImpls = UpdateUnitFactory.getDefault ().appendUpdateItems (
+                unitImpls,
+                p,
+                new HashMap<ModuleItem, String> (),
+                new HashSet<String> ());
         assertNotNull ("Some units found.", newImpls);
         assertFalse ("Some units found.", newImpls.isEmpty ());
         
@@ -147,7 +155,11 @@ public class UpdateUnitFactoryTest extends NbTestCase {
         assertNotNull ("Some upadtes are present.", updates);
         assertFalse ("Some upadtes are present.", updates.isEmpty ());
         
-        Map<String, UpdateUnit> newImpls = UpdateUnitFactory.getDefault ().appendUpdateItems (unitImpls, p, new HashMap<ModuleItem, String> ());
+        Map<String, UpdateUnit> newImpls = UpdateUnitFactory.getDefault ().appendUpdateItems (
+                unitImpls,
+                p,
+                new HashMap<ModuleItem, String> (),
+                new HashSet<String> ());
         assertNotNull ("Some units found.", newImpls);
         assertFalse ("Some units found.", newImpls.isEmpty ());
         
@@ -189,9 +201,10 @@ public class UpdateUnitFactoryTest extends NbTestCase {
         Map<String, UpdateUnit> installedImpls = UpdateUnitFactory.getDefault ().appendUpdateItems (
                 unitImpls,
                 InstalledModuleProvider.getDefault (),
-                new HashMap<ModuleItem, String> ());
+                new HashMap<ModuleItem, String> (),
+                new HashSet<String> ());
         Map<String, UpdateUnit> updatedImpls = UpdateUnitFactory.getDefault ().appendUpdateItems (
-                installedImpls, p, new HashMap<ModuleItem, String> ());
+                installedImpls, p, new HashMap<ModuleItem, String> (), new HashSet<String> ());
         boolean isInstalledAndHasUpdates = false;
         for (String id : updatedImpls.keySet ()) {
             UpdateUnit impl = updatedImpls.get (id);

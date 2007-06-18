@@ -67,21 +67,24 @@ public class UpdateUnitFactory {
     public Map<String, UpdateUnit> getUpdateUnits () {
         List<UpdateUnitProvider> updates = UpdateUnitProviderImpl.getUpdateUnitProviders (true);
         Map<ModuleItem, String> possibleStandaloneModules = new HashMap<ModuleItem, String> ();
+        Set<String> includedModules = new HashSet<String> ();
         
         // append installed units
         Map<String, UpdateUnit> mappedImpl = appendUpdateItems (
                 new HashMap<String, UpdateUnit> (),
                 InstalledModuleProvider.getDefault (),
-                possibleStandaloneModules);
+                possibleStandaloneModules,
+                includedModules);
         
         for (UpdateUnitProvider up : updates) {
             UpdateUnitProviderImpl impl = Trampoline.API.impl (up);
             
             // append units from provider
-            mappedImpl = appendUpdateItems (mappedImpl, impl.getUpdateProvider (), possibleStandaloneModules);
+            mappedImpl = appendUpdateItems (mappedImpl, impl.getUpdateProvider (), possibleStandaloneModules, includedModules);
         }
         
         // append standalone modules at the end when all features are known
+        possibleStandaloneModules.values().removeAll (includedModules);
         appendStandaloneModules (mappedImpl, possibleStandaloneModules);
         
         return mappedImpl;
@@ -94,6 +97,7 @@ public class UpdateUnitFactory {
         Collection<UpdateItem> artificialItems = null;
         Map<ModuleItem, String> possibleStandaloneModules = new HashMap<ModuleItem, String> ();
         Map<ModuleItem, String> realStandaloneModules = new HashMap<ModuleItem, String> ();
+        Set<String> includedModules = new HashSet<String> ();
         
         try {
             itemsFromProvider = provider.getUpdateItems ().values();
@@ -106,10 +110,11 @@ public class UpdateUnitFactory {
         Map<String, UpdateUnit> temp  = appendUpdateItems (
                 new HashMap<String, UpdateUnit> (),
                 InstalledModuleProvider.getDefault (),
-                possibleStandaloneModules);
+                possibleStandaloneModules,
+                includedModules);
         
         // append units from provider
-        temp = appendUpdateItems (temp, provider, possibleStandaloneModules);
+        temp = appendUpdateItems (temp, provider, possibleStandaloneModules, includedModules);
         
         assert itemsFromProvider != null : provider + " UpdateProvider cannot returns null items.";
         Map<String, UpdateUnit> retval = new HashMap<String, UpdateUnit>();
@@ -125,12 +130,16 @@ public class UpdateUnitFactory {
         }
         
         // append standalone modules at the end when all features are known
+        possibleStandaloneModules.values().removeAll (includedModules);
         appendStandaloneModules (retval, realStandaloneModules);
         
         return retval;
     }
     
-    Map<String, UpdateUnit> appendUpdateItems (Map<String, UpdateUnit> originalUnits, UpdateProvider provider, Map<ModuleItem, String> possibleStandaloneModules) {
+    Map<String, UpdateUnit> appendUpdateItems (Map<String, UpdateUnit> originalUnits,
+            UpdateProvider provider,
+            Map<ModuleItem, String> possibleStandaloneModules,
+            Set<String> includedModules) {
         assert originalUnits != null : "Map of original UnitImpl cannot be null";
 
         Map<String, UpdateItem> items;
@@ -142,8 +151,6 @@ public class UpdateUnitFactory {
         }
         
         assert items != null : "UpdateProvider[" + provider.getName () + "] should return non-null items.";
-        
-        Set<String> includedModules = new HashSet<String> ();
         
         // append updates
         for (String simpleItemId : items.keySet ()) {
@@ -165,12 +172,12 @@ public class UpdateUnitFactory {
             } else if (itemImpl instanceof NativeComponentItem) {
                 updateEl = Trampoline.API.createUpdateElement (new NativeComponentUpdateElementImpl ((NativeComponentItem) itemImpl, provider.getDisplayName ()));
             } else if (itemImpl instanceof FeatureItem) {
-                FeatureUpdateElementImpl impl = new FeatureUpdateElementImpl (
+                FeatureUpdateElementImpl impl = new FeatureUpdateElementImpl.Agent (
                         (FeatureItem) itemImpl,
                         provider.getDisplayName (),
                         UpdateManager.TYPE.FEATURE);
                 updateEl = Trampoline.API.createUpdateElement (impl);
-                // XXX: intialize contained modules
+                // intialize contained modules
                 includedModules.addAll (((FeatureItem) itemImpl).getModuleCodeNames ());
             } else {
                 assert false : "Unknown type of UpdateElement " + updateEl;
@@ -197,7 +204,7 @@ public class UpdateUnitFactory {
                         (String) module.getModuleInfo ().getLocalizedAttribute ("OpenIDE-Module-Long-Description"), // NOI18N
                         module.getCategory ());
             UpdateElement updateEl = Trampoline.API.createUpdateElement (
-                    new FeatureUpdateElementImpl (
+                    new FeatureUpdateElementImpl.Agent (
                     standaloneModule,
                     ArtificialFeaturesProvider.getDummy ().getName (),
                     UpdateManager.TYPE.STANDALONE_MODULE));

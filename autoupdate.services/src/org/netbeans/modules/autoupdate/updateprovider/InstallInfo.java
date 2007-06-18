@@ -19,10 +19,6 @@
 
 package org.netbeans.modules.autoupdate.updateprovider;
 
-import org.netbeans.modules.autoupdate.updateprovider.FeatureItem;
-import org.netbeans.modules.autoupdate.updateprovider.UpdateItemImpl;
-import org.netbeans.modules.autoupdate.updateprovider.LocalizationItem;
-import org.netbeans.modules.autoupdate.updateprovider.ModuleItem;
 import java.net.URL;
 import org.netbeans.spi.autoupdate.CustomInstaller;
 

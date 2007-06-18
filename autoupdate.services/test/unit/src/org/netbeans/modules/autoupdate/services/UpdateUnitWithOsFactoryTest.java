@@ -26,6 +26,7 @@ import java.io.OutputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import org.netbeans.api.autoupdate.UpdateUnit;
 import org.netbeans.junit.NbTestCase;
@@ -80,7 +81,11 @@ public class UpdateUnitWithOsFactoryTest extends NbTestCase {
         assertFalse ("Some modules are installed.", updates.isEmpty ());
         assertTrue (testModuleName + " found in parsed items.", updates.keySet ().contains (testModuleName + "_" + testModuleVersion));
         
-        Map<String, UpdateUnit> newImpls = UpdateUnitFactory.getDefault ().appendUpdateItems (unitImpls, p, new HashMap<ModuleItem, String> ());
+        Map<String, UpdateUnit> newImpls = UpdateUnitFactory.getDefault ().appendUpdateItems (
+                unitImpls,
+                p,
+                new HashMap<ModuleItem, String> (),
+                new HashSet<String> ());
         assertNotNull ("Some units found.", newImpls);
         assertFalse ("Some units found.", newImpls.isEmpty ());
         
@@ -113,7 +118,10 @@ public class UpdateUnitWithOsFactoryTest extends NbTestCase {
         assertFalse ("Some modules are installed.", updates.isEmpty ());
         assertTrue (testModuleName + " found in parsed items.", updates.keySet ().contains (testModuleName + "_" + testModuleVersion));
         
-        Map<String, UpdateUnit> newImpls = UpdateUnitFactory.getDefault ().appendUpdateItems (unitImpls, p, new HashMap<ModuleItem, String> ());
+        Map<String, UpdateUnit> newImpls = UpdateUnitFactory.getDefault ().appendUpdateItems (unitImpls,
+                p,
+                new HashMap<ModuleItem, String> (),
+                new HashSet<String> ());
         assertNotNull ("Some units found.", newImpls);
         assertFalse ("Some units found.", newImpls.isEmpty ());
         

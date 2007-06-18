@@ -30,8 +30,6 @@ import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.api.autoupdate.UpdateManager.TYPE;
 import org.netbeans.modules.autoupdate.updateprovider.ArtificialFeaturesProvider;
 import org.netbeans.modules.autoupdate.updateprovider.FeatureItem;
-import org.openide.modules.ModuleInfo;
-import org.openide.modules.SpecificationVersion;
 
 
 public class FeatureUpdateUnitImpl extends UpdateUnitImpl {
@@ -60,20 +58,16 @@ public class FeatureUpdateUnitImpl extends UpdateUnitImpl {
             initializeFeature ();
         }
         
-        List<UpdateElement> res = Collections.emptyList ();
-        if (updateElement != null) {
-            if (installedElement == null) {
-                res = Collections.singletonList (updateElement);
-            } else {
-                if (new SpecificationVersion(updateElement.getSpecificationVersion ()).compareTo (new SpecificationVersion(installedElement.getSpecificationVersion ())) > 0) {
-                        res = Collections.singletonList (updateElement);
-                        String id = updateElement.getCodeName ();
-                        err.log (Level.FINE, "UpdateElement " + id + "[" + installedElement.getSpecificationVersion () + "] has update " + id + "[" + updateElement.getSpecificationVersion () + "]");
-                }
-            }
+        if (updateElement == null) {
+            return Collections.emptyList ();
         }
         
-        return res;
+        String id = updateElement.getCodeName ();
+        err.log (Level.FINE, "UpdateElement " + id + "[" +
+                (installedElement == null ? "<not installed>" : installedElement.getSpecificationVersion ()) + "] has update " +
+                id + "[" + updateElement.getSpecificationVersion () + "]");
+        
+        return Collections.singletonList (updateElement);
     }
 
     public TYPE getType () {
@@ -82,10 +76,14 @@ public class FeatureUpdateUnitImpl extends UpdateUnitImpl {
     
     private void initializeFeature () {
         List<UpdateElement> featureElements = getUpdates ();
+        
+        installedElement = null;
+        updateElement = null;
+        
         UpdateElement res = null;
         FeatureUpdateElementImpl featureImpl = null;
-        Set<ModuleInfo> installedModules = new HashSet<ModuleInfo> ();
-        Set<ModuleInfo> availableModules = new HashSet<ModuleInfo> ();
+        Set<ModuleUpdateElementImpl> installedModules = new HashSet<ModuleUpdateElementImpl> ();
+        Set<ModuleUpdateElementImpl> availableModules = new HashSet<ModuleUpdateElementImpl> ();
         assert featureElements != null : "FeatureUpdateUnitImpl " + getCodeName () + " contains some available elements.";
         for (UpdateElement el : featureElements) {
             featureImpl = (FeatureUpdateElementImpl) Trampoline.API.impl (el);
@@ -94,17 +92,17 @@ public class FeatureUpdateUnitImpl extends UpdateUnitImpl {
                 installed &= moduleImpl.getUpdateUnit ().getInstalled () != null;
                 UpdateElement iue = moduleImpl.getUpdateUnit ().getInstalled ();
                 UpdateElementImpl iuei = iue == null ? null : Trampoline.API.impl (iue);
-                assert iuei ==null || iuei instanceof ModuleUpdateElementImpl : "Impl of " + iue + " is instanceof ModuleUpdateElementImpl";
+                assert iuei == null || iuei instanceof ModuleUpdateElementImpl : "Impl of " + iue + " is instanceof ModuleUpdateElementImpl";
                 if (iue != null) {
-                    installedModules.add (((ModuleUpdateElementImpl) iuei).getModuleInfo ());
+                    installedModules.add ((ModuleUpdateElementImpl) iuei);
                 }
                 if (! moduleImpl.getUpdateUnit ().getAvailableUpdates ().isEmpty ()) {
                     UpdateElement aue = moduleImpl.getUpdateUnit ().getAvailableUpdates ().get (0);
                     UpdateElementImpl auei = Trampoline.API.impl (aue);
                     assert auei instanceof ModuleUpdateElementImpl : "Impl of " + aue + " is instanceof ModuleUpdateElementImpl";
-                    availableModules.add (((ModuleUpdateElementImpl) auei).getModuleInfo ());
-                } else {
-                    availableModules.add (((ModuleUpdateElementImpl) iuei).getModuleInfo ());
+                    availableModules.add ((ModuleUpdateElementImpl) auei);
+//                } else {
+//                    availableModules.add ((ModuleUpdateElementImpl) iuei);
                 }
             }
             if (installed) {
@@ -119,6 +117,7 @@ public class FeatureUpdateUnitImpl extends UpdateUnitImpl {
             FeatureUpdateElementImpl featureElementImpl = new FeatureUpdateElementImpl (
                     item,
                     res.getSource (),
+                    installedModules,
                     featureImpl.getType ());
             installedElement = Trampoline.API.createUpdateElement (featureElementImpl);
             featureElementImpl.setUpdateUnit (res.getUpdateUnit ());
@@ -130,6 +129,7 @@ public class FeatureUpdateUnitImpl extends UpdateUnitImpl {
             FeatureUpdateElementImpl featureElementImpl = new FeatureUpdateElementImpl (
                     item,
                     featureElements.get (0).getSource (),
+                    availableModules,
                     featureImpl.getType ());
             updateElement = Trampoline.API.createUpdateElement (featureElementImpl);
             featureElementImpl.setUpdateUnit (featureElements.get (0).getUpdateUnit ());

@@ -31,6 +31,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.Module;
 import org.netbeans.modules.autoupdate.services.FeatureUpdateElementImpl;
+import org.netbeans.modules.autoupdate.services.ModuleUpdateElementImpl;
 import org.netbeans.modules.autoupdate.services.UpdateElementImpl;
 import org.netbeans.modules.autoupdate.services.Utilities;
 import org.netbeans.spi.autoupdate.UpdateItem;
@@ -135,7 +136,10 @@ public class ArtificialFeaturesProvider implements UpdateProvider {
         
         // make a feature for each one category
         for (String category : categoryToModules.keySet ()) {
-            FeatureItem featureItemImpl = createFeatureItem (category, categoryToModules.get (category), null);
+            if (true) {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+            FeatureItem featureItemImpl = createFeatureItem (category, null /*categoryToModules.get (category)*/, null);
             log.log (Level.FINE, "Create FeatureItem[" + category + ", " + featureItemImpl.getSpecificationVersion ().toString () +
                     "] containing modules " + featureItemImpl.getDependenciesToModules ());
             UpdateItem featureItem = Utilities.createUpdateItem (featureItemImpl);
@@ -149,12 +153,13 @@ public class ArtificialFeaturesProvider implements UpdateProvider {
         throw new UnsupportedOperationException("Not supported yet.");
     }
     
-    public static FeatureItem createFeatureItem (String codeName, Set<ModuleInfo> modules, UpdateElementImpl original) {
+    public static FeatureItem createFeatureItem (String codeName, Set<ModuleUpdateElementImpl> modules, UpdateElementImpl original) {
         Set<String> containsModules = new HashSet<String> ();
         String versionN = "";
         String descriptionN = "";
-        for (ModuleInfo info : modules) {
-            containsModules.add (info.getCodeNameBase () + " = " + info.getImplementationVersion ());
+        for (ModuleUpdateElementImpl impl : modules) {
+            ModuleInfo info = impl.getModuleInfo ();
+            containsModules.add (info.getCodeName () + " > " + info.getSpecificationVersion ());
             SpecificationVersion spec = info.getSpecificationVersion ();
             versionN = addVersion (versionN, spec);
             descriptionN += "<h5>" + info.getDisplayName () + "</h5>";
