@@ -21,6 +21,7 @@ package org.netbeans.modules.autoupdate.ui;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -320,14 +321,16 @@ private void cbModulesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
 
     private void cbPluginsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbPluginsActionPerformed
     if (Utilities.modulesOnly() != cbModules.isSelected()) {
+        setWaitingState(true);
         Utilities.setModulesOnly(cbModules.isSelected());
-        RequestProcessor.getDefault().post(new Runnable() {
+        Utilities.startAsWorkerThread(getSettingsTableModel().getPluginManager(), new Runnable() {
             public void run() {
                 Utilities.presentRefreshProviders(getSettingsTableModel().getPluginManager(), false);
                 getSettingsTableModel().getPluginManager().tableStructureChanged();
                 getSettingsTableModel().getPluginManager().updateUnitsChanged();
+                setWaitingState(false);
             }
-        });
+        }, NbBundle.getMessage (SettingsTab.class, "SettingsTab_ChangingView"));
     }
 }//GEN-LAST:event_cbPluginsActionPerformed
     
@@ -591,5 +594,24 @@ private class Listener implements ListSelectionListener,  TableModelListener {
     private javax.swing.ButtonGroup pluginsViewGroup;
     private javax.swing.JSplitPane spTab;
     // End of variables declaration//GEN-END:variables
+ 
+    void setWaitingState (boolean waitingState) {
+        getSettingsTableModel().getPluginManager().setWaitingState(waitingState);
+        
+        boolean enabled = !waitingState;
+        Component[] all = getComponents ();
+        for (Component component : all) {
+                changeComponentsEnableState(component,enabled);
+                
+        }
+    }
     
+    void changeComponentsEnableState (Component component, boolean b) {
+        component.setEnabled(b);
+        if (component instanceof Container) {
+            Component[] nested = ((Container)component).getComponents();
+            for (Component nestedcomponent : nested)
+                changeComponentsEnableState(nestedcomponent, b);
+        }
+    }
 }
