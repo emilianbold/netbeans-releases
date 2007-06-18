@@ -26,6 +26,7 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.MoveRefactoring;
+import org.netbeans.modules.web.refactoring.RefactoringUtil;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -45,54 +46,12 @@ public class WebXmlMove extends BaseWebXmlRename{
         this.move = move;
     }
     
-    private String getNewFQN(){
-        String newPkg = getPackageName(move.getTarget().lookup(URL.class));
-        String uqn = move.getRefactoringSource().lookup(FileObject.class).getName();
-        return newPkg + "." + uqn;
-    }
-    
     protected AbstractRefactoring getRefactoring() {
         return move;
     }
     
     protected List<RenameItem> getRenameItems() {
-        return Collections.singletonList(new RenameItem(getNewFQN(),oldFqn));
+        String newName = RefactoringUtil.constructNewName(move);
+        return Collections.singletonList(new RenameItem(newName, oldFqn));
     }
-    
-    // copied from o.n.m.java.refactoring.RetoucheUtils
-    private static String getPackageName(URL url) {
-        File f = null;
-        try {
-            f = FileUtil.normalizeFile(new File(url.toURI()));
-        } catch (URISyntaxException uRISyntaxException) {
-            throw new IllegalArgumentException("Cannot create package name for url " + url);
-        }
-        String suffix = "";
-        
-        do {
-            FileObject fo = FileUtil.toFileObject(f);
-            if (fo != null) {
-                if ("".equals(suffix))
-                    return getPackageName(fo);
-                String prefix = getPackageName(fo);
-                return prefix + ("".equals(prefix)?"":".") + suffix;
-            }
-            if (!"".equals(suffix)) {
-                suffix = "." + suffix;
-            }
-            suffix = URLDecoder.decode(f.getPath().substring(f.getPath().lastIndexOf(File.separatorChar)+1)) + suffix;
-            f = f.getParentFile();
-        } while (f!=null);
-        throw new IllegalArgumentException("Cannot create package name for url " + url);
     }
-    
-    // copied from o.n.m.java.refactoring.RetoucheUtils
-    private static String getPackageName(FileObject folder) {
-        assert folder.isFolder() : "argument must be folder";
-        return ClassPath.getClassPath(
-                folder, ClassPath.SOURCE)
-                .getResourceName(folder, '.', false);
-    }
-    
-    
-}

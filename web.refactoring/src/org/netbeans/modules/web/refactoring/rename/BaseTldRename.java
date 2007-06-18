@@ -17,8 +17,8 @@
 package org.netbeans.modules.web.refactoring.rename;
 
 import java.util.List;
+import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
-import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.web.refactoring.TldRefactoring;
 import org.netbeans.modules.web.taglib.model.FunctionType;
@@ -36,11 +36,9 @@ import org.openide.util.NbBundle;
  */
 abstract class BaseTldRename extends TldRefactoring{
     
-    protected final RenameRefactoring rename;
     protected final FileObject source;
     
-    public BaseTldRename(RenameRefactoring rename, FileObject source) {
-        this.rename = rename;
+    public BaseTldRename(FileObject source) {
         this.source = source;
     }
     
@@ -49,6 +47,8 @@ abstract class BaseTldRename extends TldRefactoring{
      * by this refactoring.
      */ 
     protected abstract List<RenameItem> getAffectedClasses();
+    
+    protected abstract AbstractRefactoring getRefactoring();
     
     public Problem prepare(RefactoringElementsBag refactoringElements) {
         
@@ -62,24 +62,24 @@ abstract class BaseTldRename extends TldRefactoring{
                 
                 for (TagType tagType : taglib.getTag()){
                     if (clazz.equals(tagType.getTagClass())){
-                        refactoringElements.add(rename, new TagClassRenameElement(clazz, newName, tagType, taglib, taglibHandle.getTldFile()));
+                        refactoringElements.add(getRefactoring(), new TagClassRenameElement(clazz, newName, tagType, taglib, taglibHandle.getTldFile()));
                     }
                     if (clazz.equals(tagType.getTeiClass())){
-                        refactoringElements.add(rename, new TeiClassRenameElement(clazz, newName, tagType, taglib, taglibHandle.getTldFile()));
+                        refactoringElements.add(getRefactoring(), new TeiClassRenameElement(clazz, newName, tagType, taglib, taglibHandle.getTldFile()));
                     }
                 }
                 for (FunctionType functionType : taglib.getFunction()){
                     if (clazz.equals(functionType.getFunctionClass())){
-                        refactoringElements.add(rename, new FunctionTypeRenameElement(clazz, newName, functionType, taglib, taglibHandle.getTldFile()));
+                        refactoringElements.add(getRefactoring(), new FunctionTypeRenameElement(clazz, newName, functionType, taglib, taglibHandle.getTldFile()));
                     }
                 }
                 ValidatorType validatorType = taglib.getValidator();
                 if (validatorType != null && clazz.equals(validatorType.getValidatorClass())){
-                    refactoringElements.add(rename, new ValidatorRenameElement(clazz, newName, validatorType, taglib, taglibHandle.getTldFile()));
+                    refactoringElements.add(getRefactoring(), new ValidatorRenameElement(clazz, newName, validatorType, taglib, taglibHandle.getTldFile()));
                 }
                 for (ListenerType listenerType : taglib.getListener()){
                     if (clazz.equals(listenerType.getListenerClass())){
-                        refactoringElements.add(rename, new ListenerRenameElement(clazz, newName, listenerType, taglib, taglibHandle.getTldFile()));
+                        refactoringElements.add(getRefactoring(), new ListenerRenameElement(clazz, newName, listenerType, taglib, taglibHandle.getTldFile()));
                     }
                 }
             }
