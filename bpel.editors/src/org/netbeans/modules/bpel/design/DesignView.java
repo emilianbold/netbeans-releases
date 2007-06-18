@@ -37,6 +37,7 @@ import java.awt.event.MouseEvent;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import javax.swing.AbstractAction;
@@ -107,6 +108,7 @@ import org.netbeans.modules.bpel.design.decoration.providers.SelectionDecoration
 import org.netbeans.modules.bpel.design.decoration.providers.ValidationDecorationProvider;
 import org.netbeans.modules.bpel.design.geometry.FDimension;
 import org.netbeans.modules.bpel.design.geometry.FPoint;
+import org.netbeans.modules.bpel.design.geometry.FShape;
 import org.netbeans.modules.bpel.design.phmode.PlaceHolderIterator;
 import org.netbeans.modules.bpel.design.phmode.PlaceHolderIteratorImpl;
 import org.netbeans.modules.bpel.design.phmode.PlaceHolderSelectionModel;
@@ -114,6 +116,7 @@ import org.netbeans.modules.bpel.design.selection.PlaceHolder;
 import org.netbeans.modules.soa.ui.nodes.NodeFactory;
 import org.netbeans.modules.bpel.editors.api.ExternalBpelEditorTopComponentListener;
 import org.netbeans.modules.bpel.editors.multiview.ThumbScrollPane;
+import org.netbeans.modules.bpel.model.api.support.UniqueId;
 import org.netbeans.modules.bpel.properties.NodeUtils;
 import org.netbeans.modules.soa.ui.form.CustomNodeEditor;
 import org.openide.ErrorManager;
@@ -1282,49 +1285,33 @@ public class DesignView extends JPanel implements
         }
     }
     
-    private Pattern getPatternCopy(Pattern pattern, Pattern parentPattern) {
-        if (pattern == null) {
-            return null;
-        }
-        Pattern copiedPattern = null;
-        
-        BpelEntity entity = pattern.getOMReference();
-        BpelEntity parentEntity = parentPattern.getOMReference();
-        if (entity == null || parentEntity == null) {
-            return null;
-        }
-        
-        copiedPattern = diagramModel.createPattern((BpelEntity)entity.copy(parentEntity));
-        
-        return copiedPattern;
-    }
-    
-    private Pattern getPatternCut(Pattern pattern) {
-        if (pattern == null) {
-            return null;
-        }
-        Pattern cuttedPattern = null;
-        BpelEntity entity = pattern.getOMReference();
-        if (entity == null) {
-            return null;
-        }
-        
-        cuttedPattern = diagramModel.createPattern(entity.cut());
-                
-        return cuttedPattern;
-    }
-    
     class CopyAction extends AbstractAction {
         private static final long serialVersionUID = 1L;
         
         public void actionPerformed(ActionEvent e) {
             if (getModel().isReadOnly()) return;
-//            Pattern copiedPattern = getPatternCopy(getSelectionModel().getSelectedPattern());
             
-            
-            goPlaceHolderMode(getSelectionModel().getSelectedPattern(), true);
+            Pattern copiedPattern = getPatternCopy(getSelectionModel().getSelectedPattern());
+            goPlaceHolderMode(copiedPattern, true);
             repaint();
         }
+        
+        private Pattern getPatternCopy(Pattern pattern) {
+            if (pattern == null) {
+                return null;
+            }
+            Pattern copiedPattern = null;
+            BpelEntity entity = pattern.getOMReference();
+            if (entity == null) {
+                return null;
+            }
+
+            copiedPattern = diagramModel.createPattern(
+                    entity.copy(new HashMap<UniqueId, UniqueId>()));
+
+            return copiedPattern;
+        }
+        
     }
 
     class CutAction extends AbstractAction {
@@ -1333,9 +1320,24 @@ public class DesignView extends JPanel implements
         public void actionPerformed(ActionEvent e) {
             if (getModel().isReadOnly()) return;
             Pattern cuttedPattern = getPatternCut(getSelectionModel().getSelectedPattern());
-            
+    
             goPlaceHolderMode(cuttedPattern, false);
             repaint();
+        }
+
+        private Pattern getPatternCut(Pattern pattern) {
+            if (pattern == null) {
+                return null;
+            }
+            Pattern cuttedPattern = null;
+            BpelEntity entity = pattern.getOMReference();
+            if (entity == null) {
+                return null;
+            }
+
+            cuttedPattern = diagramModel.createPattern(entity.cut());
+
+            return cuttedPattern;
         }
     }
 
@@ -1348,14 +1350,7 @@ public class DesignView extends JPanel implements
             }
             PlaceHolder ph = getPhSelectionModel().getSelectedPlaceHolder();
             if (ph != null) {
-                if (DesignViewMode.COPY_PLACE_HOLDER.equals(getDesignViewMode())) {
-// TODO a                    
-//                    Pattern copiedPattern = getPatternCopy(
-//                            ph.getDraggedPattern(), ph.getOwnerPattern());
-//                    ph.copyDrop(copiedPattern);
-                } else {
-                    ph.drop();
-                }
+                ph.drop();
             }
             exitPlaceHolderMode();
             repaint();
@@ -1734,8 +1729,8 @@ public class DesignView extends JPanel implements
                 PlaceHolder nextPh = getPlaceHolderIterator().next();
                 if (nextPh != null) {
                     getPhSelectionModel().setSelectedPlaceHolder(nextPh);
+                    scrollPlaceHolderToView(nextPh);
                     repaint();
-//                    scrollSelectedToView();
                 }
             }
         }
@@ -1756,6 +1751,7 @@ public class DesignView extends JPanel implements
                 PlaceHolder prevPh = getPlaceHolderIterator().previous();
                 if (prevPh != null) {
                     getPhSelectionModel().setSelectedPlaceHolder(prevPh);
+                    scrollPlaceHolderToView(prevPh);
                     repaint();
                 }
             }
@@ -1864,6 +1860,31 @@ public class DesignView extends JPanel implements
         scrollRectToVisible(new Rectangle(x1, y1, w, h));
     }
     
+    public void scrollPlaceHolderToView(PlaceHolder ph) {
+        if (ph == null){
+            return;
+        }
+        /**
+         * Get the position of selected node and scroll view to make
+         * the corresponding pattern visible
+         **/
+
+        FShape shape = ph.getShape();
+
+        Point screenTL = convertDiagramToScreen(shape.getTopLeft());
+        Point screenBR = convertDiagramToScreen(shape.getBottomRight());
+
+        int x1 = Math.max(0, screenTL.x - 8);
+        int y1 = Math.max(0, screenTL.y - 32);
+
+        int x2 = Math.min(getWidth(), screenBR.x + 8);
+        int y2 = Math.min(getHeight(), screenBR.y + 8);
+
+        int w = Math.max(1, x2 - x1);
+        int h = Math.max(1, y2 - y1);
+
+        scrollRectToVisible(new Rectangle(x1, y1, w, h));
+    }
     
     public void scrollSelectedToView(){
         SwingUtilities.invokeLater( new Runnable() {
@@ -1874,6 +1895,15 @@ public class DesignView extends JPanel implements
         });
     }
     
+    public void scrollSelectedPlaceHolderToView(){
+        SwingUtilities.invokeLater( new Runnable() {
+            public void run() {
+                getPhSelectionModel().getSelectedPlaceHolder();
+                scrollPatternToView(getSelectionModel()
+                        .getSelectedPattern());
+            }
+        });
+    }
     
     private static int AUTOSCROLL_INSETS = 20;
     

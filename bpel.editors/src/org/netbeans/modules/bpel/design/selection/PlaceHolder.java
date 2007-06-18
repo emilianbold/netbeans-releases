@@ -20,14 +20,9 @@
 
 package org.netbeans.modules.bpel.design.selection;
 
-import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
-import java.awt.Shape;
-import java.awt.geom.Ellipse2D;
-import java.awt.geom.Point2D;
-import org.netbeans.modules.bpel.design.GUtils;
 import org.netbeans.modules.bpel.design.geometry.FEllipse;
 import org.netbeans.modules.bpel.design.geometry.FPath;
 import org.netbeans.modules.bpel.design.geometry.FPoint;
@@ -104,15 +99,7 @@ public abstract class PlaceHolder {
         mouseHover = false;
     }
     
-    
-    public void copyDrop(Pattern copiedDraggedPattern) {
-        if (copiedDraggedPattern == null) {
-            return;
-        }
-        draggedPattern = copiedDraggedPattern;
-        drop();
-    }
-    
+
     public abstract void drop();
     
     
@@ -142,6 +129,10 @@ public abstract class PlaceHolder {
         g2.draw(INNER_SHAPE);
         
         g2.translate(-realCenter.x, -realCenter.y);
+    }
+    
+    public FShape getShape() {
+        return shape;
     }
     
   
