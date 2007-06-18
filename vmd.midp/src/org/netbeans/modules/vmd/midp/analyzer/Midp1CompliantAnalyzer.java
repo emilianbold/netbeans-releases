@@ -25,7 +25,9 @@ import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter;
 import org.netbeans.modules.vmd.midp.components.MidpDocumentSupport;
 import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.MidpVersionable;
+import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.items.ItemCD;
+import org.netbeans.modules.vmd.midp.components.items.ImageItemCD;
 import org.openide.util.NbBundle;
 
 import javax.swing.*;
@@ -84,10 +86,12 @@ public class Midp1CompliantAnalyzer implements Analyzer {
             return;
         }
 
-        for (PropertyDescriptor property : descriptor.getPropertyDescriptors ())
+        for (PropertyDescriptor property : descriptor.getPropertyDescriptors ()) {
             if (! property.getVersionable ().isCompatibleWith (MidpVersionable.MIDP_1))
                 if (! component.isDefaultValue (property.getName ()))
                     reportComponentProperty (list, component, property.getName ());
+            processComponentProperty (list, component, property);
+        }
 
         for (DesignComponent child : component.getComponents ())
             analyze (list, child);
@@ -95,6 +99,21 @@ public class Midp1CompliantAnalyzer implements Analyzer {
 
     private void reportComponent (DefaultListModel list, DesignComponent component) {
         list.addElement ("<html>Incompatible component: " + InfoPresenter.getHtmlDisplayName (component));
+    }
+
+    private void processComponentProperty (DefaultListModel list, DesignComponent component, PropertyDescriptor property) {
+        DescriptorRegistry registry = component.getDocument ().getDescriptorRegistry ();
+        if (registry.isInHierarchy (ItemCD.TYPEID, component.getType ())  &&  ItemCD.PROP_LAYOUT.equals (property.getName ())) {
+            if (! registry.isInHierarchy (ImageItemCD.TYPEID, component.getType ())) {
+                list.addElement ("<html>Layout property cannot be set for: " + InfoPresenter.getHtmlDisplayName (component));
+                return;
+            }
+            int value = MidpTypes.getInteger (component.readProperty (ItemCD.PROP_LAYOUT));
+            if ((value & (ItemCD.VALUE_LAYOUT_TOP | ItemCD.VALUE_LAYOUT_BOTTOM | ItemCD.VALUE_LAYOUT_VCENTER | ItemCD.VALUE_LAYOUT_SHRINK | ItemCD.VALUE_LAYOUT_VSHRINK | ItemCD.VALUE_LAYOUT_VSHRINK | ItemCD.VALUE_LAYOUT_VEXPAND | ItemCD.VALUE_LAYOUT_2)) != 0) {
+                list.addElement ("<html>Incompatible layout value set for: " + InfoPresenter.getHtmlDisplayName (component));
+                return;
+            }
+        }
     }
 
     private void reportComponentProperty (DefaultListModel list, DesignComponent component, String propertyName) {
