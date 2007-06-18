@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 2004 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 2004-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -22,10 +22,10 @@ package org.netbeans.modules.search;
 import java.awt.EventQueue;
 import java.lang.ref.Reference;
 import java.lang.reflect.Method;
+import java.util.List;
 import org.openide.ErrorManager;
 import org.openide.nodes.Node;
 import org.openide.windows.OutputWriter;
-import org.openidex.search.SearchGroup;
 import org.openidex.search.SearchType;
 
 /**
@@ -39,7 +39,9 @@ public class PrintDetailsTask implements Runnable {
     /** */
     private final Object[] objects;
     /** */
-    private final SearchGroup searchGroup;
+    private final BasicSearchCriteria basicSearchCriteria;
+    /** */
+    private final List<SearchType> searchTypes;
     /** */
     private final Node[] buffer = new Node[BUFFER_SIZE];
     /** position of the first free item in the buffer */
@@ -52,9 +54,11 @@ public class PrintDetailsTask implements Runnable {
     
     /** Creates a new instance of PrintDetailsTask */
     public PrintDetailsTask(final Object[] matchingObjects,
-                            final SearchGroup searchGroup) {
+                            final BasicSearchCriteria basicCriteria,
+                            final List<SearchType> searchTypes) {
         this.objects = matchingObjects;
-        this.searchGroup = searchGroup;
+        this.basicSearchCriteria = basicCriteria;
+        this.searchTypes = searchTypes;
     }
     
     /** */
@@ -62,22 +66,28 @@ public class PrintDetailsTask implements Runnable {
         displayer = new SearchDisplayer();
         callDisplayerFromAWT("prepareOutput");                    //NOI18N
         
-        final SearchType[] searchTypes = searchGroup.getSearchTypes();        
-        
         int freeBufSpace = 0;
-        for (int i = 0; i < objects.length; i++) {
+        for (Object obj : objects) {
 
             /* Collect details about the found node: */
             Node[] allDetails = null;
-            for (int j = 0; j < searchTypes.length; j++) {
-                Node[] details = searchTypes[j].getDetails(objects[i]);
-                if (details == null || details.length == 0) {
-                    continue;
-                }
-                if (allDetails == null) {
+            if (basicSearchCriteria != null) {
+                Node[] details = basicSearchCriteria.getDetails(obj);
+                if (details != null && details.length != 0) {
                     allDetails = details;
-                } else {
-                    allDetails = concatNodeArrays(allDetails, details);
+                }
+            }
+            if (!searchTypes.isEmpty()) {
+                for (SearchType searchType : searchTypes) {
+                    Node[] details = searchType.getDetails(obj);
+                    if (details == null || details.length == 0) {
+                        continue;
+                    }
+                    if (allDetails == null) {
+                        allDetails = details;
+                    } else {
+                        allDetails = concatNodeArrays(allDetails, details);
+                    }
                 }
             }
             if (allDetails == null) {

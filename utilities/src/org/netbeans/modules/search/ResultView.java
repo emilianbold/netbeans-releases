@@ -392,7 +392,8 @@ final class ResultView extends TopComponent {
         btnShowDetails.setEnabled(false);
         Manager.getInstance()
                .schedulePrintingDetails(resultModel.getFoundObjects(),
-                                        resultModel.getSearchGroup());
+                                        basicSearchCriteria,
+                                        searchTypes);
     }
     
     /**

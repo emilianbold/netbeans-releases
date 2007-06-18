@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 2004-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 2004-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -23,6 +23,7 @@ import java.awt.EventQueue;
 import java.lang.ref.Reference;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.List;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
@@ -32,7 +33,7 @@ import org.openide.util.RequestProcessor;
 import org.openide.util.Task;
 import org.openide.util.TaskListener;
 import org.openide.windows.OutputWriter;
-import org.openidex.search.SearchGroup;
+import org.openidex.search.SearchType;
 import static org.netbeans.modules.search.ReplaceTask.ResultStatus.SUCCESS;
 import static org.netbeans.modules.search.ReplaceTask.ResultStatus.PRE_CHECK_FAILED;
 import static org.netbeans.modules.search.ReplaceTask.ResultStatus.PROBLEMS_ENCOUNTERED;
@@ -190,14 +191,14 @@ final class Manager {
     /**
      */
     void schedulePrintingDetails(Object[] matchingObjects,
-                                 SearchGroup searchGroup) {
+                                 BasicSearchCriteria basicCriteria,
+                                 List<SearchType> searchTypes) {
         synchronized (lock) {
             assert state == NO_TASK;
             pendingTasks |= PRINTING_DETAILS;
             
             pendingPrintDetailsTask = new PrintDetailsTask(
-                    matchingObjects,
-                    searchGroup);
+                    matchingObjects, basicCriteria, searchTypes);
             processNextPendingTask();
         }
     }
