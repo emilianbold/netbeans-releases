@@ -184,12 +184,37 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../apisupport/ant</project>
                 <project>../apisupport/harness</project>
                 <project>../apisupport/project</project>
+                <project>../apisupport/refactoring</project>
                 <project>../apisupport/samples/PaintApp-sample-ui</project>
                 <project>../apisupport/samples/feedreader-sample-ui</project>
                 <project>../apisupport/timers</project>
                 <project>../autoupdate/services</project>
                 <project>../autoupdate/ui</project>
                 <project>../classfile</project>
+                <project>../cnd/antlr</project>
+                <project>../cnd/apt</project>
+                <project>../cnd/classview</project>
+                <project>../cnd/completion</project>
+                <project>../cnd/core</project>
+                <project>../cnd/discovery</project>
+                <project>../cnd/dwarfdiscovery</project>
+                <project>../cnd/dwarfdump</project>
+                <project>../cnd/folding</project>
+                <project>../cnd/gdb</project>
+                <project>../cnd/gotodeclaration</project>
+                <project>../cnd/highlight</project>
+                <project>../cnd/makeproject</project>
+                <project>../cnd/modelapi</project>
+                <project>../cnd/modeldiscovery</project>
+                <project>../cnd/modelimpl</project>
+                <project>../cnd/modelservices</project>
+                <project>../cnd/modelui</project>
+                <project>../cnd/modelutil</project>
+                <project>../cnd/qnavigator</project>
+                <project>../cnd/repository</project>
+                <project>../cnd/repositoryapi</project>
+                <project>../cnd/term</project>
+                <project>../cnd/update</project>
                 <project>../core</project>
                 <project>../core/applemenu</project>
                 <project>../core/bootstrap</project>
@@ -244,6 +269,7 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../editor/guards</project>
                 <project>../editor/hints</project>
                 <project>../editor/hints/highlights</project>
+                <project>../editor/indent</project>
                 <project>../editor/lib</project>
                 <project>../editor/lib2</project>
                 <project>../editor/mimelookup</project>
