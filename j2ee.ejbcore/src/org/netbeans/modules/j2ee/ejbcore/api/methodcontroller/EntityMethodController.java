@@ -292,21 +292,6 @@ public final class EntityMethodController extends AbstractMethodController {
 //        parent.write(ddFileObject);
     }
 
-    @Deprecated
-    public void addField(MethodModel.Variable field, FileObject ddFile, boolean localGetter, boolean localSetter,
-        boolean remoteGetter, boolean remoteSetter, String description) throws IOException {
-//        String beanClass = getBeanClass();
-//        addSetterMethod(beanClass, field, modifiersPublicAbstract, false, model);
-//        addGetterMethod(beanClass, field, modifiersPublicAbstract, false, model);
-//        final String fieldName = field.getName();
-//        updateFieldAccessors(fieldName, localGetter, localSetter, remoteGetter, remoteSetter);
-//        CmpField cmpField = model.newCmpField();
-//        cmpField.setFieldName(field.getName());
-//        cmpField.setDescription(description);
-//        model.addCmpField(cmpField);
-//        parent.write(ddFile);
-    }
-
     private MethodModel addSetterMethod(String javaClass, MethodModel.Variable field, Set<Modifier> modifiers, boolean remote, Entity entity) {
         MethodModel method = createSetterMethod(javaClass, field, modifiers, remote);
         addMethod(javaClass, method, entity);

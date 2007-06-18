@@ -24,10 +24,18 @@ import java.io.IOException;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
+import org.netbeans.modules.j2ee.common.Util;
+import org.netbeans.modules.j2ee.common.method.FieldCustomizer;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
+import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
+import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
+import org.netbeans.modules.j2ee.ejbcore.Utils;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.EjbMethodController;
 import org.netbeans.modules.j2ee.ejbcore._RetoucheUtil;
+import org.netbeans.modules.j2ee.ejbcore.action.CmFieldGenerator;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.EntityMethodController;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
@@ -111,15 +119,29 @@ public class AddCmpFieldAction extends NodeAction {
     }
 
     private static boolean addCmpField(EntityMethodController emc, FileObject ddFile, MethodModel.Variable field) throws IOException {
-        //TODO: RETOUCHE modifications of model
-//        FieldCustomizer customizer = new FieldCustomizer(emc.getModelCopy(), field, "", 
-//                emc.getLocal() != null, emc.getRemote() != null, true, true, false, false);
-//        if (customizer.customizeField()) {
-//            MethodModel.Variable customizedField = customizer.getField();
-//            emc.addField(customizedField, ddFile, customizer.isLocalGetter(), customizer.isLocalSetter(),
-//                    customizer.isRemoteGetter(), customizer.isRemoteSetter(), customizer.getDescription());
-//            return true;
-//        }
+        
+        final String ejbClass = emc.getBeanClass();
+        final Entity[] entity = new Entity[1];
+        final FileObject[] ejbClassFO = new FileObject[1];
+        
+        MetadataModel<EjbJarMetadata> metadataModel = EjbJar.getEjbJar(ddFile).getMetadataModel();
+        metadataModel.runReadAction(new MetadataModelAction<EjbJarMetadata, Void>() {
+            public Void run(EjbJarMetadata metadata) {
+                entity[0] = (Entity) metadata.findByEjbClass(ejbClass);
+                ejbClassFO[0] = metadata.findResource(Utils.toResourceName(ejbClass));
+                return null;
+            }
+        });
+        
+        FieldCustomizer customizer = new FieldCustomizer(entity[0], field, "", 
+                emc.getLocal() != null, emc.getRemote() != null, true, true, false, false);
+        if (customizer.customizeField()) {
+            MethodModel.Variable customizedField = customizer.getField();
+            CmFieldGenerator generator = CmFieldGenerator.create(emc.getBeanClass(), ejbClassFO[0]);
+            generator.addCmpField(customizedField, customizer.isLocalGetter(), customizer.isLocalSetter(),
+                    customizer.isRemoteGetter(), customizer.isRemoteSetter(), customizer.getDescription());
+            return true;
+        }
         return false;
     }
 
