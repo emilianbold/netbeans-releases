@@ -20,6 +20,7 @@ import java.text.MessageFormat;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
+import org.netbeans.modules.web.refactoring.RefactoringUtil;
 import org.netbeans.modules.web.refactoring.TldRefactoring;
 import org.netbeans.modules.web.taglib.model.FunctionType;
 import org.netbeans.modules.web.taglib.model.ListenerType;
@@ -48,6 +49,7 @@ public class TldWhereUsed extends TldRefactoring{
     }
     
     public Problem prepare(RefactoringElementsBag refactoringElements) {
+        
         
         for(TaglibHandle taglibHandle : getTaglibs(source)){
             Taglib taglib = taglibHandle.getTaglib();

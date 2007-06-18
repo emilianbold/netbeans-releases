@@ -80,6 +80,9 @@ public class WebRefactoringFactory implements RefactoringPluginFactory{
         if (sourceFO == null){
             return null;
         }
+
+        boolean javaFile = sourceFO != null && RefactoringUtil.isJavaFile(sourceFO);
+
         WebModule wm = WebModule.getWebModule(sourceFO);
         if (wm == null){
             return null;
@@ -99,15 +102,21 @@ public class WebRefactoringFactory implements RefactoringPluginFactory{
                 refactorings.add(new WebXmlRename(clazz, rename, webApp, ddFile));
                 refactorings.add(new TldRename(clazz, rename, sourceFO));
             }
-        } if (refactoring instanceof SafeDeleteRefactoring){
+        } 
+        
+        if (refactoring instanceof SafeDeleteRefactoring && javaFile){
             SafeDeleteRefactoring safeDelete = (SafeDeleteRefactoring) refactoring;
             refactorings.add(new WebXmlSafeDelete(ddFile, webApp, clazz, safeDelete));
             refactorings.add(new TldSafeDelete(clazz, safeDelete, sourceFO));
-        } if (refactoring instanceof WhereUsedQuery){
+        }
+        
+        if (refactoring instanceof WhereUsedQuery && javaFile){
             WhereUsedQuery whereUsedQuery = (WhereUsedQuery) refactoring;
             refactorings.add(new WebXmlWhereUsed(ddFile, webApp, clazz, whereUsedQuery));
             refactorings.add(new TldWhereUsed(clazz,sourceFO, whereUsedQuery));
-        } if (refactoring instanceof MoveRefactoring){
+        } 
+        
+        if (refactoring instanceof MoveRefactoring && javaFile){
             MoveRefactoring move = (MoveRefactoring) refactoring;
             refactorings.add(new WebXmlMove(ddFile, webApp, clazz, move));
             refactorings.add(new TldMove(move, sourceFO, clazz));
