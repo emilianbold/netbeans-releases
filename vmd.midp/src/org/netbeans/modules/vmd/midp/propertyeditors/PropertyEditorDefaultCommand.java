@@ -167,32 +167,34 @@ public final class PropertyEditorDefaultCommand extends PropertyEditorUserCode i
             document.getTransactionManager().readAccess( new Runnable() {
                 public void run() {
                     DesignComponent item = document.getComponentByUID(componentID);
-                    List<PropertyValue> formCmdESValues = item.getParentComponent().readProperty(DisplayableCD.PROP_COMMANDS).getArray();
-                    List<DesignComponent> formCommands = new ArrayList<DesignComponent>(formCmdESValues.size());
-                    for (PropertyValue esValue : formCmdESValues) {
-                        DesignComponent command = esValue.getComponent().readProperty(CommandEventSourceCD.PROP_COMMAND).getComponent();
-                        if (command != null) {
-                            PropertyValue ordinaryValue = command.readProperty(CommandCD.PROP_ORDINARY);
-                            if (MidpTypes.getBoolean(ordinaryValue)) {
-                                formCommands.add(command);
+                    if (item != null) {
+                        List<PropertyValue> formCmdESValues = item.getParentComponent().readProperty(DisplayableCD.PROP_COMMANDS).getArray();
+                        List<DesignComponent> formCommands = new ArrayList<DesignComponent>(formCmdESValues.size());
+                        for (PropertyValue esValue : formCmdESValues) {
+                            DesignComponent command = esValue.getComponent().readProperty(CommandEventSourceCD.PROP_COMMAND).getComponent();
+                            if (command != null) {
+                                PropertyValue ordinaryValue = command.readProperty(CommandCD.PROP_ORDINARY);
+                                if (MidpTypes.getBoolean(ordinaryValue)) {
+                                    formCommands.add(command);
+                                }
                             }
                         }
-                    }
-                    
-                    Collection<DesignComponent> components = MidpDocumentSupport.getCategoryComponent(document, CommandsCategoryCD.TYPEID).getComponents();
-                    Collection<DesignComponent> commands = new ArrayList<DesignComponent>(components.size());
-                    for (DesignComponent command : components) {
-                        PropertyValue ordinaryValue = command.readProperty(CommandCD.PROP_ORDINARY);
-                        if (MidpTypes.getBoolean(ordinaryValue)) {
-                            commands.add(command);
+                        
+                        Collection<DesignComponent> components = MidpDocumentSupport.getCategoryComponent(document, CommandsCategoryCD.TYPEID).getComponents();
+                        Collection<DesignComponent> commands = new ArrayList<DesignComponent>(components.size());
+                        for (DesignComponent command : components) {
+                            PropertyValue ordinaryValue = command.readProperty(CommandCD.PROP_ORDINARY);
+                            if (MidpTypes.getBoolean(ordinaryValue)) {
+                                commands.add(command);
+                            }
                         }
-                    }
-                    commands.removeAll(formCommands);
-                    
-                    for (DesignComponent command : commands) {
-                        String displayName = getComponentDisplayName(command);
-                        tags.add(displayName);
-                        values.put(displayName, command);
+                        commands.removeAll(formCommands);
+                        
+                        for (DesignComponent command : commands) {
+                            String displayName = getComponentDisplayName(command);
+                            tags.add(displayName);
+                            values.put(displayName, command);
+                        }
                     }
                 }
             });
