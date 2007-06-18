@@ -91,6 +91,7 @@ public class SwitcherTable extends JTable {
         getSelectionModel().clearSelection();
         getSelectionModel().setAnchorSelectionIndex(-1);
         getSelectionModel().setLeadSelectionIndex(-1);
+        setAutoscrolls( false );
     }
     
     private void init() {
