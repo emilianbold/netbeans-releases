@@ -29,31 +29,29 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.j2ee.common.source.AbstractTask;
-import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.MoveRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 /**
  *
  * @author Petr Pisl
  */
 public class JSFMoveClassPlugin implements RefactoringPlugin{
     
-    /** This one is important creature - makes sure that cycles between plugins won't appear */
-    private static ThreadLocal semafor = new ThreadLocal();
-    
     private TreePathHandle treePathHandle = null;
     private static final Logger LOGGER = Logger.getLogger(JSFMoveClassPlugin.class.getName());
     
-    private final  AbstractRefactoring refactoring;
+    private final MoveRefactoring refactoring;
     
     public JSFMoveClassPlugin(MoveRefactoring refactoring) {
         this.refactoring = refactoring;
@@ -76,18 +74,32 @@ public class JSFMoveClassPlugin implements RefactoringPlugin{
     }
     
     public Problem prepare(RefactoringElementsBag refactoringElements) {
-        if (semafor.get() == null) {
-            semafor.set(new Object());
-            Object element = refactoring.getRefactoringSource().lookup(Object.class);
-            if (element instanceof FileObject){
-                JavaSource source = JavaSource.forFileObject((FileObject) element);
+        FileObject fileObject = refactoring.getRefactoringSource().lookup(FileObject.class);    
+        treePathHandle = refactoring.getRefactoringSource().lookup(TreePathHandle.class);
+        if (fileObject != null){
+            if (fileObject.isFolder()){
+                // moving folder
+                // find the old package name
+                ClassPath classPath = ClassPath.getClassPath(fileObject, ClassPath.SOURCE);
+                FileObject root = classPath.findOwnerRoot(fileObject);
+
+                String prefix = FileUtil.getRelativePath(root, fileObject.getParent()).replace('/','.');
+                String oldName = (prefix.length() == 0 ? fileObject.getName() : prefix + '.' + fileObject.getName());
+                // the new package name
+                String newPrefix = JSFRefactoringUtils.getPackageName(refactoring.getTarget().lookup(URL.class));
+                String newName = (newPrefix.length() == 0 ? fileObject.getName() : newPrefix + '.' + fileObject.getName());
+
+                JSFRefactoringUtils.renamePackage(refactoring, refactoringElements, fileObject, oldName, newName, true);
+            }
+            else {
+                JavaSource source = JavaSource.forFileObject(fileObject);
                 if (source != null){
                     try {
                         source.runUserActionTask(new AbstractTask<CompilationController>() {
                             @Override
                             public void cancel() {
                             }
-                            
+
                             public void run(CompilationController co) throws Exception {
                                 co.toPhase(JavaSource.Phase.RESOLVED);
                                 CompilationUnitTree cut = co.getCompilationUnit();
@@ -101,35 +113,30 @@ public class JSFMoveClassPlugin implements RefactoringPlugin{
                         LOGGER.log(Level.WARNING, "Exception in JSFMoveClassPlugin", ex);  //NOI18N
                     }
                 }
-            } else
-                if (element instanceof TreePathHandle) {
-                    treePathHandle = (TreePathHandle)element;
-                }
-            if (treePathHandle != null && treePathHandle.getKind() == Kind.CLASS){
-                WebModule webModule = WebModule.getWebModule(treePathHandle.getFileObject());
-                if (webModule != null){
-                    CompilationInfo info = refactoring.getContext().lookup(CompilationInfo.class);
-                    Element resElement = treePathHandle.resolveElement(info);
-                    TypeElement type = (TypeElement) resElement;
-                    String oldFQN = type.getQualifiedName().toString();
-                    String newFQN = JSFRefactoringUtils.getPackageName(((MoveRefactoring)refactoring).getTarget().lookup(URL.class))
-                            + "." +type.getSimpleName();
-                    List <Occurrences.OccurrenceItem> items = Occurrences.getAllOccurrences(webModule, oldFQN, newFQN);
-                    
-                    Modifications modification = new Modifications();
-                    for (Occurrences.OccurrenceItem item : items) {
-                        Modifications.Difference difference = new Modifications.Difference(
-                                Modifications.Difference.Kind.CHANGE, item.getChangePosition().getBegin(),
-                                item.getChangePosition().getEnd(), item.getOldValue(), item.getNewValue(), item.getRenamePackageMessage());
-                        modification.addDifference(item.getFacesConfig(), difference);
-                        refactoringElements.add(refactoring, new DiffElement.ChangeFQCNElement(difference, item, modification));
-                    }
+            }
+        } 
+
+        if (treePathHandle != null && treePathHandle.getKind() == Kind.CLASS){
+            WebModule webModule = WebModule.getWebModule(treePathHandle.getFileObject());
+            if (webModule != null){
+                CompilationInfo info = refactoring.getContext().lookup(CompilationInfo.class);
+                Element resElement = treePathHandle.resolveElement(info);
+                TypeElement type = (TypeElement) resElement;
+                String oldFQN = type.getQualifiedName().toString();
+                String newPackageName = JSFRefactoringUtils.getPackageName(refactoring.getTarget().lookup(URL.class)); 
+                String newFQN = (newPackageName.length() == 0 ? type.getSimpleName().toString() : newPackageName + '.' + type.getSimpleName().toString());
+                List <Occurrences.OccurrenceItem> items = Occurrences.getAllOccurrences(webModule, oldFQN, newFQN);
+
+                Modifications modification = new Modifications();
+                for (Occurrences.OccurrenceItem item : items) {
+                    Modifications.Difference difference = new Modifications.Difference(
+                            Modifications.Difference.Kind.CHANGE, item.getChangePosition().getBegin(),
+                            item.getChangePosition().getEnd(), item.getOldValue(), item.getNewValue(), item.getRenamePackageMessage());
+                    modification.addDifference(item.getFacesConfig(), difference);
+                    refactoringElements.add(refactoring, new DiffElement.ChangeFQCNElement(difference, item, modification));
                 }
             }
         }
         return null;
     }
-    
-    
-    
 }

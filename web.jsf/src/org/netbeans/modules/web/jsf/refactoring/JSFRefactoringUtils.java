@@ -24,7 +24,11 @@ import java.io.File;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLDecoder;
+import java.util.List;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.refactoring.api.AbstractRefactoring;
+import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
+import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -93,5 +97,20 @@ public class JSFRefactoringUtils {
         return contains;
     }
     
+    public static void renamePackage(AbstractRefactoring refactoring, RefactoringElementsBag refactoringElements, 
+            FileObject folder, String oldFQPN, String newFQPN, boolean recursive){
+        WebModule webModule = WebModule.getWebModule(folder);
+        if (webModule != null){
+            List <Occurrences.OccurrenceItem> items = Occurrences.getPackageOccurrences(webModule, oldFQPN, newFQPN, recursive);
+            Modifications modification = new Modifications();
+            for (Occurrences.OccurrenceItem item : items) {
+                Modifications.Difference difference = new Modifications.Difference(
+                                Modifications.Difference.Kind.CHANGE, item.getChangePosition().getBegin(),
+                                item.getChangePosition().getEnd(), item.getOldValue(), item.getNewValue(), item.getRenamePackageMessage());
+                modification.addDifference(item.getFacesConfig(), difference);
+                refactoringElements.add(refactoring, new DiffElement.ChangeFQCNElement(difference, item, modification));
+            }
+        }
+    }
     
 }

@@ -29,15 +29,16 @@ public class OccurrencesTest extends TestCase {
         super.tearDown();
     }
 
-    
     public void testGetNewFQCN() {
-        assertEquals("aa.b.c.T", Occurrences.getNewFQCN("aa", "a.b.c.T", true));
-        assertEquals("a.bb.c.T", Occurrences.getNewFQCN("a.bb", "a.b.c.T", true));
-        assertEquals("a.b.cc.T", Occurrences.getNewFQCN("a.b.cc", "a.b.c.T", true));
-        assertEquals("aa.T", Occurrences.getNewFQCN("aa", "a.T", true));
-        assertEquals("aa.T", Occurrences.getNewFQCN("aa", "a.b.c.T", false));
-        assertEquals("a.b.cc.T", Occurrences.getNewFQCN("a.b.cc", "a.b.c.T", false));
-        assertEquals("a.b.T", Occurrences.getNewFQCN("a.b", "a.b.c.T", false));
+        assertEquals("aa.b.c.T", Occurrences.getNewFQCN("aa", "a", "a.b.c.T"));
+        assertEquals("a.bb.c.T", Occurrences.getNewFQCN("a.bb", "a.b", "a.b.c.T"));
+        assertEquals("a.b.cc.T", Occurrences.getNewFQCN("a.b.cc", "a.b.c", "a.b.c.T"));
+        assertEquals("aa.T", Occurrences.getNewFQCN("aa", "a", "a.T"));
+        assertEquals("aa.T", Occurrences.getNewFQCN("aa", "a.b.c", "a.b.c.T"));
+        assertEquals("a.b.cc.T", Occurrences.getNewFQCN("a.b.cc", "a.b.c", "a.b.c.T"));
+        assertEquals("a.b.T", Occurrences.getNewFQCN("a.b", "a.b.c", "a.b.c.T"));
+        assertEquals("b.T", Occurrences.getNewFQCN("b", "a.b", "a.b.T"));
+        assertEquals("T", Occurrences.getNewFQCN("", "a.b", "a.b.T"));
     }
     
 }

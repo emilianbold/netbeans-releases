@@ -103,7 +103,7 @@ public class JSFRenamePlugin implements RefactoringPlugin {
                     // the new package name
                     String newName = (prefix.length() == 0 ? refactoring.getNewName() : prefix + "." + refactoring.getNewName());
                     
-                    renamePackage(refactoringElements, fileObject, oldName, newName, true);
+                    JSFRefactoringUtils.renamePackage(refactoring, refactoringElements, fileObject, oldName, newName, true);
                 }
                 else {
                     JavaSource source = JavaSource.forFileObject(fileObject);
@@ -135,7 +135,7 @@ public class JSFRenamePlugin implements RefactoringPlugin {
                 String oldName = JSFRefactoringUtils.getPackageName(nonRecursivefolder.getFolder());
                 String newName = refactoring.getNewName();
                     
-                renamePackage(refactoringElements, nonRecursivefolder.getFolder(), oldName, newName, false);
+                JSFRefactoringUtils.renamePackage(refactoring, refactoringElements, nonRecursivefolder.getFolder(), oldName, newName, false);
             }
             
             if (treePathHandle != null && treePathHandle.getKind() == Kind.CLASS){
@@ -170,22 +170,6 @@ public class JSFRenamePlugin implements RefactoringPlugin {
      */
     private static boolean isEmpty(String str){
         return str == null || "".equals(str.trim());
-    }
-    
-    private void renamePackage(RefactoringElementsBag refactoringElements, 
-            FileObject folder, String oldFQPN, String newFQPN, boolean recursive){
-        WebModule webModule = WebModule.getWebModule(folder);
-        if (webModule != null){
-            List <Occurrences.OccurrenceItem> items = Occurrences.getPackageOccurrences(webModule, oldFQPN, newFQPN, recursive);
-            Modifications modification = new Modifications();
-            for (Occurrences.OccurrenceItem item : items) {
-                Modifications.Difference difference = new Modifications.Difference(
-                                Modifications.Difference.Kind.CHANGE, item.getChangePosition().getBegin(),
-                                item.getChangePosition().getEnd(), item.getOldValue(), item.getNewValue(), item.getRenamePackageMessage());
-                modification.addDifference(item.getFacesConfig(), difference);
-                refactoringElements.add(refactoring, new DiffElement.ChangeFQCNElement(difference, item, modification));
-            }
-        }
     }
     
     /**

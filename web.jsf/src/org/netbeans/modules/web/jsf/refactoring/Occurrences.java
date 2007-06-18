@@ -453,17 +453,17 @@ public class Occurrences {
                         Converter converter = it.next();
                         if (JSFRefactoringUtils.containsRenamingPackage(converter.getConverterClass(), oldPackageName, renameSubpackages))
                             result.add(new ConverterClassItem(configs[i], converter, 
-                                    getNewFQCN(newPackageName, converter.getConverterClass(), renameSubpackages)));
+                                    getNewFQCN(newPackageName, oldPackageName, converter.getConverterClass())));
                         if (JSFRefactoringUtils.containsRenamingPackage(converter.getConverterForClass(), oldPackageName, renameSubpackages))
                             result.add(new ConverterForClassItem(configs[i], converter,
-                                    getNewFQCN(newPackageName, converter.getConverterForClass(), renameSubpackages)));
+                                    getNewFQCN(newPackageName, oldPackageName, converter.getConverterForClass())));
                     }
                     List<ManagedBean> managedBeans = facesConfig.getManagedBeans();
                     for (Iterator<ManagedBean> it = managedBeans.iterator(); it.hasNext();) {
                         ManagedBean managedBean = it.next();
                         if (JSFRefactoringUtils.containsRenamingPackage(managedBean.getManagedBeanClass(), oldPackageName, renameSubpackages))
                             result.add(new ManagedBeanClassItem(configs[i], managedBean,
-                                    getNewFQCN(newPackageName, managedBean.getManagedBeanClass(), renameSubpackages)));
+                                    getNewFQCN(newPackageName, oldPackageName, managedBean.getManagedBeanClass())));
                     }
                     
                 }
@@ -475,40 +475,30 @@ public class Occurrences {
     
     /**
      * A helper method, which is used for obtaining new FQCN, when a package is renamed. 
-     * @param newPackageName the new package name. It must to be always full qualified package name 
+     * @param newPackageName the new package name. It must to be always full qualified package name.
+     * @param oldPackageName the old package name. It must to be always full qualified package name.
      * @param oldFQCN the full qualified class name
      * @param folderRename Indicates whether the changing package is based on the 
      * renaming package or renaming folder.
      * @returns new FQCN for the class. 
      */
-    public static String getNewFQCN(String newPackageName, String oldFQCN, boolean folderRename){
+    public static String getNewFQCN(String newPackageName, String oldPackageName, String oldFQCN){
         String value = oldFQCN;
         
-        if (!folderRename){
-            int index = oldFQCN.lastIndexOf('.');
-            if (index > -1){
-                value = oldFQCN.substring(index+1, oldFQCN.length());
-            }
-        } else {
-            int offset = 0;
-            int index;
-            while ((offset = newPackageName.indexOf('.', offset)) > 0){
-                index = value.indexOf('.');
-                if (index > -1) {
-                    value = value.substring(index+1);
+        if (oldPackageName.length() == 0){
+            value = newPackageName + '.' + oldFQCN;
+        }
+        else {
+            if (oldFQCN.startsWith(oldPackageName)){
+                value = value.substring(oldPackageName.length());
+                if (newPackageName.length() > 0){
+                    value = newPackageName + value;
                 }
-                offset++;
+                if (value.charAt(0) == '.'){
+                    value = value.substring(1);
+                }
             }
-            index = value.indexOf('.');
-            if (index > -1) {
-                value = value.substring(index+1);
-            }
-            
-        }
-        if (newPackageName.length() > 0){
-            value = newPackageName + '.' + value;
-        }
-        return value;
+         }
+         return value;
     }
-    
 }
