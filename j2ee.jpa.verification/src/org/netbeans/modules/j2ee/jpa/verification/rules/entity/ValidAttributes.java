@@ -81,8 +81,7 @@ public class ValidAttributes extends JPAClassRule {
             basicFields = entity.getAttributes().getBasic();
             
             idFields = entity.getAttributes().getId();
-            //TODO: uncomment the line below when #104834 is fixed
-            //versionFields = entity.getAttributes().getVersion();
+            versionFields = entity.getAttributes().getVersion();
         }
         
         //TODO: handle MappedSuperClass etc.
