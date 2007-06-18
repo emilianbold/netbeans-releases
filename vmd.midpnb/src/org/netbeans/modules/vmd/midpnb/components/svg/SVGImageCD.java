@@ -19,11 +19,13 @@
 
 package org.netbeans.modules.vmd.midpnb.components.svg;
 
-import java.util.ArrayList;
 import org.netbeans.modules.vmd.api.codegen.*;
+import org.netbeans.modules.vmd.api.inspector.InspectorFolderComponentPresenter;
 import org.netbeans.modules.vmd.api.inspector.InspectorPositionPresenter;
 import org.netbeans.modules.vmd.api.inspector.common.FolderPositionControllerFactory;
 import org.netbeans.modules.vmd.api.model.*;
+import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
+import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter;
 import org.netbeans.modules.vmd.api.properties.DefaultPropertiesPresenter;
 import org.netbeans.modules.vmd.midp.codegen.MidpCodePresenterSupport;
 import org.netbeans.modules.vmd.midp.codegen.MidpCodeSupport;
@@ -32,19 +34,14 @@ import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.MidpVersionable;
 import org.netbeans.modules.vmd.midp.components.general.ClassCD;
+import org.netbeans.modules.vmd.midp.components.resources.ResourcesSupport;
 import org.netbeans.modules.vmd.midp.inspector.controllers.ResourcePC;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertiesCategories;
+import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorJavaString;
 import org.netbeans.modules.vmd.midp.propertyeditors.imagechooser.PropertyEditorImageChooser;
-
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import org.netbeans.modules.vmd.api.inspector.InspectorFolderComponentPresenter;
-import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
-import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter;
-import org.netbeans.modules.vmd.midp.components.resources.ResourcesSupport;
 import org.netbeans.modules.vmd.midp.screen.ResourceSRItemPresenter;
+
+import java.util.*;
 
 
 /**
@@ -56,9 +53,10 @@ public class SVGImageCD extends ComponentDescriptor {
     public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "javax.microedition.m2g.SVGImage"); // NOI18N
     
     public static final String PROP_RESOURCE_PATH = "resourcePath";  // NOI18N
-    
+    public static final String PROP_EXTERNAL_RESOURCE_HANDLER = "externalResourceHandler"; // NOI18N
+
     public static final String ICON_PATH = "org/netbeans/modules/vmd/midpnb/resources/resource_16.png"; // NOI18N
-    
+
     static {
         MidpTypes.registerIconResource(TYPEID, ICON_PATH);
     }
@@ -77,14 +75,16 @@ public class SVGImageCD extends ComponentDescriptor {
     
     public List<PropertyDescriptor> getDeclaredPropertyDescriptors() {
         return Arrays.asList(
-                new PropertyDescriptor(PROP_RESOURCE_PATH, MidpTypes.TYPEID_JAVA_LANG_STRING, PropertyValue.createNull(), false, true, MidpVersionable.MIDP_2)
+                new PropertyDescriptor(PROP_RESOURCE_PATH, MidpTypes.TYPEID_JAVA_LANG_STRING, PropertyValue.createNull(), false, true, MidpVersionable.MIDP_2),
+                new PropertyDescriptor(PROP_EXTERNAL_RESOURCE_HANDLER, MidpTypes.TYPEID_JAVA_CODE, PropertyValue.createNull(), true, false, MidpVersionable.MIDP_2)
                 );
     }
     
     private static DefaultPropertiesPresenter createPropertiesPresenter() {
         return new DefaultPropertiesPresenter()
                 .addPropertiesCategory(PropertiesCategories.CATEGORY_PROPERTIES)
-                .addProperty("Resource Path", new PropertyEditorImageChooser("svg"), PROP_RESOURCE_PATH);
+                .addProperty("Resource Path", new PropertyEditorImageChooser("svg"), PROP_RESOURCE_PATH)
+                .addProperty("External Resource Handler", PropertyEditorJavaString.createInstance(TYPEID), PROP_EXTERNAL_RESOURCE_HANDLER);
     }
     
     private static Presenter createSetterPresenter() {
@@ -116,7 +116,9 @@ public class SVGImageCD extends ComponentDescriptor {
                     writer.write(CodeReferencePresenter.generateDirectAccessCode(component)).write(" = "); // NOI18N
                     writer.write("(SVGImage) SVGImage.createImage (getClass ().getResourceAsStream(");
                     MidpCodeSupport.generateCodeForPropertyValue(writer, pathValue);
-                    writer.write("), null);\n"); // NOI18N
+                    writer.write("), ");
+                    MidpCodeSupport.generateCodeForPropertyValue(writer, component.readProperty (PROP_EXTERNAL_RESOURCE_HANDLER));
+                    writer.write(");\n"); // NOI18N
                     
                     writer.write("} catch (java.io.IOException e) {\n").commit(); // NOI18N
                     section.switchToEditable(component.getComponentID() + "-@java.io.IOException"); // NOI18N
