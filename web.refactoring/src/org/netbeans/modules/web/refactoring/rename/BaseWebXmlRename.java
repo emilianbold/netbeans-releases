@@ -91,31 +91,6 @@ abstract class BaseWebXmlRename extends WebXmlRefactoring{
         return null;
     }
     
-    /**
-     * Encapsulates the new and old name.
-     * TODO: needs a better name
-     */ 
-    protected static class RenameItem{
-        
-        private final String oldFqn;
-        private final String newFqn;
-        
-        public RenameItem(String newFqn, String oldFqn) {
-            this.newFqn = newFqn;
-            this.oldFqn = oldFqn;
-        }
-        
-        public String getNewFqn() {
-            return newFqn;
-        }
-        
-        public String getOldFqn() {
-            return oldFqn;
-        }
-        
-        
-    }
-    
     private abstract static class WebRenameElement extends WebRefactoringElement{
         
         protected String oldName;
@@ -131,7 +106,6 @@ abstract class BaseWebXmlRename extends WebXmlRefactoring{
         protected String getName() {
             return oldName;
         }
-        
         
     }
     

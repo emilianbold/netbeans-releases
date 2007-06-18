@@ -16,6 +16,8 @@
  */
 package org.netbeans.modules.web.refactoring;
 
+import java.util.List;
+import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -24,6 +26,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.refactoring.api.Problem;
+import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -129,6 +132,77 @@ public class RefactoringUtil {
         return false;
     }
     
+    
+    /**
+     * Recursively collects the java files from the given folder into the
+     * given <code>result</code>.
+     */
+    public static void collectChildren(FileObject folder, List<FileObject> result){
+        for(FileObject child : folder.getChildren()){
+            if (isJavaFile(child)){
+                result.add(child);
+            } else if (child.isFolder()){
+                collectChildren(child, result);
+            }
+        }
+    }
+    
+    /**
+     * @return true if the given refactoring represents a package rename.
+     */
+    public static boolean isPackage(RenameRefactoring rename){
+        return rename.getRefactoringSource().lookup(NonRecursiveFolder.class) != null;
+    }
+    
+    /**
+     * Unqualifies the given FQN.
+     *
+     * @param fqn the fully qualified name.
+     * @return the unqualified name.
+     */
+    public static String unqualify(String fqn){
+        int lastDot = fqn.lastIndexOf(".");
+        if (lastDot < 0){
+            return fqn;
+        }
+        return fqn.substring(lastDot + 1);
+    }
+    
+    /**
+     * Gets the new refactored name for the given <code>javaFile</code>. 
+     * 
+     * @param javaFile the file object for the class being renamed. Excepts that
+     * the target class is the public top level class in the file.
+     * @param rename the refactoring, must represent either package or folder rename.
+     * 
+     * @return the new fully qualified name for the class being refactored.
+     */ 
+    public static String constructNewName(FileObject javaFile, RenameRefactoring rename){
+        
+        String fqn = getQualifiedName(javaFile);
+        
+        if (isPackage(rename)){
+            return rename.getNewName() + "." + unqualify(fqn);
+        }
+        
+        FileObject folder = rename.getRefactoringSource().lookup(FileObject.class);
+        ClassPath classPath = ClassPath.getClassPath(folder, ClassPath.SOURCE);
+        FileObject root = classPath.findOwnerRoot(folder);
+        
+        String prefix = FileUtil.getRelativePath(root, folder.getParent()).replace('/','.');
+        String oldName = buildName(prefix, folder.getName());
+        String newName = buildName(prefix, rename.getNewName());
+        int oldNameIndex = fqn.lastIndexOf(oldName) + oldName.length();
+        return newName + fqn.substring(oldNameIndex, fqn.length());
+        
+    }
+    
+    private static String buildName(String prefix, String name){
+        if (prefix.length() == 0){
+            return name;
+        }
+        return prefix + "." + name;
+    }
     
     
 }

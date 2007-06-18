@@ -37,6 +37,7 @@ import org.netbeans.modules.refactoring.api.WhereUsedQuery;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
 import org.netbeans.modules.refactoring.spi.RefactoringPluginFactory;
 import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.modules.web.refactoring.rename.TldPackageRename;
 import org.netbeans.modules.web.refactoring.rename.TldRename;
 import org.netbeans.modules.web.refactoring.rename.WebXmlMove;
 import org.netbeans.modules.web.refactoring.rename.WebXmlPackageRename;
@@ -92,6 +93,7 @@ public class WebRefactoringFactory implements RefactoringPluginFactory{
             RenameRefactoring rename = (RenameRefactoring) refactoring;
             if (javaPackage || folder){
                 refactorings.add(new WebXmlPackageRename(ddFile, webApp, sourceFO, rename));
+                refactorings.add(new TldPackageRename(rename, sourceFO));
             } else {
                 refactorings.add(new WebXmlRename(clazz, rename, webApp, ddFile));
                 refactorings.add(new TldRename(clazz, rename, sourceFO));

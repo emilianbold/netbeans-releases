@@ -26,7 +26,6 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.MoveRefactoring;
-import org.netbeans.modules.refactoring.api.Problem;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -57,7 +56,7 @@ public class WebXmlMove extends BaseWebXmlRename{
     }
     
     protected List<RenameItem> getRenameItems() {
-        return Collections.singletonList(new BaseWebXmlRename.RenameItem(getNewFQN(),oldFqn));
+        return Collections.singletonList(new RenameItem(getNewFQN(),oldFqn));
     }
     
     // copied from o.n.m.java.refactoring.RetoucheUtils
