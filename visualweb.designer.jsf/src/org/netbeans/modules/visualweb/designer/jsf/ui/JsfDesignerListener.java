@@ -107,9 +107,10 @@ class JsfDesignerListener implements DesignerListener {
                 }
             }
 //        } else if (selOnly) {
-        } else {
-            return false;
         }
+//        else {
+//            return false;
+//        }
 
 //        return handleDoubleClick(box);
         return handleUserAction(box);
