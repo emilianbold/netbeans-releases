@@ -354,6 +354,14 @@ public class PaletteKit implements Runnable {
                 }
             };
         }
+
+        public Action getResetAction() {
+            return new AbstractAction() {
+                public void actionPerformed(ActionEvent evt) {
+                    update();
+                }
+            };
+        }
     }
     
     private class Filter extends PaletteFilter {
