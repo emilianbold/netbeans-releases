@@ -129,7 +129,9 @@ public class OperationWidget extends AbstractTitledWidget {
             }
             
             public void setText(Widget widget, String text) {
-                OperationGeneratorHelper.changeWSDLOperationName(service, operation, text);
+                if (service.getWsdlUrl()!=null) {
+                    OperationGeneratorHelper.changeWSDLOperationName(service, operation, text);
+                }
                 operation.setOperationName(text);
                 nameWidget.setLabel(text);
             }
