@@ -28,7 +28,7 @@ import javax.swing.JMenuItem;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
-import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.editor.BaseAction;
@@ -68,9 +68,8 @@ public class GenerateCodeAction extends BaseAction {
             if (js != null) {
                 final int caretOffset = target.getCaretPosition();
                 final ArrayList<CodeGenerator> gens = new ArrayList<CodeGenerator>();
-                js.runUserActionTask(new CancellableTask<CompilationController>() {
-                    public void cancel() {
-                    }
+                js.runUserActionTask(new Task<CompilationController>() {
+
                     public void run(CompilationController controller) throws Exception {
                         controller.toPhase(JavaSource.Phase.PARSED);
                         TreePath path = controller.getTreeUtilities().pathFor(caretOffset);

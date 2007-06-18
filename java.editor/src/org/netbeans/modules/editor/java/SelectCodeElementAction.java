@@ -32,7 +32,7 @@ import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 import javax.swing.text.Caret;
 import javax.swing.text.JTextComponent;
-import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
@@ -107,7 +107,7 @@ final class SelectCodeElementAction extends BaseAction {
         }
     }
 
-    private static final class SelectionHandler implements CaretListener, CancellableTask<CompilationController>, Runnable {
+    private static final class SelectionHandler implements CaretListener, Task<CompilationController>, Runnable {
         
         private JTextComponent target;
         private SelectionInfo[] selectionInfos;
@@ -159,8 +159,6 @@ final class SelectCodeElementAction extends BaseAction {
             ignoreNextCaretUpdate = false;
         }
 
-        public void cancel() {
-        }
 
         public void run(CompilationController cc) {
             try {

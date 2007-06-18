@@ -52,6 +52,7 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.ClassPath.Entry;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.ClassIndex.SearchKind;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
@@ -524,10 +525,8 @@ public class IsOverriddenAnnotationHandler implements CancellableTask<Compilatio
             JavaSource js = JavaSource.create(cpinfo);
             
             try {
-                js.runUserActionTask(new CancellableTask<CompilationController>() {
-                    public void cancel() {
-                        cancel();
-                    }
+                js.runUserActionTask(new Task<CompilationController>() {
+
                     public void run(CompilationController controller) throws Exception {
                         Set<Element> seenElements = new HashSet<Element>();
                         

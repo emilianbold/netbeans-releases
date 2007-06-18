@@ -27,7 +27,7 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.logging.Logger;
 import javax.swing.text.JTextComponent;
-import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
@@ -42,7 +42,7 @@ import org.openide.util.NbBundle;
  *
  * @author Dusan Balek
  */
-public class JavaCodeTemplateFilter implements CodeTemplateFilter, CancellableTask<CompilationController> {
+public class JavaCodeTemplateFilter implements CodeTemplateFilter, Task<CompilationController> {
     
     private static final Logger LOG = Logger.getLogger(JavaCodeTemplateFilter.class.getName());
     
@@ -72,8 +72,6 @@ public class JavaCodeTemplateFilter implements CodeTemplateFilter, CancellableTa
         return ctx != null && getTemplateContexts(template).contains(ctx);
     }
     
-    public void cancel() {
-    }
 
     public synchronized void run(CompilationController controller) throws IOException {
         controller.toPhase(Phase.PARSED);

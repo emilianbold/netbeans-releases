@@ -50,7 +50,7 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.AbstractElementVisitor6;
 import javax.swing.text.Document;
 import org.netbeans.api.java.lexer.JavaTokenId;
-import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
@@ -100,9 +100,7 @@ public class GoToSupport {
             JavaSource js = JavaSource.forFileObject(fo);
             final String[] result = new String[1];
             
-            js.runUserActionTask(new CancellableTask<CompilationController>() {
-                public void cancel() {
-                }
+            js.runUserActionTask(new Task<CompilationController>() {
                 public void run(CompilationController controller) throws Exception {
                     if (controller.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0)
                         return;

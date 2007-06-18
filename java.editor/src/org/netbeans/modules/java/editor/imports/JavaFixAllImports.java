@@ -31,7 +31,7 @@ import java.util.prefs.Preferences;
 import javax.lang.model.element.TypeElement;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.SourceUtils;
@@ -66,9 +66,8 @@ public class JavaFixAllImports {
     }
     
     public void fixAllImports(FileObject fo) {
-        CancellableTask<WorkingCopy> task = new CancellableTask<WorkingCopy>() {
-            public void cancel() {
-            }
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
             public void run(final WorkingCopy wc) {
                 try {
                     wc.toPhase(Phase.RESOLVED);

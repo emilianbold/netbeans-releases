@@ -33,7 +33,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.swing.text.JTextComponent;
-import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
@@ -126,9 +126,8 @@ public class ImplementOverrideMethodGenerator implements CodeGenerator {
             if (js != null) {
                 try {
                     final int caretOffset = component.getCaretPosition();
-                    js.runModificationTask(new CancellableTask<WorkingCopy>() {
-                        public void cancel() {
-                        }
+                    js.runModificationTask(new Task<WorkingCopy>() {
+
                         public void run(WorkingCopy copy) throws IOException {
                             copy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                             TreePath path = copy.getTreeUtilities().pathFor(caretOffset);

@@ -550,9 +550,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                         StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(JavaCodeTemplateFilter.class, "JCT-scanning-in-progress")); //NOI18N
                         Toolkit.getDefaultToolkit().beep();                        
                     } else {
-                        js.runUserActionTask(new CancellableTask<CompilationController>() {
-                            public void cancel() {
-                            }
+                        js.runUserActionTask(new Task<CompilationController>() {
                             
                             public void run(final CompilationController controller) throws IOException {
                                 controller.toPhase(JavaSource.Phase.RESOLVED);

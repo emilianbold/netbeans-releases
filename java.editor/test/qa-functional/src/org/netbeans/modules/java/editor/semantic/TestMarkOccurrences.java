@@ -30,6 +30,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
 import junit.textui.TestRunner;
 import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
@@ -226,10 +227,8 @@ public class TestMarkOccurrences extends NbTestCase {
     
     private Set<Highlight> foundMarks;
     
-    class MyTask implements CancellableTask<CompilationController> {
+    class MyTask implements Task<CompilationController> {
         
-        public void cancel() {
-        }
         
         public void run(CompilationController parameter) throws Exception {
             foundMarks = null;

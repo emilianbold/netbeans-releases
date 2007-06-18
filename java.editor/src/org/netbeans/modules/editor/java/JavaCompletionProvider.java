@@ -95,7 +95,7 @@ public class JavaCompletionProvider implements CompletionProvider {
         return query.results;
     }
     
-    static final class JavaCompletionQuery extends AsyncCompletionQuery implements CancellableTask<CompilationController> {
+    static final class JavaCompletionQuery extends AsyncCompletionQuery implements Task<CompilationController> {
         
         private static final String ERROR = "<error>"; //NOI18N
         private static final String INIT = "<init>"; //NOI18N
@@ -323,8 +323,6 @@ public class JavaCompletionProvider implements CompletionProvider {
                 resolveDocumentation(controller);
         }
         
-        public void cancel() {
-        }
         
         private void resolveToolTip(final CompilationController controller) throws IOException {
             Env env = getCompletionEnvironment(controller, false);

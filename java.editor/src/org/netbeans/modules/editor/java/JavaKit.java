@@ -33,7 +33,7 @@ import org.netbeans.editor.ext.java.*;
 import org.netbeans.api.editor.fold.FoldHierarchy;
 import org.netbeans.api.editor.fold.FoldUtilities;
 import org.netbeans.api.java.queries.SourceLevelQuery;
-import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.editor.ext.ExtKit.CommentAction;
@@ -522,9 +522,8 @@ public class JavaKit extends NbEditorKit {
                 final Document doc = target.getDocument();
                 JavaSource js = JavaSource.forDocument(doc);
                 if (js != null) {
-                    js.runUserActionTask(new CancellableTask<CompilationController>() {
-                        public void cancel() {
-                        }
+                    js.runUserActionTask(new Task<CompilationController>() {
+
                         public void run(CompilationController controller) throws Exception {
                             doc.putProperty(COMPILATION_CONTROLLER, controller);
                             try {

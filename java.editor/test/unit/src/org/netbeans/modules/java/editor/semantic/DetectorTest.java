@@ -30,7 +30,7 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
@@ -370,8 +370,7 @@ public class DetectorTest extends TestBase {
                 }
             };
             
-            source.runUserActionTask(new CancellableTask<CompilationController>() {
-                public void cancel() {}
+            source.runUserActionTask(new Task<CompilationController>() {
                 public void run(CompilationController parameter) {
                     try {
                         parameter.toPhase(Phase.UP_TO_DATE);

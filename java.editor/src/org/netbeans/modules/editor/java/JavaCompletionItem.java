@@ -625,9 +625,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
             final int finalLen = len;
             JavaSource js = JavaSource.forDocument(doc);
             try {
-                js.runUserActionTask(new CancellableTask<CompilationController>() {
-                    public void cancel() {
-                    }
+                js.runUserActionTask(new Task<CompilationController>() {
+
                     public void run(CompilationController controller) throws IOException {
                         controller.toPhase(Phase.RESOLVED);
                         TypeElement elem = elementHandle.resolve(controller);
@@ -1187,9 +1186,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
                     try {
                         final String[] ret = new String[1];
                         JavaSource js = JavaSource.forDocument(c.getDocument());
-                        js.runUserActionTask(new CancellableTask<CompilationController>() {
-                            public void cancel() {
-                            }
+                        js.runUserActionTask(new Task<CompilationController>() {
+
                             public void run(CompilationController controller) throws Exception {
                                 controller.toPhase(JavaSource.Phase.PARSED);
                                 TreePath tp = controller.getTreeUtilities().pathFor(c.getSelectionEnd());
@@ -1366,9 +1364,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
             }
             try {
                 JavaSource js = JavaSource.forDocument(doc);
-                js.runModificationTask(new CancellableTask<WorkingCopy>() {
-                    public void cancel() {
-                    }
+                js.runModificationTask(new Task<WorkingCopy>() {
+
                     public void run(WorkingCopy copy) throws IOException {
                         copy.toPhase(Phase.ELEMENTS_RESOLVED);
                         ExecutableElement ee = elementHandle.resolve(copy);                        
@@ -1601,9 +1598,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 try {
                     JavaSource js = JavaSource.forDocument(doc);
                     final int off = offset + 4;
-                    js.runModificationTask(new CancellableTask<WorkingCopy>() {
-                        public void cancel() {                            
-                        }
+                    js.runModificationTask(new Task<WorkingCopy>() {
+
                         public void run(WorkingCopy copy) throws IOException {
                             copy.toPhase(JavaSource.Phase.RESOLVED);
                             TreePath path = copy.getTreeUtilities().pathFor(off);                            
@@ -1773,9 +1769,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 try {
                     JavaSource js = JavaSource.forDocument(c.getDocument());
                     final int off = c.getSelectionEnd() - text.length() + 4;
-                    js.runModificationTask(new CancellableTask<WorkingCopy>() {
-                        public void cancel() {                            
-                        }
+                    js.runModificationTask(new Task<WorkingCopy>() {
+
                         public void run(WorkingCopy copy) throws IOException {
                             copy.toPhase(JavaSource.Phase.RESOLVED);
                             TreePath path = copy.getTreeUtilities().pathFor(off);                            
@@ -1850,9 +1845,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
             final int finalLen = len;
             JavaSource js = JavaSource.forDocument(doc);
             try {
-                js.runUserActionTask(new CancellableTask<CompilationController>() {
-                    public void cancel() {
-                    }
+                js.runUserActionTask(new Task<CompilationController>() {
+
                     public void run(CompilationController controller) throws IOException {
                         controller.toPhase(JavaSource.Phase.RESOLVED);
                         TypeElement elem = elementHandle.resolve(controller);
@@ -2161,9 +2155,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
             final int finalLen = len;
             JavaSource js = JavaSource.forDocument(doc);
             try {
-                js.runUserActionTask(new CancellableTask<CompilationController>() {
-                    public void cancel() {
-                    }
+                js.runUserActionTask(new Task<CompilationController>() {
+
                     public void run(CompilationController controller) throws IOException {
                         controller.toPhase(JavaSource.Phase.RESOLVED);
                         DeclaredType type = typeHandle.resolve(controller);
@@ -2370,9 +2363,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
             }
             try {
                 JavaSource js = JavaSource.forDocument(c.getDocument());
-                js.runModificationTask(new CancellableTask<WorkingCopy>() {
-                    public void cancel() {
-                    }
+                js.runModificationTask(new Task<WorkingCopy>() {
+
                     public void run(WorkingCopy copy) throws IOException {
                         copy.toPhase(JavaSource.Phase.PARSED);
                         TreePath tp = copy.getTreeUtilities().pathFor(offset);
@@ -2448,9 +2440,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
         final int offset = c.getSelectionEnd();
         try {
             JavaSource js = JavaSource.forDocument(c.getDocument());
-            js.runUserActionTask(new CancellableTask<CompilationController>() {
-                public void cancel() {
-                }
+            js.runUserActionTask(new Task<CompilationController>() {
+
                 public void run(CompilationController controller) throws Exception {
                     controller.toPhase(JavaSource.Phase.PARSED);
                     Tree t = null;

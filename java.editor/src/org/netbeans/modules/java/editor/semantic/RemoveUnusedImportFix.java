@@ -26,7 +26,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
-import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.TreePathHandle;
@@ -73,8 +73,7 @@ public class RemoveUnusedImportFix implements Fix  {
         JavaSource js = JavaSource.forFileObject(file);
         
         try {
-            js.runModificationTask(new CancellableTask<WorkingCopy>() {
-                public void cancel() {}
+            js.runModificationTask(new Task<WorkingCopy>() {
                 public void run(WorkingCopy copy) throws Exception {
                     copy.toPhase(Phase.PARSED);
                     

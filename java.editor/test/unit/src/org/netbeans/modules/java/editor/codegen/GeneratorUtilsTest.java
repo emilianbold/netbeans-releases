@@ -29,7 +29,7 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
-import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
@@ -230,9 +230,8 @@ public class GeneratorUtilsTest extends NbTestCase {
         
         JavaSource js = JavaSource.forFileObject(source);
         
-        ModificationResult result = js.runModificationTask(new CancellableTask<WorkingCopy>() {
-            public void cancel() {
-            }
+        ModificationResult result = js.runModificationTask(new Task<WorkingCopy>() {
+
             public void run(WorkingCopy copy) throws Exception {
                 copy.toPhase(Phase.RESOLVED);
                 TreePath tp = copy.getTreeUtilities().pathFor(offset);
@@ -242,9 +241,7 @@ public class GeneratorUtilsTest extends NbTestCase {
         
         result.commit();
         
-        js.runUserActionTask(new CancellableTask<CompilationController>() {
-            public void cancel() {
-            }
+        js.runUserActionTask(new Task<CompilationController>() {
             public void run(CompilationController controller) throws Exception {
                 System.err.println("text:");
                 System.err.println(controller.getText());

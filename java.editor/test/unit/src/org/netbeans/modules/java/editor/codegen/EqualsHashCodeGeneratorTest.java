@@ -71,12 +71,9 @@ public class EqualsHashCodeGeneratorTest extends NbTestCase {
         JavaSource js = JavaSource.forFileObject(java);
         assertNotNull("Created", js);
         
-        class Task implements CancellableTask<CompilationController> {
+        class Task implements org.netbeans.api.java.source.Task<CompilationController> {
             EqualsHashCodeGenerator generator;
             
-            public void cancel() {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
 
             public void run(CompilationController cc) throws Exception {
                 cc.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);

@@ -39,7 +39,7 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.KeyStroke;
 import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
@@ -184,7 +184,7 @@ public class ImportClassPanel extends javax.swing.JPanel {
         PopupUtil.hidePopup();
         
         if (fqn != null) {
-            CancellableTask<WorkingCopy> task = new CancellableTask<WorkingCopy>() {
+            Task<WorkingCopy> task = new Task<WorkingCopy>() {
                 
                 public void run(final WorkingCopy wc) throws IOException {
                     wc.toPhase(Phase.RESOLVED);
@@ -222,8 +222,6 @@ public class ImportClassPanel extends javax.swing.JPanel {
                     wc.rewrite(cut, cutCopy);
                 }
                 
-                public void cancel() {
-                }
             };
             try {
                 javaSource.runModificationTask(task).commit();

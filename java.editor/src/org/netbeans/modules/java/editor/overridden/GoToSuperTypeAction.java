@@ -33,7 +33,7 @@ import javax.lang.model.element.TypeElement;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
-import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
@@ -68,8 +68,7 @@ public class GoToSuperTypeAction extends BaseAction {
         final AnnotationType[] type  = new AnnotationType[1];
         
         try {
-            js.runUserActionTask(new CancellableTask<CompilationController>() {
-                public void cancel() {}
+            js.runUserActionTask(new Task<CompilationController>() {
                 public void run(CompilationController parameter) throws Exception {
                     parameter.toPhase(Phase.RESOLVED); //!!!
                     

@@ -42,7 +42,7 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
 import javax.swing.text.Position.Bias;
-import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
@@ -148,9 +148,8 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
             final boolean[] wasResolved = new boolean[1];
             final Set<Highlight>[] changePoints = new Set[1];
             
-            js.runUserActionTask(new CancellableTask<CompilationController>() {
-                public void cancel() {
-                }
+            js.runUserActionTask(new Task<CompilationController>() {
+
                 public void run(CompilationController controller) throws Exception {
                     if (controller.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0)
                         return;

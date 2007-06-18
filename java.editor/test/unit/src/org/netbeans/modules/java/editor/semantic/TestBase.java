@@ -41,7 +41,7 @@ import junit.framework.TestSuite;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
-import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
@@ -137,10 +137,8 @@ public abstract class TestBase extends NbTestCase {
         
 	final CountDownLatch l = new CountDownLatch(1);
 	
-        source.runUserActionTask(new CancellableTask<CompilationController>() {
+        source.runUserActionTask(new Task<CompilationController>() {
             
-            public void cancel() {
-            }
             
             public void run(CompilationController parameter) {
                 try {

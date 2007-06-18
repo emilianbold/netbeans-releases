@@ -50,7 +50,7 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.ElementFilter;
 import javax.swing.text.JTextComponent;
-import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
@@ -229,12 +229,9 @@ public class EqualsHashCodeGenerator implements CodeGenerator {
     public static void invokeEqualsHashCode(final TreePathHandle handle, final JTextComponent component) {
         JavaSource js = JavaSource.forDocument(component.getDocument());
         if (js != null) {
-            class FillIn implements CancellableTask<CompilationController> {
+            class FillIn implements Task<CompilationController> {
                 EqualsHashCodeGenerator gen;
                 
-                public void cancel() {
-                }
-
                 public void run(CompilationController cc) throws Exception {
                     cc.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                     Element e = handle.resolveElement(cc);
@@ -274,9 +271,8 @@ public class EqualsHashCodeGenerator implements CodeGenerator {
             if (js != null) {
                 try {
                     final int caretOffset = component.getCaretPosition();
-                    js.runModificationTask(new CancellableTask<WorkingCopy>() {
-                        public void cancel() {
-                        }
+                    js.runModificationTask(new Task<WorkingCopy>() {
+
                         public void run(WorkingCopy copy) throws IOException {
                             copy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                             TreePath path = copy.getTreeUtilities().pathFor(caretOffset);

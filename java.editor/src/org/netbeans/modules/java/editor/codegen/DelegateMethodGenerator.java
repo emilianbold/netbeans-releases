@@ -52,7 +52,7 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 import javax.swing.text.JTextComponent;
-import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
@@ -135,9 +135,8 @@ public class DelegateMethodGenerator implements CodeGenerator {
             if (js != null) {
                 try {
                     final int caretOffset = component.getCaretPosition();
-                    js.runModificationTask(new CancellableTask<WorkingCopy>() {
-                        public void cancel() {
-                        }
+                    js.runModificationTask(new Task<WorkingCopy>() {
+
                         public void run(WorkingCopy copy) throws IOException {
                             copy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                             TreePath path = copy.getTreeUtilities().pathFor(caretOffset);
@@ -172,9 +171,8 @@ public class DelegateMethodGenerator implements CodeGenerator {
                 try {
                     final int caretOffset = component.getCaretPosition();
                     final ElementNode.Description[] description = new ElementNode.Description[1];
-                    js.runUserActionTask(new CancellableTask<CompilationController>() {
-                        public void cancel() {
-                        }
+                    js.runUserActionTask(new Task<CompilationController>() {
+
                         public void run(CompilationController controller) throws IOException {
                             VariableElement field = (VariableElement)elementHandle.resolve(controller);
                             if (field.asType().getKind() == TypeKind.DECLARED) {

@@ -37,7 +37,7 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.util.ElementFilter;
 import javax.swing.text.JTextComponent;
-import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
@@ -135,9 +135,8 @@ public class ConstructorGenerator implements CodeGenerator {
         if (js != null) {
             try {
                 final int caretOffset = component.getCaretPosition();
-                js.runModificationTask(new CancellableTask<WorkingCopy>() {
-                    public void cancel() {
-                    }
+                js.runModificationTask(new Task<WorkingCopy>() {
+
                     public void run(WorkingCopy copy) throws IOException {
                         copy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                         TreePath path = copy.getTreeUtilities().pathFor(caretOffset);

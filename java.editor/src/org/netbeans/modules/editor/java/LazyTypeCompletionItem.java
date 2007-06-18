@@ -31,7 +31,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.spi.editor.completion.CompletionTask;
@@ -78,9 +78,8 @@ public class LazyTypeCompletionItem extends JavaCompletionItem implements LazyCo
                 return false;
             }
             try {
-                javaSource.runUserActionTask(new CancellableTask<CompilationController>() {
-                    public void cancel() {
-                    }
+                javaSource.runUserActionTask(new Task<CompilationController>() {
+
                     public void run(CompilationController controller) throws Exception {
                         controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                         Scope scope = controller.getTrees().getScope(controller.getTreeUtilities().pathFor(substitutionOffset));
