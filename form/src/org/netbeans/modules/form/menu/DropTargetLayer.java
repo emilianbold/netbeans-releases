@@ -132,6 +132,18 @@ public class DropTargetLayer extends JComponent {
         
         // draw the menu item subselection rectangles
         JComponent selected = canvas.getSelectedComponent();
+        
+        // draw normal border around toplevel menus
+        if(selected instanceof JMenu && selected.getParent() instanceof JMenuBar) {
+            JMenuItem menu = (JMenuItem) selected;
+            Point location = SwingUtilities.convertPoint(menu, new Point(0,0), this);
+            g2.translate(location.x,location.y);
+            g2.setStroke(SELECTION_STROKE);
+            g2.setColor(SELECTION_COLOR);
+            g2.drawRect(0,0,menu.getWidth()-1,menu.getHeight()-1);
+            g2.translate(-location.x,-location.y);
+        }
+        
         // style only menuitems and menus that aren't also toplevel menus
         if(selected instanceof JMenuItem &&
                 !(selected.getParent() instanceof JMenuBar)) { // && !(selected instanceof JMenu)) {

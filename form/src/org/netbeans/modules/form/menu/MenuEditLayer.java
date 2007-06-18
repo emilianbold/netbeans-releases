@@ -80,9 +80,11 @@ public class MenuEditLayer extends JPanel {
             BorderFactory.createMatteBorder(0,0,0,2,Color.RED),
             BorderFactory.createEmptyBorder(2,2,2,0)
             );*/
-    public static final Border UNSELECTED_BORDER = BorderFactory.createEmptyBorder(1,1,1,1);
-    public static final Color SELECTED_BORDER_COLOR = new Color(0xFFA400);
-    public static final Border SELECTED_BORDER = BorderFactory.createLineBorder(SELECTED_BORDER_COLOR,1);
+    
+    //public static final Border UNSELECTED_BORDER = BorderFactory.createEmptyBorder(1,1,1,1);
+    //public static final Color SELECTED_BORDER_COLOR = new Color(0xFFA400);
+    //public static final Border SELECTED_BORDER = BorderFactory.createLineBorder(SELECTED_BORDER_COLOR,1);
+    
     public static final Border DRAG_MENU_BORDER = BorderFactory.createLineBorder(Color.BLACK,1);
     public static final Border DRAG_SEPARATOR_BORDER = BorderFactory.createLineBorder(Color.RED,1);
     public static final Color SELECTED_MENU_BACKGROUND = new Color(0xA5A6A9);
@@ -450,50 +452,6 @@ public class MenuEditLayer extends JPanel {
     }
     
     
-    
-    class WrapperIcon implements Icon {
-        private Icon wrapee;
-        public WrapperIcon() {
-            this(null);
-        }
-        public WrapperIcon(Icon icon) {
-            wrapee = icon;
-        }
-        
-        public void setIcon(Icon icon) {
-            this.wrapee = icon;
-        }
-        
-        public void paintIcon(Component arg0, Graphics g, int x,  int y) {
-            if(wrapee != null) {
-                wrapee.paintIcon(arg0, g, x, y);
-            } else {
-                Graphics g2 = g.create();
-                g2.setColor(Color.WHITE);
-                g2.fillRect(x,y,getIconWidth()-1, getIconHeight()-1);
-                g2.setColor(MenuEditLayer.EMPTY_ICON_COLOR);
-                g2.drawRect(x,y,getIconWidth()-1, getIconHeight()-1);
-                g2.drawRect(x+1,y+1,getIconWidth()-3, getIconHeight()-3);
-                g2.dispose();
-            }
-        }
-        
-        public int getIconWidth() {
-            if(wrapee != null) {
-                return wrapee.getIconWidth();
-            }
-            return 16;
-        }
-        
-        public int getIconHeight() {
-            if(wrapee != null) {
-                return wrapee.getIconHeight();
-            }
-            return 16;
-        }
-        
-    }
-    
     void configureMenuItem(final JMenu parent, final JComponent c) {
         menuParentMap.put(c,parent);
         if(c instanceof JMenuItem) {
@@ -563,14 +521,14 @@ public class MenuEditLayer extends JPanel {
             formDesigner.setSelectedComponent(selectedRADComponent);
 
             if (selectedComponent != null) {
-                selectedComponent.setBorder(UNSELECTED_BORDER);
+                //selectedComponent.setBorder(UNSELECTED_BORDER);
                 selectedComponent.setBackground(null);
             }
 
             selectedComponent = (JComponent) formDesigner.getComponent(selectedRADComponent);
 
             if (selectedComponent != null) {
-                selectedComponent.setBorder(SELECTED_BORDER);
+                //selectedComponent.setBorder(SELECTED_BORDER);
                 selectedComponent.setBackground(SELECTED_MENU_BACKGROUND);
                 makeSureShowingOnScreen(comp, selectedComponent);
                 if (selectedComponent instanceof JMenu) {
@@ -579,7 +537,7 @@ public class MenuEditLayer extends JPanel {
                 }
                 // clear the border if a menuitem, but not a menu
                 if (selectedComponent instanceof JMenuItem && selectedPortion != SelectedPortion.None && !(selectedComponent instanceof JMenu)) {
-                    selectedComponent.setBorder(UNSELECTED_BORDER);
+                    //selectedComponent.setBorder(UNSELECTED_BORDER);
                 }
             }
 
@@ -1290,4 +1248,49 @@ public class MenuEditLayer extends JPanel {
     }
      
     
+    
+    
+    class WrapperIcon implements Icon {
+        private Icon wrapee;
+        public WrapperIcon() {
+            this(null);
+        }
+        public WrapperIcon(Icon icon) {
+            wrapee = icon;
+        }
+        
+        public void setIcon(Icon icon) {
+            this.wrapee = icon;
+        }
+        
+        public void paintIcon(Component arg0, Graphics g, int x,  int y) {
+            if(wrapee != null) {
+                wrapee.paintIcon(arg0, g, x, y);
+            } else {
+                Graphics g2 = g.create();
+                g2.setColor(Color.WHITE);
+                g2.fillRect(x,y,getIconWidth()-1, getIconHeight()-1);
+                g2.setColor(MenuEditLayer.EMPTY_ICON_COLOR);
+                g2.drawRect(x,y,getIconWidth()-1, getIconHeight()-1);
+                g2.drawRect(x+1,y+1,getIconWidth()-3, getIconHeight()-3);
+                g2.dispose();
+            }
+        }
+        
+        public int getIconWidth() {
+            if(wrapee != null) {
+                return wrapee.getIconWidth();
+            }
+            return 16;
+        }
+        
+        public int getIconHeight() {
+            if(wrapee != null) {
+                return wrapee.getIconHeight();
+            }
+            return 16;
+        }
+        
+    }
+
 }

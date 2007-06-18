@@ -206,14 +206,14 @@ class DragOperation {
             //p("child = " + child);
             if(child == null) {
                 if(targetComponent != null) {
-                    targetComponent.setBorder(MenuEditLayer.UNSELECTED_BORDER);
+                    //targetComponent.setBorder(MenuEditLayer.UNSELECTED_BORDER);
                 }
             }
             
             
             if(child instanceof JMenuItem && /*child != payloadComponent &&*/ child != dragComponent) {
                 if(targetComponent != null) {
-                    targetComponent.setBorder(MenuEditLayer.UNSELECTED_BORDER);
+                    //targetComponent.setBorder(MenuEditLayer.UNSELECTED_BORDER);
                 }
                 targetComponent = (JComponent)child;
                 if(targetComponent != null) {
@@ -279,7 +279,7 @@ class DragOperation {
             menuEditLayer.layers.remove(dragComponent);
         }
         if(targetComponent != null) {
-            targetComponent.setBorder(MenuEditLayer.UNSELECTED_BORDER);
+            //targetComponent.setBorder(MenuEditLayer.UNSELECTED_BORDER);
         }
     }
     
@@ -298,7 +298,7 @@ class DragOperation {
         p("complete inter menu drag: target comp = " + targetComponent);
         p("================\n\n\n\n==========\n\n========");
         if(targetComponent == null) return;
-        targetComponent.setBorder(MenuEditLayer.UNSELECTED_BORDER);
+        //targetComponent.setBorder(MenuEditLayer.UNSELECTED_BORDER);
         
         //check if it's still a valid target
         JComponent tcomp = (JComponent) getDeepestComponent(pt);
@@ -355,7 +355,7 @@ class DragOperation {
         
         if(targetComponent == null) return;
         
-        targetComponent.setBorder(MenuEditLayer.UNSELECTED_BORDER);
+        //targetComponent.setBorder(MenuEditLayer.UNSELECTED_BORDER);
         
         //check if it's still a valid target
         JComponent tcomp = (JComponent) getDeepestComponent(pt);
