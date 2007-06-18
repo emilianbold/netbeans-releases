@@ -73,6 +73,8 @@ import java.util.*;
 
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import org.netbeans.modules.compapp.projects.jbi.descriptor.componentInfo.model.JBIComponentStatus;
+import org.netbeans.modules.compapp.projects.jbi.descriptor.componentInfo.model.JBIComponentStatus;
 import org.openide.filesystems.FileUtil;
 
 /**
@@ -563,29 +565,8 @@ public final class JbiProject implements Project, AntProjectListener, ProjectPro
                     //String confDir = JbiProject.this.getProjectDirectory().getPath() + "/src/conf"; // NOI18N
                     FileObject projDir = JbiProject.this.getProjectDirectory();
                     String confDir = FileUtil.toFile(projDir).getAbsolutePath() + 
-                            File.separator + "src" + File.separator + "conf"; // NOI18N
-                    File compFile = new File(confDir + File.separator + "ComponentInformation.xml");
-                    try {
-                        // load componentInfo..
-                        JBIComponentDocument compDoc = ComponentInformationParser.parse(compFile);
-                        List<JBIComponentStatus> fileList = compDoc.getJbiComponentList();
-                        JbiDefaultComponentInfo ci = JbiDefaultComponentInfo.getJbiDefaultComponentInfo();
-                        Collection deltaList = mergeLists(fileList, ci.getComponentHash());
-                        
-                        if (deltaList != null) {
-                            JBIComponentDocument document = new JBIComponentDocument();
-                            //File confFile = new File(confDir);
-                            document.getJbiComponentList().addAll(deltaList);
-                            document.getJbiComponentList().addAll(ci.getComponentHash().values());
-                            CreateComponentInformation infoDoc = new CreateComponentInformation();
-                            infoDoc.buildComponentDOMTree(document);
-                            infoDoc.writeToComponentFile(confDir); 
-                            infoDoc.buildBindingComponentDOMTree(document);
-                            infoDoc.writeToBindingComponentFile(confDir); 
-                        }
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
+                            File.separator + "src" + File.separator + "conf"; // NOI18N                    
+                    updateComponentDocuments(confDir);
                     
                     // 2. Make sure the component target list is not corrupted.
                     try {
@@ -643,21 +624,74 @@ public final class JbiProject implements Project, AntProjectListener, ProjectPro
             }
         }
         
-        private Collection mergeLists(List<JBIComponentStatus> fList, Hashtable cTable) {
-            int found = 0;
-            ArrayList old = new ArrayList();
-            // assuming there no duplicate entry in fList...
-            for (JBIComponentStatus f : fList) {
-                if (cTable.get(f.getName()) == null) {
-                    old.add(f);
-                } else {
-                    found++;
+        private void updateComponentDocuments(String confDir) {
+            
+            try {
+                // Load component info..
+                File compFile = new File(confDir + File.separator + "ComponentInformation.xml");
+                JBIComponentDocument compDoc = ComponentInformationParser.parse(compFile);
+                List<JBIComponentStatus> compList = compDoc.getJbiComponentList();
+                
+                // Load binding component info..
+                File bindingCompFile = new File(confDir + File.separator + "BindingComponentInformation.xml");
+                JBIComponentDocument bindingCompDoc = ComponentInformationParser.parse(bindingCompFile);
+                List<JBIComponentStatus> bindingCompList = bindingCompDoc.getJbiComponentList();
+                
+                // Update component namespaces using info from binding component doc
+                for (JBIComponentStatus bindingComp : bindingCompList) {
+                    String name = bindingComp.getName();
+                    List<String> nsList = bindingComp.getNamespaceList();
+                    for (JBIComponentStatus comp : compList) {
+                        if (comp.getName().equals(name)) {
+                            comp.setNamespace(nsList);
+                            break;
+                        }
+                    }
                 }
+                
+                // Get known SE/BCs at design-time
+                JbiDefaultComponentInfo defaultCompInfo =
+                        JbiDefaultComponentInfo.getJbiDefaultComponentInfo();
+                Map<String, JBIComponentStatus> defaultCompInfoMap =
+                        defaultCompInfo.getComponentHash();
+                
+                List<JBIComponentStatus> deltaList = new ArrayList<JBIComponentStatus>();
+                
+                boolean nsListUpdated = false;
+                
+                for (String name : defaultCompInfoMap.keySet()) {
+                    JBIComponentStatus compInMap = defaultCompInfoMap.get(name);
+                    boolean found = false;
+                    for (JBIComponentStatus comp : compList) {
+                        if (comp.getName().equals(name)) {
+                            for (String ns : compInMap.getNamespaceList()) {
+                                if (comp.addNamespace(ns)) {
+                                    nsListUpdated = true;
+                                }
+                            }
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (!found) {
+                        deltaList.add(compInMap);
+                    }
+                }
+                
+                if (deltaList != null && deltaList.size() > 0 || nsListUpdated) {
+                    JBIComponentDocument document = new JBIComponentDocument();
+                    document.getJbiComponentList().addAll(compList);
+                    document.getJbiComponentList().addAll(deltaList);
+                    
+                    CreateComponentInformation infoDoc = new CreateComponentInformation();
+                    infoDoc.buildComponentDOMTree(document);
+                    infoDoc.writeToComponentFile(confDir);
+                    infoDoc.buildBindingComponentDOMTree(document);
+                    infoDoc.writeToBindingComponentFile(confDir);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-            if (found < cTable.size()) {
-                return old;
-            }
-            return null;
         }
         
         /**

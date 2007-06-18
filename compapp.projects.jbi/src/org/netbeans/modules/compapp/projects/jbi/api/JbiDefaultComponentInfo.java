@@ -31,10 +31,10 @@ import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 
 import java.util.Enumeration;
-import java.util.Hashtable;
 import java.util.List;
-import java.util.Vector;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.openide.filesystems.FileSystem;
 
@@ -78,11 +78,12 @@ public class JbiDefaultComponentInfo {
     /**
      * DOCUMENT ME!
      */
-    public static final String OLD_NAME_PREFIX = "com.sun."; // NOI18N
+    private static final String OLD_NAME_PREFIX = "com.sun."; // NOI18N
+    
     /**
      * DOCUMENT ME!
      */
-    public static final String NEW_NAME_PREFIX = "sun-"; // NOI18N
+    private static final String NEW_NAME_PREFIX = "sun-"; // NOI18N
 
     /**
      * DOCUMENT ME!
@@ -93,10 +94,18 @@ public class JbiDefaultComponentInfo {
     public static final String WSDL_ICON_NAME = "SystemFileSystem.icon"; // NOI18N
 
     private static JbiDefaultComponentInfo singleton = null;
-    private Vector componentList = new java.util.Vector(1);
-    private Hashtable componentHash = new Hashtable();
-    private Hashtable defaultIconHash = new Hashtable();
-    private Hashtable bindingInfoHash = new Hashtable();
+    
+    // a list of SE and BCs known at design time
+    private List<JBIComponentStatus> componentList = new ArrayList<JBIComponentStatus>();
+    
+    // mapping SE/BC's name to the component
+    private Map<String, JBIComponentStatus> componentMap = new HashMap<String, JBIComponentStatus>();
+    
+    // mapping BC name to icon
+    private Map<String, URL> bcIconMap = new HashMap<String, URL>();
+    
+    // mapping BC name to binding info
+    private Map<String, JbiBindingInfo> bindingInfoHash = new HashMap<String, JbiBindingInfo>();
     private List<JbiBindingInfo> bindingInfoList = new ArrayList<JbiBindingInfo>();
 
     private JbiDefaultComponentInfo() {
@@ -113,11 +122,9 @@ public class JbiDefaultComponentInfo {
                 singleton = new JbiDefaultComponentInfo();
                 
                 FileSystem fileSystem = Repository.getDefault().getDefaultFileSystem();
-                
-                FileObject fo;
-
+               
                 // load new container first
-                fo = fileSystem.findResource(WSDLEDITOR_NAME);
+                FileObject fo = fileSystem.findResource(WSDLEDITOR_NAME);
                 loadJbiDefaultComponentInfoForSDLEditor(fo);
 
                 // load new container first
@@ -149,9 +156,9 @@ public class JbiDefaultComponentInfo {
                     for (int j = 0; j < ms.length; j++) {
                         String bname = ms[j].getName().toLowerCase(); // e.x., filebinding
                         FileObject msfo = ms[i].getPrimaryFile(); 
-                        Object icon = msfo.getAttribute(WSDL_ICON_NAME);
+                        URL icon = (URL) msfo.getAttribute(WSDL_ICON_NAME);
                         if (icon != null) {
-                            singleton.defaultIconHash.put(bname, icon);
+                            singleton.bcIconMap.put(bname, icon);
                             // System.out.println("Add ICON: "+bname+", "+ ((URL) icon).toString());
                         }
                     }
@@ -162,100 +169,85 @@ public class JbiDefaultComponentInfo {
 
     private static void loadJbiDefaultComponentInfoFromFileObject(FileObject fo) { // JbiComponents or SeeBeyondJbiComponents
         if (fo != null) {
-            DataFolder df = DataFolder.findFolder(fo);
-            DataObject[] ms = df.getChildren();
-            
-            for (int i = 0; i < ms.length; i++) {
-                String name = ms[i].getName();
+            DataFolder df = DataFolder.findFolder(fo);            
+            for (DataObject compDO : df.getChildren()) {
+                String name = compDO.getName();
                 String id = ""; // NOI18N
                 String desc = ""; // NOI18N
                 String type = ""; // NOI18N
                 String state = "Installed"; // NOI18N
-//                        String ns = ""; // NOI18N
-//                        fo = ms[i].getPrimaryFile();
-                FileObject msfo = ms[i].getPrimaryFile();  // e.x., SeeBeyondJbiComponents/sun-file-binding
+                List<String> nsList = new ArrayList<String>();
                 
-                List nsList = new ArrayList();
-                List<String> bids = new ArrayList<String>();
-                
-                for (Enumeration<String> e = msfo.getAttributes(); e.hasMoreElements();) {
-                    String cmd = e.nextElement();
-                    String attr = (String) msfo.getAttribute(cmd);
+                FileObject compFO = compDO.getPrimaryFile();  // e.x., SeeBeyondJbiComponents/sun-file-binding
+                for (Enumeration<String> e = compFO.getAttributes(); e.hasMoreElements();) {
+                    String attrName = e.nextElement();
+                    String attrValue = (String) compFO.getAttribute(attrName);
                     
-                    if (cmd.equals(COMP_ID)) {
-                        id = attr;
-                    } else if (cmd.equals(COMP_DESC)) {
-                        desc = attr;
-                    } else if (cmd.equals(COMP_TYPE)) {
-                        type = attr;
-                    } else if (cmd.equals(COMP_NAMESPACE)) {
-                        nsList.add(attr);
+                    if (attrName.equals(COMP_ID)) {
+                        id = attrValue;
+                    } else if (attrName.equals(COMP_DESC)) {
+                        desc = attrValue;
+                    } else if (attrName.equals(COMP_TYPE)) {
+                        type = attrValue;
+                    } else if (attrName.equals(COMP_NAMESPACE)) {
+                        nsList.add(attrValue);
                     }
                 }
-                
-                if (JBIComponentStatus.BINDING_TYPE.equals(type) && ms[i] instanceof DataFolder) {
-                    DataObject[] mgs = ((DataFolder)ms[i]).getChildren();
-                    for (int j = 0; j < mgs.length; j++) {
-                        FileObject mgsfo = mgs[j].getPrimaryFile(); // e.x., SeeBeyondJbiComponents/sun-file-binding/file.binding-1.0
-                        String attr = (String)mgsfo.getAttribute(COMP_NAMESPACE);
-                        bids.add(mgsfo.getName()); // e.x., file.binding-1    // for http soap, there are two files: http.binding-1 and soap.binding-1
+                                
+                List<String> bindingTypes = new ArrayList<String>();
+                if (JBIComponentStatus.BINDING_TYPE.equals(type) && compDO instanceof DataFolder) {
+                    for (DataObject bindingTypeDO : ((DataFolder)compDO).getChildren()) { 
+                        FileObject bindingTypeFO = bindingTypeDO.getPrimaryFile(); // e.x., SeeBeyondJbiComponents/sun-file-binding/file.binding-1.0
+                        
+                        String bindingType = bindingTypeFO.getName(); // e.x., file.binding-1    // for http soap, there are two files: http.binding-1 and soap.binding-1
+                        int idx = bindingType.indexOf('.');
+                        if (idx > 0) {
+                            bindingType = bindingType.substring(0,idx).toLowerCase();
+                        }
+                        bindingTypes.add(bindingType); // bid: file, http, soap
+                        
+                        String attr = (String) bindingTypeFO.getAttribute(COMP_NAMESPACE);
                         if (attr != null) {
                             nsList.add(attr);
                         }
                     }
                 }
-                String[] ns = (String[])nsList.toArray(new String[0]);
+                String[] ns = (String[]) nsList.toArray(new String[0]);
                 
                 // check for duplicates first..
-                if ((id.length() > 0) && (singleton.componentHash.get(id) == null)) {
-                            /*
-                               String tname = id;
-                               if (type.equalsIgnoreCase("Engine")) {
-                                   tname = name + "-" + id;
-                               }
-                             */
-                    JBIComponentStatus jcs = new JBIComponentStatus(
-                            id, id, desc, type, state, ns
-                            );
+                if (id.length() > 0 && !singleton.componentMap.containsKey(id)) {
+                    JBIComponentStatus jcs = 
+                            new JBIComponentStatus(id, id, desc, type, state, ns);
                     singleton.componentList.add(jcs);
-                    singleton.componentHash.put(id, jcs);
-                    addBindingInfo(id, bids, desc, ns);
-                    //System.out.println("CompDisplayName: "+getDisplayName(id));
+                    singleton.componentMap.put(id, jcs);
+                    for (String bindingType : bindingTypes) {
+                        addBindingInfo(id, bindingType, desc, ns);
+                    }
                 }
             }
         }
     }
+    
     /** 
-     * @param id    binding component name, e.x., "sun-http-binding"
-     * @param bids  binding types, e.x., "http", or "soap"
+     * @param id    binding component identifier, e.x., "sun-http-binding"
+     * @param bindingType   binding type, e.x., "http", or "soap"
      * @param desc  binding component description 
      * @param ns    namespaces for the binding component
      */
-    private static void addBindingInfo(String id, List<String> bids, String desc, String[] ns) {
-        Object icon = null;
-        if (bids == null) {
-            return;
+    private static void addBindingInfo(String id, String bindingType, String desc, String[] ns) {
+        URL icon = null;
+        
+        for (String name : singleton.bcIconMap.keySet()) {
+            if (name.startsWith(bindingType)) { // e.x., name: filebinding; bid: file
+                icon = singleton.bcIconMap.get(name);
+                break;
+            }
         }
-        for (String bid : bids) {
-            int idx = bid.indexOf('.');
-            if (idx > 0) {
-                bid = bid.substring(0,idx).toLowerCase();
-            }
-
-            for (Enumeration e = singleton.defaultIconHash.keys() ; e.hasMoreElements() ;) {
-                String name = (String) e.nextElement();
-                if (name.startsWith(bid)) { // e.x., name: filebinding; bid: file
-                    icon = singleton.defaultIconHash.get(name);
-                    break;
-                }
-            }
-
-            if (icon != null) {
-                JbiBindingInfo biinfo = new JbiBindingInfo(id, bid, (URL) icon, desc, ns);
-                singleton.bindingInfoHash.put(id, biinfo);
-                singleton.bindingInfoList.add(biinfo);
-                // System.out.println("Add BiInfo: "+id+", "+bid+", "+ icon.toString());
-            }
+        
+        if (icon != null) {
+            JbiBindingInfo biinfo = new JbiBindingInfo(id, bindingType, icon, desc, ns);
+            singleton.bindingInfoHash.put(id, biinfo);
+            singleton.bindingInfoList.add(biinfo);
         }
     }
 
@@ -264,7 +256,7 @@ public class JbiDefaultComponentInfo {
      *
      * @return the default componet list
      */
-    public Vector getComponentList() {
+    public List<JBIComponentStatus> getComponentList() {
         return componentList;
     }
     
@@ -273,14 +265,14 @@ public class JbiDefaultComponentInfo {
      *
      * @return the default component list hashtable
      */
-    public Hashtable getComponentHash() {
-        return componentHash;
+    public Map<String, JBIComponentStatus> getComponentHash() {
+        return componentMap;
     }
 
     /**
-     * Getter for the default binding info hashtable
+     * Getter for the default binding info list
      *
-     * @return the default binding info hashtable
+     * @return the default binding info list
      */
     public List<JbiBindingInfo> getBindingInfoList() {
         return bindingInfoList;
@@ -289,11 +281,11 @@ public class JbiDefaultComponentInfo {
     /**
      * Getter for the specific binding info
      *
+     * @param  id  binding component identifier 
      * @return the specific binding info
      */
     public JbiBindingInfo getBindingInfo(String id) {
-        Object bi = bindingInfoHash.get(id);
-        return (JbiBindingInfo) bi;
+        return bindingInfoHash.get(id);
     }
 
     /**

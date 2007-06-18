@@ -23,83 +23,78 @@ import java.io.Serializable;
 import java.net.URL;
 
 /**
- * JBI binding info, a Binding Component may implment multiple bindings
+ * JBI binding info, a Binding Component may implment multiple bindings.
  *
  * @author tli
  */
 public class JbiBindingInfo implements Serializable {
 
     /**
-     * DOCUMENT ME!
+     * Name of the binding component, e.x., "sun-http-binding".
      */
-    String bcName;
+    private String bcName;
+
+    /**
+     * Type of the binding, e.x., "http", or "soap".
+     */
+    private String bindingType;
 
     /**
      * DOCUMENT ME!
      */
-    String bindingName;
+    private String description;
 
     /**
      * DOCUMENT ME!
      */
-    String description;
+    private URL icon;
 
     /**
      * DOCUMENT ME!
      */
-    URL icon;
-
-    /**
-     * DOCUMENT ME!
-     */
-    String[] ns;
-
-    /**
-     *
-     */
-    public JbiBindingInfo() {
-        super();
-        // TODO Auto-generated constructor stub
-    }
+    private String[] ns;
 
     /**
      * DOCUMENT ME!
      *
      * @param bcName
-     * @param bindingName
+     * @param bindingType
      * @param icon
+     * @param description 
+     * @param ns 
      */
-    public JbiBindingInfo(String bcName, String bindingName, URL icon, String description, String[] ns) {
-        super();
+    public JbiBindingInfo(String bcName, String bindingType, URL icon, 
+            String description, String[] ns) {
         this.bcName = bcName;
-        this.bindingName = bindingName;
+        this.bindingType = bindingType;
         this.icon = icon;
         this.description = description;
         this.ns = ns;
     }
 
     /**
-     * DOCUMENT ME!
+     * Gets the binding component name, e.x., sun-file-binding, sun-http-binding.
      *
-     * @return Returns the BC name.
+     * @return the binding compoent name
      */
     public String getBcName() {
         return this.bcName;
     }
 
     /**
-     * DOCUMENT ME!
+     * Gets the binding type, e.x., file, http, or soap.
      *
-     * @return Returns the Binding name.
+     * @return the binding type
      */
+    // RENAME ME: API change
     public String getBindingName() {
-        return this.bindingName;
+        return this.bindingType;
     }
 
     /**
      * DOCUMENT ME!
      *
-     * @return Returns the icon.
+     * @return the icon.
      */
     public URL getIcon() {
         return this.icon;
@@ -108,7 +103,7 @@ public class JbiBindingInfo implements Serializable {
     /**
      * DOCUMENT ME!
      *
-     * @return Returns the description.
+     * @return the description
      */
     public String getDescription() {
         return this.description;
@@ -117,10 +112,10 @@ public class JbiBindingInfo implements Serializable {
     /**
      * DOCUMENT ME!
      *
-     * @return Returns the BC name.
+     * @return the binding component namespaces
      */
+    // FIXME: shouldn't each binding type have only one namespace???
     public String[] getNameSpaces() {
         return this.ns;
     }
-
 }
