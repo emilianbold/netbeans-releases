@@ -53,7 +53,9 @@ public class EnvironmentVariablesEditor extends SimpleTabularDataEditor {
         if (type.equals(EnvironmentVariablesCustomEditor.PASSWORD_TYPE)) {
             String password = (String) visibleRowValues.get(
                     EnvironmentVariablesCustomEditor.VALUE_COLUMN);
-            password = password.replaceAll(".", "*"); // NOI18N
+            if (password != null) {
+                password = password.replaceAll(".", "*"); // NOI18N
+            }
             visibleRowValues.set(
                     EnvironmentVariablesCustomEditor.VALUE_COLUMN, password);
         }
