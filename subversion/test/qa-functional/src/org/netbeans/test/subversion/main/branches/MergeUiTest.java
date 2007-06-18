@@ -83,7 +83,7 @@ public class MergeUiTest extends JellyTestCase {
             RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + REPO_PATH));
             RepositoryMaintenance.createRepository(TMP_PATH + File.separator + REPO_PATH);
             RepositoryMaintenance.loadRepositoryFromFile(TMP_PATH + File.separator + REPO_PATH, getDataDir().getCanonicalPath() + File.separator + "repo_dump");      
-            projectPath = TestKit.prepareProject("General", "Java Application", PROJECT_NAME);
+            projectPath = TestKit.prepareProject("Java", "Java Application", PROJECT_NAME);
 
             ImportWizardOperator iwo = ImportWizardOperator.invoke(ProjectsTabOperator.invoke().getProjectRootNode(PROJECT_NAME));
             RepositoryStepOperator rso = new RepositoryStepOperator();

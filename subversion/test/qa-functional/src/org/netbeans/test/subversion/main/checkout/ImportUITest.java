@@ -100,7 +100,7 @@ public class ImportUITest extends JellyTestCase {
             new File(TMP_PATH).mkdirs();
             RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + REPO_PATH));
             RepositoryMaintenance.createRepository(TMP_PATH + File.separator + REPO_PATH);
-            projectPath = TestKit.prepareProject("General", "Java Application", PROJECT_NAME);
+            projectPath = TestKit.prepareProject("Java", "Java Application", PROJECT_NAME);
             comOperator = new Operator.DefaultStringComparator(true, true);
             oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
             Node node = new ProjectsTabOperator().getProjectRootNode(PROJECT_NAME);
@@ -125,7 +125,7 @@ public class ImportUITest extends JellyTestCase {
             new File(TMP_PATH).mkdirs();
             RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + REPO_PATH));
             RepositoryMaintenance.createRepository(TMP_PATH + File.separator + REPO_PATH);
-            projectPath = TestKit.prepareProject("General", "Java Application", PROJECT_NAME);
+            projectPath = TestKit.prepareProject("Java", "Java Application", PROJECT_NAME);
             
             comOperator = new Operator.DefaultStringComparator(true, true);
             oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
@@ -182,7 +182,7 @@ public class ImportUITest extends JellyTestCase {
             RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + REPO_PATH));
             RepositoryMaintenance.createRepository(TMP_PATH + File.separator + REPO_PATH);
             RepositoryMaintenance.loadRepositoryFromFile(TMP_PATH + File.separator + REPO_PATH, getDataDir().getCanonicalPath() + File.separator + "repo_dump");
-            projectPath = TestKit.prepareProject("General", "Java Application", PROJECT_NAME);
+            projectPath = TestKit.prepareProject("Java", "Java Application", PROJECT_NAME);
             
             comOperator = new Operator.DefaultStringComparator(true, true);
             oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
@@ -260,7 +260,7 @@ public class ImportUITest extends JellyTestCase {
             RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + REPO_PATH));
             RepositoryMaintenance.createRepository(TMP_PATH + File.separator + REPO_PATH);
             RepositoryMaintenance.loadRepositoryFromFile(TMP_PATH + File.separator + REPO_PATH, getDataDir().getCanonicalPath() + File.separator + "repo_dump");
-            projectPath = TestKit.prepareProject("General", "Java Application", PROJECT_NAME);
+            projectPath = TestKit.prepareProject("Java", "Java Application", PROJECT_NAME);
             
             comOperator = new Operator.DefaultStringComparator(true, true);
             oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
@@ -316,7 +316,7 @@ public class ImportUITest extends JellyTestCase {
             RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + REPO_PATH));
             RepositoryMaintenance.createRepository(TMP_PATH + File.separator + REPO_PATH);
             RepositoryMaintenance.loadRepositoryFromFile(TMP_PATH + File.separator + REPO_PATH, getDataDir().getCanonicalPath() + File.separator + "repo_dump");
-            projectPath = TestKit.prepareProject("General", "Java Application", PROJECT_NAME);
+            projectPath = TestKit.prepareProject("Java", "Java Application", PROJECT_NAME);
             
             comOperator = new Operator.DefaultStringComparator(true, true);
             oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
