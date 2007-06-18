@@ -97,6 +97,12 @@ public abstract class ExtJellyTestCase extends JellyTestCase {
         return createFile(project, packageName, category, fileType, name, null);
     }
     
+    
+    public String getTimeStamp() {
+        return String.valueOf(new Date().getTime());
+    }
+    
+    
     private String createFile(String project, String packageName, String category, String fileType, String name, String beanName) {
         NewFileWizardOperator nfwo = NewFileWizardOperator.invoke();
         nfwo.selectProject(project);
@@ -200,7 +206,7 @@ public abstract class ExtJellyTestCase extends JellyTestCase {
     
 
     public String createBeanFormFile(String beanClassName) {
-        return createFile( TEST_PROJECT_NAME, TEST_PACKAGE_NAME , "Java GUI Forms",  "Bean Form", "MyBeanForm", beanClassName); // NOI18N
+        return createFile( TEST_PROJECT_NAME, TEST_PACKAGE_NAME , "Swing GUI Forms",  "Bean Form", "MyBeanForm", beanClassName); // NOI18N
     }
     
     /**
@@ -208,7 +214,7 @@ public abstract class ExtJellyTestCase extends JellyTestCase {
      * @return new file name
      */
     public String createJDialogFile() {
-        return createFile( TEST_PROJECT_NAME, TEST_PACKAGE_NAME , "Java GUI Forms",  "JDialog Form", "MyJDialog"); // NOI18N
+        return createFile( TEST_PROJECT_NAME, TEST_PACKAGE_NAME , "Swing GUI Forms",  "JDialog Form", "MyJDialog"); // NOI18N
     }
     
     /**
@@ -216,7 +222,7 @@ public abstract class ExtJellyTestCase extends JellyTestCase {
      * @return new file name
      */
     public String createJFrameFile() {
-        return createFile( TEST_PROJECT_NAME, TEST_PACKAGE_NAME , "Java GUI Forms",  "JFrame Form", "MyJFrame"); // NOI18N
+        return createFile( TEST_PROJECT_NAME, TEST_PACKAGE_NAME , "Swing GUI Forms",  "JFrame Form", "MyJFrame"); // NOI18N
     }
     
     /**
@@ -224,7 +230,7 @@ public abstract class ExtJellyTestCase extends JellyTestCase {
      * @return new file name
      */
     public String createFrameFile() {
-        return createFile( TEST_PROJECT_NAME, TEST_PACKAGE_NAME , "Java GUI Forms|AWT Forms",  "Frame Form", "MyFrame"); // NOI18N
+        return createFile( TEST_PROJECT_NAME, TEST_PACKAGE_NAME , "AWT GUI Forms",  "Frame Form", "MyFrame"); // NOI18N
     }
     
     /**

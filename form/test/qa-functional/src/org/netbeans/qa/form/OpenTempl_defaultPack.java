@@ -159,7 +159,7 @@ public class OpenTempl_defaultPack extends JellyTestCase {
     public void openTemplate(String templateName) throws InterruptedException{
         NewFileWizardOperator nfwo = NewFileWizardOperator.invoke();
         nfwo.selectProject(DATA_PROJECT_NAME);
-        nfwo.selectCategory("Java GUI Forms");
+        nfwo.selectCategory("Swing GUI Forms");
         nfwo.selectFileType(templateName);
         nfwo.next();
         JComboBoxOperator jcb_package = new JComboBoxOperator(nfwo, 1);
