@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -31,6 +31,8 @@ import org.netbeans.spi.viewmodel.UnknownTypeException;
 
 import org.netbeans.modules.debugger.jpda.ui.SourcePath;
 
+import org.openide.util.NbBundle;
+
 
 /**
  * @author   Jan Jancura
@@ -39,7 +41,7 @@ public class VariablesActionsProvider implements NodeActionsProvider {
     
     
     private final Action GO_TO_SOURCE_ACTION = Models.createAction (
-        "Go to Source", 
+        NbBundle.getMessage(VariablesActionsProvider.class, "CTL_GoToSource"), 
         new Models.ActionPerformer () {
             public boolean isEnabled (Object node) {
                 return true;
