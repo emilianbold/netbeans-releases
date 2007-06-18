@@ -54,6 +54,9 @@ public class ThreadInfoPanel extends javax.swing.JPanel {
                 panel.lastActiveTC = activeTC;
             }
         }
+        if (!tc.isOpened()) {
+            tc.open();
+        }
         tc.requestVisible();
         tc.requestAttention(true);
         return panel;
