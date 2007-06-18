@@ -207,6 +207,7 @@ public class NewGroupPanel extends JPanel {
 
         subprojectsKindLabel.setLabelFor(subprojectsKindRadio);
         org.openide.awt.Mnemonics.setLocalizedText(subprojectsKindLabel, org.openide.util.NbBundle.getMessage(NewGroupPanel.class, "NewGroupPanel.subprojectsKindLabel.text")); // NOI18N
+        subprojectsKindLabel.setEnabled(false);
 
         masterProjectLabel.setLabelFor(masterProjectField);
         org.openide.awt.Mnemonics.setLocalizedText(masterProjectLabel, org.openide.util.NbBundle.getMessage(NewGroupPanel.class, "NewGroupPanel.masterProjectLabel.text")); // NOI18N
@@ -234,6 +235,7 @@ public class NewGroupPanel extends JPanel {
 
         directoryKindLabel.setLabelFor(directoryKindRadio);
         org.openide.awt.Mnemonics.setLocalizedText(directoryKindLabel, org.openide.util.NbBundle.getMessage(NewGroupPanel.class, "NewGroupPanel.directoryKindLabel.text")); // NOI18N
+        directoryKindLabel.setEnabled(false);
 
         directoryLabel.setLabelFor(directoryField);
         org.openide.awt.Mnemonics.setLocalizedText(directoryLabel, org.openide.util.NbBundle.getMessage(NewGroupPanel.class, "NewGroupPanel.directoryLabel.text")); // NOI18N
@@ -369,11 +371,14 @@ public class NewGroupPanel extends JPanel {
     }//GEN-LAST:event_masterProjectButtonActionPerformed
 
     private void directoryKindRadioActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_directoryKindRadioActionPerformed
+        adHocKindLabel.setEnabled(false);
         useOpenCheckbox.setEnabled(false);
         autoSynchCheckbox.setEnabled(false);
+        subprojectsKindLabel.setEnabled(false);
         masterProjectLabel.setEnabled(false);
         masterProjectField.setEnabled(false);
         masterProjectButton.setEnabled(false);
+        directoryKindLabel.setEnabled(true);
         directoryLabel.setEnabled(true);
         directoryField.setEnabled(true);
         directoryButton.setEnabled(true);
@@ -382,11 +387,14 @@ public class NewGroupPanel extends JPanel {
     }//GEN-LAST:event_directoryKindRadioActionPerformed
 
     private void subprojectsKindRadioActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_subprojectsKindRadioActionPerformed
+        adHocKindLabel.setEnabled(false);
         useOpenCheckbox.setEnabled(false);
         autoSynchCheckbox.setEnabled(false);
+        subprojectsKindLabel.setEnabled(true);
         masterProjectLabel.setEnabled(true);
         masterProjectField.setEnabled(true);
         masterProjectButton.setEnabled(true);
+        directoryKindLabel.setEnabled(false);
         directoryLabel.setEnabled(false);
         directoryField.setEnabled(false);
         directoryButton.setEnabled(false);
@@ -395,11 +403,14 @@ public class NewGroupPanel extends JPanel {
     }//GEN-LAST:event_subprojectsKindRadioActionPerformed
 
     private void adHocKindRadioActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_adHocKindRadioActionPerformed
+        adHocKindLabel.setEnabled(true);
         useOpenCheckbox.setEnabled(true);
         autoSynchCheckbox.setEnabled(true);
+        subprojectsKindLabel.setEnabled(false);
         masterProjectLabel.setEnabled(false);
         masterProjectField.setEnabled(false);
         masterProjectButton.setEnabled(false);
+        directoryKindLabel.setEnabled(false);
         directoryLabel.setEnabled(false);
         directoryField.setEnabled(false);
         directoryButton.setEnabled(false);
