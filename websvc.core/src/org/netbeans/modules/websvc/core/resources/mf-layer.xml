@@ -50,6 +50,7 @@ Microsystems, Inc. All Rights Reserved.
          <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.core.dev.wizard.Bundle"/>
          <file name="WebService.java" url="nbres:/org/netbeans/modules/websvc/core/dev/resources/WebService.template">         
              <attr name="template" boolvalue="true"/>
+             <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
              <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.websvc.core.dev.wizard.NewWebServiceWizardIterator.create"/>
              <attr name="templateCategory" stringvalue="web-services"/>
              <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/websvc/core/dev/resources/WebService.html"/>
