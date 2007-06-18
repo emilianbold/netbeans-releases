@@ -6,14 +6,13 @@
 <#if package?? && package != "">
 package ${package};
 
+</#if>
 import javax.jws.WebService;
 
-</#if>
 /**
  *
  * @author ${user}
  */
-
 @WebService()
 public class ${name} {
 

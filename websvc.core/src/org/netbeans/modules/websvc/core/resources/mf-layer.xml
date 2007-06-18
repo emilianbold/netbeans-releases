@@ -58,7 +58,9 @@ Microsystems, Inc. All Rights Reserved.
              <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/websvc/core/dev/resources/XMLServiceDataIcon.png"/> 
          </file>
           <!--  EJB Web Service --> 
-          <file name="EjbWebService.java" url="nbres:/org/netbeans/modules/websvc/core/dev/resources/EjbWebService.template"/>
+          <file name="EjbWebService.java" url="nbres:/org/netbeans/modules/websvc/core/dev/resources/EjbWebService.template">
+              <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+          </file>
 
          <file name="WebServiceFromWSDL.java">
              <attr name="template" boolvalue="true"/>
@@ -72,6 +74,7 @@ Microsystems, Inc. All Rights Reserved.
          <attr name="WebService/MessageHandler" boolvalue="true"/>
          <file name="MessageHandler.java" url="nbres:/org/netbeans/modules/websvc/core/dev/resources/MessageHandler.template">         
              <attr name="template" boolvalue="true"/>
+             <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
              <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.websvc.core.dev.wizard.MessageHandlerWizard.create"/>
              <attr name="templateCategory" stringvalue="web-services"/>
              <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/websvc/core/dev/resources/MessageHandler.html"/>
@@ -82,6 +85,7 @@ Microsystems, Inc. All Rights Reserved.
          <attr name="WebService/LogicalHandler" boolvalue="true"/>
          <file name="LogicalHandler.java" url="nbres:/org/netbeans/modules/websvc/core/dev/resources/LogicalHandler.template">         
              <attr name="template" boolvalue="true"/>
+             <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
              <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.websvc.core.dev.wizard.LogicalHandlerWizard.create"/>
              <attr name="templateCategory" stringvalue="web-services"/>
              <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/websvc/core/dev/resources/LogicalHandler.html"/>
