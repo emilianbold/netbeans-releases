@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -24,11 +24,12 @@ import java.awt.event.ActionEvent;
 import java.util.Iterator;
 import javax.swing.Action;
 import javax.swing.AbstractAction;
+import javax.swing.ImageIcon;
 
-import org.netbeans.modules.debugger.ui.Utils;
 import org.netbeans.modules.debugger.ui.views.View;
 
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -54,7 +55,7 @@ public class ViewActions extends AbstractAction {
         Object value = super.getValue(key);
         if (key == Action.SMALL_ICON) {
             if (value instanceof String) {
-                value = Utils.getIcon ((String) value);
+                value = new ImageIcon (Utilities.loadImage ((String) value));
             }
         }
         return value;
@@ -84,7 +85,7 @@ public class ViewActions extends AbstractAction {
         ViewActions action = new ViewActions("breakpointsView");
         action.putValue (Action.NAME, "CTL_BreakpointsAction");
         action.putValue (Action.SMALL_ICON, 
-                "org/netbeans/modules/debugger/resources/breakpointsView/Breakpoint" // NOI18N
+                "org/netbeans/modules/debugger/resources/breakpointsView/Breakpoint.gif" // NOI18N
         );
         return action;
     }
@@ -96,7 +97,7 @@ public class ViewActions extends AbstractAction {
         ViewActions action = new ViewActions("callstackView");
         action.putValue (Action.NAME, "CTL_CallStackAction");
         action.putValue (Action.SMALL_ICON, 
-                "org/netbeans/modules/debugger/resources/callStackView/NonCurrentFrame" // NOI18N
+                "org/netbeans/modules/debugger/resources/callStackView/call_stack_16.png" // NOI18N
         );
         return action;
     }
@@ -108,7 +109,7 @@ public class ViewActions extends AbstractAction {
         ViewActions action = new ViewActions("localsView");
         action.putValue (Action.NAME, "CTL_LocalVariablesAction");
         action.putValue (Action.SMALL_ICON, 
-                "org/netbeans/modules/debugger/resources/localsView/LocalVariable" // NOI18N
+                "org/netbeans/modules/debugger/resources/localsView/local_variable_16.png" // NOI18N
         );
         return action;
     }
@@ -120,7 +121,7 @@ public class ViewActions extends AbstractAction {
         ViewActions action = new ViewActions("sessionsView");
         action.putValue (Action.NAME, "CTL_SessionsAction");
         action.putValue (Action.SMALL_ICON, 
-                "org/netbeans/modules/debugger/resources/sessionsView/Session" // NOI18N
+                "org/netbeans/modules/debugger/resources/sessionsView/session_16.png" // NOI18N
         );
         return action;
     }
@@ -132,7 +133,7 @@ public class ViewActions extends AbstractAction {
         ViewActions action = new ViewActions("threadsView");
         action.putValue (Action.NAME, "CTL_ThreadsAction");
         action.putValue (Action.SMALL_ICON, 
-                "org/netbeans/modules/debugger/resources/threadsView/ThreadGroup" // NOI18N
+                "org/netbeans/modules/debugger/resources/threadsView/ThreadGroup.gif" // NOI18N
         );
         return action;
     }
@@ -145,7 +146,7 @@ public class ViewActions extends AbstractAction {
         ViewActions action = new ViewActions("watchesView");
         action.putValue (Action.NAME, "CTL_WatchesAction");
         action.putValue (Action.SMALL_ICON, 
-                "org/netbeans/modules/debugger/resources/watchesView/Watch" // NOI18N
+                "org/netbeans/modules/debugger/resources/watchesView/watch_16.png" // NOI18N
         );
         return action;
     }

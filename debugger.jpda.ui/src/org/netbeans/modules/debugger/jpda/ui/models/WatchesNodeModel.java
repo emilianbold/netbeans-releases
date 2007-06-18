@@ -30,7 +30,6 @@ import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.JPDAWatch;
 import org.netbeans.spi.viewmodel.ModelEvent;
 import org.netbeans.spi.viewmodel.TreeModel;
-import org.netbeans.spi.viewmodel.ExtendedNodeModel;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 
 import org.openide.util.NbBundle;
@@ -40,10 +39,10 @@ import org.openide.util.datatransfer.PasteType;
 /**
  * @author   Jan Jancura
  */
-public class WatchesNodeModel extends VariablesNodeModel implements ExtendedNodeModel {
+public class WatchesNodeModel extends VariablesNodeModel {
 
     public static final String WATCH =
-        "org/netbeans/modules/debugger/resources/watchesView/Watch";
+        "org/netbeans/modules/debugger/resources/watchesView/watch_16.png";
 
 
     public WatchesNodeModel (ContextProvider lookupProvider) {
@@ -100,19 +99,6 @@ public class WatchesNodeModel extends VariablesNodeModel implements ExtendedNode
         super.testKnown(o);
     }
     
-    public String getIconBase (Object o) throws UnknownTypeException {
-        if (o == TreeModel.ROOT) {
-            return WATCH;
-        }
-        if (o instanceof JPDAWatch) {
-            if (isEmptyWatch(o)) {
-                return null;
-            }
-            return WATCH;
-        }
-        return super.getIconBase (o);
-    }
-
     public boolean canRename(Object node) throws UnknownTypeException {
         return (node instanceof JPDAWatch);
     }
@@ -189,12 +175,16 @@ public class WatchesNodeModel extends VariablesNodeModel implements ExtendedNode
     }
 
     public String getIconBaseWithExtension(Object node) throws UnknownTypeException {
-        String iconBase = getIconBase(node);
-        if (iconBase == null) {
-            return null;
-        } else {
-            return iconBase + ".gif";
+        if (node == TreeModel.ROOT) {
+            return WATCH;
         }
+        if (node instanceof JPDAWatch) {
+            if (isEmptyWatch(node)) {
+                return null;
+            }
+            return WATCH;
+        }
+        return super.getIconBaseWithExtension(node);
     }
     
 }

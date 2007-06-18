@@ -13,28 +13,32 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.debugger.ui.models;
 
+import java.awt.datatransfer.Transferable;
+import java.io.IOException;
 import java.util.Vector;
 
 import org.netbeans.api.debugger.Watch;
-import org.netbeans.spi.viewmodel.NodeModel;
+import org.netbeans.spi.viewmodel.ExtendedNodeModel;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
+
 import org.openide.util.NbBundle;
+import org.openide.util.datatransfer.PasteType;
 
 /**
  * @author   Jan Jancura
  */
-public class WatchesNodeModel implements NodeModel {
+public class WatchesNodeModel implements ExtendedNodeModel {
 
     public static final String WATCH =
-        "org/netbeans/modules/debugger/resources/watchesView/Watch";
+        "org/netbeans/modules/debugger/resources/watchesView/watch_16.png";
 
     private Vector listeners = new Vector ();
     
@@ -58,11 +62,15 @@ public class WatchesNodeModel implements NodeModel {
     }
     
     public String getIconBase (Object o) throws UnknownTypeException {
-        if (o == TreeModel.ROOT)
+        throw new UnsupportedOperationException("Not supported.");
+    }
+
+    public String getIconBaseWithExtension(Object node) throws UnknownTypeException {
+        if (node == TreeModel.ROOT)
             return WATCH;
-        if (o instanceof Watch)
+        if (node instanceof Watch)
             return WATCH;
-        throw new UnknownTypeException (o);
+        throw new UnknownTypeException (node);
     }
 
     /** 
@@ -81,4 +89,34 @@ public class WatchesNodeModel implements NodeModel {
         listeners.remove (l);
     }
     
+    public boolean canRename(Object node) throws UnknownTypeException {
+        return false;
+    }
+
+    public boolean canCopy(Object node) throws UnknownTypeException {
+        return false;
+    }
+
+    public boolean canCut(Object node) throws UnknownTypeException {
+        return false;
+    }
+
+    public Transferable clipboardCopy(Object node) throws IOException,
+                                                          UnknownTypeException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public Transferable clipboardCut(Object node) throws IOException,
+                                                         UnknownTypeException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public PasteType[] getPasteTypes(Object node, Transferable t) throws UnknownTypeException {
+        return null;
+    }
+
+    public void setName(Object node, String name) throws UnknownTypeException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
 }

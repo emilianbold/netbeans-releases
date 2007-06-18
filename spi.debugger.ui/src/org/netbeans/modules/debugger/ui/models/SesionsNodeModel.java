@@ -13,36 +13,40 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.debugger.ui.models;
 
+import java.awt.datatransfer.Transferable;
 import java.beans.PropertyChangeEvent;
+import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.Vector;
 
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
 import org.netbeans.api.debugger.Session;
+import org.netbeans.spi.viewmodel.ExtendedNodeModel;
 import org.netbeans.spi.viewmodel.ModelEvent;
-import org.netbeans.spi.viewmodel.NodeModel;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
+
 import org.openide.util.NbBundle;
+import org.openide.util.datatransfer.PasteType;
 
 
 /**
  * @author   Jan Jancura
  */
-public class SesionsNodeModel implements NodeModel {
+public class SesionsNodeModel implements ExtendedNodeModel {
 
     public static final String SESSION =
-        "org/netbeans/modules/debugger/resources/sessionsView/Session";
+        "org/netbeans/modules/debugger/resources/sessionsView/session_16.png";
     public static final String CURRENT_SESSION =
-        "org/netbeans/modules/debugger/resources/sessionsView/CurrentSession";
+        "org/netbeans/modules/debugger/resources/sessionsView/CurrentSession.gif";
 
     private Vector listeners = new Vector ();
     private Listener listener;
@@ -73,18 +77,52 @@ public class SesionsNodeModel implements NodeModel {
     }
     
     public String getIconBase (Object o) throws UnknownTypeException {
+        throw new UnsupportedOperationException("Not supported.");
+    }
+
+    public String getIconBaseWithExtension(Object node) throws UnknownTypeException {
         if (listener == null)
             listener = new Listener (this);
-        if (o == TreeModel.ROOT) {
+        if (node == TreeModel.ROOT) {
             return SESSION;
         } else
-        if (o instanceof Session) {
-            if (o == DebuggerManager.getDebuggerManager ().getCurrentSession ())
+        if (node instanceof Session) {
+            if (node == DebuggerManager.getDebuggerManager ().getCurrentSession ())
                 return CURRENT_SESSION;
             else
                 return SESSION;
         } else
-        throw new UnknownTypeException (o);
+        throw new UnknownTypeException (node);
+    }
+
+    public boolean canRename(Object node) throws UnknownTypeException {
+        return false;
+    }
+
+    public boolean canCopy(Object node) throws UnknownTypeException {
+        return false;
+    }
+
+    public boolean canCut(Object node) throws UnknownTypeException {
+        return false;
+    }
+
+    public Transferable clipboardCopy(Object node) throws IOException,
+                                                          UnknownTypeException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public Transferable clipboardCut(Object node) throws IOException,
+                                                         UnknownTypeException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public PasteType[] getPasteTypes(Object node, Transferable t) throws UnknownTypeException {
+        return null;
+    }
+
+    public void setName(Object node, String name) throws UnknownTypeException {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     /** 

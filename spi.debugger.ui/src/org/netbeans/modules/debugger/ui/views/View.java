@@ -30,6 +30,7 @@ import org.netbeans.spi.viewmodel.Models;
 import org.netbeans.modules.debugger.ui.Utils;
 
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
 
 
@@ -57,7 +58,7 @@ public class View extends TopComponent implements org.openide.util.HelpCtx.Provi
     
     private View (String icon, String name, String helpID, String propertiesHelpID,
                   String displayNameResource, String toolTipResource) {
-        setIcon (Utils.getIcon(icon).getImage());
+        setIcon (Utilities.loadImage (icon));
         this.name = name;
         this.helpID = helpID;
         this.propertiesHelpID = propertiesHelpID;
@@ -178,7 +179,7 @@ public class View extends TopComponent implements org.openide.util.HelpCtx.Provi
      */
     public static synchronized TopComponent getBreakpointsView() {
         return new View(
-            "org/netbeans/modules/debugger/resources/breakpointsView/Breakpoint",
+            "org/netbeans/modules/debugger/resources/breakpointsView/Breakpoint.gif",
             BREAKPOINTS_VIEW_NAME,
             "NetbeansDebuggerBreakpointNode",
             null,
@@ -192,7 +193,7 @@ public class View extends TopComponent implements org.openide.util.HelpCtx.Provi
      */
     public static synchronized TopComponent getCallStackView() {
         return new View(
-            "org/netbeans/modules/debugger/resources/allInOneView/CallStack",
+            "org/netbeans/modules/debugger/resources/allInOneView/CallStack.gif",
             CALLSTACK_VIEW_NAME,
             "NetbeansDebuggerCallStackNode",
             null,
@@ -206,7 +207,7 @@ public class View extends TopComponent implements org.openide.util.HelpCtx.Provi
      */
     public static synchronized TopComponent getLocalsView() {
         return new View(
-            "org/netbeans/modules/debugger/resources/localsView/LocalVariable",
+            "org/netbeans/modules/debugger/resources/localsView/local_variable_16.png",
             LOCALS_VIEW_NAME,
             "NetbeansDebuggerVariableNode",
             null,
@@ -220,7 +221,7 @@ public class View extends TopComponent implements org.openide.util.HelpCtx.Provi
      */
     public static synchronized TopComponent getSessionsView() {
         return new View(
-            "org/netbeans/modules/debugger/resources/sessionsView/Session",
+            "org/netbeans/modules/debugger/resources/sessionsView/session_16.png",
             SESSIONS_VIEW_NAME,
             "NetbeansDebuggerSessionNode",
             "NetbeansDebuggerSessionsPropertiesSheet",
@@ -234,7 +235,7 @@ public class View extends TopComponent implements org.openide.util.HelpCtx.Provi
      */
     public static synchronized TopComponent getThreadsView() {
         return new View(
-            "org/netbeans/modules/debugger/resources/threadsView/RunningThread",
+            "org/netbeans/modules/debugger/resources/threadsView/RunningThread.gif",
             THREADS_VIEW_NAME,
             "NetbeansDebuggerThreadNode",
             "NetbeansDebuggerThreadsPropertiesSheet",
@@ -248,7 +249,7 @@ public class View extends TopComponent implements org.openide.util.HelpCtx.Provi
      */
     public static synchronized TopComponent getWatchesView() {
         return new View(
-            "org/netbeans/modules/debugger/resources/watchesView/Watch",
+            "org/netbeans/modules/debugger/resources/watchesView/watch_16.png",
             WATCHES_VIEW_NAME,
             "NetbeansDebuggerWatchNode",
             null,

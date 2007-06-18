@@ -19,12 +19,13 @@
 
 package org.netbeans.modules.debugger.jpda.ui.models;
 
+import java.awt.datatransfer.Transferable;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Vector;
-
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.jpda.ClassVariable;
 import org.netbeans.api.debugger.jpda.JPDAClassType;
@@ -37,36 +38,37 @@ import org.netbeans.api.debugger.jpda.LocalVariable;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.api.debugger.jpda.Super;
 import org.netbeans.api.debugger.jpda.This;
+import org.netbeans.spi.viewmodel.ExtendedNodeModel;
 import org.netbeans.spi.viewmodel.ModelEvent;
-import org.netbeans.spi.viewmodel.NodeModel;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.datatransfer.PasteType;
 
 
 /**
  * @author   Jan Jancura
  */
-public class VariablesNodeModel implements NodeModel { 
+public class VariablesNodeModel implements ExtendedNodeModel { 
 
     public static final String FIELD =
-        "org/netbeans/modules/debugger/resources/watchesView/Field";
+        "org/netbeans/modules/debugger/resources/watchesView/Field.gif";
     public static final String LOCAL =
-        "org/netbeans/modules/debugger/resources/localsView/LocalVariable";
+        "org/netbeans/modules/debugger/resources/localsView/local_variable_16.png";
     public static final String FIXED_WATCH =
-        "org/netbeans/modules/debugger/resources/watchesView/FixedWatch";
+        "org/netbeans/modules/debugger/resources/watchesView/FixedWatch.gif";
     public static final String STATIC_FIELD =
-        "org/netbeans/modules/debugger/resources/watchesView/StaticField";
+        "org/netbeans/modules/debugger/resources/watchesView/StaticField.gif";
     public static final String SUPER =
-        "org/netbeans/modules/debugger/resources/watchesView/SuperVariable";
+        "org/netbeans/modules/debugger/resources/watchesView/SuperVariable.gif";
     public static final String STATIC =
-        "org/netbeans/modules/debugger/resources/watchesView/SuperVariable";
+        "org/netbeans/modules/debugger/resources/watchesView/SuperVariable.gif";
     public static final String RETURN =
-        "org/netbeans/modules/debugger/jpda/resources/Filter";
+        "org/netbeans/modules/debugger/jpda/resources/Filter.gif";
     public static final String EXPR_ARGUMENTS =
-        "org/netbeans/modules/debugger/jpda/resources/ExprArguments";
+        "org/netbeans/modules/debugger/jpda/resources/ExprArguments.gif";
 
     
     private JPDADebugger debugger;
@@ -266,39 +268,73 @@ public class VariablesNodeModel implements NodeModel {
     }
     
     public String getIconBase (Object o) throws UnknownTypeException {
-        if (o == TreeModel.ROOT)
+        throw new UnsupportedOperationException("Not supported.");
+    }
+
+    public boolean canRename(Object node) throws UnknownTypeException {
+        return false;
+    }
+
+    public boolean canCopy(Object node) throws UnknownTypeException {
+        return false;
+    }
+
+    public boolean canCut(Object node) throws UnknownTypeException {
+        return false;
+    }
+
+    public Transferable clipboardCopy(Object node) throws IOException,
+                                                          UnknownTypeException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public Transferable clipboardCut(Object node) throws IOException,
+                                                         UnknownTypeException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public PasteType[] getPasteTypes(Object node, Transferable t) throws UnknownTypeException {
+        return null;
+    }
+
+    public void setName(Object node, String name) throws UnknownTypeException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public String getIconBaseWithExtension(Object node) throws UnknownTypeException {
+        if (node == TreeModel.ROOT)
             return FIELD;
-        if (o instanceof Field) {
-            if (((Field) o).isStatic ())
+        if (node instanceof Field) {
+            if (((Field) node).isStatic ())
                 return STATIC_FIELD;
             else
                 return FIELD;
         }
-        if (o instanceof LocalVariable)
+        if (node instanceof LocalVariable)
             return LOCAL;
-        if (o instanceof Super)
+        if (node instanceof Super)
             return SUPER;
-        if (o instanceof This)
+        if (node instanceof This)
             return FIELD;
-        if (o instanceof JPDAClassType) {
+        if (node instanceof JPDAClassType) {
             return STATIC;
         }
-        if (o instanceof ClassVariable) {
+        if (node instanceof ClassVariable) {
             return STATIC;
         }
-        if (o instanceof ReturnVariable || o == "lastOperations") {
+        if (node instanceof ReturnVariable || node == "lastOperations") {
             return RETURN;
         }
-        if (o instanceof String && ((String) o).startsWith("operationArguments ")) { // NOI18N
+        if (node instanceof String && ((String) node).startsWith("operationArguments ")) { // NOI18N
             return EXPR_ARGUMENTS;
         }
-        if (o.toString().startsWith("SubArray")) // NOI18N
+        if (node.toString().startsWith("SubArray")) // NOI18N
             return LOCAL;
-        if (o == "NoInfo" || o == "No current thread" || o == "NativeMethodException") // NOI18N
+        if (node == "NoInfo" || node == "No current thread" || node == "NativeMethodException") // NOI18N
             return null;
-        throw new UnknownTypeException (o);
+        throw new UnknownTypeException (node);
     }
-
+    
     public void addModelListener (ModelListener l) {
         synchronized (modelListeners) {
             modelListeners.add(l);
@@ -320,4 +356,5 @@ public class VariablesNodeModel implements NodeModel {
             ((ModelListener) listeners[i]).modelChanged(me);
         }
     }
+
 }
