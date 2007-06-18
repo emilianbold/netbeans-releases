@@ -94,6 +94,13 @@ public interface BracesMatcher {
      * should only try to find the original area within the search lookahead
      * from the caret offset that it obtains from <code>MatcherContext</code>.
      * 
+     * <p>Normally this method is supposed to return offset boundaries of the
+     * original area or <code>null</code> if the original area can't be found.
+     * The infrastructure will highlight the whole original area according to
+     * the result of the <code>findMatches</code> call. If for some reason the
+     * matcher does not want to highlight the whole original area it can return
+     * additional offset pairs for areas that should be highlighted instead.
+     * 
      * <p>The infrastructure calls this method while holding the readlock of the
      * document being searched.
      * 

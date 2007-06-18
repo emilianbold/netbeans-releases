@@ -234,18 +234,35 @@ public final class MasterMatcher {
 
         if (matches != null && matches.length >= 2) {
             // Highlight the matched origin
-            highlights.addHighlight(origin[0], origin[1], matchedColoring);
-
+            placeHighlights(origin, true, highlights, matchedColoring);
             // Highlight all the matches
-            for(int i = 0; i < matches.length / 2; i++) {
-                highlights.addHighlight(matches[i * 2], matches[i * 2 + 1], matchedColoring);
-            }
+            placeHighlights(matches, false, highlights, matchedColoring);
         } else if (origin != null && origin.length >= 2) {
             // Highlight the mismatched origin
-            highlights.addHighlight(origin[0], origin[1], mismatchedColoring);
+            placeHighlights(origin, true, highlights, mismatchedColoring);
         }
     }
 
+    private static void placeHighlights(
+        int [] offsets, 
+        boolean skipFirst,
+        OffsetsBag highlights, 
+        AttributeSet coloring
+    ) {
+        int startIdx;
+        
+        if (skipFirst && offsets.length > 2) {
+            startIdx = 1;
+        } else {
+            startIdx = 0;
+        }
+        
+        // Highlight all the matches
+        for(int i = startIdx; i < offsets.length / 2; i++) {
+            highlights.addHighlight(offsets[i * 2], offsets[i * 2 + 1], coloring);
+        }
+    }
+    
     // when navigating: set the dot after or before the matching area, depending on the caret bias
     // when selecting: always select the inside between original and matching areas
     //                 do not select the areas themselvs
@@ -560,10 +577,10 @@ public final class MasterMatcher {
                 if (origin != null) {
                     if (origin.length == 0) {
                         origin = null;
-                    } else if (origin.length != 2) {
+                    } else if (origin.length % 2 != 0) {
                         if (LOG.isLoggable(Level.WARNING)) {
                             LOG.warning("Invalid BracesMatcher implementation, " + //NOI18N
-                                "findOrigin() can only return two offsets. " + //NOI18N
+                                "findOrigin() should return nothing or offset pairs. " + //NOI18N
                                 "Offending BracesMatcher: " + matcher); //NOI18N
                         }
                         origin = null;

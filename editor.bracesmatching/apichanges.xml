@@ -82,6 +82,22 @@ is the proper place.
 
     <changes>
 
+        <change id="BracesMatcher.findOrigin.additional.highlights">
+            <summary>Additional highlights from BracesMatcher.findOrigin</summary>
+            <version major="1" minor="1"/>
+            <date day="18" month="6" year="2007"/>
+            <author login="vstejskal"/>
+            <compatibility binary="compatible" source="compatible" semantic="compatible" modification="yes"/>
+            <description>
+                <p>
+                    The <code>BracesMatcher.findOrigin</code> can return additional
+                    offset pairs for areas that it wants to be highlighted. The first
+                    offset pair should always mark the whole original area. If no other
+                    pairs are supplied the whole original area will be highlighted.
+                </p>
+            </description>
+        </change>
+
         <change id="created">
             <summary>Braces Matching SPI created</summary>
             <version major="1" minor="0"/>
