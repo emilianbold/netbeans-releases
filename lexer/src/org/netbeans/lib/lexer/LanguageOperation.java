@@ -76,19 +76,18 @@ public final class LanguageOperation<T extends TokenId> implements PropertyChang
      * @param newLanguagePaths newly discovered language paths will be added to this set.
      * @param exploredLanguages used for checking whether the subpaths containing
      *  this language were already discovered.
-     * @param lp language path that will be checked. It must contain the "language"
-     *  parameter as the most embedded language.
-     * @param language language which token ids will be checked whether they contain
-     *  default embeddings or not.
+     * @param lp language path that will be checked. Its innermost language
+     *  will be checked for embeddings automatically.
      */
     public static <T extends TokenId> void findLanguagePaths(
     Set<LanguagePath> existingLanguagePaths, Set<LanguagePath> newLanguagePaths,
-    Set<Language<? extends TokenId>> exploredLanguages, LanguagePath lp,
-    Language<T> language) {
+    Set<Language<? extends TokenId>> exploredLanguages, LanguagePath lp) {
         // Get the complete language path
         if (!existingLanguagePaths.contains(lp)) {
             newLanguagePaths.add(lp);
         }
+        @SuppressWarnings("unchecked")
+        Language<T> language = (Language<T>)lp.innerLanguage();
         if (!exploredLanguages.contains(language)) {
             exploredLanguages.add(language);
             Set<T> ids = language.tokenIds();
@@ -100,7 +99,7 @@ public final class LanguageOperation<T extends TokenId> implements PropertyChang
                 if (embedding != null) {
                     LanguagePath elp = LanguagePath.get(lp, embedding.language());
                     findLanguagePaths(existingLanguagePaths, newLanguagePaths,
-                            exploredLanguages, elp, embedding.language());
+                            exploredLanguages, elp);
                 }
             }
         }
@@ -269,7 +268,7 @@ public final class LanguageOperation<T extends TokenId> implements PropertyChang
             lps = new HashSet<LanguagePath>();
             Set<LanguagePath> existingLps = Collections.emptySet();
             Set<Language<? extends TokenId>> exploredLangs = new HashSet<Language<? extends TokenId>>();
-            findLanguagePaths(existingLps, lps, exploredLangs, LanguagePath.get(language()), language());
+            findLanguagePaths(existingLps, lps, exploredLangs, LanguagePath.get(language()));
             synchronized (this) {
                 languagePaths = lps;
                 exploredLanguages = exploredLangs;

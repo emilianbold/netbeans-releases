@@ -123,7 +123,7 @@ public enum TestTokenId implements TokenId {
         Token<TestTokenId> token, LanguagePath languagePath, InputAttributes inputAttributes) {
             // Test language embedding in the block comment
             switch (token.id()) {
-                                                                                                                                case BLOCK_COMMENT:
+                case BLOCK_COMMENT:
                     return LanguageEmbedding.create(TestPlainTokenId.language(), 2, 2);
 
                 case JAVADOC_COMMENT:

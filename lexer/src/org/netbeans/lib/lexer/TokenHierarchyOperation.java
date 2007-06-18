@@ -419,12 +419,12 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
         return lps;
     }
     
-    public void addLanguagePath(LanguagePath lp, Language language) {
+    public void addLanguagePath(LanguagePath lp) {
         Set<LanguagePath> elps = languagePaths(); // init if not inited yet
         if (!elps.contains(lp)) {
             // Add the new language path
             Set<LanguagePath> lps = new HashSet<LanguagePath>();
-            LanguageOperation.findLanguagePaths(elps, lps, exploredLanguages, lp, null);
+            LanguageOperation.findLanguagePaths(elps, lps, exploredLanguages, lp);
             elps.addAll(lps);
             // Fire the token hierarchy change event
         }

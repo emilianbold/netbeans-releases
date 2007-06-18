@@ -54,7 +54,7 @@ public class TestStringLexer implements Lexer<TestStringTokenId> {
         while(true) {
             int ch = input.read();
             switch (ch) {
-                                case EOF:
+                case EOF:
                     if (input.readLength() > 0)
                         return token(TestStringTokenId.TEXT);
                     else

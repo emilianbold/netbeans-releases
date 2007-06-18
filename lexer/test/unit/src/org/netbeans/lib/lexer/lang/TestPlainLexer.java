@@ -56,7 +56,7 @@ final class TestPlainLexer implements Lexer<TestPlainTokenId> {
         while (true) {
             int ch = input.read();
             switch (state) {
-                                case INIT:
+                case INIT:
                     if (ch == EOF) {
                         return null;
                     } else if (Character.isWhitespace((char)ch)) { // start of whitespace

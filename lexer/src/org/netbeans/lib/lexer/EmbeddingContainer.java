@@ -201,6 +201,7 @@ public final class EmbeddingContainer<T extends TokenId> {
                 startSkipLength, endSkipLength, joinSections);
             LanguagePath languagePath = tokenList.languagePath();
             LanguagePath embeddedLanguagePath = LanguagePath.get(languagePath, embeddedLanguage);
+            tokenHierarchyOperation.addLanguagePath(embeddedLanguagePath);
             // Make the embedded token list to be the first in the list
             // Make the embedded token list to be the first in the list
             etl = new EmbeddedTokenList<ET>(
