@@ -55,7 +55,7 @@ public final class MEDesignDataObject extends J2MEDataObject implements DataObje
 
     public Node createNodeDelegate () {
         JavaNode javaNode = new JavaNode (this, true);
-        javaNode.setIconBaseWithExtension ("org/netbeans/modules/vmd/io/resources/design.gif"); // NOI18N
+        javaNode.setIconBaseWithExtension ("org/netbeans/modules/vmd/io/javame/resources/design.gif"); // NOI18N
         return new MEDesignNode (javaNode);
     }
 

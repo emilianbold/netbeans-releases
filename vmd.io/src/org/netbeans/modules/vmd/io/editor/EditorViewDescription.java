@@ -22,6 +22,7 @@ import org.netbeans.core.spi.multiview.MultiViewDescription;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.modules.vmd.api.io.DataEditorView;
 import org.netbeans.modules.vmd.api.io.DataObjectContext;
+import org.netbeans.modules.vmd.api.io.ProjectTypeInfo;
 import org.openide.util.HelpCtx;
 import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
@@ -35,8 +36,6 @@ import java.io.Serializable;
 public class EditorViewDescription implements MultiViewDescription, Serializable {
 
     private static final long serialVersionUID = 3317521754395749572L;
-
-    private static final Image DESIGN_ICON = Utilities.loadImage ("org/netbeans/modules/vmd/io/resources/design.gif"); // NOI18N
 
     private DataObjectContext context;
     private DataEditorView view;
@@ -55,7 +54,8 @@ public class EditorViewDescription implements MultiViewDescription, Serializable
     }
 
     public Image getIcon () {
-        return DESIGN_ICON;
+        ProjectTypeInfo projectTypeInfo = ProjectTypeInfo.getProjectTypeInfoFor (context.getProjectType ());
+        return projectTypeInfo != null ? Utilities.loadImage (projectTypeInfo.getIconResource ()) : null;
     }
 
     public HelpCtx getHelpCtx () {

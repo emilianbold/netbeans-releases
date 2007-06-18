@@ -28,6 +28,7 @@ import org.netbeans.core.spi.multiview.MultiViewFactory;
 import org.netbeans.modules.mobility.editor.pub.J2MEDataObject.J2MEEditorSupport;
 import org.netbeans.modules.vmd.api.io.DataEditorView;
 import org.netbeans.modules.vmd.api.io.IOUtils;
+import org.netbeans.modules.vmd.api.io.ProjectTypeInfo;
 import org.netbeans.modules.vmd.api.io.providers.DocumentSerializer;
 import org.netbeans.modules.vmd.api.io.providers.IOSupport;
 import org.netbeans.spi.editor.guards.GuardedEditorSupport;
@@ -42,6 +43,7 @@ import org.openide.text.CloneableEditor;
 import org.openide.windows.CloneableTopComponent;
 import org.openide.windows.TopComponent;
 import org.openide.awt.UndoRedo;
+import org.openide.util.Utilities;
 
 import javax.swing.text.BadLocationException;
 import javax.swing.text.EditorKit;
@@ -186,6 +188,9 @@ public final class MEDesignEditorSupport extends J2MEEditorSupport implements Ed
             return;
         IOUtils.runInAWTNoBlocking(new Runnable() {
             public void run() {
+                ProjectTypeInfo projectTypeInfo = ProjectTypeInfo.getProjectTypeInfoFor (IOSupport.getDataObjectContext (dataObject).getProjectType ());
+                tc.setIcon (projectTypeInfo != null ? Utilities.loadImage (projectTypeInfo.getIconResource ()) : null);
+
                 String displayName = messageName();
                 if (! displayName.equals(tc.getDisplayName()))
                     tc.setDisplayName(displayName);
