@@ -21,15 +21,12 @@
                 <exclude name="**/*.java"/>
             </fileset>
         </copy>
-        <mkdir dir="release/modules/ext"/>
-        <jar jarfile="release/modules/ext/${code.name.base.dashes}.jar" compress="false">
+        <mkdir dir="${cluster}/modules/ext"/>
+        <jar jarfile="${cluster}/modules/ext/${code.name.base.dashes}.jar" compress="false">
             <fileset dir="build/libclasses">
                 <exclude name="**/*.java"/>
             </fileset>
         </jar>
-
-        <mkdir dir="${cluster}/modules/ext"/>
-        <copy file="release/modules/ext/${code.name.base.dashes}.jar" tofile="${cluster}/modules/ext/${code.name.base.dashes}.jar"/>
 
         <mkdir dir="build/antclasses"/>
         <javac srcdir="antsrc" destdir="build/antclasses" source="1.5" target="1.5" debug="true" deprecation="true">
@@ -45,16 +42,13 @@
                 <exclude name="**/*.java"/>
             </fileset>
         </copy>
-        <mkdir dir="release/ant/nblib"/>
-        <jar jarfile="release/ant/nblib/${code.name.base.dashes}.jar" compress="false">
+        <mkdir dir="${cluster}/ant/nblib"/>
+        <jar jarfile="${cluster}/ant/nblib/${code.name.base.dashes}.jar" compress="false">
             <fileset dir="build/antclasses">
                 <exclude name="**/*.java"/>
             </fileset>
         </jar>
 
-        <mkdir dir="${cluster}/ant/nblib"/>
-        <copy file="release/ant/nblib/${code.name.base.dashes}.jar" tofile="${cluster}/ant/nblib/${code.name.base.dashes}.jar"/>
-       
         <mkdir dir="${cluster}/modules/scr"/>
 	<copy todir="${cluster}/modules/scr">
 	    <fileset dir="scripts"/>
@@ -64,7 +58,6 @@
     <target name="clean" depends="projectized-common.clean">
         <delete file="${cluster}/modules/ext/${code.name.base.dashes}.jar"/>
         <delete file="${cluster}/ant/nblib/${code.name.base.dashes}.jar"/>
-        <delete dir="release" />
     </target>
 
 </project>
