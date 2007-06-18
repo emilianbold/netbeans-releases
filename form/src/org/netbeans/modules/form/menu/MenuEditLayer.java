@@ -88,12 +88,13 @@ public class MenuEditLayer extends JPanel {
     public static final Color SELECTED_MENU_BACKGROUND = new Color(0xA5A6A9);
     public static final Color EMPTY_ICON_COLOR = new Color(0xDDDDDD);
     public static final int EMPTY_ICON_BORDER_WIDTH = 2;
+    /*
     public static Stroke dashedStroke1 = new BasicStroke((float) 3.0,
                                       BasicStroke.CAP_SQUARE,
                                       BasicStroke.JOIN_MITER,
                                       (float) 10.0,
                                       new float[] { (float) 1.0, (float) 4.0 },
-                                      0);
+                                      0);*/
     
     /* === private constants === */
     private static final boolean DEBUG = false;
