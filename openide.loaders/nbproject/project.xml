@@ -157,6 +157,7 @@ Microsystems, Inc. All Rights Reserved.
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.settings</code-name-base>
+                        <recursive/>
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
@@ -170,10 +171,6 @@ Microsystems, Inc. All Rights Reserved.
                     <test-dependency>
                         <code-name-base>org.openide.loaders</code-name-base>
                         <recursive/>
-                        <compile-dependency/>
-                    </test-dependency>
-                    <test-dependency>
-                        <code-name-base>org.openide.options</code-name-base>
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>

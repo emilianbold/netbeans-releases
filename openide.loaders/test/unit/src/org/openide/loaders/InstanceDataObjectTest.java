@@ -33,7 +33,6 @@ import org.netbeans.junit.NbTestCase;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.*;
 import org.openide.modules.ModuleInfo;
-import org.openide.options.SystemOption;
 import org.openide.util.*;
 import org.openide.util.lookup.AbstractLookup;
 
@@ -597,49 +596,6 @@ public class InstanceDataObjectTest extends NbTestCase {
         assertEquals ("And its value is x", x, ic.instanceCreate ());
     }
 
-    
-    public void testWeAreAbleToResetSharedClassObjectByCallingResetOnItIssue20962 () throws Exception {
-        FileObject lookupFO;
-        {
-            Object x = Setting.findObject (Setting.class, true);
-            lookupFO = lfs.findResource("/system/Services/lookupTest");
-            DataFolder folderTest = DataFolder.findFolder(lookupFO);
-            InstanceDataObject ido = InstanceDataObject.create (folderTest, "testLookupRefresh", x, null);
-            lookupFO = ido.getPrimaryFile ();
-            WeakReference ref = new WeakReference (ido);
-            Setting.resetCalled = 0;
-        }
-
-        InstanceDataObject ido = (InstanceDataObject)DataObject.find (lookupFO);
-        InstanceCookie ic = (InstanceCookie)ido.getCookie (InstanceCookie.class);
-        assertNotNull ("Has cookie", ic);
-        Object obj = ic.instanceCreate ();
-        assertNotNull ("Not null", obj);
-        assertEquals ("It is settings", Setting.class, obj.getClass ());
-        
-        
-        FileLock lock = lookupFO.lock ();
-        OutputStream os = lookupFO.getOutputStream (lock);
-        
-        PrintWriter pw = new PrintWriter (os);
-        pw.println ("<?xml version=\"1.0\"?>");
-        pw.println ("<!DOCTYPE settings PUBLIC \"-//NetBeans//DTD Session settings 1.0//EN\" \"http://www.netbeans.org/dtds/sessionsettings-1_0.dtd\">");
-        pw.println ("<settings version=\"1.0\">");
-        pw.println ("  <module name=\"org.openide.options\" spec=\"1.13\"/>");
-        pw.println ("  <instanceof class=\"org.openide.options.SystemOption\"/>");
-        pw.println ("  <instance class=\"" + Setting.class.getName () + "\"/>");
-        pw.println ("</settings>");
-        pw.close ();
-        lock.releaseLock ();
-        
-        ic = (InstanceCookie)ido.getCookie (InstanceCookie.class);
-        assertNotNull ("Has cookie", ic);
-        assertNotNull ("Not null", obj);
-        assertEquals ("It is settings", Setting.class, obj.getClass ());
-        Setting s = (Setting)Setting.findObject (Setting.class, true);
-        assertEquals ("Refresh has been called", 1, s.resetCalled);
-    }
-    
     /** Checks whether the instance is not saved multiple times.
      *
     public void testMultiSave () throws Exception {
@@ -1078,18 +1034,6 @@ public class InstanceDataObjectTest extends NbTestCase {
             if (fLock != null) fLock.releaseLock();  
             if (inputStream != null) inputStream.close();
             if (outputStream != null) outputStream.close();            
-        }
-    }
-
-    public static final class Setting extends SystemOption {
-        private static int resetCalled;
-        
-        protected void reset () {
-            resetCalled++;
-        }
-        
-        public String displayName () {
-            return "My Setting";
         }
     }
 }
