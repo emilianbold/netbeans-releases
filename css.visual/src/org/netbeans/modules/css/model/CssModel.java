@@ -20,20 +20,24 @@ package org.netbeans.modules.css.model;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Logger;
 import javax.swing.text.Document;
 import org.netbeans.api.languages.ASTEvaluator;
 import org.netbeans.api.languages.ASTItem;
 import org.netbeans.api.languages.ASTNode;
-import org.netbeans.api.languages.ASTNode;
 import org.netbeans.api.languages.ASTPath;
 import org.netbeans.api.languages.ASTToken;
+import org.netbeans.api.languages.Language;
+import org.netbeans.api.languages.LanguageDefinitionNotFoundException;
+import org.netbeans.api.languages.LanguagesManager;
 import org.netbeans.api.languages.ParseException;
 import org.netbeans.api.languages.ParserManager;
 import org.netbeans.api.languages.ParserManager.State;
 import org.netbeans.api.languages.ParserManagerListener;
+import org.netbeans.modules.css.editor.CssEditorKit;
 import org.openide.util.Exceptions;
 
 /**
@@ -82,6 +86,22 @@ public final class CssModel {
         return model;
     }
     
+    /** Winston's workaround. */
+    public static CssModel get(InputStream source) {
+        try {
+            Language lang = LanguagesManager.get().getLanguage(CssEditorKit.CSS_MIME_TYPE);
+            return new CssModel(lang.parse(source));
+        } catch (LanguageDefinitionNotFoundException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (ParseException pe) {
+            Exceptions.printStackTrace(pe);
+        } catch (IOException ioe) {
+            Exceptions.printStackTrace(ioe);
+        }
+        
+        return null;
+    }
+    
     private Document doc;
     
     private List<CssRule> rules = new ArrayList<CssRule>(10);
@@ -127,6 +147,10 @@ public final class CssModel {
         } catch (ParseException pe) {
             //parser error in the document
         }
+    }
+    
+    private CssModel(ASTNode root) {
+        updateModel(root);
     }
     
     /** @return List of {@link CssRule}s or null if the document hasn't been parsed yet. */
