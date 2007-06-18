@@ -27,10 +27,8 @@ import java.util.Set;
 import javax.lang.model.element.*;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.*;
-import org.netbeans.api.java.source.ModificationResult.Difference;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.ProgressEvent;
-import org.netbeans.modules.refactoring.java.api.DiffElement;
 import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.netbeans.modules.refactoring.java.api.InnerToOuterRefactoring;
 import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
@@ -40,6 +38,7 @@ import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 
 /** Plugin that implements the core functionality of "inner to outer" refactoring.
@@ -155,7 +154,25 @@ public class InnerToOuterRefactoringPlugin extends JavaRefactoringPlugin {
     }
 
     protected Problem fastCheckParameters(CompilationController info) {
-        //TODO:
+        Problem result = null;
+        
+        String newName = refactoring.getClassName();
+        
+        if (!Utilities.isJavaIdentifier(newName)) {
+            result = createProblem(result, true, NbBundle.getMessage(InnerToOuterRefactoringPlugin.class, "ERR_InvalidIdentifier", newName)); // NOI18N
+            return result;
+        }
+        
+        FileObject primFile = refactoring.getSourceType().getFileObject();
+        FileObject folder = primFile.getParent();
+        FileObject[] children = folder.getChildren();
+        for (FileObject child: children) {
+            if (!child.isVirtual() && child.getName().equals(newName) && "java".equals(child.getExt())) { // NOI18N
+                result = createProblem(result, true, NbBundle.getMessage(InnerToOuterRefactoringPlugin.class, "ERR_ClassClash", newName, folder.getName())); // NOI18N
+                return result;
+            }
+        }
+
         return null;
     }
 
