@@ -607,7 +607,7 @@ public class ImportWizardTest extends JellyTestCase {
     
     public void prepareProject() throws Exception {
         TestKit.closeProject(projectName);
-        file = TestKit.prepareProject("General", "Java Application", projectName, "Main.java");
+        file = TestKit.prepareProject("Java", "Java Application", projectName, "Main.java");
     }
     
     public void removeAllData() throws Exception {
