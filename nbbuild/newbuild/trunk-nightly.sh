@@ -72,9 +72,6 @@ if [ -z $DIST_SERVER ]; then
     exit 0;
 fi
 
-ssh -p 222 $DIST_SERVER mkdir -p $DIST_SERVER_PATH/$DATESTAMP
-scp -P 222 -q -r -v $DIST/* $DIST_SERVER:$DIST_SERVER_PATH/$DATESTAMP > $SCP_LOG 2>&1 &
-
 cd $TRUNK_NIGHTLY_DIRNAME
 bash build-nbi.sh
 ERROR_CODE=$?
