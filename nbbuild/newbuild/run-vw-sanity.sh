@@ -10,24 +10,28 @@ source init.sh
 
 # Initialization
 
-SRCROOT="${NB_ALL}"
-
-CACHEROOT="${BASE_DIR}/cache"
 AS_ROOT="${BASE_DIR}/SUNWappserver"
 
-J2EE_HOME="${BASE_DIR}/SUNWappserver/glassfish"
-TESTROOT="${SRCROOT}/visualweb/test"
+if [ "x${J2EE_HOME}x" = "xx" ]; then
+    J2EE_HOME="${AS_ROOT}/glassfish"
+fi
+
+TEST_ROOT="${NB_ALL}/visualweb/test"
 
 ###################################################################
 
 download () {
 	# Download App Server
-	if [ ! -d ${CACHEROOT} ]; then
-		mkdir -p $CACHEROOT
+	if [ ! -d ${AS_ROOT} ]; then
+		mkdir -p $AS_ROOT
+	fi
+
+	if [ -f ${AS_ROOT}/${AS_BINARY} ]; then
+		rm -f ${AS_ROOT}/${AS_BINARY}
 	fi
 
 	if [ -f ${AS_KITSERVER}/${AS_BINARY} ]; then
-    	cp ${AS_KITSERVER}/${AS_BINARY} ${CACHEROOT}
+    	cp ${AS_KITSERVER}/${AS_BINARY} ${AS_ROOT}
     	ERROR_CODE=$?
 	else
     	echo "ERROR: Please set AS_KITSERVER and AS_BINARY - ${AS_KITSERVER}/${AS_BINARY}"
@@ -70,13 +74,13 @@ install() {
 		mkdir ${AS_ROOT}
 	fi
 
-	chmod a+x ${CACHEROOT}/${AS_BINARY}
+	chmod a+x ${AS_ROOT}/${AS_BINARY}
 	cd ${AS_ROOT}
 
 	TEMP_DISPLAY="${DISPLAY}"
 	unset DISPLAY
 
-	java -Xmx256m -jar ${CACHEROOT}/${AS_BINARY} < ${AS_ROOT}/sunappserver_statefile
+	java -Xmx256m -jar ${AS_ROOT}/${AS_BINARY} < ${AS_ROOT}/sunappserver_statefile
 
 	ERROR_CODE=$?
 	if [ $ERROR_CODE != 0 ]; then
@@ -93,16 +97,16 @@ install() {
 setup_appserver() {
 	# Setup Application Server
 	cd ${J2EE_HOME}
-	ant -f setup.xml -Dinstance.port=8080
+	ant -f setup.xml -Dinstance.port=28080 -Ddomain.name=visualweb
 }
 
 ###################################################################
 
 setup_properties() {
 	# Setup properties file 
-	cp $TESTROOT/data/DefaultDeploymentTargets.properties.template $TESTROOT/data/tmp.properties
+	cp $TEST_ROOT/data/DefaultDeploymentTargets.properties.template $TEST_ROOT/data/tmp.properties
 	MODIFIED_J2EE_HOME=`echo ${J2EE_HOME} | sed 's/\//::/g'`
-	sed -e "s/J2EE_HOME/${MODIFIED_J2EE_HOME}/g" -e "s/::/\//g" -e "s/8080/8080/g" $TESTROOT/data/tmp.properties > $TESTROOT/data/DefaultDeploymentTargets.properties
+	sed -e "s/J2EE_HOME/${MODIFIED_J2EE_HOME}/g" -e "s/::/\//g" -e "s/8080/28080/g" -e "s/domain1/visualweb/g" $TEST_ROOT/data/tmp.properties > $TEST_ROOT/data/DefaultDeploymentTargets.properties
    
 	ERROR_CODE=$?
 	if [ $ERROR_CODE != 0 ]; then
@@ -110,14 +114,14 @@ setup_properties() {
 		exit $ERROR_CODE;
 	fi
     
-	rm -f $TESTROOT/data/tmp.properties
+	rm -f $TEST_ROOT/data/tmp.properties
 }
 
 ###################################################################
 
 run_sanity() {
 	# Run Sanity test on VisualWeb build
-	cd $SRCROOT/visualweb/ravebuild
+	cd ${NB_ALL}/visualweb/ravebuild
 	ant build-test-tools -Dnetbeans.dist.dir="${J2EE_HOME}"
 	ant commit-validation -Dnetbeans.dist.dir="${J2EE_HOME}"
 
@@ -128,31 +132,20 @@ run_sanity() {
 	fi
 }
 
-###################################################################
-
-cleanup() {
-	# Clean up
-	if [ -d ${CACHEROOT} -a ! -z ${CACHEROOT} ]; then
-		rm -rf ${CACHEROOT}
-	fi
-}
-
 ############################# MAIN ################################
 
-#download
+download
 
-#uninstall
+uninstall
 
-#create_statefile
+create_statefile
 
-#install
+install
 
-#setup_appserver
+setup_appserver
 
 setup_properties
 
 run_sanity
-
-cleanup
 
 ############################## END ################################
