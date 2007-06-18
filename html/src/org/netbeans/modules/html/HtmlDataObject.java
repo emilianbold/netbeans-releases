@@ -41,8 +41,6 @@ import org.openide.nodes.Children;
 import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
-import org.openide.util.lookup.ProxyLookup;
 
 /** Object that represents one html file.
  *
@@ -53,7 +51,6 @@ public class HtmlDataObject extends MultiDataObject implements CookieSet.Factory
     public static final String DEFAULT_ENCODING = new InputStreamReader(System.in).getEncoding();
     static final long serialVersionUID =8354927561693097159L;
     
-    transient volatile private Lookup currentLookup;
     transient volatile private boolean useEditorForEncoding = true;
     
     /** New instance.
@@ -72,14 +69,23 @@ public class HtmlDataObject extends MultiDataObject implements CookieSet.Factory
                 es.saveAs( folder, fileName );
             }
         });
-        createLookup();
-        assert currentLookup != null;
+                
+        FileEncodingQueryImplementation feq = new FileEncodingQueryImplementation() {
+            public Charset getEncoding(FileObject file) {
+                assert file != null;
+                assert file.equals(getPrimaryFile());
+                
+                String charsetName = getFileEncoding();
+                return Charset.forName(charsetName);
+            }
+        };
+        set.assign(FileEncodingQueryImplementation.class, feq);
         resolveFileEncoding();
     }
     
     @Override
     public Lookup getLookup() {
-        return currentLookup;
+        return getCookieSet().getLookup();
     }
     
     protected org.openide.nodes.Node createNodeDelegate() {
@@ -163,22 +169,6 @@ public class HtmlDataObject extends MultiDataObject implements CookieSet.Factory
         }
         
         return supported;
-    }
-    
-    private void createLookup() {
-        Lookup noEncodingLookup = super.getLookup();
-        
-        org.netbeans.spi.queries.FileEncodingQueryImplementation feq = new org.netbeans.spi.queries.FileEncodingQueryImplementation() {
-            public Charset getEncoding(FileObject file) {
-                assert file != null;
-                assert file.equals(getPrimaryFile());
-                
-                String charsetName = getFileEncoding();
-                return Charset.forName(charsetName);
-            }
-        };
-        
-        currentLookup = new ProxyLookup(noEncodingLookup, Lookups.singleton(feq));        
     }
     
     private String resolveFileEncoding() {
