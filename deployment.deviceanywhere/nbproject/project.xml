@@ -94,7 +94,6 @@
             </extra-compilation-unit>
             <class-path-extension>
                 <runtime-relative-path>ext/org-netbeans-modules-deployment-deviceanywhere.jar</runtime-relative-path>
-                <binary-origin>release/modules/ext/org-netbeans-modules-deployment-deviceanywhere.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>
