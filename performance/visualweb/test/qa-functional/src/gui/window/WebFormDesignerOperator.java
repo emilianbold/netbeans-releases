@@ -54,7 +54,7 @@ public class WebFormDesignerOperator  extends TopComponentOperator {
     
     public WebFormDesignerOperator(String topComponentName, int Index) {
         //super(topComponentName,Index);
-        super(TopComponentOperator.findTopComponent(null,topComponentName, Index, new WebFormDesignerSubchooser()));
+        super(TopComponentOperator.findTopComponent(null,topComponentName, Index, new TopComponentSubchooser()));
         try {
             surfacecomp = new ComponentOperator(this, new DesignerPaneChooser());
         } catch(TimeoutExpiredException tex) {
@@ -214,7 +214,16 @@ public class WebFormDesignerOperator  extends TopComponentOperator {
             return "Designer Surface";
         }
     }
-    
+    public static final class TopComponentSubchooser implements ComponentChooser {
+
+        public boolean checkComponent(Component component) {
+            return component.getClass().getName().equals("org.netbeans.core.multiview.MultiViewCloneableTopComponent");
+        }
+
+        public String getDescription() {
+            return "Web Designer TopComponent";
+        }
+    }
     public static final class WebFormDesignerSubchooser implements ComponentChooser {
         public boolean checkComponent(Component component) {
             return component.getClass().getName().equals("org.netbeans.modules.visualweb.designer.jsf.ui.JsfTopComponent");
