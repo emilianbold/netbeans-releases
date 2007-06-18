@@ -406,6 +406,7 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
             @SuppressWarnings("unchecked")
             Set<LanguagePath> clps = (Set<LanguagePath>)
                     ((HashSet<LanguagePath>)langOp.languagePaths()).clone();
+            lps = clps;
 
             @SuppressWarnings("unchecked")
             Set<Language<? extends TokenId>> cel = (Set<Language<? extends TokenId>>)
