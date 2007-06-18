@@ -20,6 +20,7 @@
 package org.netbeans.modules.websvc.core;
 
 import com.sun.source.tree.AnnotationTree;
+import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodTree;
@@ -51,7 +52,6 @@ import org.netbeans.modules.j2ee.common.source.SourceUtils;
 import org.openide.cookies.SaveCookie;
 import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 import static org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.progress.ProgressHandle;
@@ -148,10 +148,12 @@ public class AddWsOperationHelper {
                         ClassTree javaClass = genUtils.getClassTree();
                         TypeElement webMethodAn = workingCopy.getElements().getTypeElement("javax.jws.WebMethod"); //NOI18N
                         TypeElement webParamAn = workingCopy.getElements().getTypeElement("javax.jws.WebParam"); //NOI18N
-
+                        
+                        AssignmentTree opName = make.Assignment(make.Identifier("operationName"), make.Literal(method.getName().toString())); //NOI18N
+                        
                         AnnotationTree webMethodAnnotation = make.Annotation(
                             make.QualIdent(webMethodAn), 
-                            Collections.<ExpressionTree>emptyList()
+                            Collections.<ExpressionTree>singletonList(opName)
                         );
                         // Public modifier
                         ModifiersTree modifiersTree = make.Modifiers(
@@ -215,22 +217,18 @@ public class AddWsOperationHelper {
             }
             public void cancel() {}
         };
-        RequestProcessor.getDefault().post(new Runnable() {
-            public void run() {
-                try {
-                    targetSource.runModificationTask(modificationTask).commit();
-                    DataObject dataObject = DataObject.find(implClassFo);
-                    if (dataObject!=null) {
-                        SaveCookie cookie = dataObject.getCookie(SaveCookie.class);
-                        if (cookie!=null) cookie.save();
-                    }
-                } catch (IOException ex) {
-                    ErrorManager.getDefault().notify(ex);
-                } finally {
-                    handle.finish();
-                }
+        try {
+            targetSource.runModificationTask(modificationTask).commit();                    
+            DataObject dataObject = DataObject.find(implClassFo);
+            if (dataObject!=null) {
+                SaveCookie cookie = dataObject.getCookie(SaveCookie.class);
+                if (cookie!=null) cookie.save();
             }
-        });               
+        } catch (IOException ex) {
+            ErrorManager.getDefault().notify(ex);
+        } finally {
+            handle.finish();
+        }             
     }
     
     private String getMethodBody(Tree returnType) {
