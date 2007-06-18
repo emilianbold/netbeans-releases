@@ -77,7 +77,6 @@
             <fileset dir="antsrc" excludes="${jar-excludes}"/>
         </copy>
         <mkdir dir="${cluster}/ant/extra"/>
-        <echo message="${cluster}/ant/extra/"/>
         <jar jarfile="${cluster}/ant/extra/wsclientuptodate.jar" compress="false">
             <manifest>
                 <attribute name="NetBeans-Own-Library" value="true"/>
