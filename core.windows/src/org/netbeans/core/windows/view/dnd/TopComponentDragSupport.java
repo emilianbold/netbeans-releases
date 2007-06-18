@@ -253,7 +253,9 @@ implements AWTEventListener, DragSourceListener {
         Point ppp = new Point(point);
         Point p = SwingUtilities.convertPoint(srcComp, ppp, tabbed.getComponent());
         
-        tc = tabbed.getTopComponentAt(tabbed.tabForCoordinate(p));
+        // #106761: tabForCoordinate may return -1, so check is needed
+        int tabIndex = tabbed.tabForCoordinate(p);
+        tc = tabIndex != -1 ? tabbed.getTopComponentAt(tabIndex) : null;
         if (tc == null) {
             return;
         }
