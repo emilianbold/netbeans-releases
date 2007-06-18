@@ -20,7 +20,6 @@
 
 package org.netbeans.installer.utils;
 
-import com.sun.java.swing.plaf.windows.WindowsProgressBarUI;
 import java.awt.HeadlessException;
 import java.awt.Toolkit;
 import java.security.Principal;
