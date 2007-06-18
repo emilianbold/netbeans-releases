@@ -1681,6 +1681,7 @@ public final class VeryPretty extends JCTree.Visitor {
                                     indent = tokenText.length() - newLinePos - 1;
                                 }
                                 break;
+                            case LBRACE:
                             case RBRACE:
                             case SEMICOLON:
                                 commentSet.addTrailingComments(pendingComments);
