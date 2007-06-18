@@ -548,7 +548,7 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="Shortcuts">
         <!-- Bind explicitly to Ctrl-R, not D-R for Command on mac - Command-R
              is already bound to Replace -->
-        <file name="C-R.instance">
+        <file name="CS-R.instance">
             <attr name="instanceClass" stringvalue="org.netbeans.modules.form.actions.ReloadAction"/>
         </file>
         <file name="C-D.instance">
