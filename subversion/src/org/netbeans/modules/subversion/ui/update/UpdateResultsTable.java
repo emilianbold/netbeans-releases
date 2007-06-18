@@ -59,10 +59,10 @@ class UpdateResultsTable implements MouseListener, ListSelectionListener, Ancest
 
     private NodeTableModel tableModel;
     private JTable table;
-    private JScrollPane     component;
+    private JScrollPane component;
     private UpdateResultNode[] nodes = new UpdateResultNode[0];
     
-    private String []   tableColumns; 
+    private String [] tableColumns; 
     private TableSorter sorter;
 
     /**
@@ -332,23 +332,26 @@ class UpdateResultsTable implements MouseListener, ListSelectionListener, Ancest
     }
     
     public void valueChanged(ListSelectionEvent e) {
-        List<Node> selectedNodes = new ArrayList<Node>();
+        final List<Node> selectedNodes = new ArrayList<Node>();
         ListSelectionModel selectionModel = table.getSelectionModel();
-        TopComponent tc = (TopComponent) SwingUtilities.getAncestorOfClass(TopComponent.class,  table);
+        final TopComponent tc = (TopComponent) SwingUtilities.getAncestorOfClass(TopComponent.class,  table);
         if (tc == null) return; // table is no longer in component hierarchy
         
         int min = selectionModel.getMinSelectionIndex();
-        if (min == -1) {
-            tc.setActivatedNodes(new Node[0]);            
-        }
-        int max = selectionModel.getMaxSelectionIndex();
-        for (int i = min; i <= max; i++) {
-            if (selectionModel.isSelectedIndex(i)) {
-                int idx = sorter.modelIndex(i);
-                selectedNodes.add(nodes[idx]);
+        if (min > -1) {                        
+            int max = selectionModel.getMaxSelectionIndex();
+            for (int i = min; i <= max; i++) {
+                if (selectionModel.isSelectedIndex(i)) {
+                    int idx = sorter.modelIndex(i);
+                    selectedNodes.add(nodes[idx]);
+                }
             }
         }
-        tc.setActivatedNodes((Node[]) selectedNodes.toArray(new Node[selectedNodes.size()]));
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                tc.setActivatedNodes((Node[]) selectedNodes.toArray(new Node[selectedNodes.size()]));
+            }            
+        });        
     }
     
     private class SyncTableCellRenderer extends DefaultTableCellRenderer {
@@ -387,6 +390,7 @@ class UpdateResultsTable implements MouseListener, ListSelectionListener, Ancest
             FileInformation newFileInfo = (FileInformation) event.getParams()[2];
             
             List<UpdateResultNode> nodesList = new ArrayList<UpdateResultNode>();                        
+            boolean touched = false;
             for(UpdateResultNode node : nodes) {
                 FileUpdateInfo fui = (FileUpdateInfo) node.getLookup().lookup(FileUpdateInfo.class);
                 if(fui != null) {                    
@@ -400,6 +404,7 @@ class UpdateResultsTable implements MouseListener, ListSelectionListener, Ancest
                         
                         FileUpdateInfo newFui = new FileUpdateInfo(fui.getFile(), action);
                         nodesList.add(new UpdateResultNode(newFui));
+                        touched = true;
                     } else {
                         nodesList.add(node);
                     }                   
@@ -409,7 +414,9 @@ class UpdateResultsTable implements MouseListener, ListSelectionListener, Ancest
             }
             
             // XXX reschedule !!!
-            setTableModel(nodesList.toArray(new UpdateResultNode[nodesList.size()]));
+            if(touched) {
+                setTableModel(nodesList.toArray(new UpdateResultNode[nodesList.size()]));
+            }
         }
     }
 }
