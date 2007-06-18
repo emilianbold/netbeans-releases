@@ -168,7 +168,7 @@ public class CreateWebPackFiles extends org.netbeans.performance.test.utilities.
         long nodeTimeout = pto.getTimeouts().getTimeout("ComponentOperator.WaitStateTimeout");
         pto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 60000);
         Node projectRootNode = pto.getProjectRootNode(project_name);
-        projectRootNode.select();
+        //projectRootNode.select();
         
         waitNoEvent(1000);
         Node objNode;
