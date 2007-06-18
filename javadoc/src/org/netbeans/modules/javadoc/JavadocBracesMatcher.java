@@ -104,18 +104,14 @@ public final class JavadocBracesMatcher implements BracesMatcher, BracesMatcherF
         jdocSeq.move(caretOffset);
         if (jdocSeq.moveNext()) {
             if (isTag(jdocSeq.token())) {
-                int s = jdocSeq.offset();
-                int e = jdocSeq.offset() + jdocSeq.token().length();
-                if (s < caretOffset || !backward) {
-                    return new int [] { s, e };
+                if (jdocSeq.offset() < caretOffset || !backward) {
+                    return prepareOffsets(jdocSeq, true);
                 }
             }
 
             while(moveTheSequence(jdocSeq, backward, context.getLimitOffset())) {
                 if (isTag(jdocSeq.token())) {
-                    int s = jdocSeq.offset();
-                    int e = jdocSeq.offset() + jdocSeq.token().length();
-                    return new int [] { s, e };
+                    return prepareOffsets(jdocSeq, true);
                 }
             }
         }
@@ -157,7 +153,7 @@ public final class JavadocBracesMatcher implements BracesMatcher, BracesMatcherF
                     cnt++;
                 } else {
                     if (cnt == 0) {
-                        return new int [] { jdocSeq.offset(), jdocSeq.offset() + jdocSeq.token().length() };
+                        return prepareOffsets(jdocSeq, false);
                     } else {
                         cnt--;
                     }
@@ -235,7 +231,7 @@ public final class JavadocBracesMatcher implements BracesMatcher, BracesMatcherF
             char ch2 = t2.text().charAt(idx2);
             
             if (ch1 != ch2) {
-                return false;
+                return !Character.isLetterOrDigit(ch1) || !Character.isLetterOrDigit(ch2);
             }
             
             if (!Character.isLetterOrDigit(ch1)) {
@@ -244,6 +240,33 @@ public final class JavadocBracesMatcher implements BracesMatcher, BracesMatcherF
         }
         
         return false;
+    }
+
+    private static int [] prepareOffsets(TokenSequence<? extends TokenId> seq, boolean includeToken) {
+        int s = seq.offset();
+        int e = seq.offset() + seq.token().length();
+        CharSequence token = seq.token().text();
+        
+        if (token.charAt(1) == '/') { //NOI18N
+            return new int [] { s, e };
+        } else {
+            int he = e;
+            
+            for(int i = 1; i < token.length(); i++) {
+                char ch = token.charAt(i);
+                if (!Character.isLetterOrDigit(ch) && ch != '>') { //NOI18N
+                    he = s + i;
+                    break;
+                }
+            }
+            
+            if (includeToken) {
+                // first the boundaries, than the highlight
+                return new int [] { s, e, s, he };
+            } else {
+                return new int [] { s, he };
+            }
+        }
     }
     
     // -----------------------------------------------------
