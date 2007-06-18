@@ -137,7 +137,7 @@ public class KeyboardMenuNavigator implements KeyListener {
         }
         if(selectedRADComponent == null) {
             selectedRADComponent = currentMenuRAD.getSubComponent(0);
-            menuEditLayer.setSelectedComponent(selectedRADComponent);
+            menuEditLayer.setSelectedRADComponent(selectedRADComponent);
             return;
         }
         int index = currentMenuRAD.getIndexOf(selectedRADComponent);

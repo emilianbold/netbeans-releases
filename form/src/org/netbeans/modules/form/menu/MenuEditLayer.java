@@ -111,8 +111,9 @@ public class MenuEditLayer extends JPanel {
     private Map<JMenu, PopupMenuUI> menuPopupUIMap;
     private Map<JComponent,JComponent> menuParentMap;
     
-    public enum SelectedPortion { Icon, Text, Accelerator, All, None };
+    private RADComponent selectedRADComponent = null;
     private JComponent selectedComponent;
+    public enum SelectedPortion { Icon, Text, Accelerator, All, None };
     private SelectedPortion selectedPortion = SelectedPortion.None;
     
     private JMenu currentMenu;
@@ -327,7 +328,7 @@ public class MenuEditLayer extends JPanel {
                     for(Node n : newNodes) {
                         if(n instanceof RADComponentNode) {
                             RADComponentNode radn = (RADComponentNode) n;
-                            setSelectedComponent(radn.getRADComponent());
+                            setSelectedRADComponent(radn.getRADComponent());
                         }
                     }
                     
@@ -533,27 +534,63 @@ public class MenuEditLayer extends JPanel {
         return menuParentMap.get(menu);
     }
     
-    void setSelectedComponent(RADComponent comp) {
-        if(this.isMenuRelatedRADComponent(comp)) {
-            JComponent c = (JComponent) formDesigner.getComponent(comp);
-
-            if(selectedComponent != null) {
-                selectedComponent.setBorder(UNSELECTED_BORDER);
+    
+    RADComponent getSelectedRADComponent() {
+        return selectedRADComponent;
+    }
+    
+    JComponent getSelectedComponent() {
+        return selectedComponent;
+    }
+    
+    void setSelectedRADComponent(RADComponent comp) {
+        try {
+            glassLayer.requestFocusInWindow();
+            if (!this.isMenuRelatedRADComponent(comp)) {
+                selectedComponent = null;
+                selectedRADComponent = null;
+                setVisible(false);
+                return;
             }
-            selectedComponent = c;
-            if(selectedComponent != null) {
+
+            if (selectedRADComponent == comp) {
+                return;
+            }
+
+            selectedRADComponent = comp;
+            keyboardMenuNavigator.selectedRADComponent = (RADVisualComponent) selectedRADComponent;
+            formDesigner.setSelectedComponent(selectedRADComponent);
+
+            if (selectedComponent != null) {
+                selectedComponent.setBorder(UNSELECTED_BORDER);
+                selectedComponent.setBackground(null);
+            }
+
+            selectedComponent = (JComponent) formDesigner.getComponent(selectedRADComponent);
+
+            if (selectedComponent != null) {
                 selectedComponent.setBorder(SELECTED_BORDER);
-                makeSureShowingOnScreen(comp,selectedComponent);
-                if(selectedComponent instanceof JMenu) {
+                selectedComponent.setBackground(SELECTED_MENU_BACKGROUND);
+                makeSureShowingOnScreen(comp, selectedComponent);
+                if (selectedComponent instanceof JMenu) {
                     JMenu menu = (JMenu) selectedComponent;
                     showMenuPopup(menu);
                 }
+                // clear the border if a menuitem, but not a menu
+                if (selectedComponent instanceof JMenuItem && selectedPortion != SelectedPortion.None && !(selectedComponent instanceof JMenu)) {
+                    selectedComponent.setBorder(UNSELECTED_BORDER);
+                }
             }
+
             repaint();
-        } else {
-            setVisible(false);
+        
+        } catch (Exception ex) {
+            ex.printStackTrace();
         }
-            
+    }
+    
+    void setSelectedComponent(JComponent c) {
+        setSelectedRADComponent(formDesigner.getMetaComponent(c));
     }
     
     
@@ -591,44 +628,7 @@ public class MenuEditLayer extends JPanel {
     }
     
     
-    JComponent getSelectedComponent() {
-        return selectedComponent;
-    }
-    
-    void setSelectedComponent(JComponent c) {
-        if(selectedComponent == c) return;
-        glassLayer.requestFocusInWindow();
-        try {
-            if(selectedComponent != null) {
-                selectedComponent.setBorder(UNSELECTED_BORDER);
-                selectedComponent.setBackground(null);
-            }
-            
-            selectedComponent = c;
-            
-            if(c == null) {
-                return;
-            }
-            
-            RADVisualComponent rad = (RADVisualComponent) formDesigner.getMetaComponent(c);
-            keyboardMenuNavigator.selectedRADComponent = rad;
-            formDesigner.setSelectedComponent(rad);
-            
-            selectedComponent.setBorder(SELECTED_BORDER);
-            selectedComponent.setBackground(SELECTED_MENU_BACKGROUND);
-            // clear the border if a menuitem, but not a menu
-            if(selectedComponent instanceof JMenuItem && selectedPortion != SelectedPortion.None &&
-                    !(selectedComponent instanceof JMenu)) {
-                selectedComponent.setBorder(UNSELECTED_BORDER);
-            }
-            if(selectedComponent instanceof JMenu) {
-                JMenu menu = (JMenu) selectedComponent;
-                showMenuPopup(menu);
-            }
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-    }
+
     
     private void showContextMenu(Point popupPos) {
         ComponentInspector inspector = ComponentInspector.getInstance();
