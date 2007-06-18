@@ -5,6 +5,7 @@
 
 <#if package?? && package != "">
 package ${package};
+</#if>
 
 import java.util.HashMap;
 import java.util.Map;
@@ -21,7 +22,6 @@ import javax.rmi.PortableRemoteObject;
 import javax.sql.DataSource;
 import javax.mail.Session;
 
-</#if>
 /**
  *
  * @author ${user}

@@ -5,6 +5,7 @@
 
 <#if package?? && package != "">
 package ${package};
+</#if>
 
 import java.net.URL;
 
@@ -18,7 +19,6 @@ import javax.rmi.PortableRemoteObject;
 import javax.sql.DataSource;
 import javax.mail.Session;
 
-</#if>
 /**
  *
  * @author ${user}
