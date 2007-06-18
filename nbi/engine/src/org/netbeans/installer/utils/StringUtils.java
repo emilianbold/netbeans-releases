@@ -566,6 +566,7 @@ public abstract class StringUtils {
     public static final String SPACE = " "; // NOI18N
     public static final String QUOTE = "\""; // NOI18N
     public static final String EQUAL = "="; // NOI18N
+    public static final String UNDERSCORE = "_"; // NOI18N
     
     public static final String NEW_LINE_PATTERN = "(?:\r\n|\n|\r)"; // NOI18N
     

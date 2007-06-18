@@ -149,9 +149,11 @@ public final class LogManager {
     }
     
     public static synchronized void logEntry(String message) {
-        StackTraceElement traceElement = Thread.currentThread().getStackTrace()[2];
+        final StackTraceElement traceElement = 
+                Thread.currentThread().getStackTrace()[2];
         
-        log(ErrorLevel.DEBUG, "entering -- " +
+        log(ErrorLevel.DEBUG, 
+                "entering -- " +
                 (traceElement.isNativeMethod() ? "[native] " : "") +
                 traceElement.getClassName() + "." +
                 traceElement.getMethodName() + "():" +
