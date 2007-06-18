@@ -1881,12 +1881,14 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
         }
 
         final RADVisualContainer getSourceContainer() {
-            return movingComponents.length > 0 && formDesigner.getTopDesignComponent() != movingComponents[0] ?
-                   movingComponents[0].getParentContainer() : null;
+            return movingComponents != null && movingComponents.length > 0
+                   && formDesigner.getTopDesignComponent() != movingComponents[0]
+                ? movingComponents[0].getParentContainer() : null;
         }
 
         final boolean isTopComponent() {
-            return movingComponents.length == 0 || formDesigner.getTopDesignComponent() == movingComponents[0];
+            return movingComponents != null && movingComponents.length > 0
+                   && formDesigner.getTopDesignComponent() == movingComponents[0];
         }
 
         final boolean isDraggableLayoutComponent() {
