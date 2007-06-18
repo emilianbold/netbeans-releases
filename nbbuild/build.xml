@@ -1688,9 +1688,9 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
   </target>
     
   <target name="generate-uc-catalog" depends="generate-uc-catalog.init">
-      <property name="nbms.location" location="/net/smetiste/space/builds/netbeans/6.0/all-in-one/daily/latest/nbms"/>
+      <property name="nbms.location" location="nbms"/>
       <property name="catalog.file" location="catalog.xml"/>
-      <property name="catalog.base.url" location="http://bits.netbeans.org/"/>
+      <property name="catalog.base.url" value="http://bits.netbeans.org/"/>
       <genau config="ausrc/modules.setup" nbmLocation="${nbms.location}" catalog="${catalog.file}" catalogDeploymentLocation="${catalog.base.url}"/>
   </target>
 </project>
