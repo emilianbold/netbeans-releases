@@ -145,6 +145,7 @@ public class JavaCodegen implements ICodeGenerator
 		boolean checkAsc = false;
 		boolean genToTmp = false;
 		ArrayList<FileMapping> fmappings = new ArrayList<FileMapping>();
+		HashSet<File> targetFiles = new HashSet<File>();
 		Merger merger = new Merger();
 
 		// 2 possible places to get templates from - 
@@ -164,8 +165,10 @@ public class JavaCodegen implements ICodeGenerator
 		{
 		    task.log(task.TERSE, getBundleMessage("MSG_ErrorNoTemplatesDefinedForElement")); // NOI18N
 		    errorsCount++;
-		    continue;
-		} else {
+		    //continue;
+		    domainTemplates = new ArrayList<DomainTemplate>();
+		    domainTemplates.add(new DomainTemplate("Enum", "{name}", "java", "", "CompilationUnit.java"));
+  		} else {
 		    task.log(task.TERSE, ""); // NOI18N
 		}
 		
@@ -219,6 +222,7 @@ public class JavaCodegen implements ICodeGenerator
 				+ SEP + getOutputName(clinfo.getName(), domainTemplate) + extAdd;
 			    fmap.targetFilePath = targetFilePath;
 			    File targetFile = new File(targetFilePath);
+			    targetFiles.add(targetFile);
 			    if (targetFile.exists()) 
 			    {
 				fmap.existingSourcePath = targetFile.getCanonicalPath();
@@ -268,6 +272,10 @@ public class JavaCodegen implements ICodeGenerator
 				continue;
 			    }
 			    File ascFile = new File(((ISourceFileArtifact)src).getSourceFile());
+			    if (targetFiles.contains(ascFile)) 
+			    {
+				continue;
+			    }
 			    if (! inSubdir(new File(targetFolderName), ascFile))
 			    {
 				continue;
