@@ -404,7 +404,8 @@ public final class IndentImpl {
         }
         
         void lock() {
-            extraLock.lock();
+            if (extraLock != null)
+                extraLock.lock();
         }
         
         void runTask() throws BadLocationException {
@@ -416,7 +417,8 @@ public final class IndentImpl {
         }
         
         void unlock() {
-            extraLock.unlock();
+            if (extraLock != null)
+                extraLock.unlock();
         }
         
         @Override 
