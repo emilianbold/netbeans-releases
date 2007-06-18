@@ -256,7 +256,7 @@ public final class _RetoucheUtil {
         javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
             public void run(CompilationController controller) {
                 TypeElement typeElement = controller.getElements().getTypeElement(className);
-                result[0] = org.netbeans.api.java.source.SourceUtils.getFile(typeElement, controller.getClasspathInfo());
+                result[0] = org.netbeans.api.java.source.SourceUtils.getFile(ElementHandle.create(typeElement), controller.getClasspathInfo());
             }
         }, true);
         return result[0];

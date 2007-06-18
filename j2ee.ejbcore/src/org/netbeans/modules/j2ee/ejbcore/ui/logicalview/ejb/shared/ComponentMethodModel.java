@@ -115,7 +115,7 @@ public abstract class ComponentMethodModel extends Children.Keys<MethodModel> /*
     protected void removeNotify() {
         if (interfaces == null)
             return;
-        setKeys(Collections.EMPTY_SET);
+        setKeys(Collections.<MethodModel>emptySet());
         removeListeners();
         super.removeNotify();
     }

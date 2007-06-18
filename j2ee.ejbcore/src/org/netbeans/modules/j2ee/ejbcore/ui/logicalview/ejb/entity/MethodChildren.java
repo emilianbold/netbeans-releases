@@ -61,7 +61,7 @@ public class MethodChildren extends ComponentMethodModel {
         mvs = new EntityStrategy();
     }
 
-    protected Collection getInterfaces() {
+    protected Collection<String> getInterfaces() {
         if (local) {
             return controller.getLocalInterfaces();
         } else {

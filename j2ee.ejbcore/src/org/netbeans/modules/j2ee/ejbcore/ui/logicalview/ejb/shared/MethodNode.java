@@ -32,6 +32,7 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
 import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
@@ -204,7 +205,7 @@ public class MethodNode extends AbstractNode implements /*MDRChangeListener,*/ O
                     controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                     TypeElement typeElement = controller.getElements().getTypeElement(className);
                     if (typeElement != null) {
-                        result[0] = SourceUtils.getFile(typeElement, controller.getClasspathInfo());
+                        result[0] = SourceUtils.getFile(ElementHandle.create(typeElement), controller.getClasspathInfo());
                     }
                 }
             }, true);

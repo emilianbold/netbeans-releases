@@ -50,7 +50,7 @@ public class MethodChildren extends ComponentMethodModel {
         mvs = new SessionStrategy();
     }
 
-    protected Collection getInterfaces() {
+    protected Collection<String> getInterfaces() {
         if (local) {
             return controller.getLocalInterfaces();
         } else {
