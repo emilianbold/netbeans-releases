@@ -98,6 +98,7 @@ public final class ParametersPanel extends javax.swing.JPanel {
         
         try {
             schemaTypes = getSchemaTypes();
+            if(schemaTypes == null) return;
             String[] refTypes = new String[schemaTypes.size()];
             int i=0;
             for (ReferenceableSchemaComponent schemaType:schemaTypes) {
@@ -133,6 +134,7 @@ public final class ParametersPanel extends javax.swing.JPanel {
     private List<ReferenceableSchemaComponent> getSchemaTypes() throws CatalogModelException {
         Definitions definitions = wsdlModel.getDefinitions();
         Types types = definitions.getTypes();
+        if(types == null) return null;
         Collection<Schema> schemas = types.getSchemas();
         
         List<ReferenceableSchemaComponent> schemaTypes = new ArrayList<ReferenceableSchemaComponent>();
