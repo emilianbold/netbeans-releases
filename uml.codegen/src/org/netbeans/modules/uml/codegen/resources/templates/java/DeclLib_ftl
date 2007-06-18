@@ -54,6 +54,22 @@ import ${type};
 
 
 <#macro MemberDeclarationComment memberInfo nestingLevel >
+<@CommonDeclarationComment memberInfo nestingLevel />
+<@idMarker memberInfo nestingLevel />
+</#macro>
+
+
+<#macro MethodDeclarationComment methodInfo nestingLevel >
+<@CommonDeclarationComment methodInfo nestingLevel />
+<#if methodInfo.getMemberName()?? >
+<@idMarkerBody methodInfo "yes" nestingLevel />
+<#else>
+<@idMarker methodInfo nestingLevel />
+</#if>
+</#macro>
+
+
+<#macro CommonDeclarationComment memberInfo nestingLevel >
 <#if memberInfo.getComment()?? >
 <#assign comment=memberInfo.getComment() />
 <@ident nestingLevel />/**
@@ -62,7 +78,6 @@ import ${type};
 </#list>
 <@ident nestingLevel /> */
 </#if>
-<@idMarker memberInfo nestingLevel />
 </#macro>
 
 
@@ -200,7 +215,7 @@ ${classInfo.getModifierText(methodInfo.getModifiers())} ${methodInfo.getName()!}
 
 
 <#macro MethodDeclaration methodInfo nestingLevel >
-<@MemberDeclarationComment methodInfo nestingLevel />
+<@MethodDeclarationComment methodInfo nestingLevel />
 <@ident nestingLevel /><@compress single_line=true><@compress single_line=true>
 ${classInfo.getModifierText(methodInfo.getModifiers())} ${methodInfo.getCodeGenReturnType()!} ${methodInfo.getName()!} <@MethodDeclarationFormalParameters methodInfo /> <@MethodDeclarationThrows methodInfo /> 
 </@compress><#if methodInfo.isAbstract() >;</#if>
@@ -298,15 +313,15 @@ ${(parameterInfo.getCodeGenType())!} ${(parameterInfo.getName())!}<#if parameter
 
 
 <#macro EnumLiterals classInfo nestingLevel >
-<#if classInfo.getLiterals()?? >
-<@ident nestingLevel /><@singleline>
+<#if classInfo.getLiterals()?? && (classInfo.getLiterals()?size > 0) >
 <#list classInfo.getLiterals() as literal >
 <#if literal.getName()?? >
-${literal.getName()}
-<#if literal_has_next>, <#else>;</#if>
+<@MemberDeclarationComment literal nestingLevel />
+<@ident nestingLevel />${literal.getName()}<#if literal_has_next>,${BETWEEN_FIELDS_LINE_SPACING}<#else>;</#if>
 </#if>
 </#list>
-</@singleline>
+<#else>
+<@ident nestingLevel />;
 </#if>
 </#macro>
 
@@ -315,6 +330,15 @@ ${literal.getName()}
 <#if codegenOptions["GENERATE_MARKER_ID"]?? && codegenOptions["GENERATE_MARKER_ID"] >
 <@ident nestingLevel />// <editor-fold defaultstate="collapsed" desc=" UML Marker "> 
 <@ident nestingLevel />// #[regen=yes,id=${elementInfo.getMarkerID()}]
+<@ident nestingLevel />// </editor-fold> 
+</#if>
+</#macro>
+
+
+<#macro idMarkerBody elementInfo regenBody nestingLevel>
+<#if codegenOptions["GENERATE_MARKER_ID"]?? && codegenOptions["GENERATE_MARKER_ID"] >
+<@ident nestingLevel />// <editor-fold defaultstate="collapsed" desc=" UML Marker "> 
+<@ident nestingLevel />// #[regen=yes,regenBody=${regenBody},id=${elementInfo.getMarkerID()}]
 <@ident nestingLevel />// </editor-fold> 
 </#if>
 </#macro>
