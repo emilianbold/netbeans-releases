@@ -37,6 +37,8 @@ import org.openide.util.NbBundle;
 
 import java.util.Arrays;
 import java.util.List;
+import org.netbeans.modules.vmd.midp.components.MidpAcceptTrensferableKindPresenter;
+import org.netbeans.modules.vmd.midpnb.propertyeditors.PropertiesCategories;
 
 /**
  * @author Karol Harezlak
@@ -50,7 +52,7 @@ public final class WaitScreenCD extends ComponentDescriptor {
     public static final String ICON_LARGE_PATH = "org/netbeans/modules/vmd/midpnb/resources/wait_screen_64.png"; // NOI18N
     
     public static final String PROP_TASK = "task"; //NOI18N
-
+     
     static {
         MidpTypes.registerIconResource(TYPEID, ICON_PATH);
     }
@@ -71,7 +73,7 @@ public final class WaitScreenCD extends ComponentDescriptor {
     
     private static DefaultPropertiesPresenter createPropertiesPresenter() {
        return new DefaultPropertiesPresenter(DesignEventFilterResolver.THIS_COMPONENT)
-               .addPropertiesCategory("Task Properties") // TODO
+               .addPropertiesCategory(PropertiesCategories.CATEGORY_TASK) // TODO
                    .addProperty("Task", PropertyEditorResourcesComboBox.create(SimpleCancellableTaskCD.TYPEID, NbBundle.getMessage(WaitScreenCD.class, "LBL_CANCELLABLETASK_NEW"), NbBundle.getMessage(WaitScreenCD.class, "LBL_CANCELLABLETASK_NONE")), PROP_TASK); //NOI18N
     }
 
@@ -86,12 +88,15 @@ public final class WaitScreenCD extends ComponentDescriptor {
 
     protected List<? extends Presenter> createPresenters() {
         return Arrays.asList (
+            // accept
+            new MidpAcceptTrensferableKindPresenter().addType(SimpleCancellableTaskCD.TYPEID, PROP_TASK),
             //properties
             createPropertiesPresenter(),
             // code
             createSetterPresenter (),
             // delete
-            DeleteDependencyPresenter.createNullableComponentReferencePresenter(PROP_TASK),new MidpAcceptProducerKindPresenter().addType(SimpleCancellableTaskCD.TYPEID, PROP_TASK)
+            DeleteDependencyPresenter.createNullableComponentReferencePresenter(PROP_TASK),
+            new MidpAcceptProducerKindPresenter().addType(SimpleCancellableTaskCD.TYPEID, PROP_TASK)
         );
     }
 

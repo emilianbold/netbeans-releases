@@ -116,12 +116,13 @@ public class SVGAnimatorWrapperCD extends ComponentDescriptor {
     }
     
     protected List<? extends Presenter> createPresenters() {
-        return Arrays.asList(
+        return Arrays.asList( 
                 // properties
                 createPropertiesPresenter(),
                 new SVGFileAcceptPresenter(),
                 //accept
                 new MidpAcceptProducerKindPresenter().addType(SVGImageCD.TYPEID, PROP_SVG_IMAGE),
+                new MidpAcceptTrensferableKindPresenter().addType(SVGImageCD.TYPEID, PROP_SVG_IMAGE),
                 // code
                 createSetterPresenter(),
                 MidpCodePresenterSupport.createAddImportPresenter(),

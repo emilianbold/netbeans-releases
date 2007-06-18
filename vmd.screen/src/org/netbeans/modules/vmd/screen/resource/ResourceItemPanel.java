@@ -52,7 +52,7 @@ import java.awt.event.MouseListener;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import org.netbeans.modules.vmd.api.model.common.DesignComponentDataFlavor;
+import org.netbeans.modules.vmd.api.model.common.DesignComponentDataFlavorSupport;
 
 /**
  * @author breh
@@ -208,17 +208,17 @@ public class ResourceItemPanel extends JLabel implements MouseListener {
         }
         
         public DataFlavor[] getTransferDataFlavors() {
-            return new DataFlavor[]{DesignComponentDataFlavor.DESIGN_COMPONENT_DATA_FLAVOR};
+            return new DataFlavor[]{DesignComponentDataFlavorSupport.DESIGN_COMPONENT_DATA_FLAVOR};
         }
         
         public boolean isDataFlavorSupported(DataFlavor flavor) {
-            if (flavor == DesignComponentDataFlavor.DESIGN_COMPONENT_DATA_FLAVOR) 
+            if (flavor == DesignComponentDataFlavorSupport.DESIGN_COMPONENT_DATA_FLAVOR) 
                 return  true;
             return false;
         }
         
         public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException, IOException {
-            if (flavor == DesignComponentDataFlavor.DESIGN_COMPONENT_DATA_FLAVOR)
+            if (flavor == DesignComponentDataFlavorSupport.DESIGN_COMPONENT_DATA_FLAVOR)
                 return component;
             return null;
         }

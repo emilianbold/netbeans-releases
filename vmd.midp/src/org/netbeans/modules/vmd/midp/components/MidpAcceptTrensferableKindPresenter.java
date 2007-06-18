@@ -19,8 +19,6 @@
 package org.netbeans.modules.vmd.midp.components;
 
 import java.awt.datatransfer.Transferable;
-import java.awt.datatransfer.UnsupportedFlavorException;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.modules.vmd.api.model.ComponentProducer;
@@ -29,12 +27,12 @@ import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.api.model.TypeID;
 import org.netbeans.modules.vmd.api.model.common.AcceptPresenter;
-import org.netbeans.modules.vmd.api.model.common.DesignComponentDataFlavor;
+import org.netbeans.modules.vmd.api.model.common.DesignComponentDataFlavorSupport;
 import org.netbeans.modules.vmd.api.model.common.AcceptSuggestion;
 import org.netbeans.modules.vmd.midp.components.resources.FontCD;
 import org.netbeans.modules.vmd.midp.components.resources.ImageCD;
 import org.netbeans.modules.vmd.midp.components.resources.TickerCD;
-import org.openide.util.Exceptions;
+
 
 /**
  *
@@ -63,9 +61,7 @@ public class MidpAcceptTrensferableKindPresenter extends AcceptPresenter {
     }
     
     private Map<TypeID, String> typesMap;
-    private DesignComponent component;
-    private String propertyName;
-   
+    
     public MidpAcceptTrensferableKindPresenter() {
         super(AcceptPresenter.Kind.TRANSFERABLE);
         typesMap = new HashMap<TypeID, String>();
@@ -80,29 +76,27 @@ public class MidpAcceptTrensferableKindPresenter extends AcceptPresenter {
         typesMap.put(typeID, propertyName);
         return this;
     }
-
-    public boolean isAcceptable (Transferable transferable, AcceptSuggestion suggestion) {
+    
+    public boolean isAcceptable(Transferable transferable, AcceptSuggestion suggestion) {
         if (typesMap.values().isEmpty())
             throw new IllegalArgumentException("No types to check. Use addNewType method to add types to check"); //NOI18N
-        try {
-            if (!(transferable.getTransferData(DesignComponentDataFlavor.DESIGN_COMPONENT_DATA_FLAVOR) instanceof DesignComponent))
-                return false;
-            component = (DesignComponent) transferable.getTransferData(DesignComponentDataFlavor.DESIGN_COMPONENT_DATA_FLAVOR);
-            if (typesMap.containsKey(component.getType())) {
-                propertyName = typesMap.get(component.getType());
-                return true;
-            }
-        } catch (UnsupportedFlavorException ex) {
-            //Exceptions.printStackTrace(ex);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+        
+        if (!transferable.isDataFlavorSupported(DesignComponentDataFlavorSupport.DESIGN_COMPONENT_DATA_FLAVOR))
+            return false;
+        DesignComponent  component = DesignComponentDataFlavorSupport.getTransferableDesignComponent(transferable);
+        if (component == null)
+            return false;
+        if (typesMap.containsKey(component.getType()) && typesMap.get(component.getType()) != null)
+            return true;
         return false;
     }
     
-    public Result accept (Transferable transferable, AcceptSuggestion suggestion) {
-        getComponent().writeProperty(propertyName, PropertyValue.createComponentReference(this.component));
-        propertyName = null;
-        return new ComponentProducer.Result(this.component);
+    public Result accept(Transferable transferable, AcceptSuggestion suggestion) {
+        DesignComponent component = DesignComponentDataFlavorSupport.getTransferableDesignComponent(transferable);
+        String propertyName = typesMap.get(component.getType());
+        if (propertyName == null)
+            throw new IllegalStateException();
+        getComponent().writeProperty(propertyName, PropertyValue.createComponentReference(component));
+        return new ComponentProducer.Result(component);
     }
 }

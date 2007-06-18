@@ -25,7 +25,7 @@ import org.netbeans.modules.vmd.api.model.ComponentProducer;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.common.AcceptSupport;
-import org.netbeans.modules.vmd.api.model.common.DesignComponentDataFlavor;
+import org.netbeans.modules.vmd.api.model.common.DesignComponentDataFlavorSupport;
 import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
 import org.netbeans.modules.vmd.api.model.presenters.actions.ActionsSupport;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayPresenter;
@@ -537,12 +537,12 @@ public class TopPanel extends JPanel {
     
     private AcceptSuggestion getSugestion(final Transferable transferable) {
         final ScreenDisplayPresenter[] displayPresenterWrapper = new ScreenDisplayPresenter[1];
-        if (!(transferable.isDataFlavorSupported(DesignComponentDataFlavor.DESIGN_COMPONENT_DATA_FLAVOR)))
+        if (!(transferable.isDataFlavorSupported(DesignComponentDataFlavorSupport.DESIGN_COMPONENT_DATA_FLAVOR)))
             return null;
         devicePanel.getController().getDocument().getTransactionManager().readAccess(new Runnable() {
             public void run() {
                 try {
-                    DesignComponent component = (DesignComponent) transferable.getTransferData(DesignComponentDataFlavor.DESIGN_COMPONENT_DATA_FLAVOR);
+                    DesignComponent component = (DesignComponent) transferable.getTransferData(DesignComponentDataFlavorSupport.DESIGN_COMPONENT_DATA_FLAVOR);
                     displayPresenterWrapper[0] = component.getPresenter(ScreenDisplayPresenter.class);
                 } catch (UnsupportedFlavorException ex) {
                     Exceptions.printStackTrace(ex);
@@ -557,9 +557,10 @@ public class TopPanel extends JPanel {
     }
     private class ScreenDisplaylTransferable implements Transferable {
         private List DATA_FLAVORS = Arrays.asList(new DataFlavor[]{
-            DesignComponentDataFlavor.DESIGN_COMPONENT_DATA_FLAVOR,
+            DesignComponentDataFlavorSupport.DESIGN_COMPONENT_DATA_FLAVOR,
             ScreenDisplayDataFlavorSupport.HORIZONTAL_POSITION_DATA_FLAVOR,
             ScreenDisplayDataFlavorSupport.VERTICAL_POSITION_DATA_FLAVOR
+        
         });
         
         private WeakReference<DesignComponent> component;
@@ -579,7 +580,7 @@ public class TopPanel extends JPanel {
         }
         
         public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException, IOException {
-            if (flavor == DesignComponentDataFlavor.DESIGN_COMPONENT_DATA_FLAVOR)
+            if (flavor == DesignComponentDataFlavorSupport.DESIGN_COMPONENT_DATA_FLAVOR)
                 return component.get();
             if (flavor == ScreenDisplayDataFlavorSupport.HORIZONTAL_POSITION_DATA_FLAVOR)
                 return horizontalPosition;

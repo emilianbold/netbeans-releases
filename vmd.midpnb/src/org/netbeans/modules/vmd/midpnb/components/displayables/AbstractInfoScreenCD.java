@@ -44,7 +44,6 @@ import java.util.List;
 import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayPresenter;
 import org.netbeans.modules.vmd.midp.components.MidpAcceptProducerKindPresenter;
-import org.netbeans.modules.vmd.midp.general.FileAcceptPresenter;
 import org.netbeans.modules.vmd.midp.components.MidpAcceptTrensferableKindPresenter;
 import org.netbeans.modules.vmd.midp.components.resources.ImageFileAcceptPresenter;
 
@@ -108,6 +107,8 @@ public class AbstractInfoScreenCD extends ComponentDescriptor {
 
     protected List<? extends Presenter> createPresenters() {
         return Arrays.asList (
+            // accept
+            new MidpAcceptTrensferableKindPresenter().addType(ImageCD.TYPEID, PROP_IMAGE),
             // properties
             createPropertiesPresenter(),
             // code

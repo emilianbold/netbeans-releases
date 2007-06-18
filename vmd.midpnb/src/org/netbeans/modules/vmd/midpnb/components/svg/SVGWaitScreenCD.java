@@ -27,7 +27,6 @@ import org.netbeans.modules.vmd.api.properties.DesignEventFilterResolver;
 import org.netbeans.modules.vmd.midp.codegen.MidpParameter;
 import org.netbeans.modules.vmd.midp.codegen.MidpSetter;
 import org.netbeans.modules.vmd.midp.components.*;
-import org.netbeans.modules.vmd.midp.propertyeditors.PropertiesCategories;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorResourcesComboBox;
 import org.netbeans.modules.vmd.midpnb.codegen.MidpCustomCodePresenterSupport;
 import org.netbeans.modules.vmd.midpnb.components.resources.SimpleCancellableTaskCD;
@@ -35,6 +34,7 @@ import org.openide.util.NbBundle;
 
 import java.util.Arrays;
 import java.util.List;
+import org.netbeans.modules.vmd.midpnb.propertyeditors.PropertiesCategories;
 
 /**
  * @author Karol Harezlak
@@ -73,7 +73,7 @@ public final class SVGWaitScreenCD extends ComponentDescriptor {
     
     private static DefaultPropertiesPresenter createPropertiesPresenter() {
         return new DefaultPropertiesPresenter(DesignEventFilterResolver.THIS_COMPONENT)
-            .addPropertiesCategory(PropertiesCategories.CATEGORY_PROPERTIES)
+            .addPropertiesCategory(PropertiesCategories.CATEGORY_TASK)
                 .addProperty("Task", PropertyEditorResourcesComboBox.create(SimpleCancellableTaskCD.TYPEID, NbBundle.getMessage(SVGWaitScreenCD.class, "LBL_CANCELLABLETASK_NEW"), NbBundle.getMessage(SVGWaitScreenCD.class, "LBL_CANCELLABLETASK_NONE")), PROP_TASK);
     }
 
@@ -87,6 +87,8 @@ public final class SVGWaitScreenCD extends ComponentDescriptor {
 
     protected List<? extends Presenter> createPresenters() {
         return Arrays.asList(
+            // accept
+            new MidpAcceptTrensferableKindPresenter().addType(SimpleCancellableTaskCD.TYPEID, PROP_TASK),
             // properties
             createPropertiesPresenter (),
             // code

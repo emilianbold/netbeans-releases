@@ -38,7 +38,7 @@ import org.netbeans.modules.vmd.api.io.DataEditorView;
 
 import org.netbeans.modules.vmd.api.io.DataObjectContext;
 import org.netbeans.modules.vmd.api.model.common.AcceptSupport;
-import org.netbeans.modules.vmd.api.model.common.DesignComponentDataFlavor;
+import org.netbeans.modules.vmd.api.model.common.DesignComponentDataFlavorSupport;
 import org.netbeans.modules.vmd.api.properties.common.PropertiesSupport;
 import org.openide.nodes.Sheet;
 import org.openide.util.datatransfer.PasteType;
@@ -138,10 +138,10 @@ final class InspectorFolderNode extends AbstractNode {
     
     public PasteType getDropType(final Transferable t, final int action, int index) {
         DesignComponent transComponent = null;
-        if (t.isDataFlavorSupported(DesignComponentDataFlavor.DESIGN_COMPONENT_DATA_FLAVOR) == false)
+        if (t.isDataFlavorSupported(DesignComponentDataFlavorSupport.DESIGN_COMPONENT_DATA_FLAVOR) == false)
             return null;
         try {
-            transComponent = (DesignComponent) t.getTransferData(DesignComponentDataFlavor.DESIGN_COMPONENT_DATA_FLAVOR);
+            transComponent = (DesignComponent) t.getTransferData(DesignComponentDataFlavorSupport.DESIGN_COMPONENT_DATA_FLAVOR);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -232,11 +232,11 @@ final class InspectorFolderNode extends AbstractNode {
         }
         
         public DataFlavor[] getTransferDataFlavors() {
-            return new DataFlavor[]{DesignComponentDataFlavor.DESIGN_COMPONENT_DATA_FLAVOR};
+            return new DataFlavor[]{DesignComponentDataFlavorSupport.DESIGN_COMPONENT_DATA_FLAVOR};
         }
         
         public boolean isDataFlavorSupported(DataFlavor flavor) {
-            if (flavor == DesignComponentDataFlavor.DESIGN_COMPONENT_DATA_FLAVOR)
+            if (flavor == DesignComponentDataFlavorSupport.DESIGN_COMPONENT_DATA_FLAVOR)
                 return true;
             return false;
         }

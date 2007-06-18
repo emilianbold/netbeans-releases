@@ -32,7 +32,6 @@ import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.MidpVersionable;
 import org.netbeans.modules.vmd.midp.components.resources.ImageCD;
-import org.netbeans.modules.vmd.midp.general.FileAcceptPresenter;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertiesCategories;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorComboBox;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorResourcesComboBox;
@@ -41,6 +40,7 @@ import org.netbeans.modules.vmd.midp.screen.display.ImageItemDisplayPresenter;
 import org.netbeans.modules.vmd.midp.screen.display.injector.ImageItemInjectorPresenter;
 
 import java.util.*;
+import org.netbeans.modules.vmd.midp.components.MidpAcceptTrensferableKindPresenter;
 import org.netbeans.modules.vmd.midp.components.resources.ImageFileAcceptPresenter;
 
 /**
@@ -103,6 +103,8 @@ public class ImageItemCD extends ComponentDescriptor {
 
     protected List<? extends Presenter> createPresenters() {
         return Arrays.asList(
+                // accept
+                new MidpAcceptTrensferableKindPresenter().addType(ImageCD.TYPEID, PROP_IMAGE),
                 // properties
                 createPropertiesPresenter(),
                 // code

@@ -166,15 +166,6 @@ public final class MidpDocumentSupport {
         return i >= 0 ? str.substring(i + 1) : str;
     }
     
-    public static ComponentProducer getComponentProducer(DesignComponent component) {
-        for (ComponentProducer currentProducer : component.getDocument().getDescriptorRegistry().getComponentProducers()) {
-            if (currentProducer.getComponentTypeID().equals(component.getType()))
-                return currentProducer;
-        }
-        
-        return null;
-    }
-    
     public static Collection<DesignComponent> getAvailableCommandsForComponent(DesignComponent component) {
         Collection<DesignComponent> componentsUnderCommandCategory = getCategoryComponent(component.getDocument(), CommandsCategoryCD.TYPEID).getComponents();
         DescriptorRegistry registry = component.getDocument().getDescriptorRegistry();

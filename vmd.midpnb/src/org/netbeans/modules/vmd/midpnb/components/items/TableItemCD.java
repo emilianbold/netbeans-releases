@@ -48,7 +48,9 @@ import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayPresenter;
 import org.netbeans.modules.vmd.midp.components.MidpAcceptProducerKindPresenter;
 import org.netbeans.modules.vmd.midp.components.MidpAcceptTrensferableKindPresenter;
+import org.netbeans.modules.vmd.midp.components.resources.ImageCD;
 import org.netbeans.modules.vmd.midp.screen.DisplayableResourceCategoriesPresenter;
+import org.netbeans.modules.vmd.midpnb.components.resources.SimpleCancellableTaskCD;
 import org.netbeans.modules.vmd.midpnb.screen.display.TableItemDisplayPresenter;
 
 
@@ -129,6 +131,8 @@ public class TableItemCD extends ComponentDescriptor {
 
     protected List<? extends Presenter> createPresenters() {
         return Arrays.asList(
+            // accept
+            new MidpAcceptTrensferableKindPresenter().addType(SimpleTableModelCD.TYPEID, PROP_MODEL),
             // properties
             createPropertiesPresenter(),
             // code

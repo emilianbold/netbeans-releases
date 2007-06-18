@@ -26,6 +26,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.modules.vmd.api.model.ComponentProducer;
@@ -71,7 +72,7 @@ public abstract class FileAcceptPresenter extends AcceptPresenter {
     
     public boolean isAcceptable (Transferable transferable, AcceptSuggestion suggestion) {
         assert (!extensionsMap.isEmpty());
-        FileObject fileObject = getNodeFile(transferable);
+        FileObject fileObject = getNodeFileObject(transferable);
         if (fileObject == null && !belongsToProject(fileObject))
             return false;
         DesignDocument document = getComponent().getDocument();
@@ -85,21 +86,20 @@ public abstract class FileAcceptPresenter extends AcceptPresenter {
     }
     
     public ComponentProducer.Result accept (Transferable transferable, AcceptSuggestion suggestion) {
-        FileObject fileObject = getNodeFile(transferable);
+        FileObject fileObject = getNodeFileObject(transferable);
         TypeID typeID = getTypeForExtension(fileObject.getExt());
         String propertyName = getPropertyNameForExtension(fileObject.getExt());
         if (propertyName == null)
-            return null;
+            return super.accept(transferable, suggestion);
         DesignDocument document = getComponent().getDocument();
-        final ComponentProducer producer = DocumentSupport.getComponentProducer(document, typeID);
-        if (document == null)
-            return null;
-        DesignComponent newComponent  = producer.createComponent(document).getComponents().iterator().next();
+        final Collection<ComponentProducer> producers = DocumentSupport.getComponentProducers(document, typeID);
+        if (document == null && producers.isEmpty())
+            return super.accept(transferable, suggestion);
+        DesignComponent newComponent  = producers.iterator().next().createComponent(document).getComponents().iterator().next();
         if (getComponent().readProperty(propertyName).getKind() == PropertyValue.Kind.ARRAY)
             MidpArraySupport.append(getComponent(), propertyName, newComponent);
         else
             getComponent().writeProperty(propertyName, PropertyValue.createComponentReference(newComponent));
-        
         return new ComponentProducer.Result(newComponent);
     }
     
@@ -108,13 +108,12 @@ public abstract class FileAcceptPresenter extends AcceptPresenter {
         Map<FileObject, String> fileMap = MidpProjectSupport.getAllFilesForProjectByExt(document, extensionsMap.keySet());
         if (fileMap.get(fileObject) != null)
             return true;
-        
         return false;
     }
     
     protected InputStream getInputStream(Transferable transferable) {
         try {
-            FileObject fileNode = getNodeFile(transferable);
+            FileObject fileNode = getNodeFileObject(transferable);
             if (fileNode == null)
                 return null;
             File file = FileUtil.toFile(fileNode);
@@ -133,7 +132,7 @@ public abstract class FileAcceptPresenter extends AcceptPresenter {
         return fileMap.get(fileObject);
     }
     
-    protected FileObject getNodeFile(Transferable transferable) {
+    protected FileObject getNodeFileObject(Transferable transferable) {
         Node node = NodeTransfer.node(transferable, NodeTransfer.DND_COPY_OR_MOVE);
         if (node == null)
             return null;

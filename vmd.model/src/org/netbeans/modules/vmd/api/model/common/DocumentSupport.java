@@ -172,15 +172,16 @@ public class DocumentSupport {
     }
     /**
      * Returns a design component producer for given type 
-     * @param type of searching producer
-     * @return the producer or null when producer for given type was not found 
+     * @param type of searching producers
+     * @return the producers
      */
-    public static ComponentProducer getComponentProducer(DesignDocument document, TypeID typeID) {
+    public static Collection<ComponentProducer> getComponentProducers(DesignDocument document, TypeID typeID) {
+        Collection<ComponentProducer> producers = new HashSet<ComponentProducer>();
         for (ComponentProducer producer : document.getDescriptorRegistry().getComponentProducers()) {
             if (producer.getComponentTypeID().equals(typeID))
-                return  producer;
+                producers.add(producer);
         }
-        return null;
+        return producers;
     }
     
 }

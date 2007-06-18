@@ -88,9 +88,9 @@ public final class FormCD extends ComponentDescriptor {
                 .addParameters(MidpParameter.create(PROP_ITEMS, PROP_ITEM_STATE_LISTENER))
                 .addSetters(MidpSetter.createConstructor(TYPEID, MidpVersionable.MIDP).addParameters(DisplayableCD.PROP_TITLE))
                 .addSetters(MidpSetter.createConstructor(TYPEID, MidpVersionable.MIDP).addParameters(DisplayableCD.PROP_TITLE, PROP_ITEMS))
-                .addSetters(MidpSetter.createSetter("setItemStateListener", MidpVersionable.MIDP).addParameters(PROP_ITEM_STATE_LISTENER))
-                .addSetters(MidpSetter.createSetter("insert", MidpVersionable.MIDP).setArrayParameter(PROP_ITEMS).addParameters(PROP_ITEMS, Parameter.PARAM_INDEX))
-                .addSetters(MidpSetter.createSetter("set", MidpVersionable.MIDP).setArrayParameter(PROP_ITEMS).addParameters(PROP_ITEMS, Parameter.PARAM_INDEX));
+                .addSetters(MidpSetter.createSetter("setItemStateListener", MidpVersionable.MIDP).addParameters(PROP_ITEM_STATE_LISTENER)) //NOI18N
+                .addSetters(MidpSetter.createSetter("insert", MidpVersionable.MIDP).setArrayParameter(PROP_ITEMS).addParameters(PROP_ITEMS, Parameter.PARAM_INDEX)) //NOI18N
+                .addSetters(MidpSetter.createSetter("set", MidpVersionable.MIDP).setArrayParameter(PROP_ITEMS).addParameters(PROP_ITEMS, Parameter.PARAM_INDEX)); //NOI18N
     }
     
     
@@ -103,18 +103,19 @@ public final class FormCD extends ComponentDescriptor {
     protected List<? extends Presenter> createPresenters() {
         return Arrays.asList(
                 // accept
-                new FormFileAcceptPresenter("png","jpg","gif"), //NOI18N
+                FormAcceptPresenterSupport.createImageAcceptPresenter(),
+                FormAcceptPresenterSupport.createFileAcceptPresenter("png","jpg","gif"), //NOI18N
                 new AcceptTypePresenter(ItemCD.TYPEID) {
-            protected void notifyCreated(DesignComponent component) {
-                super.notifyCreated(component);
-                MidpArraySupport.append(getComponent(), PROP_ITEMS, component);
-            }
-        },
+                    protected void notifyCreated(DesignComponent component) {
+                        super.notifyCreated(component);
+                        MidpArraySupport.append(getComponent(), PROP_ITEMS, component);
+                    }
+                },
                 // action
                 AddActionPresenter.create(AddActionPresenter.ADD_ACTION, 10, ItemCD.TYPEID),
                 // inspector
                 InspectorPositionPresenter.create(new DisplayablePC()),
-                MidpInspectorSupport.createComponentElementsCategory("Items",createOrderingArrayController() , ItemCD.TYPEID), //NOI18N
+                MidpInspectorSupport.createComponentElementsCategory("Items",createOrderingArrayController() , ItemCD.TYPEID), //NOI18N //TODO
                 // code
                 createSetterPresenter(),
                 // flow
@@ -124,6 +125,7 @@ public final class FormCD extends ComponentDescriptor {
                 // screen
                 new FormDisplayPresenter(),
                 new FormResourceCategoriesPresenter()
+                
                 );
     }
     

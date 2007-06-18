@@ -42,7 +42,7 @@ public class ImageFileAcceptPresenter extends FileAcceptPresenter {
     public Result accept (Transferable transferable, AcceptSuggestion suggestion) {
         Result result = super.accept(transferable, suggestion);
         DesignComponent image = result.getComponents().iterator().next();
-        FileObject fileObject = super.getNodeFile(transferable);
+        FileObject fileObject = super.getNodeFileObject(transferable);
         if (fileObject == null)
             return result;
         String path = getFileClasspath(fileObject);

@@ -55,7 +55,7 @@ public class SVGFileAcceptPresenter extends FileAcceptPresenter {
         Result result = super.accept(transferable, suggestion);
         DesignComponent svgImage = result.getComponents().iterator().next();
         DesignComponent animator = getComponent();
-        FileObject fileObject = getNodeFile(transferable);
+        FileObject fileObject = getNodeFileObject(transferable);
         if (fileObject == null) {
             return result;
         }

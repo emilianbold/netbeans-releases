@@ -30,13 +30,9 @@ import org.openide.util.Utilities;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.UnsupportedFlavorException;
-import java.io.IOException;
-import java.lang.ref.WeakReference;
 import java.util.Collection;
 import java.util.Collections;
-import org.netbeans.modules.vmd.api.model.common.DesignComponentDataFlavor;
+
 
 /**
  * @author David Kaspar
