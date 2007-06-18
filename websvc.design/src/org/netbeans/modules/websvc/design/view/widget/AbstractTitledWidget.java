@@ -136,26 +136,34 @@ public abstract class AbstractTitledWidget extends AbstractMouseActionsWidget im
                 bounds.y+ 0.75f, bounds.width - 1.5f, bounds.height - 1.5f, radius, radius);
         if(isExpanded()) {
             int titleHeight = headerWidget.getBounds().height;
-//            GradientPaint gp = new GradientPaint(bounds.x, bounds.y, BORDER_COLOR,
-//                    bounds.x, bounds.y + titleHeight, borderColor);
             Area titleArea = new Area(rect);
             titleArea.subtract(new Area(new Rectangle(bounds.x,
                     bounds.y + titleHeight, bounds.width, bounds.height)));
             g.setPaint(getTitlePaint(titleArea.getBounds()));
             g.fill(titleArea);
             g.setPaint(borderColor);
-            g.drawLine(bounds.x+1, bounds.y + titleHeight, bounds.x+bounds.width-2, bounds.y + titleHeight);
+            g.drawLine(bounds.x+1, bounds.y + titleHeight-1, bounds.x+bounds.width-2, bounds.y + titleHeight-1);
+            Area bodyArea = new Area(rect);
+            bodyArea.subtract(titleArea);
+            Paint bodyPaint = getBodyPaint(bodyArea.getBounds());
+            if(bodyPaint!=null) {
+                g.setPaint(bodyPaint);
+                g.fill(bodyArea);
+            }
         } else {
-            GradientPaint gp = new GradientPaint(bounds.x, bounds.y, BORDER_COLOR,
-                    bounds.x, bounds.y + bounds.height, borderColor);
             g.setPaint(getTitlePaint(bounds));
             g.fill(rect);
         }
         g.setPaint(oldPaint);
     }
+
     protected Paint getTitlePaint(Rectangle bounds) {
         return new GradientPaint(bounds.x, bounds.y, TITLE_COLOR_BRIGHT,
                     bounds.x, bounds.y + bounds.height, TITLE_COLOR);
+    }
+    
+    protected Paint getBodyPaint(Rectangle bounds) {
+        return null;
     }
     
     protected void collapseWidget() {

@@ -20,6 +20,8 @@
 package org.netbeans.modules.websvc.design.view;
 
 import java.awt.Font;
+import java.awt.Paint;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.util.Set;
 import javax.swing.AbstractAction;
@@ -34,7 +36,7 @@ import org.netbeans.modules.websvc.design.configuration.WSConfigurationProvider;
 import org.netbeans.modules.websvc.design.configuration.WSConfigurationProviderRegistry;
 import org.netbeans.modules.websvc.design.view.widget.AbstractTitledWidget;
 import org.netbeans.modules.websvc.design.view.widget.ImageLabelWidget;
-import org.netbeans.modules.websvc.design.view.widget.ToggleButtonWidget;
+import org.netbeans.modules.websvc.design.view.widget.CheckBoxWidget;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
@@ -78,16 +80,24 @@ public class WsitWidget extends AbstractTitledWidget {
         
         getHeaderWidget().addChild(buttons);
         getContentWidget().setBorder(BorderFactory.createEmptyBorder(RADIUS));
+        getContentWidget().setLayout(LayoutFactory.createVerticalFlowLayout(
+                LayoutFactory.SerialAlignment.LEFT_TOP, RADIUS));
         for(WSConfigurationProvider provider : getConfigProviders()){
             WSConfiguration config = provider.getWSConfiguration(service, implementationClass);
             if(config != null){
-                ToggleButtonWidget button = new ToggleButtonWidget(getScene(),config.getIcon(),config.getDisplayName());
+                CheckBoxWidget button = new CheckBoxWidget(getScene(), config.getDisplayName());
                 button.setAction(new ConfigWidgetAction(config));
                 button.setToolTipText(config.getDescription());
+                button.getButton().getLabelWidget().setFont(
+                        getScene().getFont().deriveFont(Font.BOLD));
                 button.setSelected(config.isSet()); //TODO: need to refresh the widget to reflect state
                 getContentWidget().addChild(button);
             }
         }
+    }
+    
+    protected Paint getBodyPaint(Rectangle bounds) {
+        return TITLE_COLOR_PARAMETER;
     }
     
     public Object hashKey() {
@@ -104,7 +114,7 @@ public class WsitWidget extends AbstractTitledWidget {
             this.config = config;
         }
         public void actionPerformed(ActionEvent event) {
-            if(event.getActionCommand().equals(ToggleButtonWidget.ACTION_COMMAND_SELECTED)){
+            if(event.getActionCommand().equals(CheckBoxWidget.ACTION_COMMAND_SELECTED)){
                 config.set();
             }else{
                 config.unset();
