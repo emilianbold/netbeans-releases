@@ -245,15 +245,11 @@ Microsystems, Inc. All Rights Reserved.
                 <file name="org.netbeans.modules.websvc.core.jaxws.projects.EjbWSSupportLookupProvider.instance"/>
             </folder>
             <folder name="Nodes">
-<<<<<<< mf-layer.xml
                 <attr name="org-netbeans-modules-j2ee-ejbjarproject-ui-EjbsNodeFactory.instance/org-netbeans-modules-websvc-core-jaxws-nodes-WebServicesNodeFactory.instance" boolvalue="true"/>
-                <file name="org-netbeans-modules-websvc-core-jaxws-nodes-WebServicesNodeFactory.instance"/>
-                <attr name="org-netbeans-modules-websvc-core-jaxws-nodes-WebServicesNodeFactory.instance/org-netbeans-modules-j2ee-ejbjarproject-ui-ConfFilesNodeFactory.instance" boolvalue="true"/>
-=======
                 <file name="org-netbeans-modules-websvc-core-jaxws-nodes-WebServicesNodeFactory.instance">
                     <attr name="position" intvalue="600"/>
-                </file>
->>>>>>> 1.31
+                </file>                    
+                <attr name="org-netbeans-modules-websvc-core-jaxws-nodes-WebServicesNodeFactory.instance/org-netbeans-modules-j2ee-ejbjarproject-ui-ConfFilesNodeFactory.instance" boolvalue="true"/>
             </folder>
         </folder>
     </folder>
