@@ -50,9 +50,10 @@ import org.openide.filesystems.FileObject;
  *
  * @author Martin Adamek
  */
-public class CmFieldGenerator extends AbstractMethodGenerator {
+public final class CmFieldGenerator extends AbstractMethodGenerator {
     
-    private static final Set<Modifier> PUBLIC_ABSTRACT = new HashSet<Modifier>(Arrays.asList(new Modifier[] {
+    // available for tests
+    static final Set<Modifier> PUBLIC_ABSTRACT = new HashSet<Modifier>(Arrays.asList(new Modifier[] {
         Modifier.PUBLIC,
         Modifier.ABSTRACT
     }));
@@ -91,8 +92,8 @@ public class CmFieldGenerator extends AbstractMethodGenerator {
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                 TypeElement typeElement = workingCopy.getElements().getTypeElement(ejbClass);
-                MethodTree getterTree = createGetter(workingCopy, variable);
-                MethodTree setterTree = createSetter(workingCopy, variable);
+                MethodTree getterTree = createGetter(workingCopy, variable, PUBLIC_ABSTRACT);
+                MethodTree setterTree = createSetter(workingCopy, variable, PUBLIC_ABSTRACT);
                 ClassTree classTree = workingCopy.getTrees().getTree(typeElement);
                 ClassTree newClassTree = workingCopy.getTreeMaker().addClassMember(classTree, getterTree);
                 newClassTree = workingCopy.getTreeMaker().addClassMember(newClassTree, setterTree);
@@ -115,11 +116,11 @@ public class CmFieldGenerator extends AbstractMethodGenerator {
                     ClassTree classTree = workingCopy.getTrees().getTree(typeElement);
                     ClassTree newClassTree = classTree;
                     if (localGetter) {
-                        MethodTree getterTree = createGetter(workingCopy, variable);
+                        MethodTree getterTree = createGetter(workingCopy, variable, Collections.<Modifier>emptySet());
                         newClassTree = workingCopy.getTreeMaker().addClassMember(newClassTree, getterTree);
                     }
                     if (localSetter) {
-                        MethodTree setterTree = createSetter(workingCopy, variable);
+                        MethodTree setterTree = createSetter(workingCopy, variable, Collections.<Modifier>emptySet());
                         newClassTree = workingCopy.getTreeMaker().addClassMember(newClassTree, setterTree);
                     }
                     workingCopy.rewrite(classTree, newClassTree);
@@ -138,11 +139,11 @@ public class CmFieldGenerator extends AbstractMethodGenerator {
                     ClassTree classTree = workingCopy.getTrees().getTree(typeElement);
                     ClassTree newClassTree = classTree;
                     if (remoteGetter) {
-                        MethodTree getterTree = createGetter(workingCopy, variable);
+                        MethodTree getterTree = createGetter(workingCopy, variable, Collections.<Modifier>emptySet());
                         newClassTree = workingCopy.getTreeMaker().addClassMember(newClassTree, getterTree);
                     }
                     if (remoteSetter) {
-                        MethodTree setterTree = createSetter(workingCopy, variable);
+                        MethodTree setterTree = createSetter(workingCopy, variable, Collections.<Modifier>emptySet());
                         newClassTree = workingCopy.getTreeMaker().addClassMember(newClassTree, setterTree);
                     }
                     workingCopy.rewrite(classTree, newClassTree);
@@ -186,26 +187,26 @@ public class CmFieldGenerator extends AbstractMethodGenerator {
         return false;
     }
     
-    private static MethodTree createGetter(WorkingCopy workingCopy, MethodModel.Variable field) {
+    private static MethodTree createGetter(WorkingCopy workingCopy, MethodModel.Variable field, Set<Modifier> modifiers) {
         MethodModel methodModel = MethodModel.create(
                 "get" + Character.toUpperCase(field.getName().charAt(0)) + field.getName().substring(1),
                 field.getType(),
                 null,
                 Collections.<MethodModel.Variable>emptyList(),
                 Collections.<String>emptyList(),
-                PUBLIC_ABSTRACT
+                modifiers
                 );
         return MethodModelSupport.createMethodTree(workingCopy, methodModel);
     }
     
-    private static MethodTree createSetter(WorkingCopy workingCopy, MethodModel.Variable field) {
+    private static MethodTree createSetter(WorkingCopy workingCopy, MethodModel.Variable field, Set<Modifier> modifiers) {
         MethodModel methodModel = MethodModel.create(
                 "set" + Character.toUpperCase(field.getName().charAt(0)) + field.getName().substring(1),
                 "void",
                 null,
                 Collections.singletonList(MethodModel.Variable.create(field.getType(), field.getName())),
                 Collections.<String>emptyList(),
-                PUBLIC_ABSTRACT
+                modifiers
                 );
         return MethodModelSupport.createMethodTree(workingCopy, methodModel);
     }

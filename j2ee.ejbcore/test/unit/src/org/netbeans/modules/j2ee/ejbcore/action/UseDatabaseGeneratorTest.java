@@ -35,7 +35,6 @@ import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
-import org.netbeans.modules.j2ee.common.method.MethodModelSupport;
 import org.netbeans.modules.j2ee.common.source.AbstractTask;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
@@ -107,15 +106,6 @@ public class UseDatabaseGeneratorTest extends TestBase {
     }
     
     // private helpers =========================================================
-    
-    private static boolean containsMethod(WorkingCopy workingCopy, MethodModel methodModel, TypeElement typeElement) {
-        for (ExecutableElement executableElement : ElementFilter.methodsIn(typeElement.getEnclosedElements())) {
-            if (MethodModelSupport.isSameMethod(workingCopy, executableElement, methodModel)) {
-                return true;
-            }
-        }
-        return false;
-    }
     
     private static void checkDatasourceField(WorkingCopy workingCopy, TypeElement typeElement, String name, String jndiName) {
         List<VariableElement> elements = ElementFilter.fieldsIn(typeElement.getEnclosedElements());
