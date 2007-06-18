@@ -171,6 +171,16 @@ class FilesystemInterceptor extends ProvidedExtensions implements FileChangeList
         // not interested
     }
 
+    /**
+     * There is a contract that says that when a file is locked, it is expected to be changed. This is what openide/text
+     * does when it creates a Document. A versioning system is expected to make the file r/w.
+     * 
+     * @param fo a FileObject
+     */
+    public void fileLocked(FileObject fo) {
+        getInterceptor(new FileEvent(fo)).beforeEdit();
+    }
+
     private DelegatingInterceptor getInterceptor(FileEvent fe) {
         FileObject fo = fe.getFile();
         if (fo == null) return nullDelegatingInterceptor;
@@ -261,6 +271,7 @@ class FilesystemInterceptor extends ProvidedExtensions implements FileChangeList
         public void doCreate() throws IOException {  }
         public void afterCreate() {  }
         public void beforeChange() {  }        
+        public void beforeEdit() { }
         public void afterChange() {  }
         public void afterMove() {  }
         public void handle() throws IOException {  }
@@ -362,6 +373,11 @@ class FilesystemInterceptor extends ProvidedExtensions implements FileChangeList
         public void beforeChange() {
             lhInterceptor.beforeChange(file);
             interceptor.beforeChange(file);            
+        }
+
+        public void beforeEdit() {
+            lhInterceptor.beforeEdit(file);
+            interceptor.beforeEdit(file);            
         }
         
         /**
