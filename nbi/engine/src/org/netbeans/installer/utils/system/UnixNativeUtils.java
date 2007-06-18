@@ -180,7 +180,7 @@ public abstract class UnixNativeUtils extends NativeUtils {
         list.add("[Desktop Entry]");
         list.add("Encoding=UTF-8");
         list.add("Name=" + shortcut.getName());
-        list.add("Exec=" + shortcut.getTarget());
+        list.add("Exec=/bin/sh \"" + shortcut.getTarget()+ "\"");
         if(shortcut.getIcon()!=null) {
             list.add("Icon=" + shortcut.getIconPath());
         }
