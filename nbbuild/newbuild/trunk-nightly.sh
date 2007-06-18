@@ -72,6 +72,11 @@ if [ -z $DIST_SERVER ]; then
     exit 0;
 fi
 
+if [ ! -z $BUILD_ID ]; then
+    mkdir -p $DIST_SERVER2/${BUILD_ID}
+    cp -r $DIST/*  $DIST_SERVER2/${BUILD_ID}
+fi
+
 cd $TRUNK_NIGHTLY_DIRNAME
 bash build-nbi.sh
 ERROR_CODE=$?
@@ -79,6 +84,13 @@ ERROR_CODE=$?
 if [ $ERROR_CODE != 0 ]; then
     echo "ERROR: $ERROR_CODE - NBI installers build failed"
     exit $ERROR_CODE;
+fi
+
+if [ ! -z $BUILD_ID ]; then
+    mkdir -p $DIST_SERVER2/${BUILD_ID}
+    cp -r $DIST/*  $DIST_SERVER2/${BUILD_ID}
+    mv $DIST_SERVER2/latest $DIST_SERVER2/latest.old
+    ln -s $DIST_SERVER2/${BUILD_ID} $DIST_SERVER2/latest
 fi
 
 cd $TRUNK_NIGHTLY_DIRNAME
