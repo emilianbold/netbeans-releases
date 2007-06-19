@@ -2778,6 +2778,12 @@ public class CasaWrapperModel extends CasaModelImpl {
         if (p == null) {
             return null;
         }
+
+        // allow JavaEE project types
+        if (JbiDefaultComponentInfo.isJavaEEProject(p)) {
+            return JbiProjectConstants.JAVA_EE_SE_COMPONENT_NAME;
+        }
+        
         AntArtifactProvider prov = (AntArtifactProvider)p.getLookup().lookup(AntArtifactProvider.class);
         if (prov != null) {
             AntArtifact[] artifacts = prov.getBuildArtifacts();
