@@ -20,7 +20,9 @@
 package org.netbeans.spi.tasklist;
 
 import java.awt.event.ActionListener;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import org.netbeans.modules.tasklist.trampoline.TaskGroupFactory;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -134,11 +136,19 @@ public final class Task {
         return TaskGroupFactory.create( attrs );
     }
     
+    private static Set<String> unknownTaskGroups;
+    
     private static TaskGroup getTaskGroup( String groupName ) {
         TaskGroup group = TaskGroupFactory.getDefault().getGroup( groupName );
         if( null == group ) {
-            Logger.getLogger( Task.class.getName() ).log( Level.INFO, 
-                    NbBundle.getMessage( Task.class, "Err_UnknownGroupName" ), groupName ); //NOI18N
+            if( null == unknownTaskGroups || !unknownTaskGroups.contains( groupName ) ) {
+                //show only one warning that the group name is not supported
+                Logger.getLogger( Task.class.getName() ).log( Level.INFO, 
+                        NbBundle.getMessage( Task.class, "Err_UnknownGroupName" ), groupName ); //NOI18N
+                if( null == unknownTaskGroups )
+                    unknownTaskGroups = new HashSet<String>(10);
+                unknownTaskGroups.add( groupName );
+            }
             
             group = TaskGroupFactory.getDefault().getDefaultGroup();
         }
