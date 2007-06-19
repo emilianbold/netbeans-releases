@@ -157,7 +157,7 @@ public class OldProjectTransformer {
            
             StringBuffer sb = new StringBuffer();
             sb.append("<transformmap \n");
-            sb.append("       xmlns=\"http://xml.netbeans.org/schema/transformmap.xsd\"\n");
+            sb.append("       xmlns=\"http://xml.netbeans.org/schema/transformmap\"\n");
 
             
             int nss = mNameSpacePrefix.size();

@@ -51,11 +51,6 @@
         </folder>
     </folder>
 
-    <folder name="org-netbeans-xsltpro">
-        <file name="transformmap.xml" url="transformmap.xml"/>
-        <file name="genPortmap.xsl" url="genPortmap.xsl"/>
-    </folder>
-
     <folder name="SeeBeyondJbiComponents">
         <file name="sun-xslt-engine">
             <attr name="id" stringvalue="sun-xslt-engine"/>

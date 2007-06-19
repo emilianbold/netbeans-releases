@@ -335,6 +335,7 @@ public class XsltproProject implements Project, AntProjectListener {
         }
         
         protected void projectOpened() {
+            
             try {
                 // Check up on build scripts.
                 genFilesHelper.refreshBuildScript(
@@ -428,6 +429,7 @@ public class XsltproProject implements Project, AntProjectListener {
             "ant-task",             // NOI18N
             "simple-files"          // NOI18N
              */
+            "SOA",
             "XML",                  // NOI18N
             "simple-files"          // NOI18N
         };
