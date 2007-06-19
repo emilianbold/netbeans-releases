@@ -1533,25 +1533,25 @@ public class CasaWrapperModel extends CasaModelImpl {
     private void checkAndCleanUpDummyPortType(WSDLModel casaWSDLModel) {
         PortType dummyPortType = getDummyPortType(casaWSDLModel, false);
         
-        Definitions definitions = casaWSDLModel.getDefinitions();
-        
-        boolean dummyPortTypeUsed = false;
-        if (dummyPortType != null) {
+        if (dummyPortType != null) {                                  
+            boolean dummyPortTypeUsed = false;
+            
+            Definitions definitions = casaWSDLModel.getDefinitions();  
             for (Binding b : definitions.getBindings()) {
                 if (b.getType().get() == dummyPortType) {
                     dummyPortTypeUsed = true;
                     break;
                 }
             }
-        }
-        
-        if (dummyPortType != null && !dummyPortTypeUsed) {
-            casaWSDLModel.startTransaction();
-            try {
-                definitions.removePortType(dummyPortType);
-            } finally {
-                if (casaWSDLModel.isIntransaction()) {
-                    casaWSDLModel.endTransaction();
+            
+            if (!dummyPortTypeUsed) {
+                casaWSDLModel.startTransaction();
+                try {
+                    definitions.removePortType(dummyPortType);
+                } finally {
+                    if (casaWSDLModel.isIntransaction()) {
+                        casaWSDLModel.endTransaction();
+                    }
                 }
             }
         }
@@ -2447,10 +2447,12 @@ public class CasaWrapperModel extends CasaModelImpl {
         return true;
     }
         
+    // FIXME: isDefinedInCompApp() currently assumes it's THE <CompApp>.wsdl, 
+    // not any wsdl defined in CompApp!!!
     private boolean isDefinedInCompApp(final CasaPort casaPort) {
         CasaLink link = casaPort.getLink();
         String linkHref = link.getHref();
-        return linkHref.startsWith("../jbiasa/" + getCasaWSDLFileName() + "#xpointer");
+        return linkHref.startsWith("../jbiasa/" + getCasaWSDLFileName() + "#xpointer"); // NOI18N
     }
     
     /**
@@ -2560,8 +2562,11 @@ public class CasaWrapperModel extends CasaModelImpl {
     /**
      * Sets the interface qname of an endpoint. Updates the corresponding WSDL
      * Port, Binding and PortType if the endpoint is defined in casa wsdl.
-     * This interface change might need to be cascadee to other connected 
+     * This interface change might need to be cascaded to other connected 
      * endpoints.
+     * 
+     * @param endpointRef  a casa consumes or provides endpoint reference
+     * @param interfaceQName    the new interface QName for the referenced endpoint
      */
     public void setEndpointInterfaceQName(final CasaEndpointRef endpointRef,
             final QName interfaceQName) {
@@ -2569,13 +2574,25 @@ public class CasaWrapperModel extends CasaModelImpl {
         if (endpointRef.getInterfaceQName().equals(interfaceQName)) {
             return; // need this to avoid infinite loop
         }
-        
+                       
         // 1. Update endpoint interface qname in casa.
         CasaEndpoint endpoint = endpointRef.getEndpoint().get();
         QName oldInterfaceQName = endpoint.getInterfaceQName();
         startTransaction();
         try {
-            endpoint.setInterfaceQName(interfaceQName);
+            if (interfaceQName == null || interfaceQName.equals(new QName(""))) { // NOI18N
+                CasaPort casaPort = getCasaPort(endpointRef);
+                if (casaPort != null && isDefinedInCompApp(casaPort)) { // assume this is THE casa.wsdl
+                    Port port = getLinkedWSDLPort(casaPort);
+                    WSDLModel casaWSDLModel = port.getModel();
+                    String tns = casaWSDLModel.getDefinitions().getTargetNamespace();
+                    endpoint.setInterfaceQName(new QName(tns, DUMMY_PORTTYPE_NAME));                
+                } else {
+                    endpoint.setInterfaceQName(interfaceQName);
+                }
+            } else {
+                endpoint.setInterfaceQName(interfaceQName);
+            }
         } finally {
             if (isIntransaction()) {
                 fireCasaEndpointInterfaceQNameChanged(endpointRef);
@@ -2587,8 +2604,7 @@ public class CasaWrapperModel extends CasaModelImpl {
         CasaPort casaPort = getCasaPort(endpointRef);
         if (casaPort == null) {
             return;
-        }
-        
+        }     
         Port port = getLinkedWSDLPort(casaPort);
         WSDLModel casaWSDLModel = port.getModel();
         
@@ -2616,7 +2632,11 @@ public class CasaWrapperModel extends CasaModelImpl {
                 if (casaWSDLModel.isIntransaction()) {
                     casaWSDLModel.endTransaction();
                 }
-            }
+            }            
+            
+//            // Clear the cached WSDL port
+//            String linkHref = casaPort.getLink().getHref();
+//            cachedWSDLComponents.remove(linkHref);
             
             // Maybe we do, but I don't see any real reason why we have to
             // cascade the change in this case.
