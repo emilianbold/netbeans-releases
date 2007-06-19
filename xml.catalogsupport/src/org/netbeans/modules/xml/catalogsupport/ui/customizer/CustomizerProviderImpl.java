@@ -171,14 +171,12 @@ public class CustomizerProviderImpl implements CustomizerProvider {
                 REFERENCE,
                 NbBundle.getMessage(CustomizerProviderImpl.class,
                 "LBL_Customizer_Category_ProjectReferences"),
-                null,
                 null);
         
         ProjectCustomizer.Category catalog = ProjectCustomizer.Category.create(
                 CATALOG,
                 NbBundle.getMessage(CustomizerProviderImpl.class,
                 "LBL_Customizer_Category_XMLCatalog"),
-                null,
                 null);
         
         getCategories().add(references);
