@@ -1436,6 +1436,10 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
             final ClassPath sourcePath = ClassPath.getClassPath(rootFo,ClassPath.SOURCE);
             final ClassPath bootPath = ClassPath.getClassPath(rootFo, ClassPath.BOOT);
             final ClassPath compilePath = ClassPath.getClassPath(rootFo, ClassPath.COMPILE);
+            if (sourcePath == null || bootPath == null || compilePath == null) {
+                LOGGER.warning("Ignoring root with no ClassPath: " + FileUtil.getFileDisplayName(rootFo));    // NOI18N
+                return;
+            }
             //listen on the particular boot&compile classpaths:
             if (!classPath2Root.containsKey(bootPath)) {
                 bootPath.addPropertyChangeListener(RepositoryUpdater.this);
@@ -1446,10 +1450,6 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 classPath2Root.put(compilePath, root);
             }
             final boolean isInitialCompilation = folder.equals(root);            
-            if (sourcePath == null || bootPath == null || compilePath == null) {
-                LOGGER.warning("Ignoring root with no ClassPath: " + FileUtil.getFileDisplayName(rootFo));    // NOI18N
-                return;
-            }            
             try {                                
                 final File rootFile = FileUtil.toFile(rootFo);
                 if (rootFile == null) {
