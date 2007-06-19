@@ -859,7 +859,7 @@ public class CasualDiff {
         copyTo(localPointer, clazzBounds[0]);
         localPointer = diffTree(oldT.clazz, newT.clazz, clazzBounds);
         if (oldT.args.nonEmpty()) {
-            copyTo(localPointer, localPointer = oldT.args.head.pos);
+            copyTo(localPointer, localPointer = getOldPos(oldT.args.head));
         } else {
             TokenUtilities.moveFwdToToken(tokenSequence, oldT.pos, JavaTokenId.LPAREN);
             tokenSequence.moveNext();
