@@ -416,6 +416,16 @@ final class ResultView extends TopComponent {
     }
 
     @Override
+    public void requestFocus() {
+        tree.requestFocus();
+    }
+
+    @Override
+    public boolean requestFocusInWindow() {
+        return tree.requestFocusInWindow();
+    }
+
+    @Override
     protected void componentClosed() {
         assert EventQueue.isDispatchThread();
         
