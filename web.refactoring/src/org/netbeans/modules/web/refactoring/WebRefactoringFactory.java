@@ -98,7 +98,7 @@ public class WebRefactoringFactory implements RefactoringPluginFactory{
             if (javaPackage || folder){
                 refactorings.add(new WebXmlPackageRename(ddFile, webApp, sourceFO, rename));
                 refactorings.add(new TldPackageRename(rename, sourceFO));
-            } else {
+            } else if (javaFile) {
                 refactorings.add(new WebXmlRename(clazz, rename, webApp, ddFile));
                 refactorings.add(new TldRename(clazz, rename, sourceFO));
             }
