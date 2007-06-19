@@ -13,23 +13,23 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package gui.actions;
 
-
 import java.io.File;
+
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
 import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jemmy.EventTool;
-import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.junit.ide.ProjectSupport;
-import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jellytools.OutputOperator;
 import org.netbeans.jellytools.OutputTabOperator;
+
+import org.netbeans.jemmy.operators.ComponentOperator;
+import org.netbeans.junit.ide.ProjectSupport;
+
 
 /**
  * Measure UI-RESPONSIVENES and WINDOW_OPENING.
@@ -50,7 +50,7 @@ public class GenerateModelReport extends org.netbeans.performance.test.utilities
         WAIT_AFTER_OPEN=4000;        
     }
     public GenerateModelReport(String testName, String  performanceDataName) {
-        super(testName);
+        super(testName, performanceDataName);
         //TODO: Adjust expectedTime value
         expectedTime = 300000;
         WAIT_AFTER_OPEN=4000;                

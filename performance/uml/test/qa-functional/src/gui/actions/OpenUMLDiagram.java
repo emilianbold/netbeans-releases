@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -21,14 +21,15 @@ package gui.actions;
 
 
 import java.io.File;
-import org.netbeans.jellytools.NewProjectWizardOperator;
+
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
 import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jemmy.EventTool;
+import org.netbeans.jellytools.TopComponentOperator;
+
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.junit.ide.ProjectSupport;
-import org.netbeans.jellytools.TopComponentOperator;
+
 /**
  * Measure UI-RESPONSIVENES and WINDOW_OPENING.
  *
@@ -40,7 +41,6 @@ public class OpenUMLDiagram extends org.netbeans.performance.test.utilities.Perf
     private static String testProjectName = "jEdit-Model";
     private static String testDiagramName = "ClassDiagram";    
    
-   
     /** Creates a new instance of OpenUMLDiagram */
     public OpenUMLDiagram(String testName) {
         super(testName);
@@ -48,8 +48,9 @@ public class OpenUMLDiagram extends org.netbeans.performance.test.utilities.Perf
         expectedTime = 2000;
         WAIT_AFTER_OPEN=4000;        
     }
+    
     public OpenUMLDiagram(String testName, String  performanceDataName) {
-        super(testName);
+        super(testName, performanceDataName);
         //TODO: Adjust expectedTime value
         expectedTime = 2000;
         WAIT_AFTER_OPEN=4000;                
@@ -60,7 +61,6 @@ public class OpenUMLDiagram extends org.netbeans.performance.test.utilities.Perf
         
         ProjectSupport.openProject(System.getProperty("xtest.tmpdir")+File.separator+testProjectName);
         new CloseAllDocumentsAction().performAPI();
-        
     }
    
     public void prepare() {

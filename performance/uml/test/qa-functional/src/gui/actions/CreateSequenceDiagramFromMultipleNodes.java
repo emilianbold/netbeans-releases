@@ -19,23 +19,23 @@
 
 package gui.actions;
 
-
 import java.io.File;
+
+import javax.swing.tree.TreePath;
+
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
 import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jellytools.NbDialogOperator;
+
+import org.netbeans.junit.ide.ProjectSupport;
+
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.junit.ide.ProjectSupport;
-import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
-import javax.swing.tree.TreePath;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
-
-import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jemmy.operators.JListOperator;
 import org.netbeans.jemmy.operators.JButtonOperator;
-import org.netbeans.jemmy.operators.JComboBoxOperator;
 
 /**
  * Measure UI-RESPONSIVENES and WINDOW_OPENING.
@@ -58,7 +58,7 @@ public class CreateSequenceDiagramFromMultipleNodes extends org.netbeans.perform
         WAIT_AFTER_OPEN=4000;        
     }
     public CreateSequenceDiagramFromMultipleNodes(String testName, String  performanceDataName) {
-        super(testName);
+        super(testName, performanceDataName);
         //TODO: Adjust expectedTime value
         expectedTime = 5000;
         WAIT_AFTER_OPEN=4000;                

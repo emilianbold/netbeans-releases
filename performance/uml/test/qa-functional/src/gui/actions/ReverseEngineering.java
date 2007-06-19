@@ -19,24 +19,20 @@
 
 package gui.actions;
 
-import org.netbeans.jellytools.Bundle;
+import java.io.File;
 
-import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
-//import org.netbeans.jellytools.actions.NewFileAction;
+import org.netbeans.jellytools.ProjectsTabOperator;
+import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jellytools.NbDialogOperator;
+import org.netbeans.jellytools.OutputOperator;
+import org.netbeans.jellytools.OutputTabOperator;
 
+import org.netbeans.junit.ide.ProjectSupport;
 
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
-import org.netbeans.junit.ide.ProjectSupport;
-import org.netbeans.jellytools.OutputOperator;
-import org.netbeans.jellytools.OutputTabOperator;
-import java.io.File;
-import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jellytools.NbDialogOperator;
-
 
 /**
  * Test Reverse Engineering 
@@ -69,13 +65,9 @@ public class ReverseEngineering extends org.netbeans.performance.test.utilities.
         WAIT_AFTER_OPEN=4000;
     }
     
-  
-    
     public void initialize(){
-               
         ProjectSupport.openProject(System.getProperty("xtest.tmpdir")+File.separator+testProjectName);
         new CloseAllDocumentsAction().performAPI();
-
     }
     
     public void prepare(){

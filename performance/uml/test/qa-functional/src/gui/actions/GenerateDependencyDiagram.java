@@ -19,17 +19,16 @@
 
 package gui.actions;
 
-
 import java.io.File;
+
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
 import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jemmy.EventTool;
-import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.junit.ide.ProjectSupport;
 import org.netbeans.jellytools.TopComponentOperator;
 
+import org.netbeans.jemmy.operators.ComponentOperator;
 
+import org.netbeans.junit.ide.ProjectSupport;
 
 /**
  * Measure UI-RESPONSIVENES and WINDOW_OPENING.
@@ -52,7 +51,7 @@ public class GenerateDependencyDiagram extends org.netbeans.performance.test.uti
         WAIT_AFTER_OPEN=4000;        
     }
     public GenerateDependencyDiagram(String testName, String  performanceDataName) {
-        super(testName);
+        super(testName, performanceDataName);
         //TODO: Adjust expectedTime value
         expectedTime = 2000;
         WAIT_AFTER_OPEN=4000;                
