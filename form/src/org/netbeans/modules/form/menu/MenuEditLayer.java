@@ -625,6 +625,9 @@ public class MenuEditLayer extends JPanel {
     void addRadComponentToBefore(RADVisualComponent payloadRad, JComponent target) {
         try {
             JComponent targetParent = getMenuParent(target);
+            if(target.getParent() instanceof JMenuBar) {
+                targetParent = (JComponent) target.getParent();
+            }
             p("target parent = " + targetParent);
             RADVisualComponent targetRad = (RADVisualComponent) formDesigner.getMetaComponent(target);
             p("target rad = " + targetRad);
@@ -635,6 +638,31 @@ public class MenuEditLayer extends JPanel {
             
             p("=== inserting before drop target component ===");
             int index2 = targetParentRad.getIndexOf(targetRad);
+            p("inserting at index: " + index2);
+            FormModelEvent fme2 = formDesigner.getFormModel().fireComponentAdded(payloadRad, false);
+            formDesigner.getFormModel().addVisualComponent(payloadRad, targetParentRad, new Integer(index2), true);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        
+    }
+    
+    void addRadComponentToAfter(RADVisualComponent payloadRad, JComponent target) {
+        try {
+            JComponent targetParent = getMenuParent(target);
+            if(target.getParent() instanceof JMenuBar) {
+                targetParent = (JComponent) target.getParent();
+            }
+            p("target parent = " + targetParent);
+            RADVisualComponent targetRad = (RADVisualComponent) formDesigner.getMetaComponent(target);
+            p("target rad = " + targetRad);
+            RADVisualContainer targetParentRad = (RADVisualContainer) formDesigner.getMetaComponent(targetParent);
+            p("target parent rad = " + targetParentRad);
+            
+            assert targetParentRad != null;
+            
+            p("=== inserting before drop target component ===");
+            int index2 = targetParentRad.getIndexOf(targetRad) + 1;
             p("inserting at index: " + index2);
             FormModelEvent fme2 = formDesigner.getFormModel().fireComponentAdded(payloadRad, false);
             formDesigner.getFormModel().addVisualComponent(payloadRad, targetParentRad, new Integer(index2), true);

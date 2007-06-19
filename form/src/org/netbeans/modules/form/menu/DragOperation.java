@@ -328,11 +328,13 @@ class DragOperation {
             // if dragging a jmenu onto a toplevel jmenu
             if(menu.getParent() instanceof JMenuBar && payloadComponent instanceof JMenu) {
                 p("dropping into a toplevel menu");
-                if(pt2.x < 15) {  // if on the left edge
+                if(DropTargetLayer.isTopLevelMenuLeftEdge(pt2, menu)) {
+                //if(pt2.x < 15) {  // if on the left edge
                     p("doing a left drop");
                     menuEditLayer.moveRadComponentToBefore(payloadComponent, menu);
                     return;
-                } else if (pt2.x > menu.getWidth()-15) {  // if on the right edge
+                } else if (DropTargetLayer.isTopLevelMenuRightEdge(pt2, menu)) {
+                //} else if (pt2.x > menu.getWidth()-15) {  // if on the right edge
                     p("doing a right drop");
                     //menuEditLayer.moveRadComponentToAfter(payloadComponent, menu);
                     p("not doing a right drop yet");
@@ -402,16 +404,37 @@ class DragOperation {
         if(targetComponent instanceof JMenu) {
             p("============== doing a new comp to a jmenu");
             Point pt2 = SwingUtilities.convertPoint(menuEditLayer.glassLayer, pt, targetComponent);
-            if(pt2.x > targetComponent.getWidth()-30) {
-                p("doing in menu drop");
-                RADVisualContainer targetContainer = (RADVisualContainer) menuEditLayer.formDesigner.getMetaComponent(targetComponent);
-                p("target container = " + targetContainer);
-                boolean added = creator.addPrecreatedComponent(targetContainer, constraints);
+            
+            if(targetComponent.getParent() instanceof JMenuBar) {
+                p("on top of a toplevel menu");
+                
+                if(DropTargetLayer.isTopLevelMenuLeftEdge(pt2, targetComponent)) {
+                    p("on the left edge");
+                    RADVisualComponent newRad = creator.getPrecreatedMetaComponent();
+                    menuEditLayer.addRadComponentToBefore(newRad, targetComponent);
+                } else if(DropTargetLayer.isTopLevelMenuRightEdge(pt2, targetComponent)) {
+                    p("on the right edge");
+                    RADVisualComponent newRad = creator.getPrecreatedMetaComponent();
+                    menuEditLayer.addRadComponentToAfter(newRad, targetComponent);
+                } else {
+                    p("else in the center");
+                    RADVisualContainer targetContainer = (RADVisualContainer) menuEditLayer.formDesigner.getMetaComponent(targetComponent);
+                    //RADVisualComponent newRad = creator.getPrecreatedMetaComponent();
+                    boolean added = creator.addPrecreatedComponent(targetContainer, constraints);
+                    //menuEditLayer.addRadComponentToBefore(newRad, targetComponent);
+                }
             } else {
-                p("doing above menu drop");
-                RADVisualComponent newRad = creator.getPrecreatedMetaComponent();
-                p("new rad = " + newRad);
-                menuEditLayer.addRadComponentToBefore(newRad, targetComponent);
+                if(pt2.x > targetComponent.getWidth()-30) {
+                    p("doing in menu drop");
+                    RADVisualContainer targetContainer = (RADVisualContainer) menuEditLayer.formDesigner.getMetaComponent(targetComponent);
+                    p("target container = " + targetContainer);
+                    boolean added = creator.addPrecreatedComponent(targetContainer, constraints);
+                } else {
+                    p("doing above menu drop");
+                    RADVisualComponent newRad = creator.getPrecreatedMetaComponent();
+                    p("new rad = " + newRad);
+                    menuEditLayer.addRadComponentToBefore(newRad, targetComponent);
+                }
             }
         } else {
             if(targetComponent instanceof JMenuBar) {

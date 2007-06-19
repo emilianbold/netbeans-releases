@@ -85,6 +85,12 @@ public class DropTargetLayer extends JComponent {
         //josh: can i combine the menubar and normal targets into a single one?
     }
     
+    public static boolean isTopLevelMenuLeftEdge(Point pt, JComponent menu) {
+        return pt.x < 15;
+    }
+    public static boolean isTopLevelMenuRightEdge(Point pt, JComponent menu) {
+        return pt.x > menu.getWidth()-15;
+    }
     public void paintComponent(Graphics g) {
         Graphics2D g2 = (Graphics2D) g.create();
         
@@ -117,10 +123,9 @@ public class DropTargetLayer extends JComponent {
                     int size = menu.getHeight()-4;
                     
                     g2.setColor(DROP_TARGET_COLOR);
-                    
-                    if(cursorLocation.x < 15) { // left edge
+                    if(isTopLevelMenuLeftEdge(cursorLocation, menu)) {
                         drawVerticalTargetLine(g2, mblocation.x-1, mblocation.y, 50);
-                    } else if(cursorLocation.x > menu.getWidth()-15) { // right edge
+                    } else if(isTopLevelMenuRightEdge(cursorLocation, menu)) {
                         drawVerticalTargetLine(g2, mblocation.x+menu.getWidth(), mblocation.y, 50);
                         //g2.drawRect(mblocation.x+menu.getWidth()-size/2, mblocation.y+2, size, size);
                     } else { // center drop
