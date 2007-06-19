@@ -20,15 +20,13 @@
 package org.netbeans.modules.options.advanced;
 
 import java.awt.BorderLayout;
-import java.awt.Dimension;
 import java.util.Iterator;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
@@ -50,7 +48,6 @@ public final class AdvancedPanel extends JPanel {
     AdvancedPanel () {}
     
     public void update () {
-        model.update ();
     }
     
     public void applyChanges () {
@@ -84,6 +81,10 @@ public final class AdvancedPanel extends JPanel {
         tabbedPanel.addChangeListener(new ChangeListener () {
             public void stateChanged(ChangeEvent e) {
                 firePropertyChange (OptionsPanelController.PROP_HELP_CTX, null, null);
+                if(tabbedPanel.getSelectedComponent() instanceof JLabel) {
+                    String category = tabbedPanel.getTitleAt(tabbedPanel.getSelectedIndex());
+                    tabbedPanel.setComponentAt(tabbedPanel.getSelectedIndex(), model.getPanel (category));
+                }
             }
         });
         
@@ -91,18 +92,11 @@ public final class AdvancedPanel extends JPanel {
         setLayout (new BorderLayout ());
         add (tabbedPanel, BorderLayout.CENTER);
         
-        int preferredWith = 0;
         Iterator it = model.getCategories ().iterator ();
         while (it.hasNext ()) {
             String category = (String) it.next ();
-            JComponent component = model.getPanel (category);
-            preferredWith = Math.max (
-                preferredWith, 
-                component.getPreferredSize ().width + 22
-            );
-            tabbedPanel.add(category, component);
+            tabbedPanel.addTab(category, new JLabel(category));
         }
-        setPreferredSize (new Dimension (preferredWith, 100));        
         model.setLoookup (masterLookup);
     }
 }

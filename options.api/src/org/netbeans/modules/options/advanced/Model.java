@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.options.advanced;
 
-import java.awt.Color;
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -59,19 +58,20 @@ public final class Model extends TabbedPanelModel {
     }
     
     public String getToolTip (String category) {
-        AdvancedOption option = (AdvancedOption) categoryToOption.get (category);
+        AdvancedOption option = categoryToOption.get (category);
         return option.getTooltip ();
     }
     
     public JComponent getPanel (String category) {
         init ();
-        JComponent panel = (JComponent) categoryToPanel.get (category);
+        JComponent panel = categoryToPanel.get (category);
         if (panel != null) return panel;
-        AdvancedOption option = (AdvancedOption) categoryToOption.get (category);
+        AdvancedOption option = categoryToOption.get (category);
         OptionsPanelController controller = option.create ();
         categoryToController.put (category, controller);
         panel = controller.getComponent (masterLookup);
         categoryToPanel.put (category, panel);
+        controller.update();
         Border b = panel.getBorder ();
         if (b != null)
             b = new CompoundBorder (
@@ -129,7 +129,7 @@ public final class Model extends TabbedPanelModel {
         while (it.hasNext ())
             lookups.add (it.next ().getLookup ());
         return new ProxyLookup 
-            ((Lookup[]) lookups.toArray (new Lookup [lookups.size ()]));
+            (lookups.toArray (new Lookup [lookups.size ()]));
     }
     
     HelpCtx getHelpCtx (JComponent panel) {
@@ -137,8 +137,7 @@ public final class Model extends TabbedPanelModel {
         while (it.hasNext ()) {
             String category = (String) it.next ();
             if (panel == categoryToPanel.get (category)) {
-                OptionsPanelController controller = (OptionsPanelController) 
-                    categoryToController.get (category);
+                OptionsPanelController controller = categoryToController.get (category);
                 return controller.getHelpCtx ();
             }
         }
