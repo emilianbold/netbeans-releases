@@ -18,10 +18,12 @@
  */
 package org.netbeans.modules.xslt.tmap.model.impl;
 
+import javax.swing.text.Document;
 import org.netbeans.modules.xml.xam.AbstractModelFactory;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xslt.tmap.model.api.TMapModel;
 import org.netbeans.modules.xslt.tmap.model.spi.TMapModelFactory;
+import org.openide.util.Lookup;
 
 /**
  *
@@ -34,12 +36,16 @@ public class TMapModelFactoryImpl  extends AbstractModelFactory<TMapModel>
     public TMapModelFactoryImpl() {
     }
 
+    @Override
     public TMapModel getModel(ModelSource source) {
-        return new TMapModelImpl(source);
+        Lookup lookup = source.getLookup();
+        assert lookup.lookup(Document.class) != null;
+        return super.getModel(source);
+//        return new TMapModelImpl(source);
     }
 
     protected TMapModel createModel(ModelSource source) {
-        return super.getModel(source);
+        return new TMapModelImpl(source);
     }
 
 }

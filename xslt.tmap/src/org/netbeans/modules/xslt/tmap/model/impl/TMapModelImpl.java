@@ -53,17 +53,6 @@ public class TMapModelImpl extends AbstractDocumentModel<TMapComponent> implemen
     public TMapModelImpl(ModelSource source) {
         super(source);
         myFactory = new TMapComponentFactoryImpl(this);
-        // TODO  m
-////        if (myRoot == null) {
-////            try         {
-////                super.sync();
-////            }
-////            catch (IOException ex) {
-//////                Exceptions.printStackTrace(ex);
-////                ErrorManager.getDefault().notify(ex);
-//////                System.out.println("IOEXCEPTION was occur ");
-////            }
-////}
     }
     
     public TMapComponent createRootComponent(Element root) {

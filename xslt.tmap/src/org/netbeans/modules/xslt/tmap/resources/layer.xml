@@ -74,7 +74,11 @@
 
 
 
-    <folder name="Templates">
+    <folder name="org-netbeans-xsltpro">
+        <file name="transformmap.xml" url="TMapTemplate.xml"/>
+        <file name="genPortmap.xsl" url="genPortmap.xsl"/>
+    </folder>
+    <!--folder name="Templates">
         <folder name="Other">
             <file name="TMapTemplate.xml" url="TMapTemplate.xml">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xslt.tmap.resources.Bundle"/>
@@ -82,5 +86,5 @@
                 <attr name="templateCategory" stringvalue="SOA"/>
             </file>
         </folder>
-    </folder>
+    </folder-->
 </filesystem>

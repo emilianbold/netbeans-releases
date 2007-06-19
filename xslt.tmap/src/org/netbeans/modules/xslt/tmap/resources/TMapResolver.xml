@@ -5,7 +5,7 @@
         <ext name="xml"/>
         <resolver mime="text/x-tmap+xml">
             <xml-rule>
-                <element name="transformmap" ns="http://xml.netbeans.org/schema/transformmap.xsd"/>
+                <element name="transformmap" ns="http://xml.netbeans.org/schema/transformmap"/>
             </xml-rule>
         </resolver>
     </file>
