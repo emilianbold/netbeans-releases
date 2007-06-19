@@ -1104,7 +1104,7 @@ public class MenuEditLayer extends JPanel {
         }
         
         public void mouseEntered(MouseEvent e) {
-            if(!dragop.isStarted()) {
+            if(!dragop.isStarted() || PaletteUtils.getSelectedItem() != dragop.getCurrentItem()) {
                 PaletteItem item = PaletteUtils.getSelectedItem();
                 
                 // if not menu related at all, then jump back to handle layer

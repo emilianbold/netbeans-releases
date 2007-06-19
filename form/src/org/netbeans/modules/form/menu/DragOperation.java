@@ -60,6 +60,7 @@ class DragOperation {
     private enum Op { PICK_AND_PLOP_FROM_PALETTE, INTER_MENU_DRAG, NO_MENUBAR };
     private Op op = Op.PICK_AND_PLOP_FROM_PALETTE;
     private JMenuItem payloadComponent;
+    private PaletteItem currentItem;
     
     public DragOperation(MenuEditLayer menuEditLayer) {
         this.menuEditLayer = menuEditLayer;
@@ -153,6 +154,12 @@ class DragOperation {
     
     // start a pick and plop from the palette operation
     void start(PaletteItem item, Point pt) {
+        // clean up prev is necessary
+        if(dragComponent != null) {
+            menuEditLayer.layers.remove(dragComponent);
+            dragComponent = null;
+        }
+        
         if(!menuEditLayer.doesFormContainMenuBar()) {
             op = Op.NO_MENUBAR;
             //josh: use the invalid drop target cursor instead
@@ -172,6 +179,7 @@ class DragOperation {
         dragComponent.setLocation(pt);
         menuEditLayer.layers.add(dragComponent, JLayeredPane.DRAG_LAYER);
         menuEditLayer.repaint();
+        currentItem = item;
     }
     
     void move(Point pt) {
@@ -255,6 +263,7 @@ class DragOperation {
     
     void end(Point pt) {
         started = false;
+        currentItem = null;
         if(dragComponent == null) return;
         p("ending an operation at: " + pt);
         menuEditLayer.layers.remove(dragComponent);
@@ -447,6 +456,10 @@ class DragOperation {
     
     public boolean isStarted() {
         return started;
+    }
+    
+    public PaletteItem getCurrentItem() {
+        return currentItem;
     }
     
     private static void p(String s) {
