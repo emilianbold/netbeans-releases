@@ -26,6 +26,7 @@ import javax.swing.AbstractAction;
 import javax.swing.ImageIcon;
 import org.netbeans.modules.loadgenerator.spi.Engine;
 import org.netbeans.modules.loadgenerator.spi.ProcessInstance;
+import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 
@@ -34,7 +35,7 @@ import org.openide.util.WeakListeners;
  * @author Jaroslav Bachorik
  */
 public class RemoveStoppedAction extends AbstractAction {
-  private static final String ICON = "org/netbeans/modules/j2ee/deployment/impl/ui/resources/start.png"; // NOI18N
+  private static final String ICON = NbBundle.getMessage(RemoveStoppedAction.class, "RemoveStoppedAction_Icon"); // NOI18N
   private static final String PROP_ENABLED = "enabled"; // NOI18N
   
   private Engine engine = null;

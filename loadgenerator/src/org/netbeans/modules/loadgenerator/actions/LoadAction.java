@@ -25,8 +25,11 @@ import java.beans.PropertyChangeListener;
 import javax.swing.AbstractAction;
 import javax.swing.ImageIcon;
 import org.netbeans.modules.loadgenerator.api.EngineManager;
+import org.netbeans.modules.loadgenerator.api.EngineManagerException;
 import org.netbeans.modules.loadgenerator.spi.Engine;
+import org.openide.ErrorManager;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 
@@ -35,7 +38,7 @@ import org.openide.util.WeakListeners;
  * @author Jaroslav Bachorik
  */
 public class LoadAction extends AbstractAction {
-  private static final String ICON = "org/netbeans/modules/openfile/openFile.png"; // NOI18N
+  private static final String ICON = NbBundle.getMessage(LoadAction.class, "LoadAction_Icon"); // NOI18N
   private static final String PROP_ENABLED = "enabled"; // NOI18N
   
   private Engine provider = null;
@@ -58,9 +61,14 @@ public class LoadAction extends AbstractAction {
   
   public void actionPerformed(ActionEvent e) {
     EngineManager manager = Lookup.getDefault().lookup(EngineManager.class);
-    manager.startNewProcess(provider);
+    try {
+      manager.startNewProcess(provider);
+    } catch (EngineManagerException ex) {
+      ErrorManager.getDefault().log(ErrorManager.USER, ex.getMessage());
+    }
   }
   
+  @Override
   public boolean isEnabled() {
     return provider.isReady();
   }
