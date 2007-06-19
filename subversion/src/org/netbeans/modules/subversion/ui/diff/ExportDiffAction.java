@@ -315,33 +315,48 @@ public class ExportDiffAction extends ContextAction {
     private void exportDiff(Setup setup, OutputStream out) throws IOException {
         setup.initSources();
         DiffProvider diff = (DiffProvider) Lookup.getDefault().lookup(DiffProvider.class);
-        Reader r1 = setup.getFirstSource().createReader();
-        if (r1 == null) r1 = new StringReader("");  // NOI18N
-        Reader r2 = setup.getSecondSource().createReader();
-        if (r2 == null) r2 = new StringReader("");  // NOI18N
-        Difference[] differences = diff.computeDiff(r1, r2);
+
+        Reader r1 = null;
+        Reader r2 = null;
+        Difference[] differences;
+
+        try {
+            r1 = setup.getFirstSource().createReader();
+            if (r1 == null) r1 = new StringReader("");  // NOI18N
+            r2 = setup.getSecondSource().createReader();
+            if (r2 == null) r2 = new StringReader("");  // NOI18N
+            differences = diff.computeDiff(r1, r2);
+        } finally {
+            if (r1 != null) try { r1.close(); } catch (Exception e) {}
+            if (r2 != null) try { r2.close(); } catch (Exception e) {}
+        }
 
         File file = setup.getBaseFile();
         String name = file.getAbsolutePath();
-        r1 = setup.getFirstSource().createReader();
-        if (r1 == null) r1 = new StringReader(""); // NOI18N
-        r2 = setup.getSecondSource().createReader();
-        if (r2 == null) r2 = new StringReader(""); // NOI18N
-        TextDiffVisualizer.TextDiffInfo info = new TextDiffVisualizer.TextDiffInfo(
-            name + " " + setup.getFirstSource().getTitle(), // NOI18N
-            name + " " + setup.getSecondSource().getTitle(),  // NOI18N
-            null,
-            null,
-            r1,
-            r2,
-            differences
-        );
-        info.setContextMode(true, 3);
-        InputStream is = TextDiffVisualizer.differenceToContextDiffText(info);
-        while(true) {
-            int i = is.read();
-            if (i == -1) break;
-            out.write(i);
+        try {
+            r1 = setup.getFirstSource().createReader();
+            if (r1 == null) r1 = new StringReader(""); // NOI18N
+            r2 = setup.getSecondSource().createReader();
+            if (r2 == null) r2 = new StringReader(""); // NOI18N
+            TextDiffVisualizer.TextDiffInfo info = new TextDiffVisualizer.TextDiffInfo(
+                name + " " + setup.getFirstSource().getTitle(), // NOI18N
+                name + " " + setup.getSecondSource().getTitle(),  // NOI18N
+                null,
+                null,
+                r1,
+                r2,
+                differences
+            );
+            info.setContextMode(true, 3);
+            InputStream is = TextDiffVisualizer.differenceToContextDiffText(info);
+            while(true) {
+                int i = is.read();
+                if (i == -1) break;
+                out.write(i);
+            }
+        } finally {
+            if (r1 != null) try { r1.close(); } catch (Exception e) {}
+            if (r2 != null) try { r2.close(); } catch (Exception e) {}
         }
     }
 
