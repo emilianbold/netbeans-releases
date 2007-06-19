@@ -375,7 +375,7 @@ ctorDef
 
 methodDecl
 {  mController.stateBegin("Method Declaration"); }
-   : #(METHOD_DEF modifiers (typeParameters)? typeSpec methodHead)
+   : #(METHOD_DEF modifiers (typeParameters)? typeSpec methodHead s:SEMI {mController.tokenFound(#s, "Statement Terminator"); })
      { mController.stateEnd(); }
    ;
 
@@ -386,7 +386,8 @@ methodDef
        modifiers (typeParameters)? typeSpec methodHead 
 
       (
-        {
+        (
+         {
            mController.stateBegin("Method Body");
          }
 
@@ -395,7 +396,9 @@ methodDef
          {
             mController.stateEnd();
          }
-      )?
+        )
+        | s:SEMI {mController.tokenFound(#s, "Statement Terminator"); }
+      )
 
          { mController.stateEnd(); }
       ) 

@@ -832,7 +832,7 @@ enumConstantField!
 			// This is not allowed for variable definitions, but this production
 			// allows it, a semantic check could be used if you wanted.
 			(tp:typeParameters)? t:typeSpec[false]		// method or variable declaration(s)
-			(	IDENT									// the name of the method
+			(	id:IDENT									// the name of the method
 
 				// parse the formal parameter declarations.
 				LPAREN! param:parameterDeclarationList RPAREN!
@@ -843,15 +843,25 @@ enumConstantField!
 				// declared to throw
 				(tc:throwsClause)?
 
-				( s2:compoundStatement | SEMI )
+				( s2:compoundStatement 
 				{#enumConstantField = #(#[METHOD_DEF,"METHOD_DEF"],
 							 mods,
 							 tp,
 							 #(#[TYPE,"TYPE"],rt),
-							 IDENT,
+							 id,
 							 param,
 							 tc,
 							 s2);}
+                | sm:SEMI 
+				{#enumConstantField = #(#[METHOD_DEF,"METHOD_DEF"],
+							 mods,
+							 tp,
+							 #(#[TYPE,"TYPE"],rt),
+							 id,
+							 param,
+							 tc,
+							 sm);}
+                )
 			|	v:variableDefinitions[#mods,#t] vs:SEMI
 				{#enumConstantField = #v; #v.addChild(#vs);}
 			)
@@ -897,7 +907,7 @@ classField!
 					// This is not allowed for variable definitions, but this production
 					// allows it, a semantic check could be used if you wanted.
 					t:typeSpec[false]		// method or variable declaration(s)
-					(	IDENT				// the name of the method
+					(	id:IDENT				// the name of the method
 
 						// parse the formal parameter declarations.
 						LPAREN! param:parameterDeclarationList RPAREN!
@@ -908,15 +918,26 @@ classField!
 						// declared to throw
 						(tc:throwsClause)?
 
-						( s2:compoundStatement | SEMI )
+						( s2:compoundStatement 
 						{#classField = #(#[METHOD_DEF,"METHOD_DEF"],
 									 mods,
 									 tp,
 									 #(#[TYPE,"TYPE"],rt),
-									 IDENT,
+									 id,
 									 param,
 									 tc,
 									 s2);}
+                        | sm:SEMI 
+						{#classField = #(#[METHOD_DEF,"METHOD_DEF"],
+									 mods,
+									 tp,
+									 #(#[TYPE,"TYPE"],rt),
+									 id,
+									 param,
+									 tc,
+									 sm);}
+                    
+                        )
 					|	v:variableDefinitions[#mods,#t] vs:SEMI
 						{#classField = #v; #v.addChild(#vs);}
 					)
@@ -956,7 +977,7 @@ interfaceField!
 				// declared to throw
 				(tc:throwsClause)?
 
-				SEMI
+				sm:SEMI
 				
 				{#interfaceField = #(#[METHOD_DEF,"METHOD_DEF"],
 							 mods,
@@ -964,7 +985,8 @@ interfaceField!
 							 #(#[TYPE,"TYPE"],rt),
 							 IDENT,
 							 param,
-							 tc);}
+							 tc,
+							 sm);}
 			|	v:variableDefinitions[#mods,#t] vs:SEMI
 				{#interfaceField = #v; #v.addChild(#vs);} 
 			)
