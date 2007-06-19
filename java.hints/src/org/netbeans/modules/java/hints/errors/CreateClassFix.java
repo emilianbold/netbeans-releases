@@ -59,6 +59,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -119,7 +120,7 @@ public abstract class CreateClassFix implements Fix {
                 argTypes.add(make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), argName, make.Type(tmh.resolve(working)), null));
             }
             
-            MethodTree constr = make.Method(make.Modifiers(EnumSet.of(Modifier.PUBLIC/*!!!*/)), "<init>", null, Collections.<TypeParameterTree>emptyList(), argTypes, Collections.<ExpressionTree>emptyList(), "{}" /*XXX*/, null);
+            MethodTree constr = make.Method(make.Modifiers(EnumSet.of(Modifier.PUBLIC/*!!!*/)), "<init>", null, Collections.<TypeParameterTree>emptyList(), argTypes, Collections.<ExpressionTree>emptyList(), "{}" /*XXX*/, null); // NOI18N
             
             targetTree = GeneratorUtils.insertClassMember(working, targetTreePath, constr);
             
@@ -132,7 +133,7 @@ public abstract class CreateClassFix implements Fix {
                 if (t.getKind() == Kind.METHOD) {
                     MethodTree mt = (MethodTree) t;
                     
-                    if ("<init>".equals(mt.getName().toString()) && mt.getParameters().size() == 0) {
+                    if ("<init>".equals(mt.getName().toString()) && mt.getParameters().size() == 0) { // NOI18N
                         targetTree = make.removeClassMember(targetTree, mt);
                         break;
                     }
@@ -173,7 +174,7 @@ public abstract class CreateClassFix implements Fix {
                 }
             }
             
-            if (extendsType != null && !"java.lang.Object".equals(((TypeElement) extendsType.asElement()).getQualifiedName().toString())) {
+            if (extendsType != null && !"java.lang.Object".equals(((TypeElement) extendsType.asElement()).getQualifiedName().toString())) { // NOI18N
                 extendsClause = make.Type(extendsType);
             }
             
@@ -190,7 +191,7 @@ public abstract class CreateClassFix implements Fix {
         List<TypeParameterTree> typeParameters = new LinkedList<TypeParameterTree>();
         
         for (int cntr = 0; cntr < numTypeParameters; cntr++) {
-            typeParameters.add(make.TypeParameter(numTypeParameters == 1 ? "T" : "T" + cntr, Collections.<ExpressionTree>emptyList()));
+            typeParameters.add(make.TypeParameter(numTypeParameters == 1 ? "T" : "T" + cntr, Collections.<ExpressionTree>emptyList())); // NOI18N
         }
         
         switch (kind) {
@@ -205,6 +206,22 @@ public abstract class CreateClassFix implements Fix {
             default:
                 assert false : kind;
                 return null;
+        }
+    }
+    
+    private static int valueForBundle(ElementKind kind) {
+        switch (kind) {
+        case CLASS:
+            return 0;
+        case INTERFACE:
+            return 1;
+        case ENUM:
+            return 2;
+        case ANNOTATION_TYPE:
+            return 3;
+        default:
+            assert false : kind;
+            return 0;
         }
     }
     
@@ -224,21 +241,21 @@ public abstract class CreateClassFix implements Fix {
         }
 
         public String getText() {
-            return "Create Class \"" + simpleName + "\" in package " + packageName;
+            return NbBundle.getMessage(CreateClassFix.class, "FIX_CreateClassInPackage", simpleName, packageName, valueForBundle(kind));
         }
         
         private static String template(ElementKind kind) {
             switch (kind) {
-                case CLASS: return "Templates/Classes/Class.java";
-                case INTERFACE: return "Templates/Classes/Interface.java";
-                case ANNOTATION_TYPE: return "Templates/Classes/AnnotationType.java";
-                case ENUM: return "Templates/Classes/Enum.java";
+                case CLASS: return "Templates/Classes/Class.java"; // NOI18N
+                case INTERFACE: return "Templates/Classes/Interface.java"; // NOI18N
+                case ANNOTATION_TYPE: return "Templates/Classes/AnnotationType.java"; // NOI18N
+                case ENUM: return "Templates/Classes/Enum.java"; // NOI18N
                 default: throw new IllegalStateException();
             }
         }
 
         public ChangeInfo implement() throws IOException {
-            FileObject pack = FileUtil.createFolder(targetSourceRoot, packageName.replace('.', '/'));
+            FileObject pack = FileUtil.createFolder(targetSourceRoot, packageName.replace('.', '/')); // NOI18N
             FileObject classTemplate/*???*/ = Repository.getDefault().getDefaultFileSystem().getRoot().getFileObject(template(kind));
             DataObject classTemplateDO = DataObject.find(classTemplate);
             DataObject od = classTemplateDO.createFromTemplate(DataFolder.findFolder(pack), simpleName);
@@ -259,7 +276,7 @@ public abstract class CreateClassFix implements Fix {
         }
         
         public String toDebugString(CompilationInfo info) {
-            return "CreateClass:" + packageName + "." + simpleName + ":" + modifiers.toString() + ":" + kind;
+            return "CreateClass:" + packageName + "." + simpleName + ":" + modifiers.toString() + ":" + kind; // NOI18N
         }
         
     }
@@ -282,7 +299,7 @@ public abstract class CreateClassFix implements Fix {
         }
             
         public String getText() {
-            return "Create Class \"" + name + "\" in " + inFQN;
+            return NbBundle.getMessage(CreateClassFix.class, "FIX_CreateInnerClass", name, inFQN, valueForBundle(kind));
         }
 
         public ChangeInfo implement() throws Exception {
@@ -296,19 +313,19 @@ public abstract class CreateClassFix implements Fix {
                     TypeElement targetType = target.resolve(working);
                     
                     if (targetType == null) {
-                        ErrorHintsProvider.LOG.log(Level.INFO, "Cannot resolve target.");
+                        ErrorHintsProvider.LOG.log(Level.INFO, "Cannot resolve target."); // NOI18N
                         return;
                     }
                     
                     TreePath targetTree = working.getTrees().getPath(targetType);
                     
                     if (targetTree == null) {
-                        ErrorHintsProvider.LOG.log(Level.INFO, "Cannot resolve target tree: " + targetType.getQualifiedName() + ".");
+                        ErrorHintsProvider.LOG.log(Level.INFO, "Cannot resolve target tree: " + targetType.getQualifiedName() + "."); // NOI18N
                         return;
                     }
                     
                     TreeMaker make = working.getTreeMaker();
-                    MethodTree constr = make.Method(make.Modifiers(EnumSet.of(Modifier.PUBLIC)), "<init>", null, Collections.<TypeParameterTree>emptyList(), Collections.<VariableTree>emptyList(), Collections.<ExpressionTree>emptyList(), "{}" /*XXX*/, null);
+                    MethodTree constr = make.Method(make.Modifiers(EnumSet.of(Modifier.PUBLIC)), "<init>", null, Collections.<TypeParameterTree>emptyList(), Collections.<VariableTree>emptyList(), Collections.<ExpressionTree>emptyList(), "{}" /*XXX*/, null); // NOI18N
                     ClassTree innerClass = make.Class(make.Modifiers(modifiers), name, Collections.<TypeParameterTree>emptyList(), null, Collections.<Tree>emptyList(), Collections.<Tree>singletonList(constr));
                     
                     innerClass = createConstructor(working, new TreePath(targetTree, innerClass));
@@ -321,7 +338,7 @@ public abstract class CreateClassFix implements Fix {
         }
         
         public String toDebugString(CompilationInfo info) {
-            return "CreateInnerClass:" + inFQN + "." + name + ":" + modifiers.toString() + ":" + kind;
+            return "CreateInnerClass:" + inFQN + "." + name + ":" + modifiers.toString() + ":" + kind; // NOI18N
         }
         
     }
