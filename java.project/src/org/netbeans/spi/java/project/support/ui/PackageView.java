@@ -174,7 +174,9 @@ public class PackageView {
                 target.add( new PackageItem(group, fo, !hasFiles ) );
             }
             else {
-                children.add( fo, !hasFiles );
+                if (fo.isValid()) {
+                    children.add( fo, !hasFiles );
+                }
             }
         }
         if (!folders.isEmpty()) {
