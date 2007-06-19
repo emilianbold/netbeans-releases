@@ -197,8 +197,9 @@ public class DeleteTest extends JellyTestCase {
         //delete file again and commit deletion
         nodeMain = new Node(new SourcePackagesNode(projectName), pathToMain);
         nodeMain.performPopupActionNoBlock("Delete");
-        NbDialogOperator dialog = new NbDialogOperator("Confirm Object Deletion");
-        dialog.yes();
+        NbDialogOperator dialog = new NbDialogOperator("Safe Delete");
+        JButtonOperator btn = new JButtonOperator(dialog, "Refactor");
+        btn.push();
         Thread.sleep(1000);
         Exception e = null;
         try {
