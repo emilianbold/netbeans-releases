@@ -496,27 +496,21 @@ public class MenuEditLayer extends JPanel {
             selectedRADComponent = comp;
             
             registerKeyListeners();
-            keyboardMenuNavigator.selectedRADComponent = (RADVisualComponent) selectedRADComponent;
+            keyboardMenuNavigator.selectedRADComponent = selectedRADComponent;
             formDesigner.setSelectedComponent(selectedRADComponent);
 
             if (selectedComponent != null) {
-                //selectedComponent.setBorder(UNSELECTED_BORDER);
                 selectedComponent.setBackground(null);
             }
 
             selectedComponent = (JComponent) formDesigner.getComponent(selectedRADComponent);
 
             if (selectedComponent != null) {
-                //selectedComponent.setBorder(SELECTED_BORDER);
                 selectedComponent.setBackground(SELECTED_MENU_BACKGROUND);
                 makeSureShowingOnScreen(comp, selectedComponent);
                 if (selectedComponent instanceof JMenu) {
                     JMenu menu = (JMenu) selectedComponent;
                     showMenuPopup(menu);
-                }
-                // clear the border if a menuitem, but not a menu
-                if (selectedComponent instanceof JMenuItem && selectedPortion != SelectedPortion.None && !(selectedComponent instanceof JMenu)) {
-                    //selectedComponent.setBorder(UNSELECTED_BORDER);
                 }
             }
 

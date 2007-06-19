@@ -38,7 +38,7 @@ public class KeyboardMenuNavigator implements KeyListener {
     MenuEditLayer menuEditLayer;
     private RADVisualContainer menuBarRAD;
     private RADVisualContainer currentMenuRAD;
-    RADVisualComponent selectedRADComponent;
+    RADComponent selectedRADComponent;
     KeyboardFinishListener listener;
     
     public KeyboardMenuNavigator(MenuEditLayer menuEditLayer) {
