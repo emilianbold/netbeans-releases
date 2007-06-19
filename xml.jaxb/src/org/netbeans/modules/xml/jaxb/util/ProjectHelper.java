@@ -97,7 +97,7 @@ public class ProjectHelper {
             "xml_binding_build.xml";  // No I18N
     private static final String NBPROJECT_DIR = "nbproject" ;         // No I18N
     private static final String XSL_RESOURCE =
-            "org/netbeans/modules/jaxb/resources/JAXBBuild.xsl" ; // No I18N
+            "org/netbeans/modules/xml/jaxb/resources/JAXBBuild.xsl" ; // No I18N
     private static final String BUILD_GEN_JAXB_DIR =
             "build/generated/addons/jaxb"; // No I18N
     private static final String NON_JAVA_SE_CONFIG_DIR =
@@ -107,9 +107,9 @@ public class ProjectHelper {
     private static final String PLATFORM_ACTIVE = "platform.active" ; // No I18N
     private static final String DEFAULT_PLATFORM = "default_platform";// No I18N
     private static final String RUN_JVM_ARGS_KEY = "run.jvmargs";     // No I18N
-    private static final String PVT_ENDORSED = "jaxbwiz.endorsed.dirs";// No I18N
+    private static final String PROP_ENDORSED = "jaxbwiz.endorsed.dirs";// No I18N
     private static final String RUN_JVM_ARGS_VAL_PREFIX =
-            "-Djava.endorsed.dirs=${" + PVT_ENDORSED + "}";// No I18N
+            "-Djava.endorsed.dirs=${" + PROP_ENDORSED + "}";// No I18N
     
     private static final SpecificationVersion JDK_1_6 =
             new SpecificationVersion("1.6");  // No I18N    
@@ -614,9 +614,10 @@ public class ProjectHelper {
     }
     
     private static String getEndorsedDirs(Project prj){
-        // XXX TODO Find a way to do it in a portable way.
-        String ret = "${netbeans.home}/../java1/modules/ext/jaxws21;" + // No I18N
-                     "${netbeans.home}/../java1/modules/ext/jaxws21/api"; // No I18N
+        // XXX TODO:Find a better portable way to do this.
+        String ret = "\"${netbeans.home}/../java1/modules/ext/jaxws21/api" + //NOI18N
+                     File.pathSeparator + 
+                     "${netbeans.home}/../java1/modules/ext/jaxws21\"" ; //NOI18N
 //        Library jaxbLib = LibraryManager.getDefault().getLibrary(JAXB_LIB_NAME);
 //        List<URL> classPaths = jaxbLib.getContent("classpath"); // No I18N
 //        Iterator<URL> itr = classPaths.iterator();
@@ -630,12 +631,12 @@ public class ProjectHelper {
     
     private static void addEndorsedDir(Project prj){
         if (isJDK6(prj)){
-            String endorsedDirs = getPrivateProperty(prj, PVT_ENDORSED);
+            String endorsedDirs = getProjectProperty(prj, PROP_ENDORSED);
             
             if ((endorsedDirs == null) || ("".equals(endorsedDirs.trim()))){
                 endorsedDirs =  getEndorsedDirs(prj);
                 
-                savePrivateProperty(prj, PVT_ENDORSED, endorsedDirs);
+                saveProjectProperty(prj, PROP_ENDORSED, endorsedDirs);
                 saveProjectProperty(prj, RUN_JVM_ARGS_KEY,
                                          RUN_JVM_ARGS_VAL_PREFIX );
                 try {
@@ -750,7 +751,7 @@ public class ProjectHelper {
                 JavaPlatform dflt = jpm.getDefaultPlatform();
                 if (dflt != null) {
                     if (JDK_1_6.compareTo(dflt.getSpecification().getVersion())
-                            >= 0){
+                            <= 0){
                         ret = true;
                     }
                 }
@@ -762,7 +763,7 @@ public class ProjectHelper {
                                 .equals(platForm)){//
                             SpecificationVersion sv = jpi.getSpecification()
                                     .getVersion();
-                            if (JDK_1_6.compareTo(sv) >= 0){
+                            if (JDK_1_6.compareTo(sv) <= 0){
                                 ret = true;
                             }
                             break;
