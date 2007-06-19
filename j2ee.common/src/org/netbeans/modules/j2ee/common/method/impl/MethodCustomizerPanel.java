@@ -172,6 +172,7 @@ public final class MethodCustomizerPanel extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(interfaceLabel, org.openide.util.NbBundle.getMessage(MethodCustomizerPanel.class, "MethodCustomizerPanel.interfaceLabel.text")); // NOI18N
 
         interfaceButtonGroup.add(localRadio);
+        localRadio.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(localRadio, "Local");
         localRadio.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
@@ -209,6 +210,7 @@ public final class MethodCustomizerPanel extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(cardinalityLabel, org.openide.util.NbBundle.getMessage(MethodCustomizerPanel.class, "MethodCustomizerPanel.cardinalityLabel.text")); // NOI18N
 
         finderCardinalityButtonGroup.add(oneRadioButton);
+        oneRadioButton.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(oneRadioButton, org.openide.util.NbBundle.getMessage(MethodCustomizerPanel.class, "MethodCustomizerPanel.oneRadioButton.text")); // NOI18N
         oneRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
@@ -353,7 +355,7 @@ public final class MethodCustomizerPanel extends javax.swing.JPanel {
     }
     
     public List<String> getExceptions() {
-        return exceptionsPanel.getExceptions();
+        return exceptionsPanel != null ? exceptionsPanel.getExceptions() : Collections.<String>emptyList();
     }
     
     public Set<Modifier> getModifiers() {
@@ -378,6 +380,17 @@ public final class MethodCustomizerPanel extends javax.swing.JPanel {
         return (remoteRadio.isEnabled() && remoteRadio.isSelected()) || hasBothInterfaces();
     }
     
+    public String getEjbql() {
+        if (ejbqlTextArea != null) {
+            return ejbqlTextArea.getText().trim();
+        }
+        return null;
+    }
+    
+    public boolean finderReturnIsSingle() {
+        return oneRadioButton != null ? oneRadioButton.isSelected() : false;
+    }
+
     private boolean hasBothInterfaces() {
         return localRadio.isEnabled() && remoteRadio.isEnabled() && bothRadio.isSelected();
     }

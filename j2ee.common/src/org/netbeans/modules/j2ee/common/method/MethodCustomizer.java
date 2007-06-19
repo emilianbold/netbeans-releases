@@ -78,7 +78,7 @@ public final class MethodCustomizer {
     }
     
     public boolean finderReturnIsSingle() {
-        return false;
+        return panel.finderReturnIsSingle();
     }
     
     public boolean publishToLocal() {
@@ -90,7 +90,7 @@ public final class MethodCustomizer {
     }
     
     public String getEjbQL() {
-        return null;
+        return panel.getEjbql();
         
     }
     

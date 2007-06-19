@@ -57,39 +57,8 @@ public class AddFinderMethodStrategy extends AbstractAddMethodStrategy {
         return getFinderPrototypeMethod();
     }
 
-    public static MethodModel getFinderPrototypeMethod() {
-        return MethodModel.create(
-                "findBy",
-                "void",
-                "",
-                Collections.<MethodModel.Variable>emptyList(),
-                Collections.singletonList("javax.ejb.FinderException"),
-                Collections.<Modifier>emptySet()
-                );
-    }
-
     protected MethodCustomizer createDialog(FileObject fileObject, final MethodModel methodModel) throws IOException {
         return createFinderDialog(fileObject, methodModel);
-    }
-
-    protected MethodCustomizer createFinderDialog(FileObject fileObject, final MethodModel methodModel) throws IOException{
-        String className = _RetoucheUtil.getMainClassName(fileObject);
-        EjbMethodController ejbMethodController = EjbMethodController.createFromClass(fileObject, className);
-        String ejbql = null;
-        if (!ejbMethodController.hasJavaImplementation(methodModel)) {
-            ejbql = ejbMethodController.createDefaultQL(methodModel);
-        }
-        MethodsNode methodsNode = getMethodsNode();
-        return MethodCustomizerFactory.finderMethod(
-                getTitle(),
-                methodModel, 
-                ejbMethodController.hasRemote(), 
-                ejbMethodController.hasLocal(), 
-                methodsNode == null ? ejbMethodController.hasLocal() : methodsNode.isLocal(),
-                methodsNode == null ? ejbMethodController.hasRemote() : !methodsNode.isLocal(),
-                ejbql,
-                Collections.<MethodModel>emptySet()
-                );
     }
 
     public MethodType.Kind getPrototypeMethodKind() {
@@ -111,7 +80,7 @@ public class AddFinderMethodStrategy extends AbstractAddMethodStrategy {
             MetadataModel<EjbJarMetadata> metadataModel = ejbModule.getMetadataModel();
             try {
                 isEntity = metadataModel.runReadAction(new MetadataModelAction<EjbJarMetadata, Boolean>() {
-                    public Boolean run(EjbJarMetadata metadata) throws Exception {
+                    public Boolean run(EjbJarMetadata metadata) {
                         Ejb ejb = metadata.findByEjbClass(className);
                         return ejb instanceof Entity;
                     }
@@ -123,6 +92,33 @@ public class AddFinderMethodStrategy extends AbstractAddMethodStrategy {
         
         return isEntity;
         
+    }
+
+    private static MethodModel getFinderPrototypeMethod() {
+        return MethodModel.create(
+                "findBy",
+                "void",
+                "",
+                Collections.<MethodModel.Variable>emptyList(),
+                Collections.singletonList("javax.ejb.FinderException"),
+                Collections.<Modifier>emptySet()
+                );
+    }
+    
+    private MethodCustomizer createFinderDialog(FileObject fileObject, final MethodModel methodModel) throws IOException{
+        String className = _RetoucheUtil.getMainClassName(fileObject);
+        EjbMethodController ejbMethodController = EjbMethodController.createFromClass(fileObject, className);
+        MethodsNode methodsNode = getMethodsNode();
+        return MethodCustomizerFactory.finderMethod(
+                getTitle(),
+                methodModel, 
+                ejbMethodController.hasRemote(), 
+                ejbMethodController.hasLocal(), 
+                methodsNode == null ? ejbMethodController.hasLocal() : methodsNode.isLocal(),
+                methodsNode == null ? ejbMethodController.hasRemote() : !methodsNode.isLocal(),
+                ejbMethodController.createDefaultQL(methodModel),
+                Collections.<MethodModel>emptySet()
+                );
     }
 
 }

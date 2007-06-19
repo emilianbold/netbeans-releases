@@ -16,6 +16,7 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.netbeans.modules.j2ee.ejbcore.api.methodcontroller;
 
 import org.netbeans.modules.j2ee.common.method.MethodModel;
@@ -26,21 +27,23 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
-import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import org.netbeans.modules.j2ee.dd.api.ejb.CmpField;
 import org.netbeans.modules.j2ee.dd.api.ejb.CmrField;
+import org.netbeans.modules.j2ee.dd.api.ejb.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbRelation;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbRelationshipRole;
 import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
+import org.netbeans.modules.j2ee.dd.api.ejb.MethodParams;
 import org.netbeans.modules.j2ee.dd.api.ejb.Query;
+import org.netbeans.modules.j2ee.dd.api.ejb.QueryMethod;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 
 //TODO: RETOUCHE modifications of model
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -54,7 +57,7 @@ public final class EntityMethodController extends AbstractMethodController {
     private final static int IDX_LOCAL_HOME = 2;
     private final static int IDX_HOME = 3;
     
-    private final MetadataModel<EjbJarMetadata> model;
+    private final MetadataModel<EjbJarMetadata> metadataModel;
     private final String ejbClass;
     private final Set<Modifier> modifiersPublicAbstract = new HashSet<Modifier>(2);
     
@@ -63,16 +66,16 @@ public final class EntityMethodController extends AbstractMethodController {
     private final String localHome;
     private final String home;
 
-    public EntityMethodController(final String ejbClass, MetadataModel<EjbJarMetadata> model) {
-        super(ejbClass, model);
-        this.model = model;
+    public EntityMethodController(final String ejbClass, MetadataModel<EjbJarMetadata> metadataModel) {
+        super(ejbClass, metadataModel);
+        this.metadataModel = metadataModel;
         this.modifiersPublicAbstract.add(Modifier.PUBLIC);
         this.modifiersPublicAbstract.add(Modifier.ABSTRACT);
         final String[] results = new String[4];
         this.ejbClass = ejbClass;
         try {
-            model.runReadAction(new MetadataModelAction<EjbJarMetadata, FileObject>() {
-                public FileObject run(EjbJarMetadata metadata) throws Exception {
+            metadataModel.runReadAction(new MetadataModelAction<EjbJarMetadata, FileObject>() {
+                public FileObject run(EjbJarMetadata metadata) {
                     Entity entity = (Entity) metadata.findByEjbClass(ejbClass);
                     results[IDX_ABSTRACT_SCHEMA_NAME] = entity.getAbstractSchemaName();
                     results[IDX_PERSISTENCE_TYPE] = entity.getPersistenceType();
@@ -241,8 +244,8 @@ public final class EntityMethodController extends AbstractMethodController {
             methodType = new MethodType.CreateMethodType(implView);
         } else if (!implView.getName().startsWith("ejb")) { //NOI18N
             methodType = new MethodType.BusinessMethodType(implView);
-        } else if (implView.getName().startsWith("ejbFind")) { //NOI18N
-            methodType = new MethodType.FinderMethodType(implView);
+        } else if (implView.getName().startsWith("ejbSelect")) { //NOI18N
+            methodType = new MethodType.SelectMethodType(implView);
         } else if (implView.getName().startsWith("ejbHome")) { //NOI18N
             methodType = new MethodType.HomeMethodType(implView);
         }
@@ -272,7 +275,7 @@ public final class EntityMethodController extends AbstractMethodController {
 
     public AbstractMethodController.GenerateFromIntf createGenerateFromIntf() {
         try {
-            return new EntityGenerateFromIntfVisitor(ejbClass, model);
+            return new EntityGenerateFromIntfVisitor(ejbClass, metadataModel);
         } catch (IOException ioe) {
             Exceptions.printStackTrace(ioe);
         }
@@ -285,11 +288,16 @@ public final class EntityMethodController extends AbstractMethodController {
     }
 
     public void addEjbQl(MethodModel clientView, String ejbql, FileObject ddFileObject) throws IOException {
-//        if (isBMP()) {
-//            super.addEjbQl(clientView, ejbql, ddFileObject);
-//        }
-//        model.addQuery(buildQuery(clientView, ejbql));
-//        parent.write(ddFileObject);
+        if (isBMP()) {
+            super.addEjbQl(clientView, ejbql, ddFileObject);
+        }
+        Entity model = metadataModel.runReadAction(new MetadataModelAction<EjbJarMetadata, Entity>() {
+            public Entity run(EjbJarMetadata metadata) {
+                return (Entity) metadata.findByEjbClass(ejbClass);
+            }
+        });
+        model.addQuery(buildQuery(model, clientView, ejbql));
+        DDProvider.getDefault().getDDRoot(ddFileObject).write(ddFileObject); // EJB 2.1
     }
 
     private MethodModel addSetterMethod(String javaClass, MethodModel.Variable field, Set<Modifier> modifiers, boolean remote, Entity entity) {
@@ -380,32 +388,28 @@ public final class EntityMethodController extends AbstractMethodController {
         return methodType == MethodType.Kind.SELECT;
     }
 
-    public String createDefaultQL(MethodType methodType) {
+    public String createDefaultQL(MethodModel methodModel) {
         String ejbql = null;
-        if (isFinder(methodType.getKind()) && isCMP()) {
+        if (methodModel.getName().startsWith("find") && isCMP()) { // finder method in home interface
             ejbql = "SELECT OBJECT(o) \nFROM " + abstractSchemaName + " o";
-        }
-
-        if (isSelect(methodType.getKind())) {
+        } else if (methodModel.getName().startsWith("ejbSelect")) { // select method in ejb class
             ejbql = "SELECT COUNT(o) \nFROM " + abstractSchemaName + " o";
         }
-
         return ejbql;
     }
 
-    private Query buildQuery(MethodModel clientView, String ejbql) {
-//        Query query = model.newQuery();
-//        QueryMethod queryMethod = query.newQueryMethod();
-//        queryMethod.setMethodName(clientView.getName());
-//        MethodParams mParams = queryMethod.newMethodParams();
-//        for (MethodModel.Variable parameter : clientView.getParameters()) {
-//            mParams.addMethodParam(parameter.getType());
-//        }
-//        queryMethod.setMethodParams(mParams);
-//        query.setQueryMethod(queryMethod);
-//        query.setEjbQl(ejbql);
-//        return query;
-        return null;
+    private Query buildQuery(Entity model, MethodModel clientView, String ejbql) {
+        Query query = model.newQuery();
+        QueryMethod queryMethod = query.newQueryMethod();
+        queryMethod.setMethodName(clientView.getName());
+        MethodParams mParams = queryMethod.newMethodParams();
+        for (MethodModel.Variable parameter : clientView.getParameters()) {
+            mParams.addMethodParam(parameter.getType());
+        }
+        queryMethod.setMethodParams(mParams);
+        query.setQueryMethod(queryMethod);
+        query.setEjbQl(ejbql);
+        return query;
     }
 
     private static String prependAndUpper(String fullName, String prefix) {

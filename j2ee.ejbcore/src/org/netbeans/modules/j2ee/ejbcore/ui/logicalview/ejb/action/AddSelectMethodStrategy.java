@@ -25,8 +25,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import javax.lang.model.element.Modifier;
-import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.common.method.MethodCustomizerFactory;
 import org.netbeans.modules.j2ee.common.method.MethodCustomizer;
@@ -36,7 +34,6 @@ import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
 import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
 import org.netbeans.modules.j2ee.ejbcore.action.SelectMethodGenerator;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.EjbMethodController;
-import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.EntityMethodController;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.MethodType;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
@@ -75,34 +72,30 @@ public class AddSelectMethodStrategy extends AbstractAddMethodStrategy {
     protected MethodCustomizer createDialog(FileObject fileObject, final MethodModel methodModel) throws IOException {
         String className = _RetoucheUtil.getMainClassName(fileObject);
         EjbMethodController ejbMethodController = EjbMethodController.createFromClass(fileObject, className);
-        String ejbql = null;
-        if (!ejbMethodController.hasJavaImplementation(methodModel)) {
-            ejbql = ejbMethodController.createDefaultQL(methodModel);
-        }
         return MethodCustomizerFactory.selectMethod(
                 getTitle(),
                 methodModel,
-                ejbql,
+                ejbMethodController.createDefaultQL(methodModel),
                 Collections.<MethodModel>emptySet() //TODO: RETOUCHE collect all methods
                 );
     }
     
-    @SuppressWarnings("deprecation") //NOI18N
-    protected void okButtonPressed(final MethodCustomizer methodCustomizer, final MethodType methodType, 
-            final FileObject fileObject, String classHandle) throws java.io.IOException {
-        ProgressHandle handle = ProgressHandleFactory.createHandle("Adding method");
-        try {
-            handle.start(100);
-            String className = _RetoucheUtil.getMainClassName(fileObject);
-            EjbMethodController ejbMethodController = EjbMethodController.createFromClass(fileObject, className);
-            MethodModel method = methodType.getMethodElement();
-            EntityMethodController entityMethodController = (EntityMethodController) ejbMethodController;
-            entityMethodController.addSelectMethod(method, methodCustomizer.getEjbQL(), getEjbModule(fileObject).getDeploymentDescriptor());
-            handle.progress(99);
-        } finally {
-            handle.finish();
-        }
-    }
+//    @SuppressWarnings("deprecation") //NOI18N
+//    protected void okButtonPressed(final MethodCustomizer methodCustomizer, final MethodType methodType, 
+//            final FileObject fileObject, String classHandle) throws java.io.IOException {
+//        ProgressHandle handle = ProgressHandleFactory.createHandle("Adding method");
+//        try {
+//            handle.start(100);
+//            String className = _RetoucheUtil.getMainClassName(fileObject);
+//            EjbMethodController ejbMethodController = EjbMethodController.createFromClass(fileObject, className);
+//            MethodModel method = methodType.getMethodElement();
+//            EntityMethodController entityMethodController = (EntityMethodController) ejbMethodController;
+//            entityMethodController.addSelectMethod(method, methodCustomizer.getEjbQL(), getEjbModule(fileObject).getDeploymentDescriptor());
+//            handle.progress(99);
+//        } finally {
+//            handle.finish();
+//        }
+//    }
     
     public MethodType.Kind getPrototypeMethodKind() {
         return MethodType.Kind.SELECT;
@@ -125,7 +118,7 @@ public class AddSelectMethodStrategy extends AbstractAddMethodStrategy {
             MetadataModel<EjbJarMetadata> metadataModel = ejbModule.getMetadataModel();
             try {
                 isCMP = metadataModel.runReadAction(new MetadataModelAction<EjbJarMetadata, Boolean>() {
-                    public Boolean run(EjbJarMetadata metadata) throws Exception {
+                    public Boolean run(EjbJarMetadata metadata) {
                         Ejb ejb = metadata.findByEjbClass(className);
                         if (ejb instanceof Entity) {
                             Entity entity = (Entity) ejb;
