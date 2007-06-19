@@ -76,7 +76,7 @@ public class ApplePopupFactory extends PopupFactory {
     private static final boolean APPLE_COCOA_HACK = APPLE_HEAVYWEIGHT &&
             Boolean.getBoolean ("nb.explorer.hw.cocoahack"); //NOI18N
     
-    private static Set windowPool = new HashSet();
+    private static Set<Reference<JWindow>> windowPool = new HashSet<Reference<JWindow>>();
     
     //As is, the background color hack in this class works about 60% of
     //the time to get rid of the drop shadow on heavyweight popups, and
@@ -260,9 +260,9 @@ public class ApplePopupFactory extends PopupFactory {
     private static JWindow checkOutWindow() {
         if (windowPool != null) {
             if (!windowPool.isEmpty()) {
-                for (Iterator i=windowPool.iterator(); i.hasNext();) {
-                    Reference ref = (Reference) i.next();
-                    JWindow win = (JWindow) ref.get();
+                for (Iterator<Reference<JWindow>> i=windowPool.iterator(); i.hasNext();) {
+                    Reference<JWindow> ref = i.next();
+                    JWindow win = ref.get();
                     i.remove();
                     if (win != null) {
                         assert !win.isShowing();
@@ -284,7 +284,7 @@ public class ApplePopupFactory extends PopupFactory {
         if (!APPLE_COCOA_HACK) {
             win.dispose();
         }
-        windowPool.add (new SoftReference (win));
+        windowPool.add (new SoftReference<JWindow> (win));
     }
     
     //A counter for unique window ids (used only if APPLE_COCOA_HACK is true)
@@ -329,6 +329,7 @@ public class ApplePopupFactory extends PopupFactory {
                     //Later we will use it to identify the right window in
                     //the array of windows owned by the application.
                     //This ain't pretty.
+                    @SuppressWarnings("deprecation")
                     Object o = getPeer();
                     if (o != null) {
                         Method m = o.getClass().getDeclaredMethod ("setTitle", 
@@ -350,16 +351,15 @@ public class ApplePopupFactory extends PopupFactory {
                     Class c = Class.forName ("com.apple.cocoa.application." +
                             "NSApplication");
                     
-                    Method m = c.getDeclaredMethod ("sharedApplication", null);
-                    Object nsapplication = m.invoke (null, null);
+                    Method m = c.getDeclaredMethod ("sharedApplication");
+                    Object nsapplication = m.invoke (null);
                     
                     //Now we'll get an NSArray array wrapper of NSWindow objects
-                    m = nsapplication.getClass().getMethod ("windows", null);
-                    Object nsarray_of_nswindows = m.invoke (nsapplication, null);
+                    m = nsapplication.getClass().getMethod ("windows");
+                    Object nsarray_of_nswindows = m.invoke (nsapplication);
                     //Get the array size
-                    m = nsarray_of_nswindows.getClass().getMethod("count", null);
-                    int arrSize = ((Integer) m.invoke (nsarray_of_nswindows, 
-                            null)).intValue();
+                    m = nsarray_of_nswindows.getClass().getMethod("count");
+                    int arrSize = ((Integer) m.invoke (nsarray_of_nswindows)).intValue();
                     
                     //Allocate an array to copy into
                     Object[] windows = new Object [arrSize];
@@ -372,14 +372,13 @@ public class ApplePopupFactory extends PopupFactory {
                         //Lookup the methods we'll need first, to reduce
                         //overhead inside the loop
                         c = windows[0].getClass();
-                        Method titleMethod = c.getMethod("title", null);
+                        Method titleMethod = c.getMethod("title");
                         Method setHasShadowMethod = c.getMethod ("setHasShadow", 
                                 new Class[] { Boolean.TYPE});
                                 
                         for (int i=0; i < windows.length; i++) {
                             //Get the title
-                            String ttl = (String) titleMethod.invoke (windows[i], 
-                                    null);
+                            String ttl = (String) titleMethod.invoke (windows[i]);
                             
                             if (title.equals (ttl)) {
                                 //We have the right method, set hasShadow to
