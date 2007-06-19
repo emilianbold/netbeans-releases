@@ -23,7 +23,6 @@
         <folder name="application">
             <folder name="xslt+xml">
                 <folder name="Actions">
-                    <file name="org-openide-actions-EditAction.instance_hidden"/>
                     <file name="org-openide-actions-OpenAction.instance">
                         <attr name="position" intvalue="100"/>
                     </file>
