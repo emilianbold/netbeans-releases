@@ -180,7 +180,7 @@ public class JSFPageFlowMultiviewDescriptor implements MultiViewDescription, Ser
             tc.unregstierListeners();
             FileObject storageFile = PageFlowView.getStorageFile(context.getFacesConfigFile());
             
-            if ( storageFile.isValid() ){
+            if ( storageFile != null && storageFile.isValid() ){
                 tc.serializeNodeLocations(storageFile);
             } else {
                 DialogDescriptor dialog = new DialogDescriptor(
