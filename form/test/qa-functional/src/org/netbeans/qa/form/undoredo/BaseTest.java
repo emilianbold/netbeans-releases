@@ -1,4 +1,3 @@
-package org.netbeans.qa.form.undoredo;
 /*
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
@@ -17,6 +16,8 @@ package org.netbeans.qa.form.undoredo;
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
+package org.netbeans.qa.form.undoredo;
 
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
@@ -96,6 +97,8 @@ public class BaseTest extends JellyTestCase {
         formnode = new Node(prn, "Source Packages|" + PACKAGE_NAME + "|" + FILE_NAME);
         formnode.select();
         log("Form node selected.");
+        
+        formDesigner = new FormDesignerOperator(FILE_NAME);
         
         EditAction editAction = new EditAction();
         editAction.perform(formnode);
@@ -185,129 +188,147 @@ public class BaseTest extends JellyTestCase {
         
         //selectPropertiesTab(pso);
         
-        for (int i=0;i<1;i++) {
-            // section undo testing
-            
-            openAction.perform(formnode);
-            sleep(2000) ;
-            
-            assertTrue("check in Editor 11b",checkEditor("private void myAction"));
-            
-            undo(1);
-            
-            // check if aaa, bbb are generated
-            
-           assertTrue("check in Editor 10b",checkEditor("aaa,bbb"));
-           assertTrue("check in Editor 10c",!checkEditor("private void myAction"));
-            
-           undo(1);
-            
-            // check if aaa, bbb are not in editor
-            assertTrue("check i// assertTrun Editor 10a",!checkEditor("aaa,bbb"));
-            
-            //now it's not possible to check, in editore, there is different code (no on the same row)
-            assertTrue("check in Editor 9a",checkEditor("jPanel2.add(jButton1),jPanel2.add(jButton2)"));
-            
-            undo(1);
-            //check if panel order was changed
-            assertTrue("check in Editor 9b",!checkEditor("jPanel2.add(jButton2),jPanel2.add(jButton1)"));
-            assertTrue("check in Editor 8b",checkEditor("<html>"));
-            
-            undo(2);
-            
-            assertTrue("check in Editor 8a",!checkEditor("<html>"));
-            
-            //check if both buttons are in panel2
-            assertTrue("check in Editor 7a",checkEditor("jPanel2.add(jButton1"));
-            assertTrue("check in Editor 7b",checkEditor("jPanel2.add(jButton2"));
-            
-            undo(1);
-            //check if panel2 has only button2 and panel1 has only button1 as well
-            assertTrue("check in Editor 7c",!checkEditor("jPanel2.add(jButton1"));
-            assertTrue("check in Editor 7d",checkEditor("jPanel1.add(jButton1"));
-            assertTrue("check in Editor 7e",checkEditor("jPanel2.add(jButton2"));
-            
-            undo(1);
-            //check if button2 is not in jframe and background of panel2 is still set
-            assertTrue("check in Editor 4a",!checkEditor("jButton2"));
-            assertTrue("check in Editor 4b",checkEditor("jPanel2.setBackground"));
-            
-            undo(1);
-            //check if button1 is not in jframe and background of panel1 is still set
-            assertTrue("check in Editor 3a",!checkEditor("jButton1"));
-            assertTrue("check in Editor 3b",checkEditor("jPanel1.setBackground"));
-            
-            undo(1);
-            //check background if is not set on panel2
-            assertTrue("check in Editor 2a",!checkEditor("jPanel2.setBackground"));
-            
-            undo(1);
-            //check background if is not set on panel1
-            assertTrue("check in Editor 1a",!checkEditor("jPanel1.setBackground"));
-            undo(1);
-            
-            //check if panel2 disappeared from jframe
-            assertTrue("check in Editor 0a",!checkEditor("jPanel2"));
-            
-            undo(1);
-            //check if panel1 disappeared from jframe
-            assertTrue("check in Editor 0b",!checkEditor("jPanel1"));
-
-            //redo
-            redo(1);
-            //check if panel1 is in jframe
-            assertTrue("check in Editor R01a",checkEditor("jPanel1"));
-            
-            redo(1);
-            //check if panel1 is in jframe
-            assertTrue("check in Editor R02a",checkEditor("jPanel2"));
-            
-            redo(1);
-            //check if background was set for panel1
-            assertTrue("check in Editor R03a",checkEditor("jPanel1.setBackground"));
-            
-            redo(1);
-            //check if background was set for panel2
-            assertTrue("check in Editor R04a",checkEditor("jPanel2.setBackground"));
-            
-            redo(1);
-            //check if button1 was added in panel1
-            assertTrue("check in Editor R05a",checkEditor("jPanel1.add(jButton1"));
-            
-            redo(1);
-            //check if button2 was added in panel2
-            assertTrue("check in Editor R06a",checkEditor("jPanel2.add(jButton2"));
-            
-            redo(1);
-            //check if panel2 contains both buttons and panel1 is empty
-            assertTrue("check in Editor R07a",checkEditor("jPanel2.add(jButton1"));
-            assertTrue("check in Editor R07b",checkEditor("jPanel2.add(jButton2"));
-            assertTrue("check in Editor R07c",!checkEditor("jPanel1.add(jButton2"));
-            
-            redo(1);
-            //check if text in html was added
-            assertTrue("check in Editor R08a",checkEditor("<html>"));
-            assertTrue("check in Editor R08b",checkEditor("jPanel2.add(jButton2),jPanel2.add(jButton1)"));
-            
-            redo(1);
-            //check if buttons order was changed
-            assertTrue("check in Editor 9b",checkEditor("jPanel2.add(jButton1),jPanel2.add(jButton2)"));
-            
-            redo(1);
-            //check if string aaa, bbb was added in editor
-            assertTrue("check in Editor 10b",checkEditor("aaa,bbb"));
-            
-            redo(1);
-            //check if action "myAction" was added in editor
-            assertTrue("check in Editor 11b",checkEditor("private void myAction"));
-        }
+        // section undo testing
+        openAction.perform(formnode);
+        sleep(2000) ;
         
+        
+        assertTrue("check in Editor 11b",checkEditor("private void myAction"));
+
+        log("undo 1");
+        undo(1);
+
+        // check if aaa, bbb are generated
+        assertTrue("check in Editor 10b",checkEditor("aaa,bbb"));
+        assertTrue("check in Editor 10c",!checkEditor("private void myAction"));
+        log("undo 2");
+        undo(1);
+
+        // check if aaa, bbb are not in editor
+        assertTrue("check ii Editor 10a",!checkEditor("aaa,bbb"));
+
+        //now it's not possible to check, in editore, there is different code (no on the same row)
+        assertTrue("check in Editor 9a",checkEditor("jPanel2.add(jButton1),jPanel2.add(jButton2)"));
+
+        log("undo 3");
+        undo(1);
+        //check if panel order was changed
+        assertTrue("check in Editor 9b",!checkEditor("jPanel2.add(jButton2),jPanel2.add(jButton1)"));
+        assertTrue("check in Editor 8b",checkEditor("<html>"));
+
+        log("undo 4");
+        undo(2);
+
+        //check if both buttons are in panel2
+        assertTrue("check in Editor 7a",checkEditor("jPanel2.add(jButton1"));
+        assertTrue("check in Editor 7b",checkEditor("jPanel2.add(jButton2"));
+
+        log("undo 5");
+        undo(1);
+        //check if panel2 has only button2 and panel1 has only button1 as well
+        assertTrue("check in Editor 8a",!checkEditor("<html>"));
+        assertTrue("check in Editor 7c",!checkEditor("jPanel2.add(jButton1"));
+        assertTrue("check in Editor 7d",checkEditor("jPanel1.add(jButton1"));
+        assertTrue("check in Editor 7e",checkEditor("jPanel2.add(jButton2"));
+
+        log("undo 6");
+        undo(1);
+        //check if button2 is not in jframe and background of panel2 is still set
+        assertTrue("check in Editor 4a",!checkEditor("jButton2"));
+        assertTrue("check in Editor 4b",checkEditor("jPanel2.setBackground"));
+
+        log("undo 7");
+        undo(1);
+        //check if button1 is not in jframe and background of panel1 is still set
+        assertTrue("check in Editor 3a",!checkEditor("jButton1"));
+        assertTrue("check in Editor 3b",checkEditor("jPanel1.setBackground"));
+
+        log("undo 8");
+        undo(1);
+        //check background if is not set on panel2
+        assertTrue("check in Editor 2a",!checkEditor("jPanel2.setBackground"));
+
+        log("undo 9");
+        undo(1);
+        //check background if is not set on panel1
+        assertTrue("check in Editor 1a",!checkEditor("jPanel1.setBackground"));
+        
+        log("undo 10");
+        undo(1);
+
+        //check if panel2 disappeared from jframe
+        assertTrue("check in Editor 0a",!checkEditor("jPanel2"));
+
+        log("undo 10");
+        undo(1);
+        //check if panel1 disappeared from jframe
+        assertTrue("check in Editor 0b",!checkEditor("jPanel1"));
+
+        //redo
+        log("redo 1");
+        redo(1);
+        //check if panel1 is in jframe
+        assertTrue("check in Editor R01a",checkEditor("jPanel1"));
+
+        log("redo 2");        
+        redo(1);
+        //check if panel1 is in jframe
+        assertTrue("check in Editor R02a",checkEditor("jPanel2"));
+
+        log("redo 3");
+        redo(1);
+        //check if background was set for panel1
+        assertTrue("check in Editor R03a",checkEditor("jPanel1.setBackground"));
+
+        log("redo 4");
+        redo(1);
+        //check if background was set for panel2
+        assertTrue("check in Editor R04a",checkEditor("jPanel2.setBackground"));
+
+        log("redo 5");
+        redo(1);
+        //check if button1 was added in panel1
+        assertTrue("check in Editor R05a",checkEditor("jPanel1.add(jButton1"));
+
+        log("redo 6");
+        redo(1);
+        //check if button2 was added in panel2
+        assertTrue("check in Editor R06a",checkEditor("jPanel2.add(jButton2"));
+
+        log("redo 7");
+        redo(1);
+        //check if panel2 contains both buttons and panel1 is empty
+        assertTrue("check in Editor R07a",checkEditor("jPanel2.add(jButton1"));
+        assertTrue("check in Editor R07b",checkEditor("jPanel2.add(jButton2"));
+        assertTrue("check in Editor R07c",!checkEditor("jPanel1.add(jButton2"));
+
+        log("redo 8");
+        redo(1);
+        //check if text in html was added
+        assertTrue("check in Editor R08a",checkEditor("<html>"));
+        assertTrue("check in Editor R08b",checkEditor("jPanel2.add(jButton2),jPanel2.add(jButton1)"));
+
+        log("redo 9");
+        redo(1);
+        //check if buttons order was changed
+        assertTrue("check in Editor 9b",checkEditor("jPanel2.add(jButton1),jPanel2.add(jButton2)"));
+
+        log("redo 10");
+        redo(1);
+        //check if string aaa, bbb was added in editor
+        assertTrue("check in Editor 10b",checkEditor("aaa,bbb"));
+
+        log("redo 11");
+        redo(1);
+        //check if action "myAction" was added in editor
+        assertTrue("check in Editor 11b",checkEditor("private void myAction"));
+
+        log("undo 11");
         undo(11);
 
         Action saveAction;
         saveAction = new Action("File|Save", null);
         saveAction.perform();
-        
     }
     
     /** Run test.
@@ -355,10 +376,11 @@ public class BaseTest extends JellyTestCase {
         //first switch to FormEditor tab
         MainWindowOperator mainWindow = MainWindowOperator.getDefault();
         
-        OpenAction openAction = new OpenAction();
-        openAction.perform(formnode);
         
-        sleep(500) ;
+//        OpenAction openAction = new OpenAction();
+//        openAction.perform(formnode);
+        
+//        sleep(500) ;
         //inspector.selectComponent("[JFrame]");
         for (int i=0;i<n;i++) {
             sleep(500);
@@ -369,11 +391,11 @@ public class BaseTest extends JellyTestCase {
     
     void redo(int n) {
         //first switch to FormEditor tab
-        OpenAction openAction = new OpenAction();
-        openAction.perform(formnode);
+        //OpenAction openAction = new OpenAction();
+        //openAction.perform(formnode);
         
         MainWindowOperator mainWindow = MainWindowOperator.getDefault();
-        inspector.selectComponent("[JFrame]");
+        //inspector.selectComponent("[JFrame]");
         for (int i=0;i<n;i++) {
             sleep(1000);
             mainWindow.getToolbarButton(mainWindow.getToolbar("Edit"), "Redo").push();
@@ -389,14 +411,15 @@ public class BaseTest extends JellyTestCase {
         /*editor = ewo.getEditor("clear_JFrame");
         editor = new EditorOperator("clear_JFrame");
          */
-        EditAction editAction = new EditAction();
-        editAction.perform(formnode);
+        //EditAction editAction = new EditAction();
+        //editAction.perform(formnode);
         log("Source Editor window opened.");
         
-        
-        editor = ewo.getEditor();
+//        editor = ewo.getEditor();
         sleep(300);
-        String editortext = editor.getText();
+//        String editortext = editor.getText();
+         String editortext = formDesigner.editor().getText(); 
+        formDesigner.design();
         // text without escape characters
         /*
         StringBuffer newtext = new StringBuffer();

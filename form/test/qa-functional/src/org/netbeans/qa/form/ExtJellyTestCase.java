@@ -57,7 +57,7 @@ public abstract class ExtJellyTestCase extends JellyTestCase {
     public static String DELETE_OBJECT_CONFIRM = "Confirm Object Deletion"; // NOI18N
     
     /* Skip file (JFrame,Frame, JDialog, ...) delete in the end of each test */
-    public Boolean DELETE_FILES = true;
+    public Boolean DELETE_FILES = false;
     
     /** Constructor required by JUnit */
     public ExtJellyTestCase(String testName) {
