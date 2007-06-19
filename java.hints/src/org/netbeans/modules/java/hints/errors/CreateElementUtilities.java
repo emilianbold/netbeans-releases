@@ -243,14 +243,19 @@ public final class CreateElementUtilities {
             int bodyEnd   = (int) info.getTrees().getSourcePositions().getEndPosition(info.getCompilationUnit(), parent.getLeaf());
             
             types.add(ElementKind.PARAMETER);
-            types.add(ElementKind.LOCAL_VARIABLE)
-                    ;
+            types.add(ElementKind.LOCAL_VARIABLE);
             types.add(ElementKind.FIELD);
             
             if (bodyStart <= offset && offset <= bodyEnd)
                 return Collections.singletonList(info.getElements().getTypeElement("java.lang.Object").asType());
         } catch (IOException ex) {
             Logger.getLogger("global").log(Level.INFO, ex.getMessage(), ex);
+        }
+        
+        if (mt.getReturnType() == error) {
+            types.add(ElementKind.CLASS);
+            types.add(ElementKind.INTERFACE);
+            types.add(ElementKind.ENUM);
         }
         
         return null;
