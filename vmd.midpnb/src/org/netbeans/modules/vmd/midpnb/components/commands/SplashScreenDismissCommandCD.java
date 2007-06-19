@@ -21,6 +21,7 @@
 package org.netbeans.modules.vmd.midpnb.components.commands;
 
 import org.netbeans.modules.vmd.api.codegen.CodeReferencePresenter;
+import org.netbeans.modules.vmd.api.codegen.CodeNamePresenter;
 import org.netbeans.modules.vmd.api.model.*;
 import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter;
 import org.netbeans.modules.vmd.api.model.presenters.actions.DeletePresenter;
@@ -76,7 +77,8 @@ public final class SplashScreenDismissCommandCD extends ComponentDescriptor {
                 protected String generateDirectAccessCode() { return "SplashScreen.DISMISS_COMMAND"; } // NOI18N
                 protected String generateTypeCode() { return null; }
             },
-            // delete
+            CodeNamePresenter.fixed (),
+                // delete
             DeletePresenter.createIndeliblePresenter()
         );
     }
