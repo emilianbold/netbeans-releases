@@ -39,10 +39,12 @@ public class OptionTabVisualPanel extends javax.swing.JPanel {
         initComponents();
         dmp = new DeploymentManagerProperties(deployManager);
         startupTimeoutValue.setText(dmp.getStartupTimeout()+"");
+        startupTimeoutValue.setEnabled(((SunDeploymentManagerInterface) deployManager).isLocal());
         deploymentTimeoutValue.setText(dmp.getDeploymentTimeout()+"");
         enableDirectoryDeployment.setSelected(dmp.isDirectoryDeploymentPossible());
         enableDirectoryDeployment.setEnabled(((SunDeploymentManagerInterface) deployManager).isLocal());
         enableDriverDeployment.setSelected(dmp.isDriverDeploymentEnabled());
+        enableDriverDeployment.setEnabled(((SunDeploymentManagerInterface) deployManager).isLocal());
     }
     
     /** This method is called from within the constructor to
