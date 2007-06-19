@@ -43,6 +43,7 @@ import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ActionMap;
+import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.InputMap;
 import javax.swing.JButton;
@@ -1236,13 +1237,53 @@ public class DesignView extends JPanel implements
     }
     
     
+    abstract class DesignModeAction extends AbstractAction {
+        private static final long serialVersionUID = 1L;
+
+        /**
+         * Defines an <code>Action</code> object with a default
+         * description string and default icon.
+         */
+        public DesignModeAction() {
+            super();
+        }
+
+        /**
+         * Defines an <code>Action</code> object with the specified
+         * description string and a default icon.
+         */
+        public DesignModeAction(String name) {
+            super(name);
+        }
+
+        /**
+         * Defines an <code>Action</code> object with the specified
+         * description string and a the specified icon.
+         */
+        public DesignModeAction(String name, Icon icon) {
+            super(name, icon);
+        }
+
+        @Override
+        public boolean isEnabled() {
+            return super.isEnabled() && !getModel().isReadOnly() && isDesignMode();
+        }
+    }
     
-    
-    class DeleteAction extends AbstractAction {
+    abstract class PhModeAction extends AbstractAction {
+        private static final long serialVersionUID = 1L;
+
+        @Override
+        public boolean isEnabled() {
+            return super.isEnabled() && !getModel().isReadOnly() && !isDesignMode();
+        }
+    }
+
+    class DeleteAction extends DesignModeAction {
         private static final long serialVersionUID = 1L;
         
         public void actionPerformed(ActionEvent e) {
-            if (getModel().isReadOnly()) return;
+            if (!isEnabled()) return;
             
             Pattern selected = getSelectionModel().getSelectedPattern();
             
@@ -1285,11 +1326,13 @@ public class DesignView extends JPanel implements
         }
     }
     
-    class CopyAction extends AbstractAction {
+    class CopyAction extends DesignModeAction {
         private static final long serialVersionUID = 1L;
         
         public void actionPerformed(ActionEvent e) {
-            if (getModel().isReadOnly()) return;
+//            if (getModel().isReadOnly()) {
+//                return;
+//            }
             
             Pattern copiedPattern = getPatternCopy(getSelectionModel().getSelectedPattern());
             goPlaceHolderMode(copiedPattern, true);
@@ -1314,11 +1357,13 @@ public class DesignView extends JPanel implements
         
     }
 
-    class CutAction extends AbstractAction {
+    class CutAction extends DesignModeAction {
         private static final long serialVersionUID = 1L;
         
         public void actionPerformed(ActionEvent e) {
-            if (getModel().isReadOnly()) return;
+//            if (getModel().isReadOnly() || !isDesignMode()) {
+//                return;
+//            }
             Pattern cuttedPattern = getPatternCut(getSelectionModel().getSelectedPattern());
     
             goPlaceHolderMode(cuttedPattern, false);
@@ -1341,7 +1386,7 @@ public class DesignView extends JPanel implements
         }
     }
 
-    class PasteAction extends AbstractAction {
+    class PasteAction extends PhModeAction {
         private static final long serialVersionUID = 1L;
 
         public void actionPerformed(ActionEvent e) {
@@ -1378,7 +1423,7 @@ public class DesignView extends JPanel implements
         setDesignViewMode(DesignViewMode.DESIGN);
     }
 
-    class RenameAction extends AbstractAction {
+    class RenameAction extends DesignModeAction {
         private static final long serialVersionUID = 1L;
         
         public void actionPerformed(ActionEvent e) {
@@ -1418,7 +1463,7 @@ public class DesignView extends JPanel implements
         return nodeHelpCtx == null ? helpCtx : nodeHelpCtx;
     }
     
-    class CycleMexAction extends AbstractAction {
+    class CycleMexAction extends DesignModeAction {
         private static final long serialVersionUID = 1L;
         
         public void actionPerformed(ActionEvent e) {
@@ -1452,7 +1497,7 @@ public class DesignView extends JPanel implements
     }
     
     
-    class GoToSourceAction extends AbstractAction {
+    class GoToSourceAction extends DesignModeAction {
         private static final long serialVersionUID = 1L;
         
         public void actionPerformed(ActionEvent e) {
@@ -1484,7 +1529,7 @@ public class DesignView extends JPanel implements
         }
     }
     
-    class FindUsagesAction extends AbstractAction {
+    class FindUsagesAction extends DesignModeAction {
         private static final long serialVersionUID = 1L;
         
         public void actionPerformed(ActionEvent e) {
@@ -1527,7 +1572,7 @@ public class DesignView extends JPanel implements
     }
     
     
-    class ExpandCurrentPatternAction extends AbstractAction {
+    class ExpandCurrentPatternAction extends DesignModeAction {
         private static final long serialVersionUID = 1L;
         
         public void actionPerformed(ActionEvent event) {
@@ -1543,7 +1588,7 @@ public class DesignView extends JPanel implements
     }
 
     
-    class CollapseCurrentPatternAction extends AbstractAction {
+    class CollapseCurrentPatternAction extends DesignModeAction {
         private static final long serialVersionUID = 1L;
         
         public void actionPerformed(ActionEvent event) {
@@ -1562,7 +1607,7 @@ public class DesignView extends JPanel implements
     }
 
     
-    class ExpandAllPatternsAction extends AbstractAction {
+    class ExpandAllPatternsAction extends DesignModeAction {
         private static final long serialVersionUID = 1L;
         
         
@@ -1764,7 +1809,9 @@ public class DesignView extends JPanel implements
         public void actionPerformed(ActionEvent e) {
             Pattern p = getSelectionModel().getSelectedPattern();
             
-            if (p == null);
+            if (p == null) {
+                return;
+            }
             
             JPopupMenu menu = p.createPopupMenu();
             
