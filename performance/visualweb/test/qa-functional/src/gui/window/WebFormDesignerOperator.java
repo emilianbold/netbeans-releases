@@ -35,7 +35,7 @@ import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import org.netbeans.jemmy.operators.JToggleButtonOperator;
 import org.netbeans.jemmy.operators.Operator;
-
+import org.netbeans.jemmy.operators.ContainerOperator;
 
 /**
  *
@@ -54,7 +54,7 @@ public class WebFormDesignerOperator  extends TopComponentOperator {
     
     public WebFormDesignerOperator(String topComponentName, int Index) {
         //super(topComponentName,Index);
-        super(TopComponentOperator.findTopComponent(null,topComponentName, Index, new TopComponentSubchooser()));
+        super(TopComponentOperator.findTopComponent(null,topComponentName, Index, new WebFormDesignerSubchooser()));
         try {
             surfacecomp = new ComponentOperator(this, new DesignerPaneChooser());
         } catch(TimeoutExpiredException tex) {
@@ -93,26 +93,30 @@ public class WebFormDesignerOperator  extends TopComponentOperator {
     }
         
     public void switchToDesignView() {
-        JToggleButtonOperator designViewButton = new JToggleButtonOperator(this,"Design"); // NOI18N
+        ContainerOperator JSFContainer = new ContainerOperator(this.getParent().getParent());
+        JToggleButtonOperator designViewButton = new JToggleButtonOperator(JSFContainer,"Design"); // NOI18N
         
         if(!designViewButton.isSelected())
             designViewButton.pushNoBlock();
     }
     
     public void switchToJSPView() {
-        JToggleButtonOperator jspViewButton = new JToggleButtonOperator(this,"JSP"); // NOI18N
+        ContainerOperator JSFContainer = new ContainerOperator(this.getParent().getParent());        
+        JToggleButtonOperator jspViewButton = new JToggleButtonOperator(JSFContainer,"JSP"); // NOI18N
         
         if(!jspViewButton.isSelected())
             jspViewButton.pushNoBlock();
     }
     
     public void switchToCodeView() {
-        JToggleButtonOperator javaViewButton = new JToggleButtonOperator(this,"Java"); // NOI18N
+        ContainerOperator JSFContainer = new ContainerOperator(this.getParent().getParent());        
+        JToggleButtonOperator javaViewButton = new JToggleButtonOperator(JSFContainer,"Java"); // NOI18N
         
         if(!javaViewButton.isSelected())
             javaViewButton.pushNoBlock();
     }
     
+    @Override
     public void closeDiscard() {
         
         new Thread(new Runnable() {
