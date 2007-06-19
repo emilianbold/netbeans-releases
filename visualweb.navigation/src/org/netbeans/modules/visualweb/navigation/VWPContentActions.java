@@ -10,8 +10,10 @@
 package org.netbeans.modules.visualweb.navigation;
 
 import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.KeyStroke;
 import org.netbeans.modules.web.jsf.navigation.pagecontentmodel.PageContentItem;
 import org.openide.util.NbBundle;
 
@@ -27,9 +29,9 @@ public class VWPContentActions {
     //     */
     public VWPContentActions(VWPContentModel vwpContentModel) {
         this.vwpContentModel = vwpContentModel;
-        handleAddCommandButton.putValue("NAME", addButton);
-        handleAddCommandLink.putValue("NAME", addHyperlink);
-        handleAddImageHyperLink.putValue("NAME", addImageHyperlink);
+//        handleAddCommandButton.putValue("NAME", addButton);
+//        handleAddCommandLink.putValue("NAME", addHyperlink);
+//        handleAddImageHyperLink.putValue("NAME", addImageHyperlink);
     }
     
     public  Action[]  getVWPContentModelActions(  ) {
@@ -54,6 +56,7 @@ public class VWPContentActions {
     private  Action handleAddCommandButton = new HandleAddCommandButton();
     public final class HandleAddCommandButton extends AbstractAction {
         public HandleAddCommandButton(){
+            putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_B,0));
             putValue(NAME, addButton);
         }
                 
@@ -66,6 +69,7 @@ public class VWPContentActions {
     private Action handleAddCommandLink = new HandleAddCommandLink();
     public final class HandleAddCommandLink extends AbstractAction {
         public HandleAddCommandLink(){
+            putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_L,0));
             putValue(NAME, addHyperlink);
         }
         public void actionPerformed(ActionEvent e) {
@@ -75,7 +79,8 @@ public class VWPContentActions {
     
     private Action handleAddImageHyperLink = new HandleAddImageHyperLink();
     public final class HandleAddImageHyperLink extends AbstractAction {
-        public HandleAddImageHyperLink(){
+        public HandleAddImageHyperLink(){            
+            putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_I,0));
             putValue(NAME, addImageHyperlink);
         }
         public void actionPerformed(ActionEvent e) {
@@ -86,7 +91,8 @@ public class VWPContentActions {
     public final class OpenHandleAction extends AbstractAction {
         private final PageContentItem item;
         public OpenHandleAction(PageContentItem item){
-            this.item = item;
+            this.item = item;            
+            putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_O,0));
             putValue( NAME, openHandler);
         }                
         public void actionPerformed(ActionEvent ev) {

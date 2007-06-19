@@ -11,6 +11,7 @@ package org.netbeans.modules.web.jsf.navigation.graph.actions;
 
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -20,6 +21,7 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
+import javax.swing.KeyStroke;
 import org.netbeans.modules.web.jsf.navigation.NavigationCaseEdge;
 import org.netbeans.modules.web.jsf.navigation.Page;
 import org.netbeans.modules.web.jsf.navigation.PageFlowUtilities;
@@ -46,6 +48,7 @@ public class PageFlowDeleteAction extends AbstractAction{
      */
     public PageFlowDeleteAction(PageFlowScene scene) {
         this.scene = scene;
+        putValue("ACCELERATOR_KEY", KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0));
     }
     
     /* These are edges that do not exist in the local facesConfig. */
