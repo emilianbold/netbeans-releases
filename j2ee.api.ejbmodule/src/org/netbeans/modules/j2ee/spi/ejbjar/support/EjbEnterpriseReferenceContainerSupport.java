@@ -95,7 +95,7 @@ public final class EjbEnterpriseReferenceContainerSupport {
             final String[] ejbName = new String[1];
             FileObject ejbReferenceEjbClassFO = ejbReferenceMetadataModel.runReadAction(new MetadataModelAction<EjbJarMetadata, FileObject>() {
                 public FileObject run(EjbJarMetadata metadata) throws Exception {
-                    ejbName[1] = metadata.findByEjbClass(ejbReference.getEjbClass()).getEjbName();
+                    ejbName[0] = metadata.findByEjbClass(ejbReference.getEjbClass()).getEjbName();
                     return metadata.findResource(ejbReference.getEjbClass().replace('.', '/') + ".java");
                 }
             });
@@ -111,7 +111,7 @@ public final class EjbEnterpriseReferenceContainerSupport {
             }
             
             String jarName = names[names.length - 1] + "#";
-            final String ejbLink = jarName + ejbName[1];
+            final String ejbLink = jarName + ejbName[0];
             
             final boolean[] write = new boolean[] { false };
             String resourceName = metadataModel.runReadAction(new MetadataModelAction<EjbJarMetadata, String>() {

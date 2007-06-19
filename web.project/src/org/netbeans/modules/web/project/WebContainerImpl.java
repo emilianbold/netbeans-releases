@@ -95,7 +95,7 @@ class WebContainerImpl implements EnterpriseReferenceContainer {
         final String[] ejbName = new String[1];
         FileObject ejbReferenceEjbClassFO = ejbReferenceMetadataModel.runReadAction(new MetadataModelAction<EjbJarMetadata, FileObject>() {
             public FileObject run(EjbJarMetadata metadata) throws Exception {
-                ejbName[1] = metadata.findByEjbClass(ejbReference.getEjbClass()).getEjbName();
+                ejbName[0] = metadata.findByEjbClass(ejbReference.getEjbClass()).getEjbName();
                 return metadata.findResource(ejbReference.getEjbClass().replace('.', '/') + ".java");
             }
         });
@@ -111,7 +111,7 @@ class WebContainerImpl implements EnterpriseReferenceContainer {
         }
 
         String jarName = names[names.length - 1] + "#";
-        final String ejbLink = jarName + ejbName[1];
+        final String ejbLink = jarName + ejbName[0];
         
         if (local) {
             refName = getUniqueName(getWebApp(), "EjbLocalRef", "EjbRefName", ejbRefName); //NOI18N
