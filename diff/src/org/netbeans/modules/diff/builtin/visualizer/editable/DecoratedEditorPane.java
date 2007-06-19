@@ -24,6 +24,7 @@ import org.netbeans.editor.BaseTextUI;
 import org.netbeans.api.editor.fold.FoldHierarchy;
 import org.netbeans.api.diff.Difference;
 import org.openide.ErrorManager;
+import org.openide.util.RequestProcessor;
 
 import javax.swing.*;
 import javax.swing.text.*;
@@ -40,8 +41,11 @@ class DecoratedEditorPane extends JEditorPane implements PropertyChangeListener 
 
     private Difference[]        currentDiff;
     private DiffContentPanel    master;
+    
+    private final RequestProcessor.Task repaintTask;
 
     public DecoratedEditorPane(DiffContentPanel master) {
+        repaintTask = RequestProcessor.getDefault().create(new RepaintPaneTask());
         setBorder(null);
         this.master = master;
         master.getMaster().addPropertyChangeListener(this);
@@ -172,6 +176,12 @@ class DecoratedEditorPane extends JEditorPane implements PropertyChangeListener 
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
-        repaint();
+        repaintTask.schedule(150);
+    }
+    
+    private class RepaintPaneTask implements Runnable {
+        public void run() {
+            repaint();
+        }
     }
 }

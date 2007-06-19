@@ -32,8 +32,6 @@ import java.awt.geom.CubicCurve2D;
 import java.awt.geom.GeneralPath;
 import java.util.*;
 import java.util.List;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeEvent;
 
 /**
  * Split pane divider with Diff decorations.
@@ -70,11 +68,6 @@ class DiffSplitPaneDivider extends BasicSplitPaneDivider implements MouseMotionL
         
         addMouseListener(this);
         addMouseMotionListener(this);
-        master.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                repaint();
-            }
-        });
     }
 
     public void mouseClicked(MouseEvent e) {
