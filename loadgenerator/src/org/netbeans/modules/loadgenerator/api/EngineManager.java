@@ -30,13 +30,13 @@ public interface EngineManager {
   public Collection<Engine> findEngines();
 
   public Collection<Engine> findEngines(final String extension);
-
-//  public List<ILoadGeneratorInstance> findProviderInstances(final Class<? extends ILoadGeneratorInstance> providerClass);
   
-  public void startProcess(final ProcessInstance process);
+  public void startProcess(final ProcessInstance process) throws EngineManagerException;
 
-  public ProcessInstance startNewProcess(final Engine engine);
+  public ProcessInstance startNewProcess(final Engine engine) throws EngineManagerException;
   
-  public void stopProcess(final ProcessInstance process, final boolean force);
-  public void stopProcess(final String scriptPath, final boolean force);
+  public void stopProcess(final ProcessInstance process, final boolean force) throws EngineManagerException;
+  public void stopProcess(final String scriptPath, final boolean force) throws EngineManagerException;
+  
+  public Collection<ProcessInstance> findProcesses(final String scriptPath) throws EngineManagerException;
 }

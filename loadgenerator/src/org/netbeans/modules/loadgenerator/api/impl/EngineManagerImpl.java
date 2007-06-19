@@ -25,12 +25,15 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.loadgenerator.api.EngineManager;
+import org.netbeans.modules.loadgenerator.api.EngineManagerException;
 import org.netbeans.modules.loadgenerator.spi.Engine;
 import org.netbeans.modules.loadgenerator.spi.ProcessInstance;
 import org.netbeans.modules.loadgenerator.spi.ProcessInstanceListener;
@@ -44,65 +47,61 @@ import org.openide.util.Lookup;
  * @author Jaroslav Bachorik
  */
 public class EngineManagerImpl implements EngineManager, ProcessInstanceListener {
+
+  private static final Logger LOGGER = Logger.getLogger(EngineManagerImpl.class.getName());
+
   private static EngineManager instance = null;
-  
-  final private Map<ProcessInstance, ProgressHandle> prgrsHandles = Collections.synchronizedMap(new HashMap<ProcessInstance, ProgressHandle>());
-  final private ManagerOutputWindowRegistry registry = ManagerOutputWindowRegistry.getDefault();
-  
-  final private Collection<ProcessInstance> runningInstances;
+
+  private final Map<ProcessInstance, List<ProgressHandle>> prgrsHandles = Collections.synchronizedMap(new HashMap<ProcessInstance, List<ProgressHandle>>());
+  private final ManagerOutputWindowRegistry registry = ManagerOutputWindowRegistry.getDefault();
+
+  private final Collection<ProcessInstance> runningInstances;
   private static String lastUsedScript = null;
-  
+
   public void generatorStarted(ProcessInstance provider) {
     try {
-      prgrsHandles.get(provider).finish();
-      prgrsHandles.remove(provider);
+      finishHandle(provider);
     } catch (Exception e) {
       e.printStackTrace();
     }
-    
+
     if (!runningInstances.contains(provider)) {
       runningInstances.add(provider);
     }
-    
   }
+
   public void generatorStarted(final ProcessInstance provider, final String logPath) {
     try {
-      if (prgrsHandles == null || provider == null) return;
-      ProgressHandle phandle = prgrsHandles.get(provider);
-      if (phandle != null) {
-        phandle.finish();
-        prgrsHandles.remove(provider);
+      if (prgrsHandles == null || provider == null) {
+        return;
       }
+      finishHandle(provider);
     } catch (Exception e) {
       e.printStackTrace();
     }
-    
+
     if (!runningInstances.contains(provider)) {
       runningInstances.add(provider);
     }
   }
-  
+
   public void generatorStopped(final ProcessInstance provider) {
     try {
-      ProgressHandle ph = prgrsHandles.get(provider);
-      if (ph != null) {
-        ph.finish();
-        prgrsHandles.remove(provider);
-      }
+      finishHandle(provider);
     } catch (Exception e) {
       e.printStackTrace();
     }
-    
-    ((ProcessInstance)provider).removeListener(this);
+
+    provider.removeListener(this);
     runningInstances.remove(provider);
-    
+
     ManagerOutputWindow lgmgrWin = registry.find(provider);
     if (lgmgrWin != null) {
       lgmgrWin.detach(provider);
     }
   }
-  
-  
+
+
   public void instanceInvalidated(ProcessInstance instance) {
     if (lastUsedScript != null) {
       lastUsedScript = instance.getCurrentScript();
@@ -111,83 +110,98 @@ public class EngineManagerImpl implements EngineManager, ProcessInstanceListener
       registry.close(instance);
     }
   }
-  
+
   /**
    * Creates a new instance of EngineManagerImpl
    */
   public EngineManagerImpl() {
     runningInstances = new ArrayList<ProcessInstance>();
   }
-  
+
   public Collection<Engine> findEngines() {
     Collection<Engine> providers = new ArrayList<Engine>();
     Lookup.Result<Engine> result = Lookup.getDefault().lookupResult(Engine.class);
-    for(Engine provider : result.allInstances()) {
+    for (Engine provider : result.allInstances()) {
       providers.add(provider);
     }
-    
+
     return providers;
   }
-  
+
   public Collection<Engine> findEngines(final String extension) {
     Collection<Engine> providers = new ArrayList<Engine>();
     Collection<? extends Engine> result = Lookup.getDefault().lookupAll(Engine.class);
-    
-    for(Engine provider : result) {
+
+    for (Engine provider : result) {
       if (provider.getSupportedExtensions().contains(extension)) {
         providers.add(provider);
       }
     }
-    
+
     return providers;
   }
-  
-  public void startProcess(final ProcessInstance instance) {
+
+  // @throws EngineManagerException
+  public void startProcess(final ProcessInstance instance) throws EngineManagerException {
     if (instance.isRunning()) {
-      ErrorManager.getDefault().notify(ErrorManager.ERROR, new Throwable("Provider is busy"));
-      return;
+      throw new EngineManagerException("Provider " + instance.getDisplayName() + " is busy");
     }
-    
-    ProgressHandle phandle = ProgressHandleFactory.createHandle("Starting load generator", new Cancellable() {
+
+    ProgressHandle phandle = ProgressHandleFactory.createHandle("Starting load generator", new Cancellable
+
+    () {
+
       public boolean cancel() {
-        if (prgrsHandles == null || instance == null) return true;
-        ProgressHandle phandle = prgrsHandles.get(instance);
-        if (phandle != null) {
-          phandle.finish();
-          stopProcess(instance, true);
+        if (prgrsHandles == null || instance == null) {
           return true;
         }
-        return false;
+        try {
+          stopProcess(instance, true);
+        } catch (EngineManagerException ex) {
+          LOGGER.warning(ex.getMessage());
+        }
+        return true;
       }
     });
-    
-    phandle.setInitialDelay(0);
-    phandle.start();
-    phandle.switchToIndeterminate();
-    
-    prgrsHandles.put(instance, phandle);
-    
-    ((ProcessInstance)instance).addListener(this);
-    
-    // open the main management window
-    ManagerOutputWindow mngrWin = registry.open(instance);
-    
-    instance.start();
+
+    try {
+      phandle.setInitialDelay(0);
+      phandle.start();
+      phandle.switchToIndeterminate();
+
+      storeHandle(instance, phandle);
+
+      instance.addListener(this);
+
+      // open the main management window
+      ManagerOutputWindow mngrWin = registry.open(instance);
+
+      instance.start();
+    } catch (Exception e) {
+      phandle.finish();
+      prgrsHandles.remove(phandle);
+    }
     lastUsedScript = instance.getCurrentScript();
   }
-  
-  public ProcessInstance startNewProcess(final Engine provider) {
+
+  // @throws EngineManagerException
+  public ProcessInstance startNewProcess(final Engine provider) throws EngineManagerException {
     ProcessInstance runnableInstance = null;
-    
+
     final JFileChooser chooser = new JFileChooser();
     chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
     chooser.setAcceptAllFileFilterUsed(false);
-    chooser.setFileFilter(new FileFilter() {
+    chooser.setFileFilter(new FileFilter
+
+    () {
+
       public boolean accept(File f) {
-        if (f.isDirectory())
+        if (f.isDirectory()) {
           return true;
+        }
         return provider.getSupportedExtensions().contains(FileUtil.getExtension(f.getAbsolutePath()));
       }
+
       public String getDescription() {
         return "Supported scripts";
       }
@@ -204,29 +218,65 @@ public class EngineManagerImpl implements EngineManager, ProcessInstanceListener
         ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
       }
     }
-    
+
     return runnableInstance;
   }
-  
-  public void stopProcess(final ProcessInstance provider, final boolean force) {
+
+  // @throws EngineManagerException
+  public void stopProcess(final ProcessInstance provider, final boolean force) throws EngineManagerException {
     if (!provider.isRunning()) {
-      ErrorManager.getDefault().notify(ErrorManager.WARNING, new Throwable("Stopping a non-running provider"));
+      throw new EngineManagerException("Stopping a non-running provider " + provider.getDisplayName());
     }
-    
+
     ProgressHandle phandle = ProgressHandleFactory.createHandle("Stopping load generator");
-    phandle.setInitialDelay(0);
-    phandle.start();
-    phandle.switchToIndeterminate();
-    
-    prgrsHandles.put(provider, phandle);
-    
-    provider.stop(force);
+    try {
+      phandle.setInitialDelay(0);
+      phandle.start();
+      phandle.switchToIndeterminate();
+
+      storeHandle(provider, phandle);
+
+      provider.stop(force);
+    } catch (Exception e) {
+      phandle.finish();
+      prgrsHandles.remove(phandle);
+    }
   }
-  
-  public void stopProcess(final String scriptPath, final boolean force) {
-    for(ProcessInstance instance : runningInstances) {
+
+  // @throws EngineManagerException
+  public void stopProcess(final String scriptPath, final boolean force) throws EngineManagerException {
+    Collection<ProcessInstance> processes = findProcesses(scriptPath);
+    for (ProcessInstance instance : processes) {
+      stopProcess(instance, force);
+    }
+  }
+
+  public Collection<ProcessInstance> findProcesses(final String scriptPath) throws EngineManagerException {
+    Collection<ProcessInstance> processes = new ArrayList<ProcessInstance>();
+    for (ProcessInstance instance : runningInstances) {
       if (instance.getCurrentScript().equals(scriptPath)) {
-        stopProcess(instance, force);
+        processes.add(instance);
+      }
+    }
+    return processes;
+  }
+
+  private void storeHandle(ProcessInstance provider, ProgressHandle handle) {
+    List<ProgressHandle> handles = prgrsHandles.get(provider);
+    if (handles == null) {
+      handles = new ArrayList<ProgressHandle>();
+      prgrsHandles.put(provider, handles);
+    }
+    handles.add(handle);
+  }
+
+  private void finishHandle(ProcessInstance provider) {
+    List<ProgressHandle> handles = prgrsHandles.get(provider);
+    if (handles != null && !handles.isEmpty()) {
+      handles.get(0).finish();
+      handles.remove(0);
+      if (handles.isEmpty()) {
+        prgrsHandles.remove(provider);
       }
     }
   }
