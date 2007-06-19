@@ -102,7 +102,7 @@ heap_size () {
         mem=`expr $mem / 4096`
         ;;
     SunOS*)
-        mem=`/usr/sbin/prtconf | grep Memory | tr -dc '[:digit:]'`
+        mem=`/usr/sbin/prtconf | grep Memory | /usr/xpg4/bin/tr -dc '[:digit:]'`
         mem=`expr $mem / 4`
         ;;
     Darwin*)
