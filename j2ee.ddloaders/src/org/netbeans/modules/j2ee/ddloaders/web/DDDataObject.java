@@ -164,7 +164,9 @@ public class DDDataObject extends  DDMultiViewDataObject
 
     public void propertyChange(java.beans.PropertyChangeEvent evt) {
         if (DDDataObject.PROP_DOCUMENT_VALID.equals (evt.getPropertyName ())) {
-            ((DDDataNode)getNodeDelegate()).iconChanged();
+            if (this.isValid()){
+                ((DDDataNode)getNodeDelegate()).iconChanged();
+            }
         }
     }
 
