@@ -59,9 +59,17 @@ public class ConnectionTabVisualPanel extends javax.swing.JPanel {
         userNameField.setText(targetData.getUserName());
         passwordField.setText(targetData.getPassword());
         domainField.setText(targetData.getDomainName());
-        domainLocField.setText(targetData.getLocation());
+        String loc = targetData.getLocation();
+        domainLocField.setText(loc);
         enableHttpMonitor.setSelected(Boolean.valueOf(targetData.getHttpMonitorOn()).booleanValue());
         syncHttpProxies.setSelected(targetData.isSyncHttpProxyOn());
+        if (null == loc || loc.trim().length() < 1) {
+            enableHttpMonitor.setEnabled(false);
+            syncHttpProxies.setEnabled(false);
+            // the sync only happens on startup... we don't start a remote instance,
+            // so this should be disabled for now.
+            syncHttpProxies.setSelected(false);
+        }
         // Provide a name in the title bar.
         setName(NbBundle.getMessage(ConnectionTabVisualPanel.class, "TITLE_AddUserDefinedLocalServerPanel"));
         
