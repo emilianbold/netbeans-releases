@@ -205,5 +205,17 @@ public abstract class TreeRuleTestBase extends NbTestCase {
             performAnalysisTest("test/Test.java", before, i);
         }
     }
-    
+
+    public void testNoHintsForSimpleInitialize() throws Exception {
+        
+        String before = "package test; class Test {" +
+            " { java.lang.System.out.println(); } " +
+            "}\n";
+        
+        for (int i = 46; i < before.length(); i++) {
+            LOG.info("testing position " + i + " at " + before.charAt(i));
+            clearWorkDir();
+            performAnalysisTest("test/Test.java", before, i);
+        }
+    }
 }

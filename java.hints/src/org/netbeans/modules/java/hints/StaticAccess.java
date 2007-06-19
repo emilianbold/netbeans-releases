@@ -18,6 +18,7 @@ package org.netbeans.modules.java.hints;
 
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
@@ -29,6 +30,7 @@ import java.util.prefs.Preferences;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 import javax.swing.JComponent;
@@ -82,12 +84,25 @@ public class StaticAccess extends AbstractHint {
             return null;
         }
         TypeElement type = (TypeElement)el;
+        
+        Name idName = null;
+        
+        Tree expression = mst.getExpression();
+        if (expression.getKind() == Kind.MEMBER_SELECT) {
+            MemberSelectTree exprSelect = (MemberSelectTree)expression;
+            idName = exprSelect.getIdentifier();
+        }
+        
         if (mst.getExpression().getKind() == Kind.IDENTIFIER) {
             IdentifierTree idt = (IdentifierTree)mst.getExpression();
-            if (idt.getName().equals(type.getSimpleName())) {
+            idName = idt.getName();
+        }
+        
+        if (idName != null) {
+            if (idName.equals(type.getSimpleName())) {
                 return null;
             }
-            if (idt.getName().equals(type.getQualifiedName())) {
+            if (idName.equals(type.getQualifiedName())) {
                 return null;
             }
         }
