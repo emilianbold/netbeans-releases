@@ -1124,7 +1124,12 @@ public class LineBoxGroup extends ContainerBox {
     private boolean hasComponentAncestor(CssBox leaf, Element componentRootElement) {
         while ((leaf != null) && (leaf != this)) {
 //            if (leaf.getDesignBean() == component) {
-            if (getElementForComponentRootCssBox(leaf) == componentRootElement) {
+//            if (getElementForComponentRootCssBox(leaf) == componentRootElement) {
+            // XXX #107084 There needs to be a way how to find a component for
+            // the line box type of boxes, which otherwise don't have a component root element.
+            // Before it was working only thanks to 'broken' hierarchy, the parent was different (ContainerBox)
+            // than the actual box (LineBoxGroup) having one (TextBox) as its child.
+            if (leaf.getElement() == componentRootElement) {
                 return true;
             }
 
