@@ -122,9 +122,19 @@ public final class ParametersPanel extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(upButton, org.openide.util.NbBundle.getMessage(ParametersPanel.class, "ParametersPanel.upButton.text")); // NOI18N
         upButton.setEnabled(false);
+        upButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                upButtonActionPerformed(evt);
+            }
+        });
 
         org.openide.awt.Mnemonics.setLocalizedText(downButton, org.openide.util.NbBundle.getMessage(ParametersPanel.class, "ParametersPanel.downButton.text")); // NOI18N
         downButton.setEnabled(false);
+        downButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                downButtonActionPerformed(evt);
+            }
+        });
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -162,6 +172,20 @@ public final class ParametersPanel extends javax.swing.JPanel {
         );
     }// </editor-fold>//GEN-END:initComponents
 
+private void upButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_upButtonActionPerformed
+    int selIndex = table.getSelectedRow();
+    tableModel.set(selIndex - 1, tableModel.set(selIndex, tableModel.getParameter(selIndex - 1)));
+    table.setRowSelectionInterval(selIndex - 1, selIndex - 1);
+    updateButtons();
+}//GEN-LAST:event_upButtonActionPerformed
+
+private void downButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_downButtonActionPerformed
+    int selIndex = table.getSelectedRow();
+    tableModel.set(selIndex + 1, tableModel.set(selIndex, tableModel.getParameter(selIndex + 1)));
+    table.setRowSelectionInterval(selIndex + 1, selIndex + 1);
+    updateButtons();
+}//GEN-LAST:event_downButtonActionPerformed
+
 private void removeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeButtonActionPerformed
     int selectedRow = table.getSelectedRow();
     if (selectedRow > -1) {
@@ -191,10 +215,12 @@ private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
     // End of variables declaration//GEN-END:variables
     
     private void updateButtons() {
-        int selectedRowsCount = table.getSelectedRowCount();
-        removeButton.setEnabled(selectedRowsCount != 0);
-        upButton.setEnabled(selectedRowsCount == 1);
-        downButton.setEnabled(selectedRowsCount == 1);
+        int selIndex = table.getSelectedRow();
+        boolean oneSelected = table.getSelectedRowCount() == 1;
+        
+        removeButton.setEnabled(oneSelected);
+        upButton.setEnabled(oneSelected && (selIndex > 0));
+        downButton.setEnabled(oneSelected && (selIndex < tableModel.getRowCount() - 1));
     }
     
     // accessible for test
@@ -222,6 +248,14 @@ private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
         public void removeParameter(int index) {
             parameters.remove(index);
             fireTableRowsDeleted(index, index);
+        }
+        
+        public MethodModel.Variable getParameter(int index) {
+            return parameters.get(index);
+        }
+        
+        public MethodModel.Variable set(int index, MethodModel.Variable parameter) {
+            return parameters.set(index, parameter);
         }
         
         public int getRowCount() {
