@@ -519,9 +519,13 @@ public class ResourceUtils implements WizardConstants{
     }
     
     public static void saveConnPoolDatatoXml(ResourceConfigData data) {
+        Resources res = getServerResourcesGraph(data.getTargetFileObject());
+        saveConnPoolDatatoXml(data, res);
+    }
+    
+    public static void saveConnPoolDatatoXml(ResourceConfigData data, Resources res) {
         try{
             Vector vec = data.getProperties();
-            Resources res = getServerResourcesGraph(data.getTargetFileObject());
             JdbcConnectionPool connPool = res.newJdbcConnectionPool();
             
             String[] keys = data.getFieldNames();
@@ -619,7 +623,7 @@ public class ResourceUtils implements WizardConstants{
             } //for
             res.addJdbcResource(datasource);
             if(cpData != null){
-                saveConnPoolDatatoXml(cpData);
+                saveConnPoolDatatoXml(cpData, res);
             }
             createFile(dsData.getTargetFileObject(), res);
         }catch(Exception ex){
