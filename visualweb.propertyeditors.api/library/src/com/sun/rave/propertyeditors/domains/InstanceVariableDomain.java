@@ -109,7 +109,7 @@ public class InstanceVariableDomain extends AttachedDomain {
             DesignBean beans[] = context.getBeansOfType(propertyType);
             for (int i = 0; i < beans.length; i++) {
                 Object instance = beans[i].getInstance();
-                if (propertyType.isAssignableFrom(instance.getClass())) {
+                if ((instance != null) && propertyType.isAssignableFrom(instance.getClass())) {
                     String name;
                     Element element;
                     if (context == thisContext) {
