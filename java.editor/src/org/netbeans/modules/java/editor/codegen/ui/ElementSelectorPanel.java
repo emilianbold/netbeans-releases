@@ -45,6 +45,16 @@ public class ElementSelectorPanel extends JPanel implements ExplorerManager.Prov
         elementView.setRootVisible(false);
         add(elementView, BorderLayout.CENTER);
         setRootElement(elementDescription, singleSelection);
+        //make sure that the first element is pre-selected
+        Node root = manager.getRootContext();
+        Node[] children = root.getChildren().getNodes();
+        if( null != children && children.length > 0 ) {
+            try         {
+                manager.setSelectedNodes(new org.openide.nodes.Node[]{children[0]});
+            } catch (PropertyVetoException ex) {
+                //ignore
+            }
+        }
     }
     
     public List<ElementHandle<? extends Element>> getTreeSelectedElements() {
