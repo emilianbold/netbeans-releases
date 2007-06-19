@@ -210,8 +210,8 @@ public class SourceFoldersPanel extends JPanel implements HelpCtx.Provider, List
         encodingLabel = new javax.swing.JLabel();
         encodingComboBox = new javax.swing.JComboBox();
 
-        setMinimumSize(new java.awt.Dimension(200, 100));
-        setPreferredSize(new java.awt.Dimension(247, 251));
+        setMinimumSize(new java.awt.Dimension(265, 375));
+        setPreferredSize(new java.awt.Dimension(800, 500));
         setLayout(new java.awt.GridBagLayout());
 
         jLabel1.setLabelFor(this);
