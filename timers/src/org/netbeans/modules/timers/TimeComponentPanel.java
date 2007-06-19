@@ -209,7 +209,7 @@ public class TimeComponentPanel extends javax.swing.JPanel implements PropertyCh
         model.removeAllElements();
 
         for (Object f : TimesCollectorPeer.getDefault().getFiles()) {
-            model.addElement(new WeakReference(f));
+            model.addElement(new WeakReference<Object>(f));
         }
     }
 
@@ -220,7 +220,7 @@ public class TimeComponentPanel extends javax.swing.JPanel implements PropertyCh
                     DefaultListModel model = (DefaultListModel) jList1.getModel();
                     
                     if (evt.getNewValue() != null) {
-                        model.addElement(new WeakReference(evt.getNewValue()));
+                        model.addElement(new WeakReference<Object>(evt.getNewValue()));
                     } else {
                         fillIn();
                     }
