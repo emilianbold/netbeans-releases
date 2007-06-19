@@ -30,7 +30,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
 import javax.swing.JEditorPane;
-import junit.framework.Assert;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.*;
 import org.netbeans.api.java.source.JavaSource.Phase;
@@ -45,7 +44,6 @@ import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.filesystems.XMLFileSystem;
-import org.openide.util.Lookup;
 import org.openide.util.SharedClassObject;
 
 /**
