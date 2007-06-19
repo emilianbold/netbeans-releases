@@ -285,6 +285,15 @@ Microsystems, Inc. All Rights Reserved.
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.xml.schema.model</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.2</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.xml.wsdl.model</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -405,7 +414,6 @@ Microsystems, Inc. All Rights Reserved.
                 </dependency>
             </module-dependencies>
             <public-packages>
-                <friend>org.netbeans.modules.websvc.jaxrpc</friend>
                 <package>org.netbeans.modules.websvc.core</package>
                 <package>org.netbeans.modules.websvc.core.dev.wizard</package>
                 <package>org.netbeans.modules.websvc.core.webservices.action</package>
@@ -413,6 +421,7 @@ Microsystems, Inc. All Rights Reserved.
                 <package>org.netbeans.modules.websvc.core.webservices.ui.panels</package>
                 <package>org.netbeans.modules.websvc.core.wseditor.spi</package>
                 <package>org.netbeans.modules.websvc.core.wseditor.support</package>
+                <package>org.netbeans.modules.websvc.customization.model</package>
                 <package>org.netbeans.modules.websvc.wsdl</package>
             </public-packages>
         </data>

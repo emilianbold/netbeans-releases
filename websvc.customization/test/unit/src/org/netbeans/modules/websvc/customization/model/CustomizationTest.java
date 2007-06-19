@@ -37,7 +37,7 @@ import java.util.Collection;
 import java.util.List;
 import javax.swing.text.Document;
 import junit.framework.*;
-import org.netbeans.modules.websvc.customization.model.impl.JAXWSQName;
+import org.netbeans.modules.websvc.customization.model.JAXWSQName;
 import org.netbeans.modules.xml.wsdl.model.Binding;
 import org.netbeans.modules.xml.wsdl.model.Definitions;
 import org.netbeans.modules.xml.wsdl.model.Fault;

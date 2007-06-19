@@ -38,7 +38,7 @@ import org.netbeans.modules.websvc.core.JaxWsUtils;
 import org.netbeans.modules.websvc.customization.model.JavaMethod;
 import org.netbeans.modules.websvc.customization.model.PortCustomization;
 import org.netbeans.modules.websvc.customization.model.Provider;
-import org.netbeans.modules.websvc.customization.model.impl.JAXWSQName;
+import org.netbeans.modules.websvc.customization.model.JAXWSQName;
 import org.netbeans.modules.xml.multiview.ui.SectionView;
 import org.netbeans.modules.xml.multiview.ui.SectionVisualTheme;
 import org.netbeans.modules.xml.wsdl.model.Port;
