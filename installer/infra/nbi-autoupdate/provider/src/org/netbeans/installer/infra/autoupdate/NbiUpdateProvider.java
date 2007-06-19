@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.installer.Installer;
 import org.netbeans.installer.downloader.DownloadManager;
 import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.product.components.Product;
@@ -55,7 +56,8 @@ public class NbiUpdateProvider implements UpdateProvider {
             logger.log(Level.FINE,
                     "Initializing the local working directory"); // NOI18N
             
-            String localDirectoryPath = System.getProperty(LOCAL_DIRECTORY_PROPERTY);
+            String localDirectoryPath = 
+                    System.getProperty(LOCAL_DIRECTORY_PROPERTY);
             if (localDirectoryPath == null) {
                 localDirectoryPath = DEFAULT_LOCAL_DIRECTORY;
             }
@@ -64,6 +66,10 @@ public class NbiUpdateProvider implements UpdateProvider {
             
             logger.log(Level.FINE,
                     "    ... " + localDirectory); // NOI18N
+            
+            System.setProperty(
+                Installer.LOCAL_DIRECTORY_PATH_PROPERTY,
+                localDirectory.getAbsolutePath());
             
             // initialize the URIs for the remote registries (if any)
             logger.log(Level.FINE,
@@ -148,11 +154,41 @@ public class NbiUpdateProvider implements UpdateProvider {
                         "    ... adding " + product.getDisplayName() +  // NOI18N
                         "[" + product.getStatus() + "]"); // NOI18N
                 
+                // devise the version string which can be safely used by the 
+                // autoupdate/module manager mechanism - it is based on Integers, 
+                // thus will fail to work with Longs which NBI is using; we work 
+                // around it by splitting big numbers in parts with a standard part 
+                // length being 8 characters long; we also assume that the first 
+                // four version components never get that big; e.g
+                // 5.6.0.0.200706121400 becomes 5.6.0.0.20070612.1400
+                String version = product.getVersion().toString();
+                
+                final int lastPartIndex = 
+                        version.lastIndexOf(".") + 1;
+                final String lastPart = 
+                        version.substring(lastPartIndex);
+                final int lastPartLength = 
+                        lastPart.length();
+                
+                if (lastPartLength > 8) {
+                    final StringBuilder lastPartBuilder = new StringBuilder();
+                    
+                    int i = 0;
+                    for (; i < lastPartLength - 8; i += 8) {
+                        lastPartBuilder.append(lastPart.substring(i, i + 8)).append(".");
+                    }
+                    lastPartBuilder.append(lastPart.substring(i, lastPartLength));
+                    
+                    version = version.substring(0, lastPartIndex) + 
+                            lastPartBuilder.toString();
+                }
+                
+                
                 final UpdateItem updateItem;
                 if (product.getStatus() == Status.INSTALLED) {
                     updateItem = UpdateItem.createInstalledNativeComponent(
                             codename, // codename
-                            product.getVersion().toString(), // version
+                            version, // version
                             // new HashSet<String>(), // dependencides
                             null, // dependencies
                             product.getDisplayName(), // display name
@@ -161,7 +197,7 @@ public class NbiUpdateProvider implements UpdateProvider {
                 } else {
                     updateItem = UpdateItem.createNativeComponent(
                             codename, // codename
-                            product.getVersion().toString(), // version
+                            version, // version
                             Long.toString(product.getDownloadSize()), // size
                             // new HashSet<String>(), // dependencides
                             null, // dependencies
