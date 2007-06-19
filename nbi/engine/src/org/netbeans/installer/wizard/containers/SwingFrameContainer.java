@@ -342,7 +342,7 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
         return contentPane.getCancelButton();
     }
     
-    // private //////////////////////////////////////////////////////////////////////
+    // protected ////////////////////////////////////////////////////////////////////
     /**
      * Initializes and lays out the Swing components for the container frame. This
      * method also sets some frame properties which will be required at runtime,
@@ -352,16 +352,24 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
     protected void initComponents() {
         super.initComponents();
         
-        setDefaultCloseOperation(NbiFrame.DO_NOTHING_ON_CLOSE);
-        addWindowListener(new WindowAdapter() {
-            public void windowClosing(WindowEvent event) {
-                if (contentPane.getCancelButton().isEnabled()) {
-                    if (currentUi != null) {
-                        currentUi.evaluateCancelButtonClick();
+        try {
+            setDefaultCloseOperation(NbiFrame.DO_NOTHING_ON_CLOSE);
+            addWindowListener(new WindowAdapter() {
+                public void windowClosing(WindowEvent event) {
+                    if (contentPane.getCancelButton().isEnabled()) {
+                        if (currentUi != null) {
+                            currentUi.evaluateCancelButtonClick();
+                        }
                     }
                 }
-            }
-        });
+            });
+        } catch (SecurityException e) {
+            // we might fail here with a custom security manager (e.g. the netbeans
+            // one); in this case just log the exception and "let it be" (c)
+            ErrorManager.notifyDebug(
+                    "Cannot set the default close operation", 
+                    e);
+        }
         
         contentPane = new WizardFrameContentPane();
         setContentPane(contentPane);

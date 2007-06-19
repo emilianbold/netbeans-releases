@@ -242,7 +242,15 @@ public class NbiFrame extends JFrame {
     // protected ////////////////////////////////////////////////////////////////////
     protected void initComponents() {
         // the frame itself
-        setDefaultCloseOperation(EXIT_ON_CLOSE);
+        try {
+            setDefaultCloseOperation(EXIT_ON_CLOSE);
+        } catch (SecurityException e) {
+            // we might fail here with a custom security manager (e.g. the netbeans
+            // one); in this case just log the exception and "let it be" (c)
+            ErrorManager.notifyDebug(
+                    "Cannot set the default close operation", 
+                    e);
+        }
         
         setSize(frameWidth, frameHeight);
         

@@ -375,16 +375,25 @@ public class Wizard {
      */
     private FinishHandler finishHandler;
     
+    /**
+     * Specifies whether the wizard is opened in blocking mode. If it is, the 
+     * opening method {@link #openBlocking()} will not return intil the wizard is 
+     * closed from another thread.
+     */
+    private boolean blocking;
+    
     // constructors /////////////////////////////////////////////////////////////////
     /**
      * Default constructor. Performs initialization of the basic properties, which,
      * however, is not enough for normal operation - the list of
      * {@link WizardComponent} is not initialized.
      */
-    private Wizard() {
+    public Wizard() {
         this.index = -1;
         this.context = new Context();
         this.classLoader = getClass().getClassLoader();
+        
+        this.blocking = false;
     }
     
     /**
@@ -393,18 +402,20 @@ public class Wizard {
      *
      * @param parent Parent {@link Wizard}.
      */
-    private Wizard(
+    public Wizard(
             final Wizard parent) {
         this();
         
         this.parent = parent;
-        this.container = parent.container;
-        
-        this.propertyContainer = parent.propertyContainer;
-        this.context = new Context(parent.context);
-        this.classLoader = parent.classLoader;
-        
-        this.finishHandler = parent.finishHandler;
+        if (this.parent != null) {
+            this.container = parent.container;
+            
+            this.propertyContainer = parent.propertyContainer;
+            this.context = new Context(parent.context);
+            this.classLoader = parent.classLoader;
+            
+            this.finishHandler = parent.finishHandler;
+        }
     }
     
     /**
@@ -416,7 +427,7 @@ public class Wizard {
      *      should iterate.
      * @param index Initial index of the active component.
      */
-    private Wizard(
+    public Wizard(
             final Wizard parent,
             final List<WizardComponent> components,
             int index) {
@@ -439,7 +450,7 @@ public class Wizard {
      *      the wizard.
      * @param classLoader {@link ClassLoader} which should be used by the wizard.
      */
-    private Wizard(
+    public Wizard(
             final Wizard parent,
             final List<WizardComponent> components,
             final int index,
@@ -517,6 +528,26 @@ public class Wizard {
     }
     
     /**
+     * Opens the wizard in a blocking mode. As opposed to {@link #open()}, this 
+     * method will not return the wizard is closed from another thread.
+     * 
+     * @see #open()
+     */
+    public void openBlocking() {
+        this.blocking = true;
+        
+        open();
+        
+        while (blocking) {
+            try {
+                wait();
+            } catch (InterruptedException e) {
+                ErrorManager.notifyDebug("Interrupted while waiting", e);
+            }
+        }
+    }
+    
+    /**
      * Closes the wizard. The current {@link WizardContainer} is hidden and
      * deinitialized. No real action is taken if the UI mode is
      * {@link UiMode#SILENT}.
@@ -544,6 +575,11 @@ public class Wizard {
                     Wizard.class,
                     RESOURCE_UNKNOWN_UI_MODE,
                     UiMode.getCurrentUiMode()));
+        }
+        
+        if (blocking) {
+            blocking = false;
+            notifyAll();
         }
     }
     

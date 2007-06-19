@@ -26,7 +26,6 @@ import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.Properties;
-import java.util.SortedSet;
 import java.util.TreeSet;
 import org.netbeans.installer.downloader.DownloadManager;
 import org.netbeans.installer.product.Registry;
@@ -40,10 +39,8 @@ import org.netbeans.installer.utils.UiUtils;
 import org.netbeans.installer.utils.helper.EngineResources;
 import org.netbeans.installer.utils.helper.ExecutionMode;
 import org.netbeans.installer.utils.helper.FinishHandler;
-import org.netbeans.installer.utils.helper.NbiProperties;
 import org.netbeans.installer.utils.helper.UiMode;
 import org.netbeans.installer.wizard.Wizard;
-import static org.netbeans.installer.utils.StringUtils.LF;
 
 /**
  * The main class of the NBI engine. It represents the installer and provides
@@ -112,7 +109,7 @@ public class Installer implements FinishHandler {
         if (SystemUtils.getCurrentPlatform() == null) {
             ErrorManager.notifyCritical(ResourceUtils.getString(
                     Installer.class,
-                    "I.error.unsupported.platform"));
+                    ERROR_UNSUPPORTED_PLATFORM_KEY));
         }
         
         instance = this;
@@ -149,8 +146,7 @@ public class Installer implements FinishHandler {
         // create the lock file
         createLockFile();
         
-        LogManager.logExit(
-                "... finished initializing the installer engine"); // NOI18N
+        LogManager.logExit("... finished initializing the engine"); // NOI18N
     }
     
     // Life cycle control methods ///////////////////////////////////////////////////
@@ -158,13 +154,11 @@ public class Installer implements FinishHandler {
      * Starts the installer.
      */
     public void start() {
-        LogManager.logEntry(
-                "starting the installer"); // NOI18N
+        LogManager.logEntry("starting the installer"); // NOI18N
         
         Wizard.getInstance().open();
         
-        LogManager.logExit(
-                "... finished starting the installer"); // NOI18N
+        LogManager.logExit("... finished starting the installer"); // NOI18N
     }
     
     /**
@@ -232,27 +226,22 @@ public class Installer implements FinishHandler {
     }
     
     private void dumpSystemInfo() {
-        LogManager.logEntry(
-                "dumping target system information"); // NOI18N
+        LogManager.logEntry("dumping target system information"); // NOI18N
         
-        LogManager.logIndent(
-                "system properties:"); // NOI18N
+        LogManager.logIndent("system properties:"); // NOI18N
         
         for (Object key: new TreeSet<Object>(System.getProperties().keySet())) {
             LogManager.log(key.toString() + " => " +  // NOI18N
                     System.getProperties().get(key).toString());
         }
         
-        LogManager.logUnindent(
-                "... end of system properties"); // NOI18N
+        LogManager.unindent();
         
-        LogManager.logExit(
-                "... end of target system information"); // NOI18N
+        LogManager.logExit("... end of target system information"); // NOI18N
     }
     
     private void loadProperties() {
-        LogManager.logEntry(
-                "loading engine properties"); // NOI18N
+        LogManager.logEntry("loading engine properties"); // NOI18N
         
         try {
             LogManager.log("loading properties file from " + // NOI18N
@@ -277,13 +266,12 @@ public class Installer implements FinishHandler {
         } catch (IOException e) {
             final String message = ResourceUtils.getString(
                     Installer.class,
-                    "I.error.load.engine.properties");
+                    ERROR_LOAD_ENGINE_PROPERTIES_KEY);
             
             ErrorManager.notifyWarning(message, e);
         }
         
-        LogManager.logExit(
-                "... finished loading engine properties"); // NOI18N
+        LogManager.logExit("... finished loading engine properties"); // NOI18N
     }
     
     /**
@@ -293,8 +281,7 @@ public class Installer implements FinishHandler {
      * @param arguments The command line arguments
      */
     private void parseArguments(String[] arguments) {
-        LogManager.logEntry(
-                "parsing command-line arguments"); // NOI18N
+        LogManager.logEntry("parsing command-line arguments"); // NOI18N
         
         for (int i = 0; i < arguments.length; i++) {
             if (arguments[i].equalsIgnoreCase(LOOK_AND_FEEL_ARG)) {
@@ -315,7 +302,7 @@ public class Installer implements FinishHandler {
                 } else {
                     final String message = ResourceUtils.getString(
                             Installer.class,
-                            "I.warning.missing.look.and.feel.arg",
+                            WARNING_BAD_LOOK_AND_FEEL_ARG_KEY,
                             LOOK_AND_FEEL_ARG);
                     
                     ErrorManager.notifyWarning(message);
@@ -349,6 +336,11 @@ public class Installer implements FinishHandler {
                             "... uid:     " + uid); // NOI18N
                     LogManager.log(
                             "... version: " + version); // NOI18N
+                } else {
+                    ErrorManager.notifyWarning(ResourceUtils.getString(
+                            Installer.class,
+                            WARNING_BAD_TARGET_ARG_KEY,
+                            TARGET_ARG));
                 }
                 
                 LogManager.unindent();
@@ -386,7 +378,7 @@ public class Installer implements FinishHandler {
                         
                         final String message = ResourceUtils.getString(
                                 Installer.class,
-                                "I.warning.bad.locale.arg",
+                                WARNING_BAD_LOCALE_ARG_PARAM_KEY,
                                 LOCALE_ARG,
                                 value);
                         ErrorManager.notifyWarning(message);
@@ -405,66 +397,83 @@ public class Installer implements FinishHandler {
                     
                     i = i + 1;
                 } else {
-                    final String message = ResourceUtils.getString(
+                    ErrorManager.notifyWarning(ResourceUtils.getString(
                             Installer.class,
-                            "I.warning.missing.locale.arg",
-                            LOCALE_ARG);
-                    ErrorManager.notifyWarning(message);
+                            WARNING_BAD_LOCALE_ARG_KEY,
+                            LOCALE_ARG));
                 }
                 
                 LogManager.unindent();
                 continue;
             }
             
-            if (arguments[i].equalsIgnoreCase("--state")) {
-                LogManager.log("parsing command line parameter \"--state\"");
-                LogManager.indent();
+            if (arguments[i].equalsIgnoreCase(STATE_ARG)) {
+                LogManager.logIndent("parsing command line parameter \"" + // NOI18N
+                        STATE_ARG + "\""); // NOI18N
                 
                 if (i < arguments.length - 1) {
                     String value = arguments[i + 1];
                     
                     File stateFile = new File(value).getAbsoluteFile();
                     if (!stateFile.exists()) {
-                        ErrorManager.notifyWarning("The specified state file \"" + stateFile + "\", does not exist. \"--state\" parameter is ignored.");
+                        ErrorManager.notifyWarning(ResourceUtils.getString(
+                                Installer.class, 
+                                WARNING_MISSING_STATE_FILE_KEY, 
+                                STATE_ARG, 
+                                stateFile));
                     } else {
-                        System.setProperty(Registry.SOURCE_STATE_FILE_PATH_PROPERTY, stateFile.getAbsolutePath());
+                        System.setProperty(
+                                Registry.SOURCE_STATE_FILE_PATH_PROPERTY, 
+                                stateFile.getAbsolutePath());
                     }
                     
                     i = i + 1;
                 } else {
-                    ErrorManager.notifyWarning("Required parameter missing for command line argument \"--state\". Should be \"--state <state-file-path>\".");
+                    ErrorManager.notifyWarning(ResourceUtils.getString(
+                            Installer.class, 
+                            WARNING_BAD_STATE_FILE_ARG_KEY, 
+                            STATE_ARG));
                 }
                 
                 LogManager.unindent();
                 continue;
             }
             
-            if (arguments[i].equalsIgnoreCase("--record")) {
-                LogManager.log("parsing command line parameter \"--record\"");
-                LogManager.indent();
-                
+            if (arguments[i].equalsIgnoreCase(RECORD_ARG)) {
+                LogManager.logIndent("parsing command line parameter \"" + // NOI18N
+                        RECORD_ARG + "\""); // NOI18N
+                                
                 if (i < arguments.length - 1) {
                     String value = arguments[i + 1];
                     
                     File stateFile = new File(value).getAbsoluteFile();
                     if (stateFile.exists()) {
-                        ErrorManager.notifyWarning("The specified state file \"" + stateFile + "\", exists. \"--record\" parameter is ignored.");
+                        ErrorManager.notifyWarning(ResourceUtils.getString(
+                                Installer.class, 
+                                WARNING_TARGET_STATE_FILE_EXISTS_KEY, 
+                                RECORD_ARG, 
+                                stateFile));
                     } else {
-                        System.setProperty(Registry.TARGET_STATE_FILE_PATH_PROPERTY, stateFile.getAbsolutePath());
+                        System.setProperty(
+                                Registry.TARGET_STATE_FILE_PATH_PROPERTY, 
+                                stateFile.getAbsolutePath());
                     }
                     
                     i = i + 1;
                 } else {
-                    ErrorManager.notifyWarning("Required parameter missing for command line argument \"--record\". Should be \"--record <state-file-path>\".");
+                    ErrorManager.notifyWarning(ResourceUtils.getString(
+                            Installer.class, 
+                            WARNING_BAD_TARGET_STATE_FILE_ARG_KEY, 
+                            RECORD_ARG));
                 }
                 
                 LogManager.unindent();
                 continue;
             }
             
-            if (arguments[i].equalsIgnoreCase("--silent")) {
-                LogManager.log("parsing command line parameter \"--silent\"");
-                LogManager.indent();
+            if (arguments[i].equalsIgnoreCase(SILENT_ARG)) {
+                LogManager.logIndent("parsing command line parameter \"" + 
+                        SILENT_ARG + "\"");
                 
                 UiMode.setCurrentUiMode(UiMode.SILENT);
                 
@@ -472,18 +481,23 @@ public class Installer implements FinishHandler {
                 continue;
             }
             
-            if (arguments[i].equalsIgnoreCase("--create-bundle")) {
-                LogManager.log("parsing command line parameter \"--create-bundle\"");
-                LogManager.indent();
+            if (arguments[i].equalsIgnoreCase(CREATE_BUNDLE_ARG)) {
+                LogManager.logIndent("parsing command line parameter \"" + // NOI18N
+                        CREATE_BUNDLE_ARG + "\""); // NOI18N
                 
                 if (i < arguments.length - 1) {
                     String value = arguments[i + 1];
                     
                     File targetFile = new File(value).getAbsoluteFile();
                     if (targetFile.exists()) {
-                        ErrorManager.notifyWarning("The specified target file \"" + targetFile + "\", exists. \"--create-bundle\" parameter is ignored.");
+                        ErrorManager.notifyWarning(ResourceUtils.getString(
+                                Installer.class, 
+                                WARNING_BUNDLE_FILE_EXISTS_KEY, 
+                                CREATE_BUNDLE_ARG, 
+                                targetFile));
                     } else {
-                        ExecutionMode.setCurrentExecutionMode(ExecutionMode.CREATE_BUNDLE);
+                        ExecutionMode.setCurrentExecutionMode(
+                                ExecutionMode.CREATE_BUNDLE);
                         System.setProperty(
                                 Registry.CREATE_BUNDLE_PATH_PROPERTY,
                                 targetFile.getAbsolutePath());
@@ -491,103 +505,123 @@ public class Installer implements FinishHandler {
                     
                     i = i + 1;
                 } else {
-                    ErrorManager.notifyWarning("Required parameter missing for command line argument \"--create-bundle\". Should be \"--create-bundle <target-file-path>\".");
+                    ErrorManager.notifyWarning(ResourceUtils.getString(
+                            Installer.class, 
+                            WARNING_BAD_CREATE_BUNDLE_ARG_KEY, 
+                            CREATE_BUNDLE_ARG));
                 }
                 
                 LogManager.unindent();
                 continue;
             }
             
-            if (arguments[i].equalsIgnoreCase("--ignore-lock")) {
-                LogManager.log("parsing command line parameter \"--ignore-lock\"");
-                LogManager.indent();
+            if (arguments[i].equalsIgnoreCase(IGNORE_LOCK_ARG)) {
+                LogManager.logIndent("parsing command line parameter \"" + // NOI18N
+                        IGNORE_LOCK_ARG + "\""); // NOI18N
                 
-                System.setProperty(IGNORE_LOCK_FILE_PROPERTY, "true");
+                System.setProperty(IGNORE_LOCK_FILE_PROPERTY, 
+                        UNARY_ARG_VALUE);
                 
                 LogManager.unindent();
                 continue;
             }
             
-            if (arguments[i].equalsIgnoreCase("--userdir")) {
-                LogManager.log("parsing command line parameter \"--userdir\"");
-                LogManager.indent();
+            if (arguments[i].equalsIgnoreCase(USERDIR_ARG)) {
+                LogManager.logIndent("parsing command line parameter \"" + // NOI18N
+                        USERDIR_ARG + "\""); // NOI18N
                 
                 if (i < arguments.length - 1) {
                     String value = arguments[i + 1];
                     File   file  = new File(value);
                     
-                    System.setProperty(LOCAL_DIRECTORY_PATH_PROPERTY, file.getAbsolutePath());
+                    System.setProperty(LOCAL_DIRECTORY_PATH_PROPERTY, 
+                            file.getAbsolutePath());
                     
                     i = i + 1;
                 } else {
-                    ErrorManager.notifyWarning("required parameter missing for command line argument \"--userdir\". Should be \"--userdir <userdir-path>\".");
+                    ErrorManager.notifyWarning(ResourceUtils.getString(
+                            Installer.class, 
+                            WARNING_BAD_USERDIR_ARG_KEY, 
+                            USERDIR_ARG));
                 }
                 
                 LogManager.unindent();
                 continue;
             }
             
-            if (arguments[i].equalsIgnoreCase("--platform")) {
-                LogManager.log("parsing command line parameter \"--platform\"");
-                LogManager.indent();
+            if (arguments[i].equalsIgnoreCase(PLATFORM_ARG)) {
+                LogManager.logIndent("parsing command line parameter \"" + // NOI18N
+                        PLATFORM_ARG + "\""); // NOI18N
                 
                 if (i < arguments.length - 1) {
                     String value = arguments[i + 1];
                     
-                    System.setProperty(Registry.TARGET_PLATFORM_PROPERTY, value);
+                    System.setProperty(Registry.TARGET_PLATFORM_PROPERTY, 
+                            value);
                     
                     i = i + 1;
                 } else {
-                    ErrorManager.notifyWarning("required parameter missing for command line argument \"--platform\". Should be \"--platform <target-platform>\".");
+                    ErrorManager.notifyWarning(ResourceUtils.getString(
+                            Installer.class, 
+                            WARNING_BAD_PLATFORM_ARG_KEY, 
+                            PLATFORM_ARG));
                 }
                 
                 LogManager.unindent();
                 continue;
             }
             
-            if (arguments[i].equalsIgnoreCase("--suggest-install")) {
-                LogManager.log("parsing command line parameter \"--suggest-install\"");
-                LogManager.indent();
+            if (arguments[i].equalsIgnoreCase(SUGGEST_INSTALL_ARG)) {
+                LogManager.logIndent("parsing command line parameter \"" + // NOI18N
+                        SUGGEST_INSTALL_ARG + "\""); // NOI18N
                 
-                System.setProperty(Registry.SUGGEST_INSTALL_PROPERTY, "true");
-                
-                LogManager.unindent();
-                continue;
-            }
-            
-            if (arguments[i].equalsIgnoreCase("--suggest-uninstall")) {
-                LogManager.log("parsing command line parameter \"--suggest-uninstall\"");
-                LogManager.indent();
-                
-                System.setProperty(Registry.SUGGEST_UNINSTALL_PROPERTY, "true");
+                System.setProperty(
+                        Registry.SUGGEST_INSTALL_PROPERTY, 
+                        UNARY_ARG_VALUE);
                 
                 LogManager.unindent();
                 continue;
             }
             
-            if (arguments[i].equalsIgnoreCase("--force-install")) {
-                LogManager.log("parsing command line parameter \"--force-install\"");
-                LogManager.indent();
+            if (arguments[i].equalsIgnoreCase(SUGGEST_UNINSTALL_ARG)) {
+                LogManager.logIndent("parsing command line parameter \"" + // NOI18N
+                        SUGGEST_UNINSTALL_ARG + "\""); // NOI18N
                 
-                System.setProperty(Registry.FORCE_INSTALL_PROPERTY, "true");
-                
-                LogManager.unindent();
-                continue;
-            }
-            
-            if (arguments[i].equalsIgnoreCase("--force-uninstall")) {
-                LogManager.log("parsing command line parameter \"--force-uninstall\"");
-                LogManager.indent();
-                
-                System.setProperty(Registry.FORCE_UNINSTALL_PROPERTY, "true");
+                System.setProperty(
+                        Registry.SUGGEST_UNINSTALL_PROPERTY, 
+                        UNARY_ARG_VALUE);
                 
                 LogManager.unindent();
                 continue;
             }
             
-            if (arguments[i].equalsIgnoreCase("--registry")) {
-                LogManager.log("parsing command line parameter \"--registry\"");
-                LogManager.indent();
+            if (arguments[i].equalsIgnoreCase(FORCE_INSTALL_ARG)) {
+                LogManager.logIndent("parsing command line parameter \"" + // NOI18N
+                        FORCE_INSTALL_ARG + "\""); // NOI18N
+                
+                System.setProperty(
+                        Registry.FORCE_INSTALL_PROPERTY, 
+                        UNARY_ARG_VALUE);
+                
+                LogManager.unindent();
+                continue;
+            }
+            
+            if (arguments[i].equalsIgnoreCase(FORCE_UNINSTALL_ARG)) {
+                LogManager.logIndent("parsing command line parameter \"" + // NOI18N
+                        FORCE_UNINSTALL_ARG + "\""); // NOI18N
+                
+                System.setProperty(
+                        Registry.FORCE_UNINSTALL_PROPERTY, 
+                        UNARY_ARG_VALUE);
+                
+                LogManager.unindent();
+                continue;
+            }
+            
+            if (arguments[i].equalsIgnoreCase(REGISTRY_ARG)) {
+                LogManager.logIndent("parsing command line parameter \"" + // NOI18N
+                        REGISTRY_ARG + "\""); // NOI18N
                 
                 if (i < arguments.length - 1) {
                     final String value = arguments[i + 1];
@@ -600,16 +634,20 @@ public class Installer implements FinishHandler {
                                 Registry.REMOTE_PRODUCT_REGISTRIES_PROPERTY,
                                 value);
                     } else {
-                        if (!Arrays.asList(existing.split(LF)).contains(value)) {
+                        if (!Arrays.asList(
+                                existing.split(StringUtils.LF)).contains(value)) {
                             System.setProperty(
                                     Registry.REMOTE_PRODUCT_REGISTRIES_PROPERTY,
-                                    existing + LF + value);
+                                    existing + StringUtils.LF + value);
                         }
                     }
                     
                     i = i + 1;
                 } else {
-                    ErrorManager.notifyWarning("required parameter missing for command line argument \"--registry\". Should be \"--registry <remote-registry-url>\".");
+                    ErrorManager.notifyWarning(ResourceUtils.getString(
+                            Installer.class, 
+                            WARNING_BAD_REGISTRY_ARG_KEY, 
+                            REGISTRY_ARG));
                 }
                 
                 LogManager.unindent();
@@ -618,14 +656,20 @@ public class Installer implements FinishHandler {
         }
         
         if (arguments.length == 0) {
-            LogManager.log("... no command line arguments were specified");
+            LogManager.log(
+                    "... no command line arguments were specified"); // NOI18N
         }
         
         // validate arguments ///////////////////////////////////////////////////////
         if (UiMode.getCurrentUiMode() != UiMode.DEFAULT_MODE) {
-            if (System.getProperty(Registry.SOURCE_STATE_FILE_PATH_PROPERTY) == null) {
+            if (System.getProperty(
+                    Registry.SOURCE_STATE_FILE_PATH_PROPERTY) == null) {
                 UiMode.setCurrentUiMode(UiMode.DEFAULT_MODE);
-                ErrorManager.notifyWarning("\"--state\" option is required when using \"--silent\". \"--silent\" will be ignored.");
+                ErrorManager.notifyWarning(ResourceUtils.getString(
+                        Installer.class, 
+                        WARNING_SILENT_WITHOUT_STATE_KEY, 
+                        SILENT_ARG, 
+                        STATE_ARG));
             }
         }
         
@@ -634,102 +678,247 @@ public class Installer implements FinishHandler {
     }
     
     private void setLocalDirectory() {
-        LogManager.logIndent("initializing the local directory");
+        LogManager.logIndent("initializing the local directory"); // NOI18N
         
         if (System.getProperty(LOCAL_DIRECTORY_PATH_PROPERTY) != null) {
             localDirectory = new File(System.getProperty(
                     LOCAL_DIRECTORY_PATH_PROPERTY)).getAbsoluteFile();
         } else {
-            localDirectory = new File(DEFAULT_LOCAL_DIRECTORY_PATH).getAbsoluteFile();
-            System.setProperty(LOCAL_DIRECTORY_PATH_PROPERTY, DEFAULT_LOCAL_DIRECTORY_PATH);
-            LogManager.log("... custom local directory was not specified, using the default");
-        }
-        LogManager.log("... local directory: " + localDirectory);
-        if (!localDirectory.exists()) {
-            if (!localDirectory.mkdirs()) {
-                ErrorManager.notifyCritical("Cannot create local directory: " + localDirectory);
-            }
-        } else if (localDirectory.isFile()) {
-            ErrorManager.notifyCritical("Local directory exists and is a file: " + localDirectory);
-        } else if (!localDirectory.canRead()) {
-            ErrorManager.notifyCritical("Cannot read local directory - not enought permissions");
-        } else if (!localDirectory.canWrite()) {
-            ErrorManager.notifyCritical("Cannot write to local directory - not enought permissions");
+            LogManager.log("... custom local directory was " + // NOI18N
+                    "not specified, using the default"); // NOI18N
+            
+            localDirectory = 
+                    new File(DEFAULT_LOCAL_DIRECTORY_PATH).getAbsoluteFile();
+            System.setProperty(
+                    LOCAL_DIRECTORY_PATH_PROPERTY, 
+                    localDirectory.getAbsolutePath());
         }
         
-        LogManager.unindent();
-        LogManager.log("... finished initializing local directory");
+        LogManager.log("... local directory: " + localDirectory); // NOI18N
+        
+        if (!localDirectory.exists()) {
+            if (!localDirectory.mkdirs()) {
+                ErrorManager.notifyCritical(ResourceUtils.getString(
+                        Installer.class, 
+                        ERROR_CANNOT_CREATE_LOCAL_DIR_KEY, 
+                        localDirectory));
+            }
+        } else if (localDirectory.isFile()) {
+                ErrorManager.notifyCritical(ResourceUtils.getString(
+                        Installer.class, 
+                        ERROR_LOCAL_DIR_IS_FILE_KEY, 
+                        localDirectory));
+        } else if (!localDirectory.canRead()) {
+                ErrorManager.notifyCritical(ResourceUtils.getString(
+                        Installer.class, 
+                        ERROR_NO_READ_PERMISSIONS_FOR_LOCAL_DIR_KEY, 
+                        localDirectory));
+        } else if (!localDirectory.canWrite()) {
+                ErrorManager.notifyCritical(ResourceUtils.getString(
+                        Installer.class, 
+                        ERROR_NO_WRITE_PERMISSIONS_FOR_LOCAL_DIR_KEY, 
+                        localDirectory));
+        }
+        
+        LogManager.logUnindent(
+                "... finished initializing local directory"); // NOI18N
     }
     
     private void createLockFile()  {
-        LogManager.logIndent("creating lock file");
+        LogManager.logIndent("creating lock file"); // NOI18N
         
         if (System.getProperty(IGNORE_LOCK_FILE_PROPERTY) == null) {
-            File lock = new File(localDirectory, ".nbilock");
+            File lock = new File(localDirectory, LOCK_FILE_NAME);
             
             if (lock.exists()) {
-                LogManager.log("... lock file already exists");
+                LogManager.log("... lock file already exists"); // NOI18N
                 
-                if(!UiUtils.showYesNoDialog(
-                        "NetBeans Installer is already running",
-                        "It seems that another instance of installer is already " +
-                        "running!\nIt can be dangerous running another one in " +
-                        "the same time.\nAre you sure you want to run one more " +
-                        "instance?\n\n")) {
+                final String dialogTitle = ResourceUtils.getString(
+                        Installer.class, 
+                        LOCK_FILE_EXISTS_DIALOG_TITLE_KEY);
+                final String dialogText = ResourceUtils.getString(
+                        Installer.class, 
+                        LOCK_FILE_EXISTS_DIALOG_TEXT_KEY);
+                if(!UiUtils.showYesNoDialog(dialogTitle, dialogText)) {
                     cancel();
                 }
             } else {
                 try {
                     lock.createNewFile();
                 } catch (IOException e) {
-                    ErrorManager.notifyCritical(
-                            "Can't create lock for the local registry file!",
-                            e);
+                    ErrorManager.notifyCritical(ResourceUtils.getString(
+                            Installer.class, 
+                            ERROR_CANNOT_CREATE_LOCK_FILE_KEY), e);
                 }
                 
-                LogManager.log("... created lock file: " + lock);
+                LogManager.log("... created lock file: " + lock); // NOI18N
             }
             
             lock.deleteOnExit();
         } else {
-            LogManager.log("... running with --ignore-lock, skipping this step");
+            LogManager.log("... running with " + // NOI18N
+                    IGNORE_LOCK_ARG + ", skipping this step"); // NOI18N
         }
         
-        LogManager.logUnindent("finished creating lock file");
+        LogManager.logUnindent("finished creating lock file"); // NOI18N
     }
     
     /////////////////////////////////////////////////////////////////////////////////
     // Constants
+    
+    // errorcodes ///////////////////////////////////////////////////////////////////
     /** Errorcode to be used at normal exit */
-    public static final int NORMAL_ERRORCODE = 0;
+    public static final int NORMAL_ERRORCODE = 
+            0;
     
     /** Errorcode to be used when the installer is canceled */
-    public static final int CANCEL_ERRORCODE = 1;
+    public static final int CANCEL_ERRORCODE = 
+            1;
     
     /** Errorcode to be used when the installer exits because of a critical error */
-    public static final int CRITICAL_ERRORCODE = Integer.MAX_VALUE;
+    public static final int CRITICAL_ERRORCODE = 
+            Integer.MAX_VALUE;
     
-    public static final String TARGET_ARG = "--target";
+    // command line arguments ///////////////////////////////////////////////////////
+    public static final String TARGET_ARG = 
+            "--target"; // NOI18N
     
-    public static final String LOOK_AND_FEEL_ARG = "--look-and-feel";
+    public static final String LOOK_AND_FEEL_ARG = 
+            "--look-and-feel"; // NOI18N
     
-    public static final String LOCALE_ARG = "--locale";
+    public static final String LOCALE_ARG = 
+            "--locale"; // NOI18N
     
+    public static final String STATE_ARG = 
+            "--state"; // NOI18N
+    
+    public static final String RECORD_ARG = 
+            "--record"; // NOI18N
+    
+    public static final String SILENT_ARG = 
+            "--silent"; // NOI18N
+    
+    public static final String CREATE_BUNDLE_ARG = 
+            "--create-bundle"; // NOI18N
+    
+    public static final String IGNORE_LOCK_ARG = 
+            "--ignore-lock"; // NOI18N
+    
+    public static final String USERDIR_ARG = 
+            "--userdir"; // NOI18N
+    
+    public static final String PLATFORM_ARG = 
+            "--platform"; // NOI18N
+    
+    public static final String SUGGEST_INSTALL_ARG = 
+            "--suggest-install"; // NOI18N
+    
+    public static final String SUGGEST_UNINSTALL_ARG = 
+            "--suggest-uninstall"; // NOI18N
+    
+    public static final String FORCE_INSTALL_ARG = 
+            "--force-install"; // NOI18N
+    
+    public static final String FORCE_UNINSTALL_ARG = 
+            "--force-uninstall"; // NOI18N
+    
+    public static final String REGISTRY_ARG = 
+            "--registry"; // NOI18N
+    
+    public static final String UNARY_ARG_VALUE =
+            "true"; // NOI18N
+    
+    // lock file ////////////////////////////////////////////////////////////////////
+    public static final String LOCK_FILE_NAME = 
+            ".nbilock"; // NOI18N
+    
+    public static final String IGNORE_LOCK_FILE_PROPERTY =
+            "nbi.ignore.lock.file"; // NOI18N
+    
+    // local working directory //////////////////////////////////////////////////////
     public static final String DEFAULT_LOCAL_DIRECTORY_PATH =
             System.getProperty("user.home") + File.separator + ".nbi";
     
     public static final String LOCAL_DIRECTORY_PATH_PROPERTY =
-            "nbi.local.directory.path";
+            "nbi.local.directory.path"; // NOI18N
     
-    public static final String IGNORE_LOCK_FILE_PROPERTY =
-            "nbi.ignore.lock.file";
-    
+    // miscellaneous ////////////////////////////////////////////////////////////////
     public static final String DONT_USE_SYSTEM_EXIT_PROPERTY =
-            "nbi.dont.use.system.exit";
+            "nbi.dont.use.system.exit"; // NOI18N
     
     public static final String EXIT_CODE_PROPERTY =
-            "nbi.exit.code";
+            "nbi.exit.code"; // NOI18N
     
     public static final String LOG_FILE_NAME =
             "log/" + DateUtils.getTimestamp() + ".log";
+    
+    // resource bundle keys /////////////////////////////////////////////////////////
+    private static final String ERROR_UNSUPPORTED_PLATFORM_KEY = 
+            "I.error.unsupported.platform"; // NOI18N
+    
+    private static final String ERROR_LOAD_ENGINE_PROPERTIES_KEY = 
+            "I.error.load.engine.properties"; // NOI18N
+    
+    private static final String WARNING_BAD_LOOK_AND_FEEL_ARG_KEY = 
+            "I.warning.bad.look.and.feel.arg"; // NOI18N
+    
+    private static final String WARNING_BAD_TARGET_ARG_KEY = 
+            "I.warning.bad.target.arg"; // NOI18N
+    
+    private static final String WARNING_BAD_LOCALE_ARG_PARAM_KEY = 
+            "I.warning.bad.locale.arg.param"; // NOI18N
+    
+    private static final String WARNING_BAD_LOCALE_ARG_KEY = 
+            "I.warning.bad.locale.arg"; // NOI18N
+    
+    private static final String WARNING_MISSING_STATE_FILE_KEY = 
+            "I.warning.missing.state.file"; // NOI18N
+    
+    private static final String WARNING_BAD_STATE_FILE_ARG_KEY = 
+            "I.warning.bag.state.file.arg"; // NOI18N
+    
+    private static final String WARNING_TARGET_STATE_FILE_EXISTS_KEY = 
+            "I.warning.target.state.file.exists"; // NOI18N
+    
+    private static final String WARNING_BAD_TARGET_STATE_FILE_ARG_KEY = 
+            "I.warning.bad.target.state.file.arg"; // NOI18N
+    
+    private static final String WARNING_BUNDLE_FILE_EXISTS_KEY = 
+            "I.warning.bundle.file.exists"; // NOI18N
+    
+    private static final String WARNING_BAD_CREATE_BUNDLE_ARG_KEY = 
+            "I.warning.bad.create.bundle.arg"; // NOI18N
+    
+    private static final String WARNING_BAD_USERDIR_ARG_KEY = 
+            "I.warning.bad.userdir.arg"; // NOI18N
+    
+    private static final String WARNING_BAD_PLATFORM_ARG_KEY = 
+            "I.warning.bad.platform.arg"; // NOI18N
+    
+    private static final String WARNING_BAD_REGISTRY_ARG_KEY = 
+            "I.warning.bad.registry.arg"; // NOI18N
+    
+    private static final String WARNING_SILENT_WITHOUT_STATE_KEY = 
+            "I.warning.silent.without.state"; // NOI18N
+    
+    private static final String ERROR_CANNOT_CREATE_LOCAL_DIR_KEY = 
+            "I.error.cannot.create.local.dir"; // NOI18N
+    
+    private static final String ERROR_LOCAL_DIR_IS_FILE_KEY = 
+            "I.error.local.dir.is.file"; // NOI18N
+    
+    private static final String ERROR_NO_READ_PERMISSIONS_FOR_LOCAL_DIR_KEY = 
+            "I.error.no.read.permissions.for.local.dir"; // NOI18N
+    
+    private static final String ERROR_NO_WRITE_PERMISSIONS_FOR_LOCAL_DIR_KEY = 
+            "I.error.no.write.permissions.for.local.dir"; // NOI18N
+    
+    private static final String LOCK_FILE_EXISTS_DIALOG_TITLE_KEY = 
+            "I.lock.file.exists.dialog.title"; // NOI18N
+    
+    private static final String LOCK_FILE_EXISTS_DIALOG_TEXT_KEY =
+            "I.lock.file.exists.dialog.text"; // NOI18N
+    
+    private static final String ERROR_CANNOT_CREATE_LOCK_FILE_KEY = 
+            "I.error.cannot.create.lock.file"; // NOI18N
 }
