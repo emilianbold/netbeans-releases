@@ -82,10 +82,6 @@ public final class ChoiceElementCD extends ComponentDescriptor {
                 );
     }
     
-    public PaletteDescriptor getPaletteDescriptor() {
-        return new PaletteDescriptor(MidpPaletteProvider.CATEGORY_ELEMENTS, "Choice Element", "Choice Element", ICON_PATH, null); // NOI18N
-    }
-    
     private static DefaultPropertiesPresenter createPropertiesPresenter() {
         return new DefaultPropertiesPresenter()
                 .addPropertiesCategory(PropertiesCategories.CATEGORY_PROPERTIES)

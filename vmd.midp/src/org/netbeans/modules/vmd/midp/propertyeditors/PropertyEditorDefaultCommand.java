@@ -56,76 +56,74 @@ import org.openide.util.NbBundle;
  * @author Anton Chechel
  */
 public final class PropertyEditorDefaultCommand extends PropertyEditorUserCode implements PropertyEditorElement {
-    
-    private static final String NONE_ITEM = NbBundle.getMessage(PropertyEditorDefaultCommand.class, "LBL_SELECTCOMMAND_NONE");  // NOI18N
-    
+
+    private static final String NONE_ITEM = NbBundle.getMessage(PropertyEditorDefaultCommand.class, "LBL_SELECTCOMMAND_NONE"); // NOI18N
     private long componentID;
-    
+
     private final List<String> tags = new ArrayList<String>();
     private final Map<String, DesignComponent> values = new TreeMap<String, DesignComponent>();
-    
+
     private CustomEditor customEditor;
     private JRadioButton radioButton;
-    
+
     private PropertyEditorDefaultCommand() {
-        super();
         initComponents();
-        
+
         Collection<PropertyEditorElement> elements = new ArrayList<PropertyEditorElement>(1);
         elements.add(this);
         initElements(elements);
     }
-    
+
     public static PropertyEditorDefaultCommand createInstance() {
         return new PropertyEditorDefaultCommand();
     }
-    
+
     private void initComponents() {
         radioButton = new JRadioButton();
         Mnemonics.setLocalizedText(radioButton, NbBundle.getMessage(PropertyEditorDefaultCommand.class, "LBL_DEF_COMMAND_STR")); // NOI18N
         customEditor = new CustomEditor();
         radioButton.addActionListener(customEditor);
     }
-    
+
     public JComponent getCustomEditorComponent() {
         return customEditor;
     }
-    
+
     public JRadioButton getRadioButton() {
         return radioButton;
     }
-    
+
     public boolean isInitiallySelected() {
         return true;
     }
-    
+
     public boolean isVerticallyResizable() {
         return false;
     }
-    
+
     public String getAsText() {
         if (isCurrentValueAUserCodeType()) {
             return USER_CODE_TEXT;
         } else if (isCurrentValueANull()) {
             return NONE_ITEM;
         }
-        
+
         PropertyValue value = (PropertyValue) super.getValue();
         return getDecodeValue(value);
     }
-    
+
     public Boolean canEditAsText() {
         return null;
     }
-    
+
     public void setText(String text) {
         saveValue(text);
     }
-    
+
     public String getText() {
         return null;
     }
-    
+
     public void setPropertyValue(PropertyValue value) {
         customEditor.updateModel();
         if (isCurrentValueANull() || value == null) {
@@ -135,7 +133,7 @@ public final class PropertyEditorDefaultCommand extends PropertyEditorUserCode i
         }
         radioButton.setSelected(!isCurrentValueAUserCodeType());
     }
-    
+
     private void saveValue(String text) {
         if (text.length() > 0) {
             if (NONE_ITEM.equals(text)) {
@@ -145,78 +143,84 @@ public final class PropertyEditorDefaultCommand extends PropertyEditorUserCode i
             }
         }
     }
-    
+
     public void customEditorOKButtonPressed() {
         if (radioButton.isSelected()) {
             saveValue(customEditor.getText());
         }
     }
-    
+
     public String[] getTags() {
         if (isCurrentValueAUserCodeType()) {
             return null;
         }
-        
+
         tags.clear();
         tags.add(NONE_ITEM);
         values.clear();
         values.put(NONE_ITEM, null);
-        
+
         final DesignDocument document = ActiveDocumentSupport.getDefault().getActiveDocument();
         if (document != null) {
-            document.getTransactionManager().readAccess( new Runnable() {
+            document.getTransactionManager().readAccess(new Runnable() {
+
                 public void run() {
                     DesignComponent item = document.getComponentByUID(componentID);
                     if (item != null) {
-                        List<PropertyValue> formCmdESValues = item.getParentComponent().readProperty(DisplayableCD.PROP_COMMANDS).getArray();
-                        List<DesignComponent> formCommands = new ArrayList<DesignComponent>(formCmdESValues.size());
-                        for (PropertyValue esValue : formCmdESValues) {
-                            DesignComponent command = esValue.getComponent().readProperty(CommandEventSourceCD.PROP_COMMAND).getComponent();
-                            if (command != null) {
-                                PropertyValue ordinaryValue = command.readProperty(CommandCD.PROP_ORDINARY);
-                                if (MidpTypes.getBoolean(ordinaryValue)) {
-                                    formCommands.add(command);
+                        DesignComponent parent = item.getParentComponent();
+                        if (parent != null) {
+                            List<PropertyValue> formCmdESValues = parent.readProperty(DisplayableCD.PROP_COMMANDS).getArray();
+                            List<DesignComponent> formCommands = new ArrayList<DesignComponent>(formCmdESValues.size());
+                            
+                            for (PropertyValue esValue : formCmdESValues) {
+                                DesignComponent command = esValue.getComponent().readProperty(CommandEventSourceCD.PROP_COMMAND).getComponent();
+                                if (command != null) {
+                                    PropertyValue ordinaryValue = command.readProperty(CommandCD.PROP_ORDINARY);
+                                    if (MidpTypes.getBoolean(ordinaryValue)) {
+                                        formCommands.add(command);
+                                    }
                                 }
                             }
-                        }
-                        
-                        Collection<DesignComponent> components = MidpDocumentSupport.getCategoryComponent(document, CommandsCategoryCD.TYPEID).getComponents();
-                        Collection<DesignComponent> commands = new ArrayList<DesignComponent>(components.size());
-                        for (DesignComponent command : components) {
-                            PropertyValue ordinaryValue = command.readProperty(CommandCD.PROP_ORDINARY);
-                            if (MidpTypes.getBoolean(ordinaryValue)) {
-                                commands.add(command);
+
+                            Collection<DesignComponent> components = MidpDocumentSupport.getCategoryComponent(document, CommandsCategoryCD.TYPEID).getComponents();
+                            Collection<DesignComponent> commands = new ArrayList<DesignComponent>(components.size());
+                            for (DesignComponent command : components) {
+                                PropertyValue ordinaryValue = command.readProperty(CommandCD.PROP_ORDINARY);
+                                if (MidpTypes.getBoolean(ordinaryValue)) {
+                                    commands.add(command);
+                                }
                             }
-                        }
-                        commands.removeAll(formCommands);
-                        
-                        for (DesignComponent command : commands) {
-                            String displayName = getComponentDisplayName(command);
-                            tags.add(displayName);
-                            values.put(displayName, command);
+                            commands.removeAll(formCommands);
+
+                            for (DesignComponent command : commands) {
+                                String displayName = getComponentDisplayName(command);
+                                tags.add(displayName);
+                                values.put(displayName, command);
+                            }
                         }
                     }
                 }
             });
         }
-        
+
         return tags.toArray(new String[tags.size()]);
     }
-    
+
     public void init(DesignComponent component) {
         super.init(component);
         componentID = component.getComponentID();
     }
-    
+
     private String getComponentDisplayName(DesignComponent component) {
         return MidpValueSupport.getHumanReadableString(component);
     }
-    
-    private String getDecodeValue(final PropertyValue value){
+
+    private String getDecodeValue(final PropertyValue value) {
         final String[] decodeValue = new String[1];
         final DesignDocument document = ActiveDocumentSupport.getDefault().getActiveDocument();
         if (document != null) {
             document.getTransactionManager().readAccess(new Runnable() {
+
                 public void run() {
                     decodeValue[0] = getComponentDisplayName(value.getComponent());
                 }
@@ -224,13 +228,14 @@ public final class PropertyEditorDefaultCommand extends PropertyEditorUserCode i
         }
         return decodeValue[0];
     }
-    
-    
+
+
     private DesignComponent getItemCommandEvenSource(final String name) {
         final DesignComponent[] itemCommandEvenSource = new DesignComponent[1];
         final DesignDocument document = ActiveDocumentSupport.getDefault().getActiveDocument();
         if (document != null) {
-            document.getTransactionManager().writeAccess( new Runnable() {
+            document.getTransactionManager().writeAccess(new Runnable() {
+
                 public void run() {
                     DesignComponent command = values.get(name);
                     DesignComponent item = document.getComponentByUID(componentID);
@@ -242,8 +247,9 @@ public final class PropertyEditorDefaultCommand extends PropertyEditorUserCode i
                             break;
                         }
                     }
-                    
-                    if (itemCommandEvenSource[0] == null) { // create new ItemCommandEvenSource
+
+                    if (itemCommandEvenSource[0] == null) {
+                        // create new ItemCommandEvenSource
                         itemCommandEvenSource[0] = MidpDocumentSupport.attachCommandToItem(item, command);
                     }
                 }
@@ -251,14 +257,15 @@ public final class PropertyEditorDefaultCommand extends PropertyEditorUserCode i
         }
         return itemCommandEvenSource[0];
     }
-    
+
     private class CustomEditor extends JPanel implements ActionListener {
+
         private JComboBox combobox;
-        
+
         public CustomEditor() {
             initComponents();
         }
-        
+
         private void initComponents() {
             setLayout(new BorderLayout());
             combobox = new JComboBox();
@@ -266,17 +273,18 @@ public final class PropertyEditorDefaultCommand extends PropertyEditorUserCode i
             combobox.addActionListener(this);
             add(combobox, BorderLayout.CENTER);
         }
-        
+
         public void setValue(final PropertyValue value) {
             if (value == null) {
                 combobox.setSelectedItem(NONE_ITEM);
                 return;
             }
-            
+
             final PropertyValue[] cmdValue = new PropertyValue[1];
             final DesignDocument document = ActiveDocumentSupport.getDefault().getActiveDocument();
             if (document != null) {
                 document.getTransactionManager().readAccess(new Runnable() {
+
                     public void run() {
                         cmdValue[0] = value.getComponent().readProperty(ItemCommandEventSourceCD.PROP_COMMAND);
                     }
@@ -294,11 +302,11 @@ public final class PropertyEditorDefaultCommand extends PropertyEditorUserCode i
                 }
             }
         }
-        
+
         public String getText() {
             return (String) combobox.getSelectedItem();
         }
-        
+
         public void updateModel() {
             DefaultComboBoxModel model = (DefaultComboBoxModel) combobox.getModel();
             model.removeAllElements();
@@ -306,7 +314,7 @@ public final class PropertyEditorDefaultCommand extends PropertyEditorUserCode i
                 model.addElement(tag);
             }
         }
-        
+
         public void actionPerformed(ActionEvent evt) {
             radioButton.setSelected(true);
         }

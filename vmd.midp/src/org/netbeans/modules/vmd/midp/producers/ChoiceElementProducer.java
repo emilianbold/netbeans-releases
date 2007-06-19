@@ -12,9 +12,7 @@
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
+ * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.vmd.midp.producers;
 
@@ -23,27 +21,27 @@ import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.PaletteDescriptor;
 import org.netbeans.modules.vmd.midp.components.MidpJavaSupport;
-import org.netbeans.modules.vmd.midp.components.sources.ListElementEventSourceCD;
+import org.netbeans.modules.vmd.midp.components.elements.ChoiceElementCD;
 import org.netbeans.modules.vmd.midp.palette.MidpPaletteProvider;
 
 /**
- * @author David Kaspar
+ *
+ * @author Anton Chechel
  */
-public class ListElementEventSourceProducer extends ComponentProducer {
+public class ChoiceElementProducer extends ComponentProducer {
 
-    private static final String PRODUCER_ID = "#ListElementEventSourceProducer"; // NOI18N
+    private static final String PRODUCER_ID = "#ChoiceElementProducer"; // NOI18N
 
-    public ListElementEventSourceProducer () {
-        super (PRODUCER_ID, ListElementEventSourceCD.TYPEID, new PaletteDescriptor (MidpPaletteProvider.CATEGORY_ELEMENTS, "List Element", "List Element", ListElementEventSourceCD.ICON_PATH, null));
-    }
-
-    public Result createComponent (DesignDocument document) {
-        DesignComponent eventSource = document.createComponent (ListElementEventSourceCD.TYPEID);
-        return new Result (eventSource);
+    public ChoiceElementProducer() {
+        super(PRODUCER_ID, ChoiceElementCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_ELEMENTS, "Choice Element", "Choice Element", ChoiceElementCD.ICON_PATH, null));
     }
 
     public boolean checkValidity(DesignDocument document) {
-        return MidpJavaSupport.checkValidity(document, "javax.microedition.lcdui.List"); // NOI18N
+        return MidpJavaSupport.checkValidity(document, "javax.microedition.lcdui.ChoiceGroup"); // NOI18N
     }
 
+    public Result createComponent(DesignDocument document) {
+        DesignComponent choiceElement = document.createComponent(ChoiceElementCD.TYPEID);
+        return new Result(choiceElement);
+    }
 }
