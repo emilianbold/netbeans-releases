@@ -27,6 +27,8 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="org/netbeans/qa/form/visualDevelopment/MenuAndPopupMenuTest.class"/>
                 <include name="org/netbeans/qa/form/issues/*.class"/>
                 <include name="org/netbeans/qa/form/undoredo/BaseTest.class"/>
+                <include name="org/netbeans/qa/form/binding/AdvancedBeansBinding.class"/>
+                <include name="org/netbeans/test/editor/formatting/BasicTest.*"/>
             </patternset>
         </testset>
     </testbag>
@@ -39,7 +41,7 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
 
-    <testbag testattribs="almoststable" executor="ide" name="testbag_refactoring">
+    <testbag testattribs="almoststable, validation" executor="ide" name="testbag_refactoring">
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="org/netbeans/qa/form/refactoring/RenameComponentVariableTest.class"/>
@@ -51,7 +53,7 @@ Microsystems, Inc. All Rights Reserved.
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="org/netbeans/qa/form/binding/SimpleBeansBinding.class"/>
-                <include name="org/netbeans/qa/form/binding/AdvancedBeansBinding.class"/>
+              <!-- in issue testbag  <include name="org/netbeans/qa/form/binding/AdvancedBeansBinding.class"/> -->
             </patternset>
         </testset>
     </testbag>
@@ -91,13 +93,13 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
 
-    <testbag testattribs="validation" executor="ide" name="testbag_undoredo">
+<!--  issue  <testbag testattribs="validation" executor="ide" name="testbag_undoredo">
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="org/netbeans/qa/form/undoredo/BaseTest.class"/> 
             </patternset>
         </testset>
-    </testbag>
+    </testbag> -->
 
 
 <!-- Jana Maleckova -->
@@ -111,13 +113,13 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
 
-    <testbag testattribs="validation" executor="ide" name="testbag_editor_basictest">
+  <!-- issue <testbag testattribs="validation" executor="ide" name="testbag_editor_basictest">
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="org/netbeans/test/editor/formatting/BasicTest.*"/>                
             </patternset>
         </testset>
-    </testbag>
+    </testbag> -->
 
     <executor name="code" antfile="build-qa-functional.xml" target="runcodetest"/>
     <executor name="ide" antfile="build-qa-functional.xml" target="runidetest" default="true"/>
