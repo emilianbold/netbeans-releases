@@ -25,6 +25,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 import javax.swing.Icon;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -225,10 +226,11 @@ public final class AddElementVisualPanel1 extends JPanel
        getElementListFromConfigFile();
        if (elementTypeList != null)
        {
-          Set elemDisplSet = elementTypeNameMap.keySet();
-          if (elemDisplSet != null)
+          Set elemDisplaySet = new TreeSet() {};
+          elemDisplaySet.addAll(elementTypeNameMap.keySet());
+          if (elemDisplaySet != null)
           {
-             elementTypeList.setListData(elemDisplSet.toArray());
+             elementTypeList.setListData(elemDisplaySet.toArray());
           }
           // select the 1st element in the list by default
           elementTypeList.setSelectedIndex(0);
