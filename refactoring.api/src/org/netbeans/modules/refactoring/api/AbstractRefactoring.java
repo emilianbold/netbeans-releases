@@ -89,7 +89,6 @@ public abstract class AbstractRefactoring {
     private ProgressListener progressListener = new ProgressL();
     
     private ProgressSupport progressSupport;
-    AbstractRefactoring caller;
     
     Lookup refactoringSource;
     
@@ -106,7 +105,9 @@ public abstract class AbstractRefactoring {
                 RefactoringPluginFactory factory = (RefactoringPluginFactory) it.next();
                 RefactoringPlugin plugin = factory.createInstance(this);
                 if (plugin != null)  {
-                    if (caller == null || factory.getClass().getClassLoader().equals(getClass().getClassLoader()) || factory.createInstance(caller)==null) {
+                    RefactoringPlugin callerPlugin = getContext().lookup(RefactoringPlugin.class);
+                    AbstractRefactoring caller = getContext().lookup(AbstractRefactoring.class);
+                    if (caller == null || factory.getClass().getClassLoader().equals(callerPlugin.getClass().getClassLoader()) || factory.createInstance(caller)==null) {
                         //caller is internal non-api field. Plugin is always added for API calls.
                         //For non-api internal calls: 
                         //  Plugins from different modules are ignored, 

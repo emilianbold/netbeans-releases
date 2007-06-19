@@ -274,6 +274,8 @@ public class SafeDeleteRefactoringPlugin extends JavaRefactoringPlugin {
         for (Object o:refactoring.getContext().lookupAll(Object.class)) {
             q.getContext().add(o);
         }
+        q.getContext().add(refactoring);
+        q.getContext().add(this);
         return q;
     }
     
