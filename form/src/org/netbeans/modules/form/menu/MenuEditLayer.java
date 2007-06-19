@@ -257,6 +257,7 @@ public class MenuEditLayer extends JPanel {
         if(keyboardMenuNavigator == null) {
             keyboardMenuNavigator = new KeyboardMenuNavigator(this);
             glassLayer.addKeyListener(keyboardMenuNavigator);
+            keyboardMenuNavigator.selectedRADComponent = this.selectedRADComponent;
         }
     }
     

@@ -35,6 +35,7 @@ import org.netbeans.modules.form.RADVisualContainer;
  * @author joshua.marinacci@sun.com
  */
 public class KeyboardMenuNavigator implements KeyListener {
+    private static final boolean DEBUG = false;
     MenuEditLayer menuEditLayer;
     private RADVisualContainer menuBarRAD;
     private RADVisualContainer currentMenuRAD;
@@ -42,6 +43,7 @@ public class KeyboardMenuNavigator implements KeyListener {
     KeyboardFinishListener listener;
     
     public KeyboardMenuNavigator(MenuEditLayer menuEditLayer) {
+        p("kb created");
         this.menuEditLayer = menuEditLayer;
         configure();
     }
@@ -99,6 +101,7 @@ public class KeyboardMenuNavigator implements KeyListener {
     }
     
     private void selectNextMenuItem(int offset) {
+        p("select next menu item");
         //josh: do nothing here until i figure out why tab events aren't being called
         if(currentMenuRAD == null) return;
         if(selectedRADComponent == null) selectedRADComponent = currentMenuRAD.getSubComponent(0);
@@ -130,6 +133,7 @@ public class KeyboardMenuNavigator implements KeyListener {
     // select the next menu item offset from the current one.
     // pass in -1 and +1 to do prev and next menu items
     private void selectOffsetMenuItem(int offset) {
+        p("select offset menu item: " + offset);
         if(currentMenuRAD == null) return;
         if(currentMenuRAD.getSubComponents().length == 0) {
             menuEditLayer.setSelectedComponent((JComponent)null);
@@ -161,7 +165,7 @@ public class KeyboardMenuNavigator implements KeyListener {
     // select the next menu offset from the current one
     // pass in -1 and + 1 to do prev and next menu items
     private void selectOffsetMenu(int offset) {
-        
+        p("select offset menu: " + offset);
         //clear the selected component
         //menuEditLayer.setSelectedComponent(null);
         
@@ -225,6 +229,7 @@ public class KeyboardMenuNavigator implements KeyListener {
     }
     
     private void goUpOneLevelAndNext() {
+        p("go up one level and next");
         selectedRADComponent = currentMenuRAD;
         currentMenuRAD = currentMenuRAD.getParentContainer();
         if(isLastItem(selectedRADComponent, currentMenuRAD)) {
@@ -268,5 +273,10 @@ public class KeyboardMenuNavigator implements KeyListener {
                 menuEditLayer.glassLayer.requestFocusInWindow();
             }
         }
+    }
+    
+    private static void p(String s) {
+        if(DEBUG) 
+            System.out.println(s);
     }
 }
