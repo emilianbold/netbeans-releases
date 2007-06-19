@@ -1285,7 +1285,7 @@ public class DndHandler /*extends TransferHandler*/ {
     private Element getDropeeComponent(CssBox box) {
 //        DesignBean origDroppee = ModelViewMapper.findComponent(box);
 //        DesignBean origDroppee = ModelViewMapper.findMarkupDesignBean(box);
-        Element origDropeeComponentRootElement = ModelViewMapper.findComponentRootElement(box);
+        Element origDropeeComponentRootElement = ModelViewMapper.findElement(box);
 
 //        if (webform.isGridMode() && (origDroppee == null) &&
 //                (webform.getModel().getLiveUnit() != null)) {

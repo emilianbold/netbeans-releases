@@ -249,7 +249,7 @@ public class Dragger extends Interaction implements KeyListener {
 
 //                    DesignBean candidate = getLinkParticipant(startX, startY);
 //                    Element candidate = getLinkParticipant(startX, startY);
-                    Element candidate = ModelViewMapper.findComponentRootElement(webform.getPane().getPageBox(), startX, startY);
+                    Element candidate = ModelViewMapper.findElement(webform.getPane().getPageBox(), startX, startY);
 
                     if (candidate == null) {
 //                        if (beans.size() > 0) {
@@ -285,7 +285,7 @@ public class Dragger extends Interaction implements KeyListener {
                     } else {
                         // Try reverse link
 //                        candidate = getLinkParticipant(p.x, p.y);
-                        candidate = ModelViewMapper.findComponentRootElement(webform.getPane().getPageBox(), p.x, p.y);
+                        candidate = ModelViewMapper.findElement(webform.getPane().getPageBox(), p.x, p.y);
 
                         if (candidate != null) {
 //                            dropType =
@@ -1020,7 +1020,7 @@ public class Dragger extends Interaction implements KeyListener {
 
 //                DesignBean candidate = getLinkParticipant(startX, startY);
 //                Element candidate = getLinkParticipant(startX, startY);
-                Element candidate = ModelViewMapper.findComponentRootElement(webform.getPane().getPageBox(), startX, startY);
+                Element candidate = ModelViewMapper.findElement(webform.getPane().getPageBox(), startX, startY);
 
                 if ((candidate == null) ||
 //                        (webform.getPane().getDndHandler().getDropTypeForClassNamesEx(new Point(px, py),
@@ -1030,7 +1030,7 @@ public class Dragger extends Interaction implements KeyListener {
                             candidate, true) != DndHandler.DROP_LINKED)) {
                     // Try reverse link
 //                    candidate = getLinkParticipant(px, py);
-                    candidate = ModelViewMapper.findComponentRootElement(webform.getPane().getPageBox(), px, py);
+                    candidate = ModelViewMapper.findElement(webform.getPane().getPageBox(), px, py);
 
                     if ((candidate == null) ||
 //                            (webform.getPane().getDndHandler().getDropTypeForClassNamesEx(new Point(startX, startY),
@@ -1131,6 +1131,6 @@ public class Dragger extends Interaction implements KeyListener {
 ////        return null;
 ////        return ModelViewMapper.findComponent(webform.getPane().getPageBox(), x, y);
 ////        return ModelViewMapper.findMarkupDesignBean(webform.getPane().getPageBox(), x, y);
-//        return ModelViewMapper.findComponentRootElement(webform.getPane().getPageBox(), x, y);
+//        return ModelViewMapper.findElement(webform.getPane().getPageBox(), x, y);
 //    }
 }

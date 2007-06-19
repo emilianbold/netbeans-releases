@@ -1772,7 +1772,7 @@ public class InteractionManager {
                 selBox = ModelViewMapper.findBox(pageBox, x, y);
 //                sel = ModelViewMapper.findComponent(selBox);
 //                sel = ModelViewMapper.findMarkupDesignBean(selBox);
-                sel = ModelViewMapper.findComponentRootElement(selBox);
+                sel = ModelViewMapper.findElement(selBox);
             }
 
             if (inlineEditor != null) {
@@ -2549,7 +2549,7 @@ public class InteractionManager {
             if ((bx != null) && !(bx instanceof PageBox)) { // can't select body
 //                component = ModelViewMapper.findComponent(bx);
 //                component = ModelViewMapper.findMarkupDesignBean(bx);
-                component = ModelViewMapper.findComponentRootElement(bx);
+                component = ModelViewMapper.findElement(bx);
             }
 
             if (component != null) {
@@ -3000,7 +3000,7 @@ public class InteractionManager {
             Element selComponentRootElement = CssBox.getElementForComponentRootCssBox(selBox);
 //            DesignBean sel = ModelViewMapper.findComponent(pageBox, x, y);
 //            DesignBean sel = ModelViewMapper.findMarkupDesignBean(pageBox, x, y);
-            Element sel = ModelViewMapper.findComponentRootElement(pageBox, x, y);
+            Element sel = ModelViewMapper.findElement(pageBox, x, y);
             
             int internalResize = selBox.getInternalResizeDirection(x, y);
             

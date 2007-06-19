@@ -2745,7 +2745,7 @@ public final class ModelViewMapper {
     }
 
 //    /** Locate a component in the visible view given the x,y coordinates
-//     * XXX Get rid of it, replace with #findComponentRootElement. */
+//     * XXX Get rid of it, replace with #findElement. */
 //    public static MarkupDesignBean findMarkupDesignBean(CssBox box) {
 //        for (; box != null; box = box.getParent()) {
 //            MarkupDesignBean boxMarkupDesignBean = CssBox.getMarkupDesignBeanForCssBox(box);
@@ -2770,15 +2770,17 @@ public final class ModelViewMapper {
 
     /** Locates a component root element in the visible view given the box.
      * @return <code>Element</code> or <code>null</code> if there is not such */
-    public static Element findComponentRootElement(CssBox box) {
+    public static Element findElement(CssBox box) {
         for (; box != null; box = box.getParent()) {
-            Element componentRootElement = CssBox.getElementForComponentRootCssBox(box);
-            if (componentRootElement != null) {
-                if (WebForm.getDomProviderService().isSpecialComponent(componentRootElement)) {
+            // #107084 Find the element, don't check for the root.
+//            Element componentRootElement = CssBox.getElementForComponentRootCssBox(box);
+            Element element = box.getElement();
+            if (element != null) {
+                if (WebForm.getDomProviderService().isSpecialComponent(element)) {
                     continue;
                 }
 
-                return componentRootElement;
+                return element;
             }
         }
 
@@ -2792,7 +2794,7 @@ public final class ModelViewMapper {
         return pageBox.findCssBox(x, y);
     }
 
-//    /** XXX Get rid of it, replace with #findComponentRootElement. */
+//    /** XXX Get rid of it, replace with #findElement. */
 //    public static MarkupDesignBean findMarkupDesignBean(PageBox pageBox, int x, int y) {
 ////        CssBox box = findBox(x, y);
 //        CssBox box = findBox(pageBox, x, y);
@@ -2800,11 +2802,11 @@ public final class ModelViewMapper {
 //        return findMarkupDesignBean(box);
 //    }
     
-    public static Element findComponentRootElement(PageBox pageBox, int x, int y) {
+    public static Element findElement(PageBox pageBox, int x, int y) {
 //        CssBox box = findBox(x, y);
         CssBox box = findBox(pageBox, x, y);
 
-        return findComponentRootElement(box);
+        return findElement(box);
     }
 
 //    public static Rectangle findShape(PageBox pageBox, DesignBean lbean) {
