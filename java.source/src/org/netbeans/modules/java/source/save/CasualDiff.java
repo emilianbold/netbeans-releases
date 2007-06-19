@@ -230,7 +230,7 @@ public class CasualDiff {
         }
         localPointer = diffParameterList(oldT.typarams, newT.typarams, 
                 oldT.typarams.isEmpty() && newT.typarams.nonEmpty(), 
-                localPointer, printer);
+                localPointer, printer, Measure.ARGUMENT);
         if (oldT.typarams.nonEmpty()) {
             // if type parameters exists, compute correct end of type parameters.
             // ! specifies the offset for insertHint var.
@@ -367,7 +367,8 @@ public class CasualDiff {
                     newT.typarams,
                     oldT.typarams.isEmpty() || newT.typarams.isEmpty(),
                     pos,
-                    printer
+                    printer,
+                    Measure.ARGUMENT
             );
         }
         if (oldT.restype != null) { // means constructor, skip return type gen.
@@ -414,7 +415,7 @@ public class CasualDiff {
         if (!listsMatch(oldT.params, newT.params)) {
             copyTo(localPointer, posHint);
             int old = printer.setPrec(TreeInfo.noPrec);
-            localPointer = diffParameterList(oldT.params, newT.params, false, posHint, printer);
+            localPointer = diffParameterList(oldT.params, newT.params, false, posHint, printer, Measure.MEMBER);
             printer.setPrec(old);
         }
         if (localPointer < posHint)
@@ -571,7 +572,7 @@ public class CasualDiff {
         int localPointer = bounds[0];
 
         copyTo(bounds[0], localPointer = getOldPos(oldT.init.head));
-        localPointer = diffParameterList(oldT.init, newT.init, false, localPointer, printer);
+        localPointer = diffParameterList(oldT.init, newT.init, false, localPointer, printer, Measure.ARGUMENT);
         copyTo(localPointer, localPointer = getOldPos(oldT.cond));
         localPointer = diffTree(oldT.cond, newT.cond, getBounds(oldT.cond));
         if (oldT.step.nonEmpty()) 
@@ -580,7 +581,7 @@ public class CasualDiff {
             int stepListHint = oldT.cond != null ? endPos(oldT.cond) + 1 : Query.NOPOS;
             copyTo(localPointer, localPointer = stepListHint);
         }
-        localPointer = diffParameterList(oldT.step, newT.step, false, localPointer, printer);
+        localPointer = diffParameterList(oldT.step, newT.step, false, localPointer, printer, Measure.ARGUMENT);
         copyTo(localPointer, getOldPos(oldT.body));
         localPointer = diffTree(oldT.body, newT.body, getBounds(oldT.body));
         
@@ -828,7 +829,7 @@ public class CasualDiff {
 
     protected int diffApply(JCMethodInvocation oldT, JCMethodInvocation newT, int[] bounds) {
         int localPointer = bounds[0];
-        diffParameterList(oldT.typeargs, newT.typeargs, false, localPointer, printer);
+        diffParameterList(oldT.typeargs, newT.typeargs, false, localPointer, printer, Measure.ARGUMENT);
         int[] methBounds = getBounds(oldT.meth);
         localPointer = diffTree(oldT.meth, newT.meth, methBounds);
         if (!listsMatch(oldT.args, newT.args)) {
@@ -838,7 +839,7 @@ public class CasualDiff {
                 int rParen = TokenUtilities.moveFwdToToken(tokenSequence, getOldPos(oldT.meth), JavaTokenId.RPAREN);
                 copyTo(localPointer, localPointer = rParen);
             }
-            localPointer = diffParameterList2(oldT.args, newT.args, localPointer, Measure.ARGUMENT);
+            localPointer = diffParameterList(oldT.args, newT.args, false, localPointer, printer, Measure.ARGUMENT);
         }
         copyTo(localPointer, bounds[1]);
         
@@ -853,7 +854,7 @@ public class CasualDiff {
             int[] enclBounds = getBounds(oldT.encl);
             localPointer = diffTree(oldT.encl, newT.encl, enclBounds);
         }
-        diffParameterList(oldT.typeargs, newT.typeargs, false, localPointer, printer);
+        diffParameterList(oldT.typeargs, newT.typeargs, false, localPointer, printer, Measure.ARGUMENT);
         int[] clazzBounds = getBounds(oldT.clazz);
         copyTo(localPointer, clazzBounds[0]);
         localPointer = diffTree(oldT.clazz, newT.clazz, clazzBounds);
@@ -864,7 +865,7 @@ public class CasualDiff {
             tokenSequence.moveNext();
             copyTo(localPointer, localPointer = tokenSequence.offset());
         }
-        localPointer = diffParameterList(oldT.args, newT.args, false, localPointer, printer);
+        localPointer = diffParameterList(oldT.args, newT.args, false, localPointer, printer, Measure.ARGUMENT);
         // let diffClassDef() method notified that anonymous class is printed.
         if (oldT.def != null) {
             if (newT.def != null) {
@@ -892,7 +893,7 @@ public class CasualDiff {
 //        diffParameterList(oldT.dims, newT.dims, endPos(oldT.dims));
         if (oldT.elems != null && oldT.elems.head != null) {
             copyTo(localPointer, getOldPos(oldT.elems.head));
-            localPointer = diffParameterList(oldT.elems, newT.elems, false, getOldPos(oldT.elems.head), printer);
+            localPointer = diffParameterList(oldT.elems, newT.elems, false, getOldPos(oldT.elems.head), printer, Measure.ARGUMENT);
         }
         copyTo(localPointer, bounds[1]);
         return bounds[1];
@@ -1111,7 +1112,8 @@ public class CasualDiff {
                     newT.arguments,
                     oldT.arguments.isEmpty() || newT.arguments.isEmpty(),
                     pos,
-                    printer
+                    printer,
+                    Measure.ARGUMENT
             );
         }
         copyTo(localPointer, bounds[1]);
@@ -1175,7 +1177,7 @@ public class CasualDiff {
         } else {
             copyTo(localPointer, localPointer = endPos(oldT)-1);
         }
-        localPointer = diffParameterList(oldT.args, newT.args, false, localPointer, printer);
+        localPointer = diffParameterList(oldT.args, newT.args, false, localPointer, printer, Measure.ARGUMENT);
         copyTo(localPointer, bounds[1]);
         
         return bounds[1];
@@ -1228,7 +1230,7 @@ public class CasualDiff {
     protected int diffFieldGroup(FieldGroupTree oldT, FieldGroupTree newT, int[] bounds) {
         if (!listsMatch(oldT.getVariables(), newT.getVariables())) {
             copyTo(bounds[0], oldT.getStartPosition());
-            return diffParameterList(oldT.getVariables(), newT.getVariables(), false, oldT.getStartPosition(), printer);
+            return diffParameterList(oldT.getVariables(), newT.getVariables(), false, oldT.getStartPosition(), printer, Measure.ARGUMENT);
         } else {
             return oldT.endPos();
         }
@@ -1537,7 +1539,8 @@ public class CasualDiff {
             List<? extends JCTree> newList,
             boolean printParen,
             int pos,
-            VeryPretty buf)
+            VeryPretty buf,
+            Measure measure)
     {
         assert oldList != null && newList != null;
         if (oldList == newList || oldList.equals(newList))
@@ -1558,7 +1561,8 @@ public class CasualDiff {
         }
         ListMatcher<JCTree> matcher = ListMatcher.<JCTree>instance(
                 (List<JCTree>) oldList, 
-                (List<JCTree>) newList
+                (List<JCTree>) newList,
+                measure
         );
         if (!matcher.match()) {
             // nothing in the list, no need to print and nothing was printed
@@ -1568,41 +1572,56 @@ public class CasualDiff {
         if (printParen && oldList.isEmpty()) {
             buf.print(JavaTokenId.LT.fixedText());
         }
-        JCTree lastDeleted = null;
+        int oldIndex = 0;
         for (int index = 0, j = 0; j < result.length; j++) {
             ResultItem<JCTree> item = result[j];
             switch (item.operation) {
-                // insert new element
-                case INSERT:
-                    if (index++ > 0) buf.print(",");
-                    if (lastDeleted != null && treesMatch(lastDeleted, item.element, false)) {
-                        VeryPretty mainPrint = this.printer;
-                        this.printer = buf;
-                        diffTree(lastDeleted, item.element, getBounds(lastDeleted));
-                        this.printer = mainPrint;
-                    } else {
-                        buf.print(item.element);
+                case MODIFY: {
+                    JCTree tree = oldList.get(oldIndex++);
+                    int[] bounds = getBounds(tree);
+                    tokenSequence.move(bounds[0]);
+                    if (oldIndex != 1) {
+                        PositionEstimator.moveToSrcRelevant(tokenSequence, Direction.BACKWARD);
                     }
-                    lastDeleted = null;
+                    tokenSequence.moveNext();
+                    int start = tokenSequence.offset();
+                    copyTo(start, bounds[0], buf);
+                    diffTree(tree, item.element, bounds);
+                    tokenSequence.move(bounds[1]);
+                    PositionEstimator.moveToSrcRelevant(tokenSequence, Direction.FORWARD);
+                    copyTo(bounds[1], pos = tokenSequence.offset(), buf);
                     break;
+                }
+                // insert new element
+                case INSERT: {
+                    if (index++ > 0) buf.print(" ");
+                    buf.print(item.element);
+                    break;
+                }
                 case DELETE:
-                    lastDeleted = item.element;
+                    oldIndex++;
+                    tokenSequence.move(getBounds(item.element)[1]);
+                    PositionEstimator.moveToSrcRelevant(tokenSequence, Direction.FORWARD);
+                    pos = tokenSequence.offset();
                     break;
                 // just copy existing element
                 case NOCHANGE:
-                    if (index++ > 0) buf.print(",");
+                    oldIndex++;
                     int[] bounds = getBounds(item.element);
                     tokenSequence.move(bounds[0]);
-                    TokenUtilities.movePrevious(tokenSequence, bounds[0]);
+                    PositionEstimator.moveToSrcRelevant(tokenSequence, Direction.BACKWARD);
                     tokenSequence.moveNext();
                     int start = tokenSequence.offset();
-                    TokenUtilities.moveNext(tokenSequence, bounds[1]);
+                    tokenSequence.move(bounds[1]);
+                    PositionEstimator.moveToSrcRelevant(tokenSequence, Direction.FORWARD);
                     int end = tokenSequence.offset();
-                    copyTo(start, end, buf);
-                    lastDeleted = null;
+                    copyTo(start, pos = end, buf);
                     break;
                 default: 
                     break;
+            }
+            if (commaNeeded(result, item)) {
+                buf.print(",");
             }
         }
         if (printParen && oldList.isEmpty()) {
@@ -1612,72 +1631,19 @@ public class CasualDiff {
         return oldList.isEmpty() ? pos : endPos(oldList);
     }
     
-    /**
-     * Diff two lists of parameters separated by comma. It is used e.g.
-     * from type parameters and method parameters.
-     * 
-     */
-    private int diffParameterList2(
-            List<? extends JCTree> oldList,
-            List<? extends JCTree> newList,
-            int pos,
-            Measure measure)
-    {
-        assert oldList != null && newList != null;
-        if (oldList == newList || oldList.equals(newList))
-            return pos; // they match perfectly or no need to do anything
-        
-        ListMatcher<JCTree> matcher = ListMatcher.<JCTree>instance(
-                (List<JCTree>) oldList, 
-                (List<JCTree>) newList,
-                measure
-        );
-        if (!matcher.match()) {
-            // nothing in the list, no need to print and nothing was printed
-            return pos; 
+    private boolean commaNeeded(ResultItem[] arr, ResultItem item) {
+        if (item.operation == Operation.DELETE) {
+            return false;
         }
-        ResultItem<JCTree>[] result = matcher.getResult();
-        for (int oldIndex = 0, j = 0; j < result.length; j++) {
-            ResultItem<JCTree> item = result[j];
-            switch (item.operation) {
-                case MODIFY: {
-                    JCTree tree = oldList.get(oldIndex);
-                    int[] bounds = getBounds(tree);
-                    if (oldIndex++ > 0) printer.print(",");
-                    copyTo(pos, bounds[0]);
-                    diffTree(tree, item.element, bounds);
-                    tokenSequence.move(bounds[1]);
-                    PositionEstimator.moveToSrcRelevant(tokenSequence, Direction.FORWARD);
-                    pos = bounds[1];
-                    break;
-                }
-                // insert new element
-                case INSERT: {
-                    if (oldIndex > 0) printer.print(", ");
-                    printer.print(item.element);
-                    break;
-                }
-                // just copy existing element
-                case NOCHANGE: {
-                    if (oldIndex++ > 0) printer.print(",");
-                    int[] bounds = getBounds(item.element);
-                    tokenSequence.move(bounds[0]);
-                    TokenUtilities.movePrevious(tokenSequence, bounds[0]);
-                    tokenSequence.moveNext();
-                    int start = tokenSequence.offset();
-                    TokenUtilities.moveNext(tokenSequence, bounds[1]);
-                    int end = tokenSequence.offset();
-                    copyTo(start, end);
-                    pos = end + 1;
-                    break;
-                }
-                // just continue
-                case DELETE:
-                default: 
-                    break;
+        boolean result = false;
+        for (int i = 0; i < arr.length; i++) {
+            if (item == arr[i]) {
+                result = true;
+            } else if (result && arr[i].operation != Operation.DELETE) {
+                return true;
             }
         }
-        return oldList.isEmpty() ? pos : endPos(oldList);
+        return false;
     }
     
     /**
