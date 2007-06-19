@@ -350,8 +350,8 @@ public class TargetLister {
                         }
                     }
                 } else if (macroParams == null && elName.equals("target")) { // NOI18N
-                    String name = el.getAttribute("name"); // NOI18N
-                    targets.put(name, new Target(this, el, name));
+                    String targetName = el.getAttribute("name"); // NOI18N
+                    targets.put(targetName, new Target(this, el, targetName));
                 } else if (macroParams == null && elName.equals("import")) { // NOI18N
                     String fileS = el.getAttribute("file").replace('/', File.separatorChar).replace('\\', File.separatorChar); // NOI18N
                     String fileSubstituted = replaceAntProperties(fileS, propertyDefs);
@@ -392,16 +392,16 @@ public class TargetLister {
                     }
                 } else if (elName.equals("property")) { // NOI18N
                     if (el.hasAttribute("value")) { // NOI18N
-                        String name = replaceMacroParams(el.getAttribute("name"), macroParams); // NOI18N
-                        if (name.length() == 0) {
+                        String propertyName = replaceMacroParams(el.getAttribute("name"), macroParams); // NOI18N
+                        if (propertyName.length() == 0) {
                             continue;
                         }
-                        if (propertyDefs.containsKey(name)) {
+                        if (propertyDefs.containsKey(propertyName)) {
                             continue;
                         }
                         String value = replaceMacroParams(el.getAttribute("value"), macroParams); // NOI18N
                         String valueSubst = replaceAntProperties(value, propertyDefs);
-                        propertyDefs.put(name, valueSubst);
+                        propertyDefs.put(propertyName, valueSubst);
                         continue;
                     }
                     String file = replaceMacroParams(el.getAttribute("file"), macroParams); // NOI18N
@@ -419,6 +419,8 @@ public class TargetLister {
                         InputStream is = new FileInputStream(propertyFile);
                         try {
                             p.load(is);
+                        } catch (IllegalArgumentException x) {
+                            throw (IOException) new IOException(x.toString()).initCause(x);
                         } finally {
                             is.close();
                         }
@@ -437,16 +439,16 @@ public class TargetLister {
                         }
                     }
                 } else if (elName.equals("macrodef")) { // NOI18N
-                    String name = el.getAttribute("name");
-                    if (name.length() == 0) {
+                    String macrodefName = el.getAttribute("name");
+                    if (macrodefName.length() == 0) {
                         continue;
                     }
                     uri = el.getAttribute("uri"); // NOI18N
                     if (uri.length() > 0) {
-                        name = uri + '#' + name;
+                        macrodefName = uri + '#' + macrodefName;
                     }
-                    if (!macroDefs.containsKey(name)) {
-                        macroDefs.put(name, el);
+                    if (!macroDefs.containsKey(macrodefName)) {
+                        macroDefs.put(macrodefName, el);
                     }
                 }
             }

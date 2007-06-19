@@ -222,6 +222,13 @@ public class TargetListerTest extends NbTestCase {
         assertTrue("#67694: imported version is overridden", t.isOverridden());
     }
     
+    public void testMalformedUnicodeEscape() throws Exception { // #105492
+        try {
+            getTargets(testdir.getFileObject("loads-malformed-unicode.xml"));
+            fail();
+        } catch (IOException x) {/* OK */}
+    }
+    
     private static List<TargetLister.Target> getTargets(FileObject fo) throws IOException {
         AntProjectCookie apc = TargetLister.getAntProjectCookie(fo);
         SortedSet<TargetLister.Target> targets = new TreeSet<TargetLister.Target>(new TargetComparator());
