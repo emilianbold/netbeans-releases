@@ -20,7 +20,7 @@ Microsystems, Inc. All Rights Reserved.
 <project xmlns="http://www.netbeans.org/ns/project/1">
     <type>org.netbeans.modules.apisupport.project</type>
     <configuration>
-        <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
+        <data xmlns="http://www.netbeans.org/ns/nb-module-project/3">
             <code-name-base>org.netbeans.modules.uihandler</code-name-base>
             <module-dependencies>
                 <dependency>
@@ -141,6 +141,5 @@ Microsystems, Inc. All Rights Reserved.
                 <package>org.netbeans.modules.uihandler.api</package>
             </public-packages>
         </data>
-        <junit-version xmlns="http://www.netbeans.org/ns/junit/1" value="junit3"/>
     </configuration>
 </project>
