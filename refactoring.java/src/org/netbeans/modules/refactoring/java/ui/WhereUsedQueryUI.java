@@ -19,19 +19,31 @@
 package org.netbeans.modules.refactoring.java.ui;
 
 import java.text.MessageFormat;
+import java.util.HashSet;
 import java.util.ResourceBundle;
+import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.UiUtils;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;
 import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.netbeans.modules.refactoring.java.api.WhereUsedQueryConstants;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.filesystems.FileObject;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
@@ -84,6 +96,17 @@ public class WhereUsedQueryUI implements RefactoringUI {
         query.putValue(query.SEARCH_IN_COMMENTS,panel.isSearchInComments());
         if (panel.getScope()==WhereUsedPanel.Scope.ALL) {
             query.getContext().add(RetoucheUtils.getClasspathInfoFor(element));
+        } else {
+            ClasspathInfo info = query.getContext().lookup(ClasspathInfo.class);
+            Project p = FileOwnerQuery.getOwner(element.getFileObject());
+            Sources sources = ProjectUtils.getSources(p);
+            Set<FileObject> roots = new HashSet();
+            for (SourceGroup sg:sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
+                roots.add(sg.getRootFolder());
+            }
+            ClassPath rcp = ClassPathSupport.createClassPath(roots.toArray(new FileObject[roots.size()]));
+            info = ClasspathInfo.create(info.getClassPath(ClasspathInfo.PathKind.BOOT), info.getClassPath(ClasspathInfo.PathKind.COMPILE), rcp);
+            query.getContext().add(info);
         }
         if (kind == ElementKind.METHOD) {
             setForMethod();
