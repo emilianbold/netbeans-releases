@@ -59,6 +59,7 @@ import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem.AtomicAction;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.modules.SpecificationVersion;
@@ -560,23 +561,35 @@ public final class EarProjectGenerator {
     }
     
     public static void setPlatformSourceLevel(final AntProjectHelper helper, final String sourceLevel) {
-        ProjectManager.mutex().writeAccess(new Runnable() {
-            public void run() {
-                try {
-                    EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                    // #89131: these levels are not actually distinct from 1.5.
-                    String srcLevel = sourceLevel;
-                    if (sourceLevel.equals("1.6") || sourceLevel.equals("1.7"))
-                        srcLevel = "1.5";
-                    ep.setProperty(EarProjectProperties.JAVAC_SOURCE, srcLevel);
-                    ep.setProperty(EarProjectProperties.JAVAC_TARGET, srcLevel);
-                    helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
-                    ProjectManager.getDefault().saveProject(ProjectManager.getDefault().findProject(helper.getProjectDirectory()));
-                } catch (IOException e) {
-                    Exceptions.printStackTrace(e);
+        FileObject projectDir = helper.getProjectDirectory();
+        if (projectDir == null) {
+            return;
+        }
+        try {
+            projectDir.getFileSystem().runAtomicAction(new AtomicAction() {
+                public void run() throws IOException {
+                    ProjectManager.mutex().writeAccess(new Runnable() {
+                        public void run() {
+                            try {
+                                EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                                // #89131: these levels are not actually distinct from 1.5.
+                                String srcLevel = sourceLevel;
+                                if (sourceLevel.equals("1.6") || sourceLevel.equals("1.7"))
+                                    srcLevel = "1.5";
+                                ep.setProperty(EarProjectProperties.JAVAC_SOURCE, srcLevel);
+                                ep.setProperty(EarProjectProperties.JAVAC_TARGET, srcLevel);
+                                helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
+                                ProjectManager.getDefault().saveProject(ProjectManager.getDefault().findProject(helper.getProjectDirectory()));
+                            } catch (IOException e) {
+                                Exceptions.printStackTrace(e);
+                            }
+                        }
+                    });
                 }
-            }
-        });
+            });
+        } catch (IOException e) {
+            Exceptions.printStackTrace(e);
+        }
     }
     
     public static String toClasspathString(File[] classpathEntries) {

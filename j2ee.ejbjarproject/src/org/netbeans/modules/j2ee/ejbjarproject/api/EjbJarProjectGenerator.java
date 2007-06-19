@@ -49,6 +49,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.EjbJarProjectProperties;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.PlatformUiSupport;
 import org.netbeans.modules.websvc.spi.webservices.WebServicesConstants;
+import org.openide.filesystems.FileSystem.AtomicAction;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
@@ -160,63 +161,70 @@ public class EjbJarProjectGenerator {
                 configFilesBase, (libFolder == null ? null : libFolder), null, j2eeLevel, serverInstanceID);
         final EjbJarProject p = (EjbJarProject) ProjectManager.getDefault().findProject(dirFO);
         final ReferenceHelper refHelper = p.getReferenceHelper();
-        try {
-            ProjectManager.mutex().writeAccess( new Mutex.ExceptionAction() {
-                public Object run() throws Exception {
-                    Element data = h.getPrimaryConfigurationData(true);
-                    Document doc = data.getOwnerDocument();
-                    NodeList nl = data.getElementsByTagNameNS(EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE,"source-roots");
-                    assert nl.getLength() == 1;
-                    Element sourceRoots = (Element) nl.item(0);
-                    nl = data.getElementsByTagNameNS(EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE,"test-roots");  //NOI18N
-                    assert nl.getLength() == 1;
-                    Element testRoots = (Element) nl.item(0);
-                    for (int i=0; i<sourceFolders.length; i++) {
-                        String propName = "src.dir" + (i == 0 ? "" : Integer.toString(i+1)); //NOI18N
-                        String srcReference = refHelper.createForeignFileReference(sourceFolders[i], JavaProjectConstants.SOURCES_TYPE_JAVA);
-                        Element root = doc.createElementNS(EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE,"root");   //NOI18N
-                        root.setAttribute("id",propName);   //NOI18N
-                        sourceRoots.appendChild(root);
-                        EditableProperties props = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                        props.put(propName,srcReference);
-                        h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props); // #47609
-                    }
-                    
-                    if (testFolders.length == 0) {
-                        String testLoc = NbBundle.getMessage(EjbJarProjectGenerator.class,"TXT_DefaultTestFolderName");
-                        File f = new File(dir,testLoc);
-                        f.mkdirs();
-                        String propName = "test.src.dir";
-                        Element root = doc.createElementNS(EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE,"root");   //NOI18N
-                        root.setAttribute("id",propName);   //NOI18N
-                        root.setAttribute("name",NbBundle.getMessage(EjbJarProjectGenerator.class, "NAME_test.src.dir"));
-                        testRoots.appendChild(root);
-                        EditableProperties props = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                        props.put(propName,testLoc);
-                        h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props); // #47609
-                    } else {
-                        for (int i=0; i<testFolders.length; i++) {
-                            if (!testFolders[i].exists()) {
-                                testFolders[i].mkdirs();
+        // issue 89278: do not fire file change events under ProjectManager.MUTEX,
+        // it is deadlock-prone
+        dirFO.getFileSystem().runAtomicAction(new AtomicAction() {
+            public void run() throws IOException {
+                try {
+                    ProjectManager.mutex().writeAccess( new Mutex.ExceptionAction() {
+                        public Object run() throws Exception {
+                            Element data = h.getPrimaryConfigurationData(true);
+                            Document doc = data.getOwnerDocument();
+                            NodeList nl = data.getElementsByTagNameNS(EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE,"source-roots");
+                            assert nl.getLength() == 1;
+                            Element sourceRoots = (Element) nl.item(0);
+                            nl = data.getElementsByTagNameNS(EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE,"test-roots");  //NOI18N
+                            assert nl.getLength() == 1;
+                            Element testRoots = (Element) nl.item(0);
+                            for (int i=0; i<sourceFolders.length; i++) {
+                                String propName = "src.dir" + (i == 0 ? "" : Integer.toString(i+1)); //NOI18N
+                                String srcReference = refHelper.createForeignFileReference(sourceFolders[i], JavaProjectConstants.SOURCES_TYPE_JAVA);
+                                Element root = doc.createElementNS(EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE,"root");   //NOI18N
+                                root.setAttribute("id",propName);   //NOI18N
+                                sourceRoots.appendChild(root);
+                                EditableProperties props = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                                props.put(propName,srcReference);
+                                h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props); // #47609
                             }
-                            String propName = "test.src.dir" + (i == 0 ? "" : Integer.toString(i+1)); //NOI18N
-                            String testReference = refHelper.createForeignFileReference(testFolders[i], JavaProjectConstants.SOURCES_TYPE_JAVA);
-                            Element root = doc.createElementNS(EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE,"root");   //NOI18N
-                            root.setAttribute("id",propName);   //NOI18N
-                            testRoots.appendChild(root);
-                            EditableProperties props = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH); // #47609
-                            props.put(propName,testReference);
-                            h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
+
+                            if (testFolders.length == 0) {
+                                String testLoc = NbBundle.getMessage(EjbJarProjectGenerator.class,"TXT_DefaultTestFolderName");
+                                File f = new File(dir,testLoc);
+                                f.mkdirs();
+                                String propName = "test.src.dir";
+                                Element root = doc.createElementNS(EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE,"root");   //NOI18N
+                                root.setAttribute("id",propName);   //NOI18N
+                                root.setAttribute("name",NbBundle.getMessage(EjbJarProjectGenerator.class, "NAME_test.src.dir"));
+                                testRoots.appendChild(root);
+                                EditableProperties props = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                                props.put(propName,testLoc);
+                                h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props); // #47609
+                            } else {
+                                for (int i=0; i<testFolders.length; i++) {
+                                    if (!testFolders[i].exists()) {
+                                        testFolders[i].mkdirs();
+                                    }
+                                    String propName = "test.src.dir" + (i == 0 ? "" : Integer.toString(i+1)); //NOI18N
+                                    String testReference = refHelper.createForeignFileReference(testFolders[i], JavaProjectConstants.SOURCES_TYPE_JAVA);
+                                    Element root = doc.createElementNS(EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE,"root");   //NOI18N
+                                    root.setAttribute("id",propName);   //NOI18N
+                                    testRoots.appendChild(root);
+                                    EditableProperties props = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH); // #47609
+                                    props.put(propName,testReference);
+                                    h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
+                                }
+                            }
+                            h.putPrimaryConfigurationData(data,true);
+                            ProjectManager.getDefault().saveProject(p);
+                            return null;
                         }
-                    }
-                    h.putPrimaryConfigurationData(data,true);
-                    ProjectManager.getDefault().saveProject(p);
-                    return null;
+                    });
+                } catch (MutexException me ) {
+                    Exceptions.printStackTrace(me);
                 }
-            });
-        } catch (MutexException me ) {
-            Exceptions.printStackTrace(me);
-        }
+            }
+        });
+        
         // AB: fix for #53170: if j2eeLevel is 1.4 and ejb-jar.xml is version 2.0, we upgrade it to version 2.1
         FileObject ejbJarXml = FileUtil.toFileObject(configFilesBase).getFileObject("ejb-jar.xml"); // NOI18N
         if (ejbJarXml != null) {
@@ -425,27 +433,42 @@ public class EjbJarProjectGenerator {
     // AB: this method is also called from the enterprise application, so we can't pass UpdateHelper here
     // well, actually we can, but let's not expose too many classes
     public static void setPlatform(final AntProjectHelper helper, final String platformName, final String sourceLevel) {
-        ProjectManager.mutex().writeAccess(new Runnable() {
-            public void run() {
-                try {
-                    EjbJarProject project = (EjbJarProject)ProjectManager.getDefault().findProject(helper.getProjectDirectory());
-                    UpdateHelper updateHelper = project.getUpdateHelper();
-                    EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                    String finalPlatformName = platformName;
-                    if (finalPlatformName == null)
-                        finalPlatformName = JavaPlatformManager.getDefault().getDefaultPlatform().getDisplayName();
-                    
-                    // #89131: these levels are not actually distinct from 1.5.
-                    String srcLevel = sourceLevel;
-                    if (sourceLevel.equals("1.6") || sourceLevel.equals("1.7"))
-                        srcLevel = "1.5";
-                    PlatformUiSupport.storePlatform(ep, updateHelper, finalPlatformName, srcLevel != null ? new SpecificationVersion(srcLevel) : null);
-                    helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
-                    ProjectManager.getDefault().saveProject(ProjectManager.getDefault().findProject(helper.getProjectDirectory()));
-                } catch (IOException e) {
-                    Exceptions.printStackTrace(e);
+        FileObject projectDir = helper.getProjectDirectory();
+        if (projectDir == null) {
+            return;
+        }
+        // issue 89278: do not fire file change events under ProjectManager.MUTEX,
+        // it is deadlock-prone
+        try {
+            projectDir.getFileSystem().runAtomicAction(new AtomicAction() {
+                public void run() throws IOException {
+                    ProjectManager.mutex().writeAccess(new Runnable() {
+                        public void run() {
+                            try {
+                                EjbJarProject project = (EjbJarProject)ProjectManager.getDefault().findProject(helper.getProjectDirectory());
+                                UpdateHelper updateHelper = project.getUpdateHelper();
+                                EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                                String finalPlatformName = platformName;
+                                if (finalPlatformName == null)
+                                    finalPlatformName = JavaPlatformManager.getDefault().getDefaultPlatform().getDisplayName();
+
+                                // #89131: these levels are not actually distinct from 1.5.
+                                String srcLevel = sourceLevel;
+                                if (sourceLevel.equals("1.6") || sourceLevel.equals("1.7"))
+                                    srcLevel = "1.5";
+                                PlatformUiSupport.storePlatform(ep, updateHelper, finalPlatformName, srcLevel != null ? new SpecificationVersion(srcLevel) : null);
+                                helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
+                                ProjectManager.getDefault().saveProject(ProjectManager.getDefault().findProject(helper.getProjectDirectory()));
+                            } catch (IOException e) {
+                                Exceptions.printStackTrace(e);
+                            }
+                        }
+                    });
                 }
-            }
-        });
+            });
+        } catch (IOException e) {
+            Exceptions.printStackTrace(e);
+        }
+    
     }
 }
