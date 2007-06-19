@@ -612,6 +612,7 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
             this.left.add(customComponent, BorderLayout.CENTER);
             UI.setComponentForRefactoringPreview(null);
             this.splitPane.validate();
+            this.repaint();
             tree=null;
         } else {
             RequestProcessor.getDefault().post(new Runnable() {
