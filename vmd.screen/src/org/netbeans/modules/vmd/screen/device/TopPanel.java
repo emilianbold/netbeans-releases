@@ -67,7 +67,7 @@ public class TopPanel extends JPanel {
     
     //    private static final Color COLOR_HOVER_FILL = new Color (0xB9, 0xDF, 0xC0, 128);
     private static final Color COLOR_HOVER_DRAW = MainPanel.HOVER_COLOR;
-    private static final Color COLOR_DRAW_DND_LINE = Color.RED;
+    private static final Color COLOR_DRAW_DND_LINE = new Color(36, 76, 114);
     //private static final Color COLOR_DRAW_DND_SHAPE = Color.GREEN;
     private static final Stroke STROKE = new BasicStroke(2.0f);
     private static final Stroke STROKE_DND_SHAPE = new BasicStroke(1.0f);
@@ -106,7 +106,6 @@ public class TopPanel extends JPanel {
                             innerDragingInProgress = false;
                             return;
                         }
-                        innerDragingInProgress = true;
                         dragSource.startDrag(dgEvent, null,new ScreenDisplaylTransferable(dragedComponent), null);
                     }
                 });
@@ -163,7 +162,8 @@ public class TopPanel extends JPanel {
         setDropTarget(new DropTarget(this,new DropTargetListener() {
             
             public void dragEnter(DropTargetDragEvent dtde) {
-                //outerGraggingInProgress = true;
+                if (dtde.getTransferable().isDataFlavorSupported(ScreenDisplayDataFlavorSupport.HORIZONTAL_POSITION_DATA_FLAVOR))
+                    innerDragingInProgress = true;
                 updatePosition(dtde.getLocation());
                 AcceptSuggestion suggestion = getSugestion(dtde.getTransferable());
                 if (isAcceptable(dtde.getLocation(), dtde.getTransferable(), suggestion))
@@ -178,8 +178,10 @@ public class TopPanel extends JPanel {
                 if (isAcceptable(dtde.getLocation(), dtde.getTransferable(),  suggestion)) {
                     dtde.acceptDrag(DnDConstants.ACTION_COPY_OR_MOVE);
                     hoverDnD(dtde.getLocation());
-                } else
+                } else {
+                    hover(dtde.getLocation());
                     dtde.rejectDrag();
+                }
             }
             
             public void dropActionChanged(DropTargetDragEvent dtde) {
@@ -206,7 +208,7 @@ public class TopPanel extends JPanel {
                     dtde.rejectDrop();
                 }
                 innerDragingInProgress = false;
-                hover(lastHoverPoint);
+                hover(dtde.getLocation());
             }
         }));
     }
@@ -381,8 +383,9 @@ public class TopPanel extends JPanel {
                         return;
                     DesignComponent component = devicePanel.getDesignComponentAt(point);
                     ScreenDisplayPresenter presenter = component != null ? component.getPresenter(ScreenDisplayPresenter.class) : null;
+                    if (presenter == null)
+                        return;
                     Point editorOrigin = devicePanel.calculateTranslation(presenter.getView());
-                    JComponent view = presenter.getView();
                     double half = presenter.getView().getHeight() / 2;
                     if ((editorOrigin.getY() + half) > point.getY())
                         verticalPosition = Position.NORTH;
@@ -560,7 +563,7 @@ public class TopPanel extends JPanel {
             DesignComponentDataFlavorSupport.DESIGN_COMPONENT_DATA_FLAVOR,
             ScreenDisplayDataFlavorSupport.HORIZONTAL_POSITION_DATA_FLAVOR,
             ScreenDisplayDataFlavorSupport.VERTICAL_POSITION_DATA_FLAVOR
-        
+                    
         });
         
         private WeakReference<DesignComponent> component;

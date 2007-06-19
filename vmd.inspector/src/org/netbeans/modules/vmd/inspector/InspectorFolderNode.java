@@ -51,12 +51,13 @@ import org.openide.util.datatransfer.PasteType;
 final class InspectorFolderNode extends AbstractNode {
     
     private static final Action[] EMPTY_ACTION_ARRAY = new Action[0];
+    private  static DataFlavor INSPECTOR_NODE_DATA_FLAVOR = new DataFlavor(NodeTransferable.class, "Nodetransferable"); //NOI18N
     
     private Long componentID;
     private WeakReference<DesignComponent> component;
     private InspectorFolder folder;
     private Transferable transferable;
-    private PasteType pasteType;
+    
     
     InspectorFolderNode(DataObjectContext context) {
         super(new InspectorChildren(), context.getDataObject().getLookup());
@@ -131,47 +132,40 @@ final class InspectorFolderNode extends AbstractNode {
     
     protected void createPasteTypes(Transferable t, java.util.List s) {
         super.createPasteTypes(t, s);
-        PasteType paste = getDropType(t, DnDConstants.ACTION_COPY, -1 );
-        if( null != paste )
-            s.add( paste );
+        if (!t.isDataFlavorSupported(INSPECTOR_NODE_DATA_FLAVOR))
+            return;
+        PasteType paste = getDropType(t, DnDConstants.ACTION_COPY_OR_MOVE, -1 );
+        if( paste != null)
+            s.add(paste);
     }
     
     public PasteType getDropType(final Transferable t, final int action, int index) {
-        DesignComponent transComponent = null;
-        if (t.isDataFlavorSupported(DesignComponentDataFlavorSupport.DESIGN_COMPONENT_DATA_FLAVOR) == false)
+        final PasteType[] pasteType = new PasteType[1];
+        if (!t.isDataFlavorSupported(INSPECTOR_NODE_DATA_FLAVOR))
             return null;
-        try {
-            transComponent = (DesignComponent) t.getTransferData(DesignComponentDataFlavorSupport.DESIGN_COMPONENT_DATA_FLAVOR);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-        if (transComponent == null)
+        if (component == null || component.get() == null)
             return null;
-        final DesignComponent ifnc = transComponent;
-        ifnc.getDocument().getTransactionManager().readAccess(new Runnable() {
+        component.get().getDocument().getTransactionManager().readAccess(new Runnable() {
             public void run() {
-                final Transferable trans = new NodeTransferable(ifnc);
-                if (component == null)
-                    return;
-                if (component.get() != null && AcceptSupport.isAcceptable(component.get(),trans, null)) {
-                    pasteType = new PasteType() {
+                if (component.get() != null && AcceptSupport.isAcceptable(component.get(), t, null)) {
+                    pasteType[0] = new PasteType() {
                         public Transferable paste() throws IOException {
-                            ifnc.getDocument().getTransactionManager().writeAccess(new Runnable() {
+                            component.get().getDocument().getTransactionManager().writeAccess(new Runnable() {
                                 public void run() {
-                                    if (component.get() != null)
-                                        AcceptSupport.accept(component.get(), trans, null);
+                                    if (component.get() != null && AcceptSupport.isAcceptable(component.get(), t, null)) {
+                                        AcceptSupport.accept(component.get(), t, null);
+                                        System.out.println("Drop " + component.get());
+                                    }
                                 }
                             });
                             return t;
                         }
                     };
-                    return;
-                } else
-                    pasteType = null;
+                }
             }
         });
         
-        return pasteType;
+        return pasteType[0];
     }
     
     public Transferable drag() throws IOException {
@@ -196,9 +190,7 @@ final class InspectorFolderNode extends AbstractNode {
     public Transferable clipboardCut() throws IOException {
         return transferable;
     }
-    
-    
-    
+
     public boolean canDestroy() {
         return true;
     }
@@ -225,18 +217,20 @@ final class InspectorFolderNode extends AbstractNode {
     private class NodeTransferable implements Transferable {
         
         private WeakReference<DesignComponent> component;
-        
+
         public NodeTransferable(DesignComponent component) {
             assert (component != null);
             this.component = new WeakReference<DesignComponent>(component);
         }
         
         public DataFlavor[] getTransferDataFlavors() {
-            return new DataFlavor[]{DesignComponentDataFlavorSupport.DESIGN_COMPONENT_DATA_FLAVOR};
+            return new DataFlavor[]{DesignComponentDataFlavorSupport.DESIGN_COMPONENT_DATA_FLAVOR, INSPECTOR_NODE_DATA_FLAVOR};
         }
         
         public boolean isDataFlavorSupported(DataFlavor flavor) {
             if (flavor == DesignComponentDataFlavorSupport.DESIGN_COMPONENT_DATA_FLAVOR)
+                return true;
+            if (flavor == INSPECTOR_NODE_DATA_FLAVOR)
                 return true;
             return false;
         }
