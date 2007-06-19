@@ -137,7 +137,7 @@ public class BeanChildren extends Children.Keys {
 
         contextL = null;
 
-        setKeys(java.util.Collections.EMPTY_SET);
+        setKeys(java.util.Collections.emptySet());
     }
 
     /** Controls which nodes
