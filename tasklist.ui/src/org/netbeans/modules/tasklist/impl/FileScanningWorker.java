@@ -33,6 +33,7 @@ import java.util.Set;
 import org.netbeans.spi.tasklist.FileTaskScanner;
 import org.netbeans.spi.tasklist.Task;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -223,7 +224,14 @@ class FileScanningWorker implements Runnable {
             if( cache.isUpToDate( item.resource, scanner ) ) {
                 cache.getTasks( item.resource, scanner, scannedTasks );
             } else {
-                List<? extends Task> newTasks = scanner.scan( item.resource );
+                List<? extends Task> newTasks = null;
+                try {
+                    if( item.resource.isValid() )
+                        newTasks = scanner.scan( item.resource );
+                } catch( Throwable e ) {
+                    //don't let uncaught exceptions break the thread synchronization
+                    Exceptions.printStackTrace( e );
+                }
                 if( null == newTasks ) {
                     cache.getTasks( item.resource, scanner, scannedTasks );
                 } else {
