@@ -184,33 +184,34 @@ public class BindDialogOperator extends JDialogOperator {
     /** Set Null Value text */
     public void setNullValueText(String text) {
         // TODO: remove this ID and get button better way        
-        new JButtonOperator(tbdPane(), 2).pushNoBlock();
+        new JButtonOperator(tbdPane(), 4).pushNoBlock();
         setTextIntoValueDialog(text);        
     }
 
     /** Get Null Value text */
     public String getNullValueText() {
         // TODO: remove this ID and get button better way        
-        new JButtonOperator(tbdPane(), 2).pushNoBlock();
+        new JButtonOperator(tbdPane(), 4).pushNoBlock();
         return getTextIntoValueDialog();
     }
     
     /** Set Incomplete Path Value text */
     public void setIncompletePathValueText(String text) {
         // TODO: remove this ID and get button better way
-        new JButtonOperator(tbdPane(), 2).pushNoBlock();
+        new JButtonOperator(tbdPane(), 4).pushNoBlock();
         setTextIntoValueDialog(text);
     }
 
     /** get Incomplete Path Value text */
     public String getIncompletePathValueText() {
         // TODO: remove this ID and get button better way        
-        new JButtonOperator(tbdPane(), 2).pushNoBlock();
+        new JButtonOperator(tbdPane(), 4).pushNoBlock();
         return getTextIntoValueDialog();
     }
     
     private void setTextIntoValueDialog(String text) {
         JDialogOperator dialog = new JDialogOperator("Value");
+        new JComboBoxOperator(dialog).selectItem("Plain text");
         new JTextAreaOperator(dialog).setText(text);
         new JCheckBoxOperator(dialog).setSelected(true);
         new JButtonOperator(dialog, "OK").push();

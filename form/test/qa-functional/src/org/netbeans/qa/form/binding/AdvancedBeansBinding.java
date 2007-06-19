@@ -110,6 +110,7 @@ public class AdvancedBeansBinding extends ExtJellyTestCase {
         bindOp.unselectIncompletePathValue();
         bindOp.selectNullValue();
         waitAMoment();
+        waitAMoment();        
         bindOp.setNullValueText(nullMsg);
         bindOp.ok();
 
@@ -124,6 +125,7 @@ public class AdvancedBeansBinding extends ExtJellyTestCase {
         bindOp.unselectNullValue();
         bindOp.selectIncompletePathValue();
         waitAMoment();
+        waitAMoment();        
         bindOp.setIncompletePathValueText(incompleteMsg);
         bindOp.ok();
         
