@@ -1344,6 +1344,12 @@ public class MetaComponentCreator {
                 }
                 changes.put("text", value); // NOI18N
             }
+            if(comp instanceof JCheckBoxMenuItem) {
+                changes.put("selected",new Boolean(true));
+            }
+            if(comp instanceof JRadioButtonMenuItem) {
+                changes.put("selected",new Boolean(true));
+            }
         } else if (comp instanceof AbstractButton) { // JButton, JToggleButton, JCheckBox, JRadioButton
             if ("".equals(((AbstractButton)comp).getText())) { // NOI18N
                 changes.put("text", varName); // NOI18N
@@ -1466,11 +1472,18 @@ public class MetaComponentCreator {
             RADVisualContainer menuCont = (RADVisualContainer) newMetaComp;
             Container menuBar = (Container) menuCont.getBeanInstance();
             RADVisualComponent menuComp = createVisualComponent(JMenu.class);
+            try {
+            menuComp.getBeanProperty("text").setValue("File");
+            } catch (Throwable thr) { }
             Component menu = (Component) menuComp.getBeanInstance();
             menuCont.add(menuComp);
             menuCont.getLayoutSupport().addComponentsToContainer(
                     menuBar, menuBar, new Component[] { menu }, 0);
+            
             menuComp = createVisualComponent(JMenu.class);
+            try {
+            menuComp.getBeanProperty("text").setValue("Edit");
+            } catch (Throwable thr) { }
             menu = (Component) menuComp.getBeanInstance();
             menuCont.add(menuComp);
             menuCont.getLayoutSupport().addComponentsToContainer(
