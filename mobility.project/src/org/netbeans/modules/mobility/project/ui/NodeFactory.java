@@ -557,7 +557,7 @@ static class ResourcesNode extends ActionNode
                             else
                             {
                                 set.clear();
-                                return null;
+                                continue;
                             }
                         }
                         return new NDPasteType();
@@ -584,7 +584,7 @@ static class ResourcesNode extends ActionNode
                         else 
                         {
                             set.clear();
-                            return null;
+                            continue;
                         }
                     }
                     return  new NDPasteType();
@@ -602,7 +602,7 @@ static class ResourcesNode extends ActionNode
                     else 
                     {
                         set.clear();
-                        return null;
+                        continue;
                     }
                     return  new NDPasteType();
                 }
