@@ -360,7 +360,7 @@ public final class CustomizableSideBar {
         }
     } // End of SideBarPosition class
 
-    private static class MyLookupListener implements LookupListener, Runnable {
+    private static class MyLookupListener implements LookupListener {
         private String mimeType;
         
         public MyLookupListener(String mimeType) {
@@ -381,10 +381,6 @@ public final class CustomizableSideBar {
                 CACHE.keySet().removeAll(toRemove);
             }
             
-            SwingUtilities.invokeLater(this);
-        }
-        
-        public void run() {
             fireChange(mimeType);
         }
     } // End of MyLookupListener class

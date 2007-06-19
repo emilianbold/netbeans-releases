@@ -33,6 +33,7 @@ import java.util.Map;
 import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
@@ -53,6 +54,7 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
+import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
 import org.netbeans.modules.editor.impl.CustomizableSideBar;
 import org.netbeans.modules.editor.impl.CustomizableSideBar.SideBarPosition;
@@ -151,18 +153,13 @@ public class NbEditorUI extends ExtEditorUI {
         c.removeFocusListener(focusL);
     }
     
+    @Override
     protected JComponent createExtComponent() {
 
-        final JTextComponent component = getComponent();
-//        setLineNumberEnabled(true); // enable line numbering
-
-        // extComponent will be a panel
-        final JComponent ec = new JPanel(new BorderLayout());
-        ec.putClientProperty(JTextComponent.class, component);
+        JTextComponent component = getComponent();
 
         // Add the scroll-pane with the component to the center
-        final JScrollPane scroller = new JScrollPane(component);
-        
+        JScrollPane scroller = new JScrollPane(component);
         scroller.getViewport().setMinimumSize(new Dimension(4,4));
 
         // remove default scroll-pane border, winsys will handle borders itself 
@@ -173,30 +170,23 @@ public class NbEditorUI extends ExtEditorUI {
         scroller.setBorder(empty);
         scroller.setViewportBorder(empty);
 
-        String mimeType = NbEditorUtilities.getMimeType(component);
-        
+        // extComponent will be a panel
+        JComponent ec = new JPanel(new BorderLayout());
+        ec.putClientProperty(JTextComponent.class, component);
+        ec.add(scroller);
+
+        // Initialize sidebars
         Map<SideBarPosition, JComponent> sideBars = CustomizableSideBar.getSideBars(component);
+        processSideBars(sideBars, ec);
+        
         if (listener == null){
-            listener = new ChangeListener(){
-                public void stateChanged(javax.swing.event.ChangeEvent e) {
-                    if (Utilities.getEditorUI(component) == null) {
-                        return; //#63146
-                    }
-                    Map newMap = CustomizableSideBar.getSideBars(component);
-                    processSideBars(newMap, scroller, ec);
-                    ec.revalidate();
-                    ec.repaint();
-                    
-                }
-            };
-            CustomizableSideBar.addChangeListener(mimeType, listener);
+            listener = new SideBarsListener(component);
+            CustomizableSideBar.addChangeListener(NbEditorUtilities.getMimeType(component), listener);
         }
         
-        processSideBars(sideBars, scroller, ec);
-        
+        // Initialize the corner component
         initGlyphCorner(scroller);
 
-        ec.add(scroller);
         return ec;
     }
     
@@ -209,8 +199,14 @@ public class NbEditorUI extends ExtEditorUI {
         AllOptionsFolder.getDefault().setLineNumberVisible(lineNumberEnabled);
     }
     
-    private void processSideBars(Map sideBars, JScrollPane scroller, JComponent ec){
+    private static void processSideBars(Map sideBars, JComponent ec) {
+        JScrollPane scroller = (JScrollPane) ec.getComponent(0);
+
+        // Remove all existing sidebars
         ec.removeAll();
+
+        // Add the scroller and the new sidebars
+        ec.add(scroller);
         scroller.setRowHeader(null);
         scroller.setColumnHeaderView(null);
         for (Iterator entries = sideBars.entrySet().iterator(); entries.hasNext(); ) {
@@ -232,7 +228,6 @@ public class NbEditorUI extends ExtEditorUI {
                 ec.add(sideBar, position.getBorderLayoutPosition());
             }
         }
-        ec.add(scroller);
     }
     
     protected JToolBar createToolBarComponent() {
@@ -577,4 +572,29 @@ public class NbEditorUI extends ExtEditorUI {
 
     }
 
+    private static final class SideBarsListener implements ChangeListener {
+
+        private final JTextComponent component;
+        
+        public SideBarsListener(JTextComponent component) {
+            this.component = component;
+        }
+        
+        public void stateChanged(ChangeEvent e) {
+            EditorUI eui = Utilities.getEditorUI(component);
+            if (eui != null) {
+                final JComponent ec = eui.getExtComponent();
+                if (ec != null) {
+                    final Map newMap = CustomizableSideBar.getSideBars(component);
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            processSideBars(newMap, ec);
+                            ec.revalidate();
+                            ec.repaint();
+                        }
+                    });
+                }
+            }
+        }
+    } //End of SideBarPosition class
 }
