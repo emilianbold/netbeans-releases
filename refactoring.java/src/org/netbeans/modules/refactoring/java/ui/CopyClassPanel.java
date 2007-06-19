@@ -236,6 +236,11 @@ public class CopyClassPanel extends JPanel implements ActionListener, DocumentLi
         org.openide.awt.Mnemonics.setLocalizedText(isUpdateReferences, org.openide.util.NbBundle.getMessage(CopyClassPanel.class, "LBL_CopyWithoutRefactoring")); // NOI18N
         isUpdateReferences.setBorder(javax.swing.BorderFactory.createEmptyBorder(4, 4, 0, 4));
         isUpdateReferences.setMargin(new java.awt.Insets(2, 2, 0, 2));
+        isUpdateReferences.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                isUpdateReferencesActionPerformed(evt);
+            }
+        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 6;
@@ -243,6 +248,10 @@ public class CopyClassPanel extends JPanel implements ActionListener, DocumentLi
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(isUpdateReferences, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
+
+private void isUpdateReferencesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_isUpdateReferencesActionPerformed
+    parent.stateChanged(null);
+}//GEN-LAST:event_isUpdateReferencesActionPerformed
 
     
     

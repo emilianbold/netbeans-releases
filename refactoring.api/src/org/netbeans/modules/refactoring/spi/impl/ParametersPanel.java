@@ -564,6 +564,7 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
         //Initial errors are ignored by on-line error checker
         //stateChanged(null);
         customPanel.requestFocus();
+        setOKorRefactor();
         repaint();  
     }
     
@@ -655,7 +656,21 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
     
     public void stateChanged(ChangeEvent e) {
         showProblem(rui.checkParameters());
+        setOKorRefactor();
     }
+    
+    private void setOKorRefactor() {
+        if (rui instanceof RefactoringUIBypass) {
+            if (((RefactoringUIBypass) rui).isRefactoringBypassRequired()) {
+                next.setText(UIManager.getDefaults().get("OptionPane.okButtonText").toString());
+                previewButton.setVisible(false);
+            } else {
+                Mnemonics.setLocalizedText(next, NbBundle.getMessage(ParametersPanel.class, rui.isQuery()?"CTL_Find": "CTL_Finish"));
+                previewButton.setVisible(true);
+            }
+        }
+    }
+    
     
     private void showProblem(Problem problem) {
         if (problem == null) {

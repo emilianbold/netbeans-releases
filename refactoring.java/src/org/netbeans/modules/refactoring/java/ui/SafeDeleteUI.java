@@ -123,7 +123,7 @@ public class SafeDeleteUI implements RefactoringUI, RefactoringUIBypass{
     public CustomRefactoringPanel getPanel(ChangeListener parent) {
         //TODO:Do you want to just use Arrays.asList?
         if(panel == null)
-            panel = new SafeDeletePanel(refactoring, Arrays.asList(elementsToDelete), regulardelete);
+            panel = new SafeDeletePanel(refactoring, Arrays.asList(elementsToDelete), regulardelete, parent);
         return panel;
     }
     

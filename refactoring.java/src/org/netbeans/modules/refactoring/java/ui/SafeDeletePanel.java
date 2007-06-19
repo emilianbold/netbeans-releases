@@ -29,6 +29,7 @@ import java.util.Collection;
 import javax.swing.JCheckBox;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
@@ -53,17 +54,19 @@ public class SafeDeletePanel extends JPanel implements CustomRefactoringPanel {
     private final transient Collection elements;
     private final transient SafeDeleteRefactoring refactoring;
     private boolean regulardelete;
+    private ChangeListener parent;
     
     /**
      * Creates new form RenamePanelName
      * @param refactoring The SafeDelete refactoring used by this panel
      * @param selectedElements A Collection of selected elements
      */
-    public SafeDeletePanel(SafeDeleteRefactoring refactoring, Collection selectedElements, boolean regulardelete) {
+    public SafeDeletePanel(SafeDeleteRefactoring refactoring, Collection selectedElements, boolean regulardelete, ChangeListener parent) {
         setName(NbBundle.getMessage(SafeDeletePanel.class,"LBL_SafeDel")); // NOI18N
         this.elements = selectedElements;
         this.refactoring = refactoring;
         this.regulardelete = regulardelete;
+        this.parent = parent;
         initComponents();
     }
     
@@ -133,6 +136,7 @@ public class SafeDeletePanel extends JPanel implements CustomRefactoringPanel {
                     safeDelete.addItemListener(new ItemListener() {
                         public void itemStateChanged(ItemEvent evt) {
                             searchInComments.setEnabled(safeDelete.isSelected());
+                            parent.stateChanged(null);
                         }
                     });
 

@@ -151,6 +151,7 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
 
     private void updateReferencesCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_updateReferencesCheckBoxActionPerformed
         textCheckBox.setEnabled(!updateReferencesCheckBox.isSelected());
+        parent.stateChanged(null);
     }//GEN-LAST:event_updateReferencesCheckBoxActionPerformed
 
     private void textCheckBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_textCheckBoxItemStateChanged

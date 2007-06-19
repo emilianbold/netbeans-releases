@@ -121,6 +121,8 @@ public class CopyClassRefactoringUI implements RefactoringUI, RefactoringUIBypas
         return new HelpCtx(CopyClassRefactoringUI.class.getName());
     }
     public boolean isRefactoringBypassRequired() {
+        if (panel==null)
+            return false;
         return !panel.isUpdateReferences();
     }
     public void doRefactoringBypass() throws IOException {

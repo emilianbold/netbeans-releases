@@ -151,14 +151,12 @@ public class MoveClassPanel extends JPanel implements ActionListener, DocumentLi
 
         labelProject.setLabelFor(projectsComboBox);
         org.openide.awt.Mnemonics.setLocalizedText(labelProject, org.openide.util.NbBundle.getMessage(MoveClassPanel.class, "LBL_Project")); // NOI18N
-        labelProject.setToolTipText("null");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
         add(labelProject, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -178,7 +176,6 @@ public class MoveClassPanel extends JPanel implements ActionListener, DocumentLi
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
         add(labelLocation, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
@@ -207,7 +204,6 @@ public class MoveClassPanel extends JPanel implements ActionListener, DocumentLi
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 6, 0);
         add(packageComboBox, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
@@ -228,14 +224,22 @@ public class MoveClassPanel extends JPanel implements ActionListener, DocumentLi
         org.openide.awt.Mnemonics.setLocalizedText(updateReferencesCheckBox, org.openide.util.NbBundle.getBundle(MoveClassPanel.class).getString("LBL_MoveWithoutReferences")); // NOI18N
         updateReferencesCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(4, 4, 0, 4));
         updateReferencesCheckBox.setMargin(new java.awt.Insets(2, 2, 0, 2));
+        updateReferencesCheckBox.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                updateReferencesCheckBoxItemStateChanged(evt);
+            }
+        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(updateReferencesCheckBox, gridBagConstraints);
-
     }// </editor-fold>//GEN-END:initComponents
+
+private void updateReferencesCheckBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_updateReferencesCheckBoxItemStateChanged
+    parent.stateChanged(null);
+}//GEN-LAST:event_updateReferencesCheckBoxItemStateChanged
 
     
     
