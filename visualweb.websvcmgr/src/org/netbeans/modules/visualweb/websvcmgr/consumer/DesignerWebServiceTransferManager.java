@@ -42,6 +42,7 @@ import org.netbeans.modules.visualweb.websvcmgr.consumer.DesignerWebServiceExtDa
 import org.netbeans.modules.visualweb.websvcmgr.model.WebServiceData;
 import org.netbeans.modules.visualweb.websvcmgr.nodes.WebServiceLibReferenceHelper;
 import org.netbeans.modules.visualweb.websvcmgr.util.Util;
+import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;
 import org.openide.util.datatransfer.ExTransferable;
 
@@ -130,8 +131,27 @@ public class DesignerWebServiceTransferManager implements WebServiceTransferMana
     }
     
     private static void addJarReferences(boolean isJ2EE_15, Project project, WebServiceDescriptor descriptor) {
-        addLibraryDefinitions(isJ2EE_15, project, descriptor);
+        if (requiresLibraryDefinitions(isJ2EE_15, project, descriptor)) {
+            addLibraryDefinitions(isJ2EE_15, project, descriptor);
+        }
+        
         addReferenceArchives(isJ2EE_15, project, descriptor);
+    }
+    
+    private static boolean requiresLibraryDefinitions(boolean isJ2EE_15, Project project, WebServiceDescriptor descriptor) {
+        WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
+        
+        if (wm == null) {
+            return true;
+        }else if (!isJ2EE_15) {
+            ClassPath cp = ClassPath.getClassPath(wm.getDocumentBase(), ClassPath.COMPILE);
+            boolean hasJaxRpc = cp.findResource("javax/xml/rpc/Service.class") != null; // NOI18N
+            return !hasJaxRpc;
+        }else {
+            ClassPath cp = ClassPath.getClassPath(wm.getDocumentBase(), ClassPath.COMPILE);
+            boolean hasJaxWs = cp.findResource("javax/xml/ws/Service.class") != null; // NOI18N
+            return !hasJaxWs;
+        }
     }
     
     /**
@@ -142,7 +162,7 @@ public class DesignerWebServiceTransferManager implements WebServiceTransferMana
         Library webService20LibDef = WebServiceLibReferenceHelper.getWebServiceSupportLibDef(isJ2EE_15);
         
         compiletimeLibs.add(webService20LibDef);
-        WebServiceLibReferenceHelper.addLibRefsToProject( project, compiletimeLibs, ClassPath.COMPILE);
+        WebServiceLibReferenceHelper.addLibRefsToProject( project, compiletimeLibs);
     }
     
     /**
