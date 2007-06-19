@@ -40,7 +40,6 @@ import javax.swing.Action;
 import javax.swing.JFileChooser;
 import org.netbeans.core.options.keymap.api.ShortcutAction;
 import org.netbeans.core.options.keymap.spi.KeymapManager;
-import org.netbeans.modules.options.keymap.KeymapModel;
 import org.netbeans.modules.options.keymap.XMLStorage.Attribs;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileLock;
@@ -53,6 +52,8 @@ import org.openide.windows.WindowManager;
 
 public class ExportShortcutsAction {
     
+    private ExportShortcutsAction() {}
+    
     private static Action exportIDEActionsAction = new AbstractAction () {
         {putValue (Action.NAME, loc ("CTL_Export_IDE_Actions_Action"));}
         
@@ -60,8 +61,8 @@ public class ExportShortcutsAction {
 
             // 1) load all keymaps to allKeyMaps
             LayersBridge layersBridge = new LayersBridge ();
-            Map categoryToActions = layersBridge.getActions ();
-            Map m = resolveNames (categoryToActions);
+            Map<String, Set<ShortcutAction>> categoryToActions = layersBridge.getActions ();
+            Map<String, Map<String, ShortcutAction>> m = resolveNames (categoryToActions);
 
             generateLayersXML (layersBridge, m);
         }
@@ -77,15 +78,16 @@ public class ExportShortcutsAction {
         public void actionPerformed (ActionEvent e) {
 
             // 1) load all keymaps to allKeyMaps
-            Map allKeyMaps = new HashMap ();
+            Map<String, Map<String, ShortcutAction>> allKeyMaps = 
+                    new HashMap<String, Map<String, ShortcutAction>> ();
             LayersBridge layersBridge = new LayersBridge ();
             layersBridge.getActions ();
             List keyMaps = layersBridge.getProfiles ();
             Iterator it3 = keyMaps.iterator ();
             while (it3.hasNext ()) {
                 String keyMapName = (String) it3.next ();
-                Map actionToShortcuts = layersBridge.getKeymap (keyMapName);
-                Map shortcutToAction = LayersBridge.shortcutToAction (actionToShortcuts);
+                Map<ShortcutAction, Set<String>> actionToShortcuts = layersBridge.getKeymap (keyMapName);
+                Map<String, ShortcutAction> shortcutToAction = LayersBridge.shortcutToAction (actionToShortcuts);
                 allKeyMaps.put (keyMapName, shortcutToAction);
             }
 
@@ -109,7 +111,8 @@ public class ExportShortcutsAction {
                 }
             }
             if (editorBridge != null) {
-                Map actionToShortcuts = editorBridge.getKeymap(editorBridge.getCurrentProfile ());
+                Map<ShortcutAction, Set<String>> actionToShortcuts = 
+                        editorBridge.getKeymap(editorBridge.getCurrentProfile ());
                 generateEditorXML (actionToShortcuts);
             }
         }
@@ -137,10 +140,9 @@ public class ExportShortcutsAction {
     private static void exportShortcutsToHTML () {
         // read all shortcuts to keymaps
         KeymapModel keymapModel = new KeymapModel ();
-        Map keymaps = new TreeMap ();
-        Iterator it = keymapModel.getProfiles ().iterator ();
-        while (it.hasNext ()) {
-            String profile = (String) it.next ();
+        Map<String, Map<ShortcutAction, Set<String>>> keymaps = 
+                new TreeMap<String, Map<ShortcutAction, Set<String>>> ();
+        for (String profile: keymapModel.getProfiles ()) {
             keymaps.put (
                 profile,
                 keymapModel.getKeymap (profile)
@@ -166,9 +168,7 @@ public class ExportShortcutsAction {
             sb.append ("Action Name");
             XMLStorage.generateFolderEnd (sb, "h2", "        ");
             XMLStorage.generateFolderEnd (sb, "td", "        ");
-            it = keymaps.keySet ().iterator ();
-            while (it.hasNext ()) {
-                String profile = (String) it.next ();
+            for (String profile: keymaps.keySet ()) {
                 XMLStorage.generateFolderStart (sb, "td", attribs, "        ");
                 XMLStorage.generateFolderStart (sb, "h2", attribs, "        ");
                 sb.append (profile);
@@ -209,14 +209,12 @@ public class ExportShortcutsAction {
     private static void exportShortcutsToHTML2 (
         KeymapModel keymapModel, 
         StringBuffer sb,
-        Map keymaps
+        Map<String, Map<ShortcutAction, Set<String>>> keymaps
     ) {
-        List categories = new ArrayList (keymapModel.getActionCategories ());
-        Collections.sort (categories);
+        List<String> categories = new ArrayList<String> (keymapModel.getActionCategories ());
+        Collections.<String>sort (categories);
         Attribs attribs = new Attribs (true);
-        Iterator it = categories.iterator ();
-        while (it.hasNext ()) {
-            String category = (String) it.next ();
+        for (String category: categories) {
             
             // print category title
             XMLStorage.generateFolderStart (sb, "tr", attribs, "      ");
@@ -242,15 +240,13 @@ public class ExportShortcutsAction {
         StringBuffer sb, 
         KeymapModel keymapModel, 
         String category,
-        Map keymaps
+        Map<String, Map<ShortcutAction, Set<String>>> keymaps
     ) {
-        Set actions = keymapModel.getActions (category);
+        Set<ShortcutAction> actions = keymapModel.getActions (category);
 
         // sort actions
-        Map sortedActions = new TreeMap ();
-        Iterator it = actions.iterator ();
-        while (it.hasNext ()) {
-            ShortcutAction action = (ShortcutAction) it.next ();
+        Map<String, ShortcutAction> sortedActions = new TreeMap<String, ShortcutAction> ();
+        for (ShortcutAction action: actions) {
             sortedActions.put (
                 action.getDisplayName (), 
                 action
@@ -259,10 +255,9 @@ public class ExportShortcutsAction {
 
         // print actions
         Attribs attribs = new Attribs (true);
-        it = sortedActions.keySet ().iterator ();
-        while (it.hasNext ()) {
-            String actionName = (String) it.next ();
-            ShortcutAction action = (ShortcutAction) sortedActions.get (actionName);
+        for (Map.Entry<String, ShortcutAction> entry: sortedActions.entrySet()) {
+            String actionName = entry.getKey();
+            ShortcutAction action = entry.getValue();
 
             // print action name to the first column
             XMLStorage.generateFolderStart (sb, "tr", attribs, "      ");
@@ -270,11 +265,9 @@ public class ExportShortcutsAction {
             sb.append (actionName);
             XMLStorage.generateFolderEnd (sb, "td", "        ");
             
-            Iterator it2 = keymaps.keySet ().iterator ();
-            while (it2.hasNext ()) {
-                String profile = (String) it2.next ();
-                Map keymap = (Map) keymaps.get (profile);
-                Set shortcuts = (Set) keymap.get (action);
+            for (String profile: keymaps.keySet ()) {
+                Map<ShortcutAction, Set<String>> keymap = keymaps.get (profile);
+                Set<String> shortcuts = keymap.get (action);
 
                 XMLStorage.generateFolderStart (sb, "td", attribs, "        ");
                 printShortcuts (shortcuts, sb);
@@ -285,14 +278,14 @@ public class ExportShortcutsAction {
         }
     }
     
-    private static void printShortcuts (Set shortcuts, StringBuffer sb) {
+    private static void printShortcuts (Set<String> shortcuts, StringBuffer sb) {
         if (shortcuts == null) {
             sb.append ('-');
             return;
         }
-        Iterator it = shortcuts.iterator ();
+        Iterator<String> it = shortcuts.iterator ();
         while (it.hasNext ()) {
-            String shortcut = (String) it.next ();
+            String shortcut = it.next ();
             sb.append (shortcut);
             if (it.hasNext ()) sb.append (", ");
         }
@@ -300,7 +293,7 @@ public class ExportShortcutsAction {
     
     private static void generateLayersXML (
         LayersBridge layersBridge, 
-        Map categoryToActions
+        Map<String, Map<String, ShortcutAction>> categoryToActions
     ) {
         Writer fw = null;
         try {
@@ -330,7 +323,7 @@ public class ExportShortcutsAction {
     }
     
     private static void generateEditorXML (
-        Map actionToShortcuts
+        Map<ShortcutAction, Set<String>> actionToShortcuts
     ) {
         Writer fw = null;
         try {
@@ -341,22 +334,16 @@ public class ExportShortcutsAction {
             Attribs attribs = new Attribs (true);
             XMLStorage.generateFolderStart (sb, "bindings", attribs, "");
             
-            Map sortedMap = new TreeMap ();
-            Iterator it = actionToShortcuts.keySet ().iterator ();
-            while (it.hasNext ()) {
-                ShortcutAction action = (ShortcutAction) it.next ();
+            Map<String, Set<String>> sortedMap = new TreeMap<String, Set<String>> ();
+            for (ShortcutAction action: actionToShortcuts.keySet ()) {
                 sortedMap.put (
                     action.getDisplayName (), 
                     actionToShortcuts.get (action)
                 );
             }
-            it = sortedMap.keySet ().iterator ();
-            while (it.hasNext ()) {
-                String actionName = (String) it.next ();
-                Set shortcuts = (Set) sortedMap.get (actionName);
-                Iterator it2 = shortcuts.iterator ();
-                while (it2.hasNext ()) {
-                    String shortcut = (String) it2.next ();
+            for (String actionName: sortedMap.keySet ()) {
+                Set<String> shortcuts = sortedMap.get (actionName);
+                for (String shortcut: shortcuts) {
                     attribs = new Attribs (true);
                     attribs.add ("actionName", actionName);
                     attribs.add ("key", shortcut);
@@ -379,16 +366,13 @@ public class ExportShortcutsAction {
         }
     }
     
-    private static Map resolveNames (Map categoryToActions) {
-        Map result = new HashMap ();
-        Iterator it = categoryToActions.keySet ().iterator ();
-        while (it.hasNext ()) {
-            String category = (String) it.next ();
-            Set actions = (Set) categoryToActions.get (category);
-            Map actionsMap = new HashMap ();
-            Iterator it1 = actions.iterator ();
-            while (it1.hasNext ()) {
-                ShortcutAction action = (ShortcutAction) it1.next ();
+    private static Map<String, Map<String, ShortcutAction>> resolveNames (Map<String, Set<ShortcutAction>> categoryToActions) {
+        Map<String, Map<String, ShortcutAction>> result = new HashMap<String, Map<String, ShortcutAction>> ();
+        for (Map.Entry<String, Set<ShortcutAction>> entry: categoryToActions.entrySet ()) {
+            String category = entry.getKey();
+            Set<ShortcutAction> actions = entry.getValue();
+            Map<String, ShortcutAction> actionsMap = new HashMap<String, ShortcutAction> ();
+            for (ShortcutAction action: actions) {
                 actionsMap.put (action.getDisplayName (), action);
             }
             result.put (category, actionsMap);
@@ -407,40 +391,51 @@ public class ExportShortcutsAction {
     private static void generateShadowsToXML (
         LayersBridge        layersBridge,
         StringBuffer        sb,
-        Map                 shortcutToAction,
+        Map<String, Map<String, ShortcutAction>> shortcutToAction,
         String              indentation
     ) {
-        Iterator it = shortcutToAction.keySet ().iterator ();
+        Iterator<String> it = shortcutToAction.keySet ().iterator ();
         while (it.hasNext ()) {
-            String key = (String) it.next ();
-            Object value = shortcutToAction.get (key);
-            if (value instanceof Map) {
-                Attribs attribs = new Attribs (true);
-                attribs.add ("name", key);
-                XMLStorage.generateFolderStart (sb, "folder", attribs, indentation);
-                generateShadowsToXML (
-                    layersBridge,
-                    sb, 
-                    (Map) value, 
-                    "    " + indentation
-                );
-                XMLStorage.generateFolderEnd (sb, "folder", indentation);
-            } else {
-                DataObject dob = layersBridge.getDataObject (value);
-                if (dob == null) {
-                    System.out.println("no Dataobject " + value);
-                    continue;
-                }
-                FileObject fo = dob.getPrimaryFile ();
-                Attribs attribs = new Attribs (true);
-                attribs.add ("name", (String) key + ".shadow");
-                XMLStorage.generateFolderStart (sb, "file", attribs, indentation);
-                    Attribs attribs2 = new Attribs (true);
-                    attribs2.add ("name", "originalFile");
-                    attribs2.add ("stringvalue", fo.getPath ());
-                    XMLStorage.generateLeaf (sb, "attr", attribs2, indentation + "    ");
-                XMLStorage.generateFolderEnd (sb, "file", indentation);
+            String key = it.next ();
+            Map<String, ShortcutAction> value = shortcutToAction.get (key);
+            Attribs attribs = new Attribs (true);
+            attribs.add ("name", key);
+            XMLStorage.generateFolderStart (sb, "folder", attribs, indentation);
+            generateShadowsToXML2 (
+                layersBridge,
+                sb, 
+                value, 
+                "    " + indentation
+            );
+            XMLStorage.generateFolderEnd (sb, "folder", indentation);
+        }
+    }
+    
+    private static void generateShadowsToXML2 (
+        LayersBridge        layersBridge,
+        StringBuffer        sb,
+        Map<String, ShortcutAction> shortcutToAction,
+        String              indentation
+    ) {
+        Iterator<String> it = shortcutToAction.keySet ().iterator ();
+        while (it.hasNext ()) {
+            String key = it.next ();
+            ShortcutAction value = shortcutToAction.get (key);
+
+            DataObject dob = layersBridge.getDataObject (value);
+            if (dob == null) {
+                System.out.println("no Dataobject " + value);
+                continue;
             }
+            FileObject fo = dob.getPrimaryFile ();
+            Attribs attribs = new Attribs (true);
+            attribs.add ("name", key + ".shadow");
+            XMLStorage.generateFolderStart (sb, "file", attribs, indentation);
+                Attribs attribs2 = new Attribs (true);
+                attribs2.add ("name", "originalFile");
+                attribs2.add ("stringvalue", fo.getPath ());
+                XMLStorage.generateLeaf (sb, "attr", attribs2, indentation + "    ");
+            XMLStorage.generateFolderEnd (sb, "file", indentation);
         }
     }
     

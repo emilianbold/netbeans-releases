@@ -58,7 +58,7 @@ public class KeymapModel {
     // actions .................................................................
     
     public Set<String> getActionCategories () {
-        Set result = new HashSet<String>();
+        Set<String> result = new HashSet<String>();
         for (KeymapManager m : getKeymapManagerInstances()) {
             result.addAll(m.getActions().keySet());
         }
@@ -116,7 +116,7 @@ public class KeymapModel {
         }
     }
     
-    public List getProfiles () {
+    public List<String> getProfiles () {
         for (KeymapManager m : getKeymapManagerInstances()) {
             List<String> l = m.getProfiles();
             if (l != null) {

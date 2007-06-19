@@ -67,7 +67,7 @@ public interface ShortcutsFinder {
      * @param action 
      * @param shortcuts 
      */
-    void setShortcuts(ShortcutAction action, Set shortcuts);
+    void setShortcuts(ShortcutAction action, Set<String> shortcuts);
     
     /**
      * Applies the changes by storing them to the storage.

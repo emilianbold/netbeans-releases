@@ -44,7 +44,6 @@ import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
 import org.netbeans.core.options.keymap.api.ShortcutAction;
 import org.netbeans.core.options.keymap.api.ShortcutsFinder;
-import org.netbeans.modules.options.keymap.KeymapModel;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
@@ -60,19 +59,21 @@ import org.openide.util.Utilities;
  */
 public class KeymapViewModel implements TreeModel, ShortcutsFinder {
     
-    private Vector              listeners = new Vector ();
+    private Vector<TreeModelListener> listeners = new Vector<TreeModelListener> ();
     private String              currentProfile;
     private KeymapModel         model = new KeymapModel ();
     // Map (String ("xx/yy") > List (Object (action)))
     // tree of actions in folders
-    private Map                 categoryToActionsCache = new HashMap ();
-    // Map (String (keymapName) > Map (ShortcutAction > Set (String (shortcut Ctrl+F)))).
-    // contains modified shortcuts only
-    private Map                 modifiedProfiles = new HashMap ();
+    private Map<String, List<Object>> categoryToActionsCache = 
+            new HashMap<String, List<Object>> ();
+    // Profile name to map of action to set of shortcuts
+    private Map<String, Map<ShortcutAction, Set<String>>> modifiedProfiles = 
+            new HashMap<String, Map<ShortcutAction, Set<String>>> ();
     // Set (String (profileName)).
-    private Set                 deletedProfiles = new HashSet ();
+    private Set<String> deletedProfiles = new HashSet<String> ();
     // Map (String (keymapName) > Map (ShortcutAction > Set (String (shortcut Ctrl+F)))).
-    private Map                 shortcutsCache = new HashMap ();
+    private Map<String, Map<ShortcutAction, Set<String>>> shortcutsCache = 
+            new HashMap<String, Map<ShortcutAction, Set<String>>> ();
     
     static final ActionsComparator actionsComparator = new ActionsComparator ();
     
@@ -147,7 +148,7 @@ public class KeymapViewModel implements TreeModel, ShortcutsFinder {
     // ListModel ...............................................................
 
     // Map (String ("xx/yy") > Map ...)
-    private Map                 categories;
+    private Map<String, List<String>> categories;
     
     
     /**
@@ -157,21 +158,19 @@ public class KeymapViewModel implements TreeModel, ShortcutsFinder {
      *
      * Map (String (category name) > List (String (category name))).
      */
-    public Map getCategories () {
+    public Map<String, List<String>> getCategories () {
         if (categories == null) {
-            categories = new TreeMap ();
-            List c = new ArrayList (model.getActionCategories ());
+            categories = new TreeMap<String, List<String>> ();
+            List<String> c = new ArrayList<String> (model.getActionCategories ());
             Collections.sort (c);
-            Iterator it = c.iterator ();
-            while (it.hasNext ()) {
-                String cn = (String) it.next ();
+            for (String cn: c) {
                 String folderName = "";
                 StringTokenizer st = new StringTokenizer (cn, "/");
                 while (st.hasMoreTokens ()) {
                     String name = st.nextToken ();
-                    List asd = (List) categories.get (folderName);
+                    List<String> asd = categories.get (folderName);
                     if (asd == null) {
-                        asd = new ArrayList ();
+                        asd = new ArrayList<String> ();
                         categories.put (folderName, asd);
                     }
                     folderName = folderName.length () == 0 ?
@@ -190,15 +189,15 @@ public class KeymapViewModel implements TreeModel, ShortcutsFinder {
      * Returns list of subcategories (String) for given category merged 
      * together with actions for give category.
      */
-    public List getItems (String category) {
-        List result = (List) categoryToActionsCache.get (category);
+    public List<Object/*Union2<String,ShortcutAction>*/> getItems (String category) {
+        List<Object> result = categoryToActionsCache.get (category);
         if (result == null) {
-            result = new ArrayList ();
-            List ll = (List) getCategories ().get (category);
+            result = new ArrayList<Object> ();
+            List<String> ll = getCategories ().get (category);
             if (ll != null)
                 result.addAll (ll);
-            List l = new ArrayList (model.getActions (category));
-            Collections.sort (l, new ActionsComparator ());
+            List<ShortcutAction> l = new ArrayList<ShortcutAction> (model.getActions (category));
+            Collections.<ShortcutAction>sort (l, new ActionsComparator ());
             result.addAll (l);
             categoryToActionsCache.put (category, result);
             //S ystem.out.println("getItems " + category + " : " + result);
@@ -214,9 +213,9 @@ public class KeymapViewModel implements TreeModel, ShortcutsFinder {
     // other methods ...........................................................
 
     List getProfiles () {
-        Set result = new HashSet (model.getProfiles ());
+        Set<String> result = new HashSet<String> (model.getProfiles ());
         result.addAll (modifiedProfiles.keySet ());
-        List r = new ArrayList (result);
+        List<String> r = new ArrayList<String> (result);
         Collections.sort (r);
         return r;
     }
@@ -230,7 +229,7 @@ public class KeymapViewModel implements TreeModel, ShortcutsFinder {
             deletedProfiles.add (profile);
             modifiedProfiles.remove (profile);
         } else {
-            Map m = model.getKeymapDefaults (profile);
+            Map<ShortcutAction, Set<String>> m = model.getKeymapDefaults (profile);
             m = convertFromEmacs (m);
             modifiedProfiles.put (profile, m);
             treeChanged ();
@@ -247,14 +246,14 @@ public class KeymapViewModel implements TreeModel, ShortcutsFinder {
     }
     
     void cloneProfile (String newProfileName) {
-        Map result = new HashMap ();
+        Map<ShortcutAction, Set<String>> result = new HashMap<ShortcutAction, Set<String>> ();
         cloneProfile ("", result);
         modifiedProfiles.put (newProfileName, result);
     }
     
     private void cloneProfile (
         String category,        // name of currently resolved category
-        Map result              // Map (ShortcutAction > Set (String (shortcut))) 
+        Map<ShortcutAction, Set<String>> result
     ) {
         Iterator it = getItems (category).iterator ();
         while (it.hasNext ()) {
@@ -263,7 +262,7 @@ public class KeymapViewModel implements TreeModel, ShortcutsFinder {
                 cloneProfile ((String) o, result);
             else {
                 String[] shortcuts = getShortcuts ((ShortcutAction) o);
-                result.put (o, new HashSet (Arrays.asList (shortcuts)));
+                result.put ((ShortcutAction)o, new HashSet<String> (Arrays.asList (shortcuts)));
             }
         }
     }
@@ -328,26 +327,26 @@ public class KeymapViewModel implements TreeModel, ShortcutsFinder {
     public String[] getShortcuts (ShortcutAction action) {
         if (modifiedProfiles.containsKey (currentProfile)) {
             // find it in modified shortcuts
-            Map actionToShortcuts = (Map) modifiedProfiles.
+            Map<ShortcutAction, Set<String>> actionToShortcuts = modifiedProfiles.
                 get (currentProfile);
             if (actionToShortcuts.containsKey (action)) {
-                Set s = (Set) actionToShortcuts.get (action);
-                return (String[]) s.toArray (new String [s.size ()]);
+                Set<String> s = actionToShortcuts.get (action);
+                return s.toArray (new String [s.size ()]);
             }
         }
         
         if (!shortcutsCache.containsKey (currentProfile)) {
             // read profile and put it to cache
-            Map profileMap = convertFromEmacs (model.getKeymap (currentProfile));
+            Map<ShortcutAction, Set<String>> profileMap = convertFromEmacs (model.getKeymap (currentProfile));
             shortcutsCache.put (
                 currentProfile, 
                 profileMap
              );
         }
-        Map profileMap = (Map) shortcutsCache.get (currentProfile);
-        Set shortcuts = (Set) profileMap.get (action);
+        Map<ShortcutAction, Set<String>> profileMap = shortcutsCache.get (currentProfile);
+        Set<String> shortcuts = profileMap.get (action);
         if (shortcuts == null) return new String [0];
-        return (String[]) shortcuts.toArray (new String [shortcuts.size ()]);
+        return shortcuts.toArray (new String [shortcuts.size ()]);
     }
     
     void addShortcut (TreePath path, String shortcut) {
@@ -356,17 +355,17 @@ public class KeymapViewModel implements TreeModel, ShortcutsFinder {
         if (action != null)
             removeShortcut (action, shortcut);
         action = (ShortcutAction) path.getLastPathComponent ();
-        Set s = new HashSet ();
+        Set<String> s = new HashSet<String> ();
         s.add (shortcut);
         s.addAll (Arrays.asList (getShortcuts (action)));
         setShortcuts (action, s);
         nodeChanged (path);
     }
     
-    public void setShortcuts (ShortcutAction action, Set shortcuts) {
-        Map actionToShortcuts = (Map) modifiedProfiles.get (currentProfile);
+    public void setShortcuts (ShortcutAction action, Set<String> shortcuts) {
+        Map<ShortcutAction, Set<String>> actionToShortcuts = modifiedProfiles.get (currentProfile);
         if (actionToShortcuts == null) {
-            actionToShortcuts = new HashMap ();
+            actionToShortcuts = new HashMap<ShortcutAction, Set<String>> ();
             modifiedProfiles.put (currentProfile, actionToShortcuts);
         }
         actionToShortcuts.put (action, shortcuts);
@@ -379,43 +378,39 @@ public class KeymapViewModel implements TreeModel, ShortcutsFinder {
     }
     
     private void removeShortcut (ShortcutAction action, String shortcut) {
-        Set s = new HashSet (Arrays.asList (getShortcuts (action)));
+        Set<String> s = new HashSet<String> (Arrays.asList (getShortcuts (action)));
         s.remove (shortcut);
-        Map actionToShortcuts = (Map) modifiedProfiles.get (currentProfile);
+        Map<ShortcutAction, Set<String>> actionToShortcuts = modifiedProfiles.get (currentProfile);
         if (actionToShortcuts == null) {
-            actionToShortcuts = new HashMap ();
+            actionToShortcuts = new HashMap<ShortcutAction, Set<String>> ();
             modifiedProfiles.put (currentProfile, actionToShortcuts);
         }
         actionToShortcuts.put (action, s);
     }
     
     public void refreshActions () {
-        categoryToActionsCache = new HashMap ();
+        categoryToActionsCache = new HashMap<String, List<Object>> ();
         model.refreshActions ();
     }
     
     public void apply () {
         RequestProcessor.getDefault ().post (new Runnable () {
             public void run () {
-                Iterator it = modifiedProfiles.keySet ().iterator ();
-                while (it.hasNext ()) {
-                    String profile = (String) it.next ();
-                    Map actionToShortcuts = (Map) modifiedProfiles.get (profile);
+                for (String profile: modifiedProfiles.keySet()) {
+                    Map<ShortcutAction, Set<String>> actionToShortcuts = modifiedProfiles.get (profile);
                     actionToShortcuts = convertToEmacs (actionToShortcuts);
                     model.changeKeymap (
                         profile, 
                         actionToShortcuts
                     );
                 }
-                it = deletedProfiles.iterator ();
-                while (it.hasNext ()) {
-                    String profile = (String) it.next ();
+                for (String profile: deletedProfiles) {
                     model.deleteProfile (profile);
                 }
                 model.setCurrentProfile (currentProfile);
-                modifiedProfiles = new HashMap ();
-                deletedProfiles = new HashSet ();
-                shortcutsCache = new HashMap ();
+                modifiedProfiles = new HashMap<String, Map<ShortcutAction, Set<String>>> ();
+                deletedProfiles = new HashSet<String> ();
+                shortcutsCache = new HashMap<String, Map<ShortcutAction, Set<String>>> ();
                 model = new KeymapModel ();
             }
         });
@@ -426,9 +421,9 @@ public class KeymapViewModel implements TreeModel, ShortcutsFinder {
     }
     
     public void cancel () {
-        modifiedProfiles = new HashMap ();
-        deletedProfiles = new HashSet ();
-        shortcutsCache = new HashMap ();
+        modifiedProfiles = new HashMap<String, Map<ShortcutAction, Set<String>>> ();
+        deletedProfiles = new HashSet<String> ();
+        shortcutsCache = new HashMap<String, Map<ShortcutAction, Set<String>>> ();
         setCurrentProfile (model.getCurrentProfile ());
         model = new KeymapModel ();
     }
@@ -469,16 +464,12 @@ public class KeymapViewModel implements TreeModel, ShortcutsFinder {
      * Converts Map (ShortcutAction > Set (String (shortcut Alt+Shift+P))) to 
      * Map (ShortcutAction > Set (String (shortcut AS-P))).
      */
-    private static Map convertToEmacs (Map shortcuts) {
-        Map result = new HashMap ();
-        Iterator it = shortcuts.keySet ().iterator ();
-        while (it.hasNext ()) {
-            Object action = it.next ();
-            Set sh = (Set) shortcuts.get (action);
-            Set newSet = new HashSet ();
-            Iterator it2 = sh.iterator ();
-            while (it2.hasNext ()) {
-                String s = (String) it2.next ();
+    private static Map<ShortcutAction, Set<String>> convertToEmacs (Map<ShortcutAction, Set<String>> shortcuts) {
+        Map<ShortcutAction, Set<String>> result = new HashMap<ShortcutAction, Set<String>> ();
+        for (Map.Entry<ShortcutAction, Set<String>> entry: shortcuts.entrySet()) {
+            ShortcutAction action = entry.getKey();
+            Set<String> newSet = new HashSet<String> ();
+            for (String s: entry.getValue()) {
                 if (s.length () == 0) continue;
                 KeyStroke[] ks = getKeyStrokes (s, " ");
                 if (ks == null) 
@@ -500,16 +491,12 @@ public class KeymapViewModel implements TreeModel, ShortcutsFinder {
      * Converts Map (ShortcutAction > Set (String (shortcut AS-P))) to 
      * Map (ShortcutAction > Set (String (shortcut Alt+Shift+P))).
      */
-    private static Map convertFromEmacs (Map emacs) {
-        Map result = new HashMap ();
-        Iterator it = emacs.keySet ().iterator ();
-        while (it.hasNext ()) {
-            ShortcutAction action = (ShortcutAction) it.next ();
-            Set emacsShortcuts = (Set) emacs.get (action);
-            Iterator it2 = emacsShortcuts.iterator ();
-            Set shortcuts = new HashSet ();
-            while (it2.hasNext ()) {
-                String emacsShortcut = (String) it2.next ();
+    private static Map<ShortcutAction, Set<String>> convertFromEmacs (Map<ShortcutAction, Set<String>> emacs) {
+        Map<ShortcutAction, Set<String>> result = new HashMap<ShortcutAction, Set<String>> ();
+        for (Map.Entry<ShortcutAction, Set<String>> entry: emacs.entrySet()) {
+            ShortcutAction action = entry.getKey();
+            Set<String> shortcuts = new HashSet<String> ();
+            for (String emacsShortcut: entry.getValue()) {
                 KeyStroke[] keyStroke = Utilities.stringToKeys (emacsShortcut);
                 shortcuts.add (Utils.getKeyStrokesAsText (keyStroke, " "));
             }
@@ -526,14 +513,14 @@ public class KeymapViewModel implements TreeModel, ShortcutsFinder {
     private static KeyStroke[] getKeyStrokes (String keyStrokes, String delim) {
         if (keyStrokes.length () == 0) return new KeyStroke [0];
         StringTokenizer st = new StringTokenizer (keyStrokes, delim);
-        List result = new ArrayList ();
+        List<KeyStroke> result = new ArrayList<KeyStroke> ();
         while (st.hasMoreTokens ()) {
             String ks = st.nextToken ().trim ();
             KeyStroke keyStroke = Utils.getKeyStroke (ks);
             if (keyStroke == null) return null; // text is not parsable 
             result.add (keyStroke);
         }
-        return (KeyStroke[]) result.toArray (new KeyStroke [result.size ()]);
+        return result.toArray (new KeyStroke [result.size ()]);
     }
     
     private static String loc (String key) {

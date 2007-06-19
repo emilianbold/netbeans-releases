@@ -6,6 +6,7 @@
 
 package org.netbeans.modules.options.keymap;
 
+import java.awt.AWTKeyStroke;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.KeyboardFocusManager;
@@ -42,11 +43,11 @@ public class ShortcutsDialog extends javax.swing.JPanel {
         loc (bClear, "CTL_Clear");
         tfShortcut.setFocusTraversalKeys (
             KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, 
-            Collections.EMPTY_SET
+            Collections.<AWTKeyStroke>emptySet()
         );
         tfShortcut.setFocusTraversalKeys (
             KeyboardFocusManager.DOWN_CYCLE_TRAVERSAL_KEYS, 
-            Collections.EMPTY_SET
+            Collections.<AWTKeyStroke>emptySet()
         );
 //        tfShortcut.setFocusTraversalKeys (
 //            KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, 
@@ -54,7 +55,7 @@ public class ShortcutsDialog extends javax.swing.JPanel {
 //        );
         tfShortcut.setFocusTraversalKeys (
             KeyboardFocusManager.UP_CYCLE_TRAVERSAL_KEYS, 
-            Collections.EMPTY_SET
+            Collections.<AWTKeyStroke>emptySet()
         );
         listener = new Listener ();
         tfShortcut.addKeyListener(listener);

@@ -30,7 +30,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.Set;
-import java.util.StringTokenizer;
 import javax.swing.Action;
 import org.netbeans.core.options.keymap.api.ShortcutAction;
 import org.netbeans.core.options.keymap.spi.KeymapManager;
@@ -54,16 +53,16 @@ public class LayersBridge extends KeymapManager {
     
     static final String         KEYMAPS_FOLDER = "Keymaps";
     private static final String SHORTCUTS_FOLDER = "Shortcuts";
-    private static final String TOOLBARS_FOLDER = "Toolbars";
     
     private static final String LAYERS_BRIDGE = "LayersBridge";
     
     /** Map (GlobalAction > DataObject). */
-    private Map actionToDataObject = new HashMap ();
+    private Map<GlobalAction, DataObject> actionToDataObject = 
+            new HashMap<GlobalAction, DataObject> ();
     /** Map (String (folderName) > Set (GlobalAction)). */
-    private Map categoryToActions;
+    private Map<String, Set<ShortcutAction>> categoryToActions;
     /** Set (GlobalAction). */
-    private Set actions = new HashSet ();
+    private Set<GlobalAction> actions = new HashSet<GlobalAction> ();
     
     public LayersBridge() {
         super(LAYERS_BRIDGE);
@@ -72,9 +71,9 @@ public class LayersBridge extends KeymapManager {
     /**
      * Returns Map (String (folderName) > Set (GlobalAction)).
      */
-    public Map getActions () {
+    public Map<String, Set<ShortcutAction>> getActions () {
         if (categoryToActions == null) {
-            categoryToActions = new HashMap ();
+            categoryToActions = new HashMap<String, Set<ShortcutAction>> ();
             initActions ("OptionsDialog/Actions", null);               // NOI18N
             initActions (
                 "Actions", 
@@ -91,9 +90,9 @@ public class LayersBridge extends KeymapManager {
         FileObject fo = fs.findResource (folder);
         if (fo == null) return;
         DataFolder root = DataFolder.findFolder (fo);
-        Enumeration en = root.children ();
+        Enumeration<DataObject> en = root.children ();
         while (en.hasMoreElements ()) {
-            DataObject dataObject = (DataObject) en.nextElement ();
+            DataObject dataObject = en.nextElement ();
             if (dataObject instanceof DataFolder)
                 initActions ((DataFolder) dataObject, null, category);
         }
@@ -137,9 +136,9 @@ public class LayersBridge extends KeymapManager {
             actions.add (action);
             
             // add to actions (Map (String (folderName) > Set (GlobalAction))).
-            Set a = (Set) categoryToActions.get (name);
+            Set<ShortcutAction> a = categoryToActions.get (name);
             if (a == null) {
-                a = new HashSet ();
+                a = new HashSet<ShortcutAction> ();
                 categoryToActions.put (name, a);
             }
             a.add (action);
@@ -151,13 +150,13 @@ public class LayersBridge extends KeymapManager {
         }
     }
     
-    private List keymapNames;
+    private List<String> keymapNames;
     
-   public List getProfiles () {
+    public List<String> getProfiles () {
         if (keymapNames == null) {
             DataFolder root = getRootFolder (KEYMAPS_FOLDER, null);
             Enumeration en = root.children (false);
-            keymapNames = new ArrayList ();
+            keymapNames = new ArrayList<String> ();
             while (en.hasMoreElements ()) {
                 DataObject dataObject = (DataObject) en.nextElement ();
                 if (!(dataObject instanceof DataFolder)) continue;
@@ -169,60 +168,63 @@ public class LayersBridge extends KeymapManager {
         return Collections.unmodifiableList (keymapNames);
     }
     
-    /** Map (String (profile) > Map (GlobalAction > Set (String (shortcut)))). */
-    private Map keymaps = new HashMap ();
+    /** Profile to Map of GlobalAction to set of shortcuts. */
+    private Map<String, Map<ShortcutAction, Set<String>>> keymaps = 
+            new HashMap<String, Map<ShortcutAction, Set<String>>> ();
     
     /**
      * Returns Map (GlobalAction > Set (String (shortcut))).
      */
-    public Map getKeymap (String profile) {
+    public Map<ShortcutAction, Set<String>> getKeymap (String profile) {
         if (!keymaps.containsKey (profile)) {
             DataFolder root = getRootFolder (SHORTCUTS_FOLDER, null);
-            Map m = readKeymap (root);
+            Map<ShortcutAction, Set<String>> m = readKeymap (root);
             root = getRootFolder (KEYMAPS_FOLDER, profile);
             m.putAll (readKeymap (root));
             keymaps.put (profile, m);
         }
-        return Collections.unmodifiableMap ((Map) keymaps.get (profile));
+        return Collections.unmodifiableMap (keymaps.get (profile));
     }
     
     /** Map (String (profile) > Map (GlobalAction > Set (String (shortcut)))). */
-    private Map keymapDefaults = new HashMap ();
+    private Map<String, Map<ShortcutAction, Set<String>>> keymapDefaults = 
+            new HashMap<String, Map<ShortcutAction, Set<String>>> ();
     
     /**
      * Returns Map (GlobalAction > Set (String (shortcut))).
      */
-    Map getKeymapDefaults (String profile) {
+    Map<ShortcutAction, Set<String>> getKeymapDefaults (String profile) {
         if (!keymapDefaults.containsKey (profile)) {
             DataFolder root = getRootFolder (SHORTCUTS_FOLDER, null);
-            Map m = readKeymap (root);
+            Map<ShortcutAction, Set<String>> m = readKeymap (root);
             root = getRootFolder (KEYMAPS_FOLDER, profile);
             m.putAll (readKeymap (root));
             keymapDefaults.put (profile, m);
         }
-        return Collections.unmodifiableMap ((Map) keymapDefaults.get (profile));
+        return Collections.unmodifiableMap (keymapDefaults.get (profile));
     }
     
     DataObject getDataObject (Object action) {
-        return (DataObject) actionToDataObject.get (action);
+        return actionToDataObject.get (action);
     }
     
     /**
      * Read keymap from one folder Map (GlobalAction > Set (String (shortcut))).
      */
-    private Map readKeymap (DataFolder root) {
-        Map keymap = new HashMap ();
+    private Map<ShortcutAction, Set<String>> readKeymap (DataFolder root) {
+        Map<ShortcutAction, Set<String>> keymap = 
+                new HashMap<ShortcutAction, Set<String>> ();
         if (root == null) return keymap;
-        Enumeration en = root.children (false);
+        Enumeration<DataObject> en = root.children (false);
         while (en.hasMoreElements ()) {
-            DataObject dataObject = (DataObject) en.nextElement ();
+            DataObject dataObject = en.nextElement ();
             if (dataObject instanceof DataFolder) continue;
             GlobalAction action = createAction (dataObject);
             if (action == null) continue;
             String shortcut = dataObject.getName ();
-            Set s = (Set) keymap.get (action);
+            Set<String> s = keymap.get (action);
             if (s == null) {
-                s = new HashSet ();
+                s = new HashSet<String> ();
                 keymap.put (action, s);
             }
             s.add (shortcut);
@@ -245,7 +247,7 @@ public class LayersBridge extends KeymapManager {
     }
     
     // actionToShortcuts Map (GlobalAction > Set (String (shortcut))
-    public void saveKeymap (String profile, Map actionToShortcuts) {
+    public void saveKeymap (String profile, Map<ShortcutAction, Set<String>> actionToShortcuts) {
         // discard our cached copy first
         keymaps.remove(profile);
         
@@ -266,11 +268,11 @@ public class LayersBridge extends KeymapManager {
         saveKeymap (folder, actionToShortcuts, false);
     }
     
-    private void saveKeymap (DataFolder folder, Map actionToShortcuts, boolean add) {
+    private void saveKeymap (DataFolder folder, Map<ShortcutAction, Set<String>> actionToShortcuts, boolean add) {
         // hack: initialize the actions map first
   	getActions();
         // 2) convert to: Map (String (shortcut AC-C X) > GlobalAction)
-        Map shortcutToAction = shortcutToAction (actionToShortcuts);
+        Map<String, ShortcutAction> shortcutToAction = shortcutToAction (actionToShortcuts);
         
         // 3) delete obsolete DataObjects
         Enumeration en = folder.children ();
@@ -300,7 +302,7 @@ public class LayersBridge extends KeymapManager {
         while (it.hasNext ()) {
             String shortcut = (String) it.next ();
             GlobalAction action = (GlobalAction) shortcutToAction.get (shortcut);
-            DataObject dataObject = (DataObject) actionToDataObject.get (action);
+            DataObject dataObject = actionToDataObject.get (action);
             if (dataObject == null) {
                  if (System.getProperty ("org.netbeans.optionsDialog") != null)
                      System.out.println ("No original DataObject specified! Not possible to create shadow1. " + action);
@@ -337,8 +339,7 @@ public class LayersBridge extends KeymapManager {
      * Returns instance of GlobalAction encapsulating action, or null.
      */
     private GlobalAction createAction (DataObject dataObject) {
-        InstanceCookie ic = (InstanceCookie) dataObject.getCookie 
-            (InstanceCookie.class);
+        InstanceCookie ic = dataObject.getCookie(InstanceCookie.class);
         if (ic == null) return null;
         try {
             Object action = ic.instanceCreate ();
@@ -356,38 +357,20 @@ public class LayersBridge extends KeymapManager {
      * to: Map (String (shortcut AC-C X) > GlobalAction).
      * removes all non GlobalAction actions.
      */
-    static Map shortcutToAction (Map actionToShortcuts) {
-        Map shortcutToAction = new HashMap ();
-        Iterator it = actionToShortcuts.keySet ().iterator ();
-        while (it.hasNext ()) {
-            ShortcutAction action = (ShortcutAction) it.next ();
-            Set shortcuts = (Set) actionToShortcuts.get (action);
+    static Map<String, ShortcutAction> shortcutToAction (Map<ShortcutAction, Set<String>> actionToShortcuts) {
+        Map<String, ShortcutAction> shortcutToAction = new HashMap<String, ShortcutAction> ();
+        for (Map.Entry<ShortcutAction, Set<String>> entry: actionToShortcuts.entrySet()) {
+            ShortcutAction action = entry.getKey();
+            Set<String> shortcuts = entry.getValue();
             action = action.getKeymapManagerInstance(LAYERS_BRIDGE);
             if (!(action instanceof GlobalAction)) continue;
-            Iterator it2 = shortcuts.iterator ();
-            while (it2.hasNext ()) {
-                String multiShortcut = (String) it2.next ();
+            for (String multiShortcut: shortcuts) {
                 shortcutToAction.put (multiShortcut, action);
             }
         }
         return shortcutToAction;
     }
     
-    private static String[] toArray (String multiShortcut) {
-        StringTokenizer st = new StringTokenizer (multiShortcut, " ");
-        List result = new ArrayList ();
-        while (st.hasMoreTokens ()) {
-            String shortcut = st.nextToken ();
-            if (shortcut == null) {
-                if (System.getProperty ("org.netbeans.optionsDialog") != null)
-                    System.out.println ("can not parse shortcut: " + multiShortcut);
-                continue;
-            }
-            result.add (shortcut);
-        }
-        return (String[]) result.toArray (new String [result.size ()]);
-    }
-
     public void refreshActions() {
     }
 
@@ -432,15 +415,18 @@ public class LayersBridge extends KeymapManager {
             return null;
         }
         
+        @Override
         public boolean equals (Object o) {
             if (!(o instanceof GlobalAction)) return false;
             return ((GlobalAction) o).action.equals (action);
         }
         
+        @Override
         public int hashCode () {
             return action.hashCode ();
         }
         
+        @Override
         public String toString () {
             return "GlobalAction[" + getDisplayName()+ ":" + id + "]";
         }
@@ -451,5 +437,5 @@ public class LayersBridge extends KeymapManager {
             }
             return null;
         }
-}
+    }
 }
