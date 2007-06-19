@@ -18,14 +18,12 @@
  */
 package org.netbeans.modules.form.menu;
 
-import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Graphics;
 import java.awt.Point;
-import java.awt.Stroke;
 import java.awt.dnd.DropTarget;
 import java.awt.dnd.DropTargetDragEvent;
 import java.awt.dnd.DropTargetDropEvent;
@@ -70,34 +68,13 @@ import org.openide.nodes.NodeOp;
 public class MenuEditLayer extends JPanel {
     
     /* === public constants === */
-    /*
-    public static final Border INSERTION_BORDER = BorderFactory.createCompoundBorder(
-            BorderFactory.createMatteBorder(2,0,0,0,Color.RED),
-            BorderFactory.createEmptyBorder(0,2,2,2)
-            );
     
-    public static final Border INSERTION_BORDER_MENU_RIGHT = BorderFactory.createCompoundBorder(
-            BorderFactory.createMatteBorder(0,0,0,2,Color.RED),
-            BorderFactory.createEmptyBorder(2,2,2,0)
-            );*/
-    
-    //public static final Border UNSELECTED_BORDER = BorderFactory.createEmptyBorder(1,1,1,1);
-    //public static final Color SELECTED_BORDER_COLOR = new Color(0xFFA400);
-    //public static final Border SELECTED_BORDER = BorderFactory.createLineBorder(SELECTED_BORDER_COLOR,1);
     
     public static final Border DRAG_MENU_BORDER = BorderFactory.createLineBorder(Color.BLACK,1);
     public static final Border DRAG_SEPARATOR_BORDER = BorderFactory.createLineBorder(Color.RED,1);
     public static final Color SELECTED_MENU_BACKGROUND = new Color(0xA5A6A9);
     public static final Color EMPTY_ICON_COLOR = new Color(0xDDDDDD);
     public static final int EMPTY_ICON_BORDER_WIDTH = 2;
-    /*
-    public static Stroke dashedStroke1 = new BasicStroke((float) 3.0,
-                                      BasicStroke.CAP_SQUARE,
-                                      BasicStroke.JOIN_MITER,
-                                      (float) 10.0,
-                                      new float[] { (float) 1.0, (float) 4.0 },
-                                      0);*/
-    
     /* === private constants === */
     private static final boolean DEBUG = false;
     
@@ -517,6 +494,8 @@ public class MenuEditLayer extends JPanel {
             }
 
             selectedRADComponent = comp;
+            
+            registerKeyListeners();
             keyboardMenuNavigator.selectedRADComponent = (RADVisualComponent) selectedRADComponent;
             formDesigner.setSelectedComponent(selectedRADComponent);
 
