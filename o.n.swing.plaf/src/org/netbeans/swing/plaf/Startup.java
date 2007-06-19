@@ -408,10 +408,24 @@ public final class Startup {
         boolean result = osName.startsWith ("Darwin") || "Mac OS X".equals(osName);
         return result;
     }
+    
+    private boolean isSolaris10 () {
+        String osName = System.getProperty ("os.name");
+        String osVersion = System.getProperty ("os.version");
+        System.out.println("OS name: " + osName);
+        System.out.println("OS version: " + osVersion);
+        boolean result = osName.startsWith ("SunOS") && "5.10".equals(osVersion);
+        System.out.println("Is Solaris 10 ? : " + result);
+        return result;
+    }
 
     /** If it is solaris or linux, we can use GTK where supported by getting
-     * the platform specific look and feel.  Also check to make sure under no
+     * the platform specific look and feel.
+     * 
+     * Also check to make sure under no
      * circumstances do we use Motif look and feel.
+     * 
+     * #97882: Use Metal on Solaris 10 as well, there is bug which crashes JDK with GTK L&F
      *
      * @return If metal L&F should be used
      */
@@ -420,7 +434,8 @@ public final class Startup {
         boolean result = !"Solaris".equals (osName) &&
             !osName.startsWith ("SunOS") &&
             !osName.endsWith ("Linux") ||
-            UIManager.getSystemLookAndFeelClassName().indexOf("Motif") > -1;
+            UIManager.getSystemLookAndFeelClassName().indexOf("Motif") > -1 ||
+            isSolaris10();
         return result;
     }
 
