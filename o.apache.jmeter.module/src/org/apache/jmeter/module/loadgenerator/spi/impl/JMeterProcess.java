@@ -25,6 +25,7 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.apache.jmeter.engine.JMeterEngineException;
 import org.apache.jmeter.module.exceptions.InitializationException;
 import org.apache.jmeter.module.integration.*;
@@ -37,67 +38,68 @@ import org.openide.ErrorManager;
  *
  * @author Jaroslav Bachorik
  */
-public class JMeterProcess extends ProcessInstance {
-  private Semaphore runSwitchLock = new Semaphore(1);
-  private boolean running = false;
-  
+public class JMeterProcess extends ProcessInstance
+
+{
+
+  private AtomicBoolean runningState = new AtomicBoolean(Boolean.FALSE);
+
   private ProcessDescriptor runningProcess = null;
-  
-  private PropertyChangeListener processStateChangeListener = new PropertyChangeListener() {
+  private Semaphore runningProcessSemaphore = new Semaphore(1);
+
+
+  private PropertyChangeListener processStateChangeListener = new PropertyChangeListener
+
+  () {
+
     public void propertyChange(PropertyChangeEvent evt) {
-      final boolean state = ((Boolean)evt.getNewValue()).booleanValue();
-      
-      setRunning(state);
-      if (state) {
-        getWriter().println("JMeter test plan running");
-        publishStart(getEngine().getLogPath());
-      } else {
-        getWriter().println("JMeter test plan stopped");
-        publishStop();
-        runningProcess.removePropertyChangeListener(ProcessDescriptor.RUNNING, this);
+      final boolean state = ((Boolean) evt.getNewValue()).booleanValue();
+
+      try {
+        runningProcessSemaphore.acquire();
+        runningState.set(state);
+
+        if (state) {
+          getWriter().println("JMeter test plan running");
+          publishStart(getEngine().getLogPath());
+        } else {
+          getWriter().println("JMeter test plan stopped");
+          publishStop();
+          runningProcess.removePropertyChangeListener(ProcessDescriptor.RUNNING, this);
+        }
+      } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+      } finally {
+        runningProcessSemaphore.release();
       }
     }
   };
-  
+
   public JMeterProcess(final Engine factory) {
     super(factory);
   }
-  
+
   public boolean isRunning() {
-    try {
-      try {
-        runSwitchLock.acquire();
-      } catch (InterruptedException e) {}
-      return running;
-    } finally {
-      runSwitchLock.release();
-    }
+    return runningState.get();
   }
-  
+
   public String getDisplayName() {
-    if (getCurrentScript() == null)
+    if (getCurrentScript() == null) {
       return "";
-    
+    }
     String filename = getCurrentScript();
     filename = filename.substring(filename.lastIndexOf(File.separatorChar) + 1);
     return filename;
   }
-  
+
   public Image getIcon() {
     return JMeterUtils.getImage("beaker.gif").getImage();
   }
-  
+
   private void setRunning(final boolean value) {
-    try {
-      try {
-        runSwitchLock.acquire();
-      } catch (InterruptedException e) {}
-      running = value;
-    } finally {
-      runSwitchLock.release();
-    }
+    runningState.set(value);
   }
-  
+
   private JMeterIntegrationEngine getEngine() {
     try {
       return JMeterIntegrationEngine.getDefault();
@@ -106,36 +108,50 @@ public class JMeterProcess extends ProcessInstance {
     }
     return null;
   }
-  
+
   public void performStart(final String scriptFileName) {
     try {
-      getWriter().reset();
-      getWriter().print("Starting JMeter subsystem... ");
-      runningProcess = getEngine().prepareTest(scriptFileName);
-      
-      getWriter().println("Done");
-      if (runningProcess != null) {
-        runningProcess.addPropertyChangeListener(ProcessDescriptor.RUNNING, processStateChangeListener);
-        getEngine().clearLog();
-        getWriter().println("Starting JMeter test plan named " + runningProcess.getDisplayName() + " (" + scriptFileName + ")");
-        getWriter().println("Simulating " + runningProcess.getThreadsCount() + " users with ramp-up time of " + runningProcess.getRampup() + "s");
-        runningProcess.start();
-      } else {
-        throw new JMeterEngineException("Can't start JMeter script " + scriptFileName);
+      runningProcessSemaphore.acquire();
+      if (runningState.compareAndSet(false, true)) {
+        getWriter().reset();
+        getWriter().print("Starting JMeter subsystem... ");
+        runningProcess = getEngine().prepareTest(scriptFileName);
+
+        getWriter().println("Done");
+        if (runningProcess != null) {
+          runningProcess.addPropertyChangeListener(ProcessDescriptor.RUNNING, processStateChangeListener);
+          getEngine().clearLog();
+          getWriter().println("Starting JMeter test plan named " + runningProcess.getDisplayName() + " (" + scriptFileName + ")");
+          getWriter().println("Simulating " + runningProcess.getThreadsCount() + " users with ramp-up time of " + runningProcess.getRampup() + "s");
+          runningProcess.start();
+        } else {
+          throw new JMeterEngineException("Can't start JMeter script " + scriptFileName);
+        }
       }
     } catch (JMeterEngineException e) {
       ErrorManager.getDefault().log(ErrorManager.EXCEPTION, e.getMessage());
     } catch (IOException e) {
       ErrorManager.getDefault().log(ErrorManager.EXCEPTION, e.getMessage());
+    } catch (InterruptedException ex) {
+      Thread.currentThread().interrupt();
+    } finally {
+      runningProcessSemaphore.release();
     }
   }
-  
+
   public void performStop(final boolean force) {
-    if (runningProcess != null) {
-      getWriter().println("Stopping JMeter test plan");
-      runningProcess.stop();
-    } else {
-      ErrorManager.getDefault().log(ErrorManager.WARNING, "Stopping a non-running instance");
+    try {
+      runningProcessSemaphore.acquire();
+      if (runningProcess != null && runningState.compareAndSet(true, false)) {
+        getWriter().println("Stopping JMeter test plan");
+        runningProcess.stop();
+      } else {
+        ErrorManager.getDefault().log(ErrorManager.WARNING, "Stopping a non-running instance");
+      }
+    } catch (InterruptedException ex) {
+      Thread.currentThread().interrupt();
+    } finally {
+      runningProcessSemaphore.release();
     }
   }
 }
