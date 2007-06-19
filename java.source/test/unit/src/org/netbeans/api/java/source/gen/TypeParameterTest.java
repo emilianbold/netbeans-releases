@@ -41,6 +41,10 @@ public class TypeParameterTest extends GeneratorTestMDRCompat {
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
         suite.addTestSuite(TypeParameterTest.class);
+//        suite.addTest(new TypeParameterTest("testRenameTypeParamInClassDecl"));
+//        suite.addTest(new TypeParameterTest("testRenameWildCard"));
+//        suite.addTest(new TypeParameterTest("testAddGenericImplements"));
+//        suite.addTest(new TypeParameterTest("testAddGenericImplementsWithAutoImp"));
         return suite;
     }
     
