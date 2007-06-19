@@ -135,11 +135,11 @@ public class JAXBWizardRootNode extends AbstractNode {
     
     public Image getIcon(int type) {
         return Utilities.loadImage(
-                "org/netbeans/modules/jaxb/resources/packageRoot.gif" ); // No I18N
+                "org/netbeans/modules/xml/jaxb/resources/packageRoot.gif" ); // No I18N
     }
     
     public Image getOpenedIcon(int type) {
         return Utilities.loadImage(
-                "org/netbeans/modules/jaxb/resources/packageRootOpen.gif" );// No I18N
+                "org/netbeans/modules/xml/jaxb/resources/packageRootOpen.gif" );// No I18N
     }
 }

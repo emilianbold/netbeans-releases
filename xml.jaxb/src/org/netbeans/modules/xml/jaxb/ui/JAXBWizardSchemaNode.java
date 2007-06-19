@@ -190,10 +190,10 @@ public class JAXBWizardSchemaNode extends AbstractNode {
     }
     
     public Image getIcon(int type) {
-        return Utilities.loadImage( "org/netbeans/modules/jaxb/resources/package.gif" ); // No I18N
+        return Utilities.loadImage( "org/netbeans/modules/xml/jaxb/resources/package.gif" ); // No I18N
     }
     
     public Image getOpenedIcon(int type) {
-        return Utilities.loadImage( "org/netbeans/modules/jaxb/resources/packageOpen.gif" ); // No I18N
+        return Utilities.loadImage( "org/netbeans/modules/xml/jaxb/resources/packageOpen.gif" ); // No I18N
     }
 }
