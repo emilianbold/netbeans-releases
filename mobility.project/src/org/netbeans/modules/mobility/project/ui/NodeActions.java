@@ -72,6 +72,7 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
@@ -118,6 +119,8 @@ static abstract class ContextAction extends org.openide.util.actions.NodeAction 
 
 static abstract class NodeAction<T> extends ContextAction
 {   
+    protected FileObject defaultDir = null;
+    
     protected NodeAction(String name)
     {
         super(name);
@@ -213,6 +216,23 @@ static abstract class NodeAction<T> extends ContextAction
     
     synchronized  protected void performAction(Node[] activatedNodes)
     {
+        J2MEProject proj=activatedNodes[0].getLookup().lookup(J2MEProject.class);
+        //Check if all items are from the same project
+        for (Node node : activatedNodes )
+        {
+            final J2MEProject project=node.getLookup().lookup(J2MEProject.class);
+            if (proj != project)
+            {
+                proj = null;
+                break;
+            }                
+        }   
+        
+        if (proj != null)
+            defaultDir = proj.getProjectDirectory();
+        else 
+            defaultDir = null;
+        
         final T obj[]=getItems();
         
         if (obj!=null)
@@ -318,7 +338,11 @@ static class AddFolderAction extends NodeAction<File>
         chooser.setFileSelectionMode( JFileChooser.DIRECTORIES_ONLY );
         chooser.setMultiSelectionEnabled( true );
         chooser.setDialogTitle( NbBundle.getMessage( VisualClasspathSupport.class, "LBL_Classpath_AddFolder" ) ); // NOI18N
-        if (lastFile != null) chooser.setSelectedFile(lastFile);
+        if (defaultDir != null)
+            chooser.setSelectedFile(FileUtil.toFile(defaultDir.getChildren()[0]));
+        else if (lastFile != null)
+            chooser.setSelectedFile(lastFile);
+
         final int option = chooser.showOpenDialog( null ); // Sow the chooser
 
         if ( option == JFileChooser.APPROVE_OPTION ) 
@@ -477,7 +501,11 @@ static class AddJarAction extends NodeAction<File>
         chooser.setDialogTitle( NbBundle.getMessage( VisualClasspathSupport.class, "LBL_Classpath_AddJar" ) ); // NOI18N
         chooser.setFileFilter(new JarFileFilter());
         chooser.setAcceptAllFileFilterUsed( false );
-        if (lastFile != null) chooser.setSelectedFile(lastFile);
+        if (defaultDir != null)
+            chooser.setSelectedFile(FileUtil.toFile(defaultDir.getChildren()[0]));
+        else if (lastFile != null) 
+            chooser.setSelectedFile(lastFile);
+        
         final int option = chooser.showOpenDialog( null ); // Sow the chooser
 
         if ( option == JFileChooser.APPROVE_OPTION ) 
