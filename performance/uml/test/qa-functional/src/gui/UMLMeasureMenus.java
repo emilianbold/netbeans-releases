@@ -20,6 +20,7 @@
 package gui;
 
 import org.netbeans.junit.NbTestSuite;
+import gui.menus.*;
 
 /**
  * Measure UI-RESPONSIVENES and WINDOW_OPENING.
@@ -30,6 +31,8 @@ public class UMLMeasureMenus  {
 
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
+        
+        suite.addTest(new MultipleNodeContextMenu("measureTime", "Multiple Node Context Menu"));
 
         return suite;
     }

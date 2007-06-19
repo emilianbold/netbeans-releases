@@ -21,6 +21,7 @@ package gui;
 
 
 import org.netbeans.junit.NbTestSuite;
+import gui.actions.*;
 
 /**
  * Measure UI-RESPONSIVENES and WINDOW_OPENING.
@@ -37,7 +38,6 @@ public class UMLMeasureActions  {
         suite.addTest(new OpenUMLDiagram("measureTime", "Open UML Diagram"));
         suite.addTest(new CreateEmptyDiagram("measureTime", "Create Empty UML Diagram"));
         suite.addTest(new SelectingMultipleNodes("measureTime", "Selecting Multiple Nodes"));
-        suite.addTest(new MultipleNodeContextMenu("measureTime", "Multiple Node Context Menu"));
         suite.addTest(new CreateClassDiagramFromMultipleNodes("measureTime", "Create Class Diagram From Multiple Nodes")); 
         suite.addTest(new CreateSequenceDiagramFromMultipleNodes("measureTime", "Create Sequence Diagram From Multiple Nodes"));
         suite.addTest(new GenerateModelReport("measureTime", "Generate Model Report"));
