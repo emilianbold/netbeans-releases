@@ -47,7 +47,7 @@ implements CasaPalettePlugin {
         CasaPaletteItemID itemID = new CasaPaletteItemID(
                 this,
                 mProjectTypePlugin.getCategoryName(),
-                mProjectTypePlugin.getDisplayName(),
+                mProjectTypePlugin.getPluginName(),
                 mProjectTypePlugin.getIconFileBase());
         return new CasaPaletteItemID[] { itemID };
     }
@@ -70,7 +70,7 @@ implements CasaPalettePlugin {
             String projectName = getProjectCount(
                     ProjectChooser.getProjectsFolder(),
                     mProjectTypePlugin.getCategoryName() + "_" +
-                    mProjectTypePlugin.getDisplayName());
+                    mProjectTypePlugin.getPluginName());
             File projectFolder = new File(ProjectChooser.getProjectsFolder(), projectName);
             descriptor.putProperty(WizardPropertiesTemp.PROJECT_DIR, projectFolder);
             descriptor.putProperty(WizardPropertiesTemp.NAME, projectName);

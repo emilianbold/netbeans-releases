@@ -24,15 +24,17 @@ import org.netbeans.api.project.Project;
  * Service Provider Interface for internal JBI projects.
  * Port types are generic.
  * 
+ * This interface is still being defined and may change at any moment.
+ * 
  * @author jsandusky
  */
 public interface InternalProjectTypePlugin {
 
     /**
-     * Display name for this JBI project type.
+     * Name for this JBI project type.
      * @return display name
      */
-    String getDisplayName();
+    String getPluginName();
     
     /**
      * Resource path to the icon that corresponds to this JBI project type.

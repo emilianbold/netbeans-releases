@@ -38,7 +38,11 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 /**
- *
+ * This class is responsible for managing whether a wizard is shown to the user
+ * when a new internal composite application project is to be created, as well
+ * as what UI panels are used within the wizard.
+ * It is also responsible for triggering the creation of the project.
+ * 
  * @author jsandusky
  */
 public abstract class InternalProjectTypePluginWizardIterator implements WizardDescriptor.InstantiatingIterator {
@@ -56,6 +60,12 @@ public abstract class InternalProjectTypePluginWizardIterator implements WizardD
     protected abstract void createProject(File dirF, String name, String j2eeLevel) throws IOException;
 
     
+    /**
+     * Uninitializes this iterator, called when the wizard is being
+     * closed, no matter what closing option invoked.
+     *
+     * @param wiz wizard's descriptor
+     */
     public void uninitialize(WizardDescriptor wiz) {
         this.wiz.putProperty(WizardProperties.PROJECT_DIR, null);
         this.wiz.putProperty(WizardProperties.NAME, null);
@@ -63,21 +73,16 @@ public abstract class InternalProjectTypePluginWizardIterator implements WizardD
         panels = null;
     }
     
-    protected String getDefaultName() {
-        return NbBundle.getMessage(getClass(), "LBL_NPW1_DefaultProjectName"); //NOI18N
-    }
-    
-    protected String getDefaultTitle() {
-        return NbBundle.getMessage(getClass(), "TXT_NewWebApp"); //NOI18N
-    }
-    
-    
+    /**
+     * Gets the name of the current panel.
+     * @return the name
+     */
     public final String name() {
         return MessageFormat.format(
                 NbBundle.getMessage(getClass(), "LBL_WizardStepsCount"),  //NOI18N
                 new String[] {
-                    (new Integer(index + 1)).toString(), 
-                    (new Integer(panels.length)).toString() });
+            (new Integer(index + 1)).toString(),
+            (new Integer(panels.length)).toString() });
     }
     
     public final boolean hasNext() {
@@ -98,6 +103,13 @@ public abstract class InternalProjectTypePluginWizardIterator implements WizardD
         return panels[index];
     }
     
+    /**
+     * Returns set of instantiated objects. 
+     * If instantiation fails then wizard remains open to enable correct values.
+     *
+     * @throws IOException
+     * @return a set of objects created (the exact type is at the discretion of the caller)
+     */
     public final Set instantiate() throws IOException {
         Set resultSet = new HashSet();
         File dirF = (File) wiz.getProperty(WizardProperties.PROJECT_DIR);
@@ -114,6 +126,11 @@ public abstract class InternalProjectTypePluginWizardIterator implements WizardD
         return resultSet;
     }
     
+    /**
+     * Obtains the created Project, if one exists.
+     * @return the newly created project
+     * @throws java.io.IOException when there is an error finding the project
+     */
     public final Project getProject() throws IOException {
         if (mProjectFileObject != null) {
             return ProjectManager.getDefault().findProject(mProjectFileObject);
@@ -125,6 +142,11 @@ public abstract class InternalProjectTypePluginWizardIterator implements WizardD
         return mAddedPanels != null && mAddedSteps != null;
     }
     
+    /**
+     * Initializes this iterator, called from WizardDescriptor's constructor.
+     *
+     * @param wiz wizard's descriptor
+     */
     public final void initialize(WizardDescriptor wiz) {
         this.wiz = wiz;
         index = 0;
@@ -149,11 +171,15 @@ public abstract class InternalProjectTypePluginWizardIterator implements WizardD
         }
     }
     
-    // If nothing unusual changes in the middle of the wizard, simply:
+    // Not used
     public final void addChangeListener(ChangeListener l) {}
     public final void removeChangeListener(ChangeListener l) {}
 
-    
+    /**
+     * Adds a new UI panel to the wizard.
+     * If no panel is ever added, the wizard will not be shown.
+     * @param panel the UI panel to be added
+     */
     protected final void addPanel(WizardDescriptor.Panel panel) {
         if (mAddedPanels == null) {
             mAddedPanels = new ArrayList<WizardDescriptor.Panel>();
@@ -161,6 +187,12 @@ public abstract class InternalProjectTypePluginWizardIterator implements WizardD
         mAddedPanels.add(panel);
     }
     
+    /**
+     * Adds a new step name to the wizard.
+     * Each UI panel should correspond to a step name.
+     * If no step name is ever added, the wizard will not be shown.
+     * @param step the step name
+     */
     protected final void addStep(String step) {
         if (mAddedSteps == null) {
             mAddedSteps = new ArrayList<String>();
@@ -169,6 +201,10 @@ public abstract class InternalProjectTypePluginWizardIterator implements WizardD
     }
     
     
+    // The wizard is only shown if panel(s) and step(s) were added.
+    // These panels allow the plugin to customize properties before the
+    // project is created. If no properties need customizing, then no
+    // panels/steps need to be added and the wizard will not be shown.
     private WizardDescriptor.Panel[] createPanels() {
         if (mAddedPanels != null) {
             return mAddedPanels.toArray(new WizardDescriptor.Panel[mAddedPanels.size()]);
@@ -176,6 +212,10 @@ public abstract class InternalProjectTypePluginWizardIterator implements WizardD
         return new WizardDescriptor.Panel[] {};
     }
     
+    // The wizard is only shown if panel(s) and step(s) were added.
+    // These panels allow the plugin to customize properties before the
+    // project is created. If no properties need customizing, then no
+    // panels/steps need to be added and the wizard will not be shown.
     private String[] createSteps() {
         if (mAddedSteps != null) {
             return mAddedSteps.toArray(new String[mAddedSteps.size()]);
