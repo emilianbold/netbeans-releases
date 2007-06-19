@@ -16,11 +16,6 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-/*
- * ErrWriter.java
- *
- * Created on May 9, 2004, 5:06 PM
- */
 
 package org.netbeans.core.output2;
 
@@ -69,6 +64,7 @@ class ErrWriter extends OutputWriter {
         closed = false;
     }
     
+    @Override
     public void close() {
         if (!closed) {
             closed = true;
@@ -81,14 +77,17 @@ class ErrWriter extends OutputWriter {
         return closed;
     }
 
+    @Override
     public void flush() {
         wrapped.flush();
     }
     
+    @Override
     public boolean checkError() {
         return wrapped.checkError();
     }    
     
+    @Override
     public void write(int c) {
         closed = false;
         synchronized (wrapped) {
@@ -97,6 +96,7 @@ class ErrWriter extends OutputWriter {
         }
     }
     
+    @Override
     public void write(char buf[], int off, int len) {
         closed = false;
         synchronized (wrapped) {
@@ -105,6 +105,7 @@ class ErrWriter extends OutputWriter {
         }
     }
     
+    @Override
     public void write(String s, int off, int len) {
         closed = false;
         synchronized (wrapped) {
@@ -113,6 +114,7 @@ class ErrWriter extends OutputWriter {
         }
     }
     
+    @Override
     public void println(boolean x) {
         closed = false;
         synchronized (wrapped) {
@@ -121,6 +123,7 @@ class ErrWriter extends OutputWriter {
         }
     }
 
+    @Override
     public void println(int x) {
         closed = false;
         synchronized (wrapped) {
@@ -129,6 +132,7 @@ class ErrWriter extends OutputWriter {
         }
     }
     
+    @Override
     public void println(char x) {
         closed = false;
         synchronized (wrapped) {
@@ -137,6 +141,7 @@ class ErrWriter extends OutputWriter {
         }
     }
     
+    @Override
     public void println(long x) {
         closed = false;
         synchronized (wrapped) {
@@ -145,6 +150,7 @@ class ErrWriter extends OutputWriter {
         }
     }
     
+    @Override
     public void println(float x) {
         closed = false;
         synchronized (wrapped) {
@@ -153,6 +159,7 @@ class ErrWriter extends OutputWriter {
         }
     }
     
+    @Override
     public void println(double x) {
         closed = false;
         synchronized (wrapped) {
@@ -161,6 +168,7 @@ class ErrWriter extends OutputWriter {
         }
     }
     
+    @Override
     public void println(char x[]) {
         closed = false;
         synchronized (wrapped) {
@@ -169,6 +177,7 @@ class ErrWriter extends OutputWriter {
         }
     }
     
+    @Override
     public void println(String x) {
         closed = false;
         synchronized (wrapped) {
@@ -177,6 +186,7 @@ class ErrWriter extends OutputWriter {
         }
     }
     
+    @Override
     public void println(Object x) {
         closed = false;
         synchronized (wrapped) {
@@ -185,6 +195,7 @@ class ErrWriter extends OutputWriter {
         }
     }
 
+    @Override
     public void print(char[] s) {
         closed = false;
         synchronized (wrapped) {
@@ -193,6 +204,7 @@ class ErrWriter extends OutputWriter {
         }
     }
 
+    @Override
     public void print(Object obj) {
         closed = false;
         synchronized (wrapped) {
@@ -201,6 +213,7 @@ class ErrWriter extends OutputWriter {
         }
     }
 
+    @Override
     public void print(char c) {
         closed = false;
         synchronized (wrapped) {
@@ -209,6 +222,7 @@ class ErrWriter extends OutputWriter {
         }
     }
 
+    @Override
     public void print(int i) {
         closed = false;
         synchronized (wrapped) {
@@ -217,6 +231,7 @@ class ErrWriter extends OutputWriter {
         }
     }
 
+    @Override
     public void print(String s) {
         closed = false;
         synchronized (wrapped) {
@@ -225,6 +240,7 @@ class ErrWriter extends OutputWriter {
         }
     }
 
+    @Override
     public void print(boolean b) {
         closed = false;
         synchronized (wrapped) {
@@ -233,6 +249,7 @@ class ErrWriter extends OutputWriter {
         }
     }
     
+    @Override
     public void println() {
         closed = false;
         synchronized (wrapped) {

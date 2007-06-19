@@ -127,7 +127,9 @@ public class WrappedTextView extends View {
         }
 
         selectedLinkFg = UIManager.getColor("nb.output.link.foreground.selected"); //NOI18N
-        if (selectedLinkFg == null) selectedLinkFg = Color.BLUE.darker();
+        if (selectedLinkFg == null) {
+            selectedLinkFg = java.awt.Color.BLUE.darker();
+        }
         
         unselectedLinkFg = UIManager.getColor("nb.output.link.foreground"); //NOI18N
         if (unselectedLinkFg == null) {
@@ -180,10 +182,12 @@ public class WrappedTextView extends View {
         return result;
     }
 
+    @Override
     public float getMinimumSpan(int axis) {
         return getPreferredSpan(axis);
     }
 
+    @Override
     public float getMaximumSpan(int axis) {
         return getPreferredSpan(axis);
     }

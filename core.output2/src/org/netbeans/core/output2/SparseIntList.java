@@ -16,11 +16,6 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-/*
- * SparseIntList.java
- *
- * Created on August 15, 2004, 12:18 AM
- */
 
 package org.netbeans.core.output2;
 
@@ -201,6 +196,7 @@ final class SparseIntList {
         System.arraycopy(oldvals, 0, values, 0, oldvals.length);
     }
     
+    @Override
     public String toString() {
         StringBuffer result = new StringBuffer ("SparseIntList ["); //NOI18N
         result.append ("used="); //NOI18N

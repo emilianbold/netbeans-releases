@@ -58,6 +58,7 @@ public class OutputWindow extends AbstractOutputWindow {
         "org/netbeans/core/resources/frames/output.png"; // NOI18N
         
     private MouseListener activateListener = new MouseAdapter() {
+        @Override
         public void mouseClicked(MouseEvent e) {
             //#83829
             requestActive();
@@ -72,11 +73,13 @@ public class OutputWindow extends AbstractOutputWindow {
         getActionMap().put("NextViewAction", controller.nextTabAction);
     }
     
+    @Override
     public void addNotify() {
         super.addNotify();
         pane.addMouseListener(activateListener);
     }
 
+    @Override
     public void removeNotify() {
         super.removeNotify();
         pane.removeMouseListener(activateListener);
@@ -134,10 +137,12 @@ public class OutputWindow extends AbstractOutputWindow {
         return DEFAULT;
     }
 
+    @Override
     public int getPersistenceType() {
         return PERSISTENCE_ALWAYS;
     }
 
+    @Override
     public String preferredID() {
         return "output"; //NOI18N
     }
@@ -146,6 +151,7 @@ public class OutputWindow extends AbstractOutputWindow {
         return getDefault();
     }
     
+    @Override
     public String getToolTipText() {
         return getDisplayName();
     }
@@ -154,6 +160,7 @@ public class OutputWindow extends AbstractOutputWindow {
         return controller;
     }
 
+    @Override
     public void requestVisible () {
         if (Controller.LOG) {
             Controller.log("Request visible");
@@ -191,7 +198,9 @@ public class OutputWindow extends AbstractOutputWindow {
             Insets ins = getInsets();
             Color col = UIManager.getColor ("controlShadow"); //NOI18N
             //Draw *some* focus indication
-            if (col == null) col = Color.GRAY;
+            if (col == null) {
+                col = java.awt.Color.GRAY;
+            }
             g.setColor(col);
             g.drawRect (
                 ins.left + 2,
@@ -205,16 +214,18 @@ public class OutputWindow extends AbstractOutputWindow {
         requestActive();
     }
     
+    @Override
     public void requestActive() {
-        boolean activated = isActivated();
+        boolean act = isActivated();
         if (Controller.LOG) Controller.log("Request active");
         super.requestActive();
-        if (!activated) {
+        if (!act) {
             requestFocus();
         }
     }  
     
     private boolean activated = false;
+    @Override
     protected void componentActivated () {
         if (Controller.LOG) Controller.log("ComponentActivated");
         super.componentActivated();
@@ -223,6 +234,7 @@ public class OutputWindow extends AbstractOutputWindow {
         requestFocus();
     }
     
+    @Override
     protected void componentDeactivated() {
         if (Controller.LOG) Controller.log("ComponentDeactivated");
         super.componentDeactivated();
@@ -239,24 +251,24 @@ public class OutputWindow extends AbstractOutputWindow {
         controller.selectionChanged (this, (OutputTab) former, (OutputTab) current);
     }
 
-    public void lineClicked(OutputTab outputComponent, int line) {
+    void lineClicked(OutputTab outputComponent, int line) {
         controller.lineClicked (this, outputComponent, line);
     }
 
-    public void postPopupMenu(OutputTab outputComponent, Point p, Component src) {
+    void postPopupMenu(OutputTab outputComponent, Point p, Component src) {
         controller.postPopupMenu (this, outputComponent, p, src);
     }
 
-    public void caretEnteredLine(OutputTab outputComponent, int line) {
+    void caretEnteredLine(OutputTab outputComponent, int line) {
         controller.caretEnteredLine(outputComponent, line);
     }
 
-    public void documentChanged(OutputTab comp) {
+    void documentChanged(OutputTab comp) {
         controller.documentChanged (this, comp);
     }
 
     private HashSet<OutputTab> hiddenTabs = null;
-    public void putHiddenView (OutputTab comp) {
+    void putHiddenView (OutputTab comp) {
         if (hiddenTabs == null) {
             hiddenTabs = new HashSet<OutputTab>();
         }
@@ -267,11 +279,12 @@ public class OutputWindow extends AbstractOutputWindow {
         }
     }
 
-    public void removeHiddenView (OutputTab comp) {
+    void removeHiddenView (OutputTab comp) {
         hiddenTabs.remove(comp);
         comp.putClientProperty("outputWindow", null); //NOI18N
     }
 
+    @Override
     public void setSelectedTab (AbstractOutputTab op) {
         if (op.getParent() == null && hiddenTabs.contains(op)) {
             removeHiddenView ((OutputTab) op);
@@ -299,7 +312,7 @@ public class OutputWindow extends AbstractOutputWindow {
     }
 
 
-    public OutputTab[] getHiddenTabs() {
+    OutputTab[] getHiddenTabs() {
         if (hiddenTabs != null && !hiddenTabs.isEmpty()) {
             OutputTab[] result = new OutputTab[hiddenTabs.size()];
             return hiddenTabs.toArray(result);
@@ -307,7 +320,7 @@ public class OutputWindow extends AbstractOutputWindow {
         return new OutputTab[0];
     }
 
-    public OutputTab getTabForIO (NbIO io) {
+    OutputTab getTabForIO (NbIO io) {
         AbstractOutputTab[] views = getTabs();
         for (int i=0; i < views.length; i++) {
             if (((OutputTab) views[i]).getIO() == io) {
@@ -323,7 +336,7 @@ public class OutputWindow extends AbstractOutputWindow {
         return null;
     }
 
-    public void eventDispatched(IOEvent ioe) {
+    void eventDispatched(IOEvent ioe) {
             if (Controller.LOG) Controller.log ("Event received: " + ioe);
             NbIO io = ioe.getIO();
             int command = ioe.getCommand();
@@ -343,7 +356,7 @@ public class OutputWindow extends AbstractOutputWindow {
             ioe.consume();
     }
 
-    public void hasSelectionChanged(OutputTab tab, boolean val) {
+    void hasSelectionChanged(OutputTab tab, boolean val) {
         controller.hasSelectionChanged(this, tab, val);
     }
 
@@ -351,16 +364,16 @@ public class OutputWindow extends AbstractOutputWindow {
         return activated;
     }
 
-    public void hasOutputListenersChanged(OutputTab tab, boolean hasOutputListeners) {
+    void hasOutputListenersChanged(OutputTab tab, boolean hasOutputListeners) {
         controller.hasOutputListenersChanged(this, tab, hasOutputListeners);
     }
 
-    public void inputEof(OutputTab tab) {
+    void inputEof(OutputTab tab) {
         if (Controller.LOG) Controller.log ("Input EOF on " + this);
         controller.inputEof(tab);
     }
 
-    public void inputSent(OutputTab c, String txt) {
+    void inputSent(OutputTab c, String txt) {
         if (Controller.LOG) Controller.log ("Notifying controller input sent " + txt);
         controller.notifyInput(this, c, txt);
     }

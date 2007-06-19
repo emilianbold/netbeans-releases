@@ -27,8 +27,6 @@ import org.netbeans.core.output2.Controller;
 import javax.swing.*;
 import javax.swing.text.Document;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 /**
  * A basic output pane.  This class implements the non-output window specific
@@ -61,14 +59,17 @@ public abstract class AbstractOutputTab extends JComponent implements Accessible
     /* Read accessible context
      * @return - accessible context
      */
+    @Override
     public AccessibleContext getAccessibleContext() {
         if (accessibleContext == null) {
             accessibleContext = new AccessibleJComponent() {
+                        @Override
                         public AccessibleRole getAccessibleRole() {
                             // is it really a panel?
                             return AccessibleRole.PANEL;
                         }
 
+                        @Override
                         public String getAccessibleName() {
                             if (accessibleName != null) {
                                 return accessibleName;
@@ -90,6 +91,7 @@ public abstract class AbstractOutputTab extends JComponent implements Accessible
         toFocus = foc;
     }
     
+    @Override
     public void requestFocus() {
     // on mouse click the specialized component is marked, and activation is requested.
     // activation results in request focus on the tab -> the marked component gets focus.
@@ -101,6 +103,7 @@ public abstract class AbstractOutputTab extends JComponent implements Accessible
         outputPane.requestFocus();
     }
     
+    @Override
     public boolean requestFocusInWindow() {
         return getOutputPane().requestFocusInWindow();
     }    
@@ -203,6 +206,7 @@ public abstract class AbstractOutputTab extends JComponent implements Accessible
 
     protected abstract void inputEof();
 
+    @Override
     public void doLayout() {
         Insets ins = getInsets();
         int left = ins.left;

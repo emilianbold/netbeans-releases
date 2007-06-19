@@ -16,11 +16,6 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-/*
- * PairMap.java
- *
- * Created on May 12, 2004, 10:11 PM
- */
 
 package org.netbeans.core.output2;
 

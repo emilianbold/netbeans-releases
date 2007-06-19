@@ -16,11 +16,6 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-/*
- * AbstractOutputWindow.java
- *
- * Created on May 14, 2004, 10:22 PM
- */
 
 package org.netbeans.core.output2.ui;
 
@@ -99,6 +94,7 @@ public abstract class AbstractOutputWindow extends TopComponent implements Chang
     
     protected abstract void removed(AbstractOutputTab view);
     
+    @Override
     protected void addImpl(Component c, Object constraints, int idx) {
         setFocusable(false);
         Component focusOwner =
@@ -174,6 +170,7 @@ public abstract class AbstractOutputWindow extends TopComponent implements Chang
     }
     
     
+    @Override
     public void remove(Component c) {
         AbstractOutputTab removedSelectedView = null;
         synchronized (getTreeLock()) {
@@ -344,7 +341,9 @@ public abstract class AbstractOutputWindow extends TopComponent implements Chang
         if (isGtk) {
             //Presumably we can get this fixed for JDK 1.5.1
             Color c = getBackground();
-            if (c == null) c = Color.WHITE;
+            if (c == null) {
+                c = java.awt.Color.WHITE;
+            }
             g.setColor(c);
             g.fillRect(0, 0, getWidth(), getHeight());
         }

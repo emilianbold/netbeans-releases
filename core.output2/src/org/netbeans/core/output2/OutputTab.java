@@ -57,6 +57,7 @@ final class OutputTab extends AbstractOutputTab {
         super.removeNotify();
     }
 
+    @Override
     public void setDocument (Document doc) {
         if (Controller.LOG) Controller.log ("Set document on " + this + " with " + io);
         assert SwingUtilities.isEventDispatchThread();

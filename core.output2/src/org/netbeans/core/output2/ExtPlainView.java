@@ -16,11 +16,6 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-/*
- * ExtPlainView.java
- *
- * Created on May 9, 2004, 4:29 PM
- */
 
 package org.netbeans.core.output2;
 
@@ -55,8 +50,9 @@ class ExtPlainView extends PlainView {
             hintsMap = (Map)(Toolkit.getDefaultToolkit().getDesktopProperty("awt.font.desktophints")); //NOI18N
             if (hintsMap == null) {
                 hintsMap = new HashMap();
-                if (antialias)
+                if (antialias) {
                     hintsMap.put(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+                }
             }
         }
         return hintsMap;
@@ -67,11 +63,13 @@ class ExtPlainView extends PlainView {
         super (elem);
     }
 
+    @Override
     public void paint(Graphics g, Shape allocation) {
         ((Graphics2D)g).addRenderingHints(getHints());
         super.paint(g, allocation);
     }
     
+    @Override
     protected int drawSelectedText(Graphics g, int x,
                                    int y, int p0, int p1) throws BadLocationException {
                                        
@@ -94,6 +92,7 @@ class ExtPlainView extends PlainView {
     }
 
     
+    @Override
     protected int drawUnselectedText(Graphics g, int x, int y, 
                                      int p0, int p1) throws BadLocationException {
         Document doc = getDocument();

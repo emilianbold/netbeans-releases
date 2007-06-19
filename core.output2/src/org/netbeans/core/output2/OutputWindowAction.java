@@ -38,6 +38,7 @@ public final class OutputWindowAction extends CallableSystemAction {
         output.requestActive();
     }
     
+    @Override
     protected boolean asynchronous() {
         return false;
     }
@@ -50,6 +51,7 @@ public final class OutputWindowAction extends CallableSystemAction {
         return new HelpCtx (OutputWindowAction.class);
     }
 
+    @Override
     protected String iconResource () {
         return "org/netbeans/core/resources/frames/output.png"; // NOI18N
     }

@@ -66,6 +66,7 @@ public final class NbIOProvider extends IOProvider {
         return getIO (name, newIO, new Action[0]);
     }
     
+    @Override
     public InputOutput getIO(String name, Action[] toolbarActions) {
         return getIO (name, true, toolbarActions);
     }

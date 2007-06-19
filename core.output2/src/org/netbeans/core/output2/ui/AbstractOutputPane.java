@@ -57,10 +57,12 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
         init();
     }
 
+    @Override
     public void requestFocus() {
         textView.requestFocus();
     }
     
+    @Override
     public boolean requestFocusInWindow() {
         return textView.requestFocusInWindow();
     }
@@ -355,6 +357,7 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
         return getCaret().getDot();
     }
 
+    @Override
     public final void paint (Graphics g) {
         if (fontHeight == -1) {
             fontHeight = g.getFontMetrics(textView.getFont()).getHeight();
@@ -592,19 +595,24 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
     }
     
     private class OCaret extends DefaultCaret {
+        @Override
         public void setSelectionVisible(boolean val) {
             super.setSelectionVisible(true);
             super.setBlinkRate(0);
         }
+        @Override
         public boolean isSelectionVisible() {
             return true;
         }
+        @Override
         public void setBlinkRate(int rate) {
             super.setBlinkRate(0);
         }
  
+        @Override
         public boolean isVisible() { return true; }
         
+        @Override
         public void paint(Graphics g) {
             JTextComponent component = textView;
             if(isVisible() && y >= 0) {
@@ -696,9 +704,11 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
             return true;
         }        
 
+        @Override
         public void mouseReleased(MouseEvent e) {
-            if( !e.isConsumed() )
+            if( !e.isConsumed() ) {
                 super.mouseReleased(e);
+            }
         }
     }
 }

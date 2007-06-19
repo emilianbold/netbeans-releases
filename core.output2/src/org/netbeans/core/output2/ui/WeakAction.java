@@ -16,11 +16,6 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-/*
- * WeakAction.java
- *
- * Created on May 14, 2004, 11:01 PM
- */
 
 package org.netbeans.core.output2.ui;
 

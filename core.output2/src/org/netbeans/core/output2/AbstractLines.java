@@ -239,7 +239,9 @@ abstract class AbstractLines implements Lines, Runnable {
     }
 
     public int getCharCount() {
-        if (isDisposed() || isTrouble()) return 0;
+        if (isDisposed() || isTrouble()) {
+            return 0;
+        }
         Storage storage = getStorage();
         return storage == null ? 0 : AbstractLines.toCharIndex(getStorage().size());
     }
@@ -313,8 +315,12 @@ abstract class AbstractLines implements Lines, Runnable {
      * the output file.
      */
     public int getLineStart (int line) {
-        if (isDisposed() || isTrouble()) return 0;
-        if (lineStartList.size() == 0) return 0;
+        if (isDisposed() || isTrouble()) {
+            return 0;
+        }
+        if (lineStartList.size() == 0) {
+            return 0;
+        }
         return toCharIndex(lineStartList.get(line));
     }
 
@@ -322,7 +328,9 @@ abstract class AbstractLines implements Lines, Runnable {
      * file (as distinct from a byte position)
      */
     public int getLineAt (int position) {
-        if (isDisposed() || isTrouble()) return -1;
+        if (isDisposed() || isTrouble()) {
+            return -1;
+        }
         int bytePos = toByteIndex (position);
         int i = lineStartList.indexOf (bytePos);
         if (i != -1) {
@@ -332,7 +340,9 @@ abstract class AbstractLines implements Lines, Runnable {
     }
 
     public int getLineCount() {
-        if (isDisposed() || isTrouble()) return 0;
+        if (isDisposed() || isTrouble()) {
+            return 0;
+        }
         return lineStartList.size();
     }
 
@@ -341,12 +351,16 @@ abstract class AbstractLines implements Lines, Runnable {
     }
 
     public int firstListenerLine () {
-        if (isDisposed() || isTrouble()) return -1;
+        if (isDisposed() || isTrouble()) {
+            return -1;
+        }
         return linesToListeners.isEmpty() ? -1 : linesToListeners.first();
     }
 
     public int nearestListenerLine (int line, boolean backward) {
-        if (isDisposed() || isTrouble()) return -1;
+        if (isDisposed() || isTrouble()) {
+            return -1;
+        }
         return linesToListeners.nearest (line, backward);
     }
 
@@ -871,6 +885,7 @@ abstract class AbstractLines implements Lines, Runnable {
         this.lastCharCountForWrapAboveCalculation = lastCharCountForWrapAboveCalculation;
     }
 
+    @Override
     public String toString() {
         return lineStartList.toString();
     }

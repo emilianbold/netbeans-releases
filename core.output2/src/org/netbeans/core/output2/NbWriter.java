@@ -99,6 +99,7 @@ class NbWriter extends OutputWriter {
         return err;
     }
 
+    @Override
     public void close() {
         boolean wasClosed = isClosed();
         if (Controller.LOG) Controller.log ("NbWriter.close wasClosed=" + wasClosed + " out is " + out + " out is closed " + ((OutWriter) out).isClosed());
@@ -140,6 +141,7 @@ class NbWriter extends OutputWriter {
     /**
      * If not overridden, the super impl will append extra \n's
      */
+    @Override
     public void println (String s) {
         synchronized (lock) {
             ((OutWriter) out).println(s);

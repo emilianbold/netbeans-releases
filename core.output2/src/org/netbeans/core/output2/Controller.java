@@ -1180,14 +1180,14 @@ public class Controller { //XXX public only for debug access to logging code
      */
     boolean ignoreCaretChanges = false;
 
-    public void hasSelectionChanged(OutputWindow outputWindow, OutputTab tab, boolean val) {
+    void hasSelectionChanged(OutputWindow outputWindow, OutputTab tab, boolean val) {
         if (tab == outputWindow.getSelectedTab()) {
             copyAction.setEnabled(val);
             selectAllAction.setEnabled(!tab.getOutputPane().isAllSelected());
         }
     }
 
-    public void hasOutputListenersChanged(OutputWindow win, OutputTab tab, boolean hasOutputListeners) {
+    void hasOutputListenersChanged(OutputWindow win, OutputTab tab, boolean hasOutputListeners) {
         if (hasOutputListeners && win.getSelectedTab() == tab && tab.isShowing()) {
             navigateToFirstErrorLine(tab);
         }
@@ -1396,7 +1396,7 @@ public class Controller { //XXX public only for debug access to logging code
         return logStream;
     }
 
-    public void inputEof(OutputTab tab) {
+    void inputEof(OutputTab tab) {
         if (Controller.LOG) Controller.log ("Input EOF");
         NbIO io = tab.getIO();
         NbIO.IOReader in = io.in();
