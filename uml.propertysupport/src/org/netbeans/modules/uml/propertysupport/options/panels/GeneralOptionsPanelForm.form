@@ -240,12 +240,12 @@
                   </Group>
                   <EmptySpace min="-2" pref="5" max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                      <Component id="displayCompartmentTitlesComboBox" alignment="1" max="32767" attributes="1"/>
-                      <Component id="autoResizeElementsComboBox" alignment="1" pref="161" max="32767" attributes="1"/>
+                      <Component id="autoResizeElementsComboBox" max="32767" attributes="1"/>
+                      <Component id="displayCompartmentTitlesComboBox" alignment="0" pref="265" max="32767" attributes="1"/>
                   </Group>
-                  <EmptySpace min="-2" pref="86" max="-2" attributes="0"/>
+                  <EmptySpace min="-2" pref="37" max="-2" attributes="0"/>
                   <Component id="jButton1" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace min="-2" pref="106" max="-2" attributes="0"/>
+                  <EmptySpace min="-2" pref="31" max="-2" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>

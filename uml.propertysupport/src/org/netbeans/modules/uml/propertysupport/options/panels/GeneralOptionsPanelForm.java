@@ -284,11 +284,11 @@ public class GeneralOptionsPanelForm extends javax.swing.JPanel {
                     .add(jLabel2))
                 .add(5, 5, 5)
                 .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, displayCompartmentTitlesComboBox, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, autoResizeElementsComboBox, 0, 161, Short.MAX_VALUE))
-                .add(86, 86, 86)
+                    .add(autoResizeElementsComboBox, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(displayCompartmentTitlesComboBox, 0, 265, Short.MAX_VALUE))
+                .add(37, 37, 37)
                 .add(jButton1)
-                .add(106, 106, 106))
+                .add(31, 31, 31))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
