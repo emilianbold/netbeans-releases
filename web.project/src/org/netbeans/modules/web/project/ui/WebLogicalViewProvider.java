@@ -77,7 +77,6 @@ import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.j2ee.common.ui.BrokenDatasourceSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -655,7 +654,9 @@ public class WebLogicalViewProvider implements LogicalViewProvider {
             private RequestProcessor.Task task = null;
             
             public BrokenDatasourceAction() {
-                ConnectionManager.getDefault().addConnectionListener(this);
+                // Create a weak listener so that the connection listener can be GC'd when listener for a project is no longer referenced
+                ConnectionManager.getDefault().addConnectionListener(WeakListeners.create(ConnectionListener.class, this, ConnectionManager.getDefault()));
+ 
                 
                 // For now make sure BrokenDatasourceAction only applies to visualweb/Creator projects
                 // The if-statement here can be expanded to support other types of projects                
@@ -737,11 +738,7 @@ public class WebLogicalViewProvider implements LogicalViewProvider {
                             }
                         }
                     });
-                }
-                
-                if (!brokenDatasource) {
-                    ConnectionManager.getDefault().removeConnectionListener(this);
-                }
+                }                                
             }
             
             public void connectionsChanged() {
