@@ -5,17 +5,16 @@
 
 <#if package?? && package != "">
 package ${package};
+</#if>
 
 import javax.servlet.jsp.tagext.*;
 import javax.servlet.jsp.JspWriter;
 import javax.servlet.jsp.JspException;
 
-</#if>
 /**
  *
  * @author ${user}
  */
-
 public class ${name} extends SimpleTagSupport {
 
     /**

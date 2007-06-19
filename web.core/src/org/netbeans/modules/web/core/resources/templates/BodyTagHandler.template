@@ -1,10 +1,11 @@
-/*
- * __NAME__.java
- *
- * Created on __DATE__, __TIME__
- */
+<#assign licenseFirst = "/*">
+<#assign licensePrefix = " * ">
+<#assign licenseLast = " */">
+<#include "../Licenses/license-${project.license}.txt">
  
-package Templates.JSP_Servlet;           
+<#if package?? && package != "">
+package ${package};
+</#if>
 
 import java.io.IOException;
 import javax.servlet.jsp.JspException;
@@ -12,18 +13,17 @@ import javax.servlet.jsp.JspWriter;
 import javax.servlet.jsp.tagext.BodyContent;
 import javax.servlet.jsp.tagext.BodyTagSupport;
 
-/** 
- * Generated tag handler class.
- * @author  __USER__
- * @version 
+/**
+ *
+ * @author ${user}
  */
 
-public class BodyTagHandler extends BodyTagSupport {
+public class ${name} extends BodyTagSupport {
     
     /** 
     * Creates new instance of tag handler 
     */
-    public BodyTagHandler() {
+    public ${name}() {
         super();
     }
     

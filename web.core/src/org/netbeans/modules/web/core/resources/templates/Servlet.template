@@ -5,6 +5,7 @@
 
 <#if package?? && package != "">
 package ${package};
+</#if>
 
 import java.io.*;
 import java.net.*;
@@ -12,12 +13,10 @@ import java.net.*;
 import javax.servlet.*;
 import javax.servlet.http.*;
 
-</#if>
 /**
  *
  * @author ${user}
  */
-
 public class ${name} extends HttpServlet {
    
     /** 
@@ -32,10 +31,10 @@ public class ${name} extends HttpServlet {
         /* TODO output your page here
         out.println("<html>");
         out.println("<head>");
-        out.println("<title>Servlet __NAME__</title>");  
+        out.println("<title>Servlet ${name}</title>");  
         out.println("</head>");
         out.println("<body>");
-        out.println("<h1>Servlet __NAME__ at " + request.getContextPath () + "</h1>");
+        out.println("<h1>Servlet ${name} at " + request.getContextPath () + "</h1>");
         out.println("</body>");
         out.println("</html>");
         */

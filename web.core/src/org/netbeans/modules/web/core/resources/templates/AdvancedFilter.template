@@ -1,10 +1,11 @@
-/*
- * __NAME__.java
- *
- * Created on __DATE__, __TIME__
- */
+<#assign licenseFirst = "/*">
+<#assign licensePrefix = " * ">
+<#assign licenseLast = " */">
+<#include "../Licenses/license-${project.license}.txt">
  
-package Templates.JSP_Servlet;           
+<#if package?? && package != "">
+package ${package};
+</#if>
 
 import java.io.*;
 import java.net.*;
@@ -21,25 +22,23 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 
-/** 
+/**
  *
- * @author  __USER__
- * @version 
+ * @author ${user}
  */
-
-public class AdvancedFilter implements Filter {
+public class ${name} implements Filter {
 
     // The filter configuration object we are associated with.  If
     // this value is null, this filter instance is not currently
     // configured. 
     private FilterConfig filterConfig = null;
 
-    public AdvancedFilter() {
+    public ${name}() {
     } 
 
     private void doBeforeProcessing(RequestWrapper request, ResponseWrapper response)
 	throws IOException, ServletException {
-	if (debug) log("__NAME__:DoBeforeProcessing");
+	if (debug) log("${name}:DoBeforeProcessing");
 	//
 	// Write code here to process the request and/or response before
 	// the rest of the filter chain is invoked.
@@ -82,7 +81,7 @@ public class AdvancedFilter implements Filter {
 
     private void doAfterProcessing(RequestWrapper request, ResponseWrapper response)
 	throws IOException, ServletException {
-	if (debug) log("__NAME__:DoAfterProcessing");
+	if (debug) log("${name}:DoAfterProcessing");
 	//
 	// Write code here to process the request and/or response after
 	// the rest of the filter chain is invoked.
@@ -142,7 +141,7 @@ public class AdvancedFilter implements Filter {
                          FilterChain chain)
 	throws IOException, ServletException {
 	
-	if (debug) log("__NAME__:doFilter()");
+	if (debug) log("${name}:doFilter()");
 
 	//
 	// Create wrappers for the request and response objects.
@@ -223,7 +222,7 @@ public class AdvancedFilter implements Filter {
 	this.filterConfig = filterConfig;
 	if (filterConfig != null) {
 	    if (debug) { 
-		log("__NAME__: Initializing filter");
+		log("${name}: Initializing filter");
 	    }
 	}
     }
@@ -233,8 +232,8 @@ public class AdvancedFilter implements Filter {
      */
     public String toString() {
 
-	if (filterConfig == null) return ("__NAME__()");
-	StringBuffer sb = new StringBuffer("__NAME__(");
+	if (filterConfig == null) return ("${name}()");
+	StringBuffer sb = new StringBuffer("${name}(");
 	sb.append(filterConfig);
 	sb.append(")");
 	return (sb.toString());
@@ -319,7 +318,7 @@ public class AdvancedFilter implements Filter {
 	protected Hashtable localParams = null;
 
 	public void setParameter(String name, String []values) {
-	    if (debug) System.out.println("__NAME__::setParameter(" + name + "=" + values + ")" + " localParams = "+ localParams);
+	    if (debug) System.out.println("${name}::setParameter(" + name + "=" + values + ")" + " localParams = "+ localParams);
 	    
 	    if (localParams == null) {
 		localParams = new Hashtable();
@@ -337,7 +336,7 @@ public class AdvancedFilter implements Filter {
 	}
 
 	public String getParameter(String name) {
-	    if (debug) System.out.println("__NAME__::getParameter(" + name + ") localParams = " + localParams);
+	    if (debug) System.out.println("${name}::getParameter(" + name + ") localParams = " + localParams);
 	    if (localParams == null)
 		return getRequest().getParameter(name);
 	    Object val = localParams.get(name);
@@ -351,7 +350,7 @@ public class AdvancedFilter implements Filter {
 	}
 
 	public String[] getParameterValues(String name) {
-	    if (debug) System.out.println("__NAME__::getParameterValues(" + name + ") localParams = " + localParams);
+	    if (debug) System.out.println("${name}::getParameterValues(" + name + ") localParams = " + localParams);
 	    if (localParams == null)
 		return getRequest().getParameterValues(name);
 
@@ -359,7 +358,7 @@ public class AdvancedFilter implements Filter {
 	}
 
 	public Enumeration getParameterNames() {
-	    if (debug) System.out.println("__NAME__::getParameterNames() localParams = " + localParams);
+	    if (debug) System.out.println("${name}::getParameterNames() localParams = " + localParams);
 	    if (localParams == null)
 		return getRequest().getParameterNames();
 
@@ -367,7 +366,7 @@ public class AdvancedFilter implements Filter {
 	}	    
 
 	public Map getParameterMap() {
-	    if (debug) System.out.println("__NAME__::getParameterMap() localParams = " + localParams);
+	    if (debug) System.out.println("${name}::getParameterMap() localParams = " + localParams);
 	    if (localParams == null)
 		return getRequest().getParameterMap();
 	    return localParams;

@@ -124,7 +124,9 @@ Microsystems, Inc. All Rights Reserved.
         <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.web.wizards.ServletIterator.createFilterIterator"/>
         <attr name="templateCategory" stringvalue="servlet-types"/>
       </file>      
-      <file name="AdvancedFilter.java" url="templates/AdvancedFilter.template"/>
+      <file name="AdvancedFilter.java" url="templates/AdvancedFilter.template">
+        <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+      </file>
       <!-- Tag Handlers --> 
       <file name="TagHandler.java" url="templates/SimpleTagHandler.template">
         <attr name="position" intvalue="1100"/>
@@ -135,7 +137,9 @@ Microsystems, Inc. All Rights Reserved.
         <attr name="templateWizardIterator" newvalue="org.netbeans.modules.web.wizards.TagHandlerIterator"/>
         <attr name="templateCategory" stringvalue="servlet-types"/>
       </file>      
-      <file name="BodyTagHandler.java" url="templates/BodyTagHandler.template"/>
+      <file name="BodyTagHandler.java" url="templates/BodyTagHandler.template">
+        <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+      </file>
       
     </folder>
 </folder>

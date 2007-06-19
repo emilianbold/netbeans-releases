@@ -5,6 +5,7 @@
 
 <#if package?? && package != "">
 package ${package};
+</#if>
 
 import java.io.*;
 import java.net.*;
@@ -21,12 +22,10 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 
-</#if>
 /**
  *
  * @author ${user}
  */
-
 public class ${name} implements Filter {
 
     // The filter configuration object we are associated with.  If
@@ -39,7 +38,7 @@ public class ${name} implements Filter {
 
     private void doBeforeProcessing(ServletRequest request, ServletResponse response)
 	throws IOException, ServletException {
-	if (debug) log("__NAME__:DoBeforeProcessing");
+	if (debug) log("${name}:DoBeforeProcessing");
 	//
 	// Write code here to process the request and/or response before
 	// the rest of the filter chain is invoked.
@@ -70,7 +69,7 @@ public class ${name} implements Filter {
 
     private void doAfterProcessing(ServletRequest request, ServletResponse response)
 	throws IOException, ServletException {
-	if (debug) log("__NAME__:DoAfterProcessing");
+	if (debug) log("${name}:DoAfterProcessing");
 	//
 	// Write code here to process the request and/or response after
 	// the rest of the filter chain is invoked.
@@ -112,7 +111,7 @@ public class ${name} implements Filter {
                          FilterChain chain)
 	throws IOException, ServletException {
 
-	    if (debug) log("__NAME__:doFilter()");
+	    if (debug) log("${name}:doFilter()");
 
 	doBeforeProcessing(request, response);
 	
@@ -180,7 +179,7 @@ public class ${name} implements Filter {
 	this.filterConfig = filterConfig;
 	if (filterConfig != null) {
 	    if (debug) { 
-		log("__NAME__:Initializing filter");
+		log("${name}:Initializing filter");
 	    }
 	}
     }
@@ -190,8 +189,8 @@ public class ${name} implements Filter {
      */
     public String toString() {
 
-	if (filterConfig == null) return ("__NAME__()");
-	StringBuffer sb = new StringBuffer("__NAME__(");
+	if (filterConfig == null) return ("${name}()");
+	StringBuffer sb = new StringBuffer("${name}(");
 	sb.append(filterConfig);
 	sb.append(")");
 	return (sb.toString());
