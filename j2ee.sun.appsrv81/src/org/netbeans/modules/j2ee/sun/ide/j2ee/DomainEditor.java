@@ -376,8 +376,9 @@ public class DomainEditor {
     // or to  "-agentpath:C:\Program Files\lib\profileragent.dll=\"C:\Program Files\lib\",5140" (GlassFish or AS 9.0)
     private String formatJvmOption(String jvmOption, File appServerLocation) {
         // only jvmOption containing \" needs to be formatted
-        if (jvmOption.indexOf("\\\"") != -1) {
-
+        if (jvmOption.indexOf("\"") != -1) { // NOI18N
+            // special handling for -agentpath
+            if (jvmOption.indexOf("\\\"") != -1 && jvmOption.indexOf("-agentpath") != -1 ){ // NOI18N
             // Modification for AS 8.1, 8.2, initial modification for AS 9.0, GlassFish
             // Converts -agentpath:"C:\Program Files\lib\profileragent.dll=\"C:\Program Files\lib\"",5140
             // to -agentpath:C:\Program Files\lib\profileragent.dll="C:\Program Files\lib",5140
@@ -403,6 +404,9 @@ public class DomainEditor {
 
             // return correctly formatted jvmOption
             return modifiedOption;
+            } else {
+                return jvmOption.replace('"', ' ');
+        }
         }
         // return original jvmOption
         return jvmOption;
