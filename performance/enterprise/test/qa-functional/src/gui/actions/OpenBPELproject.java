@@ -68,7 +68,7 @@ public class OpenBPELproject extends org.netbeans.performance.test.utilities.Per
         new ActionNoBlock("File|Open Project...",null).perform(); //NOI18N
         WizardOperator opd = new WizardOperator("Open Project"); //NOI18N
         JTextComponentOperator path = new JTextComponentOperator(opd,1);
-        openButton = new JButtonOperator(opd,"Open Project Folder"); //NOI18N
+        openButton = new JButtonOperator(opd,"Open Project"); //NOI18N
         String paths= (System.getProperty("xtest.tmpdir") + java.io.File.separator + projectName + java.io.File.separator + projectName);
         path.setText(paths);
     }
