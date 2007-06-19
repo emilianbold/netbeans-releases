@@ -184,7 +184,6 @@ Microsystems, Inc. All Rights Reserved.
             <file name="woodstock-theme-default.xml" url="/org/netbeans/modules/visualweb/project/jsf/libraries/woodstock-theme-default.xml"/>
             <file name="jsf12-support.xml" url="/org/netbeans/modules/visualweb/project/jsf/libraries/jsf12-support.xml"/>
             <file name="ejbsupport-designtime.xml" url="/org/netbeans/modules/visualweb/project/jsf/libraries/ejbsupport-designtime.xml"/>
-            <file name="websvcsupport.xml" url="/org/netbeans/modules/visualweb/project/jsf/libraries/websvcsupport.xml"/>
         </folder>
         <folder name="LibraryTypeProviders">
             <file name="component_library_provider.instance">
