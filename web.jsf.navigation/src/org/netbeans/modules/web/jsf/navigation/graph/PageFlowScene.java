@@ -51,6 +51,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
 import javax.swing.InputMap;
@@ -98,7 +99,7 @@ public class PageFlowScene extends GraphPinScene<Page,NavigationCaseEdge,Pin> {
     private LayerWidget backgroundLayer = new LayerWidget(this);
     private LayerWidget mainLayer = new LayerWidget(this);
     private LayerWidget connectionLayer = new LayerWidget(this);
-
+    
     public LayerWidget getConnectionLayer() {
         return connectionLayer;
     }
@@ -164,19 +165,7 @@ public class PageFlowScene extends GraphPinScene<Page,NavigationCaseEdge,Pin> {
         
         
         InputMap inputMap = MapActionUtility.initInputMap();
-//        InputMap inputMap = new InputMap();
-//        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0, false), "enterAction");
-//        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_TAB,0), "handleTab");
-//        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE,0), "handleEscape");
         ActionMap actionMap = MapActionUtility.initActionMap();
-        
-//        ActionMap actionMap = new ActionMap();
-//        actionMap.put("enterAction", new TestAction("ActionEnter"));
-//        actionMap.put("handleTab", new TestAction("handleTab"));
-//        actionMap.put("handleEscape", new TestAction("EscapeAction"));
-//        actionMap.put("handleLinkStart", handleLinkStart);
-//        actionMap.put("handleLinkEnd", handleLinkEnd);
-        
         actions.addAction(ActionFactory.createActionMapAction(inputMap, actionMap));
         
         
@@ -295,14 +284,27 @@ public class PageFlowScene extends GraphPinScene<Page,NavigationCaseEdge,Pin> {
         nodeWidget.getHeader().getActions().addAction(createObjectHoverAction());
         nodeWidget.getActions().addAction(selectAction);
         nodeWidget.getActions().addAction(moveAction);
-        
-        if ( node.getPinNodes().size() == 0 ){
-            nodeWidget.setMinimized(true);
-        }
+        nodeWidget.getActions().addAction( createActionMapAction(node));
+                
+                if ( node.getPinNodes().size() == 0 ){
+                    nodeWidget.setMinimized(true);
+                }
         
         return nodeWidget;
     }
     
+    private WidgetAction createActionMapAction( Page page){
+        InputMap inputMap = new InputMap();
+        ActionMap actionMap = new ActionMap();
+        Action[] actions = page.getActions(true);
+        for( Action action : actions ){
+            KeyStroke keyStroke = (KeyStroke) action.getValue(javax.swing.Action.ACCELERATOR_KEY);
+            inputMap.put(keyStroke, action.toString());
+            actionMap.put(action.toString(), action);
+        }
+        return  ActionFactory.createActionMapAction(inputMap, actionMap);
+        
+    }
     
     
     private Map<VMDNodeWidget,Point> nodeWidget2Point = new HashMap<VMDNodeWidget,Point>();
