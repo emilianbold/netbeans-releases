@@ -64,9 +64,11 @@ public class NavigatorNodeFactory extends ReflectionNodeFactory<NodeType> {
     
     @Override
     public Node createNode(NodeType nodeType, Object ref, Lookup lookup) {
-        if (nodeType == null && ref == null && lookup == null) {
+        if (nodeType == null || ref == null || lookup == null) {
             return null;
         }
+        
+
 //        assert nodeType != null && ref != null && lookup != null;
         if (NodeType.UNKNOWN_TYPE.equals(nodeType)) {
             return createDefaultNode(ref, lookup);
