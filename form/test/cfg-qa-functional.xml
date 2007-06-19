@@ -58,6 +58,15 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
 
+    <testbag testattribs="jv" executor="ide" name="testbag_databinding">
+        <testset dir="qa-functional/src">
+            <patternset>
+                <include name="org/netbeans/qa/form/databinding/SetUpDerbyDatabaseTest.class"/>
+                <include name="org/netbeans/qa/form/databinding/MasterDetailFormTest.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+
    <testbag testattribs="validation" executor="ide" name="testbag_beans">
         <testset dir="qa-functional/src">
             <patternset>
@@ -74,7 +83,7 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
     
-   <testbag testattribs="validation,jv" executor="ide" name="testbag_visualdevelopment">
+   <testbag testattribs="validation" executor="ide" name="testbag_visualdevelopment">
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="org/netbeans/qa/form/visualDevelopment/FormGenerateCodeTest.class"/>
@@ -99,7 +108,8 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="org/netbeans/qa/form/undoredo/BaseTest.class"/> 
             </patternset>
         </testset>
-    </testbag> -->
+    </testbag>
+-->
 
 
 <!-- Jana Maleckova -->
