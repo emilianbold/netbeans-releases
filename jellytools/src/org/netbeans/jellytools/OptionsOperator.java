@@ -37,6 +37,7 @@ import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.ComponentSearcher;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.JemmyException;
+import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.Timeouts;
 import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
@@ -85,6 +86,19 @@ public class OptionsOperator extends NbDialogOperator {
      */
     public OptionsOperator() {
         super(waitJDialog(optionsSubchooser));
+        // wait until settings are loaded
+        // "Loading Settings ..."
+        String loadingLabel = Bundle.getString("org.netbeans.modules.options.Bundle", "CTL_Loading_Options");
+        long waitTimeout = this.getTimeouts().getTimeout("ComponentOperator.WaitComponentTimeout");
+        try {
+            this.getTimeouts().setTimeout("ComponentOperator.WaitComponentTimeout", 5000);
+            new JLabelOperator(this, loadingLabel).waitComponentShowing(false);
+        } catch (TimeoutExpiredException e) {
+            // ignore - options already loaded
+        } finally {
+            // set previous timeout
+            this.getTimeouts().setTimeout("ComponentOperator.WaitComponentTimeout", waitTimeout);
+        }
     }
     
     /**
