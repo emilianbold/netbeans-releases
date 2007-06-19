@@ -38,7 +38,7 @@ class Localization {
     
     private static String brandingToken = null;
     
-    private static HashMap bundleCache = new HashMap();
+    private static Map<String, ResourceBundle> bundleCache = new HashMap<String, ResourceBundle>(); // XXX: this is leaking cache
 
     public static String getBranding() {
         if (brandingToken != null) {
@@ -73,7 +73,7 @@ class Localization {
     
     private static ResourceBundle findBrandedBundle( String loc ) {
         
-        ResourceBundle bundle = (ResourceBundle)bundleCache.get( loc ); // Maybe is in cache
+        ResourceBundle bundle = bundleCache.get( loc ); // Maybe is in cache
         if ( bundle != null ) {
             return bundle;
         }
@@ -147,7 +147,7 @@ class Localization {
             brandedLoader = Localization.class.getClassLoader();
             
             // Try to find some localized jars and store the URLS
-            List locJarURLs = new ArrayList();
+            List<URL> locJarURLs = new ArrayList<URL>();
                         
             for( LocaleIterator li = new LocaleIterator( Locale.getDefault() ); li.hasNext(); ) {
                 String localeName = li.next().toString ();
@@ -341,24 +341,25 @@ class Localization {
      * A resource bundle based on <samp>.properties</samp> files (or any map).
      */
     private static final class PBundle extends ResourceBundle {
-        private final Map m; // Map<String,String>
+        private final Map<String, String> m;
         private final Locale locale;
         /**
          * Create a new bundle based on a map.
          * @param m a map from resources keys to values (typically both strings)
          * @param locale the locale it represents <em>(informational)</em>
          */
+        @SuppressWarnings("unchecked")
         public PBundle(Map m, Locale locale) {
             this.m = m;
             this.locale = locale;
         }
-        public Enumeration getKeys() {
+        public Enumeration<String> getKeys() {
             return Collections.enumeration(m.keySet());
         }
         protected Object handleGetObject(String key) {
             return m.get(key);
         }
-        public Locale getLocale() {
+        @Override public Locale getLocale() {
             return locale;
         }
     }

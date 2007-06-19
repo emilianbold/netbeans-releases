@@ -76,9 +76,9 @@ public final class ModuleUpdater extends Thread {
     private File downloadDirectory = null;
 
     /** files that are supposed to be installed (when running inside the ide) */
-    private Set installOnly;
+    private Set<File> installOnly;
     /** found files in various cluster/update/download folders */
-    private Set installFiles;
+    private Set<File> installFiles;
     
     /** Should the thread stop */
     private volatile boolean stop = false;
@@ -104,10 +104,8 @@ public final class ModuleUpdater extends Thread {
 
             checkStop();
 
-            installFiles = new HashSet ();
-            Iterator it = UpdateTracking.clusters (true).iterator ();
-            while (it.hasNext ()) {
-                File cluster = (File)it.next ();
+            installFiles = new HashSet<File> ();
+            for (File cluster: UpdateTracking.clusters (true)) {
                 UpdateTracking ut = UpdateTracking.getTracking (cluster);
                 if (ut != null) {
                     installFiles.addAll (ut.getModulesToInstall ());
@@ -180,7 +178,7 @@ public final class ModuleUpdater extends Thread {
     /** Can be used to restrict the set of NBM files that should be installed.
      */
     public void setInstallOnly (File[] files) {
-        installOnly = new HashSet ();
+        installOnly = new HashSet<File> ();
         for (int i = 0; i < files.length; i++) {
             File f = files[i];
             try {
@@ -199,7 +197,7 @@ public final class ModuleUpdater extends Thread {
         UpdaterFrame.setLabel( Localization.getBrandedString( "CTL_PreparingUnpack" ) );
         UpdaterFrame.setProgressRange( 0, installFiles.size ());
 
-        Iterator it = installFiles.iterator ();
+        Iterator<File> it = installFiles.iterator ();
         for( int i = 0; i < installFiles.size (); i++ ) {
 
             JarFile jarFile = null;
@@ -207,10 +205,10 @@ public final class ModuleUpdater extends Thread {
             try {
                 UpdaterFrame.setProgressValue( i + 1 );
 
-                jarFile = new JarFile( (File) it.next () );
-                Enumeration entries = jarFile.entries();
+                jarFile = new JarFile( it.next () );
+                Enumeration<JarEntry> entries = jarFile.entries();
                 while( entries.hasMoreElements() ) {
-                    JarEntry entry = (JarEntry) entries.nextElement();
+                    JarEntry entry = entries.nextElement();
 
                     checkStop();
 
@@ -252,8 +250,9 @@ public final class ModuleUpdater extends Thread {
         
         fromInstall = true;
         
-        ArrayList allTrackings = new ArrayList ();
-        HashMap l10ns = new HashMap();
+        ArrayList<UpdateTracking> allTrackings = new ArrayList<UpdateTracking> ();
+        Map<ModuleUpdate, UpdateTracking.Version> l10ns = 
+                new HashMap<ModuleUpdate, UpdateTracking.Version>();
         
         List clusters = UpdateTracking.clusters (true);
         Iterator clustersIterator = clusters.iterator ();
@@ -265,10 +264,10 @@ public final class ModuleUpdater extends Thread {
             }
             allTrackings.add (tracking);
 
-            HashSet nbms = new HashSet (tracking.getModulesToInstall ());
+            Set<File> nbms = new HashSet<File> (tracking.getModulesToInstall ());
             nbms.retainAll (installFiles);
             
-            File[] nbmFiles = (File[])nbms.toArray (new File[0]);
+            File[] nbmFiles = nbms.toArray (new File[0]);
             for( int i = 0; i < nbmFiles.length; i++ ) {                        
                 UpdateTracking.Version version;
                 UpdateTracking.Module modtrack;
@@ -386,15 +385,11 @@ public final class ModuleUpdater extends Thread {
             }
         }
         
-        Iterator trakingsIter = allTrackings.iterator ();
-        while (trakingsIter.hasNext ()) {
-            UpdateTracking t = (UpdateTracking)trakingsIter.next ();
+        for (UpdateTracking t: allTrackings) {
             // update_tracking of l10n's
-            Iterator it = l10ns.entrySet().iterator();
-            while ( it.hasNext() ) {
-                Map.Entry entry = (Map.Entry) it.next();
-                ModuleUpdate mod = (ModuleUpdate) entry.getKey();
-                UpdateTracking.Version version = (UpdateTracking.Version) entry.getValue();
+            for (Map.Entry<ModuleUpdate, UpdateTracking.Version> entry: l10ns.entrySet()) {
+                ModuleUpdate mod = entry.getKey();
+                UpdateTracking.Version version = entry.getValue();
                 UpdateTracking.Module modtrack = t.readModuleTracking( 
                     ! mod.isFromInstall(), 
                     mod.getCodenamebase(), 
@@ -627,11 +622,11 @@ public final class ModuleUpdater extends Thread {
          int INPARAMPENDING = 0x2; // INPARAM + \
          int STICK = 0x4; // INPARAM + " or STICK + non_" // NOI18N
          int STICKPENDING = 0x8; // STICK + \
-         Vector params = new Vector(5,5);
+         Vector<String> params = new Vector<String>(5,5);
          char c;
  
          int state = NULL;
-         StringBuffer buff = new StringBuffer(20);
+         StringBuilder buff = new StringBuilder(20);
          int slength = s.length();
          for (int i = 0; i < slength; i++) {
              c = s.charAt(i);

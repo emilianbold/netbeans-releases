@@ -72,9 +72,8 @@ public final class UpdateTracking {
     private static final Map<File, UpdateTracking.AdditionalInfo> infos = new HashMap<File, UpdateTracking.AdditionalInfo> ();
     
     /** Mapping from files defining modules to appropriate modules objects.
-     * (File, Module)
      */
-    private LinkedHashMap installedModules = new LinkedHashMap ();
+    private LinkedHashMap<File, Module> installedModules = new LinkedHashMap<File, Module> ();
 
     private boolean pError = false;
     private boolean fromUser = false;
@@ -224,7 +223,7 @@ public final class UpdateTracking {
      * @return List<File>
      */
     public static List<File> clusters (boolean includeUserDir) {
-        ArrayList files = new ArrayList ();
+        List<File> files = new ArrayList<File> ();
         
         if (includeUserDir) {
             File ud = new File (System.getProperty ("netbeans.user"));  // NOI18N
@@ -257,9 +256,7 @@ public final class UpdateTracking {
      * @return true or false
      */
     public boolean isModuleInstalled (String codeBase) {
-        Iterator it = installedModules.values ().iterator ();
-        while (it.hasNext ()) {
-            Module m = (Module)it.next ();
+        for (Module m: installedModules.values ()) {
             String mm = m.codenamebase;
             int indx = mm.indexOf ('/');
             if (indx >= 0) {
@@ -276,7 +273,7 @@ public final class UpdateTracking {
      * cluster.
      * @return List<File> of nbm files
      */
-    public List getModulesToInstall () {              
+    public List<File> getModulesToInstall () {              
         class NbmFilter implements java.io.FilenameFilter {
             public boolean accept( File dir, String name ) {
                 return name.endsWith (ModuleUpdater.NBM_EXTENSION);
@@ -286,7 +283,7 @@ public final class UpdateTracking {
         File idir = new File (directory, ModuleUpdater.DOWNLOAD_DIR);
         File[] arr = idir.listFiles (new NbmFilter ());
         if (arr == null) {
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         } else {
             return Arrays.asList (arr);
         }
@@ -512,9 +509,7 @@ public final class UpdateTracking {
     public static void convertOldFormat(File oldfile, String path, boolean fromUserDir) {
         new File( path + FILE_SEPARATOR + TRACKING_FILE_NAME ).mkdirs();
         UpdateTracking track = getTracking( fromUserDir );
-        Iterator it = track.installedModules.values ().iterator();
-        while ( it.hasNext() ) {
-            Module mod = (Module)it.next();
+        for (Module mod: track.installedModules.values ()) {
             File newfile = new File( path + FILE_SEPARATOR + TRACKING_FILE_NAME + FILE_SEPARATOR
                     + getTrackingName( mod.getCodenamebase() ) + XML_EXT );
             mod.setFile( newfile );
@@ -532,10 +527,8 @@ public final class UpdateTracking {
     }
     
     void deleteUnusedFiles() {
-        List newModules = new ArrayList (installedModules.values ());
-        Iterator it = newModules.iterator();
-        while ( it.hasNext() ) {
-            Module mod = (Module)it.next();
+        List<Module> newModules = new ArrayList<Module> (installedModules.values ());
+        for (Module mod: newModules) {
             mod.deleteUnusedFiles();
         }
         scanDir ();
@@ -588,7 +581,7 @@ public final class UpdateTracking {
         private String codenamebase;
         
         /** Holds value of property versions. */
-        private List versions = new ArrayList();
+        private List<Version> versions = new ArrayList<Version>();
         
         private File file = null;
         
@@ -627,14 +620,14 @@ public final class UpdateTracking {
         /** Getter for property versions.
          * @return Value of property versions.
          */
-        List getVersions() {
+        List<Version> getVersions() {
             return versions;
         }
         
         /** Setter for property versions.
          * @param versions New value of property versions.
          */
-        void setVersions(List versions) {
+        void setVersions(List<Version> versions) {
             this.versions = versions;
         }
         
@@ -896,9 +889,9 @@ public final class UpdateTracking {
                 // test if file is referenced from other module
                 scanDir();
                 boolean found = false;
-                Iterator it = installedModules.values ().iterator();
+                Iterator<Module> it = installedModules.values ().iterator();
                 while ( !found && it.hasNext() ) {
-                    Module mod = (Module)it.next();
+                    Module mod = it.next();
                     if ( ! mod.equals( this ) ) {
                         Version v = mod.getNewOrLastVersion();
                         if ( v != null && v.containsFile( modFile ) )
@@ -913,9 +906,7 @@ public final class UpdateTracking {
         String getL10NSpecificationVersion(String jarpath) {
             String localever = null;
             Collections.sort( versions );
-            Iterator it = versions.iterator();
-            while ( it.hasNext() ) {
-                Version ver = (Version) it.next();
+            for (Version ver: versions) {
                 localever = ver.getLocaleVersion( jarpath );
                 if ( localever != null )
                     return localever;
@@ -939,7 +930,7 @@ public final class UpdateTracking {
         private long install_time = 0;
         
         /** Holds value of property files. */
-        private List files = new ArrayList();
+        private List<ModuleFile> files = new ArrayList<ModuleFile>();
         
         /** Getter for property version.
          * @return Value of property version.
@@ -1000,20 +991,20 @@ public final class UpdateTracking {
         /** Getter for property files.
          * @return Value of property files.
          */
-        List getFiles() {
+        List<ModuleFile> getFiles() {
             return files;
         }
         
         /** Setter for property files.
          * @param files New value of property files.
          */
-        void addL10NFiles(List l10nfiles) {
+        void addL10NFiles(List<ModuleFile> l10nfiles) {
             Iterator it = l10nfiles.iterator();
             while ( it.hasNext() ) {
                 ModuleFile lf = (ModuleFile) it.next();
                 String lname = lf.getName();
                 for ( int i = files.size() - 1; i >=0; i-- ) {
-                    ModuleFile f = (ModuleFile) files.get( i );
+                    ModuleFile f = files.get( i );
                     if ( f.getName().equals( lname ) )
                         files.remove( i );
                 }

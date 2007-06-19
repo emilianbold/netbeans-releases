@@ -8,7 +8,9 @@
                deprecation="${build.compiler.deprecation}" 
                debug="${build.compiler.debug}" debuglevel="${build.compiler.debuglevel}" 
                optimize="${build.compiler.optimize}" source="${javac.source}" 
-               target="${javac.target}"/>
+               target="${javac.target}">
+            <compilerarg line="${javac.compilerargs}"/>
+        </javac>
         <copy todir="build/updaterclasses">
             <fileset dir="libsrc" excludes="${jar-excludes}"/>
         </copy>
