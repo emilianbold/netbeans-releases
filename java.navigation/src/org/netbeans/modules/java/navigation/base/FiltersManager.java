@@ -201,6 +201,7 @@ public final class FiltersManager {
             toolbar.setBorderPainted(false);
             toolbar.setBorder(BorderFactory.createEmptyBorder());
             toolbar.setOpaque(false);
+            toolbar.setFocusable(false);
             // create toggle buttons
             int filterCount = filtersDesc.getFilterCount();
             toggles = new ArrayList<JToggleButton>(filterCount);
@@ -258,6 +259,7 @@ public final class FiltersManager {
             result.setPreferredSize(size);
             result.setMargin(new Insets(2,3,2,3));
             result.setToolTipText(filtersDesc.getTooltip(index));
+            result.setFocusable(false);
             
             fStates.put(filtersDesc.getName(index), Boolean.valueOf(isSelected));
             

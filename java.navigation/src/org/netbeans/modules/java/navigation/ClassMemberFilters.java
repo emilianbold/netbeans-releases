@@ -166,6 +166,7 @@ public final class ClassMemberFilters {
             sortByNameButton.setToolTipText(sortByNameButton.getText());
             sortByNameButton.setText(null);
             sortByNameButton.setSelected( !naturalSort );
+            sortByNameButton.setFocusable( false );
         }
         res[0] = sortByNameButton;
         
@@ -174,6 +175,7 @@ public final class ClassMemberFilters {
             sortByPositionButton.setToolTipText(sortByPositionButton.getText());
             sortByPositionButton.setText(null);
             sortByPositionButton.setSelected( naturalSort );
+            sortByPositionButton.setFocusable( false );
         }
         res[1] = sortByPositionButton;
         return res;
