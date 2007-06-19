@@ -98,9 +98,9 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
-//import org.netbeans.modules.websvc.customization.model.CustomizationComponentFactory;
-//import org.netbeans.modules.websvc.customization.model.JavaMethod;
-//import org.netbeans.modules.websvc.customization.model.PortTypeOperationCustomization;
+import org.netbeans.modules.websvc.customization.model.CustomizationComponentFactory;
+import org.netbeans.modules.websvc.customization.model.JavaMethod;
+import org.netbeans.modules.websvc.customization.model.PortTypeOperationCustomization;
 import org.netbeans.modules.websvc.design.javamodel.MethodModel;
 import org.netbeans.modules.xml.schema.model.ComplexType;
 import org.netbeans.modules.xml.schema.model.ComplexTypeDefinition;
@@ -969,7 +969,6 @@ public class OperationGeneratorHelper {
     }
     
     private static void addMethodCustomization(WSDLModel wsdlModel, Operation operation, String javaName){
-        /*
         try{
             wsdlModel.startTransaction();
             CustomizationComponentFactory factory = CustomizationComponentFactory.getDefault();
@@ -981,7 +980,6 @@ public class OperationGeneratorHelper {
         }finally{
             wsdlModel.endTransaction();
         }
-         */
     }
     
     private static String getCurrentJavaName(final MethodModel method){
