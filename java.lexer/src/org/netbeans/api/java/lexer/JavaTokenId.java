@@ -154,8 +154,8 @@ public enum JavaTokenId implements TokenId {
     GTGTEQ(">>=", "operator"),
     GTGTGTEQ(">>>=", "operator"),
     
-    ELLIPSIS("...", null),
-    AT("@", null),
+    ELLIPSIS("...", "special"),
+    AT("@", "special"),
     
     WHITESPACE(null, "whitespace"),
     LINE_COMMENT(null, "comment"),
