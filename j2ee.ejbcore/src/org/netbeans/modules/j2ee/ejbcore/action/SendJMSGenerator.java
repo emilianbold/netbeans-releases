@@ -220,7 +220,7 @@ public final class SendJMSGenerator {
             MethodModel.Variable.create("javax.jms.Session", "session"),
             MethodModel.Variable.create(Object.class.getName(), "messageData")
         };
-        String methodName = "createJMSMessageFor" + destination;
+        String methodName = "createJMSMessageFor" + Utils.jndiNameToCamelCase(destination, true, null);
         final MethodModel methodModel = MethodModel.create(
                 methodName,
                 "javax.jms.Message",
