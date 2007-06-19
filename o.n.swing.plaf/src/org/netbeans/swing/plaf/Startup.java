@@ -412,10 +412,7 @@ public final class Startup {
     private boolean isSolaris10 () {
         String osName = System.getProperty ("os.name");
         String osVersion = System.getProperty ("os.version");
-        System.out.println("OS name: " + osName);
-        System.out.println("OS version: " + osVersion);
         boolean result = osName.startsWith ("SunOS") && "5.10".equals(osVersion);
-        System.out.println("Is Solaris 10 ? : " + result);
         return result;
     }
 
