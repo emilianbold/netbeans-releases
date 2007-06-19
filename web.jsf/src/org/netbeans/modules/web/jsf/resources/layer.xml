@@ -110,6 +110,7 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="position" intvalue="1000"/>
             <file name="JSFManagedBean.java" url="templates/JSFManagedBean.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
                 <attr name="position" intvalue="500"/>
                 <attr name="templateCategory" stringvalue="web-types"/>
                 <attr name="template" boolvalue="true"/>
