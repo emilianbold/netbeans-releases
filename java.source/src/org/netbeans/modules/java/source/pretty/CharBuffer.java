@@ -217,6 +217,17 @@ public final class CharBuffer {
 	    append('\n');
 	}
     }
+    public void toLineStart() {
+	if(hasMargin())
+	    needSpace();
+	else {
+	    int t = used;
+	    if (t <= 0) return;
+	    while (t > 0 && chars[t-1] <= ' ' && chars[t-1] != '\n') t--;
+	    used = t;
+            col = 0;
+	}
+    }
     public void blanklines(int n) {
         int numBlankLines = n = Math.max(lastBlankLines, n);
 	if(hasMargin())
