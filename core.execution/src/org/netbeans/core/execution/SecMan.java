@@ -65,6 +65,7 @@ public class SecMan extends SecurityManager {
         }
     }
     
+    @SuppressWarnings("deprecation")
     private void stopTaskThreadGroup(TaskThreadGroup old) {
         synchronized(old) {
             int count = old.activeCount();
