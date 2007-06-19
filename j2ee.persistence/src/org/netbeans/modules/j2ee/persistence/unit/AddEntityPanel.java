@@ -91,6 +91,7 @@ public class AddEntityPanel extends javax.swing.JPanel {
     }
     
     private void setEntityClassModel(List<String> entityClassNames) {
+        assert SwingUtilities.isEventDispatchThread();
         DefaultListModel model = new DefaultListModel();
         for (String each : entityClassNames) {
             model.addElement(each);
