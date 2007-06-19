@@ -23,17 +23,14 @@ import org.netbeans.api.autoupdate.*;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.netbeans.junit.MockServices;
-import org.netbeans.modules.autoupdate.services.*;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.autoupdate.updateprovider.InstalledModuleProvider;
 import org.netbeans.spi.autoupdate.UpdateItem;
-import org.netbeans.spi.autoupdate.UpdateLicense;
 import org.netbeans.spi.autoupdate.UpdateProvider;
 import org.openide.modules.Dependency;
 import org.openide.modules.ModuleInfo;
@@ -42,7 +39,7 @@ import org.openide.util.Lookup;
 
 /**
  *
- * @author Radek Matous
+ * @author Jiri Rechtacek
  */
 public class FeatureNotUpToDateTest extends NbTestCase
 
@@ -79,8 +76,8 @@ public class FeatureNotUpToDateTest extends NbTestCase
             String pilotName = items.keySet ().iterator ().next ();
             assertNotNull (pilotName + "must found", items.get (pilotName));
             UpdateItem pilotItem = items.get (pilotName);
-            assertNotNull ("Impl of " + pilotItem + " available", Trampoline.SPI.impl ((UpdateItem) pilotItem));
-            UpdateItemImpl pilotItemImpl = Trampoline.SPI.impl ((UpdateItem) pilotItem);
+            assertNotNull ("Impl of " + pilotItem + " available", Trampoline.SPI.impl (pilotItem));
+            UpdateItemImpl pilotItemImpl = Trampoline.SPI.impl (pilotItem);
             assertTrue ("Impl of " + pilotItem + "is ModuleItem", pilotItemImpl instanceof ModuleItem);
             ModuleItem pilotModuleItem = (ModuleItem) pilotItemImpl;
             SpecificationVersion pilotSV = new SpecificationVersion (pilotModuleItem.getSpecificationVersion ());
@@ -103,8 +100,8 @@ public class FeatureNotUpToDateTest extends NbTestCase
                 String dep;
                 if (! pilotName.equals (id)) {
                     UpdateItem item = items.get (id);
-                    assertNotNull ("Impl of " + item + " available", Trampoline.SPI.impl ((UpdateItem) item));
-                    UpdateItemImpl itemImpl = Trampoline.SPI.impl ((UpdateItem) item);
+                    assertNotNull ("Impl of " + item + " available", Trampoline.SPI.impl (item));
+                    UpdateItemImpl itemImpl = Trampoline.SPI.impl (item);
                     assertTrue ("Impl of " + item + "is ModuleItem", itemImpl instanceof ModuleItem);
                     ModuleItem moduleItem = (ModuleItem) itemImpl;
                     dep = moduleItem.getModuleInfo ().getCodeNameBase () + " > " + moduleItem.getSpecificationVersion ();
@@ -142,6 +139,7 @@ public class FeatureNotUpToDateTest extends NbTestCase
         }
     }
 
+    @Override
     protected void setUp () throws Exception {
         super.setUp ();
         this.clearWorkDir ();

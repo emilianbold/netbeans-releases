@@ -139,7 +139,7 @@ public class ArtificialFeaturesProvider implements UpdateProvider {
             if (true) {
                 throw new UnsupportedOperationException("Not supported yet.");
             }
-            FeatureItem featureItemImpl = createFeatureItem (category, null /*categoryToModules.get (category)*/, null);
+            FeatureItem featureItemImpl = createFeatureItem (category, null /*categoryToModules.get (category)*/, null, null);
             log.log (Level.FINE, "Create FeatureItem[" + category + ", " + featureItemImpl.getSpecificationVersion ().toString () +
                     "] containing modules " + featureItemImpl.getDependenciesToModules ());
             UpdateItem featureItem = Utilities.createUpdateItem (featureItemImpl);
@@ -153,7 +153,10 @@ public class ArtificialFeaturesProvider implements UpdateProvider {
         throw new UnsupportedOperationException("Not supported yet.");
     }
     
-    public static FeatureItem createFeatureItem (String codeName, Set<ModuleUpdateElementImpl> modules, UpdateElementImpl original) {
+    public static FeatureItem createFeatureItem (String codeName,
+            Set<ModuleUpdateElementImpl> modules,
+            UpdateElementImpl original,
+            String additionalDescription) {
         Set<String> containsModules = new HashSet<String> ();
         String versionN = "";
         String descriptionN = "";
@@ -169,6 +172,9 @@ public class ArtificialFeaturesProvider implements UpdateProvider {
         
         String description = original == null || original.getDescription () == null || original.getDescription ().length () == 0 ? descriptionN :
             original.getDescription ();
+        description = additionalDescription == null || additionalDescription.length () == 0 ? description :
+            description + additionalDescription;
+        
 
         String displayName = original == null || original.getDisplayName () == null || original.getDisplayName ().length () == 0 ? codeName :
             original.getDisplayName ();

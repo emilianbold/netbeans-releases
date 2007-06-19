@@ -30,6 +30,7 @@ import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.api.autoupdate.UpdateManager.TYPE;
 import org.netbeans.modules.autoupdate.updateprovider.ArtificialFeaturesProvider;
 import org.netbeans.modules.autoupdate.updateprovider.FeatureItem;
+import org.openide.util.NbBundle;
 
 
 public class FeatureUpdateUnitImpl extends UpdateUnitImpl {
@@ -84,25 +85,28 @@ public class FeatureUpdateUnitImpl extends UpdateUnitImpl {
         FeatureUpdateElementImpl featureImpl = null;
         Set<ModuleUpdateElementImpl> installedModules = new HashSet<ModuleUpdateElementImpl> ();
         Set<ModuleUpdateElementImpl> availableModules = new HashSet<ModuleUpdateElementImpl> ();
+        Set<ModuleUpdateElementImpl> missingModules = new HashSet<ModuleUpdateElementImpl> ();
         assert featureElements != null : "FeatureUpdateUnitImpl " + getCodeName () + " contains some available elements.";
         for (UpdateElement el : featureElements) {
             featureImpl = (FeatureUpdateElementImpl) Trampoline.API.impl (el);
-            boolean installed = ! featureImpl.getContainedModuleElements ().isEmpty ();
+            boolean installed = false;
             for (ModuleUpdateElementImpl moduleImpl : featureImpl.getContainedModuleElements ()) {
-                installed &= moduleImpl.getUpdateUnit ().getInstalled () != null;
+                installed |= moduleImpl.getUpdateUnit ().getInstalled () != null;
                 UpdateElement iue = moduleImpl.getUpdateUnit ().getInstalled ();
                 UpdateElementImpl iuei = iue == null ? null : Trampoline.API.impl (iue);
                 assert iuei == null || iuei instanceof ModuleUpdateElementImpl : "Impl of " + iue + " is instanceof ModuleUpdateElementImpl";
                 if (iue != null) {
                     installedModules.add ((ModuleUpdateElementImpl) iuei);
+                } else {
+                    err.log (Level.FINER, this.getCodeName () + " misses required module " + moduleImpl.getUpdateElement ());
+                    missingModules.add (moduleImpl);
                 }
                 if (! moduleImpl.getUpdateUnit ().getAvailableUpdates ().isEmpty ()) {
                     UpdateElement aue = moduleImpl.getUpdateUnit ().getAvailableUpdates ().get (0);
                     UpdateElementImpl auei = Trampoline.API.impl (aue);
                     assert auei instanceof ModuleUpdateElementImpl : "Impl of " + aue + " is instanceof ModuleUpdateElementImpl";
                     availableModules.add ((ModuleUpdateElementImpl) auei);
-//                } else {
-//                    availableModules.add ((ModuleUpdateElementImpl) iuei);
+                    err.log (Level.FINER, this + " has a update of module " + moduleImpl.getUpdateElement () + " to " + auei.getUpdateElement ());
                 }
             }
             if (installed) {
@@ -110,10 +114,16 @@ public class FeatureUpdateUnitImpl extends UpdateUnitImpl {
             }
         }
         
+        boolean isStandalone = UpdateManager.TYPE.STANDALONE_MODULE == getType ();
+        
         // if some element is whole installed
         if (res != null) {
             // create new one element contains all installed modules
-            FeatureItem item = ArtificialFeaturesProvider.createFeatureItem (getCodeName (), installedModules, featureImpl);
+            FeatureItem item = ArtificialFeaturesProvider.createFeatureItem (
+                    getCodeName (),
+                    installedModules,
+                    featureImpl,
+                    isStandalone ? null : presentAddionallyDescription (installedModules, presentMissingModules (missingModules)));
             FeatureUpdateElementImpl featureElementImpl = new FeatureUpdateElementImpl (
                     item,
                     res.getSource (),
@@ -125,7 +135,13 @@ public class FeatureUpdateUnitImpl extends UpdateUnitImpl {
         
         // add also new update element
         if (! featureElements.isEmpty () && ! availableModules.isEmpty ()) {
-            FeatureItem item = ArtificialFeaturesProvider.createFeatureItem (getCodeName (), availableModules, featureImpl);
+            // add available modules to missing
+            missingModules.addAll (availableModules);
+            FeatureItem item = ArtificialFeaturesProvider.createFeatureItem (
+                    getCodeName (),
+                    availableModules,
+                    featureImpl,
+                    isStandalone ? null : presentAddionallyDescription (installedModules, presentUpdatableModules (missingModules)));
             FeatureUpdateElementImpl featureElementImpl = new FeatureUpdateElementImpl (
                     item,
                     featureElements.get (0).getSource (),
@@ -152,6 +168,68 @@ public class FeatureUpdateUnitImpl extends UpdateUnitImpl {
     @Override
     public void updateInstalled (UpdateElement installed) {
         initialized = false;
+    }
+    
+    private static String getDisplayNames (Set<ModuleUpdateElementImpl> moduleImpls) {
+        assert moduleImpls != null && ! moduleImpls.isEmpty () : "Some ModuleUpdateElementImpl must found to take its display names.";
+        String res = "";
+        for (ModuleUpdateElementImpl moduleImpl : moduleImpls) {
+            res += (res.length () == 0 ? "" : ", ") + moduleImpl.getDisplayName ();
+        }
+        return res;
+    }
+    
+    private static String presentMissingModules (Set<ModuleUpdateElementImpl> missingModuleImpls) {
+        if (missingModuleImpls.isEmpty ()) {
+            return "";
+        }
+        
+        boolean once = missingModuleImpls.size () == 1;
+        String res;
+        if (once) {
+            res = NbBundle.getMessage (FeatureUpdateUnitImpl.class, "FeatureUpdateUnitImpl_MissingModule", getDisplayNames (missingModuleImpls));
+        } else {
+            res = NbBundle.getMessage (FeatureUpdateUnitImpl.class, "FeatureUpdateUnitImpl_MissingModules", getDisplayNames (missingModuleImpls));
+        }
+        
+        return res;
+    }
+
+    private static String presentUpdatableModules (Set<ModuleUpdateElementImpl> updatebleModuleImpls) {
+        if (updatebleModuleImpls.isEmpty ()) {
+            return "";
+        }
+        
+        boolean once = updatebleModuleImpls.size () == 1;
+        String res;
+        if (once) {
+            res = NbBundle.getMessage (FeatureUpdateUnitImpl.class, "FeatureUpdateUnitImpl_UpdatableModule", getDisplayNames (updatebleModuleImpls));
+        } else {
+            res = NbBundle.getMessage (FeatureUpdateUnitImpl.class, "FeatureUpdateUnitImpl_UpdatableModules", getDisplayNames (updatebleModuleImpls));
+        }
+        
+        return res;
+    }
+    
+    private static String presentIncludedModules (Set<ModuleUpdateElementImpl> includedModuleImpls) {
+        if (includedModuleImpls.isEmpty ()) {
+            return "";
+        }
+        
+        boolean once = includedModuleImpls.size () == 1;
+        String res;
+        if (once) {
+            res = NbBundle.getMessage (FeatureUpdateUnitImpl.class, "FeatureUpdateUnitImpl_ContainedModule", getDisplayNames (includedModuleImpls));
+        } else {
+            res = NbBundle.getMessage (FeatureUpdateUnitImpl.class, "FeatureUpdateUnitImpl_ContainedModules", getDisplayNames (includedModuleImpls));
+        }
+        
+        return res;
+    }
+    
+    private static String presentAddionallyDescription (Set<ModuleUpdateElementImpl> included, String more) {
+        String add = more + presentIncludedModules (included);
+        return add.length () > 0 ? add : null;
     }
 
 }
