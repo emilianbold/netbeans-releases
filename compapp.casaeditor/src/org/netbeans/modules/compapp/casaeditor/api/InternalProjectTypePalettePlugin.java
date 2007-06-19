@@ -29,7 +29,9 @@ import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
 
 /**
- *
+ * Integrates Composite Application Project Type Plugins into
+ * the CASA palette.
+ * 
  * @author jsandusky
  */
 public class InternalProjectTypePalettePlugin 
@@ -59,23 +61,24 @@ implements CasaPalettePlugin {
     public void handleDrop(PluginDropHandler dropHandler, CasaPaletteItemID itemID) throws IOException {
         InternalProjectTypePluginWizardIterator wizardIterator = mProjectTypePlugin.getWizardIterator();
         WizardDescriptor descriptor = new WizardDescriptor(wizardIterator);
-        
         Project project = null;
+        
+        // Set up project name and location
+        String projectName = getProjectCount(
+                ProjectChooser.getProjectsFolder(),
+                mProjectTypePlugin.getCategoryName() + "_" +
+                mProjectTypePlugin.getPluginName());
+        File projectFolder = new File(ProjectChooser.getProjectsFolder(), projectName);
+        descriptor.putProperty(WizardPropertiesTemp.PROJECT_DIR, projectFolder);
+        descriptor.putProperty(WizardPropertiesTemp.NAME, projectName);
+        descriptor.putProperty(WizardPropertiesTemp.J2EE_LEVEL, "1.4");
+        descriptor.putProperty(WizardPropertiesTemp.SET_AS_MAIN, new Boolean(false));
         
         if (wizardIterator.hasContent()) {
             descriptor.setModal(true);
             Dialog dialog = DialogDisplayer.getDefault().createDialog(descriptor);
             dialog.setVisible(true);
         } else {
-            String projectName = getProjectCount(
-                    ProjectChooser.getProjectsFolder(),
-                    mProjectTypePlugin.getCategoryName() + "_" +
-                    mProjectTypePlugin.getPluginName());
-            File projectFolder = new File(ProjectChooser.getProjectsFolder(), projectName);
-            descriptor.putProperty(WizardPropertiesTemp.PROJECT_DIR, projectFolder);
-            descriptor.putProperty(WizardPropertiesTemp.NAME, projectName);
-            descriptor.putProperty(WizardPropertiesTemp.J2EE_LEVEL, "1.4");
-            descriptor.putProperty(WizardPropertiesTemp.SET_AS_MAIN, new Boolean(false));
             wizardIterator.instantiate();
         }
         
