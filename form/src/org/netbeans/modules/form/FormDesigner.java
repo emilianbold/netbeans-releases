@@ -1551,6 +1551,8 @@ public class FormDesigner extends TopComponent implements MultiViewElement
     }
 
     public boolean isEditableInPlace(RADComponent metacomp) {
+        if(metacomp == null)
+            return false;
         Component comp = (Component) getComponent(metacomp);
         if (comp == null)
             return false;
