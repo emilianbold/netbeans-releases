@@ -22,15 +22,15 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="OptionsDialog">
         <file name="General.instance">
             <attr name="instanceClass" stringvalue="org.netbeans.modules.options.general.GeneralOptions"/>
-            <attr name="position" intvalue="300"/>
+            <attr name="position" intvalue="100"/>
         </file>
         <file name="Editor.instance">
             <attr name="instanceClass" stringvalue="org.netbeans.modules.options.editor.Editor"/>
-            <attr name="position" intvalue="400"/>
+            <attr name="position" intvalue="200"/>
         </file>    
         <file name="FontsAndColors.instance">
             <attr name="instanceClass" stringvalue="org.netbeans.modules.options.colors.FontAndColors"/>
-            <attr name="position" intvalue="500"/>
+            <attr name="position" intvalue="400"/>
         </file>    
         <folder name="PreviewExamples">
             <file name="Defaults" url="../colors/AllLanguagesExample"/>

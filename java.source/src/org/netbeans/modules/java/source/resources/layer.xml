@@ -96,7 +96,7 @@ Microsystems, Inc. All Rights Reserved.
       
      <file name="JavaOptions.instance">
              <attr name="instanceClass" stringvalue="org.netbeans.modules.java.ui.JavaOptionsCategory"/>
-             <attr name="position" intvalue="100"/>
+             <attr name="position" intvalue="300"/>
         </file>    
           
       
