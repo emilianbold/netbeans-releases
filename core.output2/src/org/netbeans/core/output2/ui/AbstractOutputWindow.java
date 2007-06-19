@@ -151,25 +151,26 @@ public abstract class AbstractOutputWindow extends TopComponent implements Chang
     }
     
     public final AbstractOutputTab[] getTabs() {
-        ArrayList al = new ArrayList(pane.getParent() == this ? pane.getTabCount() : getComponentCount());
+        ArrayList<AbstractOutputTab> al = 
+                new ArrayList<AbstractOutputTab>(pane.getParent() == this ? pane.getTabCount() : getComponentCount());
         if (pane.getParent() == this) {
             int tabs = pane.getTabCount();
             for (int i=0; i < tabs; i++) {
                 Component c = pane.getComponentAt(i);
                 if (c instanceof AbstractOutputTab) {
-                    al.add(c);
+                    al.add((AbstractOutputTab)c);
                 }
             }
         } else {
             Component[] c = getComponents();
             for (int i=0; i < c.length; i++) {
                 if (c[i] instanceof AbstractOutputTab) {
-                    al.add(c[i]);
+                    al.add((AbstractOutputTab)c[i]);
                 }
             }
         }
         AbstractOutputTab[] result = new AbstractOutputTab[al.size()];
-        return (AbstractOutputTab[]) al.toArray(result);
+        return al.toArray(result);
     }
     
     
@@ -263,7 +264,8 @@ public abstract class AbstractOutputWindow extends TopComponent implements Chang
         }
     }
     
-    public void requestFocus() {
+    @SuppressWarnings("deprecation")
+    @Override public void requestFocus() {
         if (!isShowing()) {
             return;
         }

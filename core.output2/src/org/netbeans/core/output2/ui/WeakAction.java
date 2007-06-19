@@ -42,9 +42,9 @@ import java.util.List;
  * @author  Tim Boudreau
  */
 class WeakAction implements Action, PropertyChangeListener {
-    private Reference original;
+    private Reference<Action> original;
     private Icon icon;
-    private List listeners = new ArrayList();
+    private List<PropertyChangeListener> listeners = new ArrayList<PropertyChangeListener>();
     private String name = null;
 
     /** Creates a new instance of WeakAction */
@@ -52,7 +52,7 @@ class WeakAction implements Action, PropertyChangeListener {
         wasEnabled = original.isEnabled();
         icon = (Icon) original.getValue (SMALL_ICON);
         name = (String) original.getValue (NAME);
-        this.original = new WeakReference (original);
+        this.original = new WeakReference<Action> (original);
         original.addPropertyChangeListener(WeakListeners.propertyChange(this, original));
     }
     
@@ -116,7 +116,7 @@ class WeakAction implements Action, PropertyChangeListener {
     
     private boolean hadOriginal = true;
     private Action getOriginal() {
-        Action result = (Action) original.get();
+        Action result = original.get();
         if (result == null && hadOriginal && wasEnabled) {
             hadOriginal = false;
             firePropertyChange ("enabled", Boolean.TRUE, Boolean.FALSE); //NOI18N
@@ -126,8 +126,7 @@ class WeakAction implements Action, PropertyChangeListener {
     
     private synchronized void firePropertyChange(String nm, Object old, Object nue) {
         PropertyChangeEvent pce = new PropertyChangeEvent (this, nm, old, nue);
-        for (Iterator i=listeners.iterator(); i.hasNext();) {
-            PropertyChangeListener pcl = (PropertyChangeListener) i.next();
+        for (PropertyChangeListener pcl: listeners) {
             pcl.propertyChange(pce);
         }
     }

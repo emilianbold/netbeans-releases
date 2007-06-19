@@ -255,10 +255,10 @@ public class OutputWindow extends AbstractOutputWindow {
         controller.documentChanged (this, comp);
     }
 
-    private HashSet hiddenTabs = null;
+    private HashSet<OutputTab> hiddenTabs = null;
     public void putHiddenView (OutputTab comp) {
         if (hiddenTabs == null) {
-            hiddenTabs = new HashSet();
+            hiddenTabs = new HashSet<OutputTab>();
         }
         comp.putClientProperty("outputWindow", this); //NOI18N
         hiddenTabs.add(comp);
@@ -302,7 +302,7 @@ public class OutputWindow extends AbstractOutputWindow {
     public OutputTab[] getHiddenTabs() {
         if (hiddenTabs != null && !hiddenTabs.isEmpty()) {
             OutputTab[] result = new OutputTab[hiddenTabs.size()];
-            return (OutputTab[]) hiddenTabs.toArray(result);
+            return hiddenTabs.toArray(result);
         }
         return new OutputTab[0];
     }

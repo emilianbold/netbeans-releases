@@ -39,9 +39,9 @@ class FindDialogPanel extends javax.swing.JPanel implements Runnable {
 
     static final long serialVersionUID =5048678953767663114L;
 
-    private static Reference panel = null;
+    private static Reference<FindDialogPanel> panel = null;
     private JButton acceptButton;
-    private static Vector history = new Vector();
+    private static Vector<Object> history = new Vector<Object>();
     
     /** Initializes the Form */
     FindDialogPanel() {
@@ -54,7 +54,7 @@ class FindDialogPanel extends javax.swing.JPanel implements Runnable {
             public void keyPressed(KeyEvent evt) {
                 if ( evt.getKeyCode() == KeyEvent.VK_ESCAPE ) {
                     findWhat.setPopupVisible( false );
-                    ((Dialog)dialogRef.get()).setVisible( false );
+                    dialogRef.get().setVisible( false );
                 }
             }
         });
@@ -86,11 +86,11 @@ class FindDialogPanel extends javax.swing.JPanel implements Runnable {
     public static FindDialogPanel getPanel() {
         FindDialogPanel result = null;
         if (panel != null) {
-            result = (FindDialogPanel) panel.get();
+            result = panel.get();
         }
         if (result == null) {
             result = new FindDialogPanel();
-            panel = new SoftReference (result);
+            panel = new SoftReference<FindDialogPanel> (result);
         }
         return result;
     }
@@ -196,7 +196,7 @@ class FindDialogPanel extends javax.swing.JPanel implements Runnable {
     }
 
     String getPattern() {
-        FindDialogPanel findPanel = (FindDialogPanel) panel.get();
+        FindDialogPanel findPanel = panel.get();
         return findPanel != null ? (String) findPanel.findWhat.getSelectedItem() : null;
     }
     
@@ -242,15 +242,15 @@ class FindDialogPanel extends javax.swing.JPanel implements Runnable {
         return dialog;
     }
 
-    private static Reference dialogRef = null;
+    private static Reference<Dialog> dialogRef = null;
     private static Dialog getDialog() {
         Dialog result = null;
         if (dialogRef != null) {
-            result = (Dialog) dialogRef.get();
+            result = dialogRef.get();
         }
         if (result == null) {
             result = createDialog();
-            dialogRef = new WeakReference(result);
+            dialogRef = new WeakReference<Dialog>(result);
         }
         return result;
     }

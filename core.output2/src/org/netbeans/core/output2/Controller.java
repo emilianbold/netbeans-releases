@@ -36,6 +36,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Set;
 import java.util.regex.Matcher;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -280,7 +281,7 @@ public class Controller { //XXX public only for debug access to logging code
      * queue.
      */
     private class CoalescedNameUpdater implements Runnable {
-        private HashSet components = new HashSet();
+        private Set<OutputTab> components = new HashSet<OutputTab>();
         private OutputWindow win;
         CoalescedNameUpdater (OutputWindow win) {
             this.win = win;
@@ -299,8 +300,7 @@ public class Controller { //XXX public only for debug access to logging code
         }
 
         public void run() {
-            for (Iterator i=components.iterator(); i.hasNext();) {
-                OutputTab t = (OutputTab) i.next();
+            for (OutputTab t: components) {
                 NbIO io = t.getIO();
                 if (LOG) {
                     log ("Update name for " + io.getName() + " stream " +

@@ -39,7 +39,7 @@ import org.openide.util.Exceptions;
  * @author  Tim Boudreau, Jesse Glick
  */
 public class OutputDocument implements Document, Element, ChangeListener, ActionListener, Runnable {
-    private List dlisteners = new ArrayList();
+    private List<DocumentListener> dlisteners = new ArrayList<DocumentListener>();
     private volatile Timer timer = null;
 
     private OutWriter writer;
@@ -479,9 +479,7 @@ public class OutputDocument implements Document, Element, ChangeListener, Action
     }    
     
     private void fireDocumentEvent (DocumentEvent de) {
-        Iterator i = new ArrayList(dlisteners).iterator();
-        while (i.hasNext()) {
-            DocumentListener dl = (DocumentListener) i.next();
+        for (DocumentListener dl: new ArrayList<DocumentListener>(dlisteners)) {
             if (de.getType() == DocumentEvent.EventType.REMOVE) {
                 dl.removeUpdate(de);
             } else if (de.getType() == DocumentEvent.EventType.CHANGE) {

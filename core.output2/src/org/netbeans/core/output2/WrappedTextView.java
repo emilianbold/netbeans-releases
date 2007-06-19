@@ -98,6 +98,7 @@ public class WrappedTextView extends View {
 
     private static Map hintsMap = null;
     
+    @SuppressWarnings("unchecked")
     static final Map getHints() {
         if (hintsMap == null) {
             //Thanks to Phil Race for making this possible

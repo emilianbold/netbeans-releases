@@ -229,7 +229,7 @@ class NbIO implements InputOutput {
         }
     }
     
-    public String toString() {
+    @Override public String toString() {
         return "NbIO@" + System.identityHashCode(this) + " " + getName();
     }
 
@@ -245,6 +245,7 @@ class NbIO implements InputOutput {
         return in;
     }
 
+    @SuppressWarnings("deprecation")
     public Reader flushReader() {
         return getIn();
     }    
@@ -348,12 +349,14 @@ class NbIO implements InputOutput {
             }
         }
 
+        @Override
         public boolean ready() throws IOException {        
             synchronized (lock) {
                 return !inputClosed && buffer().length() > 0;
             }
         }
         
+        @Override
         public long skip(long n) throws IOException {
             if (Controller.LOG) Controller.log (NbIO.this + ": Input skip " + n);
             checkPristine();
