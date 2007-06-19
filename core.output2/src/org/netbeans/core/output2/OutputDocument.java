@@ -689,7 +689,7 @@ public class OutputDocument implements Document, Element, ChangeListener, Action
         }
     }
 
-    private class DO implements DocumentEvent, DocumentEvent.ElementChange {
+    public class DO implements DocumentEvent, DocumentEvent.ElementChange {
         private int start;
         private int offset = -1;
         private int length = -1;

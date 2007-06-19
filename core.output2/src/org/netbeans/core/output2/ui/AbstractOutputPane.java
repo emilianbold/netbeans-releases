@@ -16,11 +16,6 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-/*
- * OutputPane.java
- *
- * Created on May 14, 2004, 6:45 PM
- */
 
 package org.netbeans.core.output2.ui;
 
@@ -35,6 +30,7 @@ import javax.swing.event.DocumentListener;
 import javax.swing.text.*;
 import java.awt.*;
 import java.awt.event.*;
+import org.netbeans.core.output2.OutputDocument;
 import org.openide.util.Exceptions;
 
 /**
@@ -439,7 +435,7 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
         //Ensure it is consumed
         e.getLength();
         documentChanged();
-        if (e.getOffset() > getCaretPos()) {
+        if (e.getOffset() > getCaretPos() && (locked || !(e instanceof OutputDocument.DO))) {
             getCaret().setDot(e.getOffset() + e.getLength());
         }
     }

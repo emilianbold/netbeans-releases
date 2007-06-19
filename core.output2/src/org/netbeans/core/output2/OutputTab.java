@@ -45,11 +45,13 @@ final class OutputTab extends AbstractOutputTab {
         setDocument (doc);
     }
 
+    @Override
     public void addNotify() {
         super.addNotify();
         if (io != null) io.setClosed(false);
     }
 
+    @Override
     public void removeNotify() {
         if (io != null) io.setClosed(true);
         super.removeNotify();
@@ -175,6 +177,7 @@ final class OutputTab extends AbstractOutputTab {
         return result;
     }
     
+    @Override
     public String toString() {
         return "OutputTab@" + System.identityHashCode(this) + " for " + io;
     }

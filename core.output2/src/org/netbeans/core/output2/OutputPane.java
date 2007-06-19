@@ -286,8 +286,10 @@ class OutputPane extends AbstractOutputPane implements ComponentListener {
             }
             
             stroke = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0);
-            if (keyStroke.equals(stroke) && findOutputTab().isInputVisible() /* #105954 */) {
-                return "SENDLINE";
+            if (keyStroke.equals(stroke)) {
+                if (findOutputTab().isInputVisible()) {/* #105954 */
+                    return "SENDLINE";
+                }
             }
             
             stroke = KeyStroke.getKeyStroke(KeyEvent.VK_D, Event.CTRL_MASK);

@@ -40,8 +40,8 @@ import java.awt.event.ActionListener;
  *
  * @author  Tim Boudreau
  */
-public abstract class AbstractOutputTab extends JComponent implements ActionListener, Accessible {
-    private InputPanel input = null;
+public abstract class AbstractOutputTab extends JComponent implements Accessible {
+    private boolean inputVisible = false;
     private AbstractOutputPane outputPane;
     private Action[] actions = new Action[0];  
     private JButton[] buttons = new JButton[0];
@@ -98,19 +98,11 @@ public abstract class AbstractOutputTab extends JComponent implements ActionList
             toFocus = null;
             return;
         }
-        if (isInputVisible()) {
-            input.requestFocus();
-        } else {
-            outputPane.requestFocus();
-        }
+        outputPane.requestFocus();
     }
     
     public boolean requestFocusInWindow() {
-        if (isInputVisible()) {
-            return input.requestFocusInWindow();
-        } else {
-            return getOutputPane().requestFocusInWindow();
-        }
+        return getOutputPane().requestFocusInWindow();
     }    
 
     protected abstract AbstractOutputPane createOutputPane();
@@ -194,56 +186,33 @@ public abstract class AbstractOutputTab extends JComponent implements ActionList
     }
 
     public final boolean isInputVisible() {
-        return input != null && input.getParent() == this && input.isVisible();
+        return inputVisible;
     }
     
     public final void setInputVisible (boolean val) {
         if (val == isInputVisible()) {
             return;
         }
+        inputVisible = val;
+        System.out.println("setting editable");
         this.outputPane.textView.setEditable(val);
-//            if (input == null) {
-//                input = new InputPanel();
-//                input.addActionListener(this);
-//            }
-//            if (input.getParent() != this) {
-//                add (input);
-//                validate();
-//            }
-//        }
-//        input.setVisible (val);
         validate();
         getOutputPane().ensureCaretPosition();
         getOutputPane().requestFocusInWindow();
-    }
-    
-    public void actionPerformed(ActionEvent ae) {
-        InputPanel ip = (InputPanel) ae.getSource();
-        if (InputPanel.ACTION_EOF.equals(ae.getActionCommand())) {
-            inputEof();
-        }  else {
-            inputSent (ip.getText());
-        }
     }
 
     protected abstract void inputEof();
 
     public void doLayout() {
-        boolean hasInput = isInputVisible();
         Insets ins = getInsets();
         int left = ins.left;
-        int bottom = hasInput ? (getHeight() - ins.bottom - 
-            (input.getPreferredSize().height)) - 3 : getHeight() - ins.bottom;
+        int bottom = getHeight() - ins.bottom;
         
         Component main = outputPane;
         
         if (main != null) {
             main.setBounds (left, ins.top, getWidth() - (left + ins.right), 
                 bottom - ins.top);
-        }
-        if (hasInput) {
-            input.setBounds (left, bottom, getWidth() - (left + ins.right), 
-                getHeight() - bottom);
         }
     }
 
