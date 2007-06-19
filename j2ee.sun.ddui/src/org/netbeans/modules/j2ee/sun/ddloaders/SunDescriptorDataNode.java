@@ -163,7 +163,7 @@ public class SunDescriptorDataNode extends DataNode {
     public String getShortDescription() {
         SAXException saxError = dataObject.getSaxError();
         if(saxError == null) {
-            return "Sun Deployment Descriptor";
+            return NbBundle.getMessage(SunDescriptorDataNode.class,"LBL_NodeShortDescription"); // NOI18N
         } else {
             return saxError.getMessage();
         }
