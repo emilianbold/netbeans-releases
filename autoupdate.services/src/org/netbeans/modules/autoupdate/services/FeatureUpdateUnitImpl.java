@@ -141,13 +141,12 @@ public class FeatureUpdateUnitImpl extends UpdateUnitImpl {
 
     @Override
     public void setInstalled (UpdateElement installed) {
-        // initialized = false;
         assert false : "Invalid calling setInstalled (" + installed + ") on FeatureUpdateUnitImpl.";
     }
 
     @Override
     public void setAsUninstalled () {
-        installedElement = null;
+        initialized = false;
     }
     
     @Override

@@ -141,6 +141,8 @@ public class ModuleUpdateElementImpl extends UpdateElementImpl {
         ModuleInfo info = Utilities.toModule (this.moduleInfo);
         if (info != null) {
             this.moduleInfo = info;
+        } else {
+            this.moduleInfo = item.getModuleInfo ();
         }
         
         return this.moduleInfo;
