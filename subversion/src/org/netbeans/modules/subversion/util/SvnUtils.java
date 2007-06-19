@@ -410,7 +410,7 @@ public class SvnUtils {
             }
             
             if (info != null && info.getUrl() != null) {
-                repositoryURL = info.getRepository();
+                repositoryURL = decode(info.getRepository());
                 if (repositoryURL != null) {
                     break;
                 }
