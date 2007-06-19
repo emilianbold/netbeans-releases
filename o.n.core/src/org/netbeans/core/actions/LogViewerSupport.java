@@ -28,7 +28,8 @@ import java.io.InputStreamReader;
 import java.io.File;
 import java.util.*;
 import java.io.*;
-import org.openide.ErrorManager;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.filesystems.*;
 import org.openide.util.*;
 import org.openide.windows.IOProvider;
@@ -39,13 +40,17 @@ import org.openide.windows.*;
  *
  * @author ludo
  */
-public class LogViewerSupport extends Thread {
+public class LogViewerSupport implements Runnable {
     boolean shouldStop = false;
     FileInputStream  filestream=null;
     BufferedReader    ins;
     InputOutput io;
     File fileName;
     String ioName;
+    int lines;
+    Ring ring;
+    private RequestProcessor.Task task;
+    
     /** Connects a given process to the output window. Returns immediately, but threads are started that
      * copy streams of the process to/from the output window.
      * @param process process whose streams to connect to the output window
@@ -58,30 +63,53 @@ public class LogViewerSupport extends Thread {
     }
 
 
-    public void run() {
-        final int MAX_LINES = 10000;
+    private void init() {
         final int LINES = 2000;
         final int OLD_LINES = 2000;
-        int lines;
-        Ring ring = new Ring(OLD_LINES);
-        int c;
+        ring = new Ring(OLD_LINES);
         String line;
 
-                                // Read the log file without
-                                // displaying everything
+        // Read the log file without
+        // displaying everything
         try {
             while ((line = ins.readLine()) != null) {
                 ring.add(line);
             } // end of while ((line = ins.readLine()) != null)
         } catch (IOException e) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            Logger.getLogger(LogViewerSupport.class.getName()).log(Level.INFO, null, e);
         } // end of try-catch
 
                                 // Now show the last OLD_LINES
         lines = ring.output();
         ring.setMaxCount(LINES);
+    }
 
-        while (shouldStop ==false) {
+    public void run() {
+        final int MAX_LINES = 10000;
+        String line;
+
+        ////System.out.println("io close or not"+io.isClosed());
+        if (io.isClosed()){//tab is closed by the user
+            shouldStop =true;
+        }
+        else{
+                        // it is possilbe in the case of only
+                        // 1 tab, that the tab is hidden, not
+                        // closed. In this case we need to
+                        // detect that and close our stream
+                        // anyway to unlock the log file
+            shouldStop =true; //assume the tab is hidden
+            TopComponent.Registry rr= TopComponent.getRegistry();
+            for (TopComponent tc: rr.getOpened()) {
+                if (tc.toString().startsWith("org.netbeans.core.output2.OutputWindow")){
+                    // the tab is not hidden so we should not stopped!!!
+                    shouldStop =false;
+                    break;
+                }
+            }
+        }
+        
+        if (!shouldStop) {
             try {
                 if (lines >= MAX_LINES) {
                     io.getOut().reset();
@@ -96,40 +124,14 @@ public class LogViewerSupport extends Thread {
                 }
 
             }catch (IOException e) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                Logger.getLogger(LogViewerSupport.class.getName()).log(Level.INFO, null, e);
             }
-            try {
-                sleep(10000);
-                ////System.out.println("io close or not"+io.isClosed());
-                if (io.isClosed()){//tab is closed by the user
-                    shouldStop =true;
-                }
-                else{
-                                // it is possilbe in the case of only
-                                // 1 tab, that the tab is hidden, not
-                                // closed. In this case we need to
-                                // detect that and close our stream
-                                // anyway to unlock the log file
-                    shouldStop =true; //assume the tab is hidden
-                    TopComponent.Registry rr= TopComponent.getRegistry();
-                    Set ss = rr.getOpened();
-                    Iterator ttt = ss.iterator();
-                    while (ttt.hasNext()){
-                        Object o = ttt.next();
-                        String sss=""+o;
-                        if (sss.startsWith("org.netbeans.core.output2.OutputWindow")){
-                            // the tab is not hidden so we should not stopped!!!
-                            shouldStop =false;
-                        }
-                    }
-                }
-            }catch (Exception e){
-                ErrorManager.getDefault().notify(ErrorManager.ERROR, e);
-            }
+            task.schedule(10000);
         }
-        ///System.out.println("end of infinite loop for log viewer\n\n\n\n");
-        stopUpdatingLogViewer();
-        
+        else {
+            ///System.out.println("end of infinite loop for log viewer\n\n\n\n");
+            stopUpdatingLogViewer();
+        }
     }
     /* display the log viewer dialog
      *
@@ -141,11 +143,10 @@ public class LogViewerSupport extends Thread {
         io.getOut().reset();
         io.select();
         filestream = new FileInputStream(fileName);
-        // RAVE ins = new BufferedReader(new InputStreamReader(filestream,"UTF-8"));//NOI18N
-                                // Use the default charset!
         ins = new BufferedReader(new InputStreamReader(filestream));
         
-        start();
+        init();
+        task = RequestProcessor.getDefault().post(this);
     }
     
     /* stop to update  the log viewer dialog
@@ -153,8 +154,6 @@ public class LogViewerSupport extends Thread {
      **/
     
     public void stopUpdatingLogViewer()   {
-        shouldStop = true;
-        
         try{
             ins.close();
             filestream.close();
@@ -162,7 +161,7 @@ public class LogViewerSupport extends Thread {
             io.setOutputVisible(false);
         }
         catch (IOException e){
-            
+            Logger.getLogger(LogViewerSupport.class.getName()).log(Level.INFO, null, e);
         }
     }
     
@@ -200,12 +199,10 @@ public class LogViewerSupport extends Thread {
         
         public int output() {
             int i = 0;
-            Iterator<String> it = anchor.iterator();
-            
-            while (it.hasNext()) {
-                io.getOut().println(it.next());
+            for (String s: anchor) {
+                io.getOut().println(s);
                 i++;
-            } // end of while (it.hasNext())
+            }
 
             return i;
         }
