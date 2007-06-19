@@ -21,6 +21,7 @@ package org.apache.tools.ant.module;
 
 import java.awt.Component;
 import java.awt.Dialog;
+import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyEditor;
@@ -41,6 +42,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.execution.NbClassPath;
 import org.openide.util.NbBundle;
 import org.openide.util.NbCollections;
+import org.openide.util.RequestProcessor;
 
 /**
  * Implementation of one panel in Options Dialog.
@@ -81,10 +83,24 @@ public class AntCustomizer extends JPanel implements ActionListener {
         cbReuseOutput.setSelected(AntSettings.getAutoCloseTabs());
         cbAlwaysShowOutput.setSelected(AntSettings.getAlwaysShowOutput());
         cbVerbosity.setSelectedIndex(AntSettings.getVerbosity() - 1);
-        lAntVersion.setText("(" + AntSettings.getAntVersion() + ")");
+        updateAntVersion();
         changed = false;
         initialized = true;
         listen = true;
+    }
+    
+    private void updateAntVersion() { // #107094: asynch, since it can be slow
+        lAntVersion.setText(NbBundle.getMessage(AntCustomizer.class, "LBL_please_wait"));
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                final String version = AntSettings.getAntVersion();
+                EventQueue.invokeLater(new Runnable() {
+                    public void run() {
+                        lAntVersion.setText("(" + version + ")");
+                    }
+                });
+            }
+        });
     }
     
     private boolean initialized = false;
@@ -162,7 +178,7 @@ public class AntCustomizer extends JPanel implements ActionListener {
                 }
                 tfAntHome.setText (file.getAbsolutePath ());
                 AntSettings.setAntHome(file);
-                lAntVersion.setText("(" + AntSettings.getAntVersion() + ")");
+                updateAntVersion();
                 changed = true;
             }
         } else
@@ -378,7 +394,7 @@ public class AntCustomizer extends JPanel implements ActionListener {
         } else {
             tfAntHome.setText(null);
         }
-        lAntVersion.setText("(" + AntSettings.getAntVersion() + ")");
+        updateAntVersion();
         changed = true;
     }//GEN-LAST:event_bAntHomeDefaultActionPerformed
         
