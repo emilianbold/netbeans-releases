@@ -21,6 +21,8 @@ package org.openide.loaders;
 
 import org.openide.filesystems.*;
 import java.io.*;
+import java.util.logging.Level;
+import org.netbeans.junit.Log;
 import org.openide.cookies.*;
 import org.openide.nodes.Node;
 import org.openide.util.RequestProcessor;
@@ -31,6 +33,7 @@ import org.openide.util.RequestProcessor;
  */
 public class XMLDataObjectTest extends org.netbeans.junit.NbTestCase {
     private FileObject data;
+    private CharSequence log;
 
     /** Creates new MultiFileLoaderHid */
     public XMLDataObjectTest (String name) {
@@ -38,6 +41,8 @@ public class XMLDataObjectTest extends org.netbeans.junit.NbTestCase {
     }
 
     protected void setUp () throws Exception {
+        log = Log.enable("org.openide.loaders", Level.WARNING);
+        
         super.setUp ();
         System.setProperty ("org.openide.util.Lookup", "org.openide.loaders.XMLDataObjectTest$Lkp");
         String fsstruct [] = new String [] {
@@ -63,6 +68,11 @@ public class XMLDataObjectTest extends org.netbeans.junit.NbTestCase {
     protected void tearDown () throws Exception {
         super.tearDown ();
         TestUtilHid.destroyLocalFileSystem (getName());
+        /*
+        if (log.length() > 0) {
+            fail("There should be no warnings:\n" + log);
+        }
+         */
     }
     
     public void testGetStatusBehaviour () throws Exception {
@@ -72,18 +82,21 @@ public class XMLDataObjectTest extends org.netbeans.junit.NbTestCase {
         
         XMLDataObject xml = (XMLDataObject)obj;
         
-        assertEquals ("not parsed yet", xml.STATUS_NOT, xml.getStatus ());
+        assertEquals ("not parsed yet", XMLDataObject.STATUS_NOT, xml.getStatus ());
         
         org.w3c.dom.Document doc = xml.getDocument ();
-        assertEquals ("still not parsed as we have lazy document", xml.STATUS_NOT, xml.getStatus ());
+        assertEquals ("still not parsed as we have lazy document", XMLDataObject.STATUS_NOT, xml.getStatus ());
         
         String id = doc.getDoctype ().getPublicId ();
-        assertEquals ("still not parsed as we have special support for publilc id", xml.STATUS_NOT, xml.getStatus ());
+        assertEquals ("still not parsed as we have special support for publilc id", XMLDataObject.STATUS_NOT, xml.getStatus ());
         
         org.w3c.dom.Element e = doc.getDocumentElement ();
         assertNotNull ("Document parsed", doc);
         
         assertEquals ("status is ok", xml.STATUS_OK, xml.getStatus ());
+        
+        assertNotNull("Has open cookie", xml.getCookie(OpenCookie.class));
+        assertNotNull("Has open cookie in lookup", xml.getLookup().lookup(OpenCookie.class));
     }
 
     public void testCookieIsUpdatedWhenContentChanges () throws Exception {
