@@ -912,6 +912,11 @@ public class Dragger extends Interaction implements KeyListener {
 //            DesignerPane.clearDirty();
             pane.clearDirty();
 
+            // XXX #94643 Avoiding possible NPE.
+            if (selections == null) {
+                return;
+            }
+            
             if (!DesignerPane.INCREMENTAL_LAYOUT) {
 //                DesignerPane.addDirtyPoint(0, 0);
                 pane.addDirtyPoint(0, 0);
