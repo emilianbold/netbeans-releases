@@ -340,7 +340,7 @@ private void tpTabsStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:
         String countInfo = (count == rawCount) ? String.valueOf (rawCount) :
             NbBundle.getMessage (PluginManagerUI.class, "PluginManagerUI_Tabs_CountFormat", count, rawCount);
         String newName = NbBundle.getMessage (PluginManagerUI.class, "PluginManagerUI_Tabs_NameFormat", originalName, countInfo);
-        tpTabs.setTitleAt (index, count == 0 ? originalName : newName);
+        tpTabs.setTitleAt (index, rawCount == 0 ? originalName : newName);
     }
     
     private int findRowWithFirstUnit (UnitCategoryTableModel model) {

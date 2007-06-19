@@ -45,7 +45,7 @@ public class LocallyDownloadedTableModel extends UnitCategoryTableModel {
     
     public final void setUnits(final List<UpdateUnit> unused) {
         List<UpdateUnit> units = getLocalDownloadSupport().getUpdateUnits();
-        List<Unit> oldUnits = getVisibletData();        
+        List<Unit> oldUnits = getUnits();        
         setData(makeCategories(units));
         computeInstalled(units, oldUnits);
     }
@@ -57,7 +57,7 @@ public class LocallyDownloadedTableModel extends UnitCategoryTableModel {
     private void computeInstalled(List<UpdateUnit> units, List<Unit> oldUnits) {
         installed.clear();
         installed.addAll(units);
-        List<Unit> newUnits = getVisibletData();
+        List<Unit> newUnits = getUnits();
         List<UpdateUnit> newUpdateUnits = new ArrayList<UpdateUnit>();
         for (Unit unit : newUnits) {
             newUpdateUnits.add(unit.updateUnit);

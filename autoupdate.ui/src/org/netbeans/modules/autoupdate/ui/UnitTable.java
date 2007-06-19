@@ -191,7 +191,7 @@ public class UnitTable extends JTable {
                             }
                         } finally {
                             if (u != null) {
-                                List<Unit> units = model.getVisibletData();
+                                List<Unit> units = model.getUnits();
                                 int row = (u != null) ? units.indexOf (u) : -1;
                                 if (row > -1) {
                                     Unit u2 = model.getUnitAtRow (row);

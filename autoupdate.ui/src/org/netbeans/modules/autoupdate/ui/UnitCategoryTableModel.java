@@ -24,7 +24,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import javax.swing.SwingUtilities;
@@ -60,16 +59,10 @@ public abstract class UnitCategoryTableModel extends AbstractTableModel {
     public UnitCategoryTableModel () {
     }
     
-    List<Unit> getVisibletData () {
-        List<Unit> retval = Collections.emptyList();
-        if (isCollapsed()) {
-            retval = getFeatureList();
-        } else {
-            retval = unitData;
-        }        
-        return retval;
+    List<Unit> getUnits () {
+        return unitData;
     }
-    
+
 
     static Map<String, Boolean> captureState(List<Unit> units) {
         Map<String,Boolean> retval = new HashMap<String, Boolean>();
@@ -186,7 +179,7 @@ public abstract class UnitCategoryTableModel extends AbstractTableModel {
                     standAloneModules.add(u);
                 }
             }
-            boolean exp = isExpandableType (getType()) && !Utilities.modulesOnly() && !standAloneModules.isEmpty();
+            boolean exp = isExpandableType (getType()) && !Utilities.modulesOnly() && !getVisibleUnits(standAloneModules, getFilter(), false).isEmpty();
             if (exp) {
                 isExpanded = NbPreferences.forModule(UnitCategoryTableModel.class).getBoolean(EXPAND_STATE, false);
             } else {
@@ -253,12 +246,20 @@ public abstract class UnitCategoryTableModel extends AbstractTableModel {
     }
         
     private List<Unit> getVisibleUnits () {
-        String filter = getFilter ();
+        return getVisibleUnits(getUnits(), getFilter(), true);
+    }
+
+    private List<Unit> getVisibleUnits (List<Unit> units, String filter, boolean filterAlsoStandardModules) {
         List<Unit> retval = new ArrayList<Unit>();
-        List<Unit> units = getVisibletData();
         for (Unit unit : units) {
-            if (unit.isVisible (filter)) {
-                retval.add (unit);
+            if (filterAlsoStandardModules) {
+                if (unit.isVisible(filter) && (!isExpandable()  || isExpanded() || UpdateManager.TYPE.FEATURE.equals(unit.updateUnit.getType()))) {
+                    retval.add(unit);
+                }                
+            } else {
+                if (unit.isVisible(filter)) {
+                    retval.add(unit);
+                }
             }
         }
         return retval;
@@ -267,7 +268,7 @@ public abstract class UnitCategoryTableModel extends AbstractTableModel {
     
     public int getRowCount () {
         int retval = getVisibleUnits ().size ();
-        return (retval > 0 && isExpansionControlPresent()) ? (retval + 1) : retval;
+        return (isExpansionControlPresent()) ? (retval + 1) : retval;
     }
     
     public int getRawItemCount () {
@@ -281,7 +282,7 @@ public abstract class UnitCategoryTableModel extends AbstractTableModel {
     
     public Collection<Unit> getMarkedUnits() {
         List<Unit> markedUnits = new ArrayList<Unit> ();
-        List<Unit> units = getVisibletData();
+        List<Unit> units = getUnits();
 
         for (Unit u : units) {
             if (u.isMarked()) {
@@ -302,7 +303,7 @@ public abstract class UnitCategoryTableModel extends AbstractTableModel {
     public String getExpansionControlText() {
         assert isExpansionControlPresent();
         String bundleKey = isExpanded() ? "Less_Command_Text" : "More_Command_Text";//NOI18N
-        return NbBundle.getMessage(UnitCategoryTableModel.class, bundleKey, getStandAloneModules().size());
+        return NbBundle.getMessage(UnitCategoryTableModel.class, bundleKey, getVisibleUnits(getStandAloneModules(), getFilter(), false).size());
     }
     
     public boolean isExpandable () {        
@@ -310,7 +311,7 @@ public abstract class UnitCategoryTableModel extends AbstractTableModel {
     }
     
     public boolean isExpansionControlPresent() {
-        return isExpandable () && !getFeatureList().isEmpty();
+        return isExpandable () && !getFeatureList().isEmpty() && !getVisibleUnits(getStandAloneModules(), getFilter(), false).isEmpty();
     }
 
     public void setExpanded (Boolean expanded) {        
@@ -319,7 +320,6 @@ public abstract class UnitCategoryTableModel extends AbstractTableModel {
         if (expanded != null) {
             NbPreferences.forModule(UnitCategoryTableModel.class).putBoolean(EXPAND_STATE, expanded);
         }
-        fireUpdataUnitChange();
     }
     
     public boolean isExpanded () {        
@@ -349,7 +349,7 @@ public abstract class UnitCategoryTableModel extends AbstractTableModel {
         return featuretData;
     }
     
-    private List<Unit> getStandAloneModules() {
+    List<Unit> getStandAloneModules() {
         List<Unit> retval = standAloneModules;
         if (retval == null) {
             retval = Collections.emptyList();
