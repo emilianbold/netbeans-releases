@@ -12,28 +12,34 @@ void
 volatile
 End cursor position = 110
 [S|, String, String, 133]
+Screen
+Select
 String
 StyleSheet
 StyleSheetList
+Submit
 SyntaxError
 End cursor position = 140
 [my|, myfunction, myfunction, 169]
-myfunction
 myvariable
-End cursor position = 180
+EE: cannot find completion item: myfunction
+EE: unexpected CC result:
+< my
+> myfunction
+End cursor position = 172
 [my|, myvariable, myvariable, 205]
-myfunction
 myvariable
 End cursor position = 216
 [|, RangeError, RangeError, 240]
-myfunction
 myvariable
 AbstractView
+Anchor
+Applet
+Area
 Array
 Attr
-Attr
 Boolean
-CDATASection
+Button
 CDATASection
 CSS2Properties
 CSSCharsetRule
@@ -51,31 +57,23 @@ CSSUnknownRule
 CSSValue
 CSSValueList
 CharacterData
-CharacterData
-Comment
+Checkbox
 Comment
 Counter
-DOMImplementation
 DOMImplementation
 DOMImplementationCSS
 Date
 Document
-Document
 DocumentCSS
 DocumentEvent
-DocumentFragment
 DocumentFragment
 DocumentStyle
 DocumentTraversal
 DocumentType
-DocumentType
 DocumentView
-Element
 Element
 ElementCSSInlineStyle
 Entity
-Entity
-EntityReference
 EntityReference
 Error
 EvalError
@@ -83,6 +81,8 @@ Event
 EventCapturer
 EventListener
 EventTarget
+FileUpload
+Form
 Function
 HTMLAnchorElement
 HTMLAppletElement
@@ -140,43 +140,55 @@ HTMLTableSectionElement
 HTMLTextAreaElement
 HTMLTitleElement
 HTMLUListElement
+Hidden
+History
+Image
 Infinity
+Input
+Link
 LinkStyle
+Location
 Math
 MediaList
+MimeType
 MouseEvent
 MutationEvent
 NaN
 NamedNodeMap
-NamedNodeMap
-Node
+Navigator
 Node
 NodeFilter
 NodeIterator
 NodeList
-NodeList
-Notation
 Notation
 Number
 Object
-ProcessingInstruction
+Option
+Password
+Plugin
 ProcessingInstruction
 RGBColor
+Radio
 RangeError
 Rect
 ReferenceError
 RegExp
+Reset
+Screen
+Select
 String
 StyleSheet
 StyleSheetList
+Submit
 SyntaxError
 Text
-Text
+Textarea
 TreeWalker
 TypeError
 UIEvent
 URIError
 ViewCSS
+Window
 abstract
 arguments[]
 boolean
