@@ -735,20 +735,6 @@ public class BindingDesignSupport {
                 itex.printStackTrace();
             }
         }
-        if (bindingDef.isNameSpecified()) {
-            BindingProperty prop = bindingDef.getTarget().getBindingProperty(bindingDef.getTargetPath());
-            FormProperty nameProp = prop.getNameProperty();
-            try {
-                Object value = nameProp.getRealValue();
-                if ((value != null) && (value instanceof String)) {
-                    binding.setName((String)value);
-                }
-            } catch (IllegalAccessException iaex) {
-                iaex.printStackTrace();
-            } catch (InvocationTargetException itex) {
-                itex.printStackTrace();
-            }
-        }
         if (bindingDef.hasSubBindings()) {
             Collection<MetaBinding> subBindings = bindingDef.getSubBindings();
             for (MetaBinding sub : subBindings) {
@@ -788,6 +774,26 @@ public class BindingDesignSupport {
         }
         binding.setValue(INVALID_BINDING, new ModifiableBoolean());
         context.addBinding(binding);
+
+        // Checking for name duplicates is performed only when binding is already in context
+        if (bindingDef.isNameSpecified()) {
+            BindingProperty prop = bindingDef.getTarget().getBindingProperty(bindingDef.getTargetPath());
+            FormProperty nameProp = prop.getNameProperty();
+            try {
+                Object value = nameProp.getRealValue();
+                if ((value != null) && (value instanceof String)) {
+                    binding.setName((String)value);
+                }
+            } catch (IllegalArgumentException iaex) {
+                // duplicate name
+                System.err.println(iaex.getMessage());
+            } catch (IllegalAccessException iaex) {
+                iaex.printStackTrace();
+            } catch (InvocationTargetException itex) {
+                itex.printStackTrace();
+            }
+        }
+        
         try {
             binding.bind();
         } catch (PropertyResolverException prex) {
