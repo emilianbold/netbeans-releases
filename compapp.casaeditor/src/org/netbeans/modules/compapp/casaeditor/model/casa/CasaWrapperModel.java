@@ -2562,8 +2562,8 @@ public class CasaWrapperModel extends CasaModelImpl {
     /**
      * Sets the interface qname of an endpoint. Updates the corresponding WSDL
      * Port, Binding and PortType if the endpoint is defined in casa wsdl.
-     * This interface change might need to be cascaded to other connected 
-     * endpoints.
+     * / * This interface change might need to be cascaded to other connected 
+     * endpoints. * /
      * 
      * @param endpointRef  a casa consumes or provides endpoint reference
      * @param interfaceQName    the new interface QName for the referenced endpoint
@@ -2638,8 +2638,8 @@ public class CasaWrapperModel extends CasaModelImpl {
 //            String linkHref = casaPort.getLink().getHref();
 //            cachedWSDLComponents.remove(linkHref);
             
-            // Maybe we do, but I don't see any real reason why we have to
-            // cascade the change in this case.
+//            // Maybe we do, but I don't see any real reason why we have to
+//            // cascade the change in this case.
             
         } else {
 //            CasaBindingComponentServiceUnit bcSU =
@@ -2664,16 +2664,16 @@ public class CasaWrapperModel extends CasaModelImpl {
                 throw e;
             }
             
-            // Cascade the change to connected endpoints.
-            // Since the casaport is user-created, there is no
-            // marked-as-"deleted" connections. Therefore, the following
-            // "includeDeleted" flag doesn't really matter.
-            for (CasaConnection connection : getConnections(casaPort, false)) {
-                CasaEndpointRef casaConsumes = getCasaEndpointRef(connection, true);
-                setEndpointInterfaceQName(casaConsumes, interfaceQName);
-                CasaEndpointRef casaProvides = getCasaEndpointRef(connection, false);
-                setEndpointInterfaceQName(casaProvides, interfaceQName);
-            }
+//            // Cascade the change to connected endpoints.
+//            // Since the casaport is user-created, there is no
+//            // marked-as-"deleted" connections. Therefore, the following
+//            // "includeDeleted" flag doesn't really matter.
+//            for (CasaConnection connection : getConnections(casaPort, false)) {
+//                CasaEndpointRef casaConsumes = getCasaEndpointRef(connection, true);
+//                setEndpointInterfaceQName(casaConsumes, interfaceQName);
+//                CasaEndpointRef casaProvides = getCasaEndpointRef(connection, false);
+//                setEndpointInterfaceQName(casaProvides, interfaceQName);
+//            }
             
             checkAndCleanUpDummyPortType(casaWSDLModel);
         }
