@@ -1357,8 +1357,13 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
                                     ex.printStackTrace();
                                 }
                             }
-                            index++;
                         }
+                        String editableColumn = subBinding.getParameter(MetaBinding.EDITABLE_PARAMETER);
+                        if (editableColumn != null) {
+                            ColumnInfo info = columns.get(index);
+                            info.setEditable(!"false".equals(editableColumn)); // NOI18N
+                        }
+                        index++;
                     }
                 }
             }
@@ -1719,7 +1724,7 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
             int columnCount;
             switch (modelType) {
                 case 0: columnCount = 4; break;
-                case 1: columnCount = 3; break;
+                case 1: columnCount = 4; break;
                 case 2: columnCount = 2; break;
                 default: columnCount = 0;
             }
