@@ -82,7 +82,7 @@ public final class NewUMLDiagWizardIterator
    {
       this.wizard = wiz;
       createPanels();
-      Project currentProject = Templates.getProject(wiz); Templates.getTargetFolder(wizard);
+      Project currentProject = Templates.getProject(wiz); 
       if (currentProject == null)
       {
          throw new IllegalArgumentException();

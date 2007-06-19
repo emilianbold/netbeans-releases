@@ -6044,10 +6044,7 @@ public class ADDrawingAreaControl extends ApplicationView
        }
        
        getGraphWindow().drawGraph();
-//       getGraphWindow().repaint();
-//       getGraphWindow().fastRepaint();
-       
-       // invalidate();
+       fireSelectEvent(graphObjects);
        refresh(true);
    }
    
@@ -6666,7 +6663,6 @@ public class ADDrawingAreaControl extends ApplicationView
                    centerPresentationElement(presElt, true, false); 
                }
                m_lastSelectedNode = nextNode;               
-//                System.err.println(" next node = "+nextNode);
                }
        
        }
@@ -10646,6 +10642,7 @@ public class ADDrawingAreaControl extends ApplicationView
          {
             Vector meidCol = (Vector)obj;
             int meidCount = meidCol.size();
+
             for (int j=0; j<meidCount; j++)
             {
                String name = (String)meidCol.get(j);

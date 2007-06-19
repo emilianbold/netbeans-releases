@@ -907,7 +907,9 @@ public class DiagramTopComponent extends CloneableTopComponent
             removeSelectedActionCallbacks();
         }
         
-        configureLocalNode(pEle);
+        // The below method call is redundant. It does exact the same sequence
+        // of code as the above again. Thus, commenting it out.
+        // configureLocalNode(pEle);
     }
     
     
