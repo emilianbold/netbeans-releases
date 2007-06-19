@@ -1488,62 +1488,31 @@ class JavaCodeGenerator extends CodeGenerator {
                     anyBinding = true;
                 }
                 StringBuilder buf = new StringBuilder();
-                Class descriptionType = BindingDesignSupport.getBindingDescriptionType(bindingDef);
                 int updateStrategy = bindingDef.getUpdateStratedy();
+                Map parameters = bindingDef.getParameters();
                 String variable = null;
-                if (bindingDef.hasSubBindings()) {
-                    variable = getBindingDescriptionVariable(descriptionType, buf);
+                boolean useVariable = (updateStrategy != MetaBinding.UPDATE_STRATEGY_READ_WRITE)
+                    || bindingDef.isIncompletePathValueSpecified()
+                    || bindingDef.isNullValueSpecified()
+                    || bindingDef.isConverterSpecified()
+                    || bindingDef.isValidatorSpecified()
+                    || bindingDef.isBindImmediately()
+                    || bindingDef.hasSubBindings()
+                    || !parameters.isEmpty();
+                if (!useVariable) {
+                    buf.append(bindingContextVariable);
+                    buf.append(".addBinding("); // NOI18N                        
+                } else {
+                    variable = getBindingDescriptionVariable("binding", buf); // NOI18N
                     buf.append(variable);
-                    buf.append(" = new "); // NOI18N
-                    buf.append(descriptionType.getName());
-                    buf.append("("); // NOI18N
-                    buildBindingParamsCode(bindingDef, buf);
-                    buf.append(");\n"); // NOI18N
-                    initCodeWriter.write(buf.toString());
+                    buf.append(" = new javax.beans.binding.Binding("); // NOI18N
+                }
+                buildBindingParamsCode(prop, buf);
+                buf.append(");\n"); // NOI18N
 
-                    for (MetaBinding sub : bindingDef.getSubBindings()) {
-                        buf = new StringBuilder();
-                        buf.append(variable);
-                        buf.append(".addBinding("); // NOI18N
-                        buf.append("\""); // NOI18N
-                        buf.append(sub.getSourcePath());
-                        buf.append("\", "); // NOI18N
-                        buf.append(sub.getTargetPath());
-                        Map parameters = sub.getParameters();
-                        Iterator<Map.Entry> iter = parameters.entrySet().iterator();
-                        while (iter.hasNext()) {
-                            Map.Entry entry = iter.next();
-                            buf.append(", "); // NOI18N
-                            buf.append(entry.getKey());
-                            buf.append(", "); // NOI18N
-                            buf.append(entry.getValue());
-                        }
-                        buf.append(");\n"); // NOI18N
-                        initCodeWriter.write(buf.toString());
-                    }
-                }
-                else {
-                    boolean useVariable = (updateStrategy != MetaBinding.UPDATE_STRATEGY_READ_WRITE)
-                        || bindingDef.isIncompletePathValueSpecified()
-                        || bindingDef.isNullValueSpecified()
-                        || bindingDef.isConverterSpecified()
-                        || bindingDef.isValidatorSpecified()
-                        || bindingDef.isBindImmediately();
-                    if (!useVariable) {
-                        buf.append(bindingContextVariable);
-                        buf.append(".addBinding("); // NOI18N                        
-                    } else {
-                        variable = getBindingDescriptionVariable(descriptionType, buf);
-                        buf.append(variable);
-                        buf.append(" = "); // NOI18N
-                        buf.append("new "); // NOI18N
-                        buf.append(descriptionType.getName());
-                        buf.append("("); // NOI18N
-                    }
-                    buildBindingParamsCode(bindingDef, buf);
-                    buf.append(");\n"); // NOI18N
-                    initCodeWriter.write(buf.toString());
-                }
+                generateBindingParameters(parameters, buf, variable);
+                initCodeWriter.write(buf.toString());
+
                 if (updateStrategy != MetaBinding.UPDATE_STRATEGY_READ_WRITE) {
                     initCodeWriter.write(variable + ".setUpdateStrategy(javax.beans.binding.Binding.UpdateStrategy."); // NOI18N
                     if (updateStrategy == MetaBinding.UPDATE_STRATEGY_READ_FROM_SOURCE) {
@@ -1565,16 +1534,29 @@ class JavaCodeGenerator extends CodeGenerator {
                 if (bindingDef.isValidatorSpecified()) {
                     generateComponentBinding0(initCodeWriter, prop.getValidatorProperty(), variable + ".setValidator"); // NOI18N
                 }
-                if (bindingDef.isNameSpecified()) {
-                    // PENDING
+                if (bindingDef.hasSubBindings()) {
+                    for (MetaBinding sub : bindingDef.getSubBindings()) {
+                        Map subParameters = sub.getParameters();
+                        buf = new StringBuilder();
+                        String childVariable = null;
+                        if (!subParameters.isEmpty()) {
+                            childVariable = getBindingDescriptionVariable("childBinding", buf); // NOI18N
+                            buf.append(childVariable);
+                            buf.append(" = "); // NOI18N
+                        }
+                        buf.append(variable);
+                        buf.append(".addBinding("); // NOI18N
+                        buf.append("\""); // NOI18N
+                        buf.append(sub.getSourcePath());
+                        buf.append("\", "); // NOI18N
+                        buf.append(sub.getTargetPath());
+                        buf.append(");\n"); // NOI18N
+                        generateBindingParameters(subParameters, buf, childVariable);
+                        initCodeWriter.write(buf.toString());
+                    }
                 }
                 if (variable != null) {
-                    // PENDING the following check should not be there - the binding should be always
-                    // added to context, but BindingContext.bindingBecameBound() must be fixed before that
-                    // e.g. bindingBecameBound() should contain unbound.remove(binding);
-                    if (!bindingDef.isBindImmediately()) {
-                        initCodeWriter.write(bindingContextVariable + ".addBinding(" + variable + ");\n"); // NOI18N
-                    }
+                    initCodeWriter.write(bindingContextVariable + ".addBinding(" + variable + ");\n"); // NOI18N
                     if (bindingDef.isBindImmediately()) {
                         initCodeWriter.write(variable + ".bind();"); // NOI18N
                     }
@@ -1599,37 +1581,64 @@ class JavaCodeGenerator extends CodeGenerator {
         }
     }
 
-    private String getBindingDescriptionVariable(Class descriptionType, StringBuilder buf) {
+    private static void generateBindingParameters(Map parameters, StringBuilder buf, String variable) {
+        Iterator<Map.Entry> iter = parameters.entrySet().iterator();
+        while (iter.hasNext()) {
+            Map.Entry entry = iter.next();
+            buf.append(variable);
+            buf.append(".setValue("); // NOI18N
+            buf.append(entry.getKey());
+            buf.append(", "); // NOI18N
+            buf.append(entry.getValue());
+            buf.append(");\n"); // NOI18N
+        }
+    }
+
+    private String getBindingDescriptionVariable(String name, StringBuilder buf) {
         String variable = null;
-        if (bindingVariables == null)
-            bindingVariables = new HashMap();
-        else
-            variable = bindingVariables.get(descriptionType.getName());
+        if (bindingVariables == null) {
+            bindingVariables = new HashMap<String, String>();
+        } else {
+            variable = bindingVariables.get(name);
+        }
 
         if (variable == null) {
-            String name = descriptionType.getSimpleName();
-            name = Character.toLowerCase(name.charAt(0)) + name.substring(1);
             variable = formModel.getCodeStructure().getExternalVariableName(
-                    descriptionType, name, true);
-            bindingVariables.put(descriptionType.getName(), variable);
+                    javax.beans.binding.Binding.class, name, true);
+            bindingVariables.put(name, variable);
 
-            buf.append(descriptionType.getName());
-            buf.append(" "); // NOI18N
+            buf.append("javax.beans.binding.Binding "); // NOI18N
         }
         return variable;
     }
 
-    private static void buildBindingParamsCode(MetaBinding bindingDef, StringBuilder buf) {
+    private static void buildBindingParamsCode(BindingProperty prop, StringBuilder buf) {
+        MetaBinding bindingDef = (MetaBinding)prop.getValue();
         String sourcePath = bindingDef.getSourcePath();
         String targetPath = bindingDef.getTargetPath();
+        if (bindingDef.isNameSpecified()) {
+            try {
+                FormProperty property = prop.getNameProperty();
+                Object value = property.getValue();
+                if (value != null) {
+                    buf.append(property.getJavaInitializationString());
+                    buf.append(", "); // NOI18N
+                }
+            } catch (IllegalAccessException iaex) {
+                iaex.printStackTrace();
+            } catch (InvocationTargetException itex) {
+                itex.printStackTrace();
+            }
+        }
         buf.append(getExpressionJavaString(bindingDef.getSource().getCodeExpression(), "this")); // NOI18N
         buf.append(", "); // NOI18N
         if (sourcePath != null) {
             buf.append("\""); // NOI18N
             buf.append(sourcePath);
             buf.append("\""); // NOI18N
+        } else {
+            buf.append("null"); // NOI18N
         }
-        else buf.append("null"); // NOI18N
         buf.append(", "); // NOI18N
         buf.append(getExpressionJavaString(bindingDef.getTarget().getCodeExpression(), "this")); // NOI18N
         buf.append(", "); // NOI18N
@@ -1637,16 +1646,8 @@ class JavaCodeGenerator extends CodeGenerator {
             buf.append("\""); // NOI18N
             buf.append(targetPath);
             buf.append("\""); // NOI18N
-        }
-        else buf.append("null"); // NOI18N
-        Map parameters = bindingDef.getParameters();
-        Iterator<Map.Entry> iter = parameters.entrySet().iterator();
-        while (iter.hasNext()) {
-            Map.Entry entry = iter.next();
-            buf.append(", "); // NOI18N
-            buf.append(entry.getKey());
-            buf.append(", "); // NOI18N
-            buf.append(entry.getValue());
+        } else {
+            buf.append("null"); // NOI18N
         }
     }
 

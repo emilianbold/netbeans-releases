@@ -849,7 +849,7 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
         columnTypeCombo.setVisible(hardcoded || bound);
         columnTypeCombo.setEditable(bound);
         resizableColumnChoice.setVisible(!userCode);
-        editableColumnChoice.setVisible(hardcoded);
+        editableColumnChoice.setVisible(hardcoded || bound);
         separator.setVisible(!userCode);
         widthMinLabel.setVisible(!userCode);
         widthMinCombo.setVisible(!userCode);
@@ -992,11 +992,13 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
     private javax.swing.JLabel widthPrefLabel;
     // End of variables declaration//GEN-END:variables
 
+    @Override
     public void addNotify() {
         super.addNotify();
         Window window = SwingUtilities.getWindowAncestor(this);
         if (window != null) {
             window.addWindowListener(new WindowAdapter() {
+                @Override
                 public void windowClosed(WindowEvent e) {
                     updateFromUI();
                 }
@@ -1051,6 +1053,9 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
                     String clazz = info.getClazz();
                     if ((clazz != null) && (!clazz.equals("Object"))) { // NOI18N
                         subBinding.setParameter(MetaBinding.TABLE_COLUMN_CLASS_PARAMETER, clazz + ".class"); // NOI18N
+                    }
+                    if (!info.isEditable()) {
+                        subBinding.setParameter(MetaBinding.EDITABLE_PARAMETER, "false"); // NOI18N
                     }
                     count++;
                 }
@@ -1721,6 +1726,7 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
             return columnCount;
         }
 
+        @Override
         public String getColumnName(int column) {
             String name = null;
             switch (column) {
@@ -1738,6 +1744,7 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
             return name;
         }
 
+        @Override
         public Class getColumnClass(int column) {
             if ((column > 1) || ((column == 1) && (modelType == 2))) {
                 return Boolean.class;
@@ -1764,10 +1771,12 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
             return value;
         }
 
+        @Override
         public boolean isCellEditable(int rowIndex, int columnIndex) {
             return true;
         }
 
+        @Override
         public void setValueAt(Object value, int rowIndex, int columnIndex) {
             ColumnInfo info = columns.get(rowIndex);
             switch (columnIndex) {

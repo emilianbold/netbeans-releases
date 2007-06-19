@@ -89,7 +89,8 @@ public class RADComponentNode extends FormNode
     public void fireComponentPropertySetsChange() {
         firePropertySetsChange(null, null);
     }
-    
+
+    @Override
     public Image getIcon(int iconType) {
         // try to get a special icon
         Image icon = BeanSupport.getBeanIcon(component.getBeanClass(), iconType);
@@ -105,15 +106,18 @@ public class RADComponentNode extends FormNode
         // use default icon
         return super.getIcon(iconType);
     }
-    
+
+    @Override
     public Image getOpenedIcon(int iconType) {
         return getIcon(iconType);
     }
-    
+
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx("gui.component-inspector"); // NOI18N
     }
-    
+
+    @Override
     public Node.PropertySet[] getPropertySets() {
         return component.getProperties();
     }
@@ -121,10 +125,12 @@ public class RADComponentNode extends FormNode
     /* List new types that can be created in this node.
      * @return new types
      */
+    @Override
     public NewType[] getNewTypes() {
         return component.getNewTypes();
     }
-    
+
+    @Override
     public Action getPreferredAction() {
         if (EditContainerAction.isEditableComponent(component)) {
             return SystemAction.get(EditContainerAction.class);
@@ -134,10 +140,11 @@ public class RADComponentNode extends FormNode
         
         //        return null;
     }
-    
+
+    @Override
     public Action[] getActions(boolean context) {
         if (actions == null) {
-            ArrayList actions = new ArrayList(20);
+            List<Action> actions = new ArrayList<Action>(20);
             RADComponent topComp = component.getFormModel().getTopRADComponent();
             
             if (component.isReadOnly()) {
@@ -158,6 +165,9 @@ public class RADComponentNode extends FormNode
             } else {
                 if (InPlaceEditLayer.supportsEditingFor(component.getBeanClass(), false)) {
                     actions.add(SystemAction.get(InPlaceEditAction.class));
+                }
+                if (javax.swing.JTable.class.isAssignableFrom(component.getBeanClass())) {
+                    actions.add(SystemAction.get(CustomizeTableAction.class));
                 }
                 if (component != topComp) {
                     actions.add(SystemAction.get(ChangeVariableNameAction.class));
@@ -220,8 +230,8 @@ public class RADComponentNode extends FormNode
         
         return actions;
     }
-
-    private void addLayoutActions(List actions) {
+    
+    private void addLayoutActions(List<Action> actions) {
         if (component.getParentComponent() instanceof RADVisualContainer) {
             actions.add(SystemAction.get(AlignAction.class));
             actions.add(SystemAction.get(SetAnchoringAction.class));
@@ -234,7 +244,7 @@ public class RADComponentNode extends FormNode
         }
     }
 
-    private void addContainerActions(List actions) {
+    private void addContainerActions(List<Action> actions) {
         if (component instanceof RADVisualContainer) {
             if (!((RADVisualContainer)component).hasDedicatedLayoutSupport()) {
                 actions.add(SystemAction.get(SelectLayoutAction.class));
@@ -260,18 +270,14 @@ public class RADComponentNode extends FormNode
         addSeparator(actions);
     }
 
-    private static void addSeparator(List actions) {
+    private static void addSeparator(List<Action> actions) {
         int n = actions.size();
         if (n > 0 && actions.get(n-1) != null) {
             actions.add(null);
         }
     }
 
-    /** Set the system name. Fires a property change event.
-     * Also may change the display name according to {@link #displayFormat}.
-     *
-     * @param s the new name
-     */
+    @Override
     public String getName() {
         return component.getName();
     }
@@ -281,6 +287,7 @@ public class RADComponentNode extends FormNode
      *
      * @param s the new name
      */
+    @Override
     public void setName(String s) {
         component.rename(s);
     }
@@ -288,6 +295,7 @@ public class RADComponentNode extends FormNode
     /** Can this node be renamed?
      * @return <code>false</code>
      */
+    @Override
     public boolean canRename() {
         return !component.isReadOnly()
                 && component != component.getFormModel().getTopRADComponent();
@@ -296,6 +304,7 @@ public class RADComponentNode extends FormNode
     /** Can this node be destroyed?
      * @return <CODE>false</CODE>
      */
+    @Override
     public boolean canDestroy() {
         return !component.isReadOnly()
                 && component != component.getFormModel().getTopRADComponent();
@@ -310,8 +319,9 @@ public class RADComponentNode extends FormNode
      * This may be overridden by subclasses to do any additional
      * cleanup.
      *
-     * @exception IOException if something fails
+     * @exception java.io.IOException if something fails
      */
+    @Override
     public void destroy() throws java.io.IOException {
         if (MetaComponentCreator.isTransparentLayoutComponent(component.getParentComponent())) {
             component = component.getParentComponent();
@@ -334,15 +344,16 @@ public class RADComponentNode extends FormNode
      *
      * @return <CODE>true</CODE> if there is a customizer
      */
+    @Override
     public boolean hasCustomizer() {
         return !component.isReadOnly()
-                && ((component.getBeanInfo().getBeanDescriptor().getCustomizerClass() != null)
-                    || javax.swing.JTable.class.isAssignableFrom(component.getBeanClass()));
+                && ((component.getBeanInfo().getBeanDescriptor().getCustomizerClass() != null));
     }
     
     /** Creates the customizer component for the node.
      * @return the component, or null if there is no customizer
      */
+    @Override
     protected Component createCustomizer() {
         Class customizerClass = component.getBeanInfo().getBeanDescriptor().getCustomizerClass();
         if (customizerClass == null) {
@@ -440,6 +451,7 @@ public class RADComponentNode extends FormNode
      * The default implementation returns <code>true</code>.
      * @return <code>true</code> if it can
      */
+    @Override
     public boolean canCopy() {
         return true;
     }
@@ -448,6 +460,7 @@ public class RADComponentNode extends FormNode
      * The default implementation assumes it can if this node is writeable.
      * @return <code>true</code> if it can
      */
+    @Override
     public boolean canCut() {
         return !component.isReadOnly()
                 && component != component.getFormModel().getTopRADComponent();
@@ -456,8 +469,9 @@ public class RADComponentNode extends FormNode
     /** Copy this node to the clipboard.
      *
      * @return The transferable for RACComponentNode
-     * @throws IOException if it could not copy
+     * @throws java.io.IOException if it could not copy
      */
+    @Override
     public Transferable clipboardCopy() throws java.io.IOException {
         return new CopySupport.RADTransferable(
                 CopySupport.getComponentCopyFlavor(),
@@ -467,8 +481,9 @@ public class RADComponentNode extends FormNode
     /** Cut this node to the clipboard.
      *
      * @return {@link Transferable} with one flavor, {@link RAD_COMPONENT_COPY_FLAVOR }
-     * @throws IOException if it could not cut
+     * @throws java.io.IOException if it could not cut
      */
+    @Override
     public Transferable clipboardCut() throws java.io.IOException {
         return new CopySupport.RADTransferable(
                 CopySupport.getComponentCutFlavor(),
@@ -481,6 +496,7 @@ public class RADComponentNode extends FormNode
      * @param s a list of {@link PasteType}s that will have added to it all
      *          types valid for this node
      */
+    @Override
     protected void createPasteTypes(Transferable t, java.util.List s) {
         CopySupport.createPasteTypes(t, s, component.getFormModel(), component);
     }
@@ -516,9 +532,10 @@ public class RADComponentNode extends FormNode
         }
         
         // FormNodeChildren implementation
+        @Override
         protected void updateKeys() {
             RADComponent[] subComps = container.getSubBeans();
-            ArrayList keys = new ArrayList(subComps.length + 2);
+            List<Object> keys = new ArrayList<Object>(subComps.length + 2);
             
             if (container instanceof RADVisualContainer) {
                 RADVisualContainer visualCont = (RADVisualContainer) container;
@@ -588,11 +605,13 @@ public class RADComponentNode extends FormNode
     }
     
     private static final class ChangeVariableNameAction extends RenameAction {
+        @Override
         public String getName() {
             return NbBundle.getMessage(ChangeVariableNameAction.class, "ChangeVariableNameAction"); // NOI18N
         }
     }
-    
+
+    @Override
     public String getHtmlDisplayName() {
         if(highlightDisplayName) {
             return  "<html><b>" + getDisplayName() + "</b></html>"; // NOI18N
@@ -607,4 +626,17 @@ public class RADComponentNode extends FormNode
             fireDisplayNameChange(null, getDisplayName());
         }
     }
+
+    private static final class CustomizeTableAction extends CustomizeAction {
+            @Override
+            public String getName() {
+                return FormUtils.getBundleString("NAME_CustomizeTableAction"); // NOI18N
+            }
+            
+            @Override
+            protected boolean enable(Node[] activatedNodes) {
+                return true;
+            }
+    }
+
 }

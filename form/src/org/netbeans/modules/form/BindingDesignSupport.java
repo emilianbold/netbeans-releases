@@ -40,7 +40,6 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.modules.form.FormUtils.TypeHelper;
 import org.netbeans.modules.form.project.ClassPathUtils;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -61,7 +60,7 @@ public class BindingDesignSupport {
 
     private static Map<Class,Object> classToInstance = new WeakHashMap<Class,Object>();
     private static Object NO_INSTANCE = new Object();
-    private static Binding.Parameter<ModifiableBoolean> INVALID_BINDING = new Binding.Parameter<ModifiableBoolean>(ModifiableBoolean.class, ""); // NOI18N
+    private static Binding.Parameter<ModifiableBoolean> INVALID_BINDING = new Binding.Parameter<ModifiableBoolean>(""); // NOI18N
 
     /**
      * Create binding design support for the given form model.
@@ -615,6 +614,12 @@ public class BindingDesignSupport {
      * Creates binding according to given MetaBinding between given source and
      * target objects. The binding is registered, so it is automatically unbound
      * and removed when the MetaBinding is removed (or the source/target component).
+     * 
+     * @param bindingDef description of the binding
+     * @param source binding source
+     * @param target binding target
+     * @param context binding context where the binding should be added
+     * @param inModel determines whether we are creating binding in the model
      */
     public void addBinding(MetaBinding bindingDef,
                            Object source, Object target,
@@ -641,20 +646,14 @@ public class BindingDesignSupport {
         }
     }
 
-    public static Class getBindingDescriptionType(MetaBinding bindingDef) {
-        return Binding.class;
-    }
-
     private static Binding createBinding(MetaBinding bindingDef,
                                          Object source, Object target,
                                          BindingContext context)
     {
-        Binding binding;
-        Collection<MetaBinding> subBindings = bindingDef.getSubBindings();
-        List<Object> parameters = new LinkedList<Object>();
+        Binding binding = new Binding(source, bindingDef.getSourcePath(), target, bindingDef.getTargetPath());
         String changeStrategy = bindingDef.getParameter(MetaBinding.TEXT_CHANGE_STRATEGY);
         if (changeStrategy != null) {
-            Object value = null;
+            SwingBindingSupport.TextChangeStrategy value = null;
             if (MetaBinding.TEXT_CHANGE_ON_ACTION_OR_FOCUS_LOST.equals(changeStrategy)) {
                 value = SwingBindingSupport.TextChangeStrategy.CHANGE_ON_ACTION_OR_FOCUS_LOST;
             } else if (MetaBinding.TEXT_CHANGE_ON_FOCUS_LOST.equals(changeStrategy)) {
@@ -663,11 +662,9 @@ public class BindingDesignSupport {
                 value = SwingBindingSupport.TextChangeStrategy.CHANGE_ON_TYPE;
             }
             if (value != null) {
-                parameters.add(SwingBindingSupport.TextChangeStrategyParameter);
-                parameters.add(value);
+                binding.setValue(SwingBindingSupport.TextChangeStrategyParameter, value);
             }
         }
-        binding = new Binding(source, bindingDef.getSourcePath(), target, bindingDef.getTargetPath(), parameters.toArray());
         Binding.UpdateStrategy updateStrategy = null;
         switch (bindingDef.getUpdateStratedy()) {
             case MetaBinding.UPDATE_STRATEGY_READ_WRITE:
@@ -744,7 +741,7 @@ public class BindingDesignSupport {
             try {
                 Object value = nameProp.getRealValue();
                 if ((value != null) && (value instanceof String)) {
-                    // PENDING
+                    binding.setName((String)value);
                 }
             } catch (IllegalAccessException iaex) {
                 iaex.printStackTrace();
@@ -753,14 +750,14 @@ public class BindingDesignSupport {
             }
         }
         if (bindingDef.hasSubBindings()) {
+            Collection<MetaBinding> subBindings = bindingDef.getSubBindings();
             for (MetaBinding sub : subBindings) {
-                List<Object> subParameters = new LinkedList<Object>();
+                Binding subBinding = binding.addBinding(sub.getSourcePath(), sub.getTargetPath());
                 String tableColumn = sub.getParameter(MetaBinding.TABLE_COLUMN_PARAMETER);
                 if (tableColumn != null) {
                     try {
                         int column = Integer.parseInt(tableColumn);
-                        subParameters.add(SwingBindingSupport.TableColumnParameter);
-                        subParameters.add(column);
+                        subBinding.setValue(SwingBindingSupport.TableColumnParameter, column);
                     } catch (NumberFormatException nfex) {
                         nfex.printStackTrace();
                     }
@@ -776,13 +773,17 @@ public class BindingDesignSupport {
                             columnClass = "java.lang." + columnClass; // NOI18N
                         }
                         Class clazz = FormUtils.loadClass(columnClass, bindingDef.getSource().getFormModel());
-                        subParameters.add(SwingBindingSupport.TableColumnClassParameter);
-                        subParameters.add(clazz);
+                        subBinding.setValue(SwingBindingSupport.TableColumnClassParameter, clazz);
                     } catch (ClassNotFoundException cnfex) {
                         cnfex.printStackTrace();
                     }
                 }
-                binding.addBinding(sub.getSourcePath(), sub.getTargetPath(), subParameters.toArray());
+                String editable = sub.getParameter(MetaBinding.EDITABLE_PARAMETER);
+                if (editable != null) {
+                    Boolean value = "false".equals(editable) ? Boolean.FALSE : Boolean.TRUE; // NOI18N
+                    subBinding.setValue(SwingBindingSupport.EditableParameter, value);
+                }
+                
             }
         }
         binding.setValue(INVALID_BINDING, new ModifiableBoolean());
