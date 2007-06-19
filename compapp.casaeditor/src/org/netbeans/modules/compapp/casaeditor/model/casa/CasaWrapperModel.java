@@ -405,6 +405,22 @@ public class CasaWrapperModel extends CasaModelImpl {
      */
     public CasaConnection addConnection(final CasaConsumes consumes,
             final CasaProvides provides) {
+        return addConnection(consumes, provides, true);
+    }
+    
+    /**
+     * Adds a brand new connection or mark a previously deleted connection
+     * as unchanged.
+     * 
+     * @param consumes  a casa consumes endpoint
+     * @param provides  a casa provides endpoint
+     * @param direction the (mouse) direction during the connection creation.
+     *                  If <code>true</code>, the "source" endpoint is the 
+     *                  consumes endpoint; if <code>false</code>, the "source" 
+     *                  endpoint is the provides endpoint.
+     */
+    public CasaConnection addConnection(final CasaConsumes consumes,
+            final CasaProvides provides, boolean direction) {
                 
         if (!canConnect(consumes, provides)) {
             throw new RuntimeException(
@@ -425,12 +441,12 @@ public class CasaWrapperModel extends CasaModelImpl {
                         getConnections(casaPort1, false).size() == 0; // the flag here doesn't matter
                 boolean isFreeEditablePort2 = casaPort2 != null && 
                         isEditable(casaPort2) &&
-                        getConnections(casaPort2, false).size() == 0; // the flag here doesn't matter                
-                if (isFreeEditablePort1 && !isFreeEditablePort2) {
-                    setEndpointInterfaceQName(consumes, null);
-                } else {
-                    assert !isFreeEditablePort1 && isFreeEditablePort2;
+                        getConnections(casaPort2, false).size() == 0; // the flag here doesn't matter 
+                
+                 if (isFreeEditablePort2 && direction) {
                     setEndpointInterfaceQName(provides, null);
+                } else {
+                    setEndpointInterfaceQName(consumes, null);
                 }
             }
         }
@@ -880,11 +896,8 @@ public class CasaWrapperModel extends CasaModelImpl {
                         isEditable(casaPort2) &&
                         getConnections(casaPort2, false).size() == 0; // the flag here doesn't matter
                 // Two incompatible endpoints are connectable if and only if
-                // one and only one is a free editable BC port.
-                if (isFreeEditablePort1 && !isFreeEditablePort2 ||
-                        !isFreeEditablePort1 && isFreeEditablePort2 ) {
-                    ;
-                } else {
+                // at least one is a free editable BC port.
+                if (!isFreeEditablePort1 && !isFreeEditablePort2) {
                     return NbBundle.getMessage(this.getClass(),
                             "MSG_CANNOT_CONNECT_INCOMPATIBLE_ENDPOINTS"); // NOI18N
                 }
