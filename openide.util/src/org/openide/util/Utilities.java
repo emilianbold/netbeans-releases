@@ -1608,7 +1608,7 @@ widthcheck:  {
     * @see #stringToKey
     */
     public static String keyToString(KeyStroke stroke) {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
 
         // add modifiers that must be pressed
         if (addModifiers(sb, stroke.getModifiers())) {
@@ -1617,7 +1617,7 @@ widthcheck:  {
 
         HashMap[] namesAndValues = initNameAndValues();
 
-        String c = (String) namesAndValues[1].get(new Integer(stroke.getKeyCode()));
+        String c = (String) namesAndValues[1].get(Integer.valueOf(stroke.getKeyCode()));
 
         if (c == null) {
             sb.append(stroke.getKeyChar());
@@ -1791,7 +1791,7 @@ widthcheck:  {
     * @param modif modifiers to add (KeyEvent.XXX_MASK)
     * @return true if something has been added
     */
-    private static boolean addModifiers(StringBuffer buf, int modif) {
+    private static boolean addModifiers(StringBuilder buf, int modif) {
         boolean b = false;
 
         if ((modif & KeyEvent.CTRL_MASK) != 0) {
