@@ -739,6 +739,8 @@ public class FacesModelSet extends ModelSet implements FacesDesignProject {
         for (int i=0; i < units.length; i++) {
             SourceUnit unit = units[i];
             if (unit != null) {
+                // save before the delete, to avoid FileAlreadyLockedException (IZ 101853)
+                unit.save();
                 unit.destroy();
                 DataObject object = unit.getDataObject();
                 if (removeFile && object != null && object.isValid()) {
