@@ -22,6 +22,7 @@ import java.awt.Dialog;
 import java.io.File;
 import java.io.IOException;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.compapp.casaeditor.palette.DefaultPluginDropHandler;
 import org.netbeans.modules.compapp.projects.jbi.api.InternalProjectTypePlugin;
 import org.netbeans.modules.compapp.projects.jbi.api.InternalProjectTypePluginWizardIterator;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
@@ -61,14 +62,16 @@ implements CasaPalettePlugin {
     public void handleDrop(PluginDropHandler dropHandler, CasaPaletteItemID itemID) throws IOException {
         InternalProjectTypePluginWizardIterator wizardIterator = mProjectTypePlugin.getWizardIterator();
         WizardDescriptor descriptor = new WizardDescriptor(wizardIterator);
+        DefaultPluginDropHandler defaultHandler = (DefaultPluginDropHandler) dropHandler;
         Project project = null;
         
         // Set up project name and location
+        File projectsRoot = defaultHandler.getInternalProjectTypePluginLocation();
         String projectName = getProjectCount(
-                ProjectChooser.getProjectsFolder(),
+                projectsRoot,
                 mProjectTypePlugin.getCategoryName() + "_" +
                 mProjectTypePlugin.getPluginName());
-        File projectFolder = new File(ProjectChooser.getProjectsFolder(), projectName);
+        File projectFolder = new File(projectsRoot, projectName);
         descriptor.putProperty(WizardPropertiesTemp.PROJECT_DIR, projectFolder);
         descriptor.putProperty(WizardPropertiesTemp.NAME, projectName);
         descriptor.putProperty(WizardPropertiesTemp.J2EE_LEVEL, "1.4");

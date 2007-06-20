@@ -42,6 +42,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.visual.action.RectangularSelectDecorator;
 import org.netbeans.api.visual.router.RouterFactory;
 import org.netbeans.modules.compapp.casaeditor.CasaDataEditorSupport;
@@ -764,5 +765,13 @@ implements PropertyChangeListener {
     
     public boolean canEdit() {
         return !mDataObject.isBuilding();
+    }
+    
+    /**
+     * Obtains the location of the src/ directory within
+     * the Composite Application project.
+     */
+    public String getSourcesPath() {
+        return mDataObject.getFolder().getPrimaryFile().getParent().getPath();
     }
 }
