@@ -251,23 +251,26 @@ public class J2MEActionProvider implements ActionProvider {
         return ProjectManager.mutex().writeAccess(new Mutex.Action<Boolean>() {
             public Boolean run() {
                 String allCfg = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH).getProperty(DefaultPropertiesDescriptor.ALL_CONFIGURATIONS);
-                if (allCfg == null || allCfg.trim().length() == 0) return Boolean.FALSE;
+                if (allCfg == null) return false;
+                //Just default configuration
+                if (allCfg.trim().length() == 0) return true;
+                //Ok we have more configs, so which one do we want to build
                 EditableProperties priv = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
                 String selectedCfg = priv.getProperty(DefaultPropertiesDescriptor.SELECTED_CONFIGURATIONS);
                 CfgSelectionPanel panel = new CfgSelectionPanel(allCfg, selectedCfg);
                 if (DialogDescriptor.OK_OPTION.equals(DialogDisplayer.getDefault().notify(new DialogDescriptor(panel, NbBundle.getMessage(CfgSelectionPanel.class, "Title_CfgSelection_" + command), true, DialogDescriptor.OK_CANCEL_OPTION, DialogDescriptor.OK_OPTION, DialogDescriptor.DEFAULT_ALIGN, new HelpCtx(CfgSelectionPanel.class), null)))) { //NOI18N
                     String newSel = panel.getSelectedConfigurations();
-                    if (selectedCfg != null && selectedCfg.equals(newSel)) return Boolean.TRUE;
+                    if (selectedCfg != null && selectedCfg.equals(newSel)) return true;
                     priv.put(DefaultPropertiesDescriptor.SELECTED_CONFIGURATIONS, newSel);
                     helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, priv);
                     try {
                         ProjectManager.getDefault().saveProject(project);
-                        return Boolean.TRUE;
+                        return true;
                     } catch (IOException ioe) {
                         ErrorManager.getDefault().notify(ioe);
                     }                    
                 }
-                return Boolean.FALSE;
+                return false;
             }
         }).booleanValue();
     }
