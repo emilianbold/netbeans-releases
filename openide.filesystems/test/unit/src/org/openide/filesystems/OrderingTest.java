@@ -209,6 +209,15 @@ public class OrderingTest extends NbTestCase {
         assertEmptyLog();
     }
 
+    public void testGetOrderZeroPositions() throws Exception { // #107550
+        apex.setAttribute("position", 0);
+        ball.setAttribute("position", 0);
+        cone.setAttribute("position", 22);
+        dent.setAttribute("position", 5);
+        assertOrder(true, apex, ball, dent, cone);
+        assertEmptyLog();
+    }
+
     // XXX tests of more advanced setOrder behavior, IAE, ...
 
 }

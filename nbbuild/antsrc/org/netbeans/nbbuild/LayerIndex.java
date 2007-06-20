@@ -245,7 +245,7 @@ public class LayerIndex extends Task {
                     cnb2label.put(cnb, label);
                 } else if (qName.equals("attr") && attributes.getValue("name").equals("position")) {
                     String intvalue = attributes.getValue("intvalue");
-                    if (intvalue != null) {
+                    if (intvalue != null && /* #107550 */ !intvalue.equals("0")) {
                         try {
                             positions.put(prefix, Integer.parseInt(intvalue));
                         } catch (NumberFormatException x) {

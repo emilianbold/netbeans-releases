@@ -70,7 +70,7 @@ class Ordering {
                 if (res != 0) {
                     return res;
                 } else {
-                    if (logWarnings && o != this) {
+                    if (logWarnings && o != this && !position.equals(0)) {
                         LOG.warning("Found same position " + position + " for both " + o.child.getPath() + " and " + child.getPath());
                     }
                     return child.getNameExt().compareTo(o.child.getNameExt());
