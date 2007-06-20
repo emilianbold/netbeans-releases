@@ -117,7 +117,11 @@
               todir="${build.classes.dir}/${native.dirname}/${native.jnilib.dir.linux}"/>
         <copy file="${native.dirname}/${native.jnilib.dir.solaris-x86}/${native.dist.dir}/${native.jnilib.file.solaris-x86}" 
               todir="${build.classes.dir}/${native.dirname}/${native.jnilib.dir.solaris-x86}"/>
+	<copy file="${native.dirname}/${native.jnilib.dir.solaris-x86}/${native.dist.dir}/${native.jnilib.file.solaris-amd64}" 
+              todir="${build.classes.dir}/${native.dirname}/${native.jnilib.dir.solaris-x86}"/>
         <copy file="${native.dirname}/${native.jnilib.dir.solaris-sparc}/${native.dist.dir}/${native.jnilib.file.solaris-sparc}" 
+              todir="${build.classes.dir}/${native.dirname}/${native.jnilib.dir.solaris-sparc}"/>
+	<copy file="${native.dirname}/${native.jnilib.dir.solaris-sparc}/${native.dist.dir}/${native.jnilib.file.solaris-sparcv9}" 
               todir="${build.classes.dir}/${native.dirname}/${native.jnilib.dir.solaris-sparc}"/>
         <copy file="${native.dirname}/${native.jnilib.dir.macosx}/${native.dist.dir}/${native.jnilib.file.macosx}" 
               todir="${build.classes.dir}/${native.dirname}/${native.jnilib.dir.macosx}"/>
