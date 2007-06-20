@@ -37,6 +37,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.tomcat5.TomcatFactory;
 import org.netbeans.modules.tomcat5.TomcatManager;
+import org.netbeans.modules.tomcat5.TomcatManager.TomcatVersion;
 import org.netbeans.modules.tomcat5.customizer.CustomizerSupport;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -324,6 +325,17 @@ public class TomcatProperties {
     public File getLibsDir() {
         String libsDir = tm.isTomcat50() || tm.isTomcat55() ? "common/lib" : "lib"; // NOI18N
         return new File(getCatalinaHome(), libsDir);
+    }
+    
+    /**
+     * Return the default Tomcat Java endorsed directory.
+     */
+    public File getJavaEndorsedDir() {
+        if (TomcatVersion.TOMCAT_60 == tm.getTomcatVersion()) {
+            return new File(getCatalinaDir(), "endorsed"); // NOI18N
+        } else {
+            return new File(getCatalinaDir(), "common/endorsed"); // NOI18N
+        }
     }
     
     public String getUsername() {

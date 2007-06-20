@@ -46,20 +46,22 @@ import org.openide.util.Exceptions;
  * writes to output window.
  */ 
 class ServerLog extends Thread {
-    private InputOutput io;
-    private OutputWriter writer;
-    private OutputWriter errorWriter;
-    private BufferedReader inReader;
-    private BufferedReader errReader;
+    private final InputOutput io;
+    private final OutputWriter writer;
+    private final OutputWriter errorWriter;
+    private final BufferedReader inReader;
+    private final BufferedReader errReader;
     private final boolean autoFlush;
     private final boolean takeFocus;
     private volatile boolean done = false;
-    private ServerLogSupport logSupport;
+    private final ServerLogSupport logSupport;
+    private final TomcatManager tomcatManager;
 
     /**
      * Tomcat server log reads from the Tomcat standard and error output and 
      * writes to output window.
      * 
+     * @param tomcatManager Tomcat deployment manager
      * @param displayName output window display name.
      * @param in Tomcat standard output reader.
      * @param err Tomcat error output reader.
@@ -67,7 +69,7 @@ class ServerLog extends Thread {
      * @param takeFocus should be the output window made visible after each
      *        changed?
      */
-    public ServerLog(String url, String displayName, Reader in, Reader err, boolean autoFlush,
+    public ServerLog(TomcatManager tomcatManager, String displayName, Reader in, Reader err, boolean autoFlush,
             boolean takeFocus) {
         super(displayName + " ServerLog - Thread"); // NOI18N
         setDaemon(true);
@@ -75,7 +77,8 @@ class ServerLog extends Thread {
         errReader = new BufferedReader(err);
         this.autoFlush = autoFlush;
         this.takeFocus = takeFocus;
-        io = UISupport.getServerIO(url);
+        this.tomcatManager = tomcatManager;
+        io = UISupport.getServerIO(tomcatManager.getUri());
         try {
             io.getOut().reset();
         } 
@@ -104,10 +107,11 @@ class ServerLog extends Thread {
             writer.println(line);
             if (line.startsWith("SEVERE: WSSERVLET11: failed to parse runtime descriptor: java.lang.LinkageError:")) { // NOI18N
                 File file = InstalledFileLocator.getDefault().locate("modules/ext/jaxws21/api/jaxws-api.jar", null, false); // NOI18N
+                File endoresedDir = tomcatManager.getTomcatProperties().getJavaEndorsedDir();
                 if (file != null) {
-                    writer.println(NbBundle.getMessage(ServerLog.class, "MSG_WSSERVLET11", file.getParent()));
+                    writer.println(NbBundle.getMessage(ServerLog.class, "MSG_WSSERVLET11", file.getParent(), endoresedDir));
                 } else {
-                    writer.println(NbBundle.getMessage(ServerLog.class, "MSG_WSSERVLET11_NOJAR"));
+                    writer.println(NbBundle.getMessage(ServerLog.class, "MSG_WSSERVLET11_NOJAR", endoresedDir));
                 }
             }
         }
