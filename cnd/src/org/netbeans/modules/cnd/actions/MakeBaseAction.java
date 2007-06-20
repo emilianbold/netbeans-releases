@@ -23,8 +23,10 @@ import java.io.File;
 import java.io.IOException;
 import org.netbeans.modules.cnd.api.execution.NativeExecutor;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.api.utils.Path;
 import org.netbeans.modules.cnd.builds.MakeExecSupport;
 import org.netbeans.modules.cnd.loaders.MakefileDataObject;
+import org.netbeans.modules.cnd.settings.CppSettings;
 import org.netbeans.modules.cnd.settings.MakeSettings;
 import org.openide.LifecycleManager;
 import org.openide.filesystems.FileObject;
@@ -106,18 +108,17 @@ public abstract class MakeBaseAction extends NodeAction {
             tabName += " " + target; // NOI18N
         
         // Execute the makefile
+        String[] envp = { Path.getPathName() + '=' + CppSettings.getDefault().getPath() };
         try {
-        new NativeExecutor(
-                buildDir.getPath(),
-                executable,
-                arguments,
-                null,
-                tabName,
-                "make", // NOI18N
-                true).execute();
-        }
-        catch (IOException ioe) {
-            System.err.println("make failed: " + ioe); // FIXUP
+            new NativeExecutor(
+                    buildDir.getPath(),
+                    executable,
+                    arguments,
+                    envp,
+                    tabName,
+                    "make", // NOI18N
+                    true).execute();
+        } catch (IOException ioe) {
         }    
     }
     

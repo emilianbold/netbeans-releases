@@ -8,5 +8,3 @@ namespace NsTwo {
     };
     
 }
-
-using namespace NsTwo;

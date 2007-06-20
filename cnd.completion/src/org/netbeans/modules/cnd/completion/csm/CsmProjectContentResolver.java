@@ -34,7 +34,9 @@ import org.netbeans.modules.cnd.api.model.services.CsmInheritanceUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmSortUtilities;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -44,6 +46,7 @@ import org.netbeans.editor.StringMap;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 
@@ -395,7 +398,7 @@ public final class CsmProjectContentResolver {
     
     private List getNamespaceVariables(CsmNamespace ns, String strPrefix, boolean match, boolean sort, boolean searchNested) {
         List res = getNamespaceMembers(ns, CsmDeclaration.Kind.VARIABLE, strPrefix, match, searchNested);
-        
+        res = filterVariables(res);
         if (sort && res != null) {
             CsmSortUtilities.sortMembers(res, isNaturalSort(), isCaseSensitive());
         }
@@ -675,13 +678,7 @@ public final class CsmProjectContentResolver {
         handledNS.add(ns);
         List res = new ArrayList();
         Iterator it = ns.getDeclarations().iterator();
-        while (it.hasNext()) {
-            CsmDeclaration decl = (CsmDeclaration) it.next();
-            if (isKindOf(decl.getKind(), kinds) &&
-                    matchName(decl.getName(), strPrefix, match)) {
-                res.add(decl);
-            }
-        }
+        filterDeclarations(it, res, kinds, strPrefix, match);
         // handle all nested namespaces
         if (searchNested) {
             for (it = ns.getNestedNamespaces().iterator(); it.hasNext();) {
@@ -698,8 +695,18 @@ public final class CsmProjectContentResolver {
         }
         return res;
     }
+
+    /*package*/ void filterDeclarations(final Iterator in, final Collection out, final CsmDeclaration.Kind kinds[], final String strPrefix, final boolean match) {
+        while (in.hasNext()) {
+            CsmDeclaration decl = (CsmDeclaration) in.next();
+            if (isKindOf(decl.getKind(), kinds) &&
+                    matchName(decl.getName(), strPrefix, match)) {
+                out.add(decl);
+            }
+        }
+    }
     
-    private boolean isKindOf(CsmDeclaration.Kind kind, CsmDeclaration.Kind kinds[]) {
+    private static boolean isKindOf(CsmDeclaration.Kind kind, CsmDeclaration.Kind kinds[]) {
         for (int i = 0; i < kinds.length; i++) {
             if (kind == kinds[i]) {
                 return true;
@@ -716,7 +723,7 @@ public final class CsmProjectContentResolver {
         return CsmSortUtilities.matchName(name, strPrefix, match, caseSensitive);
     }
     
-    private boolean matchName(String name, String strPrefix, boolean match, boolean caseSensitive) {
+    private static boolean matchName(String name, String strPrefix, boolean match, boolean caseSensitive) {
         return CsmSortUtilities.matchName(name, strPrefix, match, caseSensitive);
     }
     
@@ -741,4 +748,17 @@ public final class CsmProjectContentResolver {
         }
         return out;
     }
+
+    private List filterVariables(List<CsmVariable> res) {
+        Map<String,CsmVariable> out = new HashMap<String, CsmVariable>(res.size());
+        for (CsmVariable var : res) {
+            String fqn = var.getQualifiedName();
+            CsmVariable old = out.get(fqn);
+            // replace extern variable by normal one if needed
+            if (old == null || !CsmKindUtilities.isExternVariable(var)) {
+                out.put(fqn, var);
+            }
+        }
+        return new ArrayList(out.values());
+    } 
 }

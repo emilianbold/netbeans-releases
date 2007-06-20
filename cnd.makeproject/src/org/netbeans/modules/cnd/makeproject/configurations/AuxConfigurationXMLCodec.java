@@ -84,5 +84,8 @@ class AuxConfigurationXMLCodec extends CommonConfigurationXMLCodec {
 
     // interface XMLDecoder
     public void endElement(String element, String currentText) {
+        if (element.equals(DEFAULT_CONF_ELEMENT)) {
+            configurationDescriptor.getConfs().setActive(new Integer(currentText).intValue());
+        }
     }
 }

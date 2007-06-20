@@ -445,6 +445,10 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
                         dummyNodes[i] = new DummyNode(currentConfigurationNode.getSheet(project, projectDescriptor, selectedConfigurations[i]), selectedConfigurations[i].getName());
                     }
                     currentPropertySheetView.setNodes(dummyNodes);
+                    // FIXUP FIXUP FIXUP
+                    // Emergency work-around to get project properties to work with NB6.0. Will be fixed correctly ASAP...
+                    try {Thread.currentThread().sleep(200);}catch(Exception e){;};
+                    // FIXUP FIXUP FIXUP
                     JPanel panel = new JPanel();
                     panel.setLayout(new java.awt.GridBagLayout());
                     panel.setBorder(new javax.swing.border.EtchedBorder());

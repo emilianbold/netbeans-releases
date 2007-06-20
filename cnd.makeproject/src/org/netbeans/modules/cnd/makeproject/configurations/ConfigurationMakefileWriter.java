@@ -116,7 +116,7 @@ public class ConfigurationMakefileWriter {
                 } else if (line.indexOf("<CNS>") >= 0) { // NOI18N
                     line = line.replaceFirst("<CNS>", configurations); // NOI18N
                 } else if (line.indexOf("<CN>") >= 0) { // NOI18N
-                    line = line.replaceFirst("<CN>", projectDescriptor.getConfs().getActive().getName()); // NOI18N
+                    line = line.replaceFirst("<CN>", projectDescriptor.getConfs().getConf(0).getName()); // NOI18N
                 }
                 bw.write(line + "\n"); // NOI18N
             }

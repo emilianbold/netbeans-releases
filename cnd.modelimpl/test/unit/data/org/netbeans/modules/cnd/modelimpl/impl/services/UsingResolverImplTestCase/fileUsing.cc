@@ -1,6 +1,11 @@
 
-#include "fileNs1.h"
+void nothingIsVisible() {
+     // 
+}
+
 #include "fileNs2.h"
+
+#include "fileNs1.h"
 
 void beforeUsingNsTwoFun() {
      // 

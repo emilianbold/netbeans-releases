@@ -50,10 +50,7 @@ public class Stats {
     public static final boolean queueTiming = getBoolean("cnd.repository.queue.timing", false); //NOI18N
     public static final boolean queueTrace = getBoolean("cnd.repository.queue.trace", false); //NOI18N
     public static final boolean queueUseTicking = getBoolean("cnd.repository.queue.ticking", false); //NOI18N
-    public static final boolean useThreading = getBoolean("cnd.repository.threading", true); //NOI18N
     
-    public static final boolean writeToASingleFile = getBoolean("cnd.repository.1file", false); //NOI18N
-
     public static final int fileStatisticsLevel = getInteger("cnd.repository.file.stat", 0); //NOI18N
     public static final int fileStatisticsRanges = getInteger("cnd.repository.file.stat.ranges", 10); //NOI18N
 

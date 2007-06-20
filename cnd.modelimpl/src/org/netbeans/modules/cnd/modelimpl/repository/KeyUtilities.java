@@ -65,6 +65,10 @@ public class KeyUtilities {
         return new ProjectKey(project);
     }
     
+    public static Key createProjectKey(String projectQualifiedName) {
+        return new ProjectKey(projectQualifiedName);
+    }
+    
     public static Key createOffsetableDeclarationKey(OffsetableDeclarationBase obj) {
         assert obj != null;
         return new OffsetableDeclarationKey(obj);
@@ -186,6 +190,10 @@ public class KeyUtilities {
     /*package*/ static final class ProjectKey extends ProjectNameBasedKey {
         public ProjectKey(CsmProject project) {
             super(project.getQualifiedName());
+        }
+	
+        public ProjectKey(String projectQualifiedName) {
+            super(projectQualifiedName);
         }
         
         /*package*/ ProjectKey(DataInput aStream) throws IOException {
@@ -490,7 +498,9 @@ public class KeyUtilities {
         }
         
         protected String getFileName() {
-            return KeyUtilities.unitNamesCache.getFileNames(unitIndex).getValueById(this.fileNameIndex);
+            final IntToStringCache fileNames = KeyUtilities.unitNamesCache.getFileNames(unitIndex);
+            final String fileName = fileNames.getValueById(this.fileNameIndex);
+            return fileName;
         }
         
         public int getDepth() {
@@ -506,6 +516,47 @@ public class KeyUtilities {
 
     private static class UnitsCache extends IntToStringCache {
         private static ArrayList<IntToStringCache> fileNamesCaches = new ArrayList<IntToStringCache>();
+        
+        public void read(DataInput stream) throws IOException {
+            assert stream != null;
+            assert cache != null;
+            
+            cache.clear();
+            fileNamesCaches.clear();
+            
+            int size = stream.readInt();
+            
+            for (int i = 0; i < size; i++) {
+                String value = stream.readUTF();
+                if (value.equals("")) {
+                    cache.add(null);
+                } else {
+                    cache.add(value);
+                }
+                fileNamesCaches.add(new IntToStringCache());
+            }
+        }
+        
+        public void insertUnitFileCache (String name, IntToStringCache filesCache) {
+            int index = cache.indexOf(name);
+            if (index == -1) {
+                index = super.makeId(name);
+            }
+            fileNamesCaches.set(index, filesCache);
+        }
+        
+        
+        public IntToStringCache removeFileNames(String unitName) {
+            synchronized (cache) {
+                IntToStringCache fileNames = null;
+                int index = cache.indexOf(unitName);
+                if (index != -1) {
+                    fileNames = fileNamesCaches.get(index);
+                    fileNamesCaches.set(index, new IntToStringCache());
+                }
+                return fileNames;
+            }
+        }
     
         public int remove(String value) {
             synchronized (cache) {
@@ -546,7 +597,48 @@ public class KeyUtilities {
     }
     
     private static class IntToStringCache {
-        protected final List<String> cache = new ArrayList<String>();
+        protected final List<String> cache;
+        
+        public IntToStringCache() {
+            cache = new ArrayList<String>();
+        }
+        
+        public IntToStringCache(DataInput stream) throws IOException {
+            assert stream != null;
+            
+            cache = new ArrayList<String>();
+            
+            int size = stream.readInt();
+            
+            for (int i = 0; i < size; i++) {
+                String value = stream.readUTF();
+                if (value.equals("")) {
+                    value = null;
+                }
+                cache.add(value);
+            }
+        }
+        
+        /*
+         * Persists the master index: unit name <-> integer index
+         *
+         */
+        public void write(DataOutput stream ) throws IOException {
+            assert cache != null;
+            assert stream != null;
+            
+            int size = cache.size();
+            stream.writeInt(size);
+            
+            for (int i = 0; i < size; i++) {
+                String value = cache.get(i);
+                if (value == null) {
+                    stream.writeUTF("");
+                } else {
+                    stream.writeUTF(value);
+                }
+            }
+        }
         
         public int getId(String value) {
             synchronized (cache) {
@@ -573,8 +665,37 @@ public class KeyUtilities {
     
     private static UnitsCache unitNamesCache = new UnitsCache();
     
+    public static void readUnitsCache(DataInput stream) throws IOException {
+        assert stream != null;
+        
+        unitNamesCache.read(stream);
+    }
+    
+    public static void writeUnitsCache(DataOutput stream) throws IOException {
+        assert stream != null;
+        
+        unitNamesCache.write(stream);
+    }
+    
+    public static void readUnitFilesCache(String name, DataInput stream) throws IOException {
+        assert name != null;
+        assert stream != null;
+        
+        IntToStringCache filesCache = new IntToStringCache(stream);
+        unitNamesCache.insertUnitFileCache(name, filesCache);
+    }
+    
+    public static void writeUnitFilesCache (String unitName, DataOutput stream) throws IOException {
+        assert unitName != null;
+        assert stream != null;
+        
+        int unitId = unitNamesCache.getId(unitName);
+        IntToStringCache cache = unitNamesCache.getFileNames(unitId);
+        cache.write(stream);
+    }
+    
     public static void closeUnit(String unitName) {
-        unitNamesCache.remove(unitName);
+        unitNamesCache.removeFileNames(unitName);
     }
     
     private static abstract class ProjectNameBasedKey extends AbstractKey {

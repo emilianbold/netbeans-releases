@@ -173,11 +173,12 @@ public class APTSerializeUtils {
     // persistence support
     
     public static void writeSystemMacroMap(APTMacroMap macroMap, DataOutput output) throws IOException {
-        throw new UnsupportedOperationException("Not yet supported"); // NOI18N
+        //throw new UnsupportedOperationException("Not yet supported"); // NOI18N
     }
     
     public static APTMacroMap readSystemMacroMap(DataInput input) throws IOException {
-        throw new UnsupportedOperationException("Not yet supported"); // NOI18N
+        //throw new UnsupportedOperationException("Not yet supported"); // NOI18N
+        return null;
     }
     
     public static void writeMacroMapState(APTMacroMap.State state, DataOutput output) throws IOException {
@@ -245,7 +246,7 @@ public class APTSerializeUtils {
         if (snap == null) {
             output.writeInt(NULL_POINTER);
         } else {
-            output.write(MACRO_MAP_SNAPSHOT);
+            output.writeInt(MACRO_MAP_SNAPSHOT);
             snap.write(output);
         }
     }

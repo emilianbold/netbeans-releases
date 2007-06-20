@@ -134,9 +134,16 @@ public class APTFileMacroMap extends APTBaseMacroMap {
             APTSerializeUtils.writeSystemMacroMap(this.sysMacroMap, output);
         }
 
-        public FileStateImpl(DataInput input) throws IOException {
+        public FileStateImpl(final DataInput input) throws IOException {
             super(input);
-            this.sysMacroMap = APTSerializeUtils.readSystemMacroMap(input);
+            
+            APTMacroMap systemMap = APTSerializeUtils.readSystemMacroMap(input);
+             
+            if (systemMap == null) {
+                this.sysMacroMap = APTBaseMacroMap.EMPTY;
+            } else {
+                this.sysMacroMap = systemMap;
+            }
         }  
         
         public StateImpl copyCleaned() {

@@ -23,8 +23,10 @@ import java.io.File;
 import java.io.IOException;
 import org.netbeans.modules.cnd.api.execution.NativeExecutor;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.api.utils.Path;
 import org.netbeans.modules.cnd.execution.ShellExecSupport;
 import org.netbeans.modules.cnd.loaders.ShellDataObject;
+import org.netbeans.modules.cnd.settings.CppSettings;
 import org.openide.LifecycleManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -124,18 +126,17 @@ public class ShellRunAction extends NodeAction {
         }
        
         // Execute the makefile
+        String[] envp = { Path.getPathName() + '=' + CppSettings.getDefault().getPath() };
         try {
-        new NativeExecutor(
+            new NativeExecutor(
                 buildDir.getPath(),
                 shellCommand,
                 argsFlat,
-                null,
+                envp,
                 tabName,
                 "Run", // NOI18N
                 true).execute();
-        }
-        catch (IOException ioe) {
-            System.err.println("run failed: " + ioe); // FIXUP
+        } catch (IOException ioe) {
         }    
     }
         

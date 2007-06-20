@@ -79,8 +79,6 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
     public boolean canWrite(Persistent obj) {
         if (obj instanceof FileImpl) {
             return ((FileImpl)obj).getBuffer().isFileBased();
-        } else if (obj instanceof ProjectBase) {
-            return false;
         } else {
             return true;
         }
@@ -93,6 +91,10 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
             aHandler = LIB_PROJECT_IMPL;
         } else if (object instanceof ProjectImpl) {
             aHandler = PROJECT_IMPL;
+        } else if (object instanceof FileContainer ) {
+            aHandler = FILES_CONTAINER;
+        } else if (object instanceof GraphContainer) {
+            aHandler = GRAPTH_CONTAINER;
         } else if (object instanceof FileImpl) {
             aHandler = FILE_IMPL;
         } else if (object instanceof Unresolved.UnresolvedFile) {
@@ -208,6 +210,14 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
                 
             case LIB_PROJECT_IMPL:
                 obj = new LibProjectImpl(stream);
+                break;
+                
+            case FILES_CONTAINER:
+                obj = new FileContainer(stream);
+                break;
+                
+            case GRAPTH_CONTAINER:
+                obj = new GraphContainer(stream);
                 break;
                 
             case FILE_IMPL:
@@ -379,7 +389,9 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
     
     private static final int PROJECT_IMPL                   = FIRST_INDEX;
     private static final int LIB_PROJECT_IMPL               = PROJECT_IMPL + 1;    
-    private static final int FILE_IMPL                      = LIB_PROJECT_IMPL + 1;
+    private static final int FILES_CONTAINER                = LIB_PROJECT_IMPL + 1;
+    private static final int GRAPTH_CONTAINER               = FILES_CONTAINER + 1;
+    private static final int FILE_IMPL                      = GRAPTH_CONTAINER + 1;
     private static final int ENUM_IMPL                      = FILE_IMPL + 1;
     private static final int CLASS_IMPL                     = ENUM_IMPL + 1;
     private static final int UNRESOLVED_FILE                = CLASS_IMPL + 1;

@@ -34,6 +34,10 @@ import org.netbeans.modules.cnd.repository.testbench.Stats;
  */
 public class RepositoryQueue extends KeyValueQueue<Key, Persistent> {
     
+    public Object getLockObject() {
+        return lock;
+    }
+    
     /** Overrides parent to allow timing by flag */
     protected boolean needsTiming() {
         return Stats.queueTiming;
@@ -63,31 +67,6 @@ public class RepositoryQueue extends KeyValueQueue<Key, Persistent> {
         throw new UnsupportedOperationException();
     }
     
-    /*public void waitReady() throws InterruptedException {
-        synchronized ( lock ) {
-            try {
-                while( active && !isReady() ) {
-                    if( Stats.allowMaintenance && maintainer != null) {
-                        if( Stats.queueTrace ) System.err.printf("%s: maintenance %n ms...\n", getName(), Stats.maintenanceInterval); // NOI18N
-                        long time = System.currentTimeMillis();
-                        if( ! maintainer.maintenance(Stats.maintenanceInterval) ) {
-                            time = System.currentTimeMillis() - time;
-                            if( time < Stats.maintenanceInterval ) {
-                                Thread.sleep(Stats.maintenanceInterval - time);
-                            }
-                            break;
-                        }
-                    } else {
-                        //if( Stats.queueTrace ) System.err.printf("%s: sleeping %n ms...\n", getName(), Stats.maintenanceInterval); // NOI18N
-                        lock.wait(Stats.maintenanceInterval);
-                    }
-                    onIdle();
-                }
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
-        }
-    }*/
 
     public void onIdle() {
         // do nothing

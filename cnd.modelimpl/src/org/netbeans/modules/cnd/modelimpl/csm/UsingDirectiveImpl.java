@@ -24,6 +24,7 @@ import antlr.collections.AST;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.apt.utils.TextCache;
 import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
@@ -56,24 +57,22 @@ public class UsingDirectiveImpl extends OffsetableDeclarationBase<CsmUsingDirect
     
     public CsmNamespace getReferencedNamespace() {
         // TODO: process preceding aliases
-//        if (!Boolean.getBoolean("cnd.modelimpl.resolver2"))
-        if (ResolverFactory.resolver != 2)
-            return ((ProjectBase) getContainingFile().getProject()).findNamespace(name, true);
-        else {
-            CsmNamespace referencedNamespace = _getReferencedNamespace();
-            if (referencedNamespace == null) {
-                _setReferencedNamespace(null);
-                CsmObject result = ResolverFactory.createResolver(
-                        getContainingFile(),
-                        startOffset).
-                        resolve(name);
-                if (result != null && result instanceof CsmNamespaceDefinition) {
-                    referencedNamespace = ((CsmNamespaceDefinition)result).getNamespace();
-                    _setReferencedNamespace(referencedNamespace);
-                }
+        CsmNamespace referencedNamespace = _getReferencedNamespace();
+        if (referencedNamespace == null) {
+            _setReferencedNamespace(null);
+            CsmObject result = ResolverFactory.createResolver(
+                    getContainingFile(),
+                    startOffset).
+                    resolve(name);
+            if (result != null && result instanceof CsmNamespaceDefinition) {
+                result = ((CsmNamespaceDefinition)result).getNamespace();
             }
-            return referencedNamespace;
+            if (CsmKindUtilities.isNamespace(result)) {
+                referencedNamespace = (CsmNamespace)result;
+                _setReferencedNamespace(referencedNamespace);
+            }
         }
+        return referencedNamespace;
     }
     
     private CsmNamespace _getReferencedNamespace() {

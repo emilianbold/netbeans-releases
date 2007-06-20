@@ -352,11 +352,6 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         if( FileImpl.isOfFileScope(v) ) {
             return false;
         }
-        if( v.isExtern() ) {
-            if( v.getInitialValue() == null ) {
-                return false;
-            }
-        }
         return true;
     }
     

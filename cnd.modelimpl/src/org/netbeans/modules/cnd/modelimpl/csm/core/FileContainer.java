@@ -27,29 +27,45 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.apt.debug.DebugUtils;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.utils.APTHandlersSupport;
+import org.netbeans.modules.cnd.apt.utils.APTStringManager;
 import org.netbeans.modules.cnd.apt.utils.FilePathCache;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
+import org.netbeans.modules.cnd.repository.spi.Persistent;
+import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 
 /**
  * Storage for files and states. Class was extracted from ProjectBase.
  * @author Alexander Simon
  */
-/*package-local*/ class FileContainer {
+/*package-local*/ class FileContainer implements Persistent, SelfPersistent {
     private static final boolean TRACE_PP_STATE_OUT = DebugUtils.getBoolean("cnd.dump.preproc.state", false);
+    private final Object lock = new Object();
+    private Map<String, MyFile> myFiles = Collections.synchronizedMap(new HashMap<String, MyFile>());
+    private Map<String, Object/*String or String[]*/> canonicFiles = Collections.synchronizedMap(new HashMap<String, Object/*String or String[]*/>());
+    
     
     /** Creates a new instance of FileContainer */
     public FileContainer() {
+    }
+    
+    public FileContainer (DataInput input) throws IOException {
+        readStringToMyFileMap(input, myFiles);
+        readStringToStringsArrMap(input, canonicFiles);
+    
     }
     
     public void putFile(File file, FileImpl impl, APTPreprocHandler.State state) {
@@ -208,20 +224,9 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
     }
     
     public void write(DataOutput aStream) throws IOException {
-        UIDObjectFactory aFactory = UIDObjectFactory.getDefaultFactory();
-        HashMap<String,CsmUID<CsmFile>> files = new HashMap<String,CsmUID<CsmFile>>();
-        HashMap<String,APTPreprocHandler.State> handlers = new HashMap<String,APTPreprocHandler.State>();
-        System.err.println("NEED TO UPDATE SERIALIZATION");
-        synchronized( myFiles ) {
-            for(Map.Entry<String, MyFile> entry : myFiles.entrySet()){
-                files.put(entry.getKey(),entry.getValue().fileNew);
-                if (entry.getValue().state != null){
-                    handlers.put(entry.getKey(),entry.getValue().state);
-                }
-            }
-        }
-        aFactory.writeStringToUIDMap(files, aStream, true);
-        PersistentUtils.writeStringToStateMap(handlers, aStream);
+        writeStringToMyFileMap(aStream, myFiles);
+        writeStringToStringsArrMap(aStream, canonicFiles);
+ 
     }
     
     public void read(DataInput aStream) throws IOException {
@@ -253,9 +258,6 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
         return sharedText ? FilePathCache.getString(key) : key;
     }
     
-    private Map<String, MyFile> myFiles = Collections.synchronizedMap(new HashMap<String, MyFile>());
-    
-    private Map<String, Object/*String or String[]*/> canonicFiles = Collections.synchronizedMap(new HashMap<String, Object/*String or String[]*/>());
 
     private String getAlternativeFileKey(String primaryKey) {
         Object out = canonicFiles.get(primaryKey);
@@ -353,13 +355,134 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
         }
     }
     
-    private final Object lock = new Object();
+    private static void writeStringToMyFileMap (
+            final DataOutput output, Map<String, MyFile> aMap) throws IOException {
+        assert output != null;
+        assert aMap != null;
+        int size = aMap.size();
+        
+        //write size
+        output.writeInt(size);
+        
+        // write the map
+        final Set<Entry<String, MyFile>> entrySet = aMap.entrySet();
+        final Iterator <Entry<String, MyFile>> setIterator = entrySet.iterator();
+        while (setIterator.hasNext()) {
+            final Entry<String, MyFile> anEntry = setIterator.next();
+
+            output.writeUTF(anEntry.getKey());
+            assert anEntry.getValue() != null;
+            anEntry.getValue().write(output);
+        }
+    }
     
-    private static class MyFile {
+    private static void  readStringToMyFileMap(
+            final DataInput input, Map<String, MyFile> aMap) throws IOException {
+        
+        assert input != null; 
+        assert aMap != null;
+        
+        final APTStringManager pathManager = FilePathCache.getManager();
+        
+        aMap.clear();
+        final int size = input.readInt();
+        
+        for (int i = 0; i < size; i++) {
+            String key = input.readUTF();
+            key = pathManager == null? key: pathManager.getString(key);
+            MyFile value = new MyFile(input);
+            
+            assert key != null;
+            assert value != null;
+            
+            aMap.put(key, value);
+        }
+    }
+    
+    private static void writeStringToStringsArrMap (
+            final DataOutput output, final Map<String, Object/*String or String[]*/> aMap) throws IOException {
+        
+        assert output != null;
+        assert aMap != null;
+        
+        final int size = aMap.size();
+        output.writeInt(size);
+        
+        final Set<Entry<String, Object>> entrySet = aMap.entrySet();
+        final Iterator<Entry<String, Object>> setIterator = entrySet.iterator();
+        
+        while (setIterator.hasNext()) {
+            final Entry<String, Object> anEntry = setIterator.next();
+            assert anEntry != null;
+            
+            final String key = anEntry.getKey();
+            final Object value = anEntry.getValue();
+            assert key != null;
+            assert value != null;
+            assert ((value instanceof String) || (value instanceof String[]));
+            
+            output.writeUTF(key);
+            
+            if (value instanceof String ) {
+                output.writeInt(1);
+                output.writeUTF((String)value);
+            } else if (value instanceof String[]) {
+                
+                final String[] array = (String[]) value;
+                
+                output.writeInt(array.length);
+                for (int j = 0; j < array.length; j++) {
+                    output.writeUTF(array[j]);
+                }
+            }
+        }
+    }
+    
+    private static void readStringToStringsArrMap (
+            final DataInput input, Map<String, Object/*String or String[]*/> aMap) throws IOException {
+        assert input != null;
+        assert aMap != null;
+        
+        final APTStringManager pathManager = FilePathCache.getManager();
+        
+        aMap.clear();
+        
+        final int size = input.readInt();
+        
+        for (int i = 0; i < size; i++) {
+            String key = input.readUTF();
+            key = pathManager == null ? key : pathManager.getString(key);
+            assert key != null;
+            
+            final int arraySize = input.readInt();
+            assert arraySize != 0;
+            
+            final String[] value = new String[arraySize];
+            
+            for (int j = 0; j < arraySize; j++) {
+                String path = input.readUTF();
+                path = pathManager == null ? path : pathManager.getString(path);
+                assert path != null;
+                
+                value[j] = path;
+            }
+        }
+    }
+    
+    private static class MyFile implements Persistent, SelfPersistent {
         private final CsmUID<CsmFile> fileNew;
         private final FileImpl fileOld;
         private final String canonical;
         private APTPreprocHandler.State state;
+        
+        private MyFile (final DataInput input) throws IOException {
+            fileNew = UIDObjectFactory.getDefaultFactory().readUID(input);
+            canonical = input.readUTF();
+            if (input.readBoolean()){
+                state = PersistentUtils.readPreprocState(input);
+            }
+            fileOld = null;
+        }
         
         private MyFile(CsmUID<CsmFile> fileNew, APTPreprocHandler.State state, String fileKey) {
             this.fileNew = fileNew;
@@ -373,6 +496,15 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
             fileNew = null;
             this.state = state;
             this.canonical = getCanonicalKey(fileKey);
+        }
+
+        public void write(final DataOutput output) throws IOException {
+            UIDObjectFactory.getDefaultFactory().writeUID(fileNew, output);
+            output.writeUTF(canonical);
+            output.writeBoolean(state != null);
+            if (state != null) {
+                PersistentUtils.writePreprocState(state, output);
+            }
         }
     }
     

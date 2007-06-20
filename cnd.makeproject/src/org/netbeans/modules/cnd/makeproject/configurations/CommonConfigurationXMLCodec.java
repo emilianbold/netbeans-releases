@@ -46,6 +46,8 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.FortranCompilerCo
 
 /**
  * History:
+ * V37:
+ *   Moved active configuration (DEFAULT_CONF_ELEMENT) to private
  * V36:
  *   ARCHITECTURE_ELEMENT added.
  * V35:
@@ -70,7 +72,7 @@ abstract class CommonConfigurationXMLCodec
     extends XMLDecoder
     implements XMLEncoder {
 
-    protected final static int CURRENT_VERSION = 36;
+    protected final static int CURRENT_VERSION = 37;
 
     // Generic
     protected final static String PROJECT_DESCRIPTOR_ELEMENT = "projectDescriptor"; // NOI18N
@@ -203,7 +205,9 @@ abstract class CommonConfigurationXMLCodec
 		writeLogicalFolders(xes);
 	    }
 	    xes.element(PROJECT_MAKEFILE_ELEMENT, ((MakeConfigurationDescriptor)projectDescriptor).getProjectMakefileName());
-	    xes.element(DEFAULT_CONF_ELEMENT, "" + projectDescriptor.getConfs().getActiveAsIndex()); // NOI18N
+	    if (!publicLocation) {
+                xes.element(DEFAULT_CONF_ELEMENT, "" + projectDescriptor.getConfs().getActiveAsIndex()); // NOI18N
+            }
 	    writeConfsBlock(xes);
 	xes.elementClose(CONFIGURATION_DESCRIPTOR_ELEMENT);
     }

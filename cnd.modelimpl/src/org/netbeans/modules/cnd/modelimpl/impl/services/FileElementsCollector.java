@@ -35,8 +35,8 @@ import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceAlias;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
+import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
-import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmScopeElement;
@@ -72,7 +72,6 @@ public class FileElementsCollector {
         this.destFile = file;
         this.project = (ProjectBase) file.getProject();
         this.destOffset = offset;
-        visitedFiles.add(file);
     }
     
     //private CsmNamespace currentNamespace;
@@ -143,9 +142,7 @@ public class FileElementsCollector {
         initMaps();
         if (visibleNamespaces == null) {
             visibleNamespaces = CsmUsingResolver.extractNamespaces(usingNamespaces);
-            // add global namespace
-            visibleNamespaces.add(this.destFile.getProject().getGlobalNamespace());
-            // add context and unnamed namespaces
+            // add scope's and unnamed visible namespaces
             visibleNamespaces.addAll(directVisibleNamespaces);
         }
         return visibleNamespaces;
@@ -316,7 +313,7 @@ public class FileElementsCollector {
     
     protected void gatherDeclarationsMaps(Iterable declarations) {
         for( Iterator it = declarations.iterator(); it.hasNext(); ) {
-            CsmOffsetableDeclaration o = (CsmOffsetableDeclaration) it.next();
+            CsmOffsetable o = (CsmOffsetable) it.next();
             try {
                 int start = o.getStartOffset();
                 int end = o.getEndOffset();
@@ -324,7 +321,7 @@ public class FileElementsCollector {
                     break;
                 }
                 //assert o instanceof CsmScopeElement;
-                if(CsmKindUtilities.isScopeElement(o)) {
+                if(CsmKindUtilities.isScopeElement((CsmObject)o)) {
                     gatherScopeElementMaps((CsmScopeElement) o, end);
                 } else {
                     if( FileImpl.reportErrors ) {

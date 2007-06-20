@@ -28,6 +28,7 @@ import org.netbeans.modules.cnd.api.model.CsmModelListener;
 import org.netbeans.modules.cnd.api.model.CsmProgressListener;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmUID;
+import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.spi.editor.errorstripe.UpToDateStatus;
 import org.netbeans.spi.editor.errorstripe.UpToDateStatusProvider;
@@ -41,14 +42,15 @@ import org.openide.loaders.DataObject;
 public class CppUpToDateStatusProvider extends UpToDateStatusProvider implements CsmProgressListener, CsmModelListener {
     private String filePath;
     private CsmUID<CsmFile> uid;
+    private BaseDocument document;
     private UpToDateStatus current = UpToDateStatus.UP_TO_DATE_OK;
     
     /** Creates a new instance of CppUpToDateStatusProvider */
     public CppUpToDateStatusProvider(BaseDocument document) {
-        filePath = getPath(document);
+        this.document = document;
         CsmModelAccessor.getModel().addProgressListener(this);
         CsmModelAccessor.getModel().addModelListener(this);
-        CsmFile file = getCsmFile();
+        CsmFile file = getCsmFile(null);
         if (file == null){
             current = UpToDateStatus.UP_TO_DATE_DIRTY;
         } else {
@@ -64,11 +66,19 @@ public class CppUpToDateStatusProvider extends UpToDateStatusProvider implements
         return current;
     }
     
-    private CsmFile getCsmFile() {
+    private CsmFile getCsmFile(CsmProject project) {
         CsmFile csmFile = null;
         if (uid == null) {
-            if (filePath != null) {
-                csmFile = CsmModelAccessor.getModel().findFile(filePath);
+            if (getPath() != null) {
+                if (project == null) {
+                    csmFile = CsmModelAccessor.getModel().findFile(getPath());
+                } else {
+                    if (project instanceof ProjectBase) {
+                        csmFile = ((ProjectBase)project).getFile(new File(getPath()));
+                    } else {
+                        csmFile = project.findFile(getPath());
+                    }
+                }
             }
             if (csmFile != null) {
                 uid = csmFile.getUID();
@@ -78,17 +88,20 @@ public class CppUpToDateStatusProvider extends UpToDateStatusProvider implements
             if (csmFile != null && !csmFile.isValid()) {
                 uid = null;
                 csmFile = null;
+                filePath = null;
                 changeStatus(UpToDateStatus.UP_TO_DATE_DIRTY);
             }
         }
         return csmFile;
     }
 
-    private String getPath(BaseDocument doc) {
-        BaseDocument bDoc = (BaseDocument) doc;
-        DataObject dao = NbEditorUtilities.getDataObject(bDoc);
-        FileObject fo = dao.getPrimaryFile();
-        return File.separator+fo.getPath();
+    private String getPath() {
+        if (filePath == null) {
+            DataObject dao = NbEditorUtilities.getDataObject(document);
+            FileObject fo = dao.getPrimaryFile();
+            filePath = File.separator+fo.getPath();
+        }
+        return filePath;
     }
     
     private void changeStatus(UpToDateStatus status){
@@ -111,19 +124,19 @@ public class CppUpToDateStatusProvider extends UpToDateStatusProvider implements
     }
 
     public void fileInvalidated(CsmFile file) {
-        if (getCsmFile() == file) {
+        if (getCsmFile(null) == file) {
             changeStatus(UpToDateStatus.UP_TO_DATE_PROCESSING);
         }
     }
 
     public void fileParsingStarted(CsmFile file) {
-        if (getCsmFile() == file) {
+        if (getCsmFile(null) == file) {
             changeStatus(UpToDateStatus.UP_TO_DATE_PROCESSING);
         }
     }
 
     public void fileParsingFinished(CsmFile file) {
-        if (getCsmFile() == file) {
+        if (getCsmFile(null) == file) {
             changeStatus(UpToDateStatus.UP_TO_DATE_OK);
         }
     }
@@ -132,10 +145,18 @@ public class CppUpToDateStatusProvider extends UpToDateStatusProvider implements
     }
 
     public void projectOpened(CsmProject project) {
+        CsmFile file = getCsmFile(project);
+        if (file == null) {
+            changeStatus(UpToDateStatus.UP_TO_DATE_DIRTY);
+        } else if (file.isParsed()) {
+            changeStatus(UpToDateStatus.UP_TO_DATE_OK);
+        } else {
+            changeStatus(UpToDateStatus.UP_TO_DATE_PROCESSING);
+        }
     }
 
     public void projectClosed(CsmProject project) {
-        CsmFile file = getCsmFile();
+        CsmFile file = getCsmFile(project);
         if (file == null || file.getProject() == project) {
             changeStatus(UpToDateStatus.UP_TO_DATE_DIRTY);
         }
@@ -145,13 +166,15 @@ public class CppUpToDateStatusProvider extends UpToDateStatusProvider implements
         CsmFile file = null;
         for (CsmFile f : e.getRemovedFiles()){
             if (file == null) {
-                file = getCsmFile();
+                file = getCsmFile(null);
                 if (file == null){
                     return;
                 }
             }
             if (file == f) {
                 changeStatus(UpToDateStatus.UP_TO_DATE_DIRTY);
+                filePath = null;
+                uid = null;
             }
         }
     }

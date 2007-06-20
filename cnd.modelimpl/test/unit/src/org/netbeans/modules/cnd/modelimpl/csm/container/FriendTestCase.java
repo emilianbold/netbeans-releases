@@ -36,18 +36,9 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.trace.TraceModelTestBase;
 
 /**
- * base class for hyperlink tests
+ * base class for friends tests
  *
- * entry point:
- * - performTest (@see performTest)
- *
- * What should be configured:
- * - the dir with the same name as test class (harness init the project from the dir)
- * i.e for CsmHyperlinkProviderTestCase create
- * ${completion}/test/unit/data/org/netbeans/modules/cnd/completion/cplusplus/hyperlink/CsmHyperlinkProviderTestCase
- * and put there any C/C++ files
- *
- * @author Vladimir Voskresensky
+ * @author Alexander Simon
  */
 public class FriendTestCase extends TraceModelTestBase {
     
@@ -57,8 +48,8 @@ public class FriendTestCase extends TraceModelTestBase {
     
     protected void setUp() throws Exception {
         super.setUp();
-        log("CndFriendTestCase.setUp started.");
-        log("Test "+getName()+  " started");
+        //log("CndFriendTestCase.setUp started.");
+        //log("Test "+getName()+  " started");
     }
     
     protected void tearDown() throws Exception {

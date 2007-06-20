@@ -19,7 +19,9 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
+import antlr.Token;
 import antlr.TokenStream;
+import antlr.TokenStreamException;
 import antlr.collections.AST;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.util.CsmTracer;
@@ -40,7 +42,9 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
+import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.APTParseFileWalker;
+import org.netbeans.modules.cnd.modelimpl.parser.apt.GuardBlockWalker;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.trace.TraceModel;
@@ -105,6 +109,8 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     private Collection<CsmUID<FunctionImplEx>> fakeRegistrationUIDs = new ArrayList();
     
     private final Object fakeLock;
+
+    private final GuardBlockState guardState = new GuardBlockState();
 
     public FileImpl(FileBuffer fileBuffer, ProjectBase project, int fileType, APTPreprocHandler preprocHandler) {
         setBuffer(fileBuffer);
@@ -289,6 +295,8 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             if (ast != null) {
                 disposeAll(false);
                 render(ast);
+            } else {
+                //System.err.println("null ast for file " + getAbsolutePath());
             }
 	}
 	finally {
@@ -513,7 +521,9 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             // use full APT for generating token stream
             if (TraceFlags.TRACE_CACHE) {
                 System.err.println("CACHE: parsing using full APT for " + getAbsolutePath());
-            }             
+            }      
+            // init guard info
+            setGuardState(preprocHandler, aptFull);
             // make real parse
             APTParseFileWalker walker = new APTParseFileWalker(aptFull, this, preprocHandler);
             if (TraceFlags.DEBUG) {
@@ -564,6 +574,24 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             }
         }
         return ast;
+    }
+
+    private void setGuardState(APTPreprocHandler preprocHandler, APTFile aptLight) {
+        GuardBlockWalker guard = new GuardBlockWalker(aptLight, preprocHandler);
+        TokenStream ts = guard.getTokenStream();
+        try {
+            Token token = ts.nextToken();
+            while (!APTUtils.isEOF(token)) {
+                if (!APTUtils.isCommentToken(token)) {
+                    guard.clearGuard();
+                    break;
+                }
+                token = ts.nextToken();
+            }
+        } catch (TokenStreamException ex) {
+            guard.clearGuard();
+        }
+        getGuardState().setGuardBlockState(preprocHandler, guard.getGuard());
     }
     
     public void addInclude(IncludeImpl includeImpl) {
@@ -919,6 +947,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         factory.writeUIDCollection(this.macros, output, true);
         factory.writeUIDCollection(this.fakeRegistrationUIDs, output, false);
         output.writeInt(state);
+        output.writeInt(fileType);
         
         // not null UID
         assert this.projectUID != null;
@@ -934,6 +963,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         factory.readUIDCollection(this.macros, input);
         factory.readUIDCollection(this.fakeRegistrationUIDs, input);
         state = input.readInt();
+        fileType = input.readInt();
 
         this.projectUID = UIDObjectFactory.getDefaultFactory().readUID(input);
         // not null UID
@@ -949,8 +979,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
 
     public int hashCode() {
         int retValue;
-        
-        retValue = getAbsolutePath().hashCode();
+        retValue = getIdentityHashPath(this).hashCode();
         return retValue;
     }
 
@@ -960,8 +989,53 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         }
         boolean retValue;
         CsmFile other = (CsmFile)obj;
-        retValue = this.getAbsolutePath().equals(other.getAbsolutePath());
+        retValue = getIdentityHashPath(this).equals(getIdentityHashPath(other));
         return retValue;
+    }
+    
+    private static String getIdentityHashPath(CsmFile file) {
+	return file.getProject().getQualifiedName() + "*" + file.getAbsolutePath();
+    }
+
+    private GuardBlockState getGuardState() {
+        return guardState;
+    }
+
+    // for tests only
+    public GuardBlockState testGetGuardState() {
+        return guardState;
+    }
+    
+    public boolean isNeedReparse(APTPreprocHandler.State oldState, APTPreprocHandler newState){
+        boolean update = false;
+        if (oldState == null) {
+            update = true;
+        } else if (!oldState.isStateCorrect() && newState.isStateCorrect()) {
+            update = true;
+        } else {
+            update = getGuardState().isNeedReparse(newState);
+        }
+        return update;
+    }
+
+    public boolean isNeedReparse(APTPreprocHandler.State ppState, APTPreprocHandler.State preprocState){
+        if (ppState != null && ppState.isStateCorrect()) {
+            // do nothing
+            if (preprocState != null && isNeedReparseGuardBlock(preprocState)) {
+                // override state with new one
+                return true;
+            }
+        } else if (preprocState != null && preprocState.isStateCorrect()) {
+            // override state with new one
+            return true;
+        }
+        return false;
+    }
+
+    private boolean isNeedReparseGuardBlock(APTPreprocHandler.State preprocState){
+        APTPreprocHandler preprocHandler = APTHandlersSupport.createEmptyPreprocHandler(getAbsolutePath());
+        preprocHandler.setState(preprocState);
+        return getGuardState().isNeedReparse(preprocHandler);
     }
     
     public int getOffset(int line, int column) {

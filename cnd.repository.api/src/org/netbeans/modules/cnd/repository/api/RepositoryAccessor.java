@@ -33,26 +33,24 @@ public class RepositoryAccessor
     private RepositoryAccessor() {};
    
     private static Repository instance;
+    private static final Object lock = new Object();
 
     /**
      * Default way for clients to get instance
      * @return instance of Repository
      */
-    public static synchronized Repository getRepository()
-    {
-        if (instance == null)
-        {
-//            if (Stats.validateKeys) {
-//                Stats.log("Testing keys using KeyValidatorRepository."); // NOI18N
-//                instance = new KeyValidatorRepository();
-//            } else if (Stats.useHardRefRepository) {
-//                Stats.log("Using HashMapRepository."); // NOI18N
-//                instance = new HashMapRepository ();
-//            } else {
-                instance = (Repository)Lookup.getDefault().lookup(Repository.class);
-//            }
+    public static Repository getRepository() {
+        if (instance == null) {
+            synchronized (lock) {
+                // double check is necessary because 
+                // it is possible to have concurrent creators serialized on lock
+                if (instance == null) {
+                    instance = (Repository)Lookup.getDefault().lookup(Repository.class);
+                }
+            }
+            assert(instance != null);
         }
-        assert(instance != null);
+        
         return instance;
     }
 }

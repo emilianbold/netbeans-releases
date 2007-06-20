@@ -1681,18 +1681,18 @@ direct_declarator
 	 TypeQualifier tq;}  
 	:
 		// Must be function declaration               
-	        ((function_attribute_specification)? idInBalanceParensHard LPAREN (RPAREN|parameter_list))=>
+		((function_attribute_specification)? idInBalanceParensHard LPAREN (RPAREN|parameter_list))=>
 		// TODO: refactor the grammar and use function_declarator here
 		(function_attribute_specification)?
-                id = idInBalanceParensHard                                                     
+		id = idInBalanceParensHard                                                     
 		{declaratorID(id, qiFun);}                
 		LPAREN! //{declaratorParameterList(false);}
 		(parameter_list)?
 		RPAREN! //{declaratorEndParameterList(false);}                
 		(tq = cv_qualifier)*
 		(exception_specification)?
-                (options {greedy=true;} :function_attribute_specification)?
-                (asm_block!)?
+		(options {greedy=true;} :function_attribute_specification)?
+		(asm_block!)?
 	|	(qualified_id LPAREN qualified_id)=>	// Must be class instantiation
 		id = qualified_id
 		{

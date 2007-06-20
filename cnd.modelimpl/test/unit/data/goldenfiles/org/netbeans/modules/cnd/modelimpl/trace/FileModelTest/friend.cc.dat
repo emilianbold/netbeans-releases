@@ -77,6 +77,41 @@ CLASS B (B ) [10:1/166-17:29/363] lcurly=173
             UNIQUE NAME FUNCTION:B::boo()
             PARAMETERS:
             RETURNS int TEXT=int  [13:5/221-13:8/224]
+    FRIENDS:
+        CLASS_FRIEND_DECLARATION A2 [12:5/200-12:11/206] FriendClassImpl
+            class:A2
+        FUNCTION DEFINITION moo2  [14:5/236-14:39/270] FriendFunctionDDImpl
+            SIGNATURE moo2(int)
+            UNIQUE NAME FUNCTION_DEFINITION:moo2(int)
+            DECLARATION: moo2  [1:1/0-1:15/14]
+            PARAMETERS:
+                 [14:21/252-14:24/255] type: int TEXT=int  [14:21/252-14:24/255] init: null
+            RETURNS int TEXT=int  [14:12/243-14:15/246]
+            STATEMENT Compound  [14:26/257-14:39/270]
+                STATEMENT Return  [14:28/259-14:37/268] text: 'return 0;'
+        FUNCTION moo [15:5/276-15:25/296] FriendFunctionImpl
+            DEFINITION: moo  [2:1/15-2:24/38]
+            SIGNATURE moo(int)
+            UNIQUE NAME FUNCTION:moo(int)
+            REFERENCED FRIEND FUNCTION: moo  [2:1/15-2:24/38]
+            PARAMETERS:
+                 [15:20/291-15:23/294] type: int TEXT=int  [15:20/291-15:23/294] init: null
+            RETURNS int TEXT=int  [15:12/283-15:15/286]
+        FUNCTION DEFINITION soo  [16:5/301-16:38/334] FriendFunctionDefinitionImpl
+            SIGNATURE soo()
+            UNIQUE NAME FUNCTION_DEFINITION:S2::soo()
+            DECLARATION: soo  [4:5/56-4:15/66]
+            PARAMETERS:
+            RETURNS int TEXT=int  [16:12/308-16:15/311]
+            STATEMENT Compound  [16:25/321-16:38/334]
+                STATEMENT Return  [16:27/323-16:36/332] text: 'return 0;'
+        FUNCTION soo2 [17:5/339-17:27/361] FriendFunctionImplEx
+            DEFINITION: soo2  [5:5/71-5:26/92]
+            SIGNATURE soo2()
+            UNIQUE NAME FUNCTION:S2::soo2()
+            REFERENCED FRIEND FUNCTION: soo2  [5:5/71-5:26/92]
+            PARAMETERS:
+            RETURNS int TEXT=int  [17:12/346-17:15/349]
 FUNCTION DEFINITION ccStyle  [18:1/364-18:30/393] FunctionDDImpl
     SIGNATURE ccStyle(int)
     UNIQUE NAME FUNCTION_DEFINITION:ccStyle(int)
@@ -146,6 +181,41 @@ CLASS B (B ) [10:1/166-17:29/363] lcurly=173
             UNIQUE NAME FUNCTION:B::boo()
             PARAMETERS:
             RETURNS int TEXT=int  [13:5/221-13:8/224]
+    FRIENDS:
+        CLASS_FRIEND_DECLARATION A2 [12:5/200-12:11/206] FriendClassImpl
+            class:A2
+        FUNCTION DEFINITION moo2  [14:5/236-14:39/270] FriendFunctionDDImpl
+            SIGNATURE moo2(int)
+            UNIQUE NAME FUNCTION_DEFINITION:moo2(int)
+            DECLARATION: moo2  [1:1/0-1:15/14]
+            PARAMETERS:
+                 [14:21/252-14:24/255] type: int TEXT=int  [14:21/252-14:24/255] init: null
+            RETURNS int TEXT=int  [14:12/243-14:15/246]
+            STATEMENT Compound  [14:26/257-14:39/270]
+                STATEMENT Return  [14:28/259-14:37/268] text: 'return 0;'
+        FUNCTION moo [15:5/276-15:25/296] FriendFunctionImpl
+            DEFINITION: moo  [2:1/15-2:24/38]
+            SIGNATURE moo(int)
+            UNIQUE NAME FUNCTION:moo(int)
+            REFERENCED FRIEND FUNCTION: moo  [2:1/15-2:24/38]
+            PARAMETERS:
+                 [15:20/291-15:23/294] type: int TEXT=int  [15:20/291-15:23/294] init: null
+            RETURNS int TEXT=int  [15:12/283-15:15/286]
+        FUNCTION DEFINITION soo  [16:5/301-16:38/334] FriendFunctionDefinitionImpl
+            SIGNATURE soo()
+            UNIQUE NAME FUNCTION_DEFINITION:S2::soo()
+            DECLARATION: soo  [4:5/56-4:15/66]
+            PARAMETERS:
+            RETURNS int TEXT=int  [16:12/308-16:15/311]
+            STATEMENT Compound  [16:25/321-16:38/334]
+                STATEMENT Return  [16:27/323-16:36/332] text: 'return 0;'
+        FUNCTION soo2 [17:5/339-17:27/361] FriendFunctionImplEx
+            DEFINITION: soo2  [5:5/71-5:26/92]
+            SIGNATURE soo2()
+            UNIQUE NAME FUNCTION:S2::soo2()
+            REFERENCED FRIEND FUNCTION: soo2  [5:5/71-5:26/92]
+            PARAMETERS:
+            RETURNS int TEXT=int  [17:12/346-17:15/349]
 FUNCTION DEFINITION moo2  [14:5/236-14:39/270] FriendFunctionDDImpl
     SIGNATURE moo2(int)
     UNIQUE NAME FUNCTION_DEFINITION:moo2(int)
@@ -159,6 +229,7 @@ FUNCTION moo [15:5/276-15:25/296] FriendFunctionImpl
     DEFINITION: moo  [2:1/15-2:24/38]
     SIGNATURE moo(int)
     UNIQUE NAME FUNCTION:moo(int)
+    REFERENCED FRIEND FUNCTION: moo  [2:1/15-2:24/38]
     PARAMETERS:
          [15:20/291-15:23/294] type: int TEXT=int  [15:20/291-15:23/294] init: null
     RETURNS int TEXT=int  [15:12/283-15:15/286]

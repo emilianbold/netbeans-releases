@@ -22,6 +22,7 @@ package org.netbeans.modules.cnd.modelimpl.trace;
 import java.io.File;
 import java.io.PrintStream;
 import org.netbeans.modules.cnd.api.model.CsmModel;
+import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.test.ModelImplBaseTestCase;
 import org.netbeans.modules.cnd.test.CndCoreTestUtils;
@@ -54,12 +55,21 @@ public class TraceModelTestBase extends ModelImplBaseTestCase {
         return helper.getModel();
     }
     
-    protected void preSetUp() {
+    protected void preSetUp()  throws Exception {
         // init flags needed for file model tests before creating TraceModel
     }
     
-    protected void postSetUp() {
+    protected void postSetUp()  throws Exception {
         // init flags needed for file model tests
+    }
+    
+    protected final void initParsedProject()  throws Exception {
+        File projectDir = getTestCaseDataDir();
+        helper.initParsedProject(projectDir.getAbsolutePath());
+    }
+    
+    protected final FileImpl getFileImpl(File file) {
+        return helper.getProject().getFile(file);
     }
     
     @Override 
@@ -82,28 +92,35 @@ public class TraceModelTestBase extends ModelImplBaseTestCase {
         getTraceModel().test(testFile, streamOut, streamErr);
     }
     
-    protected void performTest(String source, String goldenDataFileName, String goldenErrFileName) throws Exception {
-        File workDir = getWorkDir();
-        File testFile = getDataFile(source);
-        
-        File output = new File(workDir, goldenDataFileName);
-        PrintStream streamOut = new PrintStream(output);
+    protected void doTest(File testFile, PrintStream streamOut, PrintStream streamErr, Object ... params) throws Exception {
         PrintStream oldOut = System.out;
-        File error = new File(workDir, goldenErrFileName);
-        PrintStream streamErr = new PrintStream(error);
         PrintStream oldErr = System.err;
         try {
-            //System.out.println("testing " + testFile);     
             // redirect output and err
             System.setOut(streamOut);
             System.setErr(streamErr);
             performModelTest(testFile, streamOut, streamErr);
         } finally {
             // restore err and out
-            streamOut.close();
-            streamErr.close();
             System.setOut(oldOut);
             System.setErr(oldErr);
+        }
+    }
+    
+    protected void performTest(String source, String goldenDataFileName, String goldenErrFileName, Object ... params) throws Exception {
+        File workDir = getWorkDir();
+        File testFile = getDataFile(source);
+        
+        File output = new File(workDir, goldenDataFileName);
+        PrintStream streamOut = new PrintStream(output);
+        File error = new File(workDir, goldenErrFileName);
+        PrintStream streamErr = new PrintStream(error);
+        try {
+            doTest(testFile, streamOut, streamErr, params);
+        } finally {
+            // restore err and out
+            streamOut.close();
+            streamErr.close();
         }
         //System.out.println("finished testing " + testFile);    
         

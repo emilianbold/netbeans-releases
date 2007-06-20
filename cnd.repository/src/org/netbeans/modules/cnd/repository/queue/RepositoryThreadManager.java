@@ -20,6 +20,7 @@
 package org.netbeans.modules.cnd.repository.queue;
 
 import java.util.*;
+import java.util.concurrent.locks.ReadWriteLock;
 import org.netbeans.modules.cnd.repository.testbench.Stats;
 import org.openide.util.RequestProcessor;
 
@@ -44,6 +45,8 @@ public class RepositoryThreadManager {
     private RepositoryWriter writer;
     private RepositoryQueue queue;
     private static boolean proceed = true;
+
+    private ReadWriteLock rwLock;
     
     private class Wrapper implements Runnable {
         
@@ -75,8 +78,9 @@ public class RepositoryThreadManager {
         }
     }
 
-    public RepositoryThreadManager(RepositoryWriter writer) {
+    public RepositoryThreadManager(RepositoryWriter writer, ReadWriteLock rwLock) {
 	this.writer = writer;
+        this.rwLock = rwLock;
 	standalone = ! RepositoryThreadManager.class.getClassLoader().getClass().getName().startsWith("org.netbeans."); // NOI18N
     }
 
@@ -91,7 +95,7 @@ public class RepositoryThreadManager {
         }
 	queue = Stats.queueUseTicking ? new TickingRepositoryQueue() : new RepositoryQueue();
         for (int i = 0; i < threadCount; i++) {
-            Runnable r = new Wrapper(new RepositoryWritingThread(writer, queue));
+            Runnable r = new Wrapper(new RepositoryWritingThread(writer, queue, rwLock));
             if( standalone ) {
                 new Thread(r).start();
             }

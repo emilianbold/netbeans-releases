@@ -23,6 +23,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.HashMap;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -39,6 +40,16 @@ public class VersionCommand implements Runnable {
     private String name;
     private String path;
     private String version = null;
+    private static HashMap<String, String> cygmap;
+    
+    static {
+        cygmap = new HashMap();
+        cygmap.put("cc.exe", "gcc.exe"); // NOI18N
+        cygmap.put("i686-pc-cygwin-gcc.exe", "gcc.exe"); // NOI18N
+        cygmap.put("c++.exe", "g++.exe"); // NOI18N
+        cygmap.put("i686-pc-cygwin-g++.exe", "g++.exe"); // NOI18N
+        cygmap.put("i686-pc-cygwin-c++.exe", "g++.exe"); // NOI18N
+    }
     
     /**
      * Creates a new instance of VersionCommand
@@ -48,9 +59,14 @@ public class VersionCommand implements Runnable {
         
         this.name = name;
         this.path = path;
+        try {
+            path = new File(path).getCanonicalPath();
+        } catch (IOException ex) {
+        }
         
         if (flavor.isGnuCompiler()) { 
             option = "--version"; // NOI18N
+            path = cygwinPath(path);
         } else if (flavor.isSunCompiler()) {
             option = "-V"; // NOI18N
         } else if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS) {
@@ -104,6 +120,24 @@ public class VersionCommand implements Runnable {
             
             nd.setTitle(NbBundle.getMessage(VersionCommand.class, "LBL_VersionInfo_Title"));
             DialogDisplayer.getDefault().notify(nd);
+        }
+    }
+    
+    /**
+     * Replace Cygwin symlinks with what they point to.
+     *
+     * @param orig The orignal path of a compiler/tool
+     * @returns The possibly modifued path of a real file
+     */
+    private String cygwinPath(String orig) {
+        int pos = orig.lastIndexOf(File.separatorChar);
+        String dir = orig.substring(0, pos);
+        String name = orig.substring(pos + 1);
+        String nuename = cygmap.get(name);
+        if (nuename != null) {
+            return dir + File.separator + nuename;
+        } else {
+            return orig;
         }
     }
 }

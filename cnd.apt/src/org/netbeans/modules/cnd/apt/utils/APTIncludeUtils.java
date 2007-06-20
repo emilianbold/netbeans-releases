@@ -26,6 +26,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.StringTokenizer;
 import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 
 /**
@@ -86,7 +87,14 @@ public class APTIncludeUtils {
     public static String resolveFilePath(String file, Collection<String> paths, String baseFile, boolean next) {
         Iterator<String> it = paths.iterator();
         if( next ) {
-            String baseFilePath = new File(baseFile).getParent();
+            String baseFilePath = baseFile;
+            StringTokenizer st = new StringTokenizer(file,"/"); // NOI18N
+            while (st.hasMoreTokens()) {
+                st.nextToken();
+                if (baseFilePath != null) {
+                    baseFilePath = new File(baseFilePath).getParent();
+                }
+            }
             while( it.hasNext() ) {
                 String sysPrefix = it.next();
                 if( sysPrefix.equals(baseFilePath) ) {

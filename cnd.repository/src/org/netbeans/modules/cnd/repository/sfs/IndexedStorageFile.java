@@ -62,7 +62,7 @@ class IndexedStorageFile extends FileStorage {
         boolean filesExists = (dataFile.exists() && indexFile.exists());
         fileRWAccess = createFileRWAccess(dataFile);
         
-        if (create && filesExists) {
+        if ( ! create && filesExists) {
             loadIndex();
             recalcUsedSize();
             indexFile.delete();
@@ -72,7 +72,8 @@ class IndexedStorageFile extends FileStorage {
             }
             
         } else {            
-            index = Stats.useCompactIndex ? new CompactFileIndex() : new SimpleFileIndex();            
+            //index = Stats.useCompactIndex ? new CompactFileIndex() : new SimpleFileIndex();            
+            index = new SimpleFileIndex();            
             fileRWAccess.truncate(0);
             
             if (indexFile.exists()) {
@@ -289,7 +290,7 @@ class IndexedStorageFile extends FileStorage {
             default:
                 result = new BufferedRWAccess(file);
         }
-        result.truncate(0);
+        //result.truncate(0);
         return result;
     }
 

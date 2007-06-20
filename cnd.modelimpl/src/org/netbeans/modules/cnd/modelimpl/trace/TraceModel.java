@@ -1640,7 +1640,7 @@ public class TraceModel {
 	}
 	
 	private void testLibProject() {
-		LibProjectImpl libProject = new LibProjectImpl(model, "/usr/include"); // NOI18N
+		LibProjectImpl libProject = LibProjectImpl.createInstance(model, "/usr/include"); // NOI18N
 		model.addProject(libProject);
 		tracer.dumpModel(libProject);
 	}

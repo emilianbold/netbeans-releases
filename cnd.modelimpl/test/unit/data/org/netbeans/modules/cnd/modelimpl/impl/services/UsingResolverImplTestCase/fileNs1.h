@@ -8,3 +8,5 @@ namespace NsOne {
     };
     
 }
+
+using namespace NsOne;

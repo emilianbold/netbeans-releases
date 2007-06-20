@@ -34,6 +34,32 @@ namespace S1 {
             boo();
             var2 = 104;
         }
+        
+        void funS2() {
+            clsS1 s1;
+            s1.clsS1pubFun();            
+            
+            clsS2 s2;
+            s2.clsS2pubFun();
+        }
+        
+        void clsS2::clsS2pubFun() {
+            
+        }
     }
+    
+    void funS1() {
+        clsS1 s1;
+        s1.clsS1pubFun();
+        
+        S2::clsS2 s2;
+        s2.clsS2pubFun();
+    }
+    
+    void clsS1::clsS1pubFun() {
+        
+    }
+    
+    extern int myCout;
 }
 

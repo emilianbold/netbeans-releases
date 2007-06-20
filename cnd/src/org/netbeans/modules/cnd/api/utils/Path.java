@@ -32,6 +32,7 @@ import org.openide.util.Utilities;
 public final class Path {
     
     private static ArrayList<String> list = new ArrayList();
+    private static String pathName = null;
     
     static {
         String path = System.getenv("PATH"); // NOI18N
@@ -110,5 +111,25 @@ public final class Path {
      */
     public static void remove(int pos) throws IndexOutOfBoundsException {
         list.remove(pos);
+    }
+    
+    /**
+     * This utility method makes it easier (on Windows) to replace PATH with one with
+     * the same case. IZ 103016 updated PATH but it wasn't foud because Path wasn't
+     * replaced. This will let us add a path using the exact same name.
+     */
+    public static String getPathName() {
+        if (pathName == null) {
+            if (Utilities.isWindows()) {
+                for (String key : System.getenv().keySet()) {
+                    if (key.toLowerCase().equals("path")) { // NOI18N
+                        pathName = key.substring(0, 4);
+                        return pathName;
+                    }
+                }
+            }
+            pathName = "PATH"; // NOI18N
+        }
+        return pathName;
     }
 }

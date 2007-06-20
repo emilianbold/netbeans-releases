@@ -20,12 +20,12 @@
 package org.netbeans.modules.cnd.repository.disk;
 
 import java.io.IOException;
-import org.netbeans.modules.cnd.repository.impl.*;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.netbeans.modules.cnd.repository.queue.RepositoryQueue;
 import org.netbeans.modules.cnd.repository.queue.RepositoryThreadManager;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
-import org.netbeans.modules.cnd.repository.testbench.Stats;
 
 /**
  *
@@ -33,53 +33,42 @@ import org.netbeans.modules.cnd.repository.testbench.Stats;
  */
 public final class DiskRepositoryManager extends AbstractDiskRepository {
     
-    private static DiskRepositoryManager instance = new DiskRepositoryManager();
-    private RepositoryQueue queue;
-    private RepositoryThreadManager threadManager;
+    private static DiskRepositoryManager    instance = new DiskRepositoryManager();
+    private final RepositoryQueue           queue;
+    private final RepositoryThreadManager   threadManager;
+    private final AbstractDiskRepository    defBehRepository;
+    private final AbstractDiskRepository    nonDefBehRepository;
+    private final Persistent                removedObject; 
+    private final ReadWriteLock             rwLock = new ReentrantReadWriteLock(true);
 
     public static DiskRepositoryManager getInstance() {
         return instance;
     }
     
-//    private Map<Key.Behavior, AbstractDiskRepository> repositories = new HashMap<Key.Behavior, AbstractDiskRepository>();
-//    public void registerRepository(Key.Behavior behavior, AbstractDiskRepository repository) {
-//        repositories.put(behavior, repository);
-//    }
-
-    private AbstractDiskRepository defaultRepository;
-    private AbstractDiskRepository bdri;
+    public RepositoryQueue getQueue() {
+        return queue;
+    }
     
     private DiskRepositoryManager() {
-        defaultRepository = new FilePerUnitDiskRepositoryImpl();
-        if (!Stats.writeToASingleFile) {
-            BaseDiskRepositoryImpl bdri = new BaseDiskRepositoryImpl();
-            bdri.setOpenFilesLimit(30);
-            this.bdri = bdri;
-        }
-	if( Stats.useThreading ) {
-	    threadManager = new RepositoryThreadManager(this);
-	    queue = threadManager.startup();
-	}
+        defBehRepository = new FilePerUnitDiskRepositoryImpl();
+        BaseDiskRepositoryImpl bdri = new BaseDiskRepositoryImpl();
+        removedObject  = new RemovedPersistent();
+        bdri.setOpenFilesLimit(30);
+        nonDefBehRepository = bdri;
+        threadManager = new RepositoryThreadManager(this, rwLock);
+	queue = threadManager.startup();
     }
     
     private AbstractDiskRepository getRepository(Key key) {
-        if (key.getBehavior() == Key.Behavior.Default || Stats.writeToASingleFile) {
-            return defaultRepository;
+        if (key.getBehavior() == Key.Behavior.Default) {
+            return defBehRepository;
         } else {
-            return bdri;
+            return nonDefBehRepository;
         }
     }
     
     public void put(Key id, Persistent obj) {
-	if( Stats.useThreading ) {
 	    queue.addLast(id, obj);
-	} else {
-	    try {
-		write(id, obj);
-	    } catch (IOException ex) {
-		ex.printStackTrace();
-	    }
-	}
     }
     
     public void waitForQueue() throws InterruptedException {
@@ -103,25 +92,15 @@ public final class DiskRepositoryManager extends AbstractDiskRepository {
     }
     
     private void iterateWith(Visitor visitor) {
-//        for (AbstractDiskRepository repository : repositories.values()) {
-//            visitor.visit(repository)
-//        }
-        visitor.visit(defaultRepository);
-        if (!Stats.writeToASingleFile) {
-	    visitor.visit(bdri);
-        }
+        visitor.visit(defBehRepository);
+        visitor.visit(nonDefBehRepository);
     }
 
-    private Object lockClearWrite = new String("Repository ClearWrite lock");
-    
-    private Key currentKey;
-    
     public void write(Key key, Persistent object) throws IOException {
-        currentKey = key;
-        synchronized ( lockClearWrite ) {
-            if (currentKey != null) {
-                getRepository(currentKey).write(currentKey, object);
-            }
+        if (object instanceof  RemovedPersistent) {
+            getRepository(key).remove(key);
+        } else {
+            getRepository(key).write(key, object);
         }
     }
 
@@ -147,21 +126,30 @@ public final class DiskRepositoryManager extends AbstractDiskRepository {
     public Persistent get(Key key) {
         return getRepository(key).get(key);
     }
+    
 
+
+    
     public void remove(Key key) {
-        getRepository(key).remove(key);
+        queue.addLast(key, removedObject);
+//        getRepository(key).remove(key);
     }
 
     public void closeUnit(final String unitName, final boolean cleanRepository) {
-        synchronized ( lockClearWrite ) {
-            
+        
+        try {
+            rwLock.writeLock().lock();
+        
             if (cleanRepository) {
+                
                 queue.clearQueue(new RepositoryQueue.Validator() {
                     public boolean isValid(Key key, Persistent value) {
                         return !key.getUnit().equals(unitName);
                     }
                 });
+                
             } else {
+                
                 queue.clearQueue(new RepositoryQueue.Validator() {
                     public boolean isValid(Key key, Persistent value) {
                         boolean result = !key.getUnit().equals(unitName);
@@ -177,25 +165,27 @@ public final class DiskRepositoryManager extends AbstractDiskRepository {
                     }
                 });                
             }
+            
             iterateWith(new Visitor() {
                 public void visit(AbstractDiskRepository repository) {
                     repository.closeUnit(unitName, cleanRepository);
                 }
             });
-            
-            //clean the repository cach files here if it is necessary
-            //
-            StorageAllocator allocator = StorageAllocator.getInstance();
-            if (cleanRepository) {
-                allocator.deleteUnitFiles(unitName);
-            }
-            
-            allocator.closeUnit(unitName);
-            
-            if (currentKey != null && unitName.equals(currentKey.getUnit())) {
-                currentKey = null;
-            }
+        } finally {
+            rwLock.writeLock().unlock();
         }
+            
+        //clean the repository cach files here if it is necessary
+        //
+        StorageAllocator allocator = StorageAllocator.getInstance();
+        if (cleanRepository) {
+            allocator.deleteUnitFiles(unitName);
+        }
+        allocator.closeUnit(unitName);
+    }
+    
+    private class RemovedPersistent implements Persistent {
+        
     }
 
     private interface Visitor {

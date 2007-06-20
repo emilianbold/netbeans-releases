@@ -20,6 +20,7 @@
 package org.netbeans.modules.cnd.ui.options;
 
 import java.awt.Color;
+import java.awt.Dialog;
 import java.awt.HeadlessException;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -29,8 +30,10 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.ResourceBundle;
 import java.util.StringTokenizer;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -42,8 +45,6 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import javax.swing.filechooser.FileFilter;
-import javax.swing.filechooser.FileSystemView;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -55,6 +56,7 @@ import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.settings.CppSettings;
+import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
@@ -104,7 +106,6 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
     
     private JFileChooser addDirectoryChooser;
     private CompilerSetManager csm;
-    private String addString;
     
     /** Creates new form ToolsPanel */
     public ToolsPanel() {
@@ -149,7 +150,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         cbCppRequired.setSelected(model.isCppRequired());
         cbFortranRequired.setSelected(model.isFortranRequired());
         
-        addString = NbBundle.getMessage(ToolsPanel.class, "LBL_AddButton"); // NOI18N
+        cbCompilerSet.removeAllItems();
     } 
     
     private void addDirectory() {
@@ -171,7 +172,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
                 file = addDirectoryChooser.getSelectedFile();
                 dirlist.add(0, file.getAbsolutePath());
                 csm = new CompilerSetManager(dirlist);
-                update();
+                update(false);
             }
         } catch (HeadlessException ex) {
         }
@@ -202,7 +203,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
                 }
             } finally {
                 if (changed) {
-                    update();
+                    update(false);
                 }
             }
         }
@@ -222,7 +223,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         }
         dirlist.add(idx, dir);
         lstDirlist.setSelectedIndex(idx);
-        update();
+        update(false);
     }
     
     /**
@@ -237,6 +238,16 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
      */
     private boolean checkForCSRemoval(int idx) {
         String dir = dirlist.get(idx);
+        int count = 0;
+        
+        for (String d : dirlist) {
+            if (d.equals(dir)) {
+                count++;
+            }
+        }
+        if (count > 1) {
+            return true; // its OK to remove a duplicate directory...
+        }
         
         for (CompilerSet cs : csm.getCompilerSets()) {
             String csdirs = cs.getDirectory();
@@ -351,9 +362,14 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
     
     /** Update the display */
     public void update() {
+        update(true);
+    }
+    
+    /** Update the display */
+    public void update(boolean doInitialize) {
         
         updating = true;
-        if (!initialized) {
+        if (!initialized || doInitialize) {
             initialize();
         }
         
@@ -427,14 +443,16 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         Tool cppSelection = getDefaultCompiler(cs, Tool.CCCompiler);
      
         for (Tool tool : cs.getTools()) {
-            if (tool.getKind() == Tool.CCompiler) {
-                cbCCommand.addItem(tool);
-            }
-            if (tool.getKind() == Tool.CCCompiler) {
-                cbCppCommand.addItem(tool);
-            }
-            if (fortran && tool.getKind() == Tool.FortranCompiler) {
-                cbFortranCommand.addItem(tool);
+            if (tool.getName().length() > 0) {
+                if (tool.getKind() == Tool.CCompiler) {
+                    cbCCommand.addItem(tool);
+                }
+                if (tool.getKind() == Tool.CCCompiler) {
+                    cbCppCommand.addItem(tool);
+                }
+                if (fortran && tool.getKind() == Tool.FortranCompiler) {
+                    cbFortranCommand.addItem(tool);
+                }
             }
         }
         if (cSelection != null) {
@@ -442,63 +460,90 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
             cbCCommand.setToolTipText(cSelection.toString());
             updateCPath(cSelection);
             cCommandSelection = cSelection;
-            cbCCommand.addItem(stringObject(addString));
         } else {
             tfCPath.setText("");
+            cbCCommand.setSelectedIndex(0);
         }
         if (cppSelection != null) {
             cbCppCommand.setSelectedItem(cppSelection);
             cbCppCommand.setToolTipText(cppSelection.toString());
             updateCppPath(cppSelection);
             cppCommandSelection = cppSelection;
-            cbCppCommand.addItem(stringObject(addString));
         } else {
             tfCppPath.setText("");
+            cbCppCommand.setSelectedIndex(0);
         }
-        if (fortran && fortranSelection != null) {
-            cbFortranCommand.setSelectedItem(fortranSelection);
-            cbFortranCommand.setToolTipText(fortranSelection.toString());
-            updateFortranPath(fortranSelection);
-            fortranCommandSelection = fortranSelection;
-            cbFortranCommand.addItem(stringObject(addString));
-        } else {
-            tfFortranPath.setText("");
+        if (fortran) {
+            if (fortranSelection != null) {
+                cbFortranCommand.setSelectedItem(fortranSelection);
+                cbFortranCommand.setToolTipText(fortranSelection.toString());
+                updateFortranPath(fortranSelection);
+                fortranCommandSelection = fortranSelection;
+            } else {
+                tfFortranPath.setText("");
+                cbFortranCommand.setSelectedIndex(0);
+            }
         }
         changingCompilerSet = false;
         dataValid();
     }
     
-    private void updateCPath(Tool tool) {
-        int toollen = tool.getPath().length();
-        int pathlen = tfCPath.getText().length();
-        
-        if ((toollen > 0 && pathlen == 0) || (toollen == 0 && pathlen > 0)) {
-            dataValid(); // force fire prop changed on PROP_VALID
+    private void updatePath(Tool tool, int kind) {
+        if (kind == Tool.CCompiler) {
+            updateCPath(tool);
+        } else if (kind == Tool.CCCompiler) {
+            updateCppPath(tool);
+        } else if (kind == Tool.FortranCompiler) {
+            updateFortranPath(tool);
         }
-        tfCPath.setText(tool.getPath());
-        tfCPath.setToolTipText(tool.getPath());
+    }
+    
+    private void updateCPath(Tool tool) {
+        if (tool != null) {
+            int toollen = tool.getPath().length();
+            int pathlen = tfCPath.getText().length();
+
+            if ((toollen > 0 && pathlen == 0) || (toollen == 0 && pathlen > 0)) {
+                dataValid(); // force fire prop changed on PROP_VALID
+            }
+            tfCPath.setText(tool.getPath());
+            tfCPath.setToolTipText(tool.getPath());
+        } else {
+            tfCPath.setText("");
+            tfCPath.setToolTipText("");
+        }
     }
     
     private void updateCppPath(Tool tool) {
-        int toollen = tool.getPath().length();
-        int pathlen = tfCppPath.getText().length();
-        
-        if ((toollen > 0 && pathlen == 0) || (toollen == 0 && pathlen > 0)) {
-            dataValid(); // force fire prop changed on PROP_VALID
+        if (tool != null) {
+            int toollen = tool.getPath().length();
+            int pathlen = tfCppPath.getText().length();
+
+            if ((toollen > 0 && pathlen == 0) || (toollen == 0 && pathlen > 0)) {
+                dataValid(); // force fire prop changed on PROP_VALID
+            }
+            tfCppPath.setText(tool.getPath());
+            tfCppPath.setToolTipText(tool.getPath());
+        } else {
+            tfCppPath.setText("");
+            tfCppPath.setToolTipText("");
         }
-        tfCppPath.setText(tool.getPath());
-        tfCppPath.setToolTipText(tool.getPath());
     }
     
     private void updateFortranPath(Tool tool) {
-        int toollen = tool.getPath().length();
-        int pathlen = tfFortranPath.getText().length();
-        
-        if ((toollen > 0 && pathlen == 0) || (toollen == 0 && pathlen > 0)) {
-            dataValid(); // force fire prop changed on PROP_VALID
+        if (tool != null) {
+            int toollen = tool.getPath().length();
+            int pathlen = tfFortranPath.getText().length();
+
+            if ((toollen > 0 && pathlen == 0) || (toollen == 0 && pathlen > 0)) {
+                dataValid(); // force fire prop changed on PROP_VALID
+            }
+            tfFortranPath.setText(tool.getPath());
+            tfFortranPath.setToolTipText(tool.getPath());
+        } else {
+            tfFortranPath.setText("");
+            tfFortranPath.setToolTipText("");
         }
-        tfFortranPath.setText(tool.getPath());
-        tfFortranPath.setToolTipText(tool.getPath());
     }
     
     /**
@@ -528,26 +573,33 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
      * restored to the earlier value.
      *
      * @param cs The CompilerSet for whom we want a tool
-     * @param type The compiler type we want
+     * @param kind The compiler type we want
      * @returns The Tool for the requested compiler (or null)
      */
-    protected Tool getDefaultCompiler(CompilerSet cs, int type) {
+    protected Tool getDefaultCompiler(CompilerSet cs, int kind) {
         String name = cs.getName();
         
         if (!name.equals(CompilerSet.None)) {
-            if (type == Tool.CCompiler) {
+            if (kind == Tool.CCompiler) {
                 if (cSelections.get(name) == null) {
                     return cs.getTool(cs.isSunCompiler() ? "cc" : "gcc"); // NOI18N
                 } else {
                     return cs.getTool(cSelections.get(name));
                 }
-            } else if (type == Tool.CCCompiler) {
+            } else if (kind == Tool.CCCompiler) {
                 if (cppSelections.get(name) == null) {
                     return cs.getTool(cs.isSunCompiler() ? "CC" : "g++"); // NOI18N
                 } else {
-                    return cs.getTool(cppSelections.get(name));
+                    Tool tool = cs.getTool(cppSelections.get(name), kind);
+                    if (tool == null) {
+                        File file = new File(cs.getDirectory(), name);
+                        if (file.exists()) {
+                            tool = cs.addTool(name, cs.getDirectory(), kind);
+                        }
+                    }
+                    return tool;
                 }
-            } else if (type == Tool.FortranCompiler) {
+            } else if (kind == Tool.FortranCompiler) {
                 if (fortranSelections.get(name) == null) {
                     return cs.getTool(cs.isSunCompiler() ? "f90" : "g77"); // NOI18N
                 } else {
@@ -667,163 +719,65 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
     private void postVersionInfo(CompilerFlavor flavor, String name, String path) {
         File file = new File(path);
         if (file.exists()) {
-            FileObject fo = FileUtil.toFileObject(file);
-            if (fo != null) {
-                String mime = fo.getMIMEType();
-                if (mime.startsWith("application/x-exe") || mime.equals(MIMENames.SHELL_MIME_TYPE)) { // NOI18N
-                    RequestProcessor.getDefault().post(new VersionCommand(flavor, name, path));
+            try {
+                FileObject fo = FileUtil.toFileObject(file.getCanonicalFile());
+                if (fo != null) {
+                    String mime = fo.getMIMEType();
+                    if (mime.startsWith("application/x-exe") || mime.equals(MIMENames.SHELL_MIME_TYPE)) { // NOI18N
+                        RequestProcessor.getDefault().post(new VersionCommand(flavor, name, path));
+                    }
                 }
+            } catch (IOException ex) {
             }
         }
     }
     
-    private void addUserTool(JComboBox jc, Tool selected) {
+    private void addRemoveUserTool(JComboBox jc, Tool selected, int kind) {
         CompilerSet cs = (CompilerSet) cbCompilerSet.getSelectedItem();
-        JFileChooser fc = new FileOnlyChooser(new CompilerSetView(cs.getDirectory()));
-        fc.setDialogType(JFileChooser.FILES_ONLY);
-        fc.setFileFilter(new FileOnlyFilter());
-        int rc = fc.showDialog(this, NbBundle.getMessage(ToolsPanel.class, "LBL_DialogAddButton")); // NOI18N
-        if (rc == JFileChooser.APPROVE_OPTION) {
-            File file = fc.getSelectedFile();
-            String name;
-            String path = file.getAbsolutePath();
-            int pos = path.lastIndexOf(File.separator);
-            if (pos >= 0) {
-                name = path.substring(pos + 1);
-                path = path.substring(0, pos);
-            } else {
-                name = file.getName();
-            }
-            
-            // validate the input
-            StringTokenizer tok = new StringTokenizer(cs.getDirectory());
-            boolean valid = false;
-            while (tok.hasMoreTokens()) {
-                String dir = tok.nextToken();
-                if (dir.equals(path)) {
-                    file = new File(dir, name);
-                    if (!file.isDirectory() && file.exists()) {
-                        valid = true;
-                        break;
+        AddRemoveToolPanel panel = new AddRemoveToolPanel(jc, cs);
+        DialogDescriptor dd = new DialogDescriptor(panel, 
+                NbBundle.getMessage(ToolsPanel.class, "TITLE_AddRemoveCompiler" + kind));
+        Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
+        dialog.setVisible(true);
+        jc.removeItemListener(this); // Remove or else we'll recurse setting the selection
+        if (dd.getValue() == NotifyDescriptor.OK_OPTION) {
+            List<String> addList = panel.getModel().getAddList();
+            List removeList = panel.getModel().getRemoveList();
+            ArrayList<Tool> rmlist = new ArrayList();
+            for (Object o : removeList) {
+                for (Tool tool : cs.getTools()) {
+                    if (o == tool) {
+                        if (tool == selected) {
+                            selected = null;
+                        }
+                        rmlist.add(tool);
+                        jc.removeItem(tool);
                     }
                 }
             }
-            if (valid) {
-                cs.addTool(name, path, selected.getKind());
-                Tool tool = cs.getTool(name);
-                for (int i = 0; i < jc.getItemCount(); i++) {
-                    if (jc.getItemAt(i) == tool) {
-                        // restore selection
-                        jc.setSelectedItem(selected);
-                        return;
-                    }
-                }
-                jc.insertItemAt(tool, jc.getItemCount() - 1);
+            for (Tool tool : rmlist) {
+                cs.getTools().remove(tool);
+            }
+            for (String name : addList) {
+                Tool tool = cs.addTool(name, cs.getDirectory(), kind);
+                jc.addItem(tool);
                 jc.setSelectedItem(tool);
-                return;
+                selected = tool;
             }
         }
-        // restore selection
-        jc.setSelectedItem(selected);
-    }
-    
-    /** See JavaDoc for JComboBox.addItem for why we have this*/
-    private Object stringObject(final String item) {
-        return new Object() { public String toString() { return item; } };
-    }
-    
-    private class FileOnlyChooser extends JFileChooser {
-        
-        public FileOnlyChooser(FileSystemView view) {
-            super(view);
-        }
-        
-        // Correctly implementing this method will get proper icons in the file chooser!
-//        public Icon getIcon(File file) {
-//            FileObject fo = FileUtil.toFileObject(file);
-//            return super.getIcon(file);
-//        }
-        
-        public boolean isTraversible(File f) {
-            return false;
-        }
-        
-        public boolean isDirectorySelectionEnabled() {
-            return false;
-        }
-        
-        public boolean isAcceptAllFileFilterUsed() {
-            return false;
-        }
-    }
-    
-    private class CompilerSetView extends FileSystemView {
-        
-        File[] roots;
-        
-        public CompilerSetView(String dirs) {
-            int pos = dirs.indexOf(File.pathSeparator);
-            if (pos >= 0) {
-                roots = new File[2];
-                roots[0] = new File(dirs.substring(0, pos));
-                roots[1] = new File(dirs.substring(pos + 1));
+        if (selected != null && cs.getTools().contains(selected)) {
+            jc.setSelectedItem(selected);
+            setDefaultCompiler(kind, selected.getName());
+            updatePath(selected, kind);
+        } else {
+            jc.setSelectedIndex(0);
+            if (jc.getItemAt(0) instanceof String) {
+                updatePath(null, kind);
             } else {
-                roots = new File[1];
-                roots[0] = new File(dirs);
+                updatePath((Tool) jc.getItemAt(0), kind);
             }
         }
-        
-        public String getSystemDisplayName(File file) {
-            if (file.isDirectory()) {
-                return file.getAbsolutePath();
-            } else {
-                return super.getSystemDisplayName(file);
-            }
-        }
-        
-        public File[] getRoots() {
-            return roots;
-        }
-        
-        public File getDefaultDirectory() {
-            return roots[0];
-        }
-        
-        public File getParentDirectory() {
-            return null;
-        }
-        
-        public Boolean isTraversable(File file) {
-            if (file.isDirectory()) {
-                for (int i = 0; i < roots.length; i++) {
-                    if (roots[i].equals(file)) {
-                        return Boolean.TRUE;
-                    }
-                }
-            }
-            return Boolean.FALSE;
-        }
-        
-        public File createNewFolder(File file) throws IOException {
-            return file;
-        }
-    }
-    
-    private class FileOnlyFilter extends FileFilter {
-        
-        public boolean accept(File file) {
-            if (!file.isDirectory()) {
-                String mimetype = FileUtil.toFileObject(file).getMIMEType();
-                if (mimetype.startsWith(MIMENames.EXE_MIME_TYPE) || mimetype.equals(MIMENames.SHELL_MIME_TYPE)) {
-                    return true;
-                }
-            }
-            return false;
-        }
-        
-        public String getDescription() {
-            return NbBundle.getMessage(ToolsPanel.class, "LBL_ExecutableFilesOnly"); // NOI18N
-        }
+        jc.addItemListener(this);
     }
     
     // implement ActionListener
@@ -858,14 +812,6 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
                             tfFortranPath.getText());
                 }
             }
-        } else if (o instanceof JComboBox) {
-            if (o == cbCCommand) {
-                
-            } else if (o == cbCppCommand) {
-                
-            } else if (o == cbFortranCommand) {
-                
-            }
         }
     }
     
@@ -883,29 +829,29 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
                 } else if (o == cbCCommand) {
                     if (item instanceof Tool) {
                         cbCCommand.setToolTipText(((Tool) item).toString());
-                        setDefaultCompiler(Tool.CCompiler, ((Tool) item).getDisplayName());
+                        setDefaultCompiler(Tool.CCompiler, ((Tool) item).getName());
                         updateCPath((Tool) item);
                         cCommandSelection = (Tool) item;
                     } else if (!changingCompilerSet) {
-                        addUserTool(cbCCommand, cCommandSelection);
+                        addRemoveUserTool(cbCCommand, cCommandSelection, Tool.CCompiler);
                     }
                 } else if (o == cbCppCommand) {
                     if (item instanceof Tool) {
                         cbCppCommand.setToolTipText(((Tool) item).toString());
-                        setDefaultCompiler(Tool.CCCompiler, ((Tool) item).getDisplayName());
+                        setDefaultCompiler(Tool.CCCompiler, ((Tool) item).getName());
                         updateCppPath((Tool) item);
                         cppCommandSelection = (Tool) item;
                     } else if (!changingCompilerSet) {
-                        addUserTool(cbCppCommand, cppCommandSelection);
+                        addRemoveUserTool(cbCppCommand, cppCommandSelection, Tool.CCCompiler);
                     }
                 } else if (o == cbFortranCommand) {
                     if (item instanceof Tool) {
                         cbFortranCommand.setToolTipText(((Tool) item).toString());
-                        setDefaultCompiler(Tool.FortranCompiler, ((Tool) item).getDisplayName());
+                        setDefaultCompiler(Tool.FortranCompiler, ((Tool) item).getName());
                         updateFortranPath((Tool) item);
                         fortranCommandSelection = (Tool) item;
                     } else if (!changingCompilerSet) {
-                        addUserTool(cbFortranCommand, fortranCommandSelection);
+                        addRemoveUserTool(cbFortranCommand, fortranCommandSelection, Tool.FortranCompiler);
                     }
                 }
             } else if (o instanceof JCheckBox && !changingCompilerSet) {
@@ -961,6 +907,60 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         }
     }
     
+    private class ToolsComboBox extends JComboBox {
+        
+        ToolsComboBox() {
+            super(new ToolsComboBoxModel(NbBundle.getMessage(ToolsPanel.class, "LBL_AddRemove")));
+        }
+        
+        public void removeAllItems() {
+            super.removeAllItems();
+            setSelectedIndex(0);
+        }
+        
+        public void removeItem(Object o) {
+            super.removeItem(o);
+            if (getItemAt(0) instanceof String) {
+                setSelectedIndex(0);
+            }
+        }
+    }
+    
+    private class ToolsComboBoxModel extends DefaultComboBoxModel {
+        
+        public ToolsComboBoxModel(String addRemove) {
+            super();
+            super.addElement("");
+            super.addElement(addRemove);
+        }
+        
+        public void addElement(Object o) {
+            if (getSize() == 2 && super.getElementAt(0) instanceof String && 
+                    super.getElementAt(0).toString().length() == 0) {
+                super.removeElementAt(0);
+            }
+            int size = getSize();
+            super.insertElementAt(o, getSize() - 1);
+        }
+        
+        public void removeElement(Object o) {
+            if (o instanceof Tool) {
+                super.removeElement(o);
+            }
+            if (getSize() == 1) {
+                super.insertElementAt("", 0);
+            }
+        }
+        
+        public void removeAllElements() {
+            int size = getSize();
+            for (int i = 1; i < size; i++) {
+                super.removeElementAt(0);
+            }
+            super.insertElementAt("", 0);
+        }
+    }
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -988,20 +988,20 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         btGdbVersion = new javax.swing.JButton();
         btGdbVersion.addActionListener(this);
         lbCCommand = new javax.swing.JLabel();
-        cbCCommand = new javax.swing.JComboBox();
+        cbCCommand = new ToolsComboBox();
         cbCCommand.addItemListener(this);
         tfCPath = new javax.swing.JTextField();
         tfColor = tfCPath.getForeground();
         btCVersion = new javax.swing.JButton();
         btCVersion.addActionListener(this);
         lbCppCommand = new javax.swing.JLabel();
-        cbCppCommand = new javax.swing.JComboBox();
+        cbCppCommand = new ToolsComboBox();
         cbCppCommand.addItemListener(this);
         tfCppPath = new javax.swing.JTextField();
         btCppVersion = new javax.swing.JButton();
         btCppVersion.addActionListener(this);
         lbFortranCommand = new javax.swing.JLabel();
-        cbFortranCommand = new javax.swing.JComboBox();
+        cbFortranCommand = new ToolsComboBox();
         cbFortranCommand.addItemListener(this);
         tfFortranPath = new javax.swing.JTextField();
         btFortranVersion = new javax.swing.JButton();

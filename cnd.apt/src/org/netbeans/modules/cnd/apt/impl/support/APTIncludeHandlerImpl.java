@@ -27,13 +27,19 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 import java.util.Stack;
 import java.util.logging.Level;
+import javax.print.attribute.Size2DSyntax;
 import org.netbeans.modules.cnd.apt.support.APTIncludeHandler;
 import org.netbeans.modules.cnd.apt.support.APTIncludeHandler.IncludeInfo;
 import org.netbeans.modules.cnd.apt.support.APTIncludeResolver;
+import org.netbeans.modules.cnd.apt.utils.APTStringManager;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.apt.utils.FilePathCache;
+import org.netbeans.modules.cnd.repository.spi.Persistent;
+import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 
 /**
  * implementation of include handler responsible for preventing recursive inclusion
@@ -100,7 +106,7 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
     }
     
     /** immutable state object of include handler */ 
-    public final static class StateImpl implements State {
+    public final static class StateImpl implements State, Persistent, SelfPersistent {
         // for now just remember lists
         private final List<String> systemIncludePaths;
         private final List<String> userIncludePaths;    
@@ -167,13 +173,115 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
         public String toString() {
             return APTIncludeHandlerImpl.toString(startFile, systemIncludePaths, userIncludePaths, recurseIncludes, inclStack);
         }
-
-        public void write(DataOutput output) {
-            throw new UnsupportedOperationException("Not yet implemented"); // NOI18N
+        
+        public void write(DataOutput output) throws IOException {
+            assert output != null;
+            output.writeUTF(startFile);
+            
+            assert systemIncludePaths != null;
+            assert userIncludePaths != null;
+            
+            int size = systemIncludePaths.size();
+            output.writeInt(size);
+            for (int i = 0; i < size; i++) {
+                output.writeUTF(systemIncludePaths.get(i));
+            }
+            
+            size = userIncludePaths.size();
+            output.writeInt(size);
+            
+            for (int i = 0; i < size; i++) {
+                output.writeUTF(userIncludePaths.get(i));
+            }
+            
+            if (recurseIncludes == null) {
+                output.writeInt(-1);
+            } else {
+                final Set<Entry<String, Integer>> entrySet = recurseIncludes.entrySet();
+                final Iterator<Entry<String, Integer>> setIterator = entrySet.iterator();
+                assert entrySet != null;
+                assert setIterator != null;
+                
+                while (setIterator.hasNext()) {
+                    final Entry<String, Integer> entry = setIterator.next();
+                    assert entry != null;
+                    
+                    output.writeUTF(entry.getKey());
+                    output.writeInt(entry.getValue().intValue());
+                }
+            }
+            
+            if (inclStack == null) {
+                output.writeInt(-1);
+            } else {
+                size = inclStack.size();
+                output.writeInt(size);
+                
+                for (int i = 0; i < size; i++ ) {
+                    final IncludeInfo inclInfo = inclStack.get(i);
+                    assert inclInfo != null;
+                    
+                    final IncludeInfoImpl inclInfoImpl = new IncludeInfoImpl(
+                            inclInfo.getIncludedPath(), inclInfo.getIncludeDirectiveLine());
+                    assert inclInfoImpl != null;
+                    
+                    inclInfoImpl.write(output);
+                    
+                }
+            }
         }
         
-        public StateImpl(DataInput input) throws IOException {
-            throw new UnsupportedOperationException("Not yet implemented"); // NOI18N
+        public StateImpl(final DataInput input) throws IOException {
+            assert input != null;
+            final APTStringManager pathManager = FilePathCache.getManager();
+            
+            startFile = input.readUTF();
+
+            systemIncludePaths = new ArrayList<String>();
+            int size = input.readInt();
+            for (int i = 0; i < size; i++) {
+                String path = input.readUTF();
+                path = (pathManager == null) ? path : pathManager.getString(path);
+                systemIncludePaths.add(i, path);
+            }
+            
+            userIncludePaths = new ArrayList<String>();
+            size = input.readInt();
+            for (int i = 0; i < size; i++) {
+                String path = input.readUTF();
+                path = (pathManager == null) ? path : pathManager.getString(path);
+                userIncludePaths.add(i, path);                
+            }
+            
+            size = input.readInt();
+            if (size == -1) {
+                recurseIncludes = null;
+            } else {
+                recurseIncludes = new HashMap<String, Integer>();
+                
+                for (int i = 0; i < size; i++) {
+                    String key = input.readUTF();
+                    key = (pathManager == null) ? key : pathManager.getString(key);
+                    final Integer value = new Integer(input.readInt());
+                    
+                    recurseIncludes.put(key, value);
+                }
+            }
+            
+            size = input.readInt();
+            
+            if (size == -1) {
+                inclStack = null;
+            } else {
+                inclStack = new Stack<IncludeInfo>();
+                
+                for (int i = 0; i < size; i++) {
+                    final IncludeInfoImpl impl = new IncludeInfoImpl(input);
+                    assert impl != null;
+                    
+                    inclStack.add(i, impl);
+                }
+            }
         }        
 
         public boolean equals(Object obj) {
@@ -240,7 +348,7 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
         }
     }    
     
-    private static final class IncludeInfoImpl implements IncludeInfo {
+    private static final class IncludeInfoImpl implements IncludeInfo, SelfPersistent, Persistent {
         private final String path;
         private final int directiveLine;
         public IncludeInfoImpl(String path, int directiveLine) {
@@ -248,6 +356,16 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
             this.path = path;
             assert directiveLine >= 0;
             this.directiveLine = directiveLine;
+        }
+        
+        public IncludeInfoImpl(final DataInput input) throws IOException {
+            assert input != null;
+            final APTStringManager pathManager = FilePathCache.getManager();
+            
+            String path = input.readUTF();
+            this.path = (pathManager == null)? path: pathManager.getString(path);
+            
+            directiveLine = input.readInt();
         }
 
         public String getIncludedPath() {
@@ -272,6 +390,13 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
             IncludeInfoImpl other = (IncludeInfoImpl)obj;
             return this.directiveLine == other.directiveLine &&
                     this.path.equals(other.path);
+        }
+
+        public void write(final DataOutput output) throws IOException {
+            assert output != null;
+            
+            output.writeUTF(path);
+            output.writeInt(directiveLine);
         }
     }
       

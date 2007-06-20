@@ -43,20 +43,20 @@ public class DoubleFileStorage extends FileStorage {
     private Map<Key, Persistent> fickleMap = new HashMap<Key, Persistent>();
     private File basePath;
     
-    private IndexedStorageFile file1;
-    private IndexedStorageFile file2;
+    private IndexedStorageFile cache_0_dataFile;
+    private IndexedStorageFile cache_1_dataFile;
     
     private boolean defragmenting = false;
-    private boolean swapped = false;
+    private boolean cache_1_dataFileIsActive = false;
     
     private ReadWriteLock  rwLock;
     
     private IndexedStorageFile getActive() {
-        return (swapped ? file2 : file1);
+        return (cache_1_dataFileIsActive ? cache_1_dataFile : cache_0_dataFile);
     }
     
     private IndexedStorageFile getPassive() {
-        return (swapped ? file1 : file2) ;
+        return (cache_1_dataFileIsActive ? cache_0_dataFile : cache_1_dataFile) ;
     }
     
     private Lock readLock() {
@@ -76,33 +76,32 @@ public class DoubleFileStorage extends FileStorage {
     }
     /**
      * Creates a new <code>DoubleFileStorage</code> instance 
-     *
-     * @param   basePath  A File representing path to the storage 
-     * @param   create    A flag if the storage should be created, not opened
-     *
+     * 
+     * @param basePath  A File representing path to the storage
+     * @param createCleanExistent    A flag if the storage should be created, not opened
      */
-    protected DoubleFileStorage (final File basePath, final boolean create) throws IOException {
+    protected DoubleFileStorage (final File basePath, final boolean createCleanExistent) throws IOException {
         this.basePath = basePath;
         rwLock = new ReentrantReadWriteLock(true);
-        file1 = new IndexedStorageFile(basePath, "cache-0", create); // NOI18N
-        file2 = new IndexedStorageFile(basePath, "cache-1", create); // NOI18N
+        cache_0_dataFile = new IndexedStorageFile(basePath, "cache-0", createCleanExistent); // NOI18N
+        cache_1_dataFile = new IndexedStorageFile(basePath, "cache-1", createCleanExistent); // NOI18N
 
         //
-        if ((file1.getDataFileUsedSize() == 0 ) &&
-            (file2.getDataFileUsedSize() == 0)) {
-            swapped = false;
-        } else if ((file1.getDataFileUsedSize() != 0 ) &&
-                    (file2.getDataFileUsedSize() != 0)) {
-            swapped = 
-             (file1.getFragmentationPercentage() < file2.getFragmentationPercentage())?false:true;
+        if ((cache_0_dataFile.getDataFileUsedSize() == 0 ) &&
+            (cache_1_dataFile.getDataFileUsedSize() == 0)) {
+            cache_1_dataFileIsActive = false;
+        } else if ((cache_0_dataFile.getDataFileUsedSize() != 0 ) &&
+                    (cache_1_dataFile.getDataFileUsedSize() != 0)) {
+            cache_1_dataFileIsActive = 
+             (cache_0_dataFile.getFragmentationPercentage() < cache_1_dataFile.getFragmentationPercentage())?false:true;
         } else {
-            swapped = (file1.getDataFileUsedSize() == 0)?false:true;
+            cache_1_dataFileIsActive = (cache_0_dataFile.getDataFileUsedSize() == 0)?false:true;
         }
     }
     
     public void close() throws IOException {
-        file1.close();
-        file2.close();
+        cache_0_dataFile.close();
+        cache_1_dataFile.close();
     }
     
     public Persistent get(final Key key) throws IOException {
@@ -182,7 +181,7 @@ public class DoubleFileStorage extends FileStorage {
             
             if( ! defragmenting ) {
                 defragmenting = true;
-                swapped = !swapped;
+                cache_1_dataFileIsActive = !cache_1_dataFileIsActive;
             }
             
             

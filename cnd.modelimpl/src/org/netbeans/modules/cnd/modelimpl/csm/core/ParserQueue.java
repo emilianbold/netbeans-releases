@@ -22,12 +22,10 @@ package org.netbeans.modules.cnd.modelimpl.csm.core;
 import java.util.*;
 import org.netbeans.modules.cnd.api.model.CsmProgressListener;
 import org.netbeans.modules.cnd.api.model.CsmProject;
-import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.util.WeakList;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.modelimpl.debug.Diagnostic;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
-import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 
 /**
  * A queue that hold a list of files to parse.
@@ -83,11 +81,8 @@ public class ParserQueue {
                 System.err.println("setPreprocStateIfNeed for " + file.getAbsolutePath() +
                         " as " + tracePreprocState(ppState) + " with current " + tracePreprocState(this.ppState));
             }
-            if (this.ppState != null && this.ppState.isStateCorrect()) {
-                // do nothing
-            } else if (ppState != null && ppState.isStateCorrect()) {
-                // override state with new one
-                this.ppState = ppState;
+            if (file.isNeedReparse(this.ppState, ppState)){
+                this.ppState = ppState;                    
             }
         }
     }
@@ -238,7 +233,7 @@ public class ParserQueue {
     
     private Object lock = new Object();
     
-    private WeakList<CsmProgressListener> progressListeners = new WeakList<CsmProgressListener>();
+    //private WeakList<CsmProgressListener> progressListeners = new WeakList<CsmProgressListener>();
     
     private Diagnostic.StopWatch stopWatch = TraceFlags.TIMING ? new Diagnostic.StopWatch(false) : null;
     
@@ -296,9 +291,9 @@ public class ParserQueue {
                 if( TraceFlags.TRACE_PARSER_QUEUE ) System.err.println("ParserQueue: added as Last with entry " + entry.toString(TraceFlags.TRACE_PARSER_QUEUE_DETAILS));
                 queue.addLast(entry);
             }
-            fireFileInvalidated(file);
             lock.notifyAll();
         }
+	ProgressSupport.instance().fireFileInvalidated(file);
     }
     
     /**
@@ -333,9 +328,9 @@ public class ParserQueue {
             }
             if( TraceFlags.TRACE_PARSER_QUEUE ) System.err.println("ParserQueue: added as First with entry " + entry.toString(TraceFlags.TRACE_PARSER_QUEUE_DETAILS));
             queue.addFirst(entry);
-            fireFileInvalidated(file);
             lock.notifyAll();
         }
+	ProgressSupport.instance().fireFileInvalidated(file);
     }
     
     public void waitReady() throws InterruptedException {
@@ -378,17 +373,18 @@ public class ParserQueue {
         boolean lastFileInProject;
         boolean notifyListeners;
         
+	FileImpl file = null;
+	
         synchronized( lock ) {
             e = queue.poll();
             if( e == null ) {
                 return null;
             }
-            FileImpl file = e.getFile();
+            file = e.getFile();
             project = file.getProjectImpl();
             ProjectData data = getProjectData(project, true);
             data.filesInQueue.remove(file);
             data.filesBeingParsed.add(file);
-            fireFileParsingStarted(file);
             lastFileInProject = data.filesInQueue.isEmpty() && data.filesBeingParsed.isEmpty();
             if( lastFileInProject) {
                 removeProjectData(project);
@@ -399,10 +395,12 @@ public class ParserQueue {
                 System.err.println("=== Starting parser queue stopwatch");
             }
         }
+	// TODO: think over, whether this should be under if( notifyListeners
+	ProgressSupport.instance().fireFileParsingStarted(file);
         if( lastFileInProject ) {
             project.onParseFinish();
             if( notifyListeners ) {
-                fireProjectParsingFinished(project);
+                ProgressSupport.instance().fireProjectParsingFinished(project);
             }
         }
         if( TraceFlags.TRACE_PARSER_QUEUE ) System.err.println("ParserQueue: polling " + e.getFile().getAbsolutePath());
@@ -436,22 +434,23 @@ public class ParserQueue {
         if( lastFileInProject ) {
             project.onParseFinish();
             if( notifyListeners ) {
-                fireProjectParsingFinished(project);
+                ProgressSupport.instance().fireProjectParsingFinished(project);
             }
         }
     }
     
     public void shutdown() {
         if( TraceFlags.TRACE_PARSER_QUEUE ) System.err.println("ParserQueue: clearing");
+	Collection<ProjectBase> copiedProjects = null; 
         synchronized ( lock ) {
             state = State.OFF;
             queue.clear();
-            for( Iterator<ProjectBase> it = projectData.keySet().iterator(); it.hasNext(); ) {
-                ProjectBase prj = it.next();
-                fireProjectParsingFinished( prj );
-            }
+	    copiedProjects = new ArrayList<ProjectBase>(projectData.keySet());
             lock.notifyAll();
         }
+	for( ProjectBase prj  : copiedProjects ) {
+	    ProgressSupport.instance().fireProjectParsingFinished( prj );
+	}
     }
     
     public void startup() {
@@ -473,7 +472,7 @@ public class ParserQueue {
         if( lastFileInProject) {
             project.onParseFinish();
             if( data.notifyListeners ) {
-                fireProjectParsingFinished(project);
+                ProgressSupport.instance().fireProjectParsingFinished(project);
             }
         }
     }
@@ -534,80 +533,24 @@ public class ParserQueue {
     private void removeProjectData(ProjectBase project) {
         projectData.remove(project);
     }
-    
-    public void addProgressListener(CsmProgressListener listener) {
-        progressListeners.add(listener);
-    }
-    
-    public void removeProgressListener(CsmProgressListener listener) {
-        progressListeners.remove(listener);
-    }
-    
-    public Iterator<CsmProgressListener> getProgressListeners() {
-	return progressListeners.iterator();
-    }
-    
-    public void onStartAddingProjectFiles(ProjectBase project) {
-        getProjectData(project, true).notifyListeners = true;
-        fireProjectParsingStarted(project);
-    }
-        
-    private void fireFileInvalidated(FileImpl file) {
-        if( TraceFlags.TRACE_PARSER_QUEUE ) System.err.println("ParserQueue: fireFileParsingStarted " + file.getAbsolutePath());
-        for( CsmProgressListener listener : progressListeners ) {
-            listener.fileInvalidated(file);
-        }
-    }
-    
-    private void fireFileParsingStarted(FileImpl file) {
-        if( TraceFlags.TRACE_PARSER_QUEUE ) System.err.println("ParserQueue: fireFileParsingStarted " + file.getAbsolutePath());
-        for( CsmProgressListener listener : progressListeners ) {
-            listener.fileParsingStarted(file);
-        }
-    }
-    
+
     private boolean needEnqueue(FileImpl file) {
         // we know, that each file is parsed only once =>
         // let's speed up work with queue ~75% by skipping such files
         return !file.isParsed();
     }
     
-    private void fireFileParsingFinished(FileImpl file) {
-        if( TraceFlags.TRACE_PARSER_QUEUE ) System.err.println("ParserQueue: fireFileParsingFinished " + file.getAbsolutePath());
-        for( CsmProgressListener listener : progressListeners ) {
-            listener.fileParsingFinished(file);
-        }
+    public void onStartAddingProjectFiles(ProjectBase project) {
+        getProjectData(project, true).notifyListeners = true;
+        ProgressSupport.instance().fireProjectParsingStarted(project);
     }
-    
-    private void fireProjectParsingStarted(ProjectBase project) {
-        if( TraceFlags.TRACE_PARSER_QUEUE ) System.err.println("ParserQueue: fireProjectParsingStarted " + project.getName());
-        for( CsmProgressListener listener : progressListeners ) {
-            listener.projectParsingStarted(project);
-        }
-    }
-    
-    private void fireProjectParsingFinished(ProjectBase project) {
-        for( CsmProgressListener listener : progressListeners ) {
-            listener.projectParsingFinished(project);
-        }
-    }
-    
-    private void fireIdle() {
-        for( CsmProgressListener listener : progressListeners ) {
-            listener.parserIdle();
-        }
-    }
-    
-    
+
     public void onEndAddingProjectFiles(ProjectBase project) {
         ProjectData data = getProjectData(project, true);
         int cnt = data.filesInQueue.size();
-        if( TraceFlags.TRACE_PARSER_QUEUE ) System.err.println("ParserQueue: fireProjectFilesCounted " + project.getName() + ' ' + cnt);
-        for( CsmProgressListener listener : progressListeners ) {
-            listener.projectFilesCounted(project, cnt);
-        }
+        ProgressSupport.instance().fireProjectFilesCounted(project, cnt);
         if( cnt == 0 ) {
-            fireProjectParsingFinished(project);
+            ProgressSupport.instance().fireProjectParsingFinished(project);
         }
     }
     
@@ -632,24 +575,29 @@ public class ParserQueue {
                 }
             }
         }
-        fireFileParsingFinished(file);
+        ProgressSupport.instance().fireFileParsingFinished(file);
         if( lastFileInProject ) {
+            if (TraceFlags.TRACE_CLOSE_PROJECT) System.err.println("Last file in project " + project.getName());
             project.onParseFinish();
             if( data.notifyListeners ) {
-                fireProjectParsingFinished(project);
+                ProgressSupport.instance().fireProjectParsingFinished(project);
             }
             if( idle ) {
-                fireIdle();
+                ProgressSupport.instance().fireIdle();
             }
             // notify all "wait" empty listeners
-            Object prjWaitEmptyLock;
-            synchronized (projectLocks) {
-                prjWaitEmptyLock = projectLocks.remove(project);
-            }            
-            if (prjWaitEmptyLock != null) {
-                synchronized (prjWaitEmptyLock) {
-                    prjWaitEmptyLock.notifyAll();
-                }
+            notifyWaitEmpty(project);
+        }
+    }
+    
+    private void notifyWaitEmpty(ProjectBase project){
+        Object prjWaitEmptyLock;
+        synchronized (projectLocks) {
+            prjWaitEmptyLock = projectLocks.remove(project);
+        }
+        if (prjWaitEmptyLock != null) {
+            synchronized (prjWaitEmptyLock) {
+                prjWaitEmptyLock.notifyAll();
             }
         }
     }

@@ -90,6 +90,21 @@ public class FileModelTest extends TraceModelTestBase {
 	performTest("nested_classes_and_enums_1.cc"); // NOI18N
     }
     
+    public void testFunctionPointerAsParameterType () throws Exception {
+	performTest("function_pointer_as_param_type.cc"); // NOI18N
+    }
+
+    public void testFunctionPointerAsVariableType () throws Exception {
+	performTest("function_pointer_as_var_type.cc"); // NOI18N
+    }
+
+    public void testFunctionPointerMisc() throws Exception {
+	performTest("function_pointer_misc.cc"); // NOI18N
+    }
+	
+    public void testUsingExtern() throws Exception {
+        performTest("using_extern.h");
+    }     
     /////////////////////////////////////////////////////////////////////
     // FAILS
     
@@ -114,20 +129,8 @@ public class FileModelTest extends TraceModelTestBase {
 	    performTest("template_inner_class_dtor_definition.cc"); // NOI18N
 	}
 
-	public void testFunctionPointerAsParameterType () throws Exception {
-	    performTest("function_pointer_as_param_type.cc"); // NOI18N
-	}
-	
 	public void testFunctionPointerAsReturnType () throws Exception {
 	    performTest("function_pointer_as_return_type.cc"); // NOI18N
-	}
-	
-	public void testFunctionPointerAsVariableType () throws Exception {
-	    performTest("function_pointer_as_var_type.cc"); // NOI18N
-	}
-	
-	public void testFunctionPointerMisc() throws Exception {
-	    performTest("function_pointer_misc.cc"); // NOI18N
 	}
 	
 	protected void postSetUp() {

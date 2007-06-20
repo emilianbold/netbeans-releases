@@ -8,7 +8,17 @@ namespace S1 {
     namespace S2 {
         extern int var2;
         void boo();
+
+        class clsS2 {
+        public:
+            void clsS2pubFun();
+        };
     }
+    
+    class clsS1 {
+    public:
+        void clsS1pubFun();
+    };
 }
 
 #endif

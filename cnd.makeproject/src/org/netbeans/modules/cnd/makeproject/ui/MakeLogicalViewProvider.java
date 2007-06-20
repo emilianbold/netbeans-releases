@@ -552,7 +552,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
                 ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_BUILD, bundle.getString( "LBL_BuildAction_Name" ), null ), // NOI18N
                 ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_REBUILD, bundle.getString( "LBL_RebuildAction_Name" ), null ), // NOI18N
                 ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_CLEAN, bundle.getString( "LBL_CleanAction_Name" ), null ), // NOI18N
-                ProjectSensitiveActions.projectCommandAction(MakeActionProvider.COMMAND_BATCH_BUILD, "Batch Build...", null ), // NOI18N
+                ProjectSensitiveActions.projectCommandAction(MakeActionProvider.COMMAND_BATCH_BUILD, bundle.getString("LBL_BatchBuildAction_Name"), null ), // NOI18N
                 new SetConfigurationAction(project),
                 null,
                 ProjectSensitiveActions.projectCommandAction( ActionProvider.COMMAND_RUN, bundle.getString( "LBL_RunAction_Name" ), null ), // NOI18N
@@ -990,16 +990,25 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             this.type = type;
         }
         
+        private void copyItemConfigurations(ItemConfiguration[] newConfigurations, ItemConfiguration[] oldConfigurations) {
+            // Only allowing copying configurations within same project
+            assert newConfigurations.length == oldConfigurations.length;
+            for (int i = 0; i < newConfigurations.length; i++) {
+                newConfigurations[i].assignValues(oldConfigurations[i]);
+            }
+        }
+        
         public Transferable paste() throws IOException {
+            Item item = viewItemNode.getItem();
+            ItemConfiguration[] oldConfigurations = item.getItemConfigurations();
             if (type == DnDConstants.ACTION_MOVE) {
                 // Drag&Drop, Cut&Paste
                 if (toFolder.getProject() == viewItemNode.getFolder().getProject()) {
                     // Move within same project
-                    Item item = viewItemNode.getItem();
                     viewItemNode.getFolder().removeItem(item);
                     toFolder.addItem(item);
+                    copyItemConfigurations(item.getItemConfigurations(), oldConfigurations);
                 } else {
-                    Item item = viewItemNode.getItem();
                     if (IpeUtils.isPathAbsolute(item.getPath())) {
                         viewItemNode.getFolder().removeItem(item);
                         toFolder.addItem(item);
@@ -1025,7 +1034,6 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             } else if (type == DnDConstants.ACTION_COPY) {
                 // Copy&Paste
                 if (toFolder.getProject() == viewItemNode.getFolder().getProject()) {
-                    Item item = viewItemNode.getItem();
                     if (IpeUtils.isPathAbsolute(item.getPath()) || item.getPath().startsWith("..")) { // NOI18N
                         Toolkit.getDefaultToolkit().beep();
                     } else {
@@ -1038,10 +1046,11 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
                         if (ext.length() > 0)
                             newPath = newPath + "." + ext; // NOI18N
                         newPath = IpeUtils.toRelativePath(FileUtil.toFile(viewItemNode.getFolder().getProject().getProjectDirectory()).getPath(), newPath);
-                        toFolder.addItemAction(new Item(FilePathAdaptor.normalize(newPath)));
+                        Item newItem = new Item(FilePathAdaptor.normalize(newPath));
+                        toFolder.addItemAction(newItem);
+                        copyItemConfigurations(newItem.getItemConfigurations(), oldConfigurations);
                     }
                 } else {
-                    Item item = viewItemNode.getItem();
                     if (IpeUtils.isPathAbsolute(item.getPath())) {
                         toFolder.addItem(new Item(item.getPath()));
                     } else if (item.getPath().startsWith("..")) { // NOI18N

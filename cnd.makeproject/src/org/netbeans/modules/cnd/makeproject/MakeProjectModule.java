@@ -81,12 +81,15 @@ public class MakeProjectModule extends ModuleInstall {
     }
     
     public void close() {
-        for (CompilerSet cs : CompilerSetManager.getDefault().getCompilerSets()) {
-            for (Tool tool : cs.getTools()) {
-                if (tool instanceof CCCCompiler) { // FIXUP: should implement/use 'capability' of tool
-                    ((CCCCompiler) tool).saveSystemIncludesAndDefines();
-                }
-            }
+	CompilerSetManager csm = CompilerSetManager.getDefault(false);
+	if (csm != null) {
+	    for (CompilerSet cs : csm.getCompilerSets()) {
+		for (Tool tool : cs.getTools()) {
+		    if (tool instanceof CCCCompiler) { // FIXUP: should implement/use 'capability' of tool
+			((CCCCompiler) tool).saveSystemIncludesAndDefines();
+		    }
+		}
+	    }
         }
     }
             

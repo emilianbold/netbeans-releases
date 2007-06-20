@@ -503,6 +503,10 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
 //        return ret;
 //    }
     
+    static enum ExprKind {
+        NONE, SCOPE, ARROW, DOT
+    }
+    
     class Context {
 
         private boolean sort;
@@ -623,11 +627,12 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
             case CsmCompletionExpression.DOT: // Dot expression
             case CsmCompletionExpression.ARROW: // Arrow expression
                 int parmCnt = exp.getParameterCount(); // Number of items in the dot exp
-
+                ExprKind kind = (exp.getExpID() == CsmCompletionExpression.ARROW || exp.getExpID() == CsmCompletionExpression.ARROW_OPEN) ?
+                                ExprKind.ARROW : ExprKind.DOT;
                 for (int i = 0; i < parmCnt && ok; i++) { // resolve all items in a dot exp
                     ok = resolveItem(exp.getParameter(i), (i == 0),
-                                     (!lastDot && i == parmCnt - 1)
-                                    );
+                                     (!lastDot && i == parmCnt - 1),
+                                    kind);
                 }
 
                 if (ok && lastDot) { // Found either type or package help
@@ -703,8 +708,8 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
 
                 for (int i = 0; i < parmCnt && ok; i++) { // resolve all items in a dot exp
                     ok = resolveItem(exp.getParameter(i), (i == 0),
-                                     (!lastDot && i == parmCnt - 1)
-                                    );
+                                     (!lastDot && i == parmCnt - 1),
+                                    ExprKind.SCOPE);
                 }
 
                 if (ok && lastDot) { // Found either type or namespace help
@@ -780,7 +785,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                 exp = exp.getParameter(0);
                 
             default: // The rest of the situations is resolved as a singleton item
-                ok = resolveItem(exp, true, true);
+                ok = resolveItem(exp, true, true, ExprKind.NONE);
                 break;
             }
 
@@ -792,7 +797,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
         * @param first whether this expression is the first one in a dot expression
         * @param last whether this expression is the last one in a dot expression
         */
-        boolean resolveItem(CsmCompletionExpression item, boolean first, boolean last) {
+        boolean resolveItem(CsmCompletionExpression item, boolean first, boolean last, ExprKind kind) {
             boolean cont = true; // whether parsing should continue or not
             boolean methodOpen = false; // helper flag for unclosed methods
 
@@ -889,17 +894,30 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
 //                                }
                                 result = new CsmCompletionResult(component, getBaseDocument(), res, var + '*', item, 0, isProjectBeeingParsed());  //NOI18N
                             } else { // not last item or finding type
-                                lastType = (CsmType)sup.findType(var, varPos);
+                                if (kind != ExprKind.SCOPE) {
+                                    lastType = (CsmType)sup.findType(var, varPos);
+                                }
                                 if (lastType != null) { // variable found
                                     staticOnly = false;
                                 } else { // no variable found
-                                    lastNamespace = finder.getExactNamespace(var); // try package
+                                    lastNamespace = kind != ExprKind.SCOPE ? null : finder.getExactNamespace(var); // try package
                                     if (lastNamespace == null) { // not package, let's try class name
                                         CsmClass cls = sup.getClassFromName(var, true);
+                                        if (cls == null) { // class not found
+                                            // try now resolver
+                                            if (kind == ExprKind.SCOPE) {
+                                                lastNamespace = findExactNamespace(var, varPos);
+                                            }
+                                            if (lastNamespace == null) {
+                                                // try class name
+                                                cls = kind == ExprKind.ARROW ? null : findExactClass(var, varPos);
+                                                if (cls == null) {
+                                                    cont = false;
+                                                }
+                                            }
+                                        }
                                         if (cls != null) {
                                             lastType = CsmCompletion.getType(cls, 0);
-                                        } else { // class not found
-                                            cont = false;
                                         }
                                     }
                                 }
@@ -992,7 +1010,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                 break;
 
             case CsmCompletionExpression.ARRAY:
-                cont = resolveItem(item.getParameter(0), first, false);
+                cont = resolveItem(item.getParameter(0), first, false, ExprKind.NONE);
                 if (cont) {
                     cont = false;
                     if (lastType != null) { // must be type
@@ -1158,7 +1176,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                 break;
 
             case CsmCompletionExpression.PARENTHESIS:
-                cont = resolveItem(item.getParameter(0), first, last);
+                cont = resolveItem(item.getParameter(0), first, last, kind);
                 break;
 
             case CsmCompletionExpression.CONSTRUCTOR: // constructor can be part of a DOT expression
@@ -1339,6 +1357,34 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
             return cont;
         }
 
+        private CsmNamespace findExactNamespace(final String var, final int varPos) {
+            CsmNamespace ns = null;
+            compResolver.setResolveTypes(CompletionResolver.RESOLVE_GLOB_NAMESPACES);      
+            if (compResolver.refresh() && compResolver.resolve(varPos, var, true)) {
+                CompletionResolver.Result res = compResolver.getResult();
+                Iterator it = res.getGlobalProjectNamespaces().iterator();
+                ns = it.hasNext() ? (CsmNamespace) it.next()  : null;
+            }                            
+            return ns;
+        }
+
+        private CsmClass findExactClass(final String var, final int varPos) {
+            CsmClass cls = null;
+            compResolver.setResolveTypes(CompletionResolver.RESOLVE_CLASSES);
+            if (compResolver.refresh() && compResolver.resolve(varPos, var, true)) {
+                CompletionResolver.Result res = compResolver.getResult();
+                Iterator it = res.getProjectClassesifiersEnums().iterator();
+                while (it.hasNext()) {
+                    CsmObject obj = (CsmObject) it.next();
+                    if (CsmKindUtilities.isClass(obj)) {
+                        cls = (CsmClass)obj;
+                        break;
+                    }
+                }
+            }
+            return cls;
+        }
+        
         private List getTypeList(CsmCompletionExpression item, int firstChildIdx) {
             int parmCnt = item.getParameterCount();
             ArrayList typeList = new ArrayList();

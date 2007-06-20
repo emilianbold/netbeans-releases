@@ -23,18 +23,17 @@ import java.io.File;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.StyledDocument;
-
-import org.openide.ErrorManager;
 import org.openide.text.NbDocument;
 import org.openide.util.Lookup;
 
 public class CppFile {
 
-    private static final ErrorManager log =
-		ErrorManager.getDefault().getInstance("CppFoldTracer"); // NOI18N
+    private static final Logger log = Logger.getLogger(CppFile.class.getName());
 
     // Parsing types
     public final static int FOLD_PARSING = 1;
@@ -108,7 +107,7 @@ public class CppFile {
     public void startParsing(Document doc) {
 //        int curCount = getCount();
 //        System.out.println("CppFile.startParsing: Parsing " + curCount);
-        log.log("CppFile.startParsing: Parsing " + getShortName(doc) +
+        log.log(Level.FINE, "CppFile.startParsing: Parsing " + getShortName(doc) +
                 " [" + Thread.currentThread().getName() + "]"); // NOI18N
         state = PARSING_STARTED;
         //this.doc = doc;
@@ -117,9 +116,9 @@ public class CppFile {
             startParsing(Integer.getInteger("CppFoldFlags", 0).intValue(), doc); // NOI18N
             state = FOLD_PARSING_COMPLETE;
         } catch (NoSuchMethodError er) {
-            log.log("CppFile.startParsing: NoSuchMethodError: " + er.getMessage());
+            log.log(Level.FINE, "CppFile.startParsing: NoSuchMethodError: " + er.getMessage());
         } catch (UnsatisfiedLinkError ule) {
-            log.log("CppFile.startParsing: UnsatisfiedLinkError: " + ule.getMessage());
+            log.log(Level.FINE, "CppFile.startParsing: UnsatisfiedLinkError: " + ule.getMessage());
         } finally {
             if (state == PARSING_STARTED) {
                 state = PARSING_FAILED;
@@ -220,6 +219,7 @@ public class CppFile {
      *  to move the offset before the opening brace (otherwise its following the brace).
      */    
     private void addNewFold(StyledDocument doc, CppFoldRecord fold) {
+        log.log(Level.FINEST, "CppFile.addNewFold: " + fold.toString());
         int startOffset = fold.getStartOffset();
         int endOffset = fold.getEndOffset();
         try {
@@ -253,9 +253,10 @@ public class CppFile {
                     break;
                 }
             } else {
-                log.log("CppFile.addNewFold: Skipping fold record on line " + startLine);
+                log.log(Level.FINE, "CppFile.addNewFold: Skipping fold record on line " + startLine);
             }
         } catch (IndexOutOfBoundsException ex) {
+            log.log(Level.FINE, "CppFile.addNewFold: fold was created for old size of document - ignored");
             // fold was created for old size of document => skip the problem
         }
     }    

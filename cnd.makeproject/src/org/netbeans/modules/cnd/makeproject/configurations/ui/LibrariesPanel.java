@@ -284,7 +284,17 @@ public class LibrariesPanel extends javax.swing.JPanel implements HelpCtx.Provid
 		seed = FileChooser.getCurrectChooserFile().getPath();
 	    if (seed == null)
 		seed = baseDir;
-	    FileFilter[] filters = new FileFilter[] {ElfDynamicLibraryFileFilter.getInstance(), ElfStaticLibraryFileFilter.getInstance()};
+            FileFilter[] filters;
+            if (Utilities.isWindows()){
+                filters = new FileFilter[] {
+                ElfStaticLibraryFileFilter.getInstance(),
+                PeDynamicLibraryFileFilter.getInstance()};
+            } else {
+                filters = new FileFilter[] {
+                ElfStaticLibraryFileFilter.getInstance(),
+                ElfDynamicLibraryFileFilter.getInstance()};
+            }
+	    //FileFilter[] filters = new FileFilter[] {ElfDynamicLibraryFileFilter.getInstance(), ElfStaticLibraryFileFilter.getInstance()};
 	    FileChooser fileChooser = new FileChooser(getString("SELECT_LIBRARY_FILE_CHOOSER_TITLE"), getString("SELECT_CHOOSER_BUTTON"), JFileChooser.FILES_ONLY, filters, seed, true);
 	    PathPanel pathPanel = new PathPanel();
 	    fileChooser.setAccessory(pathPanel);

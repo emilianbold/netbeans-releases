@@ -24,15 +24,16 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
+import java.util.HashMap;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
 import org.netbeans.modules.cnd.api.execution.NativeExecutor;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.api.utils.Path;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.cnd.makeproject.ui.SelectExecutablePanel;
@@ -82,10 +83,12 @@ public class DefaultProjectActionHandler implements ActionListener {
     
     private static InputOutput mainTab = null;
     private static HandleEvents mainTabHandler = null;
+    private static HashMap<String, Integer> tabMap = new HashMap();
     
     class HandleEvents implements ExecutionListener {
         private InputOutput reuseTab = null;
         private ProjectActionEvent[] paes;
+        private String tabName;
         int currentAction = 0;
         
         private String getTabName(ProjectActionEvent[] paes) {
@@ -138,12 +141,21 @@ public class DefaultProjectActionHandler implements ActionListener {
 //                    mainTabHandler = null;
 //                    mainTab = null;
 //                }
-                reuseTab = IOProvider.getDefault().getIO(getTabName(paes), false);
+                tabName = getTabName(paes);
+                Integer i = tabMap.get(tabName);
+                if (i == null) {
+                    i = new Integer(1);
+                    tabMap.put(tabName, i);
+                } else {
+                    tabMap.put(tabName, ++i);
+                }
+                InputOutput tab = IOProvider.getDefault().getIO(tabName, i != 1);
                 try {
-                    reuseTab.getOut().reset();
+                    tab.getOut().reset();
                 } catch (IOException ioe) {
                 }
                 if (mainTabHandler == null) {
+                    reuseTab = tab;
                     mainTab = reuseTab;
                     mainTabHandler = this;
                 }
@@ -234,17 +246,18 @@ public class DefaultProjectActionHandler implements ActionListener {
                     String csdname = ((MakeConfiguration) pae.getConfiguration()).getCompilerSet().getName();
                     String csdirs = CompilerSetManager.getDefault().getCompilerSet(csname, csdname).getDirectory();
                     boolean gotpath = false;
+                    String pathname = Path.getPathName() + '=';
                     int i;
                     for (i = 0; i < env.length; i++) {
-                        if (env[i].startsWith("PATH=")) { // NOI18N
-                            env1[i] = "PATH=" + csdirs + File.pathSeparator + env[i].substring(5); // NOI18N
+                        if (env[i].startsWith(pathname)) {
+                            env1[i] = pathname + csdirs + File.pathSeparator + env[i].substring(5); // NOI18N
                             gotpath = true;
                         } else {
                             env1[i] = env[i];
                         }
                     }
                     if (!gotpath) {
-                        env1[i] = "PATH=" + csdirs + File.pathSeparator + CppSettings.getDefault().getPath(); // NOI18N
+                        env1[i] = pathname + csdirs + File.pathSeparator + CppSettings.getDefault().getPath();
                     }
                     env = env1;
                 }
@@ -279,6 +292,8 @@ public class DefaultProjectActionHandler implements ActionListener {
         }
         
         public void executionFinished(int rc) {
+            Integer i = tabMap.get(tabName);
+            tabMap.put(tabName, --i);
             if (paes[currentAction].getID() == ProjectActionEvent.BUILD || paes[currentAction].getID() == ProjectActionEvent.CLEAN) {
                 // Refresh all files
                 try {

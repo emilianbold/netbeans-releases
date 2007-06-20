@@ -82,7 +82,11 @@ public class CompilerSetManager {
     }
     
     public static CompilerSetManager getDefault() {
-        if (instance == null) {
+	return getDefault(true);
+    }
+    
+    public static CompilerSetManager getDefault(boolean doCreate) {
+        if (instance == null && doCreate) {
             instance = new CompilerSetManager();
         }
         return instance;

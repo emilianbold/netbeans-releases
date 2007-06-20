@@ -504,24 +504,28 @@ public class ModelSupport implements PropertyChangeListener {
     }
     
     /** gets a key, which uniquely identifies the project */
-    public String getProjectKey(CsmProject project) {
-        Object o = project.getPlatformProject();
-        assert o != null;
-        String key = getProjectObjectKey(o);
-        if (key == null) {
-            key = project.getName();
-        }
-        return key;
+    public static String getProjectKey(CsmProject project) {
+	return getProjectKey(project.getPlatformProject(), project.getName());
     }
     
-    public String getProjectObjectKey(Object o) {
-        if( o instanceof Project ) {
-            Project p = (Project) o;
+    /** gets a key, which uniquely identifies the project */
+    public static String getProjectKey(Object platformProject, String defaultValue) {
+        assert platformProject != null;
+        String key = getProjectObjectKey(platformProject);
+        if (key == null) {
+            key = defaultValue;
+        }
+        return key;
+    }    
+    
+    public static String getProjectObjectKey(Object platformProject) {
+        if( platformProject instanceof Project ) {
+            Project p = (Project) platformProject;
             return p.getProjectDirectory().getPath();
-        } else if (o instanceof NativeProject) {
-            return ((NativeProject)o).getProjectRoot();
-        } else if( o instanceof File ) {
-            return ((File) o).getAbsolutePath();
+        } else if (platformProject instanceof NativeProject) {
+            return ((NativeProject)platformProject).getProjectRoot();
+        } else if( platformProject instanceof File ) {
+            return ((File) platformProject).getAbsolutePath();
         } else {
             return null;
         }

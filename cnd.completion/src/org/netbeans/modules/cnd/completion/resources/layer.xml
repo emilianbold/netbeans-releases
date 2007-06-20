@@ -47,7 +47,7 @@ Microsystems, Inc. All Rights Reserved.
                         <file name="goto-declaration">
                             <attr name="position" intvalue="100"/>
                         </file>
-                        </folder>
+		    </folder>
                 </folder>
             </folder>
             <folder name="x-c">
@@ -76,7 +76,7 @@ Microsystems, Inc. All Rights Reserved.
                         <file name="goto-declaration">
                             <attr name="position" intvalue="100"/>
                         </file>
-                        </folder>
+		    </folder>
                 </folder>
             </folder>            
         </folder>

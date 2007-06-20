@@ -24,6 +24,8 @@ import antlr.collections.AST;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.util.Iterator;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.apt.utils.TextCache;
 import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
@@ -57,21 +59,36 @@ public class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsingDecl
         // TODO: process preceding aliases
         // TODO: process non-class elements
 //        if (!Boolean.getBoolean("cnd.modelimpl.resolver"))
-        if (ResolverFactory.resolver != 2)
-            return ((ProjectBase) getContainingFile().getProject()).findClassifier(name, true);
-        else {
-            CsmDeclaration referencedDeclaration = _getReferencedDeclaration();
-            if (referencedDeclaration == null) {
-                _setReferencedDeclaration(null);
-                referencedDeclaration = (CsmDeclaration)ResolverFactory.createResolver(
-                        getContainingFile(),
-                        startOffset).
-                        resolve(name);
-                _setReferencedDeclaration(referencedDeclaration);                
+        CsmDeclaration referencedDeclaration = _getReferencedDeclaration();
+        if (referencedDeclaration == null) {
+            _setReferencedDeclaration(null);
+            ProjectBase prjBase = ((ProjectBase)getProject());
+            referencedDeclaration = prjBase.findClassifier(name, true);
+            if (referencedDeclaration == null && rawName != null && rawName.length > 1) {
+                // resolve all before last ::
+                String[] partial = new String[rawName.length - 1];
+                System.arraycopy(rawName, 0, partial, 0, rawName.length - 1);
+                CsmObject result = ResolverFactory.createResolver(getContainingFile(), startOffset).resolve(partial);
+                if (CsmKindUtilities.isNamespace(result)) {
+                    String lastName = rawName[rawName.length - 1];
+                    CsmDeclaration bestChoice = null;
+                    for (CsmDeclaration elem : ((CsmNamespace)result).getDeclarations()) {
+                        if (lastName.equals(elem.getName())) {
+                            if (!CsmKindUtilities.isExternVariable(elem)) {
+                                referencedDeclaration = elem;
+                                break;
+                            } else {
+                                bestChoice = elem;
+                            }
+                        }
+                    }
+                    referencedDeclaration = referencedDeclaration == null ? bestChoice : referencedDeclaration;
+                }
             }
-            return referencedDeclaration;
+            _setReferencedDeclaration(referencedDeclaration);                
         }
-    }
+        return referencedDeclaration;
+    }   
     
     private CsmDeclaration _getReferencedDeclaration() {
         if (TraceFlags.USE_REPOSITORY && TraceFlags.UID_CONTAINER_MARKER) {

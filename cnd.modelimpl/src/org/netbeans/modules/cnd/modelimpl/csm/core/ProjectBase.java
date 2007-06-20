@@ -49,12 +49,15 @@ import org.netbeans.modules.cnd.modelimpl.platform.*;
 import org.netbeans.modules.cnd.modelimpl.csm.*;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.APTParseFileWalker;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.APTRestorePreprocStateWalker;
+import org.netbeans.modules.cnd.modelimpl.repository.KeyUtilities;
 import org.netbeans.modules.cnd.modelimpl.textcache.ProjectNameCache;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
+import org.netbeans.modules.cnd.repository.api.RepositoryAccessor;
+import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 
@@ -64,18 +67,12 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
  * @author Vladimir Kvashin
  */
 public abstract class ProjectBase implements CsmProject, Disposable, Persistent, SelfPersistent {
+    private transient boolean restored = false;
     
     /** Creates a new instance of CsmProjectImpl */
-    public ProjectBase(ModelImpl model, Object platformProject, String name) {
-        this.model = model;
-        this.platformProject = platformProject;
+    protected ProjectBase(ModelImpl model, Object platformProject, String name) {
         this.name = ProjectNameCache.getString(name);
-        this.fqn = null;
-        if (TraceFlags.USE_REPOSITORY) {
-            // remember in repository
-            RepositoryUtils.hang(this);
-        }
-        // create global namespace
+	init(model, platformProject);	
         NamespaceImpl ns = new NamespaceImpl(this);
         assert ns != null;
         if (TraceFlags.USE_REPOSITORY) {
@@ -85,11 +82,42 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
             this.globalNamespaceOLD = ns;
             this.globalNamespaceUID = null;
         }
+    }
+    
+    private void init(ModelImpl model, Object platformProject) {
+        this.model = model;
+        this.platformProject = platformProject;
+        this.fqn = null;
+        if (TraceFlags.USE_REPOSITORY) {
+            // remember in repository
+            RepositoryUtils.hang(this);
+        }
+        // create global namespace
         
         if (TraceFlags.CLOSE_AFTER_PARSE) {
             Terminator.create(this);
         }
+    } 
+
+    /*package-local*/ boolean isRestored(){
+        return restored;
     }
+    
+    
+    public static ProjectBase readInstance(ModelImpl model, Object platformProject, String name) {
+	assert TraceFlags.PERSISTENT_REPOSITORY;
+	Key key = KeyUtilities.createProjectKey(getQualifiedName(platformProject, name));
+	Persistent o = RepositoryAccessor.getRepository().get(key);
+	if( o != null ) {
+	    assert o instanceof ProjectBase;
+	    ProjectBase impl = (ProjectBase) o;
+	    assert name.equals(impl.getName());
+	    impl.init(model, platformProject);
+            impl.restored = true;
+	    return impl;
+	}
+	return null;
+    }    
     
     public CsmNamespace getGlobalNamespace() {
         return _getGlobalNamespace();
@@ -101,9 +129,13 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
     
     public String getQualifiedName() {
         if (this.fqn == null) {
-            this.fqn = ProjectNameCache.getString(ModelSupport.instance().getProjectKey(this));
+            this.fqn = getQualifiedName(getPlatformProject(), getName());
         }
         return this.fqn;
+    }
+    
+    public static String getQualifiedName(Object platformProject, String projectName) {
+	return ProjectNameCache.getString(ModelSupport.instance().getProjectKey(platformProject, projectName));
     }
     
     /** Gets an object, which represents correspondent IDE project */
@@ -628,9 +660,9 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
 
 	    // gather macro map from all includes
 	    APTFile aptLight = getAPTLight(csmFile);
-	    if (aptLight != null) {
-		APTParseFileWalker walker = new APTParseFileWalker(aptLight, csmFile, preprocHandler);
-		walker.visit();
+            if (aptLight != null) {
+                APTParseFileWalker walker = new APTParseFileWalker(aptLight, csmFile, preprocHandler);
+                walker.visit();
 	    }
 
 	    if (state != null) {
@@ -639,7 +671,7 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
 	    return csmFile;
 	}
     }
-    
+
 //    protected boolean needScheduleParsing(FileImpl file, APTPreprocHandler preprocHandler) {
 //        APTPreprocHandler.State curState = (APTPreprocHandler.State) filesHandlers.get(file);
 //        if (curState != null && !curState.isStateCorrect() && preprocHandler != null && preprocHandler.isStateCorrect()) {
@@ -651,14 +683,7 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
     protected APTPreprocHandler.State updateFileStateIfNeeded(FileImpl csmFile, APTPreprocHandler preprocHandler) {
         APTPreprocHandler.State state = null;
         File file = csmFile.getBuffer().getFile();
-        APTPreprocHandler.State curState = (APTPreprocHandler.State) getPreprocState(file);
-        boolean update = false;
-        if (curState == null) {
-            update = true;
-        } else if (!curState.isStateCorrect() && preprocHandler.isStateCorrect()) {
-            update = true;
-        }
-        if( update ) {
+        if (csmFile.isNeedReparse(getPreprocState(file), preprocHandler)){
             state = preprocHandler.getState();
             // need to prevent corrupting shared object => copy
             APTPreprocHandler.State copy = APTHandlersSupport.copyPreprocState(state);
@@ -797,28 +822,36 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
     }
     
     public void dispose(final boolean cleanPersistent) {
-	synchronized (disposeLock) {
-	    isProjectDisposed = true;
-	}
-        ParserQueue.instance().removeAll(this);
-        disposeFiles();
-        
-        platformProject = null;
-        // we have clear all collections
-        // to protect IDE against the code model client
-        // that stores the instance of the project
-        // and does not release it upon project closure
-        _clearNamespaces();
-        _clearClassifiers();
-        declarationsSorage.clearDeclarations();
-        if (TraceFlags.USE_DEEP_REPARSING) {
-            getGraph().clear();
+        synchronized (disposeLock) {
+            isProjectDisposed = true;
         }
-        unresolved = null;
-        uid = null;
-        if (TraceFlags.USE_REPOSITORY) {
+        ParserQueue.instance().removeAll(this);
+        
+        /*
+         * if the repository is not used - clean all collections as we did before
+         * in the other case - just close the corresponding unit 
+         * collections are not cleared to write the valid project content
+         */
+        if (!TraceFlags.USE_REPOSITORY){
+            disposeFiles();
+
+            // we have clear all collections
+            // to protect IDE against the code model client
+            // that stores the instance of the project
+            // and does not release it upon project closure
+            _clearNamespaces();
+            _clearClassifiers();
+            declarationsSorage.clearDeclarations();
+            if (TraceFlags.USE_DEEP_REPARSING) {
+                getGraph().clear();
+            }
+        } else {
             RepositoryUtils.closeUnit(getUID(), cleanPersistent);
         }
+        
+        platformProject = null;
+        unresolved = null;
+        uid = null;
     }
     
     private void _clearClassifiers() {
@@ -1186,7 +1219,7 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
     
     private Object waitParseLock = new Object();
     
-    private final ModelImpl model;
+    private ModelImpl model;
     private Unresolved unresolved;
     private final String name;
     
@@ -1246,11 +1279,14 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
         assert aFactory != null;
         assert this.name != null;
         aStream.writeUTF(this.name);
+        aStream.writeUTF(RepositoryUtils.getUnitName(getUID()));        
+        RepositoryUtils.writeUnitFilesCache(getUID(), aStream);
         aFactory.writeUID(this.globalNamespaceUID, aStream);
         aFactory.writeStringToUIDMap(this.namespaces, aStream, true);
         fileContainer.write(aStream);
         aFactory.writeStringToUIDMap(this.classifiers, aStream, true);
         declarationsSorage.write(aStream);
+        graphStorage.write(aStream);
     }
     
     protected ProjectBase(DataInput aStream) throws IOException {
@@ -1260,11 +1296,14 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
         
         this.name = ProjectNameCache.getString(aStream.readUTF());
         assert this.name != null;
+        String unitName = aStream.readUTF();
+        KeyUtilities.readUnitFilesCache(unitName, aStream);
         this.globalNamespaceUID = aFactory.readUID(aStream);
         aFactory.readStringToUIDMap(this.namespaces, aStream, QualifiedNameCache.getManager());
-        fileContainer.read(aStream);
+        fileContainer = new FileContainer(aStream);
         aFactory.readStringToUIDMap(this.classifiers, aStream, QualifiedNameCache.getManager());
         declarationsSorage.read(aStream);
+        graphStorage = new GraphContainer(aStream);
         
         this.model = (ModelImpl) CsmModelAccessor.getModel();
         

@@ -19,6 +19,9 @@
 
 package org.netbeans.modules.cnd.modelimpl.repository;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -163,6 +166,29 @@ public class RepositoryUtils {
             return null;
         }
     }
+    
+    public static String getUnitName(CsmUID uid) {
+        Key key = UIDtoKey(uid);
+        assert key != null;
+        String unitName = key.getUnit();
+
+        return unitName;
+    }
+    
+    public static void writeUnitFilesCache(CsmUID uid, DataOutput aStream) throws IOException {
+        Key key = UIDtoKey(uid);
+        assert key != null;
+        String unitName = key.getUnit();
+        KeyUtilities.writeUnitFilesCache(unitName, aStream);
+    }
+    
+   public static void readUnitFilesCache(CsmUID uid, DataInput aStream) throws IOException {
+        Key key = UIDtoKey(uid);
+        assert key != null;
+        String unitName = key.getUnit();
+        KeyUtilities.readUnitFilesCache(unitName, aStream);
+    }
+
     
     public static void shutdown() {
         RepositoryAccessor.getRepository().shutdown();

@@ -81,6 +81,7 @@ final class ParsingProgress {
         synchronized (handle) {
             if( started ) {
                 handle.finish();
+                started = false;
             }
         }
     }

@@ -228,6 +228,19 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         return null;
     }
     
+    public ItemConfiguration[] getItemConfigurations() {
+        ItemConfiguration[] itemConfigurations;
+        MakeConfigurationDescriptor makeConfigurationDescriptor = getMakeConfigurationDescriptor();
+        if (makeConfigurationDescriptor == null)
+            return new ItemConfiguration[0];
+        Configuration[] configurations = makeConfigurationDescriptor.getConfs().getConfs();
+        itemConfigurations = new ItemConfiguration[configurations.length];
+        for (int i = 0; i < configurations.length; i++) {
+            itemConfigurations[i] = getItemConfiguration(configurations[i]);
+        }
+        return itemConfigurations;
+    }
+    
     public FileObject getFileObject() {
         File file = getCanonicalFile();
         FileObject fo = null;

@@ -220,6 +220,9 @@ public class CsmTracer {
 	print("DEFINITION: " + toString(fun.getDefinition())); // NOI18N
 	print("SIGNATURE " + fun.getSignature()); // NOI18N
 	print("UNIQUE NAME " + fun.getUniqueName()); // NOI18N
+        if (fun instanceof CsmFriendFunction) {
+            print("REFERENCED FRIEND FUNCTION: " + toString(((CsmFriendFunction)fun).getReferencedFunction()));
+        }
 	dumpParameters(fun.getParameters());
 	print("RETURNS " + toString(fun.getReturnType())); // NOI18N
 	unindent();
@@ -244,6 +247,9 @@ public class CsmTracer {
 	//return " [" + obj.getStartOffset() + '-' + obj.getEndOffset() + ']';
 //        CsmOffsetable.Position start = obj.getStartPosition();
 //        CsmOffsetable.Position end = obj.getEndPosition();
+        if (obj == null) {
+            return "null"; // NOI18N
+        }
 	return " [" + obj.getStartPosition() + '-' + obj.getEndPosition() + ']'; // NOI18N
     }
     
@@ -490,7 +496,7 @@ public class CsmTracer {
     }
     
     public void dumpModel(CsmVariable var) {
-	print("VARIABLE " + toString(var)); // NOI18N
+	print((var.isExtern() ? "EXTERN " : "") +  "VARIABLE " + toString(var)); // NOI18N
 	CsmVariableDefinition def = var.getDefinition();
 	if (def != null){
 	    indent();
@@ -613,9 +619,9 @@ public class CsmTracer {
     }
     
     public void dumpModel(CsmUsingDeclaration ud) {
-	CsmDeclaration decl = ud.getReferencedDeclaration();
+	CsmOffsetableDeclaration decl = (CsmOffsetableDeclaration) ud.getReferencedDeclaration();
 	String qname = decl == null ? "null" : decl.getQualifiedName(); // NOI18N
-	print("USING DECL. " + qname + ' ' + getOffsetString(ud)); // NOI18N
+	print("USING DECL. " + ud.getName() + ' ' + getOffsetString(ud) + "; REF DECL: " + qname + ' ' + getOffsetString(decl)); // NOI18N
     }
     
     public void dumpModel(CsmTypedef td) {
@@ -624,7 +630,7 @@ public class CsmTracer {
     
     public void dumpModel(CsmUsingDirective ud) {
 	CsmNamespace nsp = ud.getReferencedNamespace();
-	print("USING DECL. " + (nsp == null ? "null" : nsp.getQualifiedName()) + ' ' + getOffsetString(ud)); // NOI18N
+	print("USING NAMESPACE. " + ud.getName() + ' ' + getOffsetString(ud) + "; REF NS: " + (nsp == null ? "null" : nsp.getQualifiedName())); // NOI18N
     }
     
     public void dumpModel(CsmClass cls) {
@@ -677,6 +683,35 @@ public class CsmTracer {
 	    }
 	}
 	unindent();
+	List/*<CsmMember>*/ friends = cls.getFriends();
+        if (!friends.isEmpty()) {
+            print("FRIENDS:"); // NOI18N
+            indent();
+            for( Iterator iter = friends.iterator(); iter.hasNext(); ) {
+                CsmFriend friend = (CsmFriend) iter.next();
+                if( friend.getKind() == CsmDeclaration.Kind.CLASS_FRIEND_DECLARATION ) {
+                    CsmFriendClass frClass = (CsmFriendClass) friend;
+                    StringBuilder sb = new StringBuilder(frClass.getKind().toString());
+                    sb.append(' ');
+                    sb.append(friend.getName());
+                    sb.append(getOffsetString(friend));
+                    sb.append(' ');
+                    sb.append(getBriefClassName(friend));
+                    print(sb.toString());
+                    indent();
+                    CsmClass refClass = frClass.getReferencedClass();
+                    print("REFERENCED CLASS: " + refClass == null ? "*UNRESOLVED*" : refClass.getUniqueName());
+                    unindent();
+                } else if( friend.getKind() == CsmDeclaration.Kind.FUNCTION ) {
+                    dumpModel((CsmFunction) friend);
+                } else if ( friend.getKind() == CsmDeclaration.Kind.FUNCTION_DEFINITION ) { // inline function
+                    dumpModel((CsmFunctionDefinition) friend);
+                } else {
+                    assert false : "unexpected friend object " + friend;
+                }
+            }
+            unindent(); 
+        }
 	unindent();
     }
     

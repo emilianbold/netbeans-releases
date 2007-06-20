@@ -306,6 +306,7 @@
         </Property>
       </Properties>
       <AuxValues>
+        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new ToolsComboBox();"/>
         <AuxValue name="JavaCodeGenerator_CreateCodePost" type="java.lang.String" value="cbCCommand.addItemListener(this);"/>
       </AuxValues>
       <Constraints>
@@ -398,6 +399,7 @@
         </Property>
       </Properties>
       <AuxValues>
+        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new ToolsComboBox();"/>
         <AuxValue name="JavaCodeGenerator_CreateCodePost" type="java.lang.String" value="cbCppCommand.addItemListener(this);"/>
       </AuxValues>
       <Constraints>
@@ -484,6 +486,7 @@
         </Property>
       </Properties>
       <AuxValues>
+        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new ToolsComboBox();"/>
         <AuxValue name="JavaCodeGenerator_CreateCodePost" type="java.lang.String" value="cbFortranCommand.addItemListener(this);"/>
       </AuxValues>
       <Constraints>

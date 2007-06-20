@@ -37,9 +37,6 @@ public class FOptions extends org.netbeans.modules.editor.options.BaseOptions {
 
     public FOptions() {
         super (FKit.class, FORTRAN);
-
-	Settings.setValue(FKit.class, NbEditorDocument.FORMATTER, 
-			  Formatter.getFormatter(FKit.class));
     }
   
     /** @return localized string */

@@ -417,17 +417,27 @@ public class CompilerSet {
     
     private static HashMap<String, Tool> cache = new HashMap();
     
-    public void addTool(String name, String path, int type) {
+    public Tool addTool(String name, String path, int kind) {
         String fullpath = name.length() > 0 ? path + File.separator + name : path;
-        Tool tool = cache.get(fullpath);
+        Tool tool = cache.get(fullpath + kind);
         if (tool == null) {
-            tool = compilerProvider.createCompiler(flavor, type, name, Tool.getToolDisplayName(type), path);
+            tool = compilerProvider.createCompiler(flavor, kind, name, Tool.getToolDisplayName(kind), path);
             if (fullpath.length() > 0) {
-                cache.put(fullpath, tool);
+                cache.put(fullpath + kind, tool);
             }
         }
         if (!tools.contains(tool)) {
             tools.add(tool);
+        }
+        return tool;
+    }
+    
+    public void removeTool(String name, String path, int kind) {
+        for (Tool tool : tools) {
+            if (tool.getName().equals(name) && tool.getPath().equals(path) && tool.getKind() == kind) {
+                tools.remove(tool);
+                return;
+            }
         }
     }
     
@@ -446,6 +456,27 @@ public class CompilerSet {
         for (Tool tool : tools) {
             if (tool.getDisplayName().equals(name) || tool.getName().equals(name) ||
                     (exename != null && tool.getName().equals(exename))) {
+                return tool;
+            }
+        }
+        return null;
+    }
+    
+    /**
+     * Get a tool by name
+     *
+     * @param name The name of the desired tool
+     * @return The Tool or null
+     */
+    public Tool getTool(String name, int kind) {
+        String exename = null;
+        
+        if (Utilities.isWindows()) {
+            exename = name + ".exe"; // NOI18N
+        }
+        for (Tool tool : tools) {
+            if ((tool.getDisplayName().equals(name) || tool.getName().equals(name) ||
+                    (exename != null && tool.getName().equals(exename))) && kind == tool.getKind()) {
                 return tool;
             }
         }

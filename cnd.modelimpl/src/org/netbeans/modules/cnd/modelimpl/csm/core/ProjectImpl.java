@@ -26,7 +26,6 @@ import java.io.IOException;
 import java.util.*;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
-import org.netbeans.modules.cnd.api.project.NativeFileItem.Language;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.utils.APTIncludeUtils;
@@ -42,9 +41,20 @@ import org.netbeans.modules.cnd.modelimpl.platform.*;
  */
 public final class ProjectImpl extends ProjectBase {
     
-    public ProjectImpl(ModelImpl model, Object platformProject, String name) {
+    private ProjectImpl(ModelImpl model, Object platformProject, String name) {
         super(model, platformProject, name);
         // RepositoryUtils.put(this);
+    }
+    
+    public static ProjectImpl createInstance(ModelImpl model, Object platformProject, String name) {
+	ProjectBase instance = null;
+	if( TraceFlags.PERSISTENT_REPOSITORY ) {
+	    instance = readInstance(model, platformProject, name);
+	}
+	if( instance == null ) {
+	   instance = new ProjectImpl(model, platformProject, name); 
+	}
+	return (ProjectImpl) instance;
     }
     
     protected void createIfNeed(NativeFileItem nativeFile, boolean isSourceFile) {

@@ -112,6 +112,14 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
         return getName();
     }
     
+    public String getUniqueNameWithoutPrefix() {
+        if (isExtern()) {
+            return getQualifiedName() + " (EXTERN)"; // NOI18N
+        } else {
+            return getQualifiedName();
+        }
+    }
+    
     /** Gets this variable type 
      * @return 
      */
@@ -300,5 +308,9 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
         this.scopeUID = UIDObjectFactory.getDefaultFactory().readUID(input);
         // could be null UID (i.e. parameter)
         this.scopeRef = null;
+    }    
+    
+    public String toString() {
+        return (isExtern() ? "EXTERN " : "") + super.toString(); // NOI18N
     }     
 }

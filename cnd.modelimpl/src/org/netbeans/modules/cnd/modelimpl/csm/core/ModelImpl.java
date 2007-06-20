@@ -19,7 +19,14 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.util.WeakList;
@@ -42,6 +49,7 @@ import org.netbeans.modules.cnd.modelimpl.memory.LowMemoryListener;
 import org.netbeans.modules.cnd.modelimpl.memory.LowMemoryNotifier;
 import org.netbeans.modules.cnd.modelimpl.options.CodeAssistanceOptions;
 import org.netbeans.modules.cnd.modelimpl.platform.ModelSupport;
+import org.netbeans.modules.cnd.modelimpl.repository.KeyUtilities;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.FileNameCache;
 import org.netbeans.modules.cnd.modelimpl.textcache.ProjectNameCache;
@@ -58,10 +66,6 @@ public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startup
         CsmModelAccessor.CsmModelEx {
     
     public ModelImpl() {
-        String value = System.getProperty("cnd.repository.delete.cache.files"); //NOI18N
-        CLEAN_REPOSITORY = 
-                (value != null)? Boolean.parseBoolean(value):true;
-
         if( ! isStandalone() ) {
             ModelSupport.instance().init(this);
         }
@@ -166,7 +170,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startup
                         new IllegalStateException("CsmProject does not exist: " + id).printStackTrace(System.err); // NOI18N
                         name = "<unnamed>"; // NOI18N
                     }
-                    prj = new ProjectImpl(this, id,  name);
+                    prj = ProjectImpl.createInstance(this, id,  name);
                     putProject2Map(id,  prj);
                 }
             }
@@ -186,7 +190,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startup
                 }
                 prj = obj2Project(id);
                 if( prj == null ) {
-                    prj = new ProjectImpl(this, id,  name);
+                    prj = ProjectImpl.createInstance(this, id,  name);
                     putProject2Map(id,  prj);
                 } else {
                     String fqn = ModelSupport.instance().getProjectObjectKey(id);
@@ -237,12 +241,12 @@ public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startup
         if (SwingUtilities.isEventDispatchThread()) {
             Runnable task = new Runnable() {
                                 public void run() {
-                                    _closeProject2(csmProject, platformProjectKey, CLEAN_REPOSITORY);
+                                    _closeProject2(csmProject, platformProjectKey, ! TraceFlags.PERSISTENT_REPOSITORY);
                                 }
                             };
             this.enqueue(task, "Model: Closing Project "); // NOI18N
         } else {
-            _closeProject2(csmProject, platformProjectKey, CLEAN_REPOSITORY);
+            _closeProject2(csmProject, platformProjectKey, ! TraceFlags.PERSISTENT_REPOSITORY);
         }           
     }
     
@@ -312,17 +316,20 @@ public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startup
     }
     
     public Collection<CsmProject> projects() {
-        synchronized (lock) {
-            if (TraceFlags.USE_REPOSITORY) {
-                Collection<CsmUID<CsmProject>> vals = platf2csm.values();
-                Collection out = new ArrayList(vals.size());
-                for (CsmUID<CsmProject> uid : vals) {
-                    ProjectBase prj = (ProjectBase)UIDCsmConverter.UIDtoProject(uid);
-                    assert prj != null : "null project for UID " + uid;
-                    out.add(prj);
-                }
-                return out;
-            } else {
+        if (TraceFlags.USE_REPOSITORY) {
+            Collection<CsmUID<CsmProject>> vals;
+            synchronized (lock) {
+                vals = new ArrayList<CsmUID<CsmProject>>(platf2csm.values());
+            }
+            Collection out = new ArrayList(vals.size());
+            for (CsmUID<CsmProject> uid : vals) {
+                ProjectBase prj = (ProjectBase)UIDCsmConverter.UIDtoProject(uid);
+                assert prj != null : "null project for UID " + uid;
+                out.add(prj);
+            }
+            return out;
+        } else {
+            synchronized (lock) {
                 return new ArrayList<CsmProject>(platf2csmOLD.values());
             }
         }
@@ -345,11 +352,11 @@ public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startup
     }
     
     public void addProgressListener(CsmProgressListener listener) {
-        ParserQueue.instance().addProgressListener(listener);
+        ProgressSupport.instance().addProgressListener(listener);
     }
     
     public void removeProgressListener(CsmProgressListener listener) {
-        ParserQueue.instance().removeProgressListener(listener);
+        ProgressSupport.instance().removeProgressListener(listener);
     }
 
     public Iterator<CsmModelStateListener> getModelStateListeners() {
@@ -357,7 +364,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startup
     }
     
     public Iterator<CsmProgressListener> getProgressListeners() {
-	return ParserQueue.instance().getProgressListeners();
+	return ProgressSupport.instance().getProgressListeners();
     }
     
     public Iterator<CsmModelListener> getModelListeners() {
@@ -368,7 +375,14 @@ public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startup
         for ( CsmModelListener listener : modelListeners ) {
             listener.projectOpened(csmProject);
         }
-	csmProject.onAddedToModel();
+        csmProject.onAddedToModel();
+        if (csmProject.isRestored()){
+            for(CsmFile file : csmProject.getFileList()){
+                if (file instanceof FileImpl) {
+                    ProgressSupport.instance().fireFileParsingFinished((FileImpl)file);
+                }
+            }
+        }
     }
     
     private void fireProjectClosed(CsmProject csmProject) {
@@ -399,7 +413,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startup
                 if( uid == null ) {
                     uid = libraries.get(includePath);
                     if( uid == null ) {
-                        library = new LibProjectImpl(this, includePath);
+                        library = LibProjectImpl.createInstance(this, includePath);
                         uid = UIDCsmConverter.projectToUID(library);
                         libraries.put(includePath,  uid);
                     }
@@ -415,7 +429,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startup
                 if( library == null ) {
                     library = librariesOLD.get(includePath);
                     if( library == null ) {
-                        library = new LibProjectImpl(this, includePath);
+                        library = LibProjectImpl.createInstance(this, includePath);
                         librariesOLD.put(includePath,  library);
                     }
                 }
@@ -466,6 +480,14 @@ public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startup
     public void startup() {
         
         if( TraceFlags.TRACE_MODEL_STATE ) System.err.println("ModelImpl.startup");
+
+        if (TraceFlags.PERSISTENT_REPOSITORY) {
+            try {
+                readProjectsIndex();
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+        }
         
         setState(CsmModelState.ON);
         
@@ -486,6 +508,14 @@ public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startup
     public void shutdown() {
 
 	if( TraceFlags.TRACE_MODEL_STATE ) System.err.println("ModelImpl.shutdown");
+
+        if (TraceFlags.PERSISTENT_REPOSITORY) {
+            try {
+                writeProjectsIndex();
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+        }
         
         ParserThreadManager.instance().shutdown();
 
@@ -507,7 +537,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startup
         // clearFileExistenceCache all opened projects, UIDs will be removed in disposeProject
         for (Iterator projIter =prjsColl.iterator(); projIter.hasNext();) {
             ProjectBase project = (ProjectBase) projIter.next();
-            disposeProject(project, CLEAN_REPOSITORY);
+            disposeProject(project, ! TraceFlags.PERSISTENT_REPOSITORY);
         }
         
         cleanModel();      
@@ -624,9 +654,9 @@ public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startup
                 } catch( InterruptedException e ) {}
             }
             
+            removeProjectBase(csmProject);
             boolean cleanModel;
             synchronized( lock ) {
-                removeProjectBase(csmProject);
                 cleanModel = TraceFlags.USE_REPOSITORY ? platf2csm.isEmpty() : platf2csmOLD.isEmpty();
             }
             
@@ -652,7 +682,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startup
                 assert uid != null;
                 ProjectBase lib = (ProjectBase) UIDCsmConverter.UIDtoProject(uid);
                 assert lib != null : "Null project for UID " + uid;
-                disposeProject(lib, CLEAN_REPOSITORY);
+                disposeProject(lib, ! TraceFlags.PERSISTENT_REPOSITORY);
             }
         } else {
             Set<ProjectBase> libs;
@@ -663,7 +693,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startup
             for (Iterator<ProjectBase> it = libs.iterator(); it.hasNext();) {
                 ProjectBase lib = it.next();
                 assert lib != null;
-                disposeProject(lib, CLEAN_REPOSITORY);
+                disposeProject(lib, ! TraceFlags.PERSISTENT_REPOSITORY);
             }
         }
     }
@@ -739,6 +769,34 @@ public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startup
         APTSystemStorage.getDefault().dispose();
     }
     
+    private final static String PROJECTS_INDEX_FILE_NAME = System.getProperty("netbeans.user") + File.separator + "cnd-projects-index"; // NOI18N
+
+    private void readProjectsIndex() throws IOException {
+        String projectsIndexFile = PROJECTS_INDEX_FILE_NAME;
+        
+        try {
+            FileInputStream fis = new FileInputStream (projectsIndexFile);
+            BufferedInputStream bis = new BufferedInputStream(fis);
+            DataInputStream dis = new DataInputStream(bis);
+            KeyUtilities.readUnitsCache(dis);
+            dis.close();
+        } catch (FileNotFoundException e) {
+        }
+    }
+
+    private void writeProjectsIndex() throws IOException {
+        String projectsIndexFile = PROJECTS_INDEX_FILE_NAME;
+        
+        try {
+            FileOutputStream fos = new FileOutputStream (projectsIndexFile, false);
+            BufferedOutputStream bos = new BufferedOutputStream(fos);
+            DataOutputStream dos = new DataOutputStream(bos);
+            KeyUtilities.writeUnitsCache(dos);
+            dos.close();
+        } catch (FileNotFoundException e) {
+        }        
+    }
+    
     private Object lock = new Object();
     
     /** maps platform project to project */
@@ -758,8 +816,6 @@ public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startup
     private double warningThreshold = 0.98;
     //private double fatalThreshold = 0.99;
 
-    private final boolean CLEAN_REPOSITORY ; 
-    
     private Set disabledProjects = new HashSet();
     
 }

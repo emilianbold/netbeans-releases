@@ -393,11 +393,11 @@ public class PersistentUtils {
         }
     }
     
-    private static void writePreprocState(APTPreprocHandler.State state, DataOutput output) throws IOException {
+    public static void writePreprocState(APTPreprocHandler.State state, DataOutput output) throws IOException {
         APTSerializeUtils.writePreprocState(state, output);
     }
     
-    private static APTPreprocHandler.State readPreprocState(DataInput input) throws IOException {
+    public static APTPreprocHandler.State readPreprocState(DataInput input) throws IOException {
         return APTSerializeUtils.readPreprocState(input);
     }    
     

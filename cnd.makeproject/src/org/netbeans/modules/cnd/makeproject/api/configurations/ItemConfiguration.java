@@ -238,6 +238,22 @@ public class ItemConfiguration implements ConfigurationAuxObject {
         getFortranCompilerConfiguration().assign(i.getFortranCompilerConfiguration());
     }
     
+    public void assignValues(ConfigurationAuxObject profileAuxObject) {
+        if (!(profileAuxObject instanceof ItemConfiguration)) {
+            // FIXUP: exception ????
+            System.err.println("Item - assign: Profile object type expected - got " + profileAuxObject); // NOI18N
+            return;
+        }
+        ItemConfiguration i = (ItemConfiguration)profileAuxObject;
+        getExcluded().assign(i.getExcluded());
+        setTool(i.getTool());
+        
+        getCustomToolConfiguration().assign(i.getCustomToolConfiguration());
+        getCCompilerConfiguration().assign(i.getCCompilerConfiguration());
+        getCCCompilerConfiguration().assign(i.getCCCompilerConfiguration());
+        getFortranCompilerConfiguration().assign(i.getFortranCompilerConfiguration());
+    }
+    
     public ItemConfiguration copy(MakeConfiguration makeConfiguration) {
         ItemConfiguration copy = new ItemConfiguration(makeConfiguration, getItem());
         // safe using

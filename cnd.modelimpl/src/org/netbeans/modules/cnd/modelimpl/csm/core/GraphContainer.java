@@ -19,11 +19,16 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
@@ -31,12 +36,15 @@ import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
+import org.netbeans.modules.cnd.repository.spi.Persistent;
+import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 
 /**
  * Storage for include graph.
  * @author Alexander Simon
  */
-public class GraphContainer {
+public class GraphContainer implements Persistent, SelfPersistent {
     
     /** Creates a new instance of GraphContainer */
     public GraphContainer() {
@@ -45,6 +53,13 @@ public class GraphContainer {
         } else {
             graphOld = new HashMap<CsmFile,NodeLinkOld>();
         }
+    }
+    
+    public GraphContainer (final DataInput input) throws IOException {
+        assert input != null;
+        
+        graph = new HashMap<CsmUID<CsmFile>, NodeLink>();
+        readUIDToNodeLinkMap(input, graph);
     }
     
     /**
@@ -396,15 +411,79 @@ public class GraphContainer {
             }
         }
     }
+
+    public void write(DataOutput output) throws IOException {
+        writeUIDToNodeLinkMap(output, graph);
+    }
+    
+    private static void writeUIDToNodeLinkMap (
+            final DataOutput output, final Map<CsmUID<CsmFile>,NodeLink> aMap) throws IOException {
+        
+        assert output != null;
+        assert aMap != null;
+        
+        UIDObjectFactory uidFactory = UIDObjectFactory.getDefaultFactory();
+        assert uidFactory != null;
+        
+        output.writeInt(aMap.size());
+        
+        final Set<Entry<CsmUID<CsmFile>,NodeLink>> entrySet = aMap.entrySet();
+        final Iterator<Entry<CsmUID<CsmFile>,NodeLink>> setIterator = entrySet.iterator();
+        
+        while (setIterator.hasNext()) {
+            final Entry<CsmUID<CsmFile>,NodeLink> anEntry = setIterator.next();
+            assert anEntry != null;
+            
+            uidFactory.writeUID(anEntry.getKey(), output);
+            anEntry.getValue().write(output);
+        }
+    }    
+    
+    private static void readUIDToNodeLinkMap (
+            final DataInput input, Map<CsmUID<CsmFile>,NodeLink> aMap) throws IOException {
+        
+        assert input != null;
+        assert aMap != null;
+        UIDObjectFactory uidFactory = UIDObjectFactory.getDefaultFactory();
+        assert uidFactory != null;
+        
+        aMap.clear();
+        
+        final int size = input.readInt();
+        
+        for (int i = 0; i < size; i++) {
+            final CsmUID<CsmFile> uid = uidFactory.readUID(input);
+            final NodeLink        link = new NodeLink(input);
+            
+            assert uid != null;
+            assert link != null;
+            
+            aMap.put(uid, link);
+        }
+        
+    }
     
     private Map<CsmUID<CsmFile>,NodeLink> graph;
     private Map<CsmFile,NodeLinkOld> graphOld;
     
-    private static class NodeLink{
+    private static class NodeLink implements SelfPersistent, Persistent {
         Set<CsmUID<CsmFile>> in = new HashSet<CsmUID<CsmFile>>();
         Set<CsmUID<CsmFile>> out = new HashSet<CsmUID<CsmFile>>();
         private NodeLink(){
         }
+        
+        private NodeLink(final DataInput input) throws IOException {
+            assert input != null;
+            assert in != null;
+            assert out != null;
+
+            final UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
+            assert factory != null;
+            
+            factory.readUIDCollection(in, input);
+            factory.readUIDCollection(out, input);
+        }
+        
         private void addInLink(CsmUID<CsmFile> inLink){
             in.add(inLink);
         }
@@ -422,6 +501,18 @@ public class GraphContainer {
         }
         private Set<CsmUID<CsmFile>> getOutLinks(){
             return out;
+        }
+
+        public void write(final DataOutput output) throws IOException {
+            assert output != null;
+            assert in != null;
+            assert out != null;
+            
+            final UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
+            assert factory != null;
+            
+            factory.writeUIDCollection(in, output, false);
+            factory.writeUIDCollection(out, output, false);
         }
     }
     

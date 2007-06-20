@@ -20,6 +20,7 @@
 package org.netbeans.modules.cnd.repository.queue;
 
 import java.io.IOException;
+import java.util.concurrent.locks.ReadWriteLock;
 import org.netbeans.modules.cnd.repository.testbench.Stats;
 
 /**
@@ -30,10 +31,12 @@ public class RepositoryWritingThread implements Runnable {
     
     private RepositoryWriter writer;
     private RepositoryQueue queue;
+    private ReadWriteLock   rwLock;
     
-    public RepositoryWritingThread(RepositoryWriter writer, RepositoryQueue queue) {
+    public RepositoryWritingThread(RepositoryWriter writer, RepositoryQueue queue, ReadWriteLock rwLock) {
 	this.writer = writer;
 	this.queue = queue;
+        this.rwLock = rwLock;
     }
 
     private void waitReady() throws IOException, InterruptedException {
@@ -42,7 +45,17 @@ public class RepositoryWritingThread implements Runnable {
 		while( ! queue.isReady() ) {
 		    if( Stats.queueTrace ) System.err.printf("%s: maintenance %n ms...\n", getName(), Stats.maintenanceInterval); // NOI18N
 		    long time = System.currentTimeMillis();
-		    if( ! writer.maintenance(Stats.maintenanceInterval) ) {
+                    boolean needMoreTimeForMaintenance = false;
+                    
+                    // there should be no maintenance if the writing is blocked 
+                    try {
+                        rwLock.readLock().lock();
+                        needMoreTimeForMaintenance = writer.maintenance(Stats.maintenanceInterval);
+                    } finally {
+                        rwLock.readLock().unlock();
+                    }
+                    
+		    if( ! needMoreTimeForMaintenance ) {
 			time = System.currentTimeMillis() - time;
 			if( time < Stats.maintenanceInterval ) {
 			    Thread.currentThread().sleep(Stats.maintenanceInterval - time);
@@ -62,37 +75,41 @@ public class RepositoryWritingThread implements Runnable {
     }
     
     public void run() {
-	if( Stats.queueTrace ) System.err.printf("%s: started.\n", getName());
-        /*queue.registerMaintenancer(new Maintainer() {
-            public boolean maintenance(long timeout) throws IOException {
-                return writer.maintenance(timeout);
+        if( Stats.queueTrace ) System.err.printf("%s: started.\n", getName());
+        
+        while( true ) {
+            RepositoryQueue.Entry entry;
+            try {
+                try {
+                    rwLock.readLock().lock();
+                    entry = queue.poll();
+                    if (entry != null) {
+                        if( Stats.queueTrace ) System.err.printf("%s: writing %s\n", getName(), entry.getKey()); // NOI18N
+                        writer.write(entry.getKey(), entry.getValue());
+                        
+                    }
+                }  finally {
+                    rwLock.readLock().unlock();
+                }
+                
+                if( entry == null ) {
+                    if( RepositoryThreadManager.proceed() ) {
+                        waitReady();
+                    } else {
+                        if( Stats.queueTrace ) System.err.printf("%s: exiting\n", getName()); // NOI18N
+                        break;
+                    }
+                }
+                
+            } catch( InterruptedException e ) {
+                if( Stats.queueTrace ) System.err.printf("%s: interrupted\n", getName()); // NOI18N
+                break;
+            } catch( IOException e ) {
+                e.printStackTrace(System.err);
+            } catch( Exception e ) {
+                e.printStackTrace(System.err);
             }
-        });*/
-	while( true ) {
-	    try {
-		RepositoryQueue.Entry entry = queue.poll();
-		if( entry == null ) {
-		    if( RepositoryThreadManager.proceed() ) {
-			 waitReady();
-		    }
-		    else {
-			if( Stats.queueTrace ) System.err.printf("%s: exiting\n", getName()); // NOI18N
-			break;
-		    }
-		} else {
-		    if( Stats.queueTrace ) System.err.printf("%s: writing %s\n", getName(), entry.getKey()); // NOI18N
-		    writer.write(entry.getKey(), entry.getValue());
-		}
-	    } catch( InterruptedException e ) {
-		if( Stats.queueTrace ) System.err.printf("%s: interrupted\n", getName()); // NOI18N
-		break;
-	    } catch( IOException e ) {
-		e.printStackTrace(System.err);
-	    } catch( Exception e ) {
-		e.printStackTrace(System.err);
-	    }
-	}
-	
+        }
     }
     
     private String getName() {

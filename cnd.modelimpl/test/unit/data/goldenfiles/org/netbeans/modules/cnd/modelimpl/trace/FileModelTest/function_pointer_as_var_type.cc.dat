@@ -11,50 +11,50 @@ Includes:
     <no includes>
 Macros:
     <no macros>
-FUNCTION DEFINITION plus  [1:1/0-1:42/41] FunctionDDImpl
-    SIGNATURE plus(int,int)
-    UNIQUE NAME FUNCTION_DEFINITION:plus(int,int)
-    DECLARATION: plus  [1:1/0-1:42/41]
+FUNCTION fun1 [1:1/0-1:20/19] FunctionImpl
+    DEFINITION: null
+    SIGNATURE fun1(int,int)
+    UNIQUE NAME FUNCTION:fun1(int,int)
     PARAMETERS:
-        x [1:10/9-1:15/14] type: int TEXT=int  [1:10/9-1:13/12] init: null
-        y [1:17/16-1:22/21] type: int TEXT=int  [1:17/16-1:20/19] init: null
+         [1:10/9-1:13/12] type: int TEXT=int  [1:10/9-1:13/12] init: null
+         [1:15/14-1:18/17] type: int TEXT=int  [1:15/14-1:18/17] init: null
     RETURNS int TEXT=int  [1:1/0-1:4/3]
-    STATEMENT Compound  [1:25/24-1:42/41]
-        STATEMENT Return  [1:27/26-1:40/39] text: 'return x + y;'
-FUNCTION DEFINITION minus  [2:1/42-2:42/83] FunctionDDImpl
-    SIGNATURE minus(int,int)
-    UNIQUE NAME FUNCTION_DEFINITION:minus(int,int)
-    DECLARATION: minus  [2:1/42-2:42/83]
+VARIABLE fp_fun1 [2:1/20-2:33/52] type: int TEXT=int(*)(int,int)  [2:1/20-2:7/26] init: text='fun1'
+VARIABLE fpp_fun1 [3:1/53-3:39/91] type: int TEXT=int(**)(int,int)  [3:1/53-3:8/60] init: text='&'
+VARIABLE fppp_fun1 [4:1/92-4:42/133] type: int TEXT=int(***)(int,int)  [4:1/92-4:9/100] init: text='&'
+FUNCTION fun2 [6:1/135-6:21/155] FunctionImpl
+    DEFINITION: null
+    SIGNATURE fun2(int,int)
+    UNIQUE NAME FUNCTION:fun2(int,int)
     PARAMETERS:
-        x [2:11/52-2:16/57] type: int TEXT=int  [2:11/52-2:14/55] init: null
-        y [2:18/59-2:23/64] type: int TEXT=int  [2:18/59-2:21/62] init: null
-    RETURNS int TEXT=int  [2:1/42-2:4/45]
-    STATEMENT Compound  [2:25/66-2:42/83]
-        STATEMENT Return  [2:27/68-2:40/81] text: 'return x - y;'
-VARIABLE fp_plus [4:1/85-4:33/117] type: *int TEXT=int*  [4:1/85-4:7/91] init: text='plus'
-VARIABLE fp_minus [5:1/118-5:35/152] type: *int TEXT=int*  [5:1/118-5:7/124] init: text='minus'
+         [6:11/145-6:14/148] type: int TEXT=int  [6:11/145-6:14/148] init: null
+         [6:16/150-6:19/153] type: int TEXT=int  [6:16/150-6:19/153] init: null
+    RETURNS *int TEXT=int*  [6:1/135-6:5/139]
+VARIABLE fp_fun2 [7:1/156-7:34/189] type: *int TEXT=int*(*)(int,int)  [7:1/156-7:8/163] init: text='fun2'
+VARIABLE fpp_fun2 [8:1/190-8:40/229] type: *int TEXT=int*(**)(int,int)  [8:1/190-8:9/198] init: text='&'
+VARIABLE fppp_fun2 [9:1/230-9:43/272] type: *int TEXT=int*(***)(int,int)  [9:1/230-9:10/239] init: text='&'
 
 ========== Dumping model of PROJECT DummyProject
-FUNCTION DEFINITION plus  [1:1/0-1:42/41] FunctionDDImpl
-    SIGNATURE plus(int,int)
-    UNIQUE NAME FUNCTION_DEFINITION:plus(int,int)
-    DECLARATION: plus  [1:1/0-1:42/41]
+FUNCTION fun1 [1:1/0-1:20/19] FunctionImpl
+    DEFINITION: null
+    SIGNATURE fun1(int,int)
+    UNIQUE NAME FUNCTION:fun1(int,int)
     PARAMETERS:
-        x [1:10/9-1:15/14] type: int TEXT=int  [1:10/9-1:13/12] init: null
-        y [1:17/16-1:22/21] type: int TEXT=int  [1:17/16-1:20/19] init: null
+         [1:10/9-1:13/12] type: int TEXT=int  [1:10/9-1:13/12] init: null
+         [1:15/14-1:18/17] type: int TEXT=int  [1:15/14-1:18/17] init: null
     RETURNS int TEXT=int  [1:1/0-1:4/3]
-    STATEMENT Compound  [1:25/24-1:42/41]
-        STATEMENT Return  [1:27/26-1:40/39] text: 'return x + y;'
-FUNCTION DEFINITION minus  [2:1/42-2:42/83] FunctionDDImpl
-    SIGNATURE minus(int,int)
-    UNIQUE NAME FUNCTION_DEFINITION:minus(int,int)
-    DECLARATION: minus  [2:1/42-2:42/83]
+VARIABLE fp_fun1 [2:1/20-2:33/52] type: int TEXT=int(*)(int,int)  [2:1/20-2:7/26] init: text='fun1'
+VARIABLE fpp_fun1 [3:1/53-3:39/91] type: int TEXT=int(**)(int,int)  [3:1/53-3:8/60] init: text='&'
+VARIABLE fppp_fun1 [4:1/92-4:42/133] type: int TEXT=int(***)(int,int)  [4:1/92-4:9/100] init: text='&'
+FUNCTION fun2 [6:1/135-6:21/155] FunctionImpl
+    DEFINITION: null
+    SIGNATURE fun2(int,int)
+    UNIQUE NAME FUNCTION:fun2(int,int)
     PARAMETERS:
-        x [2:11/52-2:16/57] type: int TEXT=int  [2:11/52-2:14/55] init: null
-        y [2:18/59-2:23/64] type: int TEXT=int  [2:18/59-2:21/62] init: null
-    RETURNS int TEXT=int  [2:1/42-2:4/45]
-    STATEMENT Compound  [2:25/66-2:42/83]
-        STATEMENT Return  [2:27/68-2:40/81] text: 'return x - y;'
-VARIABLE fp_plus [4:1/85-4:33/117] type: *int TEXT=int*  [4:1/85-4:7/91] init: text='plus'
-VARIABLE fp_minus [5:1/118-5:35/152] type: *int TEXT=int*  [5:1/118-5:7/124] init: text='minus'
+         [6:11/145-6:14/148] type: int TEXT=int  [6:11/145-6:14/148] init: null
+         [6:16/150-6:19/153] type: int TEXT=int  [6:16/150-6:19/153] init: null
+    RETURNS *int TEXT=int*  [6:1/135-6:5/139]
+VARIABLE fp_fun2 [7:1/156-7:34/189] type: *int TEXT=int*(*)(int,int)  [7:1/156-7:8/163] init: text='fun2'
+VARIABLE fpp_fun2 [8:1/190-8:40/229] type: *int TEXT=int*(**)(int,int)  [8:1/190-8:9/198] init: text='&'
+VARIABLE fppp_fun2 [9:1/230-9:43/272] type: *int TEXT=int*(***)(int,int)  [9:1/230-9:10/239] init: text='&'
 

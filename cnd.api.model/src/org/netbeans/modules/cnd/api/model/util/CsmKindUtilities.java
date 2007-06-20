@@ -495,4 +495,11 @@ public class CsmKindUtilities {
     public static boolean isFriendMethod(CsmObject obj) {
         return obj instanceof CsmFriendFunction;
     }
+
+    public static boolean isExternVariable(CsmDeclaration decl) {
+        if (isVariable(decl)) {
+            return ((CsmVariable)decl).isExtern();
+        }
+        return false;
+    }
 }

@@ -28,10 +28,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.Document;
 import org.netbeans.modules.cnd.loaders.CppEditorSupport;
-
-import org.openide.ErrorManager;
 import org.openide.loaders.DataObject;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.TopComponent;
@@ -50,11 +50,10 @@ public class CppMetaModel implements PropertyChangeListener {
 
     private static RequestProcessor cppParserRP;
 
-    private static final ErrorManager log = ErrorManager.getDefault().getInstance(
-		"CppFoldTracer"); // NOI18N
+    private static final Logger log = Logger.getLogger(CppMetaModel.class.getName());
 
     private CppMetaModel() {
-	//log.log("CppMetaModel: Constructor");
+	//log.log(Level.FINE, "CppMetaModel: Constructor");
     }
 
     public static CppMetaModel getDefault() {
@@ -128,7 +127,7 @@ public class CppMetaModel implements PropertyChangeListener {
     public void scheduleParsing(final Document doc) {
 
 	final String title = (String) doc.getProperty(Document.TitleProperty);
-	log.log("CppMetaModel.scheduleParsing: Checking " + getShortName(doc) +
+	log.log(Level.FINE, "CppMetaModel.scheduleParsing: Checking " + getShortName(doc) +
 		" [" + Thread.currentThread().getName() + "]"); // NOI18N
 	final CppFile file = map.get(title);
         // try to cancel task
@@ -136,7 +135,7 @@ public class CppMetaModel implements PropertyChangeListener {
             task.cancel();
         }
 	if (file == null) {
-	    log.log("CppMetaModel.scheduleParsing: Starting initial parse for " +
+	    log.log(Level.FINE, "CppMetaModel.scheduleParsing: Starting initial parse for " +
 			getShortName(doc));
 	    task = getCppParserRP().post(new Runnable() {
 		public void run() {
@@ -147,7 +146,7 @@ public class CppMetaModel implements PropertyChangeListener {
 		}
 	    }, reparseDelay);
 	} else if (file.needsUpdate()) {
-	    log.log("CppMetaModel.scheduleParsing: Starting update parse for " +
+	    log.log(Level.FINE, "CppMetaModel.scheduleParsing: Starting update parse for " +
 			getShortName(doc));
 	    task = getCppParserRP().post(new Runnable() {
 		public void run() {
@@ -160,7 +159,7 @@ public class CppMetaModel implements PropertyChangeListener {
 	    Object o = doc.getProperty(Document.StreamDescriptionProperty);
 	    if (o instanceof DataObject) {
 		dobj = (DataObject) o;
-		log.log("CppMetaModel.scheduleParsing: Existing record for " + getShortName(doc));
+		log.log(Level.FINE, "CppMetaModel.scheduleParsing: Existing record for " + getShortName(doc));
 	    }
 	}*/
     }
@@ -202,14 +201,14 @@ public class CppMetaModel implements PropertyChangeListener {
     }
 
     public void addParsingListener(ParsingListener listener) {
-	//log.log("CppMetaModel: addParsingListener");
+	//log.log(Level.FINE, "CppMetaModel: addParsingListener");
 	synchronized (listeners) {
 	    listeners.add(listener);
 	}
     }
 
     public void removeParsingListener(ParsingListener listener) {
-	//log.log("CppMetaModel: removeParsingListener");
+	//log.log(Level.FINE, "CppMetaModel: removeParsingListener");
 	synchronized (listeners) {
 	    listeners.remove(listener);
 	}

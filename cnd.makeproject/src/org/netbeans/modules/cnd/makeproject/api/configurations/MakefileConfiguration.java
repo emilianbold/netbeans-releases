@@ -5,7 +5,7 @@
  *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
-
+ 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
@@ -32,42 +32,44 @@ import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.api.utils.ElfDynamicLibraryFileFilter;
 import org.netbeans.modules.cnd.api.utils.ElfStaticLibraryFileFilter;
-import org.netbeans.modules.cnd.makeproject.ui.wizards.PanelProjectLocationVisual;
+import org.netbeans.modules.cnd.api.utils.PeDynamicLibraryFileFilter;
+import org.netbeans.modules.cnd.api.utils.PeExecutableFileFilter;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 public class MakefileConfiguration {
     private MakeConfiguration makeConfiguration;
-
+    
     private StringConfiguration buildCommandWorkingDir;
     private StringConfiguration buildCommand;
     private StringConfiguration cleanCommand;
     private StringConfiguration output;
-
+    
     // Constructors
     public MakefileConfiguration(MakeConfiguration makeConfiguration) {
-	this.makeConfiguration = makeConfiguration;
-	buildCommandWorkingDir = new StringConfiguration(null, "."); // NOI18N
-	buildCommand = new StringConfiguration(null, "${MAKE} -f Makefile"); // NOI18N
-	cleanCommand = new StringConfiguration(null, "${MAKE} -f Makefile clean"); // NOI18N
-	output = new StringConfiguration(null, ""); // NOI18N
+        this.makeConfiguration = makeConfiguration;
+        buildCommandWorkingDir = new StringConfiguration(null, "."); // NOI18N
+        buildCommand = new StringConfiguration(null, "${MAKE} -f Makefile"); // NOI18N
+        cleanCommand = new StringConfiguration(null, "${MAKE} -f Makefile clean"); // NOI18N
+        output = new StringConfiguration(null, ""); // NOI18N
     }
-
+    
     // MakeConfiguration
     public void setMakeConfiguration(MakeConfiguration MakeConfiguration) {
-	this.makeConfiguration = makeConfiguration;
+        this.makeConfiguration = makeConfiguration;
     }
     public MakeConfiguration getMakeConfiguration() {
-	return makeConfiguration;
+        return makeConfiguration;
     }
-
+    
     // Working Dir
     public StringConfiguration getBuildCommandWorkingDir() {
-	return buildCommandWorkingDir;
+        return buildCommandWorkingDir;
     }
-
+    
     // Working Dir
     public String getBuildCommandWorkingDirValue() {
         if (buildCommandWorkingDir.getValue().length() == 0)
@@ -75,133 +77,133 @@ public class MakefileConfiguration {
         else
             return buildCommandWorkingDir.getValue();
     }
-
+    
     public void setBuildCommandWorkingDir(StringConfiguration buildCommandWorkingDir) {
-	this.buildCommandWorkingDir = buildCommandWorkingDir;
+        this.buildCommandWorkingDir = buildCommandWorkingDir;
     }
-
+    
     // Build Command
     public StringConfiguration getBuildCommand() {
-	return buildCommand;
+        return buildCommand;
     }
-
+    
     public void setBuildCommand(StringConfiguration buildCommand) {
-	this.buildCommand = buildCommand;
+        this.buildCommand = buildCommand;
     }
-
+    
     // Build Command
     public StringConfiguration getCleanCommand() {
-	return cleanCommand;
+        return cleanCommand;
     }
-
+    
     public void setCleanCommand(StringConfiguration cleanCommand) {
-	this.cleanCommand = cleanCommand;
+        this.cleanCommand = cleanCommand;
     }
-
+    
     // Output
     public StringConfiguration getOutput() {
-	return output;
+        return output;
     }
-
+    
     public void setOutput(StringConfiguration output) {
-	this.output = output;
+        this.output = output;
     }
-
+    
     // Extra
     public boolean canBuild() {
-	return getBuildCommand().getValue().length() > 0;
+        return getBuildCommand().getValue().length() > 0;
     }
-
+    
     public String getAbsBuildCommandWorkingDir() {
-	if (getBuildCommandWorkingDirValue().length() > 0 && IpeUtils.isPathAbsolute(getBuildCommandWorkingDirValue())) 
-	    return getBuildCommandWorkingDirValue();
-	else
-	    return getMakeConfiguration().getBaseDir() + "/" + getBuildCommandWorkingDirValue(); // NOI18N
+        if (getBuildCommandWorkingDirValue().length() > 0 && IpeUtils.isPathAbsolute(getBuildCommandWorkingDirValue()))
+            return getBuildCommandWorkingDirValue();
+        else
+            return getMakeConfiguration().getBaseDir() + "/" + getBuildCommandWorkingDirValue(); // NOI18N
     }
-
+    
     public boolean canClean() {
-	return getCleanCommand().getValue().length() > 0;
+        return getCleanCommand().getValue().length() > 0;
     }
-
+    
     public String getAbsOutput() {
         if (getOutput().getValue().length() == 0)
             return ""; // NOI18N
         else if (getOutput().getValue().length() > 0 && IpeUtils.isPathAbsolute(getOutput().getValue()))
-	    return getOutput().getValue();
-	else
-	    return getMakeConfiguration().getBaseDir() + "/"  + getOutput().getValue(); // NOI18N
+            return getOutput().getValue();
+        else
+            return getMakeConfiguration().getBaseDir() + "/"  + getOutput().getValue(); // NOI18N
     }
-
+    
     // Clone and assign
     public void assign(MakefileConfiguration conf) {
-	// MakefileConfiguration
-	setMakeConfiguration(conf.getMakeConfiguration());
-	getBuildCommandWorkingDir().assign(conf.getBuildCommandWorkingDir());
-	getBuildCommand().assign(conf.getBuildCommand());
-	getCleanCommand().assign(conf.getCleanCommand());
-	getOutput().assign(conf.getOutput());
+        // MakefileConfiguration
+        setMakeConfiguration(conf.getMakeConfiguration());
+        getBuildCommandWorkingDir().assign(conf.getBuildCommandWorkingDir());
+        getBuildCommand().assign(conf.getBuildCommand());
+        getCleanCommand().assign(conf.getCleanCommand());
+        getOutput().assign(conf.getOutput());
     }
-
+    
     public Object clone() {
-	MakefileConfiguration clone = new MakefileConfiguration(getMakeConfiguration());
-	clone.setBuildCommandWorkingDir((StringConfiguration)getBuildCommandWorkingDir().clone());
-	clone.setBuildCommand((StringConfiguration)getBuildCommand().clone());
-	clone.setCleanCommand((StringConfiguration)getCleanCommand().clone());
-	clone.setOutput((StringConfiguration)getOutput().clone());
-	return clone;
+        MakefileConfiguration clone = new MakefileConfiguration(getMakeConfiguration());
+        clone.setBuildCommandWorkingDir((StringConfiguration)getBuildCommandWorkingDir().clone());
+        clone.setBuildCommand((StringConfiguration)getBuildCommand().clone());
+        clone.setCleanCommand((StringConfiguration)getCleanCommand().clone());
+        clone.setOutput((StringConfiguration)getOutput().clone());
+        return clone;
     }
-
+    
     public Sheet getSheet() {
-	Sheet sheet = new Sheet();
-
-	Sheet.Set set = new Sheet.Set();
-	set.setName("Makefile"); // NOI18N
-	set.setDisplayName(getString("MakefileTxt"));
-	set.setShortDescription(getString("MakefileHint"));
-	set.put(new DirStringNodeProp(getBuildCommandWorkingDir(), "WorkingDirectory", getString("WorkingDirectory_LBL"), getString("WorkingDirectory_TT"))); // NOI18N
-	set.put(new StringNodeProp(getBuildCommand(), "BuildCommandLine", getString("BuildCommandLine_LBL"), getString("BuildCommandLine_TT"))); // NOI18N
-	set.put(new StringNodeProp(getCleanCommand(),  "CleanCommandLine", getString("CleanCommandLine_LBL"), getString("CleanCommandLine_TT"))); // NOI18N
-	set.put(new OutputStringNodeProp(getOutput(), "BuildResult", getString("BuildResult_LBL"), getString("BuildResult_TT"))); // NOI18N
-	sheet.put(set);
-
-	return sheet;
+        Sheet sheet = new Sheet();
+        
+        Sheet.Set set = new Sheet.Set();
+        set.setName("Makefile"); // NOI18N
+        set.setDisplayName(getString("MakefileTxt"));
+        set.setShortDescription(getString("MakefileHint"));
+        set.put(new DirStringNodeProp(getBuildCommandWorkingDir(), "WorkingDirectory", getString("WorkingDirectory_LBL"), getString("WorkingDirectory_TT"))); // NOI18N
+        set.put(new StringNodeProp(getBuildCommand(), "BuildCommandLine", getString("BuildCommandLine_LBL"), getString("BuildCommandLine_TT"))); // NOI18N
+        set.put(new StringNodeProp(getCleanCommand(),  "CleanCommandLine", getString("CleanCommandLine_LBL"), getString("CleanCommandLine_TT"))); // NOI18N
+        set.put(new OutputStringNodeProp(getOutput(), "BuildResult", getString("BuildResult_LBL"), getString("BuildResult_TT"))); // NOI18N
+        sheet.put(set);
+        
+        return sheet;
     }
-
+    
     private class DirStringNodeProp extends StringNodeProp {
-	public DirStringNodeProp(StringConfiguration stringConfiguration, String txt1, String txt2, String txt3) {
-	    super(stringConfiguration, txt1, txt2, txt3);
-	}
-
-	public void setValue(Object v) {
+        public DirStringNodeProp(StringConfiguration stringConfiguration, String txt1, String txt2, String txt3) {
+            super(stringConfiguration, txt1, txt2, txt3);
+        }
+        
+        public void setValue(Object v) {
             String path = IpeUtils.toRelativePath(getMakeConfiguration().getBaseDir(), (String)v); // FIXUP: not always relative path
             path = FilePathAdaptor.normalize(path);
-	    super.setValue(path);
-	}
-
-	public PropertyEditor getPropertyEditor() {
-	    return new DirEditor(getAbsBuildCommandWorkingDir());
-	}
+            super.setValue(path);
+        }
+        
+        public PropertyEditor getPropertyEditor() {
+            return new DirEditor(getAbsBuildCommandWorkingDir());
+        }
     }
-
+    
     private class OutputStringNodeProp extends StringNodeProp {
-	public OutputStringNodeProp(StringConfiguration stringConfiguration, String txt1, String txt2, String txt3) {
-	    super(stringConfiguration, txt1, txt2, txt3);
-	}
-
-	public void setValue(Object v) {
+        public OutputStringNodeProp(StringConfiguration stringConfiguration, String txt1, String txt2, String txt3) {
+            super(stringConfiguration, txt1, txt2, txt3);
+        }
+        
+        public void setValue(Object v) {
             String path = IpeUtils.toRelativePath(getMakeConfiguration().getBaseDir(), (String)v); // FIXUP: not always relative path
             path = FilePathAdaptor.normalize(path);
-	    super.setValue(path);
-	}
-
-	public PropertyEditor getPropertyEditor() {
+            super.setValue(path);
+        }
+        
+        public PropertyEditor getPropertyEditor() {
             String seed = getAbsOutput();
             if (seed.length() == 0)
                 seed = getMakeConfiguration().getBaseDir();
-	    return new ElfEditor(seed);
-	}
+            return new ElfEditor(seed);
+        }
     }
-
+    
     private class DirEditor extends PropertyEditorSupport implements ExPropertyEditor {
         private PropertyEnv propenv;
         private String seed;
@@ -244,13 +246,13 @@ public class MakefileConfiguration {
         
         public DirPanel(String seed, PropertyEditorSupport editor, PropertyEnv propenv) {
             super(
-		java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/api/Bundle").getString("Run_Directory"),
-		java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/api/Bundle").getString("SelectLabel"),
-		FileChooser.DIRECTORIES_ONLY,
-		null,
-		seed,
-		true
-		);
+                    java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/api/Bundle").getString("Run_Directory"),
+                    java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/api/Bundle").getString("SelectLabel"),
+                    FileChooser.DIRECTORIES_ONLY,
+                    null,
+                    seed,
+                    true
+                    );
             setControlButtonsAreShown(false);
             
             this.editor = editor;
@@ -310,14 +312,25 @@ public class MakefileConfiguration {
         
         public ElfPanel(String seed, PropertyEditorSupport editor, PropertyEnv propenv) {
             super(
-		"", // NOI18N
-		"", // NOI18N
-		FileChooser.FILES_ONLY,
-		new FileFilter[] {ElfExecutableFileFilter.getInstance(), ElfStaticLibraryFileFilter.getInstance(), ElfDynamicLibraryFileFilter.getInstance()},
-		seed,
-		true
-		);
+                    "", // NOI18N
+                    "", // NOI18N
+                    FileChooser.FILES_ONLY,
+                    null,
+                    seed,
+                    true
+                    );
+            
             setControlButtonsAreShown(false);
+            
+            if (Utilities.isWindows()) {
+                addChoosableFileFilter(PeExecutableFileFilter.getInstance());
+                addChoosableFileFilter(ElfStaticLibraryFileFilter.getInstance());
+                addChoosableFileFilter(PeDynamicLibraryFileFilter.getInstance());
+            } else {
+                addChoosableFileFilter(ElfExecutableFileFilter.getInstance());
+                addChoosableFileFilter(ElfStaticLibraryFileFilter.getInstance());
+                addChoosableFileFilter(ElfDynamicLibraryFileFilter.getInstance());
+            }
             setFileFilter(getAcceptAllFileFilter());
             
             this.editor = editor;
@@ -338,9 +351,9 @@ public class MakefileConfiguration {
     /** Look up i18n strings here */
     private static ResourceBundle bundle;
     private static String getString(String s) {
-	if (bundle == null) {
-	    bundle = NbBundle.getBundle(MakefileConfiguration.class);
-}
-	return bundle.getString(s);
+        if (bundle == null) {
+            bundle = NbBundle.getBundle(MakefileConfiguration.class);
+        }
+        return bundle.getString(s);
     }
 }

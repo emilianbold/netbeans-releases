@@ -50,7 +50,7 @@ public interface CsmVariable<T> extends CsmOffsetableDeclaration<T> {
     // moved to CsmMember
     //public boolean isStatic();
 
-    //public boolean isExtern();
+    public boolean isExtern();
 
     //public boolean isMutable();
     

@@ -25,6 +25,7 @@ import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.utils.FilePathCache;
+import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.platform.*;
 
 /**
@@ -34,11 +35,23 @@ public final class LibProjectImpl extends ProjectBase {
     
     private final String includePath;
     
-    public LibProjectImpl(ModelImpl model, String includePathName) {
+    private LibProjectImpl(ModelImpl model, String includePathName) {
         super(model, new File(includePathName), includePathName);
         this.includePath = includePathName;
         
         // RepositoryUtils.put(this);
+    }
+    
+    public static LibProjectImpl createInstance(ModelImpl model, String includePathName) {
+	ProjectBase instance = null;
+	if( TraceFlags.PERSISTENT_REPOSITORY ) {
+	    instance = readInstance(model, includePathName, includePathName);
+	}
+	if( instance == null ) {
+	   instance = new LibProjectImpl(model, includePathName);
+	}
+	return (LibProjectImpl) instance;
+	
     }
     
     protected void ensureFilesCreated() {

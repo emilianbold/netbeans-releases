@@ -186,7 +186,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
         } else if (element.equals(CCOMPILERTOOL_ELEMENT) || element.equals(SUN_CCOMPILERTOOL_OLD_ELEMENT)) { // FIXUP: <= 23
             if (currentItemConfiguration != null)
                 currentCCompilerConfiguration = currentItemConfiguration.getCCompilerConfiguration();
-            if (currentFolderConfiguration != null)
+            else if (currentFolderConfiguration != null)
                 currentCCompilerConfiguration = currentFolderConfiguration.getCCompilerConfiguration();
             else
                 currentCCompilerConfiguration = ((MakeConfiguration)currentConf).getCCompilerConfiguration();
@@ -195,7 +195,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
         } else if (element.equals(CCCOMPILERTOOL_ELEMENT) || element.equals(SUN_CCCOMPILERTOOL_OLD_ELEMENT)) { // FIXUP: <= 23
             if (currentItemConfiguration != null)
                 currentCCCompilerConfiguration = currentItemConfiguration.getCCCompilerConfiguration();
-            if (currentFolderConfiguration != null)
+            else if (currentFolderConfiguration != null)
                 currentCCCompilerConfiguration = currentFolderConfiguration.getCCCompilerConfiguration();
             else
                 currentCCCompilerConfiguration = ((MakeConfiguration)currentConf).getCCCompilerConfiguration();

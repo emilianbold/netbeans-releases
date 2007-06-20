@@ -4,3 +4,9 @@
 int main() {
      //
 }
+
+namespace Outer {
+    void outerFun() {
+         //
+    }
+}

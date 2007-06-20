@@ -55,6 +55,7 @@ import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.cnd.makeproject.ui.utils.ConfSelectorPanel;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.compilers.Tool;
+import org.netbeans.modules.cnd.api.utils.Path;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSetConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.FortranCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
@@ -349,7 +350,7 @@ public class MakeActionProvider implements ActionProvider {
                             path = location + ";" + path; // NOI18N
                         }
                         path = path + ";" + CppSettings.getDefault().getPath(); // NOI18N
-                        runProfile.getEnvironment().putenv("PATH", path); // NOI18N
+                        runProfile.getEnvironment().putenv(Path.getPathName(), path);
                     }
                     
                     MakeArtifact makeArtifact = new MakeArtifact(pd, conf);
