@@ -89,13 +89,9 @@ final class PanelProxy<T> extends Panel<T> {
 
     descriptor.putProperty(INPUT_FILE,
       addExtension(myRequestFile.getText().trim()));
-    descriptor.putProperty(
-      INPUT_TRANSFORM_JBI, new Boolean(myRequestJBI.isSelected()));
 
     descriptor.putProperty(OUTPUT_FILE,
       addExtension(myReplyFile.getText().trim()));
-    descriptor.putProperty(
-      OUTPUT_TRANSFORM_JBI, new Boolean(myReplyJBI.isSelected()));
     
     if (myReplyBox.isSelected()) {
       descriptor.putProperty(CHOICE, CHOICE_FILTER_REQUEST_REPLY);
@@ -147,10 +143,8 @@ final class PanelProxy<T> extends Panel<T> {
     myOperationCall.setEnabled(myReplyBox.isSelected());
 
     myRequestFile.setEnabled(myRequestBox.isSelected());
-    myRequestJBI.setEnabled(myRequestBox.isSelected());
 
     myReplyFile.setEnabled(myReplyBox.isSelected());
-    myReplyJBI.setEnabled(myReplyBox.isSelected());
 
     myOperationImplement.setRequirement(
       myRequestBox.isSelected(), myReplyBox.isSelected());
@@ -158,33 +152,17 @@ final class PanelProxy<T> extends Panel<T> {
     myOperationCall.setRequirement(
       myRequestBox.isSelected(), myReplyBox.isSelected());
 
-    if (myRequestJBI.isSelected()) {
-      updateText(
-        myRequestText,
-        i18n("LBL_JBI_Message"), // NOI18N
-        i18n("LBL_JBI_Message")); // NOI18N
-    }
-    else {
-      updateText(
-        myRequestText,
-        true,
-        (Operation) myOperationImplement.getResult(),
-        (Operation) myOperationCall.getResult());
-    }
+    updateText(
+      myRequestText,
+      true,
+      (Operation) myOperationImplement.getResult(),
+      (Operation) myOperationCall.getResult());
 
-    if (myReplyJBI.isSelected()) {
-      updateText(
-        myReplyText,
-        i18n("LBL_JBI_Message"), // NOI18N
-        i18n("LBL_JBI_Message")); // NOI18N
-     }
-     else {
-      updateText(
-        myReplyText,
-        false,
-        (Operation) myOperationCall.getResult(),
-        (Operation) myOperationImplement.getResult());
-     }
+    updateText(
+      myReplyText,
+      false,
+      (Operation) myOperationCall.getResult(),
+      (Operation) myOperationImplement.getResult());
   }
 
   private void updateText(
@@ -226,19 +204,12 @@ final class PanelProxy<T> extends Panel<T> {
     );
     myRequestBox.setEnabled(false);
     myRequestBox.setSelected(true);
-    
-    myRequestJBI = createCheckBox(
-      new ButtonAction(i18n("LBL_Transform_JBI")) { // NOI18N
-        public void actionPerformed(ActionEvent event) {
-          update();
-        }
-      }
-    );
+
     myRequestText = new JTextField();
     myRequestFile = new JTextField(fileName);
 
     return createTransformPanel(
-      myRequestBox, myRequestJBI, myRequestText, myRequestFile);
+      myRequestBox, myRequestText, myRequestFile);
   }
 
   private JPanel createTransformReplyPanel(String fileName) {
@@ -252,23 +223,15 @@ final class PanelProxy<T> extends Panel<T> {
     myReplyBox.setEnabled(true);
     myReplyBox.setSelected(false);
 
-    myReplyJBI = createCheckBox(
-      new ButtonAction(i18n("LBL_Transform_JBI")) { // NOI18N
-        public void actionPerformed(ActionEvent event) {
-          update();
-        }
-      }
-    );
     myReplyText = new JTextField();
     myReplyFile = new JTextField(fileName);
 
     return createTransformPanel(
-      myReplyBox, myReplyJBI, myReplyText, myReplyFile);
+      myReplyBox, myReplyText, myReplyFile);
   }
 
   private JPanel createTransformPanel(
     JCheckBox checkBox,
-    JCheckBox transformBox,
     JTextField text,
     JTextField file)
   {
@@ -282,15 +245,6 @@ final class PanelProxy<T> extends Panel<T> {
     c.gridwidth = 2;
     c.insets = new Insets(SMALL_INSET, 0, 0, 0);
     panel.add(checkBox, c);
-
-    // transform
-    c.gridy++;
-    c.gridwidth = 1;
-    c.insets = new Insets(
-      SMALL_INSET, MEDIUM_INSET + SMALL_INSET + TINY_INSET + TINY_INSET, TINY_INSET, 0);
-    c.fill = GridBagConstraints.NONE;
-    c.weightx = 0.0;
-    panel.add(transformBox, c);
 
     // text
     c.insets = new Insets(
@@ -326,8 +280,6 @@ final class PanelProxy<T> extends Panel<T> {
   private JCheckBox myReplyBox; 
   private JTextField myRequestText; 
   private JTextField myReplyText;
-  private JCheckBox myRequestJBI;
-  private JCheckBox myReplyJBI;
   private JTextField myRequestFile;
   private JTextField myReplyFile;
 }

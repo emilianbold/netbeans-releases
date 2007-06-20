@@ -140,13 +140,9 @@ final class PanelOperation<T> extends Panel<T> {
 
       if (myIsInput) {
         descriptor.putProperty(INPUT_FILE, file);
-        descriptor.putProperty(
-          INPUT_TRANSFORM_JBI, new Boolean(myTransformJBI.isSelected()));
       }
       else {
         descriptor.putProperty(OUTPUT_FILE, file);
-        descriptor.putProperty(
-          OUTPUT_TRANSFORM_JBI, new Boolean(myTransformJBI.isSelected()));
       }
     }
     if (myIsInput) {
@@ -222,12 +218,6 @@ final class PanelOperation<T> extends Panel<T> {
       c.weightx = 0.0;
       c.weighty = 1.0;
       c.insets = new Insets(0, 0, 0, 0);
-      myTransformJBI = createCheckBox(
-        new ButtonAction(i18n("LBL_Transform_JBI")) { // NOI18N
-          public void actionPerformed(ActionEvent event) {}
-        }
-      );
-      panel.add(myTransformJBI, c);
     }
     updatePartnerRolePorts(null);
     mainPanel.add(panel, cc);
@@ -620,7 +610,6 @@ final class PanelOperation<T> extends Panel<T> {
   {
     if (myFileName != null) {
       myFile.setEnabled(enabled);
-      myTransformJBI.setEnabled(enabled);
     }
   }
 
@@ -652,7 +641,6 @@ final class PanelOperation<T> extends Panel<T> {
   }
 
   private JTextField myFile;
-  private JCheckBox myTransformJBI;
   private JComboBox myPartnerRolePort;
   private JComboBox myOperation;
   private JTextField myInput;

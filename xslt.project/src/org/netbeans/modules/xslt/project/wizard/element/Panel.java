@@ -356,13 +356,11 @@ abstract class Panel<T> implements WizardDescriptor.ValidatingPanel<T> {
   public static final String INPUT_OPERATION = "input.operation"; // NOI18N
   public static final String INPUT_PARTNER_ROLE_PORT =
     "input.partner.role.port"; // NOI18N
-  public static final String INPUT_TRANSFORM_JBI = "input.transform.jbi"; // NOI18N
 
   public static final String OUTPUT_FILE = "output.file"; // NOI18N
   public static final String OUTPUT_OPERATION = "output.operation"; // NOI18N
   public static final String OUTPUT_PARTNER_ROLE_PORT =
     "output.partner.role.port"; // NOI18N
-  public static final String OUTPUT_TRANSFORM_JBI = "output.transform.jbi"; // NOI18N
 
   public static final String CHOICE = "choice"; // NOI18N
   public static final String CHOICE_REQUEST_REPLY = "choice.request.reply"; // NOI18N

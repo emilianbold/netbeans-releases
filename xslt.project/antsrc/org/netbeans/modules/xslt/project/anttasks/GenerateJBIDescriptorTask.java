@@ -64,7 +64,6 @@ import org.netbeans.modules.xslt.tmap.model.api.PartnerLinkTypeReference;
 import org.netbeans.modules.xslt.tmap.model.api.Service;
 import org.netbeans.modules.xslt.tmap.model.api.TMapModel;
 import org.netbeans.modules.xslt.tmap.model.api.WSDLReference;
-import org.netbeans.modules.xslt.tmap.model.impl.TMapComponents;
 import org.netbeans.modules.xslt.project.CommandlineXsltProjectXmlCatalogProvider;
 
 /**
@@ -387,7 +386,7 @@ public class GenerateJBIDescriptorTask extends org.apache.tools.ant.Task {
 
             List<Operation> operations = service.getOperations();
             for (Operation operation : operations) {
-                Invokes invokes = operation.getInvokes();
+                Invokes invokes = null;//TODO m operation.getInvokes();
                 if (invokes != null) {
                     consumer = createServiceEntry(invokes);
                     if (consumer != null && !mConsumers.contains(consumer)) {
