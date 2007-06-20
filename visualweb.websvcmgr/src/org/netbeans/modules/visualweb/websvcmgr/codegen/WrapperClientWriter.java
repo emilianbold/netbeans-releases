@@ -35,7 +35,9 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlOperation;
+import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlParameter;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;
+import org.openide.ErrorManager;
 
 /**
  * A simple writer to write the Java Source.
@@ -267,9 +269,12 @@ public class WrapperClientWriter extends java.io.PrintWriter {
 
         for(int j = 0; j < sortedMethods.size(); j++) {
             java.lang.reflect.Method method = sortedMethods.get(j);
-            Operation operation = (Operation)operations.get(j).getInternalJAXWSOperation();
+            Operation operation = getCorrespondingOperation(method, operations);
             
-            assert method.getName().equalsIgnoreCase(operation.getJavaMethodName());
+            if (operation == null) {
+                ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "Web Service client method not found in model - " + method.getName());
+                continue;
+            }
             
             println();
             
@@ -383,6 +388,56 @@ public class WrapperClientWriter extends java.io.PrintWriter {
         }
     }
         
+    private Operation getCorrespondingOperation(java.lang.reflect.Method method, List<WsdlOperation> operations) {
+        Operation result = null;
+        String methodName = method.getName();
+        Class[] parameters = method.getParameterTypes();
+        for (WsdlOperation op : operations) {
+            String opName = op.getJavaName();
+            List<WsdlParameter> opParameters = op.getParameters();
+            
+            // check the method names (case-sensitivity is ignored in some cases
+            // due to the differences between JAX-WS and JAX-RPC operation naming
+            // conventions)
+            if (!opName.equalsIgnoreCase(methodName) ||
+                (!opName.equals(methodName) && result != null)) {
+                continue;
+            }
+            
+            // check parameter signatures
+            if (opParameters.size() != parameters.length) {
+                continue;
+            }
+            
+            boolean matches = true;
+            for (int i = 0; i < parameters.length; i++) {
+                WsdlParameter opParam = opParameters.get(i);
+                if (opParam.isHolder() && isJaxRpc) {
+                    Class[] interfaces = parameters[i].getInterfaces();
+                    boolean hasHolderImpl = false;
+                    for (int j = 0; j < interfaces.length; j++) {
+                        if (interfaces[i].getName().equals("javax.xml.rpc.holders.Holder")) { // NOI18N
+                            hasHolderImpl = true;
+                            break;
+                        }
+                    }
+                    matches = matches && hasHolderImpl;
+                }else if (opParam.isHolder()) {
+                    matches = matches && parameters[i].getName().equals("javax.xml.ws.Holder"); //NOI18N
+                }else {
+                    matches = matches && parameters[i].getName().equals(opParam.getTypeName());
+                }
+            }
+            
+            if (matches) {
+                result = (Operation)op.getInternalJAXWSOperation();
+            }
+            
+        }
+        
+        return result;
+    }
+    
     private String designTimeReturnValue( String returnType ) {
         
         String fakeReturn = "null";
