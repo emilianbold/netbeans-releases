@@ -2005,7 +2005,7 @@ public class UMLParsingIntegrator
                         addToSymbolTable(nested);
                         processNestedClass(nested);
                         processTemplateParameters(nested);
-                        
+                        processComment(nested);
                         addClass(nested);
                     }
                 }
