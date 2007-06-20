@@ -639,6 +639,13 @@ public class WSDeploymentManager implements DeploymentManager {
         }
     }
     
+/* Start add - Dileep for compilation */
+    public ProgressObject distribute(Target[] target, ModuleType moduleType, InputStream inputStream, InputStream inputStream0) throws IllegalStateException {
+        return distribute(target, inputStream, inputStream0);
+    }
+/* End add - Dileep for compilation */
+    
+    
     /**
      * Delegates the call to the server's deployment manager, checking whether
      * the server is connected, updating the manager if neccessary and throwing
