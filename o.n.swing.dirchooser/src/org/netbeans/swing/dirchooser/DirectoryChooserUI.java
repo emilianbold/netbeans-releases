@@ -374,6 +374,8 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
         Set<AWTKeyStroke> tKeys = filenameTextField.getFocusTraversalKeys(java.awt.KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS);
         Set<AWTKeyStroke> newTKeys = new HashSet<AWTKeyStroke>(tKeys);
         newTKeys.remove(AWTKeyStroke.getAWTKeyStroke(KeyEvent.VK_TAB, 0));
+        // #107305: enable at least Ctrl+TAB if we have TAB for completion
+        newTKeys.add(AWTKeyStroke.getAWTKeyStroke(KeyEvent.VK_TAB, KeyEvent.CTRL_DOWN_MASK));
         filenameTextField.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, newTKeys);
         
         fileAndFilterPanel.add(filenameTextField);
