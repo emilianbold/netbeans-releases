@@ -49,7 +49,7 @@ import org.openide.util.actions.SystemAction;
 */
 public abstract class FileSystem implements Serializable {
     /** generated Serialized Version UID */
-    static final long serialVersionUID = -8931487924240189180L;
+    private static final long serialVersionUID = -8931487924240189180L;
 
     /** Property name indicating validity of filesystem. */
     public static final String PROP_VALID = "valid"; // NOI18N

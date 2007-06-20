@@ -99,7 +99,7 @@ import org.openide.util.actions.SystemAction;
  */
 public abstract class AbstractFileSystem extends FileSystem {
     /** generated Serialized Version UID */
-    static final long serialVersionUID = -3345098214331282438L;
+    private static final long serialVersionUID = -3345098214331282438L;
 
     /** system actions for this FS if it has refreshTime != 0 */
     private static SystemAction[] SYSTEM_ACTIONS;
