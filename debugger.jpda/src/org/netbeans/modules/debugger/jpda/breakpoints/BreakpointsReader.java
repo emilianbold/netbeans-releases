@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -174,6 +174,14 @@ public class BreakpointsReader implements Properties.Reader, PropertyChangeListe
             eb.setCondition (
                 properties.getString (ExceptionBreakpoint.PROP_CONDITION, "")
             );
+            String[] classFilters = (String[]) properties.getArray(ExceptionBreakpoint.PROP_CLASS_FILTERS, null);
+            if (classFilters != null) {
+                eb.setClassFilters(classFilters);
+            }
+            String[] classExclusionFilters = (String[]) properties.getArray(ExceptionBreakpoint.PROP_CLASS_EXCLUSION_FILTERS, null);
+            if (classExclusionFilters != null) {
+                eb.setClassExclusionFilters(classExclusionFilters);
+            }
             synchronized (this) {
                 cachedSourceRoots.put(eb, properties.getString("sourceRoot", null));
             }
@@ -328,6 +336,12 @@ public class BreakpointsReader implements Properties.Reader, PropertyChangeListe
                 ExceptionBreakpoint.PROP_CATCH_TYPE, 
                 eb.getCatchType ()
             );
+            properties.setArray(
+                    ExceptionBreakpoint.PROP_CLASS_FILTERS,
+                    eb.getClassFilters());
+            properties.setArray(
+                    ExceptionBreakpoint.PROP_CLASS_EXCLUSION_FILTERS,
+                    eb.getClassExclusionFilters());
             properties.setString (
                 ExceptionBreakpoint.PROP_CONDITION, 
                 eb.getCondition ()

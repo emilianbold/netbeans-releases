@@ -66,6 +66,16 @@ public class ExceptionBreakpointImpl extends ClassBasedBreakpoint {
                 (breakpoint.getCatchType () & 
                     ExceptionBreakpoint.TYPE_EXCEPTION_UNCATCHED) != 0
             );
+            String[] classFilters = breakpoint.getClassFilters();
+            int i, k = classFilters.length;
+            for (i = 0; i < k; i++) {
+                er.addClassFilter (classFilters [i]);
+            }
+            String[] classExclusionFilters = breakpoint.getClassExclusionFilters();
+            k = classExclusionFilters.length;
+            for (i = 0; i < k; i++) {
+                er.addClassExclusionFilter (classExclusionFilters [i]);
+            }
             addEventRequest (er);
         } catch (VMDisconnectedException e) {
         }
