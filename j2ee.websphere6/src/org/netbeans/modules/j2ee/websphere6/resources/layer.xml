@@ -19,6 +19,11 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
   Microsystems, Inc. All Rights Reserved.
 -->
 
+<!--
+ Changes by Dileep 
+ For porting to 6.0 all the api need to be changed to spi due to retouche.
+-->
+
 <filesystem>
     <folder name="J2EE">
         <folder name="DeploymentPlugins">
@@ -49,7 +54,8 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
                 -->
                 <file name="RegistryNodeFactory.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.websphere6.ui.nodes.WSRegistryNodeFactory"/>
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.api.RegistryNodeFactory"/>
+                    <!-- Dileep attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.api.RegistryNodeFactory"/ -->
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.RegistryNodeFactory"/>
                 </file>
                 
                 <!--
@@ -80,13 +86,19 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
                 <file name="OptionalFactory.instance">
                     <attr name="instanceCreate" newvalue="org.netbeans.modules.j2ee.websphere6.optional.WSOptionalDeploymentManagerFactory"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.websphere6.optional.WSOptionalDeploymentManagerFactory"/>
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.api.OptionalDeploymentManagerFactory"/>
+                    <!-- Dileep attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.api.OptionalDeploymentManagerFactory"/ -->
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.OptionalDeploymentManagerFactory"/>
                 </file>
                 <file name="ConfigurationSupportImpl.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.websphere6.config.ConfigurationSupportImpl"/>
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.api.ConfigurationSupport"/>
+                    <!-- Dileep attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.api.ConfigurationSupport"/ -->
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.ConfigurationSupport"/>
                 </file>
-                
+                <file name="WSModuleConfigurationFactory.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.websphere6.config.WSModuleConfigurationFactory"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfigurationFactory"/>
+                </file>
+
                 <!--
                 Server-specific deployment configuration files' names, 
                 grouped by module type
