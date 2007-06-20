@@ -36,6 +36,7 @@ import org.netbeans.modules.websvc.design.javamodel.ServiceChangeListener;
 import org.netbeans.modules.websvc.design.javamodel.ServiceModel;
 import org.netbeans.modules.websvc.design.view.DesignViewPopupProvider;
 import org.netbeans.modules.websvc.design.view.actions.AddOperationAction;
+import org.netbeans.modules.websvc.design.view.actions.RemoveOperationAction;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -101,6 +102,7 @@ public class OperationsWidget extends AbstractTitledWidget {
                 new DesignViewPopupProvider(new Action [] {
             addAction,
         })));
+        getActions().addAction(scene.createSelectAction());
         createContent(service);
     }
     
@@ -120,7 +122,13 @@ public class OperationsWidget extends AbstractTitledWidget {
         ButtonWidget addButton = new ButtonWidget(getScene(), addAction);
         addButton.setOpaque(true);
         
+        Action removeAction = new RemoveOperationAction(service, getObjectScene());
+        ButtonWidget removeButton = new ButtonWidget(getScene(), removeAction);
+        removeButton.setButtonEnabled(removeAction.isEnabled());
+        removeButton.setOpaque(true);
+
         buttons.addChild(addButton);
+        buttons.addChild(removeButton);
         buttons.addChild(getExpanderWidget());
         
         getHeaderWidget().addChild(buttons);

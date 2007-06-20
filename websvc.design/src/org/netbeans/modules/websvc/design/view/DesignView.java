@@ -83,6 +83,7 @@ public class DesignView extends JPanel  {
         //        scene.getActions().addAction(ActionFactory.createZoomAction());
         //        scene.getActions().addAction(ActionFactory.createPanAction());
         scene.getActions().addAction(ButtonAction.DEFAULT);
+        scene.getActions().addAction(scene.createSelectAction());
         mMainLayer = new LayerWidget(scene);
         mMainLayer.setPreferredLocation(new Point(0, 0));
         mMainLayer.setLayout(LayoutFactory.createVerticalFlowLayout(

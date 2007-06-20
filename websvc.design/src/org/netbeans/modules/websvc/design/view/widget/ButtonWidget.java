@@ -28,6 +28,8 @@ import java.awt.Paint;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.geom.RoundRectangle2D;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import javax.swing.Action;
 import javax.swing.ImageIcon;
 import org.netbeans.api.visual.border.Border;
@@ -38,7 +40,7 @@ import org.netbeans.api.visual.widget.Scene;
 /**
  * @author Ajit Bhate
  */
-public class ButtonWidget extends AbstractMouseActionsWidget {
+public class ButtonWidget extends AbstractMouseActionsWidget implements PropertyChangeListener{
     
     private ImageLabelWidget button;
     private Action action;
@@ -82,7 +84,7 @@ public class ButtonWidget extends AbstractMouseActionsWidget {
      */
     public ButtonWidget(Scene scene, Action action) {
         this(scene, createImageLabelWidget(scene,action));
-        this.action = action;
+        setAction(action);
     }
     
     
@@ -120,9 +122,21 @@ public class ButtonWidget extends AbstractMouseActionsWidget {
      * @param action
      */
     public void setAction(Action action) {
+        if(this.action!=null) {
+            this.action.removePropertyChangeListener(this);
+        }
         this.action = action;
+        if(this.action!=null) {
+            this.action.addPropertyChangeListener(this);
+        }
     }
     
+    public void propertyChange(PropertyChangeEvent evt) {
+        if(evt.getSource()==action && "enabled".equals(evt.getPropertyName())) {
+            setButtonEnabled((Boolean)evt.getNewValue());
+        }
+    }
+
     /**
      *
      * @return
@@ -315,4 +329,5 @@ public class ButtonWidget extends AbstractMouseActionsWidget {
     private static final Color BACKGROUND_COLOR_DISABLED = new Color(0xE4E4E4);
     private static final Color ENABLED_TEXT_COLOR = new Color(0x222222);
     private static final Color DISABLED_TEXT_COLOR = new Color(0x888888);
+
 }

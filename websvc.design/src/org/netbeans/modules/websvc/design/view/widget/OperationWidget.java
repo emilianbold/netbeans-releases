@@ -93,6 +93,7 @@ public class OperationWidget extends AbstractTitledWidget {
                 new DesignViewPopupProvider(new Action [] {
             removeAction
         })));
+        getActions().addAction(((ObjectScene)scene).createSelectAction());
         createContent();
     }
     
