@@ -36,7 +36,16 @@ Microsystems, Inc. All Rights Reserved.
         <setproxy proxyhost="${proxy.host}" proxyport="${proxy.port}"/>
     </target>
 
-    <target name="build-init" depends="basic-init">
+    <target name="jdk-5-check" depends="-jdk-init" if="have-jdk-1.6" unless="permit.jdk6.builds">
+        <property name="user.build.properties" location="${nb_all}/nbbuild/user.build.properties"/>
+        <fail>You are attempting to build NetBeans using JDK 6 (or higher).
+This is forbidden as it may lead to accidental usage of JDK 6+ APIs.
+Either run Ant with JDK 5, or set nbjdk.home=&lt;JDK 5 home&gt; in ${user.build.properties}
+(can be set from IDE by opening a module project's Properties dialog and picking the right Java Platform in Libraries).
+If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=true</fail>
+    </target>
+
+    <target name="build-init" depends="basic-init,jdk-5-check">
         <property name="public.package.jar.dir" location="${nb_all}/nbbuild/build/public-package-jars"/>
         <mkdir dir="${public.package.jar.dir}"/>
         <property name="test.dist.dir" location="${nb_all}/nbbuild/build/testdist"/>
