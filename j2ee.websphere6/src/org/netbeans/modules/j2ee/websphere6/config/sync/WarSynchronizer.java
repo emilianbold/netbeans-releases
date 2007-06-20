@@ -27,7 +27,7 @@ import javax.xml.xpath.*;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarProvider;
+//dkumar -- import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarProvider;
 import org.netbeans.modules.j2ee.websphere6.dd.beans.DDXmiConstants;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.openide.filesystems.FileUtil;
