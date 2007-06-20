@@ -34,7 +34,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.apisupport.project.layers.LayerUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.FileUtil;
 import org.openide.modules.SpecificationVersion;
 
 /**
@@ -178,7 +177,7 @@ public final class CreatedModifiedFiles {
             return new String[0];
         } else {
             String[] s = new String[createdPaths.size()];
-            return (String[]) createdPaths.toArray(s);
+            return createdPaths.toArray(s);
         }
     }
     
@@ -187,7 +186,7 @@ public final class CreatedModifiedFiles {
             return new String[0];
         } else {
             String[] s = new String[modifiedPaths.size()];
-            return (String[]) modifiedPaths.toArray(s);
+            return modifiedPaths.toArray(s);
         }
     }
     
@@ -196,7 +195,7 @@ public final class CreatedModifiedFiles {
             return new String[0];
         } else {
             String[] s = new String[invalidPaths.size()];
-            return (String[]) invalidPaths.toArray(s);
+            return invalidPaths.toArray(s);
         }
     }
     
