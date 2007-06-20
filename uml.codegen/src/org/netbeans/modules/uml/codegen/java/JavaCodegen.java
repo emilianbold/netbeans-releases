@@ -478,7 +478,6 @@ public class JavaCodegen implements ICodeGenerator
 		    }
 		    classifier.addSourceFileNotDuplicate(fmap.targetFilePath);
 		}			    
-
 	    } 	    
 	    catch (Exception e) 
 	    {
@@ -486,7 +485,8 @@ public class JavaCodegen implements ICodeGenerator
                     + e.getMessage());
 		errorsCount++;
 		e.printStackTrace();		
-	    }
+	    }	    
+	    ClassInfo.eraseRefClass(classifier);
 	}
 	if (errorsCount > 0) {	    
 	    task.fail();
