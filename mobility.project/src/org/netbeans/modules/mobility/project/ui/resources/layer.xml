@@ -106,6 +106,7 @@ Microsystems, Inc. All Rights Reserved.
         
         <folder name="MIDP">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.project.ui.wizard.Bundle"/>
+            <attr name="position" intvalue="300"/>
             <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/mobility/project/ui/resources/descriptions/MIDP/MIDP.html"/>
             <attr name="MIDP" boolvalue="true"/>
             <attr name="templateCategory" stringvalue="MIDP"/>

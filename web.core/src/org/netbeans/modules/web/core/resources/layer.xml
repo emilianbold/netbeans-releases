@@ -24,10 +24,11 @@ Microsystems, Inc. All Rights Reserved.
   </folder>
   <folder name="Templates">
     <folder name="JSP_Servlet">
+        <attr name="position" intvalue="600"/>
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle"/>
         <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/Web.html"/>
       <file name="JSP.jsp" url="templates/JSP.template">
-        <attr name="position" intvalue="400"/>
+        <attr name="position" intvalue="100"/>
                 <attr name="template" boolvalue="true"/>
         <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/JSP.html"/>
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle"/>
@@ -42,7 +43,7 @@ Microsystems, Inc. All Rights Reserved.
       <file name="JSPFX.jspf" url="templates/JSPDocX.template"/>
       <!-- Tag File -->
       <file name="TagFile.tag" url="templates/TagFile.template">
-        <attr name="position" intvalue="1000"/>
+        <attr name="position" intvalue="1100"/>
                 <attr name="template" boolvalue="true"/>
         <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/TagFile.html"/>
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle"/>
@@ -56,7 +57,7 @@ Microsystems, Inc. All Rights Reserved.
       <file name="TagFileFX.tagf" url="templates/TagFileFX.template"/>
       <!-- Servlet --> 
       <file name="Servlet.java" url="templates/Servlet.template">
-          <attr name="position" intvalue="500"/>
+          <attr name="position" intvalue="200"/>
                 <attr name="template" boolvalue="true"/>
           <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
           <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/Servlet.html"/>
@@ -68,7 +69,7 @@ Microsystems, Inc. All Rights Reserved.
       </file>
       <!-- use template description from HTML module -->
       <file name="Html.html" url="nbresloc:/org/netbeans/modules/html/templates/html.html">
-         <attr name="position" intvalue="1200"/>
+         <attr name="position" intvalue="500"/>
                 <attr name="template" boolvalue="true"/>
          <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/html/TemplateHelp.html"/>
          <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle"/>
@@ -77,7 +78,7 @@ Microsystems, Inc. All Rights Reserved.
       </file>
       
       <file name="XHtml.xhtml" url="nbresloc:/org/netbeans/modules/html/templates/xhtml.xhtml">
-         <attr name="position" intvalue="100"/>
+         <attr name="position" intvalue="600"/>
                 <attr name="template" boolvalue="true"/>
          <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/html/XhtmlTemplateHelp.html"/>
          <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle"/>
@@ -85,7 +86,7 @@ Microsystems, Inc. All Rights Reserved.
          <attr name="templateCategory" stringvalue="web-types"/>
       </file>
       <file name="CascadeStyleSheet.css" url="nbresloc:/org/netbeans/modules/css/resources/CascadeStyleSheet.css.template">
-         <attr name="position" intvalue="200"/>
+         <attr name="position" intvalue="700"/>
                 <attr name="template" boolvalue="true"/>
          <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/css/resources/CSS_template.html"/>
          <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/css/resources/css.gif"/>
@@ -96,7 +97,7 @@ Microsystems, Inc. All Rights Reserved.
 
       <!-- Servlet Listener --> 
       <file name="ServletListener.java" url="templates/ServletListener.template">
-          <attr name="position" intvalue="800"/>
+          <attr name="position" intvalue="400"/>
                 <attr name="template" boolvalue="true"/>
           <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
           <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/ServletListener.html"/>
@@ -107,7 +108,7 @@ Microsystems, Inc. All Rights Reserved.
       </file>
       <!-- Tag Library 2.0--> 
       <file name="TagLibrary.tld" url="templates/BlankTagLibrary.template">
-          <attr name="position" intvalue="900"/>
+          <attr name="position" intvalue="1000"/>
                 <attr name="template" boolvalue="true"/>
           <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/TagLibrary.html"/>
           <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle"/>
@@ -118,7 +119,7 @@ Microsystems, Inc. All Rights Reserved.
       <file name="TagLibrary_1_2.tld" url="templates/BlankTagLibrary_1_2.template"/>
       <!-- Filters --> 
       <file name="SimpleFilter.java" url="templates/SimpleFilter.template">
-        <attr name="position" intvalue="600"/>
+        <attr name="position" intvalue="300"/>
                 <attr name="template" boolvalue="true"/>
         <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
         <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/SimpleFilter.html"/>
@@ -132,7 +133,7 @@ Microsystems, Inc. All Rights Reserved.
       </file>
       <!-- Tag Handlers --> 
       <file name="TagHandler.java" url="templates/SimpleTagHandler.template">
-        <attr name="position" intvalue="1100"/>
+        <attr name="position" intvalue="900"/>
                 <attr name="template" boolvalue="true"/>
         <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
         <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/TagHandler.html"/>

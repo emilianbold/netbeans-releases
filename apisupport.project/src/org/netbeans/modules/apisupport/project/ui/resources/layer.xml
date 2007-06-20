@@ -51,7 +51,7 @@ Microsystems, Inc. All Rights Reserved.
         
         <folder name="NetBeansModuleDevelopment">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.apisupport.project.ui.wizard.Bundle"/>
-            <attr name="position" intvalue="1800"/>
+            <attr name="position" intvalue="200"/>
             <file name="gLFTemplate">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.apisupport.project.ui.wizard.glf.Bundle"/>
                 <attr name="instantiatingIterator" newvalue="org.netbeans.modules.apisupport.project.ui.wizard.glf.GLFTemplateWizardIterator"/>

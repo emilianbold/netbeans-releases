@@ -30,9 +30,8 @@ Microsystems, Inc. All Rights Reserved.
     </folder>
     <folder name="Templates">
         <folder name="JSP_Servlet">
-            <attr name="position" intvalue="900"/>
             <file name="EmptyJSON.json" url="EmptyJSON.json">
-                <attr name="position" intvalue="700"/>
+                <attr name="position" intvalue="750"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.languages.javascript.Bundle"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/languages/javascript/EmptyJSONFileDescription.html"/>
@@ -40,7 +39,7 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="templateCategory" stringvalue="web-types"/>
             </file>            
             <file name="EmptyJavaScript.js" url="EmptyJavaScript.js">
-                <attr name="position" intvalue="300"/>
+                <attr name="position" intvalue="700"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.languages.javascript.Bundle"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/languages/javascript/EmptyJavaScriptFileDescription.html"/>

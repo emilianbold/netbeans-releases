@@ -23,7 +23,7 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
   <folder name="Templates">
     <folder name="SunResources">
       <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.sun.ide.sunresources.wizards.Bundle"/>
-      <attr name="position" intvalue="1400"/>
+      <attr name="position" intvalue="1800"/>
             <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/sun/ide/sunresources/wizards/WizardInformation.html"/>
       <!--attr name="templateType_Web" boolvalue="true"/-->
       <file name="JDBC_Connection_Pool">

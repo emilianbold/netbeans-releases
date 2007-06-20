@@ -148,7 +148,7 @@
         <folder name="CDC">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2me.cdc.project.Bundle"/>
 
-            <attr name="position" intvalue="300"/>
+            <attr name="position" intvalue="400"/>
             <file name="Xlet.java" url="templates/Xlet_java">
                 <attr name="position" intvalue="100"/>
                 <attr name="template" boolvalue="true"/>

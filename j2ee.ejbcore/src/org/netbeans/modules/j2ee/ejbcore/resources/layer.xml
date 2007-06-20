@@ -56,7 +56,7 @@ Microsystems, Inc. All Rights Reserved.
             
             <!-- Templates accessible from Tools | TemplateManager -->
 
-            <attr name="position" intvalue="1300"/>
+            <attr name="position" intvalue="500"/>
             <folder name="EJB21">
                 <file name="SessionEjbClass.java" url="templates/EJB21SessionEjbClass.template">
                     <attr name="template" boolvalue="true"/>

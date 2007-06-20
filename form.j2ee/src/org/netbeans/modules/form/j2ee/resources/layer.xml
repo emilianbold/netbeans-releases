@@ -39,7 +39,7 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="Templates">
         <folder name="GUIForms">
             <file name="MasterDetailForm.java" url="templates/MasterDetailForm_java">
-                <attr name="position" intvalue="200"/>
+                <attr name="position" intvalue="900"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateCategory" stringvalue="java-forms"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.j2ee.wizard.Bundle"/>

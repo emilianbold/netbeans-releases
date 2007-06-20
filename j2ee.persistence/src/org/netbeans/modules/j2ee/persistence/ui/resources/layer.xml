@@ -32,7 +32,7 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="Templates">
         <folder name="Persistence">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.persistence.ui.resources.Bundle"/>
-            <attr name="position" intvalue="1900"/>
+            <attr name="position" intvalue="1300"/>
             <file name="Entity.java">
                 <attr name="template" boolvalue="true"/>
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.j2ee.persistence.wizard.entity.EntityWizard.create"/>

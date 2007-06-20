@@ -34,7 +34,7 @@ Microsystems, Inc. All Rights Reserved.
         <!-- Follow these nice template groups -->
     
         <folder name="XML">            
-            <attr name="position" intvalue="2000"/>
+            <attr name="position" intvalue="1700"/>
             <file name="XMLDocument.xml" url="templates/emptyXML.xml.template">
                 <attr name="position" intvalue="100"/>
                 <attr name="template" boolvalue="true"/>

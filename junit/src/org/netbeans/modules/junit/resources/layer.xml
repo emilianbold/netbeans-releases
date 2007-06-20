@@ -30,7 +30,7 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
     	          
         <folder name="JUnit">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.junit.Bundle"/>
-            <attr name="position" intvalue="1700"/>
+            <attr name="position" intvalue="1200"/>
             <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/junit/resources/templates/JUnitFolder.html"/>
             
             <!-- JUnit wizards -->
@@ -128,10 +128,6 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
                 <attr name="templateCategory" stringvalue="invisible"/>
             </file>
             
-            <file name="Package.shadow">
-                <attr name="originalFile" stringvalue="Templates/Classes/Package"/>
-                <attr name="position" intvalue="1000"/>
-            </file>
         </folder>
     </folder>
 

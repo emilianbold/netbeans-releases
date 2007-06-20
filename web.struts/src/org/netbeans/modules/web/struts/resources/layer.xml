@@ -84,7 +84,7 @@ Microsystems, Inc. All Rights Reserved.
 
     <folder name="Templates">
         <folder name="Struts">
-            <attr name="position" intvalue="100"/>
+            <attr name="position" intvalue="800"/>
             <file name="StrutsAction.java" url="templates/StrutsAction.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.struts.resources.Bundle"/>
                 <attr name="position" intvalue="100"/>
