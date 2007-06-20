@@ -68,7 +68,9 @@ public class CheckRenderer extends JPanel implements TreeCellRenderer {
 
         renderer.setIcon (node.getIcon());
         stringDisplayer.setEnabled(!node.isDisabled());
-        setToolTipText("<html>"+node.getToolTip()+"</html>");
+        String toolTip = node.getToolTip();
+        if (toolTip!=null)
+            setToolTipText("<html>"+node.getToolTip()+"</html>");
         
         //HtmlRenderer does not tolerate null colors - real ones are needed to
         //ensure fg/bg always diverge enough to be readable

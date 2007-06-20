@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.refactoring.spi.impl;
 
+import java.io.IOException;
 import java.util.Enumeration;
 import javax.swing.Icon;
 import javax.swing.tree.*;
@@ -25,6 +26,7 @@ import org.netbeans.modules.refactoring.spi.ui.TreeElement;
 import org.openide.text.PositionBounds;
 import org.netbeans.modules.refactoring.api.RefactoringElement;
 import org.netbeans.modules.refactoring.plugins.RefactoringTreeElement;
+import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
 /**
@@ -129,8 +131,11 @@ public class CheckNode extends DefaultMutableTreeNode {
     }
     
     public PositionBounds getPosition() {
-        if (userObject instanceof RefactoringElement)
-            return ((RefactoringElement) userObject).getPosition();
+        if (userObject instanceof TreeElement) {
+            Object re = ((TreeElement) userObject).getUserObject();
+            if (re instanceof RefactoringElement)
+                return ((RefactoringElement) re).getPosition();
+        }
         return null;
     }
     
@@ -140,22 +145,20 @@ public class CheckNode extends DefaultMutableTreeNode {
             if (userObject instanceof TreeElement) {
                 Object re = ((TreeElement) userObject).getUserObject();
                 if (re instanceof RefactoringElement) {
-                    tooltip = ((RefactoringElement) re).getDisplayText();
+                    RefactoringElement ree = (RefactoringElement) re;
+                    PositionBounds bounds = getPosition();
+                    FileObject file = ree.getParentFile();
+                    if (bounds != null && file!=null) {
+                        int line;
+                        try {
+                            line = bounds.getBegin().getLine() + 1;
+                        } catch (IOException ioe) {
+                            return null;
+                        }
+                        tooltip = file.getPath() + ':' + line;
+                    }
                 }
             }
-//            if ((resourceName != null) && (userObject instanceof RefactoringElement)) {
-//                RefactoringElement ree = (RefactoringElement) userObject;
-//                PositionBounds bounds = getPosition();
-//                if (bounds != null) {
-//                    int line;
-//                    try {
-//                        line = bounds.getBegin().getLine() + 1;
-//                    } catch (IOException ioe) {
-//                        return null;
-//                    }
-//                    tooltip = resourceName + ':' + line;
-//                }
-//            }
             return null;
         }
         return tooltip;
