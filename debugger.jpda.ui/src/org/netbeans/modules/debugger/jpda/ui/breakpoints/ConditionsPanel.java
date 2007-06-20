@@ -111,13 +111,14 @@ public class ConditionsPanel extends javax.swing.JPanel {
     public void setClassExcludeFilter(String[] filter) {
         String filterStr = getFilterStr(filter);
         classExcludeFilterTextField.setText(filterStr);
-        if (classFilterCheckBox.isEnabled()) {
+        if (classFilterCheckBox.isVisible()) {
             classFilterCheckBox.setSelected(filterStr.length() > 0);
+            classFilterCheckBoxActionPerformed(null);
         }
-        if (classExcludeFilterCheckBox.isEnabled()) {
-            classFilterCheckBox.setSelected(filterStr.length() > 0);
+        if (classExcludeFilterCheckBox.isVisible()) {
+            classExcludeFilterCheckBox.setSelected(filterStr.length() > 0);
+            classExcludeFilterCheckBoxActionPerformed(null);
         }
-        classFilterCheckBoxActionPerformed(null);
     }
     
     public void setCondition(String condition) {
@@ -195,8 +196,8 @@ public class ConditionsPanel extends javax.swing.JPanel {
     
     public String[] getClassExcludeFilter() {
         String filterStr;
-        if (classFilterCheckBox.isEnabled() && classFilterCheckBox.isSelected() ||
-            classExcludeFilterCheckBox.isEnabled() && classExcludeFilterCheckBox.isSelected()) {
+        if (classFilterCheckBox.isVisible() && classFilterCheckBox.isSelected() ||
+            classExcludeFilterCheckBox.isVisible() && classExcludeFilterCheckBox.isSelected()) {
             filterStr = classExcludeFilterTextField.getText().trim();
         } else {
             filterStr = "";
