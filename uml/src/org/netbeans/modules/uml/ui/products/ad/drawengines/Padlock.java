@@ -17,16 +17,6 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-/*
- * Lock.java
- *
- * Created on 7 Èþëü 2005 ã., 15:16
- *
- * To change this template, choose Tools | Options and locate the template under
- * the Source Creation and Management node. Right-click the template and choose
- * Open. You can then make changes to the template in the Source Editor.
- */
-
 package org.netbeans.modules.uml.ui.products.ad.drawengines;
 
 import java.awt.*;
