@@ -22,6 +22,7 @@ package org.netbeans.api.java.source;
 import com.sun.source.tree.Tree;                                                                                                                                                                                               
 import com.sun.source.util.TreePath;                                                                                                                                                                                           
 import com.sun.tools.javac.tree.JCTree;                                                                                                                                                                                        
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.logging.Logger;                                                                                                                                                                                                    
@@ -35,6 +36,7 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;                                                                                                                                                                        
 import org.openide.text.CloneableEditorSupport;                                                                                                                                                                                
 import org.openide.text.PositionRef;                                                                                                                                                                                           
+import org.openide.util.Exceptions;
                                                                                                                                                                                                                                
 /**                                                                                                                                                                                                                            
  * Represents a handle for {@link TreePath} which can be kept and later resolved                                                                                                                                               
@@ -122,7 +124,35 @@ public final class TreePathHandle {
         }
         return null;
     }
-    
+
+    public boolean equals(Object obj) {
+        try {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }   
+            final TreePathHandle other = (TreePathHandle) obj;
+            if (this.position.getPosition().getOffset() != this.position.getPosition().getOffset()) {
+                return false;
+            }
+            if (this.file != other.file && (this.file == null || !this.file.equals(other.file))) {
+                return false;
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+            return false;
+        }
+        return true;
+    }
+
+    public int hashCode() {
+        int hash = 7;
+        hash = 79 * hash + this.position.getOffset();
+        hash = 79 * hash + (this.file != null ? this.file.hashCode() : 0);
+        return hash;
+    }
                                                                                                                                                                                                                                
     /**                                                                                                                                                                                                                        
      * Resolves an {@link Element} from the {@link TreePathHandle}.                                                                                                                                                            
@@ -144,7 +174,7 @@ public final class TreePathHandle {
             if (enclElIsCorrespondingEl) {
                 Element e = enclosingElement.resolve(info);
                 if (e==null) {
-                    Logger.getLogger(TreePathHandle.class.getName()).fine("Cannot resolve" + enclosingElement + " in " + info.getClasspathInfo());    //NOI18N
+                    Logger.getLogger(TreePathHandle.class.getName()).severe("Cannot resolve" + enclosingElement + " in " + info.getClasspathInfo());    //NOI18N
                 }
                 return e;                                                                                                                                                                         
             } else {
