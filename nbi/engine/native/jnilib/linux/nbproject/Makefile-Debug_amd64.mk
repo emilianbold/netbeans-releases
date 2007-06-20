@@ -30,11 +30,11 @@ OBJECTFILES= \
 	${OBJECTDIR}/_ext/home/dl198383/tmp/nbi/engine/native/jnilib/linux/../.unix/src/jni_UnixNativeUtils.o
 
 # C Compiler Flags
-CFLAGS=-m64 -shared -fPIC -static-libgcc -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE
+CFLAGS=-m64 -shared -fPIC  -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE
 
 # CC Compiler Flags
-CCFLAGS=-m64 -shared -fPIC -static-libgcc -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE
-CXXFLAGS=-m64 -shared -fPIC -static-libgcc -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE
+CCFLAGS=-m64 -shared -fPIC  -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE
+CXXFLAGS=-m64 -shared -fPIC  -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE
 
 # Fortran Compiler Flags
 FFLAGS=
