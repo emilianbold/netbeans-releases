@@ -72,7 +72,10 @@ public class SQLGenericOperatorImpl extends SQLConnectableObjectImpl implements 
         this.type = SQLConstants.GENERIC_OPERATOR;
     }
 
-    /** Creates a new default instance of SQLGenericOperator */
+    /** Creates a new default instance of SQLGenericOperator 
+     * @param src 
+     * @throws com.sun.sql.framework.exception.BaseException 
+     */
     public SQLGenericOperatorImpl(SQLGenericOperator src) throws BaseException {
         this();
         copyFrom(src);
@@ -84,6 +87,7 @@ public class SQLGenericOperatorImpl extends SQLConnectableObjectImpl implements 
      * 
      * @param newName for Operator
      * @param aType for Operator
+     * @throws com.sun.sql.framework.exception.BaseException 
      */
     public SQLGenericOperatorImpl(String newName, String aType) throws BaseException {
         this();
@@ -97,6 +101,7 @@ public class SQLGenericOperatorImpl extends SQLConnectableObjectImpl implements 
     }
 
     /**
+     * @throws com.sun.sql.framework.exception.BaseException 
      * @see org.netbeans.modules.sql.framework.model.SQLConnectableObject#addInput
      */
     public void addInput(String argName, SQLObject newInput) throws BaseException {
@@ -150,6 +155,7 @@ public class SQLGenericOperatorImpl extends SQLConnectableObjectImpl implements 
 
     // We need to add more for equals ???
     /**
+     * @param refObj 
      * @see java.lang.Object#equals
      */
     public boolean equals(Object refObj) {
@@ -374,6 +380,8 @@ public class SQLGenericOperatorImpl extends SQLConnectableObjectImpl implements 
     }
 
     /**
+     * @param xmlElement 
+     * @throws com.sun.sql.framework.exception.BaseException 
      * @see SQLObject#parseXML
      */
     public void parseXML(Element xmlElement) throws BaseException {
@@ -530,7 +538,8 @@ public class SQLGenericOperatorImpl extends SQLConnectableObjectImpl implements 
      * Sets canonical operator type, obtaining configuration information from the operator
      * factory based on the given String param.
      * 
-     * @param type canonical name of operator, e.g., "concat", "tolowercase", etc.
+     * @param opInfo 
+     * @throws com.sun.sql.framework.exception.BaseException 
      */
     public void setOperatorXmlInfo(IOperatorXmlInfo opInfo) throws BaseException {
         this.operatorXmlInfo = opInfo;

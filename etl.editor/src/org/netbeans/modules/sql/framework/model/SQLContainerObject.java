@@ -49,6 +49,8 @@ public interface SQLContainerObject {
 
     /**
      * all sql objects are cloneable
+     * @return cloned sql object
+     * @throws java.lang.CloneNotSupportedException 
      */
     public Object cloneSQLObject() throws CloneNotSupportedException;
 
@@ -146,7 +148,6 @@ public interface SQLContainerObject {
      * Sets parent object, if any, that owns this SQLDefinition instance.
      * 
      * @param newParent new parent object
-     * @throws BaseException if error occurs while setting parent object
      */
     public void setParent(Object newParent);
 
@@ -155,6 +156,7 @@ public interface SQLContainerObject {
      * 
      * @param prefix the xml.
      * @return Returns the XML representation of colabSegment.
+     * @throws com.sun.sql.framework.exception.BaseException 
      */
     public String toXMLString(String prefix) throws BaseException;
 }

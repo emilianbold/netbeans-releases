@@ -84,11 +84,13 @@ public interface SQLOperator extends SQLConnectableObject {
 
     /**
      * Sets whether this object represents user specific operator.
+     * @param customOperator 
      */
     public void setCustomOperator(boolean customOperator);
 
     /**
      * Sets the name of this user specific operator. Which is also used to evaluate.
+     * @param customOperatorName 
      */
     public void setCustomOperatorName(String customOperatorName);
 
@@ -98,6 +100,7 @@ public interface SQLOperator extends SQLConnectableObject {
      * sets canonical operator type, e.g., "concat", "tolowercase", etc..
      * 
      * @param opName canonical operator name
+     * @throws com.sun.sql.framework.exception.BaseException 
      */
     public void setOperatorType(String opName) throws BaseException;
 

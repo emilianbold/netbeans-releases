@@ -62,8 +62,9 @@ public interface SQLCondition extends SQLContainerObject, SQLVisitedObject {
      * then it is linked with "AND" predicator. Ex: 1) col = input 2) (T1.EMP_ID =
      * S1.EMP_ID) AND (T1.LAST_NAME = S2.LAST_NAME)
      * 
-     * @param input
+     * @param newInput 
      * @param col
+     * @throws com.sun.sql.framework.exception.BaseException 
      */
     public void addEqualityPredicate(SQLObject newInput, SQLDBColumn col) throws BaseException;
 
@@ -101,6 +102,7 @@ public interface SQLCondition extends SQLContainerObject, SQLVisitedObject {
      * Get the condition sql text. Tries to construct Sql text from graphic model if the
      * sql text is null or empty.
      * 
+     * @param constructIfEmpty 
      * @return condition sql text
      */
     public String getConditionText(boolean constructIfEmpty);
@@ -117,7 +119,7 @@ public interface SQLCondition extends SQLContainerObject, SQLVisitedObject {
     /**
      * get the gui mode
      * 
-     * @param gui mode
+     * @return gui mode
      */
     public int getGuiMode();
 
@@ -149,6 +151,7 @@ public interface SQLCondition extends SQLContainerObject, SQLVisitedObject {
     /**
      * check if the object already exist
      * 
+     * @param obj 
      * @return true if object already exist
      */
     public SQLObject isObjectExist(SQLObject obj);
@@ -165,6 +168,7 @@ public interface SQLCondition extends SQLContainerObject, SQLVisitedObject {
      * remove the column references
      * 
      * @param column AbstractDBColumn
+     * @throws com.sun.sql.framework.exception.BaseException 
      */
     public void removeDanglingColumnRef(SQLObject column) throws BaseException;
 
@@ -173,7 +177,7 @@ public interface SQLCondition extends SQLContainerObject, SQLVisitedObject {
      * using "AND" operator.
      * 
      * @param col
-     * @param value
+     * @param victim 
      * @throws BaseException
      */
     public void removeEqualsPredicate(SQLDBColumn col, SQLObject victim) throws BaseException;
@@ -183,7 +187,6 @@ public interface SQLCondition extends SQLContainerObject, SQLVisitedObject {
      * target table is outer joined with source/table view and SQL being generated for
      * ANSI satndard FROM clause.
      * 
-     * @param cond
      * @throws BaseException
      */
     public void replaceTargetColumnIsNullPredicate() throws BaseException;

@@ -58,6 +58,7 @@ public abstract class SQLConnectableObjectImpl extends AbstractSQLObject impleme
     }
 
     /**
+     * @throws com.sun.sql.framework.exception.BaseException 
      * @see SQLConnectableObject#addInput
      */
     public void addInput(String argName, SQLObject newInput) throws BaseException {
@@ -144,6 +145,7 @@ public abstract class SQLConnectableObjectImpl extends AbstractSQLObject impleme
      * array list. Override this method in subclasses.
      * 
      * @return ArrayList of SQLTypeObjects
+     * @throws com.sun.sql.framework.exception.BaseException 
      * @see SQLConnectableObject#getPossibleTypes
      */
     public ArrayList getPossibleTypes() throws BaseException {
@@ -229,6 +231,8 @@ public abstract class SQLConnectableObjectImpl extends AbstractSQLObject impleme
     }
 
     /**
+     * @param sqlObj 
+     * @throws com.sun.sql.framework.exception.BaseException 
      * @see SQLConnectableObject#removeInputByArgName
      */
     public SQLObject removeInputByArgName(String argName, SQLObject sqlObj) throws BaseException {
