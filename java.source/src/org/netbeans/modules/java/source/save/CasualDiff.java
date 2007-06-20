@@ -1212,7 +1212,7 @@ public class CasualDiff {
                 localPointer = tokenSequence.offset();
             }
         } else {
-            if (endPos(oldT) > 0) {
+            if (endPos(oldT) > localPointer) {
                 copyTo(localPointer, localPointer = endPos(oldT));
             }
         }
