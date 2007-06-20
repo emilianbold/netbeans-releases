@@ -38,6 +38,7 @@ Microsystems, Inc. All Rights Reserved.
     <!-- register into action pool to allow user to define shortcut, put it on toolbar etc. -->  
     <folder name="Actions">
         <folder name="Versioning">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.versioning.Bundle"/>
             <file name="org-netbeans-modules-versioning-ShowTextAnnotationsAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.versioning.ShowTextAnnotationsAction"/>
             </file>
