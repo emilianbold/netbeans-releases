@@ -29,6 +29,7 @@ import org.netbeans.api.autoupdate.OperationException;
 import org.netbeans.api.autoupdate.OperationSupport;
 import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.modules.autoupdate.ui.Containers;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -113,35 +114,40 @@ public class InstallUnitWizardModel extends OperationWizardModel {
     
     @Override
     public void doCleanup () throws OperationException {
-        if (getBaseContainer ().getSupport () instanceof InstallSupport) {
-            if (OperationType.LOCAL_DOWNLOAD == getOperation ()) {
-                InstallSupport asupp = Containers.forAvailableNbms ().getSupport ();
-                if (asupp != null) {
-                    asupp.doCancel ();
+        try {
+            if (getBaseContainer ().getSupport () instanceof InstallSupport) {
+                if (OperationType.LOCAL_DOWNLOAD == getOperation ()) {
+                    InstallSupport asupp = Containers.forAvailableNbms ().getSupport ();
+                    if (asupp != null) {
+                        asupp.doCancel ();
+                    }
+                    InstallSupport usupp = Containers.forUpdateNbms ().getSupport ();
+                    if (usupp != null) {
+                        usupp.doCancel ();
+                    }
+                    Containers.forAvailableNbms ().removeAll ();
+                    Containers.forUpdateNbms ().removeAll ();
+                } else {
+                    InstallSupport isupp = (InstallSupport) getBaseContainer ().getSupport ();
+                    if (isupp != null) {
+                        isupp.doCancel ();
+                    }
                 }
-                InstallSupport usupp = Containers.forUpdateNbms ().getSupport ();
-                if (usupp != null) {
-                    usupp.doCancel ();
-                }
-                Containers.forAvailableNbms ().removeAll ();
-                Containers.forUpdateNbms ().removeAll ();
             } else {
-                InstallSupport isupp = (InstallSupport) getBaseContainer ().getSupport ();
-                if (isupp != null) {
-                    isupp.doCancel ();
+                OperationSupport osupp = (OperationSupport) getBaseContainer ().getSupport ();
+                if (osupp != null) {
+                    osupp.doCancel ();
                 }
             }
-        } else {
-            OperationSupport osupp = (OperationSupport) getBaseContainer ().getSupport ();
+            OperationSupport osupp = getCustomHandledContainer ().getSupport ();
             if (osupp != null) {
                 osupp.doCancel ();
             }
+        } catch (Exception x) {
+            Exceptions.printStackTrace (x);
+        } finally {
+            super.doCleanup ();
         }
-        OperationSupport osupp = getCustomHandledContainer ().getSupport ();
-        if (osupp != null) {
-            osupp.doCancel ();
-        }
-        super.doCleanup ();
     }
 
 }

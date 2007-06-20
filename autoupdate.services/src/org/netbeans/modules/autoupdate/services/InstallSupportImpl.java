@@ -113,7 +113,6 @@ public class InstallSupportImpl {
                 synchronized(this) {
                     currentStep = STEP.DOWNLOAD;
                 }
-                element2Clusters = new HashMap<UpdateElementImpl, File>();
                 List<? extends OperationInfo> infos = support.getContainer().listAll();
                 int size = 0;
                 for (OperationInfo info : infos) {
@@ -281,7 +280,7 @@ public class InstallSupportImpl {
                 }
                 
                 // store source of installed files
-                Utilities.writeAdditionalInformation (element2Clusters);
+                Utilities.writeAdditionalInformation (getElement2Clusters ());
                 
                 if (! needsRestart) {
                     synchronized(this) {
@@ -368,7 +367,7 @@ public class InstallSupportImpl {
     }
     
     public void doRestartLater(Restarter restarter) {    
-        Utilities.writeInstall_Later(new HashMap<UpdateElementImpl, File>(element2Clusters));
+        Utilities.writeInstall_Later(new HashMap<UpdateElementImpl, File>(getElement2Clusters ()));
     }
 
     public String getCertificate(Installer validator, UpdateElement uElement) {
@@ -780,13 +779,20 @@ public class InstallSupportImpl {
     };
 
     private File getTargetCluster(UpdateElement installed, UpdateElementImpl update, boolean isGlobal) {
-        File cluster = element2Clusters.get(update);
+        File cluster = getElement2Clusters ().get (update);
         if (cluster == null) {
             cluster = InstallManager.findTargetDirectory (installed, update, isGlobal);
             if (cluster != null) {
-                element2Clusters.put(update, cluster);
+                getElement2Clusters ().put(update, cluster);
             }
         }
         return cluster;
-    }    
+    }
+    
+    private  Map<UpdateElementImpl, File> getElement2Clusters () {
+        if (element2Clusters == null) {
+            element2Clusters = new HashMap<UpdateElementImpl, File> ();
+        }
+        return element2Clusters;
+    }
 }
