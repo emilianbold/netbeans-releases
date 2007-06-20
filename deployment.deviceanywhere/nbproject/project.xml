@@ -93,6 +93,8 @@
                 <built-to>${netbeans.dest.dir}/${cluster.dir}/modules/ext/${code.name.base.dashes}.jar</built-to>
             </extra-compilation-unit>
             <class-path-extension>
+                <binary-origin>build/libclasses</binary-origin>
+<!--                <binary-origin>${netbeans.dest.dir}/${cluster.dir}/modules/ext/org-netbeans-modules-deployment-deviceanywhere.jar</binary-origin> -->                
                 <runtime-relative-path>ext/org-netbeans-modules-deployment-deviceanywhere.jar</runtime-relative-path>
             </class-path-extension>
         </data>

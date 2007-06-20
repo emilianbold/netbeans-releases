@@ -35,6 +35,7 @@
                 <pathelement location="${ant.jar}"/>
                 <pathelement location="${tools.jar}"/>
                 <pathelement location="${cluster}/${module.jar}"/>
+                <pathelement location="${cluster}/modules/ext/${code.name.base.dashes}.jar"/>
             </classpath>
         </javac>
         <copy todir="build/antclasses">
