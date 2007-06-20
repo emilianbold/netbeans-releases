@@ -1293,7 +1293,9 @@ public class EditorContextImpl extends EditorContext {
         JavaSource js = JavaSource.forFileObject(dataObject.getPrimaryFile());
         if (js == null) return null;
         // TODO: Can be called outside of AWT? Probably need invokeAndWait()
-        final int currentOffset = org.netbeans.editor.Registry.getMostActiveComponent().getCaretPosition();
+        EditorCookie ec = nodes[0].getCookie(EditorCookie.class);
+        final int currentOffset = (ec == null) ? 0 : ec.getOpenedPanes()[0].getCaretPosition();
+        //final int currentOffset = org.netbeans.editor.Registry.getMostActiveComponent().getCaretPosition();
         final String[] currentElementPtr = new String[] { null };
         try {
             js.runUserActionTask(new CancellableTask<CompilationController>() {
