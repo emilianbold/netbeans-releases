@@ -445,10 +445,8 @@ public class CheckLinks extends MatchingTask {
                         try {
                             //URI does not handle jar:file: protocol
                             //okurls.add(new URI(base.getScheme(), base.getUserInfo(), base.getHost(), base.getPort(), base.getPath(), base.getQuery(), /*fragment*/name));
-                            okurls.add(new URI(base + "#" + name));
+                            okurls.add(new URI(base + "#" + name.replaceAll(" ", "%20")));
                         } catch (URISyntaxException e) {
-                            System.out.println("name:" + name);
-                            e.printStackTrace();
                             task.log(normalize(basepath, mappers) + findLocation(content, m.start(4)) + ": bad anchor name: " + e.getMessage(), Project.MSG_WARN);
                         }
                     } else if (recurse == 1) {
@@ -493,7 +491,6 @@ public class CheckLinks extends MatchingTask {
                         } catch (URISyntaxException e) {
                             // Message should contain the URI.
                             task.log(normalize(basepath, mappers) + location + ": bad relative URI: " + e.getMessage(), Project.MSG_WARN);
-                            e.printStackTrace();
                         }
                     } // else we are only checking that this one has right anchors
                 }
