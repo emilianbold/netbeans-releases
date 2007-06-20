@@ -23,6 +23,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+
 #include "CommonUtils.h"
 
 jbyteArray getStringBytes(JNIEnv* jEnv, jstring jString) {
@@ -91,7 +92,7 @@ jstring getString(JNIEnv* jEnv, const char* chars) {
     return (jstring) getStringWithLength(jEnv, chars, strlen(chars));
 }
 
-jstring getStringW(JNIEnv* jEnv, const unsigned short * chars) {
+jstring getStringW(JNIEnv* jEnv, const wchar_t * chars) {
     return (jstring) getStringWithLengthW(jEnv, chars, wcslen(chars));
 }
 
@@ -116,7 +117,7 @@ jstring getStringWithLength(JNIEnv* jEnv, const char* chars, int length) {
 }
 
 
-jstring getStringWithLengthW(JNIEnv* jEnv, const unsigned short* chars, int length) {
+jstring getStringWithLengthW(JNIEnv* jEnv, const wchar_t* chars, int length) {
     jstring result = NULL;
     
     if (chars != NULL) {
@@ -182,8 +183,8 @@ char* getStringFromMethod(JNIEnv* jEnv, jobject object, const char* methodName) 
     return result;
 }
 
-unsigned short* getWideStringFromMethod(JNIEnv* jEnv, jobject object, const char* methodName) {
-    unsigned short* result = NULL;
+wchar_t * getWideStringFromMethod(JNIEnv* jEnv, jobject object, const char* methodName) {
+    wchar_t* result = NULL;
     
     jclass clazz = (*jEnv)->GetObjectClass(jEnv, object);
     if (clazz != NULL) {
@@ -307,7 +308,7 @@ int mkdirs(JNIEnv* jEnv, const char *path) {
 }
 
 
-int mkdirsW(JNIEnv* jEnv, const unsigned short *path) {
+int mkdirsW(JNIEnv* jEnv, const wchar_t *path) {
     int result = 1;
     jstring jPath  = getStringW(jEnv, path);
     if (jPath != NULL) {        
@@ -343,7 +344,7 @@ unsigned char* getByteFromMultiString(JNIEnv *jEnv, jobjectArray jObjectArray, u
             jString = (jstring) (*jEnv)->GetObjectArrayElement(jEnv, jObjectArray, i);
             
             if (jString != NULL) {
-                unsigned short * chars = getWideChars(jEnv, jString);
+                wchar_t * chars = getWideChars(jEnv, jString);
                if (chars != NULL) {
                     for (j = 0; j < wcslen(chars); j++) {
                         result[index++] = chars[j];
@@ -360,15 +361,15 @@ unsigned char* getByteFromMultiString(JNIEnv *jEnv, jobjectArray jObjectArray, u
     return (unsigned char*)result;
 }
 
-unsigned short * getWideChars(JNIEnv *jEnv, jstring jString) {
+wchar_t * getWideChars(JNIEnv *jEnv, jstring jString) {
     if(jString==NULL) {
         return NULL;
     } else {
         long length = (*jEnv)->GetStringLength( jEnv, jString);
         const jchar * unicodeStr = (*jEnv)->GetStringChars( jEnv, jString, 0 );
-        unsigned short * copy = (unsigned short *) malloc(sizeof(unsigned short *)*(length + 1));
-        memset(copy, 0, sizeof(unsigned short *)*(length + 1));
-        wcsncpy(copy, unicodeStr, length);
+        wchar_t * copy = (wchar_t *) malloc(sizeof(wchar_t *)*(length + 1));
+        memset(copy, 0, sizeof(wchar_t *)*(length + 1));
+        wcsncpy(copy, (const wchar_t*)unicodeStr, length);
         (*jEnv)->ReleaseStringChars( jEnv, jString, unicodeStr);
         return copy;
     }

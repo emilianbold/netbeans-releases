@@ -19,14 +19,26 @@
  */
 
 #include <jni.h>
+#include <sys/types.h>
+#include <sys/statvfs.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include "../../.common/src/CommonUtils.h"
-#include "UnixUtils.h"
 #include "jni_UnixNativeUtils.h"
 
 JNIEXPORT jlong JNICALL Java_org_netbeans_installer_utils_system_UnixNativeUtils_getFreeSpace0(JNIEnv* jEnv, jobject jObject, jstring jPath) {
     char* path   = getChars(jEnv, jPath);
-    jlong result = (jlong) getFreeSpace(path);
+    jlong result = 0;
+    
+    struct statvfs fsstat;    
+    if(memset(&fsstat, 0, sizeof(struct statvfs)) != NULL) {
+        if(statvfs(path, &fsstat) == 0) {
+            result = (jlong) fsstat.f_frsize;
+            result *= (jlong) fsstat.f_bfree;
+        }
+    }
+    
     
     FREE(path);
     return result;

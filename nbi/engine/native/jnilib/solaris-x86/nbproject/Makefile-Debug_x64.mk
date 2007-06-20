@@ -12,16 +12,16 @@ MKDIR=mkdir
 CP=cp
 CCADMIN=CCadmin
 RANLIB=ranlib
-CC=gcc
-CCC=g++
-CXX=g++
-FC=g77
+CC=cc
+CCC=CC
+CXX=CC
+FC=f77
 
 # Include project Makefile
 include Makefile
 
 # Object Directory
-OBJECTDIR=build/Release/GNU-Solaris-Sparc
+OBJECTDIR=build/Debug_x64/Sun12-Solaris-x86
 
 # Object Files
 OBJECTFILES= \
@@ -29,11 +29,11 @@ OBJECTFILES= \
 	${OBJECTDIR}/_ext/home/dl198383/tmp/nbi/engine/native/jnilib/solaris-x86/../.unix/src/jni_UnixNativeUtils.o
 
 # C Compiler Flags
-CFLAGS=
+CFLAGS=-m64 -KPIC -shared -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -xO2 -Xa
 
 # CC Compiler Flags
-CCFLAGS=
-CXXFLAGS=
+CCFLAGS=-m64 -KPIC -shared -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -xO2 -Xa
+CXXFLAGS=-m64 -KPIC -shared -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -xO2 -Xa
 
 # Fortran Compiler Flags
 FFLAGS=
@@ -42,27 +42,27 @@ FFLAGS=
 LDLIBSOPTIONS=
 
 # Build Targets
-.build-conf: ${BUILD_SUBPROJECTS} dist/Release/GNU-Solaris-Sparc/libsolaris-x86.so
+.build-conf: ${BUILD_SUBPROJECTS} dist/solaris-amd64.so
 
-dist/Release/GNU-Solaris-Sparc/libsolaris-x86.so: ${OBJECTFILES}
-	${MKDIR} -p dist/Release/GNU-Solaris-Sparc
-	${LINK.c} -shared -o dist/Release/GNU-Solaris-Sparc/libsolaris-x86.so ${OBJECTFILES} ${LDLIBSOPTIONS} 
+dist/solaris-amd64.so: ${OBJECTFILES}
+	${MKDIR} -p dist
+	${LINK.c} -G -o dist/solaris-amd64.so -s -Kpic -h solaris-amd64.so ${OBJECTFILES} ${LDLIBSOPTIONS} 
 
 ${OBJECTDIR}/_ext/home/dl198383/tmp/nbi/engine/native/jnilib/solaris-x86/../.common/src/CommonUtils.o: ../.common/src/CommonUtils.c 
 	${MKDIR} -p ${OBJECTDIR}/_ext/home/dl198383/tmp/nbi/engine/native/jnilib/solaris-x86/../.common/src
-	$(COMPILE.c) -O2 -o ${OBJECTDIR}/_ext/home/dl198383/tmp/nbi/engine/native/jnilib/solaris-x86/../.common/src/CommonUtils.o ../.common/src/CommonUtils.c
+	$(COMPILE.c) -s -I/usr/java/include -I/usr/java/include/solaris -o ${OBJECTDIR}/_ext/home/dl198383/tmp/nbi/engine/native/jnilib/solaris-x86/../.common/src/CommonUtils.o ../.common/src/CommonUtils.c
 
 ${OBJECTDIR}/_ext/home/dl198383/tmp/nbi/engine/native/jnilib/solaris-x86/../.unix/src/jni_UnixNativeUtils.o: ../.unix/src/jni_UnixNativeUtils.c 
 	${MKDIR} -p ${OBJECTDIR}/_ext/home/dl198383/tmp/nbi/engine/native/jnilib/solaris-x86/../.unix/src
-	$(COMPILE.c) -O2 -o ${OBJECTDIR}/_ext/home/dl198383/tmp/nbi/engine/native/jnilib/solaris-x86/../.unix/src/jni_UnixNativeUtils.o ../.unix/src/jni_UnixNativeUtils.c
+	$(COMPILE.c) -s -I/usr/java/include -I/usr/java/include/solaris -o ${OBJECTDIR}/_ext/home/dl198383/tmp/nbi/engine/native/jnilib/solaris-x86/../.unix/src/jni_UnixNativeUtils.o ../.unix/src/jni_UnixNativeUtils.c
 
 # Subprojects
 .build-subprojects:
 
 # Clean Targets
 .clean-conf:
-	${RM} -r build/Release
-	${RM} dist/Release/GNU-Solaris-Sparc/libsolaris-x86.so
+	${RM} -r build/Debug_x64
+	${RM} dist/solaris-amd64.so
 
 # Subprojects
 .clean-subprojects:

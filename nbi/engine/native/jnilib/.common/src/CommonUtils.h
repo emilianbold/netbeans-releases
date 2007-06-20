@@ -19,6 +19,8 @@
  */
 
 #include <jni.h>
+#include <wchar.h>
+#include <stdlib.h>
 
 #ifndef _CommonUtils_H
 #define	_CommonUtils_H
@@ -41,17 +43,17 @@ jstring newStringFromJByteArray(JNIEnv* jEnv, jbyteArray jByteArray, int length)
 jstring newStringFromJCharArray(JNIEnv* jEnv, jcharArray jCharArray, int length);
 
 jstring getString (JNIEnv* jEnv, const char* chars);
-jstring getStringW(JNIEnv* jEnv, const unsigned short * chars);
+jstring getStringW(JNIEnv* jEnv, const wchar_t * chars);
 
 
 jstring getStringWithLength(JNIEnv* jEnv, const char* chars, int length);
-jstring getStringWithLengthW(JNIEnv* jEnv, const unsigned short * chars, int length);
+jstring getStringWithLengthW(JNIEnv* jEnv, const wchar_t * chars, int length);
 
 char* getChars(JNIEnv* jEnv, jstring jString);
-unsigned short * getWideChars(JNIEnv *jEnv, jstring str);
+wchar_t * getWideChars(JNIEnv *jEnv, jstring str);
 
 char* getStringFromMethod(JNIEnv* jEnv, jobject object, const char* methodName);
-unsigned short* getWideStringFromMethod(JNIEnv* jEnv, jobject object, const char* methodName) ;
+wchar_t* getWideStringFromMethod(JNIEnv* jEnv, jobject object, const char* methodName) ;
 
 jint getIntFromMethod(JNIEnv* jEnv, jobject object, const char* methodName);
 
@@ -62,7 +64,7 @@ void throwException(JNIEnv* jEnv, const char* message);
 void writeLog(JNIEnv* jEnv, int level, const char* message);
 
 int mkdirs (JNIEnv* jEnv, const char *path);
-int mkdirsW(JNIEnv* jEnv, const unsigned short *path);
+int mkdirsW(JNIEnv* jEnv, const wchar_t *path);
 
 unsigned char* getByteFromMultiString(JNIEnv *jEnv, jobjectArray jObjectArray, unsigned long* size);
 

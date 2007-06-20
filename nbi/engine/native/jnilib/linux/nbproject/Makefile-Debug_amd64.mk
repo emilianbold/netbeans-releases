@@ -25,16 +25,15 @@ OBJECTDIR=build/Debug_amd64/GNU-Linux-x86
 
 # Object Files
 OBJECTFILES= \
-	${OBJECTDIR}/_ext/home/dl198383/tmp/nbi/engine/native/jnilib/linux/../.unix/src/UnixUtils.o \
 	${OBJECTDIR}/_ext/home/dl198383/tmp/nbi/engine/native/jnilib/linux/../.common/src/CommonUtils.o \
 	${OBJECTDIR}/_ext/home/dl198383/tmp/nbi/engine/native/jnilib/linux/../.unix/src/jni_UnixNativeUtils.o
 
 # C Compiler Flags
-CFLAGS=-m64 -shared -fPIC  -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE
+CFLAGS=-m64 -shared -fPIC -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE
 
 # CC Compiler Flags
-CCFLAGS=-m64 -shared -fPIC  -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE
-CXXFLAGS=-m64 -shared -fPIC  -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE
+CCFLAGS=-m64 -shared -fPIC -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE
+CXXFLAGS=-m64 -shared -fPIC -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE
 
 # Fortran Compiler Flags
 FFLAGS=
@@ -48,10 +47,6 @@ LDLIBSOPTIONS=
 dist/linux-amd64.so: ${OBJECTFILES}
 	${MKDIR} -p dist
 	${LINK.c} -shared -o dist/linux-amd64.so -s ${OBJECTFILES} ${LDLIBSOPTIONS} 
-
-${OBJECTDIR}/_ext/home/dl198383/tmp/nbi/engine/native/jnilib/linux/../.unix/src/UnixUtils.o: ../.unix/src/UnixUtils.c 
-	${MKDIR} -p ${OBJECTDIR}/_ext/home/dl198383/tmp/nbi/engine/native/jnilib/linux/../.unix/src
-	$(COMPILE.c) -s -I/usr/java/include -I/usr/java/include/linux -o ${OBJECTDIR}/_ext/home/dl198383/tmp/nbi/engine/native/jnilib/linux/../.unix/src/UnixUtils.o ../.unix/src/UnixUtils.c
 
 ${OBJECTDIR}/_ext/home/dl198383/tmp/nbi/engine/native/jnilib/linux/../.common/src/CommonUtils.o: ../.common/src/CommonUtils.c 
 	${MKDIR} -p ${OBJECTDIR}/_ext/home/dl198383/tmp/nbi/engine/native/jnilib/linux/../.common/src

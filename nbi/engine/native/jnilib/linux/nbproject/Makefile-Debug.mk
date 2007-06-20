@@ -15,24 +15,25 @@ RANLIB=ranlib
 CC=gcc
 CCC=g++
 CXX=g++
-FC=g77
+FC=f95
 
 # Include project Makefile
 include Makefile
 
+# Object Directory
+OBJECTDIR=build/Debug/GNU-Linux-x86
+
 # Object Files
 OBJECTFILES= \
-	build/Debug/GNU-Linux-x86/_ext/export/home/ksorokin/Work/nbi-trunk/engine/native/linux/../.common/src/CommonUtils.o \
-	build/Debug/GNU-Linux-x86/_ext/export/home/ksorokin/Work/nbi-trunk/engine/native/linux/../.unix/src/UnixUtils.o \
-	build/Debug/GNU-Linux-x86/_ext/export/home/ksorokin/Work/nbi-trunk/engine/native/linux/../.unix/src/jni_UnixNativeUtils.o
+	${OBJECTDIR}/_ext/home/dl198383/tmp/nbi/engine/native/jnilib/linux/../.common/src/CommonUtils.o \
+	${OBJECTDIR}/_ext/home/dl198383/tmp/nbi/engine/native/jnilib/linux/../.unix/src/jni_UnixNativeUtils.o
 
 # C Compiler Flags
-CFLAGS=-shared -m32 -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE
+CFLAGS=-shared -m32 -static-libgcc -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE
 
 # CC Compiler Flags
-CCFLAGS=-shared -m32 -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE
-CXXFLAGS=-shared -m32  -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE
-
+CCFLAGS=-shared -m32 -static-libgcc -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE
+CXXFLAGS=-shared -m32 -static-libgcc -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE
 
 # Fortran Compiler Flags
 FFLAGS=
@@ -44,20 +45,16 @@ LDLIBSOPTIONS=
 .build-conf: ${BUILD_SUBPROJECTS} dist/linux.so
 
 dist/linux.so: ${OBJECTFILES}
-	@${MKDIR} -p dist
+	${MKDIR} -p dist
 	${LINK.c} -shared -o dist/linux.so -s ${OBJECTFILES} ${LDLIBSOPTIONS} 
 
-build/Debug/GNU-Linux-x86/_ext/export/home/ksorokin/Work/nbi-trunk/engine/native/linux/../.common/src/CommonUtils.o: ../.common/src/CommonUtils.c 
-	@${MKDIR} -p build/Debug/GNU-Linux-x86/_ext/export/home/ksorokin/Work/nbi-trunk/engine/native/linux/../.common/src
-	$(COMPILE.c) -s -I/usr/java/include -I/usr/java/include/linux -o build/Debug/GNU-Linux-x86/_ext/export/home/ksorokin/Work/nbi-trunk/engine/native/linux/../.common/src/CommonUtils.o ../.common/src/CommonUtils.c
+${OBJECTDIR}/_ext/home/dl198383/tmp/nbi/engine/native/jnilib/linux/../.common/src/CommonUtils.o: ../.common/src/CommonUtils.c 
+	${MKDIR} -p ${OBJECTDIR}/_ext/home/dl198383/tmp/nbi/engine/native/jnilib/linux/../.common/src
+	$(COMPILE.c) -s -I/usr/java/include -I/usr/java/include/linux -o ${OBJECTDIR}/_ext/home/dl198383/tmp/nbi/engine/native/jnilib/linux/../.common/src/CommonUtils.o ../.common/src/CommonUtils.c
 
-build/Debug/GNU-Linux-x86/_ext/export/home/ksorokin/Work/nbi-trunk/engine/native/linux/../.unix/src/UnixUtils.o: ../.unix/src/UnixUtils.c 
-	@${MKDIR} -p build/Debug/GNU-Linux-x86/_ext/export/home/ksorokin/Work/nbi-trunk/engine/native/linux/../.unix/src
-	$(COMPILE.c) -s -I/usr/java/include -I/usr/java/include/linux -o build/Debug/GNU-Linux-x86/_ext/export/home/ksorokin/Work/nbi-trunk/engine/native/linux/../.unix/src/UnixUtils.o ../.unix/src/UnixUtils.c
-
-build/Debug/GNU-Linux-x86/_ext/export/home/ksorokin/Work/nbi-trunk/engine/native/linux/../.unix/src/jni_UnixNativeUtils.o: ../.unix/src/jni_UnixNativeUtils.c 
-	@${MKDIR} -p build/Debug/GNU-Linux-x86/_ext/export/home/ksorokin/Work/nbi-trunk/engine/native/linux/../.unix/src
-	$(COMPILE.c) -s -I/usr/java/include -I/usr/java/include/linux -o build/Debug/GNU-Linux-x86/_ext/export/home/ksorokin/Work/nbi-trunk/engine/native/linux/../.unix/src/jni_UnixNativeUtils.o ../.unix/src/jni_UnixNativeUtils.c
+${OBJECTDIR}/_ext/home/dl198383/tmp/nbi/engine/native/jnilib/linux/../.unix/src/jni_UnixNativeUtils.o: ../.unix/src/jni_UnixNativeUtils.c 
+	${MKDIR} -p ${OBJECTDIR}/_ext/home/dl198383/tmp/nbi/engine/native/jnilib/linux/../.unix/src
+	$(COMPILE.c) -s -I/usr/java/include -I/usr/java/include/linux -o ${OBJECTDIR}/_ext/home/dl198383/tmp/nbi/engine/native/jnilib/linux/../.unix/src/jni_UnixNativeUtils.o ../.unix/src/jni_UnixNativeUtils.c
 
 # Subprojects
 .build-subprojects:

@@ -15,16 +15,18 @@ RANLIB=ranlib
 CC=gcc
 CCC=g++
 CXX=g++
-FC=g77
+FC=f95
 
 # Include project Makefile
 include Makefile
 
+# Object Directory
+OBJECTDIR=build/Release/GNU-Linux-x86
+
 # Object Files
 OBJECTFILES= \
-	build/Release/GNU-Linux-x86/_ext/export/home/ksorokin/Work/nbi-trunk/engine/native/linux/../.common/src/CommonUtils.o \
-	build/Release/GNU-Linux-x86/_ext/export/home/ksorokin/Work/nbi-trunk/engine/native/linux/../.unix/src/UnixUtils.o \
-	build/Release/GNU-Linux-x86/_ext/export/home/ksorokin/Work/nbi-trunk/engine/native/linux/../.unix/src/jni_UnixNativeUtils.o
+	${OBJECTDIR}/_ext/home/dl198383/tmp/nbi/engine/native/jnilib/linux/../.common/src/CommonUtils.o \
+	${OBJECTDIR}/_ext/home/dl198383/tmp/nbi/engine/native/jnilib/linux/../.unix/src/jni_UnixNativeUtils.o
 
 # C Compiler Flags
 CFLAGS=
@@ -43,20 +45,16 @@ LDLIBSOPTIONS=
 .build-conf: ${BUILD_SUBPROJECTS} dist/Release/GNU-Linux-x86/liblinux.so
 
 dist/Release/GNU-Linux-x86/liblinux.so: ${OBJECTFILES}
-	@${MKDIR} -p dist/Release/GNU-Linux-x86
-	${LINK.c} -shared -static-libgcc -o dist/Release/GNU-Linux-x86/liblinux.so ${OBJECTFILES} ${LDLIBSOPTIONS} 
+	${MKDIR} -p dist/Release/GNU-Linux-x86
+	${LINK.c} -shared -o dist/Release/GNU-Linux-x86/liblinux.so ${OBJECTFILES} ${LDLIBSOPTIONS} 
 
-build/Release/GNU-Linux-x86/_ext/export/home/ksorokin/Work/nbi-trunk/engine/native/linux/../.common/src/CommonUtils.o: ../.common/src/CommonUtils.c 
-	@${MKDIR} -p build/Release/GNU-Linux-x86/_ext/export/home/ksorokin/Work/nbi-trunk/engine/native/linux/../.common/src
-	$(COMPILE.c) -O2 -o build/Release/GNU-Linux-x86/_ext/export/home/ksorokin/Work/nbi-trunk/engine/native/linux/../.common/src/CommonUtils.o ../.common/src/CommonUtils.c
+${OBJECTDIR}/_ext/home/dl198383/tmp/nbi/engine/native/jnilib/linux/../.common/src/CommonUtils.o: ../.common/src/CommonUtils.c 
+	${MKDIR} -p ${OBJECTDIR}/_ext/home/dl198383/tmp/nbi/engine/native/jnilib/linux/../.common/src
+	$(COMPILE.c) -O2 -o ${OBJECTDIR}/_ext/home/dl198383/tmp/nbi/engine/native/jnilib/linux/../.common/src/CommonUtils.o ../.common/src/CommonUtils.c
 
-build/Release/GNU-Linux-x86/_ext/export/home/ksorokin/Work/nbi-trunk/engine/native/linux/../.unix/src/UnixUtils.o: ../.unix/src/UnixUtils.c 
-	@${MKDIR} -p build/Release/GNU-Linux-x86/_ext/export/home/ksorokin/Work/nbi-trunk/engine/native/linux/../.unix/src
-	$(COMPILE.c) -O2 -o build/Release/GNU-Linux-x86/_ext/export/home/ksorokin/Work/nbi-trunk/engine/native/linux/../.unix/src/UnixUtils.o ../.unix/src/UnixUtils.c
-
-build/Release/GNU-Linux-x86/_ext/export/home/ksorokin/Work/nbi-trunk/engine/native/linux/../.unix/src/jni_UnixNativeUtils.o: ../.unix/src/jni_UnixNativeUtils.c 
-	@${MKDIR} -p build/Release/GNU-Linux-x86/_ext/export/home/ksorokin/Work/nbi-trunk/engine/native/linux/../.unix/src
-	$(COMPILE.c) -O2 -o build/Release/GNU-Linux-x86/_ext/export/home/ksorokin/Work/nbi-trunk/engine/native/linux/../.unix/src/jni_UnixNativeUtils.o ../.unix/src/jni_UnixNativeUtils.c
+${OBJECTDIR}/_ext/home/dl198383/tmp/nbi/engine/native/jnilib/linux/../.unix/src/jni_UnixNativeUtils.o: ../.unix/src/jni_UnixNativeUtils.c 
+	${MKDIR} -p ${OBJECTDIR}/_ext/home/dl198383/tmp/nbi/engine/native/jnilib/linux/../.unix/src
+	$(COMPILE.c) -O2 -o ${OBJECTDIR}/_ext/home/dl198383/tmp/nbi/engine/native/jnilib/linux/../.unix/src/jni_UnixNativeUtils.o ../.unix/src/jni_UnixNativeUtils.c
 
 # Subprojects
 .build-subprojects:

@@ -12,26 +12,28 @@ MKDIR=mkdir
 CP=cp
 CCADMIN=CCadmin
 RANLIB=ranlib
-CC=gcc
-CCC=g++
-CXX=g++
-FC=g77
+CC=cc
+CCC=CC
+CXX=CC
+FC=f77
 
 # Include project Makefile
 include Makefile
 
+# Object Directory
+OBJECTDIR=build/Debug/Sun12-Solaris-Sparc
+
 # Object Files
 OBJECTFILES= \
-	build/Debug/GNU-Solaris-Sparc/_ext/export/home/ksorokin/Work/nbi-trunk/engine/native/solaris-sparc/../.common/src/CommonUtils.o \
-	build/Debug/GNU-Solaris-Sparc/_ext/export/home/ksorokin/Work/nbi-trunk/engine/native/solaris-sparc/../.unix/src/UnixUtils.o \
-	build/Debug/GNU-Solaris-Sparc/_ext/export/home/ksorokin/Work/nbi-trunk/engine/native/solaris-sparc/../.unix/src/jni_UnixNativeUtils.o
+	${OBJECTDIR}/_ext/home/dl198383/tmp/nbi/engine/native/jnilib/solaris-sparc/../.common/src/CommonUtils.o \
+	${OBJECTDIR}/_ext/home/dl198383/tmp/nbi/engine/native/jnilib/solaris-sparc/../.unix/src/jni_UnixNativeUtils.o
 
 # C Compiler Flags
-CFLAGS=-m32 -fPIC -shared -static-libgcc -mimpure-text -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE
+CFLAGS=-m32 -shared -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -xO2 -Xa
 
 # CC Compiler Flags
-CCFLAGS=-m32 -fPIC -shared -static-libgcc -mimpure-text -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE
-CXXFLAGS=-m32 -fPIC -shared -static-libgcc -mimpure-text -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE
+CCFLAGS=-m32 -shared -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -xO2 -Xa
+CXXFLAGS=-m32 -shared -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -xO2 -Xa
 
 # Fortran Compiler Flags
 FFLAGS=
@@ -43,20 +45,16 @@ LDLIBSOPTIONS=
 .build-conf: ${BUILD_SUBPROJECTS} dist/solaris-sparc.so
 
 dist/solaris-sparc.so: ${OBJECTFILES}
-	@${MKDIR} -p dist
-	${LINK.c} -shared -static-libgcc -mimpure-text -o dist/solaris-sparc.so -s ${OBJECTFILES} ${LDLIBSOPTIONS} 
+	${MKDIR} -p dist
+	${LINK.c} -G -o dist/solaris-sparc.so -s -Kpic -h solaris-sparc.so ${OBJECTFILES} ${LDLIBSOPTIONS} 
 
-build/Debug/GNU-Solaris-Sparc/_ext/export/home/ksorokin/Work/nbi-trunk/engine/native/solaris-sparc/../.common/src/CommonUtils.o: ../.common/src/CommonUtils.c 
-	@${MKDIR} -p build/Debug/GNU-Solaris-Sparc/_ext/export/home/ksorokin/Work/nbi-trunk/engine/native/solaris-sparc/../.common/src
-	$(COMPILE.c) -s -I/usr/java/include -I/usr/java/include/solaris -o build/Debug/GNU-Solaris-Sparc/_ext/export/home/ksorokin/Work/nbi-trunk/engine/native/solaris-sparc/../.common/src/CommonUtils.o ../.common/src/CommonUtils.c
+${OBJECTDIR}/_ext/home/dl198383/tmp/nbi/engine/native/jnilib/solaris-sparc/../.common/src/CommonUtils.o: ../.common/src/CommonUtils.c 
+	${MKDIR} -p ${OBJECTDIR}/_ext/home/dl198383/tmp/nbi/engine/native/jnilib/solaris-sparc/../.common/src
+	$(COMPILE.c) -s -I/usr/java/include -I/usr/java/include/solaris -o ${OBJECTDIR}/_ext/home/dl198383/tmp/nbi/engine/native/jnilib/solaris-sparc/../.common/src/CommonUtils.o ../.common/src/CommonUtils.c
 
-build/Debug/GNU-Solaris-Sparc/_ext/export/home/ksorokin/Work/nbi-trunk/engine/native/solaris-sparc/../.unix/src/UnixUtils.o: ../.unix/src/UnixUtils.c 
-	@${MKDIR} -p build/Debug/GNU-Solaris-Sparc/_ext/export/home/ksorokin/Work/nbi-trunk/engine/native/solaris-sparc/../.unix/src
-	$(COMPILE.c) -s -I/usr/java/include -I/usr/java/include/solaris -o build/Debug/GNU-Solaris-Sparc/_ext/export/home/ksorokin/Work/nbi-trunk/engine/native/solaris-sparc/../.unix/src/UnixUtils.o ../.unix/src/UnixUtils.c
-
-build/Debug/GNU-Solaris-Sparc/_ext/export/home/ksorokin/Work/nbi-trunk/engine/native/solaris-sparc/../.unix/src/jni_UnixNativeUtils.o: ../.unix/src/jni_UnixNativeUtils.c 
-	@${MKDIR} -p build/Debug/GNU-Solaris-Sparc/_ext/export/home/ksorokin/Work/nbi-trunk/engine/native/solaris-sparc/../.unix/src
-	$(COMPILE.c) -s -I/usr/java/include -I/usr/java/include/solaris -o build/Debug/GNU-Solaris-Sparc/_ext/export/home/ksorokin/Work/nbi-trunk/engine/native/solaris-sparc/../.unix/src/jni_UnixNativeUtils.o ../.unix/src/jni_UnixNativeUtils.c
+${OBJECTDIR}/_ext/home/dl198383/tmp/nbi/engine/native/jnilib/solaris-sparc/../.unix/src/jni_UnixNativeUtils.o: ../.unix/src/jni_UnixNativeUtils.c 
+	${MKDIR} -p ${OBJECTDIR}/_ext/home/dl198383/tmp/nbi/engine/native/jnilib/solaris-sparc/../.unix/src
+	$(COMPILE.c) -s -I/usr/java/include -I/usr/java/include/solaris -o ${OBJECTDIR}/_ext/home/dl198383/tmp/nbi/engine/native/jnilib/solaris-sparc/../.unix/src/jni_UnixNativeUtils.o ../.unix/src/jni_UnixNativeUtils.c
 
 # Subprojects
 .build-subprojects:
@@ -68,3 +66,7 @@ build/Debug/GNU-Solaris-Sparc/_ext/export/home/ksorokin/Work/nbi-trunk/engine/na
 
 # Subprojects
 .clean-subprojects:
+
+# Enable dependency checking
+.KEEP_STATE:
+.KEEP_STATE_FILE:.make.state.${CONF}
