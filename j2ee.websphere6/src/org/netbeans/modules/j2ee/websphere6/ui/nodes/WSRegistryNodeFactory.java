@@ -21,7 +21,9 @@ package org.netbeans.modules.j2ee.websphere6.ui.nodes;
 import org.openide.util.*;
 import org.openide.nodes.*;
 import org.netbeans.modules.j2ee.deployment.plugins.api.*;
-
+// Dileep - Start compile fix
+import org.netbeans.modules.j2ee.deployment.plugins.spi.RegistryNodeFactory;
+// Dileep - Start compile fix
 /**
  * Factory that creates nodes that will appear in the server registry.
  *
