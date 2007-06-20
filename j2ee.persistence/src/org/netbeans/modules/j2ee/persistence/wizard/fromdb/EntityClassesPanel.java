@@ -429,11 +429,7 @@ public class EntityClassesPanel extends javax.swing.JPanel {
 
         private ChangeSupport changeSupport = new ChangeSupport(this);
 
-        public Component getComponent() {
-            return getTypedComponent();
-        }
-
-        private EntityClassesPanel getTypedComponent() {
+        public EntityClassesPanel getComponent() {
             if (component == null) {
                 component = new EntityClassesPanel();
                 component.addChangeListener(this);
@@ -469,7 +465,7 @@ public class EntityClassesPanel extends javax.swing.JPanel {
                 cmp = RelatedCMPWizard.isCMP(wizardDescriptor);
                 FileObject targetFolder = Templates.getTargetFolder(wizardDescriptor);
 
-                getTypedComponent().initialize(persistenceGen, project, cmp, targetFolder);
+                getComponent().initialize(persistenceGen, project, cmp, targetFolder);
             }
 
             TableSource tableSource = helper.getTableSource();
@@ -485,17 +481,17 @@ public class EntityClassesPanel extends javax.swing.JPanel {
                 }
             }
 
-            getTypedComponent().update(helper.getTableClosure(), tableSourceName);
+            getComponent().update(helper.getTableClosure(), tableSourceName);
         }
 
         public boolean isValid() {
-            SourceGroup sourceGroup = getTypedComponent().getLocationValue();
+            SourceGroup sourceGroup = getComponent().getLocationValue();
             if (sourceGroup == null) {
                 setErrorMessage(NbBundle.getMessage(EntityClassesPanel.class, "ERR_JavaTargetChooser_SelectSourceGroup"));
                 return false;
             }
 
-            String packageName = getTypedComponent().getPackageName();
+            String packageName = getComponent().getPackageName();
             if (packageName.trim().equals("")) { // NOI18N
                 setErrorMessage(NbBundle.getMessage(EntityClassesPanel.class, "ERR_JavaTargetChooser_CantUseDefaultPackage"));
                 return false;
@@ -534,7 +530,7 @@ public class EntityClassesPanel extends javax.swing.JPanel {
                 LOGGER.warning("Cannot get a classpath for package " + packageName + " in " + sourceGroup); // NOI18N
             }
 
-            SelectedTables selectedTables = getTypedComponent().getSelectedTables();
+            SelectedTables selectedTables = getComponent().getSelectedTables();
             // check for null needed since isValid() can be called when
             // EntityClassesPanel.update() has not been called yet, e.g. from within
             // EntityClassesPanel.initialize()
@@ -557,12 +553,12 @@ public class EntityClassesPanel extends javax.swing.JPanel {
 
                 RelatedCMPHelper helper = RelatedCMPWizard.getHelper(wizardDescriptor);
 
-                helper.setSelectedTables(getTypedComponent().getSelectedTables());
-                helper.setLocation(getTypedComponent().getLocationValue());
-                helper.setPackageName(getTypedComponent().getPackageName());
-                helper.setCmpFieldsInInterface(getTypedComponent().getCmpFieldsInInterface());
-                helper.setGenerateFinderMethods(getTypedComponent().getGenerateFinderMethods());
-                helper.setPersistenceUnit(getTypedComponent().getPersistenceUnit());
+                helper.setSelectedTables(getComponent().getSelectedTables());
+                helper.setLocation(getComponent().getLocationValue());
+                helper.setPackageName(getComponent().getPackageName());
+                helper.setCmpFieldsInInterface(getComponent().getCmpFieldsInInterface());
+                helper.setGenerateFinderMethods(getComponent().getGenerateFinderMethods());
+                helper.setPersistenceUnit(getComponent().getPersistenceUnit());
             }
         }
 

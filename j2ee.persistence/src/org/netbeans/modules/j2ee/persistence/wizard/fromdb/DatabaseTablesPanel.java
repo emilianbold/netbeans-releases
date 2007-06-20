@@ -801,11 +801,7 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
 
         boolean waitingForScan;
 
-        public Component getComponent() {
-            return getTypedComponent();
-        }
-
-        private DatabaseTablesPanel getTypedComponent() {
+        public DatabaseTablesPanel getComponent() {
             if (component == null) {
                 component = new DatabaseTablesPanel();
                 component.addChangeListener(this);
@@ -842,7 +838,7 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
                 TableSource tableSource = helper.getTableSource();
                 FileObject targetFolder = Templates.getTargetFolder(wizardDescriptor);
 
-                getTypedComponent().initialize(project, dbschemaFileList, persistenceGen, tableSource, targetFolder);
+                getComponent().initialize(project, dbschemaFileList, persistenceGen, tableSource, targetFolder);
             }
         }
 
@@ -876,12 +872,12 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
                 return false;
             }
 
-            if (getTypedComponent().getSourceSchemaElement() == null) {
+            if (getComponent().getSourceSchemaElement() == null) {
                 setErrorMessage(NbBundle.getMessage(DatabaseTablesPanel.class, "ERR_SelectTableSource"));
                 return false;
             }
 
-            if (getTypedComponent().getTableClosure().getSelectedTables().size() <= 0) {
+            if (getComponent().getTableClosure().getSelectedTables().size() <= 0) {
                 setErrorMessage(NbBundle.getMessage(DatabaseTablesPanel.class, "ERR_SelectTables"));
                 return false;
             }
@@ -897,17 +893,17 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
                     buttonPressed.equals(WizardDescriptor.FINISH_OPTION)) {
                 RelatedCMPHelper helper = RelatedCMPWizard.getHelper(wizardDescriptor);
 
-                SchemaElement sourceSchemaElement = getTypedComponent().getSourceSchemaElement();
-                DatabaseConnection dbconn = getTypedComponent().getDatabaseConnection();
-                FileObject dbschemaFile = getTypedComponent().getDBSchemaFile();
-                String datasourceName = getTypedComponent().getDatasourceName();
+                SchemaElement sourceSchemaElement = getComponent().getSourceSchemaElement();
+                DatabaseConnection dbconn = getComponent().getDatabaseConnection();
+                FileObject dbschemaFile = getComponent().getDBSchemaFile();
+                String datasourceName = getComponent().getDatasourceName();
 
                 if (dbschemaFile != null) {
                     helper.setTableSource(sourceSchemaElement, dbschemaFile);
                 } else {
                     helper.setTableSource(sourceSchemaElement, dbconn, datasourceName);
                 }
-                helper.setTableClosure(getTypedComponent().getTableClosure());
+                helper.setTableClosure(getComponent().getTableClosure());
             }
         }
 
