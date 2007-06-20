@@ -236,7 +236,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
         }
         Node n = nodes.iterator().next();
         DataObject dob = n.getCookie(DataObject.class);
-        if ((dob!=null) && RetoucheUtils.isJavaFile(dob.getPrimaryFile())) { //NOI18N
+        if ((dob!=null) && RetoucheUtils.isJavaFile(dob.getPrimaryFile()) && !"package-info".equals(dob.getName())) { //NOI18N
             return true;
         }
         return false;
@@ -256,6 +256,8 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
         } else {
             task = new NodeToElementTask(lookup.lookupAll(Node.class)) {
                 protected RefactoringUI createRefactoringUI(TreePathHandle selectedElement, CompilationInfo info) {
+                    if (selectedElement==null)
+                        return null;
                     return new WhereUsedQueryUI(selectedElement, info);
                 }
             };
@@ -543,8 +545,12 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
         public void run(CompilationController info) throws Exception {
             info.toPhase(Phase.ELEMENTS_RESOLVED);
             CompilationUnitTree unit = info.getCompilationUnit();
-            TreePathHandle representedObject = TreePathHandle.create(TreePath.getPath(unit, unit.getTypeDecls().get(0)),info);
-            ui = createRefactoringUI(representedObject, info);
+            if (unit.getTypeDecls().isEmpty()) {
+                ui = createRefactoringUI(null, info);
+            } else {
+                TreePathHandle representedObject = TreePathHandle.create(TreePath.getPath(unit, unit.getTypeDecls().get(0)),info);
+                ui = createRefactoringUI(representedObject, info);
+            }
         }
         
         public final void run() {
@@ -558,7 +564,11 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
             } catch (IOException ex) {
                 ex.printStackTrace();
             }
-            UI.openRefactoringUI(ui);
+            if (ui!=null) {
+                UI.openRefactoringUI(ui);
+            } else {
+                JOptionPane.showMessageDialog(null,NbBundle.getMessage(RefactoringActionsProvider.class, "ERR_NoTypeDecls"));
+            }
         }
         protected abstract RefactoringUI createRefactoringUI(TreePathHandle selectedElement, CompilationInfo info);
     }
@@ -614,7 +624,12 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                     pkg[i++] = node.getLookup().lookup(NonRecursiveFolder.class);
                 }
             }
-            UI.openRefactoringUI(createRefactoringUI(fobs, handles));
+            RefactoringUI ui = createRefactoringUI(fobs, handles);
+            if (ui!=null) {
+                UI.openRefactoringUI(ui);
+            } else {
+                JOptionPane.showMessageDialog(null,NbBundle.getMessage(RefactoringActionsProvider.class, "ERR_NoTypeDecls"));
+            }
         }
 
         protected abstract RefactoringUI createRefactoringUI(FileObject[] selectedElement, Collection<TreePathHandle> handles);
