@@ -16,7 +16,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.List;
 import java.util.logging.Level;
 
 import org.netbeans.api.java.classpath.ClassPath;
@@ -24,6 +23,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.sun.dd.api.DDProvider;
 import org.netbeans.modules.j2ee.sun.dd.api.RootInterface;
@@ -50,6 +50,68 @@ import org.openide.util.Lookup;
  * @author cao
  */
 public class EjbLibReferenceHelper {
+
+    /**
+     * Class to encapsulate a hack to implement a feature that is not yet implemented by the Sun
+     * AppServer plugin. Remove this hack once it is implemented. Also, remove dependency on the
+     * module. 2007-06-20
+     * 
+     * @author Edwin Goei
+     */
+    private static class SunAppServerHack {
+
+        private FileObject sunWebXml;
+
+        private SunWebApp sunWebApp;
+
+        private SunAppServerHack(FileObject sunWebXml) throws IOException {
+            this.sunWebXml = sunWebXml;
+
+            RootInterface sunDDRoot = DDProvider.getDefault().getDDRoot(sunWebXml);
+            if (sunDDRoot instanceof SunWebApp) {
+                sunWebApp = (SunWebApp) sunDDRoot;
+            } else {
+                throw new IllegalStateException("Cannot process sun-web.xml");
+            }
+        }
+
+        /**
+         * Factory method to create a DD handler for a project.
+         * 
+         * @param project
+         * @return
+         * @throws IOException
+         */
+        public static SunAppServerHack getInstance(Project project) throws IOException {
+            FileObject sunWebXml = getSunWebXml(project);
+            if (sunWebXml == null) {
+                return null;
+            } else {
+                return new SunAppServerHack(sunWebXml);
+            }
+        }
+
+        private static FileObject getSunWebXml(Project project) {
+            Lookup lookup = project.getLookup();
+            J2eeModuleProvider provider = (J2eeModuleProvider) lookup
+                    .lookup(J2eeModuleProvider.class);
+            FileObject[] configFiles = provider.getConfigurationFiles();
+            for (FileObject fo : configFiles) {
+                if (fo.getNameExt().equals("sun-web.xml")) {
+                    return fo;
+                }
+            }
+            return null;
+        }
+
+        public SunWebApp getSunWebApp() {
+            return sunWebApp;
+        }
+
+        public void finish() throws IOException {
+            sunWebApp.write(sunWebXml);
+        }
+    }
 
     private static final String EJB_REFS_XML = "ejb-refs.xml";
 
@@ -198,14 +260,14 @@ public class EjbLibReferenceHelper {
 
         for (final String jarFilePath : jars) {
             final String jarFileName = new File(jarFilePath).getName();
-            
+
             ejbSubDir.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
                 public void run() throws IOException {
                     FileObject jar = ejbSubDir.getFileObject(jarFileName);
                     if (jar != null) {
                         jar.delete();
                     }
-            
+
                     jar = ejbSubDir.createData(jarFileName);
                     copyJarFile(jarFilePath, jar);
                 }
@@ -305,8 +367,13 @@ public class EjbLibReferenceHelper {
      * 
      * @param project
      * @param grp
+     * @throws IOException
+     * @throws ConfigurationException
      */
-    private static void addToWebXml(Project project, EjbGroup grp) {
+    private static void addToDeploymentDescriptors(Project project, EjbGroup grp)
+            throws IOException, ConfigurationException {
+        SunAppServerHack sunAppServerHack = SunAppServerHack.getInstance(project);
+
         // Add all the EJBs in this group as EJB resources to the project
         // Note: we purposely decided to add all the EJBs vs just the used
         // ones
@@ -334,6 +401,32 @@ public class EjbLibReferenceHelper {
             RequestedEjbResource resource = new RequestedEjbResource(refName, jndiName, refType,
                     home, remote);
             JsfProjectUtils.setEjbReference(project, resource);
+
+            if (sunAppServerHack != null) {
+                /*
+                 * TODO This hack should be removed once the app server plugin implements the
+                 * bindEjbReference API.
+                 */
+                SunWebApp sunWebApp = sunAppServerHack.getSunWebApp();
+                EjbRef ref = findEjbRefByName(sunWebApp, refName);
+                if (ref != null) {
+                    ref.setJndiName(jndiName);
+                } else {
+                    ref = sunWebApp.newEjbRef();
+                    ref.setEjbRefName(refName);
+                    ref.setJndiName(jndiName);
+                    sunWebApp.addEjbRef(ref);
+                }
+            } else {
+                // Bind the EJB Reference
+                J2eeModuleProvider j2eeModuleProvider = project.getLookup().lookup(
+                        J2eeModuleProvider.class);
+                j2eeModuleProvider.getConfigSupport().bindEjbReference(refName, jndiName);
+            }
+        }
+
+        if (sunAppServerHack != null) {
+            sunAppServerHack.finish();
         }
     }
 
@@ -341,8 +434,10 @@ public class EjbLibReferenceHelper {
      * Adds the EjbGroup to the currently active project. This method is idempotent.
      * 
      * @throws IOException
+     * @throws ConfigurationException
      */
-    public static void addEjbGroupToActiveProject(EjbGroup ejbGroup) throws IOException {
+    public static void addEjbGroupToActiveProject(EjbGroup ejbGroup) throws IOException,
+            ConfigurationException {
         Project project = getActiveProject();
         boolean isJavaEE5 = JsfProjectUtils.isJavaEE5Project(project);
 
@@ -355,11 +450,8 @@ public class EjbLibReferenceHelper {
         // Add/update this ejb group to the ejb ref xml in the project
         addToEjbRefXmlToProject(project, ejbGroup);
 
-        // Add an ejb-ref to the standard webapp DD, web.xml
-        addToWebXml(project, ejbGroup);
-
-        // Add it to the container-specific DD
-        addToVendorDD(project, ejbGroup);
+        // Add an ejb-ref to the standard and vendor webapp DD
+        addToDeploymentDescriptors(project, ejbGroup);
     }
 
     private static void addEjbGroupJarsToProject(EjbGroup ejbGroup, Project project)
@@ -396,44 +488,8 @@ public class EjbLibReferenceHelper {
         }
     }
 
-    private static void addToVendorDD(Project project, EjbGroup ejbGroup) throws IOException {
-        Lookup lookup = project.getLookup();
-        J2eeModuleProvider provider = (J2eeModuleProvider) lookup.lookup(J2eeModuleProvider.class);
-        FileObject[] configFiles = provider.getConfigurationFiles();
-        for (FileObject fo : configFiles) {
-            if (fo.getNameExt().equals("sun-web.xml")) {
-                addToSunWebXml(ejbGroup, fo);
-                // TODO Add support to other servers here
-            }
-        }
-    }
-
-    private static void addToSunWebXml(EjbGroup ejbGroup, FileObject fo) throws IOException {
-        RootInterface sunDDRoot = DDProvider.getDefault().getDDRoot(fo);
-        if (sunDDRoot instanceof SunWebApp) {
-            SunWebApp sunWebXml = (SunWebApp) sunDDRoot;
-
-            List<EjbInfo> sessionBeans = ejbGroup.getSessionBeans();
-            for (EjbInfo ejbInfo : sessionBeans) {
-                String refName = ejbInfo.getWebEjbRef();
-                String jndiName = ejbInfo.getJNDIName();
-
-                EjbRef ref = findEjbRefByName(sunWebXml, refName);
-                if (ref != null) {
-                    ref.setJndiName(jndiName);
-                } else {
-                    ref = sunWebXml.newEjbRef();
-                    ref.setEjbRefName(refName);
-                    ref.setJndiName(jndiName);
-                    sunWebXml.addEjbRef(ref);
-                }
-            }
-            sunWebXml.write(fo);
-        }
-    }
-
-    private static EjbRef findEjbRefByName(SunWebApp sunWebXml, String ejbRefName) {
-        EjbRef[] ejbRefs = sunWebXml.getEjbRef();
+    private static EjbRef findEjbRefByName(SunWebApp sunWebApp, String ejbRefName) {
+        EjbRef[] ejbRefs = sunWebApp.getEjbRef();
         for (EjbRef ref : ejbRefs) {
             if (ref.getEjbRefName().equals(ejbRefName)) {
                 return ref;

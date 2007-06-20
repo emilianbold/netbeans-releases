@@ -383,7 +383,7 @@ public class MethodNode extends AbstractNode implements Node.Cookie {
             // XXX Hack Jar ref adding.
             try {
                 EjbLibReferenceHelper.addEjbGroupToActiveProject(ejbGroup);
-            } catch (IOException e) {
+            } catch (Exception e) {
                 Util.getLogger().log(Level.SEVERE, "Unable to add EJB Set to Project", e);
             }
             return methodInfo.getDataProvider();
