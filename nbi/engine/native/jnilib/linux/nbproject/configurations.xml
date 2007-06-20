@@ -6,14 +6,12 @@
                    projectFiles="true">
       <itemPath>../.common/src/CommonUtils.c</itemPath>
       <itemPath>../.unix/src/jni_UnixNativeUtils.c</itemPath>
-      <itemPath>../.unix/src/UnixUtils.c</itemPath>
     </logicalFolder>
     <logicalFolder name="HeaderFiles"
                    displayName="Header Files"
                    projectFiles="true">
       <itemPath>../.common/src/CommonUtils.h</itemPath>
       <itemPath>../.unix/src/jni_UnixNativeUtils.h</itemPath>
-      <itemPath>../.unix/src/UnixUtils.h</itemPath>
     </logicalFolder>
     <logicalFolder name="ResourceFiles"
                    displayName="Resource Files"
@@ -68,12 +66,6 @@
       <item path="../.common/src/CommonUtils.h">
         <itemTool>3</itemTool>
       </item>
-      <item path="../.unix/src/UnixUtils.c">
-        <itemTool>0</itemTool>
-      </item>
-      <item path="../.unix/src/UnixUtils.h">
-        <itemTool>3</itemTool>
-      </item>
       <item path="../.unix/src/jni_UnixNativeUtils.c">
         <itemTool>0</itemTool>
       </item>
@@ -108,12 +100,6 @@
         <itemTool>0</itemTool>
       </item>
       <item path="../.common/src/CommonUtils.h">
-        <itemTool>3</itemTool>
-      </item>
-      <item path="../.unix/src/UnixUtils.c">
-        <itemTool>0</itemTool>
-      </item>
-      <item path="../.unix/src/UnixUtils.h">
         <itemTool>3</itemTool>
       </item>
       <item path="../.unix/src/jni_UnixNativeUtils.c">
@@ -163,12 +149,6 @@
         <itemTool>0</itemTool>
       </item>
       <item path="../.common/src/CommonUtils.h">
-        <itemTool>3</itemTool>
-      </item>
-      <item path="../.unix/src/UnixUtils.c">
-        <itemTool>0</itemTool>
-      </item>
-      <item path="../.unix/src/UnixUtils.h">
         <itemTool>3</itemTool>
       </item>
       <item path="../.unix/src/jni_UnixNativeUtils.c">
