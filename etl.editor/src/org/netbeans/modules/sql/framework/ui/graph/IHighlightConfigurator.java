@@ -29,7 +29,7 @@ import com.nwoods.jgo.JGoBrush;
  * @version $Revision$
  */
 public interface IHighlightConfigurator {
-    public static final Color DEFAULT_BASIC_COLOR = new Color(240, 240, 240); // light
+    public static final Color DEFAULT_BASIC_COLOR = new Color(214, 235, 255); // light
                                                                                 // gray
 
     public static final Color DEFAULT_EDIT_COLOR = Color.WHITE;

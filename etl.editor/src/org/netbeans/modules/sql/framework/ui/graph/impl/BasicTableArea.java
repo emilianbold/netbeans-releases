@@ -63,7 +63,7 @@ public class BasicTableArea extends BasicCanvasArea implements IGraphInterface {
 
             rect = new JGoRectangle();
             rect.setPen(JGoPen.makeStockPen(Color.lightGray));
-            rect.setBrush(JGoBrush.makeStockBrush(new Color(254, 253, 235)));
+            rect.setBrush(JGoBrush.makeStockBrush(new Color(241, 249, 253)));
             rect.setResizable(false);
             addObjectAtTail(rect);
         }

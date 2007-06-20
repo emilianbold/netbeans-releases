@@ -56,9 +56,9 @@ public class SQLTargetTableArea extends SQLBasicTableArea {
     private static URL targetTableConditionImgUrl = SQLBasicTableArea.class.getResource("/org/netbeans/modules/sql/framework/ui/resources/images/targetTableCondition.png");
     private static URL dataFilterImgUrl = SQLSourceTableArea.class.getResource("/org/netbeans/modules/sql/framework/ui/resources/images/filter16.gif");
     
-    private static final Color DEFAULT_BG_COLOR = new Color(234, 236, 240);
+    private static final Color DEFAULT_BG_COLOR = new Color(204, 213, 241);
     
-    private static final Color DEFAULT_BG_COLOR_DARK = new Color(183, 190, 204);
+    private static final Color DEFAULT_BG_COLOR_DARK = new Color(165, 193, 249);
     
     private static final JGoBrush DEFAULT_TITLE_BRUSH = new GradientBrush(DEFAULT_BG_COLOR, DEFAULT_BG_COLOR_DARK);  
 

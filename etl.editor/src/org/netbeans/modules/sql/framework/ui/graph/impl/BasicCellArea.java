@@ -76,7 +76,7 @@ public class BasicCellArea extends CanvasArea implements PropertyChangeListener,
 
     public static final Color DEFAULT_TEXT_COLOR = new Color(30, 70, 230); // navy;
 
-    private static final JGoPen DEFAULT_PEN = JGoPen.makeStockPen(Color.lightGray);
+    private static final JGoPen DEFAULT_PEN = JGoPen.makeStockPen(new Color(201, 230, 247));
 
     protected boolean drawBoundingRect = false;
 

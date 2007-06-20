@@ -71,6 +71,7 @@ import org.openide.windows.WindowManager;
 import com.nwoods.jgo.JGoBrush;
 import com.sun.sql.framework.exception.BaseException;
 import com.sun.sql.framework.utils.Logger;
+import org.netbeans.modules.sql.framework.ui.graph.impl.GradientBrush;
 
 /**
  * @author Ritesh Adval
@@ -93,9 +94,13 @@ public class JoinViewGraphNode extends BasicCanvasArea {
     
     private static URL showJoinDataUrl = JoinViewGraphNode.class.getResource("/org/netbeans/modules/sql/framework/ui/resources/images/showOutput.png");
     
-    private static final Color DEFAULT_TITLE_COLOR = new Color(228, 202, 148);
+    private static final Color DEFAULT_TITLE_COLOR = new Color(221, 235, 246);
     
-    private static final JGoBrush DEFAULT_TITLE_BRUSH = new JGoBrush(DEFAULT_TITLE_COLOR);
+    private static final Color DEFAULT_BG_COLOR = new Color(204, 213, 241);
+    
+    private static final Color DEFAULT_BG_COLOR_DARK = new Color(165, 193, 249);
+    
+    private static final JGoBrush DEFAULT_TITLE_BRUSH = new GradientBrush(DEFAULT_BG_COLOR_DARK, DEFAULT_BG_COLOR);    
     
     private JMenuItem showSqlItem;
     

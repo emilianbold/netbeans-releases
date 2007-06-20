@@ -45,9 +45,9 @@ public class SQLRuntimeInputArea extends SQLBasicTableArea {
 
     private static URL propertiesUrl = SQLBasicTableArea.class.getResource("/org/netbeans/modules/sql/framework/ui/resources/images/properties.png");
 
-    private static final Color DEFAULT_BG_COLOR = new Color(252, 248, 197);
+    private static final Color DEFAULT_BG_COLOR = new Color(204, 213, 241);
     
-    private static final Color DEFAULT_BG_COLOR_DARK = new Color(228, 202, 148);
+    private static final Color DEFAULT_BG_COLOR_DARK = new Color(165, 193, 249);
     
     private static final JGoBrush DEFAULT_TITLE_BRUSH = new GradientBrush(DEFAULT_BG_COLOR_DARK, DEFAULT_BG_COLOR);    
 

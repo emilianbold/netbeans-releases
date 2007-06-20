@@ -63,7 +63,7 @@ public class ParenthesisCheckBoxArea extends CanvasArea {
         rect = new JGoRectangle();
 
         rect.setPen(JGoPen.makeStockPen(Color.WHITE));
-        rect.setBrush(JGoBrush.makeStockBrush(new Color(254, 253, 235)));
+        rect.setBrush(JGoBrush.makeStockBrush(new Color(241, 249, 253)));
         rect.setSelectable(false);
         rect.setResizable(false);
         addObjectAtHead(rect);
@@ -72,7 +72,7 @@ public class ParenthesisCheckBoxArea extends CanvasArea {
         cbArea = new CheckBoxArea();
         String toolTipText = NbBundle.getMessage(ParenthesisCheckBoxArea.class, "LBL_hide_display_parentheses");
         cbArea.setToolTipText(toolTipText);
-        cbArea.setBackground(new Color(254, 253, 235));
+        cbArea.setBackground(new Color(221, 235, 246));
         addObjectAtTail(cbArea);
 
         //add text of title
