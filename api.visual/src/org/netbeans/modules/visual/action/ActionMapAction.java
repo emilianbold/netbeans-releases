@@ -56,7 +56,8 @@ public class ActionMapAction extends WidgetAction.Adapter {
     private State handleKeyEvent (Widget widget, WidgetKeyEvent event, KeyStroke keyStroke) {
         ActionListener action;
         if (actionMap != null && inputMap != null) {
-            action = actionMap.get (inputMap.get (keyStroke));
+            Object o = inputMap.get (keyStroke);
+            action = o != null ? actionMap.get (o) : null;
         } else {
             JComponent view = widget.getScene ().getView ();
             action = view != null ? view.getActionForKeyStroke (keyStroke) : null;
