@@ -59,6 +59,7 @@ import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -83,7 +84,7 @@ public class AddOverrideAnnotation extends AbstractHint {
             if (doc == null)
                 return null;
             
-            TypeElement el = compilationInfo.getElements().getTypeElement("java.lang.Override");
+            TypeElement el = compilationInfo.getElements().getTypeElement("java.lang.Override"); //NOI18N
             
             if (el == null || !GeneratorUtils.supportsOverride(compilationInfo.getFileObject()))
                 return null;
@@ -128,7 +129,8 @@ public class AddOverrideAnnotation extends AbstractHint {
                     int[] span = Utilities.findIdentifierSpan(treePath, compilationInfo, doc);
                     
                     if (span[0] != (-1) && span[1] != (-1)) {
-                        ErrorDescription ed = ErrorDescriptionFactory.createErrorDescription(getSeverity().toEditorSeverity(), "Add Override Annotation", fixes, doc, doc.createPosition(span[0]), doc.createPosition(span[1]));
+                        String desc = NbBundle.getMessage(AddOverrideAnnotation.class, "HINT_AddOverrideAnnotation");
+                        ErrorDescription ed = ErrorDescriptionFactory.createErrorDescription(getSeverity().toEditorSeverity(), desc, fixes, doc, doc.createPosition(span[0]), doc.createPosition(span[1]));
                         
                         return Collections.singletonList(ed);
                     }
@@ -148,11 +150,11 @@ public class AddOverrideAnnotation extends AbstractHint {
     }
 
     public String getDisplayName() {
-        return "Add @Override Annotation";
+        return NbBundle.getMessage(AddOverrideAnnotation.class, "DN_AddOverrideAnnotation");
     }
 
     public String getDescription() {
-        return "Add @Override Annotation by Jan Lahoda";
+        return NbBundle.getMessage(AddOverrideAnnotation.class, "DESC_AddOverrideAnnotation");
     }
 
     public void cancel() {
@@ -178,7 +180,7 @@ public class AddOverrideAnnotation extends AbstractHint {
         }
         
         public String getText() {
-            return "Add @Override Annotation";
+            return NbBundle.getMessage(AddOverrideAnnotation.class, "FIX_AddOverrideAnnotation");
         }
         
         private static final Set<Kind> DECLARATION = EnumSet.of(Kind.CLASS, Kind.METHOD, Kind.VARIABLE);
@@ -207,14 +209,14 @@ public class AddOverrideAnnotation extends AbstractHint {
                         case METHOD:
                             modifiers = ((MethodTree) top).getModifiers();
                             break;
-                        default: assert false : "Unhandled Tree.Kind";
+                        default: assert false : "Unhandled Tree.Kind"; //NOI18N
                         }
                         
                         if (modifiers == null) {
                             return ;
                         }
                         
-                        TypeElement el = copy.getElements().getTypeElement("java.lang.Override");
+                        TypeElement el = copy.getElements().getTypeElement("java.lang.Override"); //NOI18N
                         
                         if (el == null) {
                             return ;
