@@ -33,6 +33,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
@@ -40,7 +42,6 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
-import org.openide.ErrorManager;
 import org.openide.cookies.EditCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
@@ -50,6 +51,7 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
 import org.openide.util.ContextAwareAction;
+import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
@@ -86,7 +88,7 @@ public class ProjectUtilities {
             } else if (oc != null) {
                 oc.open();
             } else {
-                if (ERR.isLoggable (ErrorManager.INFORMATIONAL)) ERR.log ("No EditCookie nor OpenCookie for " + dobj);
+                ERR.log(Level.INFO, "No EditCookie nor OpenCookie for {0}", dobj);
                 return false;
             }
             return true;
@@ -108,7 +110,7 @@ public class ProjectUtilities {
                      });
                 }
                 catch (Exception ex) {
-                    ERR.notify(ErrorManager.INFORMATIONAL, ex);
+                    Exceptions.printStackTrace(ex);
                 }
             }
             return wr.urls4project;
@@ -185,7 +187,7 @@ public class ProjectUtilities {
         Map<Project,SortedSet<String>> urls4project;
     }
     
-    private static final ErrorManager ERR = ErrorManager.getDefault().getInstance(ProjectUtilities.class.getName());
+    private static final Logger ERR = Logger.getLogger(ProjectUtilities.class.getName());
     
     private ProjectUtilities() {}
     
@@ -387,7 +389,7 @@ public class ProjectUtilities {
                 c.setCursor (show ? Cursor.getPredefinedCursor (Cursor.WAIT_CURSOR) : null);
             } 
             catch (NullPointerException npe) {
-                ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, npe);
+                Exceptions.printStackTrace(npe);
             }
         }
     }
@@ -442,6 +444,8 @@ public class ProjectUtilities {
             }
             
             aux.putConfigurationFragment (openFiles, false);
+        } else {
+            ERR.log(Level.WARNING, "No AuxiliaryConfiguration in {0}", p);
         }
     }
     
@@ -450,31 +454,30 @@ public class ProjectUtilities {
      * @param p project
      */
     public static void openProjectFiles (Project p) {
-        boolean dolog = ERR.isLoggable(ErrorManager.INFORMATIONAL);
-        if (dolog) ERR.log("Trying to open files from " + p + "...");
+        ERR.log(Level.FINE, "Trying to open files from {0}...", p);
         
         AuxiliaryConfiguration aux = p.getLookup().lookup(AuxiliaryConfiguration.class);
         
         if (aux == null) {
-            if (dolog) ERR.log("No AuxiliaryConfiguration in " + p);
+            ERR.log(Level.WARNING, "No AuxiliaryConfiguration in {0}", p);
             return ;
         }
         
         Element openFiles = aux.getConfigurationFragment (OPEN_FILES_ELEMENT, OPEN_FILES_NS, false);
         if (openFiles == null) {
-            if (dolog) ERR.log("No " + OPEN_FILES_ELEMENT + " in private.xml");
+            ERR.log(Level.WARNING, "No " + OPEN_FILES_ELEMENT + " in private.xml for {0}", p);
             return;
         }
 
         NodeList list = openFiles.getElementsByTagName (FILE_ELEMENT);
         if (list == null) {
-            if (dolog) ERR.log("No " + FILE_ELEMENT + " in " + OPEN_FILES_ELEMENT);
+            ERR.log(Level.WARNING, "No " + FILE_ELEMENT + " in " + OPEN_FILES_ELEMENT + " for {0}", p);
             return ;
         }
         
         for (int i = 0; i < list.getLength (); i++) {
             String url = list.item (i).getChildNodes ().item (0).getNodeValue ();
-            if (dolog) ERR.log("Will try to open " + url);
+            ERR.log(Level.FINE, "Will try to open {0}", url);
             FileObject fo;
             try {
                 fo = URLMapper.findFileObject (new URL (url));
@@ -483,7 +486,7 @@ public class ProjectUtilities {
                 continue;
             }
             if (fo == null) {
-                if (dolog) ERR.log("Could not find " + url);
+                ERR.log(Level.FINE, "Could not find {0}", url);
                 continue;
             }
             
