@@ -127,7 +127,7 @@ public abstract class ClassBasedBreakpoint extends BreakpointImpl {
                         createClassPrepareRequest ();
                     cpr.addClassFilter (classFilters [i]);
                     logger.fine("Set class load request: " + classFilters [i]);
-                    addEventRequest (cpr);
+                    addEventRequest (cpr, true);
                 }
                 k = classExclusionFilters.length;
                 for (i = 0; i < k; i++) {
@@ -135,7 +135,7 @@ public abstract class ClassBasedBreakpoint extends BreakpointImpl {
                         createClassPrepareRequest ();
                     cpr.addClassExclusionFilter (classExclusionFilters [i]);
                     logger.fine("Set class load exclusion request: " + classExclusionFilters [i]);
-                    addEventRequest (cpr);
+                    addEventRequest (cpr, false);
                 }
             }
             if ((breakpointType & ClassLoadUnloadBreakpoint.TYPE_CLASS_UNLOADED) != 0
@@ -146,7 +146,7 @@ public abstract class ClassBasedBreakpoint extends BreakpointImpl {
                         createClassUnloadRequest ();
                     cur.addClassFilter (classFilters [i]);
                     logger.fine("Set class unload request: " + classFilters [i]);
-                    addEventRequest (cur);
+                    addEventRequest (cur, false);
                 }
                 k = classExclusionFilters.length;
                 for (i = 0; i < k; i++) {
@@ -154,7 +154,7 @@ public abstract class ClassBasedBreakpoint extends BreakpointImpl {
                         createClassUnloadRequest ();
                     cur.addClassExclusionFilter (classExclusionFilters [i]);
                     logger.fine("Set class unload exclusion request: " + classExclusionFilters [i]);
-                    addEventRequest (cur);
+                    addEventRequest (cur, false);
                 }
             }
         } catch (VMDisconnectedException e) {

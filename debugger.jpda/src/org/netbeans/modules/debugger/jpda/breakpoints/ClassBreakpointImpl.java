@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -21,6 +21,8 @@ package org.netbeans.modules.debugger.jpda.breakpoints;
 
 import com.sun.jdi.event.ClassPrepareEvent;
 import com.sun.jdi.event.Event;
+import com.sun.jdi.request.ClassPrepareRequest;
+import com.sun.jdi.request.EventRequest;
 
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.ClassLoadUnloadBreakpoint;
@@ -53,11 +55,19 @@ public class ClassBreakpointImpl extends ClassBasedBreakpoint {
             breakpoint.getBreakpointType ()
         );
     }
+    
+    protected EventRequest createEventRequest(EventRequest oldRequest) {
+        ClassPrepareRequest classRequest = (ClassPrepareRequest) oldRequest;
+        ClassPrepareRequest cpr = getEventRequestManager ().createClassPrepareRequest ();
+        // TODO: set filters
+        return cpr;
+    }
 
     public boolean exec (Event event) {
         if (event instanceof ClassPrepareEvent)
             try {
                 return perform (
+                    event,
                     null,
                     ((ClassPrepareEvent) event).thread (),
                     ((ClassPrepareEvent) event).referenceType (),
@@ -67,6 +77,7 @@ public class ClassBreakpointImpl extends ClassBasedBreakpoint {
                 // PATCH for KVM. They does not support 
                 // ReferenceType.classObject ()
                 return perform (
+                    event,
                     null,
                     ((ClassPrepareEvent) event).thread (),
                     ((ClassPrepareEvent) event).referenceType (),
@@ -75,6 +86,7 @@ public class ClassBreakpointImpl extends ClassBasedBreakpoint {
             }
         else
             return perform (
+                event,
                 null,
                 null,
                 null,

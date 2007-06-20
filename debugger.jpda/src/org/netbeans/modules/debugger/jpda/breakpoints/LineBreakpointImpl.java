@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -30,6 +30,7 @@ import com.sun.jdi.event.BreakpointEvent;
 import com.sun.jdi.event.LocatableEvent;
 import com.sun.jdi.event.Event;
 import com.sun.jdi.request.BreakpointRequest;
+import com.sun.jdi.request.EventRequest;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -152,10 +153,16 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
             }
         }
     }
+    
+    protected EventRequest createEventRequest(EventRequest oldRequest) {
+        Location location = ((BreakpointRequest) oldRequest).location();
+        return getEventRequestManager ().createBreakpointRequest (location);
+    }
 
     public boolean exec (Event event) {
         if (event instanceof BreakpointEvent) {
             return perform (
+                event,
                 getBreakpoint().getCondition (),
                 ((BreakpointEvent) event).thread (),
                 ((LocatableEvent) event).location ().declaringType (),

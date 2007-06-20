@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -28,12 +28,15 @@ import com.sun.jdi.event.WatchpointEvent;
 import com.sun.jdi.event.LocatableEvent;
 import com.sun.jdi.event.AccessWatchpointEvent;
 import com.sun.jdi.request.AccessWatchpointRequest;
+import com.sun.jdi.request.EventRequest;
 import com.sun.jdi.request.ModificationWatchpointRequest;
+
 import org.netbeans.api.debugger.Breakpoint.VALIDITY;
 import org.netbeans.api.debugger.jpda.ClassLoadUnloadBreakpoint;
 import org.netbeans.api.debugger.jpda.FieldBreakpoint;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
+
 import org.openide.util.NbBundle;
 
 /**
@@ -102,10 +105,23 @@ public class FieldBreakpointImpl extends ClassBasedBreakpoint {
         } catch (VMDisconnectedException e) {
         }
     }
+    
+    protected EventRequest createEventRequest(EventRequest oldRequest) {
+        if (oldRequest instanceof AccessWatchpointRequest) {
+            Field field = ((AccessWatchpointRequest) oldRequest).field();
+            return getEventRequestManager ().createAccessWatchpointRequest (field);
+        }
+        if (oldRequest instanceof ModificationWatchpointRequest) {
+            Field field = ((ModificationWatchpointRequest) oldRequest).field();
+            return getEventRequestManager ().createModificationWatchpointRequest (field);
+        }
+        return null;
+    }
 
     public boolean exec (Event event) {
         if (event instanceof ModificationWatchpointEvent)
             return perform (
+                event,
                 breakpoint.getCondition (),
                 ((WatchpointEvent) event).thread (),
                 ((LocatableEvent) event).location ().declaringType (),
@@ -113,6 +129,7 @@ public class FieldBreakpointImpl extends ClassBasedBreakpoint {
             );
         if (event instanceof AccessWatchpointEvent)
             return perform (
+                event,
                 breakpoint.getCondition (),
                 ((WatchpointEvent) event).thread (),
                 ((LocatableEvent) event).location ().declaringType (),

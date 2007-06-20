@@ -26,6 +26,7 @@ import com.sun.jdi.ThreadReference;
 import com.sun.jdi.VMDisconnectedException;
 import com.sun.jdi.Value;
 import com.sun.jdi.VirtualMachine;
+import com.sun.jdi.event.Event;
 import com.sun.jdi.request.EventRequest;
 import com.sun.jdi.request.EventRequestManager;
 import com.sun.jdi.request.StepRequest;
@@ -84,7 +85,7 @@ public abstract class BreakpointImpl implements Executor, PropertyChangeListener
     private final Session       session;
     private Expression          compiledCondition;
     private List<EventRequest>  requests = new ArrayList<EventRequest>();
-
+    private int                 hitCountFilter = 0;
 
     protected BreakpointImpl (JPDABreakpoint p, BreakpointsReader reader, JPDADebuggerImpl debugger, Session session) {
         this.debugger = debugger;
@@ -176,7 +177,11 @@ public abstract class BreakpointImpl implements Executor, PropertyChangeListener
         return vm.eventRequestManager ();
     }
 
-    synchronized protected void addEventRequest (EventRequest r) {
+    protected void addEventRequest (EventRequest r) {
+        addEventRequest(r, false);
+    }
+    
+    synchronized protected void addEventRequest (EventRequest r, boolean ignoreHitCount) {
         logger.fine("BreakpointImpl addEventRequest: " + r);
         requests.add (r);
         getDebugger ().getOperator ().register (r, this);
@@ -188,8 +193,23 @@ public abstract class BreakpointImpl implements Executor, PropertyChangeListener
         else
             r.setSuspendPolicy (JPDABreakpoint.SUSPEND_EVENT_THREAD);
         int hitCountFilter = getBreakpoint().getHitCountFilter();
-        if (hitCountFilter > 0) {
+        if (!ignoreHitCount && hitCountFilter > 0) {
             r.addCountFilter(hitCountFilter);
+            switch (getBreakpoint().getHitCountFilteringStyle()) {
+                case MULTIPLE:
+                    this.hitCountFilter = hitCountFilter;
+                    break;
+                case EQUAL:
+                    this.hitCountFilter = 0;
+                    break;
+                case GREATER:
+                    this.hitCountFilter = -1;
+                    break;
+                default:
+                    throw new IllegalStateException(getBreakpoint().getHitCountFilteringStyle().name());
+            }
+        } else {
+            this.hitCountFilter = 0;
         }
         r.enable ();
     }
@@ -212,8 +232,27 @@ public abstract class BreakpointImpl implements Executor, PropertyChangeListener
         }
         requests = new LinkedList<EventRequest>();
     }
+    
+    synchronized private void removeEventRequest(EventRequest r) {
+        VirtualMachine vm = getDebugger().getVirtualMachine();
+        if (vm == null) return; 
+        try {
+            logger.fine("BreakpointImpl removeEventRequest: " + r);
+            vm.eventRequestManager().deleteEventRequest(r);
+            getDebugger ().getOperator ().unregister (r);
+        } catch (VMDisconnectedException e) {
+        } catch (com.sun.jdi.InternalException e) {
+        }
+        requests.remove(r);
+    }
+    
+    /** Called when a new event request needs to be created, e.g. after hit count
+     * was met and hit count style is "greater than".
+     */
+    protected abstract EventRequest createEventRequest(EventRequest oldRequest);
 
-    public boolean perform (
+    protected boolean perform (
+        Event event,
         String condition,
         ThreadReference thread,
         ReferenceType referenceType,
@@ -222,6 +261,17 @@ public abstract class BreakpointImpl implements Executor, PropertyChangeListener
         //S ystem.out.println("BreakpointImpl.perform");
         boolean resume;
         
+        if (hitCountFilter > 0) {
+            event.request().disable();
+            //event.request().addCountFilter(hitCountFilter);
+            // This submits the event with the filter again
+            event.request().enable();
+        }
+        if (hitCountFilter == -1) {
+            event.request().disable();
+            removeEventRequest(event.request());
+            addEventRequest(createEventRequest(event.request()), true);
+        }
         //PATCH 48174
         try {
             getDebugger().setAltCSF(thread.frame(0));

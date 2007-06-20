@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -26,6 +26,7 @@ import com.sun.jdi.VirtualMachine;
 import com.sun.jdi.event.Event;
 import com.sun.jdi.event.ThreadDeathEvent;
 import com.sun.jdi.event.ThreadStartEvent;
+import com.sun.jdi.request.EventRequest;
 import com.sun.jdi.request.ThreadDeathRequest;
 import com.sun.jdi.request.ThreadStartRequest;
 
@@ -81,6 +82,16 @@ public class ThreadBreakpointImpl extends BreakpointImpl implements Executor {
         } catch (VMDisconnectedException e) {
         }
     }
+    
+    protected EventRequest createEventRequest(EventRequest oldRequest) {
+        if (oldRequest instanceof ThreadStartRequest) {
+            return getEventRequestManager ().createThreadStartRequest ();
+        }
+        if (oldRequest instanceof ThreadDeathRequest) {
+            return getEventRequestManager().createThreadDeathRequest();
+        }
+        return null;
+    }
 
     public boolean exec (Event event) {
         ThreadReference thread = null;
@@ -91,6 +102,7 @@ public class ThreadBreakpointImpl extends BreakpointImpl implements Executor {
             thread = ((ThreadDeathEvent) event).thread ();
 
         return perform (
+            event,
             null,
             thread,
             null,

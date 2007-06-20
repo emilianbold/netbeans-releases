@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -23,10 +23,11 @@ import com.sun.jdi.ReferenceType;
 import com.sun.jdi.VMDisconnectedException;
 import com.sun.jdi.event.Event;
 import com.sun.jdi.event.ExceptionEvent;
+import com.sun.jdi.request.EventRequest;
 import com.sun.jdi.request.ExceptionRequest;
+
 import org.netbeans.api.debugger.jpda.ClassLoadUnloadBreakpoint;
 import org.netbeans.api.debugger.jpda.ExceptionBreakpoint;
-
 import org.netbeans.api.debugger.Session;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 
@@ -58,22 +59,31 @@ public class ExceptionBreakpointImpl extends ClassBasedBreakpoint {
     
     protected void classLoaded (ReferenceType referenceType) {
         try {
-            ExceptionRequest er = getEventRequestManager ().
-                createExceptionRequest (
-                    referenceType, 
-                    (breakpoint.getCatchType () & 
-                        ExceptionBreakpoint.TYPE_EXCEPTION_CATCHED) != 0, 
-                    (breakpoint.getCatchType () & 
-                        ExceptionBreakpoint.TYPE_EXCEPTION_UNCATCHED) != 0
-                );
+            ExceptionRequest er = getEventRequestManager ().createExceptionRequest (
+                referenceType, 
+                (breakpoint.getCatchType () & 
+                    ExceptionBreakpoint.TYPE_EXCEPTION_CATCHED) != 0, 
+                (breakpoint.getCatchType () & 
+                    ExceptionBreakpoint.TYPE_EXCEPTION_UNCATCHED) != 0
+            );
             addEventRequest (er);
         } catch (VMDisconnectedException e) {
         }
+    }
+    
+    protected ExceptionRequest createEventRequest(EventRequest oldRequest) {
+        ExceptionRequest excRequest = (ExceptionRequest) oldRequest;
+        return getEventRequestManager ().createExceptionRequest (
+                excRequest.exception(),
+                excRequest.notifyCaught(),
+                excRequest.notifyUncaught()
+            );
     }
 
     public boolean exec (Event event) {
         if (event instanceof ExceptionEvent)
             return perform (
+                event,
                 breakpoint.getCondition (),
                 ((ExceptionEvent) event).thread (),
                 ((ExceptionEvent) event).location().declaringType(),

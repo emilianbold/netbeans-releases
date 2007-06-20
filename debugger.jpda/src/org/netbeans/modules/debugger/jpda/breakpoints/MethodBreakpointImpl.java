@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -31,6 +31,7 @@ import com.sun.jdi.event.LocatableEvent;
 import com.sun.jdi.event.MethodEntryEvent;
 import com.sun.jdi.event.MethodExitEvent;
 import com.sun.jdi.request.BreakpointRequest;
+import com.sun.jdi.request.EventRequest;
 import com.sun.jdi.request.MethodEntryRequest;
 import com.sun.jdi.request.MethodExitRequest;
 import java.util.ArrayList;
@@ -93,10 +94,39 @@ public class MethodBreakpointImpl extends ClassBasedBreakpoint {
             checkLoadedClasses (filter);
         }
     }
+    
+    protected EventRequest createEventRequest(EventRequest oldRequest) {
+        if (oldRequest instanceof BreakpointRequest) {
+            return getEventRequestManager ().
+                    createBreakpointRequest(((BreakpointRequest) oldRequest).location());
+        }
+        if (oldRequest instanceof MethodEntryRequest) {
+            MethodEntryRequest entryReq = getEventRequestManager().
+                    createMethodEntryRequest();
+            ReferenceType referenceType = (ReferenceType) oldRequest.getProperty("ReferenceType");
+            entryReq.addClassFilter(referenceType);
+            Object entryMethodNames = oldRequest.getProperty("methodNames");
+            entryReq.putProperty("methodNames", entryMethodNames);
+            entryReq.putProperty("ReferenceType", referenceType);
+            return entryReq;
+        }
+        if (oldRequest instanceof MethodExitRequest) {
+            MethodExitRequest exitReq = getEventRequestManager().
+                    createMethodExitRequest();
+            ReferenceType referenceType = (ReferenceType) oldRequest.getProperty("ReferenceType");
+            exitReq.addClassFilter(referenceType);
+            Object exitMethodNames = oldRequest.getProperty("methodNames");
+            exitReq.putProperty("methodNames", exitMethodNames);
+            exitReq.putProperty("ReferenceType", referenceType);
+            return exitReq;
+        }
+        return null;
+    }
 
     public boolean exec (Event event) {
         if (event instanceof BreakpointEvent)
             return perform (
+                event,
                 breakpoint.getCondition (),
                 ((BreakpointEvent) event).thread (),
                 ((LocatableEvent) event).location ().declaringType (),
@@ -111,6 +141,7 @@ public class MethodBreakpointImpl extends ClassBasedBreakpoint {
                     refType = ((LocatableEvent) event).location().declaringType();
                 }
                 return perform (
+                    event,
                     breakpoint.getCondition (),
                     ((MethodEntryEvent) event).thread (),
                     refType,
@@ -150,6 +181,7 @@ public class MethodBreakpointImpl extends ClassBasedBreakpoint {
                     }
                 }
                 return perform (
+                    event,
                     breakpoint.getCondition (),
                     ((MethodExitEvent) event).thread (),
                     refType,
@@ -198,6 +230,7 @@ public class MethodBreakpointImpl extends ClassBasedBreakpoint {
                             entryReq.addClassFilter(referenceType);
                             entryMethodNames = new HashSet<String>();
                             entryReq.putProperty("methodNames", entryMethodNames);
+                            entryReq.putProperty("ReferenceType", referenceType);
                         }
                         entryMethodNames.add(method.name ());
                     }
@@ -209,6 +242,7 @@ public class MethodBreakpointImpl extends ClassBasedBreakpoint {
                         exitReq.addClassFilter(referenceType);
                         exitMethodNames = new HashSet<String>();
                         exitReq.putProperty("methodNames", exitMethodNames);
+                        exitReq.putProperty("ReferenceType", referenceType);
                     }
                     exitMethodNames.add(method.name());
                 }
