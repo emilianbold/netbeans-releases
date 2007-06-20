@@ -127,7 +127,7 @@ import org.xml.sax.helpers.DefaultHandler;
  * @author Radek Matous
  */
 public final class XMLFileSystem extends AbstractFileSystem {
-    static final long serialVersionUID = 28974107313702326L;
+    private static final long serialVersionUID = 28974107313702326L;
 
     // <?xml version="1.0"?>
     // <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
@@ -239,10 +239,8 @@ public final class XMLFileSystem extends AbstractFileSystem {
 
     /** Getter of url fields.
      * @return URLs associated with XMLFileSystem.
-     * @deprecated experimental method. Nobody should rely on this method yet.
      * @since 1.14
      */
-    @Deprecated
     public URL[] getXmlUrls() {
         return urlsToXml;
     }
@@ -658,7 +656,7 @@ public final class XMLFileSystem extends AbstractFileSystem {
     public static class Impl extends Object implements AbstractFileSystem.List, AbstractFileSystem.Info,
         AbstractFileSystem.Change, AbstractFileSystem.Attr {
         /** generated Serialized Version UID */
-        static final long serialVersionUID = -67233358102597232L;
+        private static final long serialVersionUID = -67233358102597232L;
 
         /** the pointer to filesystem */
         private XMLFileSystem fs;
