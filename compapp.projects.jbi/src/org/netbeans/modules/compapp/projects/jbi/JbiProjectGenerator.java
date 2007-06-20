@@ -46,6 +46,7 @@ import org.w3c.dom.Element;
 import java.io.File;
 import java.io.IOException;
 import org.netbeans.modules.compapp.jbiserver.JbiManager;
+import org.netbeans.modules.compapp.projects.jbi.api.JbiProjectConstants;
 
 
 /**
@@ -57,7 +58,7 @@ import org.netbeans.modules.compapp.jbiserver.JbiManager;
 public class JbiProjectGenerator {
     private static final String DEFAULT_CONF_FOLDER = "conf"; // NOI18N
     private static final String DEFAULT_SRC_FOLDER = "src"; // NOI18N
-    private static final String DEFAULT_JBIASA_FOLDER = "jbiasa"; // NOI18N
+    private static final String DEFAULT_JBIASA_FOLDER = JbiProjectConstants.FOLDER_JBIASA;
     private static final String DEFAULT_COMPONENTASA_FOLDER = "jbiServiceUnits"; // NOI18N
     private static final String DEFAULT_BUILD_DIR = "build"; // NOI18N
     private static final String DEFAULT_JBI_ROUTING = "true"; // NOI18N

@@ -29,6 +29,12 @@ import java.util.ArrayList;
  * @version 
  */
 public class JbiProjectConstants {
+    
+    /**
+     * jbiasa folder
+     */
+    public static final String FOLDER_JBIASA = "jbiasa"; // NOI18N
+    
     /**
      * Jbi package root sources type.
      *
