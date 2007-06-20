@@ -154,8 +154,17 @@ public class OperationGeneratorHelper {
             }
             if(schemaModel == null) {
                 schemaModel = createSchemaModel(factory, definitions, types);
-                schema = schemaModel.getSchema();
+                schema = schemaModel.getSchema();                
             }
+            
+            String schemaNamespace = schema.getTargetNamespace();
+            if (schemaNamespace == null) {
+                String parentTns = wsdlModel.getDefinitions().getTargetNamespace();
+                if (parentTns != null) {
+                    schema.setTargetNamespace(parentTns);
+                }
+            }
+            
             Message inputMessage =  addInputMessageToOperation(operation, parameterTypes,
                     schemaModel,  isDocOriented);
             Message outputMessage = addOutputMessageToOperation(operation, returnType,
