@@ -121,6 +121,7 @@ public class ConditionsPanel extends javax.swing.JPanel {
     public void setCondition(String condition) {
         tfCondition.setText(condition);
         conditionCheckBox.setSelected(condition.length() > 0);
+        conditionCheckBoxActionPerformed(null);
     }
     
     public void setHitCountFilteringStyle(HIT_COUNT_FILTERING_STYLE style) {
