@@ -45,8 +45,12 @@ public class SvnClientFactory {
 
     /** the only existing SvnClientFactory instance */
     private static SvnClientFactory instance;        
-    private static ClientAdapterFactory factory;        
+    /** the only existing ClientAdapterFactory instance */
+    private static ClientAdapterFactory factory;       
+    /** if an exception occured */
     private static SVNClientException exception = null;
+    /** possible executable locations; fallback alternatives to $PATH */
+    private static final String[] CMDLINE_LOCATIONS = new String[] {"/usr/local/bin"};
     
     /** Creates a new instance of SvnClientFactory */
     private SvnClientFactory() {
@@ -211,24 +215,23 @@ public class SvnClientFactory {
         ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "svnClientAdapter running on commandline client");        
     }                 
     
-    private static final String[] CMDLINE_LOCATIONS = new String[] {"/usr/local/bin"};
     private void setupComandlineFatory() throws SVNClientException {
         String subversionPath = SvnModuleConfig.getDefault().getExecutableBinaryPath();
         String usedSubversionPath = setupComandlineFatory(subversionPath);                
         if(!usedSubversionPath.equals(instance)) {
             SvnModuleConfig.getDefault().setExecutableBinaryPath(usedSubversionPath);
-        }
-        
+        }        
     }
+    
     private String setupComandlineFatory(String subversionPath) throws SVNClientException {
         try {
-            CmdLineClientAdapterFactory.setup(subversionPath);
+            CmdLineClientAdapterFactory.setup13(subversionPath);
             return subversionPath;
         } catch(SVNClientException e) {
             if(Utilities.isMac() || Utilities.isUnix()) {
                 for(String location : CMDLINE_LOCATIONS) {
                     try {
-                        CmdLineClientAdapterFactory.setup(location);
+                        CmdLineClientAdapterFactory.setup13(location);
                         return location;
                     } catch(SVNClientException ex) {                        
                         continue;
