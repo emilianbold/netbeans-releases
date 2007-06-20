@@ -1117,6 +1117,16 @@ public class DesignBeanNode extends AbstractNode implements DesignBeanListener {
 // ====
 //        return SystemFileSystemSupport.getActions(PATH_DESIGN_BEAN_NODES_ACTIONS);
         List actions = new ArrayList(Arrays.asList(SystemFileSystemSupport.getActions(PATH_DESIGN_BEAN_NODES_ACTIONS)));
+
+        // XXX #94118 Bad diffing the actions for various nodes.
+        if (!Util.isPageRootContainerDesignBean(liveBean)) {
+            for (Iterator it = actions.iterator(); it.hasNext(); ) {
+                Action action = (Action)it.next();
+                if (action != null && action.getValue(ACTION_KEY_PAGE_BEAN_ONLY) == Boolean.TRUE) {
+                    it.remove();
+                }
+            }
+        }
         
         // XXX Suspicious postprocessing.
         // TODO Rather provide different subclasses of the node, handling different instances.
@@ -1141,6 +1151,11 @@ public class DesignBeanNode extends AbstractNode implements DesignBeanListener {
         return (Action[])actions.toArray(new Action[actions.size()]);
 // </actions from layers>
     }
+    
+    /** XXX #94118 Hack to differenciate the presence of the actions in the popup.
+     * There should be different types for the different nodes. */
+    public final static String ACTION_KEY_PAGE_BEAN_ONLY = "actionKeyPageBeanOnly"; // NOI18N
+    
     
     public Action getPreferredAction() {
         // #6465174 Make customize action the preferred one if is present.

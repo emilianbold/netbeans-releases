@@ -22,6 +22,7 @@ package org.netbeans.modules.visualweb.designer.jsf.action;
 
 
 import org.netbeans.modules.visualweb.designer.jsf.JsfForm;
+import org.netbeans.modules.visualweb.insync.live.DesignBeanNode;
 import org.openide.util.NbBundle;
 
 
@@ -37,6 +38,8 @@ public class RefreshAction  extends AbstractJsfFormAction {
 
     /** Creates a new instance of RefreshAction */
     public RefreshAction() {
+        // XXX #94118 Avoiding the action from non page beans. 
+        putValue(DesignBeanNode.ACTION_KEY_PAGE_BEAN_ONLY, Boolean.TRUE);
     }
 
     protected String getDisplayName(JsfForm jsfForm) {
