@@ -265,7 +265,7 @@ public class MetaComponentCreator {
         if (checkFormClass(preMetaComp.getBeanClass())) {
             int targetPlacement = getTargetPlacement(preMetaComp.getBeanClass(), targetComp, true, false);
             if (targetPlacement == TARGET_VISUAL) {
-                addVisualComponent2(preMetaComp, targetComp, constraints);
+                addVisualComponent2(preMetaComp, targetComp, constraints, true);
             }
             releasePrecreatedComponent();
             return true;
@@ -388,17 +388,20 @@ public class MetaComponentCreator {
             LayoutSupportManager.storeConstraints(
                                      (RADVisualComponent) sourceComp);
 
-        // copy the source metacomponent
-        if (copiedComp == null) {
+        boolean newlyAdded;
+        if (copiedComp == null) { // copy the source metacomponent
             copiedComp = makeCopy(sourceComp);
             if (copiedComp == null) { // copying failed (for a mystic reason)
                 return null;
             }
             ResourceSupport.switchComponentToResources(copiedComp);
+            newlyAdded = true;
+        } else {
+            newlyAdded = false;
         }
 
         if (targetPlacement == TARGET_MENU) {
-            addMenuComponent(copiedComp, targetComp);
+            addMenuComponent(copiedComp, targetComp, newlyAdded);
         }
         else if (targetPlacement == TARGET_VISUAL) {
             RADVisualComponent newVisual = (RADVisualComponent) copiedComp;
@@ -414,11 +417,11 @@ public class MetaComponentCreator {
             }
             else constraints = null;
 
-            copiedComp = addVisualComponent2(newVisual, targetComp, constraints);
+            copiedComp = addVisualComponent2(newVisual, targetComp, constraints, newlyAdded);
             // might be null if layout support did not accept the component
         }
         else if (targetPlacement == TARGET_OTHER) {
-            addOtherComponent(copiedComp, targetComp);
+            addOtherComponent(copiedComp, targetComp, newlyAdded);
         }
 
         return copiedComp;
@@ -733,7 +736,7 @@ public class MetaComponentCreator {
                 || java.applet.Applet.class.isAssignableFrom(compClass))
             targetComp = null;
 
-        return addVisualComponent2(newMetaComp, targetComp, constraints);
+        return addVisualComponent2(newMetaComp, targetComp, constraints, true);
     }
 
     private RADVisualComponent createVisualComponent(Class compClass) {
@@ -808,7 +811,8 @@ public class MetaComponentCreator {
 
     private RADVisualComponent addVisualComponent2(RADVisualComponent newMetaComp,
                                                    RADComponent targetComp,
-                                                   Object constraints)
+                                                   Object constraints,
+                                                   boolean newlyAdded)
     {
         // Issue 65254: beware of nested JScrollPanes
         if ((targetComp != null) && JScrollPane.class.isAssignableFrom(targetComp.getBeanClass())) {
@@ -835,7 +839,7 @@ public class MetaComponentCreator {
         // add the new metacomponent to the model
         if (parentCont != null) {
             try {
-                formModel.addVisualComponent(newMetaComp, parentCont, constraints, true);
+                formModel.addVisualComponent(newMetaComp, parentCont, constraints, newlyAdded);
             }
             catch (RuntimeException ex) {
                 // LayoutSupportDelegate may not accept the component
@@ -843,7 +847,7 @@ public class MetaComponentCreator {
                 return null;
             }
         }
-        else formModel.addComponent(newMetaComp, null, true);
+        else formModel.addComponent(newMetaComp, null, newlyAdded);
 
         return newMetaComp;
     }
@@ -856,12 +860,13 @@ public class MetaComponentCreator {
         if (!initComponentInstance(newMetaComp, compClass))
             return null;
 
-        addOtherComponent(newMetaComp, targetComp);
+        addOtherComponent(newMetaComp, targetComp, true);
         return newMetaComp;
     }
 
     private void addOtherComponent(RADComponent newMetaComp,
-                                   RADComponent targetComp)
+                                   RADComponent targetComp,
+                                   boolean newlyAdded)
     {
         ComponentContainer targetCont = 
             targetComp instanceof ComponentContainer
@@ -869,7 +874,7 @@ public class MetaComponentCreator {
                 && !(targetComp instanceof RADMenuComponent) ?
             (ComponentContainer) targetComp : null;
 
-        formModel.addComponent(newMetaComp, targetCont, true);
+        formModel.addComponent(newMetaComp, targetCont, newlyAdded);
     }
 
 //    private RADComponent setContainerLayout(Class layoutClass,
@@ -1129,7 +1134,7 @@ public class MetaComponentCreator {
             }
         }
 
-        addMenuComponent(newMenuItemComp, targetComp);
+        addMenuComponent(newMenuItemComp, targetComp, true);
 
         // for added new menu bar we add one menu so it is not empty
         if (newMenuComp != null) {
@@ -1150,7 +1155,8 @@ public class MetaComponentCreator {
     }
 
     private void addMenuComponent(RADComponent newMenuComp,
-                                  RADComponent targetComp)
+                                  RADComponent targetComp,
+                                  boolean newlyAdded)
     {
         Class beanClass = newMenuComp.getBeanClass();
         ComponentContainer menuContainer = null;
@@ -1173,7 +1179,7 @@ public class MetaComponentCreator {
                 menuContainer = targetCont;
         }
 
-        formModel.addComponent(newMenuComp, menuContainer, true);
+        formModel.addComponent(newMenuComp, menuContainer, newlyAdded);
     }
 
     // --------
