@@ -43,7 +43,7 @@ public class JsfJavaDataNode extends FilterNode {
 
     private JsfJavaDataNode (Node javaNode) {
         super(javaNode);
-        ((AbstractNode)javaNode).setIconBaseWithExtension("com/sun/rave/project/jsfloader/resources/jsfJavaObject.png"); // NOI18N
+        ((AbstractNode)javaNode).setIconBaseWithExtension("org/netbeans/modules/visualweb/project/jsfloader/resources/jsfJavaObject.png"); // NOI18N
     }
     
     public HelpCtx getHelpCtx() {
