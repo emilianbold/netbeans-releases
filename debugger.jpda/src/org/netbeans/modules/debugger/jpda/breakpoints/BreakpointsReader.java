@@ -24,7 +24,7 @@ import java.beans.PropertyChangeListener;
 import java.util.Map;
 import java.util.WeakHashMap;
 
-import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.Properties;
 import org.netbeans.api.debugger.jpda.ClassLoadUnloadBreakpoint;
 import org.netbeans.api.debugger.jpda.ExceptionBreakpoint;
@@ -221,6 +221,15 @@ public class BreakpointsReader implements Properties.Reader, PropertyChangeListe
                 JPDABreakpoint.SUSPEND_ALL
             )
         );
+        int hitCountFilter = properties.getInt(JPDABreakpoint.PROP_HIT_COUNT_FILTER, 0);
+        Breakpoint.HIT_COUNT_FILTERING_STYLE hitCountFilteringStyle;
+        if (hitCountFilter > 0) {
+            hitCountFilteringStyle = Breakpoint.HIT_COUNT_FILTERING_STYLE.values()
+                    [properties.getInt(JPDABreakpoint.PROP_HIT_COUNT_FILTER+"_style", 0)]; // NOI18N
+        } else {
+            hitCountFilteringStyle = null;
+        }
+        b.setHitCountFilter(hitCountFilter, hitCountFilteringStyle);
         if (properties.getBoolean (JPDABreakpoint.PROP_ENABLED, true))
             b.enable ();
         else
@@ -240,6 +249,9 @@ public class BreakpointsReader implements Properties.Reader, PropertyChangeListe
         );
         properties.setInt (JPDABreakpoint.PROP_SUSPEND, b.getSuspend ());
         properties.setBoolean (JPDABreakpoint.PROP_ENABLED, b.isEnabled ());
+        properties.setInt(JPDABreakpoint.PROP_HIT_COUNT_FILTER, b.getHitCountFilter());
+        Breakpoint.HIT_COUNT_FILTERING_STYLE style = b.getHitCountFilteringStyle();
+        properties.setInt(JPDABreakpoint.PROP_HIT_COUNT_FILTER+"_style", style != null ? style.ordinal() : 0); // NOI18N
         
         if (object instanceof LineBreakpoint) {
             LineBreakpoint lb = (LineBreakpoint) object;
