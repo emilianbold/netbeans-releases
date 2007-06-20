@@ -352,7 +352,7 @@ public class FragmentPanel extends javax.swing.JPanel implements ActionListener,
         // Create files
         try {
             FileSystem fs = Repository.getDefault().getDefaultFileSystem();
-            String tmpl = "Templates/JSP_Servlet/PageFragment.jspf"; // NOI18N
+            String tmpl = "Templates/JSF/PageFragment.jspf"; // NOI18N
             FileObject fo = fs.findResource(tmpl);
             if (fo == null)
                 throw new IOException("Can't find template FileObject for " + tmpl);  // NOI18N
