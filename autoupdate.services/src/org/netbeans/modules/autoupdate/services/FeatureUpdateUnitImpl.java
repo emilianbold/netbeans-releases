@@ -141,7 +141,7 @@ public class FeatureUpdateUnitImpl extends UpdateUnitImpl {
                     getCodeName (),
                     availableModules,
                     featureImpl,
-                    isStandalone ? null : presentAddionallyDescription (installedModules, presentUpdatableModules (missingModules)));
+                    isStandalone ? null : presentAddionallyDescription (presentUpdatableModules (missingModules), installedModules));
             FeatureUpdateElementImpl featureElementImpl = new FeatureUpdateElementImpl (
                     item,
                     featureElements.get (0).getSource (),
@@ -228,6 +228,11 @@ public class FeatureUpdateUnitImpl extends UpdateUnitImpl {
     }
     
     private static String presentAddionallyDescription (Set<ModuleUpdateElementImpl> included, String more) {
+        String add = presentIncludedModules (included) + more;
+        return add.length () > 0 ? add : null;
+    }
+
+    private static String presentAddionallyDescription (String more, Set<ModuleUpdateElementImpl> included) {
         String add = more + presentIncludedModules (included);
         return add.length () > 0 ? add : null;
     }
