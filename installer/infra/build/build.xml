@@ -185,7 +185,7 @@
             dest="${temp.file}"/>
         -->
         <get
-            src="${glassfish.builds.host}/java/re/glassfish/9.1/promoted/beta3/latest/bundles/"
+            src="${glassfish.builds.host}/java/re/glassfish/9.1/promoted/rc/latest/bundles/"
             dest="${temp.file}"/>
         <glassfish-buildnumber 
             file="${temp.file}" 
@@ -200,7 +200,7 @@
             dest="${temp.file}"/>
         -->
         <get
-            src="${openesb.builds.host}/kits/openesb/main/GlassfishDrop_b50_2/log/"
+            src="${openesb.builds.host}/kits/ojc/main/latestGlassfish/log/"
             dest="${temp.file}"/>
         <openesb-buildnumber 
             file="${temp.file}" 
@@ -239,8 +239,8 @@
             file="${temp.file}" 
             prefix="sjsam"/>
         -->
-        <property name="sjsam.milestone.number" value="8"/>
-        <property name="sjsam.build.number" value="20070413"/>
+        <property name="sjsam.milestone.number" value="1"/>
+        <property name="sjsam.build.number" value="20070614"/>
         
         <delete file="${temp.file}"/>
     </target>
