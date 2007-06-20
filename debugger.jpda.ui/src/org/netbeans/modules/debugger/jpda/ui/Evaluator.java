@@ -23,6 +23,7 @@ import java.awt.Component;
 import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.EventQueue;
+import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
@@ -31,6 +32,7 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -50,6 +52,7 @@ import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.modules.debugger.jpda.ui.models.WatchesNodeModel;
 import org.netbeans.spi.viewmodel.ColumnModel;
+import org.netbeans.spi.viewmodel.ExtendedNodeModel;
 import org.netbeans.spi.viewmodel.Model;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.Models;
@@ -71,6 +74,7 @@ import org.openide.awt.Mnemonics;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.datatransfer.PasteType;
 
 /**
  * The expression evaluator.
@@ -611,7 +615,7 @@ public class Evaluator extends javax.swing.JPanel {
         
     }
     
-    private static class EvaluatorModel implements TreeModel, NodeModel {
+    private static class EvaluatorModel implements TreeModel, ExtendedNodeModel {
         
         private CompoundModel treeModel;
         private CompoundModel nodeModel;
@@ -673,13 +677,7 @@ public class Evaluator extends javax.swing.JPanel {
         }
 
         public String getIconBase(Object node) throws UnknownTypeException {
-            Evaluator eval = currentEvaluator;
-            if (eval != null && eval.result != null) {
-                if (node == eval.result) {
-                    return WatchesNodeModel.WATCH;
-                }
-            }
-            return nodeModel.getIconBase(node);
+            throw new UnsupportedOperationException("Not supported.");
         }
 
         public String getShortDescription(Object node) throws UnknownTypeException {
@@ -690,6 +688,44 @@ public class Evaluator extends javax.swing.JPanel {
                 }
             }
             return nodeModel.getShortDescription(node);
+        }
+
+        public boolean canRename(Object node) throws UnknownTypeException {
+            return nodeModel.canRename(node);
+        }
+
+        public boolean canCopy(Object node) throws UnknownTypeException {
+            return nodeModel.canCopy(node);
+        }
+
+        public boolean canCut(Object node) throws UnknownTypeException {
+            return nodeModel.canCut(node);
+        }
+
+        public Transferable clipboardCopy(Object node) throws IOException, UnknownTypeException {
+            return nodeModel.clipboardCopy(node);
+        }
+
+        public Transferable clipboardCut(Object node) throws IOException, UnknownTypeException {
+            return nodeModel.clipboardCut(node);
+        }
+
+        public PasteType[] getPasteTypes(Object node, Transferable t) throws UnknownTypeException {
+            return nodeModel.getPasteTypes(node, t);
+        }
+
+        public void setName(Object node, String name) throws UnknownTypeException {
+            nodeModel.setName(node, name);
+        }
+
+        public String getIconBaseWithExtension(Object node) throws UnknownTypeException {
+            Evaluator eval = currentEvaluator;
+            if (eval != null && eval.result != null) {
+                if (node == eval.result) {
+                    return WatchesNodeModel.WATCH;
+                }
+            }
+            return nodeModel.getIconBaseWithExtension(node);
         }
     }
         
