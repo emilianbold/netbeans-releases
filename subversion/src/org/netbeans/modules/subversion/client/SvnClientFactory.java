@@ -21,11 +21,12 @@ package org.netbeans.modules.subversion.client;
 import java.io.File;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Proxy;
+import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.SvnModuleConfig;
 import org.netbeans.modules.subversion.config.SvnConfigFiles;
-import org.netbeans.modules.subversion.Subversion;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Utilities;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
 import org.tigris.subversion.svnclientadapter.ISVNPromptUserPassword;
 import org.tigris.subversion.svnclientadapter.SVNClientAdapterFactory;
@@ -193,9 +194,9 @@ public class SvnClientFactory {
     }
     */    
     
-    private void setupCommandline () throws SVNClientException {
-        String subversionPath = SvnModuleConfig.getDefault().getExecutableBinaryPath();
-        CmdLineClientAdapterFactory.setup(subversionPath);
+    public void setupCommandline () throws SVNClientException {
+        exception = null;
+        setupComandlineFatory();
         factory = new ClientAdapterFactory() {
             protected ISVNClientAdapter createAdapter() {
                 return SVNClientAdapterFactory.createSVNClient(CmdLineClientAdapterFactory.COMMANDLINE_CLIENT);
@@ -208,8 +209,36 @@ public class SvnClientFactory {
             }            
         };       
         ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "svnClientAdapter running on commandline client");        
-    }           
-               
+    }                 
+    
+    private static final String[] CMDLINE_LOCATIONS = new String[] {"/usr/local/bin"};
+    private void setupComandlineFatory() throws SVNClientException {
+        String subversionPath = SvnModuleConfig.getDefault().getExecutableBinaryPath();
+        String usedSubversionPath = setupComandlineFatory(subversionPath);                
+        if(!usedSubversionPath.equals(instance)) {
+            SvnModuleConfig.getDefault().setExecutableBinaryPath(usedSubversionPath);
+        }
+        
+    }
+    private String setupComandlineFatory(String subversionPath) throws SVNClientException {
+        try {
+            CmdLineClientAdapterFactory.setup(subversionPath);
+            return subversionPath;
+        } catch(SVNClientException e) {
+            if(Utilities.isMac() || Utilities.isUnix()) {
+                for(String location : CMDLINE_LOCATIONS) {
+                    try {
+                        CmdLineClientAdapterFactory.setup(location);
+                        return location;
+                    } catch(SVNClientException ex) {                        
+                        continue;
+                    }
+                }
+            }
+            throw e;
+        }
+    }
+    
     private abstract class ClientAdapterFactory {
                 
         abstract protected ISVNClientAdapter createAdapter();
