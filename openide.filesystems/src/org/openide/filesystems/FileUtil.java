@@ -54,7 +54,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileSystemView;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
-import org.openide.util.TopologicalSortException;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 
@@ -167,7 +166,7 @@ public final class FileUtil extends Object {
     } 
         
     private static File getRoot(final File dir) {
-        File retval = dir;        
+        File retval = dir;
         for (; retval.getParentFile() != null; retval = retval.getParentFile());
         assert retval != null;
         return retval;
