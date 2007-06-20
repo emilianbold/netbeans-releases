@@ -66,8 +66,8 @@ class DiffSplitPaneDivider extends BasicSplitPaneDivider implements MouseMotionL
         mydivider = new DiffSplitDivider();
         add(mydivider);
         
-        addMouseListener(this);
-        addMouseMotionListener(this);
+        mydivider.addMouseListener(this);
+        mydivider.addMouseMotionListener(this);
     }
 
     public void mouseClicked(MouseEvent e) {
@@ -140,6 +140,7 @@ class DiffSplitPaneDivider extends BasicSplitPaneDivider implements MouseMotionL
         private Map renderingHints;
 
         public DiffSplitDivider() {
+            setToolTipText(""); // NOI18N
             setBackground(UIManager.getColor("SplitPane.background")); // NOI18N
             setOpaque(true);
             renderingHints = (Map)(Toolkit.getDefaultToolkit().getDesktopProperty(
