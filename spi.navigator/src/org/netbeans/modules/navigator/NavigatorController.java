@@ -20,6 +20,7 @@
 package org.netbeans.modules.navigator;
 
 import java.awt.Component;
+import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -44,6 +45,9 @@ import org.openide.awt.UndoRedo;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataShadow;
 import org.openide.nodes.Node;
+import org.openide.nodes.NodeEvent;
+import org.openide.nodes.NodeMemberEvent;
+import org.openide.nodes.NodeReorderEvent;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -55,6 +59,8 @@ import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 import org.openide.windows.TopComponent;
 import org.openide.loaders.DataObject;
+import org.openide.nodes.NodeListener;
+import org.openide.util.WeakListeners;
 import org.openide.windows.WindowManager;
 
 /**
@@ -62,7 +68,8 @@ import org.openide.windows.WindowManager;
  * 
  * @author Dafe Simonek
  */
-public final class NavigatorController implements LookupListener, ActionListener, Lookup.Provider, PropertyChangeListener {
+public final class NavigatorController implements LookupListener, ActionListener, Lookup.Provider,
+                                                    PropertyChangeListener, NodeListener, Runnable {
     
     /** Time in ms to wait before propagating current node changes further
      * into navigator UI */
@@ -101,7 +108,9 @@ public final class NavigatorController implements LookupListener, ActionListener
     
     /** A TopComponent which was active in winsys before navigator */
     private Reference<TopComponent> lastActivatedRef;
-    
+
+    /** Listen to possible destroy of asociated curNode */
+    private NodeListener weakNodeL;
     
     /** Creates a new instance of NavigatorController */
     public NavigatorController(NavigatorTC navigatorTC) {
@@ -156,7 +165,7 @@ public final class NavigatorController implements LookupListener, ActionListener
             // combo box cleared, nothing to activate
             return;
         }
-        NavigatorPanel newPanel = (NavigatorPanel)navigatorTC.getPanels().get(index);
+        NavigatorPanel newPanel = navigatorTC.getPanels().get(index);
         activatePanel(newPanel);
     }
     
@@ -209,21 +218,39 @@ public final class NavigatorController implements LookupListener, ActionListener
         return TopComponent.getRegistry().getCurrentNodes() != null ||
                Utilities.actionsGlobalContext().lookup(NavigatorLookupHint.class) != null;
     }
+
+    private void updateContext () {
+        updateContext(false);
+    }
+    
     
     /** Important worker method, sets navigator content (available panels)
      * according to providers found in current lookup context.
+     * 
+     * @force if true that update is forced even if it means clearing navigator content
      */
-    private void updateContext () {
+    private void updateContext (boolean force) {
         // #80155: don't empty navigator for Properties window and similar
         // which don't define activated nodes
         Node node = obtainFirstCurNode();
-        if (node == null && !shouldUpdate()) {
+        if (node == null && !shouldUpdate() && !force) {
             return;
+        }
+        
+        if (curNode != null && weakNodeL != null) {
+            curNode.removeNodeListener(weakNodeL);
+            weakNodeL = null;
         }
         
         // #63165: curNode has to be modified only in updateContext
         // body, to prevent situation when curNode is null in getLookup
         curNode = node;
+        
+        // #104229: listen to node destroy and update navigator correctly 
+        if (curNode != null) {
+            weakNodeL = WeakListeners.create(NodeListener.class, this, curNode);
+            curNode.addNodeListener(weakNodeL);
+        }
         
         List<NavigatorPanel> providers = obtainProviders(node);
         List oldProviders = navigatorTC.getPanels();
@@ -261,14 +288,14 @@ public final class NavigatorController implements LookupListener, ActionListener
         
         if (selPanel != null) {
             // #61334: don't deactivate previous providers if there are no new ones
-            if (!areNewProviders) {
+            if (!areNewProviders && !force) {
                 return;
             }
             selPanel.panelDeactivated();
         }
         
         if (areNewProviders) {
-            NavigatorPanel newSel = (NavigatorPanel)providers.get(0);
+            NavigatorPanel newSel = providers.get(0);
             newSel.panelActivated(clientsLookup);
         }
         // we must disable combo-box listener to not receive unwanted events
@@ -328,7 +355,7 @@ public final class NavigatorController implements LookupListener, ActionListener
         
         // search based on Node/DataObject's primary file mime type
         if (node != null) {
-            DataObject dObj = (DataObject)node.getLookup().lookup(DataObject.class);
+            DataObject dObj = node.getLookup().lookup(DataObject.class);
             // #64871: Follow DataShadows to their original
             while (dObj instanceof DataShadow) {
                 dObj = ((DataShadow)dObj).getOriginal();
@@ -404,12 +431,49 @@ public final class NavigatorController implements LookupListener, ActionListener
     /** Stores last TopComponent activated before NavigatorTC. Used to handle
      * ESC key functionality */ 
     public void propertyChange(PropertyChangeEvent evt) {
+        // careful here, note that prop changes coming here both from 
+        // TopComponent.Registry and currently asociated Node
+        
         if (TopComponent.Registry.PROP_ACTIVATED.equals(evt.getPropertyName())) {
             TopComponent tc = TopComponent.getRegistry().getActivated();
             if (tc != null && tc != navigatorTC) {
                 lastActivatedRef = new WeakReference<TopComponent>(tc);
             }
+        } /*else if (TopComponent.Registry.PROP_TC_CLOSED.equals(evt.getPropertyName())) {
+            TopComponent tc = (TopComponent) evt.getNewValue();
+            System.out.println("tc closed: " + tc);
+            Node[] nodes = tc.getActivatedNodes();
+            for (Node node : nodes) {
+                System.out.println("act node: " + node.getDisplayName());
+            }
+        }*/
+    }
+    
+    /****** NodeListener implementation *****/
+    
+    public void nodeDestroyed(NodeEvent ev) {
+        if (EventQueue.isDispatchThread()) {
+            run();
+        } else {
+            EventQueue.invokeLater(this);
         }
+    }
+    
+    public void childrenAdded(NodeMemberEvent ev) {
+        // no operation
+    }
+
+    public void childrenRemoved(NodeMemberEvent ev) {
+        // no operation
+    }
+
+    public void childrenReordered(NodeReorderEvent ev) {
+        // no operation
+    }
+    
+    /** Runnable implementation - forces update */
+    public void run() {
+        updateContext(true);
     }
 
     /** Handles ESC key request - returns focus to previously focused top component
@@ -491,6 +555,6 @@ public final class NavigatorController implements LookupListener, ActionListener
         }
         
     } // end of ActNodeSetter
+
         
-    
 }
