@@ -33,6 +33,7 @@ public class JAXBBindingInfoPnl extends javax.swing.JPanel {
     public JAXBBindingInfoPnl(JAXBWizBindingCfgPanel parent) {
         this.wizPanel = parent;
         initComponents();
+        initComponentsCustom();
     }
 
     /** This method is called from within the constructor to
@@ -71,7 +72,6 @@ public class JAXBBindingInfoPnl extends javax.swing.JPanel {
         btnSelectBindingFile = new javax.swing.JButton();
         cmbBindingFiles = new javax.swing.JComboBox();
         txtCatalogFile = new javax.swing.JTextField();
-        txtExtension = new javax.swing.JTextField();
         btnBrowseCatalogFile = new javax.swing.JButton();
 
         lblSchemaName.setText(org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_SchemaName")); // NOI18N
@@ -151,21 +151,18 @@ public class JAXBBindingInfoPnl extends javax.swing.JPanel {
 
         chkbxNv.setText(org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_NV")); // NOI18N
         chkbxNv.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        chkbxNv.setLabel(org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_NV")); // NOI18N
         chkbxNv.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
         chkbxReadOnly.setText(org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_ReadOnly")); // NOI18N
         chkbxReadOnly.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        chkbxReadOnly.setLabel(org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_ReadOnly")); // NOI18N
         chkbxReadOnly.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
         chkbxNpa.setText(org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_NPA")); // NOI18N
         chkbxNpa.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        chkbxNpa.setLabel(org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_NPA")); // NOI18N
         chkbxNpa.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
+        chkbxVerbose.setText(org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_Verbose")); // NOI18N
         chkbxVerbose.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        chkbxVerbose.setLabel(org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_Verbose")); // NOI18N
         chkbxVerbose.setMargin(new java.awt.Insets(0, 0, 0, 0));
         chkbxVerbose.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -173,8 +170,8 @@ public class JAXBBindingInfoPnl extends javax.swing.JPanel {
             }
         });
 
+        chkbxQuiet.setText(org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_Quiet")); // NOI18N
         chkbxQuiet.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        chkbxQuiet.setLabel(org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "chkbxQuiet.label")); // NOI18N
         chkbxQuiet.setMargin(new java.awt.Insets(0, 0, 0, 0));
         chkbxQuiet.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -223,9 +220,6 @@ public class JAXBBindingInfoPnl extends javax.swing.JPanel {
 
         txtCatalogFile.setEditable(false);
 
-        txtExtension.setEditable(false);
-        txtExtension.setPreferredSize(new java.awt.Dimension(190, 20));
-
         btnBrowseCatalogFile.setText(org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_Browse")); // NOI18N
         btnBrowseCatalogFile.setEnabled(false);
 
@@ -266,7 +260,6 @@ public class JAXBBindingInfoPnl extends javax.swing.JPanel {
                                             .add(18, 18, 18)
                                             .add(btnBrowseFile))
                                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                                            .add(org.jdesktop.layout.GroupLayout.TRAILING, txtExtension, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 379, Short.MAX_VALUE)
                                             .add(layout.createSequentialGroup()
                                                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                                                     .add(cmbBindingFiles, 0, 282, Short.MAX_VALUE)
@@ -275,8 +268,8 @@ public class JAXBBindingInfoPnl extends javax.swing.JPanel {
                                                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                                                     .add(btnBrowseCatalogFile)
                                                     .add(btnSelectBindingFile)))
-                                            .add(org.jdesktop.layout.GroupLayout.TRAILING, cmbSchemaType, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                             .add(org.jdesktop.layout.GroupLayout.TRAILING, txtPackageName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 379, Short.MAX_VALUE)
+                                            .add(cmbSchemaType, 0, 30, Short.MAX_VALUE)
                                             .add(layout.createSequentialGroup()
                                                 .add(chkbxNv)
                                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -290,13 +283,13 @@ public class JAXBBindingInfoPnl extends javax.swing.JPanel {
                                         .add(txtURL, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 445, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                                     .add(21, 21, 21)))))
                     .add(lblPackageName)
-                    .add(lblOptions)
-                    .add(lblSchemaType)
                     .add(chkbxUseCatalogFile)
-                    .add(chkbxUseExtension)
                     .add(chkbxUseBindingFile, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 102, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(jSeparator1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 474, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap())
+                    .add(lblSchemaType)
+                    .add(lblOptions)
+                    .add(jSeparator1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 474, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(chkbxUseExtension))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -323,9 +316,13 @@ public class JAXBBindingInfoPnl extends javax.swing.JPanel {
                 .add(txtURL, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(lblSchemaType)
+                    .add(cmbSchemaType, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(lblPackageName)
                     .add(txtPackageName, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .add(18, 18, 18)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(lblOptions)
                     .add(chkbxNv)
@@ -334,11 +331,9 @@ public class JAXBBindingInfoPnl extends javax.swing.JPanel {
                     .add(chkbxVerbose)
                     .add(chkbxQuiet))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(lblSchemaType)
-                    .add(cmbSchemaType, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .add(18, 18, 18)
                 .add(jSeparator1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 10, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(chkbxUseExtension)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(chkbxUseBindingFile)
@@ -349,11 +344,7 @@ public class JAXBBindingInfoPnl extends javax.swing.JPanel {
                     .add(chkbxUseCatalogFile)
                     .add(txtCatalogFile, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(btnBrowseCatalogFile))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(chkbxUseExtension)
-                    .add(txtExtension, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(20, Short.MAX_VALUE))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -365,6 +356,27 @@ private void fireChangeEvent(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_
     this.wizPanel.fireChangeEvent();
 }//GEN-LAST:event_fireChangeEvent
 
+    private String getMsg(String msgKey){
+        return org.openide.util.NbBundle.getMessage(
+                JAXBBindingInfoPnl.class, msgKey);
+    }
+    
+    private void initComponentsCustom(){
+        this.chkbxNv.setToolTipText(getMsg("TT_NV")); //NOI18N
+        this.chkbxReadOnly.setToolTipText(getMsg("TT_ReadOnly")); //NOI18N
+        this.chkbxNpa.setToolTipText(getMsg("TT_NPA")); //NOI18N
+        this.chkbxVerbose.setToolTipText(getMsg("TT_Verbose")); //NOI18N
+        this.chkbxQuiet.setToolTipText(getMsg("TT_Quiet")); //NOI18N
+        this.chkbxUseExtension.setToolTipText(getMsg("TT_Extension")); //NOI18N
+        this.chkbxUseBindingFile.setToolTipText(getMsg("TT_chkbxBindingFile"));//NOI18N
+        this.chkbxUseCatalogFile.setToolTipText(getMsg("TT_chkbxCatalogFile"));//NOI18N 
+        this.cmbSchemaType.setToolTipText(getMsg("TT_SchemaType")); //NOI18N
+        this.txtPackageName.setToolTipText(getMsg("TT_PackageName")); //NOI18N
+        this.txtURL.setToolTipText(getMsg("TT_URL")); //NOI18N
+        this.txtFilePath.setToolTipText(getMsg("TT_LocalSchemaFile")); //NOI18N
+        this.txtSchemaName.setToolTipText(getMsg("TT_SchemaName" )); //NOI18N
+    }
+    
     private void localFileSelected(boolean selected){
             this.txtFilePath.setEnabled(selected);
             this.txtFilePath.setEditable(selected);
@@ -381,10 +393,6 @@ private void fireChangeEvent(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_
     private void useCatalogFileSelection(boolean selected){
         this.txtCatalogFile.setEditable(selected);
         this.btnBrowseCatalogFile.setEnabled(selected);
-    }
-
-    private void useExtensionSelection(boolean selected){
-        this.txtExtension.setEditable(selected);
     }
 
     private void btnSelectionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSelectionHandler
@@ -414,14 +422,6 @@ private void fireChangeEvent(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_
                 useCatalogFileSelection(true);
             } else {
                 useCatalogFileSelection(false);
-            }
-        }
-
-        if (evt.getSource() == this.chkbxUseExtension){
-            if (this.chkbxUseExtension.isSelected()){
-                useExtensionSelection(true);
-            } else {
-                useExtensionSelection(false);
             }
         }
 
@@ -463,7 +463,6 @@ private void fireChangeEvent(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_
     private javax.swing.JRadioButton rdoSelectURL;
     private javax.swing.ButtonGroup schemaSource;
     private javax.swing.JTextField txtCatalogFile;
-    private javax.swing.JTextField txtExtension;
     private javax.swing.JTextField txtFilePath;
     private javax.swing.JTextField txtPackageName;
     private javax.swing.JTextField txtPrjName;
