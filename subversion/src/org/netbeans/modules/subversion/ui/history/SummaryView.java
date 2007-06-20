@@ -267,7 +267,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
             }));
             menu.add(new JMenuItem(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_View")) { // NOI18N
                 {
-                    setEnabled(selection.length == 1 && !revisionSelected && drev.getFile() != null && !drev.getFile().isDirectory());
+                    setEnabled(selection.length == 1 && !revisionSelected && drev.getFile() != null && drev.getFile().exists() &&  !drev.getFile().isDirectory());
                 }
                 public void actionPerformed(ActionEvent e) {
                     RequestProcessor.getDefault().post(new Runnable() {
