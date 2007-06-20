@@ -45,7 +45,7 @@
     <!-- ========= -->
 
     <!-- Executor - Prepare IDE for complex measurements -->
-    <target name="prepare_ide_for_complex_measurements" depends="init-cp, copy_unzip_uml_project">
+    <target name="prepare_ide_for_complex_measurements" depends="init-cp, copy_unzip_jedit_project, copy_unzip_uml_project">
         <antcall target="copy_released_ide_cfg_file"/>
         
         <executeTests pluginName="ide">
