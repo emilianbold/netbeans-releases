@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -36,6 +36,7 @@ import org.openide.nodes.Node;
 
 import java.io.*;
 import java.lang.reflect.Method;
+import java.nio.charset.Charset;
 import java.util.HashMap;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -199,7 +200,7 @@ public class J2MEDataObject extends MultiDataObject {
             // super.saveFromKitToStream called to handled guarded sections -- store the results in memory
             final ByteArrayOutputStream myStream = new ByteArrayOutputStream();
             saveFromKitToStreamHook (doc,kit,myStream);
-            final String encoding = getEncoding ();
+            final String encoding = getEncoding().name();
             final CommentingPreProcessor.Source ppSource = new CommentingPreProcessor.Source() {
                 public Reader createReader() throws IOException {
                     return new StringReader(myStream.toString(encoding));
@@ -229,8 +230,8 @@ public class J2MEDataObject extends MultiDataObject {
             }
         }
 
-        protected final String getEncoding () {
-            return FileEncodingQuery.getEncoding(getDataObject().getPrimaryFile()).name();
+        protected final Charset getEncoding () {
+            return FileEncodingQuery.getEncoding(getDataObject().getPrimaryFile());
         }
 
         protected void saveFromKitToStreamHook (StyledDocument doc, EditorKit kit, OutputStream stream) throws IOException, BadLocationException {
@@ -246,7 +247,7 @@ public class J2MEDataObject extends MultiDataObject {
                 loadFromStreamToKitHook(doc, stream, kit);
                 return;
             }
-            final String encoding = getEncoding ();
+            final Charset encoding = getEncoding ();
 
             final CommentingPreProcessor.Source ppSource = new CommentingPreProcessor.Source() {
                 public Reader createReader() throws IOException {

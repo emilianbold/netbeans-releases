@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -24,8 +24,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
-import java.io.UnsupportedEncodingException;
 import java.io.Writer;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -66,7 +66,7 @@ public final class GuardedSectionsImpl {
         this.editor = ces;
     }
     
-    public Reader createGuardedReader(AbstractGuardedSectionsProvider gr, InputStream stream, String encoding) throws UnsupportedEncodingException {
+    public Reader createGuardedReader(AbstractGuardedSectionsProvider gr, InputStream stream, Charset encoding) {
         GuardedReader greader = new GuardedReader(gr, stream, false, encoding, this);
         
         Document doc = getDocument();
@@ -77,7 +77,7 @@ public final class GuardedSectionsImpl {
         return greader;
     }
     
-    public Writer createGuardedWriter(AbstractGuardedSectionsProvider gw, OutputStream stream, String encoding) throws UnsupportedEncodingException {
+    public Writer createGuardedWriter(AbstractGuardedSectionsProvider gw, OutputStream stream, Charset encoding) {
         OutputStream os = new NewLineOutputStream(stream, newLineType);
         if (sections != null) {
             List<GuardedSection> list = new ArrayList<GuardedSection>(getGuardedSections());

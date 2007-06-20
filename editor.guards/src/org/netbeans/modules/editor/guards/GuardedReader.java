@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -23,7 +23,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import org.netbeans.spi.editor.guards.support.AbstractGuardedSectionsProvider;
 
@@ -78,7 +78,7 @@ final class GuardedReader extends Reader {
 //        this(is, justFilter, null);
 //    }
 //
-    GuardedReader(AbstractGuardedSectionsProvider gr, InputStream is, boolean justFilter, String encoding, GuardedSectionsImpl guards) throws UnsupportedEncodingException {
+    GuardedReader(AbstractGuardedSectionsProvider gr, InputStream is, boolean justFilter, Charset encoding, GuardedSectionsImpl guards) {
         newLineStream = new NewLineInputStream(is);
         if (encoding == null)
             reader = new InputStreamReader(newLineStream);

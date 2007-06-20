@@ -921,7 +921,7 @@ public class FormEditorSupport extends DataEditorSupport implements EditorCookie
         if (guardedProvider != null) {
             guardedEditor.doc = doc;
             Charset c = FileEncodingQuery.getEncoding(this.getDataObject().getPrimaryFile());
-            Reader reader = guardedProvider.createGuardedReader(stream, c.name());
+            Reader reader = guardedProvider.createGuardedReader(stream, c);
             try {
                 kit.read(reader, doc, 0);
             } finally {
@@ -936,7 +936,7 @@ public class FormEditorSupport extends DataEditorSupport implements EditorCookie
     protected void saveFromKitToStream(StyledDocument doc, EditorKit kit, OutputStream stream) throws IOException, BadLocationException {
         if (guardedProvider != null) {
             Charset c = FileEncodingQuery.getEncoding(this.getDataObject().getPrimaryFile());
-            Writer writer = guardedProvider.createGuardedWriter(stream, c.name());
+            Writer writer = guardedProvider.createGuardedWriter(stream, c);
             try {
                 kit.write(writer, doc, 0, doc.getLength());
             } finally {

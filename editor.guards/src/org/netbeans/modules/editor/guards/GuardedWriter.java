@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -23,8 +23,8 @@ import java.io.CharArrayWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.io.UnsupportedEncodingException;
 import java.io.Writer;
+import java.nio.charset.Charset;
 import java.util.List;
 import org.netbeans.api.editor.guards.GuardedSection;
 import org.netbeans.spi.editor.guards.support.AbstractGuardedSectionsProvider;
@@ -48,7 +48,7 @@ final class GuardedWriter extends Writer {
     * @param os Encapsulated output stream.
     * @param list The list of the guarded sections.
     */
-    public GuardedWriter(AbstractGuardedSectionsProvider gw, OutputStream os, List<GuardedSection> list, String encoding) throws UnsupportedEncodingException {
+    public GuardedWriter(AbstractGuardedSectionsProvider gw, OutputStream os, List<GuardedSection> list, Charset encoding) {
         if (encoding == null)
             writer = new OutputStreamWriter(os);
         else

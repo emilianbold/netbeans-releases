@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -22,8 +22,8 @@ package org.netbeans.spi.editor.guards.support;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Reader;
-import java.io.UnsupportedEncodingException;
 import java.io.Writer;
+import java.nio.charset.Charset;
 import java.util.List;
 import javax.swing.text.BadLocationException;
 import org.netbeans.api.editor.guards.GuardedSection;
@@ -45,16 +45,20 @@ public abstract class AbstractGuardedSectionsProvider implements GuardedSections
 
     private final GuardedSectionsImpl impl;
     
+    /**
+     * Creates an AbstractGuardedSectionsProvider.
+     * @param editor an editor abstraction
+     */
     protected AbstractGuardedSectionsProvider(GuardedEditorSupport editor) {
         this.impl = new GuardedSectionsImpl(editor);
     }
 
-    public final Reader createGuardedReader(InputStream stream, String encoding) throws UnsupportedEncodingException {
-        return impl.createGuardedReader(this, stream, encoding);
+    public final Reader createGuardedReader(InputStream stream, Charset charset) {
+        return impl.createGuardedReader(this, stream, charset);
     }
 
-    public final Writer createGuardedWriter(OutputStream stream, String encoding) throws UnsupportedEncodingException {
-        return impl.createGuardedWriter(this, stream, encoding);
+    public Writer createGuardedWriter(OutputStream stream, Charset charset) {
+        return impl.createGuardedWriter(this, stream, charset);
     }
     
     /**

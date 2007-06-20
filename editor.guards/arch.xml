@@ -14,7 +14,7 @@ enclosed by brackets [] replaced by your own identifying information:
 "Portions Copyrighted [year] [name of copyright owner]"
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <!DOCTYPE api-answers PUBLIC "-//NetBeans//DTD Arch Answers//EN" "../../nbbuild/antsrc/org/netbeans/nbbuild/Arch.dtd" [
@@ -47,7 +47,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="arch-overall">
   <p>
-   <api group="java" name="GuardedSectionsAPI" type="export" category="devel">
+   <api group="java" name="GuardedSectionsAPI" type="export" category="official">
    The Guarded Sections module is supposed to operate over the Swing's <a href="@JDK@/javax/swing/text/StyledDocument.html"><code>StyledDocument</code></a>.
    It allows clients to manipulate named guarded sections that prevents user to
    modify the content. So if you like to create, modify or delete guarded sections the <a href="@org-netbeans-modules-editor-guards@/org/netbeans/api/editor/guards/GuardedSectionManager.html">
@@ -55,7 +55,7 @@ Microsystems, Inc. All Rights Reserved.
    </api>
   </p>
   <p>
-   <api group="java" name="GuardedSectionsSPI" type="export" category="devel">
+   <api group="java" name="GuardedSectionsSPI" type="export" category="official">
    The module also allows to implement custom guarded section persistance in various content types like java, xml, ...
    The easiest way is to subclass <a href="@org-netbeans-modules-editor-guards@/org/netbeans/spi/editor/guards/support/AbstractGuardedSectionsProvider.html">
    <code>AbstractGuardedSectionsProvider</code></a>.<br/>In order to bind guarded sections to your editor see <a href="@org-netbeans-modules-editor-guards@/org/netbeans/spi/editor/guards/GuardedSectionsFactory.html">
@@ -164,7 +164,8 @@ Microsystems, Inc. All Rights Reserved.
             // load content to kit
             if (guardedProvider != null) {
                 guardedEditor.setDocument(doc);
-                Reader reader = guardedProvider.createGuardedReader(stream, "your encoding");
+                Charset cs = FileEncodingQuery.getEncoding(this.getDataObject().getPrimaryFile());
+                Reader reader = guardedProvider.createGuardedReader(stream, cs);
                 try {
                     kit.read(reader, doc, 0);
                 } finally {
@@ -177,7 +178,8 @@ Microsystems, Inc. All Rights Reserved.
 
         protected void saveFromKitToStream(StyledDocument doc, EditorKit kit, OutputStream stream) throws IOException, BadLocationException {
             if (guardedProvider != null) {
-                Writer writer = guardedProvider.createGuardedWriter(stream, null);
+                Charset cs = FileEncodingQuery.getEncoding(this.getDataObject().getPrimaryFile());
+                Writer writer = guardedProvider.createGuardedWriter(stream, cs);
                 try {
                     kit.write(writer, doc, 0, doc.getLength());
                 } finally {
@@ -827,7 +829,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="lookup-lookup">
   <p>
-   <api category="devel" group="lookup" name="GuardedSectionsFactory" type="export" url="@org-netbeans-modules-editor-guards@/org/netbeans/spi/editor/guards/GuardedSectionsFactory.html">
+   <api category="official" group="lookup" name="GuardedSectionsFactory" type="export" url="@org-netbeans-modules-editor-guards@/org/netbeans/spi/editor/guards/GuardedSectionsFactory.html">
        Factories of custom providers that implements reading and writing guarded sections
        should be registered under <code>Editors/&lt;mime path&gt;</code>
        in the module layer file. The first one is chosen for the given mime path.
