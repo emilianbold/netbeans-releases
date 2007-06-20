@@ -36,21 +36,12 @@ import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.Map;
 import java.util.Set;
-import java.util.SortedSet;
-import java.util.StringTokenizer;
-import java.util.TreeSet;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.xml.tax.cookies.TreeEditorCookie;
@@ -76,9 +67,6 @@ import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Enumerations;
-import org.openide.util.NbCollections;
-import org.openide.util.TopologicalSortException;
-import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 
 /**
@@ -185,7 +173,7 @@ final class WritableXMLFileSystem extends AbstractFileSystem
         if (name.equals("")) { // NOI18N
             return el;
         } else {
-            int idx = name.indexOf((char) '/');
+            int idx = name.indexOf('/');
             String nextName, remainder;
             if (idx == -1) {
                 nextName = name;
@@ -200,8 +188,8 @@ final class WritableXMLFileSystem extends AbstractFileSystem
                 TreeElement e = (TreeElement) it.next();
                 if (e.getLocalName().equals("file") || // NOI18N
                         e.getLocalName().equals("folder")) { // NOI18N
-                    TreeAttribute attr = e.getAttribute("name"); // NOI18N
-                    if (attr != null && attr.getValue().equals(nextName)) {
+                    TreeAttribute nameAttr = e.getAttribute("name"); // NOI18N
+                    if (nameAttr != null && nameAttr.getValue().equals(nextName)) {
                         subel = e;
                         break;
                     }
@@ -231,18 +219,18 @@ final class WritableXMLFileSystem extends AbstractFileSystem
             //System.err.println("children <" + f + ">: none, no such element");
             return new String[] {};
         }
+        ArrayList<String> kids = new ArrayList<String>();
+        Set<String> allNames = new HashSet<String>();
         Iterator it = el.getChildNodes(TreeElement.class).iterator();
-        ArrayList kids = new ArrayList(); // List<String>
-        Set allNames = new HashSet(); // Set<String>
         while (it.hasNext()) {
             TreeElement sub = (TreeElement) it.next();
             if (sub.getLocalName().equals("file") || // NOI18N
                     sub.getLocalName().equals("folder")) { // NOI18N
-                TreeAttribute attr = sub.getAttribute("name"); // NOI18N
-                if (attr == null) {
+                TreeAttribute childName = sub.getAttribute("name"); // NOI18N
+                if (childName == null) {
                     continue;
                 }
-                String name = attr.getValue(); // NOI18N
+                String name = childName.getValue(); // NOI18N
                 if (allNames.add(name)) {
                     kids.add(name);
                         /*
@@ -262,17 +250,17 @@ final class WritableXMLFileSystem extends AbstractFileSystem
             }
         }
         //System.err.println("children <" + f + ">: " + kids);
-        return (String[]) kids.toArray(new String[kids.size()]);
+        return kids.toArray(new String[kids.size()]);
     }
     
     /** retrieve byte contents of a named resource */
     private byte[] getContentsOf(final String name) throws FileNotFoundException {
         TreeElement el = findElement(name);
         if (el == null) throw new FileNotFoundException(name);
-        TreeAttribute attr = el.getAttribute("url"); // NOI18N
-        if (attr != null) {
+        TreeAttribute urlAttr = el.getAttribute("url"); // NOI18N
+        if (urlAttr != null) {
             try {
-                URL[] u = LayerUtils.currentify(new URL(location, attr.getValue()), suffix, classpath);
+                URL[] u = LayerUtils.currentify(new URL(location, urlAttr.getValue()), suffix, classpath);
                 URLConnection conn = u[0].openConnection();
                 conn.connect();
                 InputStream is = conn.getInputStream();
@@ -320,9 +308,9 @@ final class WritableXMLFileSystem extends AbstractFileSystem
         if (el == null) {
             throw new FileNotFoundException(name);
         }
-        TreeAttribute attr = el.getAttribute("url"); // NOI18N
-        if (attr != null) {
-            String u = attr.getValue();
+        TreeAttribute urlAttr = el.getAttribute("url"); // NOI18N
+        if (urlAttr != null) {
+            String u = urlAttr.getValue();
             if (URI.create(u).isAbsolute()) {
                 // What to do? Can't overwrite it, obviously.
                 throw new IOException(name);
@@ -545,22 +533,22 @@ final class WritableXMLFileSystem extends AbstractFileSystem
     }
      */
     
-    public Enumeration attributes(String name) {
+    public Enumeration<String> attributes(String name) {
         TreeElement el = findElement(name);
         if (el == null) {
             return Enumerations.empty();
         }
-        java.util.List<String> l = new ArrayList(10);
+        java.util.List<String> l = new ArrayList<String>(10);
         Iterator it = el.getChildNodes(TreeElement.class).iterator();
         while (it.hasNext()) {
             TreeElement sub = (TreeElement) it.next();
             if (sub.getLocalName().equals("attr")) { // NOI18N
-                TreeAttribute attr = sub.getAttribute("name"); // NOI18N
-                if (attr == null) {
+                TreeAttribute nameAttr = sub.getAttribute("name"); // NOI18N
+                if (nameAttr == null) {
                     // Malformed.
                     continue;
                 }
-                l.add(attr.getValue());
+                l.add(nameAttr.getValue());
             }
         }
         return Collections.enumeration(l);
@@ -593,18 +581,18 @@ final class WritableXMLFileSystem extends AbstractFileSystem
             if (!sub.getLocalName().equals("attr")) { // NOI18N
                 continue;
             }
-            TreeAttribute attr = sub.getAttribute("name"); // NOI18N
-            if (attr == null) {
+            TreeAttribute nameAttr = sub.getAttribute("name"); // NOI18N
+            if (nameAttr == null) {
                 // Malformed.
                 continue;
             }
-            if (!attrName.equals(attr.getValue())) {
+            if (!attrName.equals(nameAttr.getValue())) {
                 continue;
             }
             try {
-                if ((attr = sub.getAttribute("stringvalue")) != null) { // NOI18N
+                if ((nameAttr = sub.getAttribute("stringvalue")) != null) { // NOI18N
                     // Stolen from XMLMapAttr, with tweaks:
-                    String inStr = attr.getValue();
+                    String inStr = nameAttr.getValue();
                     StringBuffer outStr = new StringBuffer(inStr.length());
                     for (int j = 0; j < inStr.length(); j++) {
                         char ch = inStr.charAt(j);
@@ -622,31 +610,31 @@ final class WritableXMLFileSystem extends AbstractFileSystem
                         }
                     }
                     return outStr.toString();
-                } else if ((attr = sub.getAttribute("boolvalue")) != null) { // NOI18N
-                    return Boolean.valueOf(attr.getValue());
-                } else if ((attr = sub.getAttribute("urlvalue")) != null) { // NOI18N
-                    return new URL(attr.getValue());
-                } else if ((attr = sub.getAttribute("charvalue")) != null) { // NOI18N
-                    return new Character(attr.getValue().charAt(0));
-                } else if ((attr = sub.getAttribute("bytevalue")) != null) { // NOI18N
-                    return Byte.valueOf(attr.getValue());
-                } else if ((attr = sub.getAttribute("shortvalue")) != null) { // NOI18N
-                    return Short.valueOf(attr.getValue());
-                } else if ((attr = sub.getAttribute("intvalue")) != null) { // NOI18N
-                    return Integer.valueOf(attr.getValue());
-                } else if ((attr = sub.getAttribute("longvalue")) != null) { // NOI18N
-                    return Long.valueOf(attr.getValue());
-                } else if ((attr = sub.getAttribute("floatvalue")) != null) { // NOI18N
-                    return Float.valueOf(attr.getValue());
-                } else if ((attr = sub.getAttribute("doublevalue")) != null) { // NOI18N
-                    return Double.valueOf(attr.getValue());
-                } else if ((attr = sub.getAttribute("newvalue")) != null) { // NOI18N
-                    String clazz = attr.getValue();
+                } else if ((nameAttr = sub.getAttribute("boolvalue")) != null) { // NOI18N
+                    return Boolean.valueOf(nameAttr.getValue());
+                } else if ((nameAttr = sub.getAttribute("urlvalue")) != null) { // NOI18N
+                    return new URL(nameAttr.getValue());
+                } else if ((nameAttr = sub.getAttribute("charvalue")) != null) { // NOI18N
+                    return new Character(nameAttr.getValue().charAt(0));
+                } else if ((nameAttr = sub.getAttribute("bytevalue")) != null) { // NOI18N
+                    return Byte.valueOf(nameAttr.getValue());
+                } else if ((nameAttr = sub.getAttribute("shortvalue")) != null) { // NOI18N
+                    return Short.valueOf(nameAttr.getValue());
+                } else if ((nameAttr = sub.getAttribute("intvalue")) != null) { // NOI18N
+                    return Integer.valueOf(nameAttr.getValue());
+                } else if ((nameAttr = sub.getAttribute("longvalue")) != null) { // NOI18N
+                    return Long.valueOf(nameAttr.getValue());
+                } else if ((nameAttr = sub.getAttribute("floatvalue")) != null) { // NOI18N
+                    return Float.valueOf(nameAttr.getValue());
+                } else if ((nameAttr = sub.getAttribute("doublevalue")) != null) { // NOI18N
+                    return Double.valueOf(nameAttr.getValue());
+                } else if ((nameAttr = sub.getAttribute("newvalue")) != null) { // NOI18N
+                    String clazz = nameAttr.getValue();
                     if (literal) {
                         return "new:" + clazz; // NOI18N
                     } // else XXX
-                } else if ((attr = sub.getAttribute("methodvalue")) != null) { // NOI18N
-                    String clazz = attr.getValue();
+                } else if ((nameAttr = sub.getAttribute("methodvalue")) != null) { // NOI18N
+                    String clazz = nameAttr.getValue();
                     if (literal) {
                         return "method:" + clazz; // NOI18N
                     } // else XXX

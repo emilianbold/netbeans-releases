@@ -24,8 +24,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.Iterator;
-import java.util.Set;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
@@ -132,11 +130,9 @@ public final class TestEntry {
         Project prj = FileOwnerQuery.getOwner(FileUtil.toFileObject(prjDir));
         if (prj != null) {
             // ModuleSuite
-            SubprojectProvider subprojects = (SubprojectProvider) prj.getLookup().lookup(SubprojectProvider.class);
+            SubprojectProvider subprojects = prj.getLookup().lookup(SubprojectProvider.class);
             if (subprojects != null) {
-                Set<? extends Project>  projects = subprojects.getSubprojects();
-                for (Iterator it = projects.iterator() ; it.hasNext();) {
-                    Project p = (Project)it.next();
+                for (Project p : subprojects.getSubprojects()) {
                     if (p instanceof NbModuleProject) {
                         NbModuleProject nbm = (NbModuleProject) p;
                         if (nbm != null && nbm.getCodeNameBase().equals(getCodeNameBase())) {

@@ -45,7 +45,7 @@ import org.openide.windows.WindowManager;
 public class PickIconAction extends CookieAction {
     
     protected void performAction(Node[] activatedNodes) {
-        FileObject f = ((DataObject) activatedNodes[0].getCookie(DataObject.class)).getPrimaryFile();
+        FileObject f = activatedNodes[0].getCookie(DataObject.class).getPrimaryFile();
         URL location = (URL) f.getAttribute("WritableXMLFileSystem.location"); // NOI18N
         assert location != null : f;
         NbModuleProject p = (NbModuleProject) FileOwnerQuery.getOwner(URI.create(location.toExternalForm()));
@@ -82,7 +82,7 @@ public class PickIconAction extends CookieAction {
         if (!super.enable(activatedNodes)) {
             return false;
         }
-        FileObject f = ((DataObject) activatedNodes[0].getCookie(DataObject.class)).getPrimaryFile();
+        FileObject f = activatedNodes[0].getCookie(DataObject.class).getPrimaryFile();
         URL location = (URL) f.getAttribute("WritableXMLFileSystem.location"); // NOI18N
         return location != null; // #63458
     }

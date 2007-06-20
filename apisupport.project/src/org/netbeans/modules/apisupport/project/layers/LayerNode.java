@@ -21,7 +21,9 @@ package org.netbeans.modules.apisupport.project.layers;
 
 import java.awt.Image;
 import java.io.CharConversionException;
+import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Set;
@@ -47,7 +49,6 @@ import org.openide.filesystems.MultiFileSystem;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
@@ -75,11 +76,9 @@ public final class LayerNode extends FilterNode {
         }
     }
     
-    private static final class LayerChildren extends Children.Keys {
-        
-        private static final String KEY_WAIT = "wait"; // NOI18N
-        private static final Object KEY_RAW = "raw"; // NOI18N
-        private static final Object KEY_CONTEXTUALIZED = "contextualized"; // NOI18N
+    private static final class LayerChildren extends Children.Keys<LayerChildren.KeyType> {
+
+        enum KeyType {WAIT, RAW, CONTEXTUALIZED}
         
         private final LayerUtils.LayerHandle handle;
         private ClassPath cp;
@@ -94,7 +93,7 @@ public final class LayerNode extends FilterNode {
         protected void addNotify() {
             super.addNotify();
             handle.setAutosave(true);
-            setKeys(new Object[] {KEY_WAIT});
+            setKeys(Collections.singleton(KeyType.WAIT));
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
                     try {
@@ -107,11 +106,11 @@ public final class LayerNode extends FilterNode {
                             Util.err.notify(ErrorManager.INFORMATIONAL, e);
                         }
                         layerfs = handle.layer(false);
-                        setKeys(new Object[] {KEY_RAW, KEY_WAIT});
+                        setKeys(Arrays.asList(KeyType.RAW, KeyType.WAIT));
                         FileSystem _sfs = LayerUtils.getEffectiveSystemFilesystem(p);
                         if (cp != null) { // has not been removeNotify()d yet
                             sfs = _sfs;
-                            setKeys(new Object[] {KEY_RAW, KEY_CONTEXTUALIZED});
+                            setKeys(Arrays.asList(KeyType.RAW, KeyType.CONTEXTUALIZED));
                         }
                     } catch (IOException e) {
                         Util.err.notify(ErrorManager.INFORMATIONAL, e);
@@ -121,7 +120,7 @@ public final class LayerNode extends FilterNode {
         }
         
         protected void removeNotify() {
-            setKeys(Collections.EMPTY_SET);
+            setKeys(Collections.<KeyType>emptySet());
             cp = null;
             p = null;
             layerfs = null;
@@ -129,24 +128,22 @@ public final class LayerNode extends FilterNode {
             super.removeNotify();
         }
         
-        protected Node[] createNodes(Object key) {
+        protected Node[] createNodes(KeyType key) {
             try {
-                if (key == KEY_RAW) {
+                switch (key) {
+                case RAW:
                     FileSystem fs = badge(layerfs, cp, handle.getLayerFile(), NbBundle.getMessage(LayerNode.class, "LBL_this_layer"), null);
                     return new Node[] {DataObject.find(fs.getRoot()).getNodeDelegate()};
-                } else if (key == KEY_CONTEXTUALIZED) {
-                    FileSystem fs = badge(sfs, cp, handle.getLayerFile(), NbBundle.getMessage(LayerNode.class, "LBL_this_layer_in_context"), handle.layer(false));
+                case CONTEXTUALIZED:
+                    fs = badge(sfs, cp, handle.getLayerFile(), NbBundle.getMessage(LayerNode.class, "LBL_this_layer_in_context"), handle.layer(false));
                     return new Node[] {DataObject.find(fs.getRoot()).getNodeDelegate()};
-                } else if (key == KEY_WAIT) {
+                case WAIT:
                     return new Node[] {new AbstractNode(Children.LEAF) {
-                        public String getName() {
-                            return KEY_WAIT;
-                        }
-                        public String getDisplayName() {
+                        public @Override String getDisplayName() {
                             return NbBundle.getMessage(LayerNode.class, "LayerNode_please_wait");
                         }
                     }};
-                } else {
+                default:
                     throw new AssertionError(key);
                 }
             } catch (IOException e) {
@@ -281,7 +278,7 @@ public final class LayerNode extends FilterNode {
             return LayerUtils.createLayerClasspath(modules, LayerUtils.getPlatformJarsForSuiteComponentProject(p, suite));
         } else if (type == NbModuleProvider.NETBEANS_ORG) {
             //Can cast to NbModuleProject here..
-            return LayerUtils.createLayerClasspath(LayerUtils.getProjectsForNetBeansOrgProject((NbModuleProject)p), Collections.EMPTY_SET);
+            return LayerUtils.createLayerClasspath(LayerUtils.getProjectsForNetBeansOrgProject((NbModuleProject)p), Collections.<File>emptySet());
         } else {
             throw new AssertionError(type);
         }

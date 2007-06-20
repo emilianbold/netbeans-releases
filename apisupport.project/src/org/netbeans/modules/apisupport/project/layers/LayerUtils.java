@@ -754,7 +754,7 @@ public class LayerUtils {
                 }
             }
         }
-        return (FileSystem[]) layers.toArray(new FileSystem[layers.size()]);
+        return layers.toArray(new FileSystem[layers.size()]);
     }
     
     /**
@@ -791,7 +791,7 @@ public class LayerUtils {
             }
         }
         // XXX in principle, could add CP extensions from modules... but probably not necessary
-        return ClassPathSupport.createClassPath((URL[]) roots.toArray(new URL[roots.size()]));
+        return ClassPathSupport.createClassPath(roots.toArray(new URL[roots.size()]));
     }
 
     /**

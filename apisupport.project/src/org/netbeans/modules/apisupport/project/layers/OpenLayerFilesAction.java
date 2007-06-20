@@ -84,7 +84,7 @@ public class OpenLayerFilesAction extends CookieAction {
         }
         try {
 //            Set<Project> projectsSet = new HashSet<Project>();
-            FileObject f = activatedNodes[0].getCookie(org.openide.loaders.DataObject.class).getPrimaryFile();
+            FileObject f = activatedNodes[0].getCookie(DataObject.class).getPrimaryFile();
             FileSystem fs = f.getFileSystem();
             while (fs instanceof MultiFileSystem) {
                 try {
