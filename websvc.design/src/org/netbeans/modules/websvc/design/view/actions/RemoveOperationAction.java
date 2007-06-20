@@ -85,9 +85,9 @@ public class RemoveOperationAction extends AbstractAction{
         }
     }
     
-    private void removeOperation() throws IOException{
-        OperationGeneratorHelper generatorHelper = new OperationGeneratorHelper(wsdlFile);
-        if(wsdlFile != null){
+    private void removeOperation() throws IOException {        
+        if(wsdlFile != null) {
+            OperationGeneratorHelper generatorHelper = new OperationGeneratorHelper(wsdlFile);
             WSDLModel wsdlModel = WSDLUtils.getWSDLModel(FileUtil.toFileObject(wsdlFile), true);
             //TODO: methodName should be the equivalent operation name in the WSDL
             //i.e., should look at operationName annotation if present
