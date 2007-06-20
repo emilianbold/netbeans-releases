@@ -31,6 +31,7 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.queries.UnitTestForSourceQuery;
+import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -190,5 +191,34 @@ public class SourceGroupSupport {
             }
         }
         return result;
+    }
+    
+    public static String getPackageName(String qualifiedClassName) {
+        int i = qualifiedClassName.lastIndexOf('.');
+        return i > 0 ? qualifiedClassName.substring(0, i) : null;
+    }
+    
+    public static String getClassName(String qualifiedClassName) {
+        return qualifiedClassName.substring(qualifiedClassName.lastIndexOf('.')+1);
+    }
+    
+    public static JavaSource getJavaSourceFromClassName(String qualifiedClassName, Project project) throws IOException {
+        String name = qualifiedClassName;
+        for (String pkg = getPackageName(name); pkg != null; name = pkg) {
+            for (SourceGroup sg : getJavaSourceGroups(project)) {
+                FileObject folder = getFolderForPackage(sg, pkg, false);
+                if (folder != null) {
+                    for (FileObject fo : folder.getChildren()) {
+                        if (fo.isFolder() || ! "java".equals(fo.getExt())) {
+                            continue;
+                        }
+                        if (qualifiedClassName.contains(fo.getName())) {
+                            return JavaSource.forFileObject(fo);
+                        }
+                    }
+                }
+            }
+        }
+        return null;
     }
 }

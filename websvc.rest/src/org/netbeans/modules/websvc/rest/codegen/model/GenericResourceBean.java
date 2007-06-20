@@ -105,6 +105,10 @@ public class GenericResourceBean {
     }
     
     public String getShortName() {
+        return getShortName(name);
+    }
+    
+    public static String getShortName(String name) {
         if (name.endsWith(RESOURCE_SUFFIX)) {
             return name.substring(0, name.length()-8);
         }

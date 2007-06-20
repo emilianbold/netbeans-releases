@@ -163,11 +163,6 @@ public class JaxwsOperationInfo {
         return null;
     }
     
-    public String getOutputJAXBClass() {
-        initWsdlModelInfo();
-        return getOutputType();
-    }
-    
     public WsdlPort getPort() {
         initWsdlModelInfo();
         return port;
@@ -210,6 +205,7 @@ public class JaxwsOperationInfo {
     
     //TODO maybe parse SEI class (using Retouche) for @WebParam.Mode annotation
     public String getOutputType() {
+        initWsdlModelInfo();
         String outputType = getOperation().getReturnTypeName();
         if (Constants.VOID.equals(outputType)) {
             for (WsdlParameter p : getOperation().getParameters()) {

@@ -449,7 +449,16 @@ public class JavaSourceHelper {
     
     public static String getThisFieldEqualParamStatements(String[] params) {
         StringBuilder sb = new StringBuilder();
-        String template = "if ($PARAM$ != null) { this.$PARAM$ = $PARAM$; }\n"; //NOI18N
+        String template = "this.$PARAM$ = $PARAM$;\n"; //NOI18N
+        for (int i=0; i<params.length; i++) {
+            sb.append(template.replace("$PARAM$", params[i])); //NOI18N
+        }
+        return sb.toString();
+    }
+    
+    public static String getParamEqualThisFieldStatements(String[] params) {
+        StringBuilder sb = new StringBuilder();
+        String template = "if ($PARAM$ == null) { $PARAM$ = this.$PARAM$; }\n"; //NOI18N
         for (int i=0; i<params.length; i++) {
             sb.append(template.replace("$PARAM$", params[i])); //NOI18N
         }
