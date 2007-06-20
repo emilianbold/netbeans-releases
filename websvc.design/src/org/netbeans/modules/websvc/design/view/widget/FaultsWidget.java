@@ -57,7 +57,7 @@ public class FaultsWidget extends AbstractTitledWidget implements TabWidget {
      * @param method  
      */
     public FaultsWidget(Scene scene, MethodModel method) {
-        super(scene,0,RADIUS,1,BORDER_COLOR_BLACK);
+        super(scene,0,RADIUS,1,null);
         this.method = method;
         createContent();
     }

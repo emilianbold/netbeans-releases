@@ -57,7 +57,7 @@ public class ParametersWidget extends AbstractTitledWidget implements TabWidget 
      * @param method 
      */
     public ParametersWidget(Scene scene, MethodModel method) {
-        super(scene,0,RADIUS,0,BORDER_COLOR_BLACK);
+        super(scene,0,RADIUS,0,null);
         this.method = method;
         createContent();
     }
@@ -90,14 +90,11 @@ public class ParametersWidget extends AbstractTitledWidget implements TabWidget 
     private void populateContentWidget(Widget parentWidget) {
         if(model.getRowCount()>0) {
             parameterTable = new TableWidget(getScene(),model);
-            parameterTable.setBorder(javax.swing.BorderFactory.createMatteBorder
-                    (1, 1, 0, 1, TableWidget.BORDER_COLOR));
             parentWidget.addChild(parameterTable);
         } else {
             LabelWidget noParamsWidget = new LabelWidget(getScene(),
                     NbBundle.getMessage(OperationWidget.class, "LBL_InputNone"));
             noParamsWidget.setAlignment(LabelWidget.Alignment.CENTER);
-            //noParamsWidget.setOpaque(true);
             parentWidget.addChild(noParamsWidget);
         }
     }
@@ -120,9 +117,6 @@ public class ParametersWidget extends AbstractTitledWidget implements TabWidget 
             tabComponent = createContentWidget();
             tabComponent.setBorder(BorderFactory.createEmptyBorder());
             populateContentWidget(tabComponent);
-            if(parameterTable!=null) {
-                parameterTable.setBorder(BorderFactory.createEmptyBorder(1));
-            }
         }
         return tabComponent;
     }

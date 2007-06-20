@@ -36,6 +36,7 @@ import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.model.ObjectScene;
 import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.Scene;
+import org.netbeans.api.visual.widget.SeparatorWidget;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.modules.websvc.design.javamodel.MethodModel;
@@ -163,21 +164,25 @@ public class OperationWidget extends AbstractTitledWidget {
         getHeaderWidget().addChild(buttons);
 
         getContentWidget().setLayout(LayoutFactory.createCardLayout(getContentWidget()));
+        getContentWidget().setBorder(BorderFactory.createEmptyBorder(0,0,RADIUS,0));
 
         listWidget = new Widget(getScene());
         listWidget.setLayout(LayoutFactory.createVerticalFlowLayout(LayoutFactory.SerialAlignment.JUSTIFY, 0));
-        listWidget.setBorder(BorderFactory.createEmptyBorder(0,RADIUS));
+        listWidget.setBorder(BorderFactory.createLineBorder(1, BORDER_COLOR_BLACK));
         inputWidget = new ParametersWidget(getScene(),operation);
         outputWidget = new OutputWidget(getScene(),operation);
         faultWidget = new FaultsWidget(getScene(),operation);
         descriptionWidget = new DescriptionWidget(getScene(),operation);
         listWidget.addChild(inputWidget);
+        listWidget.addChild(new SeparatorWidget(getScene(),SeparatorWidget.Orientation.HORIZONTAL));
         listWidget.addChild(outputWidget);
+        listWidget.addChild(new SeparatorWidget(getScene(),SeparatorWidget.Orientation.HORIZONTAL));
         listWidget.addChild(faultWidget);
+        listWidget.addChild(new SeparatorWidget(getScene(),SeparatorWidget.Orientation.HORIZONTAL));
         listWidget.addChild(descriptionWidget);
 
         tabbedWidget = new TabbedPaneWidget(getScene());
-        tabbedWidget.setBorder(BorderFactory.createEmptyBorder(1,RADIUS));
+        tabbedWidget.setBorder(BorderFactory.createEmptyBorder(RADIUS,0,0,0));
         tabbedWidget.addTab(inputWidget);
         tabbedWidget.addTab(outputWidget);
         tabbedWidget.addTab(faultWidget);

@@ -118,6 +118,7 @@ public class OperationsWidget extends AbstractTitledWidget {
                 LayoutFactory.SerialAlignment.JUSTIFY, 8));
         
         ButtonWidget addButton = new ButtonWidget(getScene(), addAction);
+        addButton.setOpaque(true);
         
         buttons.addChild(addButton);
         buttons.addChild(getExpanderWidget());

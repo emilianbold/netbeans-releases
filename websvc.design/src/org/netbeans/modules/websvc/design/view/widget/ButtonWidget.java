@@ -43,7 +43,7 @@ public class ButtonWidget extends AbstractMouseActionsWidget {
     private ImageLabelWidget button;
     private Action action;
     private Insets margin = new Insets(2, 2, 2, 2);
-   
+    
     /**
      *
      * @param scene
@@ -95,7 +95,7 @@ public class ButtonWidget extends AbstractMouseActionsWidget {
         super(scene);
         this.button = button;
         addChild(button);
-        setBorder(new ButtonBorder(true,margin));
+        setBorder(new ButtonBorder(this,margin));
         button.setBorder(BorderFactory.createEmptyBorder(4));
         setLayout(LayoutFactory.createHorizontalFlowLayout(
                 LayoutFactory.SerialAlignment.CENTER, 4));
@@ -114,7 +114,7 @@ public class ButtonWidget extends AbstractMouseActionsWidget {
     public ImageLabelWidget getButton() {
         return button;
     }
-
+    
     /**
      *
      * @param action
@@ -165,10 +165,6 @@ public class ButtonWidget extends AbstractMouseActionsWidget {
     public void setButtonEnabled(boolean v) {
         getButton().setEnabled(v);
         getButton().setPaintAsDisabled(!v);
-        Border border = getBorder();
-        if(border instanceof ButtonBorder) {
-            ((ButtonBorder)border).setEnabled(v);
-        }
         revalidate();
         repaint();
     }
@@ -196,86 +192,87 @@ public class ButtonWidget extends AbstractMouseActionsWidget {
             getScene().validate();
         }
     }
-
+    
     public String getActionCommand() {
         return (String)action.getValue(Action.ACTION_COMMAND_KEY);
     }
-
+    
     private static ImageLabelWidget createImageLabelWidget(Scene scene, Action action) {
         String label = (String)action.getValue(Action.NAME);
         Object icon = action.getValue(Action.SMALL_ICON);
         Image image = icon instanceof ImageIcon ? ((ImageIcon)icon).getImage(): null;
         return new ImageLabelWidget(scene,image,label);
     }
-
+    
     protected static class ButtonBorder implements Border, MouseActions {
         private boolean rollover = false;
         private boolean pressed = false;
-        private boolean enabled = true;
+        private ButtonWidget button;
         private Insets insets;
         
-        public ButtonBorder(boolean enabled, Insets insets) {
-            this.enabled = enabled;
+        public ButtonBorder(ButtonWidget button, Insets insets) {
+            this.button = button;
             this.insets = insets;
         }
         
         public Insets getInsets() {
             return insets;
         }
-
+        
         public void paint(Graphics2D g2, Rectangle rect) {
             Paint oldPaint = g2.getPaint();
             
-            if (enabled) {
-                g2.setPaint(BORDER_COLOR);
-                g2.fill(new RoundRectangle2D.Double(rect.x, rect.y,
-                            rect.width, rect.height, 6, 6));
-
+            RoundRectangle2D buttonRect = new RoundRectangle2D.Double
+                    (rect.x+0.5, rect.y+0.5, rect.width-1, rect.height-1, 6, 6);
+            if (button.isButtonEnabled()) {
+                
                 if (pressed) {
                     g2.setPaint(new Color(0xCCCCCC));
-                } else {
+                    g2.fill(buttonRect);
+                } else if (button.isOpaque()){
                     g2.setPaint(new GradientPaint(
-                            0, rect.y + 1, BACKGROUND_COLOR_1,
-                            0, rect.y + rect.height * 0.5f, 
+                            0, rect.y , BACKGROUND_COLOR_1,
+                            0, rect.y + rect.height * 0.5f,
                             BACKGROUND_COLOR_2, true));
+                    g2.fill(buttonRect);
                 }
-
-                if (rollover) {
-                    g2.fill(new RoundRectangle2D.Double(rect.x + 1.5, rect.y + 1.5,
-                            rect.width - 3, rect.height - 3, 3, 3));
-                } else {
-                    g2.fill(new RoundRectangle2D.Double(rect.x + 1, rect.y + 1,
-                            rect.width - 2, rect.height - 2, 4, 4));
-                }
-            } else {
-                g2.setPaint(grayFilter(BORDER_COLOR));
-                g2.fill(new RoundRectangle2D.Double(rect.x, rect.y,
-                            rect.width, rect.height, 6, 6));
                 
-                g2.setPaint(BACKGROUND_COLOR_DISABLED);
-                g2.fill(new RoundRectangle2D.Double(rect.x + 1, rect.y + 1,
-                        rect.width - 2, rect.height - 2, 4, 4));
+                g2.setPaint(BORDER_COLOR);
+                if (rollover) {
+                    g2.setPaint(BORDER_COLOR);
+                    g2.draw(new RoundRectangle2D.Double(rect.x + 1.5, rect.y + 1.5,
+                            rect.width - 3, rect.height - 3, 3, 3));
+                }
+                g2.draw(buttonRect);
+            } else {
+                if(button.isOpaque()) {
+                    g2.setPaint(BACKGROUND_COLOR_DISABLED);
+                    g2.fill(buttonRect);
+                    
+                }
+                g2.setPaint(grayFilter(BORDER_COLOR));
+                g2.draw(buttonRect);
             }
             
             g2.setPaint(oldPaint);
         }
-
+        
         public boolean isOpaque() {
-            return true;
+            return false;
         }
-
+        
         protected boolean isPressed() {
             return pressed;
         }
-
+        
         protected  void setPressed(boolean flag) {
             pressed = flag;
         }
-
+        
         protected  void setRolledOver(boolean flag) {
             rollover = flag;
         }
-
+        
         public void mousePressed() {
             setPressed(true);
         }
@@ -294,17 +291,13 @@ public class ButtonWidget extends AbstractMouseActionsWidget {
         
         public void mouseClicked() {
         }
-
-        void setEnabled(boolean flag) {
-            enabled = flag;
-        };
         
-    }    
+    }
     
     
     private static Color grayFilter(Color color) {
-        int y = Math.round(0.299f * color.getRed() 
-                + 0.587f * color.getGreen() 
+        int y = Math.round(0.299f * color.getRed()
+                + 0.587f * color.getGreen()
                 + 0.114f * color.getBlue());
         
         if (y < 0) {
@@ -317,8 +310,8 @@ public class ButtonWidget extends AbstractMouseActionsWidget {
     }
     
     private static final Color BORDER_COLOR = new Color(0x7F9DB9);
-    private static final Color BACKGROUND_COLOR_1 = new Color(0xD2D2DD);    
-    private static final Color BACKGROUND_COLOR_2 = new Color(0xF8F8F8);    
+    private static final Color BACKGROUND_COLOR_1 = new Color(0xD2D2DD);
+    private static final Color BACKGROUND_COLOR_2 = new Color(0xF8F8F8);
     private static final Color BACKGROUND_COLOR_DISABLED = new Color(0xE4E4E4);
     private static final Color ENABLED_TEXT_COLOR = new Color(0x222222);
     private static final Color DISABLED_TEXT_COLOR = new Color(0x888888);

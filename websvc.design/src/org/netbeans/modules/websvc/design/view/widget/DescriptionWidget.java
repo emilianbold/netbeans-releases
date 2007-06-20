@@ -40,9 +40,6 @@ import org.openide.util.NbBundle;
  */
 public class DescriptionWidget extends AbstractTitledWidget implements TabWidget {
     
-    private static final Color BORDER_COLOR = new Color(255,138,76);
-    private static final int GAP = 16;
-    
     private MethodModel method;
     private transient JavadocModel model;
     
@@ -55,7 +52,7 @@ public class DescriptionWidget extends AbstractTitledWidget implements TabWidget
      * @param method
      */
     public DescriptionWidget(Scene scene, MethodModel method) {
-        super(scene,0,RADIUS,0,BORDER_COLOR_BLACK);
+        super(scene,0,RADIUS,0,null);
         this.method = method;
         model = method.getJavadoc();
         createContent();

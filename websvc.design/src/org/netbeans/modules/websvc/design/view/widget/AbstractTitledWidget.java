@@ -30,6 +30,7 @@ import org.netbeans.api.visual.border.BorderFactory;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.api.visual.widget.Scene;
+import org.netbeans.api.visual.widget.SeparatorWidget;
 import org.netbeans.modules.websvc.design.view.layout.LeftRightLayout;
 
 /**
@@ -55,6 +56,7 @@ public abstract class AbstractTitledWidget extends AbstractMouseActionsWidget im
     
     private boolean expanded;
     private transient HeaderWidget headerWidget;
+    private transient Widget seperatorWidget;
     private transient Widget contentWidget;
     private transient ExpanderWidget expander;
     
@@ -90,6 +92,8 @@ public abstract class AbstractTitledWidget extends AbstractMouseActionsWidget im
         headerWidget.setBorder(BorderFactory.createEmptyBorder(hgap, hgap/2));
         headerWidget.setLayout(new LeftRightLayout(32));
         addChild(headerWidget);
+        seperatorWidget = new SeparatorWidget(getScene(),SeparatorWidget.Orientation.HORIZONTAL);
+        seperatorWidget.setForeground(borderColor);
         if(isExpandable()) {
             contentWidget = createContentWidget();
             expanded = ExpanderWidget.isExpanded(this, true);
@@ -141,13 +145,10 @@ public abstract class AbstractTitledWidget extends AbstractMouseActionsWidget im
                     bounds.y + titleHeight, bounds.width, bounds.height)));
             g.setPaint(getTitlePaint(titleArea.getBounds()));
             g.fill(titleArea);
-            g.setPaint(borderColor);
-            g.drawLine(bounds.x+1, bounds.y + titleHeight-1, bounds.x+bounds.width-2, bounds.y + titleHeight-1);
-            Area bodyArea = new Area(rect);
-            bodyArea.subtract(titleArea);
-            Paint bodyPaint = getBodyPaint(bodyArea.getBounds());
-            if(bodyPaint!=null) {
-                g.setPaint(bodyPaint);
+            if(isOpaque()) {
+                Area bodyArea = new Area(rect);
+                bodyArea.subtract(titleArea);
+                g.setPaint(getBackground());
                 g.fill(bodyArea);
             }
         } else {
@@ -162,17 +163,19 @@ public abstract class AbstractTitledWidget extends AbstractMouseActionsWidget im
                     bounds.x, bounds.y + bounds.height, TITLE_COLOR);
     }
     
-    protected Paint getBodyPaint(Rectangle bounds) {
-        return null;
-    }
-    
     protected void collapseWidget() {
+        if(seperatorWidget.getParentWidget()!=null) {
+            removeChild(seperatorWidget);
+        }
         if(getContentWidget().getParentWidget()!=null) {
             removeChild(getContentWidget());
         }
     }
     
     protected void expandWidget() {
+        if(seperatorWidget.getParentWidget()==null) {
+            addChild(seperatorWidget);
+        }
         if(getContentWidget().getParentWidget()==null) {
             addChild(getContentWidget());
         }

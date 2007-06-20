@@ -63,6 +63,8 @@ public class WsitWidget extends AbstractTitledWidget {
         super(scene,RADIUS,BORDER_COLOR);
         this.implementationClass = implementationClass;
         this.service=service;
+        setOpaque(true);
+        setBackground(TITLE_COLOR_PARAMETER);
         createContent();
     }
     

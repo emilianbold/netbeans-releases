@@ -47,7 +47,7 @@ public class TabbedPaneWidget extends Widget {
      */
     public TabbedPaneWidget(Scene scene) {
         super(scene);
-        setLayout(LayoutFactory.createVerticalFlowLayout(LayoutFactory.SerialAlignment.JUSTIFY, 0));
+        setLayout(LayoutFactory.createVerticalFlowLayout(LayoutFactory.SerialAlignment.JUSTIFY, 1));
         tabs = new Widget(scene);
         addChild(tabs);
         contentWidget = new Widget(scene);
@@ -73,41 +73,35 @@ public class TabbedPaneWidget extends Widget {
     public void addTab(String tabTitle, Image tabIcon, final Widget tabComponent) {
         contentWidget.addChild(tabComponent);
         final ButtonWidget tab = new ButtonWidget(getScene(), tabIcon, tabTitle);
-        tab.setBorder(new TabBorder());
+        tab.setBorder(new TabBorder(this,tab));
         tab.setAction(new AbstractAction() {
             public void actionPerformed(ActionEvent arg0) {
                 if(LayoutFactory.getActiveCard(contentWidget) != tabComponent) {
-                    if(selectedTab!=null) {
-                        selectedTab.getButton().getLabelWidget().setFont(getScene().getFont());
-                        TabBorder oldBorder = (TabBorder)selectedTab.getBorder();
-                        oldBorder.setSelected(false);
-                    }
-                    tab.getButton().getLabelWidget().setFont(getScene().getFont().deriveFont(Font.BOLD));
-                    TabBorder border = (TabBorder)tab.getBorder();
-                    border.setSelected(true);
                     selectedTab = tab;
+                    selectedTab.getButton().getLabelWidget().setFont(getScene().getFont().deriveFont(Font.BOLD));
                     LayoutFactory.setActiveCard(contentWidget, tabComponent);
                     getScene().validate();
                 }
             }
         });
         tabs.addChild(tab);
-        tabs.setLayout(new TableLayout(tabs.getChildren().size(), 1, 0, 20));
+        tabs.setLayout(new TableLayout(tabs.getChildren().size(), 0, 0, 20));
         if(selectedTab==null) {
-            LayoutFactory.setActiveCard(contentWidget, tabComponent);
             selectedTab = tab;
-            tab.getButton().getLabelWidget().setFont(getScene().getFont().deriveFont(Font.BOLD));
-            TabBorder border = (TabBorder)tab.getBorder();
-            border.setSelected(true);
+            selectedTab.getButton().getLabelWidget().setFont(getScene().getFont().deriveFont(Font.BOLD));
+            LayoutFactory.setActiveCard(contentWidget, tabComponent);
         }
     }
     
     private static class TabBorder implements Border {
-        private boolean selected = false;
-        private Insets insets = new Insets(2, 8, 2, 8);
-        private static final int radius = 6;
+        private static final int radius = 2;
+        private Insets insets = new Insets(2*radius, 3*radius, radius, 3*radius);
+        private final TabbedPaneWidget tabbedPane;
+        private final Widget tab;
         
-        public TabBorder() {
+        public TabBorder(TabbedPaneWidget tabbedPane,Widget tab) {
+            this.tabbedPane=tabbedPane;
+            this.tab=tab;
         }
         
         public Insets getInsets() {
@@ -117,31 +111,28 @@ public class TabbedPaneWidget extends Widget {
         public void paint(Graphics2D g2, Rectangle rect) {
             Paint oldPaint = g2.getPaint();
             
-            Arc2D arc = new Arc2D.Double(rect.x+0.5f, rect.y,
-                    radius, radius, 180, -90, Arc2D.OPEN);
+            Arc2D arc = new Arc2D.Double(rect.x - radius + 0.5f, rect.y + rect.height - radius *2 +0.5f,
+                    radius*2, radius*2, -90, 90, Arc2D.OPEN);
             GeneralPath gp = new GeneralPath(arc);
-            Arc2D arc1 = new Arc2D.Double(rect.x + rect.width - radius-1, rect.y,
-                    radius, radius, 90, -90, Arc2D.OPEN);
-            gp.append(arc1,true);
-            gp.lineTo(rect.x + rect.width-1, rect.y + rect.height);
-            gp.lineTo(rect.x+0.5f, rect.y + rect.height);
-            gp.closePath();
-            if (selected) {
+            arc = new Arc2D.Double(rect.x+radius+0.5f, rect.y+0.5f,
+                    radius*4, radius*4, 180, -90, Arc2D.OPEN);
+            gp.append(arc,true);
+            arc = new Arc2D.Double(rect.x + rect.width - radius*6 +1f, rect.y+0.5f,
+                    radius*4, radius*4, 90, -90, Arc2D.OPEN);
+            gp.append(arc,true);
+            arc = new Arc2D.Double(rect.x + rect.width - radius*2 +1f, rect.y + rect.height - radius*2 +0.5f,
+                    radius*2, radius*2, 180, 90, Arc2D.OPEN);
+            gp.append(arc,true);
+            if (tabbedPane.selectedTab==tab) {
                 g2.setPaint(SELECTED_TAB_COLOR);
                 g2.fill(gp);
-                GeneralPath gp1 = new GeneralPath();
-                gp1.moveTo(rect.x+0.5f, rect.y + rect.height);
-                gp1.append(arc, true);
-                gp1.append(arc1, true);
-                gp1.lineTo(rect.x + rect.width-1, rect.y + rect.height);
-                g2.setPaint(TAB_BORDER_COLOR);
-                g2.draw(gp1);
             } else {
                 g2.setPaint(TAB_COLOR);
                 g2.fill(gp);
-                g2.setPaint(TAB_BORDER_COLOR);
-                g2.draw(gp);
+                gp.closePath();
             }
+            g2.setPaint(TAB_BORDER_COLOR);
+            g2.draw(gp);
             
             g2.setPaint(oldPaint);
         }
@@ -150,10 +141,5 @@ public class TabbedPaneWidget extends Widget {
             return true;
         }
         
-        private void setSelected(boolean selected) {
-            if(this.selected != selected) {
-                this.selected = selected;
-            }
-        }
     }
 }
