@@ -172,7 +172,6 @@ public class DocumentsDialogOperatorTest extends JellyTestCase {
         new DeleteAction().performAPI(editableSourceNode);
         // "Safe Delete"
         String safeDeleteTitle = Bundle.getString("org.netbeans.modules.refactoring.spi.impl.Bundle", "LBL_SafeDel"); // NOI18N
-        String confirmButton = UIManager.getDefaults().get("OptionPane.okButtonText").toString(); // NOI18N
-        new NbDialogOperator(confirmTitle).ok();
+        new NbDialogOperator(safeDeleteTitle).ok();
     }
 }
