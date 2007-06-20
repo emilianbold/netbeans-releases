@@ -20,10 +20,10 @@ package org.netbeans.modules.xslt.core.context;
 
 import org.netbeans.modules.xml.axi.AXIComponent;
 import org.netbeans.modules.xslt.tmap.model.api.TMapModel;
-import org.netbeans.modules.xslt.tmap.model.api.TransformerDescriptor;
 import org.netbeans.modules.xslt.mapper.model.MapperContext;
 import org.netbeans.modules.xslt.mapper.model.MapperContextChangeListener;
 import org.netbeans.modules.xslt.model.XslModel;
+import org.netbeans.modules.xslt.tmap.model.api.Transform;
 
 /**
  *
@@ -32,7 +32,7 @@ import org.netbeans.modules.xslt.model.XslModel;
  */
 public class MapperContextImpl implements MapperContext {
 
-    private TransformerDescriptor myTransformContextComponent;
+    private Transform myTransformContextComponent;
     private XslModel myXslModel;
     private AXIComponent mySourceComponent;
     private AXIComponent myTargetComponent;
@@ -52,9 +52,9 @@ public class MapperContextImpl implements MapperContext {
     }
 
     // TODO m
-    public MapperContextImpl(TransformerDescriptor tDescriptor, XslModel xslModel, AXIComponent sourceComponent, AXIComponent targetComponent) {
+    public MapperContextImpl(Transform transform, XslModel xslModel, AXIComponent sourceComponent, AXIComponent targetComponent) {
         
-        this.myTransformContextComponent = tDescriptor;
+        this.myTransformContextComponent = transform;
         this.myXslModel = xslModel;
         this.mySourceComponent = sourceComponent;
         this.myTargetComponent = targetComponent;

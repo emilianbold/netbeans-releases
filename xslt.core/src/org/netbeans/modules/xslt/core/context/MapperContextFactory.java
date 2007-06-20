@@ -44,6 +44,7 @@ import org.netbeans.modules.xslt.tmap.model.api.TransformerDescriptor;
 import org.netbeans.modules.xslt.tmap.util.Util;
 import org.netbeans.modules.xslt.mapper.model.MapperContext;
 import org.netbeans.modules.xslt.model.XslModel;
+import org.netbeans.modules.xslt.tmap.model.api.Transform;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -79,10 +80,7 @@ public class MapperContextFactory {
             return new MapperContextImpl(xslModel, Util.getTMapModel(tMapFo));
         }
         
-        TransformerDescriptor transformContextComponent = getOperation(tMapModel, xsltFo);
-        if (transformContextComponent == null) {
-            transformContextComponent = getInvokes(tMapModel, xsltFo);
-        }
+        Transform transformContextComponent = getTransform(tMapModel, xsltFo);
         
         if (transformContextComponent == null) {
             // TODO m
@@ -100,18 +98,27 @@ public class MapperContextFactory {
     }
 
     // TODO m
-    private Operation getOperation(TMapModel tMapModel, FileObject xsltFo) {
+    private Transform getTransform(TMapModel tMapModel, FileObject xsltFo) {
         assert tMapModel != null && xsltFo != null;
-        Operation transformOp = null;
+        Transform transformOp = null;
         
         TransformMap root = tMapModel.getTransformMap();
         List<Service> services = root == null ? null : root.getServices();
         if (services != null) {
             for (Service service : services) {
                 List<Operation> operations = service.getOperations();
-                for (Operation elem : operations) {
-                    if (isEqual(xsltFo, elem.getFile())) {
-                        transformOp = elem;
+                if (operations == null) {
+                    break;
+                }
+                for (Operation oElem : operations) {
+                    List<Transform> transforms = oElem.getTransforms();
+                    for (Transform tElem : transforms) {
+                        if (isEqual(xsltFo, tElem.getFile())) {
+                            transformOp = tElem;
+                            break;
+                        }
+                    }
+                    if (transformOp != null) {
                         break;
                     }
                 }
@@ -124,32 +131,6 @@ public class MapperContextFactory {
         return transformOp;
     }
     
-    // TODO m
-    private Invokes getInvokes(TMapModel tMapModel, FileObject xsltFo) {
-        assert tMapModel != null && xsltFo != null;
-        Invokes transformInv = null;
-        
-        TransformMap root = tMapModel.getTransformMap();
-        List<Service> services = root == null ? null : root.getServices();
-        if (services != null) {
-            for (Service service : services) {
-                List<Operation> operations = service.getOperations();
-                for (Operation elem : operations) {
-                    Invokes invokes = elem.getInvokes();
-                    if (invokes != null && isEqual(xsltFo, invokes.getFile())) {
-                        transformInv = invokes;
-                        break;
-                    }
-                }
-                if (transformInv != null) {
-                    break;
-                }
-            }
-        }
-        
-        return transformInv;
-    }
-
     // TODO m
     private boolean isEqual(FileObject xsltFo, String filePath) {
         assert xsltFo != null;
@@ -193,16 +174,16 @@ public class MapperContextFactory {
     }
     
     // TODO m
-    private AXIComponent getSourceComponent(TransformerDescriptor tDescriptor) {
+    private AXIComponent getSourceComponent(Transform transform) {
         AXIComponent source = null;
-        source = getAXIComponent(getSourceType(tDescriptor));
+        source = getAXIComponent(getSourceType(transform));
         return source;
     }
     
     // TODO m
-    private AXIComponent getTargetComponent(TransformerDescriptor tDescriptor) {
+    private AXIComponent getTargetComponent(Transform transform) {
         AXIComponent target = null;
-        target = getAXIComponent(getTargetType(tDescriptor));
+        target = getAXIComponent(getTargetType(transform));
         return target;
     }
     
@@ -223,48 +204,19 @@ public class MapperContextFactory {
     }
 
     // TODO m
-    public ReferenceableSchemaComponent getSourceType(TransformerDescriptor tDescriptor) {
-        if (tDescriptor instanceof Operation) {
-            return getSourceType((Operation)tDescriptor);
-        } else if (tDescriptor instanceof Invokes) {
-            return getSourceType((Invokes)tDescriptor);
-        }
-        return null;
-    }
-
-    // TODO m
-    public ReferenceableSchemaComponent getSourceType(Invokes invokes) {
-        assert invokes != null;
+    public ReferenceableSchemaComponent getSourceType(Transform transform) {
+        assert transform != null;
         
         ReferenceableSchemaComponent sourceSchemaComponent = null;
         
-        Reference<org.netbeans.modules.xml.wsdl.model.Operation> operationRef = 
-                                                    invokes.getOperation();        
-        
-        org.netbeans.modules.xml.wsdl.model.Operation wsdlOp = null;
-        if (operationRef != null) {
-                wsdlOp = operationRef.get();
+        TMapComponent operation = transform.getParent();
+        if (operation == null) {
+            return null;
         }
+        assert operation instanceof Operation;
         
-        if (wsdlOp != null) {
-            org.netbeans.modules.xml.wsdl.model.Output wsdlOutput = wsdlOp.getOutput();
-            
-            NamedComponentReference<Message> message = 
-                    wsdlOutput == null ? null : wsdlOutput.getMessage();
-            if (message != null) {
-                sourceSchemaComponent = getMessageSchemaType(wsdlOp.getModel(), message);
-            }
-        }
-        
-        return sourceSchemaComponent;
-    }
-    
-    public ReferenceableSchemaComponent getSourceType(Operation operation) {
-        assert operation != null;
-        
-        ReferenceableSchemaComponent sourceSchemaComponent = null;
         Reference<org.netbeans.modules.xml.wsdl.model.Operation> operationRef = 
-                                                    operation.getOperation();
+                                                    ((Operation)operation).getOperation();
         org.netbeans.modules.xml.wsdl.model.Operation wsdlOp = null;
         if (operationRef != null) {
                 wsdlOp = operationRef.get();
@@ -282,105 +234,37 @@ public class MapperContextFactory {
         
         return sourceSchemaComponent;
     }
-
+    
     // TODO m
-    public ReferenceableSchemaComponent getTargetType(TransformerDescriptor tDescriptor) {
-        if (tDescriptor instanceof Operation) {
-            return getTargetType((Operation)tDescriptor);
-        } else if (tDescriptor instanceof Invokes) {
-            return getTargetType((Invokes)tDescriptor);
-        }
-        return null;
-    }
-
-    // TODO m
-    public ReferenceableSchemaComponent getTargetType(Invokes invokes) {
-        assert invokes != null;
+    public ReferenceableSchemaComponent getTargetType(Transform transform) {
+        assert transform != null;
         
         ReferenceableSchemaComponent targetSchemaComponent = null;
-
-        Reference<org.netbeans.modules.xml.wsdl.model.Operation> operationRef = null;
-        TMapComponent parent = invokes.getParent();
-        if (parent instanceof Operation) {
-            operationRef = ((Operation)parent).getOperation();
+        
+        TMapComponent operation = transform.getParent();
+        if (operation == null) {
+            return null;
         }
+        assert operation instanceof Operation;
         
+        Reference<org.netbeans.modules.xml.wsdl.model.Operation> operationRef = 
+                                                    ((Operation)operation).getOperation();
         org.netbeans.modules.xml.wsdl.model.Operation wsdlOp = null;
-        
         if (operationRef != null) {
                 wsdlOp = operationRef.get();
         }
-        
-        org.netbeans.modules.xml.wsdl.model.Output wsdlOutput = null;
-        
+
         if (wsdlOp != null) {
-             wsdlOutput = wsdlOp.getOutput();
-        }
-        
-        NamedComponentReference<Message> message = null;
-        
-        if (wsdlOutput != null) {
-            message = wsdlOutput.getMessage();
-        }
-        
-        if (message != null) {
-            targetSchemaComponent =
-                    getMessageSchemaType(wsdlOp.getModel(), message);
+            org.netbeans.modules.xml.wsdl.model.Output wsdlOutput = wsdlOp.getOutput();
+            
+            NamedComponentReference<Message> message = 
+                    wsdlOutput == null ? null : wsdlOutput.getMessage();
+            if (message != null) {
+                targetSchemaComponent = getMessageSchemaType(wsdlOp.getModel(), message);
+            }
         }
         
         return targetSchemaComponent;
-    }
-
-    // TODO m
-    public ReferenceableSchemaComponent getTargetType(Operation operation) {
-        assert operation != null;
-        ReferenceableSchemaComponent sourceSchemaComponent = null;
-        
-        boolean hasInvokes = operation.getInvokes() != null;
-        if (! hasInvokes) {
-            Reference<org.netbeans.modules.xml.wsdl.model.Operation> operationRef =
-                    operation.getOperation();
-            org.netbeans.modules.xml.wsdl.model.Operation wsdlOp = null;
-            if (operationRef != null) {
-                wsdlOp = operationRef.get();
-            }
-            
-            org.netbeans.modules.xml.wsdl.model.Output wsdlOutput = null;
-            if (wsdlOp != null) {
-                 wsdlOutput = wsdlOp.getOutput();
-
-                NamedComponentReference<Message> message = null;
-                if (wsdlOutput != null) {
-                    message = wsdlOutput.getMessage();
-                }
-
-                if (message != null) {
-                    sourceSchemaComponent = getMessageSchemaType(wsdlOp.getModel(), message);
-                }
-            }
-        } else {
-            Reference<org.netbeans.modules.xml.wsdl.model.Operation> operationRef =
-                    operation.getInvokes().getOperation();
-            org.netbeans.modules.xml.wsdl.model.Operation wsdlOp = null;
-            if (operationRef != null) {
-                wsdlOp = operationRef.get();
-            }
-            
-            if (wsdlOp != null) {
-                org.netbeans.modules.xml.wsdl.model.Input wsdlInput = wsdlOp.getInput();
-                
-                NamedComponentReference<Message> message = null;
-                if (wsdlInput != null) {
-                    message = wsdlInput.getMessage();
-                }
-                
-                if (message != null) {
-                    sourceSchemaComponent = getMessageSchemaType(wsdlOp.getModel(), message);
-                }
-            }
-        }
-
-        return sourceSchemaComponent;
     }
     
     /**
