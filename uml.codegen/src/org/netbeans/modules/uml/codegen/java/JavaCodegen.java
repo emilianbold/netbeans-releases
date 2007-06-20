@@ -136,8 +136,10 @@ public class JavaCodegen implements ICodeGenerator
 		// skip inner class/interface/enumeration elements
 		// as they are taken care of by their outer class code gen
 		if (clinfo.getOuterClass() != null)
+		{
+		    task.log(task.TERSE, ""); // NOI18N
 		    continue;
-		            
+		}  
 		clinfo.setMethodsAndMembers(classifier);
 		clinfo.setExportSourceFolderName(targetFolderName);
 		clinfo.setComment(classifier.getDocumentation());
