@@ -1318,14 +1318,18 @@ public class JsfProjectUtils {
      * @throws an IOException if there was a problem removing the reference
      */
     public static boolean removeLibraryReferences(Project project, Library[] libraries, String type) throws IOException {
-        // XXX NetBeans API not finished yet
-        type = ClassPath.COMPILE;
-        try {
-            return ProjectClassPathModifier.removeLibraries(libraries, getSourceRoot(project), type);
-        } catch (IOException e) {
-            // Should continue here, many exceptions happened in NetBeans codes are not fatal.
+        WebProjectLibrariesModifier wplm = (WebProjectLibrariesModifier) project.getLookup().lookup(WebProjectLibrariesModifier.class);
+        if (wplm == null) {
+            // Something is wrong, shouldn't be here.
+            return removeLibraryReferences(project, libraries);
         }
-        
+
+        if (type == ClassPath.COMPILE) {
+            return wplm.removeCompileLibraries(libraries);
+        } else if (type == ClassPath.EXECUTE) {
+            return wplm.removePackageLibraries(libraries, PATH_IN_WAR_LIB);
+        }
+
         return false;
     }
     
@@ -1435,14 +1439,18 @@ public class JsfProjectUtils {
      * @throws an IOException if there was a problem removing the references
      */
     public static boolean removeRootReferences(Project project, URL[] rootFiles, String type) throws IOException {
-        // XXX NetBeans API not finished yet
-        type = ClassPath.COMPILE;
-        try {
-            return ProjectClassPathModifier.removeRoots(rootFiles, getSourceRoot(project), type);
-        } catch (IOException e) {
-            // Should continue here, many exceptions happened in NetBeans codes are not fatal.
+        WebProjectLibrariesModifier wplm = (WebProjectLibrariesModifier) project.getLookup().lookup(WebProjectLibrariesModifier.class);
+        if (wplm == null) {
+            // Something is wrong, shouldn't be here.
+            return removeRootReferences(project, rootFiles);
         }
-        
+
+        if (type == ClassPath.COMPILE) {
+            return wplm.removeCompileRoots(rootFiles);
+        } else if (type == ClassPath.EXECUTE) {
+            return wplm.removePackageRoots(rootFiles, PATH_IN_WAR_LIB);
+        }
+
         return false;
     }
     
