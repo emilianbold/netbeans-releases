@@ -177,7 +177,7 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
         pcs.removePropertyChangeListener(listener);
     }
     
-    private PropertyEvaluator delegatingEvaluator(boolean reset) {
+    private synchronized PropertyEvaluator delegatingEvaluator(boolean reset) {
         if (reset && !loadedModuleList) {
             reset();
             if (Util.err.isLoggable(ErrorManager.INFORMATIONAL)) {
@@ -187,7 +187,7 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
         return delegate;
     }
     
-    private void reset() {
+    private synchronized void reset() {
         loadedModuleList = true;
         delegate.removePropertyChangeListener(this);
         try {
