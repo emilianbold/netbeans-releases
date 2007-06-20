@@ -19,8 +19,10 @@
 
 package org.netbeans.modules.xml.api.model;
 
+import java.awt.Component;
 import java.beans.FeatureDescriptor;
 import java.util.Enumeration;
+import org.openide.nodes.Node.Property;
 import org.openide.util.Enumerations;
 
 /**
@@ -121,6 +123,26 @@ public class SampleGrammarQueryManager extends GrammarQueryManager {
          */
         public Enumeration queryValues(HintContext ctx) {
             return Enumerations.empty();
+        }
+
+        public GrammarResult queryDefault(HintContext parentNodeCtx) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public boolean isAllowed(Enumeration en) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public Component getCustomizer(HintContext nodeCtx) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public boolean hasCustomizer(HintContext nodeCtx) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public Property[] getProperties(HintContext nodeCtx) {
+            throw new UnsupportedOperationException("Not supported yet.");
         }
         
     }
