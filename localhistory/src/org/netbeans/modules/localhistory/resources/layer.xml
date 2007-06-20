@@ -45,6 +45,7 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="OptionsDialog">
         <folder name="Actions">
             <folder name="LocalHistory">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.localhistory.resources.Bundle"/>
                 <file name="ShowLocalHistoryAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/LocalHistory/org-netbeans-modules-localhistory-ui-view-ShowLocalHistoryAction.instance"/>
                 </file>
