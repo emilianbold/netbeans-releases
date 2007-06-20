@@ -22,6 +22,10 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
 import org.netbeans.modules.sql.framework.common.utils.TagParserUtility;
 import org.netbeans.modules.sql.framework.evaluators.database.OperatorInstance;
 import org.netbeans.modules.sql.framework.evaluators.database.SQLOperatorFactory;
@@ -36,10 +40,6 @@ import org.netbeans.modules.sql.framework.model.SQLOperatorDefinition;
 import org.netbeans.modules.sql.framework.ui.graph.IOperatorField;
 import org.netbeans.modules.sql.framework.ui.graph.IOperatorXmlInfo;
 import org.netbeans.modules.sql.framework.ui.graph.impl.CustomOperatorNode;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-
 import com.sun.sql.framework.exception.BaseException;
 import com.sun.sql.framework.jdbc.SQLUtils;
 
