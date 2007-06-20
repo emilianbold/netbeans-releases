@@ -6621,6 +6621,7 @@ public class UMLParsingIntegrator
                     Element curElement = (Element)literals.get(y);
                     establishXMIID(curElement);
                     XMLManip.setAttributeValue(curElement, "enumeration", enumerationID);
+		    processComment(curElement);
                 }
                 
                 scrubOperations(pClazz, clazzObj, classSpace);

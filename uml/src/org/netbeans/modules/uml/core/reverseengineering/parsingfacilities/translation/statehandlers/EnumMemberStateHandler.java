@@ -27,6 +27,8 @@ package org.netbeans.modules.uml.core.reverseengineering.parsingfacilities.trans
 
 import org.dom4j.Node;
 
+import org.netbeans.modules.uml.core.reverseengineering.reframework.parsingframework.ITokenDescriptor;
+
 /**
  * @author Aztec
  */
@@ -122,5 +124,23 @@ public class EnumMemberStateHandler extends AttributeStateHandler
        }
        return retVal;
     }
+
+    public void processToken(ITokenDescriptor pToken, String language)
+    {
+	if(pToken == null) return;
+
+        String tokenType = pToken.getType();
+        if("Name".equals(tokenType))
+	{
+	    handleName(pToken);
+            recordStartToken(pToken);
+            handleComment(pToken);
+        } 
+	else 
+	{
+	    super.processToken(pToken, language);
+	}
+    }
+
 
 }
