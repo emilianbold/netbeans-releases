@@ -34,14 +34,13 @@ Microsystems, Inc. All Rights Reserved.
   <target name="all-nozip" depends="build-nozip,commit-validation" description="Build the IDE (no ZIP file, unpacked) and run basic validation tests."/>
 
   <target name="assure-ant">
-      <condition property="ant.version.is.good">
-          <!-- this is in 1.6.3 only -->
-          <!-- actually needed for 'executable' attr on <javadoc>, at least -->
-          <available classname="org.apache.tools.ant.types.mappers.FilterMapper"/>
-    </condition>
-    <fail unless="ant.version.is.good">
-        You need to have ant 1.6.3 at least to build NetBeans.
-    </fail>
+      <fail message="You need Ant version 1.7.0 or later to build NetBeans.">
+          <condition>
+              <not>
+                  <antversion atleast="1.7.0"/>
+              </not>
+          </condition>
+      </fail>
   </target>
   
   <target name="bootstrap"
