@@ -23,12 +23,15 @@ import javax.xml.namespace.QName;
 import org.netbeans.modules.xml.wsdl.model.ReferenceableWSDLComponent;
 import org.netbeans.modules.xml.xam.dom.Attribute;
 import org.netbeans.modules.xslt.tmap.model.api.ExNamespaceContext;
+import org.netbeans.modules.xslt.tmap.model.api.ParamType;
 import org.netbeans.modules.xslt.tmap.model.api.WSDLReference;
 
 
 /**
  *
+ * incapuslate all attribute logic.   
  * @author Vitaly Bychkov
+ * @author ads
  * @version 1.0
  */
 public class AttributeAccess {
@@ -39,23 +42,17 @@ public class AttributeAccess {
         myComponent = component;
     }
 
-    Object getAttributeValueOf( Attribute attr, String stringValue )
-    {
+    Object getAttributeValueOf( Attribute attr, String stringValue ) {
         if (stringValue == null) {
             return null;
         }
         Class clazz = attr.getType();
         if (String.class.isAssignableFrom(clazz)) {
             return stringValue;
-        } 
-//        else {
-//            for( AttributeValueFactory factory : Lazy.FACTORIES ) {
-//                if ( factory.isApplicable(attr)) {
-//                    return factory.getValue(this, attr, stringValue);
-//                }
-//            }
-//        }
-//        assert false;
+        } else if (ParamType.class.isAssignableFrom(clazz)) {
+            return ParamType.parseParamType(stringValue);
+        }
+        assert false;
         return null;
     }
     
@@ -237,5 +234,5 @@ public class AttributeAccess {
         return myComponent;
     }
     
-    
 }
+

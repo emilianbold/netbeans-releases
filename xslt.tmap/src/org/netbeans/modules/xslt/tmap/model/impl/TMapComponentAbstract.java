@@ -111,7 +111,7 @@ public abstract class TMapComponentAbstract
         return model.getDocument().createElement(type.getTagName());
     }
 
-    private AttributeAccess getAttributeAccess() {
+    protected final AttributeAccess getAttributeAccess() {
         return myAttributeAcces;
     }
 }

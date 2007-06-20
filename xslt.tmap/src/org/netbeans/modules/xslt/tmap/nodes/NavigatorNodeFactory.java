@@ -20,6 +20,7 @@ package org.netbeans.modules.xslt.tmap.nodes;
 
 import org.netbeans.modules.soa.ui.nodes.ReflectionNodeFactory;
 import org.netbeans.modules.xslt.tmap.model.api.Invokes;
+import org.netbeans.modules.xslt.tmap.model.api.Param;
 import org.netbeans.modules.xslt.tmap.model.api.TMapComponent;
 import org.netbeans.modules.xslt.tmap.model.api.TMapModel;
 import org.openide.nodes.Children;
@@ -40,12 +41,14 @@ public class NavigatorNodeFactory extends ReflectionNodeFactory<NodeType> {
     }
     
     private NavigatorNodeFactory() {
-        super(4);
+        super(6);
         //
         key2Class.put(NodeType.TRANSFORMMAP, TransformMapNode.class);
         key2Class.put(NodeType.SERVICE, ServiceNode.class);
         key2Class.put(NodeType.OPERATION, OperationNode.class);
         key2Class.put(NodeType.INVOKES, InvokesNode.class);
+        key2Class.put(NodeType.TRANSFORM, TransformNode.class);
+        key2Class.put(NodeType.PARAM, ParamNode.class);
     }
 
     public Node createNode(TMapComponent entity, Lookup lookup) {
@@ -75,35 +78,39 @@ public class NavigatorNodeFactory extends ReflectionNodeFactory<NodeType> {
         }
         
         Node node = null;
-        switch(nodeType) {
-        case TRANSFORMMAP:
-//            assert ref instanceof TransformMap 
+        switch (nodeType) {
+            case TRANSFORMMAP:
+//            assert ref instanceof TransformMap
 //                    : "reference should be TransformMap type to create TransformMap type Node"; // NOI18N
 //                node = super.createNode(nodeType,ref,
 //                        new TransformMapChildren((TransformMap)ref,lookup),lookup);
 //            break;
-        case SERVICE:
-//            assert ref instanceof Service 
+            case SERVICE:
+//            assert ref instanceof Service
 //                    : "reference should be Service type to create Service type Node"; // NOI18N
 //                node = super.createNode(nodeType,ref,
 //                        new ServiceChildren((Service)ref,lookup),lookup);
 //            break;
-        case OPERATION:
-//            assert ref instanceof Operation 
+            case OPERATION:
+            case TRANSFORM:
+//            assert ref instanceof Operation
 //                    : "reference should be Operation type to create Operation type Node"; // NOI18N
 //                node = super.createNode(nodeType,ref,
 //                        new OperationChildren((Operation)ref,lookup),lookup);
-            assert ref instanceof TMapComponent 
-                    : "reference should be TMapComponent type to create TMapComponent type Node"; // NOI18N
-                node = super.createNode(nodeType,ref,
-                        new TMapComponentNodeChildrenImpl((TMapComponent)ref,lookup),lookup);
-            break;
-        case INVOKES:
-            assert ref instanceof Invokes 
-                    : "reference should be Invokes type to create Invokes type Node"; // NOI18N
-                node = super.createNode(nodeType,ref,
-                        Children.LEAF, lookup);
-            break;
+                assert ref instanceof TMapComponent 
+                        : "reference should be TMapComponent type to create TMapComponent type Node"; // NOI18N
+                node = super.createNode(nodeType, ref, new TMapComponentNodeChildrenImpl((TMapComponent) ref, lookup), lookup);
+                break;
+            case PARAM:
+                assert ref instanceof Param 
+                        : "reference should be Param type to create Param type Node"; // NOI18N
+                node = super.createNode(nodeType, ref, Children.LEAF, lookup);
+                break;
+            case INVOKES:
+                assert ref instanceof Invokes 
+                        : "reference should be Invokes type to create Invokes type Node"; // NOI18N
+                node = super.createNode(nodeType, ref, Children.LEAF, lookup);
+                break;
         }
         
         return node;

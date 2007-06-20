@@ -21,9 +21,11 @@ package org.netbeans.modules.xslt.tmap.model.impl;
 import org.netbeans.modules.xml.xam.ComponentUpdater;
 import org.netbeans.modules.xml.xam.ComponentUpdater.Operation;
 import org.netbeans.modules.xslt.tmap.model.api.Invokes;
+import org.netbeans.modules.xslt.tmap.model.api.Param;
 import org.netbeans.modules.xslt.tmap.model.api.Service;
 import org.netbeans.modules.xslt.tmap.model.api.TMapComponent;
 import org.netbeans.modules.xslt.tmap.model.api.TMapVisitor;
+import org.netbeans.modules.xslt.tmap.model.api.Transform;
 import org.netbeans.modules.xslt.tmap.model.api.TransformMap;
 
 /**
@@ -88,9 +90,31 @@ public class SyncUpdateVisitor implements ComponentUpdater<TMapComponent>, TMapV
         org.netbeans.modules.xslt.tmap.model.api.Operation operation 
                 = (org.netbeans.modules.xslt.tmap.model.api.Operation)getParent();
         if (isAdd()) {
-            operation.setInvokes(invokes);
+            operation.addInvokes(invokes);
         } else if (isRemove()) {
-            operation.removeInvokes();
+            operation.removeInvokes(invokes);
+        }
+    }
+
+    public void visit(Transform transform) {
+        assert getParent() instanceof org.netbeans.modules.xslt.tmap.model.api.Operation;
+        org.netbeans.modules.xslt.tmap.model.api.Operation operation 
+                = (org.netbeans.modules.xslt.tmap.model.api.Operation)getParent();
+        if (isAdd()) {
+            operation.addTransform(transform);
+        } else if (isRemove()) {
+            operation.removeTransforms(transform);
+        }
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void visit(Param param) {
+        assert getParent() instanceof Transform;
+        Transform transform = (Transform)getParent();
+        if (isAdd()) {
+            transform.addParam(param);
+        } else if (isRemove()) {
+            transform.removeParam(param);
         }
     }
 
@@ -113,4 +137,5 @@ public class SyncUpdateVisitor implements ComponentUpdater<TMapComponent>, TMapV
     private boolean isRemove() {
         return Operation.REMOVE == myOperation;
     }
+
 }

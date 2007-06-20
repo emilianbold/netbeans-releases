@@ -39,6 +39,7 @@ import java.util.Iterator;
 import javax.swing.JButton;
 
 import javax.swing.JComponent;
+import javax.swing.JPanel;
 import javax.swing.JSlider;
 import javax.swing.JToolBar;
 import javax.swing.text.JTextComponent;
@@ -156,7 +157,7 @@ public class TreeMultiViewElement extends TopComponent
         // not sure that we need to add undo manager each time when 
         // component is activated, but calling method addUndoManager() more
         // than once is not a problem.
-        addUndoManager();
+////        addUndoManager();
     }
     
     @Override
@@ -191,7 +192,7 @@ public class TreeMultiViewElement extends TopComponent
             myTreeView.setVisible(true);
         }
     
-        addUndoManager();
+////        addUndoManager();
         //
         updateTMapTcGroupVisibility(true);
     }
@@ -244,7 +245,7 @@ public class TreeMultiViewElement extends TopComponent
 
     @Override
     public UndoRedo getUndoRedo() {
-        return getDataObject().getEditorSupport().getUndoManager();
+        return myDataObject.getEditorSupport().getUndoManager();
     }
 
     public JComponent getVisualRepresentation() {
@@ -291,7 +292,7 @@ public class TreeMultiViewElement extends TopComponent
         setLayout(new GridBagLayout());
         
         myTreeView = createTreeView();
-        JScrollPane scroll = new JScrollPane(myTreeView);
+        JScrollPane scroll = new JScrollPane(new JPanel()/*myTreeView*/);
         scroll.setBorder(null);
         GridBagConstraints gc = createGBConstraints();
         gc.gridx = 0;
@@ -394,15 +395,15 @@ public class TreeMultiViewElement extends TopComponent
         });
     }
 
-    /**
-     * Adds the undo/redo manager to the bpel model as an undoable
-     * edit listener, so it receives the edits onto the queue.
-     */
-    private void addUndoManager() {
-        TMapDataEditorSupport support = myDataObject.getEditorSupport();
-        if ( support!= null ){
-            QuietUndoManager undo = support.getUndoManager();
-            support.addUndoManagerToModel( undo );
-        }
-    }
+////    /**
+////     * Adds the undo/redo manager to the bpel model as an undoable
+////     * edit listener, so it receives the edits onto the queue.
+////     */
+////    private void addUndoManager() {
+////        TMapDataEditorSupport support = myDataObject.getEditorSupport();
+////        if ( support!= null ){
+////            QuietUndoManager undo = support.getUndoManager();
+////            support.addUndoManagerToModel( undo );
+////        }
+////    }
 }

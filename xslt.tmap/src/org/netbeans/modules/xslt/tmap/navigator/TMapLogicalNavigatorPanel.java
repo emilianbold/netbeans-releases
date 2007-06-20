@@ -24,6 +24,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.JComponent;
 import org.netbeans.modules.xslt.tmap.TMapDataObject;
 import org.netbeans.modules.xslt.tmap.model.api.TMapModel;
+import org.netbeans.spi.navigator.NavigatorPanel;
 import org.netbeans.spi.navigator.NavigatorPanelWithUndo;
 import org.openide.awt.UndoRedo;
 import org.openide.loaders.DataObject;
@@ -50,19 +51,25 @@ public class TMapLogicalNavigatorPanel implements NavigatorPanelWithUndo {
     
     private TMapModel myModel;
     
+    private static String NAV_PANEL_NAME = NbBundle.
+            getMessage(TMapLogicalNavigatorPanel.class, "LBL_TMAP_LOGICAL_VIEW"); // NOI18N
+    
+    public static String getUName() {
+        return NAV_PANEL_NAME;
+    }
+    
     private final LookupListener mySelectionListener = new LookupListener() {
         public void resultChanged(LookupEvent ev) {
             setNewContent();
         }
     };
-
+    
     public TMapLogicalNavigatorPanel() {
     }
 
     /** {@inheritDoc} */
     public String getDisplayName() {
-        return NbBundle.getMessage(TMapLogicalNavigatorPanel.class, 
-                "LBL_TMAP_LOGICAL_VIEW"); // NOI18N
+        return NAV_PANEL_NAME;
     }
 
     /** {@inheritDoc} */

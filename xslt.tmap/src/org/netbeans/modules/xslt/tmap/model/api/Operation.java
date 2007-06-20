@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.xslt.tmap.model.api;
 
+import java.util.List;
 import org.netbeans.modules.xslt.tmap.model.impl.TMapComponents;
 
 /**
@@ -30,9 +31,20 @@ public interface Operation extends TMapComponent,
 {
     TMapComponents TYPE = TMapComponents.SERVICE;
     
-    Invokes getInvokes();
+    List<Invokes> getInvokess();
     
-    void removeInvokes();
+    void removeInvokes(Invokes invokes);
     
-    void setInvokes(Invokes invokes);
+    void addInvokes(Invokes invokes);
+    
+    int getSizeOfInvokes();
+    
+    List<Transform> getTransforms();
+    
+    void removeTransforms(Transform transform);
+
+    void addTransform(Transform transform);
+    
+    int getSizeOfTransform();
+            
 }

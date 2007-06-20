@@ -25,8 +25,10 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.netbeans.modules.xslt.tmap.model.api.Invokes;
 import org.netbeans.modules.xslt.tmap.model.api.Operation;
+import org.netbeans.modules.xslt.tmap.model.api.Param;
 import org.netbeans.modules.xslt.tmap.model.api.Service;
 import org.netbeans.modules.xslt.tmap.model.api.TMapComponent;
+import org.netbeans.modules.xslt.tmap.model.api.Transform;
 import org.netbeans.modules.xslt.tmap.model.api.TransformMap;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -41,7 +43,9 @@ public enum NodeType {
     TRANSFORMMAP(TransformMap.class),
     SERVICE(Service.class),
     OPERATION(Operation.class),
-    INVOKES(Invokes.class);
+    INVOKES(Invokes.class),
+    TRANSFORM(Transform.class),
+    PARAM(Param.class);
 
     private AtomicReference<String> myDisplayName = new AtomicReference<String>();
     private AtomicReference<Image> myDefaultImage = new AtomicReference<Image>();

@@ -31,6 +31,7 @@ import javax.swing.tree.TreeSelectionModel;
 import org.netbeans.modules.print.spi.PrintProvider;
 import org.netbeans.modules.print.spi.PrintProviderCookie;
 import org.netbeans.modules.soa.ui.ExtendedLookup;
+import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xslt.tmap.model.api.TMapModel;
 import org.netbeans.modules.xslt.tmap.nodes.LogicalTreeHandler;
 import org.netbeans.modules.xslt.tmap.nodes.NavigatorNodeFactory;
@@ -43,6 +44,7 @@ import org.openide.explorer.ExplorerUtils;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.ProxyLookup;
 
 /**
  *
@@ -155,6 +157,9 @@ public class TMapLogicalPanel extends JPanel
 
     private boolean initNavTree() {
         myExplorerManager = new ExplorerManager();
+        if (!Model.State.VALID.equals(myModel.getState())) {
+            return false;
+        }
         initActionMap();
         Lookup contextLookup = getContextLookup();
         Node rootNode = NavigatorNodeFactory.getInstance()
@@ -215,7 +220,9 @@ public class TMapLogicalPanel extends JPanel
 //////            .getValue(FindUsagesAction.ACCELERATOR_KEY), FINDUSAGES); // NOI18N
         
         // ...and initialization of lookup variable
-        myLookup = ExplorerUtils.createLookup(myExplorerManager, actionMap);
+
+        //myLookup = ExplorerUtils.createLookup(myExplorerManager, actionMap);
+        myLookup = new ProxyLookup(myContextLookup, ExplorerUtils.createLookup(myExplorerManager, actionMap));
     }
 
 }

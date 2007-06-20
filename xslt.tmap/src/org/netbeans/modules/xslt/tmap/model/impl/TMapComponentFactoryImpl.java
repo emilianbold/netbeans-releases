@@ -20,9 +20,11 @@ package org.netbeans.modules.xslt.tmap.model.impl;
 
 import org.netbeans.modules.xslt.tmap.model.api.Invokes;
 import org.netbeans.modules.xslt.tmap.model.api.Operation;
+import org.netbeans.modules.xslt.tmap.model.api.Param;
 import org.netbeans.modules.xslt.tmap.model.api.Service;
 import org.netbeans.modules.xslt.tmap.model.api.TMapComponent;
 import org.netbeans.modules.xslt.tmap.model.api.TMapComponentFactory;
+import org.netbeans.modules.xslt.tmap.model.api.Transform;
 import org.netbeans.modules.xslt.tmap.model.api.TransformMap;
 import org.w3c.dom.Element;
 
@@ -57,6 +59,14 @@ public class TMapComponentFactoryImpl implements TMapComponentFactory {
         return new InvokesImpl(getModel());
     }
 
+    public Transform createTransform() {
+        return new TransformImpl(getModel());
+    }
+
+    public Param createParam() {
+        return new ParamImpl(getModel());
+    }
+
     public TMapComponent create(Element child, TMapComponent parent) {
         TMapComponentBuildVisitor visitor = getBuilder();
         return visitor.createSubComponent( parent , child  );
@@ -75,5 +85,4 @@ public class TMapComponentFactoryImpl implements TMapComponentFactory {
     private TMapModelImpl getModel() {
         return myModel;
     }
-    
 }

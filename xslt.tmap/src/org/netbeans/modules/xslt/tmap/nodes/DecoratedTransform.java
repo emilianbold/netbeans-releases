@@ -16,40 +16,19 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-package org.netbeans.modules.xslt.tmap.model.api;
+package org.netbeans.modules.xslt.tmap.nodes;
+
+import org.netbeans.modules.xslt.tmap.model.api.Transform;
 
 /**
  *
  * @author Vitaly Bychkov
  * @version 1.0
  */
-public class TMapVisitorAdapter implements TMapVisitor {
+public class DecoratedTransform  extends DecoratedTMapComponentAbstract<Transform> {
 
-    public void visit(TransformMap transformMap) {
-        visit((TMapComponent)transformMap);
+    public DecoratedTransform(Transform orig) {
+        super(orig);
     }
-
-    public void visit(Service service) {
-        visit((TMapComponent)service);
-    }
-
-    public void visit(Operation operation) {
-        visit((TMapComponent)operation);
-    }
-
-    public void visit(Invokes invokes) {
-        visit((TMapComponent)invokes);
-    }
-
-    public void visit(Transform transform) {
-        visit((TMapComponent)transform);
-    }
-
-    public void visit(Param param) {
-        visit((TMapComponent)param);
-    }
-
-    private void visit(TMapComponent component) {
-    }
-
 }
+

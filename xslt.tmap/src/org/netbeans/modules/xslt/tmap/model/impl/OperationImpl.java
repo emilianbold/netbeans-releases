@@ -18,12 +18,14 @@
  */
 package org.netbeans.modules.xslt.tmap.model.impl;
 
+import java.util.List;
 import org.netbeans.modules.xml.xam.Reference;
 import org.netbeans.modules.xslt.tmap.model.api.BooleanType;
 import org.netbeans.modules.xslt.tmap.model.api.Invokes;
 import org.netbeans.modules.xslt.tmap.model.api.Operation;
 import org.netbeans.modules.xslt.tmap.model.api.TMapAttributes;
 import org.netbeans.modules.xslt.tmap.model.api.TMapVisitor;
+import org.netbeans.modules.xslt.tmap.model.api.Transform;
 import org.netbeans.modules.xslt.tmap.model.api.TransformerDescriptor;
 import org.netbeans.modules.xslt.tmap.model.api.WSDLReference;
 import org.w3c.dom.Element;
@@ -47,18 +49,6 @@ public class OperationImpl extends TMapComponentAbstract
 
     public void accept(TMapVisitor visitor) {
         visitor.visit(this);
-    }
-
-    public Invokes getInvokes() {
-        return getChild(Invokes.class);
-    }
-
-    public void removeInvokes() {
-        removeChild(TYPE.getTagName(), getInvokes());
-    }
-
-    public void setInvokes(Invokes invokes) {
-        setChild(Invokes.class, TYPE.getTagName(), invokes, TYPE.getChildTypes());
     }
 
     public Reference<org.netbeans.modules.xml.wsdl.model.Operation> getOperation() {
@@ -93,4 +83,39 @@ public class OperationImpl extends TMapComponentAbstract
     public Class<Operation> getComponentType() {
         return Operation.class;
     }
+
+    public List<Invokes> getInvokess() {
+        return getChildren(Invokes.class);
+    }
+
+    public void removeInvokes(Invokes invokes) {
+        removeChild(TYPE.getTagName(), invokes);
+    }
+
+    public void addInvokes(Invokes invokes) {
+        addAfter(TYPE.getTagName(), invokes, TYPE.getChildTypes());
+    }
+
+    public int getSizeOfInvokes() {
+        List<Invokes> invokes = getInvokess();
+        return invokes == null ? 0 : invokes.size();
+    }
+
+    public List<Transform> getTransforms() {
+        return getChildren(Transform.class);
+    }
+
+    public void removeTransforms(Transform transform) {
+        removeChild(TYPE.getTagName(), transform);
+    }
+
+    public void addTransform(Transform transform) {
+        addAfter(TYPE.getTagName(), transform, TYPE.getChildTypes());
+    }
+
+    public int getSizeOfTransform() {
+        List<Transform> transforms = getTransforms();
+        return transforms == null ? 0 : transforms.size();
+    }
+
 }

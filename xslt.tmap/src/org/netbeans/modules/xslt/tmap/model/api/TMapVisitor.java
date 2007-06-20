@@ -48,4 +48,15 @@ public interface TMapVisitor {
      */
     void visit(Invokes invokes);
 
+    /**
+     * Visit "transform" element.
+     * @param transform visited element
+     */
+    void visit(Transform transform);
+
+    /**
+     * Visit "param" element.
+     * @param param visited element
+     */
+    void visit(Param param);
 }

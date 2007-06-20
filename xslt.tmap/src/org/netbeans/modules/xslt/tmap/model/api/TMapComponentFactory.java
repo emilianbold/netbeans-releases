@@ -26,29 +26,31 @@ import org.netbeans.modules.xml.xam.dom.ComponentFactory;
  * @version 1.0
  */
 public interface TMapComponentFactory extends ComponentFactory<TMapComponent> {
-//<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-//<xsltmap xmlns:ns0="http://sun.com/XsltFilterTest" xmlns:ns1="http://sun.com/FileFilterTest">
-//    <service partnerLinkType="ns0:pltFilterTest1" roleName="server">
-//        <operation opName="copyEmpl" file="Empl-Input2Output.xsl">
-//            <invokes partnerLinkType="ns1:pltFilterTest2" roleName="client"
-//                     opName="writeEmpl" />
-//        </operation>
-//    </service>
 
-//    <filterOneWay>
-//        <input  partnerLink="{http://sun.com/XsltFilterTest}pltFilterTest1"       
-//                roleName="server"            
-//                portType="{http://sun.com/XsltFilterTest}xsltFilterPort"
-//                operation="copyEmpl"
-//                messageType="{http://sun.com/FileFilterTest}output-msg"
-//                file="Empl-Input2Output.xsl" />
-//        <output partnerLink="{http://sun.com/FileFilterTest}pltFilterTest2"
-//                roleName="client"
-//                portType="{http://sun.com/FileFilterTest}fileFilterPort"
-//                operation="writeEmpl" />
-//    </filterOneWay>
-//</xsltmap>
-    
+/**
+ * <p>
+ * The following transformmap sample specifies the expected content in transfoprmmap.
+ * 
+ * <pre>
+ * &lt;?xml version="1.0" encoding="UTF-8" standalone="yes"?&gt;
+ * &lt;transformmap xmlns='http://xml.netbeans.org/schema/transformmap'&gt;
+ *        
+ *      &lt;service partnerLinkType="ns0:plt1" roleName="role1"&gt;
+ *            &lt;operation opName="operation0"&gt;
+ *                &lt;transform result="" source="" file=""&gt;
+ *                    &lt;param name="param1" type="t1"&gt;&lt;/param&gt;
+ *                    &lt;param name="param2" type="t2"&gt;&lt;/param&gt;
+ *                &lt;/transform&gt;
+ *            &lt;/operation&gt;
+ *            &lt;operation opName="operation1"&gt;
+ *                &lt;invokes  roleName="role2" partnerLinkType="ns0:plt2" inputVariable=""  outputVariable=""/&gt;
+ *            &lt;/operation&gt;
+ *        &lt;/service&gt;
+ * 
+ * &lt;/transformmap&gt;
+ * </pre>
+ */
+
     TransformMap createTransformMap();
     
     Service createService();
@@ -56,4 +58,8 @@ public interface TMapComponentFactory extends ComponentFactory<TMapComponent> {
     Operation createOperation();
     
     Invokes createInvokes();
+
+    Transform createTransform();
+
+    Param createParam();
 }

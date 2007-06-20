@@ -37,7 +37,14 @@ public enum TMapAttributes implements Attribute {
     ROLE_NAME(PartnerLinkTypeReference.ROLE_NAME, Role.class, AttributesType.AttrType.NCNAME),
     OPERATION_NAME(OperationReference.OPERATION_NAME, Operation.class, AttributesType.AttrType.NCNAME),
     TRANSFORM_JBI(TransformerDescriptor.TRANSFORM_JBI, Boolean.class),
-    FILE(TransformerDescriptor.FILE, String.class);
+    INPUT_VARIABLE(Invokes.INPUT_VARIABLE, String.class),
+    OUTPUT_VARIABLE(Invokes.OUTPUT_VARIABLE, String.class),
+    SOURCE(Transform.SOURCE, String.class),
+    RESULT(Transform.RESULT, String.class),
+    TYPE(Param.TYPE, String.class),
+    NAME(Param.NAME, String.class),
+    VALUE(Param.VALUE, String.class),
+    FILE(Transform.FILE, String.class);
 
     private String myName;
     private Class myAttributeType;

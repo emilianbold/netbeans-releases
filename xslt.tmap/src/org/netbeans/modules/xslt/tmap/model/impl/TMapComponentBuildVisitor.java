@@ -20,9 +20,11 @@ package org.netbeans.modules.xslt.tmap.model.impl;
 
 import org.netbeans.modules.xslt.tmap.model.api.Invokes;
 import org.netbeans.modules.xslt.tmap.model.api.Operation;
+import org.netbeans.modules.xslt.tmap.model.api.Param;
 import org.netbeans.modules.xslt.tmap.model.api.Service;
 import org.netbeans.modules.xslt.tmap.model.api.TMapComponent;
 import org.netbeans.modules.xslt.tmap.model.api.TMapVisitor;
+import org.netbeans.modules.xslt.tmap.model.api.Transform;
 import org.netbeans.modules.xslt.tmap.model.api.TransformMap;
 import org.w3c.dom.Element;
 
@@ -81,11 +83,22 @@ public class TMapComponentBuildVisitor implements TMapVisitor {
     public void visit(Operation operation) {
         if (isAcceptable(TMapComponents.INVOKES)) {
             setResult(new InvokesImpl(getModel(), getElement()));
+        } else if (isAcceptable(TMapComponents.TRANSFORM)) {
+            setResult(new TransformImpl(getModel(), getElement()));
         }
     }
 
     public void visit(Invokes invokes) {
         
+    }
+
+    public void visit(Transform transform) {
+        if (isAcceptable(TMapComponents.PARAM)) {
+            setResult(new ParamImpl(getModel(), getElement()));
+        }
+    }
+
+    public void visit(Param param) {
     }
 
     void init(){
@@ -112,5 +125,4 @@ public class TMapComponentBuildVisitor implements TMapVisitor {
     private void setResult( TMapComponent component ) {
         myResult = component;
     }
-    
 }
