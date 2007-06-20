@@ -75,9 +75,6 @@ public class FacesMovePanel extends JPanel implements ActionListener, CustomRefa
         folderComboBox.addActionListener(this);        
         
         project = fo != null ? FileOwnerQuery.getOwner(fo):OpenProjects.getDefault().getOpenProjects()[0];
-        
-        // TODO Preselected folder
-        initValues(fo);
     }
     
     private boolean initialized = false;
@@ -86,6 +83,7 @@ public class FacesMovePanel extends JPanel implements ActionListener, CustomRefa
         if (initialized)
             return ;
         //put initialization code here
+        initValues(fo);
         initialized = true;
     }
     
