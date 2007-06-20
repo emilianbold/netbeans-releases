@@ -77,7 +77,7 @@ public class JSFMoveClassPlugin implements RefactoringPlugin{
         FileObject fileObject = refactoring.getRefactoringSource().lookup(FileObject.class);    
         treePathHandle = refactoring.getRefactoringSource().lookup(TreePathHandle.class);
         if (fileObject != null){
-            if (fileObject.isFolder()){
+            if (fileObject.isFolder() && (JSFRefactoringUtils.isJavaFile(fileObject) || fileObject.isFolder())){
                 // moving folder
                 // find the old package name
                 ClassPath classPath = ClassPath.getClassPath(fileObject, ClassPath.SOURCE);

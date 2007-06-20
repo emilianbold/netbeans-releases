@@ -112,5 +112,10 @@ public class JSFRefactoringUtils {
             }
         }
     }
-    
+
+    private static final String JAVA_MIME_TYPE = "text/x-java"; //NOI18N
+
+    public static boolean isJavaFile(FileObject f) {
+        return JAVA_MIME_TYPE.equals(f.getMIMEType()); 
+    }
 }

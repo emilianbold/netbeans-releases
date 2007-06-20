@@ -91,7 +91,7 @@ public class JSFRenamePlugin implements RefactoringPlugin {
             NonRecursiveFolder nonRecursivefolder = refactoring.getRefactoringSource().lookup(NonRecursiveFolder.class);
             treePathHandle = refactoring.getRefactoringSource().lookup(TreePathHandle.class);
             
-            if (fileObject != null){
+            if (fileObject != null && (JSFRefactoringUtils.isJavaFile(fileObject) || fileObject.isFolder())) {
                 if (fileObject.isFolder()){
                     // renaming folder -> recursively
                     
