@@ -26,11 +26,15 @@ import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.SortedMap;
+import java.util.SortedSet;
+import java.util.StringTokenizer;
 import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.zip.ZipEntry;
@@ -71,6 +75,7 @@ public class LayerIndex extends Task {
         }
         SortedMap<String,String> files = new TreeMap<String,String>(); // layer path -> cnb
         SortedMap<String,SortedMap<String,String>> labels = new TreeMap<String,SortedMap<String,String>>(); // layer path -> cnb -> label
+        final Map<String,Integer> positions = new TreeMap<String,Integer>(); // layer path -> position
         for (FileSet fs : filesets) {
             DirectoryScanner ds = fs.getDirectoryScanner(getProject());
             File basedir = ds.getBasedir();
@@ -92,7 +97,7 @@ public class LayerIndex extends Task {
                         if (layer == null) {
                             continue;
                         }
-                        parse(jf.getInputStream(jf.getEntry(layer)), files, labels, cnb, jf);
+                        parse(jf.getInputStream(jf.getEntry(layer)), files, labels, positions, cnb, jf);
                     } finally {
                         jf.close();
                     }
@@ -109,9 +114,51 @@ public class LayerIndex extends Task {
         }
         try {
             PrintWriter pw = output != null ? new PrintWriter(output) : null;
-            for (Map.Entry<String,String> entry : files.entrySet()) {
-                String path = entry.getKey();
-                String cnb = entry.getValue();
+            SortedSet<String> layerPaths = new TreeSet<String>(new Comparator<String>() {
+                public int compare(String p1, String p2) {
+                    StringTokenizer tok1 = new StringTokenizer(p1, "/");
+                    StringTokenizer tok2 = new StringTokenizer(p2, "/");
+                    String prefix = "";
+                    while (tok1.hasMoreTokens()) {
+                        String piece1 = tok1.nextToken();
+                        if (tok2.hasMoreTokens()) {
+                            String piece2 = tok2.nextToken();
+                            if (piece1.equals(piece2)) {
+                                prefix += piece1 + "/";
+                            } else {
+                                Integer pos1 = pos(prefix + piece1);
+                                Integer pos2 = pos(prefix + piece2);
+                                if (pos1 == null) {
+                                    if (pos2 == null) {
+                                        return piece1.compareTo(piece2);
+                                    } else {
+                                        return 1;
+                                    }
+                                } else {
+                                    if (pos2 == null) {
+                                        return -1;
+                                    } else {
+                                        return pos1 - pos2;
+                                    }
+                                }
+                            }
+                        } else {
+                            return 1;
+                        }
+                    }
+                    if (tok2.hasMoreTokens()) {
+                        return -1;
+                    }
+                    assert p1.equals(p2) : p1 + " vs. " + p2;
+                    return 0;
+                }
+                Integer pos(String path) {
+                    return positions.containsKey(path) ? positions.get(path) : positions.get(path + "/");
+                }
+            });
+            layerPaths.addAll(files.keySet());
+            for (String path : layerPaths) {
+                String cnb = files.get(path);
                 if (cnb == null) {
                     cnb = "";
                 }
@@ -125,6 +172,10 @@ public class LayerIndex extends Task {
                             line += String.format(" (%s: \"%s\")", labelEntry.getKey(), labelEntry.getValue());
                         }
                     }
+                }
+                Integer pos = positions.get(path);
+                if (pos != null) {
+                    line += String.format(" (position #%d)", pos);
                 }
                 if (pw != null) {
                     pw.println(line);
@@ -143,7 +194,8 @@ public class LayerIndex extends Task {
         }
     }
 
-    private void parse(InputStream is, final Map<String,String> files, final SortedMap<String,SortedMap<String,String>> labels, final String cnb, final JarFile jf) throws Exception {
+    private void parse(InputStream is, final Map<String,String> files, final SortedMap<String,SortedMap<String,String>> labels,
+            final Map<String,Integer> positions, final String cnb, final JarFile jf) throws Exception {
         SAXParserFactory f = SAXParserFactory.newInstance();
         f.setValidating(false);
         f.setNamespaceAware(false);
@@ -191,6 +243,15 @@ public class LayerIndex extends Task {
                         labels.put(prefix, cnb2label);
                     }
                     cnb2label.put(cnb, label);
+                } else if (qName.equals("attr") && attributes.getValue("name").equals("position")) {
+                    String intvalue = attributes.getValue("intvalue");
+                    if (intvalue != null) {
+                        try {
+                            positions.put(prefix, Integer.parseInt(intvalue));
+                        } catch (NumberFormatException x) {
+                            throw new SAXException(x);
+                        }
+                    }
                 }
             }
             @Override
