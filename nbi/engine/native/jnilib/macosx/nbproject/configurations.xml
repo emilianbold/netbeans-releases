@@ -1,39 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--
-  The contents of this file are subject to the terms of the Common Development and
-  Distribution License (the License). You may not use this file except in compliance
-  with the License.
-  
-  You can obtain a copy of the License at http://www.netbeans.org/cddl.html or
-  http://www.netbeans.org/cddl.txt.
-  
-  When distributing Covered Code, include this CDDL Header Notice in each file and
-  include the License file at http://www.netbeans.org/cddl.txt. If applicable, add
-  the following below the CDDL Header, with the fields enclosed by brackets []
-  replaced by your own identifying information:
-  
-      "Portions Copyrighted [year] [name of copyright owner]"
-  
-  The Original Software is NetBeans. The Initial Developer of the Original Software
-  is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun Microsystems, Inc. All
-  Rights Reserved.
--->
-
-<configurationDescriptor version="31">
+<configurationDescriptor version="35">
   <logicalFolder name="root" displayName="root" projectFiles="true">
     <logicalFolder name="SourceFiles"
                    displayName="Source Files"
                    projectFiles="true">
       <itemPath>../.common/src/CommonUtils.c</itemPath>
       <itemPath>../.unix/src/jni_UnixNativeUtils.c</itemPath>
-      <itemPath>../.unix/src/UnixUtils.c</itemPath>
     </logicalFolder>
     <logicalFolder name="HeaderFiles"
                    displayName="Header Files"
                    projectFiles="true">
       <itemPath>../.common/src/CommonUtils.h</itemPath>
       <itemPath>../.unix/src/jni_UnixNativeUtils.h</itemPath>
-      <itemPath>../.unix/src/UnixUtils.h</itemPath>
     </logicalFolder>
     <logicalFolder name="ResourceFiles"
                    displayName="Resource Files"
@@ -50,7 +28,10 @@
   <confs>
     <conf name="Debug" type="2">
       <toolsSet>
-        <compilerSet>1</compilerSet>
+        <compilerSet>GNU</compilerSet>
+        <cRequired>true</cRequired>
+        <cppRequired>true</cppRequired>
+        <fortranRequired>false</fortranRequired>
         <platform>4</platform>
       </toolsSet>
       <compileType>
@@ -70,8 +51,6 @@
           </includeDirectories>
           <commandLine>-arch i386 -arch ppc -isysroot /Developer/SDKs/MacOSX10.4u.sdk -dynamiclib</commandLine>
         </ccCompilerTool>
-        <fortranCompilerTool>
-        </fortranCompilerTool>
         <linkerTool>
           <output>dist/macosx.dylib</output>
           <stripSymbols>true</stripSymbols>
@@ -82,32 +61,23 @@
       </compileType>
       <item path="../.common/src/CommonUtils.c">
         <itemTool>0</itemTool>
-        <cCompilerTool>
-        </cCompilerTool>
       </item>
       <item path="../.common/src/CommonUtils.h">
         <itemTool>3</itemTool>
       </item>
       <item path="../.unix/src/jni_UnixNativeUtils.c">
         <itemTool>0</itemTool>
-        <cCompilerTool>
-        </cCompilerTool>
-      </item>
-      <item path="../.unix/src/UnixUtils.c">
-        <itemTool>0</itemTool>
-        <cCompilerTool>
-        </cCompilerTool>
       </item>
       <item path="../.unix/src/jni_UnixNativeUtils.h">
-        <itemTool>3</itemTool>
-      </item>
-      <item path="../.unix/src/UnixUtils.h">
         <itemTool>3</itemTool>
       </item>
     </conf>
     <conf name="Release" type="2">
       <toolsSet>
-        <compilerSet>1</compilerSet>
+        <compilerSet>GNU</compilerSet>
+        <cRequired>true</cRequired>
+        <cppRequired>true</cppRequired>
+        <fortranRequired>false</fortranRequired>
         <platform>4</platform>
       </toolsSet>
       <compileType>
@@ -127,26 +97,14 @@
       </compileType>
       <item path="../.common/src/CommonUtils.c">
         <itemTool>0</itemTool>
-        <cCompilerTool>
-        </cCompilerTool>
       </item>
       <item path="../.common/src/CommonUtils.h">
         <itemTool>3</itemTool>
       </item>
       <item path="../.unix/src/jni_UnixNativeUtils.c">
         <itemTool>0</itemTool>
-        <cCompilerTool>
-        </cCompilerTool>
-      </item>
-      <item path="../.unix/src/UnixUtils.c">
-        <itemTool>0</itemTool>
-        <cCompilerTool>
-        </cCompilerTool>
       </item>
       <item path="../.unix/src/jni_UnixNativeUtils.h">
-        <itemTool>3</itemTool>
-      </item>
-      <item path="../.unix/src/UnixUtils.h">
         <itemTool>3</itemTool>
       </item>
     </conf>

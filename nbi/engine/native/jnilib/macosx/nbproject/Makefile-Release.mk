@@ -15,16 +15,18 @@ RANLIB=ranlib
 CC=gcc
 CCC=g++
 CXX=g++
-FC=g77
+FC=
 
 # Include project Makefile
 include Makefile
 
+# Object Directory
+OBJECTDIR=build/Release/GNU-Generic
+
 # Object Files
 OBJECTFILES= \
-	build/Release/GNU-Generic/_ext/Users/tester/ks152834/Work/nbi-trunk/engine/native/macosx/../.unix/src/UnixUtils.o \
-	build/Release/GNU-Generic/_ext/Users/tester/ks152834/Work/nbi-trunk/engine/native/macosx/../.common/src/CommonUtils.o \
-	build/Release/GNU-Generic/_ext/Users/tester/ks152834/Work/nbi-trunk/engine/native/macosx/../.unix/src/jni_UnixNativeUtils.o
+	${OBJECTDIR}/_ext/Users/lipin/tmp/nbi/engine/native/jnilib/macosx/../.common/src/CommonUtils.o \
+	${OBJECTDIR}/_ext/Users/lipin/tmp/nbi/engine/native/jnilib/macosx/../.unix/src/jni_UnixNativeUtils.o
 
 # C Compiler Flags
 CFLAGS=
@@ -43,20 +45,16 @@ LDLIBSOPTIONS=
 .build-conf: ${BUILD_SUBPROJECTS} dist/Release/GNU-Generic/libmacosx.so
 
 dist/Release/GNU-Generic/libmacosx.so: ${OBJECTFILES}
-	@${MKDIR} -p dist/Release/GNU-Generic
+	${MKDIR} -p dist/Release/GNU-Generic
 	${LINK.c} -shared -o dist/Release/GNU-Generic/libmacosx.so ${OBJECTFILES} ${LDLIBSOPTIONS} 
 
-build/Release/GNU-Generic/_ext/Users/tester/ks152834/Work/nbi-trunk/engine/native/macosx/../.unix/src/UnixUtils.o: ../.unix/src/UnixUtils.c 
-	@${MKDIR} -p build/Release/GNU-Generic/_ext/Users/tester/ks152834/Work/nbi-trunk/engine/native/macosx/../.unix/src
-	$(COMPILE.c) -O2 -o build/Release/GNU-Generic/_ext/Users/tester/ks152834/Work/nbi-trunk/engine/native/macosx/../.unix/src/UnixUtils.o ../.unix/src/UnixUtils.c
+${OBJECTDIR}/_ext/Users/lipin/tmp/nbi/engine/native/jnilib/macosx/../.common/src/CommonUtils.o: ../.common/src/CommonUtils.c 
+	${MKDIR} -p ${OBJECTDIR}/_ext/Users/lipin/tmp/nbi/engine/native/jnilib/macosx/../.common/src
+	$(COMPILE.c) -O2 -o ${OBJECTDIR}/_ext/Users/lipin/tmp/nbi/engine/native/jnilib/macosx/../.common/src/CommonUtils.o ../.common/src/CommonUtils.c
 
-build/Release/GNU-Generic/_ext/Users/tester/ks152834/Work/nbi-trunk/engine/native/macosx/../.common/src/CommonUtils.o: ../.common/src/CommonUtils.c 
-	@${MKDIR} -p build/Release/GNU-Generic/_ext/Users/tester/ks152834/Work/nbi-trunk/engine/native/macosx/../.common/src
-	$(COMPILE.c) -O2 -o build/Release/GNU-Generic/_ext/Users/tester/ks152834/Work/nbi-trunk/engine/native/macosx/../.common/src/CommonUtils.o ../.common/src/CommonUtils.c
-
-build/Release/GNU-Generic/_ext/Users/tester/ks152834/Work/nbi-trunk/engine/native/macosx/../.unix/src/jni_UnixNativeUtils.o: ../.unix/src/jni_UnixNativeUtils.c 
-	@${MKDIR} -p build/Release/GNU-Generic/_ext/Users/tester/ks152834/Work/nbi-trunk/engine/native/macosx/../.unix/src
-	$(COMPILE.c) -O2 -o build/Release/GNU-Generic/_ext/Users/tester/ks152834/Work/nbi-trunk/engine/native/macosx/../.unix/src/jni_UnixNativeUtils.o ../.unix/src/jni_UnixNativeUtils.c
+${OBJECTDIR}/_ext/Users/lipin/tmp/nbi/engine/native/jnilib/macosx/../.unix/src/jni_UnixNativeUtils.o: ../.unix/src/jni_UnixNativeUtils.c 
+	${MKDIR} -p ${OBJECTDIR}/_ext/Users/lipin/tmp/nbi/engine/native/jnilib/macosx/../.unix/src
+	$(COMPILE.c) -O2 -o ${OBJECTDIR}/_ext/Users/lipin/tmp/nbi/engine/native/jnilib/macosx/../.unix/src/jni_UnixNativeUtils.o ../.unix/src/jni_UnixNativeUtils.c
 
 # Subprojects
 .build-subprojects:
