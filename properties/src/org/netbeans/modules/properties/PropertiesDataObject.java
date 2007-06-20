@@ -31,7 +31,11 @@ import java.util.Iterator;
 import java.util.TreeSet;
 
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.*;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataNode;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectExistsException;
+import org.openide.loaders.MultiDataObject;
 import org.openide.nodes.Children;
 import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node;
@@ -97,6 +101,7 @@ public final class PropertiesDataObject extends MultiDataObject implements Cooki
         return super.getLookup();
     }
     
+    @Override
     public Lookup getLookup() {
         if (lookup == null) {
             lookup = new ProxyLookup(
@@ -143,6 +148,7 @@ public final class PropertiesDataObject extends MultiDataObject implements Cooki
      * @return data object for the new primary
      * @throws IOException if there was a problem copying
      * @throws UserCancelException if the user cancelled the copy */
+    @Override
     protected synchronized DataObject handleCopy(DataFolder df) throws IOException {
         try {
             pasteSuffix = createPasteSuffix(df);
@@ -159,6 +165,7 @@ public final class PropertiesDataObject extends MultiDataObject implements Cooki
      * @return the moved primary file object
      * @throws IOException if there was a problem moving
      * @throws UserCancelException if the user cancelled the move */
+    @Override
     protected FileObject handleMove(DataFolder df) throws IOException {
         try {
             pasteSuffix = createPasteSuffix(df);
@@ -255,6 +262,7 @@ public final class PropertiesDataObject extends MultiDataObject implements Cooki
      * @return the node representation for this data object
      * @see DataNode
      */                                                           
+    @Override
     protected Node createNodeDelegate () {
         PropertiesChildren pc = new PropertiesChildren();
 
@@ -329,6 +337,7 @@ public final class PropertiesDataObject extends MultiDataObject implements Cooki
 
         /** Called to notify that the children has been asked for children
          * after and that they should set its keys. Overrides superclass method. */
+        @Override
         protected void addNotify () {
             mySetKeys();
             
@@ -351,6 +360,7 @@ public final class PropertiesDataObject extends MultiDataObject implements Cooki
          * its nodes associated to keys and that the keys could be cleared without
          * affecting any nodes (because nobody listens to that nodes). 
          * Overrides superclass method. */
+        @Override
         protected void removeNotify () {
             setKeys(new ArrayList<String>());
         }
