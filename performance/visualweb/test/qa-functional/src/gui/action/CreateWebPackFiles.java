@@ -167,31 +167,27 @@ public class CreateWebPackFiles extends org.netbeans.performance.test.utilities.
         log(":: do cleanup.....");
         long nodeTimeout = pto.getTimeouts().getTimeout("ComponentOperator.WaitStateTimeout");
         pto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 60000);
-        Node projectRootNode = pto.getProjectRootNode(project_name);
-        //projectRootNode.select();
-        
-        waitNoEvent(1000);
-        Node objNode;
-        objNode = new Node(projectRootNode,projectfolder);
-        objNode.select();
-        objNode = new Node(projectRootNode,projectfolder+"|"+ buildedname+suffix);
-        objNode.select();        
-        
-        pto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout",nodeTimeout); 
-        
-        log(":: Document: "+buildedname+suffix);
-        log(":: Selected: "+objNode.getTreePath().toString());
-        
+
         try {
+            waitNoEvent(2000);
+            Node projectRootNode = pto.getProjectRootNode(project_name);
+            projectRootNode.select();
+            waitNoEvent(2000);
+            Node objNode;
+            objNode = new Node(projectRootNode,projectfolder);
+            objNode.select();
+            objNode = new Node(projectRootNode,projectfolder+"|"+ buildedname+suffix);
+            objNode.select();             
             new DeleteAction().performShortcut(objNode);
             String dialogCaption = org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.visualweb.navigation.Bundle", "MSG_ConfirmDeleteObjectTitle");
             new NbDialogOperator(dialogCaption).yes();
             
         } catch (TimeoutExpiredException timeoutExpiredException) {
             log("Cleanup failed because of: "+timeoutExpiredException.getMessage());
+            pto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout",nodeTimeout);
             return;
         }
- 
+        pto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout",nodeTimeout); 
         log(":: cleanup passed");
     }
     
