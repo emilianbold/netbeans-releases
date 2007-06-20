@@ -311,7 +311,10 @@ public class FileBuilder
    private static long getElemHeaderEndPosition(ElementDescriptor elem)
    {
       String modelElemType = elem.getModelElemType();
-      long pos = elem.getPosition("Body Start") - 1;
+      long pos = elem.getPosition("Body Start");
+      if (pos < 0) 
+	  pos = elem.getPosition("EndPosition");
+      pos = pos -1;
       return pos;
    }
    
