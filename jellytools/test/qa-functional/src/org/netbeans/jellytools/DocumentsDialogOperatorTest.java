@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.jellytools;
@@ -170,9 +170,9 @@ public class DocumentsDialogOperatorTest extends JellyTestCase {
         documentsOper.switchToDocument();
         // clean up - delete editable source
         new DeleteAction().performAPI(editableSourceNode);
-        // "Confirm Object Deletion"
-        String confirmTitle = Bundle.getString("org.openide.explorer.Bundle",
-                                               "MSG_ConfirmDeleteObjectTitle"); // NOI18N
-        new NbDialogOperator(confirmTitle).yes();
+        // "Safe Delete"
+        String safeDeleteTitle = Bundle.getString("org.netbeans.modules.refactoring.spi.impl.Bundle", "LBL_SafeDel"); // NOI18N
+        String confirmButton = UIManager.getDefaults().get("OptionPane.okButtonText").toString(); // NOI18N
+        new NbDialogOperator(confirmTitle).ok();
     }
 }
