@@ -28,6 +28,12 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.OptionalDeploymentManage
 import org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer;
 
 import org.netbeans.modules.j2ee.websphere6.ui.wizard.*;
+// Dileep - Start compile fix
+import org.netbeans.modules.j2ee.deployment.plugins.spi.OptionalDeploymentManagerFactory;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.FindJSPServlet;
+// Dileep - Start compile fix
 
 /**
  * An entry point to the plugin's optional functionality, such as server
