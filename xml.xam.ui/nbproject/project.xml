@@ -147,6 +147,9 @@
                 <friend>org.netbeans.modules.bpel.editors.api</friend>
                 <friend>org.netbeans.modules.bpel.search</friend>
                 <friend>org.netbeans.modules.bpel.xpath</friend>
+                <friend>org.netbeans.modules.compapp.casaeditor</friend>
+                <friend>org.netbeans.modules.encoder.ui.basic</friend>
+                <friend>org.netbeans.modules.worklist.editor</friend>
                 <friend>org.netbeans.modules.xml.schema</friend>
                 <friend>org.netbeans.modules.xml.schema.abe</friend>
                 <friend>org.netbeans.modules.xml.schema.refactoring</friend>
@@ -156,8 +159,6 @@
                 <friend>org.netbeans.modules.xml.wsdlui</friend>
                 <friend>org.netbeans.modules.xslt.core</friend>
                 <friend>org.netbeans.modules.xslt.tmap</friend>
-                <friend>org.netbeans.modules.compapp.casaeditor</friend>
-                <friend>org.netbeans.modules.encoder.ui.basic</friend>
                 <package>org.netbeans.modules.xml.xam.ui</package>
                 <package>org.netbeans.modules.xml.xam.ui.actions</package>
                 <package>org.netbeans.modules.xml.xam.ui.category</package>
