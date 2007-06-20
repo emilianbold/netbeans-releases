@@ -33,9 +33,9 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.xml.nbprefuse.AnalysisConstants;
+import org.netbeans.modules.xml.refactoring.spi.SharedUtils;
 import org.netbeans.modules.xml.refactoring.spi.UIHelper;
 import org.netbeans.modules.xml.refactoring.ui.CancelSignal;
 import org.netbeans.modules.xml.schema.model.GlobalAttribute;
@@ -153,7 +153,7 @@ public class QueryUnusedGlobalsReader {
         
         List<SourceGroup> srcGrps =
                 QueryUtilities.getProjectSourceGroups(
-                model,JavaProjectConstants.SOURCES_TYPE_JAVA);
+                model,SharedUtils.SOURCES_TYPE_JAVA);
         
         //  lastly, the other files in the project
         for(SourceGroup srcGrp : srcGrps) {
@@ -295,7 +295,7 @@ public class QueryUnusedGlobalsReader {
             index = ELE;
         }
         
-        System.out.println("QueryUnusedGlobalsReader:: create node called");
+        //System.out.println("QueryUnusedGlobalsReader:: create node called");
         SchemaUIHelper uiHelper = new SchemaUIHelper();
         Node displayNode = uiHelper.getDisplayNode(sc);
   //      Node displayNode = RefactoringManager.getInstance().
