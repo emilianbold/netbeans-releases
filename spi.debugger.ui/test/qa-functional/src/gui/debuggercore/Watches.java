@@ -127,12 +127,7 @@ public class Watches extends JellyTestCase {
             checkTTVLine(jTableOperator, 2, "inheritedVpublic", "String", "\"Inherited Public Variable\"");
             checkTTVLine(jTableOperator, 3, "inheritedSpublic", "String", "\"Inherited Public Variable\"");
         } catch (Throwable th) {
-            try {
-                // capture screen before cleanup in finally clause is completed
-                PNGEncoder.captureScreen(getWorkDir().getAbsolutePath()+File.separator+"screenBeforeCleanup.png");
-            } catch (Exception e1) {
-                // ignore it
-            }
+            Utilities.captureScreen(this);
             throw th;
         }
     }
@@ -153,12 +148,7 @@ public class Watches extends JellyTestCase {
             checkTTVLine(jTableOperator, 2, "inheritedVprotected", "String", "\"Inherited Protected Variable\"");
             checkTTVLine(jTableOperator, 3, "inheritedSprotected", "String", "\"Inherited Protected Variable\"");
         } catch (Throwable th) {
-            try {
-                // capture screen before cleanup in finally clause is completed
-                PNGEncoder.captureScreen(getWorkDir().getAbsolutePath()+File.separator+"screenBeforeCleanup.png");
-            } catch (Exception e1) {
-                // ignore it
-            }
+            Utilities.captureScreen(this);
             throw th;
         }
     }
@@ -179,12 +169,7 @@ public class Watches extends JellyTestCase {
             checkTTVLine(jTableOperator, 2, "inheritedVprivate", "String", "\"Inherited Private Variable\"");
             checkTTVLine(jTableOperator, 3, "inheritedSprivate", "String", "\"Inherited Private Variable\"");
         } catch (Throwable th) {
-            try {
-                // capture screen before cleanup in finally clause is completed
-                PNGEncoder.captureScreen(getWorkDir().getAbsolutePath()+File.separator+"screenBeforeCleanup.png");
-            } catch (Exception e1) {
-                // ignore it
-            }
+            Utilities.captureScreen(this);
             throw th;
         }
     }
@@ -205,12 +190,7 @@ public class Watches extends JellyTestCase {
             checkTTVLine(jTableOperator, 2, "inheritedVpackagePrivate", "String", "\"Inherited Package-private Variable\"");
             checkTTVLine(jTableOperator, 3, "inheritedSpackagePrivate", "String", "\"Inherited Package-private Variable\"");
         } catch (Throwable th) {
-            try {
-                // capture screen before cleanup in finally clause is completed
-                PNGEncoder.captureScreen(getWorkDir().getAbsolutePath()+File.separator+"screenBeforeCleanup.png");
-            } catch (Exception e1) {
-                // ignore it
-            }
+            Utilities.captureScreen(this);
             throw th;
         }
     }
@@ -234,12 +214,7 @@ public class Watches extends JellyTestCase {
             assertTrue("Node \'clazz\' has no child nodes", hasChildNodes("clazz", jTableOperator));
             checkTTVLine(jTableOperator, 4, "n", "int", "50");
         } catch (Throwable th) {
-            try {
-                // capture screen before cleanup in finally clause is completed
-                PNGEncoder.captureScreen(getWorkDir().getAbsolutePath()+File.separator+"screenBeforeCleanup.png");
-            } catch (Exception e1) {
-                // ignore it
-            }
+            Utilities.captureScreen(this);
             throw th;
         }
     }
@@ -263,12 +238,7 @@ public class Watches extends JellyTestCase {
             checkTTVLine(jTableOperator, 3, "llist.getLast()", "String", "\"49. item\"");
             checkTTVLine(jTableOperator, 4, "llist.get(1)", "String", "\"1. item\"");
         } catch (Throwable th) {
-            try {
-                // capture screen before cleanup in finally clause is completed
-                PNGEncoder.captureScreen(getWorkDir().getAbsolutePath()+File.separator+"screenBeforeCleanup.png");
-            } catch (Exception e1) {
-                // ignore it
-            }
+            Utilities.captureScreen(this);
             throw th;
         }
     }
@@ -288,12 +258,7 @@ public class Watches extends JellyTestCase {
             checkTTVLine(jTableOperator, 1, "alist.toString()", "String", "\"[0. item, 1. item, 2. item, 3. item, 4. item, 5. item, 6. item, 7. item, 8. item, 9. item, 10. item, 11. item, 12. item, 13. item, 14. item, 15. item, 16. item, 17. item, 18. item, 19. item, 20. item, 21. item, 22. item, 23. item, 24. item, 25. item, 26. item, 27. item, 28. item, 29. item, 30. item, 31. item, 32. item, 33. item, 34. item, 35. item, 36. item, 37. item, 38. item, 39. item, 40. item, 41. item, 42. item, 43. item, 44. item, 45. item, 46. item, 47. item, 48. item, 49. item]\"");
             checkTTVLine(jTableOperator, 2, "alist.get(2)", "String", "\"2. item\"");
         } catch (Throwable th) {
-            try {
-                // capture screen before cleanup in finally clause is completed
-                PNGEncoder.captureScreen(getWorkDir().getAbsolutePath()+File.separator+"screenBeforeCleanup.png");
-            } catch (Exception e1) {
-                // ignore it
-            }
+            Utilities.captureScreen(this);
             throw th;
         }
     }
@@ -313,12 +278,7 @@ public class Watches extends JellyTestCase {
             checkTTVLine(jTableOperator, 1, "vec.toString()", "String", "\"[0. item, 1. item, 2. item, 3. item, 4. item, 5. item, 6. item, 7. item, 8. item, 9. item, 10. item, 11. item, 12. item, 13. item, 14. item, 15. item, 16. item, 17. item, 18. item, 19. item, 20. item, 21. item, 22. item, 23. item, 24. item, 25. item, 26. item, 27. item, 28. item, 29. item, 30. item, 31. item, 32. item, 33. item, 34. item, 35. item, 36. item, 37. item, 38. item, 39. item, 40. item, 41. item, 42. item, 43. item, 44. item, 45. item, 46. item, 47. item, 48. item, 49. item]\"");
             checkTTVLine(jTableOperator, 2, "vec.get(3)", "String", "\"3. item\"");
         } catch (Throwable th) {
-            try {
-                // capture screen before cleanup in finally clause is completed
-                PNGEncoder.captureScreen(getWorkDir().getAbsolutePath()+File.separator+"screenBeforeCleanup.png");
-            } catch (Exception e1) {
-                // ignore it
-            }
+            Utilities.captureScreen(this);
             throw th;
         }
     }
@@ -340,12 +300,7 @@ public class Watches extends JellyTestCase {
             checkTTVLine(jTableOperator, 2, "hmap.get(\"5\")", "String", "\"5. item\"");
             checkTTVLine(jTableOperator, 3, "hmap.put(\"6\",\"test\")", "String", "\"6. item\"");
         } catch (Throwable th) {
-            try {
-                // capture screen before cleanup in finally clause is completed
-                PNGEncoder.captureScreen(getWorkDir().getAbsolutePath()+File.separator+"screenBeforeCleanup.png");
-            } catch (Exception e1) {
-                // ignore it
-            }
+            Utilities.captureScreen(this);
             throw th;
         }
     }
@@ -367,12 +322,7 @@ public class Watches extends JellyTestCase {
             checkTTVLine(jTableOperator, 2, "htab.get(\"9\")", "String", "\"9. item\"");
             checkTTVLine(jTableOperator, 3, "htab.put(\"10\", \"test\")", "String", "\"10. item\"");
         } catch (Throwable th) {
-            try {
-                // capture screen before cleanup in finally clause is completed
-                PNGEncoder.captureScreen(getWorkDir().getAbsolutePath()+File.separator+"screenBeforeCleanup.png");
-            } catch (Exception e1) {
-                // ignore it
-            }
+            Utilities.captureScreen(this);
             throw th;
         }
     }
@@ -394,12 +344,7 @@ public class Watches extends JellyTestCase {
             checkTTVLine(jTableOperator, 2, "tmap.get(\"12\")", "String", "\"12. item\"");
             checkTTVLine(jTableOperator, 3, "tmap.put(\"13\",\"test\")", "String", "\"13. item\"");
         } catch (Throwable th) {
-            try {
-                // capture screen before cleanup in finally clause is completed
-                PNGEncoder.captureScreen(getWorkDir().getAbsolutePath()+File.separator+"screenBeforeCleanup.png");
-            } catch (Exception e1) {
-                // ignore it
-            }
+            Utilities.captureScreen(this);
             throw th;
         }
     }
@@ -419,12 +364,7 @@ public class Watches extends JellyTestCase {
             checkTTVLine(jTableOperator, 1, "tset.contains(\"14. item\")", "boolean", "true");
             checkTTVLine(jTableOperator, 2, "tset.iterator()", "TreeMap$KeyIterator", null);
         } catch (Throwable th) {
-            try {
-                // capture screen before cleanup in finally clause is completed
-                PNGEncoder.captureScreen(getWorkDir().getAbsolutePath()+File.separator+"screenBeforeCleanup.png");
-            } catch (Exception e1) {
-                // ignore it
-            }
+            Utilities.captureScreen(this);
             throw th;
         }
     }
@@ -453,12 +393,7 @@ public class Watches extends JellyTestCase {
             checkTTVLine(jTableOperator, 5, "pole.length", "int", "50");
             checkTTVLine(jTableOperator, 6, "pole[1]", "int", "0");
         } catch (Throwable th) {
-            try {
-                // capture screen before cleanup in finally clause is completed
-                PNGEncoder.captureScreen(getWorkDir().getAbsolutePath()+File.separator+"screenBeforeCleanup.png");
-            } catch (Exception e1) {
-                // ignore it
-            }
+            Utilities.captureScreen(this);
             throw th;
         }
     }
@@ -485,12 +420,7 @@ public class Watches extends JellyTestCase {
             checkTTVLine(jTableOperator, 4, "d2[1][1]", "int", "0");
             checkTTVLine(jTableOperator, 5, "d2[15].length", null, ">Array index \"15\" is out of range <0,9><");
         } catch (Throwable th) {
-            try {
-                // capture screen before cleanup in finally clause is completed
-                PNGEncoder.captureScreen(getWorkDir().getAbsolutePath()+File.separator+"screenBeforeCleanup.png");
-            } catch (Exception e1) {
-                // ignore it
-            }
+            Utilities.captureScreen(this);
             throw th;
         }
     }
@@ -554,12 +484,7 @@ public class Watches extends JellyTestCase {
                 assertTrue(e2.getMessage(), false);
             }
         } catch (Throwable th) {
-            try {
-                // capture screen before cleanup in finally clause is completed
-                PNGEncoder.captureScreen(getWorkDir().getAbsolutePath()+File.separator+"screenBeforeCleanup.png");
-            } catch (Exception e1) {
-                // ignore it
-            }
+            Utilities.captureScreen(this);
             throw th;
         }
     }

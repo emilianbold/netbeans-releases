@@ -132,12 +132,7 @@ public class LocalVariables extends JellyTestCase {
             checkTreeTableLine(jTableOperator, 4, "Vprivate", "String", "\"Private Variable\"");
             checkTreeTableLine(jTableOperator, 5, "VpackagePrivate", "String", "\"Package-private Variable\"");
         } catch (Throwable th) {
-            try {
-                // capture screen before cleanup in finally clause is completed
-                PNGEncoder.captureScreen(getWorkDir().getAbsolutePath()+File.separator+"screenBeforeCleanup.png");
-            } catch (Exception e1) {
-                // ignore it
-            }
+            Utilities.captureScreen(this);
             throw th;
         }
     }
@@ -153,12 +148,7 @@ public class LocalVariables extends JellyTestCase {
             checkTreeTableLine(jTableOperator, 12, "Sprivate", "String", "\"Private Variable\"");
             checkTreeTableLine(jTableOperator, 13, "SpackagePrivate", "String", "\"Package-private Variable\"");
         } catch (Throwable th) {
-            try {
-                // capture screen before cleanup in finally clause is completed
-                PNGEncoder.captureScreen(getWorkDir().getAbsolutePath()+File.separator+"screenBeforeCleanup.png");
-            } catch (Exception e1) {
-                // ignore it
-            }
+            Utilities.captureScreen(this);
             throw th;
         }
     }
@@ -174,12 +164,7 @@ public class LocalVariables extends JellyTestCase {
             checkTreeTableLine(jTableOperator, 17, "inheritedSprivate", "String", "\"Inherited Private Variable\"");
             checkTreeTableLine(jTableOperator, 18, "inheritedSpackagePrivate", "String", "\"Inherited Package-private Variable\"");
         } catch (Throwable th) {
-            try {
-                // capture screen before cleanup in finally clause is completed
-                PNGEncoder.captureScreen(getWorkDir().getAbsolutePath()+File.separator+"screenBeforeCleanup.png");
-            } catch (Exception e1) {
-                // ignore it
-            }
+            Utilities.captureScreen(this);
             throw th;
         }
     }
@@ -195,12 +180,7 @@ public class LocalVariables extends JellyTestCase {
             checkTreeTableLine(jTableOperator, 22, "inheritedVprivate", "String", "\"Inherited Private Variable\"");
             checkTreeTableLine(jTableOperator, 23, "inheritedVpackagePrivate", "String", "\"Inherited Package-private Variable\"");
         } catch (Throwable th) {
-            try {
-                // capture screen before cleanup in finally clause is completed
-                PNGEncoder.captureScreen(getWorkDir().getAbsolutePath()+File.separator+"screenBeforeCleanup.png");
-            } catch (Exception e1) {
-                // ignore it
-            }
+            Utilities.captureScreen(this);
             throw th;
         }
     }
@@ -274,12 +254,7 @@ public class LocalVariables extends JellyTestCase {
             checkTreeTableLine(jTableOperator, count++, "d2", "int[][]", null);
             assertTrue("Node d2 has no child nodes", hasChildNodes("d2", treeTableOperator));
         } catch (Throwable th) {
-            try {
-                // capture screen before cleanup in finally clause is completed
-                PNGEncoder.captureScreen(getWorkDir().getAbsolutePath()+File.separator+"screenBeforeCleanup.png");
-            } catch (Exception e1) {
-                // ignore it
-            }
+            Utilities.captureScreen(this);
             throw th;
         }
     }
@@ -316,12 +291,7 @@ public class LocalVariables extends JellyTestCase {
                 assertTrue(e2.getMessage(), false);
             }
         } catch (Throwable th) {
-            try {
-                // capture screen before cleanup in finally clause is completed
-                PNGEncoder.captureScreen(getWorkDir().getAbsolutePath()+File.separator+"screenBeforeCleanup.png");
-            } catch (Exception e1) {
-                // ignore it
-            }
+            Utilities.captureScreen(this);
             throw th;
         }
     }
@@ -362,12 +332,7 @@ public class LocalVariables extends JellyTestCase {
                 assertEquals("Wrong sub-expression node", "return println()", children[4]);
 
         } catch (Throwable th) {
-            try {
-                // capture screen before cleanup in finally clause is completed
-                PNGEncoder.captureScreen(getWorkDir().getAbsolutePath()+File.separator+"screenBeforeCleanup.png");
-            } catch (Exception e1) {
-                // ignore it
-            }
+            Utilities.captureScreen(this);
             throw th;
         }
     }

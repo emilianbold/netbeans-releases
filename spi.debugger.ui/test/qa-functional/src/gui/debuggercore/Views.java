@@ -92,12 +92,7 @@ public class Views extends JellyTestCase {
             assertNotNull("Call stack view was not opened after debugger start", TopComponentOperator.findTopComponent(Utilities.callStackViewTitle, 0));
             assertNotNull("Watches view was not opened after debugger start", TopComponentOperator.findTopComponent(Utilities.watchesViewTitle, 0));
         } catch (Throwable th) {
-            try {
-                // capture screen before cleanup in finally clause is completed
-                PNGEncoder.captureScreen(getWorkDir().getAbsolutePath()+File.separator+"screenBeforeCleanup.png");
-            } catch (Exception e1) {
-                // ignore it
-            }
+            Utilities.captureScreen(this);
             throw th;
         }
     }
@@ -110,12 +105,7 @@ public class Views extends JellyTestCase {
             assertEquals("MemoryView.updateConsumption:80", Utilities.removeTags(jTableOperator.getValueAt(1,0).toString()));
             assertEquals("MemoryView.main:117", Utilities.removeTags(jTableOperator.getValueAt(2,0).toString()));
         } catch (Throwable th) {
-            try {
-                // capture screen before cleanup in finally clause is completed
-                PNGEncoder.captureScreen(getWorkDir().getAbsolutePath()+File.separator+"screenBeforeCleanup.png");
-            } catch (Exception e1) {
-                // ignore it
-            }
+            Utilities.captureScreen(this);
             throw th;
         }
     }
@@ -131,12 +121,7 @@ public class Views extends JellyTestCase {
                 assertTrue("Node " + entries[i] + " not displayed in Classes view", entries[i].equals(Utilities.removeTags(treeTableOperator.getValueAt(i, 0).toString())));
             }
         } catch (Throwable th) {
-            try {
-                // capture screen before cleanup in finally clause is completed
-                PNGEncoder.captureScreen(getWorkDir().getAbsolutePath()+File.separator+"screenBeforeCleanup.png");
-            } catch (Exception e1) {
-                // ignore it
-            }
+            Utilities.captureScreen(this);
             throw th;
         }
     }
@@ -155,12 +140,7 @@ public class Views extends JellyTestCase {
             assertEquals("MemoryView class is not in classes", "examples.advanced.MemoryView", Utilities.removeTags(jTableOperator.getValueAt(0,0).toString()));
             assertEquals("Instances number is wrong", "1 (0%)", Utilities.removeTags(jTableOperator.getValueAt(0,2).toString()));
         } catch (Throwable th) {
-            try {
-                // capture screen before cleanup in finally clause is completed
-                PNGEncoder.captureScreen(getWorkDir().getAbsolutePath()+File.separator+"screenBeforeCleanup.png");
-            } catch (Exception e1) {
-                // ignore it
-            }
+            Utilities.captureScreen(this);
             throw th;
         }
     }
@@ -178,12 +158,7 @@ public class Views extends JellyTestCase {
             filter.pushKey(KeyEvent.VK_ENTER);
             new EventTool().waitNoEvent(500);
         } catch (Throwable th) {
-            try {
-                // capture screen before cleanup in finally clause is completed
-                PNGEncoder.captureScreen(getWorkDir().getAbsolutePath()+File.separator+"screenBeforeCleanup.png");
-            } catch (Exception e1) {
-                // ignore it
-            }
+            Utilities.captureScreen(this);
             throw th;
         }
     }
@@ -199,12 +174,7 @@ public class Views extends JellyTestCase {
             assertTrue("Thread Finalizer is not shown in threads view", "Finalizer".equals(Utilities.removeTags(jTableOperator.getValueAt(4,0).toString())));
             assertTrue("Thread Signal Dispatcher is not shown in threads view", "Signal Dispatcher".equals(Utilities.removeTags(jTableOperator.getValueAt(5,0).toString())));
         } catch (Throwable th) {
-            try {
-                // capture screen before cleanup in finally clause is completed
-                PNGEncoder.captureScreen(getWorkDir().getAbsolutePath()+File.separator+"screenBeforeCleanup.png");
-            } catch (Exception e1) {
-                // ignore it
-            }
+            Utilities.captureScreen(this);
             throw th;
         }
     }
@@ -224,12 +194,7 @@ public class Views extends JellyTestCase {
                 assertTrue(ex.getClass()+": "+ex.getMessage(), false);
             }
         } catch (Throwable th) {
-            try {
-                // capture screen before cleanup in finally clause is completed
-                PNGEncoder.captureScreen(getWorkDir().getAbsolutePath()+File.separator+"screenBeforeCleanup.png");
-            } catch (Exception e1) {
-                // ignore it
-            }
+            Utilities.captureScreen(this);
             throw th;
         }
     }
@@ -251,12 +216,7 @@ public class Views extends JellyTestCase {
             assertTrue("JDK source root is not shown in threads view", jdk);
             assertTrue("MemoryView source root is not shown in threads view", project);
         } catch (Throwable th) {
-            try {
-                // capture screen before cleanup in finally clause is completed
-                PNGEncoder.captureScreen(getWorkDir().getAbsolutePath()+File.separator+"screenBeforeCleanup.png");
-            } catch (Exception e1) {
-                // ignore it
-            }
+            Utilities.captureScreen(this);
             throw th;
         }
     }
@@ -271,12 +231,7 @@ public class Views extends JellyTestCase {
             new TopComponentOperator(Utilities.threadsViewTitle).close();
             new TopComponentOperator(Utilities.sourcesViewTitle).close();
         } catch (Throwable th) {
-            try {
-                // capture screen before cleanup in finally clause is completed
-                PNGEncoder.captureScreen(getWorkDir().getAbsolutePath()+File.separator+"screenBeforeCleanup.png");
-            } catch (Exception e1) {
-                // ignore it
-            }
+            Utilities.captureScreen(this);
             throw th;
         }
     }

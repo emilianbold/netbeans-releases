@@ -68,12 +68,7 @@ public class StartDebugger extends JellyTestCase {
             Utilities.getDebugToolbar().waitComponentVisible(true);
             Utilities.waitDebuggerConsole(Utilities.runningStatusBarText, 0);
         } catch (Throwable th) {
-            try {
-                // capture screen before cleanup in finally clause is completed
-                PNGEncoder.captureScreen(getWorkDir().getAbsolutePath()+File.separator+"screenBeforeCleanup.png");
-            } catch (Exception e1) {
-                // ignore it
-            }
+            Utilities.captureScreen(this);
             throw th;
         }
     }
@@ -85,12 +80,7 @@ public class StartDebugger extends JellyTestCase {
             Utilities.getDebugToolbar().waitComponentVisible(true);
             Utilities.waitDebuggerConsole(Utilities.runningStatusBarText, 0);
         } catch (Throwable th) {
-            try {
-                // capture screen before cleanup in finally clause is completed
-                PNGEncoder.captureScreen(getWorkDir().getAbsolutePath()+File.separator+"screenBeforeCleanup.png");
-            } catch (Exception e1) {
-                // ignore it
-            }
+            Utilities.captureScreen(this);
             throw th;
         }
     }
@@ -105,12 +95,7 @@ public class StartDebugger extends JellyTestCase {
             Utilities.getDebugToolbar().waitComponentVisible(true);
             Utilities.waitDebuggerConsole(Utilities.runningStatusBarText, 0);
         } catch (Throwable th) {
-            try {
-                // capture screen before cleanup in finally clause is completed
-                PNGEncoder.captureScreen(getWorkDir().getAbsolutePath()+File.separator+"screenBeforeCleanup.png");
-            } catch (Exception e1) {
-                // ignore it
-            }
+            Utilities.captureScreen(this);
             throw th;
         }
     }
@@ -122,12 +107,7 @@ public class StartDebugger extends JellyTestCase {
             Utilities.getDebugToolbar().waitComponentVisible(true);
             Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:", 0);
         } catch (Throwable th) {
-            try {
-                // capture screen before cleanup in finally clause is completed
-                PNGEncoder.captureScreen(getWorkDir().getAbsolutePath()+File.separator+"screenBeforeCleanup.png");
-            } catch (Exception e1) {
-                // ignore it
-            }
+            Utilities.captureScreen(this);
             throw th;
         }
     }
@@ -140,12 +120,7 @@ public class StartDebugger extends JellyTestCase {
             Utilities.getDebugToolbar().waitComponentVisible(true);
             Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:75", 0);
         } catch (Throwable th) {
-            try {
-                // capture screen before cleanup in finally clause is completed
-                PNGEncoder.captureScreen(getWorkDir().getAbsolutePath()+File.separator+"screenBeforeCleanup.png");
-            } catch (Exception e1) {
-                // ignore it
-            }
+            Utilities.captureScreen(this);
             throw th;
         }
     }

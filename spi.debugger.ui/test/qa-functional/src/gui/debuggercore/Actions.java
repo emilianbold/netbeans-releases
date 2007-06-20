@@ -106,36 +106,36 @@ public class Actions extends JellyTestCase {
             
             //main menu actions
             //check main menu debug main project action
-            assertTrue(Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.debugMainProjectItem, true));
+            assertTrue(Utilities.runMenu+"|"+Utilities.debugMainProjectItem, Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.debugMainProjectItem, true));
             //Step into
-            assertTrue(Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.stepIntoItem, true));
+            assertTrue(Utilities.runMenu+"|"+Utilities.stepIntoItem, Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.stepIntoItem, true));
             //new breakpoint
-            assertTrue(Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.newBreakpointItem, true));
+            assertTrue(Utilities.runMenu+"|"+Utilities.newBreakpointItem, Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.newBreakpointItem, true));
             //new watch
-            assertTrue(Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.newWatchItem, true));
+            assertTrue(Utilities.runMenu+"|"+Utilities.newWatchItem, Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.newWatchItem, true));
             //main menu actions disabled
             //check finish debugger
-            assertFalse(Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.finishSessionsItem, false));
+            assertFalse(Utilities.runMenu+"|"+Utilities.finishSessionsItem, Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.finishSessionsItem, false));
             //pause
-            assertFalse(Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.pauseItem, false));
+            assertFalse(Utilities.runMenu+"|"+Utilities.pauseItem, Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.pauseItem, false));
             //continue
-            assertFalse(Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.continueItem, false));
+            assertFalse(Utilities.runMenu+"|"+Utilities.continueItem, Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.continueItem, false));
             //step over
-            assertFalse(Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.stepOverItem, false));
+            assertFalse(Utilities.runMenu+"|"+Utilities.stepOverItem, Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.stepOverItem, false));
             //step over expression
-            assertFalse(Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.stepOverExpresItem, false));
+            assertFalse(Utilities.runMenu+"|"+Utilities.stepOverExpresItem, Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.stepOverExpresItem, false));
             //step out
-            assertFalse(Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.stepOutItem, false));
+            assertFalse(Utilities.runMenu+"|"+Utilities.stepOutItem, Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.stepOutItem, false));
             //run to cursor
-            assertFalse(Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.runToCursorItem, false));
+            assertFalse(Utilities.runMenu+"|"+Utilities.runToCursorItem, Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.runToCursorItem, false));
             //run into method
-            assertFalse(Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.runIntoMethodItem, false));
+            assertFalse(Utilities.runMenu+"|"+Utilities.runIntoMethodItem, Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.runIntoMethodItem, false));
             //apply code changes
-            assertFalse(Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.applyCodeChangesItem, false));
+            assertFalse(Utilities.runMenu+"|"+Utilities.applyCodeChangesItem, Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.applyCodeChangesItem, false));
             //toggle breakpoint
-            assertFalse(Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.toggleBreakpointItem, false));
+            assertFalse(Utilities.runMenu+"|"+Utilities.toggleBreakpointItem, Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.toggleBreakpointItem, false));
             //evaluate expression
-            assertFalse(Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.evaluateExpressionItem, false));
+            assertFalse(Utilities.runMenu+"|"+Utilities.evaluateExpressionItem, Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.evaluateExpressionItem, false));
             MainWindowOperator.getDefault().pushKey(KeyEvent.VK_ESCAPE);
             
             //open source file
@@ -172,21 +172,16 @@ public class Actions extends JellyTestCase {
             //tools menu
             //debug is not visible
             for (int i=0;i < MainWindowOperator.getDefault().getToolbarCount();i++) {
-                assertFalse(MainWindowOperator.getDefault().getToolbarName(i).equals(Utilities.debugToolbarLabel));
+                assertFalse("Debug toolbar is visible", MainWindowOperator.getDefault().getToolbarName(i).equals(Utilities.debugToolbarLabel));
             }
             //run
             ContainerOperator tbrop = MainWindowOperator.getDefault().getToolbar(Bundle.getString("org.netbeans.modules.project.ui.Bundle", "Toolbars/Build"));
-            assertTrue(MainWindowOperator.getDefault().getToolbarButton(tbrop, Bundle.getStringTrimmed("org.netbeans.modules.project.ui.actions.Bundle", "LBL_DebugMainProjectAction_Name")).isEnabled());
+            assertTrue("Debug Main Project toolbar action is not enabled", MainWindowOperator.getDefault().getToolbarButton(tbrop, Bundle.getStringTrimmed("org.netbeans.modules.project.ui.actions.Bundle", "LBL_DebugMainProjectAction_Name")).isEnabled());
             //assertTrue(MainWindowOperator.getDefault().getToolbarButton(tbrop, Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_Connect")).isEnabled());
             
             eo.close();
         } catch (Throwable th) {
-            try {
-                // capture screen before cleanup in finally clause is completed
-                PNGEncoder.captureScreen(getWorkDir().getAbsolutePath()+File.separator+"screenBeforeCleanup.png");
-            } catch (Exception e1) {
-                // ignore it
-            }
+            Utilities.captureScreen(this);
             throw th;
         }
     }
@@ -209,61 +204,59 @@ public class Actions extends JellyTestCase {
             
             //main menu actions
             //check main menu debug main project action
-            assertTrue(Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.debugMainProjectItem, true));
+            assertTrue(Utilities.runMenu+"|"+Utilities.debugMainProjectItem, Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.debugMainProjectItem, true));
             //Step into
-            assertTrue(Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.stepIntoItem, true));
+            assertTrue(Utilities.runMenu+"|"+Utilities.stepIntoItem, Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.stepIntoItem, true));
             //new breakpoint
-            assertTrue(Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.newBreakpointItem, true));
+            assertTrue(Utilities.runMenu+"|"+Utilities.newBreakpointItem, Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.newBreakpointItem, true));
             //new watch
-            assertTrue(Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.newWatchItem, true));
+            assertTrue(Utilities.runMenu+"|"+Utilities.newWatchItem, Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.newWatchItem, true));
             //check finish debugger
-            assertTrue(Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.finishSessionsItem, true));
+            assertTrue(Utilities.runMenu+"|"+Utilities.finishSessionsItem, Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.finishSessionsItem, true));
             //pause
-            assertFalse(Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.pauseItem, false));
+            assertFalse(Utilities.runMenu+"|"+Utilities.pauseItem, Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.pauseItem, false));
             //continue
-            assertTrue(Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.continueItem, true));
+            assertTrue(Utilities.runMenu+"|"+Utilities.continueItem, Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.continueItem, true));
             //step over
-            assertTrue(Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.stepOverItem, true));
+            assertTrue(Utilities.runMenu+"|"+Utilities.stepOverItem, Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.stepOverItem, true));
             //step over expression
-            assertTrue(Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.stepOverExpresItem, true));
+            assertTrue(Utilities.runMenu+"|"+Utilities.stepOverExpresItem, Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.stepOverExpresItem, true));
             //step out
-            assertTrue(Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.stepOutItem, true));
+            assertTrue(Utilities.runMenu+"|"+Utilities.stepOutItem, Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.stepOutItem, true));
             //run to cursor
-            assertTrue(Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.runToCursorItem, true));
+            assertTrue(Utilities.runMenu+"|"+Utilities.runToCursorItem, Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.runToCursorItem, true));
             //run into method
-            assertTrue(Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.runIntoMethodItem, true));
+            assertTrue(Utilities.runMenu+"|"+Utilities.runIntoMethodItem, Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.runIntoMethodItem, true));
             //apply code changes
-            assertTrue(Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.applyCodeChangesItem, true));
+            assertTrue(Utilities.runMenu+"|"+Utilities.applyCodeChangesItem, Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.applyCodeChangesItem, true));
             //toggle breakpoint
-            assertTrue(Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.toggleBreakpointItem, true));
+            assertTrue(Utilities.runMenu+"|"+Utilities.toggleBreakpointItem, Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.toggleBreakpointItem, true));
             //evaluate expression
-            assertTrue(Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.evaluateExpressionItem, true));
+            assertTrue(Utilities.runMenu+"|"+Utilities.evaluateExpressionItem, Utilities.verifyMainMenu(Utilities.runMenu+"|"+Utilities.evaluateExpressionItem, true));
             MainWindowOperator.getDefault().pushKey(KeyEvent.VK_ESCAPE);
             
             //debug toolbar
             ContainerOperator debugToolbarOper = Utilities.getDebugToolbar();
-            assertTrue(MainWindowOperator.getDefault().getToolbarButton(debugToolbarOper,
+            assertTrue("Toolbar action Finish is not enabled", MainWindowOperator.getDefault().getToolbarButton(debugToolbarOper,
                     Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_KillAction_name")).isEnabled());
-            assertFalse(MainWindowOperator.getDefault().getToolbarButton(debugToolbarOper,
+            assertFalse("Toolbar action Pause is not disabled", MainWindowOperator.getDefault().getToolbarButton(debugToolbarOper,
                     Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_Pause_action_name")).isEnabled());
-            assertTrue(MainWindowOperator.getDefault().getToolbarButton(debugToolbarOper,
+            assertTrue("Toolbar action Continue is not enabled", MainWindowOperator.getDefault().getToolbarButton(debugToolbarOper,
                     Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_Continue_action_name")).isEnabled());
             //step
-            assertTrue(MainWindowOperator.getDefault().getToolbarButton(debugToolbarOper,
+            assertTrue("Toolbar action Step ovet is not enabled", MainWindowOperator.getDefault().getToolbarButton(debugToolbarOper,
                     Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_Step_over_action_name")).isEnabled());
-            assertTrue(MainWindowOperator.getDefault().getToolbarButton(debugToolbarOper,
+            assertTrue("Toolbar action Step over expression is not enabled", MainWindowOperator.getDefault().getToolbarButton(debugToolbarOper,
                     Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_Step_operation_action_name")).isEnabled());
-            assertTrue(MainWindowOperator.getDefault().getToolbarButton(debugToolbarOper,
+            assertTrue("Toolbar action Step into is not enabled", MainWindowOperator.getDefault().getToolbarButton(debugToolbarOper,
                     Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_Step_into_action_name")).isEnabled());
-            assertTrue(MainWindowOperator.getDefault().getToolbarButton(debugToolbarOper,
+            assertTrue("Toolbar action Step out is not enabled", MainWindowOperator.getDefault().getToolbarButton(debugToolbarOper,
                     Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_Step_out_action_name")).isEnabled());
             //run to cursor
-            assertTrue(MainWindowOperator.getDefault().getToolbarButton(debugToolbarOper,
+            assertTrue("Toolbar action Run to cursor is not enabled", MainWindowOperator.getDefault().getToolbarButton(debugToolbarOper,
                     Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_Run_to_cursor_action_name")).isEnabled());
-            assertTrue(MainWindowOperator.getDefault().getToolbarButton(debugToolbarOper,
+            assertTrue("Toolbar action Apply code changes is not enabled", MainWindowOperator.getDefault().getToolbarButton(debugToolbarOper,
                     Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_Fix_action_name")).isEnabled());
-            //assertTrue(MainWindowOperator.getDefault().getToolbarButton(debugToolbarOper,
-                    //Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_New_Watch")).isEnabled());
             
             //remove breakpoint
             Utilities.deleteAllBreakpoints();
@@ -272,12 +265,7 @@ public class Actions extends JellyTestCase {
             //close sources
             eo.close();
         } catch (Throwable th) {
-            try {
-                // capture screen before cleanup in finally clause is completed
-                PNGEncoder.captureScreen(getWorkDir().getAbsolutePath()+File.separator+"screenBeforeCleanup.png");
-            } catch (Exception e1) {
-                // ignore it
-            }
+            Utilities.captureScreen(this);
             throw th;
         }
     }
@@ -293,12 +281,7 @@ public class Actions extends JellyTestCase {
             Utilities.toggleBreakpoint(eo, 80);
             assertTrue("Breakpoint annotation is not displayed", Utilities.checkAnnotation(eo, 80, "Breakpoint"));
         } catch (Throwable th) {
-            try {
-                // capture screen before cleanup in finally clause is completed
-                PNGEncoder.captureScreen(getWorkDir().getAbsolutePath()+File.separator+"screenBeforeCleanup.png");
-            } catch (Exception e1) {
-                // ignore it
-            }
+            Utilities.captureScreen(this);
             throw th;
         }
     }
@@ -317,12 +300,7 @@ public class Actions extends JellyTestCase {
             assertTrue("Breakpoint annotation is not on line 80", Utilities.checkAnnotation(eo, 80, "Breakpoint"));
             assertTrue("Current PC annotation is not on line 80", Utilities.checkAnnotation(eo, 80, "CurrentPC"));
         } catch (Throwable th) {
-            try {
-                // capture screen before cleanup in finally clause is completed
-                PNGEncoder.captureScreen(getWorkDir().getAbsolutePath()+File.separator+"screenBeforeCleanup.png");
-            } catch (Exception e1) {
-                // ignore it
-            }
+            Utilities.captureScreen(this);
             throw th;
         }
     }
@@ -334,12 +312,7 @@ public class Actions extends JellyTestCase {
             Utilities.toggleBreakpoint(eo, 80, false);
             assertFalse("Breakpoint annotation is not removed from line 80", Utilities.checkAnnotation(eo, 80, "Breakpoint"));
         } catch (Throwable th) {
-            try {
-                // capture screen before cleanup in finally clause is completed
-                PNGEncoder.captureScreen(getWorkDir().getAbsolutePath()+File.separator+"screenBeforeCleanup.png");
-            } catch (Exception e1) {
-                // ignore it
-            }
+            Utilities.captureScreen(this);
             throw th;
         }
     }
@@ -353,12 +326,7 @@ public class Actions extends JellyTestCase {
             assertTrue("CurrentPC annotation is not on line 92", Utilities.checkAnnotation(eo, 92, "CurrentPC"));
             assertTrue("Call Site annotation is not on line 80", Utilities.checkAnnotation(eo, 80, "CallSite"));
         } catch (Throwable th) {
-            try {
-                // capture screen before cleanup in finally clause is completed
-                PNGEncoder.captureScreen(getWorkDir().getAbsolutePath()+File.separator+"screenBeforeCleanup.png");
-            } catch (Exception e1) {
-                // ignore it
-            }
+            Utilities.captureScreen(this);
             throw th;
         }
     }
@@ -372,12 +340,7 @@ public class Actions extends JellyTestCase {
             assertFalse("CurrentPC annotation remains on line 92", Utilities.checkAnnotation(eo, 92, "CurrentPC"));
             assertTrue("CurrentPC annotation is not on line 93", Utilities.checkAnnotation(eo, 93, "CurrentPC"));
         } catch (Throwable th) {
-            try {
-                // capture screen before cleanup in finally clause is completed
-                PNGEncoder.captureScreen(getWorkDir().getAbsolutePath()+File.separator+"screenBeforeCleanup.png");
-            } catch (Exception e1) {
-                // ignore it
-            }
+            Utilities.captureScreen(this);
             throw th;
         }
     }
@@ -393,12 +356,7 @@ public class Actions extends JellyTestCase {
             assertFalse("Current PC annotation remains on line 93", Utilities.checkAnnotation(eo, 93, "CurrentPC"));
             assertTrue("Current PC annotation is not on line 109", Utilities.checkAnnotation(eo, 109, "CurrentPC"));
         } catch (Throwable th) {
-            try {
-                // capture screen before cleanup in finally clause is completed
-                PNGEncoder.captureScreen(getWorkDir().getAbsolutePath()+File.separator+"screenBeforeCleanup.png");
-            } catch (Exception e1) {
-                // ignore it
-            }
+            Utilities.captureScreen(this);
             throw th;
         }
     }
@@ -412,12 +370,7 @@ public class Actions extends JellyTestCase {
             assertFalse("Current PC annotation remains on line 109", Utilities.checkAnnotation(eo, 109, "CurrentPC"));
             assertTrue("Current PC annotation is not on line 80", Utilities.checkAnnotation(eo, 80, "CurrentExpressionLine"));
         } catch (Throwable th) {
-            try {
-                // capture screen before cleanup in finally clause is completed
-                PNGEncoder.captureScreen(getWorkDir().getAbsolutePath()+File.separator+"screenBeforeCleanup.png");
-            } catch (Exception e1) {
-                // ignore it
-            }
+            Utilities.captureScreen(this);
             throw th;
         }
     }
@@ -433,12 +386,7 @@ public class Actions extends JellyTestCase {
             assertTrue("Current PC annotation is not on line 104", Utilities.checkAnnotation(eo, 104, "CurrentPC"));
             Utilities.toggleBreakpoint(eo, 104, false);
         } catch (Throwable th) {
-            try {
-                // capture screen before cleanup in finally clause is completed
-                PNGEncoder.captureScreen(getWorkDir().getAbsolutePath()+File.separator+"screenBeforeCleanup.png");
-            } catch (Exception e1) {
-                // ignore it
-            }
+            Utilities.captureScreen(this);
             throw th;
         }
     }
@@ -467,12 +415,7 @@ public class Actions extends JellyTestCase {
             assertTrue("Current PC annotation is not on line 109", Utilities.checkAnnotation(eo, 109, "CurrentPC"));
             
         } catch (Throwable th) {
-            try {
-                // capture screen before cleanup in finally clause is completed
-                PNGEncoder.captureScreen(getWorkDir().getAbsolutePath()+File.separator+"screenBeforeCleanup.png");
-            } catch (Exception e1) {
-                // ignore it
-            }
+            Utilities.captureScreen(this);
             throw th;
         }
     }
@@ -510,12 +453,7 @@ public class Actions extends JellyTestCase {
             //there should not be any other opened classes - issue 83704
             eo.closeAllDocuments();
         } catch (Throwable th) {
-            try {
-                // capture screen before cleanup in finally clause is completed
-                PNGEncoder.captureScreen(getWorkDir().getAbsolutePath()+File.separator+"screenBeforeCleanup.png");
-            } catch (Exception e1) {
-                // ignore it
-            }
+            Utilities.captureScreen(this);
             throw th;
         }
     }
