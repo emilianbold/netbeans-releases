@@ -53,7 +53,9 @@ public class PortTypeProperty extends BaseCasaProperty {
         CasaComponent component = getComponent();
         if(component instanceof CasaPort) {
             CasaWrapperModel model = (CasaWrapperModel) component.getModel();
-            bRetValue = model.isEditable((CasaPort) component);
+            if(model != null) {
+                bRetValue = model.isEditable((CasaPort) component);
+            }
         }
         return bRetValue;
     }
