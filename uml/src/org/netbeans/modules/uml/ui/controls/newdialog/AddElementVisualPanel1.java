@@ -226,8 +226,8 @@ public final class AddElementVisualPanel1 extends JPanel
        getElementListFromConfigFile();
        if (elementTypeList != null)
        {
-          Set elemDisplaySet = new TreeSet() {};
-          elemDisplaySet.addAll(elementTypeNameMap.keySet());
+          // fixed #107312. Use TreeSet to have the set sorted
+          Set elemDisplaySet = new TreeSet(elementTypeNameMap.keySet());
           if (elemDisplaySet != null)
           {
              elementTypeList.setListData(elemDisplaySet.toArray());
