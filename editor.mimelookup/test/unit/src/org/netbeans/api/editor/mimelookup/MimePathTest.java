@@ -36,6 +36,8 @@ public class MimePathTest extends NbTestCase {
     public void testParsing(){
         String path = "text/x-java/text/x-ant+xml/text/html/text/xml";
         MimePath mp = MimePath.parse(path);
+        // Repetitive parse should end up the same and it should come from cache.
+        assertSame(mp, MimePath.parse(path));
         String parsedPath = mp.getPath();
         assertTrue(path.equals(parsedPath));
 
@@ -54,6 +56,16 @@ public class MimePathTest extends NbTestCase {
         
         MimePath mpPrefix = mp.getPrefix(2);
         assertTrue("text/x-java/text/x-ant+xml".equals(mpPrefix.getPath()));
+        
+        // Force exceed size of the internal LRU cache and release the created and cached MPs
+        for (int op = 0; op < 2; op++) {
+            for (int i = 0; i < 10; i++) {
+                path = "text/x-java/text/x-test" + i;
+                mp = MimePath.parse(path);
+                assertSame(mp, MimePath.parse(path));
+            }
+            System.gc();
+        }
     }
     
     public void testMimeTypeCorrectnessCheck() {

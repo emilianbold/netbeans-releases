@@ -20,10 +20,13 @@
 package org.netbeans.api.editor.mimelookup;
 
 import java.lang.ref.Reference;
+import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.WeakHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.modules.editor.mimelookup.MimePathLookup;
@@ -111,6 +114,8 @@ public final class MimePath {
 
     private static final String REG_NAME = "[[\\p{Alnum}][!#$&.+\\-^_]]{1,127}"; //NOI18N
     private static final Pattern MIME_TYPE_PATTERN = Pattern.compile("^" + REG_NAME + "/{1}" + REG_NAME + "$"); //NOI18N
+    
+    private static final Map<String,Reference<MimePath>> string2mimePath = new HashMap<String,Reference<MimePath>>();
     
     /**
      * Gets the mime path for the given mime type. The returned <code>MimePath</code>
@@ -324,7 +329,15 @@ public final class MimePath {
         if (path == null) {
             throw new IllegalArgumentException("path cannot be null"); // NOI18N
         }
-        MimePath mimePath = EMPTY;
+        MimePath mimePath;
+        synchronized (string2mimePath) {
+            Reference<MimePath> mpRef = string2mimePath.get(path);
+            mimePath = (mpRef != null) ? mpRef.get() : null;
+            if (mimePath != null) {
+                return mimePath;
+            } // Reference was cleared -> will be re-put at the end of this method
+        }
+        mimePath = EMPTY;
         int pathLen = path.length();
         int startIndex = 0;
         while (true) {
@@ -367,6 +380,12 @@ public final class MimePath {
             mimePath = get(mimePath, mimeType);
             
             startIndex = index + 1; // after slash or after end of path
+        }
+        // Put into cache
+        synchronized (string2mimePath) {
+            // Intern the path since the language path's string path is also interned
+            // and thus they can be matched by identity
+            string2mimePath.put(path.intern(), new WeakReference<MimePath>(mimePath));
         }
         return mimePath;
     }
