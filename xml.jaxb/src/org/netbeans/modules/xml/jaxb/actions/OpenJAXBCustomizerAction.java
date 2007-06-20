@@ -151,15 +151,14 @@ public class OpenJAXBCustomizerAction extends CookieAction  {
     
     
     public String getName() {
-        return NbBundle.getMessage( 
-                                this.getClass(), "LBL_CustomizeJAXBOptions" );
+        return NbBundle.getMessage(
+                this.getClass(), "LBL_CustomizeJAXBOptions");//NOI18N
     }
 
     protected String getDialogTitle(){
-        return NbBundle.getMessage(this.getClass(),  
-                            "LBL_DialogTitleChangeBindingOptions"); // No I18N  
-    }
-    
+        return NbBundle.getMessage(
+                this.getClass(), "LBL_DialogTitleChangeBindingOptions");//NOI18N  
+    }   
     
    protected int mode() {
         return CookieAction.MODE_EXACTLY_ONE;
