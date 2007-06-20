@@ -148,7 +148,7 @@ PROPERTIES {
     projectsViewIcon:"org/netbeans/modules/languages/javascript/JavaScript.jpg";
 }
 
-BUNDLE "org.netbeans.modules.languages.javascript.JavaScript"
+BUNDLE "org.netbeans.modules.languages.javascript.Bundle"
 
 SELECTION ( ["a"-"z" "A"-"Z" "0"-"9" "_" "$"] )
 

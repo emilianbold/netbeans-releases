@@ -184,17 +184,12 @@ public class Language extends org.netbeans.api.languages.Language {
         if (!bundleResolved) {
             Feature bundleFeature = getFeature("BUNDLE");
             if (bundleFeature != null) {
-                String clsName = (String)bundleFeature.getValue();
-                if (clsName != null) {
-                    ClassLoader cl = (ClassLoader)Lookup.getDefault().lookup(ClassLoader.class);
-                    Class clazz = null;
+                String baseName = (String)bundleFeature.getValue();
+                if (baseName != null) {
                     try {
-                        clazz = cl.loadClass (clsName);
-                    } catch (ClassNotFoundException ex) {
-                        Utils.notify (ex);
-                    }
-                    if (clazz != null) {
-                        bundle = NbBundle.getBundle(clazz);
+                        bundle = NbBundle.getBundle(baseName);
+                    } catch (MissingResourceException e) {
+                        Utils.notify (e);
                     }
                 }
             }

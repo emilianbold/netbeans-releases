@@ -379,6 +379,7 @@ MARK:error: {
 
 COMPLETION:js_identifier, js_keyword, js_whitespace, js_operator, js_separator, js_comment: {
     text1:org.netbeans.modules.languages.javascript.JavaScript.completionItems;
+    confirmChars:";(,.";
 }
 
 SEMANTIC_DECLARATION:VariableName: {
@@ -426,7 +427,7 @@ PROPERTIES {
     projectsViewIcon:"org/netbeans/modules/languages/javascript/JavaScript.jpg";
 }
 
-BUNDLE "org.netbeans.modules.languages.javascript.JavaScript"
+BUNDLE "org.netbeans.modules.languages.javascript.Bundle"
 
 SELECTION ( ["a"-"z" "A"-"Z" "0"-"9" "_" "$"] )
 
