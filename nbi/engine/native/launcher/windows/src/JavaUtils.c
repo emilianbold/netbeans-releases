@@ -2,17 +2,17 @@
  * The contents of this file are subject to the terms of the Common Development and
  * Distribution License (the License). You may not use this file except in compliance
  * with the License.
- * 
+ *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html or
  * http://www.netbeans.org/cddl.txt.
- * 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file and
  * include the License file at http://www.netbeans.org/cddl.txt. If applicable, add
  * the following below the CDDL Header, with the fields enclosed by brackets []
  * replaced by your own identifying information:
- * 
+ *
  *     "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original Software
  * is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun Microsystems, Inc. All
  * Rights Reserved.
@@ -93,23 +93,23 @@ DWORD isJavaCompatible(JavaProperties *currentJava, JavaCompatible ** compatible
         DWORD check = 1;
         
         check = (compareJavaVersion(current, compatibleJava[i]->minVersion) >= 0 &&
-        compareJavaVersion(current, compatibleJava[i]->maxVersion) <= 0) ? check : 0;
-        
-        if (check) {
-            if(compatibleJava[i]->vendor!=NULL) {
-                check = (strstr(currentJava->vendor, compatibleJava[i]->vendor) != NULL) ? check : 0;
-            }
-            if (compatibleJava[i]->osName!=NULL) {
-                check = (strstr(currentJava->osName, compatibleJava[i]->osName)!=NULL) ? check : 0;
-            }
-            
-            if (compatibleJava[i]->osArch!=NULL) {
-                check = (strstr(currentJava->osArch, compatibleJava[i]->osArch)!=NULL) ? check : 0;
-            }
-            if(check) {
-                return 1;
-            }
-        }
+                compareJavaVersion(current, compatibleJava[i]->maxVersion) <= 0) ? check : 0;
+                
+                if (check) {
+                    if(compatibleJava[i]->vendor!=NULL) {
+                        check = (strstr(currentJava->vendor, compatibleJava[i]->vendor) != NULL) ? check : 0;
+                    }
+                    if (compatibleJava[i]->osName!=NULL) {
+                        check = (strstr(currentJava->osName, compatibleJava[i]->osName)!=NULL) ? check : 0;
+                    }
+                    
+                    if (compatibleJava[i]->osArch!=NULL) {
+                        check = (strstr(currentJava->osArch, compatibleJava[i]->osArch)!=NULL) ? check : 0;
+                    }
+                    if(check) {
+                        return 1;
+                    }
+                }
     }
     return 0;
 }
@@ -262,7 +262,7 @@ void getJavaProperties(WCHAR * location, LauncherProperties * props, JavaPropert
         HANDLE hRead;
         HANDLE hWrite;
         CreatePipe(&hRead, &hWrite, NULL, 0);
-        // Start the child process.        
+        // Start the child process.
         executeCommand(props, command, NULL, JAVA_VERIFICATION_PROCESS_TIMEOUT, hWrite, INVALID_HANDLE_VALUE, JAVA_VERIFICATION_PROCESS_PRIORITY);
         if(props->status!= ERROR_ON_EXECUTE_PROCESS && props->status!= ERROR_PROCESS_TIMEOUT) {
             char * output = readHandle(hRead);
@@ -343,7 +343,7 @@ void searchCurrentJavaRegistry(LauncherProperties * props) {
     HKEY rootKeys [2] = {HKEY_LOCAL_MACHINE, HKEY_CURRENT_USER};
     DWORD rootKeysNumber = sizeof(rootKeys)/sizeof(HKEY);
     DWORD keysNumber = sizeof(JAVA_REGISTRY_KEYS)/sizeof(WCHAR*);
-    writeMessageA(props, OUTPUT_LEVEL_NORMAL, 0, ".. search java in CurrentVersion values", 1);
+    writeMessageA(props, OUTPUT_LEVEL_NORMAL, 0, "Search java in CurrentVersion values...", 1);
     DWORD status = ERROR_OK;
     
     for ( k = 0; k < rootKeysNumber; k++) {
@@ -351,7 +351,20 @@ void searchCurrentJavaRegistry(LauncherProperties * props) {
             if(isTerminated(props)) return;
             WCHAR * value = getStringValue(rootKeys[k], keys[i], CURRENT_VERSION);
             if(value!=NULL) {
-                WCHAR *javaHome = getStringValuePC(rootKeys[k], keys[i], value, JAVA_HOME);
+                WCHAR *javaHome = getStringValuePC(rootKeys[k], keys[i], value, JAVA_HOME);                
+                writeMessageA(props, OUTPUT_LEVEL_NORMAL, 0, "... ", 0);
+                writeMessageA(props, OUTPUT_LEVEL_NORMAL, 0, (rootKeys[k]==HKEY_LOCAL_MACHINE) ? "HKEY_LOCAL_MACHINE" : "HKEY_CURRENT_USER", 0);
+                writeMessageA(props, OUTPUT_LEVEL_NORMAL, 0, "\\", 0);
+                writeMessageW(props, OUTPUT_LEVEL_NORMAL, 0, keys[i], 0);
+                writeMessageA(props, OUTPUT_LEVEL_NORMAL, 0, "\\", 0);                
+                writeMessageW(props, OUTPUT_LEVEL_NORMAL, 0, CURRENT_VERSION, 0);
+                writeMessageA(props, OUTPUT_LEVEL_NORMAL, 0, "->", 0);
+                writeMessageW(props, OUTPUT_LEVEL_NORMAL, 0, value, 0);
+                writeMessageA(props, OUTPUT_LEVEL_NORMAL, 0, "[", 0);
+                writeMessageW(props, OUTPUT_LEVEL_NORMAL, 0, JAVA_HOME, 0);
+                writeMessageA(props, OUTPUT_LEVEL_NORMAL, 0, "] = ", 0);
+                writeMessageW(props, OUTPUT_LEVEL_NORMAL, 0, javaHome, 1);
+                
                 free(value);
                 trySetCompatibleJava(javaHome, props);
                 FREE(javaHome);
@@ -365,7 +378,7 @@ void searchCurrentJavaRegistry(LauncherProperties * props) {
     
     
     // we found no CurrentVersion java... just search for other possible keys
-    writeMessageA(props, OUTPUT_LEVEL_NORMAL, 0, ".. search java in other values", 1);
+    writeMessageA(props, OUTPUT_LEVEL_NORMAL, 0, "Search java in other values...", 1);
     WCHAR buffer [MAX_LEN_VALUE_NAME];
     
     for(k=0;k<rootKeysNumber;k++) {
@@ -383,6 +396,17 @@ void searchCurrentJavaRegistry(LauncherProperties * props) {
                         if (err == ERROR_SUCCESS) {
                             WCHAR  * javaHome = getJavaHomeValue(keys[i], buffer);
                             status = ERROR_OK;
+                            
+                            writeMessageA(props, OUTPUT_LEVEL_NORMAL, 0, (rootKeys[k]==HKEY_LOCAL_MACHINE) ? "HKEY_LOCAL_MACHINE" : "HKEY_CURRENT_USER", 0);
+                            writeMessageA(props, OUTPUT_LEVEL_NORMAL, 0, "\\", 0);
+                            writeMessageW(props, OUTPUT_LEVEL_NORMAL, 0, keys[i], 0);
+                            writeMessageA(props, OUTPUT_LEVEL_NORMAL, 0, "\\", 0);
+                            writeMessageW(props, OUTPUT_LEVEL_NORMAL, 0, buffer, 0);
+                            writeMessageA(props, OUTPUT_LEVEL_NORMAL, 0, "[", 0);
+                            writeMessageW(props, OUTPUT_LEVEL_NORMAL, 0, JAVA_HOME, 0);
+                            writeMessageA(props, OUTPUT_LEVEL_NORMAL, 0, "] = ", 0);
+                            writeMessageW(props, OUTPUT_LEVEL_NORMAL, 0, javaHome, 1);
+                            
                             trySetCompatibleJava(javaHome, props);
                             FREE(javaHome);
                             if(props->java!=NULL) {
@@ -442,14 +466,16 @@ void searchJavaFromEnvVariables(LauncherProperties * props) {
 }
 
 
-void findSystemJava(LauncherProperties * props) {        
+void findSystemJava(LauncherProperties * props) {
     if ( props->jvms->size > 0 ) {
         writeMessageA(props, OUTPUT_LEVEL_NORMAL, 0, "Search jvm using some predefined locations", 1);
         DWORD i=0;
         for(i=0;i<props->jvms->size && !isTerminated(props);i++) {
             resolvePath(props, props->jvms->items[i]);
             trySetCompatibleJava(props->jvms->items[i]->resolved, props);
-            if(props->status==ERROR_OK) break;
+            if(props->java!=NULL) {
+                break;
+            }
         }
     }
     
@@ -465,7 +491,7 @@ void findSystemJava(LauncherProperties * props) {
     if(props->java==NULL) {
         writeMessageA(props, OUTPUT_LEVEL_NORMAL, 0, "Search java in environment variables", 1);
         searchJavaFromEnvVariables(props);
-    }    
+    }
 }
 
 

@@ -2,17 +2,17 @@
  * The contents of this file are subject to the terms of the Common Development and
  * Distribution License (the License). You may not use this file except in compliance
  * with the License.
- * 
+ *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html or
  * http://www.netbeans.org/cddl.txt.
- * 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file and
  * include the License file at http://www.netbeans.org/cddl.txt. If applicable, add
  * the following below the CDDL Header, with the fields enclosed by brackets []
  * replaced by your own identifying information:
- * 
+ *
  *     "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original Software
  * is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun Microsystems, Inc. All
  * Rights Reserved.
@@ -88,12 +88,12 @@ WCHAR * getArgumentValue(LauncherProperties * props, const WCHAR *arg, DWORD rem
     WCHARList *cmd = props->commandLine;
     WCHAR * result = NULL;
     DWORD i = getArgumentIndex(props, arg, removeArgument);
-    if((i+1) < cmd->size) { 
+    if((i+1) < cmd->size) {
         //we have at least one more argument
         if(mandatory || !isLauncherArgument(props, cmd->items[i+1])) {
             result = appendStringW(NULL, cmd->items[i+1]);
             if(removeArgument) FREE(cmd->items[i+1]);
-        }            
+        }
     }
     return result;
 }
@@ -129,10 +129,10 @@ void setOutput(LauncherProperties * props) {
     }
     
     writeMessageA(props, OUTPUT_LEVEL_NORMAL, 0,
-    (props->outputLevel == OUTPUT_LEVEL_DEBUG) ?
-    "[CMD Argument] Using debug output." :
-        "Using normal output." , 1);
-        
+            (props->outputLevel == OUTPUT_LEVEL_DEBUG) ?
+                "[CMD Argument] Using debug output." :
+                "Using normal output." , 1);
+                
 }
 
 
@@ -186,6 +186,14 @@ void checkExtractionStatus(LauncherProperties *props) {
 void trySetCompatibleJava(WCHAR * location, LauncherProperties * props) {
     if(isTerminated(props)) return;
     if(location!=NULL) {
+        if(inList(props->alreadyCheckedJava, location)) {
+            writeMessageA(props, OUTPUT_LEVEL_NORMAL, 0, "... already checked location ", 0);
+            writeMessageW(props, OUTPUT_LEVEL_NORMAL, 0, location, 1);
+            // return here and don`t proceed with private jre checking since it`s already checked as well
+            return;
+        } else {
+            props->alreadyCheckedJava = addStringToList(props->alreadyCheckedJava, location);
+        }
         JavaProperties * javaProps = NULL;
         getJavaProperties(location, props, &javaProps);
         
@@ -217,20 +225,27 @@ void trySetCompatibleJava(WCHAR * location, LauncherProperties * props) {
             privateJre = appendStringW(privateJre, L"\\jre");
             writeMessageA(props, OUTPUT_LEVEL_NORMAL, 0, "... check private jre at ", 0);
             writeMessageW(props, OUTPUT_LEVEL_NORMAL, 0, privateJre, 1);
-            getJavaProperties(privateJre, props, &javaProps);
             
-            if(isOK(props)) {
-                writeMessageA(props, OUTPUT_LEVEL_NORMAL, 0, "... checking compatibility of private jre : ", 0);
-                writeMessageW(props, OUTPUT_LEVEL_NORMAL, 0, javaProps->javaHome, 1);
-                if(isJavaCompatible(javaProps, props->compatibleJava, props->compatibleJavaNumber)) {
-                    props->java = javaProps;
-                    props->status = ERROR_OK;
-                } else {
-                    freeJavaProperties(&javaProps);
-                    props->status = ERROR_JVM_UNCOMPATIBLE;
+            if(inList(props->alreadyCheckedJava, privateJre)) {
+                writeMessageA(props, OUTPUT_LEVEL_NORMAL, 0, "... already checked location ", 0);
+                writeMessageW(props, OUTPUT_LEVEL_NORMAL, 0, privateJre, 1);                
+            } else {
+                props->alreadyCheckedJava = addStringToList(props->alreadyCheckedJava, privateJre);
+                
+                getJavaProperties(privateJre, props, &javaProps);
+                if(isOK(props)) {
+                    writeMessageA(props, OUTPUT_LEVEL_NORMAL, 0, "... checking compatibility of private jre : ", 0);
+                    writeMessageW(props, OUTPUT_LEVEL_NORMAL, 0, javaProps->javaHome, 1);
+                    if(isJavaCompatible(javaProps, props->compatibleJava, props->compatibleJavaNumber)) {
+                        props->java = javaProps;
+                        props->status = ERROR_OK;
+                    } else {
+                        freeJavaProperties(&javaProps);
+                        props->status = ERROR_JVM_UNCOMPATIBLE;
+                    }
+                } else if (props->status==ERROR_INPUTOUPUT) {
+                    props->status = ERROR_JVM_NOT_FOUND;
                 }
-            } else if (props->status==ERROR_INPUTOUPUT) {
-                props->status = ERROR_JVM_NOT_FOUND;
             }
             FREE(privateJre);
         }
@@ -307,7 +322,7 @@ void findSuitableJava(LauncherProperties * props) {
             trySetCompatibleJava(props->userDefinedJavaHome, props);
             if( props->status == ERROR_JVM_NOT_FOUND || props->status == ERROR_JVM_UNCOMPATIBLE) {
                 const char * prop = (props->status == ERROR_JVM_NOT_FOUND) ?
-                JVM_USER_DEFINED_ERROR_PROP :
+                    JVM_USER_DEFINED_ERROR_PROP :
                     JVM_UNSUPPORTED_VERSION_PROP;
                     showErrorW(props, prop, 1, props->userDefinedJavaHome);
             }
@@ -421,7 +436,7 @@ void setAdditionalArguments(LauncherProperties * props) {
     WCHARList * cmd = props->commandLine;
     if(!isOK(props)) return;
     writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0,
-    "Parsing rest of command line arguments to add them to java or application parameters... ", 1);
+            "Parsing rest of command line arguments to add them to java or application parameters... ", 1);
     WCHAR ** javaArgs;
     WCHAR ** appArgs;
     DWORD i=0;
@@ -553,7 +568,7 @@ void executeMainClass(LauncherProperties * props) {
             DWORD showMessage = 0;
             char * ptr = error;
             while(ptr!=NULL) {
-                if(strstr(ptr, "Picked up ") == NULL && getLengthA(ptr) > 1) { 
+                if(strstr(ptr, "Picked up ") == NULL && getLengthA(ptr) > 1) {
                     showMessage = 1;
                     break;
                 }
@@ -658,6 +673,7 @@ LauncherProperties * createLauncherProperties(WCHARList * commandLine) {
     props->java    = NULL;
     props->command = NULL;
     props->jvms    = NULL;
+    props->alreadyCheckedJava = NULL;
     props->exePath = getExePath();
     props->exeName = getExeName();
     props->exeDir  = getExeDirectory();
@@ -682,9 +698,9 @@ LauncherProperties * createLauncherProperties(WCHARList * commandLine) {
     
     if(argumentExists(props, extractArg, 0)) {
         props->userDefinedExtractDir = getArgumentValue(props, extractArg, 1, 0);
-        if(props->userDefinedExtractDir==NULL) {// next argument is null or another launcher argument        
+        if(props->userDefinedExtractDir==NULL) {// next argument is null or another launcher argument
             props->userDefinedExtractDir = getCurrentDirectory();
-        } 
+        }
         props->extractOnly = 1;
     }
     props->userDefinedOutput      = getArgumentValue(props, outputFileArg, 1, 1);
@@ -736,7 +752,7 @@ void freeLauncherProperties(LauncherProperties **props) {
                 FREE((*props)->compatibleJava[i]);
             }
         }
-        
+        freeStringList(&((*props)->alreadyCheckedJava));
         FREE((*props)->compatibleJava);
         freeJavaProperties(&((*props)->java));
         FREE((*props)->userDefinedJavaHome);

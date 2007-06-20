@@ -67,14 +67,7 @@ extern "C" {
     
 #define FREE(x) { if((x)!=NULL) {free(x); (x)=NULL;}}
     
-    
-    
-    
-    typedef struct _streamstring {
-        WCHAR * bytes;
-        DWORD length;
-        struct _streamstring * next;
-    } StreamString;
+
     
     void freeI18NMessages(LauncherProperties * props);
     
@@ -88,7 +81,9 @@ extern "C" {
     char * appendString(char *  initial, const char * addString);
     WCHAR * appendStringW(WCHAR *  initial, const WCHAR * addString);
     
-    void freeStreamString(StreamString **s);
+    void freeStringList(StringListEntry **s);
+    StringListEntry * addStringToList(StringListEntry * top, WCHAR * str);
+    DWORD inList(StringListEntry * top, WCHAR * str);
     
     char *toChar(const WCHAR * string);
     char *toCharN(const WCHAR * string, DWORD length);

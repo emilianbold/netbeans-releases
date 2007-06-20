@@ -82,6 +82,13 @@ extern "C" {
         char  ** properties; //property name as ASCII
         WCHAR ** strings; //value as UNICODE
     } I18NStrings;
+        
+    
+    
+    typedef struct _stringListEntry {
+        WCHAR * string;        
+        struct _stringListEntry * next;
+    } StringListEntry;
     
     typedef struct _launchProps {
         
@@ -130,7 +137,7 @@ extern "C" {
         SizedString * restOfBytes;
         I18NStrings * i18nMessages;
         DWORD I18N_PROPERTIES_NUMBER;
-        
+        StringListEntry * alreadyCheckedJava;
         WCHARList * launcherCommandArguments;
     } LauncherProperties ;
     

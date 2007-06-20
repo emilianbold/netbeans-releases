@@ -246,14 +246,33 @@ char * doubleToChar(double dl) {
     return str;
 }
 
-void freeStreamString(StreamString **ss) {
+void freeStringList(StringListEntry **ss) {
     while ( (*ss) !=NULL) {
-        FREE((*ss)->bytes);
-        StreamString * tmp = (*ss)->next;
+        FREE((*ss)->string);
+        StringListEntry * tmp = (*ss)->next;
         FREE((*ss));
         * ss = tmp;
     }
 }
+
+DWORD inList(StringListEntry * top, WCHAR * str) {    
+    StringListEntry * tmp = top;
+    while(tmp!=NULL) {
+        if(wcscmp(tmp->string, str)==0) {
+            return 1;            
+        }
+        tmp = tmp->next;
+    }
+    return 0;
+}
+
+StringListEntry * addStringToList(StringListEntry * top, WCHAR * str) {
+    StringListEntry * ss = (StringListEntry*) malloc(sizeof(StringListEntry));    
+    ss->string = appendStringW(NULL, str);
+    ss->next   = top;
+    return ss;
+}
+
 
 DWORD getLineSeparatorNumber(char *str) {
     DWORD result = 0;
