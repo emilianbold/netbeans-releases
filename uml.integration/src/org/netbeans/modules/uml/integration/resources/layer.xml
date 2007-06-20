@@ -95,9 +95,7 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
                 <attr name="originalFile" stringvalue="Actions/UML/org-netbeans-modules-uml-integration-netbeans-actions-ReverseEngineerAction.instance"/>
                 <attr name="position" intvalue="100"/>
             </file>
-            <!--<file name="org-netbeans-modules-uml-integration-netbeans-actions-DemoAction.instance"/>-->
-            
-            </folder>
+        </folder>
     </folder>
     
 
