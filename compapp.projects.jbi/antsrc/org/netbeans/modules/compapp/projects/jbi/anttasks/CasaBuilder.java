@@ -400,10 +400,15 @@ public class CasaBuilder implements JbiConstants, CasaConstants {
         String suName = getJBIServiceUnitName(jbiSU);
 
         List<Endpoint> suEndpointList = su2Endpoints.get(suName); 
-        if (suEndpointList == null || suEndpointList.size() == 0) {
+        if (suEndpointList == null) {
             log("ERROR: Invalid service unit name in service assembly jbi.xml: " + suName);
             return null;
         }
+        
+        if (suEndpointList.size() == 0) {
+            // This is OK. It's possible that a SU doesn't contain any endpoints, 
+            // for example, an empty BPEL SU.
+        } 
         
         Element identification = (Element) jbiSU.getElementsByTagName(JBI_IDENTIFICATION_ELEM_NAME).item(0);
         String name = ((Element) identification.getElementsByTagName(JBI_NAME_ELEM_NAME).item(0)).
