@@ -738,7 +738,7 @@ public class BindingDesignSupport {
         if (bindingDef.hasSubBindings()) {
             Collection<MetaBinding> subBindings = bindingDef.getSubBindings();
             for (MetaBinding sub : subBindings) {
-                Binding subBinding = binding.addBinding(sub.getSourcePath(), sub.getTargetPath());
+                Binding subBinding = binding.addChildBinding(sub.getSourcePath(), sub.getTargetPath());
                 String tableColumn = sub.getParameter(MetaBinding.TABLE_COLUMN_PARAMETER);
                 if (tableColumn != null) {
                     try {

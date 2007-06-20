@@ -1545,7 +1545,7 @@ class JavaCodeGenerator extends CodeGenerator {
                             buf.append(" = "); // NOI18N
                         }
                         buf.append(variable);
-                        buf.append(".addBinding("); // NOI18N
+                        buf.append(".addChildBinding("); // NOI18N
                         buf.append("\""); // NOI18N
                         buf.append(sub.getSourcePath());
                         buf.append("\", "); // NOI18N
