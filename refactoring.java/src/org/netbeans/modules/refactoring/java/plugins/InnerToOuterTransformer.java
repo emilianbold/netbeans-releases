@@ -26,6 +26,7 @@ import javax.lang.model.element.*;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.refactoring.java.api.InnerToOuterRefactoring;
+import org.netbeans.modules.refactoring.java.spi.ToPhaseException;
 
 /**
  *
@@ -45,7 +46,7 @@ public class InnerToOuterTransformer extends RefactoringVisitor {
         this.refactoring = re;
     }
     
-    public void setWorkingCopy(WorkingCopy wc) {
+    public void setWorkingCopy(WorkingCopy wc) throws ToPhaseException {
         super.setWorkingCopy(wc);
         this.inner = refactoring.getSourceType().resolveElement(wc);
         outer = SourceUtils.getEnclosingTypeElement(inner);

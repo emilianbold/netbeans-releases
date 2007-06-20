@@ -250,7 +250,11 @@ public abstract class JavaRefactoringPlugin extends ProgressProviderAdapter impl
         }
         
         public void run(WorkingCopy compiler) throws IOException {
-            visitor.setWorkingCopy(compiler);
+            try {
+                visitor.setWorkingCopy(compiler);
+            } catch (ToPhaseException e) {
+                return;
+            }
             CompilationUnitTree cu = compiler.getCompilationUnit();
             if (cu == null) {
                 ErrorManager.getDefault().log(ErrorManager.ERROR, "compiler.getCompilationUnit() is null " + compiler);

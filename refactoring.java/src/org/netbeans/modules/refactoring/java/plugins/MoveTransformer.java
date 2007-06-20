@@ -28,6 +28,7 @@ import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.refactoring.java.RetoucheUtils;
+import org.netbeans.modules.refactoring.java.spi.ToPhaseException;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -48,7 +49,7 @@ public class MoveTransformer extends RefactoringVisitor {
         this.move = move;
     }
     
-    public void setWorkingCopy(WorkingCopy copy) {
+    public void setWorkingCopy(WorkingCopy copy) throws ToPhaseException {
         super.setWorkingCopy(copy);
         originalFolder = workingCopy.getFileObject().getParent();
         isThisFileMoving = move.filesToMove.contains(workingCopy.getFileObject());

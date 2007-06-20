@@ -26,6 +26,8 @@ import com.sun.source.tree.*;
 import com.sun.source.util.TreePath;
 import javax.lang.model.element.*;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.modules.refactoring.java.spi.ToPhaseException;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -36,7 +38,11 @@ public class FindVisitor extends RefactoringVisitor {
     private Collection<TreePath> usages = new ArrayList<TreePath>();
 
     public FindVisitor(WorkingCopy workingCopy) {
-        setWorkingCopy(workingCopy);
+        try {
+            setWorkingCopy(workingCopy);
+        } catch (ToPhaseException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
 
     

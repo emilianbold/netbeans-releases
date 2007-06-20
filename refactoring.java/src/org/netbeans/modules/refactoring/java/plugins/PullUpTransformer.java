@@ -29,6 +29,7 @@ import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.refactoring.java.api.MemberInfo;
 import org.netbeans.modules.refactoring.java.api.PullUpRefactoring;
+import org.netbeans.modules.refactoring.java.spi.ToPhaseException;
 
 /**
  *
@@ -44,7 +45,7 @@ public class PullUpTransformer extends RefactoringVisitor {
         this.members = refactoring.getMembers();
     }
     
-    public void setWorkingCopy(WorkingCopy copy) {
+    public void setWorkingCopy(WorkingCopy copy) throws ToPhaseException {
         super.setWorkingCopy(copy);
         this.targetType = refactoring.getTargetType().resolve(copy);
     }

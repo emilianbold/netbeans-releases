@@ -32,9 +32,11 @@ import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.java.api.DiffElement;
 import org.netbeans.modules.refactoring.java.api.UseSuperTypeRefactoring;
 import org.netbeans.modules.refactoring.java.spi.JavaRefactoringPlugin;
+import org.netbeans.modules.refactoring.java.spi.ToPhaseException;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 
@@ -182,7 +184,9 @@ public class UseSuperTypeRefactoringPlugin extends JavaRefactoringPlugin {
         
         public void run(WorkingCopy compiler) throws Exception {
             try{
-                compiler.toPhase(JavaSource.Phase.RESOLVED);
+                if (compiler.toPhase(JavaSource.Phase.RESOLVED)!= JavaSource.Phase.RESOLVED) {
+                    return;
+                }
                 CompilationUnitTree cu = compiler.getCompilationUnit();
                 if (cu == null) {
                     ErrorManager.getDefault().log(ErrorManager.ERROR, "compiler.getCompilationUnit() is null " + compiler);
@@ -205,7 +209,12 @@ public class UseSuperTypeRefactoringPlugin extends JavaRefactoringPlugin {
         private final Element subTypeElement;
         private ReferencesVisitor(WorkingCopy workingCopy, Element subClassElement,
                 Element superClassElement){
-            setWorkingCopy(workingCopy);
+            try {
+                setWorkingCopy(workingCopy);
+            } catch (ToPhaseException phase) {
+                //should never be thrown;
+                Exceptions.printStackTrace(phase);
+            }
             this.superTypeElement = superClassElement;
             this.subTypeElement = subClassElement;
         }

@@ -23,6 +23,8 @@ import org.netbeans.modules.refactoring.java.spi.RefactoringVisitor;
 import com.sun.source.tree.*;
 import javax.lang.model.element.*;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.modules.refactoring.java.spi.ToPhaseException;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -35,10 +37,14 @@ public class CopyTransformer extends RefactoringVisitor {
     private String oldPackage;
 
     public CopyTransformer(WorkingCopy workingCopy, String newName, boolean insertImport, String oldPackage) {
-        setWorkingCopy(workingCopy);
-        this.newName = newName;
-        this.insertImport = insertImport;
-        this.oldPackage = oldPackage + ".*";
+        try {
+            setWorkingCopy(workingCopy);
+            this.newName = newName;
+            this.insertImport = insertImport;
+            this.oldPackage = oldPackage + ".*";
+        } catch (ToPhaseException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
     
     @Override

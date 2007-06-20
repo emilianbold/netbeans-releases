@@ -40,10 +40,12 @@ public class RefactoringVisitor extends TreePathScanner<Tree, Element> {
     protected WorkingCopy workingCopy;
     protected TreeMaker make;
     
-    public void setWorkingCopy(WorkingCopy workingCopy) {
+    public void setWorkingCopy(WorkingCopy workingCopy) throws ToPhaseException {
         this.workingCopy = workingCopy;
         try {
-            this.workingCopy.toPhase(JavaSource.Phase.RESOLVED);
+            if (this.workingCopy.toPhase(JavaSource.Phase.RESOLVED) != JavaSource.Phase.RESOLVED) {
+                throw new ToPhaseException();
+            }
         } catch (IOException ioe) {
             ErrorManager.getDefault().notify(ioe);
         }

@@ -244,7 +244,9 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
         public void run(WorkingCopy compiler) throws IOException {
             if (cancelled)
                 return ;
-            compiler.toPhase(JavaSource.Phase.RESOLVED);
+            if (compiler.toPhase(JavaSource.Phase.RESOLVED)!=JavaSource.Phase.RESOLVED) {
+                return;
+            }
             CompilationUnitTree cu = compiler.getCompilationUnit();
             if (cu == null) {
                 ErrorManager.getDefault().log(ErrorManager.ERROR, "compiler.getCompilationUnit() is null " + compiler);
