@@ -107,7 +107,7 @@ public class CasaConnectAction extends WidgetAction.LockedAdapter {
                             return;
                         }
                     }
-                    mScene.getModel().addConnection(info.mConsumes, info.mProvides);
+                    mScene.getModel().addConnection(info.mConsumes, info.mProvides, info.getConsumesToProvidesDirection());
                 }
             }
     
@@ -356,6 +356,7 @@ public class CasaConnectAction extends WidgetAction.LockedAdapter {
         
         CasaConsumes mConsumes;
         CasaProvides mProvides;
+        boolean mConsumesToProvidesDirection = true;
         
         public ConsumesProvides(CasaModelGraphScene scene, Widget src, Widget targ) {
             if (
@@ -365,15 +366,22 @@ public class CasaConnectAction extends WidgetAction.LockedAdapter {
                 Object targetObject = scene.findObject(targ);
                 if (sourceObject instanceof CasaConsumes) {
                     mConsumes = (CasaConsumes) sourceObject;
+                    mConsumesToProvidesDirection = true;
                 } else if (sourceObject instanceof CasaProvides) {
                     mProvides = (CasaProvides) sourceObject;
+                    mConsumesToProvidesDirection = false;
                 }
                 if (targetObject instanceof CasaConsumes) {
                     mConsumes = (CasaConsumes) targetObject;
+                    mConsumesToProvidesDirection = false;
                 } else if (targetObject instanceof CasaProvides) {
                     mProvides = (CasaProvides) targetObject;
+                    mConsumesToProvidesDirection = true;
                 }
             }
+        }
+        public boolean getConsumesToProvidesDirection() {
+            return mConsumesToProvidesDirection;
         }
     }
 }
