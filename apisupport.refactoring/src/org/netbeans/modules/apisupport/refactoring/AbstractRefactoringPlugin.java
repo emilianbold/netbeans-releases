@@ -37,6 +37,8 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
@@ -143,7 +145,8 @@ public abstract class AbstractRefactoringPlugin implements RefactoringPlugin {
        JavaSource source = JavaSource.forFileObject(handle.getFileObject());
        
        CancellableTask<CompilationController> info = new CancellableTask<CompilationController>() {
-           public void run(CompilationController info) {
+           public void run(CompilationController info) throws Exception {
+               info.toPhase(JavaSource.Phase.RESOLVED);
                Element neco = handle.resolveElement(info);
                infoholder.name = neco.getSimpleName().toString();
                if (neco.getKind() == ElementKind.CLASS) {
@@ -165,11 +168,14 @@ public abstract class AbstractRefactoringPlugin implements RefactoringPlugin {
                            infoholder.hasNoParams = true;
                        }
                        for (VariableElement el : lst) {
-                           TypeElement varel = (TypeElement)((DeclaredType)el.asType()).asElement();
-                           String fqn = varel.getQualifiedName().toString();
-                           if ("org.openide.filesystems.FileObject".equals(fqn)) {
-                               infoholder.hasFileObjectParam = true;
-                           }
+                            TypeMirror tm = el.asType();
+                            if (tm.getKind() == TypeKind.DECLARED) {
+                                TypeElement vare = (TypeElement) ((DeclaredType) tm).asElement();
+                                String fqn = vare.getQualifiedName().toString();
+                                if ("org.openide.filesystems.FileObject".equals(fqn)) {
+                                   infoholder.hasFileObjectParam = true;
+                                }
+                            }
                        }
                    }
                    
