@@ -77,6 +77,7 @@ import org.openide.util.NbBundle;
  */
 public class ExportNonAccessibleElement extends AbstractHint 
 implements ElementVisitor<Boolean,Void>, TypeVisitor<Boolean,Void> {
+    private transient volatile boolean stop;
     
     /** Creates a new instance of AddOverrideAnnotation */
     public ExportNonAccessibleElement() {
@@ -89,6 +90,7 @@ implements ElementVisitor<Boolean,Void>, TypeVisitor<Boolean,Void> {
 
     public List<ErrorDescription> run(CompilationInfo compilationInfo,
                                       TreePath treePath) {
+        stop = false;
         try {
             Document doc = compilationInfo.getDocument();
             
@@ -105,6 +107,10 @@ implements ElementVisitor<Boolean,Void>, TypeVisitor<Boolean,Void> {
             if (b) {
                 Element parent = e;
                 for (;;) {
+                    if (stop) {
+                        return null;
+                    }
+                    
                     if (parent == null || parent.getKind() == ElementKind.PACKAGE) {
                         break;
                     }
@@ -157,7 +163,7 @@ implements ElementVisitor<Boolean,Void>, TypeVisitor<Boolean,Void> {
     }
 
     public void cancel() {
-        // XXX implement me 
+        stop = true;
     }
     
     public Preferences getPreferences() {
@@ -184,7 +190,15 @@ implements ElementVisitor<Boolean,Void>, TypeVisitor<Boolean,Void> {
 
     public Boolean visitType(TypeElement arg0, Void arg1) {
         for (TypeParameterElement e : arg0.getTypeParameters()) {
+            if (stop) {
+                return false;
+            }
+            
             for (TypeMirror b : e.getBounds()) {
+                if (stop) {
+                    return false;
+                }
+                
                 if (b.accept(this, arg1)) {
                     return true;
                 }
@@ -207,6 +221,10 @@ implements ElementVisitor<Boolean,Void>, TypeVisitor<Boolean,Void> {
             return false;
         }
         for (VariableElement v : method.getParameters()) {
+            if (stop) {
+                return false;
+            }
+            
             if (v.asType().accept(this, nothing)) {
                 return true;
             }
@@ -249,6 +267,10 @@ implements ElementVisitor<Boolean,Void>, TypeVisitor<Boolean,Void> {
             return true;
         }
         for (TypeMirror t : arg0.getTypeArguments()) {
+            if (stop) {
+                return false;
+            }
+            
             if (t.accept(this, arg1)) {
                 return true;
             }
@@ -285,11 +307,15 @@ implements ElementVisitor<Boolean,Void>, TypeVisitor<Boolean,Void> {
     }
     
     
-    private static boolean isVisible(Element... arr) {
+    private boolean isVisible(Element... arr) {
         return isVisible(Arrays.asList(arr));
     }
-    private static boolean isVisible(Collection<? extends Element> arr) {
+    private boolean isVisible(Collection<? extends Element> arr) {
         for (Element el : arr) {
+            if (stop) {
+                return false;
+            }
+            
             if (el.getModifiers().contains(Modifier.PUBLIC) || 
                 el.getModifiers().contains(Modifier.PROTECTED)
             ) {

@@ -55,6 +55,7 @@ import org.openide.util.NbBundle;
  * @author Jaroslav tulach
  */
 public class MissingHashCode extends AbstractHint {
+    transient volatile boolean[] stop = { false };
     
     /** Creates a new instance of AddOverrideAnnotation */
     public MissingHashCode() {
@@ -67,6 +68,7 @@ public class MissingHashCode extends AbstractHint {
 
     public List<ErrorDescription> run(CompilationInfo compilationInfo,
                                       TreePath treePath) {
+        stop = new boolean [1];
         try {
             Document doc = compilationInfo.getDocument();
             
@@ -80,7 +82,7 @@ public class MissingHashCode extends AbstractHint {
             }
             
             Element parent = e.getEnclosingElement();
-            ExecutableElement[] ret = EqualsHashCodeGenerator.overridesHashCodeAndEquals(compilationInfo, parent);
+            ExecutableElement[] ret = EqualsHashCodeGenerator.overridesHashCodeAndEquals(compilationInfo, parent, stop);
             if (e != ret[0] && e != ret[1]) {
                 return null;
             }
@@ -136,7 +138,7 @@ public class MissingHashCode extends AbstractHint {
     }
 
     public void cancel() {
-        // XXX implement me 
+        stop[0] = true;
     }
     
     public Preferences getPreferences() {

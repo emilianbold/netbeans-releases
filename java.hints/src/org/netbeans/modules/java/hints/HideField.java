@@ -52,6 +52,8 @@ import org.openide.util.NbBundle;
  * @author Jaroslav tulach
  */
 public class HideField extends AbstractHint {
+    transient volatile boolean stop;
+    
     /** Creates a new instance of AddOverrideAnnotation */
     public HideField() {
         super( true, true, AbstractHint.HintSeverity.WARNING);
@@ -62,6 +64,8 @@ public class HideField extends AbstractHint {
     }
 
     protected List<Fix> computeFixes(CompilationInfo compilationInfo, TreePath treePath, Document doc, int[] bounds) {
+        stop = false;
+        
         Element el = compilationInfo.getTrees().getElement(treePath);
         if (el == null || el.getKind() != ElementKind.FIELD) {
             return null;
@@ -73,6 +77,9 @@ public class HideField extends AbstractHint {
         Element hidden = null;
         TypeElement te = (TypeElement)el.getEnclosingElement();
         for (Element field : compilationInfo.getElements().getAllMembers(te)) {
+            if (stop) {
+                return null;
+            }
             if (compilationInfo.getElements().hides(el, field)) {
                 hidden = field;
                 break;
@@ -145,7 +152,7 @@ public class HideField extends AbstractHint {
     }
 
     public void cancel() {
-        // XXX implement me 
+        stop = true;
     }
     
     public Preferences getPreferences() {

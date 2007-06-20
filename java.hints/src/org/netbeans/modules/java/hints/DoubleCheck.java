@@ -42,7 +42,6 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.modules.java.editor.semantic.Utilities;
 import org.netbeans.modules.java.hints.spi.AbstractHint;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.ErrorDescription;
@@ -57,6 +56,7 @@ import org.openide.util.NbBundle;
  * @author Jaroslav tulach
  */
 public class DoubleCheck extends AbstractHint {
+    private transient volatile boolean stop;
     
     /** Creates a new instance of AddOverrideAnnotation */
     public DoubleCheck() {
@@ -69,6 +69,7 @@ public class DoubleCheck extends AbstractHint {
     
     public List<ErrorDescription> run(CompilationInfo compilationInfo,
                                       TreePath treePath) {
+        stop = false;
         try {
             Document doc = compilationInfo.getDocument();
             
@@ -92,6 +93,9 @@ public class DoubleCheck extends AbstractHint {
                 if (sameIf(statement, outer)) {
                     same = (IfTree)statement;
                     break;
+                }
+                if (stop) {
+                    return null;
                 }
             }
             if (same == null) {
@@ -143,7 +147,7 @@ public class DoubleCheck extends AbstractHint {
     }
 
     public void cancel() {
-        // XXX implement me 
+        stop = true;
     }
     
     public Preferences getPreferences() {
@@ -156,7 +160,7 @@ public class DoubleCheck extends AbstractHint {
     }    
 
     private IfTree findOuterIf(CompilationInfo compilationInfo, TreePath treePath) {
-        for (;;) {
+        while (!stop) {
             treePath = treePath.getParentPath();
             if (treePath == null) {
                 break;

@@ -118,7 +118,7 @@ public class EqualsHashCodeGenerator implements CodeGenerator {
             return null;
         TypeElement typeElement = (TypeElement)el;
         
-        ExecutableElement[] equalsHashCode = overridesHashCodeAndEquals(cc, typeElement);
+        ExecutableElement[] equalsHashCode = overridesHashCodeAndEquals(cc, typeElement, null);
         
         List<ElementNode.Description> descriptions = new ArrayList<ElementNode.Description>();
         for (VariableElement variableElement : ElementFilter.fieldsIn(typeElement.getEnclosedElements())) {
@@ -175,9 +175,10 @@ public class EqualsHashCodeGenerator implements CodeGenerator {
     /** Computes whether a class defines equals and hashcode or not.
      * @param compilationInfo context 
      * @param type the class element to check
+     * @param stop array of booleans that is checked for [0], if true the method imediatelly returns
      * @return array of two elements [0] is equals, if it exists, [1] is hashCode, if it exists, otherwise the indexes are null
      */
-    public static ExecutableElement[] overridesHashCodeAndEquals(CompilationInfo compilationInfo, Element type) {
+    public static ExecutableElement[] overridesHashCodeAndEquals(CompilationInfo compilationInfo, Element type, boolean[] stop) {
         ExecutableElement[] ret = new ExecutableElement[2];
 
         TypeElement el = compilationInfo.getElements().getTypeElement("java.lang.Object"); // NOI18N
@@ -193,6 +194,9 @@ public class EqualsHashCodeGenerator implements CodeGenerator {
         ExecutableElement equals = null;
         
         for (Element method : el.getEnclosedElements()) {
+            if (stop != null && stop[0]) {
+                return ret;
+            }
             if (method.getKind() == ElementKind.METHOD) {
                 if (method.getSimpleName().contentEquals("equals")) { // NOI18N
                     assert equals == null;
@@ -209,17 +213,20 @@ public class EqualsHashCodeGenerator implements CodeGenerator {
         
         TypeElement clazz = (TypeElement)type;
         for (Element ee : type.getEnclosedElements()) {
+            if (stop != null && stop[0]) {
+                return ret;
+            }
             if (ee.getKind() != ElementKind.METHOD) {
                 continue;
             }
             ExecutableElement method = (ExecutableElement)ee;
             
             if (compilationInfo.getElements().overrides(method, hashCode, clazz)) {
-                ret[1] = (ExecutableElement)method;
+                ret[1] = method;
             }
             
             if (compilationInfo.getElements().overrides(method, equals, clazz)) {
-                ret[0] = (ExecutableElement)method;
+                ret[0] = method;
             }
         }
         

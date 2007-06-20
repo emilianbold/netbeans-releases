@@ -66,6 +66,7 @@ import org.openide.util.NbBundle;
  */
 public class UtilityClass extends AbstractHint implements ElementVisitor<Boolean,CompilationInfo> {
     private boolean clazz;
+    private transient volatile boolean stop;
     
     /** Creates a new instance of AddOverrideAnnotation */
     private UtilityClass(boolean b) {
@@ -86,6 +87,7 @@ public class UtilityClass extends AbstractHint implements ElementVisitor<Boolean
 
     public List<ErrorDescription> run(CompilationInfo compilationInfo,
                                       TreePath treePath) {
+        stop = false;
         try {
             Document doc = compilationInfo.getDocument();
             
@@ -111,6 +113,9 @@ public class UtilityClass extends AbstractHint implements ElementVisitor<Boolean
 
                 int cnt = 0;
                 for (Element m : e.getEnclosedElements()) {
+                    if (stop) {
+                        return null;
+                    }
                     if (m.accept(this, compilationInfo)) {
                         return null;
                     }
@@ -129,6 +134,9 @@ public class UtilityClass extends AbstractHint implements ElementVisitor<Boolean
                 }
                 ExecutableElement x = (ExecutableElement)e;
                 for (Element m : x.getEnclosingElement().getEnclosedElements()) {
+                    if (stop) {
+                        return null;
+                    }
                     if (m.accept(this, compilationInfo)) {
                         return null;
                     }

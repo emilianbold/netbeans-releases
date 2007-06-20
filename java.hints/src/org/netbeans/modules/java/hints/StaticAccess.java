@@ -56,6 +56,7 @@ import org.openide.util.NbBundle;
  * @author Jaroslav tulach
  */
 public class StaticAccess extends AbstractHint {
+    private transient volatile boolean stop;
     /** Creates a new instance of AddOverrideAnnotation */
     public StaticAccess() {
         super( true, true, AbstractHint.HintSeverity.WARNING);
@@ -109,6 +110,9 @@ public class StaticAccess extends AbstractHint {
         
         boolean foundStatic = false;
         for (Element member : type.getEnclosedElements()) {
+            if (stop) {
+                return null;
+            }
             if (member.getSimpleName().equals(mst.getIdentifier())) {
                 if (member.getModifiers().contains(Modifier.STATIC)) {
                     foundStatic = true;
@@ -140,6 +144,7 @@ public class StaticAccess extends AbstractHint {
     
     public List<ErrorDescription> run(CompilationInfo compilationInfo,
                                       TreePath treePath) {
+        stop = false;
         try {
             Document doc = compilationInfo.getDocument();
             
@@ -185,7 +190,7 @@ public class StaticAccess extends AbstractHint {
     }
 
     public void cancel() {
-        // XXX implement me 
+        stop = true;
     }
     
     public Preferences getPreferences() {
