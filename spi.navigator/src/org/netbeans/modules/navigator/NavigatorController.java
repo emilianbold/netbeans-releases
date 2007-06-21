@@ -439,14 +439,11 @@ public final class NavigatorController implements LookupListener, ActionListener
             if (tc != null && tc != navigatorTC) {
                 lastActivatedRef = new WeakReference<TopComponent>(tc);
             }
-        } /*else if (TopComponent.Registry.PROP_TC_CLOSED.equals(evt.getPropertyName())) {
-            TopComponent tc = (TopComponent) evt.getNewValue();
-            System.out.println("tc closed: " + tc);
-            Node[] nodes = tc.getActivatedNodes();
-            for (Node node : nodes) {
-                System.out.println("act node: " + node.getDisplayName());
-            }
-        }*/
+        } else if (TopComponent.Registry.PROP_TC_CLOSED.equals(evt.getPropertyName())) {
+            // force update context if some tc was closed
+            // invokeLater to let node change perform before calling update 
+            EventQueue.invokeLater(this);
+        }
     }
     
     /****** NodeListener implementation *****/
