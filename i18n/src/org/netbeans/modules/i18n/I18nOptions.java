@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -94,57 +94,64 @@ public class I18nOptions {
     
     /** Getter for init java code property. */
     public String getInitJavaCode() {
-        return getPreferences().get(PROP_INIT_JAVA_CODE,(String)I18nUtil.getInitFormatItems().get(0));
+        return getPreferences().get(PROP_INIT_JAVA_CODE,
+                                    I18nUtil.getInitFormatItems().get(0));
     }
 
     /** Setter for init java code property. */
     public void setInitJavaCode(String initJavaCode) {
-        getPreferences().put(PROP_INIT_JAVA_CODE,initJavaCode);
+        getPreferences().put(PROP_INIT_JAVA_CODE,
+                             initJavaCode);
     }    
     
     /** Getter for replace java code property. */
     public String getReplaceJavaCode() {
         // Lazy init.
-        return getPreferences().get(PROP_REPLACE_JAVA_CODE,(String)I18nUtil.getDefaultReplaceFormat(false));
+        return getPreferences().get(PROP_REPLACE_JAVA_CODE,
+                                    I18nUtil.getDefaultReplaceFormat(false));
     }
 
     /** Setter for replace java code property. */
     public void setReplaceJavaCode(String replaceJavaCode) {
-        getPreferences().put(PROP_REPLACE_JAVA_CODE,replaceJavaCode);
+        getPreferences().put(PROP_REPLACE_JAVA_CODE, replaceJavaCode);
     }    
 
     /** Getter for regular expression property. 
      * @see #PROP_REGULAR_EXPRESSION */
     public String getRegularExpression() {
-        return getPreferences().get(PROP_REGULAR_EXPRESSION,(String)I18nUtil.getRegExpItems().get(0));        
+        return getPreferences().get(PROP_REGULAR_EXPRESSION,
+                                    I18nUtil.getRegExpItems().get(0));        
     }
 
     /** Setter for regular expression property. 
      * @see #PROP_REGULAR_EXPRESSION */
     public void setRegularExpression(String regExp) {
-        getPreferences().put(PROP_REGULAR_EXPRESSION,regExp);
+        getPreferences().put(PROP_REGULAR_EXPRESSION, regExp);
     }    
     
     /** Getter for i18n regular expression property. 
      * @see #PROP_I18N_REGULAR_EXPRESSION */
     public String getI18nRegularExpression() {
-        return getPreferences().get(PROP_I18N_REGULAR_EXPRESSION,(String)I18nUtil.getI18nRegExpItems().get(0));        
+        return getPreferences().get(PROP_I18N_REGULAR_EXPRESSION,
+                                    I18nUtil.getI18nRegExpItems().get(0));        
     }
 
     /** Setter for i18n regular expression property. 
      * @see #PROP_I18N_REGULAR_EXPRESSION */
     public void setI18nRegularExpression(String regExp) {
-        getPreferences().put(PROP_I18N_REGULAR_EXPRESSION,regExp);
+        getPreferences().put(PROP_I18N_REGULAR_EXPRESSION, regExp);
     }    
 
     /** Getter for replace resource value property. */
     public boolean isReplaceResourceValue() {
-        return getPreferences().getBoolean(PROP_REPLACE_RESOURCE_VALUE,false);        
+        return getPreferences().getBoolean(PROP_REPLACE_RESOURCE_VALUE,
+                                           false);        
     }
 
     /** Setter for replacve resource value property. */
     public void setReplaceResourceValue(boolean replaceResourceValue) {
-        getPreferences().putBoolean(PROP_REPLACE_RESOURCE_VALUE,replaceResourceValue);
+        getPreferences().putBoolean(PROP_REPLACE_RESOURCE_VALUE,
+                                    replaceResourceValue);
     }
     
     /** Getter for last resource property. */
@@ -168,7 +175,8 @@ public class I18nOptions {
         if(lastResource == null)
             return;
         
-        getPreferences().put(PROP_LAST_RESOURCE2,lastResource.getPrimaryFile().getPath());
+        getPreferences().put(PROP_LAST_RESOURCE2,
+                             lastResource.getPrimaryFile().getPath());
     }
     
     /** Get context help for this system option.
@@ -179,30 +187,29 @@ public class I18nOptions {
     }
     
     private static FileSystem[] getFileSystems() {
-        List retval = new ArrayList();
-        File[] all = File.listRoots();
-        for (int i = 0; i < all.length; i++) {
-            File file = all[i];
+        List<FileSystem> retval = new ArrayList<FileSystem>();
+        for (File file : File.listRoots()) {
             FileObject fo = FileUtil.toFileObject(file);
             if (fo != null) {
                 try {
                     retval.add(fo.getFileSystem());
                 } catch (FileStateInvalidException ex) {
-                        Logger.getLogger(I18nOptions.class.getName()).log(Level.INFO, null, ex);
+                        Logger.getLogger(I18nOptions.class.getName())
+                              .log(Level.INFO, null, ex);
                 }
             }
         }        
-        return (FileSystem[])retval.toArray(new FileSystem[retval.size()]);
+        return retval.toArray(new FileSystem[retval.size()]);
     }
     
     private static FileObject findFileObject(String path) {
-        FileObject retval = null;
-        FileSystem[] fss = getFileSystems();
-        for (int i = 0; retval == null && i < fss.length; i++) {
-            FileSystem fileSystem = fss[i];
-            retval = fileSystem.findResource(path);
+        for (FileSystem fileSystem : getFileSystems()) {
+            FileObject retval = fileSystem.findResource(path);
+            if (retval != null) {
+                return retval;
+            }
         }
-        return retval;
+        return null;
     }
 
     private static BeanNode createViewNode() throws java.beans.IntrospectionException {
