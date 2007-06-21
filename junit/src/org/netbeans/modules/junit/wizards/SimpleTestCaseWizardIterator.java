@@ -33,7 +33,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.junit.GuiUtils;
 import org.netbeans.modules.junit.JUnitPluginTrampoline;
 import org.netbeans.modules.junit.JUnitSettings;
-import org.netbeans.modules.junit.TestCreator;
 import org.netbeans.modules.junit.TestUtil;
 import org.netbeans.modules.junit.plugin.JUnitPlugin;
 import org.netbeans.modules.junit.plugin.JUnitPlugin.CreateTestParam;
