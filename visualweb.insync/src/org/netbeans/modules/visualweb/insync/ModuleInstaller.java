@@ -18,26 +18,12 @@
  */
 package org.netbeans.modules.visualweb.insync;
 
-import java.io.File;
-import java.lang.reflect.Field;
-import java.net.MalformedURLException;
-import java.net.URL;
-
-// XXX Do not depend on core internals!
-//import org.netbeans.core.NbTopManager;
-//import org.netbeans.core.modules.Module;
-import org.openide.modules.InstalledFileLocator;
 import org.openide.modules.ModuleInstall;
 
 /**
  * Create a monitor singleton for the ModelSet types for insync.
  */
 public class ModuleInstaller extends ModuleInstall {
-
-    /**
-     *
-     */
-    private static final long serialVersionUID = 3977301014502125881L;
 
     /*
      * Install the monitor when the insync NB module is loaded. Also let JavaBeans know we are a
