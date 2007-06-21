@@ -13,16 +13,15 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.i18n;
 
 import org.openide.ErrorManager;
-import org.openide.util.*;
+import org.openide.util.NbBundle;
 import org.netbeans.api.project.Project;
-import java.util.*;
 import org.openide.nodes.Node;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
@@ -72,7 +71,7 @@ public class Util {
     Project project = null;
 
     if (activatedNodes.length > 0) {
-      DataObject dataObject = (DataObject)activatedNodes[0].getCookie(DataObject.class);
+      DataObject dataObject = activatedNodes[0].getCookie(DataObject.class);
       if(dataObject != null && dataObject.getPrimaryFile() != null) 
 	project = FileOwnerQuery.getOwner(dataObject.getPrimaryFile());
     } 
@@ -121,14 +120,11 @@ public class Util {
 
         // try to find in sources of execution classpath
         ClassPath ecp = ClassPath.getClassPath( srcFile, ClassPath.EXECUTE);
-        Iterator it = ecp.entries().iterator();
-        while (it.hasNext()) {
-            ClassPath.Entry e = (ClassPath.Entry)it.next();
+        for (ClassPath.Entry e : ecp.entries()) {
             SourceForBinaryQuery.Result r = SourceForBinaryQuery.findSourceRoots(e.getURL());
-            FileObject[] sourceRoots = r.getRoots();
-            for (int i=0; i < sourceRoots.length; i++) {
+            for (FileObject srcRoot : r.getRoots()) {
                 // try to find the bundle under this source root
-                ClassPath cp = ClassPath.getClassPath(sourceRoots[i], ClassPath.SOURCE);
+                ClassPath cp = ClassPath.getClassPath(srcRoot, ClassPath.SOURCE);
                 if (cp != null) {
                     FileObject ret = cp.findResource(bundleName);
                     if (ret != null)
