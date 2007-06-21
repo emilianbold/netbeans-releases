@@ -145,17 +145,31 @@ public abstract class Unit {
     }
     public String annotate (String toAnnotate) {
         if (isVisible && filter.length () != 0) {
-            int startIdx = toAnnotate.toLowerCase ().indexOf (filter);
-            if (startIdx > -1) {
-                StringBuffer sb = new StringBuffer ();
-                sb.append (toAnnotate.substring (0, startIdx));
-                sb.append ("<font bgcolor=\"yellow\">"+toAnnotate.substring (startIdx,startIdx+filter.length ())+"</font>");
-                sb.append (toAnnotate.substring (startIdx+filter.length ()));
+            String toAnnotate2 = toAnnotate.toLowerCase ();
+            int startIdx = 0;
+            int stopIdx = toAnnotate2.indexOf (filter);
+            StringBuffer sb = new StringBuffer ();
+            while (stopIdx > -1) {                
+                sb.append (toAnnotate.substring (startIdx, stopIdx));
+                sb.append ("<font bgcolor=\"yellow\">"+toAnnotate.substring (stopIdx,stopIdx+filter.length ())+"</font>");
+                startIdx = stopIdx + +filter.length ();
+                stopIdx = toAnnotate2.indexOf (filter, startIdx);
+            }
+            sb.append (toAnnotate.substring (startIdx));
+            if (startIdx > 0) {
                 return sb.toString ();
             }
         }
         return toAnnotate;
     }
+
+    public int findCaretPosition (String toAnnotate) {
+        if (isVisible && filter.length () != 0) {
+            return toAnnotate.toLowerCase ().indexOf (filter);
+        }
+        return -1;
+    }
+    
     
     public String getDescription () {
         return getRelevantElement ().getDescription ();

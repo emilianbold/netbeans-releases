@@ -24,10 +24,15 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 import org.netbeans.api.autoupdate.OperationContainer;
 import org.netbeans.api.autoupdate.OperationSupport;
 import org.netbeans.api.autoupdate.UpdateElement;
 import org.openide.modules.ModuleInfo;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.xml.XMLUtil;
 
@@ -121,7 +126,15 @@ public class UnitDetails extends DetailsPanel{
                 return;
             }
             getDetails().setText(text);
-            getDetails().setCaretPosition(0);
+            Document d = getDetails().getDocument();
+            int idx = -1;
+            try {
+                idx = u.findCaretPosition(d.getText(0, d.getLength()));
+            } catch (BadLocationException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            
+            getDetails().setCaretPosition(idx > 0 ? idx : 0);
         }
     }
     
