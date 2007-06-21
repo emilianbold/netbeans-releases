@@ -110,7 +110,7 @@ public class PackageRename implements RefactoringPluginFactory{
             private RefactoringElementsBag session;
             private String oldName;
             private FileObject root;
-            private DataFolder dataFolder;
+            private String currentName;
             
             
             public RenameNonRecursiveFolder(NonRecursiveFolder nrfo, RefactoringElementsBag session) {
@@ -118,9 +118,9 @@ public class PackageRename implements RefactoringPluginFactory{
                 this.session = session;
                 ClassPath cp = ClassPath.getClassPath(
                         folder, ClassPath.SOURCE);
-                this.oldName = cp.getResourceName(folder, '.', false);
+                this.currentName = cp.getResourceName(folder, '.', false);
+                this.oldName = this.currentName;
                 this.root = cp.findOwnerRoot(folder);
-                dataFolder = DataFolder.findFolder(folder);
                 
             }
             
@@ -133,11 +133,11 @@ public class PackageRename implements RefactoringPluginFactory{
             }
             
             public void performChange() {
-                setName();
+                setName(refactoring.getNewName());
             }
             
             public void undoChange() {
-                throw new UnsupportedOperationException("not implemented");
+                setName(oldName);
             }
             
             public Lookup getLookup() {
@@ -155,9 +155,8 @@ public class PackageRename implements RefactoringPluginFactory{
             /**
              *copy paste from PackageViewChildren
              */
-            public void setName() {
-                String name = refactoring.getNewName();
-                if (oldName.equals(name)) {
+            public void setName(String name) {
+                if (currentName.equals(name)) {
                     return;
                 }
 //            if (!isValidPackageName (name)) {
@@ -166,16 +165,16 @@ public class PackageRename implements RefactoringPluginFactory{
 //                return;
 //            }
                 name = name.replace('.','/')+'/';           //NOI18N
-                oldName = oldName.replace('.','/')+'/';     //NOI18N
+                currentName = currentName.replace('.','/')+'/';     //NOI18N
                 int i;
-                for (i=0; i<oldName.length() && i< name.length(); i++) {
-                    if (oldName.charAt(i) != name.charAt(i)) {
+                for (i=0; i<currentName.length() && i< name.length(); i++) {
+                    if (currentName.charAt(i) != name.charAt(i)) {
                         break;
                     }
                 }
                 i--;
-                int index = oldName.lastIndexOf('/',i);     //NOI18N
-                String commonPrefix = index == -1 ? null : oldName.substring(0,index);
+                int index = currentName.lastIndexOf('/',i);     //NOI18N
+                String commonPrefix = index == -1 ? null : currentName.substring(0,index);
                 String toCreate = (index+1 == name.length()) ? "" : name.substring(index+1);    //NOI18N
                 try {
                     FileObject commonFolder = commonPrefix == null ? this.root : this.root.getFileObject(commonPrefix);
@@ -189,8 +188,8 @@ public class PackageRename implements RefactoringPluginFactory{
                         }
                         destination = tmp;
                     }
-                    FileObject source = this.dataFolder.getPrimaryFile();
-                    DataFolder sourceFolder = DataFolder.findFolder(source);
+                    FileObject folder = this.folder;
+                    DataFolder sourceFolder = DataFolder.findFolder(folder);
                     DataFolder destinationFolder = DataFolder.findFolder(destination);
                     DataObject[] children = sourceFolder.getChildren();
                     for (int j=0; j<children.length; j++) {
@@ -198,18 +197,20 @@ public class PackageRename implements RefactoringPluginFactory{
                             children[j].move(destinationFolder);
                         }
                     }
-                    while (!commonFolder.equals(source)) {
-                        if (source.getChildren().length==0) {
-                            FileObject tmp = source;
-                            source = source.getParent();
+                    while (!commonFolder.equals(folder)) {
+                        if (folder.getChildren().length==0) {
+                            FileObject tmp = folder;
+                            folder = folder.getParent();
                             tmp.delete();
                         } else {
                             break;
                         }
                     }
+                    this.folder = destinationFolder.getPrimaryFile();
                 } catch (IOException ioe) {
                     ErrorManager.getDefault().notify(ioe);
                 }
+                this.currentName = name;
             }
         }
     }
