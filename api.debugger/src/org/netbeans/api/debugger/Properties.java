@@ -440,7 +440,8 @@ public abstract class Properties {
         }
     }
 
-    private static class PropertiesImpl extends Properties {
+    // package-private because of tests
+    static class PropertiesImpl extends Properties {
 
         private static final Object BAD_OBJECT = new Object ();
         private static final String BAD_STRING = "";
@@ -458,11 +459,24 @@ public abstract class Properties {
             Iterator i = DebuggerManager.getDebuggerManager().lookup(null, Reader.class).iterator ();
             while (i.hasNext ()) {
                 Reader r = (Reader) i.next ();
-                String[] ns = r.getSupportedClassNames ();
-                int j, jj = ns.length;
-                for (j = 0; j < jj; j++)
-                    register.put (ns [j], r);
+                registerReader(r);
             }
+        }
+        
+        private void registerReader(Reader r) {
+            String[] ns = r.getSupportedClassNames ();
+            int j, jj = ns.length;
+            for (j = 0; j < jj; j++) {
+                register.put (ns [j], r);
+            }
+        }
+        
+        // Used from tests
+        synchronized void addReader(Reader r) {
+            if (register == null) {
+                initReaders ();
+            }
+            registerReader(r);
         }
         
         private Reader findReader (String typeID) {
