@@ -88,9 +88,9 @@ public class ActionNoBlockTest extends JellyTestCase {
         };
         String deletePopup = Bundle.getStringTrimmed("org.openide.actions.Bundle", "Delete");
         new ActionNoBlock(null, deletePopup).perform(nodes);
-        // "Confirm Multiple Object Deletion"
-        String confirmTitle = Bundle.getString("org.openide.explorer.Bundle", "MSG_ConfirmDeleteObjectsTitle"); // NOI18N
-        new NbDialogOperator(confirmTitle).no();
+        // "Safe Delete"
+        String safeDeleteTitle = Bundle.getString("org.netbeans.modules.refactoring.spi.impl.Bundle", "LBL_SafeDel"); // NOI18N
+        new NbDialogOperator(safeDeleteTitle).cancel();
         String openPopup = Bundle.getStringTrimmed("org.openide.actions.Bundle", "Open");
         new ActionNoBlock(null, openPopup).perform(nodes[0]);
     }
