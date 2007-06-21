@@ -198,6 +198,7 @@ public class WrapperClientWriter extends java.io.PrintWriter {
         // Write the constructor
         if (isJaxRpc) {
             println("  public " + className + "() {");
+            println("    System.setProperty(\"javax.xml.soap.MessageFactory\",\"com.sun.xml.messaging.saaj.soap.ver1_1.SOAPMessageFactory1_1Impl\");");
             println("    try {");
             println("      " + serviceName + " " + serviceVariable + " = " + "new " + serviceName + "_Impl();");
             println("      " + portInterfaceVariable + " = " + serviceVariable + ".get" +portImplName +"();");
