@@ -34,11 +34,13 @@ Microsystems, Inc. All Rights Reserved.
                     </run-dependency>
                 </dependency>
             </module-dependencies>
+            
+            <public-packages/>
+            
             <class-path-extension>
                 <runtime-relative-path>ext/errorhandler.jar</runtime-relative-path>
                 <binary-origin>release/modules/ext/errorhandler.jar</binary-origin>
             </class-path-extension>
-            <public-packages/>
         </data>
     </configuration>
 </project>

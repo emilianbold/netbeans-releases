@@ -22,34 +22,7 @@ Microsystems, Inc. All Rights Reserved.
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/3">
             <code-name-base>org.netbeans.modules.visualweb.woodstock.webui.jsf</code-name-base>
-            <class-path-extension>
-                <runtime-relative-path>ext/webui-jsf-dt.jar</runtime-relative-path>
-                <binary-origin>release/modules/ext/webui-jsf-dt.jar</binary-origin>
-            </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/webui-jsf.jar</runtime-relative-path>
-                <binary-origin>release/modules/ext/webui-jsf.jar</binary-origin>
-            </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/json.jar</runtime-relative-path>
-                <binary-origin>release/modules/ext/json.jar</binary-origin>
-            </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/prototype-1.5.0.jar</runtime-relative-path>
-                <binary-origin>release/modules/ext/prototype-1.5.0.jar</binary-origin>
-            </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/jsf-extensions-common-0.1.jar</runtime-relative-path>
-                <binary-origin>release/modules/ext/jsf-extensions-common-0.1.jar</binary-origin>
-            </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/dojo-0.4.3-ajax.jar</runtime-relative-path>
-                <binary-origin>release/modules/ext/dojo-0.4.3-ajax.jar</binary-origin>
-            </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/jsf-extensions-dynamic-faces-0.1.jar</runtime-relative-path>
-                <binary-origin>release/modules/ext/jsf-extensions-dynamic-faces-0.1.jar</binary-origin>
-            </class-path-extension>
+            
             <module-dependencies>
                 <dependency>
                     <code-name-base>org.netbeans.libs.commons_logging</code-name-base>
@@ -232,6 +205,34 @@ Microsystems, Inc. All Rights Reserved.
                 <package>org.json</package>
                 <!--package>javax.faces.component</package-->
             </friend-packages>
+            <class-path-extension>
+                <runtime-relative-path>ext/webui-jsf-dt.jar</runtime-relative-path>
+                <binary-origin>release/modules/ext/webui-jsf-dt.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/webui-jsf.jar</runtime-relative-path>
+                <binary-origin>release/modules/ext/webui-jsf.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/json.jar</runtime-relative-path>
+                <binary-origin>release/modules/ext/json.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/prototype-1.5.0.jar</runtime-relative-path>
+                <binary-origin>release/modules/ext/prototype-1.5.0.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/jsf-extensions-common-0.1.jar</runtime-relative-path>
+                <binary-origin>release/modules/ext/jsf-extensions-common-0.1.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/dojo-0.4.3-ajax.jar</runtime-relative-path>
+                <binary-origin>release/modules/ext/dojo-0.4.3-ajax.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/jsf-extensions-dynamic-faces-0.1.jar</runtime-relative-path>
+                <binary-origin>release/modules/ext/jsf-extensions-dynamic-faces-0.1.jar</binary-origin>
+            </class-path-extension>
         </data>
     </configuration>
 </project>
