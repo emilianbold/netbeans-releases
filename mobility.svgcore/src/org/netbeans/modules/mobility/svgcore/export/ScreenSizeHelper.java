@@ -53,7 +53,7 @@ public class ScreenSizeHelper {
             return new Dimension(320, 240);
         }
         Dimension dim = getDeviceScreenSizeFromProject((J2MEProject) p, configuration);
-        if (dim.getHeight() < 10.0 || dim.getWidth() < 10.0){
+        if ( dim == null || dim.getHeight() < 10.0 || dim.getWidth() < 10.0){
             return new Dimension(320, 240);
         }
         return dim;
