@@ -13,23 +13,17 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
-
 package org.netbeans.modules.i18n.java;
 
-
 import java.io.IOException;
-
 import org.netbeans.modules.i18n.ResourceHolder;
-
 import org.netbeans.modules.properties.BundleStructure;
 import org.netbeans.modules.properties.Element;
 import org.netbeans.modules.properties.PropertiesDataObject;
-import org.netbeans.modules.properties.PropertiesStructure;
-
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.Repository;
