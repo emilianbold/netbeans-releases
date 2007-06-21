@@ -94,7 +94,7 @@ public class URLNodeTest extends JellyTestCase {
     /** Test delete  */
     public void testDelete() {
         urlNode.delete();
-        Utils.closeConfirmDialog();
+        Utils.closeSafeDeleteDialog();
     }
     
     /** Test rename  */

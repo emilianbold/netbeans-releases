@@ -13,13 +13,14 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.jellytools.nodes;
 
 import java.awt.Toolkit;
 import org.netbeans.jellytools.Bundle;
+import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.properties.PropertySheetOperator;
 import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.Waitable;
@@ -52,13 +53,13 @@ public class Utils {
         }
     }
     
-    /** Close "Confirm Object Deletion" dialog. **/
-    public static void closeConfirmDialog() {
-        // "Confirm Object Deletion"
-        String confirmTitle = Bundle.getString("org.openide.explorer.Bundle",
-                                               "MSG_ConfirmDeleteObjectTitle"); // NOI18N
-        new JDialogOperator(confirmTitle).close();
+    /** Close "Safe Delete" dialog. **/
+    public static void closeSafeDeleteDialog() {
+        // "Safe Delete"
+        String safeDeleteTitle = Bundle.getString("org.netbeans.modules.refactoring.spi.impl.Bundle", "LBL_SafeDel"); // NOI18N
+        new NbDialogOperator(safeDeleteTitle).close();
     }
+    
     /** Close "Rename" dialog. **/
     public static void closeRenameDialog() {
         String renameTitle = Bundle.getString("org.openide.actions.Bundle", "CTL_RenameTitle"); 

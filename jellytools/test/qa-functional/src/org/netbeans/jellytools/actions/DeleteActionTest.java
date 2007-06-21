@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.jellytools.actions;
@@ -23,9 +23,9 @@ import junit.framework.TestSuite;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.JellyTestCase;
+import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
-import org.netbeans.jemmy.operators.JDialogOperator;
 import org.netbeans.junit.NbTestSuite;
 
 /** Test org.netbeans.jellytools.actions.DeleteAction
@@ -60,8 +60,6 @@ public class DeleteActionTest extends JellyTestCase {
         TestRunner.run(suite());
     }
     
-    // "Confirm Object Deletion"
-    private static final String confirmTitle = Bundle.getString("org.openide.explorer.Bundle", "MSG_ConfirmDeleteObjectTitle");
     private static Node node;
     
     public void setUp() {
@@ -72,7 +70,9 @@ public class DeleteActionTest extends JellyTestCase {
     }
     
     public void tearDown() {
-        new JDialogOperator(confirmTitle).close();
+        // "Safe Delete"
+        String safeDeleteTitle = Bundle.getString("org.netbeans.modules.refactoring.spi.impl.Bundle", "LBL_SafeDel"); // NOI18N
+        new NbDialogOperator(safeDeleteTitle).close();
         // On some linux it may happen autorepeat is activated and it 
         // opens dialog multiple times. So, we need to close all modal dialogs.
         // See issue http://www.netbeans.org/issues/show_bug.cgi?id=56672.

@@ -112,9 +112,9 @@ public class NodeTest extends JellyTestCase {
         TestRunner.run(suite());
     }
     
-    // "Confirm Object Deletion"
-    private static String confirmTitle = Bundle.getString("org.openide.explorer.Bundle",
-                                               "MSG_ConfirmDeleteObjectTitle"); // NOI18N
+    // "Safe Delete"
+    private static String safeDeleteTitle = Bundle.getString("org.netbeans.modules.refactoring.spi.impl.Bundle",
+                                                             "LBL_SafeDel"); // NOI18N
 
     // "Runtime"
     private static final String runtimeLabel = Bundle.getString("org.netbeans.core.Bundle",
@@ -207,7 +207,7 @@ public class NodeTest extends JellyTestCase {
         // "Delete"
         String deleteItem = Bundle.getStringTrimmed("org.openide.actions.Bundle", "Delete");
         sampleClass1Node.performPopupActionNoBlock(deleteItem);
-        Utils.closeConfirmDialog();
+        Utils.closeSafeDeleteDialog();
     }
     
     /** Test getPath */
@@ -254,7 +254,7 @@ public class NodeTest extends JellyTestCase {
         Node node = new Node(sample1Node, "SampleClass11"); // NOI18N
         assertTrue(node.isPresent());
         new DeleteAction().perform(node);
-        new NbDialogOperator(confirmTitle).yes();
+        new NbDialogOperator(safeDeleteTitle).ok();
         try {
             Thread.sleep(1000);
         } catch (Exception e){};
@@ -278,7 +278,7 @@ public class NodeTest extends JellyTestCase {
         new Thread(new Runnable() {
             public void run() {
                 new DeleteAction().performAPI(duplNode);
-                new NbDialogOperator(confirmTitle).yes();
+                new NbDialogOperator(safeDeleteTitle).ok();
             }
         }, "thread performing action through API").start(); // NOI18N
         duplNode.waitNotPresent();
@@ -292,7 +292,7 @@ public class NodeTest extends JellyTestCase {
         new Thread(new Runnable() {
             public void run() {
                 new DeleteAction().performAPI(duplNode);
-                new NbDialogOperator(confirmTitle).yes();
+                new NbDialogOperator(safeDeleteTitle).ok();
             }
         }, "thread performing action through API").start(); // NOI18N
         sample1Node.waitChildNotPresent("SampleClass11");// NOI18N
@@ -310,7 +310,7 @@ public class NodeTest extends JellyTestCase {
         final Node duplNode = new Node(sample1Node, "SampleClass11"); // NOI18N
         TreePath tp1 = duplNode.getTreePath();
         new DeleteAction().perform(duplNode);
-        new NbDialogOperator(confirmTitle).yes();
+        new NbDialogOperator(safeDeleteTitle).ok();
         new CopyAction().performAPI(sampleClass1Node);
         performPaste(sample1Node);
         try {
@@ -319,12 +319,12 @@ public class NodeTest extends JellyTestCase {
             // test if NoSuchPathException is not thrown when performing action
             ImmutableNode immutableNode = new ImmutableNode(duplNode.tree(), tp1);
             new DeleteAction().perform(immutableNode);
-            new NbDialogOperator(confirmTitle).no();
+            new NbDialogOperator(safeDeleteTitle).cancel();
             assertTrue("ImmutableNode.getTreePath method should be called exactly 2 times to test it properly",
                        immutableNode.checkTest());
         } finally {
             new DeleteAction().perform(new Node(sample1Node, "SampleClass11"));
-            new NbDialogOperator(confirmTitle).yes();
+            new NbDialogOperator(safeDeleteTitle).ok();
         }
     }
 

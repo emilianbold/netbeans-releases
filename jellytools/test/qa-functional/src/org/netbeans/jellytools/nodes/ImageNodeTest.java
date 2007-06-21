@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.jellytools.nodes;
@@ -22,13 +22,9 @@ import java.awt.Toolkit;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import junit.textui.TestRunner;
-import org.netbeans.jellytools.Bundle;
-import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.SaveAsTemplateOperator;
 import org.netbeans.jellytools.TopComponentOperator;
-import org.netbeans.jellytools.properties.PropertySheetOperator;
-import org.netbeans.jemmy.operators.JDialogOperator;
 import org.netbeans.junit.NbTestSuite;
 
 /** Test of org.netbeans.jellytools.nodes.ImageNode
@@ -106,7 +102,7 @@ public class ImageNodeTest extends JellyTestCase {
     /** Test delete */
     public void testDelete() {
         imageNode.delete();
-        Utils.closeConfirmDialog();
+        Utils.closeSafeDeleteDialog();
     }
     
     /** Test rename */
