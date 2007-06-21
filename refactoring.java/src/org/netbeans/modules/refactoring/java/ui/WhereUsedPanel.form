@@ -287,6 +287,9 @@
           </Properties>
         </Component>
         <Component class="javax.swing.JComboBox" name="scope">
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="scopeActionPerformed"/>
+          </Events>
         </Component>
       </SubComponents>
     </Container>

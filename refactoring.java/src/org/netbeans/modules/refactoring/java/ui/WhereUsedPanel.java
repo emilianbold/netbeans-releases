@@ -18,16 +18,13 @@
  */
 package org.netbeans.modules.refactoring.java.ui;
 
-import com.sun.source.util.TreePath;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ItemEvent;
-import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import javax.lang.model.element.Element;
@@ -40,13 +37,14 @@ import javax.swing.ListCellRenderer;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.UiUtils;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.refactoring.java.RefactoringModule;
 import org.netbeans.modules.refactoring.java.RetoucheUtils;
+import org.netbeans.modules.refactoring.java.ui.WhereUsedPanel.Scope;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
@@ -60,7 +58,6 @@ import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
-import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.project.Project;
 
 
@@ -196,6 +193,8 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
                         }
                         if (currentProject!=null) {
                             scope.setModel(new DefaultComboBoxModel(new Object[]{allProjects, currentProject }));
+                            int defaultItem = (Integer) RefactoringModule.getOption("whereUsed.scope", 0);
+                            scope.setSelectedIndex(defaultItem);
                             scope.setRenderer(new JLabelRenderer());
                         } else {
                             scopePanel.setVisible(false);
@@ -411,6 +410,12 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
 
         scopeLabel.setText(org.openide.util.NbBundle.getMessage(WhereUsedPanel.class, "LBL_Scope")); // NOI18N
 
+        scope.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                scopeActionPerformed(evt);
+            }
+        });
+
         org.jdesktop.layout.GroupLayout scopePanelLayout = new org.jdesktop.layout.GroupLayout(scopePanel);
         scopePanel.setLayout(scopePanelLayout);
         scopePanelLayout.setHorizontalGroup(
@@ -430,6 +435,10 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
 
         add(scopePanel, java.awt.BorderLayout.PAGE_END);
     }// </editor-fold>//GEN-END:initComponents
+
+private void scopeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_scopeActionPerformed
+    RefactoringModule.setOption("whereUsed.scope", scope.getSelectedIndex());
+}//GEN-LAST:event_scopeActionPerformed
 
     private void searchInCommentsItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_searchInCommentsItemStateChanged
         // used for change default value for searchInComments check-box.
