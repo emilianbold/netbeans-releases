@@ -41,12 +41,10 @@ import org.openide.text.PrintSettings;
 
 public class CndModule extends ModuleInstall {
 
-    private static final long serialVersionUID = -8877465721852434693L;
-
     // Used in other CND sources...
     public static final ErrorManager err = ErrorManager.getDefault().getInstance("org.netbeans.modules.cnd"); // NOI18N
 
-    public void uninstalled() {
+    @Override public void uninstalled() {
         OutputWindowOutputStream.detachAllAnnotations();
 
         // Print Options
@@ -58,7 +56,7 @@ public class CndModule extends ModuleInstall {
     }
 
     /** Module is being opened (NetBeans startup, or enable-toggled) */
-    public void restored() {
+    @Override public void restored() {
 
 	// Settings for editor kits
         Settings.addInitializer(new CCSettingsInitializer(CCKit.class));
