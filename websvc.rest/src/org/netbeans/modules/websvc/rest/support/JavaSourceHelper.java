@@ -456,13 +456,20 @@ public class JavaSourceHelper {
         return sb.toString();
     }
     
-    public static String getParamEqualThisFieldStatements(String[] params) {
+    public static String getParamEqualThisFieldStatements(String[] params, String[] paramTypes) {
         StringBuilder sb = new StringBuilder();
         String template = "if ($PARAM$ == null) { $PARAM$ = this.$PARAM$; }\n"; //NOI18N
+        
         for (int i=0; i<params.length; i++) {
-            sb.append(template.replace("$PARAM$", params[i])); //NOI18N
+            if (isNotPrimitive(paramTypes[i])) {
+                sb.append(template.replace("$PARAM$", params[i])); //NOI18N
+            }
         }
         return sb.toString();
+    }
+    
+    public static boolean isNotPrimitive(String qualifiedTypeName) {
+        return qualifiedTypeName.indexOf('.') > 0;
     }
     
     public static ClassTree addConstructor(WorkingCopy copy, ClassTree tree,

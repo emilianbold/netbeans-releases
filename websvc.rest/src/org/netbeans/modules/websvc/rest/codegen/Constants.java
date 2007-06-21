@@ -179,5 +179,6 @@ public class Constants {
         XML_TRANSIENT,
         XML_ATTRIBUTE
     };
-    
+
+    public static final String JAVA_EXT = "java"; //NI18N
 }
