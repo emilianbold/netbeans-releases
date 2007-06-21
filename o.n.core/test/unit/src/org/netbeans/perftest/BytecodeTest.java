@@ -80,6 +80,8 @@ public class BytecodeTest extends NbTestCase {
         
         super.setUp();
     }
+    
+    // TODO test for ModuleInstall subclasses - they should override at least one important method
 
     /** Verification that classfiles built in production build do not contain 
      * variable information to reduce their size and improve performance.
@@ -119,7 +121,7 @@ public class BytecodeTest extends NbTestCase {
             ||  "webserver.jar".equals(f.getName())
             ||  "swing-layout-1.0.2.jar".equals(f.getName())
             ||  "beansbinding-0.5.jar".equals(f.getName())
-            ||  "appframework-0.21.jar".equals(f.getName())
+            ||  f.getName().matches("appframework-.*\\.jar")
 //            ||  "jmi.jar".equals(f.getName())
             ||  "persistence-tool-support.jar".equals(f.getName())
             ||  "ini4j.jar".equals(f.getName())
@@ -329,6 +331,7 @@ public class BytecodeTest extends NbTestCase {
             
             if (f.getName().endsWith("servlet-2.2.jar") 
                     || f.getName().endsWith("servlet2.5-jsp2.1-api.jar")
+                    || f.getName().endsWith("javaee.jar")
                     || f.getName().endsWith("javac-impl.jar")
                     || f.getName().endsWith("jaxb-impl.jar")
                     || f.getName().endsWith("jaxb-xjc.jar")
@@ -432,9 +435,19 @@ public class BytecodeTest extends NbTestCase {
                 continue;
             
             if (f.getName().endsWith("servlet-2.2.jar") 
-                    || f.getName().endsWith("servlet2.5-jsp2.1-api.jar")) 
+                    || f.getName().endsWith("servlet2.5-jsp2.1-api.jar")
+                    || f.getName().endsWith("cdc-pp-awt-layout.jar")) // #105314
                 continue;
                     
+            if (f.getName().endsWith("javaee.jar") // #105328 
+                    || f.getName().endsWith("tsalljlayoutclient601dev.jar") // #105628 
+                    || f.getName().endsWith("tsalljlayoutserver601dev.jar") // #105628 
+                    || f.getName().endsWith("lucene-core-2.1.0.jar") // #105329 
+                    || f.getName().endsWith("JGo5.1.jar") // #105319 
+                    || f.getName().endsWith("JGoLayout5.1.jar") // #105319 
+                    || f.getName().endsWith("JGoInstruments5.1.jar")) // #105319 
+                continue;
+            
             JarFile jar = new JarFile(f);
             Enumeration<JarEntry> entries = jar.entries();
             JarEntry entry;
@@ -450,7 +463,9 @@ public class BytecodeTest extends NbTestCase {
                     jars = new LinkedList<String>();
                     res2jars.put(name, jars);
                 }
-                jars.add(jar.getName());
+                if (!jars.contains(jar.getName())) { // avoid errors for multiply loaded JARs
+                    jars.add(jar.getName());
+                }
             }
         }
         boolean fail = false;
