@@ -28,6 +28,13 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="AutoupdateType">
       <!-- this ordering left because backward compatibility with deserialized autoupdate types -->
 
+      <file name="standard-update-provider.settings" url="standard-update-provider.settings">
+        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.updatecenters.resources.Bundle"/>
+        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/updatecenters/resources/updateAction.gif"/>
+        <attr name="url_key" stringvalue="URL_Default_Standard"/>
+        <attr name="enabled" boolvalue="true"/>
+      </file>
+      
       <file name="dev-update-provider.settings" url="dev-update-provider.settings">
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.updatecenters.resources.Bundle"/>
         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/updatecenters/resources/updateAction.gif"/>
