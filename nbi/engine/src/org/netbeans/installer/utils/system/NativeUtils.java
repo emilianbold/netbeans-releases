@@ -185,33 +185,42 @@ public abstract class NativeUtils {
     public abstract List<File> getFileSystemRoots() throws IOException;
     
     // protected ////////////////////////////////////////////////////////////////////
-    protected void loadNativeLibrary(String libraryPath) {
-        if (libraryPath != null) {
+    protected void loadNativeLibrary(String path) {
+        LogManager.logIndent("loading jni library");
+        LogManager.log("library resource path: " + path);
+        
+        if (path != null) {
             InputStream input = null;
             
             try {
-                File file = FileUtils.createTempFile();
+                final File file = FileUtils.createTempFile();
                 
-                input = getClass().getClassLoader().getResourceAsStream(libraryPath);
+                LogManager.log("library file path: " + file.getAbsolutePath());
                 
+                input = getClass().getClassLoader().getResourceAsStream(path);
                 FileUtils.writeFile(file, input);
                 
                 System.load(file.getAbsolutePath());
                 addDeleteOnExitFile(file);
             } catch (IOException e) {
-                ErrorManager.notify(ErrorLevel.CRITICAL, "Cannot load native library from path: " + libraryPath, e);
+                ErrorManager.notifyCritical(
+                        "Cannot load native library from path: " + path, e);
             } catch (UnsatisfiedLinkError e) {
-                ErrorManager.notify(ErrorLevel.CRITICAL, "Cannot load native library from path: " + libraryPath, e);
+                ErrorManager.notifyCritical(
+                        "Cannot load native library from path: " + path, e);
             } finally {
                 if (input != null) {
                     try {
                         input.close();
                     } catch (IOException e) {
-                        ErrorManager.notify(ErrorLevel.DEBUG, e);
+                        ErrorManager.notifyDebug("Failed to close the input " +
+                                "stream to the cached jni library", e);
                     }
                 }
             }
         }
+        
+        LogManager.logIndent("... successfully loaded the library");
     }
     
     protected void initializeForbiddenFiles(String ... filepaths) {
