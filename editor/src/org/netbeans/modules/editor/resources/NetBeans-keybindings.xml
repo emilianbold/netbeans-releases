@@ -142,6 +142,6 @@ Microsystems, Inc. All Rights Reserved.
     <bind actionName="tooltip-show" key="D-P"/>
     <bind actionName="undo" key="UNDO"/>
     <bind actionName="undo" key="D-Z"/>
-    <bind actionName="word-match-next" key="OS-K"/>
-    <bind actionName="word-match-prev" key="OS-L"/>
+    <bind actionName="word-match-next" key="D-L"/>
+    <bind actionName="word-match-prev" key="D-K"/>
 </bindings>
