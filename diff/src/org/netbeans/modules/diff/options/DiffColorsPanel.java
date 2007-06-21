@@ -50,14 +50,9 @@ public class DiffColorsPanel extends javax.swing.JPanel implements ActionListene
     private static final String ATTR_NAME_DELETED = "deleted";
     private static final String ATTR_NAME_CHANGED = "changed";
 
-    private ColorModel colorModel = null;
-    private boolean		listen = false;
-    private String              currentProfile;
-    /** cache Map (String (profile name) > Vector (AttributeSet)). */
-    private Map<String, Vector<AttributeSet>> profileToCategories = new HashMap<String, Vector<AttributeSet>>();
-    /** Set (String (profile name)) of changed profile names. */
-    private Set<String> toBeSaved = new HashSet<String>();
-    private boolean             changed = false;
+    private boolean		        listen;
+    private List<AttributeSet>  categories;
+    private boolean             changed;
     
     public DiffColorsPanel() {
         initComponents ();
@@ -93,36 +88,26 @@ public class DiffColorsPanel extends javax.swing.JPanel implements ActionListene
         }
     }
     
-    public void update (ColorModel colorModel) {
-        this.colorModel = colorModel;
-        currentProfile = colorModel.getCurrentProfile ();
+    public void update(ColorModel colorModel) {
         listen = false;
-        setCurrentProfile (currentProfile);
-        lCategories.setListData (getCategories (currentProfile));
-        lCategories.setSelectedIndex (0);
+        lCategories.setListData(new Vector(getCategories()));
+        lCategories.setSelectedIndex(0);
         refreshUI ();	
         listen = true;
         changed = false;
     }
     
     public void cancel () {
-        toBeSaved = new HashSet<String>();
-        profileToCategories = new HashMap<String, Vector<AttributeSet>>();        
         changed = false;
     }
     
     public void applyChanges() {
-        if (colorModel == null) return;
-        for(String profile : toBeSaved) {
-            Vector<AttributeSet> colors = getCategories(profile);
-            for (AttributeSet color : colors) {
-                if (ATTR_NAME_ADDED.equals(color.getAttribute(StyleConstants.NameAttribute))) DiffModuleConfig.getDefault().setAddedColor((Color) color.getAttribute(StyleConstants.Background)); 
-                if (ATTR_NAME_CHANGED.equals(color.getAttribute(StyleConstants.NameAttribute))) DiffModuleConfig.getDefault().setChangedColor((Color) color.getAttribute(StyleConstants.Background)); 
-                if (ATTR_NAME_DELETED.equals(color.getAttribute(StyleConstants.NameAttribute))) DiffModuleConfig.getDefault().setDeletedColor((Color) color.getAttribute(StyleConstants.Background)); 
-            }
+        List<AttributeSet> colors = getCategories();
+        for (AttributeSet color : colors) {
+            if (ATTR_NAME_ADDED.equals(color.getAttribute(StyleConstants.NameAttribute))) DiffModuleConfig.getDefault().setAddedColor((Color) color.getAttribute(StyleConstants.Background)); 
+            if (ATTR_NAME_CHANGED.equals(color.getAttribute(StyleConstants.NameAttribute))) DiffModuleConfig.getDefault().setChangedColor((Color) color.getAttribute(StyleConstants.Background)); 
+            if (ATTR_NAME_DELETED.equals(color.getAttribute(StyleConstants.NameAttribute))) DiffModuleConfig.getDefault().setDeletedColor((Color) color.getAttribute(StyleConstants.Background)); 
         }
-        toBeSaved = new HashSet<String>();
-        profileToCategories = new HashMap<String, Vector<AttributeSet>>();
     }
     
     public boolean isChanged () {
@@ -130,25 +115,10 @@ public class DiffColorsPanel extends javax.swing.JPanel implements ActionListene
     }
     
     public void setCurrentProfile (String currentProfile) {
-        String oldScheme = this.currentProfile;
-        this.currentProfile = currentProfile;
-        if (!colorModel.getProfiles ().contains (currentProfile)) {
-            // clone profile
-            Vector<AttributeSet> categories = getCategories (oldScheme);
-            profileToCategories.put (currentProfile, new Vector<AttributeSet>(categories));
-            toBeSaved.add (currentProfile);
-        }
         refreshUI ();
     }
 
     public void deleteProfile (String profile) {
-        if (colorModel.isCustomProfile (profile))
-            profileToCategories.put (profile, null);
-        else {
-            profileToCategories.put (profile, getDefaults (profile));
-            refreshUI ();
-        }
-        toBeSaved.add (profile);
     }
     
     public JComponent getComponent() {
@@ -158,7 +128,7 @@ public class DiffColorsPanel extends javax.swing.JPanel implements ActionListene
     // other methods ...........................................................
     
     Collection<AttributeSet> getHighlightings () {
-        return getCategories(currentProfile);
+        return getCategories();
     }
     
     private static String loc (String key) {
@@ -169,7 +139,7 @@ public class DiffColorsPanel extends javax.swing.JPanel implements ActionListene
         int index = lCategories.getSelectedIndex();
         if (index < 0) return;
         
-        Vector<AttributeSet> categories = getCategories(currentProfile);
+        List<AttributeSet> categories = getCategories();
         AttributeSet category = categories.get(lCategories.getSelectedIndex());
         SimpleAttributeSet c = new SimpleAttributeSet(category);
         
@@ -181,74 +151,34 @@ public class DiffColorsPanel extends javax.swing.JPanel implements ActionListene
         }
         
         categories.set(index, c);
-        toBeSaved.add(currentProfile);
     }
     
     private void refreshUI () {
-        int index = lCategories.getSelectedIndex ();
+        int index = lCategories.getSelectedIndex();
         if (index < 0) {
-            cbBackground.setEnabled (false);
+            cbBackground.setEnabled(false);
             return;
         }
-        cbBackground.setEnabled (true);
+        cbBackground.setEnabled(true);
         
-        Vector<AttributeSet> categories = getCategories (currentProfile);
-	    AttributeSet category = categories.get (index);
+        List<AttributeSet> categories = getCategories();
+	    AttributeSet category = categories.get(index);
         
         listen = false;
-        
-        // set defaults
-        AttributeSet defAs = getDefaultColoring();
-        if (defAs != null) {
-            Color inheritedForeground = (Color) defAs.getAttribute(StyleConstants.Foreground);
-            if (inheritedForeground == null) {
-                inheritedForeground = Color.black;
-            }
-            
-            Color inheritedBackground = (Color) defAs.getAttribute(StyleConstants.Background);
-            if (inheritedBackground == null) {
-                inheritedBackground = Color.white;
-            }
-            org.netbeans.modules.diff.options.ColorComboBox.setInheritedColor(cbBackground, inheritedBackground);
-        }
-        
         // set values
-        org.netbeans.modules.diff.options.ColorComboBox.setColor (
-            cbBackground,
-            (Color) category.getAttribute (StyleConstants.Background)
-        );
+        org.netbeans.modules.diff.options.ColorComboBox.setColor(cbBackground, (Color) category.getAttribute(StyleConstants.Background));
         listen = true;
     }
     
-    private AttributeSet getDefaultColoring() {
-        Collection/*<AttributeSet>*/ defaults = colorModel.getCategories(currentProfile, ColorModel.ALL_LANGUAGES);
-        
-        for(Iterator i = defaults.iterator(); i.hasNext(); ) {
-            AttributeSet as = (AttributeSet) i.next();
-            String name = (String) as.getAttribute(StyleConstants.NameAttribute);
-            if (name != null && "default".equals(name)) { //NOI18N
-                return as;
-            }
+    private List<AttributeSet> getCategories() {
+        if (categories == null) {
+            categories = getDiffHighlights();
+            Collections.sort(categories, new org.netbeans.modules.options.colors.CategoryComparator());
         }
-        
-        return null;
-    }
-    
-    private Vector<AttributeSet> getCategories(String profile) {
-        if (colorModel == null) return null;
-        if (!profileToCategories.containsKey(profile)) {
-            Collection<AttributeSet> c = getDiffHighlights(colorModel, profile);
-            if (c == null) {
-                c = Collections.<AttributeSet>emptySet(); // XXX OK?
-            }
-            List<AttributeSet> l = new ArrayList<AttributeSet>(c);
-            Collections.sort(l, new org.netbeans.modules.options.colors.CategoryComparator());
-            profileToCategories.put(profile, new Vector<AttributeSet>(l));
-        }
-        return profileToCategories.get(profile);
+        return categories;
     }
 
-    private Collection<AttributeSet> getDiffHighlights(ColorModel colorModel, String profile) {
+    private List<AttributeSet> getDiffHighlights() {
         List<AttributeSet> attrs = new ArrayList<AttributeSet>();
         SimpleAttributeSet sas = null;
         
@@ -273,19 +203,6 @@ public class DiffColorsPanel extends javax.swing.JPanel implements ActionListene
         return attrs;
     }
 
-    /** cache Map (String (profile name) > Vector (AttributeSet)). */
-    private Map<String, Vector<AttributeSet>> profileToDefaults = new HashMap<String, Vector<AttributeSet>>();
-    
-    private Vector<AttributeSet> getDefaults(String profile) {
-        if (!profileToDefaults.containsKey(profile)) {
-            Collection<AttributeSet> c = colorModel.getHighlightingDefaults(profile);
-            List<AttributeSet> l = new ArrayList<AttributeSet>(c);
-            Collections.sort(l, new org.netbeans.modules.options.colors.CategoryComparator());
-            profileToDefaults.put(profile, new Vector<AttributeSet>(l));
-        }
-        return profileToDefaults.get(profile);
-    }
-    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is

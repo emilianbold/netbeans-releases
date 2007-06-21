@@ -50,7 +50,6 @@ class ColorComboBox {
 	new ColorValue(Color.WHITE), 
 	new ColorValue(Color.YELLOW), 
 	ColorValue.CUSTOM_COLOR, 
-	new ColorValue(loc("CTL_None_Color"), null)                  //NOI18N
     };
     
     
@@ -62,20 +61,6 @@ class ColorComboBox {
         combo.setEditor (new ColorComboBoxRenderer(combo));
 	combo.setSelectedItem (new ColorValue(null, null));
         combo.addActionListener (new ColorComboBox.ComboBoxListener(combo));
-    }
-    
-    static void setInheritedColor (JComboBox combo, Color color) {
-	Object[] ncontent = new Object [content.length];
-	System.arraycopy (content, 0, ncontent, 0, content.length);
-        if (color != null)
-            ncontent [content.length - 1] = new ColorValue(
-                loc("CTL_Inherited_Color"), color                   //NOI18N
-            );
-        else
-            ncontent [content.length - 1] = new ColorValue(
-                loc("CTL_None_Color"), null                       //NOI18N
-            );
-	combo.setModel (new DefaultComboBoxModel (ncontent));
     }
     
     static void setColor (JComboBox combo, Color color) {
