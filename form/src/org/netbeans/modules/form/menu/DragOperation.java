@@ -194,38 +194,31 @@ class DragOperation {
             // if dragging a JMenu over an open spot in the menu bar
             if(rad != null && JMenuBar.class.isAssignableFrom(rad.getBeanClass()) && JMenu.class.isAssignableFrom(dragComponent.getClass())) {
                 p("over the menu bar");
-                showMenuBarDropTarget(rad, pt);
+                menuEditLayer.dropTargetLayer.setDropTarget(rad, pt);
                 targetComponent = (JComponent) menuEditLayer.formDesigner.getComponent(rad);
             }
             
             // open any relevant top-level menus
             if(rad != null && JMenu.class.isAssignableFrom(rad.getBeanClass())) {
-                //p("over a menu");
+                p("over a menu: " + rad);
                 targetComponent = (JComponent) menuEditLayer.formDesigner.getComponent(rad);
                 menuEditLayer.openMenu(rad, targetComponent);
                 if(JMenu.class.isAssignableFrom(dragComponent.getClass())) {
-                    showMenuBarDropTarget(rad, pt);
+                    menuEditLayer.dropTargetLayer.setDropTarget(rad, pt);
+                } else {
+                    menuEditLayer.dropTargetLayer.setDropTarget(rad, pt, DropTargetLayer.DropTargetType.INTO_SUBMENU);
                 }
                 return;
             }
             
             //show any drop target markers
             Component child = getDeepestComponentInPopups(pt);
-            //p("child = " + child);
-            if(child == null) {
-                if(targetComponent != null) {
-                    //targetComponent.setBorder(MenuEditLayer.UNSELECTED_BORDER);
-                }
-            }
             
             
-            if(child instanceof JMenuItem && /*child != payloadComponent &&*/ child != dragComponent) {
-                if(targetComponent != null) {
-                    //targetComponent.setBorder(MenuEditLayer.UNSELECTED_BORDER);
-                }
+            if(child instanceof JMenuItem && child != dragComponent) {
                 targetComponent = (JComponent)child;
                 if(targetComponent != null) {
-                    menuEditLayer.dropTargetLayer.setDropTargetComponent(targetComponent, DropTargetLayer.DropTargetType.INTER_MENU, pt);
+                    menuEditLayer.dropTargetLayer.setDropTarget(targetComponent, pt, DropTargetLayer.DropTargetType.INTER_MENU);
                 }
                 menuEditLayer.repaint();
             }
@@ -240,23 +233,15 @@ class DragOperation {
         }
     }
     
-    private void showMenuBarDropTarget(RADComponent comp, Point pt) {
-        menuEditLayer.setDrawMenuBarNewComponentTarget(comp, pt);
-        menuEditLayer.repaint();
-    }
     
     private void styleMenu(JMenu menu, Point point) {
         menu.setBorderPainted(true);
         // if on the right side: 
-        p("point = " + point + "  widt = " + menu.getWidth());
-        if(point.x > menu.getWidth()-30) {
-            p("doing menu right");
-            //menu.setBorder(MenuEditLayer.INSERTION_BORDER_MENU_RIGHT);
-            menuEditLayer.dropTargetLayer.setDropTargetComponent(menu, DropTargetLayer.DropTargetType.INTO_SUBMENU, point);
-            menu.repaint();
+        if(DropTargetLayer.isMenuRightEdge(point, menu)) {
+            menuEditLayer.dropTargetLayer.setDropTarget(menu, point, DropTargetLayer.DropTargetType.INTO_SUBMENU);
+            menu.repaint(); // josh: is this line needed?
         } else {
-            menuEditLayer.dropTargetLayer.setDropTargetComponent(menu, DropTargetLayer.DropTargetType.INTER_MENU, point);
-            //menu.setBorder(MenuEditLayer.INSERTION_BORDER);
+            menuEditLayer.dropTargetLayer.setDropTarget(menu, point, DropTargetLayer.DropTargetType.INTER_MENU);
         }
         menuEditLayer.showMenuPopup(menu);
     }
@@ -267,8 +252,7 @@ class DragOperation {
         if(dragComponent == null) return;
         p("ending an operation at: " + pt);
         menuEditLayer.layers.remove(dragComponent);
-        menuEditLayer.setDrawMenuBarNewComponentTarget(null, null);
-        menuEditLayer.dropTargetLayer.setDropTargetComponent(null, DropTargetLayer.DropTargetType.NONE, null);
+        menuEditLayer.dropTargetLayer.clearDropTarget();
         
         p("op = " + op);
         switch (op) {
@@ -286,9 +270,6 @@ class DragOperation {
         started = false;
         if(dragComponent != null) {
             menuEditLayer.layers.remove(dragComponent);
-        }
-        if(targetComponent != null) {
-            //targetComponent.setBorder(MenuEditLayer.UNSELECTED_BORDER);
         }
     }
     
@@ -328,16 +309,13 @@ class DragOperation {
             // if dragging a jmenu onto a toplevel jmenu
             if(menu.getParent() instanceof JMenuBar && payloadComponent instanceof JMenu) {
                 p("dropping into a toplevel menu");
-                if(DropTargetLayer.isTopLevelMenuLeftEdge(pt2, menu)) {
-                //if(pt2.x < 15) {  // if on the left edge
+                if(DropTargetLayer.isMenuLeftEdge(pt2, menu)) {
                     p("doing a left drop");
                     menuEditLayer.moveRadComponentToBefore(payloadComponent, menu);
                     return;
-                } else if (DropTargetLayer.isTopLevelMenuRightEdge(pt2, menu)) {
-                //} else if (pt2.x > menu.getWidth()-15) {  // if on the right edge
+                } else if (DropTargetLayer.isMenuRightEdge(pt2, menu)) {
                     p("doing a right drop");
-                    //menuEditLayer.moveRadComponentToAfter(payloadComponent, menu);
-                    p("not doing a right drop yet");
+                    menuEditLayer.moveRadComponentToAfter(payloadComponent, menu);
                     return;
                 } else {  // else must be in the center so just add to the menu instead of next to
                     menuEditLayer.moveRadComponentInto(payloadComponent, menu);
@@ -408,11 +386,11 @@ class DragOperation {
             if(targetComponent.getParent() instanceof JMenuBar) {
                 p("on top of a toplevel menu");
                 
-                if(DropTargetLayer.isTopLevelMenuLeftEdge(pt2, targetComponent)) {
+                if(DropTargetLayer.isMenuLeftEdge(pt2, targetComponent) && isMenuPayload(creator)) {
                     p("on the left edge");
                     RADVisualComponent newRad = creator.getPrecreatedMetaComponent();
                     menuEditLayer.addRadComponentToBefore(newRad, targetComponent);
-                } else if(DropTargetLayer.isTopLevelMenuRightEdge(pt2, targetComponent)) {
+                } else if(DropTargetLayer.isMenuRightEdge(pt2, targetComponent) && isMenuPayload(creator)) {
                     p("on the right edge");
                     RADVisualComponent newRad = creator.getPrecreatedMetaComponent();
                     menuEditLayer.addRadComponentToAfter(newRad, targetComponent);
@@ -460,6 +438,12 @@ class DragOperation {
         
     }
     
+    private boolean isMenuPayload(MetaComponentCreator creator) {
+        if(JMenu.class.isAssignableFrom(creator.getPrecreatedMetaComponent().getBeanClass())) {
+            return true;
+        }
+        return false;
+    }
     
     //josh: this is a very slow way to find the component under the mouse cursor.
     //there must be a faster way to do it

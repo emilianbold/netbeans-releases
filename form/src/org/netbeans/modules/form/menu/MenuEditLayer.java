@@ -712,6 +712,12 @@ public class MenuEditLayer extends JPanel {
     }
     
     void moveRadComponentToBefore(JComponent payload, JComponent target) {
+        moveRadComponentToBefore(payload, target, 0);
+    }
+    void moveRadComponentToAfter(JComponent payload, JComponent target) {
+        moveRadComponentToBefore(payload, target, 1);
+    }
+    void moveRadComponentToBefore(JComponent payload, JComponent target, int offset) {
         try {
             if(payload == target) {
                 p("can't move onto self");
@@ -725,10 +731,10 @@ public class MenuEditLayer extends JPanel {
             p("payload parent = " + payloadParent);
             
             JComponent targetParent = getMenuParent(target);
-            /*
+            
             if(targetParent == null) {
                 targetParent = (JComponent) target.getParent();
-            }*/
+            }
             p("target parent = " + targetParent);
             
             RADVisualComponent payloadRad = (RADVisualComponent) formDesigner.getMetaComponent(payload);
@@ -755,6 +761,7 @@ public class MenuEditLayer extends JPanel {
             p("=== removing ===");
             //skip if no payload rad, which probably means this is a new component from the palette
             if(payloadRad != null && payloadParentRad != null) {
+                p("=== did a remove ===");
                 int index = payloadParentRad.getIndexOf(payloadRad);
                 payloadParentRad.remove(payloadRad);
                 FormModelEvent fme = formDesigner.getFormModel().fireComponentRemoved(payloadRad, payloadParentRad, index, false);
@@ -775,7 +782,7 @@ public class MenuEditLayer extends JPanel {
             // insert if target exists, else the item was removed by dragging out of the menu
             if(targetParentRad != null) {
                 p("=== inserting before drop target component ===");
-                int index2 = targetParentRad.getIndexOf(targetRad);
+                int index2 = targetParentRad.getIndexOf(targetRad) + offset;
                 p("index of target = " + index2);
                 targetParentRad.add(payloadRad, index2);
                 targetParentRad.getLayoutSupport().addComponents(new RADVisualComponent[] { payloadRad }, 
@@ -1235,15 +1242,6 @@ public class MenuEditLayer extends JPanel {
         
     }
     
-    /*
-    public RADComponent getDrawMenuBarNewComponentTarget() {
-        return menuBarDropTargetComponent;
-    }*/
-
-    public void setDrawMenuBarNewComponentTarget(RADComponent target, Point pt) {
-        dropTargetLayer.menuBarDropTargetComponent = target;
-        dropTargetLayer.menuBarDropTargetPoint = pt;
-    }
     
     public SelectedPortion getCurrentSelectedPortion() {
         return selectedPortion;
