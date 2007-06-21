@@ -24,8 +24,8 @@ import java.awt.BorderLayout;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
@@ -148,7 +148,7 @@ public class SelectorUtils {
      * @return root <code>Node</code> 
      */
     static public Node bundlesNode(Project prj, FileObject file, boolean includeFiles) {
-        java.util.List nodes = new LinkedList();
+        List<Node> nodes = new LinkedList<Node>();
         if (prj == null)
             prj = FileOwnerQuery.getOwner(file);
 
@@ -158,18 +158,18 @@ public class SelectorUtils {
         return createRootFor(nodes, prj);
     }
 
-    private static java.util.List getRoots(ClassPath cp) {
-        ArrayList l = new ArrayList(cp.entries().size());
-        Iterator eit = cp.entries().iterator();
-        while(eit.hasNext()) {
-            ClassPath.Entry e = (ClassPath.Entry)eit.next();
+    private static List<FileObject> getRoots(ClassPath cp) {
+        ArrayList<FileObject> l = new ArrayList<FileObject>(cp.entries().size());
+        for (ClassPath.Entry e : cp.entries()) {
 
             // try to map it to sources
             URL url = e.getURL();
             SourceForBinaryQuery.Result r= SourceForBinaryQuery.findSourceRoots(url);
             FileObject [] fos = r.getRoots();
             if (fos.length > 0) {
-                for (int i = 0 ; i < fos.length; i++) l.add(fos[i]);
+                for (FileObject fo : fos) {
+                    l.add(fo);
+                }
             } else {
                 if (e.getRoot()!=null) 
                     l.add(e.getRoot()); // add the class-path location
@@ -181,15 +181,13 @@ public class SelectorUtils {
     }
 
 
-    private static java.util.List getRootNodes(Project prj,
-                                               java.util.List roots, 
-                                               FilteredNode.NodeFilter filter,
-                                               boolean includeFiles) {
-        java.util.List nodes = new ArrayList(roots.size());      
-        Iterator it = roots.iterator();
-        while (it.hasNext()) {
+    private static List<Node> getRootNodes(Project prj,
+                                           List<FileObject> roots, 
+                                           FilteredNode.NodeFilter filter,
+                                           boolean includeFiles) {
+        List<Node> nodes = new ArrayList<Node>(roots.size());      
+        for (FileObject rfo : roots) {
             try {
-                FileObject rfo = (FileObject)it.next();
                 if (includeFiles || (FileUtil.toFile(rfo)!=null)) {
                     Project owner = org.netbeans.api.project.FileOwnerQuery.getOwner(rfo);
                     Node origNode = DataObject.find(rfo).getNodeDelegate();
@@ -218,9 +216,9 @@ public class SelectorUtils {
     private static SourceGroup getSourceGroup(FileObject file, Project prj) {
       Sources src = ProjectUtils.getSources(prj);
       SourceGroup[] srcgrps = src.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-      for (int i = 0 ; i < srcgrps.length; i++) {
-          if (file == srcgrps[i].getRootFolder())
-              return srcgrps[i];
+      for (SourceGroup srcGrp : srcgrps) {
+          if (file == srcGrp.getRootFolder())
+              return srcGrp;
       }
       return null;
     }
