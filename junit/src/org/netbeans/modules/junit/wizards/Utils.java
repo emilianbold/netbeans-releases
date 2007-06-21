@@ -522,7 +522,7 @@ public final class Utils {
             return fileObjs;
         }
         
-        int nullsCount = 0;;
+        int nullsCount = 0;
         for (int i = 0; i < fileObjs.length; i++) {
             if (fileObjs[i] == null) {
                 nullsCount++;
@@ -651,8 +651,7 @@ public final class Utils {
 
         try {
             DataObject dob = DataObject.find(file);
-            EditorCookie ed = (EditorCookie)
-                              dob.getCookie(EditorCookie.class);
+            EditorCookie ed = dob.getCookie(EditorCookie.class);
             if (ed != null && /* not true e.g. for *_ja.properties */
                               file == dob.getPrimaryFile()) {
                 if (lineNum == -1) {
