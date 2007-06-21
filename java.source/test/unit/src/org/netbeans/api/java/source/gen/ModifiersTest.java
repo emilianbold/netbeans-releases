@@ -751,7 +751,7 @@ public class ModifiersTest extends GeneratorTestMDRCompat {
                 "/**\n" +
                 " *aa\n" +
                 " */\n" +
-                "@Annotation(val = 2) \n" +
+                "@Annotation(val = 2)\n" +
                 "public class Test {\n" +
                 "}\n";
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
