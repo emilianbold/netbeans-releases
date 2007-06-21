@@ -52,7 +52,6 @@ public class AntBasedProjectFactorySingletonTest extends NbTestCase {
         TestUtil.createFileFromContent(AntProjectHelperTest.class.getResource("data/project.properties"), projdir, "nbproject/project.properties");
         TestUtil.createFileFromContent(AntProjectHelperTest.class.getResource("data/private.properties"), projdir, "nbproject/private/private.properties");
         TestUtil.createFileFromContent(AntProjectHelperTest.class.getResource("data/global.properties"), scratch, "userdir/build.properties");
-        MockLookup.setInstances(AntBasedTestUtil.testAntBasedProjectType());
     }
 
     /**Test for second part of #42738.
