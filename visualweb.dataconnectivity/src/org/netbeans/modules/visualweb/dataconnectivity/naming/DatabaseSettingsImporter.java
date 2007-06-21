@@ -203,6 +203,8 @@ public class DatabaseSettingsImporter {
         Set <File> contextFiles = new HashSet<File>();
         
         if (isStartup) {
+            destPaths = new String [] {"2_0"  + File.separator +  "context.xml", "2_1"  + File.separator +  "context.xml", 
+             "5_5"  + File.separator +  "context.xml", "5_5_1"  + File.separator +  "context.xml"};
             contextFile = retrieveMigratedSettingsAtStartup();
             registerConnections(contextFile);
         } else {
