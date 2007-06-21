@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -213,10 +213,10 @@ public final class I18nUtil {
         DataObject[] folders = new DataObject[children.length];
         int i, foldersCount = 0;
 
-        for (i = 0; i < children.length; i++) {
-            if (children[i] instanceof DataFolder) {  
-                folders[foldersCount++] = children[i];
-            } else if (FactoryRegistry.hasFactory(children[i].getClass())) {
+        for (DataObject child : children) {
+            if (child instanceof DataFolder) {  
+                folders[foldersCount++] = child;
+            } else if (FactoryRegistry.hasFactory(child.getClass())) {
                 return true;
             }
         }
@@ -231,22 +231,22 @@ public final class I18nUtil {
     /** 
      * Recursivelly get all accepted data objects starting from given folder. 
      */
-    public static List getAcceptedDataObjects(DataObject.Container folder) {
-        List accepted = new ArrayList();
+    public static List<DataObject> getAcceptedDataObjects(DataObject.Container folder) {
+        List<DataObject> accepted = new ArrayList<DataObject>();
         
         final VisibilityQuery visQuery = VisibilityQuery.getDefault();
 
         DataObject[] children = folder.getChildren();
 
-        for(int i = 0; i < children.length; i++) {
-            if (!visQuery.isVisible(children[i].getPrimaryFile())) {
+        for (DataObject child : children) {
+            if (!visQuery.isVisible(child.getPrimaryFile())) {
                 continue;
             }
-            if(children[i] instanceof DataObject.Container) {
-                accepted.addAll(getAcceptedDataObjects((DataObject.Container)children[i]));
+            if(child instanceof DataObject.Container) {
+                accepted.addAll(getAcceptedDataObjects((DataObject.Container)child));
             } else {
-                if(FactoryRegistry.hasFactory(children[i].getClass()))
-                    accepted.add(children[i]);
+                if(FactoryRegistry.hasFactory(child.getClass()))
+                    accepted.add(child);
             }
         }
 
