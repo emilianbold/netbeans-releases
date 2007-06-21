@@ -25,7 +25,6 @@ import java.util.List;
 import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.product.RegistryNode;
-import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.helper.DetailedStatus;
 import org.netbeans.installer.utils.helper.Feature;
 import org.netbeans.installer.utils.helper.Status;
@@ -152,7 +151,8 @@ public class ProductFilter implements RegistryFilter {
                 
                 for (Platform platform: platforms) {
                     for (Platform productPlatform: product.getPlatforms()) {
-                        if (platform.isCompatibleWith(productPlatform)) {
+                        if (platform.isCompatibleWith(productPlatform) || 
+                                productPlatform.isCompatibleWith(platform)) {
                             intersects = true;
                         }
                     }
