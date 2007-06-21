@@ -24,7 +24,7 @@
     </logicalFolder>
   </logicalFolder>
   <projectmakefile>Makefile</projectmakefile>
-  <defaultConf>2</defaultConf>
+  <defaultConf>0</defaultConf>
   <confs>
     <conf name="Debug" type="2">
       <toolsSet>
@@ -138,6 +138,104 @@
             <directoryPath>/usr/java/include/solaris</directoryPath>
           </includeDirectories>
           <commandLine>-KPIC -shared -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -xO2 -Xa</commandLine>
+        </ccCompilerTool>
+        <linkerTool>
+          <output>dist/solaris-amd64.so</output>
+          <stripSymbols>true</stripSymbols>
+          <linkerNorunpath>false</linkerNorunpath>
+          <linkerLibItems>
+          </linkerLibItems>
+        </linkerTool>
+      </compileType>
+      <item path="../.common/src/CommonUtils.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="../.common/src/CommonUtils.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="../.unix/src/jni_UnixNativeUtils.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="../.unix/src/jni_UnixNativeUtils.h">
+        <itemTool>3</itemTool>
+      </item>
+    </conf>
+    <conf name="Debug_gnu" type="2">
+      <toolsSet>
+        <compilerSet>GNU</compilerSet>
+        <cRequired>true</cRequired>
+        <cppRequired>true</cppRequired>
+        <fortranRequired>false</fortranRequired>
+        <platform>1</platform>
+      </toolsSet>
+      <compileType>
+        <cCompilerTool>
+          <developmentMode>0</developmentMode>
+          <stripSymbols>true</stripSymbols>
+          <includeDirectories>
+            <directoryPath>/usr/java/include</directoryPath>
+            <directoryPath>/usr/java/include/solaris</directoryPath>
+          </includeDirectories>
+          <commandLine>-m32 -fPIC -static-libgcc -shared -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE</commandLine>
+        </cCompilerTool>
+        <ccCompilerTool>
+          <developmentMode>0</developmentMode>
+          <stripSymbols>true</stripSymbols>
+          <includeDirectories>
+            <directoryPath>/usr/java/include</directoryPath>
+            <directoryPath>/usr/java/include/solaris</directoryPath>
+          </includeDirectories>
+          <commandLine>-m32 -fPIC -static-libgcc -shared -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE</commandLine>
+        </ccCompilerTool>
+        <linkerTool>
+          <output>dist/solaris-x86.so</output>
+          <stripSymbols>true</stripSymbols>
+          <linkerNorunpath>false</linkerNorunpath>
+          <linkerLibItems>
+          </linkerLibItems>
+        </linkerTool>
+      </compileType>
+      <item path="../.common/src/CommonUtils.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="../.common/src/CommonUtils.h">
+        <itemTool>3</itemTool>
+      </item>
+      <item path="../.unix/src/jni_UnixNativeUtils.c">
+        <itemTool>0</itemTool>
+      </item>
+      <item path="../.unix/src/jni_UnixNativeUtils.h">
+        <itemTool>3</itemTool>
+      </item>
+    </conf>
+    <conf name="Debug_x64_gnu" type="2">
+      <toolsSet>
+        <compilerSet>GNU</compilerSet>
+        <cRequired>true</cRequired>
+        <cppRequired>true</cppRequired>
+        <fortranRequired>false</fortranRequired>
+        <platform>1</platform>
+      </toolsSet>
+      <compileType>
+        <cCompilerTool>
+          <developmentMode>0</developmentMode>
+          <stripSymbols>true</stripSymbols>
+          <sixtyfourBits>true</sixtyfourBits>
+          <includeDirectories>
+            <directoryPath>/usr/java/include</directoryPath>
+            <directoryPath>/usr/java/include/solaris</directoryPath>
+          </includeDirectories>
+          <commandLine>-fPIC -static-libgcc -shared -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE</commandLine>
+        </cCompilerTool>
+        <ccCompilerTool>
+          <developmentMode>0</developmentMode>
+          <stripSymbols>true</stripSymbols>
+          <sixtyfourBits>true</sixtyfourBits>
+          <includeDirectories>
+            <directoryPath>/usr/java/include</directoryPath>
+            <directoryPath>/usr/java/include/solaris</directoryPath>
+          </includeDirectories>
+          <commandLine>-fPIC -static-libgcc -shared -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE</commandLine>
         </ccCompilerTool>
         <linkerTool>
           <output>dist/solaris-amd64.so</output>

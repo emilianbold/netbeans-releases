@@ -27,11 +27,11 @@ CLEAN_SUBPROJECTS=${CLEAN_SUBPROJECTS_${SUBPROJECTS}}
 PROJECTNAME=solaris-x86
 
 # Active Configuration
-ACTIVECONF=Debug_x64
+ACTIVECONF=Debug
 CONF=${ACTIVECONF}
 
 # All Configurations
-ALLCONFS=Debug Release Debug_x64 
+ALLCONFS=Debug Release Debug_x64 Debug_gnu Debug_x64_gnu 
 
 
 # build
