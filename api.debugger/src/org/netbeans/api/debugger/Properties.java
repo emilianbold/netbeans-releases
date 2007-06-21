@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -34,8 +34,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
-import org.openide.ErrorManager;
 
+import org.openide.ErrorManager;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.Repository;
@@ -336,22 +336,32 @@ public abstract class Properties {
         private boolean isInitialized = false;
 
 
-        public synchronized String getProperty (String propertyName, String defaultValue) {
-            if (!isInitialized) load ();
-            isInitialized = true;
-            String value = (String) properties.get (propertyName);
-            if (value != null) return value;
+        public String getProperty (String propertyName, String defaultValue) {
+            synchronized (this) {
+                if (!isInitialized) {
+                    load ();
+                    isInitialized = true;
+                }
+                String value = (String) properties.get (propertyName);
+                if (value != null) {
+                    return value;
+                }
+            }
             return defaultValue;
         }
 
-        public synchronized void setProperty (String propertyName, String value) {
-            if (!isInitialized) load ();
-            isInitialized = true;
-            properties.put (propertyName, value);
+        public void setProperty (String propertyName, String value) {
+            synchronized (this) {
+                if (!isInitialized) {
+                    load ();
+                    isInitialized = true;
+                }
+                properties.put (propertyName, value);
+            }
             save ();
         }
     
-        private void load () {
+        private synchronized void load () {
             BufferedReader br = null;
             try {
                 FileObject fo = findSettings();
@@ -388,7 +398,7 @@ public abstract class Properties {
             task.schedule(4000);
         }
 
-        private void saveIn () {
+        private synchronized void saveIn () {
             PrintWriter pw = null;
             FileLock lock = null;
             try {
@@ -415,11 +425,14 @@ public abstract class Properties {
                         ErrorManager.getDefault().annotate(ex,
                         "Can not save debugger settings."));
             } finally {
-                if (pw != null) {
-                    pw.close ();
-                }
-                if (lock != null) {
-                    lock.releaseLock ();
+                try {
+                    if (pw != null) {
+                        pw.close ();
+                    }
+                } finally {
+                    if (lock != null) {
+                        lock.releaseLock ();
+                    }
                 }
             }
         }
@@ -479,11 +492,9 @@ public abstract class Properties {
             registerReader(r);
         }
         
-        private Reader findReader (String typeID) {
-            synchronized (this) {
-                if (register == null) {
-                    initReaders ();
-                }
+        private synchronized Reader findReader (String typeID) {
+            if (register == null) {
+                initReaders ();
             }
             
             Reader r = (Reader) register.get (typeID);
@@ -513,7 +524,7 @@ public abstract class Properties {
             String value = impl.getProperty (propertyName, null);
             if (value == null) return defaultValue;
             if (!value.startsWith ("\"")) {
-                System.out.println("Can not read string " + value + ".");
+                ErrorManager.getDefault().log("Can not read string " + value + ".");
                 return defaultValue;
             }
             return value.substring (1, value.length () - 1);
@@ -530,8 +541,12 @@ public abstract class Properties {
         public int getInt (String propertyName, int defaultValue) {
             String value = impl.getProperty (propertyName, null);
             if (value == null) return defaultValue;
-            int val = Integer.parseInt (value);
-            return val;
+            try {
+                int val = Integer.parseInt (value);
+                return val;
+            } catch (NumberFormatException nfex) {
+                return defaultValue;
+            }
         }
 
         public void setInt (String propertyName, int value) {
@@ -546,14 +561,18 @@ public abstract class Properties {
         }
 
         public void setChar (String propertyName, char value) {
-            impl.setProperty (propertyName, "" + value);
+            impl.setProperty (propertyName, Character.toString(value));
         }
 
         public float getFloat (String propertyName, float defaultValue) {
             String value = impl.getProperty (propertyName, null);
             if (value == null) return defaultValue;
-            float val = Float.parseFloat (value);
-            return val;
+            try {
+                float val = Float.parseFloat (value);
+                return val;
+            } catch (NumberFormatException nfex) {
+                return defaultValue;
+            }
         }
 
         public void setFloat (String propertyName, float value) {
@@ -563,8 +582,12 @@ public abstract class Properties {
         public long getLong (String propertyName, long defaultValue) {
             String value = impl.getProperty (propertyName, null);
             if (value == null) return defaultValue;
-            long val = Long.parseLong (value);
-            return val;
+            try {
+                long val = Long.parseLong (value);
+                return val;
+            } catch (NumberFormatException nfex) {
+                return defaultValue;
+            }
         }
 
         public void setLong (String propertyName, long value) {
@@ -574,8 +597,12 @@ public abstract class Properties {
         public double getDouble (String propertyName, double defaultValue) {
             String value = impl.getProperty (propertyName, null);
             if (value == null) return defaultValue;
-            double val = Double.parseDouble (value);
-            return val;
+            try {
+                double val = Double.parseDouble (value);
+                return val;
+            } catch (NumberFormatException nfex) {
+                return defaultValue;
+            }
         }
 
         public void setDouble (String propertyName, double value) {
@@ -596,8 +623,12 @@ public abstract class Properties {
         public byte getByte (String propertyName, byte defaultValue) {
             String value = impl.getProperty (propertyName, null);
             if (value == null) return defaultValue;
-            byte val = Byte.parseByte (value);
-            return val;
+            try {
+                byte val = Byte.parseByte (value);
+                return val;
+            } catch (NumberFormatException nfex) {
+                return defaultValue;
+            }
         }
 
         public void setByte (String propertyName, byte value) {
@@ -607,8 +638,12 @@ public abstract class Properties {
         public short getShort (String propertyName, short defaultValue) {
             String value = impl.getProperty (propertyName, null);
             if (value == null) return defaultValue;
-            short val = Short.parseShort (value);
-            return val;
+            try {
+                short val = Short.parseShort (value);
+                return val;
+            } catch (NumberFormatException nfex) {
+                return defaultValue;
+            }
         }
 
         public void setShort (String propertyName, short value) {
@@ -616,193 +651,224 @@ public abstract class Properties {
         }
 
         public Object getObject (String propertyName, Object defaultValue) {
-            String typeID = impl.getProperty (propertyName, null);
-            if (typeID == null) return defaultValue;
-            if (typeID.equals ("# null"))
-                return null; 
-            if (!typeID.startsWith ("# ")) {
-                if (typeID.startsWith ("\"")) {
-                    String s = getString (propertyName, BAD_STRING);
-                    if (s == BAD_STRING) return defaultValue;
-                    return s;
+            synchronized(impl) {
+                String typeID = impl.getProperty (propertyName, null);
+                if (typeID == null) return defaultValue;
+                if (typeID.equals ("# null"))
+                    return null; 
+                if (!typeID.startsWith ("# ")) {
+                    if (typeID.startsWith ("\"")) {
+                        String s = getString (propertyName, BAD_STRING);
+                        if (s == BAD_STRING) return defaultValue;
+                        return s;
+                    }
+                    ErrorManager.getDefault().log("Can not read object " + typeID + ". No reader registered for type " + typeID + ".");
+                    return defaultValue;
                 }
-                System.out.println("Can not read object " + typeID + ". No reader registered for type " + typeID + ".");
-                return defaultValue;
-            }
-            typeID = typeID.substring (2);
-            Class c = null;
-            try {
-                c = Class.forName (typeID);
-            } catch (ClassNotFoundException e) {
-            }
-            if (c != null) {
-                if (Map.class.isAssignableFrom (c)) {
-                    Map m = getMap (propertyName, BAD_MAP);
-                    if (m == BAD_MAP) return defaultValue;
-                    return m;
+                typeID = typeID.substring (2);
+                Class c = null;
+                try {
+                    c = Class.forName (typeID);
+                } catch (ClassNotFoundException e) {
                 }
-                if (Object [].class.isAssignableFrom (c)) {
-                    Object[] os = getArray (propertyName, BAD_ARRAY); 
-                    if (os == BAD_ARRAY) return defaultValue;
-                    return os;
+                if (c != null) {
+                    if (Map.class.isAssignableFrom (c)) {
+                        Map m = getMap (propertyName, BAD_MAP);
+                        if (m == BAD_MAP) return defaultValue;
+                        return m;
+                    }
+                    if (Object [].class.isAssignableFrom (c)) {
+                        Object[] os = getArray (propertyName, BAD_ARRAY); 
+                        if (os == BAD_ARRAY) return defaultValue;
+                        return os;
+                    }
+                    if (Collection.class.isAssignableFrom (c)) {
+                        Collection co = getCollection (propertyName, BAD_COLLECTION);
+                        if (co == BAD_COLLECTION) return defaultValue;
+                        return co;
+                    }
                 }
-                if (Collection.class.isAssignableFrom (c)) {
-                    Collection co = getCollection (propertyName, BAD_COLLECTION);
-                    if (co == BAD_COLLECTION) return defaultValue;
-                    return co;
+                Reader r = findReader (typeID);
+                if (r == null) {
+                    ErrorManager.getDefault().log("Can not read object. No reader registered for type " + typeID + ".");
+                    return defaultValue;
                 }
+                return r.read (typeID, getProperties (propertyName));
             }
-            Reader r = findReader (typeID);
-            if (r == null) {
-                System.out.println("Can not read object. No reader registered for type " + typeID + ".");
-                return defaultValue;
-            }
-            return r.read (typeID, getProperties (propertyName));
         }
 
         public void setObject (String propertyName, Object value) {
-            if (value == null) {
-                impl.setProperty (propertyName, "# null");
-                return;
-            }
-            if (value instanceof String) {
-                setString (propertyName, (String) value);
-                return; 
-            }
-            if (value instanceof Map) {
-                setMap (propertyName, (Map) value);
-                return; 
-            }
-            if (value instanceof Collection) {
-                setCollection (propertyName, (Collection) value);
-                return; 
-            }
-            if (value instanceof Object[]) {
-                setArray (propertyName, (Object[]) value);
-                return; 
-            }
+            synchronized(impl) {
+                if (value == null) {
+                    impl.setProperty (propertyName, "# null");
+                    return;
+                }
+                if (value instanceof String) {
+                    setString (propertyName, (String) value);
+                    return; 
+                }
+                if (value instanceof Map) {
+                    setMap (propertyName, (Map) value);
+                    return; 
+                }
+                if (value instanceof Collection) {
+                    setCollection (propertyName, (Collection) value);
+                    return; 
+                }
+                if (value instanceof Object[]) {
+                    setArray (propertyName, (Object[]) value);
+                    return; 
+                }
 
-            // find register
-            Reader r = findReader (value.getClass ().getName ());
-            if (r == null) {
-                System.out.println ("Can not write object " + value);
-                return;
-            }
+                // find register
+                Reader r = findReader (value.getClass ().getName ());
+                if (r == null) {
+                    ErrorManager.getDefault().log ("Can not write object " + value);
+                    return;
+                }
 
-            // write
-            r.write (value, getProperties (propertyName));
-            impl.setProperty (propertyName, "# " + value.getClass ().getName ());
+                // write
+                r.write (value, getProperties (propertyName));
+                impl.setProperty (propertyName, "# " + value.getClass ().getName ());
+            }
         }
 
         public Object[] getArray (String propertyName, Object[] defaultValue) {
-            String typeID = impl.getProperty (propertyName, null);
-            String arrayType = impl.getProperty (propertyName + ".array_type", null);
-            Properties p = getProperties (propertyName);
-            int l = p.getInt ("length", -1);
-            if (l < 0) return defaultValue;
-            Object[] os = null;
-            try {
-                os = (Object[]) Array.newInstance (
-                    getClassLoader ().loadClass (arrayType), 
-                    l
-                );
-            } catch (ClassNotFoundException ex) {
-                ErrorManager.getDefault().notify(ex);
-                os = new Object [l];
+            synchronized(impl) {
+                String arrayType = impl.getProperty (propertyName + ".array_type", null);
+                Properties p = getProperties (propertyName);
+                int l = p.getInt ("length", -1);
+                if (l < 0) return defaultValue;
+                Object[] os = null;
+                try {
+                    os = (Object[]) Array.newInstance (
+                        getClassLoader ().loadClass (arrayType), 
+                        l
+                    );
+                } catch (ClassNotFoundException ex) {
+                    ErrorManager.getDefault().notify(ex);
+                    os = new Object [l];
+                }
+                for (int i = 0; i < l; i++) {
+                    Object o = p.getObject ("" + i, BAD_OBJECT);
+                    if (o == BAD_OBJECT) return defaultValue;
+                    os [i] = o;
+                }
+                return os;
             }
-            for (int i = 0; i < l; i++) {
-                Object o = p.getObject ("" + i, BAD_OBJECT);
-                if (o == BAD_OBJECT) return defaultValue;
-                os [i] = o;
-            }
-            return os;
         }
 
         public void setArray (String propertyName, Object[] value) {
-            impl.setProperty (propertyName, "# array");
-            impl.setProperty (propertyName + ".array_type", value.getClass ().getComponentType ().getName ());
-            Properties p = getProperties (propertyName);
-            int i, k = value.length;
-            p.setInt ("length", k);
-            for (i = 0; i < k; i++)
-                p.setObject ("" + i, value [i]);
+            synchronized (impl) {
+                impl.setProperty (propertyName, "# array");
+                impl.setProperty (propertyName + ".array_type", value.getClass ().getComponentType ().getName ());
+                Properties p = getProperties (propertyName);
+                int i, k = value.length;
+                p.setInt ("length", k);
+                for (i = 0; i < k; i++)
+                    p.setObject ("" + i, value [i]);
+            }
         }
 
         public Collection getCollection (String propertyName, Collection defaultValue) {
-            String typeID = impl.getProperty (propertyName, null);
-            if (typeID == null) return defaultValue;
-            if (!typeID.startsWith ("# ")) return defaultValue;
-            Collection c = null;
-            try {
-                c = (Collection) Class.forName (typeID.substring (2)).newInstance ();
-            } catch (ClassNotFoundException ex) {
-                return defaultValue;
-            } catch (InstantiationException ex) {
-                return defaultValue;
-            } catch (IllegalAccessException ex) {
-                return defaultValue;
+            synchronized(impl) {
+                String typeID = impl.getProperty (propertyName, null);
+                if (typeID == null) return defaultValue;
+                if (!typeID.startsWith ("# ")) return defaultValue;
+                Collection c = null;
+                try {
+                    c = (Collection) Class.forName (typeID.substring (2)).newInstance ();
+                } catch (ClassNotFoundException ex) {
+                    System.err.println(ex.getLocalizedMessage());
+                    ErrorManager.getDefault().log(ex.getLocalizedMessage());
+                    ErrorManager.getDefault().notify(ex);
+                    return defaultValue;
+                } catch (InstantiationException ex) {
+                    System.err.println(ex.getLocalizedMessage());
+                    ErrorManager.getDefault().log(ex.getLocalizedMessage());
+                    ErrorManager.getDefault().notify(ex);
+                    return defaultValue;
+                } catch (IllegalAccessException ex) {
+                    System.err.println(ex.getLocalizedMessage());
+                    ErrorManager.getDefault().log(ex.getLocalizedMessage());
+                    ErrorManager.getDefault().notify(ex);
+                    return defaultValue;
+                }
+                Properties p = getProperties (propertyName);
+                int i, k = p.getInt ("length", 0);
+                for (i = 0; i < k; i++) {
+                    Object o = p.getObject ("" + i, BAD_OBJECT);
+                    if (o == BAD_OBJECT) return defaultValue;
+                    c.add (o);
+                }
+                return c;
             }
-            Properties p = getProperties (propertyName);
-            int i, k = p.getInt ("length", 0);
-            for (i = 0; i < k; i++) {
-                Object o = p.getObject ("" + i, BAD_OBJECT);
-                if (o == BAD_OBJECT) return defaultValue;
-                c.add (o);
-            }
-            return c;
         }
 
         public void setCollection (String propertyName, Collection value) {
-            if (value == null) return;
-            impl.setProperty (propertyName, "# " + value.getClass ().getName ());
-            Properties p = getProperties (propertyName);
-            Iterator it = value.iterator ();
-            int i = 0;
-            p.setInt ("length", value.size ());
-            while (it.hasNext ()) {
-                p.setObject ("" + i, it.next ());
-                i++;
+            synchronized(impl) {
+                if (value == null) {
+                    impl.setProperty (propertyName, null);
+                }
+                impl.setProperty (propertyName, "# " + value.getClass ().getName ());
+                Properties p = getProperties (propertyName);
+                Iterator it = value.iterator ();
+                int i = 0;
+                p.setInt ("length", value.size ());
+                while (it.hasNext ()) {
+                    p.setObject ("" + i, it.next ());
+                    i++;
+                }
             }
         }
 
         public Map getMap (String propertyName, Map defaultValue) {
-            String typeID = impl.getProperty (propertyName, null);
-            if (typeID == null) return defaultValue;
-            if (!typeID.startsWith ("# ")) return defaultValue;
-            Map m = null;
-            try {
-                m = (Map) Class.forName (typeID.substring (2)).newInstance ();
-            } catch (ClassNotFoundException ex) {
-                return defaultValue;
-            } catch (InstantiationException ex) {
-                return defaultValue;
-            } catch (IllegalAccessException ex) {
-                return defaultValue;
+            synchronized(impl) {
+                String typeID = impl.getProperty (propertyName, null);
+                if (typeID == null) return defaultValue;
+                if (!typeID.startsWith ("# ")) return defaultValue;
+                Map m = null;
+                try {
+                    m = (Map) Class.forName (typeID.substring (2)).newInstance ();
+                } catch (ClassNotFoundException ex) {
+                    ErrorManager.getDefault().log(ex.getLocalizedMessage());
+                    return defaultValue;
+                } catch (InstantiationException ex) {
+                    ErrorManager.getDefault().log(ex.getLocalizedMessage());
+                    return defaultValue;
+                } catch (IllegalAccessException ex) {
+                    ErrorManager.getDefault().log(ex.getLocalizedMessage());
+                    return defaultValue;
+                }
+                Properties p = getProperties (propertyName);
+                int i, k = p.getInt ("length", 0);
+                for (i = 0; i < k; i++) {
+                    Object key = p.getObject ("" + i + "-key", BAD_OBJECT);
+                    if (key == BAD_OBJECT) return defaultValue;
+                    Object value = p.getObject ("" + i + "-value", BAD_OBJECT);
+                    if (value == BAD_OBJECT) return defaultValue;
+                    m.put (key, value);
+                }
+                return m;
             }
-            Properties p = getProperties (propertyName);
-            int i, k = p.getInt ("length", 0);
-            for (i = 0; i < k; i++) {
-                Object key = p.getObject ("" + i + "-key", BAD_OBJECT);
-                if (key == BAD_OBJECT) return defaultValue;
-                Object value = p.getObject ("" + i + "-value", BAD_OBJECT);
-                if (value == BAD_OBJECT) return defaultValue;
-                m.put (key, value);
-            }
-            return m;
         }
 
         public void setMap (String propertyName, Map value) {
-            if (value == null) return;
-            impl.setProperty (propertyName, "# " + value.getClass ().getName ());
-            Properties p = getProperties (propertyName);
-            Iterator it = value.keySet ().iterator ();
-            int i = 0;
-            p.setInt ("length", value.size ());
-            while (it.hasNext ()) {
-                Object o = it.next ();
-                p.setObject ("" + i + "-key", o);
-                p.setObject ("" + i + "-value", value.get (o));
-                i++;
+            synchronized(impl) {
+                if (value == null) {
+                    impl.setProperty (propertyName, null);
+                }
+                impl.setProperty (propertyName, "# " + value.getClass ().getName ());
+                Properties p = getProperties (propertyName);
+                Iterator it = value.keySet ().iterator ();
+                int i = 0;
+                p.setInt ("length", value.size ());
+                while (it.hasNext ()) {
+                    Object o = it.next ();
+                    p.setObject ("" + i + "-key", o);
+                    p.setObject ("" + i + "-value", value.get (o));
+                    i++;
+                }
             }
         }
 
