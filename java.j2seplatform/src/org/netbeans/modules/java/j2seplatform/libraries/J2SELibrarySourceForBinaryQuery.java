@@ -25,7 +25,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.project.libraries.Library;
@@ -46,8 +46,8 @@ import org.openide.util.WeakListeners;
  */
 public class J2SELibrarySourceForBinaryQuery implements SourceForBinaryQueryImplementation {
 
-    private final Map<URL,SourceForBinaryQuery.Result> cache = new HashMap<URL,SourceForBinaryQuery.Result>();
-    private final Map<URL,URL> normalizedURLCache = new HashMap<URL,URL>();
+    private final Map<URL,SourceForBinaryQuery.Result> cache = new ConcurrentHashMap<URL,SourceForBinaryQuery.Result>();
+    private final Map<URL,URL> normalizedURLCache = new ConcurrentHashMap<URL,URL>();
 
     /** Default constructor for lookup. */
     public J2SELibrarySourceForBinaryQuery() {}
