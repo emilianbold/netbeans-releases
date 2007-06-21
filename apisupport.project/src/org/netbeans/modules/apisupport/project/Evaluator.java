@@ -177,28 +177,41 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
         pcs.removePropertyChangeListener(listener);
     }
     
-    private synchronized PropertyEvaluator delegatingEvaluator(boolean reset) {
-        if (reset && !loadedModuleList) {
-            reset();
-            if (Util.err.isLoggable(ErrorManager.INFORMATIONAL)) {
-                Util.err.log("Needed to reset evaluator in " + project + "due to use of module-list-dependent property; now cp=" + delegate.getProperty("cp"));
+    private PropertyEvaluator delegatingEvaluator(final boolean reset) {
+        return ProjectManager.mutex().readAccess(new Mutex.Action<PropertyEvaluator>() {
+            public PropertyEvaluator run() {
+                synchronized (Evaluator.this) {
+                    if (reset && !loadedModuleList) {
+                        reset();
+                        if (Util.err.isLoggable(ErrorManager.INFORMATIONAL)) {
+                            Util.err.log("Needed to reset evaluator in " + project + "due to use of module-list-dependent property; now cp=" + delegate.getProperty("cp"));
+                        }
+                    }
+                    return delegate;
+                }
             }
-        }
-        return delegate;
+        });
     }
     
-    private synchronized void reset() {
-        loadedModuleList = true;
-        delegate.removePropertyChangeListener(this);
-        try {
-            delegate = createEvaluator(project.getModuleList());
-        } catch (IOException e) {
-            Util.err.notify(ErrorManager.INFORMATIONAL, e);
-            // but leave old evaluator in place for now
-        }
-        delegate.addPropertyChangeListener(this);
-        // XXX better to compute diff between previous and new values and fire just those
-        pcs.firePropertyChange(null, null, null);
+    private void reset() {
+        ProjectManager.mutex().readAccess(new Mutex.Action<Void>() {
+            public Void run() {
+                synchronized (Evaluator.this) {
+                    loadedModuleList = true;
+                    delegate.removePropertyChangeListener(Evaluator.this);
+                    try {
+                        delegate = createEvaluator(project.getModuleList());
+                    } catch (IOException e) {
+                        Util.err.notify(ErrorManager.INFORMATIONAL, e);
+                        // but leave old evaluator in place for now
+                    }
+                    delegate.addPropertyChangeListener(Evaluator.this);
+                    // XXX better to compute diff between previous and new values and fire just those
+                    pcs.firePropertyChange(null, null, null);
+                    return null;
+                }
+            }
+        });
     }
     
     public void propertyChange(PropertyChangeEvent evt) {
