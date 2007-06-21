@@ -19,12 +19,13 @@
 package org.netbeans.modules.openide.loaders;
 
 import java.nio.charset.Charset;
+import java.util.logging.Logger;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -32,6 +33,7 @@ import org.openide.util.Exceptions;
  */
 public class DataObjectEncodingQueryImplementation extends FileEncodingQueryImplementation {
     private static ThreadLocal<DataFolder> TARGET = new ThreadLocal<DataFolder>();
+    private static final Logger LOG = Logger.getLogger(DataObjectEncodingQueryImplementation.class.getName());
     
     /** Creates a new instance of DataObjectEncodingQueryImplementation */
     public DataObjectEncodingQueryImplementation() {
@@ -61,7 +63,7 @@ public class DataObjectEncodingQueryImplementation extends FileEncodingQueryImpl
             }
             return impl.getEncoding(file);
         } catch (DataObjectNotFoundException donf) {
-            Exceptions.printStackTrace(donf);
+            LOG.warning("Invalid DataObject: " + FileUtil.getFileDisplayName(file));
             return null;
         }
     }
