@@ -32,8 +32,6 @@ import org.openide.modules.ModuleInstall;
  */
 public class TAXModuleInstall extends ModuleInstall {
 
-    private static final long serialVersionUID = -668302799172493302L;
-
     private static final String BEANINFO_PATH = "org.netbeans.modules.xml.tax.beans.beaninfo"; // NOI18N
     private static final String EDITOR_PATH   = "org.netbeans.modules.xml.tax.beans.editor";
 
@@ -58,15 +56,17 @@ public class TAXModuleInstall extends ModuleInstall {
     /**
      */
     private void installBeans () {
-	List searchPath;
+        String[] sp = Introspector.getBeanInfoSearchPath();
+        String[] newSP = new String[sp.length + 1];
+        System.arraycopy(sp, 0, newSP, 0, sp.length);
+        newSP[newSP.length - 1] = BEANINFO_PATH;
+        Introspector.setBeanInfoSearchPath(newSP);
 
-	searchPath = new LinkedList (Arrays.asList (Introspector.getBeanInfoSearchPath()));
-	searchPath.add (BEANINFO_PATH);
-        Introspector.setBeanInfoSearchPath ((String[])searchPath.toArray (new String[0]));
-
-	searchPath = new LinkedList (Arrays.asList (PropertyEditorManager.getEditorSearchPath()));
-	searchPath.add (EDITOR_PATH);
-        PropertyEditorManager.setEditorSearchPath  ((String[])searchPath.toArray (new String[0]));
+        sp = PropertyEditorManager.getEditorSearchPath();
+        newSP = new String[sp.length + 1];
+        System.arraycopy(sp, 0, newSP, 0, sp.length);
+        newSP[newSP.length - 1] = EDITOR_PATH;
+        PropertyEditorManager.setEditorSearchPath(newSP);
     }
 
     /**

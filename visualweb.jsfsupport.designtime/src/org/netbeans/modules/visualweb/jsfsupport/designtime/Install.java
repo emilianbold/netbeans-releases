@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.visualweb.jsfsupport.designtime;
 
-
 import java.beans.Introspector;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -48,20 +47,16 @@ public class Install extends ModuleInstall {
     };
 
 
-    public void restored() {
+    @Override public void restored() {
         // Add our beaninfo packages to introspector search path.
         String[] sp = Introspector.getBeanInfoSearchPath();
-        List paths = Arrays.asList(sp);
-        for( int i = 0; i < BEANINFO_PATHS.length; i++) {
-            if(!paths.contains(BEANINFO_PATHS[i])) {
-                paths = new ArrayList(paths);
-                paths.add(BEANINFO_PATHS[i]);
-            }
-        }
-        Introspector.setBeanInfoSearchPath((String[])paths.toArray(new String[paths.size()]));
+        String[] newSP = new String[sp.length + BEANINFO_PATHS.length];
+        System.arraycopy(sp, 0, newSP, 0, sp.length);
+        System.arraycopy(BEANINFO_PATHS, 0, newSP, sp.length, BEANINFO_PATHS.length);
+        Introspector.setBeanInfoSearchPath(newSP);
     }
 
-    public void uninstalled() {
+    @Override public void uninstalled() {
         // Remove our beaninfo packages from the intropsector search path.
         String[] sp = Introspector.getBeanInfoSearchPath();
         List paths = Arrays.asList(sp);
