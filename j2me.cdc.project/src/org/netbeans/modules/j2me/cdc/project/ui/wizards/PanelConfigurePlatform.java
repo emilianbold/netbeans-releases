@@ -57,7 +57,7 @@ final public class PanelConfigurePlatform implements WizardDescriptor.Panel, Wiz
     }
 
     public HelpCtx getHelp() {
-        return HelpCtx.DEFAULT_HELP; //todo
+        return new HelpCtx("cdc.panelConfigurePlatform");
     }
 
     public void readSettings(Object settings) {
