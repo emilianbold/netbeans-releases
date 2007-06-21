@@ -75,8 +75,8 @@ cp -p $DIST/zip/moduleclusters/$BASENAME-cnd.zip $DIST/zip/
 cd ../..
 generated=nbbuild/build/generated
 rm -rf $generated
-ant -f nbbuild/build.xml generate-golden-files generate-files-layout || exit
-# XXX other candidates: index-layer-paths, check-module-configs
+ant -f nbbuild/build.xml generate-golden-files generate-files-layout index-layer-paths || exit
+# XXX other candidates: check-module-configs
 prev_generated=../lastSuccessful/archive/$generated
 if [ -d $prev_generated ]; then
     diff -r -U 25 $prev_generated $generated > $generated.diff
