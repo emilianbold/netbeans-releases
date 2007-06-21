@@ -27,20 +27,14 @@ Use is subject to license terms.  *-->
                 For J2EE 1.4 web services, if the WSDL file imports schemas, other WSDL files, or both, from the local file system, the web service will only work
                 if the imported schemas and WSDL files are copied beforehand into the <tt>WEB-INF/wsdl</tt> (or <tt>META-INF/wsdl</tt>)
                 folder. If you do not do this,
-                the <a href="../build/about_wscompile.html">Web Service Compiler</a>
+                the <tt>wscompile</tt> tool
                 will not be able to locate these imported files at the end of the procedure below.
             </li>
         </ul>
 
         <p><b>To create a web service from a WSDL file:</b></p>
         <ol>
-        <li>Depending on the <a href="about_implement_ws.html">implementation form</a>, do one of the following:
-            <ul>
-                <li><a href="../../web/create/about/create_webapps_proj.html">Create a web application project</a>.</li>
-                <li><a href="../../ejb/editing/create_ejb_project.html">Create an EJB module project</a>.</li>
-            </ul>
-
-        </li>
+        <li>Depending on the <a href="about_implement_ws.html">implementation form</a>, create a web application project or an EJB module project.</li>
         <li>In the Projects window or Files window, right-click the project node
         and choose New &gt; File/Folder. In the Web Services folder, choose
         Web Service from WSDL.</li>
@@ -54,7 +48,6 @@ Use is subject to license terms.  *-->
 	
             <li>A WSDL file file is consumed, created by the IDE. The abstract portion is copied as is from the original file, 
             while the concrete portion is "normalized" from the original. 
-            See <a href="../build/about_wsdl.html">About the WSDL File</a> for abstract and concrete definitions in the WSDL file.
             For example, a SOAP binding element is created if it did
             not exist in the WSDL file. Also, the abstract service element is created to be compatible with
             the binding.</li>
@@ -67,7 +60,6 @@ Use is subject to license terms.  *-->
 	
             <li>A new WSDL file. The abstract portion is copied as is from the original file, 
             while the concrete portion is "normalized" from the original. 
-            See <a href="../build/about_wsdl.html">About the WSDL File</a> for abstract and concrete definitions in the WSDL file.
             For example, a SOAP binding element is created if it did
             not exist in the WSDL file. Also, the service element is created to be compatible with
             the binding.</li>

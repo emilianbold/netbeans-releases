@@ -19,18 +19,14 @@ Use is subject to license terms.  *-->
         before you begin, note that if the WSDL file that you want to use imports schemas, other WSDL files, or both, from the local file system, the web service client will only work
         if the imported schemas and WSDL files are copied beforehand into the <tt>WEB-INF/wsdl</tt> (or <tt>META-INF/wsdl</tt>)
         folder. If you do not do this,
-        the <a href="../build/about_wscompile.html">Web Service Compiler</a>
+        the <tt>wscompile</tt> tool
         will not be able to locate these imported files at the end of the procedure below.
 
         <p><b>To create a web service client:</b>
 	
         <ol>
             <li>Create the project to contain the web service client. Depending on how you want to
-            consume the web service, do one of the following:
-            <ul><li><a href="../../web/create/about/create_webapps_proj.html">Create a web application project</a>.
-            </li>
-                <li><a href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/project/csh/proj_j2se-standapp_wiz.html">Create a Java application project</a>.</li>
-            </ul>
+            consume the web service, create a web application project or a Java application project.
             <li>From the Projects window or Files window, right-click a node
             in the project and choose New &gt; File/Folder.
             The New File wizard appears. Under Categories, select Web Services. Under File Types, select Web Service Client.
