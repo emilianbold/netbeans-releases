@@ -495,6 +495,7 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
                 FileUtil.getOrder(Arrays.asList(fo.getChildren()), true);
                 assertNull("OpenIDE-Folder-Order attr should not be used on " + fo, fo.getAttribute("OpenIDE-Folder-Order"));
                 assertNull("OpenIDE-Folder-SortMode attr should not be used on " + fo, fo.getAttribute("OpenIDE-Folder-SortMode"));
+                // XXX should also test merged content in the case of Editors/**; see editor/mimelookup/api
             }
         }
         assertEquals("No warnings relating to folder ordering: " + h.errors(), 0, h.errors().size());
