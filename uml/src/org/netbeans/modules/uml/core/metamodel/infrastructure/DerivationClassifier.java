@@ -60,9 +60,7 @@ public class DerivationClassifier
      */
     public void setNode(Node n)
     {
-        super.setNode(n);
-        
-        m_derivation.setNode(n);
+        super.setNode(n);   
     }
     
     /* (non-Javadoc)
