@@ -139,8 +139,7 @@ public class LogManager {
         try {
             TomcatProperties tp = manager.getTomcatProperties();
             newSharedContextLog = new LogViewer(
-                tp.getCatalinaDir(),
-                manager.getCatalinaWork(),
+                manager,
                 null,
                 tomcatManagerConfig.loggerClassName(),
                 tomcatManagerConfig.loggerDir(),
@@ -228,8 +227,7 @@ public class LogManager {
                 }
                 try {
                     TomcatProperties tp = manager.getTomcatProperties();
-                    juliLogViewer = new LogViewer(tp.getCatalinaDir(), manager.getCatalinaWork(),
-                                                  null, null, null, "localhost.", null, true, false); // NOI18N
+                    juliLogViewer = new LogViewer(manager, null, null, null, "localhost.", null, true, false); // NOI18N
                     juliLogViewer.setDisplayName(NbBundle.getMessage(LogManager.class, "TXT_JuliLogDisplayName", tp.getDisplayName()));
                 } catch (UnsupportedLoggerException e) { // should never occur
                     Logger.getLogger("global").log(Level.INFO, null, e);
@@ -280,8 +278,7 @@ public class LogManager {
         LogViewer newContextLog = null;
         try {
             newContextLog = new LogViewer(
-                manager.getTomcatProperties().getCatalinaDir(),
-                manager.getCatalinaWork(),
+                manager,
                 module.getPath(),
                 moduleConfig.loggerClassName(),
                 moduleConfig.loggerDir(),

@@ -36,7 +36,9 @@ import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.modules.tomcat5.TomcatManager;
 import org.netbeans.modules.tomcat5.util.LogSupport.LineInfo;
+import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 import org.openide.windows.OutputWriter;
@@ -52,6 +54,7 @@ import org.openide.windows.OutputWriter;
  */
 public class LogViewer extends Thread {
     private volatile boolean stop = false;
+    private final TomcatManager tomcatManager;
     private InputOutput inOut;
     private OutputWriter writer;
     private OutputWriter errorWriter;
@@ -76,9 +79,7 @@ public class LogViewer extends Thread {
     /**
      * Create a new LogViewer thread.
      *
-     * @param catalinaDir catalina directory (CATALINA_BASE or CATALINA_HOME).
-     * @param catalinaWorkDir work directory where Tomcat stores generated classes
-     *        and sources from JSPs (e.g. $CATALINA_BASE/work/Catalina/localhost).
+     * @param tomcatManager Tomcat deployment manager.
      * @param webAppContext web application's context this logger is declared for,
      *        may be <code>null</code> for shared context log. It is used to look
      *        up sources of servlets generated from JSPs.
@@ -90,30 +91,25 @@ public class LogViewer extends Thread {
      * @param isTimestamped whether logged messages are timestamped.
      * @param takeFocus whether output window should get focus after each change.
      * 
-     * @throws NullPointerException if catalinaDir parameter is <code>null</code>.
      * @throws UnsupportedLoggerException logger specified by the className parameter
      *         is not supported.
      */
-    public LogViewer(File catalinaDir, String catalinaWorkDir, String webAppContext, 
+    public LogViewer(TomcatManager tomcatManager, String webAppContext, 
             String className, String directory, String prefix, String suffix, 
             boolean isTimestamped, boolean takeFocus) throws UnsupportedLoggerException {
         super("LogViewer - Thread"); // NOI18N
-        if (catalinaDir == null) {
-            throw new NullPointerException();
-        }
-        if (catalinaWorkDir == null) {
-            throw new NullPointerException();
-        }
+        this.tomcatManager = tomcatManager;
+        this.catalinaWorkDir = tomcatManager.getCatalinaWork();
         if (className != null && !"org.apache.catalina.logger.FileLogger".equals(className)) { // NOI18N
             throw new UnsupportedLoggerException(className);
         }        
         if (directory != null) {
             this.directory = new File(directory);
             if (!this.directory.isAbsolute()) {
-                this.directory = new File(catalinaDir, directory);
+                this.directory = new File(tomcatManager.getTomcatProperties().getCatalinaDir(), directory);
             }
         } else {
-            this.directory = new File(catalinaDir, "logs");  // NOI18N
+            this.directory = new File(tomcatManager.getTomcatProperties().getCatalinaDir(), "logs");  // NOI18N
         }
         if (prefix != null) {
             this.prefix = prefix;
@@ -210,6 +206,15 @@ public class LogViewer extends Thread {
                 errorWriter.println(line);
             }
         } else {
+            if (line.contains("java.lang.LinkageError: JAXB 2.0 API")) { // NOI18N
+                File file = InstalledFileLocator.getDefault().locate("modules/ext/jaxws21/api/jaxws-api.jar", null, false); // NOI18N
+                File endoresedDir = tomcatManager.getTomcatProperties().getJavaEndorsedDir();
+                if (file != null) {
+                    writer.println(NbBundle.getMessage(LogViewer.class, "MSG_WSSERVLET11", file.getParent(), endoresedDir));
+                } else {
+                    writer.println(NbBundle.getMessage(LogViewer.class, "MSG_WSSERVLET11_NOJAR", endoresedDir));
+                }
+            }
             writer.println(line);
         }
     }
