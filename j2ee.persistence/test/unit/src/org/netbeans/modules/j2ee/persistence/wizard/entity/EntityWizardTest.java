@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.j2ee.persistence.wizard.entity;
 
+import java.io.File;
 import org.netbeans.modules.j2ee.persistence.sourcetestsupport.SourceTestSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -37,20 +38,19 @@ public class EntityWizardTest extends SourceTestSupport{
         super.setUp();
     }
     
+    private FileObject getPkgFolder() throws Exception{
+        File pkg = new File(getWorkDir(), "foobar"); 
+        pkg.mkdirs();
+        return FileUtil.toFileObject(pkg);
+    }
+    
     public void testGenerateEntityFieldAccess() throws Exception {
-        FileObject result = EntityWizard.generateEntity(FileUtil.toFileObject(getWorkDir()), "MyEntity", "Long", true);
-        print(result);
+        FileObject result = EntityWizard.generateEntity(getPkgFolder(), "MyEntity", "Long", true);
         assertFile(result);
     }
     
     public void testGenerateEntityPropertyAccess() throws Exception {
-        FileObject result = EntityWizard.generateEntity(FileUtil.toFileObject(getWorkDir()), "MyEntity", "java.lang.Long", false);
-        print(result);
+        FileObject result = EntityWizard.generateEntity(getPkgFolder(), "MyEntity", "java.lang.Long", false);
         assertFile(result);
     }
-    
-    public void testEntityWasAddedToPersistenceUnit() throws Exception{
-        fail("Test is not implemented");
-    }
-    
 }
