@@ -384,6 +384,7 @@ public class CompletionProviderImpl implements CompletionProvider {
             }
             
             DatabaseContext context = DatabaseManager.getRoot (node);
+            if (context == null) return;
             List<DatabaseDefinition> definitions = context.getAllVisibleDefinitions (offset);
             String start = token.getIdentifier ().substring (0, offset - tokenOffset).trim ();
             Set<String> names = new HashSet<String> ();

@@ -121,6 +121,7 @@ public class Index {
                 String path = reader.readLine ();
                 while (path != null) {
                     File file = new File (path);
+                    file = FileUtil.normalizeFile (file);
                     FileObject fo = FileUtil.toFileObject (file);
                     roots.add (fo);
                     if (fo.equals (projectDir))
@@ -232,7 +233,9 @@ public class Index {
                 int i = is.readInt ();
                 while (i > 0) {
                     String path = is.readUTF ();
-                    FileObject fo = FileUtil.toFileObject (new File (path));
+                    File file = new File (path);
+                    file = FileUtil.normalizeFile (file);
+                    FileObject fo = FileUtil.toFileObject (file);
                     FileCache fc = FileCache.load (fo, is);
                     cache.put (fo, fc);
                     i--;
