@@ -39,7 +39,7 @@ public class TMapNavigatorController {
     }
     
     public static void activateLogicalPanel() {
-        System.out.println("try to activate logical panel");
+//        System.out.println("try to activate logical panel");
         switchNavPanel(TMapLogicalNavigatorPanel.getUName());
     }
     
@@ -61,9 +61,9 @@ public class TMapNavigatorController {
                 
                 int selIndex = navComboBox.getSelectedIndex();
                 int numPanels = navComboBox.getItemCount();              
-                System.out.println("navPanelUID: "+navPanelUid);
+//                System.out.println("navPanelUID: "+navPanelUid);
                 for (int i = 0; i < numPanels; i++) {
-                    System.out.println(i+ " navComboBox.getItemAt(i): "+navComboBox.getItemAt(i));
+//                    System.out.println(i+ " navComboBox.getItemAt(i): "+navComboBox.getItemAt(i));
                     if (navPanelUid.equals(navComboBox.getItemAt(i))) {
                         if (i != selIndex) {
                             navComboBox.setSelectedIndex(i);
