@@ -20,6 +20,7 @@
 
 package org.netbeans.installer.utils.helper;
 
+import java.util.List;
 import static org.netbeans.installer.utils.helper.PlatformConstants.*;
 
 public enum Platform {
@@ -134,6 +135,17 @@ public enum Platform {
         
         return true;
     }
+    
+    public boolean isCompatibleWith(final List<Platform> platforms) {
+        for (Platform candidate: platforms) {
+            if (isCompatibleWith(candidate)) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+    
     
     @Override
     public String toString() {

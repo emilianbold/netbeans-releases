@@ -136,7 +136,8 @@ public class Registry {
     }
     
     // initialization/finalization //////////////////////////////////////////////////
-    public void setLocalDirectory(final File localDirectory) {
+    public void setLocalDirectory(
+            final File localDirectory) {
         this.localDirectory = localDirectory;
         
         localProductCache = new File(
@@ -147,15 +148,18 @@ public class Registry {
                 DEFAULT_LOCAL_REGISTRY_FILE_NAME);
     }
     
-    public void setFinishHandler(final FinishHandler finishHandler) {
+    public void setFinishHandler(
+            final FinishHandler finishHandler) {
         this.finishHandler = finishHandler;
     }
     
-    public void setTargetPlatform(final Platform targetPlatform) {
+    public void setTargetPlatform(
+            final Platform targetPlatform) {
         this.targetPlatform = targetPlatform;
     }
     
-    public void initializeRegistry(final Progress progress) throws InitializationException {
+    public void initializeRegistry(
+            final Progress progress) throws InitializationException {
         LogManager.logEntry("initializing product registry");
         
         setRegistryProperties();
@@ -172,30 +176,75 @@ public class Registry {
         childProgress = new Progress();
         compositeProgress.addChild(childProgress, percentageChunk + percentageLeak);
         compositeProgress.setTitle("Loading local registry [" + localRegistryFile + "]");
-        loadProductRegistry(
-                localRegistryFile.toURI().toString(),
-                childProgress,
-                RegistryType.LOCAL,
-                false);
+        
+        try {
+            loadProductRegistry(
+                    localRegistryFile.toURI().toString(),
+                    childProgress,
+                    RegistryType.LOCAL,
+                    false);
+        } catch (InitializationException e) {
+            if (!UiUtils.showYesNoDialog(
+                    "Failed to load the local registry", 
+                    "The bundled registry (" + localRegistryFile + ") " +
+                    "could not be loaded, or was loaded partially. The " +
+                    "installer can continue to work normally, but doing " +
+                    "so may result in a corrupted global registry. Choose " +
+                    "Yes to continue, No to exit the installer.")) {
+                finishHandler.criticalExit();
+            } else {
+                LogManager.log(ErrorLevel.ERROR, e);
+            }
+        }
         
         childProgress = new Progress();
         compositeProgress.addChild(childProgress, percentageChunk);
         compositeProgress.setTitle("Loading bundled registry [" + bundledRegistryUri + "]");
-        loadProductRegistry(
-                bundledRegistryUri,
-                childProgress,
-                RegistryType.BUNDLED,
-                true);
+        
+        try {
+            loadProductRegistry(
+                    bundledRegistryUri,
+                    childProgress,
+                    RegistryType.BUNDLED,
+                    true);
+        } catch (InitializationException e) {
+            if (!UiUtils.showYesNoDialog(
+                    "Failed to load the bundled registry", 
+                    "The bundled registry (" + bundledRegistryUri + ") " +
+                    "could not be loaded, or was loaded partially. The " +
+                    "installer can continue to work normally, but doing " +
+                    "so may result in a corrupted global registry. Choose " +
+                    "Yes to continue, No to exit the installer.")) {
+                finishHandler.criticalExit();
+            } else {
+                LogManager.log(ErrorLevel.ERROR, e);
+            }
+        }
         
         for (String remoteRegistryURI: remoteRegistryUris) {
             childProgress = new Progress();
             compositeProgress.addChild(childProgress, percentageChunk);
             compositeProgress.setTitle("Loading remote registry [" + remoteRegistryURI + "]");
-            loadProductRegistry(
-                    remoteRegistryURI,
-                    childProgress,
-                    RegistryType.REMOTE,
-                    true);
+            
+            try {
+                loadProductRegistry(
+                        remoteRegistryURI,
+                        childProgress,
+                        RegistryType.REMOTE,
+                        true);
+            } catch (InitializationException e) {
+                if (!UiUtils.showYesNoDialog(
+                        "Failed to load the remote registry", 
+                        "The bundled registry (" + remoteRegistryURI + ") " +
+                        "could not be loaded, or was loaded partially. The " +
+                        "installer can continue to work normally, but doing " +
+                        "so may result in a corrupted global registry. Choose " +
+                        "Yes to continue, No to exit the installer.")) {
+                    finishHandler.criticalExit();
+                } else {
+                    LogManager.log(ErrorLevel.ERROR, e);
+                }
+            }
         }
         
         validateDependencies();
@@ -212,7 +261,8 @@ public class Registry {
         LogManager.logExit("... product registry initialization complete");
     }
     
-    public void finalizeRegistry(final Progress progress) throws FinalizationException {
+    public void finalizeRegistry(
+            final Progress progress) throws FinalizationException {
         LogManager.logEntry("finalizing product registry");
         
         progress.setPercentage(Progress.START);
@@ -267,7 +317,8 @@ public class Registry {
         LogManager.logExit("finalizing product registry");
     }
     
-    private void setRegistryProperties() throws InitializationException {
+    private void setRegistryProperties(
+            ) throws InitializationException {
         LogManager.logEntry("initializing product registry properties");
         
         /////////////////////////////////////////////////////////////////////////////
@@ -377,7 +428,8 @@ public class Registry {
         LogManager.log("    ... " + targetPlatform);
     }
     
-    private void validateDependencies() throws InitializationException {
+    private void validateDependencies(
+            ) throws InitializationException {
         for (Product product: getProducts()) {
             validateRequirements(product);
             validateConflicts(product);
@@ -468,11 +520,14 @@ public class Registry {
     }
     
     // validation ///////////////////////////////////////////////////////////////////
-    private void validateRequirements(final Product product) throws InitializationException {
+    private void validateRequirements(
+            final Product product) throws InitializationException {
         validateRequirements(product, new LinkedList<Product>());
     }
     
-    private void validateRequirements(final Product product, final List<Product> prohibitedList) throws InitializationException {
+    private void validateRequirements(
+            final Product product, 
+            final List<Product> prohibitedList) throws InitializationException {
         for (Dependency requirement: product.getDependencies(Requirement.class)) {
             // get the list of products that satisfy the requirement
             final List<Product> requirees = queryProducts(new ProductFilter(
@@ -531,7 +586,8 @@ public class Registry {
         }
     }
     
-    private void validateConflicts(final Product product) throws InitializationException {
+    private void validateConflicts(
+            final Product product) throws InitializationException {
         for (Dependency requirement: product.getDependencies(Requirement.class)) {
             // get the list of products that satisfy the requirement
             final List<Product> requirees = queryProducts(new ProductFilter(
@@ -556,11 +612,14 @@ public class Registry {
         }
     }
     
-    private void validateInstallAfters(final Product product) throws InitializationException {
+    private void validateInstallAfters(
+            final Product product) throws InitializationException {
         validateInstallAfters(product, new LinkedList<Product>());
     }
     
-    private void validateInstallAfters(final Product product, final List<Product> prohibitedList) throws InitializationException {
+    private void validateInstallAfters(
+            final Product product, 
+            final List<Product> prohibitedList) throws InitializationException {
         for (Dependency installafter: product.getDependencies(InstallAfter.class)) {
             // get the list of products that satisfy the install-after dependency
             final List<Product> dependees = queryProducts(new ProductFilter(
@@ -603,12 +662,67 @@ public class Registry {
         }
     }
     
-    private void validateInstallations() throws InitializationException {
+    /**
+     * Returns the list of products for which the given product is the only one, 
+     * that satisfies the requirement. In other words the returned products define
+     * at least one requirement that is directly or indirectly satisfied by this
+     * particular product and not by any other products.
+     * 
+     * <p>
+     * Product's status is also taken into account, i.e. if the dependent product 
+     * is installed, a not installed product cannot be considered as satisfying the
+     * requirement.
+     * 
+     * @param product Product for which the dependents chain should be constructed.
+     * @return The list of products for which the given product is the only one
+     *      satisfying their requirements.
+     */
+    private List<Product> getInavoidableDependents(final Product product) {
+        final List<Product> dependents = new LinkedList<Product>();
+        
+        for (Product candidate: getProducts()) {
+            for (Dependency requirement: candidate.getDependencies(Requirement.class)) {
+                final List<Product> requirees = getProducts(requirement);
+                
+                // if the candidate product is installed, then not installed 
+                // products cannot be counted as satisfying the requirement
+                if (candidate.getStatus() == Status.INSTALLED) {
+                    for (int i = 0; i < requirees.size(); i++) {
+                        if (requirees.get(i).getStatus() != Status.INSTALLED) {
+                            requirees.remove(i);
+                        }
+                    }
+                }
+                
+                // if the requirees size is 0 then we're in trouble, but this method 
+                // should not be concerned about this stuff -- it's the 
+                // reponsibility of the requirement validating methods
+                
+                // if the list of requirees contains only one element and this 
+                // element equals to the given product -- the candidate should be
+                // included in the list of inavoidable dependents; additionally we
+                // need to checks for indirect requirements, i.e. run this method 
+                // recursively on the dependent
+                if ((requirees.size() == 1) && requirees.get(0).equals(product)) {
+                    dependents.add(candidate);
+                    dependents.addAll(getInavoidableDependents(candidate));
+                }
+            }
+        }
+        
+        return dependents;
+    }
+    
+    private void validateInstallations(
+            ) throws InitializationException {
         for (Product product: getProducts()) {
             if (product.getStatus() == Status.INSTALLED) {
                 final String message = product.getLogic().validateInstallation();
                 
                 if (message != null) {
+                    final List<Product> inavoidableDependents = 
+                            getInavoidableDependents(product);
+                    
                     boolean result = UiUtils.showYesNoDialog(
                             "Validation Problem",
                             "It seems that the installation of " +
@@ -616,10 +730,16 @@ public class Registry {
                             "validation procedure issued the following " +
                             "warning:\n\n" + message + "\n\nWould you like to " +
                             "mark this product as not installed and continue?\nIf " +
-                            "you click No the installer will exit.");
+                            "you click No the installer will exit.\n\n" + 
+                            "Note that these products that depend on " + 
+                            product.getDisplayName() + " will also be disabled:" + 
+                            StringUtils.asString(inavoidableDependents));
                     
                     if (result) {
                         product.getParent().removeChild(product);
+                        for (Product dependent: inavoidableDependents) {
+                            dependent.getParent().removeChild(dependent);
+                        }
                     } else {
                         finishHandler.criticalExit();
                     }
@@ -629,15 +749,21 @@ public class Registry {
     }
     
     // registry <-> dom <-> xml operations //////////////////////////////////////////
-    public void loadProductRegistry(final File file) throws InitializationException {
+    public void loadProductRegistry(
+            final File file) throws InitializationException {
         loadProductRegistry(file.toURI().toString());
     }
     
-    public void loadProductRegistry(final String uri) throws InitializationException {
+    public void loadProductRegistry(
+            final String uri) throws InitializationException {
         loadProductRegistry(uri, new Progress(), RegistryType.REMOTE, false);
     }
     
-    public void loadProductRegistry(final String uri, final Progress progress, final RegistryType registryType, final boolean loadIncludes) throws InitializationException {
+    public void loadProductRegistry(
+            final String uri, 
+            final Progress progress, 
+            final RegistryType registryType, 
+            final boolean loadIncludes) throws InitializationException {
         try {
             final Element registryElement =
                     loadRegistryDocument(uri).getDocumentElement();
@@ -713,7 +839,12 @@ public class Registry {
         }
     }
     
-    public void saveProductRegistry(final File file, final RegistryFilter filter, final boolean saveIncludes, final boolean saveProperties, final boolean saveFeatures) throws FinalizationException {
+    public void saveProductRegistry(
+            final File file, 
+            final RegistryFilter filter, 
+            final boolean saveIncludes, 
+            final boolean saveProperties, 
+            final boolean saveFeatures) throws FinalizationException {
         try {
             XMLUtils.saveXMLDocument(getRegistryDocument(
                     filter, saveIncludes, saveProperties, saveFeatures), file);
@@ -726,7 +857,11 @@ public class Registry {
         return loadRegistryDocument(localRegistryStubUri);
     }
     
-    public Document getRegistryDocument(final RegistryFilter filter, final boolean saveIncludes, final boolean saveProperties, final boolean saveFeatures) throws XMLException, FinalizationException {
+    public Document getRegistryDocument(
+            final RegistryFilter filter, 
+            final boolean saveIncludes, 
+            final boolean saveProperties, 
+            final boolean saveFeatures) throws XMLException, FinalizationException {
         final Document document = getEmptyRegistryDocument();
         final Element documentElement = document.getDocumentElement();
         
@@ -754,7 +889,8 @@ public class Registry {
         return document;
     }
     
-    public Document loadRegistryDocument(final String uri) throws XMLException {
+    public Document loadRegistryDocument(
+            final String uri) throws XMLException {
         try {
             final File schemaFile =
                     FileProxy.getInstance().getFile(registrySchemaUri);
@@ -791,7 +927,10 @@ public class Registry {
         }
     }
     
-    private void loadRegistryComponents(final RegistryNode parentNode, final Element parentElement, final RegistryType registryType) throws InitializationException {
+    private void loadRegistryComponents(
+            final RegistryNode parentNode, 
+            final Element parentElement, 
+            final RegistryType registryType) throws InitializationException {
         final Element element = XMLUtils.getChild(parentElement, "components");
         
         if (element != null) {

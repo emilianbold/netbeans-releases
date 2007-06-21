@@ -77,7 +77,23 @@ public abstract class XMLUtils {
         FileOutputStream output = null;
         
         try {
-            saveXMLDocument(document, output = new FileOutputStream(file));
+            for (int i = 0; i < MAXIMUM_SAVE_ATTEMPTS; i++) {
+                saveXMLDocument(document, output = new FileOutputStream(file));
+                
+                // check the size of the resulting file -- sometimes it just happens 
+                // to be empty, we need to resave then; if we fail to save for 
+                // several times (MAXIMUM_SAVE_ATTEMPTS) -- fail with an 
+                // XMLException
+                if (file.length() > 0) {
+                    break;
+                }
+            }
+            
+            if (file.length() == 0) {
+                throw new XMLException("Cannot save XML document after " + 
+                        MAXIMUM_SAVE_ATTEMPTS + " attempts, the resulting " +
+                        "file is empty.");
+            }
         } catch (IOException e) {
             throw new XMLException("Cannot save XML document", e);
         } finally {
@@ -601,4 +617,7 @@ public abstract class XMLUtils {
     public static final String XSLT_REFORMAT_URI =
             FileProxy.RESOURCE_SCHEME_PREFIX +
             "org/netbeans/installer/utils/xml/reformat.xslt"; // NOI18N
+    
+    private static final int MAXIMUM_SAVE_ATTEMPTS = 
+            3;
 }

@@ -462,10 +462,11 @@ public class NbWelcomePanel extends ErrorMessagePanel {
                 }
                 
                 if (node instanceof Product) {
-                    if (!((Product) node).getPlatforms().contains(
-                            SystemUtils.getCurrentPlatform())) {
+                    if (!SystemUtils.getCurrentPlatform().isCompatibleWith(
+                            ((Product) node).getPlatforms())) {
                         continue;
                     }
+                    
                     list.add(node);
                 }
                 
