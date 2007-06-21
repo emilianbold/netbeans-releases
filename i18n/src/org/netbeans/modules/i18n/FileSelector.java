@@ -13,31 +13,41 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.i18n;
 
-import java.awt.*;
+import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.beans.*;
-import javax.swing.*;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyVetoException;
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.jdesktop.layout.GroupLayout;
-import org.openide.*;
+import org.openide.ErrorManager;
 import org.openide.awt.Mnemonics;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.*;
+import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.properties.PropertiesDataObject;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObjectNotFoundException;
 
 /**
  * Panel for selecting a properties file (by browsing a project tree). Also
@@ -188,6 +198,7 @@ public class FileSelector extends JPanel implements PropertyChangeListener, Expl
         return DialogDisplayer.getDefault().createDialog(dd);
     }
 
+    @Override
     public void addNotify() {
         confirmed = false;
         super.addNotify();
@@ -207,7 +218,7 @@ public class FileSelector extends JPanel implements PropertyChangeListener, Expl
             selectedDataObject = null;
             selectedFolder = null;
             if (nodes != null && nodes.length == 1) {
-                DataObject dobj = (DataObject) nodes[0].getCookie(DataObject.class);
+                DataObject dobj = nodes[0].getCookie(DataObject.class);
                 if (dobj != null) {
                     if (dobj instanceof PropertiesDataObject) {
                         fileNameTextField.setText(dobj.getName());
