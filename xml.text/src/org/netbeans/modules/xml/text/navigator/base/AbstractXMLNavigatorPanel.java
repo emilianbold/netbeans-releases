@@ -43,6 +43,8 @@ public abstract class AbstractXMLNavigatorPanel implements NavigatorPanel {
     protected Lookup.Result selection;
     protected final LookupListener selectionListener = new LookupListener() {
         public void resultChanged(LookupEvent ev) {
+            if(selection == null)
+                return;
             navigate(selection.allInstances());
         }
     };
