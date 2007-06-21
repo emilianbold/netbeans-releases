@@ -69,16 +69,12 @@ public class Installer extends ModuleInstall {
             facadeDFGlassFishV2 =  new org.netbeans.modules.j2ee.sun.ide.dm.SunDeploymentFactory(NbBundle.getMessage(Installer.class, "LBL_GlassFishV2"));
         }
         return facadeDFGlassFishV2;
-    }    public void restored() {
+    }    
+    
+    @Override public void restored() {
         WindowManager.getDefault().invokeWhenUIReady(new PrepareEnvironment());
     }
         
-    public void close() {       
-    }
-    
-    public void uninstalled() {
-    }
-    
     private static class PrepareEnvironment implements Runnable {
         public void run() {
             // if the domain hasn't been created successfully previously
