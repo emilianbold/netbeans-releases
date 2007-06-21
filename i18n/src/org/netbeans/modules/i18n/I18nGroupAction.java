@@ -27,7 +27,6 @@ import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import javax.swing.Action;
 import javax.swing.JMenu;
@@ -117,9 +116,7 @@ public final class I18nGroupAction extends SystemAction
         // In jdk1.3 could be used new JToolBar(getName()).
         JToolBar toolbar = new JToolBar (getName());
 
-        for(int i=0; i<i18nActions.length; i++) {
-            SystemAction action = i18nActions[i];
-
+        for (SystemAction action : i18nActions) {
             if(action == null) {
                 toolbar.addSeparator();
             } else if(action instanceof Presenter.Toolbar) {
@@ -210,7 +207,7 @@ public final class I18nGroupAction extends SystemAction
         /** */
         private final Action[] contextActions;
         /** */
-        private List/*<PropertyChangeListener>*/ propListeners;
+        private List<PropertyChangeListener> propListeners;
         /** is this action enabled? */
         private volatile Boolean enabled = null;        //unknown
         
@@ -296,9 +293,8 @@ public final class I18nGroupAction extends SystemAction
          *          <code>false</code> otherwise
          */
         private boolean shouldBeEnabled() {
-            for (int i = 0; i < i18nActions.length; i++) {
-                if ((contextActions[i] != null)
-                        && contextActions[i].isEnabled()) {
+            for (SystemAction action : i18nActions) {
+                if ((action != null) && action.isEnabled()) {
                     return true;
                 }
             }
@@ -361,7 +357,7 @@ public final class I18nGroupAction extends SystemAction
          */
         public synchronized void addPropertyChangeListener(PropertyChangeListener l) {
             if (propListeners == null) {
-                propListeners = new ArrayList(4);
+                propListeners = new ArrayList<PropertyChangeListener>(4);
             }
             propListeners.add(l);
         }
@@ -391,8 +387,8 @@ public final class I18nGroupAction extends SystemAction
                                                     propName,
                                                     oldValue,
                                                     newValue);
-                for (Iterator i = propListeners.iterator(); i.hasNext(); ) {
-                    ((PropertyChangeListener) i.next()).propertyChange(e);
+                for (PropertyChangeListener l : propListeners) {
+                    l.propertyChange(e);
                 }
             }
         }
