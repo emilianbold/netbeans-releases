@@ -34,6 +34,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.ElementFilter;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.AnnotationParser;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.ArrayValueHandler;
@@ -46,24 +47,23 @@ import org.netbeans.modules.j2ee.persistence.api.metadata.orm.PrimaryKeyJoinColu
  */
 public class EntityMappingsUtilities {
 
-    private final static Set<String> ID_ANNOTATIONS = new HashSet<String>(Arrays.asList(
-            "javax.persistence.Id",           // NOI18N
-            "javax.persistence.EmbeddedId")); // NOI18N
-
     public static boolean isTransient(Map<String, ? extends AnnotationMirror> annByType, Set<Modifier> modifiers) {
         return annByType.containsKey("javax.persistence.Transient") || modifiers.contains(Modifier.TRANSIENT); // NOI18N
     }
 
     public static boolean hasFieldAccess(AnnotationModelHelper helper, List<? extends Element> elements) {
-        for (Element element : elements) {
-            ElementKind elementKind = element.getKind();
-            if (ElementKind.FIELD.equals(elementKind) || ElementKind.METHOD.equals(elementKind)) {
-                if (helper.hasAnyAnnotation(element.getAnnotationMirrors(), ID_ANNOTATIONS)) {
-                    return elementKind.FIELD.equals(elementKind);
+        for (Element element : ElementFilter.methodsIn(elements)) {
+            for (AnnotationMirror annotation : element.getAnnotationMirrors()) {
+                String annTypeName = helper.getAnnotationTypeName(annotation.getAnnotationType());
+                if (annTypeName.startsWith("javax.persistence.")) { // NOI18N
+                    return false;
                 }
             }
         }
-        return false;
+        // if we got here, no methods were annotated with a JPA annotations
+        // then either fields are annotated, or there are no annotations in the class
+        // (in which case the default -- field access -- applies)
+        return true;
     }
 
     public static String getterNameToPropertyName(String getterName) {

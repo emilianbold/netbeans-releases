@@ -19,16 +19,53 @@
 
 package org.netbeans.modules.j2ee.persistenceapi.metadata.orm.annotation;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.*;
+import org.netbeans.modules.j2ee.persistenceapi.metadata.orm.annotation.AttributesHelper.PropertyHandler;
 
-public class EmbeddableAttributesImpl implements EmbeddableAttributes {
+public class EmbeddableAttributesImpl implements EmbeddableAttributes, PropertyHandler {
+
+    private final EmbeddableImpl embeddable;    
+    private final AttributesHelper attrHelper;
+    
+    private final List<Basic> basicList = new ArrayList<Basic>();
+    
+    public EmbeddableAttributesImpl(EmbeddableImpl embeddable) {
+        this.embeddable = embeddable;
+        attrHelper = new AttributesHelper(embeddable.getTypeElement(), embeddable.getRoot().getHelper(), this);
+        attrHelper.parse();
+    }
+    
+    public boolean hasFieldAccess() {
+        return attrHelper.hasFieldAccess();
+    }
+
+    public void handleProperty(Element element, String propertyName) {
+        AnnotationModelHelper helper = embeddable.getRoot().getHelper();
+        Map<String, ? extends AnnotationMirror> annByType = helper.getAnnotationsByType(element.getAnnotationMirrors());
+        if (EntityMappingsUtilities.isTransient(annByType, element.getModifiers())) {
+            return;
+        }
+
+        AnnotationMirror columnAnnotation = annByType.get("javax.persistence.Column"); // NOI18N
+        AnnotationMirror temporalAnnotation = annByType.get("javax.persistence.Temporal"); // NOI18N
+        String temporal = temporalAnnotation != null ? EntityMappingsUtilities.getTemporalType(helper, temporalAnnotation) : null;
+        Column column = new ColumnImpl(helper, columnAnnotation, propertyName.toUpperCase()); // NOI18N
+        AnnotationMirror basicAnnotation = annByType.get("javax.persistence.Basic"); // NOI18N
+        basicList.add(new BasicImpl(helper, basicAnnotation, propertyName, column, temporal));
+    }
 
     public void setBasic(int index, Basic value) {
         throw new UnsupportedOperationException("This operation is not implemented yet."); // NOI18N
     }
 
     public Basic getBasic(int index) {
-        throw new UnsupportedOperationException("This operation is not implemented yet."); // NOI18N
+        return basicList.get(index);
     }
 
     public int sizeBasic() {
@@ -40,7 +77,7 @@ public class EmbeddableAttributesImpl implements EmbeddableAttributes {
     }
 
     public Basic[] getBasic() {
-        throw new UnsupportedOperationException("This operation is not implemented yet."); // NOI18N
+        return basicList.toArray(new Basic[basicList.size()]);
     }
 
     public int addBasic(Basic value) {

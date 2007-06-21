@@ -22,6 +22,7 @@ package org.netbeans.modules.j2ee.persistenceapi.metadata.orm.annotation;
 import org.netbeans.modules.j2ee.metadata.model.support.TestUtilities;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Basic;
+import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Embeddable;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappings;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappingsMetadata;
@@ -74,10 +75,22 @@ public class EntityMappingsMetadataModelTest extends EntityMappingsTestCase {
                 "   @Temporal(TemporalType.DATE)" +
                 "   private Date entryDate;" +
                 "}");
+        TestUtilities.copyStringToFileObject(srcFO, "foo/DateBasedId.java",
+                "package foo;" +
+                "import javax.persistence.*;" +
+                "import java.util.*;" +
+                "@Embeddable()" +
+                "public class DateBasedId {" +
+                "   @Temporal(TemporalType.DATE)" +
+                "   private Date date;" +
+                "   @Column(name=\"ORDER_NUM\")" +
+                "   private int order;" +
+                "}");
         final String expectedResult = "foo";
         String result = createModel().runReadAction(new MetadataModelAction<EntityMappingsMetadata, String>() {
             public String run(EntityMappingsMetadata metadata) {
                 EntityMappings entityMappings = metadata.getRoot();
+                // test entities
                 Entity[] entityList = entityMappings.getEntity();
                 assertEquals(2, entityList.length);
                 // test Customer
@@ -111,7 +124,6 @@ public class EntityMappingsMetadataModelTest extends EntityMappingsTestCase {
                 assertEquals("VER", versionList[0].getColumn().getName());
                 // test Employee
                 entity = getEntityByName(entityList, "Employee");
-                assertNotNull(entity);
                 idList = entity.getAttributes().getId();
                 assertEquals(1, idList.length);
                 assertEquals("TIMESTAMP", idList[0].getTemporal());
@@ -119,6 +131,17 @@ public class EntityMappingsMetadataModelTest extends EntityMappingsTestCase {
                 assertEquals(1, versionList.length);
                 assertEquals("entryDate", versionList[0].getName());
                 assertEquals("DATE", versionList[0].getTemporal());
+                // test embeddables
+                Embeddable[] embeddableList = entityMappings.getEmbeddable();
+                assertEquals(1, embeddableList.length);
+                // test Address
+                Embeddable embeddable = getEmbeddableByClass(embeddableList, "foo.DateBasedId");
+                basicList = embeddable.getAttributes().getBasic();
+                assertEquals(2, basicList.length);
+                assertEquals("date", basicList[0].getName());
+                assertEquals("DATE", basicList[0].getTemporal());
+                assertEquals("order", basicList[1].getName());
+                assertEquals("ORDER_NUM", basicList[1].getColumn().getName());
                 return expectedResult;
             }
         });

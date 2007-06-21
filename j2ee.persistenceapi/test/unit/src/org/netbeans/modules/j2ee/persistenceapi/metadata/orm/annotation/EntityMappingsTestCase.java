@@ -26,6 +26,7 @@ import javax.persistence.spi.PersistenceProvider;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.support.JavaSourceTestCase;
+import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Embeddable;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappingsMetadata;
 import org.netbeans.modules.java.source.usages.RepositoryUpdater;
@@ -67,6 +68,15 @@ public class EntityMappingsTestCase extends JavaSourceTestCase {
         for (Entity entity : entityList) {
             if (name.equals(entity.getName())) {
                 return entity;
+            }
+        }
+        return null;
+    }
+    
+    protected static Embeddable getEmbeddableByClass(Embeddable[] embeddableList, String clazz) {
+        for (Embeddable embeddable : embeddableList) {
+            if (clazz.equals(embeddable.getClass2())) {
+                return embeddable;
             }
         }
         return null;

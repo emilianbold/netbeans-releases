@@ -35,10 +35,12 @@ public class EntityMappingsImpl implements EntityMappings {
 
     private final AnnotationModelHelper helper;
     private final PersistentObjectManager<EntityImpl> entityManager;
+    private final PersistentObjectManager<EmbeddableImpl> embeddableManager;
 
     public EntityMappingsImpl(AnnotationModelHelper helper) {
         this.helper = helper;
         entityManager = helper.createPersistentObjectManager(new EntityProvider());
+        embeddableManager = helper.createPersistentObjectManager(new EmbeddableProvider());
     }
 
     AnnotationModelHelper getHelper() {
@@ -335,7 +337,7 @@ public class EntityMappingsImpl implements EntityMappings {
     }
 
     public Embeddable getEmbeddable(int index) {
-        throw new UnsupportedOperationException("This operation is not implemented yet."); // NOI18N
+        return getEmbeddable()[index];
     }
 
     public int sizeEmbeddable() {
@@ -347,7 +349,8 @@ public class EntityMappingsImpl implements EntityMappings {
     }
 
     public Embeddable[] getEmbeddable() {
-        throw new UnsupportedOperationException("This operation is not implemented yet."); // NOI18N
+        Collection<EmbeddableImpl> embeddables = embeddableManager.getObjects();
+        return embeddables.toArray(new Embeddable[embeddables.size()]);
     }
 
     public int addEmbeddable(Embeddable value) {
@@ -390,5 +393,35 @@ public class EntityMappingsImpl implements EntityMappings {
             }
             return false;
         }
+    }
+    
+    private final class EmbeddableProvider  implements ObjectProvider<EmbeddableImpl> {
+        
+        public List<EmbeddableImpl> createInitialObjects() throws InterruptedException {
+            final List<EmbeddableImpl> result = new ArrayList<EmbeddableImpl>();
+            helper.getAnnotationScanner().findAnnotatedTypes("javax.persistence.Embeddable", new TypeAnnotationHandler() { // NOI18N
+                public void typeAnnotation(TypeElement type, AnnotationMirror annotation) {
+                    result.add(new EmbeddableImpl(helper, EntityMappingsImpl.this, type));
+                }
+            });
+            return result;
+        }
+
+        public List<EmbeddableImpl> createObjects(TypeElement type) {
+            if (helper.hasAnnotation(type.getAnnotationMirrors(), "javax.persistence.Embeddable")) { // NOI18N
+                return Collections.singletonList(new EmbeddableImpl(helper, EntityMappingsImpl.this, type));
+            }
+            return Collections.emptyList();
+        }
+
+        public boolean modifyObjects(TypeElement type, List<EmbeddableImpl> objects) {
+            assert objects.size() == 1;
+            EmbeddableImpl entity = objects.get(0);
+            if (!entity.refresh(type)) {
+                objects.remove(0);
+                return true;
+            }
+            return false;
+        }        
     }
 }

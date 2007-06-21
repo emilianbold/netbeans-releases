@@ -24,16 +24,15 @@ import java.util.List;
 import java.util.Map;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.TypeElement;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.*;
+import org.netbeans.modules.j2ee.persistenceapi.metadata.orm.annotation.AttributesHelper.PropertyHandler;
 
-public class AttributesImpl implements Attributes {
-
+public class AttributesImpl implements Attributes, PropertyHandler {
+    
     private final EntityImpl entity;
+    private final AttributesHelper attrHelper;
 
-    private boolean fieldAccess;
     private EmbeddedId embeddedId;
     private final List<Id> idList = new ArrayList<Id>();
     private final List<Version> versionList = new ArrayList<Version>();
@@ -45,46 +44,21 @@ public class AttributesImpl implements Attributes {
 
     public AttributesImpl(EntityImpl entity) {
         this.entity = entity;
-        TypeElement typeElement = entity.getTypeElement();
-        if (typeElement == null) {
-            // entity was removed, we should get an event soon
-            // XXX log
-            return;
-        }
-        AnnotationModelHelper helper = entity.getRoot().getHelper();
-
-        List<? extends Element> elements = typeElement.getEnclosedElements();
-        fieldAccess = EntityMappingsUtilities.hasFieldAccess(helper, elements);
-
-        // handle this entity's attributes
-        for (Element element : elements) {
-            ElementKind elementKind = element.getKind();
-            if (fieldAccess) {
-                if (ElementKind.FIELD.equals(elementKind)) {
-                    handleField(element);
-                }
-            } else {
-                if (ElementKind.METHOD.equals(elementKind)) {
-                    handleField(element);
-                }
-            }
-        }
+        attrHelper = new AttributesHelper(entity.getTypeElement(), entity.getRoot().getHelper(), this);
+        attrHelper.parse();
+    }
+    
+    public boolean hasFieldAccess() {
+        return attrHelper.hasFieldAccess();
     }
 
-    private void handleField(Element element) {
+    public void handleProperty(Element element, String propertyName) {
         AnnotationModelHelper helper = entity.getRoot().getHelper();
         Map<String, ? extends AnnotationMirror> annByType = helper.getAnnotationsByType(element.getAnnotationMirrors());
         if (EntityMappingsUtilities.isTransient(annByType, element.getModifiers())) {
             return;
         }
-        String propertyName = element.getSimpleName().toString();
-        if (ElementKind.METHOD.equals(element.getKind())) {
-            propertyName = EntityMappingsUtilities.getterNameToPropertyName(propertyName);
-            if (propertyName == null) {
-                return;
-            }
-        }
-
+        
         AnnotationMirror oneToOneAnnotation = annByType.get("javax.persistence.OneToOne"); // NOI18N
         AnnotationMirror oneToManyAnnotation = annByType.get("javax.persistence.OneToMany"); // NOI18N
         AnnotationMirror manyToOneAnnotation = annByType.get("javax.persistence.ManyToOne"); // NOI18N
@@ -120,10 +94,6 @@ public class AttributesImpl implements Attributes {
                 }
             }
         }
-    }
-
-    boolean hasFieldAccess() {
-        return fieldAccess;
     }
 
     public void setId(int index, Id value) {

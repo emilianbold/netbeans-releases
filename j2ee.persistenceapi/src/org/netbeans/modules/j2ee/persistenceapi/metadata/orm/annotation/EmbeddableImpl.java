@@ -19,16 +19,54 @@
 
 package org.netbeans.modules.j2ee.persistenceapi.metadata.orm.annotation;
 
+import java.util.Map;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.TypeElement;
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.JavaContextListener;
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.PersistentObject;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.*;
 
-public class EmbeddableImpl implements Embeddable {
+public class EmbeddableImpl extends PersistentObject implements Embeddable, JavaContextListener {
+    
+    private final EntityMappingsImpl root;
+    
+    // persistent
+    private String class2;
+    
+    // transient: set to null in javaContextLeft()
+    private EmbeddableAttributesImpl attributes;
+    
+    public EmbeddableImpl(AnnotationModelHelper helper, EntityMappingsImpl root, TypeElement typeElement) {
+        super(helper, typeElement);
+        this.root = root;
+        helper.addJavaContextListener(this);
+        boolean valid = refresh(typeElement);
+        assert valid;
+    }
+    
+    boolean refresh(TypeElement typeElement) {
+        class2 = typeElement.getQualifiedName().toString();
+        AnnotationModelHelper helper = getHelper();
+        Map<String, ? extends AnnotationMirror> annByType = helper.getAnnotationsByType(typeElement.getAnnotationMirrors());
+        AnnotationMirror embeddableAnn = annByType.get("javax.persistence.Embeddable"); // NOI18N
+        return embeddableAnn != null;
+    }
+    
+    EntityMappingsImpl getRoot() {
+        return root;
+    }
+    
+    public void javaContextLeft() {
+        attributes = null;
+    }
 
     public void setClass2(String value) {
         throw new UnsupportedOperationException("This operation is not implemented yet."); // NOI18N
     }
 
     public String getClass2() {
-        throw new UnsupportedOperationException("This operation is not implemented yet."); // NOI18N
+        return class2;
     }
 
     public void setAccess(String value) {
@@ -36,7 +74,7 @@ public class EmbeddableImpl implements Embeddable {
     }
 
     public String getAccess() {
-        throw new UnsupportedOperationException("This operation is not implemented yet."); // NOI18N
+        return getAttributes().hasFieldAccess() ? FIELD_ACCESS : PROPERTY_ACCESS;
     }
 
     public void setMetadataComplete(boolean value) {
@@ -59,11 +97,18 @@ public class EmbeddableImpl implements Embeddable {
         throw new UnsupportedOperationException("This operation is not implemented yet."); // NOI18N
     }
 
-    public EmbeddableAttributes getAttributes() {
-        throw new UnsupportedOperationException("This operation is not implemented yet."); // NOI18N
+    public EmbeddableAttributesImpl getAttributes() {
+        if (attributes == null) {
+            attributes = new EmbeddableAttributesImpl(this);
+        }
+        return attributes;
     }
 
     public EmbeddableAttributes newEmbeddableAttributes() {
         throw new UnsupportedOperationException("This operation is not implemented yet."); // NOI18N
+    }
+    
+    public String toString() {
+        return "EmbeddableImpl[class2='" + class2 + "']"; // NOI18N
     }
 }
