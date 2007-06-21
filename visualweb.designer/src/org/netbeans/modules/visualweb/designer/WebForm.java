@@ -45,7 +45,9 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.swing.CellRendererPane;
 import javax.swing.JComponent;
@@ -137,7 +139,7 @@ public class WebForm implements Designer {
     
 //    /** Maps elements to css boxes. */
 //    private final Map<Element, CssBox> element2cssBox = new WeakHashMap<Element, CssBox>();
-    private static final String KEY_CSS_BOX = "vwpCssBox"; // NOI18N
+    private static final String KEY_CSS_BOX_MAP = "vwpCssBoxMap"; // NOI18N
     
 //    // XXX Suspicious listener, it should be removed.
 //    private JspDataObjectListener jspDataObjectListener;
@@ -564,7 +566,14 @@ public class WebForm implements Designer {
 //        synchronized (element2cssBox) {
 //            element2cssBox.put(element, box);
 //        }
-        element.setUserData(KEY_CSS_BOX, box, CssBoxDataHandler.getDefault());
+        // #106433 There needs to be 1:N mapping for  element : box.
+        // TODO Revise potential memory leak, boxes linked to the elements!
+        Map<WebForm, CssBox> webform2box = (Map<WebForm, CssBox>)element.getUserData(KEY_CSS_BOX_MAP);
+        if (webform2box == null) {
+            webform2box = new HashMap<WebForm, CssBox>();
+        }
+        webform2box.put(this, box);
+        element.setUserData(KEY_CSS_BOX_MAP, webform2box, CssBoxDataHandler.getDefault());
     }
     
     public CssBox getCssBoxForElement(Element element) {
@@ -574,7 +583,8 @@ public class WebForm implements Designer {
         if (element == null) {
             return null;
         }
-        return (CssBox)element.getUserData(KEY_CSS_BOX);
+        Map<WebForm, CssBox> webform2box = (Map<WebForm, CssBox>)element.getUserData(KEY_CSS_BOX_MAP);
+        return webform2box == null ? null : webform2box.get(this);
     }
     
     // XXX Temporary, see DesignerService.copyBoxForElement.
