@@ -81,16 +81,10 @@ public class MapActionUtility {
         //
         //        actionMap.put("handleNewWebForm", new TestAction("handleNewWebForm"));
         //
-        //        actionMap.put("handleLeftArrowKey", new TestAction("handleLeftArrowKey"));
-        //        actionMap.put("handleRightArrowKey", new TestAction("handleRightArrowKey"));
-        //        actionMap.put("handleUpArrowKey", new TestAction("handleUpArrowKey"));
-        //        actionMap.put("handleDownArrowKey", new TestAction("handleDownArrowKey"));
-        //
-        //        actionMap.put("handleAddCommandButton", new TestAction("handleAddCommandButton"));
-        //        actionMap.put("handleAddCommandLink", new TestAction("handleAddCommandLink"));
-        //        actionMap.put("handleAddImageHyperLink", new TestAction("handleAddImageHyperLink"));
-        //        actionMap.put("handlePopupMenu", new TestAction("handlePopupMenu"));
-        //        actionMap.put("handleDeleteKey", handleDeleteKey);
+        actionMap.put("handleLeftArrowKey", new TestAction("handleArrow"));
+        actionMap.put("handleRightArrowKey", new TestAction("handleArrow"));
+        actionMap.put("handleUpArrowKey", new TestAction("handleArrow"));
+        actionMap.put("handleDownArrowKey", handleArrow );
         return actionMap;
     }
     
@@ -110,24 +104,24 @@ public class MapActionUtility {
         inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_U,0), "handleUnZoomPage");
         //
         inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER,0), "handleOpenPage");
-
+        
         // Upper Case S,E,Z,U
         inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_S,InputEvent.SHIFT_MASK), "handleLinkStart");
         inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_E,InputEvent.SHIFT_MASK), "handleLinkEnd");
         inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_Z,InputEvent.SHIFT_MASK), "handleZoomPage");
         inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_U,InputEvent.SHIFT_MASK), "handleUnZoomPage");
-
+        
         //        // Non Numeric Key Pad arrow keys
-        //        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT,0), "handleLeftArrowKey");
-        //        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT,0), "handleRightArrowKey");
-        //        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_UP,0), "handleUpArrowKey");
-        //        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN,0), "handleDownArrowKey");
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT,0), "handleLeftArrowKey");
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT,0), "handleRightArrowKey");
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_UP,0), "handleUpArrowKey");
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN,0), "handleDownArrowKey");
         //
-        //        // Numeric Key Pad arrow keys
-        //        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_KP_LEFT,0), "handleLeftArrowKey");
-        //        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_KP_RIGHT,0), "handleRightArrowKey");
-        //        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_KP_UP,0), "handleUpArrowKey");
-        //        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_KP_DOWN,0), "handleDownArrowKey");
+        // Numeric Key Pad arrow keys
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_KP_LEFT,0), "handleLeftArrowKey");
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_KP_RIGHT,0), "handleRightArrowKey");
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_KP_UP,0), "handleUpArrowKey");
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_KP_DOWN,0), "handleDownArrowKey");
         //
         //        // SHIFT + F10
         //        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_F10,InputEvent.SHIFT_MASK), "handlePopupMenu");
@@ -136,8 +130,8 @@ public class MapActionUtility {
         //        //Add File
         //        inputMap.put(KeyStroke.getKeyStroke( KeyEvent.VK_A, 0, false), "handleNewWebForm");
         
-        //                //DELETE
-        //                inputMap.put(KeyStroke.getKeyStroke( KeyEvent.VK_DELETE , 0), "handleDeleteKey");
+        //        //DELETE
+        //        inputMap.put(KeyStroke.getKeyStroke( KeyEvent.VK_DELETE , 0), "handleDeleteKey");
         return inputMap;
     }
     
@@ -166,7 +160,7 @@ public class MapActionUtility {
             }
             PageFlowScene scene = (PageFlowScene)sourceObj;
             
-            PageFlowSceneElement nextElement = SceneElementComparator.getNextSelectableElement(scene);
+            PageFlowSceneElement nextElement = SceneElementComparator.getNextSelectableElement(scene, true, true, false);
             if( nextElement != null ){
                 if( CONNECT_WIDGET != null && scene.getConnectionLayer().getChildren().contains(CONNECT_WIDGET)){
                     Anchor targetAnchor = null;
@@ -190,6 +184,42 @@ public class MapActionUtility {
             }
         }
     };
+    
+    
+    public static final Action handleArrow = new AbstractAction() {
+        
+        public void actionPerformed(ActionEvent e) {
+            Object sourceObj = e.getSource();
+            if( !(sourceObj instanceof PageFlowScene) ){
+                return;
+            }
+            PageFlowScene scene = (PageFlowScene)sourceObj;
+            
+            PageFlowSceneElement nextElement = SceneElementComparator.getNextSelectableElement(scene, false, false, true);
+            if( nextElement != null ){
+                if( CONNECT_WIDGET != null && scene.getConnectionLayer().getChildren().contains(CONNECT_WIDGET)){
+                    Anchor targetAnchor = null;
+                    if( nextElement instanceof Page ){
+                        assert CONNECT_DECORATOR_DEFAULT != null;
+                        targetAnchor = CONNECT_DECORATOR_DEFAULT.createTargetAnchor(scene.findWidget(nextElement));
+                    } else if ( nextElement instanceof Pin ){
+                        Widget pageWidget = scene.findWidget(((Pin) nextElement).getPageFlowNode());
+                        targetAnchor = CONNECT_DECORATOR_DEFAULT.createTargetAnchor(pageWidget);
+                        
+                    }
+                    if( targetAnchor != null ){
+                        CONNECT_WIDGET.setTargetAnchor(targetAnchor);
+                        scene.validate();
+                    }
+                }
+                Set<PageFlowSceneElement> set = new HashSet<PageFlowSceneElement>();
+                set.add(nextElement);
+                scene.setSelectedObjects(set);
+                
+            }
+        }
+    };
+    
     
     
     private static ConnectDecorator CONNECT_DECORATOR_DEFAULT = null;

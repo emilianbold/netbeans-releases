@@ -90,18 +90,72 @@ public class SceneElementComparator implements Comparator<SceneElement> {
         
     }
     
-    public static PageFlowSceneElement getNextSelectableElement(PageFlowScene scene ){
+//    public static PageFlowSceneElement getNextPage(PageFlowScene scene ){
+//        List selectedObjs = new ArrayList(scene.getSelectedObjects());
+//        //        List objs = new ArrayList(scene.getObjects());
+//        List objs = new ArrayList(scene.getNodes());
+//        List<SceneElement> sortedElements = new ArrayList<SceneElement>();
+//        
+//        /* Remove all the page pins */
+//        //        for( Page page : scene.getNodes() ){
+//        //            Pin pin = scene.getDefaultPin(page);
+//        //            sortedElements.remove(pin);
+//        //            objs.remove(pin);
+//        //        }
+//        
+//        for( Object obj : objs ){
+//            Point p = scene.findWidget(obj).getLocation();
+//            SceneElement se = new SceneElement((PageFlowSceneElement)obj, p);
+//            sortedElements.add(se);
+//        }
+//        SceneElement  mySelectedSceneElement = null;
+//        for( Object selObj : selectedObjs ){
+//            mySelectedSceneElement =  new SceneElement( (PageFlowSceneElement)selObj, scene.findWidget(selObj).getLocation());
+//            if( sortedElements.contains(mySelectedSceneElement)) {
+//                break;
+//            }
+//        }
+//        PageFlowSceneElement nextElement = null;
+//        if( sortedElements.size() > 0 ){
+//            Collections.sort(sortedElements, new SceneElementComparator(scene));
+//            System.out.println(sortedElements);
+//            if( mySelectedSceneElement != null ) {
+//                if( sortedElements.contains(mySelectedSceneElement)) {
+//                    int index = sortedElements.indexOf(mySelectedSceneElement);
+//                    System.out.println("Index: " + index + " Selected Element: " + mySelectedSceneElement.element);
+//                    if( sortedElements.size() > index +1 ) {
+//                        nextElement = sortedElements.get(index + 1).element;
+//                    }
+//                }
+//            }
+//            if( nextElement == null ){
+//                nextElement = sortedElements.get(0).element;
+//            }
+//        }
+//        return nextElement;
+//    }
+    
+    public static PageFlowSceneElement getNextSelectableElement(PageFlowScene scene, boolean nodesSelectable, boolean edgesSelectable, boolean pinsSelectable ){
         List selectedObjs = new ArrayList(scene.getSelectedObjects());
-        List objs = new ArrayList(scene.getObjects());
+        //        List objs = new ArrayList(scene.getObjects());
+        List objs = new ArrayList();
         List<SceneElement> sortedElements = new ArrayList<SceneElement>();
         
-        /* Remove all the pins */
-        for( Page page : scene.getNodes() ){
-            Pin pin = scene.getDefaultPin(page);
-            sortedElements.remove(pin);
-            objs.remove(pin);
+        if( nodesSelectable ) {
+            objs.addAll(scene.getNodes());
         }
-        
+        if ( edgesSelectable ) {
+            objs.addAll(scene.getEdges());
+        }
+        if( pinsSelectable ){
+            objs.addAll(scene.getPins());
+            /* Remove all the page pins */
+            for( Page page : scene.getNodes() ){
+                Pin pin = scene.getDefaultPin(page);
+                sortedElements.remove(pin);
+                objs.remove(pin);
+            }
+        }
         
         for( Object obj : objs ){
             Point p = scene.findWidget(obj).getLocation();
