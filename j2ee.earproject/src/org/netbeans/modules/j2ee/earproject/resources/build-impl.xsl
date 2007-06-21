@@ -117,7 +117,12 @@ is divided into following sections:
                     <istrue value="${{compile.jsps}}"/>
                 </condition>
                 <condition property="do.display.browser">
-                    <istrue value="${{display.browser}}"/>
+                    <and>
+                        <istrue value="${{display.browser}}"/>
+                        <not>
+                            <isset property="app.client"/>
+                        </not>
+                    </and>
                 </condition>
                 <available property="has.custom.manifest" file="${{meta.inf}}/MANIFEST.MF"/>
                 <condition property="j2ee.appclient.mainclass.tool.param" value="-mainclass ${{main.class}}" else="">

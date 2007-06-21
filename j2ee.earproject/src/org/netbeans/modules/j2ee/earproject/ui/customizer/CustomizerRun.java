@@ -82,13 +82,7 @@ public final class CustomizerRun extends JPanel implements ArchiveCustomizerPane
     private void updateEnabled() {
         boolean isWebUri = isWebModuleSelected();
         
-        // #100098
-        if (!isWebUri && jCheckBoxDisplayBrowser.isSelected()) {
-            //jCheckBoxDisplayBrowser.setSelected(false);   // cannot be used because of ActionListener
-            jCheckBoxDisplayBrowser.doClick();
-        }
-        jCheckBoxDisplayBrowser.setEnabled(isWebUri);
-        handleWebModuleRelated();
+        handleWebModuleRelated(isWebUri);
         
         jTextMainClass.setEnabled(!isWebUri);
         jTextArgs.setEnabled(!isWebUri);
@@ -141,10 +135,14 @@ public final class CustomizerRun extends JPanel implements ArchiveCustomizerPane
     }
     
     private void handleWebModuleRelated() {
-        boolean enabled = jCheckBoxDisplayBrowser.isEnabled() && jCheckBoxDisplayBrowser.isSelected();
-        jLabelContextPathDesc.setEnabled(enabled);
-        jLabelRelativeURL.setEnabled(enabled);
-        jTextFieldRelativeURL.setEnabled(enabled);
+        handleWebModuleRelated(isWebModuleSelected());
+    }
+    
+    private void handleWebModuleRelated(Boolean isWebUri) {
+        jCheckBoxDisplayBrowser.setEnabled(isWebUri);
+        jLabelContextPathDesc.setEnabled(isWebUri);
+        jLabelRelativeURL.setEnabled(isWebUri);
+        jTextFieldRelativeURL.setEnabled(isWebUri);
     }
     
     private String[] getDisplayUris() {
@@ -324,31 +322,28 @@ public final class CustomizerRun extends JPanel implements ArchiveCustomizerPane
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(webInfoPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                        .add(filler)
-                        .add(139, 139, 139)
-                        .add(clientModuleUriCombo, 0, 498, Short.MAX_VALUE))
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(jLabelContextPath))
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(jLabelServer, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 115, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jComboBoxServer, 0, 498, Short.MAX_VALUE))
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(jLabelVersion, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 115, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jTextFieldVersion, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+            .add(layout.createSequentialGroup()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
                         .addContainerGap()
-                        .add(clientInfoPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                        .add(webInfoPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                        .addContainerGap()
+                        .add(clientInfoPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .add(filler)
+                    .add(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(jLabelVersion)
+                            .add(jLabelContextPath)
+                            .add(jLabelServer))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(layout.createSequentialGroup()
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(clientModuleUriCombo, 0, 515, Short.MAX_VALUE))
+                            .add(jComboBoxServer, 0, 515, Short.MAX_VALUE)
+                            .add(jTextFieldVersion, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 119, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -368,7 +363,7 @@ public final class CustomizerRun extends JPanel implements ArchiveCustomizerPane
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabelVersion)
                     .add(jTextFieldVersion, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .add(30, 30, 30)
+                .add(32, 32, 32)
                 .add(webInfoPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(clientInfoPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
