@@ -82,7 +82,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
 
     public Set extend (final WebModule webModule) {
         Set result = new HashSet();
-        final FileObject fileObject = webModule.getDocumentBase();;
+        final FileObject fileObject = webModule.getDocumentBase();
         final Project project = FileOwnerQuery.getOwner(fileObject);
         final ProjectTemplate template = new JsfProjectTemplateJakarta();
 
