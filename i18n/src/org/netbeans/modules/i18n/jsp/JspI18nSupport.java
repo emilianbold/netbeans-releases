@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -50,23 +50,27 @@ public class JspI18nSupport extends JavaI18nSupport {
     
     
     /** Creates <code>I18nFinder</code>. Implements superclass abstract method. */
+    @Override
     protected I18nFinder createFinder() {
         return new JspI18nFinder(document);
     }
  
     /** Overrides superclass method. 
      * @return false */
+    @Override
     public boolean hasAdditionalCustomizer() {
         return false;
     }
     
     /** Overrides superclass method. 
      * @return null */
+    @Override
     public JPanel getAdditionalCustomizer() {
         return null;
     }
     
     /** Overrides superclass method. Does nothing. */
+    @Override
     public void performAdditionalChanges() {
     }
     
@@ -104,6 +108,7 @@ public class JspI18nSupport extends JavaI18nSupport {
 
         
         /** Resets finder. Overrides superclass method. */
+        @Override
         protected void reset() {
             super.reset();
             
@@ -111,6 +116,7 @@ public class JspI18nSupport extends JavaI18nSupport {
         }
         
         /** Handles state changes according next character. Overrides superclass method. */
+        @Override
         protected HardCodedString handleCharacter(char character) {
             if(state == STATE_JSP)
                 return handleStateJsp(character);
@@ -239,7 +245,7 @@ public class JspI18nSupport extends JavaI18nSupport {
                 return Class.forName(
                     "org.netbeans.modules.web.core.jsploader.JspDataObject", // NOI18N
                     false,
-                    (ClassLoader)Lookup.getDefault().lookup(ClassLoader.class)
+                    Lookup.getDefault().lookup(ClassLoader.class)
                 );
             } catch(ClassNotFoundException cnfe) {
                 return null;
