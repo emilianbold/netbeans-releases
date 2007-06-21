@@ -42,40 +42,52 @@ import javax.faces.validator.Validator;
  * @author gjmurphy
  */
 public final class PropertyEditorResolverImpl implements PropertyEditorResolver {
-    
-    private final static ResourceBundle bundle =
-            ResourceBundle.getBundle(PropertyEditorResolverImpl.class.getName());
-    
-    
+
+    private static final ResourceBundle bundle = ResourceBundle.getBundle(PropertyEditorResolverImpl.class.getName());
+
+
     public PropertyEditor getEditor(PropertyDescriptor propertyDescriptor) {
-        
-        if (propertyDescriptor == null)
+
+        if (propertyDescriptor == null) {
             return null;
+        }
         PropertyEditor editor = null;
         Class propertyEditorClass = propertyDescriptor.getPropertyEditorClass();
-        
+
         if (propertyEditorClass == null) {
             // If property descriptor does not specify a property editor, choose
             // an appropriate default based on the property type.
             Class propertyType = propertyDescriptor.getPropertyType();
-            if (String.class.isAssignableFrom(propertyType))
+            if (propertyType.isPrimitive()) {
+                if (propertyType == Short.TYPE) {
+                    editor = new IntegerPropertyEditor();
+                } else if (propertyType == Integer.TYPE) {
+                    editor = new IntegerPropertyEditor();
+                } else if (propertyType == Long.TYPE) {
+                    editor = new LongPropertyEditor();
+                } else if (propertyType == Float.TYPE) {
+                    editor = new DoublePropertyEditor();
+                } else if (propertyType == Double.TYPE) {
+                    editor = new DoublePropertyEditor();
+                }
+            }
+            if (String.class.isAssignableFrom(propertyType)) {
                 editor = new StringPropertyEditor();
-            else if (Integer.class.isAssignableFrom(propertyType))
+            } else if (Integer.class.isAssignableFrom(propertyType)) {
                 editor = new IntegerPropertyEditor();
-            else if (Long.class.isAssignableFrom(propertyType))
+            } else if (Long.class.isAssignableFrom(propertyType)) {
                 editor = new LongPropertyEditor();
-            else if (Double.class.isAssignableFrom(propertyType))
+            } else if (Double.class.isAssignableFrom(propertyType)) {
                 editor = new DoublePropertyEditor();
-            else if (Converter.class.isAssignableFrom(propertyType))
+            } else if (Converter.class.isAssignableFrom(propertyType)) {
                 editor = new ConverterPropertyEditor();
-            else if (Validator.class.isAssignableFrom(propertyType))
+            } else if (Validator.class.isAssignableFrom(propertyType)) {
                 editor = new ValidatorPropertyEditor();
-            else if (ValueBinding.class.isAssignableFrom(propertyType)
-            || ValueExpression.class.isAssignableFrom(propertyType))
+            } else if (ValueBinding.class.isAssignableFrom(propertyType) || ValueExpression.class.isAssignableFrom(propertyType)) {
                 editor = new ValueBindingPropertyEditor();
-            else if (MethodBinding.class.isAssignableFrom(propertyType)
-            || MethodExpression.class.isAssignableFrom(propertyType))
+            } else if (MethodBinding.class.isAssignableFrom(propertyType) || MethodExpression.class.isAssignableFrom(propertyType)) {
                 editor = new MethodBindingPropertyEditor();
+            }
         } else {
             if (isExportedPropertyEditorClass(propertyEditorClass)) {
                 try {
@@ -97,24 +109,19 @@ public final class PropertyEditorResolverImpl implements PropertyEditorResolver 
                 }
             }
         }
-        
+
         return editor;
     }
-    
-    
-    private final static String[] exportedPropertyEditorPackageNames = new String[] {
-        "com.sun.rave.propertyeditors",
-        "com.sun.rave.propertyeditors.css",
-        "com.sun.rave.propertyeditors.binding",
-        "com.sun.jsfcl.std.css"
-    };
-    
+
+
+    private static final String[] exportedPropertyEditorPackageNames = new String[]{"com.sun.rave.propertyeditors", "com.sun.rave.propertyeditors.css", "com.sun.rave.propertyeditors.binding", "com.sun.jsfcl.std.css"};
+
     private static boolean isExportedPropertyEditorClass(Class propertyEditorClass) {
         for (String name : exportedPropertyEditorPackageNames) {
-            if (name.equals(propertyEditorClass.getPackage().getName()))
+            if (name.equals(propertyEditorClass.getPackage().getName())) {
                 return true;
+            }
         }
         return false;
     }
-    
 }
