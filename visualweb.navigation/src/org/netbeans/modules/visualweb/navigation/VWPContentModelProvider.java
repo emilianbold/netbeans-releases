@@ -17,7 +17,6 @@ import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectUtils;
 import org.netbeans.modules.web.jsf.navigation.pagecontentmodel.PageContentModel;
 import org.netbeans.modules.web.jsf.navigation.pagecontentmodel.PageContentModelProvider;
 import org.openide.filesystems.FileChangeAdapter;
-import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 
@@ -26,7 +25,6 @@ import org.openide.filesystems.FileObject;
  * @author joelle
  */
 public class VWPContentModelProvider implements PageContentModelProvider{
-    private FacesModel facesModel;
     private VWPContentModel vwpContentModel;
     private Map<FileObject,VWPContentModel> map = new HashMap<FileObject,VWPContentModel>();
     
@@ -44,7 +42,7 @@ public class VWPContentModelProvider implements PageContentModelProvider{
         if ( JsfProjectUtils.isJsfProjectFile(fileObject) ) {
             FacesModelSet modelset = FacesModelSet.getInstance(fileObject);
             if( modelset !=  null ){
-                facesModel = modelset.getFacesModel(fileObject);
+                FacesModel facesModel = modelset.getFacesModel(fileObject);
                 if ( facesModel != null ) {
                     model =  new VWPContentModel(facesModel);
                     map.put(fileObject, model);
