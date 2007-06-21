@@ -50,6 +50,7 @@ import org.netbeans.spi.project.ProjectConfiguration;
 import org.netbeans.spi.project.ProjectConfigurationProvider;
 import org.openide.awt.DynamicMenuContent;
 import org.openide.awt.Mnemonics;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.MultiFileSystem;
@@ -211,8 +212,9 @@ public class ActiveConfigAction extends CallableSystemAction implements ContextA
             INSTANCE = this;
             fragment = FileUtil.createMemoryFileSystem();
             try {
-                FileUtil.createData(fragment.getRoot(), "Toolbars/Build/org-netbeans-modules-project-ui-actions-ActiveConfigAction.shadow"). // NOI18N
-                        setAttribute("originalFile", "Actions/Project/org-netbeans-modules-project-ui-actions-ActiveConfigAction.instance"); // NOI18N
+                FileObject f = FileUtil.createData(fragment.getRoot(), "Toolbars/Build/org-netbeans-modules-project-ui-actions-ActiveConfigAction.shadow"); // NOI18N
+                f.setAttribute("originalFile", "Actions/Project/org-netbeans-modules-project-ui-actions-ActiveConfigAction.instance"); // NOI18N
+                f.setAttribute("position", 80); // NOI18N
             } catch (IOException e) {
                 throw new AssertionError(e);
             }
