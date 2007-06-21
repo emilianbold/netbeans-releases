@@ -36,7 +36,6 @@ import org.openide.DialogDescriptor;
 import org.openide.loaders.DataObject;
 import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.windows.Mode;
 import org.netbeans.api.project.Project;
 import org.openide.util.RequestProcessor;
 import org.openide.ErrorManager;
@@ -56,13 +55,13 @@ public class I18nManager {
     private I18nSupport support;
 
     /** Weak reference to i18n panel. */
-    private WeakReference i18nPanelWRef = new WeakReference(null);
+    private WeakReference<I18nPanel> i18nPanelWRef = new WeakReference<I18nPanel>(null);
     
     /** Weak reference to top component in which internationalizing will be provided. */
-    private WeakReference dialogWRef = new WeakReference(null);
+    private WeakReference<Dialog> dialogWRef = new WeakReference<Dialog>(null);
     
     /** Weak reference to caret in editor pane. */
-    private WeakReference caretWRef;
+    private WeakReference<Caret> caretWRef;
 
     /** Found hard coded string. */
     private HardCodedString hcString;
@@ -103,13 +102,13 @@ public class I18nManager {
         }
 
         // initialize the component
-        final EditorCookie ec = (EditorCookie)sourceDataObject.getCookie(EditorCookie.class);
+        final EditorCookie ec = sourceDataObject.getCookie(EditorCookie.class);
         if(ec == null)
             return;
 
         // Add i18n panel to top component.
-        getDialog(sourceDataObject);;
-        final I18nPanel i18nPanel = ((I18nPanel)i18nPanelWRef.get());
+        getDialog(sourceDataObject);
+        final I18nPanel i18nPanel = i18nPanelWRef.get();
         i18nPanel.showBundleMessage("TXT_SearchingForStrings");
         i18nPanel.getCancelButton().requestFocusInWindow();
         
@@ -156,7 +155,7 @@ public class I18nManager {
         }
 
         // Keep only weak ref to caret, the strong one maintains editor pane itself.
-        caretWRef = new WeakReference(panes[0].getCaret());
+        caretWRef = new WeakReference<Caret>(panes[0].getCaret());
     }
     
     /** Highlights found hasrdcoded string. */
@@ -168,7 +167,7 @@ public class I18nManager {
         }
         
         // Highlight found hard coded string.
-        Caret caret = (Caret)caretWRef.get();
+        Caret caret = caretWRef.get();
         
         if(caret != null) {
             caret.setDot(hStr.getStartPosition().getOffset());
@@ -192,7 +191,7 @@ public class I18nManager {
     /** Fills values presented in internationalize dialog. */
     private void fillDialogValues() {
         // It has to work this way, at this time the strong reference in top component have to exist.
-        I18nPanel i18nPanel = (I18nPanel)i18nPanelWRef.get();
+        I18nPanel i18nPanel = i18nPanelWRef.get();
 
         i18nPanel.setI18nString(support.getDefaultI18nString(hcString));
         
@@ -205,7 +204,7 @@ public class I18nManager {
         
         try {
             // To call weak without check have to be save here cause strong reference in the top component have to exist.
-            i18nString = ((I18nPanel)i18nPanelWRef.get()).getI18nString();
+            i18nString = i18nPanelWRef.get().getI18nString();
         } catch (IllegalStateException e) {
             NotifyDescriptor.Message nd = new NotifyDescriptor.Message(
                 I18nUtil.getBundle().getString("EXC_BadKey"), NotifyDescriptor.ERROR_MESSAGE);
@@ -236,8 +235,8 @@ public class I18nManager {
             highlightHCString();
             fillDialogValues();
         } else {
-            ((I18nPanel)i18nPanelWRef.get()).showBundleMessage("TXT_NoMoreStrings");
-            ((I18nPanel)i18nPanelWRef.get()).getCancelButton().requestFocusInWindow();
+            i18nPanelWRef.get().showBundleMessage("TXT_NoMoreStrings");
+            i18nPanelWRef.get().getCancelButton().requestFocusInWindow();
         }
     }
     
@@ -270,8 +269,8 @@ public class I18nManager {
     private void getDialog(DataObject sourceDataObject) {
         Project project = Util.getProjectFor(sourceDataObject);
 
-        Dialog dialog = (Dialog) dialogWRef.get();
-        I18nPanel i18nPanel = (I18nPanel)i18nPanelWRef.get();
+        Dialog dialog = dialogWRef.get();
+        I18nPanel i18nPanel = i18nPanelWRef.get();
 
         // Dialog was not created yet or garbaged already.
         if(i18nPanel == null) {
@@ -302,7 +301,7 @@ public class I18nManager {
             i18nPanel.getCancelButton().addActionListener(listener);
             
             // Reset weak reference.
-            i18nPanelWRef = new WeakReference(i18nPanel);
+            i18nPanelWRef = new WeakReference<I18nPanel>(i18nPanel);
 
         } else {
 //            i18nPanel.setProject(project);
@@ -321,7 +320,7 @@ public class I18nManager {
                 DialogDescriptor.DEFAULT_ALIGN, null, null);
             dialog = DialogDisplayer.getDefault().createDialog(dd);
             dialog.setLocation(80, 80);
-            dialogWRef = new WeakReference(dialog);
+            dialogWRef = new WeakReference<Dialog>(dialog);
         }
 
         dialog.setVisible(true); 
@@ -331,12 +330,12 @@ public class I18nManager {
      * sets caret visible in editor part. */
     private void showDialog() {
         // Open dialog if available
-        Dialog dialog = (Dialog) dialogWRef.get();
+        Dialog dialog = dialogWRef.get();
         if (dialog != null)
             dialog.setVisible(true);
 
         // Set caret visible.
-        Caret caret = (Caret)caretWRef.get();
+        Caret caret = caretWRef.get();
         if(caret != null) {
             if(!caret.isVisible())
                 caret.setVisible(true);
@@ -346,7 +345,7 @@ public class I18nManager {
     /** Closes dialog. In our case removes <code>I18nPanel</code> from top component
      * and 'reconstruct it' to it's original layout. */
     private void closeDialog() {
-        Dialog dialog = (Dialog) dialogWRef.get();
+        Dialog dialog = dialogWRef.get();
         if (dialog != null)
             dialog.setVisible(false);
     }
