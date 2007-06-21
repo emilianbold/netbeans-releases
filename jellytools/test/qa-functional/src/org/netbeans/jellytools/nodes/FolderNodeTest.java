@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.jellytools.nodes;
@@ -74,6 +74,10 @@ public class FolderNodeTest extends org.netbeans.jellytools.JellyTestCase {
     public static void main(java.lang.String[] args) {
         junit.textui.TestRunner.run(suite());
     }
+    
+    // "Confirm Object Deletion"
+    private static final String confirmTitle = Bundle.getString("org.openide.explorer.Bundle",
+                                                                "MSG_ConfirmDeleteObjectTitle"); // NOI18N
     
     /** Test case setup. */
     protected void setUp() {
@@ -166,9 +170,7 @@ public class FolderNodeTest extends org.netbeans.jellytools.JellyTestCase {
         sample2Node.copy();
         sample1Node.paste();
         new FolderNode(sample1Node, "sample2_1").delete();  // NOI18N
-        // "Safe Delete"
-        String safeDeleteTitle = Bundle.getString("org.netbeans.modules.refactoring.spi.impl.Bundle", "LBL_SafeDel"); // NOI18N
-        new NbDialogOperator(safeDeleteTitle).ok();
+        new NbDialogOperator(confirmTitle).yes();
     }
     
     /** Test cut. */
@@ -191,7 +193,7 @@ public class FolderNodeTest extends org.netbeans.jellytools.JellyTestCase {
     public void testDelete() {
         FolderNode folderNode = new FolderNode(new SourcePackagesNode("SampleProject"), "sample1"); // NOI18N
         folderNode.delete();
-        Utils.closeSafeDeleteDialog();
+        Utils.closeConfirmDialog();
     }
     
     /** Test rename */

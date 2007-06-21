@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.jellytools.nodes;
@@ -28,6 +28,7 @@ import org.netbeans.jellytools.SaveAsTemplateOperator;
 import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jellytools.actions.CopyAction;
 import org.netbeans.jellytools.actions.SaveAllAction;
+import org.netbeans.jellytools.properties.PropertySheetOperator;
 import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
 import org.netbeans.jemmy.operators.JDialogOperator;
@@ -145,7 +146,7 @@ public class PropertiesNodeTest extends JellyTestCase {
     /** Test delete */
     public void testDelete() {
         propertiesNode.delete();
-        Utils.closeSafeDeleteDialog();
+        Utils.closeConfirmDialog();
     }
     
     /** Test rename */

@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -61,6 +61,8 @@ public class PasteActionTest extends JellyTestCase {
         TestRunner.run(suite());
     }
     
+    // "Confirm Object Deletion"
+    private static final String confirmTitle = Bundle.getString("org.openide.explorer.Bundle", "MSG_ConfirmDeleteObjectTitle");
     private static Node sample1Node;
     private static final String SAMPLE_FILE = "properties.properties";  //NOI18N
     private static final String PASTED_FILE = "properties1.properties";  //NOI18N
@@ -76,9 +78,7 @@ public class PasteActionTest extends JellyTestCase {
     public void tearDown() {
         Node pastedNode = new Node(sample1Node, PASTED_FILE);
         new DeleteAction().perform(pastedNode); 
-        // "Safe Delete"
-        String safeDeleteTitle = Bundle.getString("org.netbeans.modules.refactoring.spi.impl.Bundle", "LBL_SafeDel"); // NOI18N
-        new NbDialogOperator(safeDeleteTitle).ok();
+        new NbDialogOperator(confirmTitle).yes();
         pastedNode.waitNotPresent();
     }
 
