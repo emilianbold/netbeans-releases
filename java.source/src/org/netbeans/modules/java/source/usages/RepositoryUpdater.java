@@ -1952,10 +1952,13 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 toCancel = this.tasks.toArray (new Work[this.tasks.size()]);
             }
             for (Work w : toCancel) {
-                if (w.workType == WorkType.COMPILE) {
+                switch (w.workType) {
+                    case COMPILE:
+                    case COMPILE_WITH_DEPENDENCIES:
                     w = new SingleRootWork (WorkType.DELETE,((SingleRootWork)w).file,
                         ((SingleRootWork)w).root,((SingleRootWork)w).isFolder,
                         w.latch);
+                    break;
                 }
                 CompileWorker cw = new CompileWorker (w);
                 try {
