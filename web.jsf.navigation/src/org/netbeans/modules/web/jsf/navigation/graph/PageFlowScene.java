@@ -99,7 +99,7 @@ public class PageFlowScene extends GraphPinScene<Page,NavigationCaseEdge,Pin> {
     private LayerWidget backgroundLayer = new LayerWidget(this);
     private LayerWidget mainLayer = new LayerWidget(this);
     private LayerWidget connectionLayer = new LayerWidget(this);
-    
+
     public LayerWidget getConnectionLayer() {
         return connectionLayer;
     }
@@ -280,15 +280,16 @@ public class PageFlowScene extends GraphPinScene<Page,NavigationCaseEdge,Pin> {
                 ActionFactory.createInplaceEditorAction( new PageNodeTextFieldInplaceEditor(nodeWidget) ));
         
         mainLayer.addChild(nodeWidget);
-        
+        WidgetAction actionMapAction = createActionMapAction(node);
+        if ( actionMapAction != null )
+            nodeWidget.getActions().addAction( actionMapAction );
         nodeWidget.getHeader().getActions().addAction(createObjectHoverAction());
         nodeWidget.getActions().addAction(selectAction);
         nodeWidget.getActions().addAction(moveAction);
-        nodeWidget.getActions().addAction( createActionMapAction(node));
-                
-                if ( node.getPinNodes().size() == 0 ){
-                    nodeWidget.setMinimized(true);
-                }
+        
+        if ( node.getPinNodes().size() == 0 ){
+            nodeWidget.setMinimized(true);
+        }
         
         return nodeWidget;
     }
@@ -299,13 +300,18 @@ public class PageFlowScene extends GraphPinScene<Page,NavigationCaseEdge,Pin> {
         Action[] actions = page.getActions(true);
         for( Action action : actions ){
             KeyStroke keyStroke = (KeyStroke) action.getValue(javax.swing.Action.ACCELERATOR_KEY);
-            inputMap.put(keyStroke, action.toString());
-            actionMap.put(action.toString(), action);
+            if ( keyStroke != null ) {
+                inputMap.put(keyStroke, action.toString());
+                actionMap.put(action.toString(), action);
+            }
         }
-        return  ActionFactory.createActionMapAction(inputMap, actionMap);
+        if (actionMap.size() < 1 ) {
+            return null;
+        }
         
-    }
+        return  ActionFactory.createActionMapAction(inputMap, actionMap);
     
+    }
     
     private Map<VMDNodeWidget,Point> nodeWidget2Point = new HashMap<VMDNodeWidget,Point>();
     
