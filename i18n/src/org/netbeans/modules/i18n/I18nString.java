@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -105,6 +105,7 @@ public class I18nString {
     /**
      * Cloning must use copy contructors.
      */
+    @Override
     public Object clone() {
         return new I18nString(this);
     }
@@ -189,7 +190,7 @@ public class I18nString {
 
         FileObject fo = getSupport().getResourceHolder().getResource().getPrimaryFile();
         ClassPath cp = Util.getExecClassPath(sourceDataObject.getPrimaryFile(), fo); 
-        Map map = new HashMap(4);
+        Map<String,String> map = new HashMap<String,String>(4);
 
         map.put("key", getKey()); // NOI18N
         map.put("bundleNameSlashes", cp.getResourceName( fo, '/', false ) ); // NOI18N
