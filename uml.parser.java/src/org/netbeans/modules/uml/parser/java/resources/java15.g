@@ -765,10 +765,10 @@ annotationBlock
 // This is the body of an enum. You can have zero or more enum constants
 // followed by any number of fields like a regular class
 enumBlock
-	:	LCURLY!
-			( enumConstant ( options{greedy=true;}: COMMA! enumConstant )* ( COMMA! )? )?
-			( SEMI! ( classField | SEMI! )* )?
-		RCURLY!
+	:	l:LCURLY {#l.setType(START_CLASS_BODY);}
+			(options{greedy=true;}:  ec:enumConstant  cm:COMMA! {#ec.addChild(#cm);})* (enumConstant)?    
+			( SEMI ( classField | SEMI! )* )?
+		r:RCURLY {#r.setType(END_CLASS_BODY);}
 		{#enumBlock = #([OBJBLOCK, "OBJBLOCK"], #enumBlock);}
 	;
 

@@ -332,17 +332,21 @@ annotationBlock
 enumBlock
    : #(	OBJBLOCK
 
-        { mController.stateBegin("Body"); }
-        ( enumConstantDef )*
-	( ctorDef
-	| methodDef
-	| variableDef
-	| typeDefinition
-	| #(STATIC_INIT { mController.stateBegin("Static Initializer"); } slist[""] { mController.stateEnd(); })
-	| #(INSTANCE_INIT slist[""])
-	)*
+        s:START_CLASS_BODY { mController.tokenFound(#s, "Class Body Start"); }
 
+        { mController.stateBegin("Body"); }
+         ( enumConstantDef )* 
+         ( sm:SEMI {mController.tokenFound(#sm, "Literal Section Terminator"); } 
+                ( ctorDef
+                | methodDef
+                | variableDef
+                | typeDefinition
+                | #(STATIC_INIT { mController.stateBegin("Static Initializer"); } slist[""] { mController.stateEnd(); })
+                | #(INSTANCE_INIT slist[""])
+                )*
+          )?
         { mController.stateEnd(); }
+        e:END_CLASS_BODY   { mController.tokenFound(#e, "Class Body End"); }
       )
    ;
 
@@ -441,8 +445,8 @@ annotationFieldDecl
 // TODO: Handle enum values with arguments
 enumConstantDef
 { mController.stateBegin("Enum Member"); }
-   : #(ENUM_CONSTANT_DEF annotations n:IDENT { mController.tokenFound(#n, "Name"); } (elist)? (enumConstantBlock)?)
-     
+   : #(ENUM_CONSTANT_DEF annotations n:IDENT { mController.tokenFound(#n, "Name"); } (elist)? (enumConstantBlock)? (cm:COMMA {mController.tokenFound(#cm, "Literal Separator");})? )  
+
      { mController.stateEnd(); }
    ;
 

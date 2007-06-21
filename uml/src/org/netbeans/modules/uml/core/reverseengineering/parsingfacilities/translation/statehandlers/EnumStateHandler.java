@@ -134,7 +134,11 @@ public class EnumStateHandler extends ClassStateHandler
                     (m_DiscoverType == true))
        	    	{
        	    		m_Type.addToken(pToken);
-       	    	}
+       	    	} 
+		else if (tokenType.equals("Literal Section Terminator"))
+		{
+		    createTokenDescriptor("Literal Section Terminator", pToken);
+		}
        	    	else
        	    	{
        	    		super.processToken(pToken, language);

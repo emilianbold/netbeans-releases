@@ -136,6 +136,10 @@ public class EnumMemberStateHandler extends AttributeStateHandler
             recordStartToken(pToken);
             handleComment(pToken);
         } 
+	else if("Literal Separator".equals(tokenType))
+	{
+	    createTokenDescriptor("Literal Separator", pToken);
+        } 
 	else 
 	{
 	    super.processToken(pToken, language);

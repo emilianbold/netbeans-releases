@@ -36,6 +36,8 @@ import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.Operation;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IParameter;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.Parameter;
+import org.netbeans.modules.uml.core.metamodel.core.constructs.IEnumeration;
+import org.netbeans.modules.uml.core.metamodel.core.constructs.IEnumerationLiteral;
 
 /** 
  */
@@ -69,6 +71,8 @@ public class ElementMatcher {
 	    elems = Merger.getAttributes(scopingType);
 	} else if (elem instanceof IOperation) {
 	    elems = Merger.getOperations(scopingType);
+	} else if (elem instanceof IEnumerationLiteral) {
+	    elems = Merger.getEnumLiterals(scopingType);
 	} else if (elem instanceof IClassifier) {
 	    elems = Merger.getSubTypes(scopingType);
 	}

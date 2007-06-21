@@ -107,7 +107,15 @@ public class ElementDescriptor
     */
    public long getEndPos()
    {
-       long pos = getPosition("EndPosition");
+       long pos = -1;
+       if ("EnumerationLiteral".equals(getModelElemType())) 
+       {
+	   pos = getPosition("Literal Separator");
+       }
+       else
+       {
+	   pos = getPosition("EndPosition");
+       }
        if (pos == -1) {
 	   if (tokenDescriptors == null || tokenDescriptors.size() == 0)
 	   {
@@ -130,6 +138,10 @@ public class ElementDescriptor
 			   pos = spos;
 		       }
 		   }
+	       }
+	       if (pos > -1) 
+	       {
+		   pos = pos - 1;
 	       }
 	   }
        }
@@ -243,9 +255,17 @@ public class ElementDescriptor
    }
    
 
-    public List getOwnedElements()
+    public List getOwnedElements(boolean notLiterals)
    {
-      String query = "./UML:Element.ownedElement/*";
+      String query;
+      if (notLiterals) 
+      {
+	  query = "./UML:Element.ownedElement/*";
+      } 
+      else 
+      {
+	  query = "./UML:Enumeration.literal/UML:EnumerationLiteral";
+      } 
       //ArrayList < Node > retVal = new ArrayList < Node > ();
       List result = node.selectNodes(query);
       

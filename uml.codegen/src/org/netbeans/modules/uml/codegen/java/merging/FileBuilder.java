@@ -127,7 +127,7 @@ public class FileBuilder
    {
       String modelElemType = newElem.getModelElemType();
       long insertPos = -1;
-      List<ElementDescriptor> c = getElementsSorted(oldParentElem);
+      List<ElementDescriptor> c = getElementsSorted(oldParentElem, true);
       ElementDescriptor oldElem = oldParentElem;
       if ("Attribute".equals(modelElemType))
       {
@@ -135,8 +135,19 @@ public class FileBuilder
 	      oldElem = c.get(0);
 	      mods.add(new ModDesc(ModDesc.INSERT_BEFORE, newElem, oldElem, insertPos, HEADER_AND_BODY));
 	  } else {
-	      insertPos = getSrcTopPosition(oldParentElem);
+	      insertPos = getSrcTopPosition(oldParentElem, true);
 	      mods.add(new ModDesc(ModDesc.INSERT_AFTER, newElem, oldElem, insertPos, HEADER_AND_BODY));
+	  }
+      }
+      else if ("EnumerationLiteral".equals(modelElemType))
+      {
+	  List<ElementDescriptor> literals = getElementsSorted(oldParentElem, false);
+	  if ( !( literals == null || literals.size() == 0)) {
+	      oldElem = literals.get(0);
+	      mods.add(new ModDesc(ModDesc.INSERT_BEFORE, newElem, oldElem, insertPos, HEADER_AND_BODY, -2));
+	  } else {
+	      insertPos = getSrcTopPosition(oldParentElem, false);
+	      mods.add(new ModDesc(ModDesc.INSERT_AFTER, newElem, oldElem, insertPos, HEADER_AND_BODY, -2));
 	  }
       }
       else  //if ("Operation".equals(modelElemType))
@@ -144,7 +155,7 @@ public class FileBuilder
 	  if ( !( c == null || c.size() == 0)) {
 	      oldElem = c.get(c.size() - 1);
 	  } else {
-	      insertPos = getSrcTopPosition(oldParentElem);
+	      insertPos = getSrcTopPosition(oldParentElem, true);
 	  }
 	  mods.add(new ModDesc(ModDesc.INSERT_AFTER, newElem, oldElem, insertPos, HEADER_AND_BODY));      
       } 
@@ -170,6 +181,22 @@ public class FileBuilder
 	    mods.add(new ModDesc(ModDesc.INSERT_BEFORE, newElem, oldElem, -1, HEADER_AND_BODY, pr));
 	}      
     }
+
+    public void insertLiteralSectionTerminator(ElementDescriptor newElem, ElementDescriptor oldElem) 
+    {
+	long insertPos = getSrcTopPosition(oldElem, true);
+	ModDesc m = new ModDesc(ModDesc.INSERT_AFTER, 
+				newElem.getPosition("Literal Section Terminator"),
+				newElem.getPosition("Literal Section Terminator"),
+				-1,
+				-1,
+				insertPos,
+				HEADER_AND_BODY,
+				-1,
+				";");
+	    mods.add(m);
+    }
+
 
    /**
     *  client calls this method to indicate that it finished
@@ -223,7 +250,11 @@ public class FileBuilder
       long insertPos = -1;
       if ("Attribute".equals(modelElemType))
       {
-         insertPos = getSrcTopPosition(container);
+         insertPos = getSrcTopPosition(container, true);
+      }
+      else if ("EnumerationLiteral".equals(modelElemType))
+      {
+         insertPos = getSrcTopPosition(container, false);
       }
       else  //if ("Operation".equals(modelElemType))
       {
@@ -235,16 +266,36 @@ public class FileBuilder
    
    // Returns the position of the byte right next to the first left brace '{'.
    // In case, the left brace is not found, 0 is returned.
-   private long getSrcTopPosition(ElementDescriptor container) 
+   private long getSrcTopPosition(ElementDescriptor container, boolean notForLiteral) 
    {
+       long pos = -1 ;
+       if (notForLiteral) 
+       {
+	   pos = container.getPosition("Literal Section Terminator");
+	   if (pos > -1) 
+	   {
+	       return pos;
+	   } 
+	   else 
+	   {
+	       List<ElementDescriptor> literals = getElementsSorted(container, false);
+	       if ( !( literals == null || literals.size() == 0)) {
+		   pos = literals.get(literals.size() - 1).getEndPos();
+		   if (pos > -1) 
+		   {
+		       return pos;
+		   } 
+	       }	       
+	   }
+       }
        return container.getPosition("Body Start");
    }
       
 
-   private static List<ElementDescriptor> getElementsSorted(ElementDescriptor container) 
+   private static List<ElementDescriptor> getElementsSorted(ElementDescriptor container, boolean notLiterals) 
    {
-       ArrayList<ElementDescriptor> res = new ArrayList<ElementDescriptor>();
-       List nodes = container.getOwnedElements();
+       ArrayList<ElementDescriptor> res = new ArrayList<ElementDescriptor>();       
+       List nodes = container.getOwnedElements(notLiterals);
        if (nodes == null) {
 	   return null;
        }
@@ -311,10 +362,9 @@ public class FileBuilder
    private static long getElemHeaderEndPosition(ElementDescriptor elem)
    {
       String modelElemType = elem.getModelElemType();
-      long pos = elem.getPosition("Body Start");
+      long pos = elem.getPosition("Body Start") - 1;
       if (pos < 0) 
-	  pos = elem.getPosition("EndPosition");
-      pos = pos -1;
+	  pos = elem.getEndPos();
       return pos;
    }
    
@@ -596,6 +646,27 @@ public class FileBuilder
 	private String patchContent;
 
 	public ModDesc(int type, 
+		       long newStart,
+		       long newEnd,
+		       long oldStart,
+		       long oldEnd,
+		       long oldEdPoint,
+		       int scope,
+		       int pr,
+		       String patchContent)
+	{
+	    this.type = type;
+	    this.newStart = newStart;
+	    this.newEnd = newEnd;
+	    this.oldStart = oldStart;
+	    this.oldEnd = oldEnd;
+	    this.oldEdPoint = oldEdPoint;
+	    this.scope = scope;
+	    this.pr = pr;
+	    this.patchContent = patchContent;
+	}
+
+	public ModDesc(int type, 
 		       ElementDescriptor newElem,
 		       ElementDescriptor oldElem,
 		       long oldEdPoint,
@@ -661,6 +732,30 @@ public class FileBuilder
 	 */
 	void storePatchContent(String patch) {
 	    patchContent = patch;
+	    if (newElem != null && type != ModDesc.REMOVE)
+	    {
+		if (type == ModDesc.REPLACE) 
+		{
+		    Node o = oldElem.getNode();
+		    if (o != null) 
+		    {
+			if ("EnumerationLiteral".equals(oldElem.getModelElemType()) 
+			    && oldElem.getPosition("Literal Separator") < 0)
+			{
+			    return;
+			}
+		    }
+		}
+		Node n = newElem.getNode();
+		if (n != null) 
+		{
+		    if ("EnumerationLiteral".equals(newElem.getModelElemType()) 
+			&& newElem.getPosition("Literal Separator") < 0)
+		    {
+			patchContent = patchContent + ",";
+		    }
+		}
+	    }
 	}
 
 	public String toString() {

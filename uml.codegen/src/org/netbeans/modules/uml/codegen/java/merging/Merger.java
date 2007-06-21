@@ -46,6 +46,10 @@ import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.Operation;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IParameter;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.Parameter;
+import org.netbeans.modules.uml.core.metamodel.core.constructs.IEnumeration;
+import org.netbeans.modules.uml.core.metamodel.core.constructs.Enumeration;
+import org.netbeans.modules.uml.core.metamodel.core.constructs.IEnumerationLiteral;
+import org.netbeans.modules.uml.core.metamodel.core.constructs.EnumerationLiteral;
 
 import org.netbeans.modules.uml.core.coreapplication.ICoreProduct;
 import org.netbeans.modules.uml.core.metamodel.core.constructs.Class;
@@ -311,7 +315,13 @@ public class Merger implements IUMLParserEventsSink {
      *  TBD with an element moved from one owner to another
      *  
      */
-    private void merge(IClassifier newClass, IClassifier oldClass) { 
+    private void merge(IClassifier newClass, IClassifier oldClass) 
+    { 
+
+	List<IEnumerationLiteral> newLits = getEnumLiterals(newClass);
+	List<IEnumerationLiteral> oldLits = getEnumLiterals(oldClass);
+	merge(newClass, oldClass, newLits, oldLits);
+	mergelLiteralSectionTerminators(newClass, oldClass);
 
 	List<IAttribute> newAttrs = getAttributes(newClass);
 	List<IAttribute> oldAttrs = getAttributes(oldClass);
@@ -434,6 +444,22 @@ public class Merger implements IUMLParserEventsSink {
 	}
     }
 
+    private void mergelLiteralSectionTerminators(IClassifier newClass, IClassifier oldClass) 
+    { 
+	if (newClass == null || oldClass == null) 
+	{
+	    return;
+	}
+	ElementDescriptor nd = new ElementDescriptor(newClass.getNode());
+	ElementDescriptor od = new ElementDescriptor(oldClass.getNode());
+	if ("Enumeration".equals(od.getModelElemType()) 
+	    && od.getPosition("Literal Section Terminator") < 0 
+	    && "Enumeration".equals(nd.getModelElemType())
+	    && nd.getPosition("Literal Section Terminator") > -1) 
+	{
+	    fileBuilder.insertLiteralSectionTerminator(nd, od);
+	}	
+    }
 
     private boolean addToMatched(HashSet<IElement> list, IElement elem) 
     {
@@ -510,6 +536,29 @@ public class Merger implements IUMLParserEventsSink {
 		    cacheElement(o);
 		}
 		res.add(o);
+	    }
+	}
+	return res;
+    }
+
+
+    protected static List<IEnumerationLiteral> getEnumLiterals(IClassifier cl) {
+	ArrayList<IEnumerationLiteral> res = new ArrayList<IEnumerationLiteral>();
+	String query = "./UML:Enumeration.literal/UML:EnumerationLiteral";
+	List lits = XMLManip.selectNodeList(cl.getNode(), query);
+	if (lits != null)
+	{
+	    Iterator iter = lits.iterator();
+	    while(iter.hasNext()) 
+	    { 
+		Node n = (Node)iter.next();
+		IEnumerationLiteral l = (IEnumerationLiteral)retrieveElement(n);
+		if (l == null) {
+		    l = new EnumerationLiteral();
+		    l.setNode(n);
+		    cacheElement(l);
+		}
+		res.add(l);
 	    }
 	}
 	return res;
