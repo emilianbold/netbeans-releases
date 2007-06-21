@@ -192,7 +192,7 @@ public class JsfFunctionalTest extends JellyTestCase{
         // verify
         EditorOperator facesEditor = getFacesConfig();
         String expected = "<managed-bean>";
-        assertTrue("faces-config.xml should not contain "+expected, facesEditor.contains(expected));
+        assertFalse("faces-config.xml should not contain "+expected, facesEditor.contains(expected));
     }
     
     /** Test adding JSF Managed Bean from faces-config.xml. */
