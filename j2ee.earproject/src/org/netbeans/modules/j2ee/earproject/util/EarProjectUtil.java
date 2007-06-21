@@ -51,7 +51,11 @@ public final class EarProjectUtil {
      * @see J2eeModule
      */
     public static boolean isDDCompulsory(String j2eeVersion) {
-        assert j2eeVersion != null;
+        // #103298
+        if (j2eeVersion == null) {
+            // what should we return?
+            return false;
+        }
         if (J2eeModule.J2EE_13.equals(j2eeVersion)
                 || J2eeModule.J2EE_14.equals(j2eeVersion)) {
             return true;
