@@ -69,34 +69,34 @@ public class J2ee15ProjectHelper extends J2eeProjectHelper {
     }
     
     
-    public String getPortComponentName() {
-        if (portComponentName == null) {
-            JavaSource source = JavaSource.forFileObject(getJavaSource());
-            
-            if (source != null)
-                portComponentName = getClassName(source);
-        }
-        
-        //System.out.println("J2ee15ProjectHelper.portComponentName = " + portComponentName);
-        return portComponentName;
-    }
-    
-    public String getServiceDescriptionName() {
-        if (serviceDescriptionName == null) {
-            JavaSource source = JavaSource.forFileObject(getJavaSource());
-            
-            if (source != null) {
-                serviceDescriptionName = getServiceName(source);
-                
-                if (serviceDescriptionName == null) {
-                    serviceDescriptionName = getPortComponentName() + SERVICE_SUFFIX;
-                }
-            }
-        }
-        
-        //System.out.println("J2ee15ProjectHelper.serviceDescriptionName = " + serviceDescriptionName);
-        return serviceDescriptionName;
-    }
+//    public String getPortComponentName() {
+//        if (portComponentName == null) {
+//            JavaSource source = JavaSource.forFileObject(getJavaSource());
+//            
+//            if (source != null)
+//                portComponentName = getClassName(source);
+//        }
+//        
+//        //System.out.println("J2ee15ProjectHelper.portComponentName = " + portComponentName);
+//        return portComponentName;
+//    }
+//    
+//    public String getServiceDescriptionName() {
+//        if (serviceDescriptionName == null) {
+//            JavaSource source = JavaSource.forFileObject(getJavaSource());
+//            
+//            if (source != null) {
+//                serviceDescriptionName = getServiceName(source);
+//                
+//                if (serviceDescriptionName == null) {
+//                    serviceDescriptionName = getPortComponentName() + SERVICE_SUFFIX;
+//                }
+//            }
+//        }
+//        
+//        //System.out.println("J2ee15ProjectHelper.serviceDescriptionName = " + serviceDescriptionName);
+//        return serviceDescriptionName;
+//    }
     
     public List<String> getAllServiceRefNames() {
         if (serviceRefNames == null) {
