@@ -23,7 +23,7 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 <filesystem>
     <folder name="Templates">
         <folder name="UML">
-            <folder name="CodeGeneration">            
+            <folder name="Code Generation">            
                 <folder name="Java">     
                     <file name="CompilationUnit.java" url="templates/java/CompilationUnit_java">
                         <attr name="template" boolvalue="true" />

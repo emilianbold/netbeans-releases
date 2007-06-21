@@ -40,6 +40,8 @@ import org.netbeans.modules.uml.util.StringTokenizer2;
  */
 public class DomainTemplatesRetriever 
 {
+    public final static String TEMPLATES_BASE_FOLDER = "Templates/UML/Code Generation"; // NOI18N
+    
     private static HashMap<String,List<DomainTemplate>> codeGenTemplates = null;
     
     public static void clear()
@@ -86,6 +88,10 @@ public class DomainTemplatesRetriever
                 continue;
             
             DomainObject domainObject = family.getDomainByName(tokens[1]);
+            
+            if (domainObject == null)
+                continue;
+            
             String elementType = domainObject.getModelElement();
             String stereotype = domainObject.getStereotype();
             
@@ -136,8 +142,7 @@ public class DomainTemplatesRetriever
             load((UMLProject)ProjectUtil.findReferencingProject(element));
         
         String eleType = element.getElementType();
-        ETList<String> stereotypes = 
-            element.getAppliedStereotypesAsString();
+        ETList<String> stereotypes = element.getAppliedStereotypesAsString();
         
         // Interface elements are also marked with the stereotype <<interface>>
         // but we don't need the extra demarcation so remove it from the list

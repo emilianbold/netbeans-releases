@@ -20,7 +20,9 @@ package org.netbeans.modules.uml.codegen.ui;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Enumeration;
 import javax.swing.DefaultComboBoxModel;
+import org.netbeans.modules.uml.codegen.dataaccess.DomainTemplatesRetriever;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.Repository;
@@ -57,18 +59,26 @@ public class TemplatesTableRowPanel extends javax.swing.JPanel
     {
         FileSystem fs = Repository.getDefault().getDefaultFileSystem ();
 	FileObject root = fs.getRoot().getFileObject(
-            "Templates/UML/CodeGeneration/Java"); // NOI18N
+            DomainTemplatesRetriever.TEMPLATES_BASE_FOLDER); // NOI18N
         
-        FileObject[] templateFiles = root.getChildren();
+        // FileObject[] templateFiles = root.getChildren();
         
         DefaultComboBoxModel selectionModel = 
             ((DefaultComboBoxModel)templateFileCombo.getModel());
         
         selectionModel.addElement("<None Selected>");
         
-        for (FileObject templateFile: templateFiles)
+        Enumeration templateFiles = root.getChildren(true);
+        
+        while (templateFiles.hasMoreElements())
         {
-            selectionModel.addElement(templateFile.getNameExt());
+            FileObject template = (FileObject)templateFiles.nextElement();
+
+            if (!template.isFolder())
+            {
+                selectionModel.addElement(template.getPath().substring(
+                    DomainTemplatesRetriever.TEMPLATES_BASE_FOLDER.length()+1));
+            }
         }
     }
     

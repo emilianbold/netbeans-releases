@@ -53,7 +53,7 @@ public class JavaCodegen implements ICodeGenerator
     public final static String JAVA_EXT = ".java"; // NOI18N
     public final static String DOT = "."; // NOI18N
     public final static String LOG_INDENT = "  ";
-    public final static String SEP = "/"; //System.getProperty("file.separator");
+    public final static String SEP = "/"; //System.getProperty("file.separator"); // NOI18N
 
     public JavaCodegen()
     {
@@ -66,10 +66,10 @@ public class JavaCodegen implements ICodeGenerator
 			 Properties props) 
     {
 	boolean backup = Boolean.valueOf(
-            props.getProperty("backup", "true")).booleanValue();
+            props.getProperty("backup", "true")).booleanValue(); // NOI18N
         
 	boolean genMarkers = Boolean.valueOf(
-            props.getProperty("generateMarkers", "true")).booleanValue();
+            props.getProperty("generateMarkers", "true")).booleanValue(); // NOI18N
 
         int errorsCount = 0;
 
@@ -127,7 +127,7 @@ public class JavaCodegen implements ICodeGenerator
             }
 
 	    task.log(task.TERSE, classifier.getElementType() + " " // NOI18N
-		     + classifier.getFullyQualifiedName(false) + " ... ", false);
+                + classifier.getFullyQualifiedName(false) + " ... ", false); // NOI18N
 
 	    try 
 	    {	    	    
@@ -155,10 +155,10 @@ public class JavaCodegen implements ICodeGenerator
 		FileSystem fs = Repository.getDefault().getDefaultFileSystem();
 	    
 		FileObject root = fs.getRoot()
-		    .getFileObject("Templates/UML/CodeGeneration/Java");
+		    .getFileObject(DomainTemplatesRetriever.TEMPLATES_BASE_FOLDER); // NOI18N
 		
 		String projTemplPath = clinfo.getOwningProject().getBaseDirectory()
-		    + File.separator + "templates" + File.separator + "java";
+		    + File.separator + "templates" + File.separator + "java"; // NOI18N
 		
 		List<DomainTemplate> domainTemplates = DomainTemplatesRetriever
 		    .retrieveTemplates(clinfo.getClassElement());
@@ -192,7 +192,7 @@ public class JavaCodegen implements ICodeGenerator
 			}
 			
 			templteFileObject.setAttribute(
-                            "javax.script.ScriptEngine", "freemarker");
+                            "javax.script.ScriptEngine", "freemarker"); // NOI18N
                     
 			DataObject templateDataObject = 
                             DataObject.find(templteFileObject);
@@ -211,11 +211,11 @@ public class JavaCodegen implements ICodeGenerator
 			    String extAdd = templateDataObject.getPrimaryFile().getExt();
 			    if (extAdd != null && extAdd.length() > 0) 
 			    {
-				extAdd = "." + extAdd;
+				extAdd = "." + extAdd; // NOI18N
 			    } 
 			    else
 			    {
-				extAdd = "";
+				extAdd = ""; // NOI18N
 			    }
 			    String targetPackageFolderPath = exportPkgFileObject.getPath();
 			    String targetFilePath = targetPackageFolderPath
@@ -253,7 +253,7 @@ public class JavaCodegen implements ICodeGenerator
 		    catch (IOException ex) 
 		    {
 			task.log(task.TERSE, getBundleMessage("MSG_ErrorWhileProcessingElement") // NOI18N
-				 + ex.getMessage());
+				 + " " + ex.getMessage()); // NOI18N
 			errorsCount++;
 			ex.printStackTrace();
 		    }					    
@@ -336,11 +336,11 @@ public class JavaCodegen implements ICodeGenerator
 				DataFolder.findFolder(exportPkgFileObject);
 			    
 			    HashMap parameters = new HashMap();
-			    parameters.put("classInfo", clinfo);
-			    parameters.put("modelElement", classifier);
+			    parameters.put("classInfo", clinfo); // NOI18N
+			    parameters.put("modelElement", classifier); // NOI18N
 			    Hashtable codegenOptions = new Hashtable();
-			    codegenOptions.put("GENERATE_MARKER_ID", genMarkers);
-			    parameters.put("codegenOptions", codegenOptions);
+			    codegenOptions.put("GENERATE_MARKER_ID", genMarkers); // NOI18N
+			    parameters.put("codegenOptions", codegenOptions); // NOI18N
 			    
 			    DataObject n = templateDataObject.createFromTemplate(
 				folder, 
@@ -361,7 +361,7 @@ public class JavaCodegen implements ICodeGenerator
 		    catch (Exception e) 
 		    {
 			task.log(task.TERSE, getBundleMessage("MSG_ErrorWhileSourceCodeGenerating") // NOI18N
-				 + e.getMessage());
+				 + " " + e.getMessage());
 			errorsCount++;
 			e.printStackTrace();
 			continue;
@@ -428,7 +428,7 @@ public class JavaCodegen implements ICodeGenerator
 		    catch (IOException ex) 
 		    {
 			task.log(task.TERSE, getBundleMessage("MSG_ErrorWhileSourceCodeMerging") // NOI18N
-				 + ex.getMessage());
+				 + " " + ex.getMessage());
 			errorsCount++;
 			ex.printStackTrace();
 		    }			
@@ -482,7 +482,7 @@ public class JavaCodegen implements ICodeGenerator
 	    catch (Exception e) 
 	    {
 		task.log(task.TERSE, getBundleMessage("MSG_ErrorWhileProcessingElement") // NOI18N
-                    + e.getMessage());
+                    + " " + e.getMessage());
 		errorsCount++;
 		e.printStackTrace();		
 	    }	    
@@ -558,7 +558,7 @@ public class JavaCodegen implements ICodeGenerator
     private String getTempGenerationTargetDir() 
 	throws IOException
     {		    
-	String tmpdir = System.getProperty("java.io.tmpdir")+"/generated_";	
+	String tmpdir = System.getProperty("java.io.tmpdir")+"/generated_"; // NOI18N
 	String trg = new File(tmpdir).getCanonicalPath()
 	    +((int)(Math.random() * 100000));
 	
@@ -572,9 +572,9 @@ public class JavaCodegen implements ICodeGenerator
 	throws IOException
     {
 	String pack = info.getPackageName();
-	String packPath = "";
+	String packPath = ""; // NOI18N
 	if (pack != null) {
-	    packPath = pack.replaceAll("\\.", SEP);
+	    packPath = pack.replaceAll("\\.", SEP); // NOI18N
 	}
 	File packDir = new File(dir.getCanonicalPath() + SEP + packPath);
 	File parent = guessedChild.getParentFile();

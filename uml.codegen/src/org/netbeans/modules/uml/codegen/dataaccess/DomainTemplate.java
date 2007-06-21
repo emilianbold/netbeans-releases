@@ -109,8 +109,7 @@ public class DomainTemplate
     
     public File getTemplateFile()
     {
-        return new File(System.getProperty("netbeans.user") + 
-            File.separatorChar + "CodeGenTemplates" + 
+        return new File(DomainTemplatesRetriever.TEMPLATES_BASE_FOLDER +
             File.separatorChar + getTemplateFilename());
     }
 

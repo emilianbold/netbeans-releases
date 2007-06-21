@@ -39,7 +39,6 @@ import org.openide.util.Exceptions;
 public class TemplateFamiliesHandler 
 {
     private static TemplateFamiliesHandler self = null;
-    
     private TemplateFamilies templateFamilies = null;
 
     public final static String configFolder = 

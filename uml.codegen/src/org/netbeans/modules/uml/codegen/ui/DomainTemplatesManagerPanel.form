@@ -15,29 +15,30 @@
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" attributes="0">
+              <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" attributes="0">
-                      <EmptySpace min="-2" pref="2" max="-2" attributes="0"/>
-                      <Component id="templatesTreePanel" min="-2" pref="158" max="-2" attributes="1"/>
-                      <EmptySpace min="14" pref="14" max="-2" attributes="0"/>
-                      <Component id="templatePropsPanel" min="-2" max="-2" attributes="0"/>
+                      <Component id="templatesTreePanel" min="-2" max="-2" attributes="1"/>
+                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                      <Component id="templatePropsPanel" max="32767" attributes="0"/>
                   </Group>
                   <Component id="jLabel1" alignment="0" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace max="32767" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Group type="102" alignment="0" attributes="0">
-              <Component id="jLabel1" min="-2" pref="17" max="-2" attributes="0"/>
+          <Group type="102" alignment="1" attributes="0">
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="templatePropsPanel" alignment="0" min="-2" max="-2" attributes="1"/>
-                  <Component id="templatesTreePanel" alignment="0" min="-2" max="-2" attributes="1"/>
+                  <Component id="templatesTreePanel" max="32767" attributes="1"/>
+                  <Component id="templatePropsPanel" alignment="0" max="32767" attributes="1"/>
               </Group>
-              <EmptySpace min="-2" pref="33" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -48,13 +49,15 @@
       <Layout>
         <DimensionLayout dim="0">
           <Group type="103" groupAlignment="0" attributes="0">
-              <Group type="102" alignment="0" attributes="0">
+              <Group type="102" alignment="1" attributes="0">
                   <Group type="103" groupAlignment="1" attributes="0">
-                      <Component id="treeScroll" alignment="0" pref="158" max="32767" attributes="1"/>
-                      <Group type="102" alignment="0" attributes="0">
-                          <Component id="addButton" min="-2" max="-2" attributes="1"/>
+                      <Component id="treeScroll" alignment="1" pref="164" max="32767" attributes="1"/>
+                      <Group type="102" alignment="1" attributes="0">
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="addButton" pref="73" max="32767" attributes="1"/>
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="removeButton" min="-2" max="-2" attributes="1"/>
+                          <EmptySpace min="-2" pref="4" max="-2" attributes="0"/>
                       </Group>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
@@ -64,11 +67,11 @@
         <DimensionLayout dim="1">
           <Group type="103" groupAlignment="0" attributes="0">
               <Group type="102" alignment="1" attributes="0">
-                  <Component id="treeScroll" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace max="32767" attributes="0"/>
-                  <Group type="103" groupAlignment="3" attributes="0">
-                      <Component id="addButton" alignment="3" min="-2" max="-2" attributes="0"/>
-                      <Component id="removeButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="treeScroll" pref="373" max="32767" attributes="0"/>
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Component id="removeButton" min="-2" max="-2" attributes="0"/>
+                      <Component id="addButton" alignment="0" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
               </Group>
@@ -119,32 +122,31 @@
           <Group type="103" groupAlignment="0" attributes="0">
               <Group type="102" attributes="0">
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <Group type="103" alignment="1" groupAlignment="1" attributes="0">
-                          <Component id="templatesTableScroll" alignment="1" pref="483" max="32767" attributes="0"/>
-                          <Group type="102" alignment="1" attributes="0">
-                              <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="stereotypeLabel" min="-2" max="-2" attributes="0"/>
-                                  <Component id="modelElementLabel" min="-2" max="-2" attributes="0"/>
-                                  <Component id="descriptionLabel" min="-2" max="-2" attributes="0"/>
-                              </Group>
-                              <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                              <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="stereotypeText" alignment="0" pref="373" max="32767" attributes="0"/>
-                                  <Component id="modelElementCombo" alignment="0" pref="373" max="32767" attributes="0"/>
-                                  <Component id="descriptionScroll" alignment="0" pref="373" max="32767" attributes="0"/>
-                              </Group>
+                      <Component id="templatesTableScroll" alignment="1" pref="517" max="32767" attributes="0"/>
+                      <Group type="102" alignment="1" attributes="0">
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Component id="stereotypeLabel" min="-2" max="-2" attributes="0"/>
+                              <Component id="modelElementLabel" min="-2" max="-2" attributes="0"/>
+                              <Component id="descriptionLabel" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Component id="stereotypeText" alignment="0" pref="444" max="32767" attributes="0"/>
+                              <Component id="modelElementCombo" alignment="0" pref="444" max="32767" attributes="0"/>
+                              <Component id="descriptionScroll" alignment="0" pref="444" max="32767" attributes="0"/>
                           </Group>
                       </Group>
-                      <Group type="102" alignment="0" attributes="0">
-                          <EmptySpace min="-2" pref="192" max="-2" attributes="0"/>
-                          <Component id="addRowButton" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                          <Component id="modifyRowButton" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                          <Component id="removeRowButton" min="-2" max="-2" attributes="0"/>
+                      <Component id="jLabel2" alignment="0" pref="517" max="32767" attributes="0"/>
+                      <Group type="102" alignment="1" attributes="0">
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="addRowButton" min="-2" pref="111" max="-2" attributes="1"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="modifyRowButton" min="-2" max="-2" attributes="1"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="removeRowButton" min="-2" pref="111" max="-2" attributes="0"/>
                       </Group>
                   </Group>
-                  <EmptySpace min="-2" max="-2" attributes="0"/>
+                  <EmptySpace max="-2" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
@@ -165,15 +167,17 @@
                       <Component id="descriptionLabel" min="-2" max="-2" attributes="0"/>
                       <Component id="descriptionScroll" min="-2" pref="82" max="-2" attributes="0"/>
                   </Group>
+                  <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                  <Component id="jLabel2" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
-                  <Component id="templatesTableScroll" min="-2" pref="139" max="-2" attributes="0"/>
-                  <EmptySpace type="separate" max="-2" attributes="0"/>
+                  <Component id="templatesTableScroll" min="-2" pref="141" max="-2" attributes="0"/>
+                  <EmptySpace type="unrelated" max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="3" attributes="0">
                       <Component id="removeRowButton" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="modifyRowButton" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="addRowButton" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <EmptySpace max="32767" attributes="0"/>
+                  <EmptySpace pref="71" max="32767" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
@@ -227,6 +231,9 @@
               </StringArray>
             </Property>
           </Properties>
+          <Events>
+            <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="modelElementComboItemStateChanged"/>
+          </Events>
         </Component>
         <Component class="javax.swing.JLabel" name="stereotypeLabel">
           <Properties>
@@ -236,6 +243,9 @@
           </Properties>
         </Component>
         <Component class="javax.swing.JTextField" name="stereotypeText">
+          <Events>
+            <EventHandler event="inputMethodTextChanged" listener="java.awt.event.InputMethodListener" parameters="java.awt.event.InputMethodEvent" handler="stereotypeTextInputMethodTextChanged"/>
+          </Events>
         </Component>
         <Component class="javax.swing.JLabel" name="descriptionLabel">
           <Properties>
@@ -259,6 +269,9 @@
                 <Property name="tabSize" type="int" value="4"/>
                 <Property name="wrapStyleWord" type="boolean" value="true"/>
               </Properties>
+              <Events>
+                <EventHandler event="inputMethodTextChanged" listener="java.awt.event.InputMethodListener" parameters="java.awt.event.InputMethodEvent" handler="descriptionTextAreaInputMethodTextChanged"/>
+              </Events>
             </Component>
           </SubComponents>
         </Container>
@@ -309,6 +322,9 @@
               <ResourceString bundle="org/netbeans/modules/uml/codegen/ui/Bundle.properties" key="BTN_Modify_Row" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
             <Property name="actionCommand" type="java.lang.String" value="MODIFY_ROW"/>
+            <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+              <Dimension value="[111, 23]"/>
+            </Property>
           </Properties>
         </Component>
         <Component class="javax.swing.JButton" name="removeRowButton">
@@ -317,15 +333,22 @@
               <ResourceString bundle="org/netbeans/modules/uml/codegen/ui/Bundle.properties" key="BTN_Remove_Row" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
             <Property name="actionCommand" type="java.lang.String" value="REMOVE_ROW"/>
+            <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+              <Dimension value="[111, 23]"/>
+            </Property>
+          </Properties>
+        </Component>
+        <Component class="javax.swing.JLabel" name="jLabel2">
+          <Properties>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/uml/codegen/ui/Bundle.properties" key="LBL_Templates" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
           </Properties>
         </Component>
       </SubComponents>
     </Container>
     <Component class="javax.swing.JLabel" name="jLabel1">
       <Properties>
-        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
-          <ComponentRef name="templatesTreePanel"/>
-        </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/uml/codegen/ui/Bundle.properties" key="LBL_DomainObjects_PanelTitle" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
