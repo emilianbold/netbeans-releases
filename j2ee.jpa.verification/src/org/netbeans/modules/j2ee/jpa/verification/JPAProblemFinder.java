@@ -75,10 +75,15 @@ public abstract class JPAProblemFinder {
     private static JPAProblemFinder runningInstance = null;
     
     public JPAProblemFinder(FileObject file){
+        assert file != null;
         this.file = file;
     }
     
     public void run(final CompilationInfo info) throws Exception{
+        if (!"text/x-java".equals(file.getMIMEType())){ //NOI18N
+            return;
+        }
+
         if (runningInstance != null){
             runningInstance.cancel();
         }

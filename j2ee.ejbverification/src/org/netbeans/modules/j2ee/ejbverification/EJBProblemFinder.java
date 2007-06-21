@@ -55,10 +55,16 @@ public abstract class EJBProblemFinder {
     private static EJBProblemFinder runningInstance = null;
     
     public EJBProblemFinder(FileObject file){
+        assert file != null;
         this.file = file;
     }
     
     public void run(final CompilationInfo info) throws Exception{
+
+        if (!"text/x-java".equals(file.getMIMEType())){ //NOI18N
+            return;
+        }
+
         if (runningInstance != null){
             runningInstance.cancel();
         }
