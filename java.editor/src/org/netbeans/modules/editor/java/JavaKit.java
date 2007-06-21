@@ -130,6 +130,8 @@ public class JavaKit extends NbEditorKit {
     /* package */ static final String deleteNextCamelCasePosition = "delete-next-camel-case-position"; //NOI18N
     
     /* package */ static final String COMPILATION_CONTROLLER = "compilation-controller"; //NOI18N
+
+    /* package */ static final String REFORMAT_SHIFT = "reformat-shift"; //NOI18N
     
     static final long serialVersionUID =-5445829962533684922L;
     
@@ -526,10 +528,12 @@ public class JavaKit extends NbEditorKit {
 
                         public void run(CompilationController controller) throws Exception {
                             doc.putProperty(COMPILATION_CONTROLLER, controller);
+                            doc.putProperty(REFORMAT_SHIFT, 0);
                             try {
                                 JavaFormatAction.super.actionPerformed(evt, target);
                             } finally {
                                 doc.putProperty(COMPILATION_CONTROLLER, null);
+                                doc.putProperty(REFORMAT_SHIFT, null);
                             }
                         }
                     }, false);

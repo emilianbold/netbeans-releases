@@ -51,12 +51,14 @@ public class Reformatter {
     private Document doc;
     private int startOffset;
     private int endOffset;
+    private int shift;
 
-    public Reformatter(CompilationController controller, Document doc, int startOffset, int endOffset) {
+    public Reformatter(CompilationController controller, Document doc, int startOffset, int endOffset, int shift) {
         this.controller = controller;
         this.doc = doc;
         this.startOffset = startOffset;
         this.endOffset = endOffset;
+        this.shift = shift;
     }
     
     public boolean reformat() throws BadLocationException {
@@ -168,7 +170,7 @@ public class Reformatter {
                 if (sourceTS.moveNext() || sourceTS.isEmpty()) {
                     int sourceOffset = sourceTS.isEmpty() ? offset : sourceTS.offset() + offset;
                     if (sourceOffset >= startOffset && sourceOffset <= endOffset) {
-                        Position pos = doc.createPosition(sourceOffset);
+                        Position pos = doc.createPosition(sourceOffset + shift);
                         StringBuilder sb = new StringBuilder();
                         textTS.moveIndex(addStart);
                         while (textTS.moveNext() && textTS.index() <= addEnd)
@@ -193,51 +195,67 @@ public class Reformatter {
                     }
                 }
                 if (start >= 0) {
-                    Position startPos = doc.createPosition(start);
-                    Position endPos = doc.createPosition(end);
+                    Position startPos = doc.createPosition(start + shift);
+                    Position endPos = doc.createPosition(end + shift);
                     diffs.add(new Diff(startPos, endPos, null));
                 }
                 break;
             case 'c':                
                 start = -1;
                 end = -1;
-                String delta = null;
+                StringBuilder preDelta = new StringBuilder();
+                StringBuilder postDelta = new StringBuilder();
                 while (sourceTS.moveNext() && sourceTS.index() <= delEnd) {
                     int sourceOffset = sourceTS.offset() + offset;
                     int sourceEndOffset = sourceOffset + sourceTS.token().length();
-                    if (sourceEndOffset >= startOffset && sourceOffset < endOffset) {
+                    if (sourceEndOffset < startOffset) {
+                        preDelta.append(sourceTS.token().text());
+                    } else if (sourceOffset >= endOffset) {
+                        postDelta.append(sourceTS.token().text());                        
+                    } else {
                         if (start < 0) {
                             int d = startOffset - sourceOffset;
                             start = d > 0 ? startOffset : sourceOffset;
                             if (d > 0)
-                                delta = sourceTS.token().text().subSequence(0, d).toString();
+                                preDelta.append(sourceTS.token().text().subSequence(0, d));
                         }
-                        end = sourceEndOffset <= endOffset ? sourceEndOffset : endOffset;
+                        int d = sourceEndOffset - endOffset;
+                        end = d > 0 ? endOffset : sourceEndOffset;
+                        if (d > 0) {
+                            int len = sourceTS.token().text().length();
+                            postDelta.append(sourceTS.token().text().subSequence(len - d, len));
+                        }
                     }
                 }
                 if (start >= 0) {
-                    Position startPos = doc.createPosition(start);
-                    Position endPos = doc.createPosition(end);
+                    Position startPos = doc.createPosition(start + shift);
+                    Position endPos = doc.createPosition(end + shift);
                     StringBuilder sb = new StringBuilder();
                     textTS.moveIndex(addStart);
                     while (textTS.moveNext() && textTS.index() <= addEnd)
                         sb.append(textTS.token().text());
                     String s = sb.toString();
-                    if (delta != null) {
-                        List<String> deltaLines = new ArrayList<String>();
-                        getLines(delta, deltaLines, null);
+                    if (preDelta.length() > 0 || postDelta.length() > 0) {
                         List<String> sbLines = new ArrayList<String>();
                         getLines(s, sbLines, null);
-                        int idx = Math.min(deltaLines.size(), sbLines.size() - 1);
-                        String lastDelta = deltaLines.get(deltaLines.size() - 1);
-                        String sbLine = sbLines.get(idx);
-                        int i = 0;
-                        while (i < lastDelta.length() && i < sbLine.length() && lastDelta.charAt(i) == sbLine.charAt(i))
-                            i++;
+                        List<String> preDeltaLines = new ArrayList<String>();
+                        if (preDelta.length() > 0)
+                            getLines(preDelta.toString(), preDeltaLines, null);
+                        List<String> postDeltaLines = new ArrayList<String>();
+                        if (postDelta.length() > 0)
+                            getLines(postDelta.toString(), postDeltaLines, null);
+                        int idx = Math.min(preDeltaLines.size() - 1, sbLines.size() - 1);
                         sb = new StringBuilder();
-                        if (i < sbLine.length() - 1)
-                            sb.append(sbLine.substring(i));
-                        for (int j = idx + 1; j < sbLines.size(); j++)
+                        if (idx >= 0) {
+                            String lastPreDelta = preDeltaLines.get(preDeltaLines.size() - 1);
+                            String sbLine = sbLines.get(idx);
+                            int i = 0;
+                            while (i < lastPreDelta.length() && i < sbLine.length() && lastPreDelta.charAt(i) == sbLine.charAt(i))
+                                i++;
+                            if (i < sbLine.length())
+                                sb.append(sbLine.substring(i));
+                        }
+                        for (int j = idx + 1; j < sbLines.size() - postDeltaLines.size(); j++)
                             sb.append(sbLines.get(j));
                     }
                     diffs.add(new Diff(startPos, endPos, sb.length() > 0 ? sb.toString() : null));
@@ -267,7 +285,7 @@ public class Reformatter {
                 case 'i':
                     int lineOffset = lineOffsets.get(lineDelStart) + offset;
                     if (lineOffset >= startOffset && lineOffset <= endOffset) {
-                        Position pos = doc.createPosition(lineOffset);
+                        Position pos = doc.createPosition(lineOffset + shift);
                         StringBuilder sb = new StringBuilder();
                         for (int i = lineAddStart; i <= lineAddEnd; i++)
                             sb.append(textLines.get(i));
@@ -300,8 +318,8 @@ public class Reformatter {
                                 idx++;
                             end += idx;
                         }
-                        Position startPos = doc.createPosition(start);
-                        Position endPos = doc.createPosition(end);
+                        Position startPos = doc.createPosition(start + shift);
+                        Position endPos = doc.createPosition(end + shift);
                         diffs.add(new Diff(startPos, endPos, null));
                     }
                     break;

@@ -139,8 +139,8 @@ public class SourceUtils {
         return bound != null ? bound.bound : null;
     }
     
-    public static boolean reformat(CompilationController controller, Document doc, int startOffset, int endOffset) throws BadLocationException {
-        Reformatter r = new Reformatter(controller, doc, startOffset, endOffset);
+    public static boolean reformat(CompilationController controller, Document doc, int startOffset, int endOffset, int shift) throws BadLocationException {
+        Reformatter r = new Reformatter(controller, doc, startOffset, endOffset, shift);
         return r.reformat();
     }
 
