@@ -67,15 +67,7 @@ public class RefactoringTreeElement implements TreeElement {
     }
 
     public String getText(boolean isLogical) {
-        String text = refactoringElement.getDisplayText();
-        if (refactoringElement.getStatus() == RefactoringElement.GUARDED) {
-            text = text + " [<font color=#CC0000>" + // NOI18N
-                            NbBundle.getMessage(UIUtilities.class, "LBL_InGuardedBlock") + "</font>]";
-        } else if (refactoringElement.getStatus() == refactoringElement.READ_ONLY) {
-            text = text + " [<font color=#CC0000>" + // NOI18N
-                            NbBundle.getMessage(UIUtilities.class, "LBL_InReadOnlyFile") + "</font>]";
-        }
-        return text;
+        return refactoringElement.getDisplayText();
     }
 
     public Object getUserObject() {
