@@ -29,7 +29,7 @@ import org.netbeans.spi.project.support.ant.AntBasedTestUtil;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.AntProjectHelperTest;
 import org.openide.filesystems.FileObject;
-import org.openide.util.lookup.Lookups;
+import org.openide.util.test.MockLookup;
 
 /**
  *
@@ -52,9 +52,7 @@ public class AntBasedProjectFactorySingletonTest extends NbTestCase {
         TestUtil.createFileFromContent(AntProjectHelperTest.class.getResource("data/project.properties"), projdir, "nbproject/project.properties");
         TestUtil.createFileFromContent(AntProjectHelperTest.class.getResource("data/private.properties"), projdir, "nbproject/private/private.properties");
         TestUtil.createFileFromContent(AntProjectHelperTest.class.getResource("data/global.properties"), scratch, "userdir/build.properties");
-        TestUtil.setLookup(new Object[] {
-            AntBasedTestUtil.testAntBasedProjectType(),
-        });
+        MockLookup.setInstances(AntBasedTestUtil.testAntBasedProjectType());
     }
 
     /**Test for second part of #42738.
@@ -64,11 +62,7 @@ public class AntBasedProjectFactorySingletonTest extends NbTestCase {
         AntBasedProjectType type1 = AntBasedTestUtil.testAntBasedProjectType();
         AntBasedProjectType type2 = AntBasedTestUtil.testAntBasedProjectType();
         
-        TestUtil.setLookup(Lookups.fixed(new Object[] {
-            factory,
-            type1,
-            type2,
-        }));
+        MockLookup.setInstances(factory, type1, type2);
         
         Method getAntBasedProjectTypeMethod = AntProjectHelper.class.getDeclaredMethod("getType", new Class[0]);
         
@@ -79,37 +73,25 @@ public class AntBasedProjectFactorySingletonTest extends NbTestCase {
         
         assertTrue(getAntBasedProjectTypeMethod.invoke(helper) == type2);
         
-        TestUtil.setLookup(Lookups.fixed(new Object[] {
-            factory,
-            type1,
-        }));
+        MockLookup.setInstances(factory, type1);
         
         p = ProjectManager.getDefault().findProject(projdir);
         helper = p.getLookup().lookup(AntProjectHelper.class);
         
         assertTrue(getAntBasedProjectTypeMethod.invoke(helper) == type1);
         
-        TestUtil.setLookup(Lookups.fixed(new Object[] {
-            factory,
-            type2,
-        }));
+        MockLookup.setInstances(factory, type2);
         
         p = ProjectManager.getDefault().findProject(projdir);
         helper = p.getLookup().lookup(AntProjectHelper.class);
         
         assertTrue(getAntBasedProjectTypeMethod.invoke(helper) == type2);
         
-        TestUtil.setLookup(Lookups.fixed(new Object[] {
-            factory,
-        }));
+        MockLookup.setInstances(factory);
         
         assertNull(ProjectManager.getDefault().findProject(projdir));
 
-        TestUtil.setLookup(Lookups.fixed(new Object[] {
-            factory,
-            type1,
-            type2,
-        }));
+        MockLookup.setInstances(factory, type1, type2);
         
         assertTrue(getAntBasedProjectTypeMethod.invoke(helper) == type2);
     }
