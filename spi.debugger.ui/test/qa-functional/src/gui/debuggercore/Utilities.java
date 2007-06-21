@@ -131,8 +131,7 @@ public class Utilities {
     public static boolean verifyMainMenu(String actionPath, boolean expected) {
         if (expected == MainWindowOperator.getDefault().menuBar().showMenuItem(actionPath).isEnabled()) {
             return MainWindowOperator.getDefault().menuBar().showMenuItem(actionPath).isEnabled();
-        }
-        else {
+        } else {
             for (int i = 0; i < 10; i++) {
                 if (MainWindowOperator.getDefault().menuBar().showMenuItem(actionPath).isEnabled() == expected) {
                     MainWindowOperator.getDefault().menuBar().closeSubmenus();
@@ -193,7 +192,7 @@ public class Utilities {
         showDebuggerView(breakpointsViewTitle);
         JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(breakpointsViewTitle));
         if (jTableOperator.getRowCount() > 0) {
-            new JPopupMenuOperator(jTableOperator.callPopupOnCell(0, 0)).pushMenu("Delete All");
+            new JPopupMenuOperator(jTableOperator.callPopupOnCell(0, 0)).pushMenu(Bundle.getString("org.netbeans.modules.debugger.ui.models.Bundle", "CTL_BreakpointAction_DeleteAll_Label"));
         }
     }
 
@@ -201,32 +200,8 @@ public class Utilities {
         showDebuggerView(watchesViewTitle);
         JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(watchesViewTitle));
         if (jTableOperator.getRowCount() > 0) {
-            new JPopupMenuOperator(jTableOperator.callPopupOnCell(0, 0)).pushMenu("Delete All");
+            new JPopupMenuOperator(jTableOperator.callPopupOnCell(0, 0)).pushMenu(Bundle.getString("org.netbeans.modules.debugger.ui.models.Bundle", "CTL_WatchAction_DeleteAll"));
         }
-    }
-
-    public static void closeZombieSessions() {
-        MainWindowOperator mwo = MainWindowOperator.getDefault();
-        showDebuggerView(sessionsViewTitle);
-        TopComponentOperator sessionsOper = new TopComponentOperator(sessionsViewTitle);
-        JTableOperator jTableOperator = new JTableOperator(sessionsOper);
-
-        for (int i = 0; i < jTableOperator.getRowCount(); i++) {
-            //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.killSessionsItem).toString(), null).perform();
-            new Action(null, null, Utilities.killSessionShortcut).performShortcut();
-            //Utilities.sleep(1000);
-        }
-
-        jTableOperator = new JTableOperator(sessionsOper);
-        if (jTableOperator.getRowCount() > 0) {
-            for (int i = 0; i < jTableOperator.getRowCount(); i++) {
-                jTableOperator.selectCell(i, 0);
-                javax.swing.JPopupMenu jPopupMenu = jTableOperator.callPopupOnCell(jTableOperator.getRowCount() - 1, 0);
-                new JPopupMenuOperator(jPopupMenu).pushMenu("Finish");
-                mwo.waitStatusText("User program finished");
-            }
-        }
-        sessionsOper.close();
     }
 
     public static void showDebuggerView(String viewName) {
@@ -240,13 +215,11 @@ public class Utilities {
         in = in.trim();
         if (in.indexOf('<') == -1) {
             out = in;
-        }
-        else {
+        } else {
             while (in.indexOf('<') >= 0) {
                 if (in.indexOf('<') == 0) {
                     in = in.substring(in.indexOf('>') + 1, in.length());
-                }
-                else {
+                } else {
                     out += in.substring(0, in.indexOf('<'));
                     in = in.substring(in.indexOf('<'), in.length());
                 }
@@ -256,15 +229,11 @@ public class Utilities {
     }
 
     public static void endAllSessions() {
-        String finishPath = runMenu + "|" + finishSessionsItem;
-        while (MainWindowOperator.getDefault().menuBar().showMenuItem(finishPath).isEnabled()) {
-            MainWindowOperator.getDefault().menuBar().closeSubmenus();
-            new EventTool().waitNoEvent(500);
-            new FinishDebuggerAction().performShortcut();
-            new EventTool().waitNoEvent(500);
+        showDebuggerView(sessionsViewTitle);
+        JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(sessionsViewTitle));
+        if (jTableOperator.getRowCount() > 0) {
+            new JPopupMenuOperator(jTableOperator.callPopupOnCell(0, 0)).pushMenu(Bundle.getString("org.netbeans.modules.debugger.ui.models.Bundle", "CTL_SessionAction_FinishAll_Label"));
         }
-        MainWindowOperator.getDefault().menuBar().closeSubmenus();
-        new EventTool().waitNoEvent(500);
     }
 
     public static void startDebugger() {
