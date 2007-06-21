@@ -37,6 +37,7 @@ import org.netbeans.modules.visualweb.ejb.datamodel.EjbDataModel;
 import org.netbeans.modules.visualweb.ejb.datamodel.EjbGroup;
 import org.netbeans.modules.visualweb.ejb.datamodel.EjbInfo;
 import org.netbeans.modules.visualweb.ejb.util.Util;
+import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectConstants;
 import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectUtils;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileLock;
@@ -166,9 +167,8 @@ public class EjbLibReferenceHelper {
 
         for (int i = 0; i < projects.length; i++) {
             try {
-                FileObject projectLibDir = JsfProjectUtils.getProjectLibraryDirectory(projects[i]);
-                FileObject ejbSubDir = projectLibDir
-                        .getFileObject(EjbDataSourceManager.EJB_DATA_SUB_DIR);
+                FileObject ejbSubDir = projects[i].getProjectDirectory().getFileObject(
+                        JsfProjectConstants.PATH_LIBRARIES + '/' + EjbDataSourceManager.EJB_DATA_SUB_DIR);
                 if (ejbSubDir == null)
                     // NO ejb in this project. Move on
                     continue;
