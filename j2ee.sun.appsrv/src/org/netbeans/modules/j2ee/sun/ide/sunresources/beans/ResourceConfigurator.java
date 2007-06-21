@@ -118,8 +118,7 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
 
     public MessageDestination createJMSResource(String jndiName, MessageDestination.Type type, String ejbName, File dir) {
         SunMessageDestination msgDest = null;
-        FileObject location = FileUtil.toFileObject(dir);
-        Resources resources = ResourceUtils.getServerResourcesGraph(location);
+        Resources resources = ResourceUtils.getServerResourcesGraph(dir);
         AdminObjectResource aoresource = resources.newAdminObjectResource();
         aoresource.setJndiName(jndiName);
         if (MessageDestination.Type.QUEUE.equals(type)) {
@@ -159,7 +158,7 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
         }
         resources.addConnectorResource(connresource);
         resources.addConnectorConnectionPool(connpoolresource);
-        ResourceUtils.createFile(location, resources);
+        ResourceUtils.createFile(dir, resources);
         msgDest = new SunMessageDestination(jndiName, type);
         return msgDest;
     }

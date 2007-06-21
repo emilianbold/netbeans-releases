@@ -2453,7 +2453,6 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
             throw new org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException(NbBundle.getMessage(SunONEDeploymentConfiguration.class,
                     "ERR_NoJMSResource", name)); // NOI18N
         }
-        
         ResourceConfiguratorInterface rci = getResourceConfigurator();
         if(rci != null) {
              if(!rci.isJMSResourceDefined(name, resourceDir)) {
@@ -2464,7 +2463,59 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
     }
     
     public void bindMdbToMessageDestination(String mdbName, String name, MessageDestination.Type type) throws org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException {
-        
+        // validation
+        if (Utils.strEmpty(mdbName) || Utils.strEmpty(name)) {
+            return;
+        }
+
+        try {
+            FileObject primarySunDDFO = getSunDD(configFiles[0], true);
+            if (primarySunDDFO != null) {
+                RootInterface sunDDRoot = DDProvider.getDefault().getDDRoot(primarySunDDFO);
+                if (sunDDRoot instanceof SunEjbJar) {
+                    SunEjbJar sunEjbJar = (SunEjbJar) sunDDRoot;
+                    EnterpriseBeans eb = sunEjbJar.getEnterpriseBeans();
+                    if (eb == null) {
+                        eb = sunEjbJar.newEnterpriseBeans();
+                        sunEjbJar.setEnterpriseBeans(eb);
+                    }
+                    Ejb ejb = findNamedBean(eb, mdbName, EnterpriseBeans.EJB, Ejb.EJB_NAME);
+                    if (ejb == null) {
+                        ejb = eb.newEjb();
+                        ejb.setEjbName(mdbName);
+                        eb.addEjb(ejb);
+                    }
+                    ejb.setJndiName(name);
+                    String factory = "jms/" + name + "Factory"; //NOI18N
+                    MdbConnectionFactory connFactory = ejb.newMdbConnectionFactory();
+                    connFactory.setJndiName(factory);
+                    ejb.setMdbConnectionFactory(connFactory);
+//                    /* I think the following is not needed. These entries are being created through 
+//                     * some other path - Peter 
+//                     */ 
+//                    org.netbeans.modules.j2ee.sun.dd.api.common.MessageDestination destination = findNamedBean(eb, mdbName, EnterpriseBeans.MESSAGE_DESTINATION, org.netbeans.modules.j2ee.sun.dd.api.common.MessageDestination.JNDI_NAME);
+//                    if (destination == null) {
+//                        destination = eb.newMessageDestination();
+//                        destination.setJndiName(name);
+//                        eb.addMessageDestination(destination);
+//                    }
+                    
+                    // if changes, save file.
+                    sunDDRoot.write(primarySunDDFO);
+                }
+            }
+        } catch (IOException ex) {
+            // This is a legitimate exception that could occur, such as a problem
+            // writing the changed descriptor to disk.
+            String message = NbBundle.getMessage(SunONEDeploymentConfiguration.class, "ERR_ExceptionBindingResourceRef", ex.getClass().getSimpleName()); // NOI18N
+            throw new org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException(message, ex);
+        } catch (Exception ex) {
+            // This would probably be a runtime exception due to a bug, but we
+            // must trap it here so it doesn't cause trouble upstream.
+            // We handle it the same as above for now.
+            String message = NbBundle.getMessage(SunONEDeploymentConfiguration.class, "ERR_ExceptionBindingResourceRef", ex.getClass().getSimpleName()); // NOI18N
+            throw new org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException(message, ex);
+        }
     }
     
     public String findMessageDestinationName(String mdbName) throws org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException {
@@ -2473,13 +2524,13 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
     
     public void bindMessageDestinationReference(String referenceName, String connectionFactoryName, 
             String destName, MessageDestination.Type type) throws org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException {
-        
+                
     }
     
     public void bindMessageDestinationReferenceForEjb(String ejbName, String ejbType,
             String referenceName, String connectionFactoryName,
             String destName, MessageDestination.Type type) throws org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException {
-        
+                
     }
     
     private DConfigBeanRoot getDConfigBeanRoot(J2eeModule module) throws ConfigurationException {

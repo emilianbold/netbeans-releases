@@ -50,7 +50,7 @@ public class RegistrationUtils {
     }
     
     public static void checkUpdateServerResources(ServerInterface mejb, java.io.File primaryFile) throws Exception {
-        Resources resources = ResourceUtils.getServerResourcesGraph(primaryFile);
+        Resources resources = ResourceUtils.getResourcesGraph(primaryFile);
         HashMap serverPools = getServerConnectionPools(mejb);
         HashMap serverDatasources = getServerJdbcResources(mejb);
           

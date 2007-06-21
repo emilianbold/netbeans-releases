@@ -1413,12 +1413,27 @@ public class ResourceUtils implements WizardConstants{
      * Create a new sun-resources graph if none exists or obtain the existing 
      * graph to add new resource.
      */     
+    public static Resources getServerResourcesGraph(File targetFolder){
+        FileObject location = FileUtil.toFileObject(targetFolder.getParentFile());
+        try{
+            location = FileUtil.createFolder(targetFolder);
+        }catch(Exception ex){
+        
+        }    
+        return getServerResourcesGraph(location);
+            
+    }
+    
+    /*
+     * Create a new sun-resources graph if none exists or obtain the existing 
+     * graph to add new resource.
+     */     
     public static Resources getServerResourcesGraph(FileObject targetFolder){
         Resources res = getResourceGraph();
         targetFolder = setUpExists(targetFolder);               
         File sunResource = getServerResourcesFile(targetFolder);
         if(sunResource != null){
-            res = getServerResourcesGraph(sunResource);
+            res = getResourcesGraph(sunResource);
         }
         return res;
     }
@@ -1427,7 +1442,7 @@ public class ResourceUtils implements WizardConstants{
      * Get the resources-graph for a sun-resource.xml
      *
      */     
-    public static Resources getServerResourcesGraph(File sunResource){
+    public static Resources getResourcesGraph(File sunResource){
         Resources res = null;
         if(sunResource != null){
             java.io.FileInputStream in = null;
@@ -1445,6 +1460,10 @@ public class ResourceUtils implements WizardConstants{
             }
         }
         return res;
+    }
+    
+    public static void createFile(File targetFolder, final Resources res){
+        createFile(FileUtil.toFileObject(targetFolder), res);
     }
     
     public static void createFile(FileObject targetFolder, final Resources res){
