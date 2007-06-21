@@ -139,7 +139,6 @@ Microsystems, Inc. All Rights Reserved.
     </folder>
 
     <folder name="Services">
-        <file name="org-netbeans-modules-makeproject-ui-FoldersList.settings" url="foldersList.settings"/>
         <file name="org-netbeans-modules-cnd-makeproject-MakeOptions.settings" url="MakeOptions.settings">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.makeproject.Bundle"/>
             <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/makeproject/ui/resources/makeProject.gif"/>
