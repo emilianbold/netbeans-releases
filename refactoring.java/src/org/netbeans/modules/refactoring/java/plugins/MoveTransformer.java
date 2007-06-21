@@ -27,6 +27,7 @@ import javax.lang.model.element.*;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.netbeans.modules.refactoring.java.spi.ToPhaseException;
 import org.openide.filesystems.FileObject;
@@ -53,6 +54,9 @@ public class MoveTransformer extends RefactoringVisitor {
         super.setWorkingCopy(copy);
         originalFolder = workingCopy.getFileObject().getParent();
         isThisFileMoving = move.filesToMove.contains(workingCopy.getFileObject());
+        elementsToImport = new HashSet();
+        isThisFileReferencingOldPackage = false;
+        elementsAlreadyImported = new HashSet();
     }
     
     @Override
@@ -78,8 +82,11 @@ public class MoveTransformer extends RefactoringVisitor {
             if (el!=null) {
                 if (!isThisFileMoving) {
                     if (isElementMoving(el)) {
-                        if (!elementsAlreadyImported.contains(el))
-                            elementsToImport.add(el);
+                        if (!elementsAlreadyImported.contains(el)) {
+                            FileObject fo = SourceUtils.getFile(el, workingCopy.getClasspathInfo());
+                            if (!workingCopy.getCompilationUnit().getPackageName().toString().equals(move.getTargetPackageName(fo)))
+                                elementsToImport.add(el);
+                        }
                     }
                 } else {
                     if (!isThisFileReferencingOldPackage && (!isElementMoving(el) && isTopLevelClass(el)) && getPackageOf(el).toString().equals(RetoucheUtils.getPackageName(workingCopy.getFileObject().getParent()))) {
@@ -97,6 +104,10 @@ public class MoveTransformer extends RefactoringVisitor {
         while (el.getKind() != ElementKind.PACKAGE) 
             el = el.getEnclosingElement();
         return (PackageElement) el;
+    }
+
+    private boolean isPackageRename() {
+        return move.refactoring instanceof RenameRefactoring;
     }
     
     
@@ -141,6 +152,7 @@ public class MoveTransformer extends RefactoringVisitor {
         if (workingCopy.getTreeUtilities().isSynthetic(getCurrentPath())) {
             return result;
         }
+        CompilationUnitTree cut = node;
         if (isThisFileMoving) {
             // change package statement if old and new package exist, i.e.
             // neither old nor new package is default
@@ -150,33 +162,39 @@ public class MoveTransformer extends RefactoringVisitor {
             } else {
                 // in order to handle default package, we have to rewrite whole
                 // compilation unit:
-                CompilationUnitTree copy = make.CompilationUnit(
+                cut = make.CompilationUnit(
                         "".equals(newPckg) ? null : make.Identifier(newPckg),
                         node.getImports(),
                         node.getTypeDecls(),
                         node.getSourceFile()
                 );
-                rewrite(node, copy);
             }
             if (isThisFileReferencingOldPackage) {
                 //add import to old package
-                node = insertImport(node, node.getPackageName().toString() + ".*");
+                cut = insertImport(cut, cut.getPackageName().toString() + ".*", null);
             }
         }
         for (Element el:elementsToImport) {
             FileObject fo = SourceUtils.getFile(el, workingCopy.getClasspathInfo());
-            node = insertImport(node, move.getTargetPackageName(fo) + "." +el.getSimpleName());
+            cut = insertImport(cut, move.getTargetPackageName(fo) + "." +el.getSimpleName(), el);
         }
+        rewrite(node, cut);
         return result;
     }
     
-    private CompilationUnitTree insertImport(CompilationUnitTree node, String imp) {
+    private CompilationUnitTree insertImport(CompilationUnitTree node, String imp, Element orig) {
         for (ImportTree tree: node.getImports()) {
             if (tree.getQualifiedIdentifier().toString().equals(imp)) 
                 return node;
+            if (orig!=null) {
+                if (tree.getQualifiedIdentifier().toString().equals(getPackageOf(orig).getQualifiedName()+".*") && isPackageRename()) {
+                    FileObject fo = SourceUtils.getFile(orig, workingCopy.getClasspathInfo());
+                    rewrite(tree.getQualifiedIdentifier(), make.Identifier(move.getTargetPackageName(fo)+".*"));
+                    return node;
+                }
+            }
         }
         CompilationUnitTree nju = make.insertCompUnitImport(node, 0, make.Import(make.Identifier(imp), false));
-        rewrite(node, nju);
         return nju;
     }
     

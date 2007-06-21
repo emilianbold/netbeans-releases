@@ -41,7 +41,7 @@ import org.openide.util.NbBundle;
 public class MoveRefactoringPlugin extends JavaRefactoringPlugin {
 
     private Map packagePostfix = new HashMap();
-    private AbstractRefactoring refactoring;
+    AbstractRefactoring refactoring;
     ArrayList<FileObject> filesToMove = new ArrayList();
     HashMap<FileObject,ElementHandle> classes;
     Map<FileObject, Set<FileObject>> whoReferences = new HashMap();
