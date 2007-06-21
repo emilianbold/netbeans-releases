@@ -145,6 +145,11 @@ is divided into following sections:
                     <pathelement location="${{netbeans.home}}/../soa1/modules/org-netbeans-modules-xslt-project.jar"/>
                     <pathelement location="${{netbeans.home}}/../soa1/ant/nblib/org-netbeans-modules-xslt-project.jar"/>
                     <pathelement location="${{netbeans.home}}/../soa1/modules/org-netbeans-modules-xslt-core.jar"/>
+                    <pathelement location="${{netbeans.home}}/../soa1/modules/org-netbeans-modules-xslt-tmap.jar"/>
+                    <pathelement location="${{netbeans.home}}/../ide8/modules/org-netbeans-modules-xml-xam.jar"/>
+                    <pathelement location="${{netbeans.home}}/../ide8/modules/org-netbeans-modules-xml-retriever.jar"/>
+                    <pathelement location="${{netbeans.home}}/../ide8/modules/org-netbeans-modules-projectapi.jar"/>
+                    <pathelement location="${{netbeans.home}}/../platform7/modules/org-openide-loaders.jar"/>
                     <pathelement location="${{netbeans.home}}/../platform7/core/org-openide-filesystems.jar"/>
                     <pathelement location="${{netbeans.home}}/../platform7/lib/org-openide-util.jar"/>
                 </path>
