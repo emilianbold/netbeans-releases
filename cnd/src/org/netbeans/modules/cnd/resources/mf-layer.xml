@@ -315,7 +315,7 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="Templates">
         <folder name="cFiles">
 	    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
-      	    <attr name="position" intvalue="400"/>
+      	    <attr name="position" intvalue="450"/>
             <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/cFiles.html"/>
 	    
 	    <file name="file.c" url="templates/c/empty-c.template">
