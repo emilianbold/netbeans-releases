@@ -25,6 +25,7 @@ import java.awt.Paint;
 import java.awt.Rectangle;
 import org.netbeans.api.visual.border.BorderFactory;
 import org.netbeans.api.visual.layout.LayoutFactory;
+import org.netbeans.api.visual.model.ObjectScene;
 import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
@@ -56,7 +57,7 @@ public class ParametersWidget extends AbstractTitledWidget implements TabWidget 
      * @param scene 
      * @param method 
      */
-    public ParametersWidget(Scene scene, MethodModel method) {
+    public ParametersWidget(ObjectScene scene, MethodModel method) {
         super(scene,0,RADIUS,0,null);
         this.method = method;
         createContent();
@@ -100,7 +101,7 @@ public class ParametersWidget extends AbstractTitledWidget implements TabWidget 
     }
 
     public Object hashKey() {
-        return method==null?null:method.getOperationName()+"_Parameters";
+        return model;
     }
     
     public String getTitle() {

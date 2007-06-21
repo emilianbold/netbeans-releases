@@ -19,9 +19,10 @@
 
 package org.netbeans.modules.websvc.design.view.widget;
 
-import java.awt.Color;
 import java.awt.Font;
 import java.awt.Image;
+import java.util.HashSet;
+import java.util.Set;
 import javax.swing.Action;
 import javax.swing.JToolBar;
 import org.netbeans.api.visual.action.ActionFactory;
@@ -29,6 +30,9 @@ import org.netbeans.api.visual.border.BorderFactory;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.api.visual.model.ObjectScene;
+import org.netbeans.api.visual.model.ObjectSceneEvent;
+import org.netbeans.api.visual.model.ObjectSceneEventType;
+import org.netbeans.api.visual.model.ObjectSceneListener;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.*;
 import org.netbeans.modules.websvc.design.javamodel.MethodModel;
@@ -51,9 +55,11 @@ public class OperationsWidget extends AbstractTitledWidget {
     
     private transient ServiceModel serviceModel;
     private transient Action addAction;
+    private transient RemoveOperationAction removeAction;
     
     private transient Widget buttons;
     private transient ImageLabelWidget headerLabelWidget;
+    private ObjectSceneListener operationSelectionListener;
     
     
     
@@ -74,9 +80,8 @@ public class OperationsWidget extends AbstractTitledWidget {
             }
             
             public void operationAdded(MethodModel method) {
-                OperationWidget operationWidget = new OperationWidget(getScene(),serviceModel, service, method);
+                OperationWidget operationWidget = new OperationWidget(getObjectScene(), serviceModel,service, method);
                 getContentWidget().addChild(operationWidget);
-                getObjectScene().addObject(method, operationWidget);
                 updateHeaderLabel();
                 getScene().validate();
             }
@@ -84,7 +89,6 @@ public class OperationsWidget extends AbstractTitledWidget {
             public void operationRemoved(MethodModel method) {
                 Widget operationWidget = getObjectScene().findWidget(method);
                 if(operationWidget!=null) {
-                    getObjectScene().removeObject(method);
                     getContentWidget().removeChild(operationWidget);
                     updateHeaderLabel();
                     getScene().validate();
@@ -122,11 +126,10 @@ public class OperationsWidget extends AbstractTitledWidget {
         ButtonWidget addButton = new ButtonWidget(getScene(), addAction);
         addButton.setOpaque(true);
         
-        Action removeAction = new RemoveOperationAction(service, getObjectScene());
+        removeAction = new RemoveOperationAction(service);
         ButtonWidget removeButton = new ButtonWidget(getScene(), removeAction);
-        removeButton.setButtonEnabled(removeAction.isEnabled());
         removeButton.setOpaque(true);
-
+        
         buttons.addChild(addButton);
         buttons.addChild(removeButton);
         buttons.addChild(getExpanderWidget());
@@ -136,9 +139,8 @@ public class OperationsWidget extends AbstractTitledWidget {
         getContentWidget().setBorder(BorderFactory.createEmptyBorder(RADIUS));
         if(serviceModel.getOperations()!=null) {
             for(MethodModel operation:serviceModel.getOperations()) {
-                OperationWidget operationWidget = new OperationWidget(getScene(),serviceModel, service, operation);
+                OperationWidget operationWidget = new OperationWidget(getObjectScene(), serviceModel, service, operation);
                 getContentWidget().addChild(operationWidget);
-                getObjectScene().addObject(operation, operationWidget);
             }
         }
     }
@@ -149,7 +151,36 @@ public class OperationsWidget extends AbstractTitledWidget {
     }
     
     public Object hashKey() {
-        return serviceModel==null?null:serviceModel.getServiceName();
+        return serviceModel;
+    }
+    
+    public void notifyAdded() {
+//        super.notifyAdded();
+        operationSelectionListener = new ObjectSceneAdapter() {
+            public void selectionChanged(ObjectSceneEvent event,
+                    Set<Object> previousSelection, Set<Object> newSelection) {
+                Set<MethodModel> methods = new HashSet<MethodModel>();
+                if(newSelection!=null) {
+                    for(Object obj:newSelection) {
+                        if(obj instanceof MethodModel) {
+                            methods.add((MethodModel)obj);
+                        }
+                    }
+                }
+                removeAction.setWorkingSet(methods);
+            }
+        };
+        getObjectScene().addObjectSceneListener(operationSelectionListener,
+                ObjectSceneEventType.OBJECT_SELECTION_CHANGED);
+    }
+    
+    public void notifyRemoved() {
+//        super.notifyRemoved();
+        if(operationSelectionListener!=null) {
+            getObjectScene().removeObjectSceneListener(operationSelectionListener,
+                    ObjectSceneEventType.OBJECT_SELECTION_CHANGED);
+            operationSelectionListener=null;
+        }
     }
     
     /**
@@ -160,9 +191,5 @@ public class OperationsWidget extends AbstractTitledWidget {
      */
     public void addToolbarActions(JToolBar toolbar) {
         toolbar.add(addAction);
-    }
-    
-    private ObjectScene getObjectScene() {
-        return (ObjectScene)getScene();
     }
 }

@@ -128,6 +128,7 @@ public class ButtonWidget extends AbstractMouseActionsWidget implements Property
         this.action = action;
         if(this.action!=null) {
             this.action.addPropertyChangeListener(this);
+            setButtonEnabled(action.isEnabled());
         }
     }
     

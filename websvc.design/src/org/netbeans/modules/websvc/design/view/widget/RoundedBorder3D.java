@@ -26,15 +26,17 @@ import java.awt.geom.RoundRectangle2D;
 /**
  * @author David Kaspar
  */
-public class RoundedBorder3D implements Border, MouseActions {
+public class RoundedBorder3D implements Border, Selectable {
     
     private static final Color SHADOW_COLOR = new Color(208,208,208);
+    private static final Color SELECTED_BORDER_COLOR = new Color(255,153,0);
    
     private int radius;
     private int insetWidth;
     private int insetHeight;
     private Color drawColor;
     private int depth = 3;
+    private boolean selected = false;
     
     /**
      *
@@ -57,11 +59,11 @@ public class RoundedBorder3D implements Border, MouseActions {
     }
     
     public void paint(Graphics2D gr, Rectangle bounds) {
+        Paint oldPaint = gr.getPaint();
+        RoundRectangle2D rect = new RoundRectangle2D.Double(bounds.x+0.5f,
+                bounds.y + 0.5f, bounds.width - depth - 1, 
+                bounds.height - depth - 1, radius, radius);
         if (drawColor != null) {
-            Paint oldPaint = gr.getPaint();
-            RoundRectangle2D rect = new RoundRectangle2D.Double(bounds.x+0.5f,
-                    bounds.y + 0.5f, bounds.width - depth - 1, 
-                    bounds.height - depth - 1, radius, radius);
             RoundRectangle2D outerRect = new RoundRectangle2D.Double(
                     bounds.x + depth + 0.5f, bounds.y + depth + 0.5f,
                     bounds.width - depth - 1, bounds.height - depth - 1, radius, radius);
@@ -71,27 +73,20 @@ public class RoundedBorder3D implements Border, MouseActions {
             gr.fill(raisedArea);
             gr.setPaint(drawColor);
             gr.draw(rect);
-            gr.setPaint(oldPaint);
         }
+        if(selected) {
+            gr.setPaint(SELECTED_BORDER_COLOR);
+            gr.draw(rect);
+        }
+        gr.setPaint(oldPaint);
     }
     
     public boolean isOpaque() {
         return true;
     }
 
-    public void mouseClicked() {
+    public void setSelected(boolean flag) {
+        if(selected!=flag) selected=flag;
     }
 
-    public void mousePressed() {
-    }
-
-    public void mouseReleased() {
-    }
-
-    public void mouseEntered() {
-    }
-
-    public void mouseExited() {
-    }
-    
 }

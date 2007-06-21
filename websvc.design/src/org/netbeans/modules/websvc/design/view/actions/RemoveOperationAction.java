@@ -12,8 +12,6 @@ package org.netbeans.modules.websvc.design.view.actions;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.Set;
 import javax.swing.AbstractAction;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -24,11 +22,6 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.visual.model.ObjectScene;
-import org.netbeans.api.visual.model.ObjectSceneEvent;
-import org.netbeans.api.visual.model.ObjectSceneEventType;
-import org.netbeans.api.visual.model.ObjectSceneListener;
-import org.netbeans.api.visual.model.ObjectState;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.modules.websvc.core.MethodGenerator;
 import org.netbeans.modules.websvc.design.javamodel.MethodModel;
@@ -55,64 +48,19 @@ public class RemoveOperationAction extends AbstractAction{
     
     private Set<MethodModel> methods;
     private Service service;
-    private ObjectScene objectScene;
-    private ObjectSceneListener objectSceneListener;
     
     /** Creates a new instance of RemoveOperationAction */
-    public RemoveOperationAction(Service service, ObjectScene objectScene) {
-        this(service);
-        this.objectScene = objectScene;
-        methods = new HashSet<MethodModel>();
-        objectSceneListener = new ObjectSceneListener() {
-            
-            public void objectAdded(ObjectSceneEvent event, Object addedObject) {
-            }
-            
-            public void objectRemoved(ObjectSceneEvent event, Object removedObject) {
-            }
-            
-            public void objectStateChanged(ObjectSceneEvent event, Object changedObject, ObjectState previousState, ObjectState newState) {
-            }
-            
-            public void selectionChanged(ObjectSceneEvent event, Set<Object> previousSelection, Set<Object> newSelection) {
-                if(newSelection==null||newSelection.isEmpty()) {
-                    setEnabled(false);
-                } else {
-                    methods.clear();
-                    for(Object obj:newSelection) {
-                        if(obj instanceof MethodModel) {
-                            methods.add((MethodModel)obj);
-                        }
-                    }
-                    setEnabled(!methods.isEmpty());
-                }
-            }
-            
-            public void highlightingChanged(ObjectSceneEvent event, Set<Object> previousHighlighting, Set<Object> newHighlighting) {
-            }
-            
-            public void hoverChanged(ObjectSceneEvent event, Object previousHoveredObject, Object newHoveredObject) {
-            }
-            
-            public void focusChanged(ObjectSceneEvent event, Object previousFocusedObject, Object newFocusedObject) {
-            }
-        };
-        setEnabled(false);
-        objectScene.addObjectSceneListener(objectSceneListener,ObjectSceneEventType.OBJECT_SELECTION_CHANGED);
-    }
-    
-    /** Creates a new instance of RemoveOperationAction */
-    public RemoveOperationAction(Service service, MethodModel method) {
-        this(service);
-        this.methods = Collections.singleton(method);
-    }
-    
-    /** Creates a new instance of RemoveOperationAction */
-    private RemoveOperationAction(Service service) {
+    public RemoveOperationAction(Service service) {
         super(getName());
         this.service = service;
+        setEnabled(false);
     }
     
+    public void setWorkingSet(Set<MethodModel> methods) {
+        this.methods = methods;
+        setEnabled(methods!=null&&!methods.isEmpty());
+    }
+
     public void actionPerformed(ActionEvent arg0) {
         if(methods.size()<1) return;
         boolean sigleSelection = methods.size()==1;
@@ -142,8 +90,6 @@ public class RemoveOperationAction extends AbstractAction{
     }
     
     private void removeOperation(Set<MethodModel> methods) throws IOException {
-        if(objectScene!=null) 
-            objectScene.removeObjectSceneListener(objectSceneListener,ObjectSceneEventType.OBJECT_SELECTION_CHANGED);
         for(MethodModel method:methods) {
             String methodName = method.getOperationName();
             FileObject implementationClass = getImplementationClass(method);
@@ -168,11 +114,6 @@ public class RemoveOperationAction extends AbstractAction{
                 SaveCookie cookie = dobj.getCookie(SaveCookie.class);
                 if(cookie!=null) cookie.save();
             }
-        }
-        if(objectScene!=null) {
-            objectScene.addObjectSceneListener(objectSceneListener,ObjectSceneEventType.OBJECT_SELECTION_CHANGED);
-            methods.clear();
-            setEnabled(false);
         }
     }
     

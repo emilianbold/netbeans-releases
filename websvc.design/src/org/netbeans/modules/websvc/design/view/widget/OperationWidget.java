@@ -27,6 +27,7 @@ import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.geom.GeneralPath;
 import java.awt.image.BufferedImage;
+import java.util.Collections;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.api.visual.action.ActionFactory;
@@ -72,7 +73,7 @@ public class OperationWidget extends AbstractTitledWidget {
     private transient Widget listWidget;
     private transient ButtonWidget viewButton;
     
-    private transient Action removeAction;
+    private transient RemoveOperationAction removeAction;
 
     private ParametersWidget inputWidget;
     private OutputWidget outputWidget;
@@ -85,18 +86,18 @@ public class OperationWidget extends AbstractTitledWidget {
      * @param scene
      * @param operation
      */
-    public OperationWidget(Scene scene, ServiceModel serviceModel, Service service, MethodModel operation) {
+    public OperationWidget(ObjectScene scene, ServiceModel serviceModel, Service service, MethodModel operation) {
         super(scene,RADIUS,BORDER_COLOR);
         this.service = service;
         this.operation=operation;
         this.serviceModel = serviceModel;
         
-        removeAction = new RemoveOperationAction(service, operation);
+        removeAction = new RemoveOperationAction(service);
+        removeAction.setWorkingSet(Collections.singleton(operation));
         getActions().addAction(ActionFactory.createPopupMenuAction(
                 new DesignViewPopupProvider(new Action [] {
             removeAction
         })));
-        getActions().addAction(((ObjectScene)scene).createSelectAction());
         createContent();
     }
     
@@ -151,7 +152,7 @@ public class OperationWidget extends AbstractTitledWidget {
             final ButtonWidget sampleButton = new ButtonWidget(getScene(), type.getIcon());
             sampleButton.setAction(new AbstractAction() {
                 public void actionPerformed(ActionEvent arg0) {
-                    Widget messageLayer = ((ObjectScene)getScene()).findWidget(DesignView.messageLayerKey);
+                    Widget messageLayer = (getObjectScene()).findWidget(DesignView.messageLayerKey);
                     messageLayer.removeChildren();
                     SampleMessageWidget messageWidget = new SampleMessageWidget(
                             getScene(), operation, type);
@@ -173,10 +174,10 @@ public class OperationWidget extends AbstractTitledWidget {
         listWidget = new Widget(getScene());
         listWidget.setLayout(LayoutFactory.createVerticalFlowLayout(LayoutFactory.SerialAlignment.JUSTIFY, 0));
         listWidget.setBorder(BorderFactory.createLineBorder(1, BORDER_COLOR_BLACK));
-        inputWidget = new ParametersWidget(getScene(),operation);
-        outputWidget = new OutputWidget(getScene(),operation);
-        faultWidget = new FaultsWidget(getScene(),operation);
-        descriptionWidget = new DescriptionWidget(getScene(),operation);
+        inputWidget = new ParametersWidget(getObjectScene(),operation);
+        outputWidget = new OutputWidget(getObjectScene(),operation);
+        faultWidget = new FaultsWidget(getObjectScene(),operation);
+        descriptionWidget = new DescriptionWidget(getObjectScene(),operation);
         listWidget.addChild(inputWidget);
         listWidget.addChild(new SeparatorWidget(getScene(),SeparatorWidget.Orientation.HORIZONTAL));
         listWidget.addChild(outputWidget);
@@ -224,7 +225,7 @@ public class OperationWidget extends AbstractTitledWidget {
     }
 
     public Object hashKey() {
-        return operation==null?null:operation.getOperationName();
+        return operation;
     }
 
     private boolean isTabbedView() {

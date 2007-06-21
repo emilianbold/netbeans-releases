@@ -24,6 +24,7 @@ import java.awt.Image;
 import java.awt.Paint;
 import java.awt.Rectangle;
 import org.netbeans.api.visual.layout.LayoutFactory;
+import org.netbeans.api.visual.model.ObjectScene;
 import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
@@ -50,7 +51,7 @@ public class OutputWidget extends AbstractTitledWidget implements TabWidget{
      * @param scene
      * @param method
      */
-    public OutputWidget(Scene scene, MethodModel method) {
+    public OutputWidget(ObjectScene scene, MethodModel method) {
         super(scene,0,RADIUS,1,null);
         this.method = method;
         createContent();
@@ -87,6 +88,10 @@ public class OutputWidget extends AbstractTitledWidget implements TabWidget{
     public Image getIcon() {
         return null;
         //return IMAGE;
+    }
+    
+    public Object hashKey() {
+        return method==null?null:method.getResult();
     }
     
     public Widget getComponentWidget() {

@@ -28,6 +28,11 @@ import java.awt.geom.Area;
 import java.awt.geom.RoundRectangle2D;
 import org.netbeans.api.visual.border.BorderFactory;
 import org.netbeans.api.visual.layout.LayoutFactory;
+import org.netbeans.api.visual.model.ObjectScene;
+import org.netbeans.api.visual.model.ObjectSceneEvent;
+import org.netbeans.api.visual.model.ObjectSceneEventType;
+import org.netbeans.api.visual.model.ObjectSceneListener;
+import org.netbeans.api.visual.model.ObjectState;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.SeparatorWidget;
@@ -36,7 +41,7 @@ import org.netbeans.modules.websvc.design.view.layout.LeftRightLayout;
 /**
  * @author Ajit Bhate
  */
-public abstract class AbstractTitledWidget extends AbstractMouseActionsWidget implements ExpandableWidget {
+public abstract class AbstractTitledWidget extends Widget implements ExpandableWidget {
     
     public static final Color BORDER_COLOR = new Color(169, 197, 235);
     public static final Color TITLE_COLOR = new Color(184, 215, 255);
@@ -55,6 +60,7 @@ public abstract class AbstractTitledWidget extends AbstractMouseActionsWidget im
     private int depth = radius/3;
     
     private boolean expanded;
+    private ObjectSceneListener objectSceneListener;
     private transient HeaderWidget headerWidget;
     private transient Widget seperatorWidget;
     private transient Widget contentWidget;
@@ -67,7 +73,7 @@ public abstract class AbstractTitledWidget extends AbstractMouseActionsWidget im
      * @param radius of the rounded arc
      * @param color color of the border and gradient title
      */
-    public AbstractTitledWidget(Scene scene, int radius, Color color) {
+    public AbstractTitledWidget(ObjectScene scene, int radius, Color color) {
         this(scene,radius,radius,radius,color);
     }
     /**
@@ -79,7 +85,7 @@ public abstract class AbstractTitledWidget extends AbstractMouseActionsWidget im
      * @param gap for content widget
      * @param color color of the border and gradient title
      */
-    public AbstractTitledWidget(Scene scene, int radius, int hgap, int cgap, Color color) {
+    public AbstractTitledWidget(ObjectScene scene, int radius, int hgap, int cgap, Color color) {
         super(scene);
         this.radius = radius;
         this.borderColor = color;
@@ -104,6 +110,7 @@ public abstract class AbstractTitledWidget extends AbstractMouseActionsWidget im
             }
             expander = new ExpanderWidget(getScene(), this, expanded);
         }
+        getActions().addAction(scene.createSelectAction());
     }
     
     protected Widget getContentWidget() {
@@ -204,5 +211,43 @@ public abstract class AbstractTitledWidget extends AbstractMouseActionsWidget im
     
     protected boolean isExpandable() {
         return true;
+    }
+    
+    public void notifyAdded() {
+        super.notifyAdded();
+        final Object key = hashKey();
+        if(key!=null) {
+            getObjectScene().addObject(key, this);
+            objectSceneListener = new ObjectSceneAdapter() {
+                public void objectStateChanged(ObjectSceneEvent event, 
+                        Object changedObject, ObjectState previousState, 
+                        ObjectState newState) {
+                    if(changedObject==key && 
+                            previousState.isSelected()!=newState.isSelected() &&
+                            getBorder() instanceof Selectable) {
+                        ((Selectable)getBorder()).setSelected(newState.isSelected());
+                        repaint();
+                    }
+                }
+            };
+            getObjectScene().addObjectSceneListener(objectSceneListener, 
+                    ObjectSceneEventType.OBJECT_STATE_CHANGED);
+        }
+    }
+    
+    public void notifyRemoved() {
+        super.notifyRemoved();
+        Object key = hashKey();
+        if(key!=null&&getObjectScene().isObject(key)) {
+            getObjectScene().removeObject(key);
+            if(objectSceneListener!=null) {
+                getObjectScene().removeObjectSceneListener(objectSceneListener, 
+                    ObjectSceneEventType.OBJECT_STATE_CHANGED);
+            }
+        }
+    }
+    
+    protected ObjectScene getObjectScene() {
+        return (ObjectScene)super.getScene();
     }
 }

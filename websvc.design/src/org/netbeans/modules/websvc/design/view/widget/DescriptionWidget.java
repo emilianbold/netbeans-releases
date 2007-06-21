@@ -27,6 +27,7 @@ import java.awt.Paint;
 import java.awt.Rectangle;
 import org.netbeans.api.visual.border.BorderFactory;
 import org.netbeans.api.visual.layout.LayoutFactory;
+import org.netbeans.api.visual.model.ObjectScene;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.websvc.design.javamodel.JavadocModel;
@@ -51,7 +52,7 @@ public class DescriptionWidget extends AbstractTitledWidget implements TabWidget
      * @param scene
      * @param method
      */
-    public DescriptionWidget(Scene scene, MethodModel method) {
+    public DescriptionWidget(ObjectScene scene, MethodModel method) {
         super(scene,0,RADIUS,0,null);
         this.method = method;
         model = method.getJavadoc();
@@ -84,7 +85,7 @@ public class DescriptionWidget extends AbstractTitledWidget implements TabWidget
     }
     
     public Object hashKey() {
-        return method==null?null:method.getOperationName()+"_Description";
+        return model;
     }
     
     public String getTitle() {
