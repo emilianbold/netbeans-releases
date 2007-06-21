@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -30,7 +30,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import javax.swing.Action;
-import javax.swing.Icon;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
@@ -90,7 +89,8 @@ public final class I18nGroupAction extends SystemAction
     }
 
     /** Gets icon resource. Overrides suprclass method. */
-     protected String iconResource () {
+    @Override
+    protected String iconResource () {
          return "org/netbeans/modules/i18n/i18nAction.gif"; // NOI18N
      }
 
