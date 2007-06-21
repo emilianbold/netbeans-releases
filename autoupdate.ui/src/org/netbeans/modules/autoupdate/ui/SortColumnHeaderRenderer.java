@@ -19,11 +19,13 @@
 package org.netbeans.modules.autoupdate.ui;
 
 import java.awt.Component;
+import java.util.prefs.Preferences;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.SwingConstants;
 import javax.swing.table.TableCellRenderer;
+import org.openide.util.NbPreferences;
 
 /**
  *
@@ -32,21 +34,19 @@ import javax.swing.table.TableCellRenderer;
 public class SortColumnHeaderRenderer implements TableCellRenderer{
     private UnitCategoryTableModel model;
     private TableCellRenderer textRenderer;
-    private Object sortColumn = null;
-    private ImageIcon sortDescIcon = null;
-    private static ImageIcon sortAscIcon = null;
+    private String sortColumn;
+    private ImageIcon sortDescIcon;
+    private static ImageIcon sortAscIcon;    
+    private boolean sortAscending;
     
-    private boolean sortAscending = true;
     public SortColumnHeaderRenderer (UnitCategoryTableModel model, TableCellRenderer textRenderer) {
         this.model = model;
         this.textRenderer = textRenderer;
-        if (Utilities.modulesOnly ()) {
-            sortColumn = this.model.getColumnName (2); // category
-        } else {
-            sortColumn = this.model.getColumnName (1); // name
-        }
+        sortColumn = getPreferences().get(keyForType("SortingColumn"), getDefaultColumnSelected());// NOI18N
+        sortAscending = getPreferences().getBoolean(keyForType("SortAscending"), true);// NOI18N
+        this.model.sort (sortColumn, sortAscending);
     }
-    
+        
     public Component getTableCellRendererComponent (JTable table, Object value,
             boolean isSelected,
             boolean hasFocus, int row,
@@ -64,31 +64,32 @@ public class SortColumnHeaderRenderer implements TableCellRenderer{
         return text;
     }
     
-    public void defaultColumnSelected () {
-        if (Utilities.modulesOnly ()) {
-            sortColumn = this.model.getColumnName (2); // category
-        } else {
-            sortColumn = this.model.getColumnName (1); // name
-        }
-        this.model.sort (sortColumn, true);
+    public void setDefaultSorting () {
+        setSorting(getDefaultColumnSelected());
     }
     
-    public void columnSelected (Object column) {
+    private String getDefaultColumnSelected() {
+        String retval = null;
+        if (Utilities.modulesOnly ()) {
+            retval = this.model.getColumnName (2); // category
+        } else {
+            retval = this.model.getColumnName (1); // name
+        }
+        return retval;
+    }
+        
+    public void setSorting (Object column) {
         if (!column.equals (sortColumn)) {
-            sortColumn = column;
+            sortColumn = (String)column;
             sortAscending = true;
         } else {
             sortAscending = !sortAscending;
-            /*if (sortAscending) {
-                column = this.model.getColumnName(2);
-                sortColumn = column;
-                this.model.sort(column, sortAscending);
-                return;
-            }*/
         }
+        getPreferences().put(keyForType("SortingColumn"), sortColumn);// NOI18N
+        getPreferences().putBoolean(keyForType("SortAscending"), sortAscending);// NOI18N
         this.model.sort (column, sortAscending);
     }
-    
+        
     private ImageIcon getSortAscIcon () {
         if (sortAscIcon == null) {
             sortAscIcon = new ImageIcon (org.openide.util.Utilities.loadImage (
@@ -104,4 +105,12 @@ public class SortColumnHeaderRenderer implements TableCellRenderer{
         }
         return sortDescIcon;
     }
+    
+    private String keyForType(String key) {
+        return key  + model.getType();
+    }
+    
+    private static Preferences getPreferences() {
+        return NbPreferences.forModule(SortColumnHeaderRenderer.class);
+    }    
 }

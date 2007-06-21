@@ -253,7 +253,7 @@ public abstract class UnitCategoryTableModel extends AbstractTableModel {
         }
     }
         
-    private List<Unit> getVisibleUnits () {
+    List<Unit> getVisibleUnits () {
         return getVisibleUnits(getUnits(), getFilter(), true);
     }
 

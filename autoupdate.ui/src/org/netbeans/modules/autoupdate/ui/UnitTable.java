@@ -186,20 +186,22 @@ public class UnitTable extends JTable {
                             }
                             Object id = getColumnModel ().getColumn (column).getIdentifier ();
                             if (model.isSortAllowed (id)) {
-                                sortingRenderer.columnSelected (id);
+                                sortingRenderer.setSorting (id);
                                 repaint ();
                             }
                         } finally {
                             if (u != null) {
-                                List<Unit> units = model.getUnits();
+                                List<Unit> units = model.getVisibleUnits();
                                 int row = (u != null) ? units.indexOf (u) : -1;
                                 if (row > -1) {
                                     Unit u2 = model.getUnitAtRow (row);
-                                    if (u.updateUnit.getCodeName ().equals (u2.updateUnit.getCodeName ())) {
-                                        getSelectionModel ().setSelectionInterval (row, row);
-                                        Rectangle rect = UnitTable.this.getCellRect (row, 0, true);
-                                        UnitTable.this.scrollRectToVisible (rect);
-                                    }
+                                    if (u2 != null) {
+                                        if (u.updateUnit.getCodeName ().equals (u2.updateUnit.getCodeName ())) {
+                                            getSelectionModel ().setSelectionInterval (row, row);
+                                            Rectangle rect = UnitTable.this.getCellRect (row, 0, true);
+                                            UnitTable.this.scrollRectToVisible (rect);
+                                        }
+                                    } 
                                 }
                             }
                         }
@@ -236,7 +238,7 @@ public class UnitTable extends JTable {
         
         public void setDefaultSorting () {
             if (sortingRenderer != null) {
-                sortingRenderer.defaultColumnSelected ();
+                sortingRenderer.setDefaultSorting ();
             }
         }
     }        
