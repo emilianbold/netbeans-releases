@@ -215,34 +215,6 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
     
-    <!-- Web Project workflow -->
-<!-- TODO no tomcat - see issue 101104             <testbag testattribs="all or footprint or footprint_WebProject" prio="320"
-             executor="ide_footprint" name="Footprint - Web project workflow" >
-        <testset dir="footprint/src">
-            <patternset>
-                <include name="footprint/WebProjectWorkflow.class"/>
-            </patternset>
-        </testset>
-    </testbag>
-    
-    <testbag testattribs="(all or footprint or footprint_WebProject) and NOT once" prio="321"
-             executor="ide_footprint" name="Footprint - Web project workflow" >
-        <testset dir="footprint/src">
-            <patternset>
-                <include name="footprint/WebProjectWorkflow.class"/>
-            </patternset>
-        </testset>
-    </testbag>
-    
-    <testbag testattribs="(all or footprint or footprint_WebProject) and NOT once" prio="322"
-             executor="ide_footprint" name="Footprint - Web project workflow" >
-        <testset dir="footprint/src">
-            <patternset>
-                <include name="footprint/WebProjectWorkflow.class"/>
-            </patternset>
-        </testset>
-    </testbag>
--->
     <!-- Find Usages -->
     <testbag testattribs="all or footprint or footprint_FindUsages" prio="330"
              executor="ide_footprint" name="Footprint - Find usages" >
