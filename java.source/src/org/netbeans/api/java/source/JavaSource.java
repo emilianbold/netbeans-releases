@@ -482,6 +482,7 @@ public final class JavaSource {
         this.rootFo = root;
         this.classpathInfo.addChangeListener(WeakListeners.change(this.listener, this.classpathInfo));
         this.flags|= IS_CLASS_FILE;
+        this.binding = new PositionConverter(classFileObject, null);
     }
        
     private static final Set<StackTraceElement> warnedAboutRunInEQ = new HashSet<StackTraceElement>();

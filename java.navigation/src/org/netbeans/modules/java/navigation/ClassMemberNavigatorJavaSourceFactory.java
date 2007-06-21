@@ -49,7 +49,7 @@ public final class ClassMemberNavigatorJavaSourceFactory extends LookupBasedJava
     }
     
     public ClassMemberNavigatorJavaSourceFactory() {        
-        super(Phase.ELEMENTS_RESOLVED, Priority.NORMAL);
+        super(Phase.ELEMENTS_RESOLVED, Priority.NORMAL, "text/x-java", "application/x-class-file");
     }
 
     public synchronized CancellableTask<CompilationInfo> createTask(FileObject file) {
@@ -63,17 +63,8 @@ public final class ClassMemberNavigatorJavaSourceFactory extends LookupBasedJava
     }
 
     public List<FileObject> getFileObjects() {
-        List<FileObject> result = new ArrayList<FileObject>();
+        List<FileObject> result = super.getFileObjects();
 
-        // Filter uninteresting files from the lookup
-        for( FileObject fileObject : super.getFileObjects() ) {
-            if (!"text/x-java".equals(FileUtil.getMIMEType(fileObject)) && !"java".equals(fileObject.getExt()) &&
-                !"application/x-class-file".equals(FileUtil.getMIMEType(fileObject)) && !"class".equals(fileObject.getExt())) {  //NOI18N
-                continue;
-            }
-            result.add(fileObject);
-        }
-        
         if (result.size() == 1)
             return result;
 
