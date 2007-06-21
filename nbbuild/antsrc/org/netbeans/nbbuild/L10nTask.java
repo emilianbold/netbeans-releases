@@ -90,7 +90,7 @@ import org.netbeans.nbbuild.utils.cvsutils.CvsEntries;
  * @version 1.1.2	Aug 29 15:23:51 PDT 2002
  */
 public class L10nTask extends MatchingTask {
-    private Hashtable<String,HashSet> modules = new Hashtable<String,HashSet>();
+    private Hashtable<String,HashSet<String>> modules = new Hashtable<String,HashSet<String>>();
     private String[] allmodules;
     private String[] topdirs;
     private String localizableFile, generatedFile, changedFile,globalFile;
@@ -788,7 +788,7 @@ public class L10nTask extends MatchingTask {
         StringTokenizer st = new StringTokenizer(s,",");
         HashSet<String> modSet = null;
         
-        modules = new Hashtable<String, HashSet>();
+        modules = new Hashtable<String, HashSet<String>>();
         int modCnt = 0;
         while (st.hasMoreTokens()) {
             String fullMod=st.nextToken().trim();
@@ -802,7 +802,7 @@ public class L10nTask extends MatchingTask {
             }
             log("Top module is "+topMod, Project.MSG_DEBUG);
             if (modules.containsKey(topMod)) {
-                modSet = (HashSet<String>) modules.get(topMod);
+                modSet = modules.get(topMod);
                 modSet.add( fullMod );
             } else {
                 modSet = new HashSet<String>();
