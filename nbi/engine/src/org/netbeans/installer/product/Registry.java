@@ -419,9 +419,16 @@ public class Registry {
         
         // hide products that do not support the current platform
         for (Product product: getProducts()) {
-            if (!product.getPlatforms().contains(targetPlatform)) {
-                product.setVisible(false);
+            boolean compatible = false;
+            
+            for (Platform productPlatform: product.getPlatforms()) {
+                if (targetPlatform.isCompatibleWith(productPlatform)) {
+                    compatible = true;
+                    break;
+                }
             }
+            
+            product.setVisible(compatible);
         }
         
         // hide empty groups
@@ -791,6 +798,12 @@ public class Registry {
             for (Element child: XMLUtils.getChildren(element)) {
                 if (child.getNodeName().equals("product")) {
                     final Product product = new Product().loadFromDom(child);
+                    
+                    // find the existing products which have the same uid/version
+                    // and whose platforms itersect with the platforms of the 
+                    // currently loaded component (i.e. at least one of the platforms
+                    // in the existing product is compatible a platform in the
+                    // currept product's set and vice versa)
                     final List<Product> existing = getProducts(
                             product.getUid(),
                             product.getVersion(),
