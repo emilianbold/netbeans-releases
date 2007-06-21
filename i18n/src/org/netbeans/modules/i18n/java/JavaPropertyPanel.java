@@ -13,29 +13,19 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
 
 package org.netbeans.modules.i18n.java;
 
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
 import java.util.ResourceBundle;
-import javax.swing.JButton;
-
-import org.netbeans.modules.i18n.I18nString;
-import org.netbeans.modules.i18n.I18nUtil;
 import org.netbeans.modules.i18n.PropertyPanel;
-
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-
 
 /**
  * Property panel for <code>JavaI18nString</code>'s.
@@ -102,6 +92,7 @@ public class JavaPropertyPanel extends PropertyPanel {
     }
 
     /** Overrides superclass method. */
+    @Override
     protected void updateReplaceText() {
         super.updateReplaceText();
         
