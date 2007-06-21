@@ -23,10 +23,10 @@
     </xsd:element>
     
     <xsd:complexType name="operationType">
-        <xsd:sequence maxOccurs="unbounded">
+        <xsd:choice maxOccurs="unbounded">
             <xsd:element name="invokes" type="tns:invokesType"/>
             <xsd:element name="transform" type="tns:transformType"/>
-        </xsd:sequence>
+        </xsd:choice>
         <xsd:attribute name="opName" type="xsd:NCName" use="required"/>
         <!-- for backwards compatability, 'file' means implicit transform -->
         <xsd:attribute name="file" type="xsd:string"/>
