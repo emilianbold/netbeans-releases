@@ -142,6 +142,8 @@ public class JSPDebuggingOverallTest extends JellyTestCase {
         }
         // confirm properties dialog
         propertiesDialogOper.ok();
+        // if setting default server, it scans server jars; otherwise it continues immediatelly
+        ProjectSupport.waitScanFinished();
     }
     
     /** Set a random port for Tomcat server and socket debugger transport. */
