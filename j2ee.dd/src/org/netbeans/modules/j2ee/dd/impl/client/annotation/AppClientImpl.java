@@ -23,6 +23,8 @@ import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.j2ee.dd.api.client.AppClient;
 import org.netbeans.modules.j2ee.dd.api.common.CommonDDBean;
@@ -38,6 +40,7 @@ import org.netbeans.modules.j2ee.dd.api.common.RootInterface;
 import org.netbeans.modules.j2ee.dd.api.common.ServiceRef;
 import org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException;
 import org.netbeans.modules.j2ee.dd.impl.common.annotation.CommonAnnotationHelper;
+import org.netbeans.modules.j2ee.dd.impl.common.annotation.EjbRefHelper;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
 import org.openide.filesystems.FileObject;
 import org.xml.sax.SAXParseException;
@@ -54,6 +57,7 @@ public class AppClientImpl implements AppClient {
     private EnvEntry[] envEntries = null;
     private MessageDestinationRef[] messageDestinationRefs = null;
     private ServiceRef[] serviceRefs = null;
+    private EjbRef[] ejbRefs;
 
     
     /**
@@ -97,6 +101,20 @@ public class AppClientImpl implements AppClient {
             return;
         }
         serviceRefs = CommonAnnotationHelper.getServiceRefs(helper);
+    }
+    
+    private void initEjbRefs() {
+        
+        if (ejbRefs != null) {
+            return;
+        }
+        
+        final List<EjbRef> resultEjbRefs = new ArrayList<EjbRef>();
+        
+        EjbRefHelper.setEjbRefs(helper, resultEjbRefs, null);
+        
+        ejbRefs = resultEjbRefs.toArray(new EjbRef[resultEjbRefs.size()]);
+                
     }
     
     // <editor-fold desc="Model implementation">
@@ -174,8 +192,13 @@ public class AppClientImpl implements AppClient {
         initServiceRefs();
         return serviceRefs.length;
     }
-    // </editor-fold>
     
+    public EjbRef[] getEjbRef() {
+        initEjbRefs();
+        return ejbRefs;
+    }
+
+    // </editor-fold>
     
     // <editor-fold defaultstate="collapsed" desc="Not implemented methods">
     @Override
@@ -216,10 +239,6 @@ public class AppClientImpl implements AppClient {
     }
 
     public String getCallbackHandler() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public EjbRef[] getEjbRef() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 

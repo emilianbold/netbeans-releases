@@ -31,11 +31,9 @@ import org.netbeans.modules.j2ee.dd.api.common.ResourceRef;
 import org.netbeans.modules.j2ee.dd.api.common.SecurityRole;
 import org.netbeans.modules.j2ee.dd.api.common.ServiceRef;
 import org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException;
-import org.netbeans.modules.j2ee.dd.api.ejb.Ejb;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
 import org.netbeans.modules.j2ee.dd.api.ejb.MessageDriven;
 import org.netbeans.modules.j2ee.dd.api.web.WebAppMetadata;
-import org.netbeans.modules.j2ee.dd.impl.common.annotation.CommonTestCase;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.metadata.model.support.TestUtilities;
 
@@ -62,7 +60,7 @@ public class CommonAnnotationHelperTest extends CommonTestCase {
                 "@DeclareRoles({\"Visitor\", \"Administrator\"})" +
                 "public class ListServlet {" +
                 "}");
-        createWebAppModel().runReadAction(new MetadataModelAction<WebAppMetadata, Void>() {
+        createWebAppModel(false).runReadAction(new MetadataModelAction<WebAppMetadata, Void>() {
             public Void run(WebAppMetadata metadata) throws VersionNotSupportedException {
                 checkSecurityRoles(metadata.getRoot().getSecurityRole());
                 return null;
@@ -434,12 +432,4 @@ public class CommonAnnotationHelperTest extends CommonTestCase {
         }
     }
     
-    private static Ejb getEjbByEjbName(Ejb[] ejbs, String name) {
-        for (Ejb ejb : ejbs) {
-            if (name.equals(ejb.getEjbName())) {
-                return ejb;
-            }
-        }
-        return null;
-    }
 }

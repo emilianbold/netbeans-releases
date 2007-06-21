@@ -23,6 +23,7 @@ import java.io.IOException;
 import org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
 import org.netbeans.modules.j2ee.dd.api.ejb.MessageDriven;
+import org.netbeans.modules.j2ee.dd.impl.common.annotation.CommonTestCase;
 import org.netbeans.modules.j2ee.metadata.model.support.TestUtilities;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 
@@ -30,7 +31,7 @@ import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
  *
  * @author Martin Adamek
  */
-public class MessageDrivenImplTest extends EjbJarTestCase  {
+public class MessageDrivenImplTest extends CommonTestCase  {
 
     public MessageDrivenImplTest(String testName) {
         super(testName);

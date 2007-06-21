@@ -60,6 +60,7 @@ import org.netbeans.modules.j2ee.dd.api.web.Taglib;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.dd.api.web.WelcomeFileList;
 import org.netbeans.modules.j2ee.dd.impl.common.annotation.CommonAnnotationHelper;
+import org.netbeans.modules.j2ee.dd.impl.common.annotation.EjbRefHelper;
 import org.netbeans.modules.j2ee.dd.spi.MetadataUnit;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.JavaContextListener;
@@ -85,6 +86,8 @@ public class WebAppImpl implements WebApp, JavaContextListener {
     private ServiceRef[] serviceRefs = null;
     private SecurityRole[] securityRoles = null;
     private Servlet[] servlets = null;
+    private EjbRef[] ejbRefs;
+    private EjbLocalRef[] ejbLocalRefs;
 
     public WebAppImpl(AnnotationModelHelper helper, boolean merge) {
         this.helper = helper;
@@ -184,6 +187,22 @@ public class WebAppImpl implements WebApp, JavaContextListener {
             return;
         }
         servlets = servletList.toArray(new Servlet[servletList.size()]);
+    }
+    
+    private void initLocalAndRemoteEjbRefs() {
+        
+        if (ejbRefs != null && ejbLocalRefs != null) {
+            return;
+        }
+        
+        final List<EjbRef> resultEjbRefs = new ArrayList<EjbRef>();
+        final List<EjbLocalRef> resultEjbLocalRefs = new ArrayList<EjbLocalRef>();
+        
+        EjbRefHelper.setEjbRefs(helper, resultEjbRefs, resultEjbLocalRefs);
+        
+        ejbRefs = resultEjbRefs.toArray(new EjbRef[resultEjbRefs.size()]);
+        ejbLocalRefs = resultEjbLocalRefs.toArray(new EjbLocalRef[resultEjbLocalRefs.size()]);
+                
     }
     
     public WebApp clone() {
@@ -696,14 +715,16 @@ public class WebAppImpl implements WebApp, JavaContextListener {
         if (merge && ddRoot != null) {
             return ddRoot.getEjbRef();
         }
-        return new EjbRef[0];
+        initLocalAndRemoteEjbRefs();
+        return ejbRefs;
     }
 
     public int sizeEjbRef() {
         if (merge && ddRoot != null) {
             return ddRoot.sizeEjbRef();
         }
-        return 0;
+        initLocalAndRemoteEjbRefs();
+        return ejbRefs.length;
     }
 
     public int addEjbRef(EjbRef valueInterface) {
@@ -733,14 +754,16 @@ public class WebAppImpl implements WebApp, JavaContextListener {
         if (merge && ddRoot != null) {
             return ddRoot.getEjbLocalRef();
         }
-        return new EjbLocalRef[0];
+        initLocalAndRemoteEjbRefs();
+        return ejbLocalRefs;
     }
 
     public int sizeEjbLocalRef() {
         if (merge && ddRoot != null) {
             return ddRoot.sizeEjbLocalRef();
         }
-        return 0;
+        initLocalAndRemoteEjbRefs();
+        return ejbLocalRefs.length;
     }
 
     public int addEjbLocalRef(EjbLocalRef valueInterface) {

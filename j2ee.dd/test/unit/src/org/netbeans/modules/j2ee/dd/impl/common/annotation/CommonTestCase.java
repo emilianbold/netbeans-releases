@@ -27,6 +27,7 @@ import java.util.Collections;
 import javax.ejb.Stateless;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.j2ee.dd.api.client.AppClientMetadata;
+import org.netbeans.modules.j2ee.dd.api.ejb.Ejb;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
 import org.netbeans.modules.j2ee.dd.api.web.WebAppMetadata;
 import org.netbeans.modules.j2ee.dd.spi.MetadataUnit;
@@ -89,6 +90,15 @@ public class CommonTestCase extends JavaSourceTestCase {
                 ClassPath.getClassPath(srcFO, ClassPath.SOURCE),
                 null);
         return AppClientMetadataModelFactory.createMetadataModel(metadataUnit);
+    }
+
+    protected static Ejb getEjbByEjbName(Ejb[] ejbs, String name) {
+        for (Ejb ejb : ejbs) {
+            if (name.equals(ejb.getEjbName())) {
+                return ejb;
+            }
+        }
+        return null;
     }
 
 }

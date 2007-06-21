@@ -29,13 +29,10 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import javax.lang.model.util.ElementFilter;
 import org.netbeans.modules.j2ee.dd.api.common.CommonDDBean;
 import org.netbeans.modules.j2ee.dd.api.common.EjbLocalRef;
 import org.netbeans.modules.j2ee.dd.api.common.EjbRef;
@@ -59,8 +56,7 @@ import org.netbeans.modules.j2ee.dd.api.ejb.RemoveMethod;
 import org.netbeans.modules.j2ee.dd.api.ejb.SecurityIdentity;
 import org.netbeans.modules.j2ee.dd.api.ejb.Session;
 import org.netbeans.modules.j2ee.dd.impl.common.annotation.CommonAnnotationHelper;
-import org.netbeans.modules.j2ee.dd.impl.common.annotation.EjbLocalRefImpl;
-import org.netbeans.modules.j2ee.dd.impl.common.annotation.EjbRefImpl;
+import org.netbeans.modules.j2ee.dd.impl.common.annotation.EjbRefHelper;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.AnnotationParser;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.ArrayValueHandler;
@@ -203,39 +199,7 @@ public class SessionImpl implements Session {
         final List<EjbRef> resultEjbRefs = new ArrayList<EjbRef>();
         final List<EjbLocalRef> resultEjbLocalRefs = new ArrayList<EjbLocalRef>();
         
-        // javax.ejb.EJBs is array of javax.ejb.EJB and is applicable to class
-        Map<String, ? extends AnnotationMirror> annByType = helper.getAnnotationsByType(typeElement.getAnnotationMirrors());
-        AnnotationMirror ejbsAnnotation = annByType.get("javax.ejb.EJBs"); // NOI18N
-        AnnotationParser parser = AnnotationParser.create(helper);
-        parser.expectAnnotationArray("value", helper.resolveType("javax.ejb.EJB"), new ArrayValueHandler() { // NOI18N
-            public Object handleArray(List<AnnotationValue> arrayMembers) {
-                for (AnnotationValue arrayMember : arrayMembers) {
-                    Object arrayMemberValue = arrayMember.getValue();
-                    if (arrayMemberValue instanceof AnnotationMirror) {
-                        createReference((AnnotationMirror) arrayMemberValue, resultEjbRefs, resultEjbLocalRefs);
-                    }
-                }
-                return null;
-            }
-        }, null);
-        parser.parse(ejbsAnnotation);
-        
-        // @EJB at class
-        if (helper.hasAnnotation(typeElement.getAnnotationMirrors(), "javax.ejb.EJB")) { // NOI18N
-            createReference(typeElement, resultEjbRefs, resultEjbLocalRefs);
-        }
-        // @EJB at field
-        for (VariableElement variableElement : ElementFilter.fieldsIn(typeElement.getEnclosedElements())) {
-            if (helper.hasAnnotation(variableElement.getAnnotationMirrors(), "javax.ejb.EJB")) { // NOI18N
-                createReference(variableElement, resultEjbRefs, resultEjbLocalRefs);
-            }
-        }
-        // @EJB at method
-        for (ExecutableElement executableElement : ElementFilter.methodsIn(typeElement.getEnclosedElements())) {
-            if (helper.hasAnnotation(executableElement.getAnnotationMirrors(), "javax.ejb.EJB")) {
-                createReference(executableElement, resultEjbRefs, resultEjbLocalRefs);
-            }
-        }
+        EjbRefHelper.setEjbRefsForClass(helper, typeElement, resultEjbRefs, resultEjbLocalRefs);
         
         ejbRefs = resultEjbRefs.toArray(new EjbRef[resultEjbRefs.size()]);
         ejbLocalRefs = resultEjbLocalRefs.toArray(new EjbLocalRef[resultEjbLocalRefs.size()]);
@@ -248,132 +212,6 @@ public class SessionImpl implements Session {
             return;
         }
         serviceRefs = CommonAnnotationHelper.getServiceRefs(helper, typeElement);
-    }
-    
-    /**
-     * Creates local or remote reference
-     */
-    private void createReference(Element element, List<EjbRef> resultEjbRefs, List<EjbLocalRef> resultEjbLocalRefs) {
-        
-        String name = null;
-        String beanInterface = null;
-        String beanName = null;
-        String mappedName = null;
-        String description = null;
-        
-        TypeElement interfaceTypeElement = null;
-        
-        Map<String, ? extends AnnotationMirror> annByType = helper.getAnnotationsByType(element.getAnnotationMirrors());
-        
-        if (ElementKind.CLASS == element.getKind()) {
-
-            AnnotationParser parser = AnnotationParser.create(helper);
-            parser.expectString("name", null);
-            parser.expectClass("beanInterface", null);
-            parser.expectString("beanName", null);
-            parser.expectString("mappedName", null);
-            parser.expectString("description", null);
-            ParseResult parseResult = parser.parse(annByType.get("javax.ejb.EJB"));
-            
-            name = parseResult.get("name", String.class);
-            beanInterface = parseResult.get("beanInterface", String.class);
-            beanName = parseResult.get("beanName", String.class);
-            mappedName = parseResult.get("mappedName", String.class);
-            description = parseResult.get("description", String.class);
-            
-            if (beanInterface != null) {
-                interfaceTypeElement = helper.getCompilationController().getElements().getTypeElement(beanInterface);
-            }
-            
-        } else if (ElementKind.FIELD == element.getKind() || ElementKind.METHOD == element.getKind()) {
-            
-            TypeMirror fieldTypeMirror = element.asType();
-
-            if (ElementKind.METHOD == element.getKind()) {
-                if (!element.getSimpleName().toString().startsWith("set")) {
-                    return;
-                }
-                ExecutableElement method = (ExecutableElement) element;
-                List<? extends VariableElement> parameters = method.getParameters();
-                if (parameters.size() != 1) {
-                    return;
-                }
-                fieldTypeMirror = parameters.get(0).asType();
-            }
-            
-            if (TypeKind.DECLARED == fieldTypeMirror.getKind()) {
-                DeclaredType fieldDeclaredType = (DeclaredType) fieldTypeMirror;
-                Element fieldTypeElement = fieldDeclaredType.asElement();
-                if (ElementKind.INTERFACE == fieldTypeElement.getKind()) {
-                    interfaceTypeElement = (TypeElement) fieldTypeElement;
-                    beanInterface = interfaceTypeElement.getQualifiedName().toString();
-                }
-            }
-            
-            AnnotationParser parser = AnnotationParser.create(helper);
-            parser.expectString("name", parser.defaultValue(element.getSimpleName().toString()));
-            ParseResult parseResult = parser.parse(annByType.get("javax.ejb.EJB"));
-            name = parseResult.get("name", String.class);
-            
-        } else {
-            return;
-        }
-        
-        if (interfaceTypeElement != null) {
-            createReference(interfaceTypeElement, resultEjbRefs, resultEjbLocalRefs, name, beanInterface, beanName, mappedName, description);
-        }
-        
-    }
-    
-    /**
-     * Creates local or remote reference
-     */
-    private void createReference(AnnotationMirror annotationMirror, List<EjbRef> resultEjbRefs, List<EjbLocalRef> resultEjbLocalRefs) {
-        
-        String name;
-        String beanInterface;
-        String beanName;
-        String mappedName;
-        String description;
-        
-        TypeElement interfaceTypeElement;
-        
-        AnnotationParser parser = AnnotationParser.create(helper);
-        parser.expectString("name", null);
-        parser.expectClass("beanInterface", null);
-        parser.expectString("beanName", null);
-        parser.expectString("mappedName", null);
-        parser.expectString("description", null);
-        ParseResult parseResult = parser.parse(annotationMirror);
-
-        name = parseResult.get("name", String.class);
-        beanInterface = parseResult.get("beanInterface", String.class);
-        beanName = parseResult.get("beanName", String.class);
-        mappedName = parseResult.get("mappedName", String.class);
-        description = parseResult.get("description", String.class);
-
-        interfaceTypeElement = helper.getCompilationController().getElements().getTypeElement(beanInterface);
-
-        createReference(interfaceTypeElement, resultEjbRefs, resultEjbLocalRefs, name, beanInterface, beanName, mappedName, description);
-        
-    }
-    
-    private void createReference(TypeElement interfaceTypeElement, List<EjbRef> resultEjbRefs, List<EjbLocalRef> resultEjbLocalRefs, 
-            String name, String beanInterface, String beanName, String mappedName, String description) {
-        
-        // TODO: implement good-enough algorithm to recognize if referenced interface is local or remote
-        // this one just checks if there is @Remote annotation; if not, it is local
-        boolean isLocal = true;
-        Map<String, ? extends AnnotationMirror> memberAnnByType = helper.getAnnotationsByType(interfaceTypeElement.getAnnotationMirrors());
-        if (memberAnnByType.get("javax.ejb.Remote") != null) {
-            isLocal = false;
-        }
-        
-        if (isLocal) {
-            resultEjbLocalRefs.add(new EjbLocalRefImpl(name, beanInterface, beanName, mappedName, description));
-        } else {
-            resultEjbRefs.add(new EjbRefImpl(name, beanInterface, beanName, mappedName, description));
-        }
     }
     
     private void initResourceRefs() {

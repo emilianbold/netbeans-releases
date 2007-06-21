@@ -28,6 +28,7 @@ import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
 import org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans;
 import org.netbeans.modules.j2ee.dd.api.ejb.MessageDriven;
 import org.netbeans.modules.j2ee.dd.api.ejb.Session;
+import org.netbeans.modules.j2ee.dd.impl.common.annotation.CommonTestCase;
 import org.netbeans.modules.j2ee.metadata.model.support.TestUtilities;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 
@@ -35,7 +36,7 @@ import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
  *
  * @author Martin Adamek
  */
-public class EjbJarMetadataModelTest extends EjbJarTestCase {
+public class EjbJarMetadataModelTest extends CommonTestCase {
     
     public EjbJarMetadataModelTest(String testName) {
         super(testName);

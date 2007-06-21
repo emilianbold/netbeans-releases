@@ -25,6 +25,7 @@ import org.netbeans.modules.j2ee.dd.api.common.ServiceRef;
 import org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
 import org.netbeans.modules.j2ee.dd.api.ejb.Session;
+import org.netbeans.modules.j2ee.dd.impl.common.annotation.CommonTestCase;
 import org.netbeans.modules.j2ee.metadata.model.support.TestUtilities;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 
@@ -32,7 +33,7 @@ import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
  *
  * @author Martin Adamek
  */
-public class SessionImplTest extends EjbJarTestCase {
+public class SessionImplTest extends CommonTestCase {
 
     public SessionImplTest(String testName) {
         super(testName);
@@ -122,99 +123,6 @@ public class SessionImplTest extends EjbJarTestCase {
 
     }
     
-    public void testGetEjbRef() throws IOException, InterruptedException {
-        TestUtilities.copyStringToFileObject(srcFO, "foo/FooLocal.java",
-                "package foo;" +
-                "public interface FooLocal {" +
-                "}");
-        TestUtilities.copyStringToFileObject(srcFO, "foo/FooLocal2.java",
-                "package foo;" +
-                "public interface FooLocal2 {" +
-                "}");
-        TestUtilities.copyStringToFileObject(srcFO, "foo/FooRemote.java",
-                "package foo;" +
-                "import javax.ejb.*;" +
-                "@Remote()" +
-                "public interface FooRemote {" +
-                "}");
-        TestUtilities.copyStringToFileObject(srcFO, "foo/Foo1.java",
-                "package foo;" +
-                "import javax.ejb.*;" +
-                "@Stateless()" +
-                "public class Foo1 implements FooLocal {" +
-                "@EJB()" +
-                "private FooLocal run;" +
-                "}");
-        TestUtilities.copyStringToFileObject(srcFO, "foo/Foo2.java",
-                "package foo;" +
-                "import javax.ejb.*;" +
-                "@Stateless()" +
-                "public class Foo2 implements FooLocal {" +
-                "@EJB()" +
-                "private void setIter(FooRemote it) {};" +
-                "}");
-        TestUtilities.copyStringToFileObject(srcFO, "foo/Foo3.java",
-                "package foo;" +
-                "import javax.ejb.*;" +
-                "@Stateless()" +
-                "public class Foo3 implements FooLocal {" +
-                "@EJB(beanInterface=FooLocal.class, description=\"dsc\", mappedName=\"mFoo\", beanName=\"bFoo\", name=\"Foo\")" +
-                "private FooRemote prop;" +
-                "}");
-        TestUtilities.copyStringToFileObject(srcFO, "foo/Foo4.java",
-                "package foo;" +
-                "import javax.ejb.*;" +
-                "@Stateless()" +
-                "public class Foo4 implements FooLocal {" +
-                "@EJB(beanInterface=FooLocal.class, description=\"dsc\", mappedName=\"mFoo\", beanName=\"bFoo\", name=\"Foo\")" +
-                "private void setIter(FooRemote it) {};" +
-                "}");
-        TestUtilities.copyStringToFileObject(srcFO, "foo/Foo5.java",
-                "package foo;" +
-                "import javax.ejb.*;" +
-                "@EJB(beanInterface=FooLocal.class, description=\"dsc1\", mappedName=\"mFoo\", beanName=\"bFoo\", name=\"Foo\")" +
-                "@Stateless()" +
-                "public class Foo5 implements FooLocal {" +
-                "}");
-        TestUtilities.copyStringToFileObject(srcFO, "foo/Foo6.java",
-                "package foo;" +
-                "import javax.ejb.*;" +
-                "@EJBs({" +
-                "@EJB(beanInterface=FooLocal.class, description=\"dsc1\", mappedName=\"mFoo1\", beanName=\"bFoo1\", name=\"Foo1\")," +
-                "@EJB(beanInterface=FooRemote.class, description=\"dsc2\", mappedName=\"mFoo2\", beanName=\"bFoo2\", name=\"Foo2\")," +
-                "@EJB(beanInterface=FooLocal2.class, description=\"dsc3\", mappedName=\"mFoo3\", beanName=\"bFoo3\", name=\"Foo3\")" +
-                "})" +
-                "@Stateless()" +
-                "public class Foo6 implements FooLocal {" +
-                "}");
-        
-        createEjbJarModel().runReadAction(new MetadataModelAction<EjbJarMetadata, Void>() {
-            public Void run(EjbJarMetadata metadata) throws VersionNotSupportedException {
-                // test Foo1
-                Session session = (Session) getEjbByEjbName(metadata.getRoot().getEnterpriseBeans().getSession(), "Foo1");
-                assertEquals(1, session.getEjbLocalRef().length);
-                // test Foo2
-                session = (Session) getEjbByEjbName(metadata.getRoot().getEnterpriseBeans().getSession(), "Foo2");
-                assertEquals(1, session.getEjbRef().length);
-                // test Foo3
-                session = (Session) getEjbByEjbName(metadata.getRoot().getEnterpriseBeans().getSession(), "Foo3");
-                assertEquals(1, session.getEjbRef().length);
-                // test Foo4
-                session = (Session) getEjbByEjbName(metadata.getRoot().getEnterpriseBeans().getSession(), "Foo4");
-                assertEquals(1, session.getEjbRef().length);
-                // test Foo5
-                session = (Session) getEjbByEjbName(metadata.getRoot().getEnterpriseBeans().getSession(), "Foo5");
-                assertEquals(1, session.getEjbLocalRef().length);
-                // test Foo6
-                session = (Session) getEjbByEjbName(metadata.getRoot().getEnterpriseBeans().getSession(), "Foo6");
-                assertEquals(2, session.getEjbLocalRef().length);
-                assertEquals(1, session.getEjbRef().length);
-                
-                return null;
-            }
-        });
-
-    }
     public void testGetServiceRef() throws IOException, InterruptedException {
         TestUtilities.copyStringToFileObject(srcFO, "foo/FooService.java",
                 "package foo;" +
