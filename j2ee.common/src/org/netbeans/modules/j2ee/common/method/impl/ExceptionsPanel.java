@@ -23,8 +23,12 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
 import org.openide.util.NbBundle;
 
@@ -40,13 +44,14 @@ public final class ExceptionsPanel extends javax.swing.JPanel {
         initComponents();
         tableModel = new ExceptionsTableModel(parameters);
         table.setModel(tableModel);
+
         table.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent e) {
                 updateButtons();
             }
         });
         table.addKeyListener(new KeyAdapter() {
-            public void keyPressed(KeyEvent e) {
+            public void keyReleased(KeyEvent e) {
                 updateButtons();
             }
         });
@@ -81,25 +86,35 @@ public final class ExceptionsPanel extends javax.swing.JPanel {
         ));
         jScrollPane1.setViewportView(table);
 
-        org.openide.awt.Mnemonics.setLocalizedText(addButton, org.openide.util.NbBundle.getMessage(ParametersPanel.class, "ParametersPanel.addButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(addButton, org.openide.util.NbBundle.getMessage(ExceptionsPanel.class, "ParametersPanel.addButton.text")); // NOI18N
         addButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 addButtonActionPerformed(evt);
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(removeButton, org.openide.util.NbBundle.getMessage(ParametersPanel.class, "ParametersPanel.removeButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(removeButton, org.openide.util.NbBundle.getMessage(ExceptionsPanel.class, "ParametersPanel.removeButton.text")); // NOI18N
         removeButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 removeButtonActionPerformed(evt);
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(upButton, org.openide.util.NbBundle.getMessage(ParametersPanel.class, "ParametersPanel.upButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(upButton, org.openide.util.NbBundle.getMessage(ExceptionsPanel.class, "ParametersPanel.upButton.text")); // NOI18N
         upButton.setEnabled(false);
+        upButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                upButtonActionPerformed(evt);
+            }
+        });
 
-        org.openide.awt.Mnemonics.setLocalizedText(downButton, org.openide.util.NbBundle.getMessage(ParametersPanel.class, "ParametersPanel.downButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(downButton, org.openide.util.NbBundle.getMessage(ExceptionsPanel.class, "ParametersPanel.downButton.text")); // NOI18N
         downButton.setEnabled(false);
+        downButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                downButtonActionPerformed(evt);
+            }
+        });
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -136,11 +151,31 @@ public final class ExceptionsPanel extends javax.swing.JPanel {
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
+
+private void downButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_downButtonActionPerformed
+    int selIndex = table.getSelectedRow();
+    int newIndex = selIndex + 1;
+    if (newIndex < tableModel.getExceptions().size()) {
+        tableModel.set(newIndex, tableModel.set(selIndex, tableModel.getException(newIndex)));
+        table.setRowSelectionInterval(newIndex, newIndex);
+        updateButtons();
+    }
+}//GEN-LAST:event_downButtonActionPerformed
+
+private void upButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_upButtonActionPerformed
+    int selIndex = table.getSelectedRow();
+    int newIndex = selIndex - 1;
+    if (newIndex >= 0) {
+        tableModel.set(newIndex, tableModel.set(selIndex, tableModel.getException(newIndex)));
+        table.setRowSelectionInterval(newIndex, newIndex);
+        updateButtons();
+    }
+}//GEN-LAST:event_upButtonActionPerformed
     
 private void removeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeButtonActionPerformed
     int selectedRow = table.getSelectedRow();
     if (selectedRow > -1) {
-        tableModel.removeParameter(selectedRow);
+        tableModel.removeException(selectedRow);
     }
     if (selectedRow == table.getRowCount()) {
         selectedRow--;
@@ -150,7 +185,7 @@ private void removeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
 }//GEN-LAST:event_removeButtonActionPerformed
 
 private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
-    int index = tableModel.addParameter();
+    int index = tableModel.addException();
     table.getSelectionModel().setSelectionInterval(index, index);
     updateButtons();
 }//GEN-LAST:event_addButtonActionPerformed
@@ -166,10 +201,12 @@ private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
     // End of variables declaration//GEN-END:variables
     
     private void updateButtons() {
-        int selectedRowsCount = table.getSelectedRowCount();
-        removeButton.setEnabled(selectedRowsCount != 0);
-        upButton.setEnabled(selectedRowsCount == 1);
-        downButton.setEnabled(selectedRowsCount == 1);
+        int selIndex = table.getSelectedRow();
+        boolean oneSelected = table.getSelectedRowCount() == 1;
+        
+        removeButton.setEnabled(oneSelected);
+        upButton.setEnabled(oneSelected && (selIndex > 0));
+        downButton.setEnabled(oneSelected && (selIndex < tableModel.getRowCount() - 1));
     }
     
     // accessible for test
@@ -185,18 +222,26 @@ private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
             return exceptions;
         }
         
-        public int addParameter() {
+        public int addException() {
             int index = exceptions.size();
-            exceptions.add(" "); // NOI18N
+            exceptions.add(""); // NOI18N
             fireTableRowsInserted(index, index);
             return index;
         }
         
-        public void removeParameter(int index) {
+        public void removeException(int index) {
             exceptions.remove(index);
             fireTableRowsDeleted(index, index);
         }
         
+        public String getException(int index) {
+            return exceptions.get(index);
+        }
+        
+        public String set(int index, String exception) {
+            return exceptions.set(index, exception);
+        }
+
         public int getRowCount() {
             return exceptions.size();
         }

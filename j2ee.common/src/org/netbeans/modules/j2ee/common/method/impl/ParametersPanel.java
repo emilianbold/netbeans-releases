@@ -71,7 +71,7 @@ public final class ParametersPanel extends javax.swing.JPanel {
             }
         });
         table.addKeyListener(new KeyAdapter() {
-            public void keyPressed(KeyEvent e) {
+            public void keyReleased(KeyEvent e) {
                 updateButtons();
             }
         });
@@ -174,16 +174,22 @@ public final class ParametersPanel extends javax.swing.JPanel {
 
 private void upButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_upButtonActionPerformed
     int selIndex = table.getSelectedRow();
-    tableModel.set(selIndex - 1, tableModel.set(selIndex, tableModel.getParameter(selIndex - 1)));
-    table.setRowSelectionInterval(selIndex - 1, selIndex - 1);
-    updateButtons();
+    int newIndex = selIndex - 1;
+    if (newIndex >= 0) {
+        tableModel.set(newIndex, tableModel.set(selIndex, tableModel.getParameter(newIndex)));
+        table.setRowSelectionInterval(newIndex, newIndex);
+        updateButtons();
+    }
 }//GEN-LAST:event_upButtonActionPerformed
 
 private void downButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_downButtonActionPerformed
     int selIndex = table.getSelectedRow();
-    tableModel.set(selIndex + 1, tableModel.set(selIndex, tableModel.getParameter(selIndex + 1)));
-    table.setRowSelectionInterval(selIndex + 1, selIndex + 1);
-    updateButtons();
+    int newIndex = selIndex + 1;
+    if (newIndex < tableModel.getParameters().size()) {
+        tableModel.set(newIndex, tableModel.set(selIndex, tableModel.getParameter(newIndex)));
+        table.setRowSelectionInterval(newIndex, newIndex);
+        updateButtons();
+    }
 }//GEN-LAST:event_downButtonActionPerformed
 
 private void removeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeButtonActionPerformed

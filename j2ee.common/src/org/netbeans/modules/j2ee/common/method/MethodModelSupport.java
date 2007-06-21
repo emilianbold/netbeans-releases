@@ -129,8 +129,7 @@ public final class MethodModelSupport {
         }
         List<ExpressionTree> throwsList = new ArrayList<ExpressionTree>();
         for (String exceptionName : methodModel.getExceptions()) {
-            TypeElement element = workingCopy.getElements().getTypeElement(exceptionName);
-            throwsList.add(treeMaker.QualIdent(element));
+            throwsList.add(createQualIdent(workingCopy, exceptionName));
         }
         MethodTree result;
         String body = methodModel.getBody();
