@@ -54,6 +54,10 @@ public class MethodModel {
     }
     
     public FileObject getImplementationClass(){
+        if(!implementationClass.isValid()){
+            FileObject parent = implementationClass.getParent();
+            implementationClass = parent.getFileObject(implementationClass.getNameExt());
+        }
         return implementationClass;
     }
     
@@ -76,7 +80,7 @@ public class MethodModel {
     
     public void setOperationName(String operationName) {
         if (this.operationName != operationName) {
-            JaxWsUtils.setWebMethodAttrValue(implementationClass, methodHandle, "operationName", operationName); //NOI18N
+            JaxWsUtils.setWebMethodAttrValue(getImplementationClass(), methodHandle, "operationName", operationName); //NOI18N
             
             this.operationName=operationName==null?javaName:operationName;
         }

@@ -24,10 +24,8 @@ import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
-import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
-import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.tree.VariableTree;
@@ -88,10 +86,6 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import java.util.Iterator;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.SourceGroup;
-import org.openide.filesystems.FileLock;
-import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -218,11 +212,7 @@ public class JaxWsUtils {
         if (addService) {
             serviceID = jaxWsSupport.addService(targetName, serviceImplPath, wsdlURL.toString(), service.getName(), port.getName(), artifactsPckg, jsr109Supported && Util.isJavaEE5orHigher(project));
         }
-        //Copy SEI to src dir       
-        FileObject serviceArtifactsFolder = project.getProjectDirectory().getFileObject("build/generated/wsimport/service"); //NOI18N
-        FileObject seiClass = serviceArtifactsFolder.getFileObject(port.getJavaName().replace('.', '/') + ".java");
-        copyToSource(seiClass, port.getJavaName(),classPath.findOwnerRoot(implClassFo));
-        
+ 
         final String wsdlLocation = jaxWsSupport.getWsdlLocation(serviceID);
         JavaSource targetSource = JavaSource.forFileObject(implClassFo);
         CancellableTask<WorkingCopy> task = new CancellableTask<WorkingCopy>() {
@@ -488,26 +478,6 @@ public class JaxWsUtils {
             packageName = fullyQualifiedName.substring(0, index);
         }
         return packageName;
-    }
-    
-    public  static void copyToSource(FileObject fileToCopy, String qualifiedClassName, FileObject srcRoot )throws IOException{
-        if(fileToCopy != null){
-            String packageToCopy =  getPackageName(qualifiedClassName);
-            FileObject destFolder = FileUtil.createFolder(srcRoot, packageToCopy.replace('.', '/'));
-            FileObject existingFile = destFolder.getFileObject(fileToCopy.getNameExt());
-            if(existingFile != null){
-                FileLock lock = null;
-                try{
-                    lock = existingFile.lock();
-                    existingFile.delete(lock);
-                }finally{
-                    if(lock != null){
-                        lock.releaseLock();
-                    }
-                }
-            }
-            FileUtil.copyFile(fileToCopy, destFolder, fileToCopy.getName());
-        }
     }
     
  

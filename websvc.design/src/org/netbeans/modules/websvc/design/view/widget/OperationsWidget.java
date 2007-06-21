@@ -63,7 +63,7 @@ public class OperationsWidget extends AbstractTitledWidget {
      * @param service
      * @param serviceModel
      */
-    public OperationsWidget(ObjectScene scene, final Service service, ServiceModel serviceModel) {
+    public OperationsWidget(ObjectScene scene, final Service service, final ServiceModel serviceModel) {
         super(scene,RADIUS,BORDER_COLOR);
         this.serviceModel = serviceModel;
         serviceModel.addServiceChangeListener(new ServiceChangeListener() {
@@ -74,7 +74,7 @@ public class OperationsWidget extends AbstractTitledWidget {
             }
             
             public void operationAdded(MethodModel method) {
-                OperationWidget operationWidget = new OperationWidget(getScene(),service, method);
+                OperationWidget operationWidget = new OperationWidget(getScene(),serviceModel, service, method);
                 getContentWidget().addChild(operationWidget);
                 getObjectScene().addObject(method, operationWidget);
                 updateHeaderLabel();
@@ -136,7 +136,7 @@ public class OperationsWidget extends AbstractTitledWidget {
         getContentWidget().setBorder(BorderFactory.createEmptyBorder(RADIUS));
         if(serviceModel.getOperations()!=null) {
             for(MethodModel operation:serviceModel.getOperations()) {
-                OperationWidget operationWidget = new OperationWidget(getScene(),service, operation);
+                OperationWidget operationWidget = new OperationWidget(getScene(),serviceModel, service, operation);
                 getContentWidget().addChild(operationWidget);
                 getObjectScene().addObject(operation, operationWidget);
             }

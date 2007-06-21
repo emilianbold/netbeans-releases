@@ -30,6 +30,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.ArrayList;
 import java.util.List;
@@ -52,6 +53,7 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
+import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.Comment;
@@ -62,8 +64,12 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.websvc.api.jaxws.project.GeneratedFilesHelper;
 import org.netbeans.modules.websvc.design.util.SourceUtils;
 import org.openide.ErrorManager;
+import org.openide.execution.ExecutorTask;
 import static org.netbeans.api.java.source.JavaSource.Phase;
 import org.openide.filesystems.FileObject;
 
@@ -79,7 +85,6 @@ public class Utils {
     }
     
     public static void populateModel(final FileObject implClass, final ServiceModel serviceModel) {
-        
         JavaSource javaSource = JavaSource.forFileObject(implClass);
         CancellableTask<CompilationController> task = new CancellableTask<CompilationController>() {
             public void run(CompilationController controller) throws IOException {
@@ -136,7 +141,7 @@ public class Utils {
                         if (!serviceNameFound) serviceModel.serviceName = implClass.getName()+"Service"; //NOI18N
                         if (!tnsFound) {
                             String qualifName = classEl.getQualifiedName().toString();
-                            int ind = qualifName.lastIndexOf(".");                           
+                            int ind = qualifName.lastIndexOf(".");
                             serviceModel.targetNamespace = "http://"+(ind>=0?qualifName.substring(0,ind):"")+"/";
                         }
                         
@@ -150,7 +155,7 @@ public class Utils {
                         seiClassEl = controller.getElements().getTypeElement(serviceModel.endpointInterface);
                         if (seiClassEl != null) classEl = seiClassEl;
                     }
-                                       
+                    
                     boolean foundWebMethodAnnotation=false;
                     TypeElement methodAnotationEl = controller.getElements().getTypeElement("javax.jws.WebMethod"); //NOI18N
                     List<ExecutableElement> methods = new ArrayList<ExecutableElement>();
@@ -193,14 +198,25 @@ public class Utils {
                         serviceModel.status = ServiceModel.STATUS_INCORRECT_SERVICE;
                         return;
                     }
-                            
+                    
+                    boolean hasEndpointInterfaceAttr = serviceModel.endpointInterface != null;
+                    FileObject seiClass = null;
+                    if(hasEndpointInterfaceAttr){
+                        final Project project = FileOwnerQuery.getOwner(implClass);
+                        String seiPath = "build/generated/wsimport/service/" + serviceModel.endpointInterface.replace('.', '/') + ".java"; //NOI18N
+                        seiClass = project.getProjectDirectory().getFileObject(seiPath);
+                        if(seiClass == null){
+                            invokeWsImport(project, serviceModel.getName());
+                            seiClass = project.getProjectDirectory().getFileObject(seiPath);
+                        }
+                    }
                     for (int i=0;i<methods.size();i++) {
                         MethodModel operation = new MethodModel();
-                        
                         boolean seiClassFound = false;
-                        if (serviceModel.endpointInterface!=null) {
+                        if (hasEndpointInterfaceAttr) {
                             // find SEI File Object in sources
-                            ClassPath classPath = ClassPath.getClassPath(implClass, ClassPath.SOURCE);
+                            //TODO: do we need to still do this??
+                            ClassPath classPath = ClassPath.getClassPath(seiClass, ClassPath.SOURCE);
                             FileObject[] srcRoots = classPath.getRoots();
                             for (FileObject srcRoot:srcRoots) {
                                 String seiClassResource = serviceModel.endpointInterface.replace('.', '/')+".java"; //NOI18N
@@ -209,7 +225,7 @@ public class Utils {
                                     seiClassFound = true;
                                     operation.setImplementationClass(seiClassFo);
                                     break;
-                                } 
+                                }
                             }
                         }
                         if (!seiClassFound) operation.setImplementationClass(implClass);
@@ -372,7 +388,7 @@ public class Utils {
             TreePathHandle paramHandle = TreePathHandle.create(paramEl, controller);
             param.setParamHandle(paramHandle);
             populateParam(controller, paramEl, param);
-            params.add(param);            
+            params.add(param);
         }
         methodModel.setParams(params);
         
@@ -392,7 +408,7 @@ public class Utils {
             paramModel.setParamType(type.toString());
         }
         TypeElement paramAnotationEl = controller.getElements().getTypeElement("javax.jws.WebParam"); //NOI18N
-        List<? extends AnnotationMirror> paramAnnotations = paramEl.getAnnotationMirrors();                
+        List<? extends AnnotationMirror> paramAnnotations = paramEl.getAnnotationMirrors();
         for (AnnotationMirror anMirror : paramAnnotations) {
             if (controller.getTypes().isSameType(paramAnotationEl.asType(), anMirror.getAnnotationType())) {
                 Map<? extends ExecutableElement, ? extends AnnotationValue> expressions = anMirror.getElementValues();
@@ -412,11 +428,11 @@ public class Utils {
     }
     
     private static void setSoapRequest(MethodModel methodModel, String tns) {
-
+        
         try {
             // create a sample SOAP request using SAAJ API
             MessageFactory messageFactory = MessageFactory.newInstance();
-
+            
             SOAPMessage request = messageFactory.createMessage();
             MimeHeaders headers = request.getMimeHeaders();
             String action = methodModel.getAction();
@@ -434,7 +450,7 @@ public class Utils {
             // removing soap header
             SOAPHeader header = envelope.getHeader();
             envelope.removeChild(header);
-
+            
             // implementing body
             Name methodName = envelope.createName(methodModel.getOperationName());
             SOAPElement methodElement = body.addBodyElement(methodName);
@@ -447,7 +463,7 @@ public class Utils {
             for (ParamModel param:params) {
                 String paramNs = param.getTargetNamespace();
                 Name paramName = null;
-                if (paramNs!=null) {                   
+                if (paramNs!=null) {
                     String pref = "ns"+String.valueOf(++i); //NOI18N
                     paramName = envelope.createName(param.getName(), pref, paramNs);
                     methodElement.addNamespaceDeclaration(pref,paramNs);
@@ -458,7 +474,7 @@ public class Utils {
                 SOAPElement paramElement = methodElement.addChildElement(paramName);
                 
                 String paramType = param.getParamType();
-                if ("javax.xml.namespace.QName".equals(paramType)) {    
+                if ("javax.xml.namespace.QName".equals(paramType)) {
                     paramElement.addNamespaceDeclaration("sampleNs", "http://www.netbeans.org/sampleNamespace");
                     paramElement.addTextNode("sampleNs:sampleQName");
                 } else {
@@ -479,7 +495,7 @@ public class Utils {
         try {
             // create a sample SOAP request using SAAJ API
             MessageFactory messageFactory = MessageFactory.newInstance();
-
+            
             SOAPMessage response = messageFactory.createMessage();
             SOAPPart part = response.getSOAPPart();
             SOAPEnvelope envelope = part.getEnvelope();
@@ -494,7 +510,7 @@ public class Utils {
             // removing soap header
             SOAPHeader header = envelope.getHeader();
             envelope.removeChild(header);
-
+            
             // implementing body
             Name responseName = envelope.createName(methodModel.getOperationName()+"Response"); //NOI18N
             SOAPElement responseElement = body.addBodyElement(responseName);
@@ -523,7 +539,7 @@ public class Utils {
                 SOAPElement resultElement = responseElement.addChildElement(resultName);
                 resultElement.addTextNode(getSampleValue(resultType));
             }
-
+            
             methodModel.setSoapResponse(response);
             
         } catch (SOAPException ex) {
@@ -535,30 +551,30 @@ public class Utils {
         if ("java.lang.String".equals(paramType)) {
             return "sample text"; //NOI18N
         } else if ("int".equals(paramType) || //NOI18N
-                    "java.lang.Integer".equals(paramType) || //NOI18N
-                    "java.math.BigInteger".equals(paramType)) { //NOI18N
+                "java.lang.Integer".equals(paramType) || //NOI18N
+                "java.math.BigInteger".equals(paramType)) { //NOI18N
             return "99"; //NOI18N
         } else if ("double".equals(paramType) || "java.lang.Double".equals(paramType)) { //NOI18N
             return "999.999"; //NOI18N
         } else if ("float".equals(paramType) || //NOI18N
-                    "java.lang.Float".equals(paramType) || //NOI18N
-                    "java.math.BigDecimal".equals(paramType)) {//NOI18N
+                "java.lang.Float".equals(paramType) || //NOI18N
+                "java.math.BigDecimal".equals(paramType)) {//NOI18N
             return "99.99"; //NOI18N
         } else if ("long".equals(paramType) || "java.lang.Long".equals(paramType)) { //NOI18N
             return "999"; //NOI18N
         } else if ("boolean".equals(paramType) || "java.lang.Boolean".equals(paramType)) { //NOI18N
             return "false"; //NOI18N
         } else if ("char".equals(paramType) || //NOI18N
-                    "java.lang.Char".equals(paramType) || //NOI18N
-                    "short".equals(paramType) || //NOI18N
-                    "java.lang.Short".equals(paramType)) { //NOI18N
+                "java.lang.Char".equals(paramType) || //NOI18N
+                "short".equals(paramType) || //NOI18N
+                "java.lang.Short".equals(paramType)) { //NOI18N
             return "65"; //NOI18N
         } else if ("byte[]".equals(paramType)) { //NOI18N
             return "73616D706C652074657874"; //NOI18N
         } else if ("javax.xml.datatype.XMLGregorianCalendar".equals(paramType) || //NOI18N
-                   "java.util.Date".equals(paramType) || //NOI18N
-                   "java.util.Calendar".equals(paramType) || //NOI18N
-                   "java.util.GregorianCalendar".equals(paramType)) { //NOI18N
+                "java.util.Date".equals(paramType) || //NOI18N
+                "java.util.Calendar".equals(paramType) || //NOI18N
+                "java.util.GregorianCalendar".equals(paramType)) { //NOI18N
             return "2007-04-19"; //NOI18N
         } else if ("javax.xml.datatype.Duration".equals(paramType)) { //NOI18N
             return "P2007Y4M"; //NOI18N
@@ -571,7 +587,7 @@ public class Utils {
         JavaSource javaSource = JavaSource.forFileObject(implClass);
         CancellableTask<WorkingCopy> modificationTask = new CancellableTask<WorkingCopy>() {
             public void run(WorkingCopy workingCopy) throws IOException {
-                workingCopy.toPhase(Phase.RESOLVED);            
+                workingCopy.toPhase(Phase.RESOLVED);
                 TreeMaker make = workingCopy.getTreeMaker();
                 ClassTree classTree = SourceUtils.findPublicTopLevelClass(workingCopy);
                 List<? extends Tree> members = classTree.getMembers();
@@ -591,7 +607,7 @@ public class Utils {
                                 for(ExecutableElement ex:expressions.keySet()) {
                                     if (ex.getSimpleName().contentEquals("operationName")) { //NOI18N
                                         if (methodModel.getOperationName().equals(expressions.get(ex).getValue())) {
-                                            targetMethod = method;    
+                                            targetMethod = method;
                                         }
                                         break;
                                     }
@@ -609,14 +625,14 @@ public class Utils {
                     
                 }
                 if (targetMethod!=null) {
-                    Comment comment = Comment.create(Style.JAVADOC, 0,0,0, text);                   
+                    Comment comment = Comment.create(Style.JAVADOC, 0,0,0, text);
                     // Issue in Retouche (90302) : the following part couldn't be used for now
                     // MethodTree newMethod = make.addComment(targetMethod, comment , true);
                     // workingCopy.rewrite(targetMethod, newMethod);
                 }
                 
-             }
-             public void cancel() {}
+            }
+            public void cancel() {}
             
         };
         try {
@@ -628,24 +644,107 @@ public class Utils {
     
     public static  String getFormatedDocument(SOAPMessage message) {
         try {
-        TransformerFactory transformerFactory = TransformerFactory.newInstance();
-        transformerFactory.setAttribute("indent-number", new Integer(4));
-        Transformer transformer = transformerFactory.newTransformer();
-        transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-        
-        StreamResult result = new StreamResult(new StringWriter());
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        message.writeTo(bos);
-        String output = bos.toString();
-        InputStream bis = new ByteArrayInputStream(output.getBytes());
-        StreamSource source = new StreamSource(bis);
-        
-        transformer.transform(source, result);
-        
-        return result.getWriter().toString();
+            TransformerFactory transformerFactory = TransformerFactory.newInstance();
+            transformerFactory.setAttribute("indent-number", new Integer(4));
+            Transformer transformer = transformerFactory.newTransformer();
+            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+            
+            StreamResult result = new StreamResult(new StringWriter());
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            message.writeTo(bos);
+            String output = bos.toString();
+            InputStream bis = new ByteArrayInputStream(output.getBytes());
+            StreamSource source = new StreamSource(bis);
+            
+            transformer.transform(source, result);
+            
+            return result.getWriter().toString();
         } catch (Exception ex) {
             ex.printStackTrace();
             return null;
         }
+    }
+    
+    public  static void invokeWsImport(Project project, final String serviceName) {
+        if (project!=null) {
+            FileObject buildImplFo = project.getProjectDirectory().getFileObject(GeneratedFilesHelper.BUILD_IMPL_XML_PATH);
+            try {
+                ExecutorTask wsimportTask =
+                        ActionUtils.runTarget(buildImplFo,
+                        new String[]{"wsimport-service-clean-"+serviceName,"wsimport-service-"+serviceName},null); //NOI18N
+                wsimportTask.waitFinished();
+            } catch (IOException ex) {
+                ErrorManager.getDefault().log(ex.getLocalizedMessage());
+            } catch (IllegalArgumentException ex) {
+                ErrorManager.getDefault().log(ex.getLocalizedMessage());
+            }
+        }
+    }
+    
+
+    public static String getCurrentJavaName(final MethodModel method){
+        final String[] javaName = new String[1];
+        final JavaSource javaSource = JavaSource.forFileObject(method.getImplementationClass());
+        final CancellableTask<WorkingCopy> modificationTask = new CancellableTask<WorkingCopy>() {
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                ElementHandle methodHandle = method.getMethodHandle();
+                Element methodEl = methodHandle.resolve(workingCopy);
+                javaName[0] =  methodEl.getSimpleName().toString();
+            }
+            
+            public void cancel() {
+            }
+        };
+        try {
+            javaSource.runModificationTask(modificationTask).commit();
+        } catch (IOException ex) {
+            ErrorManager.getDefault().notify(ex);
+        }
+        return javaName[0];
+    }
+    
+    /**
+     * Obtains the value of an annotation's attribute if that attribute is present.
+     * @param clazz The Java source to parse
+     * @param annotationClass Fully qualified name of the annotation class
+     * @param attributeName Name of the attribute whose value is returned
+     * @return String Returns the string value of the attribute. Returns empty string if attribute is not found.
+     */
+    public static String getAttributeValue(FileObject clazz, final String annotationClass, final String attributeName){
+        JavaSource javaSource = JavaSource.forFileObject(clazz);
+        final String[] attributeValue = new String[]{""};
+        if (javaSource!=null) {
+            CancellableTask<CompilationController> task = new CancellableTask<CompilationController>() {
+                public void run(CompilationController controller) throws IOException {
+                    controller.toPhase(Phase.ELEMENTS_RESOLVED);
+                    SourceUtils srcUtils = SourceUtils.newInstance(controller);
+                    TypeElement wsElement = controller.getElements().getTypeElement(annotationClass);
+                    if(srcUtils != null && wsElement != null){
+                        List<? extends AnnotationMirror> annotations = srcUtils.getTypeElement().getAnnotationMirrors();
+                        for (AnnotationMirror anMirror : annotations) {
+                            Map<? extends ExecutableElement, ? extends AnnotationValue> expressions = anMirror.getElementValues();
+                            for(ExecutableElement ex:expressions.keySet()) {
+                                if (ex.getSimpleName().contentEquals(attributeName)) {
+                                    String interfaceName =  (String)expressions.get(ex).getValue();
+                                    if(interfaceName != null){
+                                        attributeValue[0] = URLEncoder.encode(interfaceName,"UTF-8"); //NOI18N
+                                        break;
+                                    }
+                                }
+                            }
+                            
+                        }
+                    }
+                }
+                public void cancel() {}
+            };
+            try {
+                javaSource.runUserActionTask(task, true);
+            } catch (IOException ex) {
+                ErrorManager.getDefault().notify(ex);
+            }
+        }
+        return attributeValue[0];
     }
 }

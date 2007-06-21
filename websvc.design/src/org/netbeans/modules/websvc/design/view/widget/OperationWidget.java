@@ -40,6 +40,7 @@ import org.netbeans.api.visual.widget.SeparatorWidget;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.modules.websvc.design.javamodel.MethodModel;
+import org.netbeans.modules.websvc.design.javamodel.ServiceModel;
 import org.netbeans.modules.websvc.design.schema2java.OperationGeneratorHelper;
 import org.netbeans.modules.websvc.design.view.DesignView;
 import org.netbeans.modules.websvc.design.view.DesignViewPopupProvider;
@@ -62,6 +63,7 @@ public class OperationWidget extends AbstractTitledWidget {
 
     private Service service;
     private MethodModel operation;
+    private ServiceModel serviceModel;
     
     private transient Widget buttons;
     private transient ImageLabelWidget headerLabelWidget;
@@ -83,10 +85,11 @@ public class OperationWidget extends AbstractTitledWidget {
      * @param scene
      * @param operation
      */
-    public OperationWidget(Scene scene, Service service, MethodModel operation) {
+    public OperationWidget(Scene scene, ServiceModel serviceModel, Service service, MethodModel operation) {
         super(scene,RADIUS,BORDER_COLOR);
         this.service = service;
         this.operation=operation;
+        this.serviceModel = serviceModel;
         
         removeAction = new RemoveOperationAction(service, operation);
         getActions().addAction(ActionFactory.createPopupMenuAction(
@@ -132,7 +135,7 @@ public class OperationWidget extends AbstractTitledWidget {
             
             public void setText(Widget widget, String text) {
                 if (service.getWsdlUrl()!=null) {
-                    OperationGeneratorHelper.changeWSDLOperationName(service, operation, text);
+                    OperationGeneratorHelper.changeWSDLOperationName(serviceModel, service, operation, text);
                 }
                 operation.setOperationName(text);
                 nameWidget.setLabel(text);

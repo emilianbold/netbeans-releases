@@ -22,36 +22,19 @@ package org.netbeans.modules.websvc.design.schema2java;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.AnnotationValue;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.TypeElement;
-import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.source.CancellableTask;
-import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.ElementHandle;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.JavaSource.Phase;
-import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.websvc.api.jaxws.project.GeneratedFilesHelper;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModel;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModelListener;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModeler;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModeler;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModelerFactory;
-import org.netbeans.modules.websvc.core.JaxWsUtils;
-import org.netbeans.modules.websvc.design.util.SourceUtils;
 import org.netbeans.modules.websvc.design.util.WSDLUtils;
 import org.netbeans.modules.websvc.design.view.actions.ParamModel;
 import org.netbeans.modules.websvc.design.view.actions.Utils;
@@ -65,7 +48,6 @@ import org.netbeans.modules.xml.schema.model.LocalElement;
 import org.netbeans.modules.xml.schema.model.ReferenceableSchemaComponent;
 import org.netbeans.modules.xml.schema.model.Schema;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
-import org.netbeans.modules.xml.schema.model.SchemaModelFactory;
 import org.netbeans.modules.xml.schema.model.Sequence;
 import org.netbeans.modules.xml.wsdl.model.Binding;
 import org.netbeans.modules.xml.wsdl.model.BindingFault;
@@ -92,7 +74,6 @@ import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPOperation;
 import org.netbeans.modules.xml.wsdl.model.extensions.xsd.WSDLSchema;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import org.openide.ErrorManager;
-import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -102,6 +83,7 @@ import org.netbeans.modules.websvc.customization.model.CustomizationComponentFac
 import org.netbeans.modules.websvc.customization.model.JavaMethod;
 import org.netbeans.modules.websvc.customization.model.PortTypeOperationCustomization;
 import org.netbeans.modules.websvc.design.javamodel.MethodModel;
+import org.netbeans.modules.websvc.design.javamodel.ServiceModel;
 import org.netbeans.modules.xml.schema.model.ComplexType;
 import org.netbeans.modules.xml.schema.model.ComplexTypeDefinition;
 import org.netbeans.modules.xml.schema.model.SchemaComponentFactory;
@@ -154,7 +136,7 @@ public class OperationGeneratorHelper {
             }
             if(schemaModel == null) {
                 schemaModel = createSchemaModel(factory, definitions, types);
-                schema = schemaModel.getSchema();                
+                schema = schemaModel.getSchema();
             }
             
             String schemaNamespace = schema.getTargetNamespace();
@@ -194,7 +176,7 @@ public class OperationGeneratorHelper {
         return operation;
     }
     
-   
+    
     
     private boolean isPrimitiveType(ParamModel parameterType){
         return (Utils.getPrimitiveType(parameterType.getParamType().getName()) != null);
@@ -202,23 +184,6 @@ public class OperationGeneratorHelper {
     
     private boolean isPrimitiveType(ReferenceableSchemaComponent comp){
         return (Utils.getPrimitiveType(comp.getName()) !=  null);
-    }
-    
-    public  GlobalSimpleType getPrimitiveType(String javaPrimitive){
-        if(types == null){
-            populateXSDTable();
-        }
-        if(primitives == null){
-            SchemaModel primitiveModel = SchemaModelFactory.getDefault().getPrimitiveTypesModel();
-            primitives = primitiveModel.getSchema().getSimpleTypes();
-        }
-        String xsdTypeName = types.get(javaPrimitive);
-        for(GlobalSimpleType ptype: primitives){
-            if(ptype.getName().equals(xsdTypeName)){
-                return ptype;
-            }
-        }
-        return null;
     }
     
     
@@ -240,19 +205,7 @@ public class OperationGeneratorHelper {
     }
     
     
-    private void populateXSDTable(){
-        types = new HashMap<String, String>();
-        types.put("int", "int");
-        types.put("char", "unsignedShort");
-        types.put("boolean","boolean");
-        types.put("long", "long");
-        types.put("double", "double");
-        types.put("float", "float");
-        types.put("byte",  "byte");
-        types.put("String", "string");
-        types.put("java.lang.String", "string");
-    }
-    
+  
     private Binding findBindingForPortType(Collection<Binding> bindings, PortType portType){
         for(Binding b : bindings){
             NamedComponentReference<PortType> portTypeRef = b.getType();
@@ -624,11 +577,7 @@ public class OperationGeneratorHelper {
     public void generateJavaArtifacts(String serviceName,
             final FileObject implementationClass, final String operationName, final boolean remove) throws IOException{
         Project project = FileOwnerQuery.getOwner(implementationClass);
-        invokeWsImport(project,serviceName);
-        
-        //copy SEI to source directory
-        ClassPath classPath = ClassPath.getClassPath(implementationClass, ClassPath.SOURCE);
-        copySEItoSource(project,getServiceEndpointInterfaceFromAnnotation(implementationClass),classPath.findOwnerRoot(implementationClass));
+       org.netbeans.modules.websvc.design.javamodel.Utils.invokeWsImport(project,serviceName);
         
         try {
             WsdlModeler modeler = WsdlModelerFactory.getDefault().getWsdlModeler(wsdlFile.toURI().toURL());
@@ -652,64 +601,18 @@ public class OperationGeneratorHelper {
         }
     }
     
-    private void copySEItoSource(Project project, String seiClassName, FileObject srcRoot)throws IOException{
-        FileObject serviceArtifactsFolder = project.getProjectDirectory().getFileObject("build/generated/wsimport/service"); //NOI18N
-        FileObject seiFile = serviceArtifactsFolder.getFileObject(seiClassName.replace('.', '/') + ".java");
-        JaxWsUtils.copyToSource(seiFile, seiClassName,srcRoot);
-    }
     
-    /**
-     * Obtains the value of an annotation's attribute if that attribute is present.
-     * @param clazz The Java source to parse
-     * @param annotationClass Fully qualified name of the annotation class
-     * @param attributeName Name of the attribute whose value is returned
-     * @return String Returns the string value of the attribute. Returns empty string if attribute is not found.
-     */
-    public static String getAttributeValue(FileObject clazz, final String annotationClass, final String attributeName){
-        JavaSource javaSource = JavaSource.forFileObject(clazz);
-        final String[] attributeValue = new String[]{""};
-        if (javaSource!=null) {
-            CancellableTask<CompilationController> task = new CancellableTask<CompilationController>() {
-                public void run(CompilationController controller) throws IOException {
-                    controller.toPhase(Phase.ELEMENTS_RESOLVED);
-                    SourceUtils srcUtils = SourceUtils.newInstance(controller);
-                    TypeElement wsElement = controller.getElements().getTypeElement(annotationClass);
-                    if(srcUtils != null && wsElement != null){
-                        List<? extends AnnotationMirror> annotations = srcUtils.getTypeElement().getAnnotationMirrors();
-                        for (AnnotationMirror anMirror : annotations) {
-                            Map<? extends ExecutableElement, ? extends AnnotationValue> expressions = anMirror.getElementValues();
-                            for(ExecutableElement ex:expressions.keySet()) {
-                                if (ex.getSimpleName().contentEquals(attributeName)) {
-                                    String interfaceName =  (String)expressions.get(ex).getValue();
-                                    if(interfaceName != null){
-                                        attributeValue[0] = URLEncoder.encode(interfaceName,"UTF-8"); //NOI18N
-                                        break;
-                                    }
-                                }
-                            }
-                            
-                        }
-                    }
-                }
-                public void cancel() {}
-            };
-            try {
-                javaSource.runUserActionTask(task, true);
-            } catch (IOException ex) {
-                ErrorManager.getDefault().notify(ex);
-            }
-        }
-        return attributeValue[0];
-    }
     
     public static String getServiceEndpointInterfaceFromAnnotation(FileObject implBean){
-        return  getAttributeValue(implBean, "javax.jws.WebService", "endpointInterface");
+        return  org.netbeans.modules.websvc.design.javamodel.Utils
+                .getAttributeValue(implBean, "javax.jws.WebService", "endpointInterface");
     }
     
     public static String getPortTypeNameFromInterface(FileObject interfaceClass){
         //if interface, use the @WebService.name attribute. If no such attribute
         //use the simple name of the interface
-        String portTypeName = getAttributeValue(interfaceClass, "javax.jws.WebService", "name");
+        String portTypeName = 
+                org.netbeans.modules.websvc.design.javamodel.Utils.getAttributeValue(interfaceClass, "javax.jws.WebService", "name");
         if(portTypeName.equals("")){
             portTypeName = interfaceClass.getName();
         }
@@ -726,7 +629,8 @@ public class OperationGeneratorHelper {
                 return getPortTypeNameFromInterface(seiFile);
             }
         }else{
-            String portTypeName = getAttributeValue(implClass, "javax.jws.WebService", "name");
+            String portTypeName = 
+                    org.netbeans.modules.websvc.design.javamodel.Utils.getAttributeValue(implClass, "javax.jws.WebService", "name");
             if(!portTypeName.equals("")){
                 return portTypeName;
             }
@@ -761,22 +665,6 @@ public class OperationGeneratorHelper {
         return jaxwssupport.getLocalWsdlFolderForService(serviceName, false);
     }
     
-    public  void invokeWsImport(Project project, final String serviceName) {
-        if (project!=null) {
-            FileObject buildImplFo = project.getProjectDirectory().getFileObject(GeneratedFilesHelper.BUILD_IMPL_XML_PATH);
-            try {
-                ExecutorTask wsimportTask =
-                        ActionUtils.runTarget(buildImplFo,
-                        new String[]{"wsimport-service-clean-"+serviceName,"wsimport-service-"+serviceName},null); //NOI18N
-                wsimportTask.waitFinished();
-            } catch (IOException ex) {
-                ErrorManager.getDefault().log(ex.getLocalizedMessage());
-            } catch (IllegalArgumentException ex) {
-                ErrorManager.getDefault().log(ex.getLocalizedMessage());
-            }
-        }
-    }
-    
     private String getUniqueGlobalElementName(Schema schema, String baseName){
         String bName = baseName;
         int suffix = 0;
@@ -809,8 +697,19 @@ public class OperationGeneratorHelper {
         return schemaModel;
     }
     
-    public static void changeWSDLOperationName(Service service, MethodModel methodModel, String newOperationName){
+    public static void changeWSDLOperationName(final ServiceModel serviceModel, final Service service, MethodModel methodModel, String newOperationName){
         String oldOperationName = methodModel.getOperationName();
+        if(oldOperationName.equals(newOperationName)) return;
+        
+        //before making the change, make sure SEI is generated.
+        FileObject implClass = serviceModel.getImplementationClass();
+        ClassPath classPath = ClassPath.getClassPath(implClass, ClassPath.SOURCE);
+        final Project project = FileOwnerQuery.getOwner(implClass);
+        String seiPath = "build/generated/wsimport/service/" + serviceModel.getEndpointInterface().replace('.', '/') + ".java"; //NOI18N
+        FileObject seiClass = project.getProjectDirectory().getFileObject(seiPath);
+        if(seiClass == null){
+            org.netbeans.modules.websvc.design.javamodel.Utils.invokeWsImport(project, service.getName());
+        }
         File wsdlFile = getWSDLFile(service, methodModel);
         WSDLModel wsdlModel = WSDLUtils.getWSDLModel(FileUtil.toFileObject(wsdlFile), true);
         PortType portType = null;
@@ -850,20 +749,24 @@ public class OperationGeneratorHelper {
                         NamedComponentReference<GlobalElement> elementRef = part.getElement();
                         GlobalElement element = elementRef.get();
                         SchemaModel schemaModel = element.getModel();
+                        //TODO: global elements in schemas that import other schemas
+                        
                         //create a new Global Element
-                        GlobalElement gb = null;
-                        try{
-                            schemaModel.startTransaction();
-                            gb = schemaModel.getFactory().createGlobalElement();
-                            gb.setName(newOperationName);
-                            //get the type that the previous GlobalElement refers to:
-                            NamedComponentReference<? extends GlobalType> typeRef = element.getType();
-                            GlobalType gt = typeRef.get();
-                            NamedComponentReference<GlobalType> gtRef = gb.createReferenceTo(gt, GlobalType.class);
-                            gb.setType(gtRef);
-                            schemaModel.getSchema().addElement(gb);
-                        }finally{
-                            schemaModel.endTransaction();
+                        GlobalElement gb = getGlobalElement(schemaModel.getSchema(), newOperationName);
+                        if(gb == null){
+                            try{
+                                schemaModel.startTransaction();
+                                gb = schemaModel.getFactory().createGlobalElement();
+                                gb.setName(newOperationName);
+                                //get the type that the previous GlobalElement refers to:
+                                NamedComponentReference<? extends GlobalType> typeRef = element.getType();
+                                GlobalType gt = typeRef.get();
+                                NamedComponentReference<GlobalType> gtRef = gb.createReferenceTo(gt, GlobalType.class);
+                                gb.setType(gtRef);
+                                schemaModel.getSchema().addElement(gb);
+                            }finally{
+                                schemaModel.endTransaction();
+                            }
                         }
                         try{
                             wsdlModel.startTransaction();
@@ -876,13 +779,12 @@ public class OperationGeneratorHelper {
                         }finally{
                             wsdlModel.endTransaction();
                         }
-                        
                     }
                 }
             }
             
             //add Customization to maintain generated Java method name
-            String javaName = getCurrentJavaName(methodModel);
+            String javaName = org.netbeans.modules.websvc.design.javamodel.Utils.getCurrentJavaName(methodModel);
             addMethodCustomization(wsdlModel, operation, javaName);
             
             //Change the names in the binding section too
@@ -913,6 +815,16 @@ public class OperationGeneratorHelper {
             }
             
         }
+    }
+    
+    private static GlobalElement getGlobalElement(Schema schema, String elementName){
+        Collection<GlobalElement> elements = schema.getElements();
+        for(GlobalElement element : elements ){
+            if(element.getName().equals(elementName)){
+                return element;
+            }
+        }
+        return null;
     }
     
     private static boolean isWrapperQualified(Operation operation, String oldName){
@@ -978,6 +890,21 @@ public class OperationGeneratorHelper {
     }
     
     private static void addMethodCustomization(WSDLModel wsdlModel, Operation operation, String javaName){
+        //if there is an existing customization, reset it if necessary
+        List<PortTypeOperationCustomization> operationBindings = operation.getExtensibilityElements(PortTypeOperationCustomization.class);
+        if(operationBindings.size() > 0){
+            PortTypeOperationCustomization operationBinding = operationBindings.get(0);
+            JavaMethod javaMethod = operationBinding.getJavaMethod();
+            if(!javaMethod.getName().equals(javaName)){
+                try{
+                    wsdlModel.startTransaction();
+                    javaMethod.setName(javaName);
+                }finally{
+                    wsdlModel.endTransaction();
+                }
+            }
+            return;
+        }
         try{
             wsdlModel.startTransaction();
             CustomizationComponentFactory factory = CustomizationComponentFactory.getDefault();
@@ -991,26 +918,7 @@ public class OperationGeneratorHelper {
         }
     }
     
-    private static String getCurrentJavaName(final MethodModel method){
-        final String[] javaName = new String[1];
-        final JavaSource javaSource = JavaSource.forFileObject(method.getImplementationClass());
-        final CancellableTask<WorkingCopy> modificationTask = new CancellableTask<WorkingCopy>() {
-            public void run(WorkingCopy workingCopy) throws IOException {
-                workingCopy.toPhase(Phase.RESOLVED);
-                ElementHandle methodHandle = method.getMethodHandle();
-                Element methodEl = methodHandle.resolve(workingCopy);
-                javaName[0] =  methodEl.getSimpleName().toString();
-            }
-            
-            public void cancel() {
-            }
-        };
-        try {
-            javaSource.runModificationTask(modificationTask).commit();
-        } catch (IOException ex) {
-            ErrorManager.getDefault().notify(ex);
-        }
-        return javaName[0];
-    }
+    
+    
 }
 
