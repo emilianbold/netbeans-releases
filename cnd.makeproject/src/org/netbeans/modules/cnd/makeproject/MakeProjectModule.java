@@ -61,8 +61,6 @@ public class MakeProjectModule extends ModuleInstall {
 
     private static final ErrorManager ERR = ErrorManager.getDefault().getInstance(MakeProjectModule.class.getName());
         
-    private ActionWrapper debugWrapper = null;
-    private ActionWrapper runWrapper = null;
     private CustomizerNode profileCustomizerNode;
     
     public void restored() {
