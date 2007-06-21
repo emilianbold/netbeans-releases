@@ -49,7 +49,6 @@ import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.modules.web.NewJspFileNameStepOperator;
 import org.netbeans.jellytools.modules.web.nodes.WebPagesNode;
 import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JLabelOperator;
@@ -195,7 +194,7 @@ public class EndToEndTest extends JellyTestCase {
     public void testCreateLoginBean() throws IOException {
         NewFileWizardOperator newWizardOper = NewFileWizardOperator.invoke();
         newWizardOper.selectProject(PROJECT_NAME);
-        newWizardOper.selectCategory("Web");
+        newWizardOper.selectCategory("Struts");
         newWizardOper.selectFileType("Struts ActionForm Bean");
         newWizardOper.next();
         NewFileNameLocationStepOperator nameStepOper = new NewFileNameLocationStepOperator();
@@ -217,7 +216,7 @@ public class EndToEndTest extends JellyTestCase {
     public void testCreateLoginAction() throws IOException {
         NewFileWizardOperator newWizardOper = NewFileWizardOperator.invoke();
         newWizardOper.selectProject(PROJECT_NAME);
-        newWizardOper.selectCategory("Web");
+        newWizardOper.selectCategory("Struts");
         newWizardOper.selectFileType("Struts Action");
         newWizardOper.next();
         NewFileNameLocationStepOperator nameStepOper = new NewFileNameLocationStepOperator();
@@ -246,7 +245,7 @@ public class EndToEndTest extends JellyTestCase {
     
     /** Create SecurityManager class.  */
     public void testCreateSecurityManager() throws IOException {
-        NewFileWizardOperator.create(PROJECT_NAME, "Java Classes", "Empty Java File", "com.mycompany.eshop.security", "SecurityManager");
+        NewFileWizardOperator.create(PROJECT_NAME, "Java", "Empty Java File", "com.mycompany.eshop.security", "SecurityManager");
         EditorOperator editorOper = new EditorOperator("SecurityManager.java");
         Properties properties = new Properties();
         properties.load(this.getClass().getResourceAsStream("Bundle.properties"));
