@@ -35,6 +35,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import org.netbeans.api.db.explorer.ConnectionManager;
+import org.netbeans.api.db.explorer.DatabaseConnection;
 
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
@@ -42,6 +44,7 @@ import org.netbeans.modules.j2ee.deployment.common.api.DatasourceAlreadyExistsEx
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 
 import org.openide.ErrorManager;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -168,5 +171,92 @@ public class DesignTimeDataSourceServiceImpl implements DesignTimeDataSourceServ
         }
         
         return reqDss;
+    }
+    
+      /**
+     * Returns set of broken datasources
+     *
+     * @param project
+     * @return Set<Datasource>  returns a set of data sources that don't have corresponding database connections
+     */
+    public Set<RequestedJdbcResource> getBrokenDatasources(Project project) {
+        J2eeModuleProvider jmp =
+                (J2eeModuleProvider)project.getLookup().lookup(J2eeModuleProvider.class);
+        
+        Set<Datasource> dss = null;
+        try {
+            dss = jmp.getModuleDatasources();
+        } catch (ConfigurationException e) {
+            dss = new HashSet<Datasource>();
+        }
+        
+        Set<Datasource> brokenDatasources = new HashSet<Datasource>();
+        Iterator<Datasource> it = dss.iterator();
+        while (it.hasNext()) {
+            Datasource ds = it.next();
+            if(!isFound(ds)){
+                brokenDatasources.add(ds);
+            }
+        }
+        
+        Set<RequestedJdbcResource> brokenReqDss = new HashSet<RequestedJdbcResource>();
+        it = brokenDatasources.iterator();
+        
+        while (it.hasNext()) {
+            Datasource ds = it.next();
+            RequestedJdbcResource r = new RequestedJdbcResource(ds.getJndiName(),ds.getDriverClassName(),
+                    ds.getUrl(), null, ds.getUsername(), ds.getPassword(), null);
+            
+            brokenReqDss.add(r);
+        }
+        
+        return brokenReqDss;
+    }
+    
+    private boolean isFound(Datasource ds) {
+        boolean found = false;
+        String url = ds.getUrl();
+        String username = ds.getUsername();
+        DatabaseConnection[] dbConns = ConnectionManager.getDefault().getConnections();
+        for(int i=0; i<dbConns.length; i++ ){
+            DatabaseConnection dbCon = dbConns[i];
+            String url1 = dbCon.getDatabaseURL();
+            String username1 = dbCon.getUser();
+            if (matchURL(url, url1, true) && Utilities.compareObjects(username, username1)) {
+                found = true;
+            }
+        }
+        return found;
+    }
+    
+     private boolean matchURL(String jdbcResourceUrl, String dsInfoUrl, boolean ignoreCase) {
+        if (ignoreCase){
+            jdbcResourceUrl = jdbcResourceUrl.toLowerCase();
+            dsInfoUrl = dsInfoUrl.toLowerCase();
+        }
+        if (jdbcResourceUrl.equals(dsInfoUrl)){
+            return true;
+        }
+        
+        if (jdbcResourceUrl.contains("derby")) {
+            String newJdbcResourceUrl = jdbcResourceUrl.substring(0, jdbcResourceUrl.lastIndexOf(":")) + jdbcResourceUrl.substring(jdbcResourceUrl.lastIndexOf("/"));
+            if (newJdbcResourceUrl.equals(dsInfoUrl)){
+                return true;
+            }
+        }
+        
+        int nextIndex = 0;
+        if ((jdbcResourceUrl != null) && (dsInfoUrl != null)){
+            char[] jdbcResourceUrlChars = jdbcResourceUrl.toCharArray();
+            char[] dsInfoUrlChars = dsInfoUrl.toCharArray();
+            for(int i = 0; i < jdbcResourceUrlChars.length - 1; i++){
+                if ((jdbcResourceUrlChars[i] != dsInfoUrlChars[i]) && jdbcResourceUrlChars[i] == ':'){
+                    nextIndex = 1;
+                } else if (jdbcResourceUrlChars[i + nextIndex] != dsInfoUrlChars[i]){
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 }

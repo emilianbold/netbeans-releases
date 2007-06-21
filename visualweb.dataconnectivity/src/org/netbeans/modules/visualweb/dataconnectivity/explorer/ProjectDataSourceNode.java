@@ -112,10 +112,10 @@ public class ProjectDataSourceNode extends AbstractNode implements Node.Cookie, 
         }
         
         boolean isBroken = false;
-//        // Check if Data Source Reference node has any child nodes, if it does, check if any data sources are missing
-//        if (this.getChildren().getNodes().length > 0)
-//            if (BrokenDataSourceSupport.isBroken(nbProject))
-//                isBroken = true;
+        // Check if Data Source Reference node has any child nodes, if it does, check if any data sources are missing
+        if (this.getChildren().getNodes().length > 0)
+            if (BrokenDataSourceSupport.isBroken(nbProject))
+                isBroken = true;
 
        if (isBroken){
             Image brokenBadge = Utilities.mergeImages(dSContainerImage, brokenDsReferenceBadge, 8, 0);
@@ -137,15 +137,13 @@ public class ProjectDataSourceNode extends AbstractNode implements Node.Cookie, 
             // ignore
         }
        
-//        boolean isBroken = false;
-        boolean isBroken = true;
+        boolean isBroken = false;
         // Check if Data Source Reference node has any child nodes, if it does, check if any data sources are missing
-//        if (this.getChildren().getNodes().length > 0)
-//            if (BrokenDataSourceSupport.isBroken(nbProject))
-//                isBroken = true;
+        if (this.getChildren().getNodes().length > 0)
+            if (BrokenDataSourceSupport.isBroken(nbProject))
+                isBroken = true;
         
-//        return isBroken ? "<font color=\"#A40000\">" + dispName + "</font>" : null; //NOI18N;
-          return isBroken ? dispName + "</font>" : null; //NOI18N;
+        return isBroken ? "<font color=\"#A40000\">" + dispName + "</font>" : null; //NOI18N;
     }
     
     public void dataSourcesChange(ProjectDataSourcesChangeEvent evt) {

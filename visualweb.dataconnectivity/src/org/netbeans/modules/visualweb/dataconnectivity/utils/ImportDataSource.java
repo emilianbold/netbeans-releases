@@ -303,9 +303,13 @@ public class ImportDataSource {
             public void run() {
                 try {
                     WaitForUpdatePanel pleaseWait = new WaitForUpdatePanel(project);                    
-                    NotifyDescriptor nd = new NotifyDescriptor.Message(NbBundle.getMessage(WaitForUpdatePanel.class, "MSG_WaitForUpdate"), NotifyDescriptor.DEFAULT_OPTION); //NOI18N
-                    DialogDisplayer.getDefault().notify(nd);
-                    pleaseWait.setVisible(true);
+                    NotifyDescriptor nd = new NotifyDescriptor.Message(NbBundle.getMessage(WaitForUpdatePanel.class, "MSG_WaitForUpdate"), NotifyDescriptor.OK_CANCEL_OPTION); //NOI18N                    
+                    
+                    if (DialogDisplayer.getDefault().notify(nd) == NotifyDescriptor.CANCEL_OPTION) {
+                        pleaseWait.setVisible(true);
+                        DialogDisplayer.getDefault().notify(nd);
+                    }
+                    
                 } finally {
                     
                 }

@@ -45,7 +45,7 @@ import org.openide.xml.XMLUtil;
  * This class builds the visual representation of data sources (list) in the Project Navigator
  * @author Winston Prakash
  */
-public class ProjectDataSourceNodeChildren extends Children.Keys implements ProjectDataSourceListener{
+public class ProjectDataSourceNodeChildren extends Children.Keys implements Node.Cookie, ProjectDataSourceListener {
 
     Project nbProject = null;
 
@@ -59,14 +59,17 @@ public class ProjectDataSourceNodeChildren extends Children.Keys implements Proj
         super.addNotify();
         updateKeys();
 
+         ProjectDataSourceTracker.addListener( nbProject,this);
+                
+                
         // make sure insync has done it's stuff so that we know the datasources.
-		if (Boolean.getBoolean("vwp.designer.jsf.loadModelSync")) { // NOI18N
-			FacesModelSet.getInstance(nbProject);			
-		} else {
-			FacesModelSet.startModeling(nbProject);
-		}
+//		if (Boolean.getBoolean("vwp.designer.jsf.loadModelSync")) { // NOI18N
+//			FacesModelSet.getInstance(nbProject);			
+//		} else {
+//			FacesModelSet.startModeling(nbProject);
+//		}
 		
-        ProjectDataSourceTracker.addListener( nbProject,this);
+//        ProjectDataSourceTracker.addListener( nbProject,this);
 
     }
 
@@ -137,12 +140,11 @@ public class ProjectDataSourceNodeChildren extends Children.Keys implements Proj
                     // ignore
                 }
                 
-//                if (DataSourceResolver.getInstance().isDataSourceMissing(nbProject, dispName)){
-//                    return brokenBadgedImage;
-//                } else{
-//                    return datasourceImage;
-//                }
-                return datasourceImage;
+                if (DataSourceResolver.getInstance().isDataSourceMissing(nbProject, dispName)){
+                    return brokenBadgedImage;
+                } else{
+                    return datasourceImage;
+                }
             }
             
             public Image getOpenedIcon(int type){
@@ -168,8 +170,7 @@ public class ProjectDataSourceNodeChildren extends Children.Keys implements Proj
     }
     
     public void dataSourceChange(ProjectDataSourceChangeEvent evt) {
-        updateKeys();
-        
+        updateKeys();                
     }
     
 }

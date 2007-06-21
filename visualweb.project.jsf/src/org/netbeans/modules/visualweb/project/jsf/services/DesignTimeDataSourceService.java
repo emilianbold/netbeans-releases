@@ -52,5 +52,7 @@ public interface DesignTimeDataSourceService {
     public Set<RequestedJdbcResource> getProjectDataSources(Project p);
 
     public Set<RequestedJdbcResource> getServerDataSources(Project p);
+    
+    public Set<RequestedJdbcResource> getBrokenDatasources(Project p);
 
 }

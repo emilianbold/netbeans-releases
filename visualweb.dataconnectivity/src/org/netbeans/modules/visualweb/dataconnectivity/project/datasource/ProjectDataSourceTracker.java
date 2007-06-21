@@ -58,7 +58,6 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.lang.ref.WeakReference;
 
 import javax.naming.NamingException;
 import javax.xml.parsers.DocumentBuilder;
@@ -90,7 +89,7 @@ public class ProjectDataSourceTracker{
     private HashMap<Project, DSTracker> trackers = new HashMap<Project, DSTracker>() ;
     
     protected ProjectTrackerContextListener insyncDataSourceListener = new ProjectTrackerContextListener() ;
-    protected OpenProjectsListener openProjectsListener = new OpenProjectsListener();
+//    protected OpenProjectsListener openProjectsListener = new OpenProjectsListener();
     
     /****
      * This class is meant to be a singleton service
@@ -102,7 +101,7 @@ public class ProjectDataSourceTracker{
         // TODO:  add listener to insync here for Project openings
         //    and closings.
         ModelSet.addModelSetsListener(insyncDataSourceListener) ;
-        OpenProjects.getDefault().addPropertyChangeListener(openProjectsListener);
+//        OpenProjects.getDefault().addPropertyChangeListener(openProjectsListener);
     }
     
     private static ProjectDataSourceTracker thisOne = new ProjectDataSourceTracker() ;
@@ -346,7 +345,7 @@ public class ProjectDataSourceTracker{
         private ProjectDataSourceNode projectNode ;  // used in the project navigator
         
         private Project project = null ;
-        private HashSet listeners = new HashSet <WeakReference>();
+        private HashSet listeners = new HashSet();
         private HashSet listenersForDSContainer = new HashSet();
         
         AuxiliaryConfiguration projectAux = null ;
@@ -517,7 +516,7 @@ public class ProjectDataSourceTracker{
                 String[] dynamicDataSources = getDynamicDataSources();
                 String[] hardcodedDataSources = getHardcodedDataSources();
                 for (Iterator i = listeners.iterator(); i.hasNext();) {
-                    ProjectDataSourceListener pair = (ProjectDataSourceListener)((WeakReference)i.next()).get();
+                    ProjectDataSourceListener pair = (ProjectDataSourceListener)i.next();
                     pair.dataSourceChange(
                         new ProjectDataSourceChangeEvent(dynamicDataSources, hardcodedDataSources));
                 }
@@ -608,7 +607,7 @@ public class ProjectDataSourceTracker{
         }
         
         private  void addListener( ProjectDataSourceListener listener) {
-            listeners.add( new WeakReference(listener) );
+            listeners.add( listener );
         }
         
         private void removeListener( ProjectDataSourceListener listener) {
@@ -616,7 +615,7 @@ public class ProjectDataSourceTracker{
         }
         
         private  void addListener( ProjectDataSourcesListener listener) {
-            listenersForDSContainer.add( new WeakReference(listener) );
+            listenersForDSContainer.add( listener );
         }
         
         private void removeListener( ProjectDataSourcesListener listener) {
@@ -751,24 +750,24 @@ public class ProjectDataSourceTracker{
         }
     }
     
-    public class OpenProjectsListener implements PropertyChangeListener {
-        
-        public void propertyChange(PropertyChangeEvent event) {
-            
-            // The list of open projects has changed; clean up any old projects we may be holding on to.
-            if (OpenProjects.PROPERTY_OPEN_PROJECTS.equals(event.getPropertyName())) {
-                
-                List<Project> oldOpenProjectsList = Arrays.asList((Project[]) event.getOldValue());
-                List<Project> newOpenProjectsList = Arrays.asList((Project[]) event.getNewValue());
-                Set<Project> closedProjectsSet = new LinkedHashSet<Project>(oldOpenProjectsList);
-                closedProjectsSet.removeAll(newOpenProjectsList);
-                for (Project project : closedProjectsSet) {
-                    // Project has been closed; remove it and the DSTracker from the map.
-                    trackers.remove(project);
-                }
-            }
-        }
-    }
+//    public class OpenProjectsListener implements PropertyChangeListener {
+//        
+//        public void propertyChange(PropertyChangeEvent event) {
+//            
+//            // The list of open projects has changed; clean up any old projects we may be holding on to.
+//            if (OpenProjects.PROPERTY_OPEN_PROJECTS.equals(event.getPropertyName())) {
+//                
+//                List<Project> oldOpenProjectsList = Arrays.asList((Project[]) event.getOldValue());
+//                List<Project> newOpenProjectsList = Arrays.asList((Project[]) event.getNewValue());
+//                Set<Project> closedProjectsSet = new LinkedHashSet<Project>(oldOpenProjectsList);
+//                closedProjectsSet.removeAll(newOpenProjectsList);
+//                for (Project project : closedProjectsSet) {
+//                    // Project has been closed; remove it and the DSTracker from the map.
+//                    trackers.remove(project);
+//                }
+//            }
+//        }
+//    }
     
   
     private static final String LOGPREFIX = "PDST: " ; // NOI18N

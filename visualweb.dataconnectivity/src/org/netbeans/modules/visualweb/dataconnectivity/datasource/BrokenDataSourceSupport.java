@@ -21,6 +21,8 @@ package org.netbeans.modules.visualweb.dataconnectivity.datasource;
 
 import java.util.Set;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.visualweb.project.jsf.services.DesignTimeDataSourceService;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /**
@@ -47,12 +49,14 @@ public class BrokenDataSourceSupport {
     /**
      * Checks whether the project has a broken/missing server problem.
      *
+     * @param project 
      * @param serverInstanceID server instance of which should be checked.
      *
      * @return true server instance of the specified id doesn't exist
      */
     public static boolean isBroken(Project project) {
-        Set problemDatasources = DataSourceResolver.getInstance().getProblemDataSources(project);
+        DesignTimeDataSourceService dataSourceService = Lookup.getDefault().lookup(DesignTimeDataSourceService.class);
+        Set problemDatasources =  dataSourceService.getBrokenDatasources(project);
         if (problemDatasources == null)
             return false;
         else

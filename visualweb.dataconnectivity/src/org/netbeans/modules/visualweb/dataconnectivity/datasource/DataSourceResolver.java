@@ -41,7 +41,6 @@ import org.netbeans.modules.visualweb.project.jsf.services.DesignTimeDataSourceS
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -54,6 +53,7 @@ import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.api.db.explorer.JDBCDriverManager;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.visualweb.dataconnectivity.model.ProjectDataSourceManager;
 import org.openide.ErrorManager;
 import org.openide.util.Lookup;
 
@@ -205,24 +205,20 @@ public class DataSourceResolver implements JdbcDriverInfoListener, DataSourceInf
             return projectDataSourceManager.matchDataSourceInfo(projectDataSourceManager.getDataSourceWithName(item), dsInfo);
     }
     
-    // if a project data source is not known to the IDE (data source is missing) then return true
+    // if a project data source does not have a corresponding connetion then return true
     public boolean isDataSourceMissing(Project project, String prjDsName) {
-        Set ideDataSources = DataSourceInfoManager.getInstance().getSortedDataSourceNames();
-        boolean missing = true;
-        
-        if (!ideDataSources.isEmpty()) {
-            Iterator ideDs = ideDataSources.iterator();
-            String ideDsName;
-            
-            while (ideDs.hasNext()) {
-                ideDsName = (String)ideDs.next();
-                
-                if (ideDsName.equals(prjDsName)) {
-                    missing = false;
-                    break; // data source match made, stop checking
-                }
+        DesignTimeDataSourceService dataSourceService = Lookup.getDefault().lookup(DesignTimeDataSourceService.class);
+        Set <RequestedJdbcResource> problemDatasources =  dataSourceService.getBrokenDatasources(project);
+
+        boolean missing = false;
+        Iterator it = problemDatasources.iterator();
+        while (it.hasNext()) {          
+            RequestedJdbcResource reqRes = (RequestedJdbcResource)it.next();
+            if (("jdbc/" + prjDsName).equals(reqRes.getJndiName())) {
+                missing = true;
+                break; // data source match made, stop checking
             }
-        }
+        }        
         
         return missing;
     }
