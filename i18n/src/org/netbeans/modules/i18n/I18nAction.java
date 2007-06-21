@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -54,13 +54,13 @@ public class I18nAction extends NodeAction {
             return;
 
         final Node node = activatedNodes[0];
-        DataObject dataObject = (DataObject) node.getCookie(DataObject.class);
+        DataObject dataObject = node.getCookie(DataObject.class);
         if (dataObject == null)
             return;
 
-        EditorCookie editorCookie = (EditorCookie) node.getCookie(EditorCookie.class);
+        EditorCookie editorCookie = node.getCookie(EditorCookie.class);
         if (editorCookie == null) {
-            editorCookie = (EditorCookie) dataObject.getCookie(EditorCookie.class);
+            editorCookie = dataObject.getCookie(EditorCookie.class);
             if (editorCookie == null)
                 return;
         }
@@ -69,6 +69,7 @@ public class I18nAction extends NodeAction {
         I18nManager.getDefault().internationalize(dataObject);
     }
 
+    @Override
     protected boolean asynchronous() {
         return false;
     }
@@ -80,13 +81,13 @@ public class I18nAction extends NodeAction {
             return false;
 
         final Node node = activatedNodes[0];
-        DataObject dataObject = (DataObject) node.getCookie(DataObject.class);
+        DataObject dataObject = node.getCookie(DataObject.class);
         if (dataObject == null || dataObject.getPrimaryFile() == null)
             return false;
 
-        EditorCookie editorCookie = (EditorCookie) node.getCookie(EditorCookie.class);
+        EditorCookie editorCookie = node.getCookie(EditorCookie.class);
         if (editorCookie == null) {
-            editorCookie = (EditorCookie) dataObject.getCookie(EditorCookie.class);
+            editorCookie = dataObject.getCookie(EditorCookie.class);
             if (editorCookie == null)
                 return false;
         }
