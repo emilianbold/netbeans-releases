@@ -406,5 +406,9 @@ public final class MimePath {
             return lookup;
         }
     }
-    
+
+    public @Override String toString() {
+        return "MimePath[" + path + "]"; // NOI18N
+    }
+
 }
