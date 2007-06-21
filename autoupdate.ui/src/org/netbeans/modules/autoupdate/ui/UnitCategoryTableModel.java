@@ -173,7 +173,7 @@ public abstract class UnitCategoryTableModel extends AbstractTableModel {
             for (UnitCategory unitCategory : data) {
                 this.unitData.addAll(unitCategory.getUnits());
             }
-            standAloneModules = new ArrayList();
+            standAloneModules = new ArrayList<Unit> ();
             for (Unit u : unitData) {
                 if (UpdateManager.TYPE.STANDALONE_MODULE.equals(u.updateUnit.getType())) {
                     standAloneModules.add(u);
@@ -348,7 +348,7 @@ public abstract class UnitCategoryTableModel extends AbstractTableModel {
     
     private List<Unit> getFeatureList() {
         if (featuretData == null) {
-            featuretData = new ArrayList(unitData);
+            featuretData = new ArrayList<Unit> (unitData);
             featuretData.removeAll(getStandAloneModules());
             if (unitCmp != null) {
                 Collections.sort(featuretData,unitCmp);
