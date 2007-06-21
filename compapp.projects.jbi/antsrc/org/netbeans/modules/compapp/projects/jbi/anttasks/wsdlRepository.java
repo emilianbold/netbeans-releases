@@ -96,7 +96,7 @@ public class wsdlRepository {
         
         this.project = project;
         
-        wsdlModels = getAllWsdlDocuments(project);
+        wsdlModels = getAllWsdlModels(project);
         
         bcNsMap = buildBindingComponentMap(project);
         
@@ -145,13 +145,17 @@ public class wsdlRepository {
         return wsdlModels;
     }
             
-    // Use file-based wsdls
-    private List<WSDLModel> getAllWsdlDocuments(Project project) {
-        String projPath = project.getProperty("basedir") + File.separator;
-        String serviceUnitsDirLoc = projPath + "src" + File.separator + "jbiServiceUnits";
-        String jbiAsaDirLoc = projPath + "src" + File.separator + "jbiasa";
+    /**
+     * Gets all the WSDL files from both SU projects and JBI project.
+     */
+    private List<File> getAllWsdlFiles(Project project) {
+        List<File> ret = new ArrayList<File>();  
         
-        // Examine all WSDLs (from both SU projects and JBI project)
+        String srcPath = project.getProperty("basedir") + 
+                File.separator + "src" + File.separator;
+        String serviceUnitsDirLoc = srcPath + "jbiServiceUnits";
+        String jbiAsaDirLoc = srcPath + "jbiasa";
+                
         File serviceUnitsDir = new File(serviceUnitsDirLoc);
         File jbiASADir = new File(jbiAsaDirLoc);
         FilenameFilter filter = new FilenameFilter() {
@@ -159,20 +163,39 @@ public class wsdlRepository {
                 return name.endsWith(".wsdl");
             }
         };
-        String casaWSDLFileName = getCasaWSDLFileName();
-        List<File> wsdlFiles = MyFileUtil.listFiles(serviceUnitsDir, filter, true);
-        for (File file : wsdlFiles) {
-            if (file.getName().equals(casaWSDLFileName)) {
-                // Use the original casa wsdl file under src/jbiasa/.
-                wsdlFiles.remove(file);
-                break;
+        
+        // Note that all files under src/jbiasa/ have been copied over to 
+        // src/jbiServiceUnits/ at the beginning of jbi-build.
+        // For all the WSDLs defined in JBI project, we want to use the  
+        // original R/W copy under src/jbiasa/ instead of the R/O copy under 
+        // src/jbiServiceUnits/.
+        List<String> jbiASAChildNames = new ArrayList<String>();
+        for (File file : jbiASADir.listFiles()) {
+            jbiASAChildNames.add(file.getName());
+        }
+                
+        // Add all WSDLs coming from SU projects
+        for (File file : serviceUnitsDir.listFiles()) {
+            String fileName = file.getName();
+            // Skip <compapp>.wsdl and other wsdl files or directories 
+            // defined under src/jbiasa/.
+            if (!jbiASAChildNames.contains(fileName)) {
+                ret.addAll(MyFileUtil.listFiles(jbiASADir, filter, true));
             }
         }
-        wsdlFiles.addAll(MyFileUtil.listFiles(jbiASADir, filter, true));
         
+        // Add all the WSDLs defined in JBI project (under src/jbiasa/).
+        ret.addAll(MyFileUtil.listFiles(jbiASADir, filter, true));
+        
+        return ret;
+    }
+    
+    private List<WSDLModel> getAllWsdlModels(Project project) {        
         List<WSDLModel> ret = new ArrayList<WSDLModel>();
         
-        for (File file : wsdlFiles) {
+        WSDLModelFactory wsdlModelFactory = WSDLModelFactory.getDefault();
+        
+        for (File file : getAllWsdlFiles(project)) {
             try {
                 ModelSource ms = null;                
                 try {
@@ -188,7 +211,7 @@ public class wsdlRepository {
                     ms = new ModelSource(lookup, false);
                 }
                 
-                WSDLModel wm = WSDLModelFactory.getDefault().createFreshModel(ms); 
+                WSDLModel wm = wsdlModelFactory.createFreshModel(ms); 
                 ret.add(wm);
             } catch (CatalogModelException ex) {
                 ex.printStackTrace();
@@ -197,12 +220,7 @@ public class wsdlRepository {
         
         return ret;
     }    
-    
-    private String getCasaWSDLFileName() {        
-        String projName = project.getProperty(JbiProjectProperties.ASSEMBLY_UNIT_UUID);
-        return projName + ".wsdl";
-    }
-    
+        
     /**
      * Implementation of CatalogModel
      * @param file
@@ -345,7 +363,7 @@ public class wsdlRepository {
                                 if (bcNs != null) {
                                     String bcName = bcNsMap.get(bcNs);
                                     if (bcName != null) {
-                                        port2BC.put(p, bcName); p.getBinding().getQName();
+                                        port2BC.put(p, bcName);
                                     } else {
                                         System.out.println("***WARNING: Missing WSDL extension plug-in for \"" + bcNs + "\".");
                                     }
