@@ -138,7 +138,12 @@ public class LayerIndex extends Task {
                                     if (pos2 == null) {
                                         return -1;
                                     } else {
-                                        return pos1 - pos2;
+                                        int diff = pos1 - pos2;
+                                        if (diff != 0) {
+                                            return diff;
+                                        } else {
+                                            return piece1.compareTo(piece2);
+                                        }
                                     }
                                 }
                             }
@@ -157,6 +162,9 @@ public class LayerIndex extends Task {
                 }
             });
             layerPaths.addAll(files.keySet());
+            SortedSet<String> remaining = new TreeSet<String>(files.keySet());
+            remaining.removeAll(layerPaths);
+            assert remaining.isEmpty() : remaining;
             for (String path : layerPaths) {
                 String cnb = files.get(path);
                 if (cnb == null) {
