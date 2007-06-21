@@ -59,6 +59,7 @@ public class JavaI18nString extends I18nString {
         this.setArguments(peer.arguments);
     }
     
+    @Override
     public Object clone() {
         return new JavaI18nString(this);
     }
@@ -83,6 +84,7 @@ public class JavaI18nString extends I18nString {
     /** 
      * Add java specific replacing values. 
      */
+    @Override
     protected void fillFormatMap(Map map) {
         map.put("identifier", ((JavaI18nSupport)getSupport()).getIdentifier()); // NOI18N
 
