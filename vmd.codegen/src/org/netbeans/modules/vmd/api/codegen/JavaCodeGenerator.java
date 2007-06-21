@@ -22,7 +22,13 @@ import org.netbeans.api.editor.guards.GuardedSection;
 import org.netbeans.api.editor.guards.GuardedSectionManager;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
+import org.netbeans.modules.vmd.api.io.providers.IOSupport;
+import org.netbeans.modules.vmd.api.io.DataObjectContext;
 import org.openide.ErrorManager;
+import org.openide.NotifyDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileLock;
 import org.openide.text.NbDocument;
 
 import javax.swing.text.BadLocationException;
@@ -31,6 +37,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.WeakHashMap;
+import java.io.IOException;
 
 /**
  * @author David Kaspar
@@ -64,6 +71,9 @@ public final class JavaCodeGenerator {
     }
 
     public void generateCode (final StyledDocument document, final DesignDocument designDocument) {
+        if (! checkCodeGenerationAvailability (designDocument))
+            return;
+
         final Collection<CodePresenter> presenters = DocumentSupport.gatherAllPresentersOfClass (designDocument, CodePresenter.class);
         try {
             NbDocument.runAtomic (document, new Runnable() {
@@ -78,6 +88,24 @@ public final class JavaCodeGenerator {
         Collection<CodeGlobalLevelPresenter> globalLevel = DocumentSupport.filterPresentersForClass (presenters, CodeGlobalLevelPresenter.class);
         for (CodeGlobalLevelPresenter presenter : globalLevel)
             presenter.performGlobalGeneration (document);
+    }
+
+    private boolean checkCodeGenerationAvailability (DesignDocument designDocument) {
+        DataObjectContext context = IOSupport.getDataObjectForDocument (designDocument);
+        FileObject primaryFile = context.getDataObject ().getPrimaryFile ();
+        try {
+            FileLock lock = primaryFile.lock ();
+            lock.releaseLock ();
+            return true;
+        } catch (IOException e) {
+            DialogDisplayer.getDefault ().notifyLater (new NotifyDescriptor.Message (
+                    "<html>The file is unexpectedly locked therefore the source code cannot be updated.<br>" +
+                    "Please, save your files and close the IDE. Then using external file manager<br>" +
+                    "delete following file <b>.LCK" + primaryFile.getNameExt () + "~</b> file which is placed next to the edited .vmd design file.<br>" +
+                    "Then you can start the IDE and continue your work again."
+            ));
+            return false;
+        }
     }
 
     private void generateCodeCore (Collection<CodePresenter> presenters, StyledDocument document) {
