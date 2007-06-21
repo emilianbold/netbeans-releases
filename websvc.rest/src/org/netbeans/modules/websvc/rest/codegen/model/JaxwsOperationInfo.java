@@ -35,6 +35,7 @@ import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlParameter;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlService;
 import org.netbeans.modules.websvc.rest.codegen.Constants;
+import org.netbeans.modules.websvc.rest.wizard.Util;
 import org.openide.filesystems.FileUtil;
 
 /**
@@ -43,8 +44,8 @@ import org.openide.filesystems.FileUtil;
  */
 public class JaxwsOperationInfo {
     String serviceName;
-    String portName = "zipinfoSoap";
-    String operationName = "GetCityState";
+    String portName;
+    String operationName;
     String wsdlUrl;
     Project project;
     JAXWSClientSupport support;
@@ -66,7 +67,7 @@ public class JaxwsOperationInfo {
         }
     }
     
-    static String derivePackageName(String wsdlURL) {
+    static String derivePackageName(String wsdlURL, String subPackage) {
         if (wsdlURL.startsWith("file:")) {
             throw new IllegalArgumentException("URL to access WSDL could not be local");
         }
@@ -77,6 +78,10 @@ public class JaxwsOperationInfo {
         StringBuilder sb = new StringBuilder(segments[segments.length-1]);
         sb.append('.');
         sb.append(segments[segments.length-2]);
+        if (subPackage != null) {
+            sb.append(".");
+            sb.append(Util.lowerFirstChar(subPackage));
+        }
         return sb.toString();
     }
     
@@ -146,7 +151,7 @@ public class JaxwsOperationInfo {
     
     public void setupWebServiceClient() {
         if (getServiceClient() == null) {
-            support.addServiceClient(serviceName, wsdlUrl, derivePackageName(wsdlUrl), true); // TODO null package name cause NPE
+            support.addServiceClient(serviceName, wsdlUrl, derivePackageName(wsdlUrl, serviceName), true); // TODO null package name cause NPE
         }
     }
     
