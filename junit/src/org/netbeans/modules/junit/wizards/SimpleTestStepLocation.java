@@ -594,7 +594,7 @@ public final class SimpleTestStepLocation implements WizardDescriptor.Panel<Wiza
         if ((allTestSourceGroups.length == 1) || (srcGroup == null)) {
             srcRootsToOffer = allTestSourceGroups;
         } else {
-            srcRootsToOffer = (Object[]) sourcesToTestsMap.get(srcGroup);
+            srcRootsToOffer = sourcesToTestsMap.get(srcGroup);
         }
         
         Object previousSelectedItem = cboxLocation.getSelectedItem();
@@ -1306,8 +1306,7 @@ public final class SimpleTestStepLocation implements WizardDescriptor.Panel<Wiza
             srcGroup = selectedSourceGroup;
             
             FileObject selectedFileObj
-                    = ((DataObject) selectedNode.getCookie(DataObject.class))
-                      .getPrimaryFile();
+                    = selectedNode.getCookie(DataObject.class).getPrimaryFile();
             
             /* display selected class name: */
             try {
