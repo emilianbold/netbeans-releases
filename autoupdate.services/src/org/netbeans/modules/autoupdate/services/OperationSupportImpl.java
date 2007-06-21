@@ -199,12 +199,12 @@ public abstract class OperationSupportImpl {
                 
 
                 for (UpdateUnit unit : affectedModules) {
-                    assert unit.getInstalled () != null;
+                    assert unit.getInstalled () != null : "Module " + unit + " is installed while doing uninstall.";
                     UpdateUnitImpl impl = Trampoline.API.impl (unit);
                     impl.setAsUninstalled();
                 }
                 for (UpdateUnit unit : affectedFeatures) {
-                    assert unit.getInstalled () != null;
+                    assert unit.getInstalled () != null : "Feature " + unit + " is installed while doing uninstall.";
                     UpdateUnitImpl impl = Trampoline.API.impl (unit);
                     impl.setAsUninstalled();
                 }
