@@ -1010,7 +1010,11 @@ public class CasaWrapperModel extends CasaModelImpl {
             String href = link.getHref();
             try {
                 PortType pt = (PortType) getWSDLComponentFromXLinkHref(href);
-                ret.add(pt);
+//                if (pt.getName().equals(DUMMY_PORTTYPE_NAME)) {
+//                    ret.add(null);
+//                } else {
+                    ret.add(pt);
+//                }
             } catch (Exception ex) {
                 System.out.println("Failed to Fetch: " + href);
             }
@@ -1203,7 +1207,7 @@ public class CasaWrapperModel extends CasaModelImpl {
     /**
      * Adds a new WSDL endpoint.
      */
-    public CasaPort addCasaPort(String componentType, String componentName, int x, int y) {
+    public CasaPort addCasaPort(String bindingType, String componentName, int x, int y) {
         
         // 1. Update casa wsdl
         WSDLModel casaWSDLModel = getCasaWSDLModel(true); 
@@ -1242,17 +1246,32 @@ public class CasaWrapperModel extends CasaModelImpl {
             }
         }
         
-        String casaWSDLFileName = getCasaWSDLFileName();
-        String portHref = CASA_WSDL_RELATIVE_LOCATION + casaWSDLFileName +
-                "#xpointer(/definitions/service[@name='" + // NOI18N
-                newServiceName + "']/port[@name='" + newPortName + "'])"; // NOI18N
+        String relativePath = getRelativePathForCasaWSDL();
+        String portHref = getPortHref(relativePath, newServiceName, newPortName);        
+        String portTypeHref = getPortTypeHref(relativePath, DUMMY_PORTTYPE_NAME);
                 
         String tns = casaWSDLModel.getDefinitions().getTargetNamespace(); 
 
-        return addCasaPortToModel(componentType, componentName, 
+        return addCasaPortToModel(componentName, bindingType, 
                 new QName(tns, DUMMY_PORTTYPE_NAME),  
                 new QName(tns, newServiceName), 
-                newPortName, portHref, null, x, y);
+                newPortName, portHref, portTypeHref, x, y);
+    }
+    
+    private String getRelativePathForCasaWSDL() {
+        String casaWSDLFileName = getCasaWSDLFileName();
+        return CASA_WSDL_RELATIVE_LOCATION + casaWSDLFileName;
+    }
+    
+    private String getPortHref(String relativePath, String serviceName, String portName) {
+        return relativePath +
+                "#xpointer(/definitions/service[@name='" + // NOI18N
+                serviceName + "']/port[@name='" + portName + "'])"; // NOI18N
+    }
+    
+    private String getPortTypeHref(String relativePath, String portTypeName) {
+        return relativePath +
+                "#xpointer(/definitions/portType[@name='" + portTypeName + "'])"; // NOI18N
     }
     
     private String getCasaWSDLFileName() {
@@ -1309,16 +1328,13 @@ public class CasaWrapperModel extends CasaModelImpl {
             if (bi == null) {
                 return null;
             }
-            String componentType = bi.getBindingName();
-            String componentName = bi.getBcName();
+            
             String newServiceName = ((Service) (port.getParent())).getName();
-            String newPortName = port.getName();            
-            int x = 0;
-            int y = 0;
+            String newPortName = port.getName(); 
             String fname = wsdlFile.getCanonicalPath();
-            String href = fname.substring(fname.indexOf("jbiServiceUnits")).replace('\\', '/'); // NOI18N
-            String portHref = "../" + href + "#xpointer(/definitions/service[@name='" // NOI18N
-                    + newServiceName + "']/port[@name='" + newPortName + "'])"; // NOI18N
+            String relativePath = "../" + // NOI18N
+                    fname.substring(fname.indexOf("jbiServiceUnits")).replace('\\', '/'); // NOI18N
+            String portHref = getPortHref(relativePath, newServiceName, newPortName); 
             
             for (CasaBindingComponentServiceUnit bcSU : getBindingComponentServiceUnits()) {
                 for (CasaPort casaPort : bcSU.getPorts().getPorts()) {
@@ -1330,13 +1346,17 @@ public class CasaWrapperModel extends CasaModelImpl {
                 }
             }
             
-            Definitions definitions = port.getModel().getDefinitions();
-            String tns = definitions.getTargetNamespace();
+            String tns = port.getModel().getDefinitions().getTargetNamespace();
             String newInterfaceName = port.getBinding().get().getType().get().getName();
-            return addCasaPortToModel(componentType, componentName, 
+            String newPortTypeHref = getPortTypeHref(relativePath, newInterfaceName);
+            
+            String bindingType = bi.getBindingName();
+            String componentName = bi.getBcName();
+            
+            return addCasaPortToModel(componentName, bindingType,  
                     new QName(tns, newInterfaceName),
                     new QName(tns, newServiceName), 
-                    newPortName, portHref, port, x, y);
+                    newPortName, portHref, newPortTypeHref, 0, 0);
         } catch (Exception ex) {
             // add failed...
             ex.printStackTrace();
@@ -1345,20 +1365,21 @@ public class CasaWrapperModel extends CasaModelImpl {
         return null;
     }
     
-    private CasaPort addCasaPortToModel(String componentType, 
-            String componentName,
+    private CasaPort addCasaPortToModel(String componentName, 
+            String bindingType,
             QName newInterfaceQName,
             QName newServiceQName, String newPortName,
-            String portHref, Port port, int x, int y) {
-        CasaComponentFactory casaFactory = getFactory();
-        CasaEndpoint newEndpoint;
+            String portHref, String portTypeHref, int x, int y) {
         
         CasaEndpoints endpoints = getRootComponent().getEndpoints();
+                
+        // 1. Create and add a dummy endpoint
+        CasaComponentFactory casaFactory = getFactory();
+        CasaEndpoint newEndpoint = casaFactory.createCasaEndpoint();
+        String newEndpointID = getUniqueEndpointID(this);
+            
         startTransaction();
-        try {
-            // 1. Create and add a dummy endpoint
-            newEndpoint = casaFactory.createCasaEndpoint();
-            String newEndpointID = getUniqueEndpointID(this);
+        try {            
             newEndpoint.setName(newEndpointID);
             newEndpoint.setEndpointName(newPortName); 
             newEndpoint.setInterfaceQName(newInterfaceQName);
@@ -1377,7 +1398,7 @@ public class CasaWrapperModel extends CasaModelImpl {
         casaPort.setY(y);
 //        casaPort.setBindingState("unbound");
 //        casaPort.setPortType("");
-        casaPort.setBindingType(componentType);
+        casaPort.setBindingType(bindingType);
         
         // 3. Add casa port link
         CasaLink link = casaFactory.createCasaLink();
@@ -1396,9 +1417,26 @@ public class CasaWrapperModel extends CasaModelImpl {
         casaProvides.setEndpoint(
                 casaProvides.createReferenceTo(newEndpoint, CasaEndpoint.class));
         casaPort.setProvides(casaProvides);
-        
+                
+        // 6. Create a new portType link, if the exsiting portType list doens't
+        // contains the new portType.
+        boolean portTypeExists = false;
+        CasaPortTypes portTypes = getRootComponent().getPortTypes();
+        for (CasaLink portTypeLink : portTypes.getLinks()) {
+            if (portTypeLink.getHref().equals(portTypeHref)) {
+                portTypeExists = true;
+                break;
+            }
+        }
+        CasaLink portTypeLink = null;
+        if (!portTypeExists) {
+            portTypeLink = casaFactory.createCasaLink();
+            portTypeLink.setHref(portTypeHref);
+            portTypeLink.setType("simple");
+        }
+
         startTransaction();
-        try {
+        try {            
             CasaBindingComponentServiceUnit casaBCSU = null;
             for(CasaBindingComponentServiceUnit bcSUs : getBindingComponentServiceUnits()) {
                 if (bcSUs.getComponentName().equals(componentName)) {
@@ -1426,6 +1464,14 @@ public class CasaWrapperModel extends CasaModelImpl {
             // add the new WSDL endpoint
             CasaPorts casaPorts = casaBCSU.getPorts();
             casaPorts.addPort(-1, casaPort);
+            
+            // add the new portType link, if applicable
+            if (portTypeLink != null) {                
+                portTypes.addLink(-1, portTypeLink);
+            }
+            
+            // TODO: we are not using Bindings and Services. Those are currently
+            // not updated.
         
         } finally {
             if (isIntransaction()) {
@@ -1532,7 +1578,7 @@ public class CasaWrapperModel extends CasaModelImpl {
                         }
                     }
                     
-                    checkAndCleanUpDummyPortType(casaWSDLModel);
+//                    checkAndCleanUpDummyPortType(casaWSDLModel);
                 }
             });
             
@@ -1543,7 +1589,7 @@ public class CasaWrapperModel extends CasaModelImpl {
     
     /**
      * Clean up the dummy portType if it is no longer used in casa wsdl.
-     */
+     */ /*
     private void checkAndCleanUpDummyPortType(WSDLModel casaWSDLModel) {
         PortType dummyPortType = getDummyPortType(casaWSDLModel, false);
         
@@ -1569,7 +1615,7 @@ public class CasaWrapperModel extends CasaModelImpl {
                 }
             }
         }
-    }
+    } */
     
     private void setCasaPortState(final CasaPort casaPort,
             final CasaPortState state) {
@@ -2690,7 +2736,7 @@ public class CasaWrapperModel extends CasaModelImpl {
 //                setEndpointInterfaceQName(casaProvides, interfaceQName);
 //            }
             
-            checkAndCleanUpDummyPortType(casaWSDLModel);
+//            checkAndCleanUpDummyPortType(casaWSDLModel);
         }
     }
     
