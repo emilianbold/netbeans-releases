@@ -200,35 +200,40 @@ public class Utils {
                     }
                     
                     boolean hasEndpointInterfaceAttr = serviceModel.endpointInterface != null;
+                    
+                    // search for SEI class
                     FileObject seiClass = null;
                     if(hasEndpointInterfaceAttr){
-                        final Project project = FileOwnerQuery.getOwner(implClass);
-                        String seiPath = "build/generated/wsimport/service/" + serviceModel.endpointInterface.replace('.', '/') + ".java"; //NOI18N
-                        seiClass = project.getProjectDirectory().getFileObject(seiPath);
-                        if(seiClass == null){
-                            invokeWsImport(project, serviceModel.getName());
+                        // first look for SEI class in src hierarchy (SEI exists but : WS from Java case)
+                        ClassPath classPath = ClassPath.getClassPath(implClass, ClassPath.SOURCE);
+                        FileObject[] srcRoots = classPath.getRoots();
+                        for (FileObject srcRoot:srcRoots) {
+                            String seiClassResource = serviceModel.endpointInterface.replace('.', '/')+".java"; //NOI18N
+                            seiClass = srcRoot.getFileObject(seiClassResource);
+                            if (seiClass != null) {
+                                break;
+                            }
+                        }                        
+                        if (seiClass == null) { // looking for SEI class under build/generated directory
+                            final Project project = FileOwnerQuery.getOwner(implClass);
+                            String seiPath = "build/generated/wsimport/service/" + serviceModel.endpointInterface.replace('.', '/') + ".java"; //NOI18N
                             seiClass = project.getProjectDirectory().getFileObject(seiPath);
-                        }
-                    }
-                    for (int i=0;i<methods.size();i++) {
-                        MethodModel operation = new MethodModel();
-                        boolean seiClassFound = false;
-                        if (hasEndpointInterfaceAttr) {
-                            // find SEI File Object in sources
-                            //TODO: do we need to still do this??
-                            ClassPath classPath = ClassPath.getClassPath(seiClass, ClassPath.SOURCE);
-                            FileObject[] srcRoots = classPath.getRoots();
-                            for (FileObject srcRoot:srcRoots) {
-                                String seiClassResource = serviceModel.endpointInterface.replace('.', '/')+".java"; //NOI18N
-                                FileObject seiClassFo = srcRoot.getFileObject(seiClassResource);
-                                if (seiClassFo != null) {
-                                    seiClassFound = true;
-                                    operation.setImplementationClass(seiClassFo);
-                                    break;
-                                }
+                            if(seiClass == null){
+                                invokeWsImport(project, serviceModel.getName());
+                                seiClass = project.getProjectDirectory().getFileObject(seiPath);
                             }
                         }
-                        if (!seiClassFound) operation.setImplementationClass(implClass);
+                        
+                    }
+                    
+                    // populate methods
+                    for (int i=0;i<methods.size();i++) {
+                        MethodModel operation = new MethodModel();
+                        if (hasEndpointInterfaceAttr && seiClass != null) {
+                            operation.setImplementationClass(seiClass);
+                        } else {
+                            operation.setImplementationClass(implClass);
+                        }
                         ElementHandle methodHandle = ElementHandle.create(methods.get(i));
                         operation.setMethodHandle(methodHandle);
                         Utils.populateOperation(controller, methods.get(i), operation, serviceModel.getTargetNamespace());
