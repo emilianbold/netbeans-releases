@@ -154,26 +154,21 @@ public class ProjectTreeItemImpl implements IProjectTreeItem, FileExtensions
     */
    public IElement getModelElement()
    {
-      /*IElement retVal = null;
+      IElement retVal = null;
       if(m_ModelElement != null)
       {
          retVal = m_ModelElement.getElement();
-//          if( m_ModelElement.getElement2() != null )
-//          {
-//             retVal = m_ModelElement.getElement2();
-//          }
-//         retVal = m_ModelElement;
       }
-      return retVal;*/
+      return retVal;
 	   
 	   //to improve performance cache the element
-		if(cachedElement==null){
-			if(m_ModelElement != null)
-			{
-				cachedElement=m_ModelElement.getElement();
-			}
-		}
-		return cachedElement;
+//		if(cachedElement==null){
+//			if(m_ModelElement != null)
+//			{
+//				cachedElement=m_ModelElement.getElement();
+//			}
+//		}
+//		return cachedElement;
    }
 
    /* (non-Javadoc)
