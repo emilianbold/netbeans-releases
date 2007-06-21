@@ -33,6 +33,7 @@ Microsystems, Inc. All Rights Reserved.
         <java classname="org.apache.tools.ant.Main" dir="${nball.dir}/performance/test" failonerror="true" fork="true">
             <jvmarg value="-Dant.home=${ant.home}"/>
             <arg value="buildtests"/>
+            <arg value="-Dpermit.jdk6.builds=true"/>
             <arg value="-Dxtest.testtype=qa-functional"/>
             <arg value="-Dxtest.attribs=all"/>
             <arg value="-Dxtest.home=${xtest.home}"/>
@@ -51,6 +52,7 @@ Microsystems, Inc. All Rights Reserved.
         <java classname="org.apache.tools.ant.Main" dir="${nball.dir}/performance/test" failonerror="true" fork="true">
             <jvmarg value="-Dant.home=${ant.home}"/>
             <arg value="cleantests"/>
+            <arg value="-Dpermit.jdk6.builds=true"/>
             <arg value="-Dxtest.testtype=qa-functional"/>
             <arg value="-Dxtest.attribs=all"/>
             <arg value="-Dxtest.home=${xtest.home}"/>
