@@ -58,7 +58,7 @@ Microsystems, Inc. All Rights Reserved.
     </testbag>
 
     
-    <testbag testattribs="validation" executor="ide" name="testbag_beans">
+    
     <testbag testattribs="jv" executor="ide" name="testbag_databinding">
         <testset dir="qa-functional/src">
             <patternset>
@@ -86,8 +86,7 @@ Microsystems, Inc. All Rights Reserved.
     </testbag>
     
 
-    <testbag testattribs="validation,jv" executor="ide" name="testbag_visualdevelopment">
-
+    
    <testbag testattribs="validation" executor="ide" name="testbag_visualdevelopment">
 
         <testset dir="qa-functional/src">
