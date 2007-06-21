@@ -19,14 +19,9 @@
 
 package org.netbeans.modules.j2ee.persistenceapi.metadata.orm.annotation;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.j2ee.metadata.model.support.TestUtilities;
-import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.*;
-import org.netbeans.modules.java.source.usages.RepositoryUpdater;
 
 /**
  *

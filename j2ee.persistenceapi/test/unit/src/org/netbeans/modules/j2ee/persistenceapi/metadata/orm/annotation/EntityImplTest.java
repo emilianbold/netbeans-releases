@@ -23,7 +23,6 @@ import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.metadata.model.support.TestUtilities;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappingsMetadata;
-import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Id;
 
 /**
  *

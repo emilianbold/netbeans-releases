@@ -19,19 +19,14 @@
 
 package org.netbeans.modules.j2ee.persistenceapi.metadata.orm.annotation;
 
-import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.j2ee.metadata.model.support.TestUtilities;
-import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
-import org.netbeans.modules.j2ee.metadata.model.support.JavaSourceTestCase;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Basic;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappings;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappingsMetadata;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Id;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Version;
-import org.netbeans.modules.java.source.usages.RepositoryUpdater;
-import org.openide.filesystems.FileObject;
 
 /**
  *

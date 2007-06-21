@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.j2ee.persistenceapi.metadata.orm.annotation;
 
-import java.util.concurrent.CountDownLatch;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelCompatibilityTest;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappingsMetadata;
