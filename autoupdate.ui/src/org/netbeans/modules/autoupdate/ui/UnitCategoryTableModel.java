@@ -164,34 +164,41 @@ public abstract class UnitCategoryTableModel extends AbstractTableModel {
         fireTableDataChanged ();
     }
     
-    private final void setData (List<UnitCategory> data,  Comparator<Unit> unitCmp) {
-        this.unitCmp = unitCmp != null ? unitCmp : getDefaultComparator ();
+    private final void setData(List<UnitCategory> data,  Comparator<Unit> unitCmp) {
+        this.unitCmp = unitCmp != null ? unitCmp : getDefaultComparator();
         featuretData = null;
         if (data != null) {
-            this.unitData = Collections.emptyList ();
+            this.unitData = Collections.emptyList();
             this.unitData = new ArrayList<Unit>();
             for (UnitCategory unitCategory : data) {
                 this.unitData.addAll(unitCategory.getUnits());
-            }  
+            }
             standAloneModules = new ArrayList();
-            for (Unit u : unitData) {                
+            for (Unit u : unitData) {
                 if (UpdateManager.TYPE.STANDALONE_MODULE.equals(u.updateUnit.getType())) {
                     standAloneModules.add(u);
                 }
             }
-            boolean exp = isExpandableType (getType()) && !Utilities.modulesOnly() && !getVisibleUnits(standAloneModules, getFilter(), false).isEmpty();
-            if (exp) {
-                isExpanded = NbPreferences.forModule(UnitCategoryTableModel.class).getBoolean(EXPAND_STATE, false);
-            } else {
-                isExpanded = null;
-            }            
+            computeExtensionState();
         } else {
             assert unitData != null;
         }
         if (unitCmp != null) {
             Collections.sort(unitData,unitCmp);
-        }                
-        this.fireTableDataChanged ();
+        }
+        this.fireTableDataChanged();
+    }
+    
+    
+    private void computeExtensionState() {
+            boolean exp = isExpandableType (getType()) && !Utilities.modulesOnly() 
+                    && !getVisibleUnits(getFeatureList(), getFilter(), false).isEmpty()
+                    && !getVisibleUnits(standAloneModules, getFilter(), false).isEmpty();
+            if (exp) {
+                isExpanded = NbPreferences.forModule(UnitCategoryTableModel.class).getBoolean(EXPAND_STATE, false);
+            } else {
+                isExpanded = null;
+            }                    
     }
     
     public void setUnitComparator (Comparator<Unit> comparator) {
@@ -209,6 +216,7 @@ public abstract class UnitCategoryTableModel extends AbstractTableModel {
                     UnitCategoryTableModel.this.filter = filter.toLowerCase ();
                 }
                 //UnitCategoryTableModel.this.fireTableDataChanged ();
+                computeExtensionState();
                 fireUpdataUnitChange ();
                 if (runAfterwards != null) {
                     runAfterwards.run();
