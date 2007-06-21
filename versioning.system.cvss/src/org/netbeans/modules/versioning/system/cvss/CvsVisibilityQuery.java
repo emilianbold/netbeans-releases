@@ -81,9 +81,18 @@ public class CvsVisibilityQuery implements VisibilityQueryImplementation, Versio
             if (parent == null) return;
             File marker = new File(parent, MARKER_CVS_REMOVED);
             if (marker.exists()) {
+                if (file.lastModified() > marker.lastModified() && !CvsVersioningSystem.FILENAME_CVS.equals(file.getName())) {
+                    makeVisible(parent);
+                }
                 fireVisibilityChanged();
             }
         }
+    }
+
+    private static void makeVisible(File file) {
+        if (file == null) return;
+        new File(file, MARKER_CVS_REMOVED).delete();
+        makeVisible(file.getParentFile());
     }
 
     static boolean isHiddenFolder(File file) {
@@ -92,7 +101,7 @@ public class CvsVisibilityQuery implements VisibilityQueryImplementation, Versio
             File [] files = file.listFiles();
             for (File child : files) {
                 if (child.lastModified() > marker.lastModified() && !CvsVersioningSystem.FILENAME_CVS.equals(child.getName())) {
-                    marker.delete();
+                    makeVisible(file);
                     refreshVisibility();
                     return false;
                 }
