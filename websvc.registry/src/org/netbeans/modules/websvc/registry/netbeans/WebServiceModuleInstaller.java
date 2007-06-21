@@ -29,11 +29,6 @@ import org.openide.ErrorManager;
 import org.openide.modules.ModuleInstall;
 import org.openide.modules.InstalledFileLocator;
 
-//import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
-//import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
-//import org.netbeans.modules.j2ee.deployment.devmodules.spi.InstanceListener;
-
-
 /** class WebServiceModuleInstaller
  *
  *  ModuleInstall for the web service registry module.  Handles reading
@@ -117,19 +112,6 @@ public class WebServiceModuleInstaller extends ModuleInstall /*implements Instan
         
     public static void updatesSpecialLoader(ExtensionClassLoader loader) throws Exception {
         try {
-//            String serverInstanceIDs[] = Deployment.getDefault().getServerInstanceIDs();
-//            J2eePlatform platform = null;
-//            for (int i = 0; i < serverInstanceIDs.length; i++) {
-//                J2eePlatform p = Deployment.getDefault().getJ2eePlatform(serverInstanceIDs [i]);
-//                if (p!= null && p.isToolSupported("wscompile")) {
-//                    platform = p;
-//                    break;
-//                }
-//            }
-//            File f1 = platform == null ? null : platform.getPlatformRoots() [0];
-//            if(f1 != null && f1.exists()) {
-//                String installRoot = f1.getAbsolutePath();
-                
                 
                 String javaVersion = System.getProperty("java.version"); //NOI18N
                 
@@ -210,34 +192,4 @@ public class WebServiceModuleInstaller extends ModuleInstall /*implements Instan
         return fileName;
     }    
 
-//    public void changeDefaultInstance(String oldServerInstanceID, String newServerInstanceID) {
-//    }
-//    
-//    public void instanceAdded(String serverInstanceID) {
-//        if (registryInstalled==false){
-//            specialLoader = null;
-//            restoreds();
-//            try {
-//                PersistenceManagerInterface persistenceManager = (PersistenceManagerInterface)
-//                specialLoader.loadClass("org.netbeans.modules.websvc.registry.WebServicePersistenceManager").newInstance(); //NOI18N
-//                persistenceManager.load(specialLoader);
-//            } catch (ClassNotFoundException cnfe){
-//                // nothing to do in this case, this server does not support wscompile or web services
-//                // see bug 55323 
-//            } catch(Exception ex) {
-//                ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
-//            }
-//            
-//            firePropertyChange("specialLoader", null,"specialLoader");//NOI18N
-//        }
-//    }
-//
-//    public void instanceRemoved(String serverInstanceID) {
-//    }
-//        /*
-//         * Used to get the netbeans classloader of this class.
-//         *
-//         */
-//    static class Empty {
-//    }
 }
