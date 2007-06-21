@@ -245,7 +245,17 @@ public class EndToEndTest extends JellyTestCase {
     
     /** Create SecurityManager class.  */
     public void testCreateSecurityManager() throws IOException {
-        NewFileWizardOperator.create(PROJECT_NAME, "Java", "Empty Java File", "com.mycompany.eshop.security", "SecurityManager");
+        NewFileWizardOperator newWizardOper = NewFileWizardOperator.invoke();
+        newWizardOper.selectProject(PROJECT_NAME);
+        // need to distinguish Java and Java Server Faces
+        newWizardOper.treeCategories().setComparator(new DefaultStringComparator(true, true));
+        newWizardOper.selectCategory("Java");
+        newWizardOper.selectFileType("Empty Java File");
+        newWizardOper.next();
+        NewFileNameLocationStepOperator nfnlso = new NewFileNameLocationStepOperator();
+        nfnlso.setObjectName("SecurityManager");
+        nfnlso.setPackage("com.mycompany.eshop.security");
+        nfnlso.finish();
         EditorOperator editorOper = new EditorOperator("SecurityManager.java");
         Properties properties = new Properties();
         properties.load(this.getClass().getResourceAsStream("Bundle.properties"));
