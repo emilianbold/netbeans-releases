@@ -23,6 +23,7 @@ import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.swing.text.Document;
 import org.netbeans.api.java.source.CompilationInfo;
@@ -62,7 +63,9 @@ public class HideFieldByVar extends HideField {
         if (el.getKind() == ElementKind.FIELD) {
             return null;
         }
+        boolean isStatic = false;
         while (el != null && !(el instanceof TypeElement)) {
+            isStatic = el.getModifiers().contains(Modifier.STATIC);
             el = el.getEnclosingElement();
         }
         if (el == null) {
@@ -80,6 +83,9 @@ public class HideFieldByVar extends HideField {
             }
             
             if (e.getKind() != ElementKind.FIELD) {
+                continue;
+            }
+            if (isStatic && !e.getModifiers().contains(Modifier.STATIC)) {
                 continue;
             }
             if (e.getSimpleName() == vt.getName()) {

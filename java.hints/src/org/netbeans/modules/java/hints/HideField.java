@@ -122,7 +122,7 @@ public class HideField extends AbstractHint {
 
             ErrorDescription ed = ErrorDescriptionFactory.createErrorDescription(
                 getSeverity().toEditorSeverity(),
-                NbBundle.getMessage(DoubleCheck.class, "MSG_HiddenField"), // NOI18N
+                getDisplayName(),
                 fixes,
                 doc,
                 doc.createPosition(span[0]),

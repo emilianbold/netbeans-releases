@@ -63,8 +63,22 @@ public class HideFieldByVarTest extends TreeRuleTestBase {
             "}";
         
         performAnalysisTest("test/Test.java", before + after, before.length(), 
-            "0:82-0:87:verifier:Field hides another field"
+            "0:82-0:87:verifier:Local variable hides a field"
         );
+    }
+    public void testLocaVarInStaticMethod() throws Exception {
+        String text = "package test; class Test {" +
+            "  protected  int value;" +
+            "  private static int compute() {" +
+            "    int value = -1;" +
+            "    return 10;" +
+            "  }" +
+            "}";
+        
+        for (int i = 0; i < text.length(); i++) {
+            clearWorkDir();
+            performAnalysisTest("test/Test.java", "// index: " + i + "\n" + text, i);
+        }
     }
     public void testLocaVarAgainsInhVar() throws Exception {
         String before = "package test; class Test {" +
@@ -79,7 +93,7 @@ public class HideFieldByVarTest extends TreeRuleTestBase {
             "}";
         
         performAnalysisTest("test/Test.java", before + after, before.length(), 
-            "0:109-0:114:verifier:Field hides another field"
+            "0:109-0:114:verifier:Local variable hides a field"
         );
     }
     public void testParamIsOkAgainstInhVar() throws Exception {
