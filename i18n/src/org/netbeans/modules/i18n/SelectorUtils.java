@@ -65,7 +65,7 @@ public class SelectorUtils {
     new FilteredNode.NodeFilter() {
       public boolean acceptNode(Node n) {
 	// Has to be data object.
-	DataObject dataObject = (DataObject)n.getCookie(DataObject.class);
+	DataObject dataObject = n.getCookie(DataObject.class);
 	if(dataObject == null)
 	  return false;
 		   
@@ -115,7 +115,7 @@ public class SelectorUtils {
 		   }
 
 		   // Has to be data object.
-		   DataObject dataObject = (DataObject)nodes[0].getCookie(DataObject.class);
+		   DataObject dataObject = nodes[0].getCookie(DataObject.class);
 		   if(dataObject == null)
 		     return false;
                       
@@ -124,7 +124,7 @@ public class SelectorUtils {
 		 }
 	       }
 	       );
-      return (DataObject)selectedNodes[0].getCookie(DataObject.class);
+      return selectedNodes[0].getCookie(DataObject.class);
     } catch (UserCancelException uce) {
         //ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, uce);
             // nobody is interested in the message
@@ -232,15 +232,15 @@ public class SelectorUtils {
   static public Node sourcesNode(Project prj, FilteredNode.NodeFilter filter) {
       Sources src = ProjectUtils.getSources(prj);
       SourceGroup[] srcgrps = src.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-      java.util.List nodes = new ArrayList();      
-      for (int i = 0 ; i < srcgrps.length; i++) {
+      java.util.List<Node> nodes = new ArrayList<Node>();      
+      for (SourceGroup srcGrp : srcgrps) {
 	try {
-	  FileObject rfo = srcgrps[i].getRootFolder();
+	  FileObject rfo = srcGrp.getRootFolder();
 	  FilteredNode node = new FilteredNode(DataObject.find(rfo).getNodeDelegate(),
 					       filter);
-	  //	  node.setName(srcgrps[i].getName());
-	  node.setDisplayName(srcgrps[i].getDisplayName());
-	  //	node.setIcon(srcgrps[i].getIcon());
+	  //	  node.setName(srcGrp.getName());
+	  node.setDisplayName(srcGrp.getDisplayName());
+	  //	node.setIcon(srcGrp.getIcon());
 					     
 	  nodes.add(node);
 	} catch (org.openide.loaders.DataObjectNotFoundException ex) {}
@@ -249,7 +249,7 @@ public class SelectorUtils {
       return createRootFor(nodes, prj);
   }
 
-    private static Node createRootFor(java.util.List nodes, Project prj) {
+    private static Node createRootFor(java.util.List<Node> nodes, Project prj) {
         // create a root for all gathered nodes
         Children ch = new Children.Array();
         Node[] nodesArray = new Node[ nodes.size() ];
@@ -282,7 +282,7 @@ public class SelectorUtils {
         
     // Selects one folder from data systems.
     DataFolder dataFolder = 
-      (DataFolder)NodeOperation.getDefault().select
+      NodeOperation.getDefault().select
       (
        I18nUtil.getBundle().getString ("CTL_Template_Dialog_Title"),
        I18nUtil.getBundle().getString ("CTL_Template_Dialog_RootTitle"),
@@ -293,7 +293,7 @@ public class SelectorUtils {
 	     return false;
 	   }
                     
-	   DataFolder cookie = (DataFolder)nodes[0].getCookie(DataFolder.class);
+	   DataFolder cookie = nodes[0].getCookie(DataFolder.class);
 	   return (cookie != null && cookie.getPrimaryFile().canWrite());
 	 }
        },
