@@ -25,7 +25,7 @@ TOKEN:html_element_start: ( "<" ):<IN_ELEMENT_START>
 TOKEN:html_end_element_start: ( "</" ):<IN_ELEMENT_START>
 
 TOKEN:gsp_element_start: ( "<g:" ):<IN_GSP_ELEMENT_START>
-TOKEN:gsp_end_element_start: ( "<g:" ):<IN_GSP_ELEMENT_START>
+TOKEN:gsp_end_element_start: ( "</g:" ):<IN_GSP_ELEMENT_START>
 
 <IN_ELEMENT_START>:TOKEN:html_element_name: ( "SCRIPT" ):<IN_SCRIPT_ELEMENT>
 <IN_ELEMENT_START>:TOKEN:html_element_name: ( "script" ):<IN_SCRIPT_ELEMENT>
