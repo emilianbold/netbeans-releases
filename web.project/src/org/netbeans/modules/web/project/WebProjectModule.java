@@ -63,7 +63,7 @@ public class WebProjectModule extends ModuleInstall {
                             // also it must be moved before J2EE_PLATFORM_CLASSPATH, because a server (JBoss) can expose
                             // old jsp api, and the compiler is not then able compile some jsp pages with tag lib declarations
                             .append(InstalledFileLocator.getDefault().locate("modules/ext/servlet2.5-jsp2.1-api.jar", null, false)) //NOI18N
-                            .append(":${" + WebProjectProperties.J2EE_PLATFORM_CLASSPATH + "}:") // NOI18N
+                            .append(":${").append(WebProjectProperties.J2EE_PLATFORM_CLASSPATH).append("}:") // NOI18N
                             .append(InstalledFileLocator.getDefault().locate("modules/ext/glassfish-jspparser.jar", null, false)) //NOI18N
                             .append(':') // NOI18N
                             .append(InstalledFileLocator.getDefault().locate("modules/ext/glassfish-logging.jar", null, false)) //NOI18N
