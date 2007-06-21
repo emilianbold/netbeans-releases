@@ -135,7 +135,7 @@ public class SceneElementComparator implements Comparator<SceneElement> {
 //        return nextElement;
 //    }
     
-    public static PageFlowSceneElement getNextSelectableElement(PageFlowScene scene, boolean nodesSelectable, boolean edgesSelectable, boolean pinsSelectable ){
+    public static PageFlowSceneElement getNextSelectableElement(PageFlowScene scene, boolean reverse, boolean nodesSelectable, boolean edgesSelectable, boolean pinsSelectable ){
         List selectedObjs = new ArrayList(scene.getSelectedObjects());
         //        List objs = new ArrayList(scene.getObjects());
         List objs = new ArrayList();
@@ -169,10 +169,13 @@ public class SceneElementComparator implements Comparator<SceneElement> {
                 break;
             }
         }
+        
         PageFlowSceneElement nextElement = null;
         if( sortedElements.size() > 0 ){
             Collections.sort(sortedElements, new SceneElementComparator(scene));
-            System.out.println(sortedElements);
+            if( reverse ){
+                Collections.reverse(sortedElements);
+            }
             if( mySelectedSceneElement != null ) {
                 if( sortedElements.contains(mySelectedSceneElement)) {
                     int index = sortedElements.indexOf(mySelectedSceneElement);
