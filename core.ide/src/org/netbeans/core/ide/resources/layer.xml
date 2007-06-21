@@ -110,11 +110,9 @@ Microsystems, Inc. All Rights Reserved.
              the changes if appropriate -->
         <file name="Standard.xml" url="Standard.xml">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
-            <attr name="position" intvalue="300"/>
         </file>
         <file name="Debugging.xml" url="Debugging.xml">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
-            <attr name="position" intvalue="400"/>
         </file>
  
     </folder> <!-- Toolbars -->
