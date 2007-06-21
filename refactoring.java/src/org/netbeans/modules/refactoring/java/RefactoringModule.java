@@ -24,7 +24,6 @@ import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.Repository;
-import org.openide.modules.ModuleInstall;
 
 /**
  * Module installation class for Refactoring module.
@@ -32,7 +31,7 @@ import org.openide.modules.ModuleInstall;
  * @author Jan Becicka
  * @author Pavel Flaska
  */
-public class RefactoringModule extends ModuleInstall {
+public class RefactoringModule {
 
     /** Holds the file objects whose attributes represents options */
     private static FileObject optionsFile = null;
