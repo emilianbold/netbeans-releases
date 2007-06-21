@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 2004-2005 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 2004-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -28,7 +28,6 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.modules.junit.GuiUtils;
 import org.netbeans.modules.junit.SelfResizingPanel;
 import org.openide.WizardDescriptor;
-import org.openide.loaders.TemplateWizard;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -36,7 +35,7 @@ import org.openide.util.NbBundle;
  *
  * @author  Marian Petras
  */
-class EmptyTestStepLocation implements WizardDescriptor.Panel {
+class EmptyTestStepLocation implements WizardDescriptor.Panel<WizardDescriptor> {
 
     private Component visualComp;
     private JCheckBox chkSetUp;
@@ -103,25 +102,21 @@ class EmptyTestStepLocation implements WizardDescriptor.Panel {
         return true;
     }
 
-    public void readSettings(Object settings) {
-        TemplateWizard wizard = (TemplateWizard) settings;
-        
+    public void readSettings(WizardDescriptor settings) {
         chkSetUp.setSelected(
-                Boolean.TRUE.equals(wizard.getProperty(GuiUtils.CHK_SETUP)));
+                Boolean.TRUE.equals(settings.getProperty(GuiUtils.CHK_SETUP)));
         chkTearDown.setSelected(
-                Boolean.TRUE.equals(wizard.getProperty(GuiUtils.CHK_TEARDOWN)));
+                Boolean.TRUE.equals(settings.getProperty(GuiUtils.CHK_TEARDOWN)));
         chkCodeHints.setSelected(
-                Boolean.TRUE.equals(wizard.getProperty(GuiUtils.CHK_HINTS)));
+                Boolean.TRUE.equals(settings.getProperty(GuiUtils.CHK_HINTS)));
     }
 
-    public void storeSettings(Object settings) {
-        TemplateWizard wizard = (TemplateWizard) settings;
-        
-        wizard.putProperty(GuiUtils.CHK_SETUP,
+    public void storeSettings(WizardDescriptor settings) {
+        settings.putProperty(GuiUtils.CHK_SETUP,
                            Boolean.valueOf(chkSetUp.isSelected()));
-        wizard.putProperty(GuiUtils.CHK_TEARDOWN,
+        settings.putProperty(GuiUtils.CHK_TEARDOWN,
                            Boolean.valueOf(chkTearDown.isSelected()));
-        wizard.putProperty(GuiUtils.CHK_HINTS,
+        settings.putProperty(GuiUtils.CHK_HINTS,
                            Boolean.valueOf(chkCodeHints.isSelected()));
     }
 

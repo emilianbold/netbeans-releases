@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 2004-2005 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 2004-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -37,7 +37,7 @@ import org.openide.util.NbBundle;
  *
  * @author  Marian Petras
  */
-public class StepProblemMessage implements WizardDescriptor.Panel {
+public class StepProblemMessage implements WizardDescriptor.Panel<WizardDescriptor> {
     
     private final String msg;
     private final Project project;
@@ -107,7 +107,7 @@ public class StepProblemMessage implements WizardDescriptor.Panel {
         return false;
     }
     
-    public void readSettings(Object settings) {
+    public void readSettings(WizardDescriptor settings) {
         //this panel has no settings
     }
     
@@ -115,7 +115,7 @@ public class StepProblemMessage implements WizardDescriptor.Panel {
         //no need for listeners - this panel is always invalid
     }
     
-    public void storeSettings(Object settings) {
+    public void storeSettings(WizardDescriptor settings) {
         //this panel has no settings
     }
     

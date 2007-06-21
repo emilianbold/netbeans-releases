@@ -73,7 +73,7 @@ public class EmptyTestCaseWizardIterator
     /** registered change listeners */
     private List<ChangeListener> changeListeners;   //PENDING - what is this useful for?
     /** panel for choosing name and target location of the test class */
-    private WizardDescriptor.Panel targetPanel;
+    private WizardDescriptor.Panel<WizardDescriptor> targetPanel;
     private Project lastSelectedProject = null;
     /** */
     private WizardDescriptor.Panel optionsPanel;
@@ -145,7 +145,7 @@ public class EmptyTestCaseWizardIterator
 
     /**
      */
-    public WizardDescriptor.Panel current() {
+    public WizardDescriptor.Panel<WizardDescriptor> current() {
         switch (current) {
             case INDEX_TARGET:
                 return getTargetPanel();
@@ -154,7 +154,7 @@ public class EmptyTestCaseWizardIterator
         }
     }
 
-    private WizardDescriptor.Panel getTargetPanel() {
+    private WizardDescriptor.Panel<WizardDescriptor> getTargetPanel() {
         final Project project = Templates.getProject(wizard);
         if (targetPanel == null || project != lastSelectedProject) {
             Collection<SourceGroup> sourceGroups = Utils.getTestTargets(project, true);

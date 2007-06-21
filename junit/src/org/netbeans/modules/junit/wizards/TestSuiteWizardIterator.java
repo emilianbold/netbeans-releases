@@ -70,7 +70,7 @@ public class TestSuiteWizardIterator
     /** registered change listeners */
     private List<ChangeListener> changeListeners;
     /** panel for choosing name and target location of the test class */
-    private WizardDescriptor.Panel targetPanel;
+    private WizardDescriptor.Panel<WizardDescriptor> targetPanel;
     private Project lastSelectedProject = null;
     /** */
     private WizardDescriptor.Panel optionsPanel;
@@ -145,7 +145,7 @@ public class TestSuiteWizardIterator
 
     /**
      */
-    public WizardDescriptor.Panel current() {
+    public WizardDescriptor.Panel<WizardDescriptor> current() {
         switch (current) {
             case INDEX_TARGET:
                 return getTargetPanel();
@@ -161,7 +161,7 @@ public class TestSuiteWizardIterator
      *
      * @return  existing panel or a newly created panel if it did not exist
      */
-    private WizardDescriptor.Panel getTargetPanel() {
+    private WizardDescriptor.Panel<WizardDescriptor> getTargetPanel() {
         final Project project = Templates.getProject(wizard);
         if (targetPanel == null || project != lastSelectedProject) {
             JUnitPlugin plugin = TestUtil.getPluginForProject(project);

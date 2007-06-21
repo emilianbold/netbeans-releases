@@ -69,7 +69,7 @@ public class SimpleTestCaseWizardIterator
     /** */
     private Project lastSelectedProject = null;
     /** panel for choosing name and target location of the test class */
-    private WizardDescriptor.Panel classChooserPanel;
+    private WizardDescriptor.Panel<WizardDescriptor> classChooserPanel;
 
     /**
      */
@@ -139,7 +139,7 @@ public class SimpleTestCaseWizardIterator
 
     /**
      */
-    public WizardDescriptor.Panel current() {
+    public WizardDescriptor.Panel<WizardDescriptor> current() {
         switch (current) {
             case INDEX_CHOOSE_CLASS:
                 return getClassChooserPanel();
@@ -155,7 +155,7 @@ public class SimpleTestCaseWizardIterator
      *
      * @return  existing panel or a newly created panel if it did not exist
      */
-    private WizardDescriptor.Panel getClassChooserPanel() {
+    private WizardDescriptor.Panel<WizardDescriptor> getClassChooserPanel() {
         final Project project = Templates.getProject(wizard);
         if (classChooserPanel == null || project != lastSelectedProject) {
             final Utils utils = new Utils(project);

@@ -99,7 +99,6 @@ import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
-import org.openide.loaders.TemplateWizard;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
@@ -114,7 +113,7 @@ import org.openide.util.UserCancelException;
  *
  * @author  Marian Petras
  */
-public final class SimpleTestStepLocation implements WizardDescriptor.Panel {
+public final class SimpleTestStepLocation implements WizardDescriptor.Panel<WizardDescriptor> {
     
     /**
      * message layer for displaying messages about problems with checkbox
@@ -163,7 +162,7 @@ public final class SimpleTestStepLocation implements WizardDescriptor.Panel {
      * project to create a test class in
      */
     private Project project;
-    private TemplateWizard wizard;
+    private WizardDescriptor wizard;
     
 
     // focus change detection mechanism
@@ -1387,8 +1386,8 @@ public final class SimpleTestStepLocation implements WizardDescriptor.Panel {
         return null;
     }
     
-    public void readSettings(Object settings) {
-        wizard = (TemplateWizard) settings;
+    public void readSettings(WizardDescriptor settings) {
+        wizard = settings;
         
         chkPublic.setSelected(
                Boolean.TRUE.equals(wizard.getProperty(GuiUtils.CHK_PUBLIC)));
@@ -1408,8 +1407,8 @@ public final class SimpleTestStepLocation implements WizardDescriptor.Panel {
                Boolean.TRUE.equals(wizard.getProperty(GuiUtils.CHK_HINTS)));
     }
     
-    public void storeSettings(Object settings) {
-        wizard = (TemplateWizard) settings;
+    public void storeSettings(WizardDescriptor settings) {
+        wizard = settings;
         
         wizard.putProperty(SimpleTestCaseWizard.PROP_CLASS_TO_TEST,
                            srcFile);
