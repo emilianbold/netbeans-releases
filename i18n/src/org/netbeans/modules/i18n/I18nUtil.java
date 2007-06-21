@@ -28,7 +28,6 @@ import java.util.ResourceBundle;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
-import org.openide.util.SharedClassObject;
 import org.netbeans.api.queries.VisibilityQuery;
 
 /**
@@ -72,30 +71,30 @@ public final class I18nUtil {
 
     
     /** Items for init format customizer. */
-    private static List initFormatItems;
+    private static List<String> initFormatItems;
 
     /** Help description for init format customizer. */
-    private static List initHelpItems;
+    private static List<String> initHelpItems;
 
     /** Items for replace format customizer. */
-    private static List replaceFormatItems;
+    private static List<String> replaceFormatItems;
 
     /** Help description for replace format customizer. */
-    private static List replaceHelpItems;
+    private static List<String> replaceHelpItems;
 
     /** Items for regular expression customizer. */
-    private static List regExpItems;
+    private static List<String> regExpItems;
 
     /** Help description for regular expression customizer. */
-    private static List regExpHelpItems;
+    private static List<String> regExpHelpItems;
     
     /** Items for i18n regular expression customizer. */
-    private static List i18nRegExpItems;
+    private static List<String> i18nRegExpItems;
 
     /** Gets <code>initFormatItems</code>. */
-    public static List getInitFormatItems() { 
+    public static List<String> getInitFormatItems() { 
         if(initFormatItems == null) {
-            initFormatItems = new ArrayList(2);
+            initFormatItems = new ArrayList<String>(2);
             initFormatItems.add("java.util.ResourceBundle.getBundle(\"{bundleNameSlashes}\")"); // NOI18N
             initFormatItems.add("org.openide.util.NbBundle.getBundle({sourceFileName}.class)"); // NOI18N
         }
@@ -104,10 +103,10 @@ public final class I18nUtil {
     }
 
     /** Gets <code>InitHelpFormats</code>. */
-    public static List getInitHelpItems() {
+    public static List<String> getInitHelpItems() {
         if(initHelpItems == null) {
             ResourceBundle bundle = getBundle();
-            initHelpItems = new ArrayList(3);
+            initHelpItems = new ArrayList<String>(3);
             initHelpItems.add("{bundleNameSlashes} - "+ bundle.getString("TXT_PackageNameSlashes")); // NOI18N
             initHelpItems.add("{bundleNameDots} - " + bundle.getString("TXT_PackageNameDots")); // NOI18N
             initHelpItems.add("{sourceFileName} - " + bundle.getString("TXT_SourceDataObjectName")); // NOI18N
@@ -117,9 +116,9 @@ public final class I18nUtil {
     }
 
     /** Gets <code>replaceFormatItems</code>. */
-    public static List getReplaceFormatItems() {
+    public static List<String> getReplaceFormatItems() {
         if(replaceFormatItems == null) {
-            replaceFormatItems = new ArrayList(7);
+            replaceFormatItems = new ArrayList<String>(7);
             replaceFormatItems.add("{identifier}.getString(\"{key}\")"); // NOI18N
             replaceFormatItems.add("Utilities.getString(\"{key}\")"); // NOI18N
             replaceFormatItems.add("java.util.ResourceBundle.getBundle(\"{bundleNameSlashes}\").getString(\"{key}\")"); // NOI18N
@@ -136,14 +135,14 @@ public final class I18nUtil {
      * a NB module project or not. (Module projects use NbBundle preferentially.)
      */
     public static String getDefaultReplaceFormat(boolean nbProject) {
-        return (String) getReplaceFormatItems().get(nbProject ? 5 : 2);
+        return getReplaceFormatItems().get(nbProject ? 5 : 2);
     }
 
     /** Gets <code>replaceHeplItems</code>.*/
-    public static List getReplaceHelpItems() {
+    public static List<String> getReplaceHelpItems() {
         if(replaceHelpItems == null) {
             ResourceBundle bundle = getBundle();
-            replaceHelpItems = new ArrayList(6);
+            replaceHelpItems = new ArrayList<String>(6);
             replaceHelpItems.add("{identifier} - " + bundle.getString("TXT_FieldIdentifier")); // NOI18N
             replaceHelpItems.add("{key} - " + bundle.getString("TXT_KeyHelp")); // NOI18N
             replaceHelpItems.add("{bundleNameSlashes} - " + bundle.getString("TXT_PackageNameSlashes")); // NOI18N
@@ -156,9 +155,9 @@ public final class I18nUtil {
     }
 
     /** Gets <code>regExpItems</code>. */
-    public static List getRegExpItems() {
+    public static List<String> getRegExpItems() {
         if(regExpItems == null) {
-            regExpItems = new ArrayList(4);
+            regExpItems = new ArrayList<String>(4);
             regExpItems.add("(getString|getBundle)[:space:]*\\([:space:]*{hardString}|// *NOI18N"); // NOI18N
             regExpItems.add("(getString|getBundle)[:space:]*\\([:space:]*{hardString}"); // NOI18N
             regExpItems.add("// *NOI18N"); // NOI18N
@@ -169,9 +168,9 @@ public final class I18nUtil {
     }
     
     /** Gets <code>i18nRegExpItems</code>. */
-    public static List getI18nRegExpItems() {
+    public static List<String> getI18nRegExpItems() {
         if(i18nRegExpItems == null) {
-            i18nRegExpItems = new ArrayList(2);
+            i18nRegExpItems = new ArrayList<String>(2);
             i18nRegExpItems.add("getString[:space:]*\\([:space:]*{hardString}"); // NOI18N
             i18nRegExpItems.add("(getString[:space:]*\\([:space:]*|getMessage[:space:]*\\(([:alnum:]|[:punct:]|[:space:])*,[:space:]*){hardString}"); // NOI18N
         }
@@ -180,10 +179,10 @@ public final class I18nUtil {
     }
     
     /** Gets <code>regExpHelpItems</code>. */
-    public static List getRegExpHelpItems() {
+    public static List<String> getRegExpHelpItems() {
         if(regExpHelpItems == null) {
             ResourceBundle bundle = getBundle();
-            regExpHelpItems = new ArrayList(13);
+            regExpHelpItems = new ArrayList<String>(13);
             regExpHelpItems.add("{hardString} - " + bundle.getString("TXT_HardString")); // NOI18N
             regExpHelpItems.add("[:alnum:] - " + bundle.getString("TXT_Alnum")); // NOI18N
             regExpHelpItems.add("[:alpha:] - " + bundle.getString("TXT_Alpha")); // NOI18N
