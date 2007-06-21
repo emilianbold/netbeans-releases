@@ -233,11 +233,14 @@ public class SunDDHelper {
     
     public void setServiceMessageSecurityBinding(String svcDescName,
             String pcName, String providerId) {
+        System.out.println("setServiceMSB sdn = " + svcDescName + " pcName = " +
+                pcName + " pid = " + providerId);
         Element root = getRootElement();
         Element component = null;
         String componentTag = null;
         String componentNameTag = null;
         
+        System.out.println("type = " + type);
         if (type == ProjectType.WEB) {
             componentTag = SERVLET_TAG;
             componentNameTag = SERVLET_NAME_TAG;
@@ -281,13 +284,14 @@ public class SunDDHelper {
     }
     
     public void setServiceRefMessageSecurityBinding(String serviceRefName,
-            String namespaceURI, String localPart, String className) {
+            String namespaceURI, String localPart) {
         Element root = getRootElement();
         
         if (type == ProjectType.EJB) {
-            Element component = getComponentElement(root, EJB_TAG, EJB_NAME_TAG, className);
+            String ejbName = getEjbName(serviceRefName);
+            Element component = getComponentElement(root, EJB_TAG, EJB_NAME_TAG, ejbName);
             if (component == null) {
-                component = createEjbElement(className);
+                component = createEjbElement(ejbName);
                 root.appendChild(component);
             }
             
@@ -352,11 +356,12 @@ public class SunDDHelper {
     }
     
     public void removeServiceRefMessageSecurityBinding(String serviceRefName,
-            String namespaceURI, String localPart, String className) {
+            String namespaceURI, String localPart) {
         Element root = getRootElement();
         
         if (type == ProjectType.EJB) {
-            root = getComponentElement(root, EJB_TAG, EJB_NAME_TAG, className);
+            String ejbName = getEjbName(serviceRefName);
+            root = getComponentElement(root, EJB_TAG, EJB_NAME_TAG, ejbName);
             
             if (root == null) return;
         }
@@ -408,11 +413,12 @@ public class SunDDHelper {
     }
     
     public boolean isClientSecurityEnabled(String serviceRefName,
-            String namespaceURI, String localPart, String className) {
+            String namespaceURI, String localPart) {
         Element root = getRootElement();
         
         if (type == ProjectType.EJB) {
-            root = getComponentElement(root, EJB_TAG, EJB_NAME_TAG, className);
+            String ejbName = getEjbName(serviceRefName);
+            root = getComponentElement(root, EJB_TAG, EJB_NAME_TAG, ejbName);
             
             if (root == null) return false;
         }
@@ -557,10 +563,10 @@ public class SunDDHelper {
         return null;
     }
     
-    private Element createEjbElement(String className) {
+    private Element createEjbElement(String ejbName) {
         Document document = getDocument();
         Element ejb = document.createElement(EJB_TAG);
-        ejb.appendChild(createElement(EJB_NAME_TAG, className));
+        ejb.appendChild(createElement(EJB_NAME_TAG, ejbName));
         
         return ejb;
     }
@@ -651,6 +657,13 @@ public class SunDDHelper {
         return null;
     }
     
+    private String getEjbName(String refName) {
+        String ejbName = refName.substring(0, refName.indexOf("/"));        //NOI18N
+        ejbName = ejbName.substring(ejbName.lastIndexOf(".")+1);            //NOI18N
+
+        return ejbName;
+    }
+    
     private boolean containsValue(Element element, String value) {
         Node child = element.getFirstChild();
         
@@ -662,6 +675,7 @@ public class SunDDHelper {
     }
     
     private void writeDocument() {
+        System.out.println("writeDocument() ");
         beautify();
         
         //RequestProcessor.getDefault().post(new Runnable() {
@@ -690,6 +704,7 @@ public class SunDDHelper {
             
             //transformer.transform(source, new StreamResult(System.out));
         } catch (Exception ex) {
+            ex.printStackTrace();
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         } finally {
             if (os != null) {

@@ -20,10 +20,8 @@
 package org.netbeans.modules.identity.profile.ui.editor;
 
 import javax.swing.JComponent;
-import java.io.File;
 import java.util.List;
 import javax.swing.JPanel;
-import org.netbeans.modules.identity.profile.api.bridgeapi.SunDDBridge;
 import org.netbeans.modules.identity.profile.ui.SecurityView;
 import org.netbeans.modules.identity.profile.ui.WSCSecurityView;
 import org.netbeans.modules.identity.profile.ui.WSPSecurityView;
@@ -31,8 +29,6 @@ import org.netbeans.modules.websvc.core.wseditor.spi.WSEditor;
 import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
 import org.openide.nodes.Node;
 import org.netbeans.modules.identity.profile.ui.MessagePanel;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.identity.profile.ui.support.J2eeProjectHelper;
 import org.netbeans.modules.identity.profile.ui.support.WsdlData;
@@ -78,8 +74,8 @@ public class SecurityWSEditor implements WSEditor {
                 }
             }
             
-            if (helper.providerExists())
-                iPanel = displaySunDDAlert();
+            //if (helper.providerExists())
+            //   iPanel = displaySunDDAlert();
             
             if (iPanel == null)
                 iPanel = setUpSecurityPanel();
@@ -114,56 +110,49 @@ public class SecurityWSEditor implements WSEditor {
         }
     }
     
-    private JPanel displaySunDDAlert() {
-        boolean isServer = helper.isServer();
-        JPanel p = null;
-        String providerName = null;
-        File sunDD = helper.getSunDD();
-        if (isServer) {
-            String pcName = helper.getPortComponentName();
-            String descName = helper.getServiceDescriptionName();
-            providerName = SunDDBridge.getEndPointProvider(sunDD, descName, pcName);
-        } else {
-            List<String> refNames = helper.getAllServiceRefNames();
-            WsdlData wsdlData = helper.getWsdlData().get(0);
-            String namespace = null;
-            String localPart = null;
-            if (wsdlData != null) {
-                namespace = wsdlData.getTargetNameSpace();
-                localPart = wsdlData.getPort();
-            }
-            providerName = SunDDBridge.getSvcRefProvider(sunDD,
-                    (String)refNames.get(0), namespace, localPart);
-        }
-        String message = NbBundle.getMessage(SecurityWSEditor.class,
-                "LBL_AuthNProviderExists") + " " + providerName + "." + " " + //NOI18N
-                NbBundle.getMessage(SecurityWSEditor.class,
-                "LBL_AuthNProviderOverwrite"); //NOI18N
-        NotifyDescriptor d = new NotifyDescriptor.Confirmation(
-                message, NbBundle.getMessage(
-                SecurityWSEditor.class, "LBL_NotifyTitle"), //NOI18N
-                NotifyDescriptor.YES_NO_OPTION);
-        DialogDisplayer.getDefault().notify(d);
-        if (d.getValue() == NotifyDescriptor.NO_OPTION) {
-            p = new MessagePanel(NbBundle.getMessage(
-                    SecurityWSEditor.class, "LBL_AuthNProviderExists") + //NOI18N
-                    providerName);
-        }
-        return p;
-    }
+    //    private JPanel displaySunDDAlert() {
+    //        boolean isServer = helper.isServer();
+    //        JPanel p = null;
+    //        String providerName = null;
+    //        File sunDD = helper.getSunDD();
+    //        if (isServer) {
+    //            String pcName = helper.getPortComponentName();
+    //            String descName = helper.getServiceDescriptionName();
+    //            providerName = SunDDBridge.getEndPointProvider(sunDD, descName, pcName);
+    //        } else {
+    //            List<String> refNames = helper.getAllServiceRefNames();
+    //            WsdlData wsdlData = helper.getWsdlData().get(0);
+    //            String namespace = null;
+    //            String localPart = null;
+    //            if (wsdlData != null) {
+    //                namespace = wsdlData.getTargetNameSpace();
+    //                localPart = wsdlData.getPort();
+    //            }
+    //            providerName = SunDDBridge.getSvcRefProvider(sunDD,
+    //                    (String)refNames.get(0), namespace, localPart);
+    //        }
+    //        String message = NbBundle.getMessage(SecurityWSEditor.class,
+    //                "LBL_AuthNProviderExists") + " " + providerName + "." + " " + //NOI18N
+    //                NbBundle.getMessage(SecurityWSEditor.class,
+    //                "LBL_AuthNProviderOverwrite"); //NOI18N
+    //        NotifyDescriptor d = new NotifyDescriptor.Confirmation(
+    //                message, NbBundle.getMessage(
+    //                SecurityWSEditor.class, "LBL_NotifyTitle"), //NOI18N
+    //                NotifyDescriptor.YES_NO_OPTION);
+    //        DialogDisplayer.getDefault().notify(d);
+    //        if (d.getValue() == NotifyDescriptor.NO_OPTION) {
+    //            p = new MessagePanel(NbBundle.getMessage(
+    //                    SecurityWSEditor.class, "LBL_AuthNProviderExists") + //NOI18N
+    //                    providerName);
+    //        }
+    //        return p;
+    //    }
     
     private JPanel setUpSecurityPanel() {
-        helper.closeSunDDEditor();
-        
         if (helper.isServer()) {
             return new WSPSecurityView(helper);
         } else {
-            if (helper.closeSunDDEditor()) {
-                return new WSCSecurityView(helper);
-            } else {
-                return  new MessagePanel(NbBundle.getMessage(SecurityWSEditor.class,
-                        "LBL_SunDDEditorOpen"));
-            }
+            return new WSCSecurityView(helper);
         }
     }
     

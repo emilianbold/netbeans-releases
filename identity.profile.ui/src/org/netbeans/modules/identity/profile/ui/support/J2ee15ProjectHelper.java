@@ -26,7 +26,6 @@ import com.sun.source.util.Trees;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.lang.model.element.AnnotationMirror;
@@ -40,10 +39,6 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.Repository;
-import org.openide.loaders.DataFolder;
-import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 
 /**
@@ -54,26 +49,10 @@ public class J2ee15ProjectHelper extends J2eeProjectHelper {
     
     private static final String SERVICE_SUFFIX = "Service";     //NOI18N
     
-    private static final String SUN_WEB_TEMPLATE = "Templates/Identity/SunDD/sun-web.xml";     //NOI18N
-    
-    private static final String SUN_WEB_XML = "sun-web";        //NOI18N
-    
-    private static final String SUN_EJB_JAR_TEMPLATE = "Templates/Identity/SunDD/sun-ejb-jar.xml";     //NOI18N
-    
-    private static final String SUN_EJB_JAR_XML = "sun-ejb-jar";    //NOI18N
-    
-    private static final String SUN_APPLICATION_CLIENT_TEMPLATE = "Templates/Identity/SunDD/sun-application-client.xml";    //NOI18N
-    
-    private static final String SUN_APPLICATION_CLIENT_XML = "sun-application-client";  //NOI18N
-    
-    private static final String XML_EXT = "xml";        //NOI18N
-    
     private static final String WEB_FOLDER = "web";     //NOI18N
       
     private static final String JAVA_EXT = "java";       //NOI18N
-    
-    private static final String WEB_INF_FOLDER = "WEB-INF";     //NOI18N
-    
+
     private static final String CONF_FOLDER = "conf";       //NOI18N
  
     private static final String TEST_FOLDER = "test";       //NOI18N
@@ -136,158 +115,7 @@ public class J2ee15ProjectHelper extends J2eeProjectHelper {
         
         return serviceRefNames;
     }
-    
-    public List<ServiceRef> getServiceRefs() {
-        if (serviceRefs == null) {
-            getAllServiceRefNames();
-        }
-        
-        return serviceRefs;
-    }
-    
-    public boolean providerExists() {
-        return false;
-    }
-    
-    
-    public boolean isSecurityEnabled() {
-        SunDDHelper helper = new SunDDHelper(getSunDDFO(), getProjectType());
-        
-        if (isServer()) {
-            return helper.isServiceSecurityEnabled(getServiceDescriptionName(),
-                    getPortComponentName());
-        } else {
-            for (WsdlData wsdlData : getWsdlData()) {
-                String namespace = wsdlData.getTargetNameSpace();
-                String localPart = wsdlData.getPort();
-                
-                for (ServiceRef ref : getServiceRefs()) {
-                    if (helper.isClientSecurityEnabled(ref.getName(),
-                            namespace, localPart, ref.getClassName())) {
-                        return true;
-                    }
-                }
-            }
-        }
-        
-        return false;
-    }
-    
-    protected void enableMessageLevelSecurity(String providerId) {
-        SunDDHelper helper = new SunDDHelper(getSunDDFO(), getProjectType());
-        
-        if (isServer()) {
-            helper.setServiceMessageSecurityBinding(getServiceDescriptionName(),
-                    getPortComponentName(), providerId);
-        } else {
-            for (WsdlData wsdlData : getWsdlData()) {
-                String namespace = wsdlData.getTargetNameSpace();
-                String localPart = wsdlData.getPort();
-                
-                for (ServiceRef ref : getServiceRefs()) {
-                    helper.setServiceRefMessageSecurityBinding(ref.getName(),
-                            namespace, localPart, ref.getClassName());
-                }
-            }
-        }
-    }
-    
-    protected void disableMessageLevelSecurity() {
-        SunDDHelper helper = new SunDDHelper(getSunDDFO(), getProjectType());
-        
-        if (isServer()) {
-            helper.removeServiceMessageSecurityBinding(getServiceDescriptionName(),
-                    getPortComponentName());
-        } else {
-            for (WsdlData wsdlData : getWsdlData()) {
-                String namespace = wsdlData.getTargetNameSpace();
-                String localPart = wsdlData.getPort();
-                
-                for (ServiceRef ref : getServiceRefs()) {
-                    helper.removeServiceRefMessageSecurityBinding(ref.getName(),
-                            namespace, localPart, ref.getClassName());
-                }
-            }
-        }
-    }
-    
-    public FileObject getSunDDFO() {
-        FileObject conf = getConfRoot();
-        String sunDDName = getSunDDName();
-        FileObject fobj = conf.getFileObject(sunDDName, XML_EXT);
-        
-        if (fobj == null) {
-            String template = getSunDDTemplate();
-            
-            try {
-                fobj = createSunDDFromTemplate(template, conf, sunDDName);
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
-        }
-        
-        return fobj;
-    }
-    
-    private String getSunDDName() {
-        switch (getProjectType()) {
-        case EJB:
-            return SUN_EJB_JAR_XML;
-        case WEB:
-            return SUN_WEB_XML;
-        case CLIENT:
-            return SUN_APPLICATION_CLIENT_XML;
-        }
-        
-        return null;
-    }
-    
-    private String getSunDDTemplate() {
-        switch (getProjectType()) {
-        case EJB:
-            return SUN_EJB_JAR_TEMPLATE;
-        case WEB:
-            return SUN_WEB_TEMPLATE;
-        case CLIENT:
-            return SUN_APPLICATION_CLIENT_TEMPLATE;
-        }
-        
-        return null;
-    }
-    
-    private FileObject getConfRoot() {
-        FileObject[] sourceRoots = getProvider().getSourceRoots();
-        
-        for (FileObject root : sourceRoots) {
-            String name = root.getName();
-            
-            if (getProjectType() == ProjectType.WEB) {
-                if (name.equals(WEB_FOLDER)) {      
-                    return root.getFileObject(WEB_INF_FOLDER);
-                }
-            } else {
-                if (name.equals(CONF_FOLDER)) {      //NOI18N
-                    return root;
-                }
-            }
-        }
-        return null;
-    }
-    
-    private FileObject createSunDDFromTemplate(String template,
-            FileObject folder, String sunDDName) throws IOException {
-        assert template != null;
-        assert folder != null;
-        
-        FileSystem defaultFS = Repository.getDefault().getDefaultFileSystem();
-        FileObject templateFO = defaultFS.findResource(template);
-        DataObject templateDO = DataObject.find(templateFO);
-        DataFolder dataFolder = DataFolder.findFolder(folder);    
-        DataObject dataObj = templateDO.createFromTemplate(dataFolder, sunDDName);
-        
-        return dataObj.getPrimaryFile();
-    }
-    
+  
     private String getClassName(JavaSource source) {
         final String[] className = new String[1];
         

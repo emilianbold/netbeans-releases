@@ -29,16 +29,12 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
-import java.lang.reflect.Method;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Enumeration;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.identity.profile.api.bridgeapi.SunDDBridge;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.dd.api.common.ServiceRef;
 import org.netbeans.modules.j2ee.dd.api.ejb.Ejb;
@@ -62,19 +58,25 @@ import org.openide.nodes.Node;
 import org.netbeans.modules.identity.profile.api.bridgeapi.RuntimeBridge;
 import org.netbeans.modules.j2ee.api.ejbjar.Car;
 import org.netbeans.modules.j2ee.dd.api.client.AppClient;
+import org.netbeans.modules.j2ee.dd.api.client.AppClientMetadata;
 import org.netbeans.modules.j2ee.dd.api.common.RootInterface;
 import org.netbeans.modules.j2ee.dd.api.common.SecurityRole;
+import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
 import org.netbeans.modules.j2ee.dd.api.web.AuthConstraint;
+import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.SecurityConstraint;
+import org.netbeans.modules.j2ee.dd.api.web.WebAppMetadata;
 import org.netbeans.modules.j2ee.dd.api.web.WebResourceCollection;
+import org.netbeans.modules.j2ee.dd.api.webservices.WebservicesMetadata;
 import org.openide.filesystems.FileUtil;
-import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.websvc.wsitconf.api.WSITConfigProvider;
 import org.netbeans.modules.websvc.wsitconf.spi.SecurityCheckerRegistry;
 import org.openide.filesystems.FileLock;
-import org.openide.loaders.DataNode;
-import org.openide.util.NotImplementedException;
-import org.openide.windows.TopComponent;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.Repository;
+import org.openide.loaders.DataFolder;
 
 /**
  * Helper class for working with J2EE projects.
@@ -85,14 +87,6 @@ import org.openide.windows.TopComponent;
  * @author Srividhya Narayanan
  */
 public class J2eeProjectHelper {
-    
-    private static final String SUN_WEB_XML = "sun-web.xml";        //NOI18N
-    
-    private static final String WEB_CONFIG_FILE_NAME = "WEB-INF/" + SUN_WEB_XML; //NOI18N
-    
-    private static final String EJB_CONFIG_FILE_NAME = "sun-ejb-jar.xml"; //NOI18N
-    
-    private static final String CLIENT_CONFIG_FILE_NAME = "sun-application-client.xml"; //NOI18N
     
     private static final String SERVICE_REF_NAME_PREFIX = "service/"; //NOI18N
     
@@ -124,11 +118,31 @@ public class J2eeProjectHelper {
     
     private static final String CLIENT_WSDL_LOC = "META-INF"; // NOI18N;
     
+    private static final String SUN_WEB_XML = "sun-web";        //NOI18N
+    
+    private static final String SUN_WEB_TEMPLATE = "Templates/Identity/SunDD/sun-web.xml";     //NOI18N
+    
+    private static final String SUN_EJB_JAR_TEMPLATE = "Templates/Identity/SunDD/sun-ejb-jar.xml";     //NOI18N
+    
+    private static final String SUN_EJB_JAR_XML = "sun-ejb-jar";    //NOI18N
+    
+    private static final String SUN_APPLICATION_CLIENT_TEMPLATE = "Templates/Identity/SunDD/sun-application-client.xml";    //NOI18N
+    
+    private static final String SUN_APPLICATION_CLIENT_XML = "sun-application-client";  //NOI18N
+    
+    private static final String XML_EXT = "xml";        //NOI18N
+    
+    private static final String WEB_FOLDER = "web";     //NOI18N
+    
+    private static final String WEB_INF_FOLDER = "WEB-INF";     //NOI18N
+    
+    private static final String CONF_FOLDER = "conf";       //NOI18N
+    
     private static SecurityCheckerImpl securityChecker;
     
     static {
         securityChecker = new SecurityCheckerImpl();
-     
+        
         SecurityCheckerRegistry.getDefault().register(securityChecker);
     }
     
@@ -153,7 +167,7 @@ public class J2eeProjectHelper {
     private List<String> serviceRefNames;
     private List<WsdlData> wsdlData;
     private List<String> serviceNames;
-   
+    
     public static J2eeProjectHelper newInstance(Node node, JaxWsModel model) {
         J2eeProjectHelper helper = new J2eeProjectHelper(node, model);
         
@@ -170,17 +184,17 @@ public class J2eeProjectHelper {
         this.model = model;
     }
     
-    public boolean isSecurable() {  
+    public boolean isSecurable() {
         if (getProject() == null || getProvider() == null)
             return false;
-  
+        
         if (isServer()) {
             if (getPortComponentName() != null &&
                     getServiceDescriptionName() != null)
                 return true;
         } else {
             // We don't support 1.4 appclient.
-             if (getProjectType() == ProjectType.CLIENT && 
+            if (getProjectType() == ProjectType.CLIENT &&
                     getVersion() == Version.VERSION_1_4) {
                 return false;
             }
@@ -325,17 +339,17 @@ public class J2eeProjectHelper {
             String versionString = "";  //NOI18N
             
             switch (getProjectType()) {
-                case WEB:
-                    versionString = getWebModule().getJ2eePlatformVersion();
-                    break;
-                case EJB:
-                    versionString = getEjbModule().getJ2eePlatformVersion();
-                    break;
-                case CLIENT:
-                    versionString = getClientModule().getJ2eePlatformVersion();
-                    break;
-                default:
-                    break;
+            case WEB:
+                versionString = getWebModule().getJ2eePlatformVersion();
+                break;
+            case EJB:
+                versionString = getEjbModule().getJ2eePlatformVersion();
+                break;
+            case CLIENT:
+                versionString = getClientModule().getJ2eePlatformVersion();
+                break;
+            default:
+                break;
             }
             
             if (versionString.equals("1.4")) {  //NOI18N
@@ -350,52 +364,15 @@ public class J2eeProjectHelper {
         return version;
     }
     
-    public File getSunDD() {
-        if (sunDD == null) {
-            FileObject fobj = getSunDDFO();
-        
-            if (fobj != null) {
-                sunDD = FileUtil.toFile(fobj);
-            }
-        }
-    
-        return sunDD;
-        /*
-        if (sunDD == null) {
-            switch (getProjectType()) {
-                case WEB:
-                    
-                    sunDD = getProvider().getDeploymentConfigurationFile(
-                            WEB_CONFIG_FILE_NAME);
-                    System.out.println("sunDD = " + sunDD);
-                    break;
-                case EJB:
-                    sunDD = getProvider().getDeploymentConfigurationFile(
-                            EJB_CONFIG_FILE_NAME);
-                    break;
-                case CLIENT:
-                    sunDD = getProvider().getDeploymentConfigurationFile(
-                            CLIENT_CONFIG_FILE_NAME);
-                    break;
-                default:
-                    break;
-            }
-        }
-        
-        return sunDD;
-        */
-   
-    }
-    
-    protected FileObject getSunDDFO() {
-        FileObject[] fobjs = getProvider().getConfigurationFiles();
-        
-        if (fobjs.length > 0) {
-            return fobjs[0];
-        }
-        
-        return null;
-    }
+    //    protected FileObject getSunDDFO() {
+    //        FileObject[] fobjs = getProvider().getConfigurationFiles();
+    //
+    //        if (fobjs.length > 0) {
+    //            return fobjs[0];
+    //        }
+    //
+    //        return null;
+    //    }
     
     public String getEndpointName() {
         if (!isServer())
@@ -408,34 +385,13 @@ public class J2eeProjectHelper {
                 String javaClassName = getJavaSourceName();
                 
                 switch (getProjectType()) {
-                    case WEB:
-                        for (Servlet s : getWebApp().getServlet()) {
-                            if (s.getServletClass().equals(javaClassName)) {
-                                endpointName = s.getServletName();
-                                break;
-                            }
-                        }
-                        break;
-                    case EJB:
-                        org.netbeans.modules.j2ee.dd.api.ejb.EjbJar ejbJar = getEjbJar();
-                        EnterpriseBeans eb = ejbJar.getEnterpriseBeans();
-                        
-                        if(eb != null) {
-                            for(Ejb ejb : eb.getEjbs()) {
-                                // Unlike servlets, the generated ejb name is
-                                // the same as the web service name.
-                                String ejbName = ejb.getEjbName();
-                                if(ejbName != null && ejbName.length() > 0 &&
-                                        ejb.getEjbClass().equals(javaClassName)) {
-                                    endpointName = ejbName;
-                                    break;
-                                }
-                            }
-                        }
-                        
-                        break;
-                    default:
-                        break;
+                case WEB:
+                    endpointName = getEndpointNameFromWebApp(javaClassName);
+                    break;
+                case EJB:
+                    endpointName = getEndpointNameFromEjbJar(javaClassName);
+                default:
+                    break;
                 }
             } else if (version == Version.VERSION_1_5) {
                 Service service = getService();
@@ -449,37 +405,110 @@ public class J2eeProjectHelper {
             }
         }
         
+        //System.out.println("endpointName = " + endpointName);
         return endpointName;
     }
     
-    private void getServiceInfo() {
-        String endpointName = getEndpointName();
-        Webservices webServices = this.getWebServicesXML();
-        ProjectType projectType = getProjectType();
+    private String getEndpointNameFromWebApp(final String javaClassName) {
+        MetadataModel<WebAppMetadata> model = getJ2eeModule().getMetadataModel(WebAppMetadata.class);
+        String name = null;
         
         try {
-            for (WebserviceDescription desc : webServices.getWebserviceDescription()) {
-                for (PortComponent pc : desc.getPortComponent()) {
-                    String linkName = "";       //NOI18N
+            name =  model.runReadAction(new MetadataModelAction<WebAppMetadata, String> () {
+                public String run(WebAppMetadata metadata) {
+                    WebApp webApp = metadata.getRoot();
                     
-                    if (projectType == ProjectType.WEB) {
-                        linkName = pc.getServiceImplBean().getServletLink();
-                    } else if (projectType == ProjectType.EJB) {
-                        linkName = pc.getServiceImplBean().getEjbLink();
+                    for (Servlet s : webApp.getServlet()) {
+                        if (s.getServletClass().equals(javaClassName)) {
+                            return s.getServletName();
+                        }
                     }
                     
-                    if (linkName.equals(endpointName)) {
-                        portComponentName = pc.getPortComponentName();
-                        serviceDescriptionName = desc.getWebserviceDescriptionName();
-                        return;
-                    }
+                    return null;
                 }
-            }
-        } catch (Exception excp) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
-                    excp);
+            });
+        } catch (Exception ex) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         }
         
+        return name;
+    }
+    
+    private String getEndpointNameFromEjbJar(final String javaClassName) {
+        MetadataModel<EjbJarMetadata> model = getJ2eeModule().getMetadataModel(EjbJarMetadata.class);
+        String name = null;
+        
+        try {
+            name =  model.runReadAction(new MetadataModelAction<EjbJarMetadata, String> () {
+                public String run(EjbJarMetadata metadata) {
+                    org.netbeans.modules.j2ee.dd.api.ejb.EjbJar ejbJar = metadata.getRoot();
+                    EnterpriseBeans eb = ejbJar.getEnterpriseBeans();
+                    
+                    if(eb != null) {
+                        for(Ejb ejb : eb.getEjbs()) {
+                            // Unlike servlets, the generated ejb name is
+                            // the same as the web service name.
+                            String ejbName = ejb.getEjbName();
+                            if(ejbName != null && ejbName.length() > 0 &&
+                                    ejb.getEjbClass().equals(javaClassName)) {
+                                return ejbName;
+                            }
+                        }
+                    }
+                    
+                    return null;
+                }
+            });
+        } catch (Exception ex) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+        }
+        
+        return name;
+    }
+    
+    private void getServiceInfo() {
+        MetadataModel<WebservicesMetadata> webServicesModel = getJ2eeModule().getMetadataModel(WebservicesMetadata.class);
+        
+        try {
+            webServicesModel.runReadAction(new MetadataModelAction<WebservicesMetadata,
+                    String> () {
+                public String run(WebservicesMetadata metadata) {
+                    Webservices webServices = metadata.getRoot();
+                    
+                    System.out.println("getServiceInfo()");
+                    String endpointName = getEndpointName();
+                    ProjectType projectType = getProjectType();
+                    
+                    try {
+                        for (WebserviceDescription desc : webServices.getWebserviceDescription()) {
+                            System.out.println("desc = " + desc);
+                            for (PortComponent pc : desc.getPortComponent()) {
+                                System.out.println("pc = " + pc);
+                                String linkName = "";       //NOI18N
+                                
+                                if (projectType == ProjectType.WEB) {
+                                    linkName = pc.getServiceImplBean().getServletLink();
+                                } else if (projectType == ProjectType.EJB) {
+                                    linkName = pc.getServiceImplBean().getEjbLink();
+                                }
+                                
+                                if (linkName.equals(endpointName)) {
+                                    portComponentName = pc.getPortComponentName();
+                                    serviceDescriptionName = desc.getWebserviceDescriptionName();
+                                }
+                            }
+                        }
+                    } catch (Exception excp) {
+                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
+                                excp);
+                    }
+                    return portComponentName;
+                }
+            });
+            
+        } catch (Exception ex) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+        }
     }
     
     public String getPortComponentName() {
@@ -489,6 +518,7 @@ public class J2eeProjectHelper {
             getServiceInfo();
         }
         
+        //System.out.println("portComponentName = " + portComponentName);
         return portComponentName;
     }
     
@@ -501,6 +531,7 @@ public class J2eeProjectHelper {
             }
         }
         
+        //System.out.println("serviceDescriptionName = " + serviceDescriptionName);
         return serviceDescriptionName;
     }
     
@@ -508,64 +539,126 @@ public class J2eeProjectHelper {
         if (isServer()) return null;
         
         if (serviceRefNames == null) {
-            serviceRefNames = new ArrayList<String>();
-            Version version = getVersion();
-            
             switch (getProjectType()) {
-                case WEB:
+            case WEB:
+                serviceRefNames = getAllServiceRefNamesFromWebApp();
+                break;
+            case CLIENT:
+                serviceRefNames = getAllServiceRefNamesFromAppClient();
+                break;
+            case EJB:
+                serviceRefNames = getAllServiceRefNamesFromEjbJar();
+                break;
+            }
+        }
+        return serviceRefNames;
+    }
+    
+    private List<String> getAllServiceRefNamesFromWebApp() {
+        MetadataModel<WebAppMetadata> model = getJ2eeModule().getMetadataModel(WebAppMetadata.class);
+        List<String> refNames = null;
+        
+        try {
+            refNames =  model.runReadAction(new MetadataModelAction<WebAppMetadata, List<String>> () {
+                public List<String> run(WebAppMetadata metadata) {
+                    WebApp webApp = metadata.getRoot();
+                    List<String> refNames = new ArrayList<String>();
+                    
                     try {
-                        for (ServiceRef s : getWebApp().getServiceRef()) {
-                            System.out.println("s = " + s);
+                        for (ServiceRef s : webApp.getServiceRef()) {
                             if (version == Version.VERSION_1_4) {
                                 if (s.getServiceRefName().equalsIgnoreCase(getServiceRefName()))
-                                    serviceRefNames.add(s.getServiceRefName());
+                                    refNames.add(s.getServiceRefName());
                             } else if (version == Version.VERSION_1_5) {
-                                if (isThisTheServiceRef(s))
-                                    serviceRefNames.add(s.getServiceRefName());
-                            }
-                        }
-                    } catch (Exception ex) {
-                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-                    }
-                    break;
-                case CLIENT:
-                    try {
-                        for (ServiceRef s : getAppClient().getServiceRef()) {
-                            if (version == Version.VERSION_1_4) {
-                                if (s.getServiceRefName().equalsIgnoreCase(getServiceRefName()))
-                                    serviceRefNames.add(s.getServiceRefName());
-                            } else if (version == Version.VERSION_1_5) {
-                                //if (isThisTheServiceRef(s))
-                                serviceRefNames.add(s.getServiceRefName());
-                            }
-                        }
-                    } catch (Exception ex) {
-                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-                    }
-                    break;
-                case EJB:
-                    try {
-                        if (version == Version.VERSION_1_5) {
-                            org.netbeans.modules.j2ee.dd.api.ejb.EjbJar ejbJar = getEjbJar();
-                            EnterpriseBeans eb = ejbJar.getEnterpriseBeans();
-                            
-                            if(eb != null) {
-                                for(Ejb ejb : eb.getEjbs()) {
-                                    for (ServiceRef s : ejb.getServiceRef()) {
-                                        if (isThisTheServiceRef(s))
-                                            serviceRefNames.add(s.getServiceRefName());
-                                    }
+                                if (isThisTheServiceRef(s)) {
+                                    refNames.add(s.getServiceRefName());
+                                    //System.out.println("refName = " + s.getServiceRefName());
                                 }
                             }
                         }
                     } catch (Exception ex) {
                         ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
                     }
-                    break;
-            }
+                    
+                    return refNames;
+                }
+            });
+        } catch (Exception ex) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         }
-        return serviceRefNames;
+        
+        return refNames;
     }
+    
+    private List<String> getAllServiceRefNamesFromAppClient() {
+        MetadataModel<AppClientMetadata> model = getJ2eeModule().getMetadataModel(AppClientMetadata.class);
+        List<String> refNames = null;
+        
+        try {
+            refNames =  model.runReadAction(new MetadataModelAction<AppClientMetadata, List<String>> () {
+                public List<String> run(AppClientMetadata metadata) {
+                    AppClient appClient = metadata.getRoot();
+                    List<String> refNames = new ArrayList<String>();
+                    
+                    try {
+                        for (ServiceRef s : appClient.getServiceRef()) {
+                            if (version == Version.VERSION_1_4) {
+                                if (s.getServiceRefName().equalsIgnoreCase(getServiceRefName()))
+                                    refNames.add(s.getServiceRefName());
+                            } else if (version == Version.VERSION_1_5) {
+                                //if (isThisTheServiceRef(s))
+                                refNames.add(s.getServiceRefName());
+                            }
+                        }
+                    } catch (Exception ex) {
+                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                    }
+                    
+                    return refNames;
+                }
+            });
+        } catch (Exception ex) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+        }
+        
+        return refNames;
+    }
+    
+    private List<String> getAllServiceRefNamesFromEjbJar() {
+        MetadataModel<EjbJarMetadata> model = getJ2eeModule().getMetadataModel(EjbJarMetadata.class);
+        List<String> refNames = null;
+        
+        try {
+            refNames = model.runReadAction(new MetadataModelAction<EjbJarMetadata,
+                    List<String>> () {
+                public List<String> run(EjbJarMetadata metadata) {
+                    List<String> refNames = new ArrayList<String>();
+                    org.netbeans.modules.j2ee.dd.api.ejb.EjbJar ejbJar = metadata.getRoot();
+                    EnterpriseBeans eb = ejbJar.getEnterpriseBeans();
+                    
+                    if(eb != null) {
+                        for(Ejb ejb : eb.getEjbs()) {
+                            try {
+                                for (ServiceRef s : ejb.getServiceRef()) {
+                                    if (isThisTheServiceRef(s))
+                                        refNames.add(s.getServiceRefName());
+                                }
+                            } catch (Exception ex) {
+                                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                            }
+                        }
+                    }
+                    
+                    return refNames;
+                }
+            });
+        } catch (Exception ex) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+        }
+        
+        return refNames;
+    }
+    
     
     private boolean isThisTheServiceRef(ServiceRef s) {
         String wsdlFile = getWsdlFO().getPath();
@@ -574,14 +667,14 @@ public class J2eeProjectHelper {
         //System.out.println("wsdlfo name from client node " + getWsdlFO().getName());
         //System.out.println("wsdlfo path from client node " + getWsdlFO().getPath());
         URI wsdlUri = s.getWsdlFile();
-   
+        
         //System.out.println("wsdlfile from service-ref " + wsdlUri.toString());
         //System.out.println("wsdlfile from service-ref " + wsdlUri.getPath());
         //System.out.println("wsdlfile from service-ref " + wsdlUri.getSchemeSpecificPart());
         
         String path = wsdlUri.getPath();
         int idx = 0;
-    
+        
         if (path.startsWith(EJB_WSDL_LOC)) {
             idx = EJB_WSDL_LOC.length();
         } else if (path.startsWith(WEB_WSDL_LOC)) {
@@ -626,40 +719,15 @@ public class J2eeProjectHelper {
     
     protected FileObject getWsdlFO() {
         if (getVersion() == Version.VERSION_1_4) {
-            String refName = null;
             
             switch (getProjectType()) {
-                case WEB:
-                    refName = getServiceRefName();
-                    
-                    try {
-                        for (ServiceRef s : getWebApp().getServiceRef()) {
-                            if (s.getServiceRefName().equalsIgnoreCase(refName)) {
-                                return getProjectDirectory().getFileObject(
-                                        "web/" + s.getWsdlFile().getPath());    //NOI18N
-                            }
-                        }
-                    } catch (Exception ex) {
-                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-                    }
-                    break;
-                case CLIENT:
-                    refName = getServiceRefName();
-                    
-                    try {
-                        for (ServiceRef s : getAppClient().getServiceRef()) {
-                            if (s.getServiceRefName().equalsIgnoreCase(refName)) {
-                                return getProjectDirectory().getFileObject(
-                                        "src/conf/" + s.getWsdlFile().getPath().substring(9));    //NOI18N
-                            }
-                        }
-                    } catch (Exception ex) {
-                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-                    }
-                    break;
-                case EJB:
-                    // Not applicable?
-                    break;
+            case WEB:
+                return getWsdlFOFromWebApp(getServiceRefName());
+            case CLIENT:
+                return getWsdlFOFromAppClient(getServiceRefName());
+            case EJB:
+                // Not applicable?
+                break;
             }
         } else if (getVersion() == Version.VERSION_1_5) {
             Client client = getClient();
@@ -676,62 +744,264 @@ public class J2eeProjectHelper {
         return null;
     }
     
+    private FileObject getWsdlFOFromWebApp(final String refName) {
+        MetadataModel<WebAppMetadata> model = getJ2eeModule().getMetadataModel(WebAppMetadata.class);
+        FileObject fobj = null;
+        
+        try {
+            fobj =  model.runReadAction(new MetadataModelAction<WebAppMetadata, FileObject> () {
+                public FileObject run(WebAppMetadata metadata) {
+                    WebApp webApp = metadata.getRoot();
+                    try {
+                        for (ServiceRef s : webApp.getServiceRef()) {
+                            if (s.getServiceRefName().equalsIgnoreCase(refName)) {
+                                return getProjectDirectory().getFileObject(
+                                        "web/" + s.getWsdlFile().getPath());    //NOI18N
+                            }
+                        }
+                    } catch (Exception ex) {
+                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                    }
+                    
+                    return null;
+                }
+            });
+        } catch (Exception ex) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+        }
+        
+        return fobj;
+    }
+    
+    private FileObject getWsdlFOFromAppClient(final String refName) {
+        MetadataModel<AppClientMetadata> model = getJ2eeModule().getMetadataModel(AppClientMetadata.class);
+        FileObject fobj = null;
+        
+        try {
+            fobj =  model.runReadAction(new MetadataModelAction<AppClientMetadata, FileObject> () {
+                public FileObject run(AppClientMetadata metadata) {
+                    AppClient appClient = metadata.getRoot();
+                    try {
+                        for (ServiceRef s : appClient.getServiceRef()) {
+                            if (s.getServiceRefName().equalsIgnoreCase(refName)) {
+                                return getProjectDirectory().getFileObject(
+                                        "src/conf/" + s.getWsdlFile().getPath().substring(9));    //NOI18N
+                            }
+                        }
+                    } catch (Exception ex) {
+                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                    }
+                    
+                    return null;
+                }
+            });
+        } catch (Exception ex) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+        }
+        
+        return fobj;
+    }
+    
+    
     public boolean isAppServerSun() {
         return RuntimeBridge.isAppServerSun(getProvider());
     }
     
     public boolean providerExists() {
-        File sunDD = getSunDD();
-   
-        if (isServer()) {
-            String pcName = getPortComponentName();
-            String descName = getServiceDescriptionName();
-            
-            if (SunDDBridge.doesEndPointMSBExist(sunDD, descName, pcName) &&
-                    !(SunDDBridge.isEndPointMSBAMProvider(sunDD, descName, pcName)))
-                return true;
-        } else {                 
-            List<String> refNames = getAllServiceRefNames();     
-            String s = refNames.get(0);
-            List<WsdlData> wsdlInfo = getWsdlData();
-            if (!wsdlInfo.isEmpty()) {
-                WsdlData w = wsdlInfo.get(0);
-                String namespace = w.getTargetNameSpace();
-                String localPart = w.getPort();
-                if (SunDDBridge.doesSvcRefMSBExist(sunDD, s, namespace, localPart) &&
-                        !(SunDDBridge.isSvcRefMSBAMProvider(sunDD, s, namespace, localPart)))
-                    return true;
-            }
-        }
         return false;
     }
     
+    
     public boolean isSecurityEnabled() {
-        File sunDD = getSunDD();
-        String pcName = getPortComponentName();
-        String descName = getServiceDescriptionName();
-        List<String> refNames = getAllServiceRefNames();
+        SunDDHelper helper = new SunDDHelper(getSunDDFO(), getProjectType());
         
         if (isServer()) {
-            if (SunDDBridge.doesEndPointMSBExist(sunDD, descName, pcName) &&
-                    SunDDBridge.isEndPointMSBAMProvider(sunDD, descName, pcName))
-                return true;
+            return helper.isServiceSecurityEnabled(getServiceDescriptionName(),
+                    getPortComponentName());
         } else {
-            String s = refNames.get(0);
-            List<WsdlData> wsdlInfo = getWsdlData();
-            
-            if (!wsdlInfo.isEmpty()) {
-                WsdlData w = wsdlInfo.get(0);
-                String namespace = w.getTargetNameSpace();
-                String localPart = w.getPort();
+            for (WsdlData wsdlData : getWsdlData()) {
+                String namespace = wsdlData.getTargetNameSpace();
+                String localPart = wsdlData.getPort();
                 
-                if (SunDDBridge.doesSvcRefMSBExist(sunDD, s, namespace, localPart) &&
-                        SunDDBridge.isSvcRefMSBAMProvider(sunDD, s, namespace, localPart))
-                    return true;
+                for (String name : getAllServiceRefNames()) {
+                    if (helper.isClientSecurityEnabled(name,
+                            namespace, localPart)) {
+                        return true;
+                    }
+                }
             }
         }
+        
         return false;
     }
+    
+    protected void enableMessageLevelSecurity(String providerId) {
+        SunDDHelper helper = new SunDDHelper(getSunDDFO(), getProjectType());
+        
+        if (isServer()) {
+            helper.setServiceMessageSecurityBinding(getServiceDescriptionName(),
+                    getPortComponentName(), providerId);
+        } else {
+            for (WsdlData wsdlData : getWsdlData()) {
+                String namespace = wsdlData.getTargetNameSpace();
+                String localPart = wsdlData.getPort();
+                
+                for (String name : getAllServiceRefNames()) {
+                    helper.setServiceRefMessageSecurityBinding(name,
+                            namespace, localPart);
+                }
+            }
+        }
+    }
+    
+    protected void disableMessageLevelSecurity() {
+        SunDDHelper helper = new SunDDHelper(getSunDDFO(), getProjectType());
+        
+        if (isServer()) {
+            helper.removeServiceMessageSecurityBinding(getServiceDescriptionName(),
+                    getPortComponentName());
+        } else {
+            for (WsdlData wsdlData : getWsdlData()) {
+                String namespace = wsdlData.getTargetNameSpace();
+                String localPart = wsdlData.getPort();
+                
+                for (String name : getAllServiceRefNames()) {
+                    helper.removeServiceRefMessageSecurityBinding(name,
+                            namespace, localPart);
+                }
+            }
+        }
+    }
+    
+    public FileObject getSunDDFO() {
+        FileObject conf = getConfRoot();
+        String sunDDName = getSunDDName();
+        FileObject fobj = conf.getFileObject(sunDDName, XML_EXT);
+        
+        if (fobj == null) {
+            String template = getSunDDTemplate();
+            
+            try {
+                fobj = createSunDDFromTemplate(template, conf, sunDDName);
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+        }
+        
+        return fobj;
+    }
+    
+    private String getSunDDName() {
+        switch (getProjectType()) {
+        case EJB:
+            return SUN_EJB_JAR_XML;
+        case WEB:
+            return SUN_WEB_XML;
+        case CLIENT:
+            return SUN_APPLICATION_CLIENT_XML;
+        }
+        
+        return null;
+    }
+    
+    private String getSunDDTemplate() {
+        switch (getProjectType()) {
+        case EJB:
+            return SUN_EJB_JAR_TEMPLATE;
+        case WEB:
+            return SUN_WEB_TEMPLATE;
+        case CLIENT:
+            return SUN_APPLICATION_CLIENT_TEMPLATE;
+        }
+        
+        return null;
+    }
+    
+    private FileObject getConfRoot() {
+        FileObject[] sourceRoots = getProvider().getSourceRoots();
+        
+        for (FileObject root : sourceRoots) {
+            String name = root.getName();
+            
+            if (getProjectType() == ProjectType.WEB) {
+                if (name.equals(WEB_FOLDER)) {
+                    return root.getFileObject(WEB_INF_FOLDER);
+                }
+            } else {
+                if (name.equals(CONF_FOLDER)) {      //NOI18N
+                    return root;
+                }
+            }
+        }
+        return null;
+    }
+    
+    private FileObject createSunDDFromTemplate(String template,
+            FileObject folder, String sunDDName) throws IOException {
+        assert template != null;
+        assert folder != null;
+        
+        FileSystem defaultFS = Repository.getDefault().getDefaultFileSystem();
+        FileObject templateFO = defaultFS.findResource(template);
+        DataObject templateDO = DataObject.find(templateFO);
+        DataFolder dataFolder = DataFolder.findFolder(folder);
+        DataObject dataObj = templateDO.createFromTemplate(dataFolder, sunDDName);
+        
+        return dataObj.getPrimaryFile();
+    }
+    
+    //    public boolean providerExists() {
+    //        File sunDD = getSunDD();
+    //
+    //        if (isServer()) {
+    //            String pcName = getPortComponentName();
+    //            String descName = getServiceDescriptionName();
+    //
+    //            if (SunDDBridge.doesEndPointMSBExist(sunDD, descName, pcName) &&
+    //                    !(SunDDBridge.isEndPointMSBAMProvider(sunDD, descName, pcName)))
+    //                return true;
+    //        } else {
+    //            List<String> refNames = getAllServiceRefNames();
+    //            String s = refNames.get(0);
+    //            List<WsdlData> wsdlInfo = getWsdlData();
+    //            if (!wsdlInfo.isEmpty()) {
+    //                WsdlData w = wsdlInfo.get(0);
+    //                String namespace = w.getTargetNameSpace();
+    //                String localPart = w.getPort();
+    //                if (SunDDBridge.doesSvcRefMSBExist(sunDD, s, namespace, localPart) &&
+    //                        !(SunDDBridge.isSvcRefMSBAMProvider(sunDD, s, namespace, localPart)))
+    //                    return true;
+    //            }
+    //        }
+    //        return false;
+    //    }
+    //
+    //    public boolean isSecurityEnabled() {
+    //        File sunDD = getSunDD();
+    //        String pcName = getPortComponentName();
+    //        String descName = getServiceDescriptionName();
+    //        List<String> refNames = getAllServiceRefNames();
+    //
+    //        if (isServer()) {
+    //            if (SunDDBridge.doesEndPointMSBExist(sunDD, descName, pcName) &&
+    //                    SunDDBridge.isEndPointMSBAMProvider(sunDD, descName, pcName))
+    //                return true;
+    //        } else {
+    //            String s = refNames.get(0);
+    //            List<WsdlData> wsdlInfo = getWsdlData();
+    //
+    //            if (!wsdlInfo.isEmpty()) {
+    //                WsdlData w = wsdlInfo.get(0);
+    //                String namespace = w.getTargetNameSpace();
+    //                String localPart = w.getPort();
+    //
+    //                if (SunDDBridge.doesSvcRefMSBExist(sunDD, s, namespace, localPart) &&
+    //                        SunDDBridge.isSvcRefMSBAMProvider(sunDD, s, namespace, localPart))
+    //                    return true;
+    //            }
+    //        }
+    //        return false;
+    //    }
     
     public boolean isWsitSecurityEnabled() {
         return WSITConfigProvider.getDefault().isWsitSecurityEnabled(node, model);
@@ -748,7 +1018,7 @@ public class J2eeProjectHelper {
     public void enableWSPSecurity(String providerId) {
         enableMessageLevelSecurity(providerId);
     }
-        
+    
     public void disableWSPSecurity() {
         disableMessageLevelSecurity();
     }
@@ -772,73 +1042,73 @@ public class J2eeProjectHelper {
         disableMessageLevelSecurity();
     }
     
-    protected void enableMessageLevelSecurity(String providerId) {
-        File sunDD = getSunDD();
-        String pcName = getPortComponentName();
-        String descName = getServiceDescriptionName();
-        List<String> refNames = getAllServiceRefNames();
-        
-        if (isServer()) {
-//            System.out.println("descname: portcompname: " + descName +
-//                    " : " + pcName);
-            if (!SunDDBridge.setEndPointMSB(sunDD, descName, pcName, providerId)){
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
-                        new Exception("Failed during SunDD changes")); // NOI18N
-            }
-        } else {
-            List<WsdlData> wsdlInfo = getWsdlData();
-            int i = 0;
-            assert(wsdlInfo.size() >= refNames.size());
-            for (String s : refNames) {
-                if (wsdlInfo.get(i) != null) {
-                    String namespace = wsdlInfo.get(i).getTargetNameSpace();
-                    String localPart = wsdlInfo.get(i).getPort();
-//                    System.out.println("refName : namespace: localpart: " + s +
-//                            " : " + namespace + " : " + localPart);
-                    if (!SunDDBridge.setSvceRefMSB(sunDD, s, namespace, localPart)) {
-                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
-                                new Exception("Failed during SunDD changes")); // NOI18N
-                    }
-                }
-                i++;
-            }
-        }
-    }
+    //    protected void enableMessageLevelSecurity(String providerId) {
+    //        File sunDD = getSunDD();
+    //        String pcName = getPortComponentName();
+    //        String descName = getServiceDescriptionName();
+    //        List<String> refNames = getAllServiceRefNames();
+    //
+    //        if (isServer()) {
+    //            //            System.out.println("descname: portcompname: " + descName +
+    //            //                    " : " + pcName);
+    //            if (!SunDDBridge.setEndPointMSB(sunDD, descName, pcName, providerId)){
+    //                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
+    //                        new Exception("Failed during SunDD changes")); // NOI18N
+    //            }
+    //        } else {
+    //            List<WsdlData> wsdlInfo = getWsdlData();
+    //            int i = 0;
+    //            assert(wsdlInfo.size() >= refNames.size());
+    //            for (String s : refNames) {
+    //                if (wsdlInfo.get(i) != null) {
+    //                    String namespace = wsdlInfo.get(i).getTargetNameSpace();
+    //                    String localPart = wsdlInfo.get(i).getPort();
+    //                    //                    System.out.println("refName : namespace: localpart: " + s +
+    //                    //                            " : " + namespace + " : " + localPart);
+    //                    if (!SunDDBridge.setSvceRefMSB(sunDD, s, namespace, localPart)) {
+    //                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
+    //                                new Exception("Failed during SunDD changes")); // NOI18N
+    //                    }
+    //                }
+    //                i++;
+    //            }
+    //        }
+    //    }
     
-    protected void disableMessageLevelSecurity() {
-        //if (!isSecurityEnabled()) return;
-        
-        File sunDD = getSunDD();
-        String pcName = getPortComponentName();
-        String descName = getServiceDescriptionName();
-        List<String> refNames = getAllServiceRefNames();
-        
-        if (isServer()) {
-//            System.out.println("Into delete -- descname: portcompname: " + descName +
-//                    " : " + pcName);
-            if (!SunDDBridge.deleteEndPointMSB(sunDD, descName, pcName)){
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
-                        new Exception("Failed during SunDD changes")); // NOI18N
-            }
-        } else {
-            List<WsdlData> wsdlInfo = getWsdlData();
-            int i = 0;
-            assert(wsdlInfo.size() >= refNames.size());
-            for (String s : refNames) {
-                if (wsdlInfo.get(i) != null) {
-                    String namespace = wsdlInfo.get(i).getTargetNameSpace();
-                    String localPart = wsdlInfo.get(i).getPort();
-//                    System.out.println("Into delete -- refName : namespace: localpart: " + s +
-//                            " : " + namespace + " : " + localPart);
-                    if (!SunDDBridge.deleteSvcRefMSB(sunDD, s, namespace, localPart)) {
-                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
-                                new Exception("Failed during SunDD changes")); // NOI18N
-                    }
-                }
-                i++;
-            }
-        }
-    }
+    //    protected void disableMessageLevelSecurity() {
+    //        //if (!isSecurityEnabled()) return;
+    //
+    //        File sunDD = getSunDD();
+    //        String pcName = getPortComponentName();
+    //        String descName = getServiceDescriptionName();
+    //        List<String> refNames = getAllServiceRefNames();
+    //
+    //        if (isServer()) {
+    //            //            System.out.println("Into delete -- descname: portcompname: " + descName +
+    //            //                    " : " + pcName);
+    //            if (!SunDDBridge.deleteEndPointMSB(sunDD, descName, pcName)){
+    //                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
+    //                        new Exception("Failed during SunDD changes")); // NOI18N
+    //            }
+    //        } else {
+    //            List<WsdlData> wsdlInfo = getWsdlData();
+    //            int i = 0;
+    //            assert(wsdlInfo.size() >= refNames.size());
+    //            for (String s : refNames) {
+    //                if (wsdlInfo.get(i) != null) {
+    //                    String namespace = wsdlInfo.get(i).getTargetNameSpace();
+    //                    String localPart = wsdlInfo.get(i).getPort();
+    //                    //                    System.out.println("Into delete -- refName : namespace: localpart: " + s +
+    //                    //                            " : " + namespace + " : " + localPart);
+    //                    if (!SunDDBridge.deleteSvcRefMSB(sunDD, s, namespace, localPart)) {
+    //                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
+    //                                new Exception("Failed during SunDD changes")); // NOI18N
+    //                    }
+    //                }
+    //                i++;
+    //            }
+    //        }
+    //    }
     
     private void enableLiberty() {
         addAMSecurityConstraint();
@@ -957,36 +1227,12 @@ public class J2eeProjectHelper {
             ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, e);
         } catch (IllegalStateException e) {
             ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, e);
-        } 
+        }
     }
     
     public String getConfigPath() {
         return FileUtil.toFile(getProjectDirectory()).getPath() + File.separator +
                 "src" + File.separator + "conf";    //NOI18N
-    }
-    
-    public String getDefaultKeystore() {
-        String loc = getProvider().getInstanceProperties().getProperty(
-                InstanceProperties.URL_ATTR);
-        int startIndx = loc.indexOf('[');
-        int endIndx = loc.indexOf(']');
-        loc = loc.substring(startIndx+1, endIndx) +
-                "/domains/domain1/config/keystore.jks";  //NOI18N
-        return normalizeFilePath(loc);
-    }
-    
-    public String getDefaultKeystorePassword() {
-        return "adminadmin";        //NOI18N
-    }
-    
-    public String getDefaultKeyAlias() {
-        return "s1as";      //NOI18N
-    }
-    
-    private String normalizeFilePath(String path) {
-        char o = '\\';
-        char n = '/';
-        return path.replace(o, n);
     }
     
     private String getServiceRefName() {
@@ -996,9 +1242,9 @@ public class J2eeProjectHelper {
     public List<String> getAllServiceNames() {
         if (serviceNames == null) {
             serviceNames = new ArrayList<String>();
-        
+            
             FileObject wsdlFO = getWsdlFO();
-   
+            
             if (wsdlFO != null) {
                 try {
                     serviceNames = WsdlParser.getWsdlSvcNames(
@@ -1009,14 +1255,14 @@ public class J2eeProjectHelper {
                 }
             }
         }
-     
+        
         return serviceNames;
     }
     
     public List<String> getEndpointURI() {
         if (endpointUri == null) {
             endpointUri = new ArrayList<String>();
-      
+            
             if (isServer()) {
                 endpointUri.add(getServiceDescriptionName());
             } else {
@@ -1024,51 +1270,6 @@ public class J2eeProjectHelper {
             }
         }
         return endpointUri;
-    }
-    
-    public boolean closeSunDDEditor() {
-        TopComponent.Registry registry = TopComponent.getRegistry();
-        Set openedComponents = registry.getOpened();
-        Iterator iter = openedComponents.iterator();
-        FileObject sunDDFO = getSunDDFO();
-        TopComponent sunDDEditor = null;
-        
-        while (iter.hasNext()) {
-            TopComponent component = (TopComponent) iter.next();
-            
-            // guard against null component and component name
-            if (component == null) continue;
-            
-            String name = component.getName();
-            if (name != null && name.equals(SUN_WEB_XML)) {
-                Node node  = component.getActivatedNodes()[0];
-                DataObject dObj = null;
-                
-                if (node instanceof DataNode) {
-                    dObj = ((DataNode) node).getDataObject();
-                } else {
-                    try {
-                        // This is a hack to get the dataobject associated with
-                        // the sun-web config editor.
-                        Method method = component.getClass().getMethod("getConfigDataObject"); //NOI18N
-                        dObj = (DataObject) method.invoke(component);
-                    } catch (Exception ex) {
-                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-                    }
-                }
-                
-                if (dObj != null && dObj.getPrimaryFile() == sunDDFO) {
-                    sunDDEditor = component;
-                    break;
-                }
-            }
-        }
-        
-        if (sunDDEditor != null) {
-            return sunDDEditor.close();
-        }
-        
-        return true;
     }
     
     private String getServiceName() {
@@ -1101,7 +1302,7 @@ public class J2eeProjectHelper {
     
     private FileObject getFileObject() {
         FileObject source = getJavaSource();
-       
+        
         if (source != null) return source;
         
         FileObject fo = (FileObject)node.getLookup().lookup(FileObject.class);
@@ -1113,10 +1314,10 @@ public class J2eeProjectHelper {
         return dobj.getPrimaryFile();
     }
     
-     protected FileObject getJavaSource() {
+    protected FileObject getJavaSource() {
         return (FileObject)node.getLookup().lookup(FileObject.class);
     }
-
+    
     protected String getJavaSourceName() {
         return getService().getImplementationClass();
     }
@@ -1141,56 +1342,26 @@ public class J2eeProjectHelper {
         return Car.getCar(getProjectDirectory());
     }
     
-    protected WebApp getWebApp() {
-        //System.out.println(getProvider().getJ2eeModule().getDeploymentDescriptor(
-        //        J2eeModule.WEB_XML).dumpBeanNode());
-	// TODO: this method has been replaced with getJ2eeModule().getMetadataModel
-        // return (WebApp)getJ2eeModule().getDeploymentDescriptor(
-        //        J2eeModule.WEB_XML);
-	throw new NotImplementedException();
-    }
-    
-    protected AppClient getAppClient() {
-        // TODO: this method has been replaced with getJ2eeModule().getMetadataModel
-	// return (AppClient)getJ2eeModule().getDeploymentDescriptor(
-        //        J2eeModule.CLIENT_XML);
-        throw new NotImplementedException();
-    }
-    
-    protected org.netbeans.modules.j2ee.dd.api.ejb.EjbJar getEjbJar() {
-        //System.out.println(getProvider().getJ2eeModule().getDeploymentDescriptor(
-        //        J2eeModule.EJBJAR_XML).dumpBeanNode());
-        // TODO: this method has been replaced with getJ2eeModule().getMetadataModel
-	// return (org.netbeans.modules.j2ee.dd.api.ejb.EjbJar)
-        // getJ2eeModule().getDeploymentDescriptor(
-        //        J2eeModule.EJBJAR_XML);
-	throw new NotImplementedException();
-    }
-    
-    protected org.netbeans.modules.j2ee.dd.api.webservices.Webservices getWebServicesXML() {
-        // TODO: this method has been replaced with getJ2eeModule().getMetadataModel
-	// switch (getProjectType()) {
-        //    case WEB:
-        //        //System.out.println(getProvider().getJ2eeModule().getDeploymentDescriptor(
-        //        //        J2eeModule.WEBSERVICES_XML).dumpBeanNode());
-        //        return (org.netbeans.modules.j2ee.dd.api.webservices.Webservices)
-        //         getJ2eeModule().getDeploymentDescriptor(
-        //                J2eeModule.WEBSERVICES_XML);
-        //    case EJB:
-        //        //System.out.println("dumping the bean node for webservices xml file ");
-        //        //getProvider().getJ2eeModule().getDeploymentDescriptor(
-        //        //        J2eeModule.EJBSERVICES_XML).dumpXml();
-        //        return (org.netbeans.modules.j2ee.dd.api.webservices.Webservices)
-        //        getJ2eeModule().getDeploymentDescriptor(
-        //                J2eeModule.EJBSERVICES_XML);
-        //}
-        //return null;
-	throw new NotImplementedException();
-
-    }
-    
     protected J2eeModule getJ2eeModule() {
         return getProvider().getJ2eeModule();
+    }
+    
+    protected WebApp getWebApp() {
+        FileObject conf = getConfRoot();
+        FileObject fobj = conf.getFileObject("web", XML_EXT);
+        
+        System.out.println("fobj = " + fobj);
+        
+        try {
+            WebApp webApp = DDProvider.getDefault().getDDRoot(fobj);
+            
+            System.out.println("webApp = " + webApp);
+            return webApp;
+        } catch (Exception ex) {
+            ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
+        }
+        
+        return null;
     }
 }
 
