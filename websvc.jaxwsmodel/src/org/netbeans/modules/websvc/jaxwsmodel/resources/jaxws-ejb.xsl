@@ -38,13 +38,12 @@ Microsystems, Inc. All Rights Reserved.
             <xsl:if test="/jaxws:jax-ws/jaxws:services/jaxws:service">
                 <xsl:if test="count(/jaxws:jax-ws/jaxws:services/jaxws:service[not(jaxws:wsdl-url)]) > 0">
                     <target name="wsgen-init" depends="init">
-                        <mkdir dir="${{build.generated.dir}}/wsgen/service"/>
-                        <mkdir dir="${{build.classes.dir.real}}"/>
+                        <mkdir dir="${{build.generated.dir}}/wsgen/service"/>                        
                         <taskdef name="wsgen" classname="com.sun.tools.ws.ant.WsGen">
                             <classpath path="${{j2ee.platform.wsgen.classpath}}"/>
                         </taskdef>
                     </target>
-                    <target name="wsgen-generate">
+                    <target name="wsgen-compile">
                         <xsl:attribute name="depends">
                             <xsl:for-each select="/jaxws:jax-ws/jaxws:services/jaxws:service[not(jaxws:wsdl-url)]">
                                 <xsl:if test="position()!=1"><xsl:text>, </xsl:text></xsl:if>
@@ -54,6 +53,7 @@ Microsystems, Inc. All Rights Reserved.
                                 <xsl:text>wsgen-</xsl:text><xsl:value-of select="@name"/>
                             </xsl:for-each>
                         </xsl:attribute>
+                        <ejbjarproject2:javac srcdir="${{build.generated.dir}}/wsgen/service" classpath="${{j2ee.platform.wsgen.classpath}}:${{javac.classpath}}" destdir="${{classes.dir}}"/>
                     </target>
                 </xsl:if>
             </xsl:if>
@@ -61,16 +61,34 @@ Microsystems, Inc. All Rights Reserved.
                 <xsl:if test="not(jaxws:wsdl-url)">
                     <xsl:variable name="wsname" select="@name"/>
                     <xsl:variable name="seiclass" select="jaxws:implementation-class"/>
-                    <target name="wsgen-{$wsname}" depends="wsgen-init, compile">
-                        <wsgen
-                            sourcedestdir="${{build.generated.dir}}/wsgen/service"
-                            resourcedestdir="${{build.generated.dir}}/wsgen/service"
-                            keep="false"
-                            genwsdl="true"
-                            sei="{$seiclass}"
-                        >
-                            <classpath path="${{classes.dir}}:${{j2ee.platform.wsgen.classpath}}:${{javac.classpath}}"/>
-                        </wsgen>
+                    <target name="wsgen-{$wsname}" depends="wsgen-init, -do-compile">
+                    <xsl:choose>
+                         <xsl:when test="$jaxwsversion = 'jaxws21lib'">
+                             <wsgen
+                                 xendorsed="true"
+                                 fork="true"
+                                 sourcedestdir="${{build.generated.dir}}/wsgen/service"
+                                 resourcedestdir="${{build.generated.dir}}/wsgen/service"
+                                 keep="false"
+                                 genwsdl="true"
+                                 sei="{$seiclass}">
+                                 <classpath path="${{java.home}}/../lib/tools.jar:${{classes.dir}}:${{j2ee.platform.wsgen.classpath}}:${{javac.classpath}}"/>
+                                 <jvmarg value="-Djava.endorsed.dirs=${{jaxws.endorsed.dir}}"/>
+                             </wsgen>
+                         </xsl:when>
+                         <xsl:otherwise>
+                             <wsgen
+                                 fork="true"
+                                 sourcedestdir="${{build.generated.dir}}/wsgen/service"
+                                 resourcedestdir="${{build.generated.dir}}/wsgen/service"
+                                 keep="false"
+                                 genwsdl="true"
+                                 sei="{$seiclass}">
+                                 <classpath path="${{java.home}}/../lib/tools.jar:${{classes.dir}}:${{j2ee.platform.wsgen.classpath}}:${{javac.classpath}}"/>
+                                 <jvmarg value="-Djava.endorsed.dirs=${{jaxws.endorsed.dir}}"/>
+                             </wsgen>                            
+                        </xsl:otherwise>
+                    </xsl:choose>
                     </target>
                 </xsl:if>
             </xsl:for-each>
