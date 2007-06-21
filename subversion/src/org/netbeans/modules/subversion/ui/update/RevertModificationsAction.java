@@ -34,7 +34,6 @@ import org.netbeans.modules.versioning.util.Utils;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.nodes.Node;
 import org.tigris.subversion.svnclientadapter.ISVNInfo;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
@@ -47,54 +46,54 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
  * @author Petr Kuzel
  */
 public class RevertModificationsAction extends ContextAction {
-          
+    
     /** Creates a new instance of RevertModificationsAction */
-    public RevertModificationsAction() {        
+    public RevertModificationsAction() {
     }
-
+    
     protected String getBaseName(Node[] activatedNodes) {
         return "CTL_MenuItem_Revert"; // NOI18N
     }
-
+    
     protected int getFileEnabledStatus() {
         return FileInformation.STATUS_VERSIONED & ~FileInformation.STATUS_VERSIONED_NEWINREPOSITORY;
     }
-
+    
     protected int getDirectoryEnabledStatus() {
         return FileInformation.STATUS_VERSIONED & ~FileInformation.STATUS_VERSIONED_NEWINREPOSITORY;
     }
-
+    
     protected void performContextAction(final Node[] nodes) {
-        if(!Subversion.getInstance().checkClientAvailable()) {            
+        if(!Subversion.getInstance().checkClientAvailable()) {
             return;
-        }      
+        }
         final Context ctx = getContext(nodes);
-        final File root = ctx.getRootFiles()[0];        
+        final File root = ctx.getRootFiles()[0];
         final SVNUrl rootUrl;
         final SVNUrl url;
         
-        try {            
+        try {
             rootUrl = SvnUtils.getRepositoryRootUrl(root);
             url = SvnUtils.getRepositoryUrl(root);
         } catch (SVNClientException ex) {
             SvnClientExceptionHandler.notifyException(ex, true, true);
             return;
-        }                 
+        }
         final RepositoryFile repositoryFile = new RepositoryFile(rootUrl, url, SVNRevision.HEAD);
         
         final RevertModifications revertModifications = new RevertModifications(repositoryFile);
         if(!revertModifications.showDialog()) {
             return;
         }
-
+        
         ContextAction.ProgressSupport support = new ContextAction.ProgressSupport(this, nodes) {
             public void perform() {
                 performRevert(revertModifications.getRevisionInterval(), revertModifications.revertNewFiles(), ctx, this);
             }
-        };            
+        };
         support.start(createRequestProcessor(nodes));
     }
-        
+    
     /** Recursive revert */
     public static void performRevert(RevertModifications.RevisionInterval revisions, boolean revertNewFiles, Context ctx, SvnProgressSupport support) {
         SvnClient client;
@@ -104,7 +103,7 @@ public class RevertModificationsAction extends ContextAction {
             SvnClientExceptionHandler.notifyException(ex, true, true);
             return;
         }
-
+        
         File files[] = ctx.getFiles();
         File[][] split = Utils.splitFlatOthers(files);
         for (int c = 0; c<split.length; c++) {
@@ -116,17 +115,17 @@ public class RevertModificationsAction extends ContextAction {
             if (recursive == false) {
                 files = SvnUtils.flatten(files, FileInformation.STATUS_REVERTIBLE_CHANGE);
             }
-
-            try {                
+            
+            try {
                 if(revisions != null) {
-                    for (int i= 0; i<files.length; i++) {
+                    for (int i= 0; i < files.length; i++) {
                         if(support.isCanceled()) {
                             return;
                         }
                         SVNUrl url = SvnUtils.getRepositoryUrl(files[i]);
                         revisions = recountStartRevision(client, url, revisions);
                         if(files[i].exists()) {
-                            client.merge(url, revisions.endRevision, url, revisions.startRevision, files[i], false, recursive);                        
+                            client.merge(url, revisions.endRevision, url, revisions.startRevision, files[i], false, recursive);
                         } else {
                             assert revisions.startRevision instanceof SVNRevision.Number : "The revision has to be a Number when trying to undelete file!";
                             client.copy(url, files[i], revisions.startRevision);
@@ -136,41 +135,70 @@ public class RevertModificationsAction extends ContextAction {
                     if(support.isCanceled()) {
                         return;
                     }
-                    if(files.length > 0 ) {
-                        client.revert(files, recursive);                                               
+                    if(files.length > 0 ) {                        
+                        // check for deleted files, we also want to undelete their parents
+                        Set<File> deletedFiles = new HashSet<File>();
+                        for(File file : files) {
+                            deletedFiles.addAll(getDeletedParents(file));
+                        }                        
+                                
+                        client.revert(files, recursive);
+                        
+                        // revert also deleted parent folders
+                        // for all undeleted files
+                        client.revert(deletedFiles.toArray(new File[deletedFiles.size()]), false);
                     }
                 }
             } catch (SVNClientException ex) {
                 support.annotate(ex);
             }
         }
-
+        
         if(support.isCanceled()) {
             return;
         }
-                
+        
         if(revertNewFiles) {
             File[] newfiles = Subversion.getInstance().getStatusCache().listFiles(ctx.getRootFiles(), FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY | FileInformation.STATUS_VERSIONED_ADDEDLOCALLY);
-            for (int i = 0; i < newfiles.length; i++) {                                
-                FileObject fo = FileUtil.toFileObject(newfiles[i]);                                    
+            for (int i = 0; i < newfiles.length; i++) {
+                FileObject fo = FileUtil.toFileObject(newfiles[i]);
                 try {
                     if(fo != null) {
                         fo.delete();
                     }
-                }
-                catch (IOException ex) {
+                } catch (IOException ex) {
                     ErrorManager.getDefault().notify(ex);
                 }
             }
+        }
+    }
+    
+    private static Set<File> getDeletedParents(File file) {
+        Set<File> ret = new HashSet<File>();
+        file = file.getParentFile();
+        if(file == null) {
+            return ret;
         }        
-    }        
-
+        
+        FileInformation info = Subversion.getInstance().getStatusCache().getStatus(file);
+        if( !((info.getStatus() & FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY) != 0 ||
+              (info.getStatus() & FileInformation.STATUS_VERSIONED_DELETEDLOCALLY) != 0) )  
+        {
+            return ret;
+        }        
+                
+        ret.add(file);        
+        
+        ret.addAll(getDeletedParents(file));
+        return ret;
+    }    
+    
     /**
      * Folders that were resurrected by "Revert Delete" have not really been created because they already existed.
-     * Therefore we must refresh their status manually.  
-     *  
+     * Therefore we must refresh their status manually.
+     *
      * @param file
-     */ 
+     */
     private static void refreshRecursively(File file) {
         File [] files = file.listFiles();
         if (files != null) {
@@ -182,26 +210,11 @@ public class RevertModificationsAction extends ContextAction {
         cache.refreshCached(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
     }
 
-    private static void addFileSystem(Set filesystems, File file) {
-        FileObject fo;
-        for (;;) {
-            fo = FileUtil.toFileObject(file);
-            if (fo != null) break;
-            file = file.getParentFile();
-            if (file == null) return;
-        }
-        try {
-            filesystems.add(fo.getFileSystem());
-        } catch (FileStateInvalidException e) {
-            // ignore invalid filesystems
-        }
-    }
-    
-    private static RevertModifications.RevisionInterval recountStartRevision(SvnClient client, SVNUrl repository, RevertModifications.RevisionInterval ret) throws SVNClientException {            
+    private static RevertModifications.RevisionInterval recountStartRevision(SvnClient client, SVNUrl repository, RevertModifications.RevisionInterval ret) throws SVNClientException {
         if(ret.startRevision.equals(SVNRevision.HEAD)) {
             ISVNInfo info = client.getInfo(repository);
             ret.startRevision = info.getRevision();
-        } 
+        }
         long start = Long.parseLong(ret.startRevision.toString());
         if(start > 0) {
             start = start - 1;
