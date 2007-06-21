@@ -29,7 +29,7 @@ import org.netbeans.modules.xslt.tmap.model.impl.TMapComponents;
 public interface Operation extends TMapComponent, 
         OperationReference, TransformerDescriptor 
 {
-    TMapComponents TYPE = TMapComponents.SERVICE;
+    TMapComponents TYPE = TMapComponents.OPERATION;
     
     List<Invokes> getInvokess();
     
