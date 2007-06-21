@@ -72,7 +72,7 @@ final class RemoteFilesystemChooser extends JPanel implements ExplorerManager.Pr
             
     private static boolean foldersOnly;
     private ExplorerManager em;
-    private static final ImageIcon CDC_PROJECT_ICON = new ImageIcon(Utilities.loadImage("org/netbeans/modules/j2me/cdc/project/ui/resources/cdcProject.png")); // NOI18N
+    private static final ImageIcon CDC_PROJECT_ICON = new ImageIcon(Utilities.loadImage("org/netbeans/modules/j2me/cdc/project/resources/cdcProject.png")); // NOI18N
     private static final String FOLDER_ICON_BASE = "org/openide/loaders/defaultFolder"; //NOI18N
      
     private PropertyChangeListener pcl = new PropertyChangeListener() {
