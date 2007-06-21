@@ -24,7 +24,7 @@
     
     <target name="build" depends="init,-build"/>
     
-    <target name="init" depends="-clean,-checkout-trunk,-checkout-branch,-init,-init-properties"/>
+    <target name="init" depends="-clean,-checkout-trunk,-checkout-branch,-init,-init-properties,-post-init-clean"/>
     
     <target name="-clean">
         <delete dir="${output.dir}"/>
@@ -358,6 +358,28 @@ jarsigner.alias=${jarsigner.alias}
 jarsigner.storepass=${jarsigner.storepass}
         </echo>
         <replace file="${environment.properties}" token="\" value="/"/>
+    </target>
+    
+    <target name="-post-init-clean">
+        <delete dir="${basedir}/cache/raw"/>
+        <delete>
+            <fileset dir="${basedir}/cache/packaged">
+                <!-- nb components -->
+                <exclude name="**/nb*${build.number}*"/>
+                
+                <!-- glassfish -->
+                <exclude name="**/glassfish*${glassfish.milestone.number}.${glassfish.build.number}*"/>
+                
+                <!-- openesb -->
+                <exclude name="**/openesb*${glassfish.milestone.number}.${openesb.build.number}*"/>
+                
+                <!-- sjsam -->
+                <exclude name="**/sjsam*${glassfish.milestone.number}.${sjsam.build.number}*"/>
+                
+                <!-- tomcat -->
+                <exclude name="**/tomcat*"/>
+            </fileset>
+        </delete>
     </target>
     
     <target name="-build">
