@@ -46,7 +46,8 @@
 
     <target name="qa-functional-compiler" depends="build-performance, init, init-cp">
         <ant antfile="${nball.dir}/nbbuild/templates/xtest-qa-functional.xml" target="qa-functional-compiler">
-        </ant>
+            <property name="permit.jdk6.builds" value="true"/>
+	</ant>
             
         <packageTests/>
     </target>
