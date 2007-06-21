@@ -1320,7 +1320,10 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
             LinkedList<Pair> toCompile = new LinkedList<Pair>();
             final File classCache = Index.getClassFolder(rootFile);
             ClassIndexImpl uqImpl = ClassIndexManager.getDefault().createUsagesQuery(root, true);
-            assert uqImpl != null;
+            if (uqImpl == null) {
+                //IDE is exiting, indeces are already closed.
+                return;
+            }
             SourceAnalyser sa = uqImpl.getSourceAnalyser();
             assert sa != null;
             boolean invalidIndex = isInitialCompilation && !sa.isValid();
