@@ -53,7 +53,7 @@ public class TranslateActionFactory extends AbstractComposerActionFactory {
     }
     
     private SVGObject getSelectedObjectAt( MouseEvent me) {
-        SVGObject [] selectedObjects = m_sceneMgr.getSelectedObjects();
+        SVGObject [] selectedObjects = m_sceneMgr.getSelected();
         if (selectedObjects != null && selectedObjects.length > 0) {
             SVGObject selObj = selectedObjects[0];
             if (selObj.getScreenBBox().contains(me.getPoint())) {

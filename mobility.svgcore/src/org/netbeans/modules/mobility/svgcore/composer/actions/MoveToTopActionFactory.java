@@ -24,11 +24,11 @@ import org.netbeans.modules.mobility.svgcore.view.svg.AbstractSVGAction;
  *
  * @author Pavel Benes
  */
-public class MoveToTopActionFactory extends AbstractComposerActionFactory {
+public class MoveToTopActionFactory extends AbstractComposerActionFactory implements SceneManager.SelectionListener{
     private final AbstractSVGAction  m_moveToTopAction = 
-        new AbstractSVGAction("animate_start.png", "HINT_MoveToTop", "LBL_MoveToTop") {
+        new AbstractSVGAction("move_to_top.png", "HINT_MoveToTop", "LBL_MoveToTop") {
             public void actionPerformed(ActionEvent e) {
-                SVGObject [] selected = m_sceneMgr.getSelectedObjects();
+                SVGObject [] selected = m_sceneMgr.getSelected();
                 if (selected != null) {
                     assert selected.length > 0;
                     assert selected[0] != null;
@@ -41,9 +41,15 @@ public class MoveToTopActionFactory extends AbstractComposerActionFactory {
     
     public MoveToTopActionFactory(SceneManager sceneMgr) {
         super(sceneMgr);
+        m_moveToTopAction.setEnabled(false);
+        sceneMgr.addSelectionListener(this);
     }
 
     public AbstractSVGAction getMenuAction() {
         return m_moveToTopAction;
     }
+    
+    public void selectionChanged(SVGObject[] newSelection, SVGObject[] oldSelection) {
+        m_moveToTopAction.setEnabled(newSelection != null);
+    }    
 }

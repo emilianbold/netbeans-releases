@@ -19,8 +19,10 @@ import com.sun.perseus.model.*;
 import com.sun.perseus.model.DocumentNode;
 import com.sun.perseus.model.ElementNode;
 import com.sun.perseus.model.Group;
+import javax.swing.text.BadLocationException;
 import org.netbeans.modules.mobility.svgcore.composer.SVGObject;
 import org.netbeans.modules.mobility.svgcore.composer.SceneManager;
+import org.openide.util.Exceptions;
 import org.w3c.dom.Node;
 
 /**
@@ -32,6 +34,8 @@ public final class PatchedGroup extends Group implements PatchedElement {
     private static final byte WRAPPER_NO      = 1;
     private static final byte WRAPPER_YES     = 2;
 
+    private static final String ATTR_TRANSFORM = "transform";
+    
     //TODO HACK - revisit
     public static SceneManager s_sceneMgr = null;
     
@@ -100,95 +104,56 @@ public final class PatchedGroup extends Group implements PatchedElement {
     public void setUserTransform(Transform txf) {
         super.setTransform(txf);
         setChanged(true);
-        System.out.println("Changing the group: " + id);
+        //System.out.println("Changing the group: " + id);
     }
     
-    private int [] m_path;
-    
-    public void setPath(int [] path) {
-        m_path = path;
+    public void applyChangesToText() {
+        try {
+            String transform = getTransformAsText();
+            s_sceneMgr.getDataObject().getModel().setAttributeLater(getId(), ATTR_TRANSFORM, transform);
+        } catch (BadLocationException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
     
-    public int [] getPath() {
-        return m_path;
-    }
-    
-    /*
-    SVGConstants.SVG_TRANSFORM_ATTRIBUTE
-    SVGConstants.SVG_MOTION_PSEUDO_ATTRIBUTE
-            
-        if (SVGConstants.SVG_FONT_FAMILY_ATTRIBUTE == traitName
-            ||
-            SVGConstants.SVG_FONT_SIZE_ATTRIBUTE == traitName
-            ||
-            SVGConstants.SVG_FONT_STYLE_ATTRIBUTE == traitName
-            ||
-            SVGConstants.SVG_FONT_WEIGHT_ATTRIBUTE == traitName
-            || 
-            SVGConstants.SVG_TEXT_ANCHOR_ATTRIBUTE == traitName
-            
-            
-       if (SVGConstants.SVG_STROKE_WIDTH_ATTRIBUTE == traitName
-            ||
-            SVGConstants.SVG_STROKE_MITERLIMIT_ATTRIBUTE == traitName
-            ||
-            SVGConstants.SVG_STROKE_DASHOFFSET_ATTRIBUTE == traitName
-            ||
-            SVGConstants.SVG_FILL_RULE_ATTRIBUTE == traitName
-            || 
-            SVGConstants.SVG_STROKE_LINEJOIN_ATTRIBUTE == traitName
-            ||
-            SVGConstants.SVG_STROKE_LINECAP_ATTRIBUTE == traitName
-            ||
-            SVGConstants.SVG_DISPLAY_ATTRIBUTE == traitName
-            ||
-            SVGConstants.SVG_VISIBILITY_ATTRIBUTE == traitName
-            ||
-            SVGConstants.SVG_COLOR_ATTRIBUTE == traitName
-            ||
-            SVGConstants.SVG_FILL_ATTRIBUTE == traitName
-            ||
-            SVGConstants.SVG_STROKE_ATTRIBUTE == traitName
-            ||
-            SVGConstants.SVG_FILL_OPACITY_ATTRIBUTE == traitName
-            ||
-            SVGConstants.SVG_STROKE_OPACITY_ATTRIBUTE == traitName
-            ||
-            SVGConstants.SVG_STROKE_DASHARRAY_ATTRIBUTE == traitName
-            ||
-            SVGConstants.SVG_OPACITY_ATTRIBUTE == traitName)    
-           
-SVGConstants.SVG_ID_ATTRIBUTE == traitName
-            ||
-            SVGConstants.SVG_REQUIRED_FEATURES_ATTRIBUTE == traitName
-            ||
-            SVGConstants.SVG_REQUIRED_EXTENSIONS_ATTRIBUTE == traitName
-            ||
-            SVGConstants.SVG_SYSTEM_LANGUAGE_ATTRIBUTE == traitName) 
-    */
-    
-    public String getText() {
+    public String getText(boolean onlyAttrs) {
         StringBuilder sb = new StringBuilder();
-        sb.append( "<g ");
+        if (!onlyAttrs) {
+            sb.append( "<g ");
+        }
         sb.append("id=\"");
         sb.append(id);
         sb.append("\"");
         
-        Transform tfm = getTransform();
-        if (tfm != null) {
-            sb.append(" transform=\"matrix(");
-            for (int i = 0; i < 5; i++) {
-                sb.append( tfm.getComponent(i));
-                sb.append(',');
-            }
-            sb.append(tfm.getComponent(5));
-            sb.append(")\"");            
+        String transform = getTransformAsText();
+        if (transform != null && transform.length() > 0) {
+            sb.append(" " + ATTR_TRANSFORM + "=\"");
+            sb.append(transform);
+            sb.append("\"");            
         }
-        sb.append(">");
+        if (!onlyAttrs) {        
+            sb.append(">");
+        }
         return sb.toString();
     }
         
     public ElementNode newInstance(final DocumentNode doc) {
         return new PatchedGroup(doc);
+    }    
+    
+    private String getTransformAsText() {
+        Transform     tfm = getTransform();
+        StringBuilder sb  = new StringBuilder();
+
+        if (tfm != null) {
+            sb.append("matrix(");
+            for (int i = 0; i < 5; i++) {
+                sb.append( tfm.getComponent(i));
+                sb.append(',');
+            }
+            sb.append(tfm.getComponent(5));
+            sb.append(")");
+        }
+        return sb.toString();
     }    
 }

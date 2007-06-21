@@ -44,14 +44,14 @@ public class SVGNavigatorTree extends JTree {
     
     private boolean firstPaint;
 
-    public SVGNavigatorTree(SVGDataObject dObj) {
+    public SVGNavigatorTree(SVGDataObject dObj) throws Exception {
         super();
         this.dObj = dObj;
         
         firstPaint = true;
         treeModel = new DefaultTreeModel(null);
         setModel(treeModel);         
-        DocumentElement rootElement = dObj.getModel().getDocumentModel().getRootElement();
+        DocumentElement rootElement = dObj.getModel()._getDocumentModel().getRootElement();
         SVGNavigatorNode rootTna = new SVGNavigatorNode(rootElement, this, null, VISIBILITY_DIRECT);
         treeModel.setRoot(rootTna);  
         setShowsRootHandles(true);
@@ -97,24 +97,21 @@ public class SVGNavigatorTree extends JTree {
                de.getType().equals(SVGNavigatorNode.XML_EMPTY_TAG);
     }
     
-    public void selectNode( int [] path) {
-        if (path == null) {
-            DocumentElement de = dObj.getModel().findElement(path);
-            if (de != null) {
-                SVGNavigatorNode node = ((SVGNavigatorNode) treeModel.getRoot()).findNode(de);
-                if ( node != null) {
-                    TreePath treePath = node.getNodePath();
-                    makeVisible(treePath);
-                    setSelectionPath(treePath);
-                    repaint();
-                } else {
-                    System.err.println("Node not found");
-                }
+    public void selectNode( String id) {
+        DocumentElement de = dObj.getModel().getElementById(id);
+        if (de != null) {
+            SVGNavigatorNode node = ((SVGNavigatorNode) treeModel.getRoot()).findNode(de);
+            if ( node != null) {
+                TreePath treePath = node.getNodePath();
+                makeVisible(treePath);
+                setSelectionPath(treePath);
+                repaint();
             } else {
-                System.err.println("Element not found");
+                //TODO expand navigator node representing the element
+                System.out.println("Node not expanded");
             }
         } else {
-            System.err.println("Null path provided");
+            System.err.println("Element not found");
         }
     }
     

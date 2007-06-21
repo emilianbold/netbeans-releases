@@ -62,7 +62,7 @@ public class TranslateAction extends AbstractComposerAction {
     }
 
     public void actionCompleted() {
-        applyChanges();
+        applyChanges(m_translated);
         super.actionCompleted();
     }
 }

@@ -31,6 +31,7 @@ import javax.swing.tree.TreePath;
 import org.netbeans.modules.editor.structure.api.DocumentElement;
 import org.netbeans.modules.editor.structure.api.DocumentElementEvent;
 import org.netbeans.modules.editor.structure.api.DocumentElementListener;
+import org.netbeans.modules.mobility.svgcore.model.SVGFileModel;
 import org.openide.ErrorManager;
 
 /**
@@ -39,7 +40,7 @@ import org.openide.ErrorManager;
  *
  * @author Pavel Benes (based on the class TreeNodeAdapter by Marek Fukala)
  */
-class SVGNavigatorNode implements TreeNode, DocumentElementListener {
+final class SVGNavigatorNode implements TreeNode, DocumentElementListener {
     public static final String XML_TAG       = "tag";
     public static final String XML_EMPTY_TAG = "empty_tag";
     public static final String XML_CONTENT   = "content";
@@ -64,6 +65,7 @@ class SVGNavigatorNode implements TreeNode, DocumentElementListener {
         this.nodeTree = nodeTree;
         this.parent   = parent;
         this.nodeVisibility = nodeVisibility;
+        //System.out.println("Creating tree node for element " + de);
     }   
         
     public java.util.Enumeration<SVGNavigatorNode> children() {
@@ -99,6 +101,7 @@ class SVGNavigatorNode implements TreeNode, DocumentElementListener {
     }
     
     public DocumentElement getDocumentElement() {
+        assert de != null;
         return de;
     }
     
@@ -178,8 +181,7 @@ class SVGNavigatorNode implements TreeNode, DocumentElementListener {
     }
     
     public String getText(boolean html) {
-        if(de.getType().equals(XML_TAG)
-        || de.getType().equals(XML_EMPTY_TAG)) {
+        if(SVGFileModel.isTagElement(de)) {
             //XML TAG text
             String attribsVisibleText = "";
             AttributeSet attribs = getDocumentElement().getAttributes();
@@ -454,7 +456,7 @@ class SVGNavigatorNode implements TreeNode, DocumentElementListener {
             //do nothing for comments
         } else {
             if(debug) System.out.println(">>> removing tag element");
-            final TreeNode tn = getChildTreeNode(rde);
+            final SVGNavigatorNode tn = getChildTreeNode(rde);
             final int tnIndex = getIndex(tn);
             
             if(tn != null) {
@@ -466,7 +468,7 @@ class SVGNavigatorNode implements TreeNode, DocumentElementListener {
         }
         if(debug) System.out.println("<<<EVENT finished (node removed)");
     }
-    
+        
     private void unmarkNodeAsError(final SVGNavigatorNode tna) {
         //handle error element
         tna.containsError = false;

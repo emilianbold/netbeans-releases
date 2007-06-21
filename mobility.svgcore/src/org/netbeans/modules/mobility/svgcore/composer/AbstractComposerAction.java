@@ -16,6 +16,8 @@ package org.netbeans.modules.mobility.svgcore.composer;
 
 import java.awt.Graphics;
 import org.netbeans.modules.mobility.svgcore.SVGDataObject;
+import org.netbeans.modules.mobility.svgcore.composer.prototypes.PatchedGroup;
+import org.w3c.dom.svg.SVGLocatableElement;
 
 /**
  *
@@ -38,10 +40,6 @@ public abstract class AbstractComposerAction implements ComposerAction{
         return m_isCompleted;
     }
 
-    public SVGObject getSelected() {
-        return null;
-    }
-
     public void paint(Graphics g, int x, int y) {
     }
         
@@ -57,7 +55,10 @@ public abstract class AbstractComposerAction implements ComposerAction{
         return m_factory.getSceneManager().getDataObject();
     }
     
-    protected void applyChanges() {
-        m_factory.getSceneManager().applyChangesToText();
+    protected void applyChanges(SVGObject obj) {
+        SVGLocatableElement elem = obj.getSVGElement();
+        if (elem != null && elem instanceof PatchedGroup) {
+            ((PatchedGroup) elem).applyChangesToText();
+        }
     }
 }

@@ -96,8 +96,8 @@ public class SVGNavigatorPanel implements NavigatorPanel {
             final SVGDataObject d = (SVGDataObject) selectedFiles.iterator().next();
             //TODO Potential memory leak, use weak reference or something
             d.getModel().addSelectionListener( new SVGFileModel.SelectionListener() {
-                public void selectionChanged(int [] path) {
-                    navigator.select(path);
+                public void selectionChanged(String selectedId) {
+                    navigator.select(selectedId);
                 }
             });
             navigator.navigate(d);        

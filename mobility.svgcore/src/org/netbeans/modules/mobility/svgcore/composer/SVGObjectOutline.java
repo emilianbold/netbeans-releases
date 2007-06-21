@@ -40,8 +40,7 @@ public class SVGObjectOutline {
     public SVGObjectOutline(SVGObject svgObject) {
         assert svgObject != null : "The SVGObject reference cannot be null";
         m_svgObject  = svgObject;
-        m_screenBBox = GraphicUtils.scale(m_svgObject.getSVGScreenBBox(),
-                                          1/getZoomRatio());
+        m_screenBBox = m_svgObject.getInitialScreenBBox();
         setDirty();
     }
     
@@ -104,6 +103,7 @@ public class SVGObjectOutline {
         float [] pt = new float[2];
         pt[0] = zoomRatio * (m_svgObject.getCurrentTranslateX() + m_screenBBox.getX() + m_screenBBox.getWidth() / 2);
         pt[1] = zoomRatio * (m_svgObject.getCurrentTranslateY() + m_screenBBox.getY() + m_screenBBox.getHeight() / 2);
+        System.out.println("Center: {" + pt[0] + "," + pt[1] + "}");
         return pt;
     }
     

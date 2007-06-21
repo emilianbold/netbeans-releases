@@ -30,9 +30,9 @@ import org.netbeans.modules.mobility.svgcore.view.source.SVGSourceMultiViewEleme
  * @author Pavel Benes
  */
 public class SelectAction extends AbstractComposerAction {
-    private SVGObject m_selected;
+    private final SVGObject m_selected;
 
-    public SelectAction(ComposerActionFactory factory, SVGObject selected) {
+    public SelectAction(SelectActionFactory factory, SVGObject selected) {
         super(factory);
         m_selected = selected;
         m_selected.repaint(SVGObjectOutline.SELECTOR_OVERLAP);
@@ -45,8 +45,8 @@ public class SelectAction extends AbstractComposerAction {
 
         if (me.getClickCount() > 1) {
             SVGDataObject dObj = m_factory.getSceneManager().getDataObject();
-            int [] path = m_selected.getActualSelection();
-            DocumentElement delem = dObj.getModel().findElement(path);
+            String id = m_selected.getElementId();
+            DocumentElement delem = dObj.getModel().getElementById(id);
             if (delem != null) {
                 SVGSourceMultiViewElement.selectElement( dObj, delem, true);
             }
@@ -71,23 +71,24 @@ public class SelectAction extends AbstractComposerAction {
     }
 
     public void paint(Graphics g, int x, int y) {
-        if ( !m_isCompleted) {
+        if ( !m_isCompleted && !m_selected.isDeleted()) {
             m_selected.getOutline().draw(g, x, y);
         }
     }
 
     public SVGObject getSelected() {
-        if ( m_selected != null && m_selected.isDeleted()) {
+        if ( m_isCompleted) {
+            return null;
+        } else if ( m_selected.isDeleted()) {
             actionCompleted();
-            m_selected = null;
+            return null;
+        } else {
+            return m_selected;
         }
-        return m_selected;
     }
 
     public void actionCompleted() {
-        if (m_selected != null) {
-            m_selected.repaint(SVGObjectOutline.SELECTOR_OVERLAP);
-            super.actionCompleted();
-        }
+        m_selected.repaint(SVGObjectOutline.SELECTOR_OVERLAP);
+        super.actionCompleted();
     }
 }

@@ -29,8 +29,4 @@ public interface ComposerAction {
     public void paint(Graphics g, int x, int y);
 
     public boolean isCompleted();
-
-    //TODO Remove - better use some container for active actions
-    // on the SelectActionFactory and ask there for current selection
-    public SVGObject getSelected();
 }

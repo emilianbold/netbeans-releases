@@ -15,7 +15,6 @@
 package org.netbeans.modules.mobility.svgcore.composer.actions;
 
 import java.awt.Color;
-import java.awt.Cursor;
 import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.Point;
@@ -89,7 +88,7 @@ public class RotateActionFactory extends AbstractComposerActionFactory {
         public void actionCompleted() {
             m_rotated.repaint(SVGObjectOutline.SELECTOR_OVERLAP);
             repaintRotatePivot();
-            applyChanges();
+            applyChanges(m_rotated);
             super.actionCompleted();
         }
         
@@ -130,7 +129,7 @@ public class RotateActionFactory extends AbstractComposerActionFactory {
     }
     
     private SVGObject getObjectToRotateAt( MouseEvent me) {
-        SVGObject [] selectedObjects = m_sceneMgr.getSelectedObjects();
+        SVGObject [] selectedObjects = m_sceneMgr.getSelected();
         if (selectedObjects != null && selectedObjects.length > 0) {
             SVGObject selObj = selectedObjects[0];
             if ( selObj.getOutline().isAtRotateHandlePoint((float) me.getX(), (float) me.getY())) {

@@ -161,13 +161,13 @@ public class SVGNavigatorContent extends JPanel {
         });        
     }
     
-    void select(int [] path) {
+    void select(String selectedId) {
 //        try {
             WeakReference panelWR = (WeakReference)uiCache.get(peerDO);
             if(panelWR != null) {
                 NavigatorContentPanel cp = (NavigatorContentPanel)panelWR.get();
                 if(cp != null) {
-                    cp.tree.selectNode(path);
+                    cp.tree.selectNode(selectedId);
                 }
             }
 //        } catch (PropertyVetoException ex){
@@ -211,14 +211,8 @@ public class SVGNavigatorContent extends JPanel {
         private final FiltersManager   filters;
 
         private final SVGFileModel.ModelListener modelListener = new SVGFileModel.ModelListener() {
-            public void modelChanged(int[] path) {
-                assert SwingUtilities.isEventDispatchThread() : "Not in AWT event dispach thread";  //NOI18N
-                try {
-                    //TODO update only part of the tree according to the event
-                    //chlds.update();
-                } catch (Exception ex) {
-                      ex.printStackTrace();
-                }                                 
+            public void modelChanged() {
+                tree.repaint();
             }
         };       
         

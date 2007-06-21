@@ -14,6 +14,7 @@
 
 package org.netbeans.modules.mobility.svgcore.composer.prototypes;
 
+import com.sun.perseus.builder.SVGTinyModelFactory;
 import com.sun.perseus.model.*;
 import com.sun.perseus.model.DocumentNode;
 import com.sun.perseus.model.SVG;
@@ -21,7 +22,6 @@ import com.sun.perseus.util.SVGConstants;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Vector;
-import org.netbeans.modules.mobility.svgcore.composer.SceneManager;
 
 /**
  *
@@ -66,51 +66,51 @@ public abstract class SVGComposerPrototypeFactory  {
             // == Text Module ======================================================
             //
             v.addElement(new PatchedText(doc));
-            // v.addElement(new TSpan(doc));
+            //// v.addElement(new TSpan(doc));
 
             //
             // == Font Module ======================================================
             //
             v.addElement(new PatchedFont(doc));
-            //v.addElement(new FontFace(doc));
-            //v.addElement(new Glyph(doc));
-            //v.addElement(new Glyph(doc, SVGConstants.SVG_MISSING_GLYPH_TAG));
-            //v.addElement(new HKern(doc)); 
+            v.addElement(new PatchedFontFace(doc));
+            v.addElement(new PatchedGlyph(doc));
+            v.addElement(new PatchedGlyph(doc, SVGConstants.SVG_MISSING_GLYPH_TAG));
+            v.addElement(new PatchedHKern(doc)); 
 
             // 
             // == Hyperlinking Module ==============================================
             //
-            //v.addElement(new Anchor(doc));
-
+            v.addElement(new PatchedAnchor(doc));
+           
             // 
             // == Animation Module =================================================
             //
             v.addElement(new PatchedAnimate(doc));
             v.addElement(new PatchedAnimateMotion(doc));
-            //v.addElement(new Set(doc));
-            v.addElement(new AnimateTransform(doc));
+            v.addElement(new PatchedSet(doc));
+            v.addElement(new PatchedAnimateTransform(doc));
             v.addElement(new PatchedAnimate(doc, SVGConstants.SVG_ANIMATE_COLOR_TAG));
 
             //
             // == SolidColor Module ================================================
             //
-            //v.addElement(new SolidColor(doc));
+            v.addElement(new PatchedSolidColor(doc));
 
             //
             // == Gradient Module ================================================
             //
-            //v.addElement(new LinearGradient(doc));
-            //v.addElement(new RadialGradient(doc));
-            //v.addElement(new Stop(doc));
+            v.addElement(new PatchedLinearGradient(doc));
+            v.addElement(new PatchedRadialGradient(doc));
+            v.addElement(new PatchedStop(doc));
 
             //
             // == Extensibility Module =========================================
             //
-            //v.addElement(new StrictElement(doc, 
-            //                               SVGConstants.SVG_FOREIGN_OBJECT_TAG,
-            //                               SVGConstants.SVG_NAMESPACE_URI,
-            //                               FOREIGN_OBJECT_REQUIRED_ATTRIBUTES,
-            //                               null));
+            v.addElement(new PatchedStrictElement(doc, 
+                                           SVGConstants.SVG_FOREIGN_OBJECT_TAG,
+                                           SVGConstants.SVG_NAMESPACE_URI,
+                                           SVGTinyModelFactory.FOREIGN_OBJECT_REQUIRED_ATTRIBUTES,
+                                           null));
             //
             // == Medial Module ================================================
             //

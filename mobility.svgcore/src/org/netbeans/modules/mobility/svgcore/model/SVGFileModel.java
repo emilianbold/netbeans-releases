@@ -12,11 +12,11 @@
  */   
 package org.netbeans.modules.mobility.svgcore.model;
 
-import com.sun.perseus.model.ModelNode;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
+import javax.microedition.m2g.SVGImage;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
@@ -30,10 +30,9 @@ import org.netbeans.modules.editor.structure.api.DocumentModel;
 import org.netbeans.modules.editor.structure.api.DocumentModelException;
 import org.netbeans.modules.editor.structure.api.DocumentModelListener;
 import org.netbeans.modules.mobility.svgcore.SVGDataLoader;
-import org.netbeans.modules.mobility.svgcore.composer.PerseusController;
-import org.netbeans.modules.mobility.svgcore.composer.prototypes.PatchedGroup;
+import org.netbeans.modules.mobility.svgcore.model.ElementMapping;
 import org.netbeans.modules.xml.multiview.XmlMultiViewEditorSupport;
-import org.w3c.dom.svg.SVGElement;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -47,20 +46,21 @@ public class SVGFileModel {
     
     
     public interface ModelListener {
-        public void modelChanged( int [] path);
+        public void modelChanged();
     }
 
     public interface SelectionListener {
-        public void selectionChanged( int [] path);
+        public void selectionChanged( String id);
     }
 
     private final XmlMultiViewEditorSupport edSup;
+    private final ElementMapping            m_mapping;
     private       List<ModelListener>       modelListeners     = new ArrayList<ModelListener>();
     private       List<SelectionListener>   selectionListeners = new ArrayList<SelectionListener>();
     private       BaseDocument              bDoc;
     private       EditorKit                 kit;
     private       DocumentModel             m_model;
-    private       boolean                   isChanged = false;
+    private       boolean                   isChanged = true;
     
     private final DocumentListener          docListener = new DocumentListener() {
         public void removeUpdate(DocumentEvent e) {documentModified();}
@@ -74,14 +74,14 @@ public class SVGFileModel {
         public void documentElementRemoved(DocumentElement de) {
             if (isTagElement(de)) {
                 System.out.println("Element removed " + de.getName() + " " + de.toString()  + "[" + de.getElementCount() + "]");
-                fireModelChange(null);
+                fireModelChange();
             }
         }
 
         public void documentElementChanged(DocumentElement de) {
             if (isTagElement(de)) {
                 System.out.println("Element changed " + de.getName() + " " + de.toString()  + "[" + de.getElementCount() + "]");
-                fireModelChange( getIndexedPath(de));
+                fireModelChange();
             }
         }
 
@@ -94,25 +94,35 @@ public class SVGFileModel {
                     at org.netbeans.modules.editor.structure.api.DocumentElement.getElementCount(DocumentElement.java:145)
                     at org.netbeans.modules.mobility.svgcore.model.SVGFileModel$2.documentElementAttributesChanged(SVGFileModel.java:84)
                  */
-                //System.out.println("Element attrs changed " + de.getName() + " " + de.toString()  + "[" + de.getElementCount() + "]");
-                fireModelChange( getIndexedPath(de));
+                System.out.println("Element attrs changed " + de.getName() + " " + de.toString()  + "[" + de.getElementCount() + "]");
+                fireModelChange();
             }
         }
 
         public void documentElementAdded(DocumentElement de) {
             if (isTagElement(de)) {
+                String id = getIdAttribute(de);
+                if (id != null) {
+                    m_mapping.add( id, de);
+                }
                 System.out.println("Element added " + de.getName() + " " + de.toString() + "[" + de.getElementCount() + "]");
-                fireModelChange( getIndexedPath(de));
+                fireModelChange();
             }
         }        
     };
 
     /** Creates a new instance of SVGFileModel */
     public SVGFileModel(XmlMultiViewEditorSupport edSup) {
-        this.edSup      = edSup;
-        m_model      = null;
+        this.edSup = edSup;
+        m_model    = null;
+        m_mapping  = new ElementMapping();
     }        
 
+    public SVGImage parseSVGImage() throws IOException, BadLocationException {
+        SVGImage svgImage = m_mapping.parseDocument(m_model);
+        return svgImage;
+    }
+        
     public boolean isChanged() {
         return isChanged;
     }
@@ -145,10 +155,10 @@ public class SVGFileModel {
         }
     }
     
-    public void setSelected( int [] path) {
+    public void setSelected(String selectedId) {
         synchronized(selectionListeners) {
             for (int i = 0; i < selectionListeners.size(); i++) {
-                ((SelectionListener) selectionListeners.get(i)).selectionChanged(path);
+                ((SelectionListener) selectionListeners.get(i)).selectionChanged(selectedId);
             }
         }
     }
@@ -229,19 +239,19 @@ public class SVGFileModel {
         }
     }
     
-    public synchronized String writeToString() throws Exception {
+    public synchronized DocumentModel _getModel() throws Exception {
         checkDocument();
-        return bDoc.getText(0, bDoc.getLength());
+        return m_model;
     }
     
     public synchronized int getElementStartOffset( DocumentElement del) throws IOException, DocumentModelException {
         return del.getStartOffset();
     }
     
-    public synchronized int getElementStartOffset( int [] pathIndexes) throws IOException, DocumentModelException {
+    public synchronized int getElementStartOffset( String id) throws IOException, DocumentModelException {
         checkDocument();
         int             offset;
-        DocumentElement elem = findElement(pathIndexes);
+        DocumentElement elem = getElementById(id);
         
         if ( elem != null) {
             offset = elem.getStartOffset();
@@ -252,125 +262,35 @@ public class SVGFileModel {
         return offset;
     }
     
-    static boolean isTagElement(DocumentElement elem) {
+    public static boolean isTagElement(DocumentElement elem) {
         return elem != null && (elem.getType().equals(XML_TAG) ||
                elem.getType().equals(XML_EMPTY_TAG));
     }
 
-    static boolean isError(DocumentElement elem) {
+    public static boolean isError(DocumentElement elem) {
         return elem.getType().equals(XML_ERROR_TAG);
     }
     
-    public DocumentElement findElement(int [] pathIndexes) {
-        DocumentElement element = m_model.getRootElement();
-        
-        main_loop: for (int i = 0; i < pathIndexes.length; i++)  {
-            int childNum = element.getElementCount();
-            int index = 0;
-            for (int j = 0; j < childNum; j++) {
-                DocumentElement child = element.getElement(j);
-                
-                if ( isTagElement(child)) {
-                    if ( pathIndexes[i] == index) {
-                        element = child;
-                        continue main_loop;
-                    } else {
-                        index++;
-                    }
-                }
-            }
-            element = null;
-            break;
-        }
-        
-        return element;
+    public static String getIdAttribute(DocumentElement de) {
+        AttributeSet attrs = de.getAttributes();
+        String id = (String) attrs.getAttribute("id");
+        return id;
     }
     
-    public int [] getIndexedPath( DocumentElement de) {
-        assert isTagElement(de);
-        assert de.getDocumentModel() == m_model : "The element is no longer in the current document";
-        
-        int [] path = null;
-        
-        try {
-            List<DocumentElement> objectPath = new ArrayList<DocumentElement>();
-            do {
-                objectPath.add(de);
-                de = de.getParentElement();
-            } while( de != null);
-
-            de = m_model.getRootElement();
-            assert de == objectPath.get(objectPath.size()-1);
-
-            path = new int[objectPath.size()-1];
-
-            main_loop: for (int i = 0; i < path.length; i++)  {
-                int    childNum = de.getElementCount();
-                int    index    = 0;
-                Object o        = objectPath.get( path.length - i - 1);
-
-                for (int j = 0; j < childNum; j++) {
-                    DocumentElement child = de.getElement(j);
-
-                    if ( isTagElement(child)) {
-                        if (child == o) {
-                            path[i] = index;
-                            de      = child;
-                            continue main_loop;
-                        } else {
-                            index++;
-                        }
-                    }
-                }
-                path = null;
-                break;
-            }
-        } catch(Exception e) {
-            e.printStackTrace();
-        }
-        
-        return path;       
+    public DocumentElement getElementById(String id) {
+        DocumentElement elem = m_mapping.id2element(id);
+        assert elem != null : "Element with id '" + id + "' not found.";
+        return elem;
     }
     
-    public DocumentModel getDocumentModel() {
+    public String getElementId(DocumentElement de) {
+        String id = m_mapping.element2id(de);
+        assert id != null : "Element " + de + " could not be found!";
+        return id;
+    }
+    
+    public DocumentModel _getDocumentModel() {
         return m_model;
-    }
-
-    public DocumentElement findElement(String id) {
-        DocumentElement element = m_model.getRootElement();
-        int idLength = id.length();
-        int pos = 0;
-        
-        main_loop: while( pos < idLength) {
-            int elemIndex = 0;
-            char c;
-            while ( Character.isDigit(c=id.charAt(pos))) {
-                elemIndex = (elemIndex * 10) + (c - '0');
-                pos++;
-            }
-            int childNum = element.getElementCount();
-            int index = 0;
-            for (int j = 0; j < childNum; j++) {
-                DocumentElement child = element.getElement(j);    
-                if ( isTagElement(child)) {
-                    if (index == elemIndex) {
-                        String name       = child.getName();
-                        int    nameLength = name.length();
-                        
-                        if ( isEqual(id, name, pos, 0, nameLength)) {
-                            pos += nameLength;
-                            element = child;
-                            continue main_loop;
-                        }
-                    } else {
-                        index++;
-                    }
-                }
-            }
-            return null;
-        }
-        
-        return element;        
     }
     
     protected static boolean isEqual(String str1, String str2, int pos1, int pos2, int length) {
@@ -388,7 +308,7 @@ public class SVGFileModel {
     }
     
     public boolean isLeaf(String id) {
-        DocumentElement elem = findElement(id); 
+        DocumentElement elem = getElementById(id); 
         return elem != null ? elem.isLeaf() : true;
     }
 
@@ -405,7 +325,7 @@ public class SVGFileModel {
     }
         
     public List getChildElements( String id) {
-        DocumentElement parent = findElement(id);
+        DocumentElement parent = getElementById(id);
         if (parent != null) {
             StringBuilder sb = new StringBuilder(id);
             int size = sb.length();
@@ -428,13 +348,9 @@ public class SVGFileModel {
         }
     }
     
-    public synchronized String describeElement(int [] path, boolean showTag, boolean showAttributes, String lineSep) {
-        DocumentElement el = findElement(path);
-        if (el != null) {
-            return describeElement( el, showTag, showAttributes, lineSep);
-        } else {
-            return "";
-        }
+    public synchronized String describeElement(String id, boolean showTag, boolean showAttributes, String lineSep) {
+        DocumentElement de = checkIntegrity(id);
+        return describeElement( de, showTag, showAttributes, lineSep);
     }
 
     private boolean eventInProgress = false;
@@ -445,16 +361,17 @@ public class SVGFileModel {
             try {
                 synchronized( modelListeners) {
                     for (int i = 0; i < modelListeners.size(); i++) {
-                        ((ModelListener) modelListeners.get(i)).modelChanged(null);
+                        ((ModelListener) modelListeners.get(i)).modelChanged();
                     }
                 }
             } finally {
+                System.out.println("Update completed");
                 eventInProgress = false;
             }
         }
     };
     
-    protected synchronized void fireModelChange(int [] path) {
+    protected synchronized void fireModelChange() {
         if ( !eventInProgress) {
             System.out.println("Asking for update");
             SwingUtilities.invokeLater( updateTask);
@@ -498,20 +415,17 @@ public class SVGFileModel {
         return false;
     }
     
-    public void deleteElement(int [] path) throws BadLocationException {
-        assert path != null : "Element not found";
-        DocumentElement de = findElement(path);
-        assert de != null : "No element at path: " + PerseusController.toString(path);
+    public void deleteElement(String id) throws BadLocationException {
+        DocumentElement de = checkIntegrity(id);
+        
         //TODO any locking??
         int startOff = de.getStartOffset();
         bDoc.remove(startOff, de.getEndOffset() - startOff + 1);
     }
     
-    public void wrapElement(int [] path, String text) throws BadLocationException {
-        assert path != null : "Element not found";
-        DocumentElement de = findElement(path);
-        assert de != null : "No element at path: " + PerseusController.toString(path);
-        checkIntegrity(de);
+    public void wrapElement(String id, String text) throws BadLocationException {
+        DocumentElement de = checkIntegrity(id);
+        
         //TODO any locking??
         int startOff = de.getStartOffset();
         int length   = de.getEndOffset() - startOff + 1;
@@ -565,11 +479,8 @@ public class SVGFileModel {
     /**
      * Make the selected element to become the first child of its parent.
      */
-    public void moveToBottom(int [] path) throws BadLocationException {
-        assert path != null : "Element not found";
-        DocumentElement de = findElement(path);
-        assert de != null : "No element at path: " + PerseusController.toString(path);
-        checkIntegrity(de);
+    public void moveToBottom(String id) throws BadLocationException {
+        DocumentElement de = checkIntegrity(id);
         
         DocumentElement parent = de.getParentElement();
         DocumentElement firstChild = parent.getElement(0);
@@ -590,11 +501,8 @@ public class SVGFileModel {
     /**
      * Make the selected element to become the last child of its parent.
      */
-    public void moveToTop(int [] path) throws BadLocationException {
-        assert path != null : "Element not found";
-        DocumentElement de = findElement(path);
-        assert de != null : "No element at path: " + PerseusController.toString(path);
-        checkIntegrity(de);
+    public void moveToTop(String id) throws BadLocationException {
+        DocumentElement de = checkIntegrity(id);
         
         DocumentElement parent = de.getParentElement();
         DocumentElement lastChild = parent.getElement(parent.getElementCount() - 1);
@@ -615,11 +523,8 @@ public class SVGFileModel {
     /**
      * Move the selected element one position to the end of a list of its siblings.
      */
-    public void moveForward(int [] path) throws BadLocationException {
-        assert path != null : "Element not found";
-        DocumentElement de = findElement(path);
-        assert de != null : "No element at path: " + PerseusController.toString(path);
-        checkIntegrity(de);
+    public void moveForward(String id) throws BadLocationException {
+        DocumentElement de = checkIntegrity(id);
         
         DocumentElement parent = de.getParentElement();
         DocumentElement lastChild = parent.getElement(parent.getElementCount() - 1);
@@ -643,11 +548,8 @@ public class SVGFileModel {
     /**
      * Move the selected element one position to the beginning of a list of its siblings.
      */
-    public void moveBackward(int [] path) throws BadLocationException {
-        assert path != null : "Element not found";
-        DocumentElement de = findElement(path);
-        assert de != null : "No element at path: " + PerseusController.toString(path);
-        checkIntegrity(de);
+    public void moveBackward(String id) throws BadLocationException {
+        DocumentElement de = checkIntegrity(id);
         
         DocumentElement parent = de.getParentElement();
         DocumentElement firstChild = parent.getElement(0);
@@ -679,58 +581,123 @@ public class SVGFileModel {
         throw new RuntimeException("The document element " + de + " is no longer part of the document");
     }
     
+    /*
     public void synchronize(ModelNode perseusRoot) throws BadLocationException {
+        System.out.println("Synchronization started ...");
         DocumentElement element = m_model.getRootElement();
         //TODO lock document?
-        synchronize( element, perseusRoot);
+        synchronize( element, perseusRoot, 0);
+        System.out.println("Synchronization ended.");
+    }
+    */
+    
+    public void setAttributeLater(final String id, final String attrName, final String attrValue) throws BadLocationException {
+        DocumentElement de = m_mapping.id2element(id);
+        if (de != null) {
+            setAttribute(id, attrName, attrValue);
+        } else {
+            m_mapping.scheduleTask(id,new Runnable() {
+                public void run() {
+                    try {
+                        setAttribute(id, attrName, attrValue);
+                    } catch (BadLocationException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            });
+        }
     }
     
-    public void synchronize(DocumentElement docElem, ModelNode perseusNode) throws BadLocationException {
+    private void setAttribute( String id, String attrName, String attrValue) throws BadLocationException {
+        DocumentElement elem = checkIntegrity(id);
+        assert isTagElement(elem) : "Attribute change allowed only for tag elements";
+        
+        int startOff = elem.getStartOffset() + 1 + elem.getName().length();        
+        int endOff;
+        
+        if ( elem.getElementCount() > 0) {
+            endOff = elem.getElement(0).getStartOffset() - 1;
+        } else {
+            endOff = elem.getEndOffset() - 1;
+        }
+        String fragment = bDoc.getText(startOff, endOff - startOff + 1);
+        int p;
+        if ( (p=fragment.indexOf(attrName)) != -1) {
+            p += attrName.length();
+            while( ++p < fragment.length()) {
+                if (fragment.charAt(p) =='"') {
+                    int q = p;
+
+                    while( ++q < fragment.length()) {
+                        if (fragment.charAt(q) =='"') {
+                            p++;
+                            bDoc.replace(startOff + p, q-p , attrValue, null);
+                            return;
+                        }
+                    }
+                }
+            }
+            System.err.println("Attribute " + attrName + " not changed: \"" + fragment + "\"");
+        } else {
+            StringBuilder sb = new StringBuilder(" ");
+            sb.append(attrName);
+            sb.append("=\"");
+            sb.append(attrValue);
+            sb.append( "\" ");
+            bDoc.insertString(startOff, sb.toString(), null);
+        }
+    }
+    /*
+    private void synchronize(DocumentElement docElem, ModelNode perseusNode, int level) throws BadLocationException {
         assert docElem != null;
         assert perseusNode != null;
         
         //TODO check if works for multiple synchronisation changes
         if ( perseusNode instanceof PatchedGroup) {
             PatchedGroup pg = (PatchedGroup) perseusNode;
+            
             if (pg.isChanged()) {
-                int startOff = docElem.getStartOffset();
-                if ( docElem.getElementCount() > 0) {
-                    int endOff = docElem.getElement(0).getStartOffset();
-                    String text = ((PatchedGroup)perseusNode).getText();
-                    bDoc.replace(startOff, endOff - startOff, text, null);
-                } else {
-                    System.err.println("Invalid wrapper");
-                }
+                changeAttribute(docElem, "transform", ((PatchedGroup)perseusNode).getTransformAsText());
                 pg.setChanged(false);
             }
         }
         
         int childElemNum = docElem.getElementCount();
         ModelNode childNode = perseusNode.getFirstChildNode();
+        System.out.println(level+"synchronizing " + perseusNode + "->" + docElem);
         for (int i = 0; i < childElemNum; i++) {
             DocumentElement childElem = docElem.getElement(i);
             if ( isTagElement(childElem)) {
                 if (childNode != null) {
-                    synchronize(childElem, childNode);
+                    synchronize(childElem, childNode, level + 1);
                     childNode = childNode.getNextSiblingNode();
                 } else {
-                    System.err.println("Inconsistent tree structure");
+                    System.err.println("Extra element:" + childElem);
                     break;
                 }
             }
         }
         
-        if (childNode != null) {
+        if (childNode != null &&
+            !(childNode instanceof SVGSVGElement) &&    
+            !PerseusController.isViewBoxMarker(childNode)) {
             System.err.println("Inconsistent tree structure");
         }
     }
-    
-    private void checkIntegrity(DocumentElement de) {
-        
+    */
+    private void checkIntegrity(DocumentElement de) {        
         if ( de.getDocumentModel() != m_model ||
              de.getDocument() != bDoc) {
             System.out.println("Element is not part of the current document");
             throw new RuntimeException("Element is not part of the current document");
         }
     }    
+    
+    private DocumentElement checkIntegrity(String id) {
+        DocumentElement de = getElementById(id);
+        assert de != null : "No element with id: " + id;
+        checkIntegrity(de);
+        return de;
+    }
+    
 }

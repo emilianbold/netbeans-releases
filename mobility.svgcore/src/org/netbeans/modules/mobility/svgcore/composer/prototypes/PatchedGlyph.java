@@ -14,20 +14,24 @@
 
 package org.netbeans.modules.mobility.svgcore.composer.prototypes;
 
+import com.sun.perseus.model.*;
 import com.sun.perseus.model.DocumentNode;
 import com.sun.perseus.model.ElementNode;
-import com.sun.perseus.model.Symbol;
 import org.netbeans.modules.mobility.svgcore.composer.SVGObject;
 
 /**
  *
  * @author Pavel Benes
  */
-public final class PatchedSymbol extends Symbol implements PatchedElement {
-    private String m_idBackup    = null;
+public final class PatchedGlyph extends Glyph implements PatchedElement {
+    private String m_idBackup = null;
     
-    public PatchedSymbol(final DocumentNode ownerDocument) {
+    public PatchedGlyph(final DocumentNode ownerDocument) {
         super(ownerDocument);
+    }
+    
+    public PatchedGlyph(final DocumentNode ownerDocument, String tag) {
+        super(ownerDocument, tag);
     }
     
     public void attachSVGObject(SVGObject obj) {
@@ -46,8 +50,8 @@ public final class PatchedSymbol extends Symbol implements PatchedElement {
             id = m_idBackup;
         }
     }
-
+    
     public ElementNode newInstance(final DocumentNode doc) {
-        return new PatchedSymbol(doc);
+        return new PatchedGlyph(doc, getLocalName());
     }    
 }

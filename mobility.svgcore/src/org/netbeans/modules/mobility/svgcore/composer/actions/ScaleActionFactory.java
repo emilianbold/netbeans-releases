@@ -105,7 +105,7 @@ public class ScaleActionFactory extends AbstractComposerActionFactory {
     }
     
     private SVGObject getObjectToScaleAt( MouseEvent me) {
-        SVGObject [] selectedObjects = m_sceneMgr.getSelectedObjects();
+        SVGObject [] selectedObjects = m_sceneMgr.getSelected();
         if (selectedObjects != null && selectedObjects.length > 0) {
             SVGObject selObj = selectedObjects[0];
             if ( selObj.getOutline().isAtScaleHandlePoint((float) me.getX(), (float) me.getY())) {

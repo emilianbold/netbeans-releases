@@ -27,6 +27,8 @@ import org.netbeans.modules.mobility.svgcore.composer.SceneManager;
  */
 public class SelectActionFactory extends AbstractComposerActionFactory {
     
+    private SelectAction m_activeAction;
+    
     public SelectActionFactory(SceneManager sceneMgr) {
         super(sceneMgr);
     }
@@ -41,8 +43,8 @@ public class SelectActionFactory extends AbstractComposerActionFactory {
         return null;
     }
     
-    public ComposerAction startAction(SVGObject selected) {
-        return new SelectAction(this, selected);
+    public synchronized ComposerAction startAction(SVGObject selected) {
+        return setActiveAction( new SelectAction(this, selected));
     }
     
     public synchronized ComposerAction startAction(InputEvent e) {        
@@ -51,9 +53,25 @@ public class SelectActionFactory extends AbstractComposerActionFactory {
         if ( me != null) {
             SVGObject [] objects = m_sceneMgr.getPerseusController().getObjectsAt(me.getX(), me.getY());
             if (objects != null && objects.length > 0)  {
-                return new SelectAction(this, objects[0], me);
+                return setActiveAction(new SelectAction(this, objects[0], me));
             }    
         }
         return null;
+    }
+    
+    public SelectAction getActiveAction() {
+        if (m_activeAction != null && !m_activeAction.isCompleted()) {
+            return m_activeAction;
+        } else {
+            return null;
+        }
+    }
+    
+    private SelectAction setActiveAction( SelectAction active) {
+        if (m_activeAction != null) {
+            m_activeAction.actionCompleted();
+        }
+        m_activeAction = active;
+        return active;
     }
 }

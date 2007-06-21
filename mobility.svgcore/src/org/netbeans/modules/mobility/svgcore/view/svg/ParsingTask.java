@@ -20,15 +20,17 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Font;
 import java.io.IOException;
-import java.io.StringBufferInputStream;
 import javax.microedition.m2g.SVGImage;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
+import javax.swing.text.Document;
+import org.netbeans.modules.editor.structure.api.DocumentModel;
 import org.netbeans.modules.mobility.svgcore.SVGDataObject;
-import org.netbeans.modules.mobility.svgcore.composer.PerseusController;
+import org.netbeans.modules.mobility.svgcore.model.ElementMapping;
+import org.netbeans.modules.mobility.svgcore.model.SVGFileModel;
 import org.openide.util.NbBundle;
 import org.openide.xml.EntityCatalog;
 import org.openide.xml.XMLUtil;
@@ -45,8 +47,8 @@ final class ParsingTask extends Thread {
     private final JPanel              panel;
     private final JTextArea           textArea;
     private final SVGViewTopComponent svgView;
-    private final String              text;
-    //private final String              svgElementText;
+    private final SVGFileModel        m_fileModel;
+    private final DocumentModel       m_docModel;
 
     public ParsingTask(SVGDataObject dObj, SVGViewTopComponent svgView) throws Exception {
         this.svgView = svgView;
@@ -60,8 +62,9 @@ final class ParsingTask extends Thread {
         textArea.setFont(font.deriveFont(16.0f));
         panel.add(new JScrollPane(textArea), BorderLayout.CENTER);
         setPriority( Thread.MIN_PRIORITY);
-        text = dObj.getModel().writeToString();
-      //  svgElementText = dObj.getModel().getSVGHeader();
+        m_fileModel = dObj.getModel();
+        // ensure that model is valid
+        m_docModel  = m_fileModel._getModel();
     }
 
     public JComponent getPanel() {
@@ -75,27 +78,26 @@ final class ParsingTask extends Thread {
     //TODO use alternative to StringBufferInputStream
     @SuppressWarnings({"deprecation"})
     public void run() {
-        StringBufferInputStream in;
         try {
-            in = new StringBufferInputStream(text);
-            try {           
-                final SVGImage svgImage = (SVGImage) PerseusController.createImage( in);
-//                final SVGImage svgImage = (SVGImage) PerseusController.createImage( in, svgElementText);
-//                final SVGImage svgImage = (SVGImage) ScalableImage.createImage( in, null);
+            try {
+                final SVGImage svgImage = m_fileModel.parseSVGImage();
                 assert svgImage != null;
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
                         svgView.showImage(svgImage);
                     }
                 });  
-            } catch (IOException ex) {
-                showParsingError(text, ex);
-            } finally {
-                in.close();
+            } catch (IOException e) {
+                Document doc = m_docModel.getDocument();
+                showParsingError(doc.getText(0, doc.getLength()), e);
+            } catch(Exception e) {
+                e.printStackTrace();
+                Document doc = m_docModel.getDocument();
+                showParsingError(doc.getText(0, doc.getLength()), e);
             }
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        } 
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
     }
     
     private String composeMessageText( StringBuffer perseusError,
@@ -117,9 +119,13 @@ final class ParsingTask extends Thread {
     }
 
     @SuppressWarnings({"deprecation"})
-    private void showParsingError(String fileText, IOException perseusException) {            
+    private void showParsingError(String fileText, Exception perseusException) {            
         final StringBuffer saxErrors    = new StringBuffer();
-        final StringBuffer perseusError = new StringBuffer(perseusException.getLocalizedMessage());
+        String errorDescr = perseusException.getLocalizedMessage();
+        if (errorDescr == null) {
+            errorDescr = perseusException.getClass().getName();
+        }
+        final StringBuffer perseusError = new StringBuffer(errorDescr);
         updateText( composeMessageText(perseusError, saxErrors, null));
         final int [] errorCount = new int[3];
 
@@ -172,6 +178,9 @@ final class ParsingTask extends Thread {
                 in.close();
             } catch (IOException ex) {
                 ex.printStackTrace();
+            }
+            if (errorCount[0] == 0 && errorCount[1] == 0) {
+                errorCount[0] = 1;
             }
             updateText(composeMessageText(perseusError, saxErrors, errorCount));
         }

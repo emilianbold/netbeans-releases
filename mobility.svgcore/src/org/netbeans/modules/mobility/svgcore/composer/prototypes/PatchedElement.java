@@ -19,6 +19,4 @@ public interface PatchedElement {
     public void      attachSVGObject(SVGObject obj);
     public SVGObject getSVGObject();
     public void      setNullId(boolean isNull);
-    public void      setPath(int [] path);
-    public int []    getPath();
 }

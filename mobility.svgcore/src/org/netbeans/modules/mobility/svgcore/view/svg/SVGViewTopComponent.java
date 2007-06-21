@@ -15,8 +15,6 @@ package org.netbeans.modules.mobility.svgcore.view.svg;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Component;
-import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontMetrics;
@@ -53,7 +51,6 @@ import javax.swing.UIManager;
 import javax.swing.border.Border;
 
 import javax.microedition.m2g.SVGImage;
-import javax.swing.CellRendererPane;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JToggleButton;
@@ -216,6 +213,8 @@ final public class SVGViewTopComponent extends CloneableTopComponent {
     
     private SVGViewTopComponent(SVGDataObject svgDataObject) {
         this.svgDataObject = svgDataObject;
+        m_sceneMgr         = new SceneManager(svgDataObject, content);
+        m_sceneMgr.initialize();
         initialize();
     }
 
@@ -225,23 +224,23 @@ final public class SVGViewTopComponent extends CloneableTopComponent {
     
     private class SVGCookie implements SelectionCookie, AnimationCookie {
 
-        public void startAnimation(final SVGDataObject doj, final DocumentElement elem) {
+        public void startAnimation(final SVGDataObject doj, final DocumentElement de) {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     System.out.println("Starting animation");
                     startAnimationAction.actionPerformed(null);
-                    int [] path = doj.getModel().getIndexedPath(elem);
-                    m_sceneMgr.getPerseusController().startAnimation(path);
+                    String id = doj.getModel().getElementId(de);
+                    m_sceneMgr.getPerseusController().startAnimation(id);
                 }
             });
         }
 
-        public void stopAnimation(final SVGDataObject doj, final DocumentElement elem) {
+        public void stopAnimation(final SVGDataObject doj, final DocumentElement de) {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     System.out.println("Stopping animation");
-                    int [] path = doj.getModel().getIndexedPath(elem);
-                    m_sceneMgr.getPerseusController().stopAnimation(path);
+                    String id = doj.getModel().getElementId(de);
+                    m_sceneMgr.getPerseusController().stopAnimation(id);
                 }
             });
         }
@@ -250,8 +249,8 @@ final public class SVGViewTopComponent extends CloneableTopComponent {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     System.out.println("Updating selection");
-                    int [] path = doj.getModel().getIndexedPath(de);
-                    m_sceneMgr.setSelection(path);
+                    String id = doj.getModel().getElementId(de);
+                    m_sceneMgr.setSelection(id);
                 }
             });
         }        
@@ -291,7 +290,7 @@ final public class SVGViewTopComponent extends CloneableTopComponent {
                 
         //add(toolbar  = createToolBar(), BorderLayout.NORTH);
         toolbar = createToolBar();
-        enableComponentsInToolbar(toolbar, false);
+        //enableComponentsInToolbar(toolbar, false);
         
         changeListener = new ChangeListener() {
             public void stateChanged(ChangeEvent e) {
@@ -375,7 +374,7 @@ final public class SVGViewTopComponent extends CloneableTopComponent {
     }
             
     public void onShow() {        
-        if ( m_sceneMgr == null || getModel().isChanged()) {
+        if ( getModel().isChanged()) {
             updateImage();
             getModel().setChanged(false);
         }
@@ -417,7 +416,7 @@ final public class SVGViewTopComponent extends CloneableTopComponent {
         svgAnimator = null;
 */
 //        svgImage = null;
-        enableComponentsInToolbar(toolbar, false);        
+        //enableComponentsInToolbar(toolbar, false);        
     }
     
     /** Creates cloned object which uses the same underlying data object. */
@@ -574,7 +573,11 @@ final public class SVGViewTopComponent extends CloneableTopComponent {
         startAnimationButton.setSelected(false);
         initButton(toolbar, pauseAnimationButton = new JButton( pauseAnimationAction));
         initButton(toolbar, stopAnimationButton  = new JButton( stopAnimationAction));
-                
+        
+        toolbar.add(createToolBarSeparator(), constrains);
+        for (Action action : m_sceneMgr.getMenuActions()) {
+            initButton(toolbar, new JButton( action));
+        }       
         constrains = new GridBagConstraints();
         constrains.anchor = GridBagConstraints.WEST;
         constrains.fill = GridBagConstraints.HORIZONTAL;
@@ -646,16 +649,15 @@ final public class SVGViewTopComponent extends CloneableTopComponent {
         toolBarSeparator.setMinimumSize(dim);
         return toolBarSeparator;
     }
-
+/*
     private static void enableComponentsInToolbar(Container component, boolean enable){
         Component[] components = component.getComponents();
         for (int i = 0; i < components.length; i++) {
             components[i].setEnabled(enable);
-            CellRendererPane p;
             enableComponentsInToolbar((Container) components[i], enable);
         }
     }
-    
+*/    
     /** Serialize this top component. Serializes its data object in addition
      * to common superclass behaviour.
      * @param out the stream to serialize to
@@ -730,8 +732,7 @@ final public class SVGViewTopComponent extends CloneableTopComponent {
         m_img = img;
         content.add(img);
         
-        m_sceneMgr = new SceneManager(this.svgDataObject, content);
-        m_sceneMgr.initialize(img);
+        m_sceneMgr.setImage(img);
         final JComponent topComponent = m_sceneMgr.getComposerGUI();
         basePanel.add( topComponent, BorderLayout.CENTER);
         m_sceneMgr.registerPopupActions( new Action[]{
@@ -758,7 +759,7 @@ final public class SVGViewTopComponent extends CloneableTopComponent {
             pauseAnimationAction,
             stopAnimationAction}, lookup);
 
-        enableComponentsInToolbar(toolbar, true);
+        //enableComponentsInToolbar(toolbar, true);
         updateZoomCombo();
         updateAnimationActions();
 

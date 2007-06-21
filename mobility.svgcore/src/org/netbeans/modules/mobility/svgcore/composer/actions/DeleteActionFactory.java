@@ -24,15 +24,17 @@ import org.netbeans.modules.mobility.svgcore.view.svg.AbstractSVGAction;
  *
  * @author Pavel Benes
  */
-public class DeleteActionFactory extends AbstractComposerActionFactory {
+public class DeleteActionFactory extends AbstractComposerActionFactory implements SceneManager.SelectionListener {
     private final AbstractSVGAction  m_deleteAction = 
-        new AbstractSVGAction("animate_start.png", "HINT_DeleteObject", "LBL_DeleteObject") {
+        new AbstractSVGAction("delete_element.png", "HINT_DeleteElement", "LBL_DeleteElement") {
             public void actionPerformed(ActionEvent e) {
-                SVGObject [] selected = m_sceneMgr.getSelectedObjects();
+                SVGObject [] selected = m_sceneMgr.getSelected();
                 if (selected != null) {
                     assert selected.length > 0;
                     assert selected[0] != null;
-                    m_sceneMgr.deleteObject(selected[0]);
+                    SVGObject deleted = selected[0];
+                    deleted.repaint();
+                    m_sceneMgr.deleteObject(deleted);
                 } else {
                     System.err.println("No selection, button should be disabled");
                 }
@@ -41,9 +43,15 @@ public class DeleteActionFactory extends AbstractComposerActionFactory {
     
     public DeleteActionFactory(SceneManager sceneMgr) {
         super(sceneMgr);
+        m_deleteAction.setEnabled(false);
+        sceneMgr.addSelectionListener(this);
     }
 
     public AbstractSVGAction getMenuAction() {
         return m_deleteAction;
+    }
+
+    public void selectionChanged(SVGObject[] newSelection, SVGObject[] oldSelection) {
+        m_deleteAction.setEnabled(newSelection != null);
     }
 }

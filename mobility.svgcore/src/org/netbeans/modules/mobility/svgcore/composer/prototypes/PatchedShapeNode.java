@@ -50,16 +50,6 @@ public final class PatchedShapeNode extends ShapeNode implements PatchedElement 
         }
     }
     
-    private int [] m_path;
-    
-    public void setPath(int [] path) {
-        m_path = path;
-    }
-    
-    public int [] getPath() {
-        return m_path;
-    }
-        
     public ElementNode newInstance(final DocumentNode doc) {
         return new PatchedShapeNode(doc, getLocalName());
     }    

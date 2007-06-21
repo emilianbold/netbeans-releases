@@ -16,22 +16,25 @@ package org.netbeans.modules.mobility.svgcore.composer.prototypes;
 
 import com.sun.perseus.model.DocumentNode;
 import com.sun.perseus.model.ElementNode;
-import com.sun.perseus.model.Symbol;
+import com.sun.perseus.model.StrictElement;
 import org.netbeans.modules.mobility.svgcore.composer.SVGObject;
 
 /**
  *
  * @author Pavel Benes
  */
-public final class PatchedSymbol extends Symbol implements PatchedElement {
-    private String m_idBackup    = null;
+public final class PatchedStrictElement extends StrictElement implements PatchedElement {
+    private String m_idBackup = null;
     
-    public PatchedSymbol(final DocumentNode ownerDocument) {
-        super(ownerDocument);
+    public PatchedStrictElement(final DocumentNode doc,
+                         final String localName,
+                         final String namespaceURI,
+                         final String[] requiredTraits,
+                         final String[][] requiredTraitsNS) {
+        super(doc, localName, namespaceURI, requiredTraits, requiredTraitsNS);
     }
     
     public void attachSVGObject(SVGObject obj) {
-        
     }
 
     public SVGObject getSVGObject() {
@@ -46,8 +49,9 @@ public final class PatchedSymbol extends Symbol implements PatchedElement {
             id = m_idBackup;
         }
     }
-
+            
     public ElementNode newInstance(final DocumentNode doc) {
-        return new PatchedSymbol(doc);
+        return new PatchedStrictElement(doc, getLocalName(), 
+                getNamespaceURI(), getRequiredTraits(), getRequiredTraitsNS());
     }    
 }

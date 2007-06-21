@@ -16,17 +16,17 @@ package org.netbeans.modules.mobility.svgcore.composer.prototypes;
 
 import com.sun.perseus.model.DocumentNode;
 import com.sun.perseus.model.ElementNode;
-import com.sun.perseus.model.Symbol;
+import com.sun.perseus.model.LinearGradient;
 import org.netbeans.modules.mobility.svgcore.composer.SVGObject;
 
 /**
  *
  * @author Pavel Benes
  */
-public final class PatchedSymbol extends Symbol implements PatchedElement {
-    private String m_idBackup    = null;
+public final class PatchedSolidColor extends LinearGradient implements PatchedElement {
+    private String m_idBackup = null;
     
-    public PatchedSymbol(final DocumentNode ownerDocument) {
+    public PatchedSolidColor(final DocumentNode ownerDocument) {
         super(ownerDocument);
     }
     
@@ -46,8 +46,8 @@ public final class PatchedSymbol extends Symbol implements PatchedElement {
             id = m_idBackup;
         }
     }
-
+            
     public ElementNode newInstance(final DocumentNode doc) {
-        return new PatchedSymbol(doc);
+        return new PatchedLinearGradient(doc);
     }    
 }

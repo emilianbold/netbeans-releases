@@ -13,7 +13,6 @@
  */
 package org.netbeans.modules.mobility.svgcore.composer;
 
-import com.sun.perseus.model.ModelNode;
 import java.awt.event.InputEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -32,10 +31,10 @@ import org.netbeans.modules.mobility.svgcore.composer.actions.MoveToBottomAction
 import org.netbeans.modules.mobility.svgcore.composer.actions.MoveToTopActionFactory;
 import org.netbeans.modules.mobility.svgcore.composer.actions.RotateActionFactory;
 import org.netbeans.modules.mobility.svgcore.composer.actions.ScaleActionFactory;
+import org.netbeans.modules.mobility.svgcore.composer.actions.SelectAction;
 import org.netbeans.modules.mobility.svgcore.composer.actions.SelectActionFactory;
 import org.netbeans.modules.mobility.svgcore.composer.actions.TranslateActionFactory;
 import org.netbeans.modules.mobility.svgcore.composer.prototypes.PatchedGroup;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.InstanceContent;
@@ -47,35 +46,30 @@ import org.openide.util.lookup.InstanceContent;
 public class SceneManager {
     private final SVGDataObject               m_dObj;
     private final InstanceContent             m_lookupContent;
-    private final PerseusController           m_perseusController;
-    private final ScreenManager               m_screenMgr;
-    private final InputControlManager         m_inputControlMgr;
+    private       PerseusController           m_perseusController;
+    private       ScreenManager               m_screenMgr;
+    private       InputControlManager         m_inputControlMgr;
     private final List<ComposerActionFactory> m_registeredActions = new ArrayList<ComposerActionFactory>();
     private final Stack<ComposerAction>       m_activeActions = new Stack<ComposerAction>();
-    private final SelectActionFactory         m_selectActionFactory;
+    private       SelectActionFactory         m_selectActionFactory;
+    private final List<SelectionListener>     m_selectionListeners = new ArrayList<SelectionListener>();
     private       SVGImage                    m_svgImage      = null;
 
+    public static interface SelectionListener {
+        public void selectionChanged( SVGObject [] newSelection, SVGObject [] oldSelection);
+    }
+    
     public SceneManager(SVGDataObject dObj,InstanceContent lookupContent) {
         m_dObj              = dObj;
         m_lookupContent     = lookupContent;
-        m_perseusController = new PerseusController(this);
-        m_screenMgr         = new ScreenManager(this);
-        m_inputControlMgr   = new InputControlManager(this);
-        
-        // used later for creation of selection events
-        m_selectActionFactory = new SelectActionFactory(this); 
     }
 
-    public void initialize(SVGImage svgImage) {
+    public void initialize() {
         //TODO HACK - revisit
         PatchedGroup.s_sceneMgr = this;
-        
-        m_svgImage = svgImage;
-        m_perseusController.initialize();
-        m_screenMgr.initialize();
-        m_inputControlMgr.initialize();
 
         //TODO use some Netbeans mechanism for action registration
+        m_selectActionFactory = new SelectActionFactory(this); 
         m_registeredActions.add( new HighlightActionFactory(this));
         m_registeredActions.add( m_selectActionFactory);
         m_registeredActions.add( new TranslateActionFactory(this));
@@ -86,6 +80,17 @@ public class SceneManager {
         m_registeredActions.add( new MoveToBottomActionFactory(this));
         m_registeredActions.add( new MoveForwardActionFactory(this));
         m_registeredActions.add( new MoveBackwardActionFactory(this));
+    }
+    
+    public void setImage(SVGImage svgImage) {
+        m_svgImage = svgImage;
+        m_perseusController = new PerseusController(this);
+        m_screenMgr         = new ScreenManager(this);
+        m_inputControlMgr   = new InputControlManager(this);
+        
+        m_perseusController.initialize();
+        m_screenMgr.initialize();
+        m_inputControlMgr.initialize();
     }
     
     public void registerPopupActions( Action [] actions, Lookup lookup) {
@@ -101,6 +106,18 @@ public class SceneManager {
         actions = factoryMenuActions.toArray( new Action[factoryMenuActions.size()]);
         JPopupMenu popup = Utilities.actionsToPopup( actions, lookup);
         m_screenMgr.registerPopupMenu(popup);
+    }
+    
+    public Action [] getMenuActions() {
+        List<Action> factoryMenuActions = new ArrayList();
+        
+        for (ComposerActionFactory factory : m_registeredActions) {
+            Action a;
+            if ( (a=factory.getMenuAction()) != null) {
+                factoryMenuActions.add(a);
+            }
+        } 
+        return factoryMenuActions.toArray( new Action[factoryMenuActions.size()]);
     }
 
     public SVGDataObject getDataObject() {
@@ -118,7 +135,7 @@ public class SceneManager {
     public ScreenManager getScreenManager() {
         return m_screenMgr;
     }
-
+    
     public SVGImage getSVGImage() {
         return m_svgImage;
     }
@@ -127,18 +144,19 @@ public class SceneManager {
         return m_screenMgr.getComponent();
     }
 
-    public void setSelection(int [] path) {
-        SVGObject selectedObj = m_perseusController.getObject(path);
+    public void addSelectionListener( SelectionListener listener) {
+        m_selectionListeners.add(listener);
+    }
+    
+    public void setSelection(String id) {
+        SVGObject selectedObj = m_perseusController.getObjectById(id);
         
         if (selectedObj != null) {
-            SVGObject [] oldSelection = getSelectedObjects();
+            SVGObject [] oldSelection = getSelected();
 
-            for (int i = m_activeActions.size() - 1; i >= 0; i--) {
-                ComposerAction action = m_activeActions.get(i);
-                if (action.getSelected() != null) {
-                    action.actionCompleted();
-                    m_activeActions.remove(i);
-                }
+            SelectAction action = m_selectActionFactory.getActiveAction();
+            if (action != null) {
+                action.actionCompleted();
             }
             
             m_activeActions.push( m_selectActionFactory.startAction(selectedObj));
@@ -146,7 +164,7 @@ public class SceneManager {
             m_screenMgr.setCursor(cursor != null ? cursor.getCursor() : null);
 
             //TODO implement better selection change handling
-            SVGObject [] newSelection = getSelectedObjects();
+            SVGObject [] newSelection = getSelected();
             if (!areSame(newSelection, oldSelection)) {
                 selectionChanged(newSelection, oldSelection);
             }        
@@ -155,7 +173,7 @@ public class SceneManager {
     
      void processEvent(InputEvent event) {
          if (m_perseusController.isAnimationStopped()) {
-           SVGObject [] oldSelection = getSelectedObjects();
+           SVGObject [] oldSelection = getSelected();
 
             //first let ongoing actions to process the event         
             boolean consumed = false;
@@ -194,40 +212,31 @@ public class SceneManager {
             m_screenMgr.setCursor(cursor != null ? cursor.getCursor() : null);
 
             //TODO implement better selection change handling
-            SVGObject [] newSelection = getSelectedObjects();
+            SVGObject [] newSelection = getSelected();
             if (!areSame(newSelection, oldSelection)) {
                 selectionChanged(newSelection, oldSelection);
             }                    
         }
     }
 
-    public SVGObject [] getSelectedObjects() {
-        SVGObject selected = null;
-
-        for (int i = m_activeActions.size()-1; i >= 0; i--) {
-            if ( (selected=m_activeActions.get(i).getSelected()) != null) {
-                break;
-            }
+    public SVGObject []  getSelected() {
+        SVGObject    selected = null;
+        SelectAction action   = m_selectActionFactory.getActiveAction();
+        
+        if (action != null) {
+            selected = action.getSelected();
         }
-        if (selected == null) {
+        if (selected != null) {
+            return new SVGObject[] { selected };
+        } else {
             return null;
-        } else {            
-            return new SVGObject[] {selected};
         }
     }
-
+    
     public Stack<ComposerAction> getActiveActions() {
         return m_activeActions;
     }
 
-    
-    
-    
-    
-    
-    
-    
-    
     public boolean containsAction( Class clazz) {
         for (int i = m_activeActions.size() - 1; i >= 0; i--) {
             if ( clazz.isInstance( m_activeActions.get(i))) {
@@ -237,19 +246,10 @@ public class SceneManager {
         return false;    
     }
     
-    public void applyChangesToText() {
-        try {
-            m_dObj.getModel().synchronize((ModelNode) m_perseusController.getSVGDocument());
-        } catch (Exception ex) {
-            System.err.println("Changes were not applied to text!");
-            Exceptions.printStackTrace(ex);
-        }
-    }
-    
     public void deleteObject(SVGObject svgObj) {
-        SVGObject [] oldSelection = getSelectedObjects();
+        SVGObject [] oldSelection = getSelected();
         svgObj.delete();
-        SVGObject [] newSelection = getSelectedObjects();
+        SVGObject [] newSelection = getSelected();
         if (!areSame(newSelection, oldSelection)) {
             selectionChanged(newSelection, oldSelection);
         }                    
@@ -267,8 +267,12 @@ public class SceneManager {
                 m_lookupContent.add(newSelection[i]);
             }
             //TODO use better mechanism for selection handling
-            m_dObj.getModel().setSelected( newSelection[0].getActualSelection());
-        }        
+            m_dObj.getModel().setSelected( newSelection[0].getElementId());
+        }  
+        
+        for (SelectionListener listener : m_selectionListeners) {
+            listener.selectionChanged(newSelection, oldSelection);
+        }
     }
     
     

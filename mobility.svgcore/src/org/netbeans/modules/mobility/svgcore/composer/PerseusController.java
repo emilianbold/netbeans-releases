@@ -16,7 +16,6 @@ package org.netbeans.modules.mobility.svgcore.composer;
 import com.sun.perseus.awt.SVGAnimatorImpl;
 import com.sun.perseus.builder.ModelBuilder;
 import com.sun.perseus.model.DocumentNode;
-import com.sun.perseus.model.ElementNode;
 import com.sun.perseus.model.ModelNode;
 import com.sun.perseus.model.SVG;
 import com.sun.perseus.model.SVGImageImpl;
@@ -29,7 +28,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.StringBufferInputStream;
 import java.text.MessageFormat;
 import java.util.HashSet;
 import java.util.Set;
@@ -51,6 +49,7 @@ import org.netbeans.modules.mobility.svgcore.composer.prototypes.PatchedGroup;
 import org.netbeans.modules.mobility.svgcore.composer.prototypes.SVGComposerPrototypeFactory;
 import org.netbeans.modules.mobility.svgcore.model.SVGFileModel;
 import org.openide.util.Exceptions;
+import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.svg.SVGAnimationElement;
@@ -73,6 +72,7 @@ public class PerseusController {
     
     public static final float DEFAULT_MAX           = 30.0f;
     public static final float DEFAULT_STEP          = 0.1f;
+    public static final String ID_VIEWBOX_MARKER    = "$VIEWBOX$";
         
     protected final SceneManager        m_sceneMgr;
     protected       SVGAnimatorImpl     m_animator;
@@ -90,7 +90,6 @@ public class PerseusController {
     void initialize() {
         m_svgImage   = m_sceneMgr.getSVGImage();
         m_svgDoc     = (DocumentNode) m_svgImage.getDocument();
-        setupPath((ModelNode) getSVGRootElement(), new int[0], 0);
         //System.out.println("Before rendering: " + m_svgImage);
         //PerseusController.printTree( (DocumentNode) m_svgImage.getDocument(), 0);
         
@@ -104,6 +103,7 @@ public class PerseusController {
         if (rect != null) {
             m_viewBoxMarker = (SVGLocatableElement) m_svgDoc.createElementNS(SVGConstants.SVG_NAMESPACE_URI,
                     SVGConstants.SVG_RECT_TAG);
+            m_viewBoxMarker.setId(ID_VIEWBOX_MARKER);
             m_viewBoxMarker.setTrait(SVGConstants.SVG_FILL_ATTRIBUTE, "none"); //NOI18N
             m_viewBoxMarker.setTrait(SVGConstants.SVG_STROKE_ATTRIBUTE, "none"); //NOI18N
             m_viewBoxMarker.setFloatTrait(SVGConstants.SVG_X_ATTRIBUTE, rect.getX());
@@ -147,156 +147,17 @@ public class PerseusController {
         return (SVGSVGElement) m_svgDoc.getDocumentElement();        
     }
     
-    public int [] getPath(ModelNode node) {
-        int [] path = null;
-        if (node instanceof PatchedElement) {
-            path = ((PatchedElement) node).getPath();
-            if (path == null) {
-                System.err.println("Path not set for element!");
+    public SVGObject getObjectById(String id) {
+        SVGElement elem = getElementById(id);
+        if ( elem != null && elem instanceof SVGLocatableElement) {
+            SVGLocatableElement locElem = (SVGLocatableElement) elem;
+            if ( locElem.getScreenBBox() != null) {
+                return getSVGObject( locElem);
             }
-        } else {
-            System.err.println("Only PatchedElements can be found!");
-        }
-        return path;
-    }
-    
-    public int [] _getPath(ModelNode node) {
-        int       depth = 0;
-        ModelNode n     = node;
-        
-        while(n != null) {
-            n = n.getParent();
-            depth++;
-        }
-        
-        // we are not interested in the topmost DocumentNode
-        if (depth > 0) {
-            depth--;
-        }
-        int [] path = new int[depth];
-        
-        while( depth > 0) {
-            int index = 0;
-            ModelNode prevSibling = node.getPreviousSiblingNode();
-            while(prevSibling != null) {
-                prevSibling = prevSibling.getPreviousSiblingNode();
-                index++;
-            }
-            path[--depth] = index;
-            node = node.getParent();
-        }
-        
-        return path;
-    }
-        
-    protected void setupPath(ModelNode node, int [] parentPath, int nodeIndex) {
-        int [] path = new int[parentPath.length + 1];
-        for (int i = 0; i < parentPath.length - 1; i++) {
-            path[i] = parentPath[i];
-        }    
-        path[path.length-1] = nodeIndex;
-        
-        int [] testPath = _getPath(node);
-        if ( !isSamePath(path, testPath)) {
-            System.err.println("Incorrect path: " + toString(path) + "<>" + toString(testPath));
-        } else {
-            System.out.println("Correct path: " + toString(path));
-        }   
-        
-        if (node instanceof PatchedElement) {
-            ((PatchedElement) node).setPath(testPath);
-        }
-        
-        ModelNode child = (ElementNode) node.getFirstChildNode();
-        int       index = 0;
-        
-        while( child != null) {
-            setupPath(child, path, index++);
-            child = child.getNextSiblingNode();
-        }
-    }
-
-    private static boolean isSamePath(int [] p1, int [] p2) {
-        if (p1 != null && p2 != null) {
-            if (p1.length == p2.length) {
-                for (int i = 0; i < p1.length; i++) {
-                    if (p1[i] != p2[i]) {
-                        return false;
-                    }
-                }
-                return true;
-            }
-        }
-        return false;
-    }
-    
-/*    
-    protected ModelNode findElement(int [] path) {
-        System.out.println("looking for path: " + toString(path));
-        return findElement(m_svgDoc, path);
-    }
-
-  */  
-    //TODO move to utils
-    public static String toString(int [] array) {
-        StringBuilder sb = new StringBuilder("[");
-        if (array == null) {
-            sb.append("null");
-        } else {
-            for (int i : array) {
-                sb.append(i);
-                sb.append(',');
-            }
-            sb.append("]");
-        }
-        return sb.toString();
-    }
-    
-/*    
-    protected ModelNode findElement(ModelNode parent, int [] path) {
-        if (parent instanceof PatchedElement) {
-            System.out.println("Checking path: " + parent + toString( ((PatchedElement)parent).getPath()));
-            if ( isSamePath( ((PatchedElement) parent).getPath(), path)) {
-                return parent;
-            }
-        }
-        ModelNode child = (ElementNode) parent.getFirstChildNode();
-        ModelNode result;
-        
-        while( child != null) {
-            if ((result=findElement(child, path)) != null) {
-                return result;
-            }
-            child = child.getNextSiblingNode();
         }
         return null;
     }
-  */
-    
-    protected ModelNode findElement(int [] path) {
-        ModelNode node = m_svgDoc;
-        //System.out.println("Before find: " + node);
-        //printTree(node, 0);
-        
-        for (int i = 0; i < path.length && node != null; i++) {
-            node = (ElementNode) node.getFirstChildNode();
-            if (node != null) {
-                for (int j = path[i]; j > 0 && node != null;) {
-                    node = (ElementNode) node.getNextSiblingNode();
-                    if (node instanceof PatchedGroup &&
-                        ((PatchedGroup) node).isWrapper()) {
-                        
-                    } else {
-                        j--;
-                    }
-                }
-            }
-        }
-        
-        return node;        
-    }
-            
-    
+      
     public SVGObject [] getObjectsAt(int x, int y) {
         SVGLocatableElement elem = _findElementAt(x,y);
         
@@ -321,14 +182,24 @@ public class PerseusController {
         return null;
     }
 
-    public SVGObject getObject( int [] path) {
-        ModelNode elem = findElement(path);
-        if (elem != null && elem instanceof SVGLocatableElement) {
-            return getSVGObject((SVGLocatableElement)elem);
-        }
-        return null;
+    public SVGLocatableElement wrapElement(final SVGObject svgObj) {
+        SVGLocatableElement elem = svgObj.getSVGElement();
+        Node parent = elem.getParentNode();
+        assert m_svgDoc == getOwnerDocument(parent) : "Perseus node belongs to another document";
+        // HACK - clear all elements' ids so that the element removal is possible
+        setNullIds(elem, true);
+        parent.removeChild(elem);
+        PatchedGroup wrapper = (PatchedGroup) m_svgDoc.createElementNS(SVGConstants.SVG_NAMESPACE_URI,
+                SVGConstants.SVG_G_TAG);
+        wrapper.attachSVGObject(svgObj);
+        wrapper.appendChild(elem);
+        // HACK - restore element ids
+        parent.appendChild(wrapper);
+        setNullIds(elem, false);
+        wrapper.setId(generateWrapperID());
+        return wrapper;
     }
-
+    
     public void delete(final SVGLocatableElement elem) {
         execute(new Runnable() {
             public void run() {
@@ -432,8 +303,7 @@ public class PerseusController {
             });
         }
     }
-    
-    
+        
     private synchronized SVGObject getSVGObject(SVGLocatableElement elem) {
         assert elem != null : "Element must not be null";
         if ( elem instanceof PatchedElement) {
@@ -464,6 +334,31 @@ public class PerseusController {
             }
         }
         return elt;
+    }
+    
+    protected SVGElement getElementById(String id) {
+        SVGElement elem = getElementById( (ModelNode) getSVGRootElement(), id);
+        assert elem != null;
+        return elem;
+    }
+    
+    protected static SVGElement getElementById( ModelNode node, String id) {
+        if (node instanceof SVGElement) {
+            SVGElement svgElem = (SVGElement) node;
+            if ( id.equals(svgElem.getId())) {
+                return svgElem;
+            }
+        }
+
+        ModelNode child = node.getFirstChildNode();
+        while( child != null) {
+            SVGElement res = getElementById(child, id);
+            if (res != null) {
+                return res;
+            }
+            child = child.getNextSiblingNode();
+        }
+        return null;
     }
     
     public boolean isAnimationStopped() {
@@ -522,16 +417,16 @@ public class PerseusController {
         }        
     }
     
-    public void startAnimation(int [] path) {
-        ModelNode elem = findElement(path);
+    public void startAnimation(String id) {
+        SVGElement elem = getElementById(id);
         if (elem instanceof SVGAnimationElement) {
             System.out.println("Starting animation ...");
             ((SVGAnimationElement) elem).beginElementAt(0);
         }        
     }
 
-    public void stopAnimation(int [] path) {
-        ModelNode elem = findElement(path);
+    public void stopAnimation(String id) {
+        SVGElement elem = getElementById(id);
         if (elem instanceof SVGAnimationElement) {
             System.out.println("Stopping animation ...");
             ((SVGAnimationElement) elem).endElementAt(0);
@@ -585,6 +480,7 @@ public class PerseusController {
     };
     
     //Show dialog with id conversion mapping
+    @SuppressWarnings({"deprecation"})
     public void mergeImage(File file) throws FileNotFoundException, IOException, DocumentModelException, BadLocationException {
         FileInputStream     fin = null;
         DocumentModel       docModel;
@@ -631,7 +527,7 @@ public class PerseusController {
             }
 
             String       text = doc.getText(0, doc.getLength());
-            StringBufferInputStream in = new StringBufferInputStream(text);
+            java.io.StringBufferInputStream in = new java.io.StringBufferInputStream(text);
             ModelBuilder.loadDocument(in, m_svgDoc,
                     SVGComposerPrototypeFactory.getPrototypes(m_svgDoc));
 
@@ -649,12 +545,11 @@ public class PerseusController {
                         SVGConstants.SVG_G_TAG);
                     ((SVG)svgRoot).appendChild(wrapper);
                     //wrapper.setPath( new int[] { 0, getChildrenCount(svgRoot)});
-                    wrapper.setId(SVGObject.generateWrapperID());
+                    wrapper.setId(generateWrapperID());
                     wrapper.attachSVGObject( new SVGObject(m_sceneMgr, wrapper));
 
                     transferChildren(wrapper, (SVG)sibling);
-                    wrapper.setPath(_getPath(wrapper));
-                    m_sceneMgr.getDataObject().getModel().appendElement(wrapper.getText(), insertedText);
+                    m_sceneMgr.getDataObject().getModel().appendElement(wrapper.getText(false), insertedText);
                     break;
                 }
             }
@@ -746,8 +641,36 @@ public class PerseusController {
             diff += newLength - oldLength;
         }        
     }
-    
+        
     protected static SVGImage loadDocument( final InputStream is, final ExternalResourceHandler handler) 
+        throws IOException {
+
+        DocumentNode documentNode   = new DocumentNode();
+        UpdateAdapter updateAdapter = new UpdateAdapter();
+        documentNode.setUpdateListener(updateAdapter);
+
+        ModelBuilder.loadDocument(is, documentNode,
+                SVGComposerPrototypeFactory.getPrototypes(documentNode));
+
+        if (updateAdapter.hasLoadingFailed()) {
+            if (updateAdapter.getLoadingFailedException() != null) {
+                throw new IOException
+                    (updateAdapter.getLoadingFailedException().getMessage());
+            }
+            throw new IOException("Loading of SVG document failed.");
+        }
+
+        SVGImageImpl img = new SVGImageImpl(documentNode, null);
+
+        // Now, initialize the timing engine and sample at zero.
+        documentNode.initializeTimingEngine();
+        documentNode.sample(new Time(0));
+        
+        return img;        
+    }
+
+    /*
+    protected static SVGImage __loadDocument( final InputStream is, final ExternalResourceHandler handler) 
         throws IOException {
 
         //TODO Find a better way how to uses Perseus prototypes
@@ -796,7 +719,8 @@ public class PerseusController {
         documentNode.sample(new Time(0));
         return sii;        
     }
-
+*/
+    
     protected static int getChildrenCount( ModelNode node) {
         int count = 0;
         ModelNode child = node.getFirstChildNode();
@@ -849,4 +773,48 @@ public class PerseusController {
         }
     }
     
+    public static boolean isViewBoxMarker( ModelNode node) {
+        return node instanceof SVGElement &&
+               ID_VIEWBOX_MARKER.equals(((SVGElement) node).getId());
+    }
+
+    public static SVGRect getSafeScreenBBox(SVGLocatableElement elem) {
+        SVGRect bBox = elem.getScreenBBox();
+        if ( bBox == null) {
+            //TODO solve the issue with null bounding box
+            System.err.println("Null screen BBox for element:" + elem);
+            ModelNode child = ((ModelNode)elem).getFirstChildNode();
+            if (child != null && child instanceof SVGLocatableElement) {
+                bBox = ((SVGLocatableElement) child).getScreenBBox();
+            }
+        }
+        return bBox;
+    }
+
+    public static SVGRect getSafeBBox(SVGLocatableElement elem) {
+        SVGRect bBox = elem.getBBox();
+        if ( bBox == null) {
+            //TODO solve the issue with null bounding box
+            System.err.println("Null screen BBox for element:" + elem);
+            ModelNode child = ((ModelNode)elem).getFirstChildNode();
+            if (child != null && child instanceof SVGLocatableElement) {
+                bBox = ((SVGLocatableElement) child).getBBox();
+            }
+        }
+        return bBox;
+    }
+    
+    //TODO revisit (use filename for inserted files)
+    protected static String generateWrapperID() {
+        return "w_" + System.currentTimeMillis();
+    }
+    
+    protected static Document getOwnerDocument(Node elem) {
+        Node parent;
+        
+        while( (parent=elem.getParentNode()) != null) {
+            elem = parent;
+        }
+        return (Document) elem;
+    }    
 }
