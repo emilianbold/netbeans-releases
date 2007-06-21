@@ -1953,6 +1953,7 @@ public final class SimpleTestStepLocation implements WizardDescriptor.Panel<Wiza
             this.component = comp;
         }
         
+        @Override
         public Action get(Object key) {
             if (key.equals("press")) {                                  //NOI18N
                 Action defaultAction = super.get(key);
@@ -2177,6 +2178,7 @@ public final class SimpleTestStepLocation implements WizardDescriptor.Panel<Wiza
                 clearFocusGainAllowedVar();
             }
         }
+        @Override
         public boolean isEnabled() {
             return delegate.isEnabled();
         }
@@ -2188,6 +2190,7 @@ public final class SimpleTestStepLocation implements WizardDescriptor.Panel<Wiza
     private class ClsNameDocumentFilter extends DocumentFilter {
         public ClsNameDocumentFilter () {}
         
+        @Override
         public void replace(DocumentFilter.FilterBypass bypass,
                             int offset,
                             int length,
@@ -2198,6 +2201,7 @@ public final class SimpleTestStepLocation implements WizardDescriptor.Panel<Wiza
             }
             super.replace(bypass, offset, length, text, attrs);
         }
+        @Override
         public void insertString(
                             DocumentFilter.FilterBypass bypass,
                             int offset,
@@ -2208,6 +2212,7 @@ public final class SimpleTestStepLocation implements WizardDescriptor.Panel<Wiza
             }
             super.insertString(bypass, offset, string, attr);
         }
+        @Override
         public void remove(DocumentFilter.FilterBypass bypass,
                            int offset,
                            int length) throws BadLocationException {
@@ -2231,6 +2236,7 @@ public final class SimpleTestStepLocation implements WizardDescriptor.Panel<Wiza
     private class ClsNameNavigationFilter extends NavigationFilter {
         public ClsNameNavigationFilter () {}
         
+        @Override
         public void setDot(NavigationFilter.FilterBypass bypass,
                            int dot,
                            Position.Bias bias) {
@@ -2240,6 +2246,7 @@ public final class SimpleTestStepLocation implements WizardDescriptor.Panel<Wiza
                 super.setDot(bypass, dot, bias);
             }
         }
+        @Override
         public void moveDot(NavigationFilter.FilterBypass bypass,
                            int dot,
                            Position.Bias bias) {

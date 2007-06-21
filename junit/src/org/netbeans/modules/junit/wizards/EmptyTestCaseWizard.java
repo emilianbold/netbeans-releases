@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 2004 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 2004-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -41,6 +41,7 @@ public class EmptyTestCaseWizard extends TemplateWizard {
     /**
      * initializes the settings for the settings panel
      */
+    @Override
     public void initialize() {
         JUnitSettings settings = JUnitSettings.getDefault();
         
