@@ -83,8 +83,10 @@ import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
@@ -434,69 +436,77 @@ public final class J2SEProject implements Project, AntProjectListener {
                     cpProvider.getProjectClassPaths(ClassPath.SOURCE)[0], J2SEProjectProperties.MAIN_CLASS);
 
             // Make it easier to run headless builds on the same machine at least.
-            ProjectManager.mutex().writeAccess(new Mutex.Action<Void>() {
-                public Void run() {
-                    EditableProperties ep = updateHelper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-                    File buildProperties = new File(System.getProperty("netbeans.user"), "build.properties"); // NOI18N
-                    ep.setProperty("user.properties.file", buildProperties.getAbsolutePath()); //NOI18N
-                    
-                    // set jaxws.endorsed.dir property (for endorsed mechanism to be used with wsimport, wsgen)
-                    setJaxWsEndorsedDirProperty(ep);
-                    
-                    // move web-service-clients one level up from in project.xml
-                    // WS should be part of auxiliary configuration
-                    Element data = helper.getPrimaryConfigurationData(true);
-                    NodeList nodes = data.getElementsByTagName(JAX_RPC_CLIENTS);
-                    if(nodes.getLength() > 0) {                        
-                        Element oldJaxRpcClients = (Element) nodes.item(0);
-                        Document doc = createNewDocument();
-                        Element newJaxRpcClients = doc.createElementNS(JAX_RPC_NAMESPACE, JAX_RPC_CLIENTS);
-                        NodeList childNodes = oldJaxRpcClients.getElementsByTagName(JAX_RPC_CLIENT);
-                        for (int i=0;i<childNodes.getLength();i++) {                            
-                            Element oldJaxRpcClient = (Element) childNodes.item(i);
-                            Element newJaxRpcClient = doc.createElementNS(JAX_RPC_NAMESPACE, JAX_RPC_CLIENT);
-                            NodeList nodeProps = oldJaxRpcClient.getChildNodes();
-                            for (int j=0;j<nodeProps.getLength();j++) {
-                                Node n = nodeProps.item(j);
-                                if (n instanceof Element) {
-                                    Element oldProp = (Element) n;
-                                    Element newProp = doc.createElementNS(JAX_RPC_NAMESPACE, oldProp.getLocalName());
-                                    String text = oldProp.getTextContent();
-                                    newProp.setTextContent(text);
-                                    newJaxRpcClient.appendChild(newProp);
+            try {
+                getProjectDirectory().getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
+                    public void run () throws IOException {
+                        ProjectManager.mutex().writeAccess(new Mutex.Action<Void>() {
+                            public Void run() {
+                                EditableProperties ep = updateHelper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+                                File buildProperties = new File(System.getProperty("netbeans.user"), "build.properties"); // NOI18N
+                                ep.setProperty("user.properties.file", buildProperties.getAbsolutePath()); //NOI18N
+
+                                // set jaxws.endorsed.dir property (for endorsed mechanism to be used with wsimport, wsgen)
+                                setJaxWsEndorsedDirProperty(ep);
+
+                                // move web-service-clients one level up from in project.xml
+                                // WS should be part of auxiliary configuration
+                                Element data = helper.getPrimaryConfigurationData(true);
+                                NodeList nodes = data.getElementsByTagName(JAX_RPC_CLIENTS);
+                                if(nodes.getLength() > 0) {                        
+                                    Element oldJaxRpcClients = (Element) nodes.item(0);
+                                    Document doc = createNewDocument();
+                                    Element newJaxRpcClients = doc.createElementNS(JAX_RPC_NAMESPACE, JAX_RPC_CLIENTS);
+                                    NodeList childNodes = oldJaxRpcClients.getElementsByTagName(JAX_RPC_CLIENT);
+                                    for (int i=0;i<childNodes.getLength();i++) {                            
+                                        Element oldJaxRpcClient = (Element) childNodes.item(i);
+                                        Element newJaxRpcClient = doc.createElementNS(JAX_RPC_NAMESPACE, JAX_RPC_CLIENT);
+                                        NodeList nodeProps = oldJaxRpcClient.getChildNodes();
+                                        for (int j=0;j<nodeProps.getLength();j++) {
+                                            Node n = nodeProps.item(j);
+                                            if (n instanceof Element) {
+                                                Element oldProp = (Element) n;
+                                                Element newProp = doc.createElementNS(JAX_RPC_NAMESPACE, oldProp.getLocalName());
+                                                String text = oldProp.getTextContent();
+                                                newProp.setTextContent(text);
+                                                newJaxRpcClient.appendChild(newProp);
+                                            }
+                                        }
+                                        newJaxRpcClients.appendChild(newJaxRpcClient);
+                                    }
+                                    aux.putConfigurationFragment(newJaxRpcClients, true);
+                                    data.removeChild(oldJaxRpcClients);
+                                    helper.putPrimaryConfigurationData(data, true);
                                 }
+
+                                updateHelper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
+                                ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                                if (!ep.containsKey(J2SEProjectProperties.INCLUDES)) {
+                                    ep.setProperty(J2SEProjectProperties.INCLUDES, "**"); // NOI18N
+                                }
+                                if (!ep.containsKey(J2SEProjectProperties.EXCLUDES)) {
+                                    ep.setProperty(J2SEProjectProperties.EXCLUDES, ""); // NOI18N
+                                }
+                                helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
+                                try {
+                                    ProjectManager.getDefault().saveProject(J2SEProject.this);
+                                } catch (IOException e) {
+                                    //#91398 provide a better error message in case of read-only location of project.
+                                    if (!J2SEProject.this.getProjectDirectory().canWrite()) {
+                                        NotifyDescriptor nd = new NotifyDescriptor.Message(NbBundle.getMessage(J2SEProject.class, "ERR_ProjectReadOnly",
+                                                J2SEProject.this.getProjectDirectory().getName()));
+                                        DialogDisplayer.getDefault().notify(nd);
+                                    } else {
+                                        ErrorManager.getDefault().notify(e);
+                                    }
+                                }
+                                return null;
                             }
-                            newJaxRpcClients.appendChild(newJaxRpcClient);
-                        }
-                        aux.putConfigurationFragment(newJaxRpcClients, true);
-                        data.removeChild(oldJaxRpcClients);
-                        helper.putPrimaryConfigurationData(data, true);
+                        });
                     }
-                    
-                    updateHelper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
-                    ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                    if (!ep.containsKey(J2SEProjectProperties.INCLUDES)) {
-                        ep.setProperty(J2SEProjectProperties.INCLUDES, "**"); // NOI18N
-                    }
-                    if (!ep.containsKey(J2SEProjectProperties.EXCLUDES)) {
-                        ep.setProperty(J2SEProjectProperties.EXCLUDES, ""); // NOI18N
-                    }
-                    helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
-                    try {
-                        ProjectManager.getDefault().saveProject(J2SEProject.this);
-                    } catch (IOException e) {
-                        //#91398 provide a better error message in case of read-only location of project.
-                        if (!J2SEProject.this.getProjectDirectory().canWrite()) {
-                            NotifyDescriptor nd = new NotifyDescriptor.Message(NbBundle.getMessage(J2SEProject.class, "ERR_ProjectReadOnly",
-                                    J2SEProject.this.getProjectDirectory().getName()));
-                            DialogDisplayer.getDefault().notify(nd);
-                        } else {
-                            ErrorManager.getDefault().notify(e);
-                        }
-                    }
-                    return null;
-                }
-            });
+                });            
+            } catch (IOException e) {
+                Exceptions.printStackTrace(e);
+            }
             J2SELogicalViewProvider physicalViewProvider = getLookup().lookup(J2SELogicalViewProvider.class);
             if (physicalViewProvider != null &&  physicalViewProvider.hasBrokenLinks()) {   
                 BrokenReferencesSupport.showAlert();
