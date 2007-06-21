@@ -103,10 +103,12 @@ public class ModelUtils {
         attr.setInstanceVariable(getField(problemCtx.getJavaClass(), attrName));
         attr.setAccesor(getAccesor(problemCtx.getJavaClass(), attrName));
         
-        attr.setMutator(getMutator(
-                problemCtx.getCompilationInfo(),
-                problemCtx.getJavaClass(),
-                attr.getInstanceVariable()));
+        if (attr.getInstanceVariable() != null){
+            attr.setMutator(getMutator(
+                    problemCtx.getCompilationInfo(),
+                    problemCtx.getJavaClass(),
+                    attr.getInstanceVariable()));
+        }
         
         if (problemCtx.getAccessType() == AccessType.FIELD){
             attr.setJavaElement(attr.getInstanceVariable());
