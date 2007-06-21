@@ -46,6 +46,7 @@ import org.netbeans.junit.NbTestSuite;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.filesystems.XMLFileSystem;
 import org.openide.loaders.DataObject;
@@ -456,16 +457,16 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
 
         BinaryCacheManager bcm = new BinaryCacheManager(cacheDir);
         Logger err = Logger.getLogger("org.netbeans.core.projects.cache");
-        LayerParsehandler h = new LayerParsehandler();
+        LayerParseHandler h = new LayerParseHandler();
         err.addHandler(h);
         bcm.store(urls);
         assertEquals("No errors or warnings during layer parsing: "+h.errors().toString(), 0, h.errors().size());
     }
     
-    private static class LayerParsehandler extends Handler {
+    private static class LayerParseHandler extends Handler {
         List<String> errors = new ArrayList<String>();
         
-        LayerParsehandler () {}
+        LayerParseHandler () {}
         
         public void publish(LogRecord rec) {
             if (Level.WARNING.equals(rec.getLevel()) || Level.SEVERE.equals(rec.getLevel())) {
@@ -483,7 +484,20 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
         public void close() throws SecurityException {
         }
     }
-    
+
+    public void testFolderOrdering() {
+        LayerParseHandler h = new LayerParseHandler();
+        Logger.getLogger("org.openide.filesystems.Ordering").addHandler(h);
+        Enumeration<? extends FileObject> files = Repository.getDefault().getDefaultFileSystem().getRoot().getChildren(true);
+        while (files.hasMoreElements()) {
+            FileObject fo = files.nextElement();
+            if (fo.isFolder()) {
+                FileUtil.getOrder(Arrays.asList(fo.getChildren()), true);
+            }
+        }
+        assertEquals("No warnings relating to folder ordering: " + h.errors(), 0, h.errors().size());
+    }
+
     private static byte[] getFileContent(FileObject fo) throws IOException {
         BufferedInputStream in = new BufferedInputStream(fo.getInputStream());
         int size = (int) fo.getSize();
