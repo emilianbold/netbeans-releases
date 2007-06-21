@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -74,14 +74,14 @@ public class InsertI18nStringAction extends CookieAction {
      */
     protected void performAction (final Node[] activatedNodes) {
         try {
-            final EditorCookie editorCookie = (EditorCookie)(activatedNodes[0]).getCookie(EditorCookie.class);
+            final EditorCookie editorCookie = (activatedNodes[0]).getCookie(EditorCookie.class);
             if (editorCookie == null) {
                 Util.debug(new IllegalArgumentException("Missing editor cookie!")); // NOI18N
                 return;
             }
 
             // Set data object.
-            dataObject = (DataObject)activatedNodes[0].getCookie(DataObject.class);
+            dataObject = activatedNodes[0].getCookie(DataObject.class);
             if (dataObject == null) {
                 Util.debug(new IllegalArgumentException("Missing DataObject!"));    // NOI18N
                 return;
@@ -214,6 +214,7 @@ public class InsertI18nStringAction extends CookieAction {
 
     /** Overrides superclass method. Adds additional test if i18n module has registered factory
      * for this data object to be able to perform i18n action. */
+    @Override
     protected boolean enable(Node[] activatedNodes) {
         if (!super.enable(activatedNodes)) return false;
 
@@ -235,7 +236,7 @@ public class InsertI18nStringAction extends CookieAction {
         }*/
         // PENDING<<
 
-        DataObject dataObject = (DataObject)activatedNodes[0].getCookie(DataObject.class);
+        DataObject dataObject = activatedNodes[0].getCookie(DataObject.class);
 
         if (dataObject == null) return false;
 
@@ -244,7 +245,7 @@ public class InsertI18nStringAction extends CookieAction {
 
         if (FactoryRegistry.hasFactory(dataObject.getClass()) == false) return false;
 
-        EditorCookie sec = (EditorCookie)(activatedNodes[0]).getCookie(EditorCookie.class);
+        EditorCookie sec = (activatedNodes[0]).getCookie(EditorCookie.class);
         if (sec == null) return false;
 
         JEditorPane[] edits = sec.getOpenedPanes();
@@ -277,6 +278,7 @@ public class InsertI18nStringAction extends CookieAction {
         return new HelpCtx(I18nUtil.HELP_ID_MANINSERT);
     }
 
+    @Override
     protected boolean asynchronous() {
       return false;
     }
