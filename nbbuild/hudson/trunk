@@ -35,7 +35,7 @@ rm -rf $DIST/
 ant -Dbuildnum=$BUILD_TAG -f nbbuild/build.xml build-nozip || exit
 
 ant -f nbbuild/build.xml commit-validation
-run-vw-sanity.sh
+sh -x `dirname $0`/run-vw-sanity.sh
 # Do not halt if there were failures, but do collect results for Hudson:
 ant -f nbbuild/build.xml commit-validation-junit-format
 
