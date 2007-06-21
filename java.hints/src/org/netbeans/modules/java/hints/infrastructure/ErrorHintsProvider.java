@@ -53,12 +53,9 @@ import javax.swing.text.Position;
 import javax.swing.text.Position.Bias;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.modules.java.hints.infrastructure.CreatorBasedLazyFixList;
 import org.netbeans.modules.java.hints.spi.ErrorRule;
 import org.netbeans.modules.java.hints.spi.ErrorRule.Data;
 import org.netbeans.spi.editor.hints.ErrorDescription;
@@ -98,7 +95,6 @@ public final class ErrorHintsProvider implements CancellableTask<CompilationInfo
     }
     
     List<ErrorDescription> computeErrors(CompilationInfo info, Document doc) throws IOException {
-        JavaSource js = JavaSource.forFileObject(file);
         List<Diagnostic> errors = info.getDiagnostics();
         List<ErrorDescription> descs = new ArrayList<ErrorDescription>();
         
@@ -126,7 +122,11 @@ public final class ErrorHintsProvider implements CancellableTask<CompilationInfo
             LazyFixList ehm;
             
             if (rules != null) {
-                ehm = new CreatorBasedLazyFixList(info.getFileObject(), d.getCode(), (int)getPrefferedPosition(info, d), rules, data);
+                int pos = (int)getPrefferedPosition(info, d);
+                
+                pos = info.getPositionConverter().getOriginalPosition(pos);
+                
+                ehm = new CreatorBasedLazyFixList(info.getFileObject(), d.getCode(), pos, rules, data);
             } else {
                 ehm = ErrorDescriptionFactory.lazyListForFixes(Collections.<Fix>emptyList());
             }
@@ -170,10 +170,8 @@ public final class ErrorHintsProvider implements CancellableTask<CompilationInfo
     }
     
     public static Token findUnresolvedElementToken(CompilationInfo info, int offset) throws IOException {
-        offset = info.getPositionConverter().getOriginalPosition(offset);
-        
-        TokenHierarchy th = TokenHierarchy.get(info.getDocument());
-        TokenSequence<JavaTokenId> ts = SourceUtils.getJavaTokenSequence(th, offset);
+        TokenHierarchy<Void> th = info.getTokenHierarchy();
+        TokenSequence<JavaTokenId> ts = th.tokenSequence(JavaTokenId.language());
         
         if (ts == null) {
             return null;
@@ -258,9 +256,9 @@ public final class ErrorHintsProvider implements CancellableTask<CompilationInfo
         boolean rangePrepared = false;
         
         if (CANNOT_RESOLVE.contains(d.getCode())) {
-            int[] span = findUnresolvedElementSpan(info, (int) getPrefferedPosition(info, d));
+            int[] span = translatePositions(info, findUnresolvedElementSpan(info, (int) getPrefferedPosition(info, d)));
             
-            if (span != null && span[0] != (-1) && span[1] != (-1)) {
+            if (span != null) {
                 startOffset = span[0];
                 endOffset   = span[1];
                 rangePrepared = true;
@@ -268,8 +266,8 @@ public final class ErrorHintsProvider implements CancellableTask<CompilationInfo
         }
         
         if (UNDERLINE_IDENTIFIER.contains(d.getCode())) {
-            int offset = info.getPositionConverter().getOriginalPosition((int) getPrefferedPosition(info, d));
-            TokenSequence<JavaTokenId> ts = SourceUtils.getJavaTokenSequence(TokenHierarchy.get(doc), offset);
+            int offset = (int) getPrefferedPosition(info, d);
+            TokenSequence<JavaTokenId> ts = info.getTokenHierarchy().tokenSequence(JavaTokenId.language());
             
             int diff = ts.move(offset);
             
@@ -277,9 +275,13 @@ public final class ErrorHintsProvider implements CancellableTask<CompilationInfo
                 Token<JavaTokenId> t = ts.token();
                 
                 if (t.id() == JavaTokenId.IDENTIFIER) {
-                    startOffset = ts.offset();
-                    endOffset   = startOffset + t.length();
-                    rangePrepared = true;
+                    int[] span = translatePositions(info, new int[] {ts.offset(), ts.offset() + t.length()});
+                    
+                    if (span != null) {
+                        startOffset = span[0];
+                        endOffset   = span[1];
+                        rangePrepared = true;
+                    }
                 }
             }
         }
@@ -377,6 +379,19 @@ public final class ErrorHintsProvider implements CancellableTask<CompilationInfo
         
         Logger.getLogger("TIMER").log(Level.FINE, "Java Hints",
                 new Object[] {info.getFileObject(), end - start});
+    }
+    
+    private int[] translatePositions(CompilationInfo info, int[] span) {
+        if (span == null || span[0] == (-1) || span[1] == (-1))
+            return null;
+        
+        int start = info.getPositionConverter().getOriginalPosition(span[0]);
+        int end   = info.getPositionConverter().getOriginalPosition(span[1]);
+        
+        if (start == (-1) || end == (-1))
+            return null;
+        
+        return new int[] {start, end};
     }
     
     private long getPrefferedPosition(CompilationInfo info, Diagnostic d) throws IOException {
