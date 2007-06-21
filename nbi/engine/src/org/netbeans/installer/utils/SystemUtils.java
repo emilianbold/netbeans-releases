@@ -292,6 +292,11 @@ public final class SystemUtils {
         return new File(System.getProperty("java.home"));
     }
     
+    public static boolean isCurrentJava64Bit() {
+        return System.getProperty("os.arch").equals("amd64") || 
+                System.getProperty("os.arch").equals("sparcv9");
+    }
+    
     public static File getPacker() {
         if (isWindows()) {
             return new File(getCurrentJavaHome(), "bin/pack200.exe");
@@ -677,11 +682,16 @@ public final class SystemUtils {
     
     public static Platform getCurrentPlatform() {
         if (currentPlatform == null) {
+            boolean is64bit = System.getProperty("os.arch").equals("amd64") ||
+                    System.getProperty("os.arch").equals("sparcv9");
+            
             if (System.getProperty("os.name").contains("Windows")) {
-                currentPlatform = Platform.WINDOWS;
+                currentPlatform = 
+                        is64bit ? Platform.WINDOWS_X64 : Platform.WINDOWS_X86;
             }
             if (System.getProperty("os.name").contains("Linux")) {
-                currentPlatform = Platform.LINUX;
+                currentPlatform = 
+                        is64bit ? Platform.LINUX_X64 : Platform.LINUX_X86;
             }
             if (System.getProperty("os.name").contains("Mac OS X") &&
                     System.getProperty("os.arch").contains("ppc")) {
