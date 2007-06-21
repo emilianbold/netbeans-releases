@@ -79,6 +79,9 @@ public final class ResultModel {
     /** list of matching objects (usually {@code DataObject}s) */
     final List<MatchingObject> matchingObjects
             = new ArrayList<MatchingObject>();
+    /** set of matching objects - only used as a prevention from duplicates */
+    private final Set<MatchingObject> matchingObjectsSet
+            = new HashSet<MatchingObject>(40);
 
     /** Contains optional finnish message often reason why finished. */
     private String finishMessage;
@@ -148,9 +151,11 @@ public final class ResultModel {
      */
     synchronized boolean objectFound(Object object) {
         MatchingObject matchingObject = new MatchingObject(this, object);
-        if (matchingObjects.add(matchingObject) == false) {
+        if (matchingObjectsSet.add(matchingObject) == false) {
             return true;
         }
+
+        matchingObjects.add(matchingObject);
         
         assert limitReached == false;
         assert treeModel != null;
