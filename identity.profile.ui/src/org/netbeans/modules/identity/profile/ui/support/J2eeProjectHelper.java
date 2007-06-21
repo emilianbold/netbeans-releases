@@ -475,15 +475,12 @@ public class J2eeProjectHelper {
                 public String run(WebservicesMetadata metadata) {
                     Webservices webServices = metadata.getRoot();
                     
-                    System.out.println("getServiceInfo()");
                     String endpointName = getEndpointName();
                     ProjectType projectType = getProjectType();
                     
                     try {
                         for (WebserviceDescription desc : webServices.getWebserviceDescription()) {
-                            System.out.println("desc = " + desc);
                             for (PortComponent pc : desc.getPortComponent()) {
-                                System.out.println("pc = " + pc);
                                 String linkName = "";       //NOI18N
                                 
                                 if (projectType == ProjectType.WEB) {
@@ -1349,13 +1346,10 @@ public class J2eeProjectHelper {
     protected WebApp getWebApp() {
         FileObject conf = getConfRoot();
         FileObject fobj = conf.getFileObject("web", XML_EXT);
-        
-        System.out.println("fobj = " + fobj);
-        
+ 
         try {
             WebApp webApp = DDProvider.getDefault().getDDRoot(fobj);
-            
-            System.out.println("webApp = " + webApp);
+     
             return webApp;
         } catch (Exception ex) {
             ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);

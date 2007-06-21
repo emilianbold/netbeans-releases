@@ -233,14 +233,11 @@ public class SunDDHelper {
     
     public void setServiceMessageSecurityBinding(String svcDescName,
             String pcName, String providerId) {
-        System.out.println("setServiceMSB sdn = " + svcDescName + " pcName = " +
-                pcName + " pid = " + providerId);
         Element root = getRootElement();
         Element component = null;
         String componentTag = null;
         String componentNameTag = null;
-        
-        System.out.println("type = " + type);
+    
         if (type == ProjectType.WEB) {
             componentTag = SERVLET_TAG;
             componentNameTag = SERVLET_NAME_TAG;
@@ -675,7 +672,6 @@ public class SunDDHelper {
     }
     
     private void writeDocument() {
-        System.out.println("writeDocument() ");
         beautify();
         
         //RequestProcessor.getDefault().post(new Runnable() {
