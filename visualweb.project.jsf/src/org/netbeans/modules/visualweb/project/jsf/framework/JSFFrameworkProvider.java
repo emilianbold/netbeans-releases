@@ -33,20 +33,18 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.math.BigInteger;
-import java.util.Set;
 import java.util.HashSet;
+import java.util.Set;
 import java.util.HashMap;
 import java.util.ArrayList;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.j2ee.dd.api.common.InitParam;
 import org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.project.libraries.Library;
-import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.j2ee.dd.api.web.*;
-import org.openide.ErrorManager;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.openide.DialogDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
@@ -55,11 +53,14 @@ import org.openide.filesystems.Repository;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.libraries.Library;
+import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.web.spi.webmodule.WebFrameworkProvider;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.spi.webmodule.FrameworkConfigurationPanel;
-import org.openide.util.Utilities;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 import org.openide.loaders.DataObject;
 import org.openide.cookies.OpenCookie;
 
@@ -71,7 +72,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
     private static final String FACES_STATE_SAVING_METHOD = "javax.faces.STATE_SAVING_METHOD"; // NOI18N
     private static final String FACES_VALIDATE_XML = "com.sun.faces.validateXml"; // NOI18N
     private static final String FACES_VERIFY_OBJECTS = "com.sun.faces.verifyObjects"; // NOI18N
-
+    
     private JSFConfigurationPanel panel;
     /** Creates a new instance of JSFFrameworkProvider */
     public JSFFrameworkProvider() {
@@ -79,13 +80,13 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                 NbBundle.getMessage(JSFFrameworkProvider.class, "JSF_Name"),               // NOI18N
                 NbBundle.getMessage(JSFFrameworkProvider.class, "JSF_Description"));       //NOI18N
     }
-
-    public Set extend (final WebModule webModule) {
-        Set result = new HashSet();
+    
+    public Set extend(final WebModule webModule) {
         final FileObject fileObject = webModule.getDocumentBase();
         final Project project = FileOwnerQuery.getOwner(fileObject);
         final ProjectTemplate template = new JsfProjectTemplateJakarta();
-
+        Set result = new HashSet();
+              
         // Set Bean Package and Start Page
         String presetPackage = JsfProjectUtils.getProjectProperty(project, JsfProjectConstants.PROP_JSF_PAGEBEAN_PACKAGE);
         if (presetPackage == null || presetPackage.length() == 0) {
@@ -111,7 +112,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                     project.getProjectDirectory().setAttribute("NewProject", Boolean.TRUE); // NOI18N
                     template.create(project, webModule.getJ2eePlatformVersion(), pageName);
                 } catch (IOException ioe){
-                    ErrorManager.getDefault().notify(ioe);
+                    Exceptions.printStackTrace(ioe);
                 }
            }
         }); 
@@ -136,8 +137,8 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                                 try {
                                     JSFUtils.createJSFUserLibrary(installFolder, libraryVersion);
                                     jsfLib = JSFUtils.getJSFLibrary(libraryVersion);
-                                } catch (IOException e){
-                                    ErrorManager.getDefault().notify(e);
+                                } catch (IOException ioe) {
+                                    Exceptions.printStackTrace(ioe);
                                 }
                             }
                         }
@@ -151,14 +152,11 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                             LibraryManager.getDefault().getLibrary("jstl11"),
                         });
                     } catch (IOException ioe) {
-                        //ErrorManager.getDefault().notify(ioe);
+                        // Exceptions.printStackTrace(ioe);
                     }
                 }
             }
             template.addLibrary(project);
-
-            FileObject dd = webModule.getDeploymentDescriptor();
-            WebApp ddRoot = DDProvider.getDefault().getDDRoot(dd);
 
             FileSystem fileSystem = webModule.getWebInf().getFileSystem();
             fileSystem.runAtomicAction(new CreateFacesConfig(webModule, isMyFaces, pageName));
@@ -180,19 +178,19 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                                 }
                             }
                         } catch (IOException ioe){
-                            ErrorManager.getDefault().notify(ioe);
+                            Exceptions.printStackTrace(ioe);
                         }
                     }
                 }); 
             }
         } catch (FileNotFoundException exc) {
-            ErrorManager.getDefault().notify(exc);
+            Exceptions.printStackTrace(exc);
         } catch (IOException exc) {
-            ErrorManager.getDefault().notify(exc);
+            Exceptions.printStackTrace(exc);
         }
         return result;
     }
-
+    
     public static String readResource(InputStream is, String encoding) throws IOException {
         // read the config from resource first
         StringBuffer sbuffer = new StringBuffer();
@@ -244,8 +242,8 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
         return panel;
     }
     
-    public boolean isInWebModule(org.netbeans.modules.web.api.webmodule.WebModule wm) {
-        FileObject documentBase = wm.getDocumentBase();
+    public boolean isInWebModule(org.netbeans.modules.web.api.webmodule.WebModule webModule) {
+        FileObject documentBase = webModule.getDocumentBase();
         Project project = FileOwnerQuery.getOwner(documentBase);
         return JsfProjectUtils.isJsfProject(project);
     }
@@ -273,7 +271,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
             this.pageName = pageName;
         }
         
-        public void run() throws IOException {            
+        public void run() throws IOException {
             // Enter servlet into the deployment descriptor
             FileObject dd = webModule.getDeploymentDescriptor();
             WebApp ddRoot = DDProvider.getDefault().getDDRoot(dd);
@@ -518,12 +516,13 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                         ddRoot.addListener(facesListener);
                     }
                     ddRoot.write(dd);
-                }
-                catch (ClassNotFoundException cnfe){
-                    ErrorManager.getDefault().notify(cnfe);
+                    
+                    
+                } catch (ClassNotFoundException cnfe){
+                    Exceptions.printStackTrace(cnfe);
                 }
             }
-
+            
             // copy faces-config.xml
             File fileConfig = new File(FileUtil.toFile(webModule.getWebInf()), "faces-config.xml"); // NOI18N
             if (!fileConfig.exists()) {
@@ -551,7 +550,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
         private void changeIndexJSP(FileObject indexjsp, String pageName) throws IOException {
             
             String content = readResource(indexjsp.getInputStream(), "UTF-8"); //NO18N
-        
+            
             // what find
             String find = "<h1>JSP Page</h1>"; // NOI18N
             String endLine = System.getProperty("line.separator"); //NOI18N
