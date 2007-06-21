@@ -119,8 +119,15 @@ public class ModelUtils {
         }
     }
     
+    // TODO: reimplement this method to take a type argument and assure 100% accuracy 
     public static ExecutableElement getAccesor(TypeElement clazz, String fieldName){
         for (ExecutableElement method : getMethod(clazz, getAccesorName(fieldName))){
+            if (method.getParameters().size() == 0){
+                return method;
+            }
+        }
+        
+        for (ExecutableElement method : getMethod(clazz, getBooleanAccesorName(fieldName))){
             if (method.getParameters().size() == 0){
                 return method;
             }
@@ -161,6 +168,12 @@ public class ModelUtils {
     
     public static String getAccesorName(String fieldName){
         return "get" //NOI18N
+                + Character.toString(fieldName.charAt(0)).toUpperCase() +
+                fieldName.substring(1);
+    }
+    
+    public static String getBooleanAccesorName(String fieldName){
+        return "is" //NOI18N
                 + Character.toString(fieldName.charAt(0)).toUpperCase() +
                 fieldName.substring(1);
     }
