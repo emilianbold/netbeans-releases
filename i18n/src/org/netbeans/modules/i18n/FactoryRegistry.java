@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -24,10 +24,8 @@ package org.netbeans.modules.i18n;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -48,14 +46,14 @@ public final class FactoryRegistry extends Object {
     private FactoryRegistry() {};
     
     /** All i18n supports kept as <code>Lookup.Result</code>. */
-    private static Lookup.Result result;
-    private static final Set cache = Collections.synchronizedSet(new HashSet(5));    
-    private static final Set ncache = Collections.synchronizedSet(new HashSet(50));    
+    private static Lookup.Result<I18nSupport.Factory> result;
+    private static final Set<Class> cache = Collections.synchronizedSet(new HashSet<Class>(5));    
+    private static final Set<Class> ncache = Collections.synchronizedSet(new HashSet<Class>(50));    
     
     /** Gets lookup result holding script type instances. */
-    private static Lookup.Result getSupports() {
+    private static Lookup.Result<I18nSupport.Factory> getSupports() {
         if(result == null) {
-            result = Lookup.getDefault().lookup(new Lookup.Template(I18nSupport.Factory.class));
+            result = Lookup.getDefault().lookup(new Lookup.Template<I18nSupport.Factory>(I18nSupport.Factory.class));
             result.addLookupListener(new LookupListener() {
                 public void resultChanged(LookupEvent e) {
                     cache.clear();
@@ -71,10 +69,10 @@ public final class FactoryRegistry extends Object {
      * @return factory for specified data object class or <code>null</code> */
     public static I18nSupport.Factory getFactory(Class dataObjectClass) {
         
-        List candidates = new ArrayList(3);
+        List<I18nSupport.Factory> candidates
+                = new ArrayList<I18nSupport.Factory>(3);
         
-        for(Iterator it = getSupports().allInstances().iterator(); it.hasNext(); ) {
-            I18nSupport.Factory factory = (I18nSupport.Factory)it.next();
+        for (I18nSupport.Factory factory : getSupports().allInstances()) {
 
             // XXX it has to be checked for null, for cases Jsp support and java support
             // don't have their modules available, see JspI18nSupportFactory.getDataObjectClass.
@@ -88,14 +86,13 @@ public final class FactoryRegistry extends Object {
         if(candidates.size() == 0) {
             return null;
         } else if(candidates.size() == 1) {
-            return (I18nSupport.Factory)candidates.get(0);
+            return candidates.get(0);
         } else {
             I18nSupport.Factory chosen = null;
             
             // Find factory which supported class data object 
             // is the lowest one in the class hierarchy.
-            for(Iterator it = candidates.iterator(); it.hasNext(); ) {
-                I18nSupport.Factory fct = (I18nSupport.Factory)it.next();
+            for (I18nSupport.Factory fct : candidates) {
                 
                 if(chosen == null) {
                     chosen = fct;
@@ -120,8 +117,7 @@ public final class FactoryRegistry extends Object {
         if (cache.contains(dataObjectClass)) return true;
         if (ncache.contains(dataObjectClass)) return false;
         
-        for(Iterator it = getSupports().allInstances().iterator(); it.hasNext(); ) {
-            I18nSupport.Factory factory = (I18nSupport.Factory)it.next();
+        for (I18nSupport.Factory factory : getSupports().allInstances()) {
 
             // XXX it has to be checked for null, for cases Jsp support and java support
             // don't have their modules available, see JspI18nSupportFactory.getDataObjectClass.
