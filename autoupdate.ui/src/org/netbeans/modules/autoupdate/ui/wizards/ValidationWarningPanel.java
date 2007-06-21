@@ -44,7 +44,7 @@ public class ValidationWarningPanel extends javax.swing.JPanel {
         for (UpdateElement el : plugins) {
             s = s + el.getDisplayName () + "\n";
         }
-        taPlugins.setText (s);
+        tpPlugins.setText (s);
         if (untrusted.isEmpty ()) {
             // not signed
             taHead.setText(org.openide.util.NbBundle.getMessage(ValidationWarningPanel.class, "ValidationWarningPanel_taHead_NotSignedText"));
@@ -63,7 +63,8 @@ public class ValidationWarningPanel extends javax.swing.JPanel {
     private void initComponents() {
 
         taHead = new javax.swing.JTextArea();
-        taPlugins = new javax.swing.JTextArea();
+        spPlugins = new javax.swing.JScrollPane();
+        tpPlugins = new javax.swing.JTextPane();
         taWarning = new javax.swing.JTextArea();
 
         taHead.setEditable(false);
@@ -71,10 +72,7 @@ public class ValidationWarningPanel extends javax.swing.JPanel {
         taHead.setWrapStyleWord(true);
         taHead.setOpaque(false);
 
-        taPlugins.setEditable(false);
-        taPlugins.setLineWrap(true);
-        taPlugins.setWrapStyleWord(true);
-        taPlugins.setOpaque(false);
+        spPlugins.setViewportView(tpPlugins);
 
         taWarning.setEditable(false);
         taWarning.setLineWrap(true);
@@ -89,29 +87,30 @@ public class ValidationWarningPanel extends javax.swing.JPanel {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(spPlugins, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 398, Short.MAX_VALUE)
                     .add(taHead)
-                    .add(taWarning)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, taPlugins, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 344, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, taWarning))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(taHead, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .add(14, 14, 14)
-                .add(taPlugins, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 119, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 14, Short.MAX_VALUE)
-                .add(taWarning, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(taHead, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 57, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(spPlugins, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 196, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(taWarning, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 58, Short.MAX_VALUE)
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JScrollPane spPlugins;
     private javax.swing.JTextArea taHead;
-    private javax.swing.JTextArea taPlugins;
     private javax.swing.JTextArea taWarning;
+    private javax.swing.JTextPane tpPlugins;
     // End of variables declaration//GEN-END:variables
     
 }

@@ -14,13 +14,13 @@
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" attributes="0">
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="taHead" alignment="0" max="32767" attributes="1"/>
-                  <Component id="taWarning" alignment="0" max="32767" attributes="1"/>
-                  <Component id="taPlugins" alignment="1" min="-2" pref="344" max="-2" attributes="0"/>
+                  <Component id="spPlugins" alignment="0" pref="398" max="32767" attributes="0"/>
+                  <Component id="taHead" alignment="0" max="32767" attributes="2"/>
+                  <Component id="taWarning" alignment="1" max="32767" attributes="2"/>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -28,11 +28,11 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace min="-2" max="-2" attributes="0"/>
-              <Component id="taHead" min="-2" max="-2" attributes="0"/>
-              <EmptySpace min="-2" pref="14" max="-2" attributes="0"/>
-              <Component id="taPlugins" min="-2" pref="119" max="-2" attributes="0"/>
-              <EmptySpace pref="14" max="32767" attributes="0"/>
-              <Component id="taWarning" min="-2" max="-2" attributes="0"/>
+              <Component id="taHead" min="-2" pref="57" max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
+              <Component id="spPlugins" pref="196" max="32767" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
+              <Component id="taWarning" pref="58" max="32767" attributes="0"/>
               <EmptySpace min="-2" max="-2" attributes="0"/>
           </Group>
       </Group>
@@ -47,14 +47,14 @@
         <Property name="opaque" type="boolean" value="false"/>
       </Properties>
     </Component>
-    <Component class="javax.swing.JTextArea" name="taPlugins">
-      <Properties>
-        <Property name="editable" type="boolean" value="false"/>
-        <Property name="lineWrap" type="boolean" value="true"/>
-        <Property name="wrapStyleWord" type="boolean" value="true"/>
-        <Property name="opaque" type="boolean" value="false"/>
-      </Properties>
-    </Component>
+    <Container class="javax.swing.JScrollPane" name="spPlugins">
+
+      <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
+      <SubComponents>
+        <Component class="javax.swing.JTextPane" name="tpPlugins">
+        </Component>
+      </SubComponents>
+    </Container>
     <Component class="javax.swing.JTextArea" name="taWarning">
       <Properties>
         <Property name="editable" type="boolean" value="false"/>

@@ -117,7 +117,7 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
                     presentInstallDone ();
                 }
             }
-        };
+        }
         fireChange ();
     }
     
@@ -189,26 +189,28 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
         final Installer inst = tmpInst;
         List<UpdateElement> unsigned = new ArrayList<UpdateElement> ();
         List<UpdateElement> untrusted = new ArrayList<UpdateElement> ();
-        UpdateElement sEl = null;
+        String certs = "";
         for (UpdateElement el : model.getAllUpdateElements ()) {
             InstallSupport addSupport = model.getAdditionallyInstallSupport ();
             if (! (support.isSigned (inst, el) || (addSupport != null && addSupport.isSigned (inst, el)))) {
                 unsigned.add (el);
-                if (sEl == null) sEl = el;
             } else if (! (support.isTrusted (inst, el) || (addSupport != null && addSupport.isTrusted (inst, el)))) {
                 untrusted.add (el);
-                if (sEl == null) sEl = el;
+                String cert = support.getCertificate (inst, el);
+                if (cert != null && cert.length () > 0) {
+                    certs += getBundle ("ValidationWarningPanel_ShowCertificateFormat", el.getDisplayName (), cert);
+                }
             }
         }
-        final UpdateElement strangeElement = sEl;
         if (untrusted.size () > 0 || unsigned.size () > 0) {
             ValidationWarningPanel p = new ValidationWarningPanel (unsigned, untrusted);
             final JButton showCertificate = new JButton ();
             Mnemonics.setLocalizedText (showCertificate, getBundle ("ValidationWarningPanel_ShowCertificateButton"));
+            final String certificate = certs;
             showCertificate.addActionListener (new ActionListener () {
                 public void actionPerformed (ActionEvent e) {
                     if (showCertificate.equals (e.getSource ())) {
-                        DialogDisplayer.getDefault().notify (new NotifyDescriptor.Message (support.getCertificate (inst, strangeElement)));
+                        DialogDisplayer.getDefault().notify (new NotifyDescriptor.Message (certificate));
                     }
                 }
             });
@@ -219,7 +221,7 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
             dd.setOptions (new JButton [] {canContinue, cancel});
             dd.setClosingOptions (new JButton [] {canContinue, cancel});
             dd.setOptionType (NotifyDescriptor.WARNING_MESSAGE);
-            if (! untrusted.isEmpty ()) {
+            if (! untrusted.isEmpty () && certs.length () > 0) {
                 dd.setAdditionalOptions (new JButton [] {showCertificate});
             }
             DialogDisplayer.getDefault ().createDialog (dd).setVisible (true);
@@ -336,7 +338,7 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
         }
     }
 
-    private String getBundle (String key) {
-        return NbBundle.getMessage (InstallStep.class, key);
+    private String getBundle (String key, Object... params) {
+        return NbBundle.getMessage (InstallStep.class, key, params);
     }
 }
