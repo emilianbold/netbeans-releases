@@ -548,7 +548,8 @@ public class CasaWrapperModel extends CasaModelImpl {
         if (bindingType == null) {
 //            // missing the binding type, use the default for now...
 //            bindingType = ltg;            
-            String msg = "Failed to populate binding for " + bType.toUpperCase() + ".";
+            String msg = "Failed to populate binding for " + 
+                    (bType == null ? "unknown binding type" : bType.toUpperCase()) + ".";
             NotifyDescriptor d =
                     new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE);
             DialogDisplayer.getDefault().notify(d);
@@ -2406,8 +2407,8 @@ public class CasaWrapperModel extends CasaModelImpl {
     
     /**
      * Checks whether a CasaPort is editable.
-     * Only user-created ones are editable. CasaPorts that come from component
-     * projects are not editable.
+     * Only CasaPorts coming from compapp are editable. CasaPorts that come from 
+     * component projects are not editable.
      */
     public boolean isEditable(final CasaPort casaPort) {
         return isDefinedInCompApp(casaPort);
@@ -2460,12 +2461,13 @@ public class CasaWrapperModel extends CasaModelImpl {
         return true;
     }
         
-    // FIXME: isDefinedInCompApp() currently assumes it's THE <CompApp>.wsdl, 
-    // not any wsdl defined in CompApp!!!
+    /**
+     * Check whether the given casa port is defined in the composite application.
+     */
     private boolean isDefinedInCompApp(final CasaPort casaPort) {
         CasaLink link = casaPort.getLink();
         String linkHref = link.getHref();
-        return linkHref.startsWith("../jbiasa/" + getCasaWSDLFileName() + "#xpointer"); // NOI18N
+        return linkHref.startsWith("../jbiasa/"); // NOI18N
     }
     
     /**
