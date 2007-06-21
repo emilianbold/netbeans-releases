@@ -77,7 +77,9 @@ import org.netbeans.modules.uml.core.support.umlsupport.Strings;
 import org.netbeans.modules.uml.project.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.uml.project.ui.customizer.UMLProjectProperties;
 import org.netbeans.modules.uml.project.ui.nodes.UMLPhysicalViewProvider;
+import org.netbeans.modules.uml.project.ui.nodes.ModelRootNodeCookie;
 import org.netbeans.modules.uml.project.ui.customizer.UMLImportsUiSupport;
+import org.netbeans.modules.uml.util.ITaskFinishListener;
 import org.openide.loaders.DataObject;
 
 
@@ -363,7 +365,30 @@ public class UMLProject implements Project, AntProjectListener
         ReverseEngineerTask reTask = new ReverseEngineerTask(
                 mHelper.getProject(),
                 files,
-                false, false, true, true, null);
+                false, false, true, true, 
+		new ITaskFinishListener() {
+
+		    public void taskFinished()
+		    {
+			SwingUtilities.invokeLater(new Runnable()
+			{
+			    public void run()
+			    {
+				UMLPhysicalViewProvider provider =
+				    (UMLPhysicalViewProvider)UMLProject.this.getLookup().
+				    lookup(UMLPhysicalViewProvider.class);
+				if (provider != null) 
+				{
+				    ModelRootNodeCookie cookie =
+					provider.getModelRootNodeCookie();
+				    
+				    if (cookie!=null)
+					cookie.recalculateChildren();
+				}
+			    }
+		        });			      
+		    } 
+		});
         
         RequestProcessor processor =
                 new RequestProcessor("uml/ReverseEngineer"); // NOI18N
