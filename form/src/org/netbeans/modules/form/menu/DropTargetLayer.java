@@ -29,6 +29,7 @@ import javax.swing.JComponent;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JRadioButtonMenuItem;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.form.RADComponent;
 import org.netbeans.modules.form.menu.DropTargetLayer.DropTargetType;
@@ -295,7 +296,6 @@ class DropTargetLayer extends JComponent {
     }
     
     public static MenuEditLayer.SelectedPortion calculateSelectedPortion(JMenuItem item, Point localPt) {
-        // josh: change these hard coded values to be based on the real component
         if(localPt.x <= getIconRight(item)) {
             return SelectedPortion.Icon;
         }
@@ -320,6 +320,9 @@ class DropTargetLayer extends JComponent {
     //josh: hard coded to account for the checkbox gutter. replace in the future
     // with a calculated value
     private static int getIconLeft(JMenuItem item) {
+        if(item instanceof JRadioButtonMenuItem) {
+            return 11;
+        }
         return 14;
     }
     
