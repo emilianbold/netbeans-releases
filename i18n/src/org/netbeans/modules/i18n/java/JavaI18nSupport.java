@@ -25,6 +25,7 @@ import java.lang.reflect.Modifier;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -184,12 +185,14 @@ public class JavaI18nSupport extends I18nSupport {
     }
 
     /** Overrides superclass method. */
+    @Override
     public PropertyPanel getPropertyPanel() {
         return new JavaPropertyPanel();
     }
     
     /** Overrides superclass method. 
      * @return true */
+    @Override
     public boolean hasAdditionalCustomizer() {
         return true;
     }
@@ -197,12 +200,14 @@ public class JavaI18nSupport extends I18nSupport {
     /** Overrides superclass method. 
      * @return <code>JavaReplacePanel</code> which offers to customize additional
      * source values (in our case for creating bundle field) */
+    @Override
     public JPanel getAdditionalCustomizer() {
         return new JavaReplacePanel(this);
     }
 
     /** Overrides superclass method. 
      * Actuallay creates bundle field specified by user */
+    @Override
     public void performAdditionalChanges() {
         // Creates field.
         createField();
@@ -275,7 +280,7 @@ public class JavaI18nSupport extends I18nSupport {
         ClassPath cp = ClassPath.getClassPath( fo, ClassPath.SOURCE );
 
         
-        Map map = new HashMap(3);
+        Map<String,String> map = new HashMap<String,String>(3);
 
         map.put("bundleNameSlashes", cp.getResourceName( fo, '/', false ) ); // NOI18N
         map.put("bundleNameDots", cp.getResourceName( fo, '.', false ) ); // NOI18N
@@ -423,20 +428,17 @@ public class JavaI18nSupport extends I18nSupport {
         /** Finds all strings according specified regular expression. */
         protected HardCodedString[] findAllStrings() {
             
-            ArrayList list = new ArrayList();
+            List<HardCodedString> list = new ArrayList<HardCodedString>();
 
             HardCodedString hardString;
-
-            for(;(hardString = findNextString())!= null;) {
+            while ((hardString = findNextString()) != null) {
                 list.add(hardString);
             }
 
             if(list.isEmpty())
                 return null;
             else {
-                HardCodedString[] hardStrings = new HardCodedString[list.size()];
-                list.toArray(hardStrings);
-                return hardStrings;
+                return list.toArray(new HardCodedString[list.size()]);
             }
         }
         
@@ -768,7 +770,7 @@ public class JavaI18nSupport extends I18nSupport {
              * and replace tokens "{key}" and "{hardString}" with the passed
              * hard-coded string.
              */
-            Map map = new HashMap(3);
+            Map<String,String> map = new HashMap<String,String>(3);
             map.put("key", hardString);  //older form of regexp format  //NOI18N
             map.put("hardString", hardString);                          //NOI18N
             return Translator.translateRegexp(regexpForm, map);
@@ -877,7 +879,7 @@ public class JavaI18nSupport extends I18nSupport {
                 return Class.forName(
                     "org.netbeans.modules.java.JavaDataObject", // NOI18N
                     false,
-                    (ClassLoader)Lookup.getDefault().lookup(ClassLoader.class));
+                    Lookup.getDefault().lookup(ClassLoader.class));
             } catch(ClassNotFoundException cnfe) {
                 return null;
             }
