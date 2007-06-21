@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Copyright 2005, 2007 Nokia Corporation. All rights reserved.
+
+The contents of this file are subject to the terms of the Common
+Development and Distribution License (the License). See LICENSE.TXT for exact terms.
+You may not use this file except in compliance with the License.  You can obtain a copy of the
+License at http://www.netbeans.org/cddl.html
+
+When distributing Covered Code, include this CDDL Header Notice in each
+file and include the License. If applicable, add the following below the
+CDDL Header, with the fields enclosed by brackets [] replaced by your own
+identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+-->
+<project default="deploy">
+    <target name="init">
+        <fail unless="deployment.jad">Property deployment.jad is not set.</fail>
+        <fail unless="deployment.jar">Property deployment.jar is not set.</fail>
+        <condition property="deployment-to-all-devices">
+            <istrue value="${deployment.nokia.deploytoalldevices}"/>
+        </condition>
+        <condition property="deploy-selected-devicelist-ok">
+            <and>
+                <isset property="deployment.nokia.selecteddevices"/>
+                <not><equals arg1="${deployment.nokia.selecteddevices}" arg2="" trim="true"/></not>
+            </and>
+        </condition>
+    </target>
+
+    <target name="deploy_all" depends="init" if="deployment-to-all-devices">
+       <java classname="com.nokia.phone.deploy.DeployerMain" fork="true">
+            <classpath>
+              <pathelement location="${libs.nokiadeployment.classpath}"/>
+            </classpath>
+           <jvmarg value="-Djava.library.path=${java.library.path};${netbeans.home}/../extra/modules/lib;${netbeans.home}/../mobility8/modules/lib"/>
+           <arg file="${deployment.jad}"/>
+          <arg file="${deployment.jar}"/>
+        </java>
+    </target>
+
+    <target name="deploy_selected" depends="init" unless="deployment-to-all-devices">
+        <fail unless="deploy-selected-devicelist-ok" message="No selected devices for deployment"/>
+        <java classname="com.nokia.phone.deploy.DeployerMain" fork="true">
+            <classpath>
+              <pathelement location="${libs.nokiadeployment.classpath}"/>
+          </classpath>
+           <jvmarg value="-Djava.library.path=${java.library.path};${netbeans.home}/../extra/modules/lib;${netbeans.home}/../mobility8/modules/lib"/>
+          <arg file="${deployment.jad}"/>
+          <arg file="${deployment.jar}"/>
+          <arg value="${deployment.nokia.selecteddevices}"/>
+        </java>
+    </target>
+    
+    <target name="deploy" depends="deploy_all, deploy_selected"/>
+</project>

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Copyright  2005, 2007 Nokia Corporation. All rights reserved.
+
+The contents of this file are subject to the terms of the Common
+Development and Distribution License (the License). See LICENSE.TXT for exact terms.
+You may not use this file except in compliance with the License.  You can obtain a copy of the
+License at http://www.netbeans.org/cddl.html
+
+When distributing Covered Code, include this CDDL Header Notice in each
+file and include the License. If applicable, add the following below the
+CDDL Header, with the fields enclosed by brackets [] replaced by your own
+identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+-->
+<project name="mobility/deployment/nokia" default="netbeans" basedir=".">
+    <import file="../../../nbbuild/templates/projectized.xml"/>
+    <description>Builds, tests, and runs the project org.netbeans.modules.mobility.deployment.nokia.</description>
+    <target name="release" depends="init">
+        <mkdir dir="${cluster}/modules/scr"/>
+        <copy todir="${cluster}/modules/scr">
+            <fileset dir="scripts"/>
+        </copy>
+        <mkdir dir="${cluster}/modules/lib"/>
+        <copy todir="${cluster}/modules/lib">
+            <fileset dir="release/modules/lib"/>
+        </copy>
+    </target>
+</project>
