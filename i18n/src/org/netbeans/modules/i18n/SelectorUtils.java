@@ -20,10 +20,15 @@
 
 package org.netbeans.modules.i18n;
 
-import java.awt.*;
+import java.awt.BorderLayout;
 import java.io.IOException;
-import java.util.*;
-import javax.swing.*;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.LinkedList;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -43,7 +48,6 @@ import org.openide.nodes.NodeOperation;
 import org.openide.util.UserCancelException;
 import org.openide.filesystems.FileUtil;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
-import java.net.URL;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.openide.awt.Mnemonics;
