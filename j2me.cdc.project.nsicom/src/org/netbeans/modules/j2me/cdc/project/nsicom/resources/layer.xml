@@ -50,7 +50,7 @@
     </folder>
     <folder name="Customizer">
         <folder name="org.netbeans.modules.kjava.j2meproject">
-            <folder name="Jad">
+            <folder name="Run">
                 <file name="NSIcom">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2me.cdc.project.nsicom.Bundle"/>
                     <attr name="customizerPanelClass" newvalue="org.netbeans.modules.j2me.cdc.project.nsicom.NSIcomProjectCategoryCustomizer"/>
