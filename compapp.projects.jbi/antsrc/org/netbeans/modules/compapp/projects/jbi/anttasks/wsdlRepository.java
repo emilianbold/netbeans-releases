@@ -43,6 +43,7 @@ import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.locator.CatalogModelException;
 import org.openide.filesystems.FileObject;
 import org.apache.tools.ant.Project;
+import org.netbeans.modules.compapp.projects.jbi.api.JbiProjectConstants;
 import org.netbeans.modules.compapp.projects.jbi.util.MyFileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
@@ -153,8 +154,8 @@ public class wsdlRepository {
         
         String srcPath = project.getProperty("basedir") + 
                 File.separator + "src" + File.separator;
-        String serviceUnitsDirLoc = srcPath + "jbiServiceUnits";
-        String jbiAsaDirLoc = srcPath + "jbiasa";
+        String serviceUnitsDirLoc = srcPath + JbiProjectConstants.FOLDER_JBISERVICEUNITS;
+        String jbiAsaDirLoc = srcPath + JbiProjectConstants.FOLDER_JBIASA;
                 
         File serviceUnitsDir = new File(serviceUnitsDirLoc);
         File jbiASADir = new File(jbiAsaDirLoc);

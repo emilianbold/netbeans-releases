@@ -36,6 +36,11 @@ public class JbiProjectConstants {
     public static final String FOLDER_JBIASA = "jbiasa"; // NOI18N
     
     /**
+     * jbiServiceUnits folder
+     */
+    public static final String FOLDER_JBISERVICEUNITS = "jbiServiceUnits"; // NOI18N
+    
+    /**
      * Jbi package root sources type.
      *
      * @see org.netbeans.api.project.Sources

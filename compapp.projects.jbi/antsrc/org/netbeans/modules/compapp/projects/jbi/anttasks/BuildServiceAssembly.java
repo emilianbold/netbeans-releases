@@ -43,6 +43,7 @@ import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
 import org.netbeans.modules.compapp.projects.jbi.MigrationHelper;
+import org.netbeans.modules.compapp.projects.jbi.api.JbiProjectConstants;
 import org.netbeans.modules.compapp.projects.jbi.descriptor.XmlUtil;
 import org.netbeans.modules.compapp.projects.jbi.descriptor.endpoints.model.Connection;
 import org.netbeans.modules.compapp.projects.jbi.descriptor.endpoints.model.Endpoint;
@@ -150,8 +151,8 @@ public class BuildServiceAssembly extends Task {
             String srcDirLoc = projPath + "src" + File.separator;
             String confDirLoc = srcDirLoc + "conf" + File.separator;
             
-            serviceUnitsDirLoc = srcDirLoc + "jbiServiceUnits";            
-            jbiasaDirLoc = srcDirLoc + "jbiasa";
+            serviceUnitsDirLoc = srcDirLoc + JbiProjectConstants.FOLDER_JBISERVICEUNITS;            
+            jbiasaDirLoc = srcDirLoc + JbiProjectConstants.FOLDER_JBIASA;
             
             String catalogDirLoc = serviceUnitsDirLoc
                     + File.separator + "META-INF"
@@ -249,10 +250,9 @@ public class BuildServiceAssembly extends Task {
             Map<String, List<Connection>[]> bcConnections = 
                     connectionResolver.getBCConnections();
             
-            List<String> bcsUsingCompAppWsdl = 
-                    getBindingComponentsUsingCompAppWsdl(bcConnections);            
+//            List<String> bcsUsingCompAppWsdl = 
+//                    getBindingComponentsUsingCompAppWsdl(bcConnections);            
             for (String bcName : connectionResolver.getBCNames()) {
-//                List<Connection>[] clist = bcConnections.get(bcName);
                 String bcJarName = null;
                 for (int k = 0; k < suJarNames.size(); k++) {
                     String name = suJarNames.get(k);
@@ -272,8 +272,8 @@ public class BuildServiceAssembly extends Task {
                     // ToDo: update bc jar endpoints.xml
                     // 1. copy BCjars for each needed BC
                     // 2. create jbi.xml
-                    boolean isCompAppWSDLNeeded = bcsUsingCompAppWsdl.contains(bcName);
-                    createBCJar(bcJarName, bcName, genericBCJar, connectionResolver, isCompAppWSDLNeeded);                    
+//                    boolean isCompAppWSDLNeeded = bcsUsingCompAppWsdl.contains(bcName);
+                    createBCJar(bcJarName, bcName, genericBCJar, connectionResolver/*, isCompAppWSDLNeeded*/);                    
                 } else {
                     log("ERROR: Cannot create binding component jar for " + bcName);
                 }
@@ -781,8 +781,8 @@ public class BuildServiceAssembly extends Task {
     }
         
     private void createBCJar(String outFile, String bcName,
-            JarFile genericBCJar, ConnectionResolver connectionResolver,
-            boolean isCompAppWSDLNeeded) 
+            JarFile genericBCJar, ConnectionResolver connectionResolver/*,
+            boolean isCompAppWSDLNeeded*/) 
             throws Exception {
         byte[] buffer = new byte[1024];
         int bytesRead;
@@ -792,38 +792,44 @@ public class BuildServiceAssembly extends Task {
         JarOutputStream newJar = new JarOutputStream(new FileOutputStream(outFile));
         
         try {
-            Enumeration entries = genericBCJar.entries();
+            Enumeration<JarEntry> jarEntries = genericBCJar.entries();
             
-            while (entries.hasMoreElements()) {
-                JarEntry entry = (JarEntry) entries.nextElement();
-                InputStream is = genericBCJar.getInputStream(entry);
+            while (jarEntries.hasMoreElements()) {
+                JarEntry jarEntry = jarEntries.nextElement();
+                InputStream is = genericBCJar.getInputStream(jarEntry);
                 
                 // TODO: update casa wsdl entry in generic bc jar file.
-                if (entry.getName().equals(casaWSDLFileName)) {
-                    // Quick fix for J1: If the casa wsdl file doesn't contain 
-                    // active endpoints, then we skip packaging the casa wsdl entry.
-                    // (Future improvement: This rule should apply to all the 
-                    // wsdl files.)
-                    if (isCompAppWSDLNeeded) {
-                        
-                        newJar.putNextEntry(new JarEntry(casaWSDLFileName));
-                        
-                        // HACK: remove "../jbiServiceUnits/" from import elements' location
-                        BufferedReader reader = new BufferedReader(new InputStreamReader(is, "UTF-8")); // FIXME: encoding
-                        String line;
-                        while ((line = reader.readLine()) != null) {
-                            if (line.indexOf("location=\"../jbiServiceUnits/") != -1) {
-                                line = line.replace("../jbiServiceUnits/", "");
+                if (jarEntry.getName().equals(casaWSDLFileName)) {
+//                    // Quick fix for J1: If the casa wsdl file doesn't contain 
+//                    // active endpoints, then we skip packaging the casa wsdl entry.
+//                    // (Future improvement: This rule should apply to all the 
+//                    // wsdl files.)
+//                    if (isCompAppWSDLNeeded) {
+                    
+                    newJar.putNextEntry(new JarEntry(casaWSDLFileName));
+                    
+                    // HACK: remove "../jbiServiceUnits/" and "../jbiasa" from 
+                    // import elements' location
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(is, "UTF-8")); // FIXME: encoding
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        if (line.indexOf("import") != -1) {
+                            if (line.indexOf("location=\"../" + JbiProjectConstants.FOLDER_JBISERVICEUNITS + "/") != -1) {
+                                line = line.replace("../" + JbiProjectConstants.FOLDER_JBISERVICEUNITS + "/", "");
                             }
-                            newJar.write(line.getBytes("UTF-8"));
-                            newJar.write(System.getProperty("line.separator").getBytes("UTF-8"));
+                            if (line.indexOf("location=\"../" + JbiProjectConstants.FOLDER_JBIASA + "/") != -1) {
+                                line = line.replace("../" + JbiProjectConstants.FOLDER_JBIASA + "/", "");
+                            }
                         }
-                        reader.close();
+                        newJar.write(line.getBytes("UTF-8"));
+                        newJar.write(System.getProperty("line.separator").getBytes("UTF-8"));
                     }
+                    reader.close();
+//                    }
                     
                 } else {
                     
-                    newJar.putNextEntry(entry);
+                    newJar.putNextEntry(jarEntry);
                     
                     while ((bytesRead = is.read(buffer)) != -1) {
                         newJar.write(buffer, 0, bytesRead);
