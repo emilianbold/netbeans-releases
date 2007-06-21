@@ -26,6 +26,7 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.timers.TimesCollector;
 import org.netbeans.editor.Registry;
+import org.netbeans.modules.java.JavaDataLoader;
 import org.netbeans.modules.java.source.usages.RepositoryUpdater;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -73,7 +74,7 @@ public class ActivatedDocumentListener implements ChangeListener {
         if (lastValidFile == activeFile)
             return;
         
-        if (lastValidFile != null) {
+        if (lastValidFile != null && isJava(lastValidFile)) {
             if (!IGNORE_COMPILE_REQUESTS) {
                 ClassPath cp = ClassPath.getClassPath(lastValidFile, ClassPath.SOURCE);
                 if (cp != null) {
@@ -110,4 +111,15 @@ public class ActivatedDocumentListener implements ChangeListener {
      */
     public static boolean IGNORE_COMPILE_REQUESTS = false;
 
+    //needs to be the same as in RepositoryUpdater:
+    private static boolean isJava(final FileObject fo) {
+        if (fo.isFolder()) {
+            return false;
+        } else if (JavaDataLoader.JAVA_EXTENSION.equals(fo.getExt().toLowerCase())) {
+            return true;
+        } else {
+            return JavaDataLoader.JAVA_MIME_TYPE.equals(fo.getMIMEType());
+        }
+    }
+    
 }
