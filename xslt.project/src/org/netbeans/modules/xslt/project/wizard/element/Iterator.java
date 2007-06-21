@@ -167,6 +167,10 @@ public final class Iterator implements TemplateWizard.Iterator {
                   && (Panel.CHOICE_FILTER_REQUEST_REPLY.equals(choice) 
                   || Panel.CHOICE_FILTER_ONE_WAY.equals(choice))) 
           {
+//System.out.println("choice panel is : "+choice);              
+              
+              setAdditionalTransformation(tMapOp, wizard, componentFactory,
+                      Panel.CHOICE_FILTER_REQUEST_REPLY.equals(choice));
 // TODO m | r               
 //              setInvokes(tMapOp, wizard, componentFactory,
 //                      Panel.CHOICE_FILTER_REQUEST_REPLY.equals(choice));
@@ -264,6 +268,66 @@ public final class Iterator implements TemplateWizard.Iterator {
 
      return tMapOp;
 }
+  
+// TODO m | r
+    private void setAdditionalTransformation(
+            org.netbeans.modules.xslt.tmap.model.api.Operation tMapOp,
+            TemplateWizard wizard, 
+            TMapComponentFactory componentFactory, 
+            boolean isFilterRequestReply) 
+    {
+        assert tMapOp != null && wizard != null && componentFactory != null;
+        Invokes invokes = null;
+        Transform transform = null;
+        String outputFileStr = (String) wizard.getProperty(Panel.OUTPUT_FILE);
+        Operation wizardOutputOperation = 
+                (Operation) wizard.getProperty(Panel.OUTPUT_OPERATION);
+        Panel.PartnerRolePort wizardOutputPartnerRolePort = 
+                (Panel.PartnerRolePort) wizard.getProperty(Panel.OUTPUT_PARTNER_ROLE_PORT);
+
+        PartnerLinkType wizardOutPlt = wizardOutputPartnerRolePort == null 
+                ? null 
+                : wizardOutputPartnerRolePort.getPartnerLinkType();
+        Role wizardOutRole = wizardOutputPartnerRolePort == null 
+                ? null 
+                : wizardOutputPartnerRolePort.getRole();
+
+        if (wizardOutPlt != null && wizardOutRole != null && wizardOutputOperation != null) {
+            invokes = componentFactory.createInvokes();
+            invokes.setPartnerLinkType(invokes.
+                    createWSDLReference(wizardOutPlt, PartnerLinkType.class));
+            invokes.setRole(invokes.
+                    createWSDLReference(wizardOutRole, Role.class));
+            invokes.setOperation(invokes.
+                    createWSDLReference(wizardOutputOperation, Operation.class));
+
+            // TODO m
+            invokes.setInputVariable("inputVar");
+            invokes.setOutputVariable("outputVar");
+
+
+            if (isFilterRequestReply) {
+                transform = componentFactory.createTransform();
+
+                // TODO m
+                transform.setSource("sourceVal2");
+                transform.setResult("resultVal2");
+                if (outputFileStr != null && !"".equals(outputFileStr)) {
+                    transform.setFile(outputFileStr);
+                }
+            }
+        }
+
+        if (invokes != null) {
+            tMapOp.addInvokes(invokes);
+        }
+        
+        if (transform != null) {
+            tMapOp.addTransform(transform);
+        }
+    }
+
+// TODO m | r
 // TODO m | r  
 //  private Invokes setInvokes(
 //          org.netbeans.modules.xslt.tmap.model.api.Operation tMapOp,
