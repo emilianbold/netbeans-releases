@@ -238,16 +238,21 @@ public final class JavaDataLoader extends MultiFileLoader {
         
         @Override
         public FileObject copy(FileObject f, String suffix) throws IOException {
-            String origName = getFile().getName();
+            final FileObject origFile = getFile();
+            String origName = origFile.getName();
             FileObject fo = super.copy(f, suffix);
-            ClassPath cp = ClassPath.getClassPath(fo,ClassPath.SOURCE);
-            if (cp != null) {
-                String pkgName = cp.getResourceName(f, '.', false);
-                JavaDataObject.renameFO(fo, pkgName, fo.getName(), origName);
-            
-                // unfortunately JavaDataObject.renameFO creates JavaDataObject but it is too soon
-                // in this stage. Loaders reusing this FileEntry will create further files.
-                destroyDataObject(fo);
+            final ClassPath cpOrig = ClassPath.getClassPath(origFile,ClassPath.SOURCE);
+            final ClassPath cpNew = ClassPath.getClassPath(fo, ClassPath.SOURCE);
+            if (cpOrig != null && cpNew != null) {                
+                final String pkgNameOrig = cpOrig.getResourceName(origFile.getParent(), '.', false);
+                final String pkgNameNew = cpNew.getResourceName(f,'.',false); 
+                final String newName = fo.getName();
+                if (!pkgNameNew.equals(pkgNameOrig) || !newName.equals(origName)) {
+                    JavaDataObject.renameFO(fo, pkgNameNew, newName, origName);
+                    // unfortunately JavaDataObject.renameFO creates JavaDataObject but it is too soon
+                    // in this stage. Loaders reusing this FileEntry will create further files.
+                    destroyDataObject(fo);
+                }                    
             }
             return fo;
         }
