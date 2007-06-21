@@ -31,12 +31,14 @@ import org.openide.util.NbBundle;
 public class RestPaletteUtils {
 
     public static String getLocalizedString(String bundleName, String key, String nonLocalized) {
-        if(bundleName != null) {
+        if(bundleName != null && key != null) {
             try {
                 ResourceBundle bundle = NbBundle.getBundle(bundleName);
                 if(bundle != null && bundle.getString(key) != null)
                     return bundle.getString(key);
-            } catch(MissingResourceException ex) {
+            } catch(Exception ex) {
+                //ignore
+            } catch(Throwable th) {
                 //ignore
             }
         }

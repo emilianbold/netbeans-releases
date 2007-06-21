@@ -40,10 +40,13 @@
         </folder>
     </folder>
     
-    <folder name="RestComponents">        
-        <file name="google-map.xml" url="/org/netbeans/modules/websvc/rest/component/google-map.xml" />
-        <file name="yahoo-ns.xml" url="/org/netbeans/modules/websvc/rest/component/yahoo-ns.xml" />
-        <file name="strikeiron.xml" url="/org/netbeans/modules/websvc/rest/component/strikeiron.xml" />
+    <folder name="RestComponents">
+        <folder name="Google">
+            <file name="google-map.xml" url="/org/netbeans/modules/websvc/rest/component/google-map.xml" />
+        </folder>
+        <folder name="Yahoo">
+            <file name="yahoo-ns.xml" url="/org/netbeans/modules/websvc/rest/component/yahoo-ns.xml" />
+        </folder>
     </folder>    
     
 </filesystem>

@@ -173,38 +173,27 @@ public class RestComponentData {
     }
     
     public void init(Document doc) throws XPathExpressionException, IOException {
-        String bundle = getAttributeValue("//component", "bundle");
+        
         name = getAttributeValue("//component", "name");
-        if(getAttributeValue("//component", "path") == null) {
-            categoryPath = "/";
-            int index = name.indexOf("/");
-            int lastIndex = name.lastIndexOf("/");
-            if(index != -1 && lastIndex != index) {
-                categoryPath = name.substring(0, lastIndex);
-                name = name.substring(lastIndex+1);
-            }
-            
-        } else {
-            categoryPath = getAttributeValue("//component", "path");
-        }
-        categoryName = RestPaletteUtils.getLocalizedString(bundle,
-                categoryPath, categoryPath.substring(categoryPath.lastIndexOf("/")+1, categoryPath.length()));
-        String nameKey = categoryPath + "/" + name;
+        categoryPath = getAttributeValue("//component", "category");
+        if(name == null || categoryPath == null)
+            return;
+        String nameKey = getAttributeValue("//component", "nameKey");
+        String categoryKey = getAttributeValue("//component", "categoryKey");
+        String bundle = getAttributeValue("//component", "bundle");
         displayName = RestPaletteUtils.getLocalizedString(bundle, nameKey, name);
+        categoryName = RestPaletteUtils.getLocalizedString(bundle, categoryKey, 
+            categoryPath.startsWith("/")?categoryPath.substring(1):categoryPath);        
         
         NodeList descNodes = getNodeList("//component/description");
         if(descNodes != null && descNodes.getLength() > 0) {
             Node descNode = descNodes.item(0);
             if(descNode.getAttributes() != null &&
-                    descNode.getAttributes().getNamedItem("name") != null &&
+                    descNode.getAttributes().getNamedItem("key") != null &&
                     descNode.getAttributes().getNamedItem("bundle") != null) {
                 description = RestPaletteUtils.getLocalizedString(
                         descNode.getAttributes().getNamedItem("bundle").getNodeValue(),
-                        descNode.getAttributes().getNamedItem("name").getNodeValue(), displayName);
-            } else if(descNode.getChildNodes() != null && descNode.getChildNodes().getLength() > 0) {
-                description = descNode.getFirstChild().getNodeValue();
-                if(description == null)
-                    description = displayName;
+                        descNode.getAttributes().getNamedItem("key").getNodeValue(), displayName);
             }
         }
         
@@ -228,10 +217,8 @@ public class RestComponentData {
         
         //Service
         NodeList serviceNodes = getNodeList("//component/service");
-        if(serviceNodes != null && serviceNodes.getLength() > 0) {
-            String serviceName = getAttributeValue("//component/service", "name");
-            String portName = getAttributeValue("//component/service", "port");
-            service = new Service(serviceName, portName);
+        if(serviceNodes != null && serviceNodes.getLength() > 0) {         
+            service = new Service(getAttributeValue("//component/service", "name"));
             
             //Methods
             List<Method> methodList = new ArrayList<Method>();
@@ -241,12 +228,20 @@ public class RestComponentData {
                     Node method = methods.item(i);
                     NamedNodeMap attrList = method.getAttributes();
                     String methodName = null;
+                    String serviceName = null;
+                    String portName = null;
                     String type = null;
                     String typeUrl = null;
                     String url = null;
                     Attr nameAttr = (Attr) attrList.getNamedItem("name");
                     if(nameAttr != null)
                         methodName = nameAttr.getNodeValue();
+                    Attr serviceNameAttr = (Attr) attrList.getNamedItem("serviceName");
+                    if(serviceNameAttr != null)
+                        serviceName = serviceNameAttr.getNodeValue();
+                    Attr portNameAttr = (Attr) attrList.getNamedItem("portName");
+                    if(portNameAttr != null)
+                        portName = portNameAttr.getNodeValue();
                     Attr urlAttr = (Attr) attrList.getNamedItem("url");
                     if(urlAttr != null)
                         url = urlAttr.getNodeValue();
@@ -255,7 +250,8 @@ public class RestComponentData {
                         type = typeAttr.getNodeValue();
                     
                     if(methodName != null)
-                        service.addMethod(new Method(methodName, type, url));
+                        service.addMethod(new Method(methodName, 
+                                serviceName, portName, type, url));
                 }
             }
         } else {
@@ -310,21 +306,16 @@ public class RestComponentData {
     
     public class Service {
         private String name;
-        private String portName;
+        
         private List<Method> methodList = Collections.emptyList();
         
-        public Service(String name, String portName) {
+        public Service(String name) {
             this.name = name;
-            this.portName = portName;
             this.methodList = new ArrayList<Method>();
         }
         
         public String getName() {
             return name;
-        }
-        
-        public String getPortName() {
-            return portName;
         }
         
         public List<Method> getMethods() {
@@ -338,6 +329,8 @@ public class RestComponentData {
     
     public class Method {
         private String name;
+        private String serviceName;
+        private String portName;
         /*'type' defines the type of service WSDL, WADL etc.,
             For WSDL it is WSDL or 'http://schemas.xmlsoap.org/wsdl/' or
             WSDL:[http://schemas.xmlsoap.org/wsdl/],
@@ -348,14 +341,25 @@ public class RestComponentData {
         //URL of document (In case of WSDL it is the url of WSDL document)
         private String url;
         
-        public Method(String name, String type, String url) {
+        public Method(String name, String serviceName, String portName, 
+                String type, String url) {
             this.name = name;
+            this.serviceName = serviceName;
+            this.portName = portName;
             this.type = type;
             this.url = url;
         }
         
         public String getName() {
             return name;
+        }
+        
+        public String getServiceName() {
+            return serviceName;
+        }
+        
+        public String getPortName() {
+            return portName;
         }
         
         public String getType() {

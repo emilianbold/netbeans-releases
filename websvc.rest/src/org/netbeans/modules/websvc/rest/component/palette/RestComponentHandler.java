@@ -57,7 +57,7 @@ public class RestComponentHandler implements ActiveEditorDrop {
         
         Lookup pItem = RestPaletteFactory.getCurrentPaletteItem();
         Node n = pItem.lookup(Node.class);
-        final RestComponentData data = (RestComponentData) n.getValue("RestComponentData");
+        final RestComponentData data = RestPaletteFactory.getRestComponentData(n);
         final String type = data.getService().getMethods().get(0).getType();
         generatorTask = RequestProcessor.getDefault().create(new Runnable() {
             public void run() {

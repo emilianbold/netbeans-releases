@@ -21,31 +21,36 @@ import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import javax.swing.text.BadLocationException;
+import javax.xml.parsers.ParserConfigurationException;
 import org.netbeans.spi.palette.PaletteController;
 import org.openide.cookies.EditorCookie;
-import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
+import org.openide.filesystems.FileRenameEvent;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.MultiDataObject;
 import org.openide.nodes.CookieSet;
 import org.openide.util.Exceptions;
 import org.openide.windows.TopComponent;
+import org.xml.sax.SAXException;
 
 /**
  *
  * @author Ayub Khan
  */
-public class RestPaletteListener implements PropertyChangeListener {
+public class RestPaletteListener implements PropertyChangeListener, FileChangeListener {
     
     public static final String REST_TEMPLATE = "@UriTemplate";
     
     PaletteController pc = null;
     
     public void propertyChange(PropertyChangeEvent evt) {
-        /*System.out.println("evt: "+evt.getPropertyName()+" "+
-                evt.getOldValue()+" "+evt.getNewValue());*/
         if(evt.getPropertyName().equals(TopComponent.Registry.PROP_ACTIVATED )) {
             if(pc == null)
                 pc = RestPaletteFactory.createPalette();
+            if(pc == null)
+                return;
             TopComponent activeTc = TopComponent.getRegistry().getActivated();
             if( null != activeTc ) {
                 DataObject d = activeTc.getLookup().lookup(DataObject.class);
@@ -95,9 +100,42 @@ public class RestPaletteListener implements PropertyChangeListener {
                 return doc.getText(0, doc.getLength()).
                         indexOf(REST_TEMPLATE) != -1;
             }
-        }
-        catch (BadLocationException ex) {
+        } catch (BadLocationException ex) {
         }
         return false;
+    }
+
+    public void fileFolderCreated(FileEvent fe) {
+        //ignore
+    }
+
+    public void fileDataCreated(FileEvent fe) {
+        try {
+            RestPaletteFactory.createPaletteItemFromComponent(fe.getFile());
+        } catch (IOException ex) {
+        } catch (ParserConfigurationException ex) {
+        } catch (SAXException ex) {
+        }
+    }
+
+    public void fileChanged(FileEvent fe) {
+        try {
+            RestPaletteFactory.createPaletteItemFromComponent(fe.getFile());
+        } catch (IOException ex) {
+        } catch (ParserConfigurationException ex) {
+        } catch (SAXException ex) {
+        }
+    }
+
+    public void fileDeleted(FileEvent fe) {
+        RestPaletteFactory.updateAllPaletteItems();
+    }
+
+    public void fileRenamed(FileRenameEvent fe) {
+        //ignore
+    }
+
+    public void fileAttributeChanged(FileAttributeEvent fe) {
+        //ignore
     }
 }

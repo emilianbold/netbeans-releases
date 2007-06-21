@@ -20,6 +20,8 @@ import java.beans.BeanInfo;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.util.ArrayList;
+import java.util.List;
 import javax.xml.parsers.*;
 import javax.xml.xpath.*;
 import org.netbeans.spi.palette.PaletteController;
@@ -45,113 +47,166 @@ public class RestPaletteFactory {
     
     public static final String REST_COMPONENTS_FOLDER = "RestComponents";
     
+    private static final String REST_COMPONENT_DATA = "RestComponentData";
+    
     private static PaletteController pc = null;
+    
+    private static boolean paletteUpdateInProgress = false;
     
     public RestPaletteFactory() {
     }
     
     public static PaletteController createPalette() {
         try {
-            RestPaletteFactory pf = new RestPaletteFactory();
-            pf.getPaletteRoot(); //create palette root REST_PALETTE_FOLDER if necessary
-            pc = PaletteFactory.createPalette(REST_PALETTE_FOLDER,
-                    new RestPaletteActions());
-            pf.populatePaletteItems(pc);
+            getPaletteRoot();
+            PaletteController pc = PaletteFactory.createPalette(REST_PALETTE_FOLDER, new RestPaletteActions());
+            setPaletteController(pc);
+            updateAllPaletteItems();
             return pc;
-        } catch (ParserConfigurationException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (SAXException ex) {
-            Exceptions.printStackTrace(ex);
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
         return null;
     }
     
-    public void populatePaletteItems(PaletteController pc)
-            throws IOException, ParserConfigurationException, SAXException {
-        //Find all REST components from /RestComponents in layer.xml
-        String folderName = REST_COMPONENTS_FOLDER;
-        FileObject rcFolder = getRestComponentsFolder(folderName);
-        for(FileObject fo: rcFolder.getChildren()) {
-            System.out.println("file: " + fo.getNameExt());
-            DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-            DocumentBuilder db = dbf.newDocumentBuilder();
-            Document doc = db.parse(fo.getInputStream());
-            RestComponentData data = new RestComponentData(doc);
-            
-            String itemsFolderPath = data.getCategoryPath();
-            FileObject root = getPaletteRoot();
-            FileObject itemsFolder1 = createItemsFolder(root, itemsFolderPath);
-            String itemsFolderDisplay = data.getCategoryName();
-            if(itemsFolderDisplay != null) {
-                DataObject d = DataObject.find(itemsFolder1);
-                if(d != null && d.getNodeDelegate() != null)
-                    d.getNodeDelegate().setDisplayName(itemsFolderDisplay);
-            }
-            String displayName = data.getName();
-            String description = data.getDescription();
-            Node itemNode1 = createItemNode(itemsFolder1, getComponentFile(data),
-                    data.getClassName(), data.getIcon16(), data.getIcon32(), displayName, description);
-            itemNode1.setValue("RestComponentData", data);
-            System.out.println("test url: "+itemNode1.getValue("url"));
-        }
+    public synchronized static PaletteController getPaletteController() {
+        return pc;
+    }
+    
+    public synchronized static void setPaletteController(PaletteController pController) {
+        pc = pController;
+    }
+    
+    public synchronized static boolean isPaletteUpdateInProgress() {
+        return paletteUpdateInProgress;
+    }
+    
+    public synchronized static void setPaletteUpdateInProgress(boolean inProgress) {
+        paletteUpdateInProgress = inProgress;
     }
     
     //----------------------------------   helpers  ------------------------------------------------------------------
+        
+    public static void updateAllPaletteItems() {
+        try {
+            setPaletteUpdateInProgress(true);
+            for (org.openide.filesystems.FileObject fo : getAllRestComponentFiles()) {
+                try {
+                    createPaletteItemFromComponent(fo, false);
+                } catch (javax.xml.parsers.ParserConfigurationException ex) {
+                } catch (org.xml.sax.SAXException ex) {
+                } catch (java.io.IOException ex) {
+                }
+            }
+            
+        } catch (IOException ex) {
+        }
+        setPaletteUpdateInProgress(false);
+    }
     
-    private String getComponentFile(RestComponentData data) {
+    public static boolean createPaletteItemFromComponent(FileObject fo) 
+            throws IOException, ParserConfigurationException, SAXException {
+        return createPaletteItemFromComponent(fo, true);
+    }
+    
+    private static boolean createPaletteItemFromComponent(FileObject fo, boolean skipInProgress)
+            throws IOException, ParserConfigurationException, SAXException {
+        if(skipInProgress && isPaletteUpdateInProgress())
+            return false;
+        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+        DocumentBuilder db = dbf.newDocumentBuilder();
+        Document doc = db.parse(fo.getInputStream());
+        RestComponentData data = new RestComponentData(doc);
+
+        String itemsFolderPath = data.getCategoryPath();
+        FileObject root = getPaletteRoot();
+        FileObject itemsFolder1 = createItemsFolder(root, itemsFolderPath);
+        String itemsFolderDisplay = data.getCategoryName();
+        if(itemsFolderDisplay != null) {
+            DataObject d = DataObject.find(itemsFolder1);
+            if(d != null && d.getNodeDelegate() != null)
+                d.getNodeDelegate().setDisplayName(itemsFolderDisplay);
+        }
+        String displayName = data.getDisplayName();
+        String description = data.getDescription();
+        Node itemNode1 = createItemNode(itemsFolder1, getComponentFileName(data),
+                data.getClassName(), data.getIcon16(), data.getIcon32(), displayName, description);
+        setRestComponentData(itemNode1, data);
+        return true;
+    }
+    
+    public static RestComponentData getRestComponentData(Node itemNode) {
+        if(itemNode != null)
+            return (RestComponentData) itemNode.getValue(REST_COMPONENT_DATA);
+        return null;
+    }
+    
+    public static void setRestComponentData(Node itemNode, RestComponentData data) {
+        itemNode.setValue(REST_COMPONENT_DATA, data);
+    }
+    
+    public static List<FileObject> getAllRestComponentFiles() throws IOException {
+        List<FileObject> files = new ArrayList<FileObject>();
+        FileObject rcFolder = getRestComponentsFolder();
+        getAllRestComponentFiles(rcFolder, files);
+        return files;
+    }
+    
+    public static void getAllRestComponentFiles(FileObject rcFolder, List<FileObject> files) throws IOException {
+        for(FileObject fo: rcFolder.getChildren()) {
+            if(fo.isFolder())
+                getAllRestComponentFiles(fo, files);
+            else
+                files.add(fo);
+        }
+    }
+    
+    public static String getComponentFileName(RestComponentData data) {
         return data.getName() + ".xml";
     }
     
-    private FileObject createItemsFolder(FileObject root, String itemsFolder) throws IOException {
+    public static FileObject createItemsFolder(FileObject root, String itemsFolder) throws IOException {
+        if(root == null)
+            throw new IOException("Rest Palette Folder null");
+        if(itemsFolder == null)
+            throw new IOException("Folder name null");
         FileObject fooCategory = root.getFileObject(itemsFolder);
         if(fooCategory == null)
             fooCategory = FileUtil.createFolder(root,itemsFolder);
         return fooCategory;
     }
     
-    private Node createItemNode(FileObject itemsFolder, String name,
+    public static Node createItemNode(FileObject itemsFolder, String name,
             String className, String icon16, String icon32, String displayName,
             String description)
             throws IOException, ParserConfigurationException, SAXException {
         FileObject itemFile = createItemFileWithActiveEditorDrop(itemsFolder, name,
                 className, icon16, icon32, displayName, description);
         Node itemNode = DataObject.find(itemFile).getNodeDelegate();
-        System.out.println("Item display name. "+itemNode.getDisplayName());
-        System.out.println("Item description. "+itemNode.getShortDescription());
-        System.out.println("Item small icon. "+itemNode.getIcon(BeanInfo.ICON_COLOR_16x16));
-        System.out.println("Item big icon. "+itemNode.getIcon(BeanInfo.ICON_COLOR_32x32));
         itemNode.setHidden(false);
         
         getPaletteRoot().refresh();
         
         Object o = itemNode.getLookup().lookup(ActiveEditorDrop.class);
-        System.out.println("Item does not contain ActiveEditorDrop implementation in its lookup."+o);
         return itemNode;
     }
     
-    private Node createItemNode(FileObject itemsFolder, String name,
+    public static Node createItemNode(FileObject itemsFolder, String name,
             String className, String icon16, String icon32, String bundleName,
             String nameKey, String toolTipKey)
             throws IOException, ParserConfigurationException, SAXException {
         FileObject itemFile = createItemFileWithActiveEditorDrop(itemsFolder, name,
                 className, icon16, icon32, bundleName, nameKey, toolTipKey);
         Node itemNode = DataObject.find(itemFile).getNodeDelegate();
-        System.out.println("Item display name. "+itemNode.getDisplayName());
-        System.out.println("Item description. "+itemNode.getShortDescription());
-        System.out.println("Item small icon. "+itemNode.getIcon(BeanInfo.ICON_COLOR_16x16));
-        System.out.println("Item big icon. "+itemNode.getIcon(BeanInfo.ICON_COLOR_32x32));
         itemNode.setHidden(false);
         
         getPaletteRoot().refresh();
         
         Object o = itemNode.getLookup().lookup(ActiveEditorDrop.class);
-        System.out.println("Item does not contain ActiveEditorDrop implementation in its lookup."+o);
         return itemNode;
     }
     
-    private FileObject createItemFileWithActiveEditorDrop(FileObject itemsFolder,
+    public static FileObject createItemFileWithActiveEditorDrop(FileObject itemsFolder,
             String itemFile, String className, String icon16, String icon32,
             String displayName, String description) throws IOException {
         FileObject fo = itemsFolder.getFileObject(itemFile);
@@ -182,7 +237,7 @@ public class RestPaletteFactory {
         return fo;
     }
     
-    private FileObject createItemFileWithActiveEditorDrop(FileObject itemsFolder,
+    public static FileObject createItemFileWithActiveEditorDrop(FileObject itemsFolder,
             String itemFile, String className, String icon16, String icon32,
             String bundleName, String nameKey, String toolTipKey) throws IOException {
         FileObject fo = itemsFolder.getFileObject(itemFile);
@@ -210,7 +265,7 @@ public class RestPaletteFactory {
         return fo;
     }
     
-    private FileObject getPaletteRoot() throws IOException {
+    public static FileObject getPaletteRoot() throws IOException {
         FileSystem fs = Repository.getDefault().getDefaultFileSystem();
         FileObject paletteRoot = fs.findResource(REST_PALETTE_FOLDER);
         if(paletteRoot == null)
@@ -218,17 +273,13 @@ public class RestPaletteFactory {
         return paletteRoot;
     }
     
-    private FileObject getRestComponentsFolder(String folderName) throws IOException {
-        FileObject paletteFolder;
+    public static FileObject getRestComponentsFolder() throws IOException {
+        String compFolderName = REST_COMPONENTS_FOLDER;
         FileSystem fs = Repository.getDefault().getDefaultFileSystem();
-        paletteFolder = fs.findResource(folderName);
-        if (paletteFolder == null) { // not found, cannot continue
-            throw new FileNotFoundException(folderName);
-        }
-        return paletteFolder;
+        return fs.findResource(compFolderName);
     }
     
     public static Lookup getCurrentPaletteItem() {
-        return pc.getSelectedItem();
+        return getPaletteController().getSelectedItem();
     }
 }
