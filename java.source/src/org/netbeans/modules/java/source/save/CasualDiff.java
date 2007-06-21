@@ -237,8 +237,10 @@ public class CasualDiff {
             // ! specifies the offset for insertHint var.
             // public class Yerba<E, M>! { ...
             insertHint = endPos(oldT.typarams.last());
-            TokenUtilities.moveFwdToToken(tokenSequence, insertHint, JavaTokenId.GT);
-            insertHint = tokenSequence.offset() + JavaTokenId.GT.fixedText().length();
+            tokenSequence.move(insertHint);
+            PositionEstimator.moveToSrcRelevant(tokenSequence, Direction.FORWARD);
+            // it can be > (GT) or >> (SHIFT)
+            insertHint = tokenSequence.offset() + tokenSequence.token().length();
         }
         switch (getChangeKind(oldT.extending, newT.extending)) {
             case NOCHANGE:
@@ -372,6 +374,9 @@ public class CasualDiff {
                     printer,
                     Measure.ARGUMENT
             );
+            if (parens && oldT.typarams.isEmpty()) {
+                printer.print(" "); // print the space after type parameter
+            }
         }
         if (oldT.restype != null) { // means constructor, skip return type gen.
             int[] restypeBounds = getBounds(oldT.restype);
@@ -1639,7 +1644,6 @@ public class CasualDiff {
         }
         if (printParens && oldList.isEmpty()) {
             buf.print(makeAround[1].fixedText());
-            buf.print(" "); // part of options?
         }
         return oldList.isEmpty() ? pos : endPos(oldList);
     }
