@@ -49,13 +49,13 @@ public class JavaI18nString extends I18nString {
     protected JavaI18nString(JavaI18nString copy) {
         super(copy);
         if (arguments == null) return;
-        this.arguments = (String[]) copy.arguments.clone();
+        this.arguments = copy.arguments.clone();
     }
     
     public void become(JavaI18nString i18nString) {
         super.become(i18nString);
         
-        JavaI18nString peer = (JavaI18nString) i18nString;
+        JavaI18nString peer = i18nString;
         this.setArguments(peer.arguments);
     }
     

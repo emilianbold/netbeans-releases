@@ -13,21 +13,18 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 
 package org.netbeans.modules.i18n;
 
-
 import java.io.IOException;
 import javax.swing.JPanel;
 import javax.swing.text.StyledDocument;
-
 import org.openide.cookies.EditorCookie;
 import org.openide.loaders.DataObject;
-
 
 /**
  * Abstract class. Supports 'one i18n session' -> i18n-zing of one source file.
@@ -60,7 +57,7 @@ public abstract class I18nSupport {
     public I18nSupport(DataObject sourceDataObject) {
         this.sourceDataObject = sourceDataObject;
         
-        EditorCookie editorCookie = (EditorCookie)sourceDataObject.getCookie(EditorCookie.class);
+        EditorCookie editorCookie = sourceDataObject.getCookie(EditorCookie.class);
         
         if(editorCookie == null)
             throw new IllegalArgumentException("I18N: Illegal data object type"+ sourceDataObject); // NOI18N
@@ -75,7 +72,7 @@ public abstract class I18nSupport {
      * work on document is necessary. */
     private void loadDocument() throws IOException {
         if(document == null) {
-            EditorCookie editorCookie = (EditorCookie)sourceDataObject.getCookie(EditorCookie.class);
+            EditorCookie editorCookie = sourceDataObject.getCookie(EditorCookie.class);
 
             if(editorCookie == null)
                 throw new IllegalArgumentException("I18N: Illegal data object type"+ sourceDataObject); // NOI18N
