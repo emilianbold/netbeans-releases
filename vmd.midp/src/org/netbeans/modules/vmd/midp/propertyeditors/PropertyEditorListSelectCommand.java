@@ -56,29 +56,27 @@ import org.openide.util.NbBundle;
  * @author Karol Harezlak
  */
 public final class PropertyEditorListSelectCommand extends PropertyEditorUserCode implements PropertyEditorElement {
-    
+
     private long componentID;
-    
+
     private final List<String> tags = new ArrayList<String>();
     private final Map<String, DesignComponent> values = new TreeMap<String, DesignComponent>();
-    
+
     private CustomEditor customEditor;
     private JRadioButton radioButton;
     private TypeID typeID;
-    
+
     private String noneItem;
     private String defaultItem;
-    
+
     public static PropertyEditorListSelectCommand create() {
-        String mnemonic =  NbBundle.getMessage(PropertyEditorListSelectCommand.class, "LBL_SEL_COMMAND_STR");
-        String noneItem = NbBundle.getMessage(PropertyEditorListSelectCommand.class, "LBL_SELECTCOMMAND_NONE");  // NOI18N
-        String defaultItem  = NbBundle.getMessage(PropertyEditorListSelectCommand.class, "LBL_SELECTCOMMAND_DEFAULT");  // NOI18N
-        
+        String mnemonic = NbBundle.getMessage(PropertyEditorListSelectCommand.class, "LBL_SEL_COMMAND_STR");
+        String noneItem = NbBundle.getMessage(PropertyEditorListSelectCommand.class, "LBL_SELECTCOMMAND_NONE"); // NOI18N
+        String defaultItem = NbBundle.getMessage(PropertyEditorListSelectCommand.class, "LBL_SELECTCOMMAND_DEFAULT"); // NOI18N
         return new PropertyEditorListSelectCommand(ListSelectCommandCD.TYPEID, mnemonic, noneItem, defaultItem);
     }
-    
+
     public PropertyEditorListSelectCommand(TypeID typeID, String mnemonic, String noneItem, String defaultItem) {
-        super();
         initComponents();
         this.typeID = typeID;
         Mnemonics.setLocalizedText(radioButton, mnemonic);
@@ -88,49 +86,49 @@ public final class PropertyEditorListSelectCommand extends PropertyEditorUserCod
         elements.add(this);
         initElements(elements);
     }
-    
+
     private void initComponents() {
         radioButton = new JRadioButton();
-        
+
         customEditor = new CustomEditor();
         radioButton.addActionListener(customEditor);
     }
-    
+
     public JComponent getCustomEditorComponent() {
         return customEditor;
     }
-    
+
     public JRadioButton getRadioButton() {
         return radioButton;
     }
-    
+
     public boolean isInitiallySelected() {
         return true;
     }
-    
+
     public boolean isVerticallyResizable() {
         return false;
     }
-    
+
     public String getAsText() {
         if (isCurrentValueAUserCodeType()) {
             return USER_CODE_TEXT;
         } else if (isCurrentValueANull()) {
             return noneItem;
         }
-        
+
         PropertyValue value = (PropertyValue) super.getValue();
         return getDecodeValue(value);
     }
-    
+
     public String getText() {
         return null;
     }
-    
+
     public void setText(String text) {
         saveValue(text);
     }
-    
+
     public void setPropertyValue(PropertyValue value) {
         customEditor.updateModel();
         if (isCurrentValueANull() || value == null) {
@@ -140,7 +138,7 @@ public final class PropertyEditorListSelectCommand extends PropertyEditorUserCod
         }
         radioButton.setSelected(!isCurrentValueAUserCodeType());
     }
-    
+
     private void saveValue(String text) {
         if (text.length() > 0) {
             if (noneItem.equals(text)) {
@@ -150,26 +148,27 @@ public final class PropertyEditorListSelectCommand extends PropertyEditorUserCod
             }
         }
     }
-    
+
     public void customEditorOKButtonPressed() {
         if (radioButton.isSelected()) {
             saveValue(customEditor.getText());
         }
     }
-    
+
     public String[] getTags() {
         if (isCurrentValueAUserCodeType()) {
             return null;
         }
-        
+
         tags.clear();
         tags.add(noneItem);
         values.clear();
         values.put(noneItem, null);
-        
+
         final DesignDocument document = ActiveDocumentSupport.getDefault().getActiveDocument();
         if (document != null) {
-            document.getTransactionManager().writeAccess( new Runnable() {
+            document.getTransactionManager().writeAccess(new Runnable() {
+
                 public void run() {
                     Collection<DesignComponent> components = MidpDocumentSupport.getCategoryComponent(document, CommandsCategoryCD.TYPEID).getComponents();
                     Collection<DesignComponent> commands = new ArrayList<DesignComponent>(components.size());
@@ -179,10 +178,10 @@ public final class PropertyEditorListSelectCommand extends PropertyEditorUserCod
                             commands.add(command);
                         }
                     }
-                    
+
                     tags.add(defaultItem);
                     values.put(defaultItem, getListSelectCommand(document));
-                    
+
                     for (DesignComponent command : commands) {
                         String displayName = getComponentDisplayName(command);
                         tags.add(displayName);
@@ -191,58 +190,62 @@ public final class PropertyEditorListSelectCommand extends PropertyEditorUserCod
                 }
             });
         }
-        
+
         return tags.toArray(new String[tags.size()]);
     }
-    
+
     private DesignComponent getListSelectCommand(DesignDocument document) {
         return MidpDocumentSupport.getSingletonCommand(document, typeID);
     }
-    
+
     public void init(DesignComponent component) {
         super.init(component);
         componentID = component.getComponentID();
     }
-    
+
     private String getComponentDisplayName(DesignComponent component) {
         return MidpValueSupport.getHumanReadableString(component);
     }
-    
-    private String getDecodeValue(final PropertyValue value){
+
+    private String getDecodeValue(final PropertyValue value) {
         final String[] decodeValue = new String[1];
-        final DesignDocument document = ActiveDocumentSupport.getDefault().getActiveDocument();
-        if (document != null) {
-            document.getTransactionManager().readAccess(new Runnable() {
-                public void run() {
-                    DesignComponent valueComponent = value.getComponent();
-                    if (valueComponent != null) {
-                        PropertyValue pv = valueComponent.readProperty(CommandEventSourceCD.PROP_COMMAND);
-                        if (pv != null) {
-                            DesignComponent refComponent = pv.getComponent();
-                            if (refComponent != null && refComponent.equals(getListSelectCommand(document))) {
-                                decodeValue[0] = defaultItem;
+        final DesignComponent valueComponent = value.getComponent();
+        if (valueComponent != null) {
+            final DesignDocument document = valueComponent.getDocument();
+            if (document != null) {
+                document.getTransactionManager().readAccess(new Runnable() {
+                    public void run() {
+                        DesignComponent valueComponent = value.getComponent();
+                        if (valueComponent != null) {
+                            PropertyValue pv = valueComponent.readProperty(CommandEventSourceCD.PROP_COMMAND);
+                            if (pv != null) {
+                                DesignComponent refComponent = pv.getComponent();
+                                if (refComponent != null && refComponent.equals(getListSelectCommand(document))) {
+                                    decodeValue[0] = defaultItem;
+                                } else {
+                                    decodeValue[0] = getComponentDisplayName(valueComponent);
+                                }
                             } else {
-                                decodeValue[0] = getComponentDisplayName(valueComponent);
+                                decodeValue[0] = noneItem;
                             }
                         } else {
                             decodeValue[0] = noneItem;
                         }
-                    } else {
-                        decodeValue[0] = noneItem;
                     }
-                }
-            });
+                });
+            }
         }
-        
+
         return decodeValue[0];
     }
-    
-    
+
+
     private DesignComponent getCommandEvenSource(final String name) {
         final DesignComponent[] itemCommandEvenSource = new DesignComponent[1];
         final DesignDocument document = ActiveDocumentSupport.getDefault().getActiveDocument();
         if (document != null) {
-            document.getTransactionManager().writeAccess( new Runnable() {
+            document.getTransactionManager().writeAccess(new Runnable() {
+
                 public void run() {
                     DesignComponent command = values.get(name);
                     DesignComponent list = document.getComponentByUID(componentID);
@@ -254,23 +257,25 @@ public final class PropertyEditorListSelectCommand extends PropertyEditorUserCod
                             break;
                         }
                     }
-                    
-                    if (itemCommandEvenSource[0] == null) { // create new ItemCommandEvenSource
-                        itemCommandEvenSource[0] = MidpDocumentSupport.attachCommandToDisplayable(list, command);
+
+                    if (itemCommandEvenSource[0] == null) {
+                        // create new ItemCommandEvenSource
+itemCommandEvenSource[0] = MidpDocumentSupport.attachCommandToDisplayable(list, command);
                     }
                 }
             });
         }
         return itemCommandEvenSource[0];
     }
-    
+
     private class CustomEditor extends JPanel implements ActionListener {
+
         private JComboBox combobox;
-        
+
         public CustomEditor() {
             initComponents();
         }
-        
+
         private void initComponents() {
             setLayout(new BorderLayout());
             combobox = new JComboBox();
@@ -278,17 +283,18 @@ public final class PropertyEditorListSelectCommand extends PropertyEditorUserCod
             combobox.addActionListener(this);
             add(combobox, BorderLayout.CENTER);
         }
-        
+
         public void setValue(final PropertyValue value) {
             if (value == null) {
                 combobox.setSelectedItem(noneItem);
                 return;
             }
-            
+
             final PropertyValue[] cmdValue = new PropertyValue[1];
             final DesignDocument document = ActiveDocumentSupport.getDefault().getActiveDocument();
             if (document != null) {
                 document.getTransactionManager().readAccess(new Runnable() {
+
                     public void run() {
                         cmdValue[0] = value.getComponent().readProperty(CommandEventSourceCD.PROP_COMMAND);
                     }
@@ -306,11 +312,11 @@ public final class PropertyEditorListSelectCommand extends PropertyEditorUserCod
                 }
             }
         }
-        
+
         public String getText() {
             return (String) combobox.getSelectedItem();
         }
-        
+
         public void updateModel() {
             DefaultComboBoxModel model = (DefaultComboBoxModel) combobox.getModel();
             model.removeAllElements();
@@ -318,7 +324,7 @@ public final class PropertyEditorListSelectCommand extends PropertyEditorUserCod
                 model.addElement(tag);
             }
         }
-        
+
         public void actionPerformed(ActionEvent evt) {
             radioButton.setSelected(true);
         }
