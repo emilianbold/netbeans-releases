@@ -754,6 +754,7 @@ public class Widget {
 
     /**
      * Returns a mouse cursor for a specified local location in the widget.
+     * @param localLocation the local location
      * @return the mouse cursor; default implementation return value of cursor property.
      * @since 2.3
      */
