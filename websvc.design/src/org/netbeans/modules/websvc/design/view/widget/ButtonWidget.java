@@ -36,15 +36,18 @@ import org.netbeans.api.visual.border.Border;
 import org.netbeans.api.visual.border.BorderFactory;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.widget.Scene;
+import org.netbeans.api.visual.widget.Widget;
 
 /**
  * @author Ajit Bhate
  */
-public class ButtonWidget extends AbstractMouseActionsWidget implements PropertyChangeListener{
+public class ButtonWidget extends Widget implements PropertyChangeListener{
     
     private ImageLabelWidget button;
     private Action action;
     private Insets margin = new Insets(2, 2, 2, 2);
+    private boolean rollover = false;
+    private boolean pressed = false;
     
     /**
      *
@@ -137,7 +140,7 @@ public class ButtonWidget extends AbstractMouseActionsWidget implements Property
             setButtonEnabled((Boolean)evt.getNewValue());
         }
     }
-
+    
     /**
      *
      * @return
@@ -195,11 +198,49 @@ public class ButtonWidget extends AbstractMouseActionsWidget implements Property
         return getButton().isEnabled();
     }
     
+    protected boolean isPressed() {
+        return pressed;
+    }
+    
+    protected  void setPressed(boolean flag) {
+        if(flag!=pressed) {
+            pressed = flag;
+            repaint();
+        }
+    }
+    
+    protected boolean isRolledOver() {
+        return rollover;
+    }
+    
+    protected  void setRolledOver(boolean flag) {
+        if(flag!=rollover) {
+            rollover = flag;
+            repaint();
+        }
+    }
+    
+    public void updateState(ButtonAction.ButtonState state, boolean buttonClicked) {
+        switch (state) {
+        case FOCUS_GAINED:
+            if(!isRolledOver()) setRolledOver(true);
+            break;
+        case FOCUS_LOST:
+            if(isRolledOver()) setRolledOver(false);
+            break;
+        case PRESSED:
+            if(!isPressed()) setPressed(true);
+            break;
+        case RELEASED:
+            if(isPressed()) setPressed(false);
+            if(buttonClicked) actionPerformed();
+            break;
+        }
+    }
     /**
      * Called when mouse is clicked on the widget.
      */
-    public void mouseClicked() {
-        super.mouseClicked();
+    public void actionPerformed() {
         //simply delegate to swing action
         if(isButtonEnabled() && action!=null) {
             action.actionPerformed(new ActionEvent(this,0, getActionCommand()));
@@ -219,9 +260,7 @@ public class ButtonWidget extends AbstractMouseActionsWidget implements Property
         return new ImageLabelWidget(scene,image,label);
     }
     
-    protected static class ButtonBorder implements Border, MouseActions {
-        private boolean rollover = false;
-        private boolean pressed = false;
+    protected static class ButtonBorder implements Border {
         private ButtonWidget button;
         private Insets insets;
         
@@ -241,7 +280,7 @@ public class ButtonWidget extends AbstractMouseActionsWidget implements Property
                     (rect.x+0.5, rect.y+0.5, rect.width-1, rect.height-1, 6, 6);
             if (button.isButtonEnabled()) {
                 
-                if (pressed) {
+                if (button.isPressed()) {
                     g2.setPaint(new Color(0xCCCCCC));
                     g2.fill(buttonRect);
                 } else if (button.isOpaque()){
@@ -253,7 +292,7 @@ public class ButtonWidget extends AbstractMouseActionsWidget implements Property
                 }
                 
                 g2.setPaint(BORDER_COLOR);
-                if (rollover) {
+                if (button.isRolledOver()) {
                     g2.setPaint(BORDER_COLOR);
                     g2.draw(new RoundRectangle2D.Double(rect.x + 1.5, rect.y + 1.5,
                             rect.width - 3, rect.height - 3, 3, 3));
@@ -274,37 +313,6 @@ public class ButtonWidget extends AbstractMouseActionsWidget implements Property
         
         public boolean isOpaque() {
             return false;
-        }
-        
-        protected boolean isPressed() {
-            return pressed;
-        }
-        
-        protected  void setPressed(boolean flag) {
-            pressed = flag;
-        }
-        
-        protected  void setRolledOver(boolean flag) {
-            rollover = flag;
-        }
-        
-        public void mousePressed() {
-            setPressed(true);
-        }
-        
-        public void mouseReleased() {
-            setPressed(false);
-        }
-        
-        public void mouseEntered() {
-            setRolledOver(true);
-        }
-        
-        public void mouseExited() {
-            setRolledOver(false);
-        }
-        
-        public void mouseClicked() {
         }
         
     }
@@ -328,7 +336,5 @@ public class ButtonWidget extends AbstractMouseActionsWidget implements Property
     private static final Color BACKGROUND_COLOR_1 = new Color(0xD2D2DD);
     private static final Color BACKGROUND_COLOR_2 = new Color(0xF8F8F8);
     private static final Color BACKGROUND_COLOR_DISABLED = new Color(0xE4E4E4);
-    private static final Color ENABLED_TEXT_COLOR = new Color(0x222222);
-    private static final Color DISABLED_TEXT_COLOR = new Color(0x888888);
-
+    
 }

@@ -155,7 +155,7 @@ public class OperationsWidget extends AbstractTitledWidget {
     }
     
     public void notifyAdded() {
-//        super.notifyAdded();
+        super.notifyAdded();
         operationSelectionListener = new ObjectSceneAdapter() {
             public void selectionChanged(ObjectSceneEvent event,
                     Set<Object> previousSelection, Set<Object> newSelection) {
@@ -175,7 +175,7 @@ public class OperationsWidget extends AbstractTitledWidget {
     }
     
     public void notifyRemoved() {
-//        super.notifyRemoved();
+        super.notifyRemoved();
         if(operationSelectionListener!=null) {
             getObjectScene().removeObjectSceneListener(operationSelectionListener,
                     ObjectSceneEventType.OBJECT_SELECTION_CHANGED);
