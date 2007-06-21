@@ -1588,7 +1588,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <checkmoduleconfigs nbroot=".."/>
   </target>
 
-  <target name="index-layer-paths" depends="bootstrap" description="Create index of layer paths.">
+  <target name="index-layer-paths" depends="generate-golden-files-init" description="Create index of layer paths.">
       <property name="build" location="netbeans"/>
       <fail message="You must create a build first.">
           <condition>
@@ -1598,7 +1598,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
           </condition>
       </fail>
       <taskdef name="layerindex" classname="org.netbeans.nbbuild.LayerIndex" classpath="nbantext.jar"/>
-      <layerindex>
+      <layerindex output="${generated.files.dir}/layers.txt">
           <modules dir="${build}">
               <include name="**/*.jar"/>
           </modules>
