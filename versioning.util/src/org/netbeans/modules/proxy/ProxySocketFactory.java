@@ -409,14 +409,10 @@ public class ProxySocketFactory extends SocketFactory {
         InetSocketAddress isa = (InetSocketAddress) proxy.address();
         switch (proxy.type()) {
         case HTTP:
-            cs.setConnectionType(ConnectivitySettings.CONNECTION_VIA_HTTPS);
-            cs.setProxyHost(isa.getAddress().getHostAddress());
-            cs.setProxyPort(isa.getPort());
+            setupProxy(cs, ConnectivitySettings.CONNECTION_VIA_HTTPS, isa);
             break;
         case SOCKS:
-            cs.setConnectionType(ConnectivitySettings.CONNECTION_VIA_SOCKS);
-            cs.setProxyHost(isa.getAddress().getHostAddress());
-            cs.setProxyPort(isa.getPort());
+            setupProxy(cs, ConnectivitySettings.CONNECTION_VIA_SOCKS, isa);
             break;
         default:
         }
@@ -427,6 +423,13 @@ public class ProxySocketFactory extends SocketFactory {
             cs.setProxyPassword(prefs.get(PROXY_AUTHENTICATION_PASSWORD, null).toCharArray());
         }
         return cs;
+    }
+
+    private void setupProxy(ConnectivitySettings cs, int connectionType, InetSocketAddress inetSocketAddress) {
+        cs.setConnectionType(connectionType);
+        InetAddress address = inetSocketAddress.getAddress();
+        cs.setProxyHost((address != null) ? address.getHostAddress() : inetSocketAddress.getHostName());
+        cs.setProxyPort(inetSocketAddress.getPort());
     }
 
     private Socket createSocket(ConnectivitySettings cs, InetSocketAddress address, int timeout) throws IOException {
