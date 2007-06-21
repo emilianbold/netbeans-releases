@@ -181,7 +181,7 @@ public class wsdlRepository {
             // Skip <compapp>.wsdl and other wsdl files or directories 
             // defined under src/jbiasa/.
             if (!jbiASAChildNames.contains(fileName)) {
-                ret.addAll(MyFileUtil.listFiles(jbiASADir, filter, true));
+                ret.addAll(MyFileUtil.listFiles(file, filter, true));
             }
         }
         
