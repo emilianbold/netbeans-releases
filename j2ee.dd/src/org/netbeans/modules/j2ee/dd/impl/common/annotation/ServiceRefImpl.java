@@ -49,16 +49,18 @@ import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.Pa
 public class ServiceRefImpl implements ServiceRef {
 
     private final TypeElement typeElement;
+    private final TypeElement parentElement;
     private final Element element;
     private final AnnotationModelHelper helper;
     private String serviceRefName, wsdlFile;
     private String value, type;
     private PortComponentRef[] portComponentRefs;
 
-    public ServiceRefImpl(Element element, TypeElement typeElement, AnnotationModelHelper helper) {
+    public ServiceRefImpl(Element element, TypeElement typeElement, TypeElement parentElement, AnnotationModelHelper helper) {
         this.typeElement = typeElement;
         this.helper = helper;
         this.element = element;
+        this.parentElement=parentElement;
         Map<String, ? extends AnnotationMirror> annByType = helper.getAnnotationsByType(element.getAnnotationMirrors());
         AnnotationParser parser = AnnotationParser.create(helper);     
         parser.expectString("name",null);
@@ -85,6 +87,7 @@ public class ServiceRefImpl implements ServiceRef {
         typeElement = null;
         element = null;
         helper = null;
+        parentElement = null;
     }
     
     public URI getWsdlFile() {
@@ -99,9 +102,10 @@ public class ServiceRefImpl implements ServiceRef {
     }    
 
     public String getServiceRefName() {
-        String finalServiceRefName=null;
         if (serviceRefName!=null) {
             return serviceRefName;
+        } else if (parentElement!=null && element != null) {
+            return parentElement.getQualifiedName().toString()+"/"+element.getSimpleName().toString(); //NOI18N
         } else if (value!=null) {
             return "service/"+getClassNameFromClass(value); //NOI18N
         } else if (type!=null) {

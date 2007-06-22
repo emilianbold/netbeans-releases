@@ -309,7 +309,7 @@ public class CommonAnnotationHelper {
         // fields
         for (VariableElement field : ElementFilter.fieldsIn(typeElement.getEnclosedElements())) {
             if (helper.hasAnnotation(field.getAnnotationMirrors(), "javax.xml.ws.WebServiceRef")) { //NOI18N
-                addServiceReference(result, field, helper);
+                addServiceReference(result, field, typeElement, helper);
             }
         }
         return result;
@@ -323,7 +323,7 @@ public class CommonAnnotationHelper {
                     "javax.xml.ws.WebServiceRef", // NOI18N
                     EnumSet.of(ElementKind.FIELD),new AnnotationHandler() {
                         public void handleAnnotation(TypeElement typeElement, Element element, AnnotationMirror annotation) {
-                            addServiceReference(result, element, helper);
+                            addServiceReference(result, element, typeElement, helper);
                         }
                     });
         } catch (InterruptedException e) {
@@ -390,7 +390,7 @@ public class CommonAnnotationHelper {
         return elements.toArray(new ResourceEnvRef[elements.size()]);
     }
     
-    private static void addServiceReference(final List<ServiceRef> serviceRefs, final Element element, final AnnotationModelHelper helper) {
+    private static void addServiceReference(final List<ServiceRef> serviceRefs, final Element element, TypeElement parentElement, final AnnotationModelHelper helper) {
         TypeMirror fieldTypeMirror = element.asType();
         if (fieldTypeMirror.getKind() == TypeKind.DECLARED) {
             DeclaredType fieldDeclaredType = (DeclaredType) fieldTypeMirror;
@@ -398,7 +398,7 @@ public class CommonAnnotationHelper {
             
             if (ElementKind.INTERFACE == fieldTypeElement.getKind() || ElementKind.CLASS == fieldTypeElement.getKind() ) {
                 TypeElement typeElement = (TypeElement) fieldTypeElement;
-                ServiceRef newServiceRef = new ServiceRefImpl(element, typeElement, helper);
+                ServiceRef newServiceRef = new ServiceRefImpl(element, typeElement, parentElement, helper);
                 // test if already exists
                 ServiceRef existingServiceRef = null;
                 for (ServiceRef sr : serviceRefs) {

@@ -183,7 +183,7 @@ public class SessionImplTest extends CommonTestCase {
                 assertEquals(1, session1.getServiceRef().length);
                 assertEquals(1, session1.sizeServiceRef());
                 ServiceRef serviceRef1 = session1.getServiceRef(0);
-                assertEquals("service/FooService", serviceRef1.getServiceRefName());
+                assertEquals("foo.Foo1/service", serviceRef1.getServiceRefName());
                 assertEquals("foo.FooService", serviceRef1.getServiceInterface());
                 assertNull(serviceRef1.getWsdlFile());
                 assertEquals(0,serviceRef1.sizePortComponentRef());
@@ -203,7 +203,7 @@ public class SessionImplTest extends CommonTestCase {
                 assertEquals(1, session3.getServiceRef().length);
                 assertEquals(1, session3.sizeServiceRef());
                 ServiceRef serviceRef3 = session3.getServiceRef(0);
-                assertEquals("service/FooService", serviceRef3.getServiceRefName());
+                assertEquals("foo.Foo3/port", serviceRef3.getServiceRefName());
                 assertEquals("foo.FooService", serviceRef3.getServiceInterface());
                 assertEquals(1,serviceRef3.sizePortComponentRef());
                 PortComponentRef portComponentRef3 = serviceRef3.getPortComponentRef(0);
