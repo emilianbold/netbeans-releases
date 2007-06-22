@@ -119,7 +119,7 @@ public class SVGFileModel {
     }        
 
     public SVGImage parseSVGImage() throws IOException, BadLocationException {
-        SVGImage svgImage = m_mapping.parseDocument(m_model);
+        SVGImage svgImage = m_mapping.parseDocument(this, m_model);
         return svgImage;
     }
         
@@ -163,8 +163,15 @@ public class SVGFileModel {
         }
     }
     
+    private long m_changedTime;
+    
     protected void documentModified() {
+        m_changedTime = System.currentTimeMillis();
         setChanged(true);
+    }
+    
+    public boolean isModelStable() {
+        return System.currentTimeMillis() - m_changedTime > 2000;
     }
     
     public boolean containsAnimations() {
@@ -181,14 +188,29 @@ public class SVGFileModel {
     }
        
     private JEditorPane getOpenedEditor() {
-        //TODO should be called from AWT Thread
-        JEditorPane [] panes = edSup.getOpenedPanes();
-        
-        if (panes != null && panes.length > 0) {
-            return panes[0];
+        final JEditorPane [] panes = new JEditorPane[1];
+                
+        if ( SwingUtilities.isEventDispatchThread()) {
+            JEditorPane [] temp = edSup.getOpenedPanes();
+            if (temp != null && temp.length > 0) {
+                panes[0] = temp[0];
+            }
         } else {
-            return null;
+            try {
+                SwingUtilities.invokeAndWait( new Runnable() {
+                    public void run() {
+                        JEditorPane [] temp = edSup.getOpenedPanes();
+                        if (temp != null && temp.length > 0) {
+                            panes[0] = temp[0];
+                        }
+                    }
+                });
+            } catch( Exception e) {
+                e.printStackTrace();
+            }
         }
+        
+        return panes[0];
     }
     
     //TODO synchronize
@@ -279,7 +301,6 @@ public class SVGFileModel {
     
     public DocumentElement getElementById(String id) {
         DocumentElement elem = m_mapping.id2element(id);
-        assert elem != null : "Element with id '" + id + "' not found.";
         return elem;
     }
     
@@ -349,8 +370,13 @@ public class SVGFileModel {
     }
     
     public synchronized String describeElement(String id, boolean showTag, boolean showAttributes, String lineSep) {
-        DocumentElement de = checkIntegrity(id);
-        return describeElement( de, showTag, showAttributes, lineSep);
+        DocumentElement de = getElementById(id);
+        if (de != null) {
+            checkIntegrity(de);
+            return describeElement( de, showTag, showAttributes, lineSep);
+        } else {
+            return "";
+        }
     }
 
     private boolean eventInProgress = false;
@@ -686,11 +712,9 @@ public class SVGFileModel {
     }
     */
     private void checkIntegrity(DocumentElement de) {        
-        if ( de.getDocumentModel() != m_model ||
-             de.getDocument() != bDoc) {
-            System.out.println("Element is not part of the current document");
-            throw new RuntimeException("Element is not part of the current document");
-        }
+        assert de != null;
+        assert de.getDocument() == bDoc : "Element is not part of the current document";
+        assert de.getDocumentModel() == m_model : "Element is not part of the current document model";
     }    
     
     private DocumentElement checkIntegrity(String id) {
@@ -698,6 +722,5 @@ public class SVGFileModel {
         assert de != null : "No element with id: " + id;
         checkIntegrity(de);
         return de;
-    }
-    
+    }    
 }

@@ -51,7 +51,7 @@ public class SVGNavigatorTree extends JTree {
         firstPaint = true;
         treeModel = new DefaultTreeModel(null);
         setModel(treeModel);         
-        DocumentElement rootElement = dObj.getModel()._getDocumentModel().getRootElement();
+        DocumentElement rootElement = dObj.getModel()._getModel().getRootElement();
         SVGNavigatorNode rootTna = new SVGNavigatorNode(rootElement, this, null, VISIBILITY_DIRECT);
         treeModel.setRoot(rootTna);  
         setShowsRootHandles(true);

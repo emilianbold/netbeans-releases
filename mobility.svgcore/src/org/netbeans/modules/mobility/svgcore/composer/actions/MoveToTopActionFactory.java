@@ -49,7 +49,7 @@ public class MoveToTopActionFactory extends AbstractComposerActionFactory implem
         return m_moveToTopAction;
     }
     
-    public void selectionChanged(SVGObject[] newSelection, SVGObject[] oldSelection) {
-        m_moveToTopAction.setEnabled(newSelection != null);
+    public void selectionChanged(SVGObject[] newSelection, SVGObject[] oldSelection, boolean isReadOnly) {
+        m_moveToTopAction.setEnabled(newSelection != null && !isReadOnly);
     }    
 }

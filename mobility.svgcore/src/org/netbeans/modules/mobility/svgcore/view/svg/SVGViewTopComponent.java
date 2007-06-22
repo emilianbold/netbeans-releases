@@ -56,7 +56,10 @@ import javax.swing.JFileChooser;
 import javax.swing.JToggleButton;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.editor.structure.api.DocumentElement;
+import org.netbeans.modules.mobility.project.J2MEProject;
 import org.netbeans.modules.mobility.svgcore.ExternalEditAction;
 import org.netbeans.modules.mobility.svgcore.export.SaveElementAsImage;
 import org.netbeans.modules.mobility.svgcore.export.SaveAnimationAsImageAction;
@@ -86,6 +89,7 @@ import org.netbeans.modules.mobility.svgcore.SVGDataObject;
 import org.netbeans.modules.mobility.svgcore.composer.PerseusController;
 import org.netbeans.modules.mobility.svgcore.composer.SceneManager;
 import org.netbeans.modules.mobility.svgcore.composer.ScreenManager;
+import org.netbeans.modules.mobility.svgcore.export.ScreenSizeHelper;
 import org.netbeans.modules.mobility.svgcore.model.SVGFileModel;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -127,6 +131,7 @@ final public class SVGViewTopComponent extends CloneableTopComponent {
     private JToggleButton  hoverToggleButton;
     private JToggleButton  scaleToConfigurationToggleButton;
     private JToggleButton  showViewBoxToggleButton;
+    private JToggleButton  allowEditToggleButton;
     private ChangeListener changeListener;        
     
     private boolean doScale      = false;
@@ -145,6 +150,15 @@ final public class SVGViewTopComponent extends CloneableTopComponent {
     private ZoomOutAction           zoomOutAction;
     private ToggleShowViewBoxAction showViewBoxAction;
 
+    private AbstractSVGAction       allowEditAction = 
+        new AbstractSVGAction("allow_edit.png", "HINT_AllowEdit", "LBL_AllowEdit", true) {
+            public void actionPerformed(ActionEvent e) {
+                m_sceneMgr.setReadOnly( !m_sceneMgr.isReadOnly());
+                updateAnimationActions();
+                insertGraphicsAction.setEnabled(!m_sceneMgr.isReadOnly());
+            }
+    };            
+    
     private AbstractSVGAction       startAnimationAction = 
         new AbstractSVGAction("animate_start.png", "HINT_AnimateStart", "LBL_AnimateStart") {
             public void actionPerformed(ActionEvent e) {
@@ -201,10 +215,6 @@ final public class SVGViewTopComponent extends CloneableTopComponent {
                     }
                 }
             }
-
-        public boolean isEnabled() {
-            return true;
-        }            
     };            
     
     public SVGViewTopComponent() {    
@@ -564,8 +574,6 @@ final public class SVGViewTopComponent extends CloneableTopComponent {
                 
         initButton(toolbar, scaleToConfigurationToggleButton = new JToggleButton(scaleAction = new ToggleScaleAction()));
         initButton(toolbar, showViewBoxToggleButton = new JToggleButton(showViewBoxAction = new ToggleShowViewBoxAction()));               
-        //TODO read state somehow
-        //showViewBoxToggleButton.setSelected(m_sceneMgr.getScreenManager().getShowViewBoxOnly());
 
         toolbar.add(createToolBarSeparator(), constrains);
         
@@ -575,6 +583,9 @@ final public class SVGViewTopComponent extends CloneableTopComponent {
         initButton(toolbar, stopAnimationButton  = new JButton( stopAnimationAction));
         
         toolbar.add(createToolBarSeparator(), constrains);
+        initButton(toolbar, allowEditToggleButton = new JToggleButton(allowEditAction));               
+        allowEditToggleButton.setSelected(!m_sceneMgr.isReadOnly());
+        
         for (Action action : m_sceneMgr.getMenuActions()) {
             initButton(toolbar, new JButton( action));
         }       
@@ -630,15 +641,17 @@ final public class SVGViewTopComponent extends CloneableTopComponent {
 
     private void updateAnimationActions() {
         int state = getPerseus().getAnimatorState();
-        startAnimationAction.setEnabled(state == PerseusController.ANIMATION_NOT_RUNNING);
-        startAnimationButton.setEnabled(startAnimationAction.isEnabled());
+        boolean isReadOnly = m_sceneMgr.isReadOnly();
         
-        boolean isActive = state == PerseusController.ANIMATION_RUNNING ||
-                state == PerseusController.ANIMATION_PAUSED;
+        startAnimationAction.setEnabled(isReadOnly && state == PerseusController.ANIMATION_NOT_RUNNING);
+        //startAnimationButton.setEnabled(startAnimationAction.isEnabled());
+        
+        boolean isActive = isReadOnly && (state == PerseusController.ANIMATION_RUNNING ||
+                state == PerseusController.ANIMATION_PAUSED);
         pauseAnimationAction.setEnabled(isActive);
         stopAnimationAction.setEnabled(isActive);
-        pauseAnimationButton.setEnabled(isActive);
-        stopAnimationButton.setEnabled(isActive);
+        //pauseAnimationButton.setEnabled(isActive);
+        //stopAnimationButton.setEnabled(isActive);
     }
     
     private static JSeparator createToolBarSeparator () {
@@ -693,7 +706,7 @@ final public class SVGViewTopComponent extends CloneableTopComponent {
         // to reset the listener for FileObject changes //todo???
         //TODO replace???
         //((SVGOpenSupport)svgDataObject.getCookie(SVGOpenSupport.class)).prepareViewer();
-        initialize();
+        //initialize();
     }    
 
     protected void updateZoomCombo() {
@@ -852,17 +865,98 @@ final public class SVGViewTopComponent extends CloneableTopComponent {
     }
         
     private class ToggleScaleAction extends AbstractSVGAction {
+        private float m_previousZoomRatio;
+        
         ToggleScaleAction() {
             super( "scale.png", "HINT_ToggleScale", "LBL_ToggleScale");
         }
         
         public void actionPerformed(ActionEvent e) {
-            //TODO implement scale ??
+            ScreenManager smgr = m_sceneMgr.getScreenManager();
+            
             doScale = !doScale;
+            if (doScale) {
+                m_previousZoomRatio = smgr.getZoomRatio();
+
+                
+                String activeConfiguration = null;
+                final FileObject primaryFile = svgDataObject.getPrimaryFile ();
+                Project p = FileOwnerQuery.getOwner (primaryFile);
+                if (p != null && p instanceof J2MEProject){
+                    J2MEProject project = (J2MEProject) p;
+                    activeConfiguration = project.getConfigurationHelper().getActiveConfiguration().getDisplayName();
+                }
+                Dimension dim       = ScreenSizeHelper.getCurrentDeviceScreenSize(primaryFile, activeConfiguration);
+                Rectangle imgBounds = smgr.getImageBounds();
+                
+                float ratio = (float) (dim.getHeight() / imgBounds.getHeight());
+                smgr.setZoomRatio(ratio * m_previousZoomRatio);
+            } else {
+                smgr.setZoomRatio(m_previousZoomRatio);
+            }
             zoomInAction.setEnabled(!doScale);
             zoomOutAction.setEnabled(!doScale);
+            zoomToFitAction.setEnabled(!doScale);
+            zoomComboBox.setEnabled(!doScale);
+            repaint();
         }
     }    
+/*    
+    
+    private class ImageScaleHelper {
+        private SVGSVGElement element;
+        private J2MEProject project;
+        private PropertyChangeListener pcl;
+        private boolean scale;
+        
+        ImageScaleHelper(final SVGSVGElement element){
+            this.element = element;                    
+            final FileObject primaryFile = svgDataObject.getPrimaryFile ();
+            Project p = FileOwnerQuery.getOwner (primaryFile);
+            if (p != null && p instanceof J2MEProject){
+                project = (J2MEProject) p;
+                final ProjectConfigurationsHelper helper = project.getConfigurationHelper();
+                helper.addPropertyChangeListener( WeakListeners.propertyChange(pcl = new PropertyChangeListener() {
+                    public void propertyChange(PropertyChangeEvent evt) {
+                        scale(scale);
+                    }
+                }, helper));
+            }
+        }
+        
+        void scale(final boolean scale){
+            this.scale = scale;
+            if (svgAnimator != null && svgAnimator.getState() != SVGAnimatorImpl.STATE_STOPPED){
+                svgAnimator.invokeLater(new Runnable() {
+                    public void run() {
+                        if (!scale){
+                            element.setCurrentScale(1.0f);
+                            SVGViewTopComponent.this.imagePanel.repaint();
+                            return;
+                        }
+                        String activeConfiguration = null;
+                        final FileObject primaryFile = svgDataObject.getPrimaryFile ();
+                        Project p = FileOwnerQuery.getOwner (primaryFile);
+                        if (p != null && p instanceof J2MEProject){
+                            project = (J2MEProject) p;
+                            activeConfiguration = project.getConfigurationHelper().getActiveConfiguration().getDisplayName();
+                        }
+                        Dimension dim = ScreenSizeHelper.getCurrentDeviceScreenSize(primaryFile, activeConfiguration);
+                        Dimension dim2 = imagePanel.getSize();
+                        double ratio = dim.getHeight() / dim2.getHeight();
+                        element.setCurrentScale((float)ratio);                        
+                        SVGViewTopComponent.this.imagePanel.repaint();
+                    }
+                });
+            }                
+        }
+    }
+    
+    
+  */  
+    
+    
+    
     
     private class ToggleHighlightAction extends AbstractAction implements Presenter.Popup {
         ToggleHighlightAction (){
@@ -939,7 +1033,7 @@ final public class SVGViewTopComponent extends CloneableTopComponent {
             
             float zoomRatio = Math.min( (float) (panelBounds.width - 2 * SVGImagePanel.CROSS_SIZE)/ imgBounds.width,
                                         (float) (panelBounds.height - 2 * SVGImagePanel.CROSS_SIZE) / imgBounds.height);
-            smgr.setZoomRatio(zoomRatio);
+            smgr.setZoomRatio(zoomRatio * smgr.getZoomRatio());
             updateZoomCombo();
         }
     }        

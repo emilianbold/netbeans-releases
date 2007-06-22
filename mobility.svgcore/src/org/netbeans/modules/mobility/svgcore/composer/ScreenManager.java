@@ -20,6 +20,7 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.Rectangle;
+import java.awt.Shape;
 import java.util.Stack;
 import javax.microedition.m2g.SVGImage;
 import javax.swing.JComponent;
@@ -36,7 +37,7 @@ import org.w3c.dom.svg.SVGSVGElement;
  * @author Pavel Benes
  */
 public class ScreenManager {
-    private static final Image LOCK_ICON           = org.openide.util.Utilities.loadImage ("org/netbeans/modules/mobility/svgcore/resources/lock.png"); // NOI18N        
+    private static final Image PEN_ICON            = org.openide.util.Utilities.loadImage ("org/netbeans/modules/mobility/svgcore/resources/pen.png"); // NOI18N        
     private static final Color VIEWBOXBORDER_COLOR = Color.DARK_GRAY;
 
     private static final float MINIMUM_ZOOM = 0.01f;
@@ -48,7 +49,6 @@ public class ScreenManager {
     private       SVGImagePanel       m_imageContainer;
     private       SVGLocatableElement m_popupElement = null;
     private       Cursor              m_cursor = null;    
-    private       SVGRect             m_bBox;
     private       boolean             m_showAllArea;
     private       boolean             m_showTooltip     = true;
     private       boolean             m_highlightObject = true;
@@ -62,32 +62,37 @@ public class ScreenManager {
     void initialize() {
         PerseusController perseus = m_sceneMgr.getPerseusController();
         m_animatorView = perseus.getAnimatorGUI();
-        m_bBox         = perseus.getSVGRootElement().getScreenBBox();
                        
         m_imageContainer = new SVGImagePanel(m_animatorView) {
             protected void paintPanel(Graphics g, int x, int y, int w, int h) {
-                PerseusController perseus = m_sceneMgr.getPerseusController();
-                if (m_showAllArea) {
-                    SVGLocatableElement elem = perseus.getViewBoxMarker();
-                    if (elem != null) {
-                        SVGRect rect = elem.getScreenBBox();
-                        g.setColor( VIEWBOXBORDER_COLOR);
-                        g.drawRect((int)(x + rect.getX()), (int)(y + rect.getY()),
-                                   (int)(rect.getWidth()), (int)(rect.getHeight()));
-                    }
-                }
-                
-                if (perseus.isAnimationStopped()) {
-                    Stack<ComposerAction> actions = m_sceneMgr.getActiveActions();
-                    if (actions != null) {
-                        for (int i = actions.size()-1; i >= 0; i--) {
-                            actions.get(i).paint(g, x, y);
+                Shape clip = g.getClip();
+                try {
+                    g.setClip(x, y, w, h);
+                    PerseusController perseus = m_sceneMgr.getPerseusController();
+                    if (m_showAllArea) {
+                        SVGLocatableElement elem = perseus.getViewBoxMarker();
+                        if (elem != null) {
+                            SVGRect rect = elem.getScreenBBox();
+                            g.setColor( VIEWBOXBORDER_COLOR);
+                            g.drawRect((int)(x + rect.getX()), (int)(y + rect.getY()),
+                                       (int)(rect.getWidth()), (int)(rect.getHeight()) - 1);
                         }
                     }
-                } else {
-                    x += 1;
-                    y += h - LOCK_ICON.getHeight(null) - 1;
-                    g.drawImage(LOCK_ICON, x, y, null);
+
+                    if (!m_sceneMgr.isReadOnly()) {
+                        Stack<ComposerAction> actions = m_sceneMgr.getActiveActions();
+                        if (actions != null) {
+                            for (int i = actions.size()-1; i >= 0; i--) {
+                                actions.get(i).paint(g, x, y);
+                            }
+                        }
+
+                        x += 1;
+                        y += h - PEN_ICON.getHeight(null) - 1;
+                        g.drawImage(PEN_ICON, x, y, null);
+                    }
+                } finally {
+                    g.setClip(clip);
                 }
             }
         };
@@ -230,9 +235,10 @@ public class ScreenManager {
             translatePoint.setY(0);
             rect = viewBoxRect;
         } else {
-            translatePoint.setX( m_zoomRatio * ((m_bBox.getWidth() - m_bBox.getWidth()) / 2 - m_bBox.getX() ));
-            translatePoint.setY( m_zoomRatio * ((m_bBox.getHeight() - m_bBox.getHeight()) / 2 - m_bBox.getY() ));
-            rect = m_bBox;
+            rect = m_sceneMgr.getPerseusController().getSVGRootElement().getScreenBBox();
+            
+            translatePoint.setX( m_zoomRatio * ((rect.getWidth() - rect.getWidth()) / 2 - rect.getX() ));
+            translatePoint.setY( m_zoomRatio * ((rect.getHeight() - rect.getHeight()) / 2 - rect.getY() ));
         }
         size = new Dimension((int) (rect.getWidth() * m_zoomRatio),
                              (int) (rect.getHeight() * m_zoomRatio));

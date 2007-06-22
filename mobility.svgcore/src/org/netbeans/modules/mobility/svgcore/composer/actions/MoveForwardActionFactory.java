@@ -49,7 +49,7 @@ public class MoveForwardActionFactory extends AbstractComposerActionFactory impl
         return m_moveForwardAction;
     }
     
-    public void selectionChanged(SVGObject[] newSelection, SVGObject[] oldSelection) {
-        m_moveForwardAction.setEnabled(newSelection != null);
+    public void selectionChanged(SVGObject[] newSelection, SVGObject[] oldSelection, boolean isReadOnly) {
+        m_moveForwardAction.setEnabled(newSelection != null && !isReadOnly);
     }    
 }

@@ -12,18 +12,12 @@
  */   
 package org.netbeans.modules.mobility.svgcore.view.svg;
 
-import java.io.IOException;
 import javax.swing.Action;
 import javax.swing.JComponent;
-import javax.swing.SwingUtilities;
 import org.netbeans.modules.mobility.svgcore.SVGDataObject;
 import org.netbeans.modules.xml.multiview.AbstractMultiViewElement;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.ProxyLookup;
-import org.w3c.dom.DOMException;
-import org.xml.sax.SAXException;
 
 /**
  *

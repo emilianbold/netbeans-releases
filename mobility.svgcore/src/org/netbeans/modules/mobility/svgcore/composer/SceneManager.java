@@ -54,9 +54,10 @@ public class SceneManager {
     private       SelectActionFactory         m_selectActionFactory;
     private final List<SelectionListener>     m_selectionListeners = new ArrayList<SelectionListener>();
     private       SVGImage                    m_svgImage      = null;
+    private       boolean                     m_isReadOnly      = true;
 
     public static interface SelectionListener {
-        public void selectionChanged( SVGObject [] newSelection, SVGObject [] oldSelection);
+        public void selectionChanged( SVGObject [] newSelection, SVGObject [] oldSelection, boolean isReadOnly);
     }
     
     public SceneManager(SVGDataObject dObj,InstanceContent lookupContent) {
@@ -148,6 +149,22 @@ public class SceneManager {
         m_selectionListeners.add(listener);
     }
     
+    public boolean isReadOnly() {
+        return m_isReadOnly;
+    }
+    
+    public void setReadOnly(boolean isReadOnly) {
+        if ( m_isReadOnly != isReadOnly) {
+            m_isReadOnly = isReadOnly;
+            if ( !m_isReadOnly) {
+                m_perseusController.stopAnimator();
+            }
+            SVGObject [] selected = getSelected();
+            notifySelectionChanged(selected, selected);
+            m_screenMgr.repaint();
+        }
+    }
+    
     public void setSelection(String id) {
         SVGObject selectedObj = m_perseusController.getObjectById(id);
         
@@ -172,7 +189,7 @@ public class SceneManager {
     }
     
      void processEvent(InputEvent event) {
-         if (m_perseusController.isAnimationStopped()) {
+         if (!isReadOnly()) {
            SVGObject [] oldSelection = getSelected();
 
             //first let ongoing actions to process the event         
@@ -269,12 +286,14 @@ public class SceneManager {
             //TODO use better mechanism for selection handling
             m_dObj.getModel().setSelected( newSelection[0].getElementId());
         }  
-        
-        for (SelectionListener listener : m_selectionListeners) {
-            listener.selectionChanged(newSelection, oldSelection);
-        }
+        notifySelectionChanged(newSelection, oldSelection);
     }
     
+    protected void notifySelectionChanged(SVGObject [] newSelection, SVGObject [] oldSelection) {
+        for (SelectionListener listener : m_selectionListeners) {
+            listener.selectionChanged(newSelection, oldSelection, m_isReadOnly);
+        }
+    }    
     
     //TODO move to SVGObject class
     protected static boolean areSame(SVGObject [] arr1,SVGObject [] arr2) {

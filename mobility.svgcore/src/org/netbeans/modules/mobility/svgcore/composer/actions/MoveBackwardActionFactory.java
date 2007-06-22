@@ -49,8 +49,8 @@ public class MoveBackwardActionFactory extends AbstractComposerActionFactory imp
         return m_moveBackwardAction;
     }
     
-    public void selectionChanged(SVGObject[] newSelection, SVGObject[] oldSelection) {
-        m_moveBackwardAction.setEnabled(newSelection != null);
+    public void selectionChanged(SVGObject[] newSelection, SVGObject[] oldSelection, boolean isReadOnly) {
+        m_moveBackwardAction.setEnabled(newSelection != null && !isReadOnly);
     }
     
 }

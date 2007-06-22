@@ -51,7 +51,7 @@ public class DeleteActionFactory extends AbstractComposerActionFactory implement
         return m_deleteAction;
     }
 
-    public void selectionChanged(SVGObject[] newSelection, SVGObject[] oldSelection) {
-        m_deleteAction.setEnabled(newSelection != null);
+    public void selectionChanged(SVGObject[] newSelection, SVGObject[] oldSelection, boolean isReadOnly) {
+        m_deleteAction.setEnabled(newSelection != null && !isReadOnly);
     }
 }

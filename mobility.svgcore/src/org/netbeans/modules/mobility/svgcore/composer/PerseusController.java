@@ -125,7 +125,7 @@ public class PerseusController {
     public SVGLocatableElement getViewBoxMarker() {
         return m_viewBoxMarker;
     }
-    
+        
     public JComponent getAnimatorGUI() {
         return (JComponent) m_animator.getTargetComponent();
     }
@@ -360,11 +360,11 @@ public class PerseusController {
         }
         return null;
     }
-    
+    /*
     public boolean isAnimationStopped() {
         return m_animationState == ANIMATION_NOT_AVAILABLE ||
                m_animationState == ANIMATION_NOT_RUNNING;
-    }
+    }*/
     
     public int getAnimatorState() {
         return m_animationState;

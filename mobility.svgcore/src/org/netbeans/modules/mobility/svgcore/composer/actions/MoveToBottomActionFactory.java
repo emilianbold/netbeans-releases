@@ -49,7 +49,7 @@ public class MoveToBottomActionFactory extends AbstractComposerActionFactory imp
         return m_moveToBottomAction;
     }
     
-    public void selectionChanged(SVGObject[] newSelection, SVGObject[] oldSelection) {
-        m_moveToBottomAction.setEnabled(newSelection != null);
+    public void selectionChanged(SVGObject[] newSelection, SVGObject[] oldSelection, boolean isReadOnly) {
+        m_moveToBottomAction.setEnabled(newSelection != null && !isReadOnly);
     }    
 }

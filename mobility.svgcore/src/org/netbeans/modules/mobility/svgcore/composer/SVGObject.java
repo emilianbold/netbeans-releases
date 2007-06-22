@@ -15,7 +15,6 @@
 package org.netbeans.modules.mobility.svgcore.composer;
 
 import com.sun.perseus.j2d.Transform;
-import com.sun.perseus.model.ModelNode;
 import java.awt.Rectangle;
 import javax.swing.text.BadLocationException;
 import org.netbeans.modules.mobility.svgcore.composer.prototypes.PatchedGroup;
@@ -64,7 +63,7 @@ public class SVGObject {
     
     public String getElementId() {
         String id = m_elem.getId();
-        assert id != null : "SVGElement id cannot be null";
+        assert id != null : "Null ID of SVGElement " + m_elem;
         return id;
     }       
 
@@ -80,7 +79,7 @@ public class SVGObject {
             pg.setTransform(null);
         } 
         
-        SVGRect rect = elem.getScreenBBox();
+        SVGRect rect = PerseusController.getSafeScreenBBox(elem);
         
         if (tfm != null) {
             pg.setTransform(tfm);
