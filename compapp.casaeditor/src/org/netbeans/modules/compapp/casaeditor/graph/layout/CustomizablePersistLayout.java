@@ -102,6 +102,8 @@ public abstract class CustomizablePersistLayout implements Layout {
                 // Do not animate horizontally for right-aligned widgets.
                 widget.setPreferredLocation(new Point(suggestedX, currentLocation.y));
             }
+        }
+        /*
         } else if (suggestedX + widgetSize.width > region.getBounds().width) {
             suggestedX =
                     region.getBounds().width -
@@ -111,7 +113,7 @@ public abstract class CustomizablePersistLayout implements Layout {
                 suggestedX = 0;
             }
         }
-
+        */
         return new Point(suggestedX, suggestedY);
     }
     
