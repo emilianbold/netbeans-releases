@@ -34,7 +34,7 @@ import org.openide.nodes.Node;
  * @author ChrisWebster
  */
 public class NodeDisplayPanel extends JPanel implements ExplorerManager.Provider {
-    private PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+    private PropertyChangeSupport pcs;
     private ExplorerManager manager = new ExplorerManager();
     
     /** Creates a new instance of NodeDisplayPanel */
@@ -60,12 +60,21 @@ public class NodeDisplayPanel extends JPanel implements ExplorerManager.Provider
         btv.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NodeDisplayPanel.class, "ACSD_NodeTreeView"));
     }
     
+    /** Ubuntu workaround
+     */
+    private PropertyChangeSupport getProperChangeSupport() {
+        if(pcs == null) {
+            pcs =  new PropertyChangeSupport(this);
+        }
+        return pcs;
+    }
+    
     public void addPropertyChangeListener(PropertyChangeListener l) {
-        pcs.addPropertyChangeListener(l);
+        getProperChangeSupport().addPropertyChangeListener(l);
     }
     
     private void firePropertyChange() {
-        pcs.firePropertyChange(ExplorerManager.PROP_NODE_CHANGE, null, null);
+        getProperChangeSupport().firePropertyChange(ExplorerManager.PROP_NODE_CHANGE, null, null);
     }
     
     public Node[] getSelectedNodes() {
