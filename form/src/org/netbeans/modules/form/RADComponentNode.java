@@ -41,6 +41,7 @@ import org.netbeans.modules.form.actions.*;
 import org.netbeans.modules.form.layoutsupport.*;
 import org.netbeans.modules.form.editors.TableCustomizer;
 import org.netbeans.modules.form.menu.AddSubItemAction;
+import org.netbeans.modules.form.menu.InsertMenuAction;
 import org.netbeans.modules.form.menu.MenuEditLayer;
 
 public class RADComponentNode extends FormNode
@@ -250,7 +251,9 @@ public class RADComponentNode extends FormNode
                 actions.add(SystemAction.get(SelectLayoutAction.class));
                 actions.add(SystemAction.get(CustomizeLayoutAction.class));
             }
-            if(MenuEditLayer.isMenuRelatedContainer(component)) {
+            if(MenuEditLayer.isMenuBarContainer(component)) {
+                actions.add(SystemAction.get(InsertMenuAction.class));
+            } else if(MenuEditLayer.isMenuRelatedContainer(component)) {
                 actions.add(SystemAction.get(AddSubItemAction.class));
             } else { // only use the AddAction for non-menu containers
                 actions.add(SystemAction.get(AddAction.class));

@@ -161,6 +161,14 @@ public class MenuEditLayer extends JPanel {
         return isMenuRelatedComponentClass(comp.getBeanClass());
     }
     
+    public static boolean isMenuBarContainer(RADComponent comp) {
+        if(comp == null) return false;
+        Class clas = comp.getBeanClass();
+        if(clas == null) return false;
+        if(JMenuBar.class.isAssignableFrom(clas)) return true;
+        return false;
+    }
+    
     public static boolean isMenuRelatedContainer(RADComponent comp) {
         if(comp == null) return false;
         Class clas = comp.getBeanClass();

@@ -89,7 +89,7 @@ public class AddSubItemAction extends NodeAction {
         popupMenu.addMenuListener(new MenuListener() {
             public void menuSelected(MenuEvent e) {
                 JMenu menu = (JMenu) e.getSource();
-                createAlignSubmenu(menu);
+                createInsertSubmenu(menu);
             }
             
             public void menuDeselected(MenuEvent e) {}
@@ -143,7 +143,7 @@ public class AddSubItemAction extends NodeAction {
      * because they cannot be added as children of JMenu.
      * 
      * */
-    private void createAlignSubmenu(JMenu menu) {
+    private void createInsertSubmenu(JMenu menu) {
         final Node[] nodes = getActivatedNodes();
         final List components = FormUtils.getSelectedLayoutComponents(nodes);
         //only create this menu the first time it is called
@@ -172,27 +172,6 @@ public class AddSubItemAction extends NodeAction {
                     }
                 }
             }
-            
-            
-            /*
-            ResourceBundle bundle = NbBundle.getBundle(AlignAction.class);
-            JMenuItem centerVItem = new AlignMenuItem(
-                    bundle.getString("CTL_AlignVCenter"), // NOI18N
-                    components,
-                    11);*/
-            /*
-            items = new JMenuItem[] {leftGroupItem, rightGroupItem, centerHGroupItem,
-                upGroupItem, downGroupItem, centerVGroupItem, leftItem, rightItem,
-                centerHItem, upItem, downItem, centerVItem};
-            for (int i=0; i < items.length; i++) {
-                items[i].addActionListener(getMenuItemListener());
-                items[i].setEnabled(false);
-                HelpCtx.setHelpIDString(items[i], AlignAction.class.getName());
-                menu.add(items[i]);
-                if (i+1 == items.length/2) {
-                    menu.addSeparator();
-                }
-            }*/
         }
         updateState(components);
     }
@@ -213,54 +192,7 @@ public class AddSubItemAction extends NodeAction {
             items[i+n].setEnabled(actions[i].isEnabled());
         }
     }
-    /*
-    private ActionListener getMenuItemListener() {
-        if (menuItemListener == null)
-            menuItemListener = new AlignMenuItemListener();
-        return menuItemListener;
-    }*/
 
-    // --------
-/*
-    private static class AlignMenuItem extends JMenuItem {
-        private int direction;
-        private List components;
-
-        AlignMenuItem(String text, List components, int direction) {
-            super(text);
-            this.components = components;
-            this.direction = direction;
-        }
-        
-        int getDirection() {
-            return direction;
-        }
-
-        List getRADComponents() {
-            return components;
-        }
-    }
-
-    private static class AlignMenuItemListener implements ActionListener {
-        public void actionPerformed(ActionEvent evt) {
-            Object source = evt.getSource();
-            if (!(source instanceof AlignMenuItem)) {
-                return;
-            }
-            AlignMenuItem mi = (AlignMenuItem) source;
-            if (!mi.isEnabled()) {
-                return;
-            }
-            int index = mi.getDirection();
-            RADComponent radC = (RADComponent)mi.getRADComponents().get(0);
-            FormModel fm = radC.getFormModel();
-            FormDesigner fd = FormEditor.getFormDesigner(fm);
-            ((Action)fd.getDesignerActions(false).toArray()[index]).actionPerformed(evt);            
-        }
-    }
-        
-    private ActionListener menuItemListener;
-  */  
     private static Node[] getNodes() {
         // using NodeAction and global activated nodes is not reliable
         // (activated nodes are set with a delay after selection in
