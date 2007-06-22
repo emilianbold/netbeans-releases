@@ -640,21 +640,24 @@ public class JavaI18nSupport extends I18nSupport {
                         String hardString = document.getText(hardStringStart.getOffset(), foundStringLength);
 
                         // Retrieve offset of the end of line where was found hard coded string.
-                        String restBuffer = new String(buffer, currentStringEnd, buffer.length-currentStringEnd);
+                        String restBuffer = new String(buffer, currentStringEnd, buffer.length - currentStringEnd);
                         int endOfLine = restBuffer.indexOf('\n');
-                        if(endOfLine == -1)
+                        if (endOfLine == -1) {
                             endOfLine = restBuffer.length();
+                        }
 
-                        lastJavaString.append(document.getText(currentStringStart+1, hardString.length()));
+                        lastJavaString.append(document.getText(currentStringStart + 1,
+                                                               hardString.length()));
 
                         // Get the rest of line.
-                        String restOfLine = document.getText(currentStringStart+1+hardString.length(), currentStringEnd+endOfLine-currentStringStart-hardString.length());
+                        String restOfLine = document.getText(currentStringStart + 1 + hardString.length(),
+                                                             currentStringEnd + endOfLine - currentStringStart - hardString.length());
 
                         // Replace rest of occurences of \" to cheat out regular expression for very minor case when the same string is after our at the same line.
                         lastJavaString.append(restOfLine.replace('\"', '_'));
 
                         // If not matches regular expression -> is not internationalized.
-                        if(isSearchedString(lastJavaString.toString(), hardString) ) {
+                        if (isSearchedString(lastJavaString.toString(), hardString)) {
                             lastPosition = hardStringEnd;
 
                             // Search was successful -> return.
@@ -682,13 +685,15 @@ public class JavaI18nSupport extends I18nSupport {
 
         /** Helper utility method. */
         private String extractString(String sourceString) {
-            if(sourceString == null)
-                return ""; // NOI18N
+            if (sourceString == null) {
+                return "";                                              //NOI18N
+            }
 
             if ((sourceString.length() >= 2) &&
-            (sourceString.charAt(0) == '"') &&
-            (sourceString.charAt(sourceString.length() - 1) == '"'))
+                    (sourceString.charAt(0) == '"') &&
+                    (sourceString.charAt(sourceString.length() - 1) == '"')) {
                 sourceString = sourceString.substring(1, sourceString.length() - 1);
+            }
             return sourceString;
         }
 
