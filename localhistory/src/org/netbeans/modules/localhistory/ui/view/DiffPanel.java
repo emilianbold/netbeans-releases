@@ -50,7 +50,7 @@ public class DiffPanel extends javax.swing.JPanel {
 
         jToolBar1.add(jPanel1);
 
-        nextButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/localhistory/resources/icons/diff-next.png")));
+        nextButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/localhistory/resources/icons/diff-next.png"))); // NOI18N
         nextButton.setText(org.openide.util.NbBundle.getMessage(DiffPanel.class, "DiffPanel.nextButton.text")); // NOI18N
         nextButton.setToolTipText(org.openide.util.NbBundle.getMessage(DiffPanel.class, "DiffPanel.nextButton.toolTipText")); // NOI18N
         nextButton.setAlignmentX(0.5F);
@@ -59,7 +59,7 @@ public class DiffPanel extends javax.swing.JPanel {
         nextButton.setEnabled(false);
         jToolBar1.add(nextButton);
 
-        prevButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/localhistory/resources/icons/diff-prev.png")));
+        prevButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/localhistory/resources/icons/diff-prev.png"))); // NOI18N
         prevButton.setText(org.openide.util.NbBundle.getMessage(DiffPanel.class, "DiffPanel.prevButton.text")); // NOI18N
         prevButton.setToolTipText(org.openide.util.NbBundle.getMessage(DiffPanel.class, "DiffPanel.prevButton.toolTipText")); // NOI18N
         prevButton.setAlignmentX(0.5F);
@@ -88,15 +88,15 @@ public class DiffPanel extends javax.swing.JPanel {
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(diffPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 749, Short.MAX_VALUE)
             .add(jToolBar1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 749, Short.MAX_VALUE)
+            .add(diffPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 749, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .add(jToolBar1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 43, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+            .add(layout.createSequentialGroup()
+                .add(jToolBar1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 25, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(diffPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 207, Short.MAX_VALUE))
+                .add(diffPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 225, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
     
