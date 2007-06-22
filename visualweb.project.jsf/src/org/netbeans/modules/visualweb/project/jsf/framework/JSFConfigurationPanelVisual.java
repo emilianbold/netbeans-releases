@@ -58,7 +58,6 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
         initComponents();
         this.panel = panel;
         initLibraries();
-//        enableComponents(false);
         
         tURLPattern.getDocument().addDocumentListener(this);
         cbPackageJars.setVisible(false);
@@ -73,7 +72,7 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
         jsfLibraries = new ArrayList();
         
         for (int i = 0; i < libraries.length; i++) {
-            if (libraries[i].getName().startsWith("JSF-")) { //NOI18N
+            if (libraries[i].getName().startsWith("JSF-") || libraries[i].getName().equals("jsf12")) { //NOI18N
                 String displayName = libraries[i].getDisplayName();
                 items.add(displayName);
                 jsfLibraries.add(libraries[i]);
@@ -85,7 +84,6 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
             rbRegisteredLibrary.setEnabled(false);
             cbLibraries.setEnabled(false);
             rbNewLibrary.setSelected(true);
-            rbNoneLibrary.setSelected(false);
             panel.setLibrary(null);
         } else {
             rbRegisteredLibrary.setEnabled(true);
@@ -118,14 +116,14 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
         cbPackageJars = new javax.swing.JCheckBox();
         jPanel1 = new javax.swing.JPanel();
         libPanel = new javax.swing.JPanel();
-        jtFolder = new javax.swing.JTextField();
-        jbBrowse = new javax.swing.JButton();
         rbRegisteredLibrary = new javax.swing.JRadioButton();
         cbLibraries = new javax.swing.JComboBox();
         rbNewLibrary = new javax.swing.JRadioButton();
+        lDirectory = new javax.swing.JLabel();
+        jtFolder = new javax.swing.JTextField();
+        jbBrowse = new javax.swing.JButton();
         lVersion = new javax.swing.JLabel();
         jtVersion = new javax.swing.JTextField();
-        lDirectory = new javax.swing.JLabel();
         rbNoneLibrary = new javax.swing.JRadioButton();
 
         setLayout(new java.awt.CardLayout());
@@ -242,21 +240,8 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
         libPanel.setAlignmentX(0.2F);
         libPanel.setAlignmentY(0.2F);
 
-        jtFolder.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyPressed(java.awt.event.KeyEvent evt) {
-                jtFolderKeyPressed(evt);
-            }
-        });
-
-        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/project/jsf/framework/Bundle"); // NOI18N
-        jbBrowse.setText(bundle.getString("LBL_Browse")); // NOI18N
-        jbBrowse.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jbBrowseActionPerformed(evt);
-            }
-        });
-
         buttonGroup1.add(rbRegisteredLibrary);
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/project/jsf/framework/Bundle"); // NOI18N
         rbRegisteredLibrary.setText(bundle.getString("LBL_REGISTERED_LIBRARIES")); // NOI18N
         rbRegisteredLibrary.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         rbRegisteredLibrary.setMargin(new java.awt.Insets(0, 0, 0, 0));
@@ -283,6 +268,21 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
             }
         });
 
+        lDirectory.setText(bundle.getString("LBL_INSTALL_DIR")); // NOI18N
+
+        jtFolder.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                jtFolderKeyPressed(evt);
+            }
+        });
+
+        jbBrowse.setText(bundle.getString("LBL_Browse")); // NOI18N
+        jbBrowse.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jbBrowseActionPerformed(evt);
+            }
+        });
+
         lVersion.setText(bundle.getString("LBL_VERSION")); // NOI18N
 
         jtVersion.addKeyListener(new java.awt.event.KeyAdapter() {
@@ -290,8 +290,6 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
                 jtVersionKeyReleased(evt);
             }
         });
-
-        lDirectory.setText(bundle.getString("LBL_INSTALL_DIR")); // NOI18N
 
         buttonGroup1.add(rbNoneLibrary);
         rbNoneLibrary.setText(bundle.getString("LBL_Any_Library")); // NOI18N
@@ -589,6 +587,9 @@ private void jtFolderKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_
     }
     
     private void updateLibrary(){
+        if (cbLibraries.getItemCount() == 0)
+            rbRegisteredLibrary.setEnabled(false);
+        
         if (rbNoneLibrary.isSelected()){
             enableNewLibraryComponent(false);
             enableDefinedLibraryComponent(false);
