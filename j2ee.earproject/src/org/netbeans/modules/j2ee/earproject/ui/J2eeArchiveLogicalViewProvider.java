@@ -490,8 +490,8 @@ public class J2eeArchiveLogicalViewProvider implements LogicalViewProvider {
             actions.addAll(Arrays.asList(new Action[] {
                 null,
                 ProjectSensitiveActions.projectCommandAction( ActionProvider.COMMAND_RUN, bundle.getString( "LBL_RunAction_Name" ), null ), // NOI18N
-                ProjectSensitiveActions.projectCommandAction( ActionProvider.COMMAND_DEBUG, bundle.getString( "LBL_DebugAction_Name" ), null ), // NOI18N
                 ProjectSensitiveActions.projectCommandAction( EjbProjectConstants.COMMAND_REDEPLOY, bundle.getString( "LBL_DeployAction_Name" ), null ), // NOI18N
+                ProjectSensitiveActions.projectCommandAction( ActionProvider.COMMAND_DEBUG, bundle.getString( "LBL_DebugAction_Name" ), null ), // NOI18N
                 null,
                 CommonProjectActions.setAsMainProjectAction(),
                 CommonProjectActions.openSubprojectsAction(),
