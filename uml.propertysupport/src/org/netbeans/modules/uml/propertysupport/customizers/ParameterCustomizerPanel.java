@@ -48,6 +48,8 @@ import java.awt.Color;
 import javax.swing.DefaultCellEditor;
 import javax.swing.JComboBox;
 import javax.swing.SwingUtilities;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
@@ -65,7 +67,6 @@ public class ParameterCustomizerPanel extends javax.swing.JPanel {
     private ResourceBundle bundle = NbBundle.getBundle(ParameterCustomizerPanel.class);
     public ListSelectionModel listSelModel;
     private DefaultListModel listModel;
-    //private ArrayList<ElementData> paramArrayList = new ArrayList <ElementData>();
     private ArrayList <ElementData> removedElements = new ArrayList();
     private IPropertyElement parentElement;
     private IPropertyDefinition rootDef;
@@ -105,7 +106,6 @@ public class ParameterCustomizerPanel extends javax.swing.JPanel {
             public void changedUpdate(javax.swing.event.DocumentEvent e) {
                 validateName();
             }
-            
         });
         
         // create mutiplicty table and its data model
@@ -118,6 +118,11 @@ public class ParameterCustomizerPanel extends javax.swing.JPanel {
         tableHeaders.add(colName);
         TableModel tableModel = new  MultiplicityTableModel(tableHeaders);
         multiplicityTable = new JTable(tableModel);
+        multiplicityTable.getModel().addTableModelListener(new TableModelListener() {
+            public void tableChanged(TableModelEvent e) {
+                tableChangeHandler(e);
+            }
+        });
         
         multiplicityTable.setAutoResizeMode(JTable.AUTO_RESIZE_NEXT_COLUMN);
         tableScrollPane.setViewportView(multiplicityTable);
@@ -166,7 +171,6 @@ public class ParameterCustomizerPanel extends javax.swing.JPanel {
         //            cellWidth = comp.getPreferredSize().width;
 
         //            column.setPreferredWidth(Math.max(headerWidth, cellWidth));
-                    System.out.println("Max Width = " + headerWidth);
                     column.setPreferredWidth(headerWidth + 10);
         //            column.setMaxWidth(headerWidth + 10);
                 }
@@ -208,7 +212,7 @@ public class ParameterCustomizerPanel extends javax.swing.JPanel {
     
     public void setTypeList(Object[] typeList) {
         if (typeList != null) {
-            ComboBoxModel model = new DefaultComboBoxModel(typeList);
+            ComboBoxModel model = new DefaultComboBoxModel(typeList); 
             typesCombo.setModel(model);
         }
     }
@@ -957,6 +961,87 @@ public class ParameterCustomizerPanel extends javax.swing.JPanel {
             }
         }
     }
+    
+    public void tableChangeHandler(TableModelEvent e) {
+        StringBuffer message = new StringBuffer();
+        boolean valid = true;
+        int row = e.getFirstRow();
+        int column = e.getColumn();
+        int lowerVal = 0;
+        int upperVal = 0;
+        TableModel model = (TableModel)e.getSource();
+        if (row != -1 && column != 2) {
+            if (column == 0 ) {         // lower column
+                valid = validateLower(row, column, model, message);
+                if (valid) {
+                    if (valid = validateUpper(row, column+1, model, message)) {
+                        lowerVal = Integer.parseInt((String) model.getValueAt(row, column));
+                        upperVal = Integer.parseInt((String) model.getValueAt(row, column+1));
+                        if (lowerVal >= upperVal) {
+                            valid = false;
+                            message.append(bundle.getString("MSG_LOWER_MUST_BE_SMALLER"));
+                        }
+                    }
+                }
+            } else if (column == 1) {   // upper column
+                valid = validateUpper(row, column, model, message);
+                if (valid) {
+                    if (valid = validateLower(row, column-1, model, message)) {
+                         upperVal = Integer.parseInt((String) model.getValueAt(row, column));
+                         lowerVal = Integer.parseInt((String) model.getValueAt(row, column-1));
+                         if (upperVal <= lowerVal) {
+                             valid = false;
+                             message.append(bundle.getString("MSG_UPPER_MUST_BE_GREATER"));
+                         }
+                     }
+                }
+            }
+            messageArea.setText(message.toString());
+            editParamButton.setEnabled(valid);
+        }
+    }
+    
+    private boolean validateLower(int row, int column, TableModel model, StringBuffer message){
+         boolean valid = true;
+         String lower = (String) model.getValueAt(row, column);
+         try {
+             if (lower == null || lower.length() == 0) {
+                 valid = false;
+                 message.append(bundle.getString("MSG_EMTPY_LOWER"));
+             } else {
+                 int lowerVal = Integer.parseInt(lower);
+                 if (lowerVal < 0) {
+                     valid = false;
+                     message.append(bundle.getString("MSG_INVALID_LOWER"));
+                 } 
+             }
+         } catch (NumberFormatException nfe) {
+             valid = false;
+             message.append(bundle.getString("MSG_INVALID_LOWER"));
+         }
+         return valid;
+     }
+    
+     private boolean validateUpper(int row, int column, TableModel model, StringBuffer message){
+         boolean valid = true;
+         String upper = (String) model.getValueAt(row, column);
+         try {
+             if (upper == null || upper.length() == 0) {
+                 valid = false;
+                 message.append(bundle.getString("MSG_EMTPY_UPPER"));
+             } else {
+                 int upperVal = Integer.parseInt(upper);
+                 if (upperVal < 0) {
+                     valid = false;
+                     message.append(bundle.getString("MSG_INVALID_UPPER"));
+                 } 
+             }
+         } catch (NumberFormatException nfe) {
+             valid = false;
+             message.append(bundle.getString("MSG_INVALID_UPPER"));
+         }
+         return valid;
+     }
     
     //Swap two elements in the list.
     private void swap(int indx1, int indx2) {

@@ -129,6 +129,12 @@ public class ParameterCustomizer extends JPanel implements EnhancedCustomPropert
                         if (pickMan != null) {
                             String filter = "DataType Class Interface";  // NO I18N
                             list = pickMan.getTypeNamesWithStringFilter(filter);
+                            // Fixed IZ=83449. Remove "void" type from the list if found
+                            if ( list != null) {
+                                if (list.isInList("void", true)) {
+                                    list.remove("void");
+                                }
+                            }
                         }
                     }
                 }
