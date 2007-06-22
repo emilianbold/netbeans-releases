@@ -1588,10 +1588,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
         MenuEditLayer menuEditLayer = getMenuEditLayer();
         Component comp = (Component) getComponent(metacomp);
         menuEditLayer.setVisible(true);
-        //handleLayer.setVisible(false);
-        menuEditLayer.requestFocus();
-        menuEditLayer.openMenu(metacomp,comp);
-        
+        menuEditLayer.openAndShowMenu(metacomp,comp);
     }
     
     // --------

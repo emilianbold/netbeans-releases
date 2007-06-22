@@ -221,15 +221,20 @@ public class MenuEditLayer extends JPanel {
     }
     
     
+    // the public method for non-menu parts of the form editor to
+    // start menu editing
+    public void openAndShowMenu(RADComponent metacomp, Component comp) {
+        openMenu(metacomp, comp);
+        glassLayer.requestFocusInWindow();
+    }
     
-    public void openMenu(RADComponent metacomp, Component comp) {
+    void openMenu(RADComponent metacomp, Component comp) {
         configureGlassLayer();
+        registerKeyListeners();
         configureFormListeners();
         //reset the layers
         JMenu menu = (JMenu) comp;
         currentMenu = menu;
-        registerKeyListeners();
-        glassLayer.requestFocusInWindow();
         configureMenu(null,menu);
         showMenuPopup(menu);
         if(metacomp instanceof RADVisualContainer) {
@@ -259,7 +264,7 @@ public class MenuEditLayer extends JPanel {
     }
     
     //josh: all this key listener stuff should go into a separate class
-    private void registerKeyListeners() {
+    private synchronized void registerKeyListeners() {
         if(keyboardMenuNavigator == null) {
             keyboardMenuNavigator = new KeyboardMenuNavigator(this);
             glassLayer.addKeyListener(keyboardMenuNavigator);
@@ -358,6 +363,9 @@ public class MenuEditLayer extends JPanel {
             return false;
         }
         if(metacomp.getBeanClass().equals(JMenuItem.class)) {
+            return true;
+        }
+        if(metacomp.getBeanClass().equals(JMenu.class)) {
             return true;
         }
         return false;
@@ -488,7 +496,6 @@ public class MenuEditLayer extends JPanel {
     
     void setSelectedRADComponent(RADComponent comp) {
         try {
-            glassLayer.requestFocusInWindow();
             if (!this.isMenuRelatedRADComponent(comp)) {
                 selectedComponent = null;
                 selectedRADComponent = null;
@@ -1071,6 +1078,7 @@ public class MenuEditLayer extends JPanel {
                         formDesigner.startInPlaceEditing(rad);
                     } else {
                         openMenu(rad, c);
+                        glassLayer.requestFocusInWindow();
                         setSelectedComponent(c);
                         if(e.isPopupTrigger()) {
                             showContextMenu(e.getPoint());
@@ -1155,6 +1163,7 @@ public class MenuEditLayer extends JPanel {
                         } else {
                             selectedPortion = SelectedPortion.None;
                         }
+                        glassLayer.requestFocusInWindow();
                         setSelectedComponent(c);
                         
                     }
