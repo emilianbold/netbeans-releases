@@ -297,7 +297,6 @@ public class FormLoaderSettings  {
                                | CodeVariable.EXPLICIT_DECLARATION
             :
             CodeVariable.FIELD | variablesModifier;
-        CodeStructure.setGlobalDefaultVariableType(varType);
 
         if (value) {            
             variablesModifier &= CodeVariable.FINAL;
@@ -312,16 +311,15 @@ public class FormLoaderSettings  {
 
     /** Setter for the variablesModifier option */
     public void setVariablesModifier(int value) {
-        int variablesModifier = value;
+        getPreferences().putInt(PROP_VARIABLES_MODIFIER, value);
 
         int varType;
         if (getVariablesLocal()) {
-            varType = CodeVariable.LOCAL | variablesModifier;
-            if ((variablesModifier & CodeVariable.FINAL) == 0)
+            varType = CodeVariable.LOCAL | value;
+            if ((value & CodeVariable.FINAL) == 0)
                 varType |= CodeVariable.EXPLICIT_DECLARATION;
         }
-        else varType = CodeVariable.FIELD | variablesModifier;
-        CodeStructure.setGlobalDefaultVariableType(varType);
+        else varType = CodeVariable.FIELD | value;
     }
 
     /** Getter for the generateMnemonicsCode option */

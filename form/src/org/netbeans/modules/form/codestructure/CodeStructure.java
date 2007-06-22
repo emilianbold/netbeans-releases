@@ -46,8 +46,6 @@ public class CodeStructure {
     private Map expressionsToVariables = new HashMap(50);
     private Set externalVariables = null;    
 
-    private static int globalDefaultVariableType = CodeVariable.FIELD
-                                                   | CodeVariable.PRIVATE;
     private int defaultVariableType = -1;
 
     private boolean undoRedoRecording = false;
@@ -655,25 +653,6 @@ public class CodeStructure {
 
     /** WARNING: This method will be removed in full two-way editing
      *           implementation. DO NOT USE! */
-    public static void setGlobalDefaultVariableType(int type) {
-        if (type < 0) {
-            globalDefaultVariableType = CodeVariable.FIELD
-                                        | CodeVariable.PRIVATE;
-        }
-        else {
-            type &= CodeVariable.ALL_MASK;
-            if ((type & CodeVariable.SCOPE_MASK) == CodeVariable.NO_VARIABLE)
-                type |= CodeVariable.FIELD;
-            int fdMask = CodeVariable.EXPLICIT_DECLARATION | CodeVariable.FINAL;
-            if ((type & fdMask) == fdMask)
-                type &= ~CodeVariable.EXPLICIT_DECLARATION;
-
-            globalDefaultVariableType = type;
-        }
-    }
-
-    /** WARNING: This method will be removed in full two-way editing
-     *           implementation. DO NOT USE! */
     public void setDefaultVariableType(int type) {
         if (type < 0) {
             defaultVariableType = -1; // global default will be used
@@ -690,13 +669,9 @@ public class CodeStructure {
         }
     }
 
-    static int getGlobalDefaultVariableType() {
-        return globalDefaultVariableType;
-    }
-
     int getDefaultVariableType() {
         return defaultVariableType > -1 ?
-               defaultVariableType : globalDefaultVariableType;
+               defaultVariableType : CodeVariable.FIELD | CodeVariable.PRIVATE;
     }
 
     // ---------
