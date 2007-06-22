@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -x
+#set -x
 
 DIRNAME=`dirname $0`
 cd ${DIRNAME}
@@ -47,6 +47,9 @@ download () {
 ###################################################################
 
 uninstall() {
+	# Stop domain
+	$J2EE_HOME/bin/asadmin stop-domain visualweb
+
 	# First be good and uninstall
 	if [ -x $J2EE_HOME/bin/uninstall ]; then
     	$J2EE_HOME/bin/uninstall -silent
