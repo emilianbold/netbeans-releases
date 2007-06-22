@@ -1054,6 +1054,10 @@ public class CasaWrapperModel extends CasaModelImpl {
 //        return null;
     }
     
+    public boolean isDummyPortType(PortType portType) {
+        return portType.getName().equals(DUMMY_PORTTYPE_NAME);
+    }
+    
     private PortType getPortType(final QName interfaceQName) {
         CasaPortTypes casaPortTypes = getRootComponent().getPortTypes();
         for (CasaLink link : casaPortTypes.getLinks()) {

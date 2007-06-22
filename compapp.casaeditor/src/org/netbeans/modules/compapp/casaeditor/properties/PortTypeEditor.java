@@ -146,24 +146,24 @@ public class PortTypeEditor extends PropertyEditorSupport
             mPortType = portType;
 
             
-            mPortTypesComboBox.addItem(NbBundle.getMessage(PortTypeEditorPanel.class, "CLEAR_INTERFACE_DEFINITION")); // NOI18N
-            boolean bPTFound = false;
+//            mPortTypesComboBox.addItem(NbBundle.getMessage(PortTypeEditorPanel.class, "CLEAR_INTERFACE_DEFINITION")); // NOI18N
+//            boolean bPTFound = false;
             QName qName;
             for(PortType pt : portTypes) {
-                qName = new QName(pt.getModel().getDefinitions().getTargetNamespace(), pt.getName());
+                qName = pt == null ? new QName("") : new QName(pt.getModel().getDefinitions().getTargetNamespace(), pt.getName());
                 mPortTypesComboBox.addItem(qName);
                 mapPTtoQName.put(pt, qName);
-                if(portType.equals(pt)) {
-                    bPTFound = true;
-                }
+//                if(portType.equals(pt)) {
+//                    bPTFound = true;
+//                }
             }
-            if(portType != null) {
-                if(bPTFound) {
+//            if(portType != null) {
+//                if(bPTFound) {
                     mPortTypesComboBox.setSelectedItem(mapPTtoQName.get(portType));
-                } else {
-                    mPortTypesComboBox.setSelectedIndex(0);
-                }
-            }
+//                } else {
+//                    mPortTypesComboBox.setSelectedIndex(0);
+//                }
+//            }
         }
 
         public void connect(PropertyEditor propertyEditor, PropertyEnv env) {
@@ -185,9 +185,10 @@ public class PortTypeEditor extends PropertyEditorSupport
         public Object getValue() {
             PortType retPortType = null;
             int iIndex = mPortTypesComboBox.getSelectedIndex();
-            if(iIndex >= 1) {
-                retPortType = mPortTypes.get(iIndex - 1);
-            }
+//            if(iIndex >= 1) {
+//                retPortType = mPortTypes.get(iIndex - 1);
+//            }
+            retPortType = mPortTypes.get(iIndex);
             return retPortType;
         }
 
