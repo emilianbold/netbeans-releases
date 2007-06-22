@@ -41,7 +41,8 @@ import org.openide.util.lookup.Lookups;
 
 /**
  *
- * @author Martin Matula, Jan Becicka
+ * @author Martin Matula
+ * @author Jan Becicka
  */
 public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
     private final AbstractRefactoring refactoring;
@@ -50,7 +51,7 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
     private String newName;
     private RenamePanel panel;
     private boolean fromListener = false;
-    private TreePathHandle jmiObject;
+    private TreePathHandle handle;
     private FileObject byPassFolder;
     private boolean byPassPakageRename;
     private boolean pkgRename = true;
@@ -115,7 +116,7 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
 //    }
     
     public RenameRefactoringUI(TreePathHandle handle, CompilationInfo info) {
-        this.jmiObject = handle;
+        this.handle = handle;
         this.refactoring = new RenameRefactoring(Lookups.singleton(handle));
         oldName = handle.resolveElement(info).getSimpleName().toString();
         refactoring.getContext().add(RetoucheUtils.getClasspathInfoFor(handle));
@@ -126,9 +127,9 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
     
     public RenameRefactoringUI(FileObject file, TreePathHandle handle, CompilationInfo info) {
         if (handle!=null) {
-            jmiObject = handle;
+            handle = handle;
             this.refactoring = new RenameRefactoring(Lookups.fixed(file, handle));
-            oldName = jmiObject.resolveElement(info).getSimpleName().toString();
+            oldName = handle.resolveElement(info).getSimpleName().toString();
         } else {
             this.refactoring = new RenameRefactoring(Lookups.fixed(file));
             oldName = file.getName();
@@ -203,8 +204,8 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
         if (panel == null) {
             String name = oldName;
             String suffix = "";
-            if (jmiObject != null) {
-                ElementKind kind = RetoucheUtils.getElementKind(jmiObject);
+            if (handle != null) {
+                ElementKind kind = RetoucheUtils.getElementKind(handle);
                 if (kind.isClass() || kind.isInterface()) {
                     suffix  = kind.isInterface() ? getString("LBL_Interface") : getString("LBL_Class");
                 } else if (kind == ElementKind.METHOD) {
@@ -213,7 +214,7 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
                     suffix = getString("LBL_Field");
                 } else if (kind == ElementKind.LOCAL_VARIABLE) {
                     suffix = getString("LBL_LocalVar");
-                } else if (kind == ElementKind.PACKAGE || (jmiObject == null && fromListener)) {
+                } else if (kind == ElementKind.PACKAGE || (handle == null && fromListener)) {
                     suffix = pkgRename ? getString("LBL_Package") : getString("LBL_Folder");
                 } else if (kind == ElementKind.PARAMETER) {
                     suffix = getString("LBL_Parameter");
@@ -272,18 +273,20 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
 
     public HelpCtx getHelpCtx() {
         String postfix;
-        ElementKind k = RetoucheUtils.getElementKind(jmiObject);
-               
-        if (k == ElementKind.PACKAGE)
+        if (handle==null) {
             postfix = ".JavaPackage";//NOI18N
-        else if (k.isClass() || k.isInterface())
-            postfix = ".JavaClass";//NOI18N
-        else if (k == ElementKind.METHOD)
-            postfix = ".Method";//NOI18N
-        else if (k.isField())
-            postfix = ".Field";//NOI18N
-        else
-            postfix = "";
+        } else {
+            ElementKind k = RetoucheUtils.getElementKind(handle);
+            
+            if (k.isClass() || k.isInterface())
+                postfix = ".JavaClass";//NOI18N
+            else if (k == ElementKind.METHOD)
+                postfix = ".Method";//NOI18N
+            else if (k.isField())
+                postfix = ".Field";//NOI18N
+            else
+                postfix = "";
+        }
         
         return new HelpCtx(RenameRefactoringUI.class.getName() + postfix);
     }
