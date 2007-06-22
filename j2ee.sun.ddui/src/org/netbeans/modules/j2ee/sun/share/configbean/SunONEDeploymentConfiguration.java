@@ -2445,13 +2445,14 @@ result = ASDDVersion.SUN_APPSERVER_8_1;
         try {
             RootInterface sunDDRoot = getSunDDRoot(false);
             SunEjbJar sunEjbJar = (SunEjbJar) sunDDRoot;
-            EnterpriseBeans eb = sunEjbJar.getEnterpriseBeans();
-            if (eb != null) {
-                Ejb ejb = findNamedBean(eb, mdbName, EnterpriseBeans.EJB, Ejb.EJB_NAME);
-                if (ejb != null) {
-                    // get jndi name of existing reference.
-                    assert mdbName.equals(ejb.getEjbName());
-                    destinationName = ejb.getJndiName();
+            if (sunEjbJar != null) {
+                EnterpriseBeans eb = sunEjbJar.getEnterpriseBeans();
+                if (eb != null) {
+                    Ejb ejb = findNamedBean(eb, mdbName, EnterpriseBeans.EJB, Ejb.EJB_NAME);
+                    if (ejb != null) {
+                        assert mdbName.equals(ejb.getEjbName());
+                        destinationName = ejb.getJndiName();
+                    }
                 }
             }
         } catch (IOException ex) {
