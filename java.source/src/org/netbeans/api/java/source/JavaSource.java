@@ -409,7 +409,8 @@ public final class JavaSource {
         if (doc == null) {
             throw new IllegalArgumentException ("doc == null");  //NOI18N
         }
-        JavaSource js = (JavaSource)doc.getProperty(JavaSource.class);
+        Reference<?> ref = (Reference<?>) doc.getProperty(JavaSource.class);
+        JavaSource js = ref != null ? (JavaSource) ref.get() : null;
         if (js == null) {
             DataObject dObj = (DataObject)doc.getProperty(Document.StreamDescriptionProperty);
             if (dObj != null)
