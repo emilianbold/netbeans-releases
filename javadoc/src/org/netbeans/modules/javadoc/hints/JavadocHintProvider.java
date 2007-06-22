@@ -135,7 +135,7 @@ public final class JavadocHintProvider extends AbstractHint {
     private boolean createJavadocKind;
     
     private JavadocHintProvider(boolean createJavadocKind) {
-        super( true, true, createJavadocKind ? AbstractHint.HintSeverity.CURRENT_LINE_WARNING : AbstractHint.HintSeverity.WARNING );
+        super( false, true, createJavadocKind ? AbstractHint.HintSeverity.CURRENT_LINE_WARNING : AbstractHint.HintSeverity.WARNING );
         this.createJavadocKind = createJavadocKind;
     }
     
