@@ -504,7 +504,7 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
     
     //    private File navDataFile = null;
     public final static FileObject getStorageFile( FileObject configFile ){
-//        FileObject webFolder = getWebFolder(configFile);
+        //        FileObject webFolder = getWebFolder(configFile);
         
         Project p = FileOwnerQuery.getOwner(configFile);
         FileObject projectDirectory = p.getProjectDirectory();
@@ -517,7 +517,7 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
         
         
         
-//        FileObject nbprojectFolder = webFolder.getParent().getFileObject("nbproject", null);
+        //        FileObject nbprojectFolder = webFolder.getParent().getFileObject("nbproject", null);
         String filename = configFile.getName() + ".NavData";
         FileObject storageFile = nbprojectFolder.getFileObject(filename);
         if( storageFile == null ){
@@ -543,8 +543,10 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
     }
     
     public void serializeNodeLocations(FileObject navDataFile){
-        saveLocations();
-        SceneSerializer.serialize(sceneData, navDataFile);
+        if( navDataFile != null  ){
+            saveLocations();
+            SceneSerializer.serialize(sceneData, navDataFile);
+        }
     }
     
     public void deserializeNodeLocation(FileObject navDataFile) {
