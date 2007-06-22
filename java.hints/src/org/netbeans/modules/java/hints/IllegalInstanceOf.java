@@ -45,7 +45,7 @@ import org.openide.util.NbBundle;
 public class IllegalInstanceOf extends AbstractHint {
 
     public IllegalInstanceOf() {
-        super(true, true, HintSeverity.WARNING);
+        super(false, true, HintSeverity.WARNING);
     }
 
     public Set<Kind> getTreeKinds() {

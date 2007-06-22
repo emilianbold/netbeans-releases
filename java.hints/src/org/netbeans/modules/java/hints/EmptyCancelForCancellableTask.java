@@ -52,7 +52,7 @@ import org.openide.util.NbBundle;
 public class EmptyCancelForCancellableTask extends AbstractHint {
 
     public EmptyCancelForCancellableTask() {
-        super(true, true, HintSeverity.WARNING);
+        super(false, true, HintSeverity.WARNING);
     }
 
     public String getDescription() {

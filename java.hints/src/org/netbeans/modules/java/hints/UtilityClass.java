@@ -70,7 +70,7 @@ public class UtilityClass extends AbstractHint implements ElementVisitor<Boolean
     
     /** Creates a new instance of AddOverrideAnnotation */
     private UtilityClass(boolean b) {
-        super( true, true, b ? AbstractHint.HintSeverity.WARNING : AbstractHint.HintSeverity.CURRENT_LINE_WARNING);
+        super( false, true, b ? AbstractHint.HintSeverity.WARNING : AbstractHint.HintSeverity.CURRENT_LINE_WARNING);
         clazz = b;
     }
     

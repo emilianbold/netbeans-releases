@@ -70,7 +70,7 @@ public class EmptyStatements extends AbstractHint {
     private static EmptyStatements esBlock;
     
     private EmptyStatements( Tree.Kind treeKind ) {
-        super( true, true, HintSeverity.WARNING );
+        super( treeKind == Tree.Kind.IF ? false : true, true, HintSeverity.WARNING );
         this.treeKind = treeKind;                
     }
 

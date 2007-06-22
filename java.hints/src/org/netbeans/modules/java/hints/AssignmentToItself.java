@@ -50,7 +50,7 @@ public class AssignmentToItself extends AbstractHint {
     private Set<Kind> KINDS = Collections.<Tree.Kind>singleton(Tree.Kind.ASSIGNMENT);
     
     public AssignmentToItself() {
-        super( true, true, HintSeverity.WARNING );
+        super( false, true, HintSeverity.WARNING );
     }
 
     public Set<Kind> getTreeKinds() {
