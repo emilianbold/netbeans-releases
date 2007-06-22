@@ -79,7 +79,9 @@ ould operate on.
 //TODO            return new NbMoveRefactoringPlugin((MoveRefactoring)refactoring);
         }
         if (refactoring instanceof SafeDeleteRefactoring) {
-            return new NbSafeDeleteRefactoringPlugin(refactoring);
+            if (handle != null) {
+                return new NbSafeDeleteRefactoringPlugin(refactoring);
+            }
         }
         return null;
     }
