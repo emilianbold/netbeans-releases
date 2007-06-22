@@ -1,7 +1,7 @@
 # line comment
 
-foreach name ($argv)
-  if ( -f $name ) then
-     echo -n "delete the file '${name}' (y/n/q)?"
-  endif
-end
+for name in $@;do
+  if [ -n $name ]; then
+     echo "delete the file $name (y/n/q)?"
+  fi
+done

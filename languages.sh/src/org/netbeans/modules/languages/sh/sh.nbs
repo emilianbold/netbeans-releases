@@ -20,7 +20,7 @@
 ########### tokens #############################################################
 
 TOKEN:operator: ( [
-    "+" "|" "&" "<" ">" "!" "@" "="
+    "+" "|" "&" "<" ">" "!" "@" "=" ";" "(" ")" "-" "*" "/" ":" "?" "^"
 ] )
 
 TOKEN:line_comment: ( "#" [^ "\n" "\r"]* )
@@ -43,7 +43,7 @@ TOKEN:keyword:(
     "exit" |
     "fi" |
     "for" |
-    "foreach" |
+    "function" |
     "history" |
     "if" |
     "ignoreeof" |
@@ -52,6 +52,7 @@ TOKEN:keyword:(
     "path" |
     "prompt" |
     "return" |
+    "select" |
     "set" |
     "setenv" |
     "shift" |
@@ -61,6 +62,7 @@ TOKEN:keyword:(
     "trap" |
     "unalias" |
     "unset" |
+    "until" |
     "while"
 )
 
@@ -70,7 +72,11 @@ TOKEN:number: (["0"-"9"] ["0"-"9" "."]*)
 
 TOKEN:whitespace: ([" " "\t" "\n" "\r"]+)
 
-TOKEN:identifier:( [^ "\"" "\n" "\r" "\t" " "]+ )
+TOKEN:identifier:( 
+    ["a"-"z" "A"-"Z" "_" "$"] 
+    ["a"-"z" "A"-"Z" "0"-"9" "_" "$"
+    ]*
+)
 
 TOKEN:string: (
     "\""
@@ -80,9 +86,24 @@ TOKEN:string: (
     "\""
 )
 
+TOKEN:string: (
+    "\'"
+        ( [^ "\'" "\n" "\r"] |
+          ("\\" ["r" "n" "t" "\\" "\'" "\""])
+        )*
+    "\'"
+)
+
 
 ########### navigator ##########################################################
 
 NAVIGATOR:label: {
     display_name: "$label$";
 }
+
+
+MARK:error: {
+    type:"Error";
+    message:"Unexpected character.";
+}
+
