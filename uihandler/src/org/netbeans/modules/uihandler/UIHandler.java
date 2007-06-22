@@ -32,6 +32,8 @@ import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
+import org.openide.util.Task;
 
 /**
  *
@@ -42,6 +44,8 @@ implements ActionListener, Runnable, Callable<JButton> {
     private final boolean exceptionOnly;
     static final PropertyChangeSupport SUPPORT = new PropertyChangeSupport(UIHandler.class);
     static final int MAX_LOGS = 1000;
+    private static Task lastRecord = Task.EMPTY;
+    private static RequestProcessor FLUSH = new RequestProcessor("Flush UI Logs"); // NOI18N
     
     public UIHandler(boolean exceptionOnly) {
         setLevel(Level.FINEST);
@@ -53,12 +57,29 @@ implements ActionListener, Runnable, Callable<JButton> {
             return;
         }
         
-        Installer.writeOut(record);
-        
-        SUPPORT.firePropertyChange(null, null, null);
+        class WriteOut implements Runnable {
+            public LogRecord r;
+            public void run() {
+                Installer.writeOut(r);
+                SUPPORT.firePropertyChange(null, null, null);
+                r = null;
+            }
+        }
+        WriteOut wo = new WriteOut();
+        wo.r = record;
+        lastRecord = FLUSH.post(wo);
     }
 
     public void flush() {
+        waitFlushed();
+    }
+    
+    static final void waitFlushed() {
+        try {
+            lastRecord.waitFinished(1000);
+        } catch (InterruptedException ex) {
+            Installer.LOG.log(Level.FINE, null, ex);
+        }
     }
 
     public void close() throws SecurityException {

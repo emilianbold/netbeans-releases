@@ -182,10 +182,13 @@ public class Installer extends ModuleInstall {
     }
     
     public static int getLogsSize() {
+        UIHandler.waitFlushed();
         return prefs.getInt("count", 0); // NOI18N
     }
     
     public static List<LogRecord> getLogs() {
+        UIHandler.waitFlushed();
+        
         File f = logFile(0);
         if (f == null || !f.exists()) {
             return new ArrayList<LogRecord>();
@@ -317,6 +320,8 @@ public class Installer extends ModuleInstall {
     }
     
     public boolean closing() {
+        UIHandler.waitFlushed();
+        
         if (getLogsSize() == 0) {
             return true;
         }

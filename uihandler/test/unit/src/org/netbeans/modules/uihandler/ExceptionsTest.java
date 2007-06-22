@@ -70,6 +70,7 @@ public class ExceptionsTest extends NbTestCase {
         uiLogger.log(log1);
         uiLogger.log(log2);
         uiLogger.log(log3);
+        UIHandler.waitFlushed();
         assertEquals(3, installer.getLogsSize());
         if (installer.getThrown().getMessage().indexOf("TESTING ERROR") == -1) {
             fail("Wrong message " + installer.getThrown().getMessage());

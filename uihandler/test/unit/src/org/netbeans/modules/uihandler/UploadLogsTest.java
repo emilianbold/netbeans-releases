@@ -34,12 +34,14 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import java.util.zip.GZIPInputStream;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.lib.uihandler.LogRecords;
 import org.netbeans.lib.uihandler.MultiPartHandler;
 import org.w3c.dom.Document;
+import org.xml.sax.SAXException;
 
 /**
  *
@@ -161,7 +163,12 @@ public class UploadLogsTest extends NbTestCase {
 
 
             DocumentBuilder b = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-            Document dom = b.parse(files[0]);
+            Document dom = null;
+            try {
+                dom = b.parse(new GZIPInputStream(new FileInputStream(files[0])));
+            } catch (SAXException ex) {
+                fail("cannot parse: " + files[0]);
+            }
 
             assertNotNull("Parsed", dom);
         }

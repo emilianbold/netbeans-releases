@@ -81,6 +81,7 @@ public class InstallerTest extends NbTestCase {
         installer.close();
         
         installer.restored();
+        UIHandler.waitFlushed();
         assertEquals("One log is available: " + Installer.getLogs(), 1, Installer.getLogsSize());
         assertEquals("The right message is there", 
             "Something happened", Installer.getLogs().get(0).getMessage()
