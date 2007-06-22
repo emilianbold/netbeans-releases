@@ -53,6 +53,8 @@ public class FirstParseCatcher extends EditorAwareJavaSourceTaskFactory {
             }
             public void run(final CompilationInfo info) throws Exception {
                 Logger.getLogger(FirstParseCatcher.class.getName()).entering(FirstParseCatcher.class.getName(), "run", info.getFileObject());
+                
+                long startTime = System.currentTimeMillis();
                 RebuildOraculum oraculum = RebuildOraculum.get(info.getFileObject());
                 
                 if (oraculum.isInitialized()) {
@@ -74,6 +76,11 @@ public class FirstParseCatcher extends EditorAwareJavaSourceTaskFactory {
                 Logger.getLogger(FirstParseCatcher.class.getName()).log(Level.FINER, "Found type={0}.", types);
                 
                 oraculum.initialize(RebuildOraculum.sortOut(info.getElements(), types));
+                
+                if (info.getFileObject() != null) {
+                    Logger.getLogger("TIMER").log(Level.FINE, "First Parse Catcher",
+                            new Object[] {info.getFileObject(), System.currentTimeMillis() - startTime});
+                }
                 
                 Logger.getLogger(FirstParseCatcher.class.getName()).exiting(FirstParseCatcher.class.getName(), "run");
             }

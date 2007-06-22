@@ -101,6 +101,10 @@ public class RebuildOraculum {
     private static final Pattern ANONYMOUS = Pattern.compile("\\$[0-9]"); //NOI18N
     
     public List<File> findFilesToRebuild(File root, FileObject file, ClasspathInfo cpInfo, Map<ElementHandle, Collection<String>> currentMembers, Collection<String> possiblyRemovedClasses) {
+        long startTime = System.currentTimeMillis();
+        long endTime   = -1;
+        
+        try {
         Logger.getLogger(RebuildOraculum.class.getName()).log(Level.FINE, "members={0}", getMembers());
         Logger.getLogger(RebuildOraculum.class.getName()).log(Level.FINE, "currentMembers={0}", currentMembers);
         
@@ -156,9 +160,23 @@ public class RebuildOraculum {
             return Collections.<File>emptyList();
         }
         
+        endTime = System.currentTimeMillis();
+        
         ClassIndex ci = cpInfo.getClassIndex();
         
         return findAllDependent(root, file, ci, classes);
+        } finally {
+            if (endTime == (-1)) {
+                endTime = System.currentTimeMillis();
+            }
+            
+            if (file != null) {
+                Logger.getLogger("TIMER").log(Level.FINE, "RebuildOraculum: findFilesToRebuild total",
+                        new Object[] {file, System.currentTimeMillis() - startTime});
+                Logger.getLogger("TIMER").log(Level.FINE, "RebuildOraculum: quick heuristics",
+                        new Object[] {file, endTime - startTime});
+            }
+        }
     }
     
     public static List<File> findAllDependent(File root, FileObject file, ClassIndex ci, Collection<ElementHandle<TypeElement>> classes) {
