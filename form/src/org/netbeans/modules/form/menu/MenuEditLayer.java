@@ -1130,6 +1130,12 @@ public class MenuEditLayer extends JPanel {
         }
         
         public void mouseReleased(MouseEvent e) {
+            if(e.isPopupTrigger()) {
+                //p("showing a context menu");
+                showContextMenu(e.getPoint());
+                return;
+            }
+            
             //p("mouse released: " + e);
             if(dragop.isStarted()) {
                 dragop.end(e.getPoint());
