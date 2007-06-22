@@ -47,25 +47,29 @@ public class DerbyWaiter {
     public DerbyWaiter(boolean migration) {
         isMigration = migration;
         JDBCDriverManager.getDefault().addDriverListener(jdbcDriverListener);
-        registerConnections();
     }
     
     private synchronized void registerConnections() {
         if (registered) {
             return;
         }
+        
         JDBCDriver[] drvsArray = JDBCDriverManager.getDefault().getDrivers(DRIVER_CLASS_NET);
+        if (isMigration) {
+            DatabaseSettingsImporter.getInstance().locateAndRegisterDrivers();
+            DatabaseSettingsImporter.getInstance().locateAndRegisterConnections(true);
+            if (drvsArray.length > 0) {
+                SampleDatabaseCreator.createAll("travel", "travel", "travel", "TRAVEL", "modules/ext/travel.zip", false, "localhost", 1527);                
+            }
+            return;
+        }        
+
+        // Register sample database
         if (drvsArray.length > 0) {
-            if (isMigration) {
-                DatabaseSettingsImporter.getInstance().locateAndRegisterDrivers();
-                DatabaseSettingsImporter.getInstance().locateAndRegisterConnections(true);
-                SampleDatabaseCreator.createAll("travel", "travel", "travel", "TRAVEL", "modules/ext/travel.zip", false, "localhost", 1527);
-            } else
-                SampleDatabaseCreator.createAll("travel", "travel", "travel", "TRAVEL", "modules/ext/travel.zip", false, "localhost", 1527);
-            
+            SampleDatabaseCreator.createAll("travel", "travel", "travel", "TRAVEL", "modules/ext/travel.zip", false, "localhost", 1527);
             registered = true;
-            JDBCDriverManager.getDefault().removeDriverListener(jdbcDriverListener);            
-        }
+            JDBCDriverManager.getDefault().removeDriverListener(jdbcDriverListener);
+        }                
     }
 }
 

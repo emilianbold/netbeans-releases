@@ -223,16 +223,20 @@ public class DatabaseSettingsImporter {
     }
     
     public File retrieveMigratedSettingsAtStartup() {
-        File contextReleaseRoot  = new File(System.getProperty("netbeans.user")); // NOI18N        
-        File[] contextReleaseDirFiles = null;                
+        File contextReleaseRoot  = new File(System.getProperty("netbeans.user") + File.separator + "config" + File.separator); // NOI18N        
+        File[] configDirs = null;                
         
-        contextReleaseDirFiles = contextReleaseRoot.listFiles();
+        configDirs = contextReleaseRoot.listFiles();
         File contextFile = null;
-        for (int i = 0; i < contextReleaseDirFiles.length; i++) {
-            String fileName = contextReleaseDirFiles[i].getName();
-            if (fileName.equals("context.xml")) {
-                contextFile = contextReleaseDirFiles[i];
-                break;
+        for (int i = 0; i < configDirs.length; i++) {
+            File[] contextReleaseDirFiles = configDirs[i].listFiles();
+
+            for (File releaseDir : contextReleaseDirFiles) {
+                String fileName = releaseDir.getName();
+                if (fileName.equals("context.xml")) {
+                    contextFile = contextReleaseDirFiles[i];
+                    break;
+                }
             }
         }
                         
