@@ -161,8 +161,8 @@ public class WsdlModeler {
             if (wsdlUrl.toExternalForm().startsWith("http://") || wsdlUrl.toExternalForm().startsWith("https://")) { //NOI18N
                 InputSource source = new InputSource(wsdlUrl.toExternalForm());
                 options.addWSDL(source);
-            } else {
-                options.addWSDL(new File(wsdlUrl.toURI()));
+            } else { // wsdl is in local file
+                options.addWSDL(new File(wsdlUrl.getFile()));
             }
             options.compatibilityMode = WsimportOptions.EXTENSION;
             
