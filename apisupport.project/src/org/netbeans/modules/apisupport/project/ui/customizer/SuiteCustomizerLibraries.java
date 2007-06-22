@@ -414,8 +414,10 @@ final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         DISABLED_PLATFORM_MODULES.add("org.openide.execution"); // NOI18N
         DISABLED_PLATFORM_MODULES.add("org.netbeans.core.execution"); // NOI18N
         // Similar - unlikely to really be wanted by typical platform apps, and show some GUI.
+        /* XXX #107870: currently org.netbeans.core.actions.LogAction needs OW:
         DISABLED_PLATFORM_MODULES.add("org.openide.io"); // NOI18N
         DISABLED_PLATFORM_MODULES.add("org.netbeans.core.output2"); // NOI18N
+         */
         DISABLED_PLATFORM_MODULES.add("org.netbeans.core.multiview"); // NOI18N
         // this one is useful only for writers of apps showing local disk
         DISABLED_PLATFORM_MODULES.add("org.netbeans.modules.favorites"); // NOI18N
