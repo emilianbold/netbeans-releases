@@ -24,11 +24,13 @@ import org.netbeans.modules.j2ee.persistence.api.metadata.orm.*;
 public class IdImpl implements Id {
 
     private final String name;
+    private final GeneratedValue generatedValue;
     private final Column column;
     private final String temporal;
 
-    public IdImpl(String name, Column column, String temporal) {
+    public IdImpl(String name, GeneratedValue generatedValue, Column column, String temporal) {
         this.name = name;
+        this.generatedValue = generatedValue;
         this.column = column;
         this.temporal = temporal;
     }
@@ -58,7 +60,7 @@ public class IdImpl implements Id {
     }
 
     public GeneratedValue getGeneratedValue() {
-        throw new UnsupportedOperationException("This operation is not implemented yet."); // NOI18N
+        return generatedValue;
     }
 
     public GeneratedValue newGeneratedValue() {

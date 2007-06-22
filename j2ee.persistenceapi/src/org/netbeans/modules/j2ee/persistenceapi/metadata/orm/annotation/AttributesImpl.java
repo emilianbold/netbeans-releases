@@ -93,7 +93,9 @@ public class AttributesImpl implements Attributes, PropertyHandler {
                 String temporal = temporalAnnotation != null ? EntityMappingsUtilities.getTemporalType(helper, temporalAnnotation) : null;
                 Column column = new ColumnImpl(helper, columnAnnotation, propertyName.toUpperCase()); // NOI18N
                 if (idAnnotation != null) {
-                    idList.add(new IdImpl(propertyName, column, temporal));
+                    AnnotationMirror generatedValueAnnotation = annByType.get("javax.persistence.GeneratedValue"); // NOI18N
+                    GeneratedValue genValue = generatedValueAnnotation != null ? new GeneratedValueImpl(helper, generatedValueAnnotation) : null;
+                    idList.add(new IdImpl(propertyName, genValue, column, temporal));
                 } else if (versionAnnotation != null) {
                     versionList.add(new VersionImpl(propertyName, column, temporal));
                 } else {

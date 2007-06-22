@@ -19,16 +19,29 @@
 
 package org.netbeans.modules.j2ee.persistenceapi.metadata.orm.annotation;
 
+import javax.lang.model.element.AnnotationMirror;
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.AnnotationParser;
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.ParseResult;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.*;
 
 public class GeneratedValueImpl implements GeneratedValue {
+
+    private final ParseResult parseResult;
+
+    public GeneratedValueImpl(AnnotationModelHelper helper, AnnotationMirror generatedValueAnnotation) {
+        AnnotationParser parser = AnnotationParser.create(helper);
+        parser.expectEnumConstant("strategy", helper.resolveType("javax.persistence.GenerationType"), parser.defaultValue("AUTO")); // NOI18N
+        parser.expectString("generator", parser.defaultValue("")); // NOI18N
+        parseResult = parser.parse(generatedValueAnnotation);
+    }
 
     public void setStrategy(String value) {
         throw new UnsupportedOperationException("This operation is not implemented yet."); // NOI18N
     }
 
     public String getStrategy() {
-        throw new UnsupportedOperationException("This operation is not implemented yet."); // NOI18N
+        return parseResult.get("strategy", String.class); // NOI18N
     }
 
     public void setGenerator(String value) {
@@ -36,6 +49,6 @@ public class GeneratedValueImpl implements GeneratedValue {
     }
 
     public String getGenerator() {
-        throw new UnsupportedOperationException("This operation is not implemented yet."); // NOI18N
+        return parseResult.get("generator", String.class); // NOI18N
     }
 }
