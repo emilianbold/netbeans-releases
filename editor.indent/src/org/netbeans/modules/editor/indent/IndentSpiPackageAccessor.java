@@ -19,8 +19,6 @@
 
 package org.netbeans.modules.editor.indent;
 
-import javax.swing.text.Document;
-import javax.swing.text.Position;
 import org.netbeans.spi.editor.indent.Context;
 
 /**
@@ -57,8 +55,6 @@ public abstract class IndentSpiPackageAccessor {
         INSTANCE = accessor;
     }
     
-    public abstract Context createContext(boolean indent, Document doc);
-    
-    public abstract void resetBounds(Context ctx, Position startPos, Position endPos);
+    public abstract Context createContext(TaskHandler handler);
     
 }
