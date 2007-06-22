@@ -83,7 +83,7 @@ public abstract class WSDLNamedElementNode<T extends WSDLComponent> extends WSDL
     public void setName(String name) {
         if(this.mPropertyAdapter != null && isEditable()) {
             this.mPropertyAdapter.setName(name);
-            super.setName(name);
+            super.setName(mPropertyAdapter.getName());
         } 
         
     }
