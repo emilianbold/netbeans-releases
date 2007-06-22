@@ -171,9 +171,9 @@ public class J2eeProjectHelper {
     public static J2eeProjectHelper newInstance(Node node, JaxWsModel model) {
         J2eeProjectHelper helper = new J2eeProjectHelper(node, model);
         
-        if (helper.getVersion() == Version.VERSION_1_5) {
-            return new J2ee15ProjectHelper(node, model);
-        }
+        //if (helper.getVersion() == Version.VERSION_1_5) {
+        //    return new J2ee15ProjectHelper(node, model);
+        //}
         
         return helper;
     }
@@ -560,7 +560,8 @@ public class J2eeProjectHelper {
                 public List<String> run(WebAppMetadata metadata) {
                     WebApp webApp = metadata.getRoot();
                     List<String> refNames = new ArrayList<String>();
-                    
+                    Version version = getVersion();
+        
                     try {
                         for (ServiceRef s : webApp.getServiceRef()) {
                             if (version == Version.VERSION_1_4) {
@@ -569,7 +570,6 @@ public class J2eeProjectHelper {
                             } else if (version == Version.VERSION_1_5) {
                                 if (isThisTheServiceRef(s)) {
                                     refNames.add(s.getServiceRefName());
-                                    //System.out.println("refName = " + s.getServiceRefName());
                                 }
                             }
                         }
@@ -590,13 +590,14 @@ public class J2eeProjectHelper {
     private List<String> getAllServiceRefNamesFromAppClient() {
         MetadataModel<AppClientMetadata> model = getJ2eeModule().getMetadataModel(AppClientMetadata.class);
         List<String> refNames = null;
-        
+
         try {
             refNames =  model.runReadAction(new MetadataModelAction<AppClientMetadata, List<String>> () {
                 public List<String> run(AppClientMetadata metadata) {
                     AppClient appClient = metadata.getRoot();
                     List<String> refNames = new ArrayList<String>();
-                    
+                    Version version = getVersion();
+
                     try {
                         for (ServiceRef s : appClient.getServiceRef()) {
                             if (version == Version.VERSION_1_4) {
@@ -632,7 +633,8 @@ public class J2eeProjectHelper {
                     List<String> refNames = new ArrayList<String>();
                     org.netbeans.modules.j2ee.dd.api.ejb.EjbJar ejbJar = metadata.getRoot();
                     EnterpriseBeans eb = ejbJar.getEnterpriseBeans();
-                    
+                    Version version = getVersion();
+
                     if(eb != null) {
                         for(Ejb ejb : eb.getEjbs()) {
                             try {
@@ -671,7 +673,7 @@ public class J2eeProjectHelper {
         
         String path = wsdlUri.getPath();
         int idx = 0;
-        
+  
         if (path.startsWith(EJB_WSDL_LOC)) {
             idx = EJB_WSDL_LOC.length();
         } else if (path.startsWith(WEB_WSDL_LOC)) {
