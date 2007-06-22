@@ -424,9 +424,9 @@ public class ActionEditor extends PropertyEditorSupport implements FormAwareEdit
         }
         updateOrDeleteResource(action, actionKey + ".smallIcon", Action.SMALL_ICON+".IconName", fileInProject, map, Icon.class); // NOI18N
         updateOrDeleteResource(action, actionKey + ".largeIcon", ActionPropertyEditorPanel.LARGE_ICON_KEY+".IconName", fileInProject, map, Icon.class); // NOI18N
-        updateOrDeleteResource(action, actionKey+".accelerator", Action.ACCELERATOR_KEY,fileInProject,map, KeyStroke.class); // NOI18N
-        updateOrDeleteResource(action, actionKey+".BlockingDialog.message","BlockingDialog.message",fileInProject,map,String.class); // NOI18N
-        updateOrDeleteResource(action, actionKey+".BlockingDialog.title","BlockingDialog.title",fileInProject,map,String.class); // NOI18N
+        updateOrDeleteResource(action, actionKey+".accelerator", Action.ACCELERATOR_KEY, fileInProject,map, KeyStroke.class); // NOI18N
+        updateOrDeleteResource(action, actionKey+".BlockingDialog.message", "BlockingDialog.message", fileInProject,map,String.class); // NOI18N
+        updateOrDeleteResource(action, actionKey+".BlockingDialog.title", "BlockingDialog.title", fileInProject,map,String.class); // NOI18N
         map.save();
     }
     

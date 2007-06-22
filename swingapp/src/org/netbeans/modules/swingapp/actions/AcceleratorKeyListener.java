@@ -68,9 +68,9 @@ public class AcceleratorKeyListener implements KeyListener {
     }
     
     public void setCurrentKeyStroke(KeyStroke ks) {
-        keyStroke = ks;
         clearFields();
-        if(ks != null) {
+        keyStroke = ks;
+        if(keyStroke != null) {
             currentKeyCode = keyStroke.getKeyCode();
             panel.acceleratorText.setText(KeyEvent.getKeyText(currentKeyCode));
             panel.shiftCheckbox.setSelected((keyStroke.getModifiers() & InputEvent.SHIFT_DOWN_MASK) > 0);
@@ -90,6 +90,7 @@ public class AcceleratorKeyListener implements KeyListener {
         panel.altCheckbox.setSelected(false);
         panel.metaCheckbox.setSelected(false);
         panel.acceleratorText.setText("");
+        keyStroke = null;
     }
     
     public void setEnabled(boolean enabled) {

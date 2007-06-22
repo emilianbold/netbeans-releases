@@ -257,13 +257,30 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel {
         }
     }
     
+    private void setAcceleratorPanelEnabled(boolean b) {
+        acceleratorText.setEnabled(b);
+        altCheckbox.setEnabled(b);
+        controlCheckbox.setEnabled(b);
+        shiftCheckbox.setEnabled(b);
+        metaCheckbox.setEnabled(b);
+    }
+    
+    private void clearAcceleratorPanel() {
+        acceleratorText.setText("");
+        altCheckbox.setSelected(false);
+        controlCheckbox.setSelected(false);
+        metaCheckbox.setSelected(false);
+        shiftCheckbox.setSelected(false);
+    }
+    
     private void updateFieldsFromAction(final ProxyAction act) {
         if(act == null) {
             clearFieldsForNull();
         } else {
             textField.setEnabled(true);
             tooltipField.setEnabled(true);
-            acceleratorText.setEnabled(true);
+            acceleratorListener.setEnabled(true);
+            setAcceleratorPanelEnabled(true);
             iconButtonLarge.setEnabled(true);
             iconButtonSmall.setEnabled(true);
             selectedTextfield.setEnabled(true);
@@ -857,8 +874,6 @@ private void targetClassButtonActionPerformed(java.awt.event.ActionEvent evt) {/
         String selectedClass = AppFrameworkSupport.getClassNameForFile(cp.getSelectedFile());
         classField.setText(selectedClass);
         classLabel.setText(selectedClass);
-        //validate();
-        //SwingUtilities.getWindowAncestor(this).pack();
     }
 }//GEN-LAST:event_targetClassButtonActionPerformed
 
@@ -868,12 +883,12 @@ private void backgroundTaskCheckboxActionPerformed(java.awt.event.ActionEvent ev
         blockingDialogText.setEnabled(backgroundTaskCheckbox.isSelected());
         blockingDialogTitle.setEnabled(backgroundTaskCheckbox.isSelected());
     }
-    // TODO add your handling code here:
 }//GEN-LAST:event_backgroundTaskCheckboxActionPerformed
 
     private void clearAccelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_clearAccelButtonActionPerformed
         // clear the accelerator because you can't actually use backspace to clear it
-        acceleratorText.setText(""); // NOI18N
+        acceleratorListener.clearFields();
+        clearAcceleratorPanel();
     }//GEN-LAST:event_clearAccelButtonActionPerformed
     
     
@@ -1117,6 +1132,8 @@ private void backgroundTaskCheckboxActionPerformed(java.awt.event.ActionEvent ev
         tooltipField.setEnabled(false);
         tooltipField.setText("");
         acceleratorListener.setEnabled(false);
+        setAcceleratorPanelEnabled(false);
+        clearAcceleratorPanel();
         iconButtonLarge.setEnabled(false);
         iconButtonLarge.setIcon(null);
         iconButtonSmall.setEnabled(false);
@@ -1139,6 +1156,7 @@ private void backgroundTaskCheckboxActionPerformed(java.awt.event.ActionEvent ev
         textField.setEnabled(true);
         tooltipField.setEnabled(true);
         acceleratorListener.setEnabled(true);
+        setAcceleratorPanelEnabled(true);
         iconButtonLarge.setEnabled(true);
         iconButtonSmall.setEnabled(true);
         selectedTextfield.setEnabled(true);
