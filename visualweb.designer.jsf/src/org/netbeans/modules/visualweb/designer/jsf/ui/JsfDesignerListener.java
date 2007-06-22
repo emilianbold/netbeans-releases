@@ -253,6 +253,11 @@ class JsfDesignerListener implements DesignerListener {
 
 //        DataObject dobj = frameForm.getDataObject();
         DataObject dobj = externalJsfForm.getJspDataObject();
+        if (dobj == null) {
+            // #107543 The data object is missing. Notify user?
+            return;
+        }
+        
         OpenCookie oc = (OpenCookie)dobj.getCookie(OpenCookie.class);
 
         if (oc != null) {
