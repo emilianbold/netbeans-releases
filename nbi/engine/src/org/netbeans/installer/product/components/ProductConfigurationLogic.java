@@ -24,6 +24,7 @@ import java.io.File;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
+import org.netbeans.installer.utils.FileUtils;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.SystemUtils;
@@ -72,6 +73,12 @@ public abstract class ProductConfigurationLogic {
                 return ResourceUtils.getString(
                         ProductConfigurationLogic.class,
                         "PCL.validation.directory.file",
+                        installLocation);
+            }
+            if (FileUtils.isEmpty(installLocation)) {
+                return ResourceUtils.getString(
+                        ProductConfigurationLogic.class,
+                        "PCL.validation.directory.empty",
                         installLocation);
             }
         }
