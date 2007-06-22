@@ -119,6 +119,7 @@ is divided into following sections:
                 <condition property="do.display.browser">
                     <and>
                         <istrue value="${{display.browser}}"/>
+                        <!-- See issue 107504 -->
                         <not>
                             <isset property="app.client"/>
                         </not>
