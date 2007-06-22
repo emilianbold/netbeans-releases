@@ -2,17 +2,17 @@
  * The contents of this file are subject to the terms of the Common Development and
  * Distribution License (the License). You may not use this file except in compliance
  * with the License.
- * 
+ *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html or
  * http://www.netbeans.org/cddl.txt.
- * 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file and
  * include the License file at http://www.netbeans.org/cddl.txt. If applicable, add
  * the following below the CDDL Header, with the fields enclosed by brackets []
  * replaced by your own identifying information:
- * 
+ *
  *     "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original Software
  * is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun Microsystems, Inc. All
  * Rights Reserved.
@@ -25,13 +25,13 @@ import java.io.IOException;
 import java.util.List;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
-import javax.print.attribute.AttributeSet;
 import org.netbeans.installer.utils.applications.GlassFishUtils;
 import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.product.components.ProductConfigurationLogic;
 import org.netbeans.installer.utils.FileProxy;
 import org.netbeans.installer.utils.FileUtils;
+import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.applications.JavaUtils;
 import org.netbeans.installer.utils.exceptions.InitializationException;
@@ -40,6 +40,7 @@ import org.netbeans.installer.utils.exceptions.UninstallationException;
 import org.netbeans.installer.utils.exceptions.XMLException;
 import org.netbeans.installer.utils.helper.Dependency;
 import org.netbeans.installer.utils.helper.ExecutionResults;
+import org.netbeans.installer.utils.helper.NbiThread;
 import org.netbeans.installer.utils.helper.RemovalMode;
 import org.netbeans.installer.utils.progress.Progress;
 import org.netbeans.installer.wizard.Wizard;
@@ -112,7 +113,8 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                     getString("CL.install.error.java.home"), // NOI18N
                     e);
         }
-        
+        progress.setPercentage(Progress.START);
+        final int DELTA_PROGRESS = 10;
         // stop the default domain //////////////////////////////////////////////////
         try {
             progress.setDetail(getString("CL.install.stop.as")); // NOI18N
@@ -135,7 +137,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                     installLocation,
                     javaExecutable.getAbsolutePath(),
                     "-cp", // NOI18N
-                    extCp.getAbsolutePath() + 
+                    extCp.getAbsolutePath() +
                     SystemUtils.getPathSeparator() +
                     amInstaller.getAbsolutePath(),
                     mainClass,
@@ -165,6 +167,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                     getString("CL.install.error.add.jvm.option"), // NOI18N
                     e);
         }
+        progress.addPercentage(DELTA_PROGRESS);
         
         // start the default domain /////////////////////////////////////////////////
         try {
@@ -177,6 +180,10 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                     e);
         }
         
+        progress.addPercentage(DELTA_PROGRESS);
+        Thread th = new MoveProgressThread(progress, 5L * 60L, DELTA_PROGRESS * 7);
+        th.start();
+        
         // stop the default domain //////////////////////////////////////////////////
         try {
             progress.setDetail(getString("CL.install.stop.as")); // NOI18N
@@ -188,6 +195,10 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                     e);
         }
         
+        if(th.isAlive()) {
+            LogManager.log("stopping moving progress thread...");
+            th.stop();
+        }
         // remove the jvm option ///////////////////////////////////////////////////
         try {
             progress.setDetail(getString("CL.install.remove.jvm.option")); // NOI18N
@@ -263,7 +274,50 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     public boolean registerInSystem() {
         return false;
     }
+    private class MoveProgressThread extends NbiThread {
+        private Progress progress;
+        public MoveProgressThread(final Progress progress, final long seconds, final int percentageDelta)  {
+            super(new Runnable() {
+                public void run() {
+                    final long MLSEC = 1000L;
+                    long startTime = System.currentTimeMillis();
+                    long endTime   = startTime + MLSEC * seconds;
+                    final int startPercentage = progress.getPercentage();
+                    LogManager.log("... starting percentage : " + startPercentage);
+                    LogManager.log("... end percentage : " + 
+                            (startPercentage + percentageDelta));
+                    long timePosition = startTime;
+                    
+                    while(timePosition < endTime) {
+                        try {
+                            sleep(MLSEC);
+                            timePosition = System.currentTimeMillis();
+                            final long current = startPercentage +
+                                    ((timePosition - startTime) * percentageDelta) / (seconds * MLSEC);
+                            if(current <= 100) {
+                                if(progress.getPercentage()!=current) {
+                                    LogManager.log("... setting percentage to " + current);
+                                    progress.setPercentage(current);
+                                }
+                            } else {
+                                LogManager.log("... 100% has been reached");
+                            }
+                        } catch (InterruptedException e) {
+                            LogManager.log("Interrupted while sleeping", e);
+                        }
+                    }
+                     LogManager.log("... end of progress moving thread");
+                }
+            });
+        }
+        
+    }
     
+    @Override
+    public int getLogicPercentage() {
+        return 90 ;
+    }
+
     // private //////////////////////////////////////////////////////////////////////
     private String getAMServerLinkName(final File asLocation) {
         final File file = new File(asLocation, AMSERVER_DIR_INSIDE_AS);
