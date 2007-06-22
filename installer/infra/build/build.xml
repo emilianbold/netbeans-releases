@@ -181,11 +181,11 @@
         
         <!--
         <get
-            src="${glassfish.builds.host}/java/re/glassfish/9.1/promoted/latest/latest/bundles/"
+            src="${glassfish.builds.host}/java/re/glassfish/9.1/promoted/rc/latest/bundles/"
             dest="${temp.file}"/>
         -->
         <get
-            src="${glassfish.builds.host}/java/re/glassfish/9.1/promoted/rc/latest/bundles/"
+            src="${glassfish.builds.host}/java/re/glassfish/9.1/promoted/rc/b51/bundles/"
             dest="${temp.file}"/>
         <glassfish-buildnumber 
             file="${temp.file}" 
@@ -194,11 +194,6 @@
             file="${temp.file}" 
             prefix="sjsas"/>
 
-        <!--
-        <get
-            src="${openesb.builds.host}/kits/openesb/main/latestGlassfish/log/"
-            dest="${temp.file}"/>
-        -->
         <get
             src="${openesb.builds.host}/kits/ojc/main/latestGlassfish/log/"
             dest="${temp.file}"/>
@@ -214,7 +209,7 @@
             prefix="swdp"/>
         
         <get
-            src="${glassfish.builds.host}/java/re/javaeesdk/5.0_03/promoted/preview2/latest/bundles/"
+            src="${glassfish.builds.host}/java/re/javaeesdk/5.0_03/archive/preview2/latest/bundles/"
             dest="${temp.file}"/>
         <portletcontainer-buildnumber 
             file="${temp.file}" 
@@ -235,12 +230,18 @@
         <get
             src="${sjsam.builds.host}/projects/am-javaee/update3beta/"
             dest="${temp.file}"/>
+        -->
+        <get
+            src="${glassfish.builds.host}/java/re/javaeesdk/5.0_03/archive/fcs/latest/bundles/"
+            dest="${temp.file}"/>
         <sjsam-buildnumber 
             file="${temp.file}" 
             prefix="sjsam"/>
-        -->
+            
+        <!--
         <property name="sjsam.milestone.number" value="1"/>
         <property name="sjsam.build.number" value="20070614"/>
+        -->
         
         <delete file="${temp.file}"/>
     </target>
