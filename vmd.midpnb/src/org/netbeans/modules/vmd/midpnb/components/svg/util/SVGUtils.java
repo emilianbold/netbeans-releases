@@ -19,21 +19,16 @@
 
 package org.netbeans.modules.vmd.midpnb.components.svg.util;
 
+import org.openide.util.Exceptions;
+import org.xml.sax.*;
+import org.xml.sax.helpers.XMLReaderFactory;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.regex.Pattern;
-import org.openide.util.Exceptions;
-import org.xml.sax.Attributes;
-import org.xml.sax.ContentHandler;
-import org.xml.sax.EntityResolver;
-import org.xml.sax.InputSource;
-import org.xml.sax.Locator;
-import org.xml.sax.SAXException;
-import org.xml.sax.XMLReader;
-import org.xml.sax.helpers.XMLReaderFactory;
 
 /**
  *
@@ -64,11 +59,11 @@ public final class SVGUtils {
     
     private static class NamedElementsContentHandler implements ContentHandler, EntityResolver {
         
-        private ArrayList foundElements;
+        private ArrayList<String> foundElements;
         private Pattern regex;
         
         public NamedElementsContentHandler(String regex) {
-            this.foundElements = new ArrayList();
+            this.foundElements = new ArrayList<String>();
             this.regex  = Pattern.compile(regex);
         }
         
