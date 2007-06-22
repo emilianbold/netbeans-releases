@@ -141,6 +141,7 @@ public class VisualSQLEditorMetaDataImpl implements VisualSQLEditorMetaData {
         allColumnsTable.clear() ;
         allColumnsTableLoaded = false ;
         pkTable.clear() ;
+	identifierQuoteString = null;
     }
 
 //     public String[] getSchemas() {
@@ -153,7 +154,6 @@ public class VisualSQLEditorMetaDataImpl implements VisualSQLEditorMetaData {
      */
     public List<String> getSchemas() {
 	List<String> schemas = Arrays.asList(dataSourceInfo.getDataSource().getSchemas());
-	logInfo("GetSchemas, number of schemas found: " + schemas.size());
 	return schemas;
     }        
 
@@ -575,6 +575,22 @@ public class VisualSQLEditorMetaDataImpl implements VisualSQLEditorMetaData {
 //         logInfo( dataSourceInfo.getName() + " finished loading all columns" ) ;
 //     }
 
+    String identifierQuoteString = null;
+    
+    public String getIdentifierQuoteString()
+	throws SQLException
+    {
+        logInfo( dataSourceInfo.getName() + " getIdentifierQuoteString ");
+        if ( dbmdh == null )
+	    initMetaData() ;
+	if ( identifierQuoteString != null) {
+	    return identifierQuoteString;
+	} else {
+	    identifierQuoteString = databaseMetaData.getIdentifierQuoteString();
+	    return identifierQuoteString;
+	}
+    }
+    
     /* ================================================================ */
     /*****
      * parse a full table name, e.g. Schema.Table or Table
