@@ -156,36 +156,54 @@ public class Utils {
     
     
     public static void registerResources(java.io.File[] resourceDirs, ServerInterface mejb){
-        System.out.println(bundle.getString("Msg_ProjResRegisterStart")); //NOI18N
-        try{
-            SunDeploymentManagerInterface sunDm = (SunDeploymentManagerInterface)mejb.getDeploymentManager();
-            for (int j=0; j<resourceDirs.length; j++){
+        SunDeploymentManagerInterface sunDm = (SunDeploymentManagerInterface) mejb.getDeploymentManager();
+        if (sunDm.getAppserverVersion() != ServerLocationManager.GF_V2) {
+            System.out.println(bundle.getString("Msg_ProjResRegisterStart")); //NOI18N
+            try {
+                for (int j = 0; j < resourceDirs.length; j++) {
+                    File resourceDir = resourceDirs[j];
+                    File[] resources = null;
+                    if (resourceDir != null) {
+                        resources = resourceDir.listFiles(new SunResourceFileFilter());
+                    }
+                    if (resources != null) {
+                        registerSunResources(mejb, resources);
+                    }
+                }
+            } catch (Exception ex) {
+                String errorMsg = MessageFormat.format(bundle.getString("Msg_RegFailure"), new Object[]{ex.getLocalizedMessage()}); //NOI18N
+                System.out.println(errorMsg);
+            }
+            System.out.println(bundle.getString("Msg_ProjResRegisterFinish")); //NOI18N
+        }else {
+            System.out.println(bundle.getString("Msg_PrepResourcesForDeploy")); //NOI18N
+            for (int j = 0; j < resourceDirs.length; j++) {
                 File resourceDir = resourceDirs[j];
                 File[] resources = null;
-                if(resourceDir != null){
+                if (resourceDir != null) {
                     resources = resourceDir.listFiles(new SunResourceFileFilter());
                 }
-                if(resources != null){
-                    registerSunResources(mejb, resources);
+                if (resources != null) {
+                    prepareSunResources(mejb, resources);
                 }
             }
-        }catch(Exception ex){
-            String errorMsg = MessageFormat.format(bundle.getString( "Msg_RegFailure"), new Object[]{ex.getLocalizedMessage()}); //NOI18N
-            System.out.println(errorMsg);
         }
-        System.out.println(bundle.getString("Msg_ProjResRegisterFinish")); //NOI18N
     }
     
     private static void registerSunResources(final ServerInterface mejb, final File[] resources) throws Exception {
         for(int i=0; i<resources.length; i++ ){
             File resource = resources[i];
             if((resource != null) && (!resource.isDirectory())){
-                SunDeploymentManagerInterface sunDm = (SunDeploymentManagerInterface)mejb.getDeploymentManager();
-                if(sunDm.getAppserverVersion() != ServerLocationManager.GF_V2){
-                    Utils.registerIndvResources(mejb, resource);
-                }else{
-                    RegistrationUtils.checkUpdateServerResources(mejb, resource);
-                }    
+                Utils.registerIndvResources(mejb, resource);
+            }
+        }
+    }
+    
+    private static void prepareSunResources(final ServerInterface mejb, final File[] resources) {
+        for(int i=0; i<resources.length; i++ ){
+            File resource = resources[i];
+            if((resource != null) && (!resource.isDirectory())){
+                RegistrationUtils.checkUpdateServerResources(mejb, resource);
             }
         }
     }
