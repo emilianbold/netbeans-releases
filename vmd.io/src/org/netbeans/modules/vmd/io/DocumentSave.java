@@ -21,6 +21,7 @@ package org.netbeans.modules.vmd.io;
 import org.netbeans.modules.vmd.api.model.*;
 import org.netbeans.modules.vmd.api.io.DataSerializer;
 import org.netbeans.modules.vmd.api.io.DataObjectContext;
+import org.netbeans.modules.vmd.api.io.ProjectTypeInfo;
 import org.netbeans.modules.vmd.api.io.providers.IOSupport;
 import org.openide.xml.XMLUtil;
 import org.openide.ErrorManager;
@@ -66,10 +67,12 @@ public class DocumentSave {
         Document xml = XMLUtil.createDocument (XML_ROOT_NODE, null, null, null);// TODO - NS, DTD
         Node xmlRootNode = xml.getFirstChild ();
         setAttribute (xml, xmlRootNode, VERSION_ATTR, VERSION_VALUE_1);
-        setAttribute (xml, xmlRootNode, PROP_PROJECT_TYPE, savingDocument.getDocumentInterface().getProjectType());
+        String projectType = savingDocument.getDocumentInterface ().getProjectType ();
+        setAttribute (xml, xmlRootNode, PROP_PROJECT_TYPE, projectType);
 
         Node node = xml.createElement (DOCUMENT_NODE);
-        setAttribute (xml, node, VERSION_ATTR, VERSION_VALUE_1);
+        setAttribute (xml, node, VERSION_ATTR, ProjectTypeInfo.getProjectTypeInfoFor (projectType).getDocumentVersion ());
+
         checkDocumentValidity (savingDocument);
         saveComponent (xml, node, savingDocument.getRootComponent ());
         xmlRootNode.appendChild (node);

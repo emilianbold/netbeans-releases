@@ -38,6 +38,8 @@ public abstract class ProjectTypeInfo {
 
     public abstract TypeID getRootCDTypeID ();
 
+    public abstract String getDocumentVersion ();
+    
     public static ProjectTypeInfo getProjectTypeInfoFor (String projectType) {
         for (ProjectTypeInfo info : Lookup.getDefault ().lookupAll (ProjectTypeInfo.class))
             if (info.projectType.equals (projectType))

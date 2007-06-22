@@ -25,6 +25,7 @@ This dtd describes the vmd file format including the built-in plug-ins
 <!ELEMENT VisualMobileDesign (Document,FlowScene?)>
 <!ATTLIST VisualMobileDesign
     version CDATA #REQUIRED
+    projectType CDATA #REQUIRED
 >
 
 <!ELEMENT Document (Component)?>

@@ -35,11 +35,15 @@ import java.util.Iterator;
  */
 public class MidpDocumentSerializationController extends DocumentSerializationController {
 
-    public void approveComponents (DataObjectContext context, DesignDocument loadingDocument, Collection<ComponentElement> componentElements) {
+    private static final String VERSION_1 = "1";
+
+    public void approveComponents (DataObjectContext context, DesignDocument loadingDocument, String documentVersion, Collection<ComponentElement> componentElements) {
+        if (! MidpDocumentSupport.PROJECT_TYPE_MIDP.equals (context.getProjectType ())  ||  ! VERSION_1.equals (documentVersion))
+            return;
     }
 
-    public void approveProperties (DataObjectContext context, DesignDocument loadingDocument, DesignComponent component, Collection<PropertyElement> propertyElements) {
-        if (! MidpDocumentSupport.PROJECT_TYPE_MIDP.equals (context.getProjectType ()))
+    public void approveProperties (DataObjectContext context, DesignDocument loadingDocument, String documentVersion, DesignComponent component, Collection<PropertyElement> propertyElements) {
+        if (! MidpDocumentSupport.PROJECT_TYPE_MIDP.equals (context.getProjectType ())  ||  ! VERSION_1.equals (documentVersion))
             return;
         if (loadingDocument.getDescriptorRegistry ().isInHierarchy (ItemCD.TYPEID, component.getType ())) {
             Iterator<PropertyElement> iterator = propertyElements.iterator ();

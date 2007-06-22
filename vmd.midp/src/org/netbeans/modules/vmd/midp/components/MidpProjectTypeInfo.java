@@ -40,4 +40,8 @@ public class MidpProjectTypeInfo extends ProjectTypeInfo {
         return RootCD.TYPEID;
     }
 
+    public String getDocumentVersion () {
+        return "1";
+    }
+
 }

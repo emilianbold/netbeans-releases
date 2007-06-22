@@ -41,4 +41,8 @@ public class GameProjectTypeInfo extends ProjectTypeInfo {
         return GameRootCD.TYPEID;
     }
 
+    public String getDocumentVersion () {
+        return "1";
+    }
+
 }

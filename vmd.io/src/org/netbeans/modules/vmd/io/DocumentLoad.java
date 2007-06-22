@@ -90,6 +90,8 @@ public class DocumentLoad {
     }
 
     private static void loadDocumentVersion1 (final DataObjectContext context, final DesignDocument loadingDocument, Node documentNode) {
+        final String documentVersion = getAttributeValue (documentNode, DocumentSave.VERSION_ATTR);
+
         ArrayList<ComponentElement> componentElements = new ArrayList<ComponentElement> ();
         if (documentNode != null)
             for (Node child : getChildNode (documentNode))
@@ -97,7 +99,7 @@ public class DocumentLoad {
                     collectStructure (componentElements, child, Long.MIN_VALUE);
 
         for (DocumentSerializationController controller : getDocumentSerializationControllers ())
-            controller.approveComponents (context, loadingDocument, componentElements);
+            controller.approveComponents (context, loadingDocument, documentVersion, componentElements);
 
         final HashMap<Long, ComponentElement> hierarchy = new HashMap<Long, ComponentElement> ();
         HashSet<TypeID> typeids = new HashSet<TypeID> ();
@@ -110,12 +112,12 @@ public class DocumentLoad {
 
         loadingDocument.getTransactionManager ().writeAccess (new Runnable() {
             public void run () {
-                loadDocumentCore (context, loadingDocument, hierarchy);
+                loadDocumentCore (context, loadingDocument, documentVersion, hierarchy);
             }
         });
     }
 
-    private static void loadDocumentCore (DataObjectContext context, DesignDocument loadingDocument, HashMap<Long, ComponentElement> hierarchy) {
+    private static void loadDocumentCore (DataObjectContext context, DesignDocument loadingDocument, String documentVersion, HashMap<Long, ComponentElement> hierarchy) {
         ArrayList<ComponentElement> list = new ArrayList<ComponentElement> (hierarchy.values ());
         Collections.sort (list, new Comparator<ComponentElement>() {
             public int compare (ComponentElement o1, ComponentElement o2) {
@@ -169,7 +171,7 @@ public class DocumentLoad {
             }
 
             for (DocumentSerializationController controller : getDocumentSerializationControllers ())
-                controller.approveProperties (context, loadingDocument, component, propertyElements);
+                controller.approveProperties (context, loadingDocument, documentVersion, component, propertyElements);
 
             for (PropertyElement propertyElement : propertyElements) {
                 String propertyName = propertyElement.getPropertyName ();

@@ -30,8 +30,8 @@ import java.util.Collection;
  */
 public abstract class DocumentSerializationController {
 
-    public abstract void approveComponents (DataObjectContext context, DesignDocument loadingDocument, Collection<ComponentElement> componentElements);
+    public abstract void approveComponents (DataObjectContext context, DesignDocument loadingDocument, String documentVersion, Collection<ComponentElement> componentElements);
 
-    public abstract void approveProperties (DataObjectContext context, DesignDocument loadingDocument, DesignComponent component, Collection<PropertyElement> propertyElements);
+    public abstract void approveProperties (DataObjectContext context, DesignDocument loadingDocument, String documentVersion, DesignComponent component, Collection<PropertyElement> propertyElements);
 
 }
