@@ -1324,11 +1324,16 @@ public class UnitTab extends javax.swing.JPanel {
             super ("UnitTab_MoreAction", /*KeyStroke.getKeyStroke (KeyEvent.VK_N, KeyEvent.CTRL_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK), */"Expand");//NOI18N
         }
         public void performerImpl (Unit uu) {
-            final Map<String, Boolean> state = UnitCategoryTableModel.captureState (model.getUnits ());
-            model.setExpanded(true);
-            fireUpdataUnitChange ();
-            UnitCategoryTableModel.restoreState (model.getUnits (), state, model.isMarkedAsDefault ());
-            focusTable();
+            try {
+                setWaitingState(true);
+                final Map<String, Boolean> state = UnitCategoryTableModel.captureState (model.getUnits ());            
+                model.setExpanded(true);
+                fireUpdataUnitChange ();
+                UnitCategoryTableModel.restoreState (model.getUnits (), state, model.isMarkedAsDefault ());
+                focusTable();
+            } finally {
+                setWaitingState(false);
+            }
         }
 
         @Override
@@ -1359,11 +1364,16 @@ public class UnitTab extends javax.swing.JPanel {
             super ("UnitTab_LessAction", /*KeyStroke.getKeyStroke (KeyEvent.VK_N, KeyEvent.CTRL_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK), */"Expand");//NOI18N
         }
         public void performerImpl (Unit uu) {
-            final Map<String, Boolean> state = UnitCategoryTableModel.captureState (model.getUnits ());
-            model.setExpanded(false);
-            fireUpdataUnitChange ();
-            UnitCategoryTableModel.restoreState (model.getUnits (), state, model.isMarkedAsDefault ());
-            focusTable();
+            try {
+                setWaitingState(true);
+                final Map<String, Boolean> state = UnitCategoryTableModel.captureState(model.getUnits());
+                model.setExpanded(false);
+                fireUpdataUnitChange();
+                UnitCategoryTableModel.restoreState(model.getUnits(), state, model.isMarkedAsDefault());
+                focusTable();
+            } finally {
+                setWaitingState(false);
+            }            
         }
 
         @Override
