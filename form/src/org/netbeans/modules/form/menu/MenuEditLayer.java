@@ -23,7 +23,9 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Point;
+import java.awt.RenderingHints;
 import java.awt.dnd.DropTarget;
 import java.awt.dnd.DropTargetDragEvent;
 import java.awt.dnd.DropTargetDropEvent;
@@ -200,8 +202,6 @@ public class MenuEditLayer extends JPanel {
         this.requestFocus();
         configureGlassLayer();
         configureFormListeners();
-        //dragop = new DragOperation(this);
-        //dragop.start(item,)
     }
     
     
@@ -211,10 +211,13 @@ public class MenuEditLayer extends JPanel {
             g.setColor(Color.RED);
             g.drawString("the MenuEditLayer is visible",5,getHeight()-5);
         }
-        g.setColor(Color.BLACK);
+        Graphics2D g2 = (Graphics2D) g.create();
+        g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+        g2.setColor(Color.BLACK);
         if(showMenubarWarning) {
-            g.drawString("TEMP: You cannot add a menu component to a form without a menubar.", 5, getHeight()-30);
+            g2.drawString("You cannot add a menu component to a form without a menubar.", 5, getHeight()-30);
         }
+        g2.dispose();
     }
     
     
@@ -1086,8 +1089,10 @@ public class MenuEditLayer extends JPanel {
 
             JComponent c = dragop.getDeepestComponentInPopups(e.getPoint());
 
+            
             if(c == null && !isMenuRelatedRADComponent(rad)) {
                 p("not a menu component. going back to handle layer");
+                PaletteUtils.clearPaletteSelection();
                 hideMenuLayer();
             }
 
@@ -1176,6 +1181,10 @@ public class MenuEditLayer extends JPanel {
         }
         
         public void mouseEntered(MouseEvent e) {
+            if(showMenubarWarning) {
+                showMenubarWarning = false;
+                repaint();
+            }
             if(!dragop.isStarted() || PaletteUtils.getSelectedItem() != dragop.getCurrentItem()) {
                 PaletteItem item = PaletteUtils.getSelectedItem();
                 
@@ -1195,12 +1204,13 @@ public class MenuEditLayer extends JPanel {
                     dragop.start(item,e.getPoint());
                 }
                 
+                /*
                 if(formDesigner.getDesignerMode() == FormDesigner.MODE_SELECT && showMenubarWarning) {
                     p("still in bad mode");
-                    glassLayer.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+                    //glassLayer.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                     showMenubarWarning = false;
                     repaint();
-                }
+                }*/
             }
         }
         

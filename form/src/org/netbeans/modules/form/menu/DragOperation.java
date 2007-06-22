@@ -163,7 +163,7 @@ class DragOperation {
         if(!menuEditLayer.doesFormContainMenuBar()) {
             op = Op.NO_MENUBAR;
             //josh: use the invalid drop target cursor instead
-            menuEditLayer.glassLayer.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+            //menuEditLayer.glassLayer.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
             menuEditLayer.showMenubarWarning = true;
             menuEditLayer.repaint();
             return;
