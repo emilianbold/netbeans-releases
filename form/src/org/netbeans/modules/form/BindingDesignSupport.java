@@ -869,12 +869,12 @@ public class BindingDesignSupport {
         BindingContext context = binding.getContext();
         if (!(binding.getValue(INVALID_BINDING, null).value)) { // Issue 104960
             binding.unbind();
+            context.removeBinding(binding);
         } else {
             try {
                 binding.unbind();
             } catch (NullPointerException npex) {} // ugly implementation detail of binding library
         }
-        context.removeBinding(binding);
     }
 
     private void removeBindingInModel(MetaBinding bindingDef) {
