@@ -240,9 +240,8 @@ public class NewAppWizardIterator implements WizardDescriptor.InstantiatingItera
             template.getName(), // project name (dir)
             "applicationpackage", // NOI18N
             "ShellApp", // NOI18N
-            "ShellFrame", // NOI18N
-            "ShellAboutBox", // NOI18N
-            "ShellActions" }; // NOI18N
+            "ShellView", // NOI18N
+            "ShellAboutBox" }; // NOI18N
     }
 
     private static String[] getSubstituteNames(String projectName, String appClassName) {
@@ -265,9 +264,8 @@ public class NewAppWizardIterator implements WizardDescriptor.InstantiatingItera
             projectName,
             packageName,
             appClassName,
-            appPrefix + "Frame", // NOI18N
-            appPrefix + "AboutBox", // NOI18N
-            appPrefix + "Actions" // NOI18N
+            appPrefix + "View", // NOI18N
+            appPrefix + "AboutBox" // NOI18N
         };
     }
 }

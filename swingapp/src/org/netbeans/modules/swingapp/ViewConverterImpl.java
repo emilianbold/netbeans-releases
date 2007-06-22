@@ -21,6 +21,8 @@ package org.netbeans.modules.swingapp;
 
 import java.awt.BorderLayout;
 import javax.swing.JComponent;
+import javax.swing.JFrame;
+import javax.swing.JMenuBar;
 import javax.swing.JRootPane;
 import javax.swing.JToolBar;
 import org.netbeans.modules.form.ViewConverter;
@@ -36,16 +38,35 @@ public class ViewConverterImpl implements ViewConverter {
 
     public Convert convert(Object component, boolean root, boolean designRestrictions) {
         if (root && component instanceof application.View) {
-            return new ConvertResult(new AppDesignView(), null);
+            return new ConvertResult(
+                    designRestrictions ? new AppDesignView() : new AppPreview(),
+                    null);
         } else {
             return null;
         }
-        // TODO: frame for preview
     }
 
     public static class AppDesignView extends JRootPane {
         public void setComponent(JComponent component) {
             getContentPane().add(component, BorderLayout.CENTER);
+        }
+
+        public void setToolBar(JToolBar toolBar) {
+            getContentPane().add(toolBar, BorderLayout.PAGE_START);
+        }
+
+        public void setStatusBar(JComponent statusBar) {
+            getContentPane().add(statusBar, BorderLayout.PAGE_END);
+        }
+    }
+
+    public static class AppPreview extends JFrame {
+        public void setComponent(JComponent component) {
+            getContentPane().add(component);
+        }
+
+        public void setMenuBar(JMenuBar menuBar) {
+            setJMenuBar(menuBar);
         }
 
         public void setToolBar(JToolBar toolBar) {

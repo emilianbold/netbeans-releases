@@ -517,13 +517,15 @@ public class ActionManager {
           + "        }\n" // NOI18N
           + "    }\n"; // NOI18N
 
-    private static String getTaskClassImplCode(String taskName, String ctorCode) {
+    private String getTaskClassImplCode(String taskName, String ctorCode) {
         if (ctorCode == null) {
             ctorCode = "";
         }
         if (ctorCode.length() > 0 && !ctorCode.endsWith("\n")) { // NOI18N
             ctorCode = ctorCode + "\n"; // NOI18N
         }
+        ctorCode = "super(" + AppFrameworkSupport.getApplicationCode(getRoot()) + ");\n" // NOI18N
+                   + ctorCode;
         if (ctorCode.length() > 0) { // provisional indentation, PENDING...
             StringBuilder buf = new StringBuilder();
             String indent = "            "; // NOI18N

@@ -126,7 +126,14 @@ class AppFrameworkSupport {
             return false;
         }
     }
-    
+
+    static String getApplicationCode(FileObject srcFile) {
+        String appClsName = getApplicationClassName(srcFile);
+        return appClsName != null
+            ? application.Application.class.getName() + ".getInstance(" + appClsName + ".class)" // NOI18N
+            : null;
+    }
+
     /**
      * Returns source code for obtaining the ResourceMap for given file (class).
      * Supposing the code is only used within the given source file - so the
@@ -134,10 +141,13 @@ class AppFrameworkSupport {
      * @param srcFile the source file for which the ResourceMap should be obtained
      */
     static String getResourceMapCode(FileObject srcFile) {
-        return application.ApplicationContext.class.getName()
-                + ".getInstance().getResourceMap(" + srcFile.getName() + ".class)"; // NOI18N
+        return getApplicationCode(srcFile) + ".getContext().getResourceMap(" + srcFile.getName() + ".class)"; // NOI18N
     }
-    
+
+    static String getActionMapCode(FileObject srcFile) {
+        return getApplicationCode(srcFile) + ".getContext().getActionMap(" + srcFile.getName() + ".class, this)"; // NOI18N
+    }
+
     /**
      * Finds the source file that represents the Application subclass of
      * the project. Returns the corresponding class name.

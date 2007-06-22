@@ -261,7 +261,7 @@
             </MenuItem>
             <MenuItem class="javax.swing.JMenuItem" name="exitMenuItem">
               <AuxValues>
-                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="exitMenuItem.setAction(ApplicationContext.getInstance().getActionMap(ShellView.class, this).get(&quot;quit&quot;));"/>
+                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="exitMenuItem.setAction(application.Application.getInstance(ShellApp.class).getContext().getActionMap(ShellView.class, this).get(&quot;quit&quot;));"/>
                 <AuxValue name="JavaCodeGenerator_VariableLocal" type="java.lang.Boolean" value="true"/>
                 <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="0"/>
               </AuxValues>
@@ -342,11 +342,6 @@
         </Component>
       </SubComponents>
     </Container>
-    <Component class="application.TaskMonitor" name="taskMonitor">
-      <Events>
-        <EventHandler event="propertyChange" listener="java.beans.PropertyChangeListener" parameters="java.beans.PropertyChangeEvent" handler="taskMonitorPropertyChange"/>
-      </Events>
-    </Component>
     <Component class="javax.persistence.EntityManager" name="entityManager">
       <Properties>
         <Property name="persistenceUnit" type="java.lang.String" value="_unitName_"/>

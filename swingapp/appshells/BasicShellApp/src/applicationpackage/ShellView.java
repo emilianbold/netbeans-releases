@@ -8,7 +8,8 @@ import application.Action;
 import application.ApplicationContext;
 import application.ResourceMap;
 import application.SingleFrameApplication;
-import application.SingleFrameApplication.SingleFrameApplicationView;
+import application.FrameView;
+import application.TaskMonitor;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.Timer;
@@ -19,8 +20,8 @@ import javax.swing.JFrame;
 /**
  * The application's main frame.
  */
-public class ShellView extends SingleFrameApplicationView {
-    
+public class ShellView extends FrameView {
+
     public ShellView(SingleFrameApplication app) {
         super(app);
 
@@ -29,12 +30,12 @@ public class ShellView extends SingleFrameApplicationView {
         // status bar initialization - message timeout, idle icon and busy animation, etc
         ResourceMap resourceMap = getResourceMap();
         int messageTimeout = resourceMap.getInteger("StatusBar.messageTimeout");
-	messageTimer = new Timer(messageTimeout, new ActionListener() {
+        messageTimer = new Timer(messageTimeout, new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 statusMessageLabel.setText("");
             }
         });
-	messageTimer.setRepeats(false);
+        messageTimer.setRepeats(false);
         int busyAnimationRate = resourceMap.getInteger("StatusBar.busyAnimationRate");
         for (int i = 0; i < busyIcons.length; i++) {
             busyIcons[i] = resourceMap.getIcon("StatusBar.busyIcons[" + i + "]");
@@ -44,13 +45,45 @@ public class ShellView extends SingleFrameApplicationView {
                 busyIconIndex = (busyIconIndex + 1) % busyIcons.length;
                 statusAnimationLabel.setIcon(busyIcons[busyIconIndex]);
             }
-        }); 
+        });
         idleIcon = resourceMap.getIcon("StatusBar.idleIcon");
         statusAnimationLabel.setIcon(idleIcon);
         progressBar.setVisible(false);
+
+        // connecting action tasks to status bar via TaskMonitor
+        TaskMonitor taskMonitor = new TaskMonitor(getApplication().getContext());
+        taskMonitor.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
+            public void propertyChange(java.beans.PropertyChangeEvent evt) {
+                String propertyName = evt.getPropertyName();
+                if ("started".equals(propertyName)) {
+                    if (!busyIconTimer.isRunning()) {
+                        statusAnimationLabel.setIcon(busyIcons[0]);
+                        busyIconIndex = 0;
+                        busyIconTimer.start();
+                    }
+                    progressBar.setVisible(true);
+                    progressBar.setIndeterminate(true);
+                } else if ("done".equals(propertyName)) {
+                    busyIconTimer.stop();
+                    statusAnimationLabel.setIcon(idleIcon);
+                    progressBar.setVisible(false);
+                    progressBar.setValue(0);
+                } else if ("message".equals(propertyName)) {
+                    String text = (String)(evt.getNewValue());
+                    statusMessageLabel.setText((text == null) ? "" : text);
+                    messageTimer.restart();
+                } else if ("progress".equals(propertyName)) {
+                    int value = (Integer)(evt.getNewValue());
+                    progressBar.setVisible(true);
+                    progressBar.setIndeterminate(false);
+                    progressBar.setValue(value);
+                }
+            }
+        });
     }
 
-    @Action public void showAboutBox(ActionEvent e) {
+    @Action
+    public void showAboutBox(ActionEvent e) {
         if (aboutBox == null) {
             JFrame mainFrame = ShellApp.getApplication().getMainFrame();
             aboutBox = new ShellAboutBox(mainFrame);
@@ -78,99 +111,65 @@ public class ShellView extends SingleFrameApplicationView {
         statusMessageLabel = new javax.swing.JLabel();
         statusAnimationLabel = new javax.swing.JLabel();
         progressBar = new javax.swing.JProgressBar();
-        taskMonitor = new application.TaskMonitor();
 
-        javax.swing.GroupLayout mainPanelLayout = new javax.swing.GroupLayout(mainPanel);
+        org.jdesktop.layout.GroupLayout mainPanelLayout = new org.jdesktop.layout.GroupLayout(mainPanel);
         mainPanel.setLayout(mainPanelLayout);
         mainPanelLayout.setHorizontalGroup(
-            mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 400, Short.MAX_VALUE)
+            mainPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(0, 400, Short.MAX_VALUE)
         );
         mainPanelLayout.setVerticalGroup(
-            mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 252, Short.MAX_VALUE)
+            mainPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(0, 252, Short.MAX_VALUE)
         );
 
-        fileMenu.setText(application.ApplicationContext.getInstance().getResourceMap(ShellView.class).getString("fileMenu.text")); // NOI18N
+        fileMenu.setText(application.Application.getInstance(applicationpackage.ShellApp.class).getContext().getResourceMap(ShellView.class).getString("fileMenu.text")); // NOI18N
 
-        exitMenuItem.setAction(ApplicationContext.getInstance().getActionMap(ShellView.class, this).get("quit"));
+        exitMenuItem.setAction(application.Application.getInstance(ShellApp.class).getContext().getActionMap(ShellView.class, this).get("quit"));
         fileMenu.add(exitMenuItem);
 
         menuBar.add(fileMenu);
 
-        helpMenu.setText(application.ApplicationContext.getInstance().getResourceMap(ShellView.class).getString("helpMenu.text")); // NOI18N
+        helpMenu.setText(application.Application.getInstance(applicationpackage.ShellApp.class).getContext().getResourceMap(ShellView.class).getString("helpMenu.text")); // NOI18N
 
-        aboutMenuItem.setAction(application.ApplicationContext.getInstance().getActionMap(ShellView.class, this).get("showAboutBox"));
+        aboutMenuItem.setAction(application.Application.getInstance(applicationpackage.ShellApp.class).getContext().getActionMap(ShellView.class, this).get("showAboutBox"));
         helpMenu.add(aboutMenuItem);
 
         menuBar.add(helpMenu);
 
         statusAnimationLabel.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
 
-        javax.swing.GroupLayout statusPanelLayout = new javax.swing.GroupLayout(statusPanel);
+        org.jdesktop.layout.GroupLayout statusPanelLayout = new org.jdesktop.layout.GroupLayout(statusPanel);
         statusPanel.setLayout(statusPanelLayout);
         statusPanelLayout.setHorizontalGroup(
-            statusPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(statusPanelSeparator, javax.swing.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
-            .addGroup(statusPanelLayout.createSequentialGroup()
+            statusPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(statusPanelSeparator, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
+            .add(statusPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(statusMessageLabel)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 226, Short.MAX_VALUE)
-                .addComponent(progressBar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(statusAnimationLabel)
+                .add(statusMessageLabel)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 226, Short.MAX_VALUE)
+                .add(progressBar, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(statusAnimationLabel)
                 .addContainerGap())
         );
         statusPanelLayout.setVerticalGroup(
-            statusPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(statusPanelLayout.createSequentialGroup()
-                .addComponent(statusPanelSeparator, javax.swing.GroupLayout.PREFERRED_SIZE, 2, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGroup(statusPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(statusMessageLabel)
-                    .addComponent(statusAnimationLabel)
-                    .addComponent(progressBar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(3, 3, 3))
+            statusPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(statusPanelLayout.createSequentialGroup()
+                .add(statusPanelSeparator, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .add(statusPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(statusMessageLabel)
+                    .add(statusAnimationLabel)
+                    .add(progressBar, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(3, 3, 3))
         );
-
-        taskMonitor.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
-            public void propertyChange(java.beans.PropertyChangeEvent evt) {
-                taskMonitorPropertyChange(evt);
-            }
-        });
 
         setComponent(mainPanel);
         setMenuBar(menuBar);
         setStatusBar(statusPanel);
     }// </editor-fold>//GEN-END:initComponents
 
-private void taskMonitorPropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_taskMonitorPropertyChange
-    String propertyName = evt.getPropertyName();
-    if ("started".equals(propertyName)) {
-        if (!busyIconTimer.isRunning()) {
-            statusAnimationLabel.setIcon(busyIcons[0]);
-            busyIconIndex = 0;
-            busyIconTimer.start();
-        }
-        progressBar.setVisible(true);
-        progressBar.setIndeterminate(true);
-    } else if ("done".equals(propertyName)) {
-        busyIconTimer.stop();
-        statusAnimationLabel.setIcon(idleIcon);
-        progressBar.setVisible(false);
-        progressBar.setValue(0);
-    } else if ("message".equals(propertyName)) {
-        String text = (String)(evt.getNewValue());
-        statusMessageLabel.setText((text == null) ? "" : text);
-        messageTimer.restart();
-    } else if ("progress".equals(propertyName)) {
-        int value = (Integer)(evt.getNewValue());
-        progressBar.setVisible(true);
-        progressBar.setIndeterminate(false);
-        progressBar.setValue(value);
-    }
-}//GEN-LAST:event_taskMonitorPropertyChange
-   
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel mainPanel;
     private javax.swing.JMenuBar menuBar;
@@ -178,7 +177,6 @@ private void taskMonitorPropertyChange(java.beans.PropertyChangeEvent evt) {//GE
     private javax.swing.JLabel statusAnimationLabel;
     private javax.swing.JLabel statusMessageLabel;
     private javax.swing.JPanel statusPanel;
-    private application.TaskMonitor taskMonitor;
     // End of variables declaration//GEN-END:variables
 
     private final Timer messageTimer;

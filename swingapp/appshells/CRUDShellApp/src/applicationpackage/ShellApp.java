@@ -4,6 +4,7 @@
 
 package applicationpackage;
 
+import application.Application;
 import application.ApplicationContext;
 import application.SingleFrameApplication;
 import application.View;
@@ -18,17 +19,7 @@ public class ShellApp extends SingleFrameApplication {
      * At startup create and show the main frame of the application.
      */
     @Override protected void startup() {
-       show(getView());
-    }
-
-    /**
-     * Creates the view representing the main frame of the application. Called
-     * only once with "mainFrame" as the name parameter.
-     * @param name the name of the view
-     * @return the main view of the application
-     */
-    @Override protected View createView(String name) {
-        return new ShellView(this);
+       show(new ShellView(this));
     }
 
     /**
@@ -44,7 +35,7 @@ public class ShellApp extends SingleFrameApplication {
      * @return the instance of ShellApp
      */
     public static ShellApp getApplication() {
-        return (ShellApp) ApplicationContext.getInstance().getApplication();
+        return Application.getInstance(ShellApp.class);
     }
 
     /**

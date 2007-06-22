@@ -99,11 +99,10 @@ public class ActionEditor extends PropertyEditorSupport implements FormAwareEdit
         if(!isAppFramework()) {
             return super.getJavaInitializationString();
         }
-        return "application.ApplicationContext.getInstance().getActionMap(" // NOI18N
-                + getSourceFile().getName() + ".class, this).get(\"" // NOI18N
-                + action.getId()+ "\")"; // NOI18N
+        return AppFrameworkSupport.getActionMapCode(getSourceFile())
+                + ".get(\"" + action.getId()+ "\")"; // NOI18N
     }
-    
+
     // property editor impl
     public void setContext(FormModel formModel, FormProperty property) {
         this.formModel = formModel;

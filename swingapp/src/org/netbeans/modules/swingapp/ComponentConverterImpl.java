@@ -30,26 +30,22 @@ import org.netbeans.modules.form.ComponentConverter;
 public class ComponentConverterImpl implements ComponentConverter {
 
     public Class getDesignClass(String componentClassName) {
-//        if (application.SingleFrameApplication.SingleFrameApplicationView.class.getName()
-//                .equals(componentClassName)) {
-//            return SingleFrameApplicationView.class;
-//        }
         return null;
     }
 
     public Class getDesignClass(Class componentClass) {
         if (application.View.class.isAssignableFrom(componentClass)) {
-            return SingleFrameApplicationView.class;
+            return FrameView.class;
         } else {
             return null;
         }
     }
 
-    public static class SingleFrameApplicationView extends application.SingleFrameApplication.SingleFrameApplicationView {
+    public static class FrameView extends application.FrameView {
         private JRootPane rootPane;
 
-        public SingleFrameApplicationView() {
-            super(null);
+        public FrameView() {
+            super(new application.Application() { protected void startup() {} });
         }
 
         public JRootPane getRootPane() {
@@ -60,14 +56,14 @@ public class ComponentConverterImpl implements ComponentConverter {
         }
     }
 
-    public static class SingleFrameApplicationViewBeanInfo extends SimpleBeanInfo {
+    public static class FrameViewBeanInfo extends SimpleBeanInfo {
         public PropertyDescriptor[] getPropertyDescriptors() {
             try {
                 return new PropertyDescriptor[] {
-                    new PropertyDescriptor("component", SingleFrameApplicationView.class), // NOI18N
-                    new PropertyDescriptor("menuBar", SingleFrameApplicationView.class), // NOI18N
-                    new PropertyDescriptor("toolBar", SingleFrameApplicationView.class), // NOI18N
-                    new PropertyDescriptor("statusBar", SingleFrameApplicationView.class) // NOI18N
+                    new PropertyDescriptor("component", FrameView.class), // NOI18N
+                    new PropertyDescriptor("menuBar", FrameView.class), // NOI18N
+                    new PropertyDescriptor("toolBar", FrameView.class), // NOI18N
+                    new PropertyDescriptor("statusBar", FrameView.class) // NOI18N
                 };
             } catch (IntrospectionException ex) {
                 Logger.getLogger(ComponentConverterImpl.class.getName()).log(Level.INFO, null, ex);
