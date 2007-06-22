@@ -235,7 +235,7 @@ public class UMLProjectHelper
             if (projectFilename.exists() == true)
             {
                 mProject = mApplication.openProject(projectFilename.getAbsolutePath());
-                mProject.setDirty(false);
+//                mProject.setDirty(false);
             }
             
             if (mProject == null)

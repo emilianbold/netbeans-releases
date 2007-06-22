@@ -206,6 +206,9 @@ public class Application implements IApplication,
                             Document doc = Validator.verifyXMLFileFormat(fileName, "XMI");
                             project = establishOpenProject(doc, fileName);
                             
+                            if (project ==  null)
+                                return null;
+                            
                             if (m_QueryManager != null)
                             {
                                 // Delete the .QueryCache if it exists.  The file will be regenerated 
@@ -262,12 +265,15 @@ public class Application implements IApplication,
                     TypedFactoryRetriever<IProject> fact =
                         new TypedFactoryRetriever<IProject>();
                     project = fact.createTypeAndFill("Project", node);
-                    project.setDocument(doc);
-                    project.setFileName(fileName);
-                    
-                    UMLXMLManip.convertRelativeHrefs(fileName, project);
-                    project.loadDefaultImports();
-                    attachProject(project);
+                    if (project != null)
+                    {
+                        project.setDocument(doc);
+                        project.setFileName(fileName);
+                        
+                        UMLXMLManip.convertRelativeHrefs(fileName, project);
+                        project.loadDefaultImports();
+                        attachProject(project);
+                    }
                 }
             }
         }
