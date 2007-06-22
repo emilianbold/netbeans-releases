@@ -76,6 +76,7 @@ Microsystems, Inc. All Rights Reserved.
         
         <folder name="Window">
             <folder name="Versioning">
+                <attr name="position" intvalue="1550"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/versioning/resources/window-versioning.png"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.versioning.Bundle"/>
             </folder>
