@@ -74,7 +74,9 @@ public class TableColumnDesignInfo extends AbstractDesignInfo {
                 }
             }
         }
-        TableDesignHelper.adjustTableWidth(bean.getBeanParent().getBeanParent(), oldColumnWidth, 0);
+        if (bean.getBeanParent() != null) {
+            TableDesignHelper.adjustTableWidth(bean.getBeanParent().getBeanParent(), oldColumnWidth, 0);
+        }
         return Result.SUCCESS;
     }
 
