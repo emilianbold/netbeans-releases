@@ -119,7 +119,7 @@ public final class MethodModelSupport {
         if (methodModel.getParameters() != null) {
             for (MethodModel.Variable parameter : methodModel.getParameters()) {
                 VariableTree variableTree = treeMaker.Variable(
-                        treeMaker.Modifiers(Collections.<Modifier>emptySet()),
+                        treeMaker.Modifiers(parameter.getFinalModifier() ? Collections.<Modifier>singleton(Modifier.FINAL) : Collections.<Modifier>emptySet()),
                         parameter.getName(),
                         getTypeTree(workingCopy, parameter.getType()),
                         null
