@@ -43,11 +43,11 @@ public class InstalledModuleProvider implements InstalledUpdateProvider {
 
     // XXX: should be removed
     public static Map<String, ModuleInfo> getInstalledModules () {
-        return getDefault ().getModuleInfos ();
+        return getDefault ().getModuleInfos (false);
     }
     
-    private Map<String, ModuleInfo> getModuleInfos () {
-        if (moduleInfos == null) {
+    private Map<String, ModuleInfo> getModuleInfos (boolean force) {
+        if (moduleInfos == null || force) {
             moduleInfos = new HashMap<String, ModuleInfo> ();
             Collection<? extends ModuleInfo> infos = result.allInstances ();
             for (ModuleInfo info: infos) {
@@ -90,7 +90,7 @@ public class InstalledModuleProvider implements InstalledUpdateProvider {
 
     public Map<String, UpdateItem> getUpdateItems () throws IOException {
         Map<String, UpdateItem> res = new HashMap<String, UpdateItem> ();
-        for (ModuleInfo info : getModuleInfos ().values ()) {
+        for (ModuleInfo info : getModuleInfos (true).values ()) {
             SimpleItem simpleItem = new SimpleItem.InstalledModule (info);
             Date time = Utilities.readInstallTimeFromUpdateTracking (info);
             String installTime = null;

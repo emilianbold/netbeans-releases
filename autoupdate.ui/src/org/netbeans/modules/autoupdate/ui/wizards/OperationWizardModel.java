@@ -27,6 +27,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JButton;
 import org.netbeans.api.autoupdate.OperationContainer;
 import org.netbeans.api.autoupdate.OperationContainer.OperationInfo;
@@ -315,6 +317,10 @@ public abstract class OperationWizardModel {
     
     private void addRequiredElements (Set<UpdateElement> elems) {
         for (UpdateElement el : elems) {
+            if (el == null || el.getUpdateUnit () == null) {
+                Logger.getLogger (OperationWizardModel.class.getName ()).log (Level.INFO, "UpdateElement " + el + " cannot be null"
+                        + (el == null ? "" : " or UpdateUnit " + el.getUpdateUnit () + " cannot be null"));
+            }
             if (UpdateManager.TYPE.CUSTOM_HANDLED_COMPONENT == el.getUpdateUnit ().getType ()) {
                 getCustomHandledContainer ().add (el);
             } else {

@@ -94,14 +94,16 @@ public final class ModuleDeleterImpl  {
             removeControlModuleFile(moduleInfo);
         }
 
-        new HackModuleListRefresher().run();
+        refreshModuleList ();
+        
         int rerunWaitCount = 0;
         for (ModuleInfo moduleInfo : modules) {
-            err.log(Level.FINE,"Locate and remove config file of " + moduleInfo.getCodeNameBase ());                       
-            for (; rerunWaitCount < 100 && !isModuleUninstalled(moduleInfo) ;rerunWaitCount++) {
+            err.log(Level.FINE, "Locate and remove config file of " + moduleInfo.getCodeNameBase ());                       
+            for (; rerunWaitCount < 100 && !isModuleUninstalled(moduleInfo); rerunWaitCount++) {
                 try {
                     Thread.currentThread().sleep(100);
                 } catch (InterruptedException ex) {
+                    err.log (Level.INFO, "Overflow checks of uninstalled module " + moduleInfo.getCodeName ());
                     Thread.currentThread().interrupt();
                 }
             }
@@ -110,8 +112,7 @@ public final class ModuleDeleterImpl  {
     }
     
     private boolean isModuleUninstalled(ModuleInfo moduleInfo) {
-        return (!moduleInfo.isEnabled() && Utilities.isValid(moduleInfo) &&
-                (InstalledModuleProvider.getInstalledModules().get(moduleInfo.getCodeNameBase()) == null));
+        return (InstalledModuleProvider.getInstalledModules ().get (moduleInfo.getCodeNameBase()) == null);
     }
 
     private File locateControlFile (ModuleInfo m) {
@@ -191,6 +192,10 @@ public final class ModuleDeleterImpl  {
                 continue;
             }
             File file = InstalledFileLocator.getDefault ().locate (fileName, moduleInfo.getCodeNameBase (), false);
+            if (file == null) {
+                err.log (Level.WARNING, "InstalledFileLocator doesn't locate file " + fileName + " for module " + moduleInfo.getCodeNameBase ());
+                continue;
+            }
             if (file.equals (updateTracking)) {
                 continue;
             }
@@ -290,17 +295,12 @@ public final class ModuleDeleterImpl  {
         return files;
     }
 
-    private class HackModuleListRefresher implements Runnable {
-        public void run () {
-            // XXX: the modules list should be delete automatically when config/Modules/module.xml is removed
-            FileObject modulesRoot = Repository.getDefault ().getDefaultFileSystem ().findResource ("Modules"); // NOI18N
-            err.log(Level.FINE,
-                    "It\'s a hack: Call refresh on " + modulesRoot +
-                    " file object.");
-            if (modulesRoot != null) {
-                modulesRoot.refresh ();
-            }
-            // end of hack
+    private void refreshModuleList () {
+        // XXX: the modules list should be delete automatically when config/Modules/module.xml is removed
+        FileObject modulesRoot = Repository.getDefault ().getDefaultFileSystem ().findResource ("Modules"); // NOI18N
+        err.log (Level.FINE, "Call refresh on " + modulesRoot + " file object.");
+        if (modulesRoot != null) {
+            modulesRoot.refresh ();
         }
     }
 }

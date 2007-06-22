@@ -159,18 +159,14 @@ public class ArtificialFeaturesProvider implements UpdateProvider {
             String additionalDescription) {
         Set<String> containsModules = new HashSet<String> ();
         String versionN = "";
-        String descriptionN = "";
         for (ModuleUpdateElementImpl impl : modules) {
             ModuleInfo info = impl.getModuleInfo ();
             containsModules.add (info.getCodeName () + " > " + info.getSpecificationVersion ());
             SpecificationVersion spec = info.getSpecificationVersion ();
             versionN = addVersion (versionN, spec);
-            descriptionN += "<h5>" + info.getDisplayName () + "</h5>";
-            String desc = (String) info.getLocalizedAttribute ("OpenIDE-Module-Long-Description");
-            descriptionN += desc == null ? "" : desc; // NOI18N
         }
         
-        String description = original == null || original.getDescription () == null || original.getDescription ().length () == 0 ? descriptionN :
+        String description = original == null || original.getDescription () == null || original.getDescription ().length () == 0 ? "" :
             original.getDescription ();
         description = additionalDescription == null || additionalDescription.length () == 0 ? description :
             description + additionalDescription;

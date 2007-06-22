@@ -183,7 +183,9 @@ public abstract class OperationSupportImpl {
                     case FEATURE :
                         for (ModuleUpdateElementImpl moduleImpl : ((FeatureUpdateElementImpl) updateElementImpl).getContainedModuleElements ()) {
                             moduleInfos.add (moduleImpl.getModuleInfo ());
-                            affectedModules.add (moduleImpl.getUpdateUnit ());
+                            if (moduleImpl.getUpdateUnit ().getInstalled () != null) {
+                                affectedModules.add (moduleImpl.getUpdateUnit ());
+                            }
                         }
                         affectedFeatures.add (updateElement.getUpdateUnit ());
                         break;
@@ -194,10 +196,9 @@ public abstract class OperationSupportImpl {
                 try {
                     deleter.delete (moduleInfos.toArray (new ModuleInfo[0]));
                 } catch(IOException iex) {
-                    throw new OperationException(OperationException.ERROR_TYPE.UNINSTALL);
+                    throw new OperationException(OperationException.ERROR_TYPE.UNINSTALL, iex);
                 }
                 
-
                 for (UpdateUnit unit : affectedModules) {
                     assert unit.getInstalled () != null : "Module " + unit + " is installed while doing uninstall.";
                     UpdateUnitImpl impl = Trampoline.API.impl (unit);
