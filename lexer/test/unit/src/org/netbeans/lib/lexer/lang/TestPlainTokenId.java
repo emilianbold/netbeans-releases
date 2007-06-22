@@ -41,6 +41,8 @@ public enum TestPlainTokenId implements TokenId {
     WORD,
     WHITESPACE("whitespace");
 
+    public static final String MIME_TYPE = "text/x-simple-plain";
+    
     private final String primaryCategory;
 
     TestPlainTokenId() {
@@ -76,7 +78,7 @@ public enum TestPlainTokenId implements TokenId {
 
         @Override
         protected String mimeType() {
-            return "text/x-simple-plain";
+            return MIME_TYPE;
         }
         
     }.language();
