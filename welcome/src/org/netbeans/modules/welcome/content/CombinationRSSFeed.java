@@ -20,6 +20,7 @@
 package org.netbeans.modules.welcome.content;
 
 import java.io.IOException;
+import java.net.URL;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -59,14 +60,16 @@ public class CombinationRSSFeed extends RSSFeed {
         reader.setContentHandler( handler );
         reader.setEntityResolver( org.openide.xml.EntityCatalog.getDefault() );
         reader.setErrorHandler( new ErrorCatcher() );
-        reader.parse( new InputSource(url1) );
+        InputSource is = findInputSource(new URL(url1));
+        reader.parse( is );
 
         ArrayList<FeedItem> res = new ArrayList<FeedItem>( 2*NEWS_COUNT );
         res.addAll( handler.getItemList() );
 
         handler = new FeedHandler();
         reader.setContentHandler( handler );
-        reader.parse( new InputSource(url2) );
+        is = findInputSource(new URL(url2));
+        reader.parse( is );
 
         res.addAll( handler.getItemList() );
 

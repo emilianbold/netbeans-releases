@@ -29,8 +29,18 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.FilterInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
 import java.net.SocketException;
+import java.net.URL;
 import java.net.UnknownHostException;
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -40,6 +50,10 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.Preferences;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.Inflater;
+import java.util.zip.InflaterInputStream;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -49,6 +63,9 @@ import javax.swing.SwingUtilities;
 import javax.xml.parsers.ParserConfigurationException;
 import org.openide.ErrorManager;
 import org.openide.awt.Mnemonics;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.Repository;
+import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 import org.openide.xml.XMLUtil;
@@ -78,6 +95,24 @@ public class RSSFeed extends JScrollPane implements Constants, PropertyChangeLis
     private static DateFormat printingDateFormat = DateFormat.getDateTimeInstance( DateFormat.SHORT, DateFormat.SHORT );
     private static DateFormat printingDateFormatShort = DateFormat.getDateInstance( DateFormat.SHORT );
 
+    /** Returns file for caching of content. 
+     * Enclosing folder is created if it does not exist yet.
+     */
+    private static File initCacheStore(String path) throws IOException {
+        File cacheStore;
+        String userDir = System.getProperty("netbeans.user"); // NOI18N
+        if (userDir != null) {
+            cacheStore = new File(new File(new File (userDir, "var"), "cache"), "welcome"); // NOI18N
+        } else {
+            File cachedir = FileUtil.toFile(Repository.getDefault().getDefaultFileSystem().getRoot());
+            cacheStore = new File(cachedir, "welcome"); // NOI18N
+        }
+        cacheStore = new File(cacheStore, path);
+        cacheStore.getParentFile().mkdirs();
+        cacheStore.createNewFile();
+        return cacheStore;
+    }
+    
     public RSSFeed( String url, boolean showProxyButton ) {
         this.url = url;
         this.showProxyButton = showProxyButton;
@@ -117,12 +152,84 @@ public class RSSFeed extends JScrollPane implements Constants, PropertyChangeLis
         reader.setEntityResolver( org.openide.xml.EntityCatalog.getDefault() );
         reader.setErrorHandler( new ErrorCatcher() );
 
-        reader.parse( new InputSource(url) );
+        InputSource is = findInputSource(new URL(url));
+        reader.parse( is );
 
         return handler.getItemList();
     }
 
-        /** Inner class error catcher for handling SAXParseExceptions */
+    /** Searches either for localy cached copy of URL content of original.
+     */
+    protected InputSource findInputSource(URL u) throws IOException {
+        try {
+            Preferences prefs = NbPreferences.forModule(RSSFeed.class);
+            StringBuilder pathSB = new StringBuilder(u.getHost());
+            if (u.getPort() != -1) {
+                pathSB.append(u.getPort());
+            }
+            pathSB.append(u.getPath());
+            String path = pathSB.toString();
+            java.net.HttpURLConnection httpCon = 
+                    (java.net.HttpURLConnection) u.openConnection();
+            httpCon.setRequestProperty("Accept-Encoding", "gzip, deflate");     // NOI18N
+
+            // obtain the ETag from a local store, returns null if not found
+//            String etag = loadETag(); 
+
+//if (etag != null) {
+//  sourceConnection.addRequestProperty("If-None-Match", etag);
+//}
+//
+            String lastModified = prefs.get(path, null);
+            if (lastModified != null) {
+                httpCon.addRequestProperty("If-Modified-Since",lastModified); // NOI18N
+            }
+
+            httpCon.connect();
+            //if it returns Not modified then we already have the content, return
+            if (httpCon.getResponseCode() == HttpURLConnection.HTTP_NOT_MODIFIED) {
+              //disconnect() should only be used when you won't
+              //connect to the same site in a while,
+              //since it disconnects the socket. Only losing
+              //the stream on an HTTP 1.1 connection will
+              //maintain the connection waiting and be
+              //faster the next time around
+                File cacheFile = initCacheStore(path);
+                Logger.getLogger(RSSFeed.class.getName()).
+                        log(Level.INFO, "Reading content of {0} from {1}", new Object[] {u.toString(), cacheFile.getAbsolutePath()});
+//                httpCon.disconnect();
+                return new org.xml.sax.InputSource(new BufferedInputStream(new FileInputStream(cacheFile)));
+            }
+            else {
+                //obtain the encoding returned by the server
+                String encoding = httpCon.getContentEncoding();
+                Logger.getLogger(RSSFeed.class.getName()).log(Level.FINE, "Connection encoding: {0}", encoding);
+
+////get the last modified & etag and
+////store them for the next check
+//storeETag(sourceConnection.getHeaderField("ETag"));
+                Logger.getLogger(RSSFeed.class.getName()).log(Level.FINE, "ETag: {0}", httpCon.getHeaderField("ETag"));
+
+                InputStream is = null;
+                if ("gzip".equalsIgnoreCase(encoding)) {
+                    is = new GZIPInputStream(httpCon.getInputStream());
+                }
+                else if ("deflate".equalsIgnoreCase(encoding)) {
+                    is = new InflaterInputStream(httpCon.getInputStream(), new Inflater(true));
+                }
+                else {
+                  is = httpCon.getInputStream();
+                }
+                Logger.getLogger(RSSFeed.class.getName()).log(Level.INFO, "Reading {0} from original source and caching", url);
+                return new org.xml.sax.InputSource(new CachingInputStream(is, path, httpCon.getHeaderField("Last-Modified")));
+            }
+        } catch (IOException ioe) {
+            Logger.getLogger(RSSFeed.class.getName()).log(Level.INFO, null, ioe);
+            throw ioe;
+        }
+    }
+
+    /** Inner class error catcher for handling SAXParseExceptions */
     static class ErrorCatcher implements org.xml.sax.ErrorHandler {
         private void message(Level level, org.xml.sax.SAXParseException e) {
             Logger l = Logger.getLogger(RSSFeed.class.getName());
@@ -496,6 +603,44 @@ public class RSSFeed extends JScrollPane implements Constants, PropertyChangeLis
 
         boolean isValid() {
             return null != title && null != link;
+        }
+    }
+    
+    static class CachingInputStream extends FilterInputStream {
+        private OutputStream os;
+        private String modTime;
+        private String path;
+        
+        CachingInputStream (InputStream is, String path, String time) 
+        throws IOException {
+            super(is);
+            File storage = initCacheStore(path);
+            os = new BufferedOutputStream(new FileOutputStream(storage));
+            modTime = time;
+            this.path = path;
+        }
+
+        @Override
+        public void close() throws IOException {
+            super.close();
+            NbPreferences.forModule(RSSFeed.class).put(path, modTime);
+            os.close();
+        }
+
+        @Override
+        public int read() throws IOException {
+            int val = super.read();
+            os.write(val);
+            return val;
+        }
+
+        @Override
+        public int read(byte[] b, int off, int len) throws IOException {
+            int res = super.read(b, off, len);
+            if (res != -1) {
+                os.write(b, off, res);
+            }
+            return res;
         }
     }
 }
