@@ -38,7 +38,7 @@ Microsystems, Inc. All Rights Reserved.
     <fontcolor name="mod-unused" waveUnderlined="999999"/>
     <fontcolor name="mod-abstract" />
     
-    <fontcolor name="mod-field-declaration" default="identifier"/>    
+    <fontcolor name="mod-field-declaration" default="field"/>    
     <fontcolor name="mod-local-variable-declaration" default="identifier"/>    
     <fontcolor name="mod-parameter-declaration" default="identifier"/>
     
@@ -61,7 +61,7 @@ Microsystems, Inc. All Rights Reserved.
         <font style="bold" />
     </fontcolor>
     
-    <fontcolor name="mod-field" foreColor="009900" default="identifier"/>        
+    <fontcolor name="mod-field" default="field"/>        
     <fontcolor name="mod-local-variable" default="identifier"/>
     <fontcolor name="mod-parameter" default="identifier"/>
     <fontcolor name="mod-method" default="identifier"/>
