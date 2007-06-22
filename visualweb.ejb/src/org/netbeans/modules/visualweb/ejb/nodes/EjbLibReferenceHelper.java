@@ -154,9 +154,12 @@ public class EjbLibReferenceHelper {
      */
     public static void updateEjbGroupForProjects(Project[] projects, EjbGroup ejbGroup)
             throws IOException {
-        // Update the jars in each open project
+        // Update the jars in each open visual web project
         for (int i = 0; i < projects.length; i++) {
-            updateEjbGroupForProject(ejbGroup, projects[i]);
+            Project project = projects[i];
+            if (JsfProjectUtils.isJsfProject(project)) {
+                updateEjbGroupForProject(ejbGroup, project);
+            }
         }
     }
 
@@ -174,7 +177,8 @@ public class EjbLibReferenceHelper {
 
             try {
                 FileObject ejbSubDir = projects[i].getProjectDirectory().getFileObject(
-                        JsfProjectConstants.PATH_LIBRARIES + '/' + EjbDataSourceManager.EJB_DATA_SUB_DIR);
+                        JsfProjectConstants.PATH_LIBRARIES + '/'
+                                + EjbDataSourceManager.EJB_DATA_SUB_DIR);
                 if (ejbSubDir == null)
                     // NO ejb in this project. Move on
                     continue;
@@ -344,28 +348,6 @@ public class EjbLibReferenceHelper {
         } catch (java.io.IOException ie) {
             Util.getLogger().log(Level.WARNING, "Failed to save ejb refs", ie);
         }
-    }
-
-    public static EjbRefMaintainer getEjbRefMaintainer(Project project) {
-        // Try to get the referred EJB groups from the ejb-refs.xml if there is
-        // an ejb-refs.xml exists
-        FileObject ejbRefXml = null;
-        try {
-            ejbRefXml = JsfProjectUtils.getProjectLibraryDirectory(project).getFileObject(
-                    EjbDataSourceManager.EJB_DATA_SUB_DIR + "/" + EJB_REFS_XML);
-        } catch (java.io.IOException ie) {
-            // Trouble getting to the ref file
-            return null;
-        }
-
-        // If the user has never added an EJB before, then there is no
-        // ejb-refs.xml
-        if (ejbRefXml == null)
-            return null;
-
-        EjbRefMaintainer refMaintainer = new EjbRefMaintainer(FileUtil.toFile(ejbRefXml)
-                .getAbsolutePath());
-        return refMaintainer;
     }
 
     /**
