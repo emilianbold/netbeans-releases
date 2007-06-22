@@ -65,6 +65,7 @@ public abstract class SourceUnit implements Unit, DocumentListener, UndoableEdit
     protected StyledDocument styledDocument;
     protected UndoManager undoManager;
     private DataObject dataObject = null;
+    private EditorCookie ec = null;
 
     //--------------------------------------------------------------------------------- Construction
 
@@ -89,7 +90,7 @@ public abstract class SourceUnit implements Unit, DocumentListener, UndoableEdit
         state = State.SOURCEDIRTY;  // need to perform initial read of source into model
 
         // Listen for the editor closing the document so that we can release it
-        EditorCookie ec = (EditorCookie)Util.getCookie(fobj, EditorCookie.class);
+        ec = (EditorCookie)Util.getCookie(fobj, EditorCookie.class);
         if (ec instanceof CloneableEditorSupport)
             ((CloneableEditorSupport)ec).addPropertyChangeListener(this);
 
@@ -114,12 +115,15 @@ public abstract class SourceUnit implements Unit, DocumentListener, UndoableEdit
         releaseDocument();
 		// Make sure FileObject listener is also removed that was added by the
 		// above releaseDocument() call
-        fobj.removeFileChangeListener(this);
+        if (fobj != null) {
+	        fobj.removeFileChangeListener(this);
+        }
         listeners = null;
 
-        EditorCookie ec = (EditorCookie)Util.getCookie(fobj, EditorCookie.class);
-        if (ec instanceof CloneableEditorSupport)
+        if (ec instanceof CloneableEditorSupport) {
             ((CloneableEditorSupport)ec).removePropertyChangeListener(this);
+            ec = null;
+        }
         undoManager = null;
     }
     
@@ -152,11 +156,15 @@ public abstract class SourceUnit implements Unit, DocumentListener, UndoableEdit
             styledDocument = null;
             
             //need to tell the undo manager to clear events on the Undo/Redo stack
-            undoManager.notifyBufferEdited(this);
+            if (undoManager != null) { // XXX Prevent NPE from leaked unit?
+            	undoManager.notifyBufferEdited(this);
+            }
             
             // Add back the FileObject change listener, now that we no longer 
-            // listen to the StyledDocument changes            
-            fobj.addFileChangeListener(this);
+            // listen to the StyledDocument changes
+            if (fobj != null) { // XXX Prevent NPE from leaked unit?
+            	fobj.addFileChangeListener(this);
+            }
         }
     }
     
@@ -330,9 +338,7 @@ public abstract class SourceUnit implements Unit, DocumentListener, UndoableEdit
      */
     public void removeUpdate(DocumentEvent e) {
         assert Trace.trace("insync-listener", "SU.removeUpdate");
-        if (undoManager != null) {
-        	undoManager.notifyBufferEdited(this);
-        }
+    	undoManager.notifyBufferEdited(this);
         setSourceDirty();
     }
     

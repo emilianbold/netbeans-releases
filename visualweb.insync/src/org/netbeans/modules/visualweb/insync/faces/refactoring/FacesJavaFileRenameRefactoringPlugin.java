@@ -47,6 +47,7 @@ import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.visualweb.insync.Model;
 import org.netbeans.modules.visualweb.insync.faces.ElBindingScanner;
+import org.netbeans.modules.visualweb.insync.faces.ElementAttrValueScanner;
 import org.netbeans.modules.visualweb.insync.faces.FacesUnit;
 import org.netbeans.modules.visualweb.insync.java.JavaClass;
 import org.netbeans.modules.visualweb.insync.java.JavaUnit;
@@ -298,6 +299,18 @@ public class FacesJavaFileRenameRefactoringPlugin extends FacesRefactoringPlugin
                         }
                     }
                 }
+                
+                if (isRefactoringSourcePageBean && refactoringSourceModel instanceof FacesModel) {
+                	MarkupUnit markupUnit = ((FacesModel)refactoringSourceModel).getMarkupUnit();
+                    if (markupUnit != null) {
+                    	ElementAttrValueScanner elementScanner = new ElementAttrValueScanner();
+                    	Document markupDocument = markupUnit.getSourceDom();
+                    	if (elementScanner.getReferenceCount(markupDocument, "f:subview", "id", refactoringSourcefileObject.getName()) > 0) {                    		
+                    		refactoringElements.add(getRefactoring(),
+                    				new RenameSubViewRefactoringElement(markupUnit.getFileObject(), markupUnit, refactoringSourcefileObject.getName(), newName));
+                    	}
+                    }
+                }                                
                 
                 // The renaming of bean class name is handled by NetBeans Web project JSF refcatoring.
                 // Rename the managed bean name. 

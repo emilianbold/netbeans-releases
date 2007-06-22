@@ -261,6 +261,10 @@ public class FacesJavaFileMoveRefactoringPlugin extends FacesRefactoringPlugin {
                     }
 	                for (FileObject fileToMove : filesToMove) {
 		                if (FacesRefactoringUtils.isJavaFileObjectOfInterest(fileToMove)) {
+	                        if ((!FacesRefactoringUtils.isFolderPageBeanRoot(targetFileObject)) && 
+	                        		(!FacesRefactoringUtils.isFileUnderPageBeanRoot(targetFileObject))) {
+	                            return new Problem(true, NbBundle.getMessage(FacesJavaFileMoveRefactoringPlugin.class, "ERR_TargetLocationIsNotInPageBeanRoot")); // NOI18N
+	                        }
 		                	// TODO
 //		                    FileObject targetFileObjectWithSameName = targetFileObject.getFileObject(fileObject.getName(), fileObject.getExt());
 //		                    if (targetFileObjectWithSameName != null && targetFileObjectWithSameName.isValid()) {
@@ -331,8 +335,8 @@ public class FacesJavaFileMoveRefactoringPlugin extends FacesRefactoringPlugin {
                 		if (nonRecursiveFolderFileObject != null) {
                 			FileObject sourceRootFileObject = FacesRefactoringUtils.getClassPathRoot(nonRecursiveFolderFileObject);
                 			if (sourceRootFileObject != null) {
-                				FileObject targetJspFolder = sourceRootFileObject.getFileObject(newPackageNameWithSlashes);
-                                if (targetJspFolder == null) {
+                				targetFileObject = sourceRootFileObject.getFileObject(newPackageNameWithSlashes);
+                                if (targetFileObject == null) {
                                 	try {
                                 		targetFileObject = FileUtil.createFolder(sourceRootFileObject, newPackageNameWithSlashes);
         							} catch (IOException ioe) {
@@ -563,11 +567,6 @@ public class FacesJavaFileMoveRefactoringPlugin extends FacesRefactoringPlugin {
                         FacesRefactoringUtils.getAllBeanNameOccurrences(webModule, oldBeanName, newBeanName);
                     for (FacesRefactoringUtils.OccurrenceItem item : items) {
                         refactoringElements.add(getRefactoring(), new JSFConfigRenameBeanNameElement(item));
-                    }
-
-                    items = FacesRefactoringUtils.getAllBeanClassOccurrences(webModule, oldBeanClass, newBeanClass);
-                    for (FacesRefactoringUtils.OccurrenceItem item : items) {
-                        refactoringElements.add(getRefactoring(), new JSFConfigRenameBeanClassElement(item));
                     }
                 }
                 
