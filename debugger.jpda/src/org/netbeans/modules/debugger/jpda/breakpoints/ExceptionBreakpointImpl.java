@@ -54,7 +54,7 @@ public class ExceptionBreakpointImpl extends ClassBasedBreakpoint {
             new String[0],
             ClassLoadUnloadBreakpoint.TYPE_CLASS_LOADED
         );
-        checkLoadedClasses (breakpoint.getExceptionClassName ());
+        checkLoadedClasses (breakpoint.getExceptionClassName (), null);
     }
     
     protected void classLoaded (ReferenceType referenceType) {

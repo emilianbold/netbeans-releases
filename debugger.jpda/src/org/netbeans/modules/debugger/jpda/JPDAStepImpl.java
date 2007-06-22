@@ -213,6 +213,7 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
                 // TODO: Would be nice to know which ObjectReference we're executing the method on
                 MethodBreakpoint mb = MethodBreakpoint.create(lastOperation.getMethodClassType(), methodName);
                 mb.setClassFilters(createClassFilters(vm, lastOperation.getMethodClassType(), methodName));
+                mb.setThreadFilters(debugger, new JPDAThread[] { tr });
                 //mb.setMethodName(methodName);
                 mb.setBreakpointType(MethodBreakpoint.TYPE_METHOD_EXIT);
                 mb.setHidden(true);

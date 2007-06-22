@@ -21,6 +21,7 @@ package org.netbeans.modules.debugger.jpda.breakpoints;
 
 import com.sun.jdi.Location;
 import com.sun.jdi.Method;
+import com.sun.jdi.ObjectReference;
 import com.sun.jdi.ReferenceType;
 import com.sun.jdi.VMDisconnectedException;
 import com.sun.jdi.Value;
@@ -42,8 +43,12 @@ import java.util.Set;
 import org.netbeans.api.debugger.Breakpoint.VALIDITY;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.ClassLoadUnloadBreakpoint;
+import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.MethodBreakpoint;
+import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
+import org.netbeans.modules.debugger.jpda.expr.JDIVariable;
+import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.openide.util.NbBundle;
 
 /**
@@ -91,7 +96,7 @@ public class MethodBreakpointImpl extends ClassBasedBreakpoint {
             ClassLoadUnloadBreakpoint.TYPE_CLASS_LOADED
         );
         for(String filter : breakpoint.getClassFilters()) {
-            checkLoadedClasses (filter);
+            checkLoadedClasses (filter, breakpoint.getClassExclusionFilters());
         }
     }
     
@@ -105,6 +110,18 @@ public class MethodBreakpointImpl extends ClassBasedBreakpoint {
                     createMethodEntryRequest();
             ReferenceType referenceType = (ReferenceType) oldRequest.getProperty("ReferenceType");
             entryReq.addClassFilter(referenceType);
+            JPDAThread[] threadFilters = breakpoint.getThreadFilters(getDebugger());
+            if (threadFilters != null && threadFilters.length > 0) {
+                for (JPDAThread t : threadFilters) {
+                    entryReq.addThreadFilter(((JPDAThreadImpl) t).getThreadReference());
+                }
+            }
+            ObjectVariable[] varFilters = breakpoint.getInstanceFilters(getDebugger());
+            if (varFilters != null && varFilters.length > 0) {
+                for (ObjectVariable v : varFilters) {
+                    entryReq.addInstanceFilter((ObjectReference) ((JDIVariable) v).getJDIValue());
+                }
+            }
             Object entryMethodNames = oldRequest.getProperty("methodNames");
             entryReq.putProperty("methodNames", entryMethodNames);
             entryReq.putProperty("ReferenceType", referenceType);
@@ -115,6 +132,18 @@ public class MethodBreakpointImpl extends ClassBasedBreakpoint {
                     createMethodExitRequest();
             ReferenceType referenceType = (ReferenceType) oldRequest.getProperty("ReferenceType");
             exitReq.addClassFilter(referenceType);
+            JPDAThread[] threadFilters = breakpoint.getThreadFilters(getDebugger());
+            if (threadFilters != null && threadFilters.length > 0) {
+                for (JPDAThread t : threadFilters) {
+                    exitReq.addThreadFilter(((JPDAThreadImpl) t).getThreadReference());
+                }
+            }
+            ObjectVariable[] varFilters = breakpoint.getInstanceFilters(getDebugger());
+            if (varFilters != null && varFilters.length > 0) {
+                for (ObjectVariable v : varFilters) {
+                    exitReq.addInstanceFilter((ObjectReference) ((JDIVariable) v).getJDIValue());
+                }
+            }
             Object exitMethodNames = oldRequest.getProperty("methodNames");
             exitReq.putProperty("methodNames", exitMethodNames);
             exitReq.putProperty("ReferenceType", referenceType);
@@ -228,6 +257,18 @@ public class MethodBreakpointImpl extends ClassBasedBreakpoint {
                             entryReq = getEventRequestManager().
                                     createMethodEntryRequest();
                             entryReq.addClassFilter(referenceType);
+                            JPDAThread[] threadFilters = breakpoint.getThreadFilters(getDebugger());
+                            if (threadFilters != null && threadFilters.length > 0) {
+                                for (JPDAThread t : threadFilters) {
+                                    entryReq.addThreadFilter(((JPDAThreadImpl) t).getThreadReference());
+                                }
+                            }
+                            ObjectVariable[] varFilters = breakpoint.getInstanceFilters(getDebugger());
+                            if (varFilters != null && varFilters.length > 0) {
+                                for (ObjectVariable v : varFilters) {
+                                    entryReq.addInstanceFilter((ObjectReference) ((JDIVariable) v).getJDIValue());
+                                }
+                            }
                             entryMethodNames = new HashSet<String>();
                             entryReq.putProperty("methodNames", entryMethodNames);
                             entryReq.putProperty("ReferenceType", referenceType);
@@ -240,6 +281,18 @@ public class MethodBreakpointImpl extends ClassBasedBreakpoint {
                         exitReq = getEventRequestManager().
                                 createMethodExitRequest();
                         exitReq.addClassFilter(referenceType);
+                        JPDAThread[] threadFilters = breakpoint.getThreadFilters(getDebugger());
+                        if (threadFilters != null && threadFilters.length > 0) {
+                            for (JPDAThread t : threadFilters) {
+                                exitReq.addThreadFilter(((JPDAThreadImpl) t).getThreadReference());
+                            }
+                        }
+                        ObjectVariable[] varFilters = breakpoint.getInstanceFilters(getDebugger());
+                        if (varFilters != null && varFilters.length > 0) {
+                            for (ObjectVariable v : varFilters) {
+                                exitReq.addInstanceFilter((ObjectReference) ((JDIVariable) v).getJDIValue());
+                            }
+                        }
                         exitMethodNames = new HashSet<String>();
                         exitReq.putProperty("methodNames", exitMethodNames);
                         exitReq.putProperty("ReferenceType", referenceType);

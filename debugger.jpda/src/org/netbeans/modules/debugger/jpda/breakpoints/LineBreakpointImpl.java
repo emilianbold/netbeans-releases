@@ -26,6 +26,7 @@ import com.sun.jdi.ObjectCollectedException;
 import com.sun.jdi.ReferenceType;
 import com.sun.jdi.VMDisconnectedException;
 import com.sun.jdi.ClassNotPreparedException;
+import com.sun.jdi.ObjectReference;
 import com.sun.jdi.event.BreakpointEvent;
 import com.sun.jdi.event.LocatableEvent;
 import com.sun.jdi.event.Event;
@@ -41,12 +42,15 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.jpda.ClassLoadUnloadBreakpoint;
-import org.netbeans.api.debugger.jpda.JPDABreakpoint;
 import org.netbeans.api.debugger.jpda.LineBreakpoint;
 import org.netbeans.api.debugger.Session;
+import org.netbeans.api.debugger.jpda.JPDAThread;
+import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.modules.debugger.jpda.EditorContextBridge;
 import org.netbeans.modules.debugger.jpda.SourcePath;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
+import org.netbeans.modules.debugger.jpda.expr.JDIVariable;
+import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 
@@ -118,7 +122,7 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
             new String [0],
             ClassLoadUnloadBreakpoint.TYPE_CLASS_LOADED
         );
-        checkLoadedClasses (className);
+        checkLoadedClasses (className, null);
     }
 
     protected void classLoaded (ReferenceType referenceType) {
@@ -146,6 +150,7 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
             try {           
                 BreakpointRequest br = getEventRequestManager ().
                     createBreakpointRequest (location);
+                setFilters(br);
                 addEventRequest (br);
                 setValidity(Breakpoint.VALIDITY.VALID, null);
                 //System.out.println("Breakpoint " + br + location + "created");
@@ -156,7 +161,24 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
     
     protected EventRequest createEventRequest(EventRequest oldRequest) {
         Location location = ((BreakpointRequest) oldRequest).location();
-        return getEventRequestManager ().createBreakpointRequest (location);
+        BreakpointRequest br = getEventRequestManager ().createBreakpointRequest (location);
+        setFilters(br);
+        return br;
+    }
+    
+    private void setFilters(BreakpointRequest br) {
+        JPDAThread[] threadFilters = getBreakpoint().getThreadFilters(getDebugger());
+        if (threadFilters != null && threadFilters.length > 0) {
+            for (JPDAThread t : threadFilters) {
+                br.addThreadFilter(((JPDAThreadImpl) t).getThreadReference());
+            }
+        }
+        ObjectVariable[] varFilters = getBreakpoint().getInstanceFilters(getDebugger());
+        if (varFilters != null && varFilters.length > 0) {
+            for (ObjectVariable v : varFilters) {
+                br.addInstanceFilter((ObjectReference) ((JDIVariable) v).getJDIValue());
+            }
+        }
     }
 
     public boolean exec (Event event) {

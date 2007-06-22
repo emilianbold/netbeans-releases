@@ -20,6 +20,7 @@
 package org.netbeans.modules.debugger.jpda.breakpoints;
 
 import com.sun.jdi.Field;
+import com.sun.jdi.ObjectReference;
 import com.sun.jdi.ReferenceType;
 import com.sun.jdi.VMDisconnectedException;
 import com.sun.jdi.event.Event;
@@ -30,12 +31,17 @@ import com.sun.jdi.event.AccessWatchpointEvent;
 import com.sun.jdi.request.AccessWatchpointRequest;
 import com.sun.jdi.request.EventRequest;
 import com.sun.jdi.request.ModificationWatchpointRequest;
+import com.sun.jdi.request.WatchpointRequest;
 
 import org.netbeans.api.debugger.Breakpoint.VALIDITY;
 import org.netbeans.api.debugger.jpda.ClassLoadUnloadBreakpoint;
 import org.netbeans.api.debugger.jpda.FieldBreakpoint;
 import org.netbeans.api.debugger.Session;
+import org.netbeans.api.debugger.jpda.JPDAThread;
+import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
+import org.netbeans.modules.debugger.jpda.expr.JDIVariable;
+import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 
 import org.openide.util.NbBundle;
 
@@ -76,7 +82,7 @@ public class FieldBreakpointImpl extends ClassBasedBreakpoint {
             new String[0],
             ClassLoadUnloadBreakpoint.TYPE_CLASS_LOADED
         );
-        checkLoadedClasses (breakpoint.getClassName ());
+        checkLoadedClasses (breakpoint.getClassName (), null);
     }
     
     protected void classLoaded (ReferenceType referenceType) {
@@ -92,6 +98,7 @@ public class FieldBreakpointImpl extends ClassBasedBreakpoint {
             ) {
                 AccessWatchpointRequest awr = getEventRequestManager ().
                     createAccessWatchpointRequest (f);
+                setFilters(awr);
                 addEventRequest (awr);
             }
             if ( (breakpoint.getBreakpointType () & 
@@ -99,6 +106,7 @@ public class FieldBreakpointImpl extends ClassBasedBreakpoint {
             ) {
                 ModificationWatchpointRequest mwr = getEventRequestManager ().
                     createModificationWatchpointRequest (f);
+                setFilters(mwr);
                 addEventRequest (mwr);
             }
             setValidity(VALIDITY.VALID, null);
@@ -109,15 +117,34 @@ public class FieldBreakpointImpl extends ClassBasedBreakpoint {
     protected EventRequest createEventRequest(EventRequest oldRequest) {
         if (oldRequest instanceof AccessWatchpointRequest) {
             Field field = ((AccessWatchpointRequest) oldRequest).field();
-            return getEventRequestManager ().createAccessWatchpointRequest (field);
+            WatchpointRequest awr = getEventRequestManager ().createAccessWatchpointRequest (field);
+            setFilters(awr);
+            return awr;
         }
         if (oldRequest instanceof ModificationWatchpointRequest) {
             Field field = ((ModificationWatchpointRequest) oldRequest).field();
-            return getEventRequestManager ().createModificationWatchpointRequest (field);
+            WatchpointRequest mwr = getEventRequestManager ().createModificationWatchpointRequest (field);
+            setFilters(mwr);
+            return mwr;
         }
         return null;
     }
 
+    private void setFilters(WatchpointRequest wr) {
+        JPDAThread[] threadFilters = breakpoint.getThreadFilters(getDebugger());
+        if (threadFilters != null && threadFilters.length > 0) {
+            for (JPDAThread t : threadFilters) {
+                wr.addThreadFilter(((JPDAThreadImpl) t).getThreadReference());
+            }
+        }
+        ObjectVariable[] varFilters = breakpoint.getInstanceFilters(getDebugger());
+        if (varFilters != null && varFilters.length > 0) {
+            for (ObjectVariable v : varFilters) {
+                wr.addInstanceFilter((ObjectReference) ((JDIVariable) v).getJDIValue());
+            }
+        }
+    }
+    
     public boolean exec (Event event) {
         if (event instanceof ModificationWatchpointEvent)
             return perform (

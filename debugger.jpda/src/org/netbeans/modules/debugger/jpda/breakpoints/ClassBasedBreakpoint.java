@@ -154,7 +154,7 @@ public abstract class ClassBasedBreakpoint extends BreakpointImpl {
     }
     
     protected boolean checkLoadedClasses (
-        String className
+        String className, String[] classExclusionFilters
     ) {
         VirtualMachine vm = getVirtualMachine ();
         if (vm == null) return false;
@@ -175,9 +175,20 @@ public abstract class ClassBasedBreakpoint extends BreakpointImpl {
                 if (i != null) {
                     String name = referenceType.name ();
                     if (match (name, className)) {
-                        logger.fine(" Class loaded: " + referenceType);
-                        classLoaded (referenceType);
-                        matched = true;
+                        boolean excluded = false;
+                        if (classExclusionFilters != null) {
+                            for (String exFilter : classExclusionFilters) {
+                                if (match(name, exFilter)) {
+                                    excluded = true;
+                                    break;
+                                }
+                            }
+                        }
+                        if (!excluded) {
+                            logger.fine(" Class loaded: " + referenceType);
+                            classLoaded (referenceType);
+                            matched = true;
+                        }
                     }
                 }
             }
