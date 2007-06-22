@@ -40,11 +40,10 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 /**
- * This class handles the persistence of complibs in different installation
- * scopes. Conceptually there is a USER scope, a SYSTEM scope (to be
- * implemented), and a scope for each project. Maintains sets of
- * ExtensionComplib-s per scope and also maintains a list of directories in an
- * XML file.
+ * This class handles the persistence of complibs in different installation scopes. Conceptually
+ * there is a USER scope, a SYSTEM scope (to be implemented), and a scope for each project.
+ * Maintains sets of ExtensionComplib-s per scope and also maintains a list of directories in an XML
+ * file.
  * 
  * @author Edwin Goei
  */
@@ -74,15 +73,14 @@ class Scope {
 
     /**
      * @param installHome
-     *            directory that contains index file and all expanded complib
-     *            dirs in this scope
+     *            directory that contains index file and all expanded complib dirs in this scope
      */
     private Scope(File installHome) {
         this.installHome = installHome;
         loadComplibs();
     }
 
-    public static Scope createScope(File installHome) {
+    static Scope createScope(File installHome) {
         return new Scope(installHome);
     }
 
@@ -104,18 +102,14 @@ class Scope {
         return scope;
     }
 
-    public static void destroyScopeForProject(Project project)
-            throws IOException {
+    public static void destroyScopeForProject(Project project) throws IOException {
         File installHome = getProjectInstallHome(project);
         registry.remove(installHome);
     }
 
-    private static File getProjectInstallHome(Project project)
-            throws IOException {
-        File projectLibDir = FileUtil.toFile(JsfProjectUtils
-                .getProjectLibraryDirectory(project));
-        File cFile = projectLibDir.getCanonicalFile();
-        File installHome = new File(cFile, PATH_PROJECT_SCOPE_COMPLIB);
+    private static File getProjectInstallHome(Project project) throws IOException {
+        File projectLibDir = IdeUtil.getProjectLibraryDirectory(project);
+        File installHome = new File(projectLibDir, PATH_PROJECT_SCOPE_COMPLIB);
         return installHome;
     }
 
@@ -190,21 +184,18 @@ class Scope {
     }
 
     /**
-     * Install a complib package into this scope and return the newly installed
-     * complib.
+     * Install a complib package into this scope and return the newly installed complib.
      * 
      * @param pkg
      * @return
      * @throws IOException
      * @throws ComplibException
      */
-    ExtensionComplib installComplibPackage(ComplibPackage pkg)
-            throws IOException, ComplibException {
+    ExtensionComplib installComplibPackage(ComplibPackage pkg) throws IOException, ComplibException {
         // Find a unique absolute lib dir in this scope
         File packageFile = pkg.getPackageFile();
         String baseName = packageFile.getName();
-        String prefix = IdeUtil.removeWhiteSpace(IdeUtil
-                .removeExtension(baseName));
+        String prefix = IdeUtil.removeWhiteSpace(IdeUtil.removeExtension(baseName));
         File dstDir = IdeUtil.findUniqueFile(ensureInstallHome(), prefix, "");
 
         // Expand the src complib into this scope
@@ -213,8 +204,7 @@ class Scope {
     }
 
     /**
-     * Install an existing complib into this scope and return the newly
-     * installed complib.
+     * Install an existing complib into this scope and return the newly installed complib.
      * 
      * @param srcComplib
      *            source complib
@@ -222,8 +212,8 @@ class Scope {
      * @throws IOException
      * @throws ComplibException
      */
-    ExtensionComplib installComplib(ExtensionComplib srcComplib)
-            throws IOException, ComplibException {
+    ExtensionComplib installComplib(ExtensionComplib srcComplib) throws IOException,
+            ComplibException {
         // Find a unique absolute lib dir in this scope
         String baseName = srcComplib.getDirectoryBaseName();
         File dstDir = IdeUtil.findUniqueFile(ensureInstallHome(), baseName, "");
@@ -233,8 +223,7 @@ class Scope {
         return createComplib(dstDir);
     }
 
-    private ExtensionComplib createComplib(File dstDir)
-            throws ComplibException, IOException {
+    private ExtensionComplib createComplib(File dstDir) throws ComplibException, IOException {
         ExtensionComplib dstComplib = new ExtensionComplib(dstDir);
         complibSet.add(dstComplib);
         directorySet.add(dstComplib.getDirectoryBaseName());
@@ -318,8 +307,7 @@ class Scope {
     }
 
     /**
-     * Returns an existing complib in this scope with a matching complib Id or
-     * null.
+     * Returns an existing complib in this scope with a matching complib Id or null.
      * 
      * @param complib
      * @return
@@ -371,8 +359,7 @@ class Scope {
     /**
      * @return The index.xml File object for this scope.
      * @throws FileNotFoundException
-     *             if scope dir is not found or cannot be created which should
-     *             not normally occur
+     *             if scope dir is not found or cannot be created which should not normally occur
      */
     private File getIndexFile() {
         return new File(installHome, LIBRARY_INDEX_FILENAME);

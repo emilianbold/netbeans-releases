@@ -36,6 +36,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.visualweb.api.designerapi.DesignerServiceHack;
+import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectConstants;
 import org.openide.ErrorManager;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
@@ -408,6 +409,20 @@ public class IdeUtil {
             return name.substring(i + 1);
         }
         return name;
+    }
+
+    /**
+     * Returns a directory under the project root under which library resources such as jar files
+     * can be managed by the IDE.
+     * 
+     * @param project
+     *            Target project
+     * @return File of the library directory or null if it does not exist
+     */
+    public static File getProjectLibraryDirectory(Project project) {
+        FileObject projRoot = project.getProjectDirectory();
+        File projRootFile = FileUtil.toFile(projRoot);
+        return new File(projRootFile, JsfProjectConstants.PATH_LIBRARIES);
     }
 
     /** ********* Begin module-specifc methods ****************************** */
