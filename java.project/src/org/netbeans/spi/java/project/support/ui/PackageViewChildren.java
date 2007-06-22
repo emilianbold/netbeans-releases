@@ -337,6 +337,7 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
     }
     
     private PackageNode updatePath( String oldPath, String newPath ) {
+        assert newPath != null;
         Object o = names2nodes.get( oldPath );
         if ( o == null ) {
             return null;
