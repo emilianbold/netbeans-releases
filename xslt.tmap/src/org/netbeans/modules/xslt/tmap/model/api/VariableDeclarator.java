@@ -18,33 +18,21 @@
  */
 package org.netbeans.modules.xslt.tmap.model.api;
 
-import java.util.List;
-import org.netbeans.modules.xslt.tmap.model.impl.TMapComponents;
-
 /**
  *
  * @author Vitaly Bychkov
  * @version 1.0
  */
-public interface Operation extends TMapComponent, VariableDeclarator,
-        OperationReference, TransformerDescriptor 
-{
-    TMapComponents TYPE = TMapComponents.OPERATION;
-    
-    List<Invokes> getInvokess();
-    
-    void removeInvokes(Invokes invokes);
-    
-    void addInvokes(Invokes invokes);
-    
-    int getSizeOfInvokes();
-    
-    List<Transform> getTransforms();
-    
-    void removeTransforms(Transform transform);
+public interface VariableDeclarator {
 
-    void addTransform(Transform transform);
+    String INPUT_VARIABLE = "inputVariable"; // NOI18N
+    String OUTPUT_VARIABLE = "outputVariable"; // NOI18N
     
-    int getSizeOfTransform();
-            
+    public String getInputVariable();
+    
+    public void setInputVariable(String inputVariable);
+    
+    public String getOutputVariable();
+    
+    public void setOutputVariable(String outputVariable);
 }

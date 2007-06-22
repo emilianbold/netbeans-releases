@@ -28,6 +28,8 @@
             <xsd:element name="transform" type="tns:transformType"/>
         </xsd:choice>
         <xsd:attribute name="opName" type="xsd:NCName" use="required"/>
+        <xsd:attribute name="inputVariable" type="xsd:string" use="required"/>
+        <xsd:attribute name="outputVariable" type="xsd:string" use="required"/>
         <!-- for backwards compatability, 'file' means implicit transform -->
         <xsd:attribute name="file" type="xsd:string"/>
         <xsd:attribute name="transformJBI" type="xsd:boolean" default="false"/>

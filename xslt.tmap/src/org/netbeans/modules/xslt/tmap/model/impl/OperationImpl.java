@@ -118,4 +118,19 @@ public class OperationImpl extends TMapComponentAbstract
         return transforms == null ? 0 : transforms.size();
     }
 
+    public String getInputVariable() {
+        return getAttribute(TMapAttributes.INPUT_VARIABLE);
+    }
+
+    public void setInputVariable(String inputVariable) {
+        setAttribute(INPUT_VARIABLE, TMapAttributes.INPUT_VARIABLE, inputVariable);
+    }
+
+    public String getOutputVariable() {
+        return getAttribute(TMapAttributes.OUTPUT_VARIABLE);
+    }
+
+    public void setOutputVariable(String outputVariable) {
+        setAttribute(OUTPUT_VARIABLE, TMapAttributes.OUTPUT_VARIABLE, outputVariable);
+    }
 }
