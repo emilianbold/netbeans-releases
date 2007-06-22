@@ -18,6 +18,8 @@
  */
 package org.netbeans.modules.db.sql.visualeditor.querymodel;
 
+import org.netbeans.modules.db.sql.visualeditor.querybuilder.QueryBuilderMetaData;
+
 /**
  * Represents the restriction in a JOIN clause
  * Must be of form a.x = b.y
@@ -46,8 +48,8 @@ public class JoinRestriction {
 
     // Return the SQL string that corresponds to this From clause
     // For now, assume no joins
-    public String genText() {
-        return " " + _col1.genText() + " " + _op + " " + _col2.genText();    // NOI18N
+    public String genText(QueryBuilderMetaData qbMetaData) {
+        return " " + _col1.genText(qbMetaData) + " " + _op + " " + _col2.genText(qbMetaData);    // NOI18N
     }
 
     // Methods

@@ -18,6 +18,8 @@
  */
 package org.netbeans.modules.db.sql.visualeditor.querymodel;
 
+import org.netbeans.modules.db.sql.visualeditor.querybuilder.QueryBuilderMetaData;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Collection;
@@ -58,20 +60,20 @@ public class QueryNode implements Query {
 
     // Generate the SQL string corresponding to this model
 
-    public String genText() {
-        String res = _select.genText() + " " + _from.genText();    // NOI18N
+    public String genText(QueryBuilderMetaData qbMD) {
+        String res = _select.genText(qbMD) + " " + _from.genText(qbMD);    // NOI18N
 
         if (_where!=null)
-            res += _where.genText();
+            res += _where.genText(qbMD);
 
         if (_groupBy!=null)
-            res += _groupBy.genText();
+            res += _groupBy.genText(qbMD);
 
         if (_having!=null)
-            res += _having.genText();
+            res += _having.genText(qbMD);
 
         if (_orderBy!=null)
-            res += _orderBy.genText();
+            res += _orderBy.genText(qbMD);
 
         return res;
     }

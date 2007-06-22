@@ -18,6 +18,8 @@
  */
 package org.netbeans.modules.db.sql.visualeditor.querymodel;
 
+import org.netbeans.modules.db.sql.visualeditor.querybuilder.QueryBuilderMetaData;
+
 import java.util.Collection;
 
 /**
@@ -57,7 +59,7 @@ public class SetFunction extends ColumnItem implements UnaryExpression {
         items.add(_argument);
     }
 
-    public String genText() {
+    public String genText(QueryBuilderMetaData qbMD) {
         String funcType = null;
         switch (_type) {
             case AVG:
@@ -78,10 +80,10 @@ public class SetFunction extends ColumnItem implements UnaryExpression {
             default:
                 break;
         }
-        funcType += _argument.genText();
+        funcType += _argument.genText(qbMD);
         funcType += ")";
         if (_alias != null) {
-            funcType += " AS " + _alias.genText();
+            funcType += " AS " + _alias.genText(qbMD);
         }
         return funcType;
     }

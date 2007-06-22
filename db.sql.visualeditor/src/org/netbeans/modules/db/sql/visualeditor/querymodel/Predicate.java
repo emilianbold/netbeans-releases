@@ -18,6 +18,8 @@
  */
 package org.netbeans.modules.db.sql.visualeditor.querymodel;
 
+import org.netbeans.modules.db.sql.visualeditor.querybuilder.QueryBuilderMetaData;
+
 import java.util.ArrayList;
 import java.util.Collection;
 
@@ -89,8 +91,8 @@ public final class Predicate implements Expression {
     }
 
     // Return the Where clause as a SQL string
-    public String genText() {
-        return _val1.genText() + " " + _op + " " + _val2.genText(); // NOI18N
+    public String genText(QueryBuilderMetaData qbMD) {
+        return _val1.genText(qbMD) + " " + _op + " " + _val2.genText(qbMD); // NOI18N
     }
 
     public Value getVal1() {

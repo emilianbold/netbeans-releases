@@ -25,6 +25,8 @@ package org.netbeans.modules.db.sql.visualeditor.querymodel;
 // ToDo: Decide whether a null WHERE clause is better represented as a null
 // ptr, or a Where with null condition.
 
+import org.netbeans.modules.db.sql.visualeditor.querybuilder.QueryBuilderMetaData;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Collection;
@@ -104,9 +106,9 @@ public class WhereNode implements Where {
     }
 
     // Return the Where clause as a SQL string
-    public String genText() {
+    public String genText(QueryBuilderMetaData qbMD) {
         if (_cond!=null)
-            return "\nWHERE " + _cond.genText() ;  // NOI18N
+            return "\nWHERE " + _cond.genText(qbMD) ;  // NOI18N
         else
             return "";  // NOI18N
     }

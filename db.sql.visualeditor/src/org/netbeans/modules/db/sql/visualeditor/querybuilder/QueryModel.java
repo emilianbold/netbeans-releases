@@ -53,11 +53,12 @@ class QueryModel {
     // The parsed query produced by the parser
     private Query                       _query = null;
     static boolean                      DEBUG = false;
-
+    private QueryBuilderMetaData        qbMetaData;
 
     // Constructors
 
-    QueryModel() {
+    QueryModel(QueryBuilderMetaData qbMetaData) {
+        this.qbMetaData = qbMetaData;
     }
 
     // Methods
@@ -74,13 +75,13 @@ class QueryModel {
 
     String genText() {
 
-	Log.getLogger().entering("QueryModel", "genText"); // NOI18N
+        Log.getLogger().entering("QueryModel", "genText"); // NOI18N
         if (QueryModel.DEBUG)
             (new Throwable()).printStackTrace();
         if ( _query == null )
             return null;
         else
-            return (_query.genText());
+            return (_query.genText(qbMetaData));
     }
 
 
@@ -352,17 +353,17 @@ class QueryModel {
                 // we will support only a.x = ?  OR
                 // a.x IN ( ?, ?, ? ) for thresher.
                 if ( val1.isParameterized() ) {
-                    String val1String = val1.genText();
+                    String val1String = val1.genText(qbMetaData);
                     for (int i=0; i<val1String.length(); i++) {
                         if (val1String.charAt(i) == '?' )
-                            predicates.add(val2.genText());
+                            predicates.add(val2.genText(qbMetaData));
                     }
                 }
                 else if ( val2.isParameterized() ) {
-                    String val2String = val2.genText();
+                    String val2String = val2.genText(qbMetaData);
                     for (int i=0; i<val2String.length(); i++) {
                         if (val2String.charAt(i) == '?' )
-                            predicates.add(val1.genText());
+                            predicates.add(val1.genText(qbMetaData));
                     }
                 }
         }
@@ -377,7 +378,7 @@ class QueryModel {
     void renameTableSpec(String oldTableSpec, String corrName) {
         // Find all the places where a tableSpec can occur, and replace
         // This seems to be most of the query
-	Log.getLogger().entering("QueryModel", "renameTableSpec", new Object[] { oldTableSpec, corrName } ) ; // NOI18N
+        Log.getLogger().entering("QueryModel", "renameTableSpec", new Object[] { oldTableSpec, corrName } ) ; // NOI18N
         _query.renameTableSpec(oldTableSpec, corrName);
     }
 

@@ -129,7 +129,6 @@ public class QueryBuilder extends TopComponent
     // Private variables
 
     private boolean                     DEBUG = false;
-    // true if database is connected, false otherwise.
 
     // private DatabaseMetaData            _databaseMetaData;
     // private DatabaseMetaDataHelper      _dbmdh;
@@ -170,7 +169,12 @@ public class QueryBuilder extends TopComponent
 	return qbMetaData.isColumnName( columnName );
     }
 
+    // Provide access to metadata object (currently used during text generation)
 
+    public QueryBuilderMetaData getMetaData() {
+	return qbMetaData;
+    }
+    
     /////////////////////////////////////////////////////////////////////////
     // Delete support
     /////////////////////////////////////////////////////////////////////////
@@ -873,7 +877,7 @@ public class QueryBuilder extends TopComponent
                 String checkedFullTableName = checkFullTableName( fromTableName ) ;
 
                 if (DEBUG)
-                    System.out.println("checkFullTableName called fromTableName = " + fromTableName + " returns " +
+                    System.out.println("checkFullTableName called, fromTableName: " + fromTableName + " returns: " +
                                        checkedFullTableName + " \n " ); // NOI18N
                 if ( checkedFullTableName == null ) {
                     // table not found, give an error
@@ -1049,7 +1053,7 @@ public class QueryBuilder extends TopComponent
 
         // Initialize the QueryModel object if necessary
         if (_queryModel==null)
-            _queryModel = new QueryModel();
+            _queryModel = new QueryModel(qbMetaData);
 
         _queryModel.parse(query);
     }
@@ -1436,7 +1440,7 @@ public class QueryBuilder extends TopComponent
         String command = getSqlCommand();
 
         if (_queryModel==null)
-            _queryModel = new QueryModel();
+            _queryModel = new QueryModel(qbMetaData);
 
         Log.getLogger().finest("  * command=" + command) ;
 

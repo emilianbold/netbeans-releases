@@ -18,6 +18,8 @@
  */
 package org.netbeans.modules.db.sql.visualeditor.querymodel;
 
+import org.netbeans.modules.db.sql.visualeditor.querybuilder.QueryBuilderMetaData;
+
 /**
  * Represents an identifier (schema/table/column name)
  */
@@ -26,7 +28,6 @@ public class Identifier {
     // Fields
     private String      _name;
     private boolean     _delimited;
-    
     
     // Constructors
     
@@ -48,11 +49,13 @@ public class Identifier {
     
     // Accessors
     
-    public String genText() {
-        if (_delimited)
-            return "\"" + _name + "\"";
-        else
+    public String genText(QueryBuilderMetaData qbMetaData) {
+        if (_delimited) {
+	    String delimiter = qbMetaData.getIdentifierQuoteString();
+	    return delimiter + _name + delimiter;
+	} else {
             return _name;
+	}
     }
     
     

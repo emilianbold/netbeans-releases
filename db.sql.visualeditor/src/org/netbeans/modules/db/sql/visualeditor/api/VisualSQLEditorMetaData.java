@@ -72,4 +72,9 @@ public interface VisualSQLEditorMetaData {
      */
     public List<List<String>> getExportedKeys(String schema, String table) throws SQLException ;
 
+    /***
+     * Returns the string used t quote SQL identifiers.
+     * @return the quoting string or a space if quoting is not supported
+     */
+    public String getIdentifierQuoteString() throws SQLException ;
 }

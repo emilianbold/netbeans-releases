@@ -89,6 +89,8 @@ TOKEN : /* Identifier */
 |
     < DELIMITED_ID: "\"" (~["\n","\r","\""])* "\"" >
 |
+    < MYSQL_DELIMITED_ID: "`" (~["\n","\r","\"", "`"])* "`" >
+|
     < #LETTER:
       [
        "\u0024",
@@ -651,8 +653,16 @@ Identifier identifier() :
       t = <ORDINARY_ID>         // Not delimited
       { return new Identifier(t.image,false); }
 
-    | t = <DELIMITED_ID>  // Strip surrounding quotes before returning
+      // For delimited identifiers, strip surrounding quotes before returning.
+      // When we generate text output we will use the appropriate quote form.
+      
+    | t = <DELIMITED_ID>  
       { return new Identifier(t.image.substring(1,t.image.length()-1),true); }
+
+    | t = <MYSQL_DELIMITED_ID>  
+      { return new Identifier(t.image.substring(1,t.image.length()-1),true); }
+
+
 //      { return new Identifier(t.image,true); }
 }
 

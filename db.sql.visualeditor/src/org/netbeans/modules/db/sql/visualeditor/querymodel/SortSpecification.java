@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.db.sql.visualeditor.querymodel;
 
+import org.netbeans.modules.db.sql.visualeditor.querybuilder.QueryBuilderMetaData;
 
 import java.util.Collection;
 
@@ -48,8 +49,8 @@ public final class SortSpecification implements QueryItem {
 
     // Methods
 
-    public String genText() {
-        return _column.genText() + " " +  // NOI18N
+    public String genText(QueryBuilderMetaData qbMD) {
+        return _column.genText(qbMD) + " " +  // NOI18N
               _direction;
     }
 

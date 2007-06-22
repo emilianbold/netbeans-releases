@@ -34,81 +34,79 @@ import java.sql.SQLException;
 public class QueryBuilderMetaData {
 
     // Metadata managed by the QueryEditor
-    private Hashtable 			importKcTable = new Hashtable() ;
-    private Hashtable 			allColumnNames = null;
-    
+    private Hashtable 		importKcTable = new Hashtable();
+    private Hashtable 		allColumnNames = null;
+
     // Metadata object
     // This will contain *either* a metadata object provided by the client,
     // *or* one that is generated internally
-    private VisualSQLEditorMetaData 	metadata;
-    private QueryBuilder		queryBuilder;
+    private VisualSQLEditorMetaData metadata;
+    private QueryBuilder 	queryBuilder;
 
-    private boolean                     DEBUG = false;
+    private boolean 		DEBUG = false;
 
     // Constructor, with external metaData
     // Used by most clients
-    QueryBuilderMetaData (VisualSQLEditorMetaData vseMetaData, QueryBuilder queryBuilder) {
-	this.metadata = vseMetaData ;
-	this.queryBuilder = queryBuilder;
+    QueryBuilderMetaData(VisualSQLEditorMetaData vseMetaData, QueryBuilder queryBuilder) {
+        this.metadata = vseMetaData;
+        this.queryBuilder = queryBuilder;
     }
 
     // Constructor, without external metaData
     // Used by DB Explorer and other clients who don't have a dependency on VSE
-    QueryBuilderMetaData (DatabaseConnection dbconn, QueryBuilder queryBuilder) {
-	this.metadata = new InternalVSEMetaDataImpl(dbconn);
-	this.queryBuilder = queryBuilder;
+    QueryBuilderMetaData(DatabaseConnection dbconn, QueryBuilder queryBuilder) {
+        this.metadata = new InternalVSEMetaDataImpl(dbconn);
+        this.queryBuilder = queryBuilder;
     }
 
 
     // Various schema methods
-    boolean isSchemaName( String schemaName ) {
-	List<String> schemas = getSchemas() ;
-	if (schemas.contains(schemaName)) {
-	    Log.getLogger().finest(" found schema name "+schemaName) ;
-	    return true ;
-	}
-        return false ;
+    boolean isSchemaName(String schemaName) {
+        List<String> schemas = getSchemas();
+        if (schemas.contains(schemaName)) {
+            Log.getLogger().finest(" found schema name " + schemaName);
+            return true;
+        }
+        return false;
     }
 
-    boolean isTableName( String tableName ) {
+    boolean isTableName(String tableName) {
         try {
-            String x = checkTableName( tableName ) ;
-            if ( x != null )
-                return true ;
-        } catch( SQLException se) {
+            String x = checkTableName(tableName);
+            if (x != null) {
+                return true;
+            }
+        } catch (SQLException se) {
             // exception handled elsewhere.
         }
-        return false ;
+        return false;
     }
 
-    boolean isColumnName( String columnName ) {
-        
-	try {
-	    if (allColumnNames==null)
-		getAllColumnNames();
+    boolean isColumnName(String columnName) {
 
-	    return allColumnNames.containsKey(columnName);
-	}
-        catch( SQLException se) {
+        try {
+            if (allColumnNames == null) {
+                getAllColumnNames();
+            }
+            return allColumnNames.containsKey(columnName);
+        } catch (SQLException se) {
             // exception handled elsewhere.
-	}
-	return false;
+        }
+        return false;
     }
 
     // Return the list of columns that may appear in queries
     // Implemented by fetching all columns for all known tables
     // ToDo: Decide how to avoid re-fetching all the information
-    void getAllColumnNames()
-	throws SQLException
-    {
-	allColumnNames = new Hashtable(500);
-        List<List<String>> tables = getTables() ;
-        for ( List<String> table : tables) {
-	    List<String> columns = getColumns(table.get(0), table.get(1));
-	    for (String column : columns) {
-		allColumnNames.put (column, column);
-	    }
-	}
+    void getAllColumnNames() throws SQLException {
+        allColumnNames = new Hashtable(500);
+        List<List<String>> tables = getTables();
+        for (List<String> table : tables) {
+            List<String> columns = getColumns(table.get(0), table.get(1));
+            for (String column : columns) {
+                allColumnNames.put(column, column);
+            }
+        }
     }
 
     /**
@@ -120,51 +118,49 @@ public class QueryBuilderMetaData {
      *
      *   tableName can be schema.table or just table - look for both.
      */
-    String checkTableName( String tableName ) throws SQLException {
+    String checkTableName(String tableName) throws SQLException {
 
         Log.getLogger().entering("QueryBuilderMetaData", "checkTableName", tableName); // NOI18N
-
-        if ( tableName == null || tableName.length() < 1) {
-            return tableName ;
-        }
-        
-        String[] descrip = parseTableName(tableName) ;
-        String paramSchemaName = descrip[0] ;
-        String paramTableName = descrip[1] ;
-        
-        if ( paramSchemaName != null ) {
-            return checkFullTableName( tableName ) ;
+        if (tableName == null || tableName.length() < 1) {
+            return tableName;
         }
 
-        String returnTable = null ;
-        
-        List tables = getAllTables() ;
+        String[] descrip = parseTableName(tableName);
+        String paramSchemaName = descrip[0];
+        String paramTableName = descrip[1];
+
+        if (paramSchemaName != null) {
+            return checkFullTableName(tableName);
+        }
+
+        String returnTable = null;
+
+        List<String> tables = getAllTables();
         // now search for the tablename in the list.
-        for ( Iterator i = tables.iterator(); i.hasNext() ;  ) {
-            // first check if the table name exists as is
-            String fullNameDb = (String)i.next() ;
-            String tableNameDb = parseTableName(fullNameDb)[1] ;
-            if ( tableNameDb.equalsIgnoreCase( paramTableName ) ) {
-                returnTable = fullNameDb ;
-                break ;
-            }   
-        }
-        
-        if ( returnTable == null ) {
-            String fullAliasTableName = queryBuilder.getQueryModel().getFullTableName(paramTableName) ;
-            if ( fullAliasTableName != null && tableName.equals(fullAliasTableName)) {
-                return null;
 
-            } else if ( fullAliasTableName != null ) {
-                 return checkTableName( fullAliasTableName ) ;
+        for (String fullNameDb : tables) {
+            // first check if the table name exists as is
+            String tableNameDb = parseTableName(fullNameDb)[1];
+            if (tableNameDb.equalsIgnoreCase(paramTableName)) {
+                returnTable = fullNameDb;
+                break;
             }
         }
 
-        if ( returnTable != null )
-            getColumnNames(returnTable ) ;
+        if (returnTable == null) {
+            String fullAliasTableName = queryBuilder.getQueryModel().getFullTableName(paramTableName);
+            if (fullAliasTableName != null && tableName.equals(fullAliasTableName)) {
+                return null;
+            } else if (fullAliasTableName != null) {
+                return checkTableName(fullAliasTableName);
+            }
+        }
 
+        if (returnTable != null) {
+            getColumnNames(returnTable);
+        }
         // table name was not found
-        return returnTable ;
+        return returnTable;
     }
 
 
@@ -172,7 +168,7 @@ public class QueryBuilderMetaData {
      *   Check if the full table name exists in the _tableColumns
      *   Case is ignored while searching
      *   If table does not exist then return null
-     *   
+     *
      *   return the same name if it exactly matches
      *   if case differs, return the full name from the database
      *   if it's an alias and there's a cases-insenstive match, return the full name from the database
@@ -186,31 +182,30 @@ public class QueryBuilderMetaData {
      *   return the
      *
      */
-    String checkFullTableName( String fullTableName ) throws SQLException {
-        Log.getLogger().entering("QueryBuilderMetaData", "checkFullTableName", fullTableName ); // NOI18N
- 
-        String returnTable = null ;
+    String checkFullTableName(String fullTableName) throws SQLException {
+        Log.getLogger().entering("QueryBuilderMetaData", "checkFullTableName", fullTableName); // NOI18N
+        String returnTable = null;
 
-        if ( parseTableName(fullTableName)[0] == null ) {
+        if (parseTableName(fullTableName)[0] == null) {
             // no schema name, so fullTableName is really just a tableName.
-            return checkTableName(fullTableName) ;
+            return checkTableName(fullTableName);
         }
 
-        List tables = getAllTables() ;
-        for ( Iterator i = tables.iterator(); i.hasNext() ;  ) {
+        List<String> tables = getAllTables();
+        for (Iterator i = tables.iterator(); i.hasNext();) {
             // first check if the table name exists as is
-            String fullNameDb = (String)i.next() ;
-            if ( fullNameDb.equalsIgnoreCase( fullTableName ) ) {
-                returnTable = fullNameDb ;
-                break ;
-            }   
+            String fullNameDb = (String) i.next();
+            if (fullNameDb.equalsIgnoreCase(fullTableName)) {
+                returnTable = fullNameDb;
+                break;
+            }
         }
-        
+
         // Load the column cache for this table.
-        if ( returnTable != null )
-	    getColumnNames(returnTable ) ;
-        
-        return returnTable ;
+        if (returnTable != null) {
+            getColumnNames(returnTable);
+        }
+        return returnTable;
     }
 
 
@@ -221,29 +216,26 @@ public class QueryBuilderMetaData {
      *   else return the same name if it exactly matches
      *   else return the name from the database
      */
-    String checkColumnName( String tableName, String columnName ) throws SQLException {
+    String checkColumnName(String tableName, String columnName) throws SQLException {
 
-        Log.getLogger().entering("QueryBuilderMetaData", "checkColumnName", new Object[] {tableName, columnName}); // NOI18N
-        
-        String tabName = checkTableName( tableName ) ;
-        
-        List columns = getColumnNames(tabName) ;
-        
-        if ( columns == null ) return null ;
-        
-        for ( int k = 0; k < columns.size(); k++ ) {
-            String  columnDB = (String) columns.get(k);
+        Log.getLogger().entering("QueryBuilderMetaData", "checkColumnName", new Object[]{tableName, columnName}); // NOI18N
+        String tabName = checkTableName(tableName);
+
+        List columns = getColumnNames(tabName);
+
+        if (columns == null) {
+            return null;
+        }
+        for (int k = 0; k < columns.size(); k++) {
+            String columnDB = (String) columns.get(k);
             // first check if the column name exists "as is"
-            if ( columnName.equals( columnDB ) ) {
+            if (columnName.equals(columnDB)) {
                 return columnName;
-            }
-            // otherwise compare ignoring case, if matched return the
-            // name from database
-            else if ( columnName.equalsIgnoreCase( columnDB ) ) {
-                return  columnDB ;
+            } else if (columnName.equalsIgnoreCase(columnDB)) {
+                return columnDB;
             }
         }
-        
+
         // column name was not found
         return null;
     }
@@ -256,183 +248,171 @@ public class QueryBuilderMetaData {
      *  false otherwise.
      */
 
-    boolean checkColumnNameForTable( Column col, String tableName ) {
+    boolean checkColumnNameForTable(Column col, String tableName) {
         String columnName = col.getColumnName();
-        
-        Log.getLogger().entering("QueryBuilderMetaData", "checkColumnNameForTable", tableName); // NOI18N
-        
-        String fullTableNameFromAlias = queryBuilder.getQueryModel().getFullTableName( tableName );
-        if ( fullTableNameFromAlias != null ) {
-            tableName = fullTableNameFromAlias ;
-        }
-        boolean retVal = false ;
-        
-        // TODO JFB should not catch this.
-        List cols ;
-        String checkedTable ;
-        try {
-            checkedTable = checkTableName( tableName ) ;
-            if (checkedTable == null) return false ;
-            cols = getColumnNames(checkedTable) ;
-        } catch (SQLException sqle) {
-	    Log.getLogger().finest("  ** problems getting metadata " + sqle.getMessage()) ;
-            return false ;
 
+        Log.getLogger().entering("QueryBuilderMetaData", "checkColumnNameForTable", tableName); // NOI18N
+        String fullTableNameFromAlias = queryBuilder.getQueryModel().getFullTableName(tableName);
+        if (fullTableNameFromAlias != null) {
+            tableName = fullTableNameFromAlias;
         }
-        if ( "*".equals(columnName)) { // NOI18N
-            retVal = true ;                    
-            if ( fullTableNameFromAlias == null && ! ( checkedTable.equals(col.getTableSpec()) ) ) {
-                col.setTableSpec(col.getTableSpec(), checkedTable ) ;
-		Log.getLogger().finest(" adjust table to " + checkedTable) ;
+        boolean retVal = false;
+
+        // TODO JFB should not catch this.
+        List cols;
+        String checkedTable;
+        try {
+            checkedTable = checkTableName(tableName);
+            if (checkedTable == null) {
+                return false;
+            }
+            cols = getColumnNames(checkedTable);
+        } catch (SQLException sqle) {
+            Log.getLogger().finest("  ** problems getting metadata " + sqle.getMessage());
+            return false;
+        }
+        if ("*".equals(columnName)) {            // NOI18N
+	    retVal = true;
+            if (fullTableNameFromAlias == null && !(checkedTable.equals(col.getTableSpec()))) {
+                col.setTableSpec(col.getTableSpec(), checkedTable);
+                Log.getLogger().finest(" adjust table to " + checkedTable);
             }
         } else {
-            for ( int icnt = 0 ; icnt < cols.size() ; icnt++ ) {
-                if ( columnName.equalsIgnoreCase( (String)cols.get(icnt))) {
-                    col.setColumnName(col.getColumnName(), (String)cols.get(icnt) );
-		    Log.getLogger().finest(" adjust colname to " + (String)cols.get(icnt) ) ;
-                    if ( col.getTableSpec() == null ) {
-                        col.setTableSpec(col.getTableSpec(), checkedTable ) ;
-                        Log.getLogger().finest( " adjust table to " + checkedTable) ;
+            for (int icnt = 0; icnt < cols.size(); icnt++) {
+                if (columnName.equalsIgnoreCase((String) cols.get(icnt))) {
+                    col.setColumnName(col.getColumnName(), (String) cols.get(icnt));
+                    Log.getLogger().finest(" adjust colname to " + (String) cols.get(icnt));
+                    if (col.getTableSpec() == null) {
+                        col.setTableSpec(col.getTableSpec(), checkedTable);
+                        Log.getLogger().finest(" adjust table to " + checkedTable);
                     }
-                    retVal = true ;
-                    break ;
+                    retVal = true;
+                    break;
                 }
             }
         }
-        
-        Log.getLogger().finest( "checkColumnNameForTable found="+retVal ); // NOI18N
-        
-        return retVal ;
-        
-        /***
-        for ( int i = 0; i < _tableColumns.size(); i++ ) {
-            TableColumns tableColumn = (TableColumns) _tableColumns.get(i);
-            String _tableName = tableColumn.getTableName();
-            // first check if the table name exists "as is"
-            // table name must already be valid using checkTableName
-            // reset the column's table spec.
-            if ( _tableName.equals( tableName ) ) {
 
-                List columns = tableColumn.getColumns();
-                for ( int k = 0; k < columns.size(); k++ ) {
-                    String _columnName = (String) columns.get(k);
-                    if ( ( _columnName.equals( columnName ) ) ||
-                            ( _columnName.equalsIgnoreCase( columnName ) ) ) {
-                        // change the column's table name
-                        col.setTableSpec(col.getTableSpec(), tableName);
-                        // change the column's name to the correct one.
-                        col.setColumnName(col.getColumnName(), _columnName);
-                        return true;
-                    }
-                }
-            } else {
-                // check if the tableName is actually an alias
-                String fullTableNameFromAlias =
-                        _queryModel.getFullTableName( tableName );
-                if ( fullTableNameFromAlias != null ) {
-                    // tableName is an alias
-                    if ( _tableName.equals( fullTableNameFromAlias ) ) {
-                        if ( ! tableColumn.columnsLoaded() ) {
-                            loadColumns( tableColumn );
-                        }
-                        List columns = tableColumn.getColumns();
-                        for ( int k = 0; k < columns.size(); k++ ) {
-                            String _columnName = (String) columns.get(k);
-                            if ( ( _columnName.equals( columnName ) ) ||
-                                    ( _columnName.equalsIgnoreCase( columnName ) ) ) {
-                                // change the column's table name
-                                col.setColumnTableName(fullTableNameFromAlias);
-                                // change the column's corr name
-                                col.setColumnCorrName(tableName);
-                                // change the column's name to the correct one.
-                                col.setColumnName(col.getColumnName(), _columnName);
-                                return true;
-                            }
-                        }
-                    }
-                }
-            }
+        Log.getLogger().finest("checkColumnNameForTable found=" + retVal); // NOI18N
+        return retVal;
+
+	/***
+        for ( int i = 0; i < _tableColumns.size(); i++ ) {
+	    TableColumns tableColumn = (TableColumns) _tableColumns.get(i);
+	    String _tableName = tableColumn.getTableName();
+	    // first check if the table name exists "as is"
+	    // table name must already be valid using checkTableName
+	    // reset the column's table spec.
+	    if ( _tableName.equals( tableName ) ) {
+		List columns = tableColumn.getColumns();
+		for ( int k = 0; k < columns.size(); k++ ) {
+		    String _columnName = (String) columns.get(k);
+		    if ( ( _columnName.equals( columnName ) ) ||
+			 ( _columnName.equalsIgnoreCase( columnName ) ) ) {
+			// change the column's table name
+			col.setTableSpec(col.getTableSpec(), tableName);
+			// change the column's name to the correct one.
+			col.setColumnName(col.getColumnName(), _columnName);
+			return true;
+		    }
+		}
+	    } else {
+		// check if the tableName is actually an alias
+		String fullTableNameFromAlias =
+		    _queryModel.getFullTableName( tableName );
+		if ( fullTableNameFromAlias != null ) {
+		    // tableName is an alias
+		    if ( _tableName.equals( fullTableNameFromAlias ) ) {
+			if ( ! tableColumn.columnsLoaded() ) {
+			    loadColumns( tableColumn );
+			}
+			List columns = tableColumn.getColumns();
+			for ( int k = 0; k < columns.size(); k++ ) {
+			    String _columnName = (String) columns.get(k);
+			    if ( ( _columnName.equals( columnName ) ) ||
+				 ( _columnName.equalsIgnoreCase( columnName ) ) ) {
+				// change the column's table name
+				col.setColumnTableName(fullTableNameFromAlias);
+				// change the column's corr name
+				col.setColumnCorrName(tableName);
+				// change the column's name to the correct one.
+				col.setColumnName(col.getColumnName(), _columnName);
+				return true;
+			    }
+			}
+		    }
+		}
+	    }
         }
         return false;
-         ***/
+	***/
     }
 
 
     // checks the table name and column name given a col.
     // if possible corrects the column name and table name
     // otherwise returns false, the caller is supposed to give an error message
-    boolean checkTableColumnName( Column col ) throws SQLException {
+    boolean checkTableColumnName(Column col) throws SQLException {
 
-        String tableSpec = col.getTableSpec() ;
-        String tableName = col.getFullTableName() ;
-        String colName = col.getColumnName() ;
-        
-	Log.getLogger().finest("checkTableColumnName called. " + " tableSpec = " + tableSpec  + // NOI18N
-                    " tableName = " + tableName + " . " + colName  ); // NOI18N        
-        
-        if ( "*".equals(col.getColumnName() ) && tableSpec == null  ) {
+        String tableSpec = col.getTableSpec();
+        String tableName = col.getFullTableName();
+        String colName = col.getColumnName();
+
+        Log.getLogger().finest("checkTableColunName col=*, notable " + " tableSpec = " + tableSpec +
+			       " tableName = " + tableName + " . " + colName); // NOI18N
+        if ("*".equals(col.getColumnName()) && tableSpec == null) {
             // Column name was "*" with no tableSpec - assume it's OK.
-
-            Log.getLogger().finest("checkTableColunName col=*, notable ") ;
-            return true ; //NOI18N
+            Log.getLogger().finest("checkTableColunName col=*, notable ");
+            return true; //NOI18N
         }
-        String checkedTableName = checkTableName( tableSpec ) ;
+        String checkedTableName = checkTableName(tableSpec);
 
-        String fullTableNameFromAlias = null ;
+        String fullTableNameFromAlias = null;
 //        if ( checkedTableName == null && tableSpec != null ) {
-            // why the above check ? This will not set fullTableNameFromAlias
-            // regression
-            // http://daning.sfbay/cvsweb/queryeditor/src/com/sun/rave/queryeditor/querybuilder/QueryBuilder.java.diff?r1=1.133&r2=1.134&cvsroot=/cvs/rave
-            fullTableNameFromAlias = queryBuilder.getQueryModel().getFullTableName( tableSpec );
+        // why the above check ? This will not set fullTableNameFromAlias
+        // regression
+        // http://daning.sfbay/cvsweb/queryeditor/src/com/sun/rave/queryeditor/querybuilder/QueryBuilder.java.diff?r1=1.133&r2=1.134&cvsroot=/cvs/rave
+        fullTableNameFromAlias = queryBuilder.getQueryModel().getFullTableName(tableSpec);
 //        }
-        Log.getLogger().finest("checkTableColumnName called. " +
-			       " checkedTableName = " + checkedTableName  +
-			       " fullTableNameFromAlias = " + fullTableNameFromAlias ); // NOI18N
-        if ( checkedTableName == null ) {
+	Log.getLogger().finest("checkTableColumnName called. " + " checkedTableName = " + checkedTableName +
+			       " fullTableNameFromAlias = " + fullTableNameFromAlias); // NOI18N
+        if (checkedTableName == null) {
             // table not found
             return false; // let the caller display the error
-        }
-
-        // table has alias set corr name and set table name.
-        // Added the following check to fix :
-        //     5061214  Cannot parse a query with alias.
-        else if ( ( fullTableNameFromAlias != null ) &&
-                ( ! fullTableNameFromAlias.equalsIgnoreCase( tableSpec ) ) ) {
-            if (DEBUG)
-                System.out.println("setColumnTableName called. " +
-                        " checkedTableName = " + checkedTableName  + 
-                        " tableSpec = " + tableSpec  + 
-                        " fullTableNameFromAlias = " + fullTableNameFromAlias + "\n" ); // NOI18N
-            col.setColumnTableName( checkedTableName );
-            col.setColumnCorrName( tableSpec );
-        } else if ( ! checkedTableName.equals( tableName ) ) {
+        } else if ((fullTableNameFromAlias != null) && (!fullTableNameFromAlias.equalsIgnoreCase(tableSpec))) {
+            if (DEBUG) {
+                System.out.println("setColumnTableName called. " + " checkedTableName = " + checkedTableName +
+				   " tableSpec = " + tableSpec + " fullTableNameFromAlias = " + fullTableNameFromAlias + "\n"); // NOI18N
+            }
+            col.setColumnTableName(checkedTableName);
+            col.setColumnCorrName(tableSpec);
+        } else if (!checkedTableName.equals(tableName)) {
             // table found but maybe in a wrong case, replace
             // it in the querymodel
-            if (DEBUG)
-                System.out.println("setTableSpec called. " +
-                        " checkedTableName = " + checkedTableName  + "\n" ); // NOI18N
-            col.setTableSpec( tableName, checkedTableName );
+            if (DEBUG) {
+                System.out.println("setTableSpec called. " + " checkedTableName = " + checkedTableName + "\n"); // NOI18N
+            }
+            col.setTableSpec(tableName, checkedTableName);
         }
 
         String columnName = col.getColumnName();
 
-        if (columnName.equals("*")) return true ;
-        
-        String checkedColumnName = checkColumnName( checkedTableName,
-                columnName ) ;
-        if (DEBUG)
-            System.out.println("column Name = " + columnName  + "\n" // NOI18N
-                    + "checked column Name = " + checkedColumnName  + "\n" ); // NOI18N
-        if ( checkedColumnName == null ) {
+        if (columnName.equals("*")) {
+            return true;
+        }
+        String checkedColumnName = checkColumnName(checkedTableName, columnName);
+        if (DEBUG) {
+            System.out.println("column Name = " + columnName + "\n" + "checked column Name = " + checkedColumnName + "\n"); // NOI18N
+        }
+        if (checkedColumnName == null) {
             // column not found
             return false; // let the caller display the error
-        } else if ( ! checkedColumnName.equals( columnName ) )  {
-            if (DEBUG)
-                System.out.println("set column name called. oldColumnName = " + columnName + //NOI18N
-                        " newColumnName = " + checkedColumnName  + "\n" ); // NOI18N
+        } else if (!checkedColumnName.equals(columnName)) {
+            if (DEBUG) {
+                System.out.println("set column name called. oldColumnName = " + columnName +
+				   " newColumnName = " + checkedColumnName + "\n"); // NOI18N
             // column found but maybe in a wrong case, replace
             // it in the querymodel
-            col.setColumnName( columnName, checkedColumnName );
+            col.setColumnName(columnName, checkedColumnName);
         }
 
         return true;
@@ -443,62 +423,57 @@ public class QueryBuilderMetaData {
      * Returns the list of tables and views
      */
     List<String> getAllTables() throws SQLException {
-
         /*
         List tables = getTablesInternal("TABLE");
         tables.addAll(getTablesInternal("VIEW"));
         return tables;
-        */
+         */
         // return metaDataCache.getTables() ;
-	List<List<String>> tables = getTables() ;
+        List<List<String>> tables = getTables();
 
-	// Convert from List<table, schema> to "table.schema", expected by query editor
-	List<String> result = new ArrayList<String>();
-	for (List fullTable : tables) {
-	    String schema = (String)fullTable.get(0);
-	    String table = (String)fullTable.get(1);
-	    result.add( ((schema==null)||(schema.equals(""))) ?
-			table :
-			schema + "." + table 
-		) ;
-		}
-	return result;
+        // Convert from List<table, schema> to "table.schema", expected by query editor
+        List<String> result = new ArrayList<String>();
+        for (List fullTable : tables) {
+            String schema = (String) fullTable.get(0);
+            String table = (String) fullTable.get(1);
+            result.add(((schema == null) || (schema.equals(""))) ? table : schema + "." + table);
+        }
+        return result;
     }
 
     /* ===== JFB
     private List getTablesInternal(String type) {
-        List tableNames = new ArrayList();
-        if ( checkDatabaseConnection() == false ) {
-            return tableNames;
-        }
-        boolean firstTime = true;
-        while ( true ) {
-            try {
-                checkMetaData();
-
-                TableMetaData[] tmd;
-                if ( Log.isLoggable()) Log.log("start get"+type+"MetaData") ;
-                tmd = (type.equals("TABLE")) ? _dbmdh.getTableMetaData() : _dbmdh.getViewMetaData();
-                if ( Log.isLoggable()) Log.log("end get"+type+"MetaData") ;
-                for (int i=0; i<tmd.length; i++)
-                    tableNames.add(getFullTableName(tmd[i]));
-                break;
-            } catch (SQLException sqle) {
-                if ( firstTime ) {
-                    refreshDataBaseMetaData();
-                    firstTime = false;
-                } else {
-                    reportDatabaseError("DATABASE_ERROR", sqle); // NOI18N
-                    break;
-                }
-            }
-        }
-        return tableNames;
+	List tableNames = new ArrayList();
+	if ( checkDatabaseConnection() == false ) {
+	    return tableNames;
+	}
+	boolean firstTime = true;
+	while ( true ) {
+	    try {
+		checkMetaData();
+		TableMetaData[] tmd;
+		if ( Log.isLoggable()) Log.log("start get"+type+"MetaData") ;
+		tmd = (type.equals("TABLE")) ? _dbmdh.getTableMetaData() : _dbmdh.getViewMetaData();
+		if ( Log.isLoggable()) Log.log("end get"+type+"MetaData") ;
+		for (int i=0; i<tmd.length; i++)
+		    tableNames.add(getFullTableName(tmd[i]));
+		break;
+	    } catch (SQLException sqle) {
+		if ( firstTime ) {
+		    refreshDataBaseMetaData();
+		    firstTime = false;
+		} else {
+		    reportDatabaseError("DATABASE_ERROR", sqle); // NOI18N
+		    break;
+		}
+	    }
+	}
+	return tableNames;
     }
-     *****/
+    *****/
 
 
-//     private String getFullTableName(TableMetaData tmd) throws SQLException {
+    //     private String getFullTableName(TableMetaData tmd) throws SQLException {
 //         if (DEBUG) {
 //             System.out.println(" getFullTableName() called " + "\n" ); // NOI18N
 //         }
@@ -514,7 +489,7 @@ public class QueryBuilderMetaData {
 //             schema += ".";
 //         }
 //         String tableName = tmd.getMetaInfo(TableMetaData.TABLE_NAME);
-// 
+//
 //         // if table name does not contain spaces
 //         if (tableName.indexOf(' ') == -1 ) {
 //             return schema + tableName;
@@ -522,24 +497,19 @@ public class QueryBuilderMetaData {
 //             return schema + "\"" + tableName + "\"";
 //         }
 //     }
-
 //     /**
 //      * Returns the list of tables and views in all schemas that are accessible
 //      * through the DataSource associated with this QE
 //      */
 //     List getAllTablesInDataSource() throws SQLException {
-
 //         // Log.log(" getAllTablesInDataSource() called " + "\n" ); // NOI18N
-
 //         return metaDataCache.getTables() ;
-        
 //         /*
 //         try {
 //             checkMetaData();
 //         } catch (SQLException sqle) {
 //             reportDatabaseError("DATABASE_ERROR", sqle); // NOI18N
 //         }
-
 //         // Get list of schemas in the datasource
 //         String[] schemaNames =  sqlStatement.getSchemas();
 //         if (schemaNames == null || schemaNames.length == 0)
@@ -557,42 +527,40 @@ public class QueryBuilderMetaData {
 //         */
 //     }
 
-
     /**
      * Returns the list of table names in the specified schema
      */
-    /**** JFB private List getTablesInternal(String type, String schemaName) {
-        if (Log.isLoggable() ) Log.log("enter tablesInternal "+type+","+schemaName) ;
-        List tableNames = new ArrayList();
-        if ( checkDatabaseConnection() == false )
-            return tableNames;
-        boolean firstTime = true;
-        while ( true ) {
-            try {
-                checkMetaData();
-                String[] tables =
-                        (type.equals("TABLE")) ?_dbmdh.getTables(schemaName) : _dbmdh.getViews(schemaName);     // NOI18N
-
-                // Convert to ArrayList, because caller expects it
-                for (int i=0; i<tables.length; i++) {
-                    tableNames.add(tables[i]);
-                    if (DEBUG)
-                        System.out.println(" getAllTablesInternal() tables [ " + i + " ]  = " + tables[i]  + "\n" ); // NOI18N
-                }
-                break;
-            } catch (SQLException sqle) {
-                if ( firstTime ) {
-                    refreshDataBaseMetaData();
-                    firstTime = false;
-                } else {
-                    reportDatabaseError("DATABASE_ERROR", sqle); // NOI18N
-                    break;
-                }
-            }
-        }
-
-        if (Log.isLoggable() ) Log.log("exit tablesInternal, cnt= " + tableNames.size() ) ;
-        return tableNames;
+    /**** JFB
+    private List getTablesInternal(String type, String schemaName) {
+	if (Log.isLoggable() ) Log.log("enter tablesInternal "+type+","+schemaName) ;
+	List tableNames = new ArrayList();
+	if ( checkDatabaseConnection() == false )
+	    return tableNames;
+	boolean firstTime = true;
+	while ( true ) {
+	    try {
+		checkMetaData();
+		String[] tables =
+		    (type.equals("TABLE")) ?_dbmdh.getTables(schemaName) : _dbmdh.getViews(schemaName);     // NOI18N
+		// Convert to ArrayList, because caller expects it
+		for (int i=0; i<tables.length; i++) {
+		    tableNames.add(tables[i]);
+		    if (DEBUG)
+			System.out.println(" getAllTablesInternal() tables [ " + i + " ]  = " + tables[i]  + "\n" ); // NOI18N
+		}
+		break;
+	    } catch (SQLException sqle) {
+		if ( firstTime ) {
+		    refreshDataBaseMetaData();
+		    firstTime = false;
+		} else {
+		    reportDatabaseError("DATABASE_ERROR", sqle); // NOI18N
+		    break;
+		}
+	    }
+	}
+	if (Log.isLoggable() ) Log.log("exit tablesInternal, cnt= " + tableNames.size() ) ;
+	return tableNames;
     }
     ***/
 
@@ -603,41 +571,36 @@ public class QueryBuilderMetaData {
     // SCH: Modified to use schema if available
     /*  JFB
     public List getColumnNames(String tableName) throws SQLException {
-
-        Log.err.log(ErrorManager.INFORMATIONAL,
-                "Entering QueryBuilder.getColumnNames, tableName: " + tableName); // NOI18N
-
-        return metaDataCache.getColumnNames(tableName)) ;
-      
-        boolean firstTime = true;
-        while ( true ) {
-            try {
-                checkMetaData();
-
-                ResultSet rs = _dbmdh.getMetaData().getColumns(null, null, tableName, "%"); // NOI18N
-                if (rs != null) {
-                    while (rs.next()) {
-                        columnNames.add(rs.getString("COLUMN_NAME")); // NOI18N
-                    }
-                    rs.close();
-                }
-                break;
-            } catch (SQLException sqle) {
-                if ( firstTime ) {
-                    refreshDataBaseMetaData();
-                    firstTime = false;
-                } else {
-                    reportDatabaseError("DATABASE_ERROR", sqle); // NOI18N
-                    break;
-                }
-            }
-        }
-        if (DEBUG)
-            for (int j=0; j<columnNames.size(); j++)
-                System.out.println("Column ["+j+"] : " + (String) columnNames.get(j) + "\n" ); // NOI18N
-        
+	Log.err.log(ErrorManager.INFORMATIONAL,
+		    "Entering QueryBuilder.getColumnNames, tableName: " + tableName); // NOI18N
+	return metaDataCache.getColumnNames(tableName)) ;
+    boolean firstTime = true;
+    while ( true ) {
+	try {
+	    checkMetaData();
+	    ResultSet rs = _dbmdh.getMetaData().getColumns(null, null, tableName, "%"); // NOI18N
+	    if (rs != null) {
+		while (rs.next()) {
+		    columnNames.add(rs.getString("COLUMN_NAME")); // NOI18N
+		}
+		rs.close();
+	    }
+	    break;
+	} catch (SQLException sqle) {
+	    if ( firstTime ) {
+		refreshDataBaseMetaData();
+		firstTime = false;
+	    } else {
+		reportDatabaseError("DATABASE_ERROR", sqle); // NOI18N
+		break;
+	    }
+	}
     }
-    */
+    if (DEBUG)
+	for (int j=0; j<columnNames.size(); j++)
+	    System.out.println("Column ["+j+"] : " + (String) columnNames.get(j) + "\n" ); // NOI18N
+    }
+   ***/
 
     /**
      * Returns the imported key columns for this table -- i.e., the columns
@@ -646,61 +609,55 @@ public class QueryBuilderMetaData {
      * This was formerly included in SqlStatementMetaDataCache, now implemented
      * in the QueryEditor
      */
-    List getImportedKeyColumns(String fullTableName)
-	throws SQLException
-    {
-        List keys = (List)importKcTable.get(fullTableName) ;
-        if ( keys != null )
-	    return keys ;
-        
-	String[] tb = parseTableName(fullTableName);
-	List<List<String>> importedKeys = getImportedKeys(tb[0], tb[1]);
-	keys = new ArrayList();
-	for (List<String> key : importedKeys)
-	    keys.add(key.get(1));
+    List getImportedKeyColumns(String fullTableName) throws SQLException {
+        List keys = (List) importKcTable.get(fullTableName);
+        if (keys != null) {
+            return keys;
+        }
+        String[] tb = parseTableName(fullTableName);
+        List<List<String>> importedKeys = getImportedKeys(tb[0], tb[1]);
+        keys = new ArrayList();
+        for (List<String> key : importedKeys) {
+            keys.add(key.get(1));
+        }
+        importKcTable.put(fullTableName, keys);
+        return keys;
 
-        importKcTable.put(fullTableName, keys) ;
-	return keys;
-	
         /*
         List keys = new ArrayList();
         String tableName, schemaName=null;
         String[] table = fullTableName.split("\\."); // NOI18N
         if (table.length>1) {
-            schemaName=table[0];
-            tableName = table[1];
+	    schemaName=table[0];
+	    tableName = table[1];
         } else
-            tableName=table[0];
-
+	    tableName=table[0];
         boolean firstTime = true;
         while ( true ) {
-            try {
-                checkMetaData();
-
-                ResultSet rs = _databaseMetaData.getImportedKeys(null, schemaName, tableName);
-                if (rs != null) {
-                    while (rs.next()) {
-                        keys.add(rs.getString("FKCOLUMN_NAME")); // NOI18N
-                    }
-                    rs.close();
-                }
-                break;
-            } catch (SQLException sqle) {
-                if ( firstTime ) {
-                    refreshDataBaseMetaData();
-                    firstTime = false;
-                } else {
-                    reportDatabaseError("DATABASE_ERROR", sqle); // NOI18N
-                    break;
-                }
-            }
+	    try {
+		checkMetaData();
+		ResultSet rs = _databaseMetaData.getImportedKeys(null, schemaName, tableName);
+		if (rs != null) {
+		    while (rs.next()) {
+			keys.add(rs.getString("FKCOLUMN_NAME")); // NOI18N
+		    }
+		    rs.close();
+		}
+		break;
+	    } catch (SQLException sqle) {
+		if ( firstTime ) {
+		    refreshDataBaseMetaData();
+		    firstTime = false;
+		} else {
+		    reportDatabaseError("DATABASE_ERROR", sqle); // NOI18N
+		    break;
+		}
+	    }
         }
-
         Log.err.log(ErrorManager.INFORMATIONAL, "Imported key columns for table " + fullTableName); // NOI18N
         if (keys!= null)
-            for (int i=0; i<keys.size(); i++)
-                Log.err.log(ErrorManager.INFORMATIONAL, "Keys("+i+"): " + keys.get(i)); // NOI18N
-
+	    for (int i=0; i<keys.size(); i++)
+		Log.err.log(ErrorManager.INFORMATIONAL, "Keys("+i+"): " + keys.get(i)); // NOI18N
         return keys;
         */
     }
@@ -713,23 +670,22 @@ public class QueryBuilderMetaData {
     List getForeignKeys(String fullTableName) throws SQLException {
 
         Log.getLogger().entering("QueryBuilderMetaData", "getForeignKeys", fullTableName); // NOI18N
-
         // keys.add(new String[] {"travel.trip", "personid", "travel.person", "personid"});
-
         // We get the exported keys (foreign tables that reference this one), then
         // imported keys (foreign tables that this one references).
         /*
         List keys = getForeignKeys1(fullTableName, true);
         keys.addAll(getForeignKeys1(fullTableName, false));
-        */
-	String[] tableSpec = parseTableName(fullTableName);
+         */
+        String[] tableSpec = parseTableName(fullTableName);
         List<List<String>> keys = getImportedKeys(tableSpec[0], tableSpec[1]);
-        keys.addAll( getExportedKeys(tableSpec[0], tableSpec[1]));
+        keys.addAll(getExportedKeys(tableSpec[0], tableSpec[1]));
 
-	// Convert to a List(String[]), for compatibility with the rest of the QueryEditor
-	List result = new ArrayList();
-	for (List<String> key : keys)
-	    result.add(key.toArray());
+        // Convert to a List(String[]), for compatibility with the rest of the QueryEditor
+        List result = new ArrayList();
+        for (List<String> key : keys) {
+            result.add(key.toArray());
+        }
         return result;
     }
 
@@ -738,53 +694,49 @@ public class QueryBuilderMetaData {
      */
     /*
     List getForeignKeys1(String fullTableName, boolean exported) {
-
-        String tableName, schemaName=null;
-        String[] table = fullTableName.split("\\."); // NOI18N
-        if (table.length>1) {
-            schemaName=table[0];
-            tableName = table[1];
-        } else
-            tableName=table[0];
-
-        Log.log(" getForeignKeys1 schemaName = " + schemaName + " tableName = " + tableName + "\n" ); // NOI18N
-        List keys = new ArrayList();
-        boolean firstTime = true;
-        while ( true ) {
-            try {
-                checkMetaData();
-
-                ResultSet rs =
-                        exported ?
-                            _databaseMetaData.getExportedKeys(null, schemaName, tableName) :
-                            _databaseMetaData.getImportedKeys(null, schemaName, tableName);
-                if (rs != null) {
-                    while (rs.next()) {
-                        String fschem = rs.getString("FKTABLE_SCHEM"); // NOI18N
-                        String pschem = rs.getString("PKTABLE_SCHEM"); // NOI18N
-                        String[] key = new String[] {
-                            ((fschem!=null) ? fschem+"." : "") + rs.getString("FKTABLE_NAME"), // NOI18N
-                                    rs.getString("FKCOLUMN_NAME"), // NOI18N
-                                    ((pschem!=null) ? pschem+"." : "") + rs.getString("PKTABLE_NAME"), // NOI18N
-                                    rs.getString("PKCOLUMN_NAME") }; // NOI18N
-                                    keys.add(key);
-                    }
-                    rs.close();
-                }
-                break;
-            } catch (SQLException sqle) {
-                if ( firstTime ) {
-                    refreshDataBaseMetaData();
-                    firstTime = false;
-                } else {
-                    reportDatabaseError("DATABASE_ERROR", sqle); // NOI18N
-                    break;
-                }
-            }
-        }
-        return keys;
+	String tableName, schemaName=null;
+	String[] table = fullTableName.split("\\."); // NOI18N
+	if (table.length>1) {
+	    schemaName=table[0];
+	    tableName = table[1];
+	} else
+	    tableName=table[0];
+	Log.log(" getForeignKeys1 schemaName = " + schemaName + " tableName = " + tableName + "\n" ); // NOI18N
+	List keys = new ArrayList();
+	boolean firstTime = true;
+	while ( true ) {
+	    try {
+		checkMetaData();
+		ResultSet rs =
+		    exported ?
+		    _databaseMetaData.getExportedKeys(null, schemaName, tableName) :
+		    _databaseMetaData.getImportedKeys(null, schemaName, tableName);
+		if (rs != null) {
+		    while (rs.next()) {
+			String fschem = rs.getString("FKTABLE_SCHEM"); // NOI18N
+			String pschem = rs.getString("PKTABLE_SCHEM"); // NOI18N
+			String[] key = new String[] {
+			    ((fschem!=null) ? fschem+"." : "") + rs.getString("FKTABLE_NAME"), // NOI18N
+			    rs.getString("FKCOLUMN_NAME"), // NOI18N
+			    ((pschem!=null) ? pschem+"." : "") + rs.getString("PKTABLE_NAME"), // NOI18N
+			    rs.getString("PKCOLUMN_NAME") }; // NOI18N
+			keys.add(key);
+		    }
+		    rs.close();
+		}
+		break;
+	    } catch (SQLException sqle) {
+		if ( firstTime ) {
+		    refreshDataBaseMetaData();
+		    firstTime = false;
+		} else {
+		    reportDatabaseError("DATABASE_ERROR", sqle); // NOI18N
+		    break;
+		}
+	    }
+	}
+	return keys;
     }
-
     */
 
     /**
@@ -792,16 +744,18 @@ public class QueryBuilderMetaData {
      * Note that the set of FKs is passed in from the caller, to avoid having to make multiple
      * fetches from the dbmetedata when we're adding a new table
      */
-    String[] findForeignKey(String oldFullTableName, String newFullTableName, List foreignKeys)
-    {
-        Log.getLogger().entering("QueryBuilderMetaData", "findForeignKey", new Object[] { oldFullTableName, newFullTableName }); // NOI18N
-
-        if (foreignKeys!=null) {
-            for (int i=0; i<foreignKeys.size(); i++) {
-                String[] key = (String[])foreignKeys.get(i);
-                if ((key[0].equalsIgnoreCase(newFullTableName)&&key[2].equalsIgnoreCase(oldFullTableName)) ||
-                        (key[0].equalsIgnoreCase(oldFullTableName)&&key[2].equalsIgnoreCase(newFullTableName)))
+    String[] findForeignKey(String oldFullTableName, String newFullTableName, List foreignKeys) {
+        Log.getLogger().entering("QueryBuilderMetaData", "findForeignKey", new Object[]{oldFullTableName, newFullTableName}); // NOI18N
+        if (foreignKeys != null) {
+            for (int i = 0; i < foreignKeys.size(); i++) {
+                String[] key = (String[]) foreignKeys.get(i);
+                if ((key[0].equalsIgnoreCase(newFullTableName) &&
+		     key[2].equalsIgnoreCase(oldFullTableName)) ||
+		    (key[0].equalsIgnoreCase(oldFullTableName) &&
+		     key[2].equalsIgnoreCase(newFullTableName)))
+		{
                     return (String[]) foreignKeys.get(i);
+                }
             }
         }
         Log.getLogger().finest("No key found"); // NOI18N
@@ -815,18 +769,25 @@ public class QueryBuilderMetaData {
     String[] findForeignKey(String fullTableName1, String colName1, String fullTableName2, String colName2)
 	throws SQLException
     {
-        Log.getLogger().entering("QueryBuilderMetaData", "findForeignKey", new Object[] { fullTableName1, colName1, fullTableName1, colName2 });
+        Log.getLogger().entering("QueryBuilderMetaData", "findForeignKey",
+				 new Object[]{fullTableName1, colName1, fullTableName1, colName2});
 
         // Get the complete list of keys for one of the tables; we use table1
         List foreignKeys = getForeignKeys(fullTableName1);
-        if (foreignKeys!=null) {
-            for (int i=0; i<foreignKeys.size(); i++) {
-                String[] key = (String[])foreignKeys.get(i);
-                if ((key[0].equalsIgnoreCase(fullTableName1) && key[1].equalsIgnoreCase(colName1)
-                && key[2].equalsIgnoreCase(fullTableName2) && key[3].equalsIgnoreCase(colName2)) ||
-                        (key[0].equalsIgnoreCase(fullTableName2) && key[1].equalsIgnoreCase(colName2)
-                        && key[2].equalsIgnoreCase(fullTableName1) && key[3].equalsIgnoreCase(colName1)))
+        if (foreignKeys != null) {
+            for (int i = 0; i < foreignKeys.size(); i++) {
+                String[] key = (String[]) foreignKeys.get(i);
+                if ((key[0].equalsIgnoreCase(fullTableName1) &&
+		     key[1].equalsIgnoreCase(colName1) &&
+		     key[2].equalsIgnoreCase(fullTableName2) &&
+		     key[3].equalsIgnoreCase(colName2)) ||
+		    (key[0].equalsIgnoreCase(fullTableName2) &&
+		     key[1].equalsIgnoreCase(colName2) &&
+		     key[2].equalsIgnoreCase(fullTableName1) &&
+		     key[3].equalsIgnoreCase(colName1)))
+		{
                     return (String[]) foreignKeys.get(i);
+                }
             }
         }
         Log.getLogger().finest("No key found"); // NOI18N
@@ -835,50 +796,49 @@ public class QueryBuilderMetaData {
 
 
     // Get the list of column names associated with the specified table name, with no Exception
-    public void getColumnNames(String fullTableName, List columnNames)  {
-         try {
-            columnNames.addAll( getColumnNames(fullTableName)) ;
-         } catch(SQLException sqle) {
-             // can't do anything.
-         }
-     }
+    public void getColumnNames(String fullTableName, List columnNames) {
+        try {
+            columnNames.addAll(getColumnNames(fullTableName));
+        } catch (SQLException sqle) {
+            // can't do anything.
+        }
+    }
 
     public List getColumnNames(String fullTableName) throws SQLException {
 
         // Log.getLogger().entering("QueryBuilderMetaData", "getColumnNames", fullTableName ); // NOI18N
-    
-	String[] tb = parseTableName(fullTableName);
-        return getColumns( tb[0], tb[1] ) ;
+        String[] tb = parseTableName(fullTableName);
+        return getColumns(tb[0], tb[1]);
+
         /*
         String[] table = fullTableName.split("\\.");
         if (table.length==1) // no schema -- use the old method
-            getColumnNames(fullTableName, columnNames);
+	    getColumnNames(fullTableName, columnNames);
         else {
-            String[] colNames=null;
-            boolean firstTime = true;
-            try {
-                checkMetaData();
-                // hack, getColumns throws an exception if table name has
-                // spaces.
-                colNames = _dbmdh.getColumns(fullTableName.replaceAll("\"", "") );
-            } catch (SQLException sqle) {
-                // First time we catch an error, try resetting the RowSet
-                refreshDataBaseMetaData();
-                try {
-                    checkMetaData();
-                    colNames = _dbmdh.getColumns(fullTableName);
-                } catch (SQLException sqle2) {
-                    // We must have a real error.  Report it.
-                    reportDatabaseError("DATABASE_ERROR", sqle2); // NOI18N
-                }
-            }
-
-            // Convert to ArrayList because caller expects it
-            if (colNames!=null)
-                for (int i=0; i<colNames.length; i++)
-                    columnNames.add(colNames[i]);
+	    String[] colNames=null;
+	    boolean firstTime = true;
+	    try {
+		checkMetaData();
+		// hack, getColumns throws an exception if table name has
+		// spaces.
+		colNames = _dbmdh.getColumns(fullTableName.replaceAll("\"", "") );
+	    } catch (SQLException sqle) {
+		// First time we catch an error, try resetting the RowSet
+		refreshDataBaseMetaData();
+		try {
+		    checkMetaData();
+		    colNames = _dbmdh.getColumns(fullTableName);
+		} catch (SQLException sqle2) {
+		    // We must have a real error.  Report it.
+		    reportDatabaseError("DATABASE_ERROR", sqle2); // NOI18N
+		}
+	    }
+	    // Convert to ArrayList because caller expects it
+	    if (colNames!=null)
+		for (int i=0; i<colNames.length; i++)
+		    columnNames.add(colNames[i]);
         }
-        */
+         */
     }
 
 
@@ -887,60 +847,56 @@ public class QueryBuilderMetaData {
      */
     List getPrimaryKeys(String fullTableName) throws SQLException {
 
-	Log.getLogger().entering("QueryBuilderMetaData", "getPrimaryKeys", fullTableName ); // NOI18N
-
-	String schemaName=null, tableName;
+        Log.getLogger().entering("QueryBuilderMetaData", "getPrimaryKeys", fullTableName); // NOI18N
+        String schemaName = null;
+        String tableName;
         String[] table = parseTableName(fullTableName);
-        if (table.length>1) {
+        if (table.length > 1) {
             schemaName = table[0];
             tableName = table[1];
-        } else
-            tableName=table[0];
-        return getPrimaryKeys(schemaName, tableName) ;
+        } else {
+            tableName = table[0];
+        }
+        return getPrimaryKeys(schemaName, tableName);
+
         /*
         List primaryKeys = new ArrayList();
-
         String tableName, schemaName=null;
         String[] table = fullTableName.split("\\."); // NOI18N
         if (table.length>1) {
-            schemaName=table[0];
-            tableName = table[1];
+	    schemaName=table[0];
+	    tableName = table[1];
         } else
-            tableName=table[0];
-
+	    tableName=table[0];
         boolean firstTime = true;
         while ( true ) {
-            try {
-                checkMetaData();
-
-                ResultSet rs = _databaseMetaData.getPrimaryKeys(null, schemaName, tableName);
-                if (rs != null) {
-                    String name;
-                    while (rs.next()) {
-                        name = rs.getString("COLUMN_NAME"); // NOI18N
-                        primaryKeys.add(name);
-                    }
-                    rs.close();
-                }
-                break;
-
-            } catch (SQLException sqle) {
-                if ( firstTime ) {
-                    refreshDataBaseMetaData();
-                    firstTime = false;
-                } else {
-                    reportDatabaseError("DATABASE_ERROR", sqle); // NOI18N
-                    break;
-                }
-            }
+	    try {
+		checkMetaData();
+		ResultSet rs = _databaseMetaData.getPrimaryKeys(null, schemaName, tableName);
+		if (rs != null) {
+		    String name;
+		    while (rs.next()) {
+			name = rs.getString("COLUMN_NAME"); // NOI18N
+			primaryKeys.add(name);
+		    }
+		    rs.close();
+		}
+		break;
+	    } catch (SQLException sqle) {
+		if ( firstTime ) {
+		    refreshDataBaseMetaData();
+		    firstTime = false;
+		} else {
+		    reportDatabaseError("DATABASE_ERROR", sqle); // NOI18N
+		    break;
+		}
+	    }
         }
-
         return primaryKeys;
-         **/
+        **/
     }
 
-//    private List<List<String>> allTables = null ;
-    
+    //    private List<List<String>> allTables = null ;
 //     // Formerly part of the metadata interface.  Now implemented locally.
 //     List<List<String>> getTables() throws SQLException {
 // 	if (allTables==null) {
@@ -956,37 +912,42 @@ public class QueryBuilderMetaData {
 // 	return allTables;
 //     }
 
-
     // Wrapper methods for accessing the actual metadata
     // These use an externally provided one (if available), otherwise the
     // internal one
-
 //     List<List<String>> getTables(String schema) throws SQLException {
 // 	return metadata.getTables(schema);
 //     }
-    
     List<String> getSchemas() {
-	return metadata.getSchemas();
-    }	
+        return metadata.getSchemas();
+    }
 
     List<List<String>> getTables() throws SQLException {
-	return metadata.getTables();
+        return metadata.getTables();
     }
-    
+
     List<String> getPrimaryKeys(String schema, String table) throws SQLException {
-	return metadata.getPrimaryKeys(schema, table);
+        return metadata.getPrimaryKeys(schema, table);
     }
 
     List<List<String>> getImportedKeys(String schema, String table) throws SQLException {
-	return metadata.getImportedKeys(schema, table);
+        return metadata.getImportedKeys(schema, table);
     }
 
     List<List<String>> getExportedKeys(String schema, String table) throws SQLException {
-	return metadata.getExportedKeys(schema, table);
+        return metadata.getExportedKeys(schema, table);
     }
 
     List<String> getColumns(String schema, String table) throws SQLException {
-	return metadata.getColumns(schema, table);
+        return metadata.getColumns(schema, table);
+    }
+
+    public String getIdentifierQuoteString() {
+        try {
+            return metadata.getIdentifierQuoteString();
+        } catch (SQLException e) {
+            return "";
+        }
     }
 
     // JDTODO: figure out what to do here
@@ -994,28 +955,24 @@ public class QueryBuilderMetaData {
     }
 
     // Utility Methods
-        /* ================================================================ */
+    /* ================================================================ */
     /*****
      * parse a full table name, e.g. Schema.Table or Table
-     * and returns an array where 
+     * and returns an array where
      * [0] = schema (or null if none found)
      * [1] = table name.
      */
-    private static String[]  parseTableName(String fullTableName) {
-        
-        String[] retVal = new String[2] ;
-        
+    private static String[] parseTableName(String fullTableName) {
+        String[] retVal = new String[2];
+
         String[] table = fullTableName.split("\\."); // NOI18N
-        if (table.length>1) {
+        if (table.length > 1) {
             retVal[0] = table[0];
             retVal[1] = table[1];
         } else {
-            retVal[0] = null ;
+            retVal[0] = null;
             retVal[1] = table[0];
         }
-        return retVal ;
+        return retVal;
     }
-
 }
-
-

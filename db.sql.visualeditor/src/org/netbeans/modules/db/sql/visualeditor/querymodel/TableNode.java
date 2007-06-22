@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.db.sql.visualeditor.querymodel;
 
+import org.netbeans.modules.db.sql.visualeditor.querybuilder.QueryBuilderMetaData;
 
 import java.util.Collection;
 
@@ -66,27 +67,27 @@ public class TableNode implements Table {
 
 
     // Methods
-    public String genText() {
-        return genText(false);
+    public String genText(QueryBuilderMetaData qbMD) {
+        return genText(qbMD, false);
     }
 
     // Return the SQL string that corresponds to this Table
     // This was originally called only in FROM clauses, but is now used as
     // part of column specifications.
     // For now, assume no joins
-    public String genText(boolean from) {
+    public String genText(QueryBuilderMetaData qbMD, boolean from) {
         if (from)       // Calling from within a FROM clause
             return
-                ((_schemaName==null) ? "" : _schemaName.genText()+".") +  // NOI18N
-                _tableName.genText() +
+                ((_schemaName==null) ? "" : _schemaName.genText(qbMD)+".") +  // NOI18N
+                _tableName.genText(qbMD) +
                 // remove AS to fix CR5097412
-                ((_corrName==null) ? "" : " " + _corrName.genText());  // NOI18N
+                ((_corrName==null) ? "" : " " + _corrName.genText(qbMD));  // NOI18N
         else            // Calling from within a column
             return
                 ((_corrName!=null)
-                 ? _corrName.genText()
-                 : ((_schemaName==null) ? "" : _schemaName.genText()+".") +  // NOI18N
-                 _tableName.genText());
+                 ? _corrName.genText(qbMD)
+                 : ((_schemaName==null) ? "" : _schemaName.genText(qbMD)+".") +  // NOI18N
+                 _tableName.genText(qbMD));
     }
 
 

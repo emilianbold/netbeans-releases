@@ -18,6 +18,8 @@
  */
 package org.netbeans.modules.db.sql.visualeditor.querymodel;
 
+import org.netbeans.modules.db.sql.visualeditor.querybuilder.QueryBuilderMetaData;
+
 import java.util.Collection;
 
 /**
@@ -118,25 +120,25 @@ public class ColumnNode extends ColumnItem implements Column {
         return column.matches(getTableSpec(), getColumnName());
     }
 
-    public String genText(boolean select) {
+    public String genText(QueryBuilderMetaData qbMetaData, boolean select) {
         return
             // Table Spec, if any
             ( ((_table!=null) && (_table.getTableSpec()!=null)) ?
-              _table.genText(false)+ "."                        :       // NOI18N
+              _table.genText(qbMetaData, false)+ "."                        :       // NOI18N
               "")       			                     +  // NOI18N
 
             // Column Name
-            _columnName.genText()                                    +
+            _columnName.genText(qbMetaData)                                    +
 
             // Derived Column Name, if there is one and we're in a SELECT
             ( ((select) && (_derivedColName!=null))  ?
-              " AS " + _derivedColName.genText()     :                 // NOI18N
+              " AS " + _derivedColName.genText(qbMetaData)     :                 // NOI18N
               "");                                                      // NOI18N
     }
 
 
-    public String genText() {
-        return genText(false);
+    public String genText(QueryBuilderMetaData qbMetaData) {
+        return genText(qbMetaData, false);
     }
 
 

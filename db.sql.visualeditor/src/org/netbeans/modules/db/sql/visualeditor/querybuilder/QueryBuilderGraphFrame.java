@@ -867,7 +867,7 @@ public class QueryBuilderGraphFrame extends JPanel
         // before. So for the initial table populate the command
         // This will initiate the QueryBuilder properly.
         if ( ( _queryBuilder.getQueryModel() == null ) ||
-                ( _queryBuilder.getQueryModel().genText() == null ) ) {
+	     ( _queryBuilder.getQueryModel().genText() == null ) ) {
             String query = new String("select * from " + fullTableName);
             _queryBuilder.populate(query);
             _queryBuilder.setSqlCommand(query);
@@ -1517,7 +1517,7 @@ public class QueryBuilderGraphFrame extends JPanel
         for (int i=0; i<columns.size(); i++) {
             if (DEBUG) {
                 System.out.println("expr getReferencedColumn i = " + i +
-                        " " + ((Column)columns.get(i)).genText());
+				   " " + ((Column)columns.get(i)).genText(null));
             }
             
             Column c = (Column)columns.get(i);
@@ -1529,7 +1529,7 @@ public class QueryBuilderGraphFrame extends JPanel
                         System.out.println(
                                 "where getReferencedColumn j = " + j + " " +
                                 " found = " + found +
-                                ((Column)whereColumns.get(j)).genText());
+                                ((Column)whereColumns.get(j)).genText(null));
                     }
                 }
                 if ( found > 1 )  // more than one instance

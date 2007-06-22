@@ -22,6 +22,8 @@ package org.netbeans.modules.db.sql.visualeditor.querymodel;
  * Represents a HAVING clause in a SQL Table Expression
  */
 
+import org.netbeans.modules.db.sql.visualeditor.querybuilder.QueryBuilderMetaData;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Collection;
@@ -46,10 +48,10 @@ public class HavingNode implements Having {
 
     // Return the SQL string that corresponds to this From clause
     // For now, assume no joins
-    public String genText() {
+    public String genText(QueryBuilderMetaData qbMetaData) {
         String res="";    // NOI18N
         if (_condition != null) {
-            res = "\nHAVING " + _condition.genText();  // NOI18N
+            res = "\nHAVING " + _condition.genText(qbMetaData);  // NOI18N
         }
 
         return res;

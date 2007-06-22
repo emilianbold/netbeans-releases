@@ -18,17 +18,22 @@
  */
 package org.netbeans.modules.db.sql.visualeditor.querymodel;
 
+import org.netbeans.modules.db.sql.visualeditor.querybuilder.QueryBuilderMetaData;
+
 import java.util.Collection;
 
 // the comon base type of every item present in a query
 // provides common functionalities to all items
-public interface QueryItem {
+public interface  QueryItem {
+
     // generate text that represent the item
-    public String genText();
+    public String genText(QueryBuilderMetaData qbMD);
+
     // walks recursively the specific item to find all teh columns that are referenced from this item.
     // For instance, called on a WHERE cluase will return all teh columns used in the expression of the WHERE clause
     // could be used by the editor to obtain info on all teh column used in a particular clause
     public void getReferencedColumns(Collection columns);
+
     // fills the provided Collection with a list of all the items used in this specific item, but only one level
     // So for instance on Query it would provide what the query is composed of (Select, From, Where, etc.)
     // on Where it would provide the expression used

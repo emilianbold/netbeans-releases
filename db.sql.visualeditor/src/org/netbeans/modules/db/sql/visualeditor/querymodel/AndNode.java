@@ -18,6 +18,8 @@
  */
 package org.netbeans.modules.db.sql.visualeditor.querymodel;
 
+import org.netbeans.modules.db.sql.visualeditor.querybuilder.QueryBuilderMetaData;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Collection;
@@ -42,14 +44,14 @@ public class AndNode extends BooleanExpressionList implements And {
     //
 
     // Return the Where clause as a SQL string
-    public String genText() {
+    public String genText(QueryBuilderMetaData qbMetaData) {
         if (_expressions==null || _expressions.size()==0)
             return "";    // NOI18N
 
-        String res = ((Expression)_expressions.get(0)).genText();    // NOI18N
+        String res = ((Expression)_expressions.get(0)).genText(qbMetaData);    // NOI18N
 
         for (int i=1; i<_expressions.size(); i++)
-            res += "\n          AND " + ((Expression)_expressions.get(i)).genText();    // NOI18N
+            res += "\n          AND " + ((Expression)_expressions.get(i)).genText(qbMetaData);    // NOI18N
 
         return res;
     }

@@ -18,6 +18,8 @@
  */
 package org.netbeans.modules.db.sql.visualeditor.querymodel;
 
+import org.netbeans.modules.db.sql.visualeditor.querybuilder.QueryBuilderMetaData;
+
 import java.util.Collection;
 
 /**
@@ -42,7 +44,7 @@ public class Literal implements Value {
 
     // Methods
 
-    public String genText() {
+    public String genText(QueryBuilderMetaData qbMD) {
         return _value.toString();
     }
 
@@ -53,7 +55,7 @@ public class Literal implements Value {
 
     // Accessors/Mutators
 
-    public Object getValue() {
+    public Object getValue(QueryBuilderMetaData qbMD) {
         return _value;
     }
 

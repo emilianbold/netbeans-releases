@@ -18,6 +18,8 @@
  */
 package org.netbeans.modules.db.sql.visualeditor.querymodel;
 
+import org.netbeans.modules.db.sql.visualeditor.querybuilder.QueryBuilderMetaData;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Collection;
@@ -45,13 +47,13 @@ public class GroupByNode implements GroupBy {
 
     // Return the Select clause as a SQL string
 
-    public String genText() {
+    public String genText(QueryBuilderMetaData qbMetaData) {
         String res = "\nGROUP BY ";  // NOI18N
 
         if (_columnList.size() > 0) {
-            res += ((ColumnNode)_columnList.get(0)).genText();
+            res += ((ColumnNode)_columnList.get(0)).genText(qbMetaData);
             for (int i=1; i<_columnList.size(); i++) {
-                res += ", " + ((ColumnNode)_columnList.get(i)).genText();    // NOI18N
+                res += ", " + ((ColumnNode)_columnList.get(i)).genText(qbMetaData);    // NOI18N
             }
         }
 

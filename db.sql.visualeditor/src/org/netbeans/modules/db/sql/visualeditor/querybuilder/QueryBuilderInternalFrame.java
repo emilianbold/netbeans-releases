@@ -431,7 +431,7 @@ public class QueryBuilderInternalFrame extends JInternalFrame
                 _queryBuilder._queryModel.addOrCreateAndExpression ( pred );
                 if (DEBUG) {
                     System.out.println ( 
-                        _queryBuilder._queryModel.getWhere ().genText () );
+                        _queryBuilder._queryModel.getWhere ().genText (null) );
                 }
                 _queryBuilder.generate();
                 e.acceptDrop(DnDConstants.ACTION_MOVE);
