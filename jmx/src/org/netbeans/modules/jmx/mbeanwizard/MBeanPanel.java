@@ -141,7 +141,6 @@ public class MBeanPanel extends javax.swing.JPanel
      */
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
-
         mbeanTypeButtonGroup = new javax.swing.ButtonGroup();
         mbeanDescriptionJTextField = new javax.swing.JTextField();
         generatedFileJTextField = new javax.swing.JTextField();
@@ -173,6 +172,7 @@ public class MBeanPanel extends javax.swing.JPanel
         isMXBean.setText("isMXBean");
         isMXBean.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         isMXBean.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        isMXBean.setName("isMXBeanCheckBox");
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);

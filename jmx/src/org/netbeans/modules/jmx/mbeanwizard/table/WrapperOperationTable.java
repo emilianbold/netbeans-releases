@@ -130,6 +130,7 @@ public class WrapperOperationTable extends OperationTable {
                  return new DefaultCellEditor(typeField);
              } else {
                  JComboBox jcb = WizardHelpers.instanciateRetTypeJComboBox();
+                 jcb.setName("methTypeBox");// NOI18N
                  return new JComboBoxCellEditor(jcb, this);
              }
          } else if (column == 3) { //parameter panel

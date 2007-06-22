@@ -121,6 +121,7 @@
         <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
           <Insets value="[0, 0, 0, 0]"/>
         </Property>
+        <Property name="name" type="java.lang.String" value="isMXBeanCheckBox"/>
       </Properties>
     </Component>
   </SubComponents>

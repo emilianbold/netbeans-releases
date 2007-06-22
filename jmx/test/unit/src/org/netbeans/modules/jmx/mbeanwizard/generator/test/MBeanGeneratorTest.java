@@ -34,7 +34,7 @@ import java.util.Set;
 
 import org.netbeans.modules.jmx.WizardConstants;
 import org.netbeans.modules.jmx.MBeanDO;
-import org.netbeans.modules.jmx.mbeanwizard.generator.MBeanGenInfo;
+//import org.netbeans.modules.jmx.mbeanwizard.generator.MBeanGenInfo;
 import org.netbeans.modules.jmx.mbeanwizard.generator.Translator;
         
 /**
@@ -45,7 +45,7 @@ public class MBeanGeneratorTest extends TestCase {
     
     private TemplateWizard wizard;
     private MBeanDO mbean;
-    private MBeanGenInfo genInfo;
+//    private MBeanGenInfo genInfo;
 
     public MBeanGeneratorTest(String testName) {
         super(testName);
@@ -374,16 +374,16 @@ public class MBeanGeneratorTest extends TestCase {
         }
     }
     
-    public void test28() throws Exception {
-        System.out.println("##### Test 28 #####");
-        fillWizardDescriptor(wizard, "Test28");
-        try {
-            createGenInfo(wizard);
-            fail("MBean generation without test class package must fail !");
-        } catch (IllegalArgumentException e) {
-            assertTrue(e.getMessage().equals("test class package or path invalid"));
-        }
-    }
+//    public void test28() throws Exception {
+//        System.out.println("##### Test 28 #####");
+//        fillWizardDescriptor(wizard, "Test28");
+//        try {
+//            createGenInfo(wizard);
+//            fail("MBean generation without test class package must fail !");
+//        } catch (IllegalArgumentException e) {
+//            assertTrue(e.getMessage().equals("test class package or path invalid"));
+//        }
+//    }
     
     public void test29() throws Exception {
         System.out.println("##### Test 29 #####");
@@ -407,49 +407,49 @@ public class MBeanGeneratorTest extends TestCase {
         }
     }
     
-    public void test31() throws Exception {
-        System.out.println("##### Test 31 #####");
-        fillWizardDescriptor(wizard, "Test31");
-        try {
-            createGenInfo(wizard);
-            fail("MBean generation without test class file location must fail !");
-        } catch (IllegalArgumentException e) {
-            assertTrue(e.getMessage().equals("test file path invalid"));
-        }
-    }
+//    public void test31() throws Exception {
+//        System.out.println("##### Test 31 #####");
+//        fillWizardDescriptor(wizard, "Test31");
+//        try {
+//            createGenInfo(wizard);
+//            fail("MBean generation without test class file location must fail !");
+//        } catch (IllegalArgumentException e) {
+//            assertTrue(e.getMessage().equals("test file path invalid"));
+//        }
+//    }
     
-    public void test32() throws Exception {
-        System.out.println("##### Test 32 #####");
-        fillWizardDescriptor(wizard, "Test32");
-        try {
-            createGenInfo(wizard);
-            fail("MBean generation without test class file location must fail !");
-        } catch (IllegalArgumentException e) {
-            assertTrue(e.getMessage().equals("test file path invalid"));
-        }
-    }
+//    public void test32() throws Exception {
+//        System.out.println("##### Test 32 #####");
+//        fillWizardDescriptor(wizard, "Test32");
+//        try {
+//            createGenInfo(wizard);
+//            fail("MBean generation without test class file location must fail !");
+//        } catch (IllegalArgumentException e) {
+//            assertTrue(e.getMessage().equals("test file path invalid"));
+//        }
+//    }
     
-    public void test33() throws Exception {
-        System.out.println("##### Test 33 #####");
-        fillWizardDescriptor(wizard, "Test33");
-        try {
-            createGenInfo(wizard);
-            fail("MBean generation without test class name must fail !");
-        } catch (IllegalArgumentException e) {
-            assertTrue(e.getMessage().equals("test class name invalid"));
-        }
-    }
+//    public void test33() throws Exception {
+//        System.out.println("##### Test 33 #####");
+//        fillWizardDescriptor(wizard, "Test33");
+//        try {
+//            createGenInfo(wizard);
+//            fail("MBean generation without test class name must fail !");
+//        } catch (IllegalArgumentException e) {
+//            assertTrue(e.getMessage().equals("test class name invalid"));
+//        }
+//    }
     
-    public void test34() throws Exception {
-        System.out.println("##### Test 34 #####");
-        fillWizardDescriptor(wizard, "Test34");
-        try {
-            createGenInfo(wizard);
-            fail("MBean generation without test class name must fail !");
-        } catch (IllegalArgumentException e) {
-            assertTrue(e.getMessage().equals("test class name invalid"));
-        }
-    }
+//    public void test34() throws Exception {
+//        System.out.println("##### Test 34 #####");
+//        fillWizardDescriptor(wizard, "Test34");
+//        try {
+//            createGenInfo(wizard);
+//            fail("MBean generation without test class name must fail !");
+//        } catch (IllegalArgumentException e) {
+//            assertTrue(e.getMessage().equals("test class name invalid"));
+//        }
+//    }
     
     public void test35() throws Exception {
         System.out.println("##### Test 35 #####");
@@ -532,9 +532,9 @@ public class MBeanGeneratorTest extends TestCase {
         mbean = Translator.createMBeanDO(wiz);
     }
     
-    private void createGenInfo(TemplateWizard wiz) throws Exception {
-        genInfo = Translator.createGenInfo(wiz);
-    }
+//    private void createGenInfo(TemplateWizard wiz) throws Exception {
+//        genInfo = Translator.createGenInfo(wiz);
+//    }
 /*    
     private static boolean diffWithPattern(String content, 
             String expectedContentPattern, Properties prop)

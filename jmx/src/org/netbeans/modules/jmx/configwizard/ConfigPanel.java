@@ -152,6 +152,7 @@ public class ConfigPanel extends javax.swing.JPanel
         threadContentionJCheckBox.setText("jCheckBox1");
         threadContentionJCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         threadContentionJCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        threadContentionJCheckBox.setName("threadContentionJCheckBox");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
