@@ -60,6 +60,7 @@ import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
+import javax.swing.text.Document;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.java.editor.semantic.Utilities;
 import org.netbeans.modules.java.hints.infrastructure.ErrorHintsProvider;
@@ -239,15 +240,19 @@ public final class CreateElementUtilities {
         }
         
         try {
-            int bodyStart = Utilities.findBodyStart(parent.getLeaf(), info.getCompilationUnit(), info.getTrees().getSourcePositions(), info.getDocument());
-            int bodyEnd   = (int) info.getTrees().getSourcePositions().getEndPosition(info.getCompilationUnit(), parent.getLeaf());
+            Document doc = info.getDocument();
             
-            types.add(ElementKind.PARAMETER);
-            types.add(ElementKind.LOCAL_VARIABLE);
-            types.add(ElementKind.FIELD);
-            
-            if (bodyStart <= offset && offset <= bodyEnd)
-                return Collections.singletonList(info.getElements().getTypeElement("java.lang.Object").asType());
+            if (doc != null) {//XXX
+                int bodyStart = Utilities.findBodyStart(parent.getLeaf(), info.getCompilationUnit(), info.getTrees().getSourcePositions(), doc);
+                int bodyEnd   = (int) info.getTrees().getSourcePositions().getEndPosition(info.getCompilationUnit(), parent.getLeaf());
+
+                types.add(ElementKind.PARAMETER);
+                types.add(ElementKind.LOCAL_VARIABLE);
+                types.add(ElementKind.FIELD);
+
+                if (bodyStart <= offset && offset <= bodyEnd)
+                    return Collections.singletonList(info.getElements().getTypeElement("java.lang.Object").asType());
+            }
         } catch (IOException ex) {
             Logger.getLogger("global").log(Level.INFO, ex.getMessage(), ex);
         }

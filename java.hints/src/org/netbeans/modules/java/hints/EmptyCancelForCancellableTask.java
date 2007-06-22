@@ -121,6 +121,10 @@ public class EmptyCancelForCancellableTask extends AbstractHint {
         
         try {
             Document doc = compilationInfo.getDocument();
+            
+            if (doc == null)
+                return null;
+            
             int[] span = Utilities.findIdentifierSpan(treePath, compilationInfo, doc);
             
             if (span[0] != (-1) && span[1] != (-1)) {
