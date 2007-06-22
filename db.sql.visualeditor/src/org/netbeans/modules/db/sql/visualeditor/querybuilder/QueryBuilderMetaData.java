@@ -407,7 +407,7 @@ public class QueryBuilderMetaData {
             // column not found
             return false; // let the caller display the error
         } else if (!checkedColumnName.equals(columnName)) {
-            if (DEBUG) {
+            if (DEBUG) 
                 System.out.println("set column name called. oldColumnName = " + columnName +
 				   " newColumnName = " + checkedColumnName + "\n"); // NOI18N
             // column found but maybe in a wrong case, replace
@@ -918,6 +918,7 @@ public class QueryBuilderMetaData {
 //     List<List<String>> getTables(String schema) throws SQLException {
 // 	return metadata.getTables(schema);
 //     }
+
     List<String> getSchemas() {
         return metadata.getSchemas();
     }
