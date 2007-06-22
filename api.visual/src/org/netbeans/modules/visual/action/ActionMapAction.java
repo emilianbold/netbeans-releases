@@ -92,9 +92,9 @@ public class ActionMapAction extends WidgetAction.Adapter {
                         Scene scene = widget.getScene ();
                         Point point = scene.convertSceneToView (widget.convertLocalToScene (event.getPoint ()));
                         popupMenu.show (scene.getView (), point.x, point.y);
+                        return State.CONSUMED;
                     }
                 }
-                return State.CONSUMED;
             }
         }
         return State.REJECTED;
