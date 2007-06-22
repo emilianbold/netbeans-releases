@@ -30,7 +30,6 @@ import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.jackpot.test.TestUtilities;
-import org.netbeans.modules.java.source.transform.Transformer;
 import org.netbeans.junit.NbTestSuite;
 import org.openide.filesystems.FileUtil;
 
@@ -54,6 +53,7 @@ public class FeatureAddingTest extends GeneratorTestMDRCompat {
         return suite;
     }
 
+    @SuppressWarnings("unchecked")
     public void testAddFieldToBeginning() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile, 
@@ -81,30 +81,31 @@ public class FeatureAddingTest extends GeneratorTestMDRCompat {
             "    }\n\n" +
             "}\n";
 
-        process(
-            new Transformer<Void, Object>() {
-                public Void visitClass(ClassTree node, Object p) {
-                    super.visitClass(node, p);
-                    if ("Test".contentEquals(node.getSimpleName())) {
-                            VariableTree member = make.Variable(
-                                make.Modifiers(
-                                    Collections.<Modifier>emptySet(),
-                                    Collections.<AnnotationTree>emptyList()
-                                ),
-                                "a",
-                                make.PrimitiveType(TypeKind.INT), null
-                            );
-                        ClassTree copy = make.insertClassMember(node, 0, member);
-                        changes.rewrite(node, copy);
-                    }
-                    return null;
-                }
+        JavaSource src = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        Task task = new Task<WorkingCopy>() {
+            
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                VariableTree member = make.Variable(
+                    make.Modifiers(
+                        Collections.<Modifier>emptySet(),
+                        Collections.<AnnotationTree>emptyList()
+                    ),
+                    "a",
+                    make.PrimitiveType(TypeKind.INT), null
+                );
+                ClassTree copy = make.insertClassMember(clazz, 0, member);
+                workingCopy.rewrite(clazz, copy);
             }
-        );
+        };
+        src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
         assertEquals(golden, res);
     }
 
+    @SuppressWarnings("unchecked")
     public void testAddFieldToEnd() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile, 
@@ -134,30 +135,31 @@ public class FeatureAddingTest extends GeneratorTestMDRCompat {
             "    \n" +
             "}\n";
 
-        process(
-            new Transformer<Void, Object>() {
-                public Void visitClass(ClassTree node, Object p) {
-                    super.visitClass(node, p);
-                    if ("Test".contentEquals(node.getSimpleName())) {
-                            VariableTree member = make.Variable(
-                                make.Modifiers(
-                                    Collections.<Modifier>emptySet(),
-                                    Collections.<AnnotationTree>emptyList()
-                                ),
-                                "a",
-                                make.PrimitiveType(TypeKind.INT), null
-                            );
-                        ClassTree copy = make.addClassMember(node, member);
-                        changes.rewrite(node, copy);
-                    }
-                    return null;
-                }
+        JavaSource src = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        Task task = new Task<WorkingCopy>() {
+            
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                VariableTree member = make.Variable(
+                    make.Modifiers(
+                        Collections.<Modifier>emptySet(),
+                        Collections.<AnnotationTree>emptyList()
+                    ),
+                    "a",
+                    make.PrimitiveType(TypeKind.INT), null
+                );
+                ClassTree copy = make.addClassMember(clazz, member);
+                workingCopy.rewrite(clazz, copy);
             }
-        );
+        };
+        src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
         assertEquals(golden, res);
     }
     
+    @SuppressWarnings("unchecked")
     public void testAddFieldToEmpty() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile, 
