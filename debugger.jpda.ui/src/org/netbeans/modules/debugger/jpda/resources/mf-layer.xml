@@ -31,6 +31,7 @@ Microsystems, Inc. All Rights Reserved.
                     </file>-->
                     <file name="org-netbeans-modules-debugger-jpda-ui-actions-ToggleMethodFieldBreakpointAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-jpda-ui-actions-ToggleMethodFieldBreakpointAction.instance"/>
+                        <attr name="position" intvalue="500"/>
                     </file>
                 </folder>
                 <folder name="Popup">
