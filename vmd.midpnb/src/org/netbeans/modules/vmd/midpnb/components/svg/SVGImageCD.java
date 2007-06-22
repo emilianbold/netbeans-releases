@@ -62,7 +62,7 @@ public class SVGImageCD extends ComponentDescriptor {
     }
     
     public void postInitialize(DesignComponent component) {
-        MidpProjectSupport.addLibraryToProject(component.getDocument(), SVGAnimatorWrapperCD.MIDP_NB_SVG_LIBRARY);
+        MidpProjectSupport.addLibraryToProject(component.getDocument(), SVGPlayerCD.MIDP_NB_SVG_LIBRARY);
     }
     
     public TypeDescriptor getTypeDescriptor() {

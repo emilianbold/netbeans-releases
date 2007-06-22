@@ -30,11 +30,11 @@ import org.netbeans.modules.vmd.midp.components.*;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorResourcesComboBox;
 import org.netbeans.modules.vmd.midpnb.codegen.MidpCustomCodePresenterSupport;
 import org.netbeans.modules.vmd.midpnb.components.resources.SimpleCancellableTaskCD;
+import org.netbeans.modules.vmd.midpnb.propertyeditors.PropertiesCategories;
 import org.openide.util.NbBundle;
 
 import java.util.Arrays;
 import java.util.List;
-import org.netbeans.modules.vmd.midpnb.propertyeditors.PropertiesCategories;
 
 /**
  * @author Karol Harezlak
@@ -54,7 +54,7 @@ public final class SVGWaitScreenCD extends ComponentDescriptor {
     }
     
     public void postInitialize (DesignComponent component) {
-        MidpProjectSupport.addLibraryToProject (component.getDocument (), SVGAnimatorWrapperCD.MIDP_NB_SVG_LIBRARY);
+        MidpProjectSupport.addLibraryToProject (component.getDocument (), SVGPlayerCD.MIDP_NB_SVG_LIBRARY);
     }
 
     public TypeDescriptor getTypeDescriptor() {
@@ -81,7 +81,7 @@ public final class SVGWaitScreenCD extends ComponentDescriptor {
         return new CodeSetterPresenter ()
             .addParameters (MidpParameter.create (PROP_TASK))
             .addParameters (MidpCustomCodePresenterSupport.createSVGWaitScreenCommandParameter ())
-            .addSetters (MidpSetter.createConstructor (TYPEID, MidpVersionable.MIDP_2).addParameters (SVGAnimatorWrapperCD.PROP_SVG_IMAGE, MidpCustomCodePresenterSupport.PARAM_DISPLAY))
+            .addSetters (MidpSetter.createConstructor (TYPEID, MidpVersionable.MIDP_2).addParameters (SVGPlayerCD.PROP_SVG_IMAGE, MidpCustomCodePresenterSupport.PARAM_DISPLAY))
             .addSetters (MidpSetter.createSetter ("setTask", MidpVersionable.MIDP_2).addParameters (PROP_TASK));
     }
 

@@ -25,12 +25,13 @@ import org.netbeans.modules.vmd.api.io.serialization.DocumentSerializationContro
 import org.netbeans.modules.vmd.api.io.serialization.PropertyElement;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
-import org.netbeans.modules.vmd.midp.components.MidpDocumentSupport;
 import org.netbeans.modules.vmd.midp.components.MidpDocumentSerializationController;
+import org.netbeans.modules.vmd.midp.components.MidpDocumentSupport;
 import org.netbeans.modules.vmd.midpnb.components.svg.SVGAnimatorWrapperCD;
+import org.netbeans.modules.vmd.midpnb.components.svg.SVGPlayerCD;
 
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 
 /**
  * @author David Kaspar
@@ -38,21 +39,35 @@ import java.util.Iterator;
 public class MidpCustomDocumentSerializationController extends DocumentSerializationController {
 
     public void approveComponents (DataObjectContext context, DesignDocument loadingDocument, String documentVersion, Collection<ComponentElement> componentElements) {
+        if (! MidpDocumentSupport.PROJECT_TYPE_MIDP.equals (context.getProjectType ())  ||  ! MidpDocumentSerializationController.VERSION_1.equals (documentVersion))
+            return;
+        ArrayList<ComponentElement> elementsToRemove = new ArrayList<ComponentElement> ();
+        ArrayList<ComponentElement> elementsToAdd = new ArrayList<ComponentElement> ();
+        for (ComponentElement element : componentElements) {
+            if (SVGAnimatorWrapperCD.TYPEID.equals (element.getTypeID ())) {
+                elementsToRemove.add (element);
+                elementsToAdd.add (ComponentElement.create (element.getParentUID (), element.getUID (), SVGPlayerCD.TYPEID, element.getNode ()));
+            }
+        }
+        componentElements.removeAll (elementsToRemove);
+        componentElements.addAll (elementsToAdd);
     }
 
     public void approveProperties (DataObjectContext context, DesignDocument loadingDocument, String documentVersion, DesignComponent component, Collection<PropertyElement> propertyElements) {
         if (! MidpDocumentSupport.PROJECT_TYPE_MIDP.equals (context.getProjectType ())  ||  ! MidpDocumentSerializationController.VERSION_1.equals (documentVersion))
             return;
-        if (loadingDocument.getDescriptorRegistry ().isInHierarchy (SVGAnimatorWrapperCD.TYPEID, component.getType ())) {
-            Iterator<PropertyElement> iterator = propertyElements.iterator ();
-            while (iterator.hasNext ()) {
-                PropertyElement propertyElement = iterator.next ();
-                if (SVGAnimatorWrapperCD.PROP_OLD_START_ANIM_IMMEDIATELY.equals (propertyElement.getPropertyName ())) {
-                    iterator.remove ();
-                    propertyElements.add (PropertyElement.create (SVGAnimatorWrapperCD.PROP_START_ANIM_IMMEDIATELY, propertyElement.getTypeID (), propertyElement.getSerialized ()));
+        if (loadingDocument.getDescriptorRegistry ().isInHierarchy (SVGPlayerCD.TYPEID, component.getType ())) {
+            ArrayList<PropertyElement> elementsToRemove = new ArrayList<PropertyElement> ();
+            ArrayList<PropertyElement> elementsToAdd = new ArrayList<PropertyElement> ();
+            for (PropertyElement propertyElement : propertyElements) {
+                if (SVGPlayerCD.PROP_OLD_START_ANIM_IMMEDIATELY.equals (propertyElement.getPropertyName ())) {
+                    elementsToRemove.add (propertyElement);
+                    elementsToAdd.add (PropertyElement.create (SVGPlayerCD.PROP_START_ANIM_IMMEDIATELY, propertyElement.getTypeID (), propertyElement.getSerialized ()));
                     break;
                 }
             }
+            propertyElements.removeAll (elementsToRemove);
+            propertyElements.addAll (elementsToAdd);
         }
     }
 

@@ -41,7 +41,7 @@ public class MidpProjectTypeInfo extends ProjectTypeInfo {
     }
 
     public String getDocumentVersion () {
-        return "1";
+        return "2";
     }
 
 }

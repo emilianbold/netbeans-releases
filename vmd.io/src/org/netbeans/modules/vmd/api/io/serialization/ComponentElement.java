@@ -39,7 +39,7 @@ public final class ComponentElement {
         this.node = node;
     }
 
-    public long getParentuid () {
+    public long getParentUID () {
         return parentuid;
     }
 

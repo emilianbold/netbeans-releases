@@ -19,16 +19,16 @@
  */
 package org.netbeans.modules.vmd.midp.components;
 
-import org.netbeans.modules.vmd.api.io.serialization.DocumentSerializationController;
-import org.netbeans.modules.vmd.api.io.serialization.ComponentElement;
-import org.netbeans.modules.vmd.api.io.serialization.PropertyElement;
 import org.netbeans.modules.vmd.api.io.DataObjectContext;
-import org.netbeans.modules.vmd.api.model.DesignDocument;
+import org.netbeans.modules.vmd.api.io.serialization.ComponentElement;
+import org.netbeans.modules.vmd.api.io.serialization.DocumentSerializationController;
+import org.netbeans.modules.vmd.api.io.serialization.PropertyElement;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
+import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.midp.components.items.ItemCD;
 
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 
 /**
  * @author David Kaspar
@@ -38,23 +38,23 @@ public class MidpDocumentSerializationController extends DocumentSerializationCo
     public static final String VERSION_1 = "1";
 
     public void approveComponents (DataObjectContext context, DesignDocument loadingDocument, String documentVersion, Collection<ComponentElement> componentElements) {
-        if (! MidpDocumentSupport.PROJECT_TYPE_MIDP.equals (context.getProjectType ())  ||  ! VERSION_1.equals (documentVersion))
-            return;
     }
 
     public void approveProperties (DataObjectContext context, DesignDocument loadingDocument, String documentVersion, DesignComponent component, Collection<PropertyElement> propertyElements) {
         if (! MidpDocumentSupport.PROJECT_TYPE_MIDP.equals (context.getProjectType ())  ||  ! VERSION_1.equals (documentVersion))
             return;
         if (loadingDocument.getDescriptorRegistry ().isInHierarchy (ItemCD.TYPEID, component.getType ())) {
-            Iterator<PropertyElement> iterator = propertyElements.iterator ();
-            while (iterator.hasNext ()) {
-                PropertyElement propertyElement = iterator.next ();
+            ArrayList<PropertyElement> elementsToRemove = new ArrayList<PropertyElement> ();
+            ArrayList<PropertyElement> elementsToAdd = new ArrayList<PropertyElement> ();
+            for (PropertyElement propertyElement : propertyElements) {
                 if (ItemCD.PROP_OLD_ITEM_COMMAND_LISTENER.equals (propertyElement.getPropertyName ())) {
-                    iterator.remove ();
-                    propertyElements.add (PropertyElement.create (ItemCD.PROP_ITEM_COMMAND_LISTENER, propertyElement.getTypeID (), propertyElement.getSerialized ()));
+                    elementsToRemove.add (propertyElement);
+                    elementsToAdd.add (PropertyElement.create (ItemCD.PROP_ITEM_COMMAND_LISTENER, propertyElement.getTypeID (), propertyElement.getSerialized ()));
                     break;
                 }
             }
+            propertyElements.removeAll (elementsToRemove);
+            propertyElements.addAll (elementsToAdd);
         }
     }
 

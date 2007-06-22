@@ -21,7 +21,6 @@ package org.netbeans.modules.vmd.midpnb.producers;
 
 
 import org.netbeans.modules.vmd.api.model.ComponentProducer;
-import org.netbeans.modules.vmd.api.model.ComponentProducer.Result;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.PaletteDescriptor;
 import org.netbeans.modules.vmd.api.model.TypeID;
@@ -31,8 +30,8 @@ import org.netbeans.modules.vmd.midpnb.components.handlers.SVGMenuEventHandlerCD
 import org.netbeans.modules.vmd.midpnb.components.items.TableItemCD;
 import org.netbeans.modules.vmd.midpnb.components.resources.SimpleCancellableTaskCD;
 import org.netbeans.modules.vmd.midpnb.components.resources.SimpleTableModelCD;
-import org.netbeans.modules.vmd.midpnb.components.svg.SVGAnimatorWrapperCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.SVGImageCD;
+import org.netbeans.modules.vmd.midpnb.components.svg.SVGPlayerCD;
 import org.netbeans.modules.vmd.midpnb.palette.MidpNbPaletteProvider;
 
 /**
@@ -55,9 +54,9 @@ public abstract class CustomComponentProducer extends ComponentProducer {
         return true;
     }
     
-    public static final class SVGAnimatorWrapperProducer extends CustomComponentProducer {
-        public SVGAnimatorWrapperProducer() {
-            super(SVGAnimatorWrapperCD.TYPEID, new PaletteDescriptor(MidpNbPaletteProvider.CATEGORY_SVG, "SVG Animator Wrapper", "SVG Animator Wrapper", SVGAnimatorWrapperCD.ICON_PATH, SVGAnimatorWrapperCD.ICON_LARGE_PATH)); // NOI18N
+    public static final class SVGPlayerProducer extends CustomComponentProducer {
+        public SVGPlayerProducer () {
+            super(SVGPlayerCD.TYPEID, new PaletteDescriptor(MidpNbPaletteProvider.CATEGORY_SVG, "SVG Player", "SVG Player", SVGPlayerCD.ICON_PATH, SVGPlayerCD.ICON_LARGE_PATH)); // NOI18N
         }
         
         public boolean checkValidity(DesignDocument document) {

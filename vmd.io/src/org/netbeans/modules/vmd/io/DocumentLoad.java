@@ -138,7 +138,7 @@ public class DocumentLoad {
         }
 
         for (ComponentElement element : hierarchy.values ()) {
-            long parentuid = element.getParentuid ();
+            long parentuid = element.getParentUID ();
             DesignComponent parent = loadingDocument.getComponentByUID (parentuid);
             DesignComponent component = loadingDocument.getComponentByUID (element.getUID ());
             if (component == null)

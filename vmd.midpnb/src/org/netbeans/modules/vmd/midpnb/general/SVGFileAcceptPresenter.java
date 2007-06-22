@@ -19,11 +19,6 @@
 
 package org.netbeans.modules.vmd.midpnb.general;
 
-import java.awt.datatransfer.Transferable;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
 import org.netbeans.modules.vmd.api.model.ComponentProducer.Result;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
@@ -33,12 +28,18 @@ import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.categories.ResourcesCategoryCD;
 import org.netbeans.modules.vmd.midp.general.FileAcceptPresenter;
 import org.netbeans.modules.vmd.midpnb.components.sources.SVGMenuElementEventSourceCD;
-import org.netbeans.modules.vmd.midpnb.components.svg.SVGAnimatorWrapperCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.SVGImageCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.SVGMenuCD;
+import org.netbeans.modules.vmd.midpnb.components.svg.SVGPlayerCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.util.SVGUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
+
+import java.awt.datatransfer.Transferable;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  *
@@ -48,7 +49,7 @@ import org.openide.util.Exceptions;
 public class SVGFileAcceptPresenter extends FileAcceptPresenter {
 
     public SVGFileAcceptPresenter() {
-        super(SVGAnimatorWrapperCD.PROP_SVG_IMAGE, SVGImageCD.TYPEID, "svg");
+        super(SVGPlayerCD.PROP_SVG_IMAGE, SVGImageCD.TYPEID, "svg");
     }
 
     public Result accept(Transferable transferable, AcceptSuggestion suggestion) {
