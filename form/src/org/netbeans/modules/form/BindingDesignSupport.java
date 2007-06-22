@@ -156,6 +156,7 @@ public class BindingDesignSupport {
         return getBindingDescriptors(null, beanDescriptor, component.getBeanInstance());
     }
 
+    @SuppressWarnings("unchecked") // generic array creation NOI18N
     private List<BindingDescriptor>[] getBindingDescriptors(TypeHelper type, BeanDescriptor beanDescriptor, Object instance) {
         List<BindingDescriptor> bindingList = new LinkedList<BindingDescriptor>();
         List<BindingDescriptor> prefList = new LinkedList<BindingDescriptor>();
@@ -270,109 +271,150 @@ public class BindingDesignSupport {
      * @param type type whose possible bindings should be returned.
      * @return list of <code>BindingDescriptor</code>s describing possible bindings.
      */
+    @SuppressWarnings("unchecked") // generic array creation NOI18N
     public List<BindingDescriptor>[] getBindingDescriptors(TypeHelper type) {
+        List<BindingDescriptor> typesFromSource = Collections.emptyList();
+        Class binarySuperClass = null;
         if (type.getType() == null) {
             FileObject fileInProject = FormEditor.getFormDataObject(formModel).getPrimaryFile();
             ClassPath cp = ClassPath.getClassPath(fileInProject, ClassPath.SOURCE);
-            String typeName = type.getName();
-            String resourceName = typeName.replace('.', '/') + ".java"; // NOI18N
-            FileObject fob = cp.findResource(resourceName);
             final List<BindingDescriptor> types = new LinkedList<BindingDescriptor>();
-            if (fob != null) {
-            JavaSource source = JavaSource.forFileObject(fob);
-            try {
-                source.runUserActionTask(new CancellableTask<CompilationController>() {
-                    public void run(CompilationController cc) throws Exception {
-                        cc.toPhase(JavaSource.Phase.RESOLVED);
-                        CompilationUnitTree cu = cc.getCompilationUnit();
-                        ClassTree clazz = null;
-                        for (Tree typeDecl : cu.getTypeDecls()) {
-                            if (Tree.Kind.CLASS == typeDecl.getKind()) {
-                                clazz = (ClassTree) typeDecl;
-                                break;
-                            }
-                        }
-                        // PENDING superclasses
-                        for (Tree clMember : clazz.getMembers()) {
-                            if (clMember.getKind() == Tree.Kind.METHOD) {
-                                MethodTree method = (MethodTree)clMember;
-                                if (method.getParameters().size() != 0) continue;
-                                Set<javax.lang.model.element.Modifier> modifiers = method.getModifiers().getFlags();
-                                if (modifiers.contains(javax.lang.model.element.Modifier.STATIC)
-                                        || !modifiers.contains(javax.lang.model.element.Modifier.PUBLIC)) {
-                                    continue;
+            final String[] superClass = new String[1];
+            superClass[0] = type.getName();
+            do {
+                String typeName = superClass[0];
+                String resourceName = typeName.replace('.', '/') + ".java"; // NOI18N
+                FileObject fob = cp.findResource(resourceName);
+                if (fob == null) {
+                    try {
+                        binarySuperClass = ClassPathUtils.loadClass(typeName, fileInProject);
+                    } catch (ClassNotFoundException cnfex) {}
+                    break;
+                }
+                JavaSource source = JavaSource.forFileObject(fob);
+                try {
+                    source.runUserActionTask(new CancellableTask<CompilationController>() {
+                        public void run(CompilationController cc) throws Exception {
+                            cc.toPhase(JavaSource.Phase.RESOLVED);
+                            CompilationUnitTree cu = cc.getCompilationUnit();
+                            ClassTree clazz = null;
+                            for (Tree typeDecl : cu.getTypeDecls()) {
+                                if (Tree.Kind.CLASS == typeDecl.getKind()) {
+                                    clazz = (ClassTree) typeDecl;
+                                    break;
                                 }
-                                String methodName = method.getName().toString();
-                                Tree returnType = method.getReturnType();
-                                
-                                String propName;
-                                if (methodName.startsWith("get")) { // NOI18N
-                                    propName = methodName.substring(3);
-                                } else if (methodName.startsWith("is")) { // NOI18N
-                                    if ((returnType.getKind() == Tree.Kind.PRIMITIVE_TYPE)
-                                            && (((PrimitiveTypeTree)returnType).getPrimitiveTypeKind() == TypeKind.BOOLEAN)) {
-                                        propName = methodName.substring(2);
+                            }
+                            for (Tree clMember : clazz.getMembers()) {
+                                if (clMember.getKind() == Tree.Kind.METHOD) {
+                                    MethodTree method = (MethodTree)clMember;
+                                    if (method.getParameters().size() != 0) continue;
+                                    Set<javax.lang.model.element.Modifier> modifiers = method.getModifiers().getFlags();
+                                    if (modifiers.contains(javax.lang.model.element.Modifier.STATIC)
+                                            || !modifiers.contains(javax.lang.model.element.Modifier.PUBLIC)) {
+                                        continue;
+                                    }
+                                    String methodName = method.getName().toString();
+                                    Tree returnType = method.getReturnType();
+
+                                    String propName;
+                                    if (methodName.startsWith("get")) { // NOI18N
+                                        propName = methodName.substring(3);
+                                    } else if (methodName.startsWith("is")) { // NOI18N
+                                        if ((returnType.getKind() == Tree.Kind.PRIMITIVE_TYPE)
+                                                && (((PrimitiveTypeTree)returnType).getPrimitiveTypeKind() == TypeKind.BOOLEAN)) {
+                                            propName = methodName.substring(2);
+                                        } else {
+                                            continue;
+                                        }
                                     } else {
                                         continue;
                                     }
-                                } else {
-                                    continue;
-                                }
-                                if (propName.length() == 0) continue;
-                                if ((propName.length() == 1) || (Character.isLowerCase(propName.charAt(1)))) {
-                                    propName = Character.toLowerCase(propName.charAt(0)) + propName.substring(1);
-                                }
-
-                                String typeName;
-                                if (returnType.getKind() == Tree.Kind.PRIMITIVE_TYPE) {
-                                    PrimitiveTypeTree ptree = (PrimitiveTypeTree)returnType;
-                                    if (ptree.getPrimitiveTypeKind() == TypeKind.VOID) {
-                                        continue; // void return type
+                                    if (propName.length() == 0) continue;
+                                    if ((propName.length() == 1) || (Character.isLowerCase(propName.charAt(1)))) {
+                                        propName = Character.toLowerCase(propName.charAt(0)) + propName.substring(1);
                                     }
-                                    typeName = ptree.toString();
-                                } else {
-                                    Trees trees = cc.getTrees();
-                                    TreePath path = trees.getPath(cu, returnType);
-                                    Element el = trees.getElement(path);
-                                    if (el.getKind() == ElementKind.CLASS) {
-                                        TypeElement tel = (TypeElement)el;
-                                        typeName = tel.getQualifiedName().toString();
+
+                                    String typeName;
+                                    if (returnType.getKind() == Tree.Kind.PRIMITIVE_TYPE) {
+                                        PrimitiveTypeTree ptree = (PrimitiveTypeTree)returnType;
+                                        if (ptree.getPrimitiveTypeKind() == TypeKind.VOID) {
+                                            continue; // void return type
+                                        }
+                                        typeName = ptree.toString();
                                     } else {
-                                        // fallback
-                                        typeName = Object.class.getName();
+                                        typeName = treeToClassName(cc, returnType);
                                     }
+                                    types.add(0, new BindingDescriptor(propName, new TypeHelper(typeName)));
                                 }
-                                types.add(new BindingDescriptor(propName, new TypeHelper(typeName)));
                             }
+                            Tree superTree = clazz.getExtendsClause();
+                            superClass[0] = treeToClassName(cc, superTree);
                         }
-                    }
 
-                    public void cancel() {
-                    }
-                }, true);
-            } catch (IOException ioex) {
-                ioex.printStackTrace();
-            }
-            }
-            return new List[] {types};
-        } else {
-            Class clazz = FormUtils.typeToClass(type);
-            if (clazz.getName().startsWith("java.lang.") // NOI18N
-                    || Collection.class.isAssignableFrom(clazz)
-                    || clazz.isArray()) {
-                return new List[] {Collections.EMPTY_LIST, Collections.EMPTY_LIST, Collections.EMPTY_LIST};
-            }
+                        public void cancel() {
+                        }
 
-            List<BindingDescriptor>[] list;
+                        private String treeToClassName(CompilationController cc, Tree tree) {
+                            String typeName = Object.class.getName();
+                            if (tree != null) {
+                                CompilationUnitTree cu = cc.getCompilationUnit();
+                                Trees trees = cc.getTrees();
+                                TreePath path = trees.getPath(cu, tree);
+                                Element el = trees.getElement(path);
+                                if ((el != null) && (el.getKind() == ElementKind.CLASS)) {
+                                    TypeElement tel = (TypeElement)el;
+                                    typeName = tel.getQualifiedName().toString();
+                                }
+                            }
+                            return typeName;
+                        }
+                    }, true);
+                } catch (IOException ioex) {
+                    ioex.printStackTrace();
+                }
+            } while (!Object.class.equals(superClass[0]));
+            typesFromSource = types;
+        }
+        List<BindingDescriptor>[] list = new List[] {Collections.emptyList(), typesFromSource, Collections.emptyList()};
+        Class clazz = (type.getType() == null) ? binarySuperClass : FormUtils.typeToClass(type);
+        if ((clazz != null) && !clazz.getName().startsWith("java.lang.") // NOI18N
+                && !Collection.class.isAssignableFrom(clazz)
+                && !clazz.isArray()) {
             try {
                 BeanInfo beanInfo = FormUtils.getBeanInfo(clazz);
-                list = getBindingDescriptors(type, beanInfo.getBeanDescriptor(), getInstance(clazz));
+                List<BindingDescriptor>[] typesFromBinary = getBindingDescriptors(type, beanInfo.getBeanDescriptor(), getInstance(clazz));
+                Map<String,BindingDescriptor>[] maps = new Map[3];
+                for (int i=0; i<3; i++) {
+                    maps[i] = listToMap(typesFromBinary[i]);
+                }
+                for (BindingDescriptor descriptor : typesFromSource) {
+                    String path = descriptor.getPath();
+                    int i;
+                    for (i=0; i<3; i++) {
+                        if (maps[i].containsKey(path)) break;
+                    }
+                    if (i == 3) {
+                        i = 1; // put into observablle properties by default
+                    }
+                    maps[i].put(path, descriptor);
+                }
+                for (int i=0; i<3; i++) {
+                    list[i] = new LinkedList<BindingDescriptor>(maps[i].values());
+                }
             } catch (Exception ex) {
                 ex.printStackTrace();
-                list = new List[] {Collections.EMPTY_LIST, Collections.EMPTY_LIST, Collections.EMPTY_LIST};
             }
-            return list;
         }
+        return list;
+    }
+
+    private static Map<String,BindingDescriptor> listToMap(List<BindingDescriptor> list) {
+        Map<String,BindingDescriptor> map = new TreeMap<String,BindingDescriptor>();
+        for (BindingDescriptor descriptor : list) {
+            String path = descriptor.getPath();
+            map.put(path, descriptor);
+        }
+        return map;
     }
 
     /**

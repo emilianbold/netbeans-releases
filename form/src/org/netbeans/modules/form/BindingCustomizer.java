@@ -36,10 +36,12 @@ import javax.swing.tree.TreeCellRenderer;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
 import org.jdesktop.layout.GroupLayout;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.form.FormUtils.TypeHelper;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.explorer.propertysheet.PropertyPanel;
+import org.openide.filesystems.FileObject;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -1117,6 +1119,19 @@ private void importDataButtonActionPerformed(java.awt.event.ActionEvent evt) {//
         typeChangeSupport.firePropertyChange(null, null, null);
     }
 
+    private static TypeHelper typeHelperForRADComponent(RADComponent comp) {
+        TypeHelper type = null;
+        if (comp.getFormModel().getTopRADComponent() == comp) {
+            FileObject fob = FormEditor.getFormDataObject(comp.getFormModel()).getPrimaryFile();
+            ClassPath cp = ClassPath.getClassPath(fob, ClassPath.SOURCE);
+            String className = cp.getResourceName(fob, '.', false);
+            type = new TypeHelper(className);
+        } else {
+            type = new TypeHelper(comp.getBeanClass());
+        }
+        return type;
+    }
+
    public class ExpressionNode extends JTree.DynamicUtilTreeNode {
        private BindingDescriptor descriptor;
        private RADComponent comp;
@@ -1124,10 +1139,10 @@ private void importDataButtonActionPerformed(java.awt.event.ActionEvent evt) {//
        private TypeHelper type;
        
        ExpressionNode(RADComponent comp) {
-           this(new TypeHelper(comp.getBeanClass()));
+           this(typeHelperForRADComponent(comp));
            this.comp = comp;
        }
-
+       
        ExpressionNode(TypeHelper type) {
            super("root", designSupport.getBindingDescriptors(type)); // NOI18N
            this.type = type;
@@ -1144,7 +1159,7 @@ private void importDataButtonActionPerformed(java.awt.event.ActionEvent evt) {//
        private ExpressionNode() {
            super(null, null);
        }
-
+       
        private void updateLeafStatus() {
            boolean leaf = true;
            if (childValue instanceof List[]) {
