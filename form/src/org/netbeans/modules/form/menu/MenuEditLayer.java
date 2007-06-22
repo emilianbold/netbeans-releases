@@ -41,6 +41,7 @@ import java.util.Map;
 import java.util.TooManyListenersException;
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
 import javax.swing.JLayeredPane;
 import javax.swing.JMenu;
@@ -48,8 +49,10 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
+import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JSeparator;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.event.MouseInputAdapter;
 import javax.swing.plaf.PopupMenuUI;
@@ -501,7 +504,7 @@ public class MenuEditLayer extends JPanel {
             formDesigner.setSelectedComponent(selectedRADComponent);
 
             if (selectedComponent != null) {
-                selectedComponent.setBackground(null);
+                selectedComponent.setBackground(getNormalBackground(selectedComponent));
             }
 
             selectedComponent = (JComponent) formDesigner.getComponent(selectedRADComponent);
@@ -520,6 +523,31 @@ public class MenuEditLayer extends JPanel {
         } catch (Exception ex) {
             ex.printStackTrace();
         }
+    }
+    
+    
+    private Color getNormalBackground(JComponent c) {
+        Color color = null;
+        if(c instanceof JMenuBar) {
+            color = UIManager.getDefaults().getColor("MenuBar.background");
+        }
+        if(c instanceof JMenu) {
+            color = UIManager.getDefaults().getColor("Menu.background");
+        }
+        if(c instanceof JCheckBoxMenuItem) {
+            color = UIManager.getDefaults().getColor("CheckBoxMenuItem.background");
+        }
+        if(c instanceof JRadioButtonMenuItem) {
+            color = UIManager.getDefaults().getColor("RadioButtonMenuItem.background");
+        }
+               
+        if(color == null) {
+            color = UIManager.getDefaults().getColor("MenuItem.background");
+        }
+        if(color == null) {
+            color = Color.WHITE;
+        }
+        return color;
     }
     
     void setSelectedComponent(JComponent c) {

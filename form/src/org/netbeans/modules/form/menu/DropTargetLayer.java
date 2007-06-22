@@ -25,6 +25,7 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.RenderingHints;
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
@@ -320,17 +321,41 @@ class DropTargetLayer extends JComponent {
     //josh: hard coded to account for the checkbox gutter. replace in the future
     // with a calculated value
     private static int getIconLeft(JMenuItem item) {
+        if(isWindows()) {
+            if(hasRadioOrCheckSibling(item)) {
+                return 22;
+            } else {
+                return 20;
+            }
+        }
         if(item instanceof JRadioButtonMenuItem) {
             return 11;
         }
         return 14;
     }
     
+    
+    private static boolean hasRadioOrCheckSibling(JMenuItem item) {
+        if(item.getParent() == null) return false;
+        for(Component c : item.getParent().getComponents()) {
+            if(c instanceof JRadioButtonMenuItem) return true;
+            if(c instanceof JCheckBoxMenuItem) return true;
+        }
+        return false;
+    }
+    
     private static int getIconRight(JMenuItem item) {
         return getIconLeft(item) + getIconWidth(item);
     }
     
+ 
     
+    private static boolean isWindows() {
+        if(System.getProperty("os.name").startsWith("Windows")) {
+            return true;
+        }
+        return false;
+    }
     private static void p(String s) {
         if(DEBUG) {
             System.out.println(s);
