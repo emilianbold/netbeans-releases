@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE codetemplates PUBLIC "-//NetBeans//DTD Editor Code Templates settings 1.0//EN" "http://www.netbeans.org/dtds/EditorCodeTemplates-1_0.dtd">
+<codetemplates>
+    <codetemplate abbreviation="jaxbm" xml:space="preserve">
+        <code>try {            
+                JAXBContext jaxbCtx= JAXBContext.newInstance( ${OBJ2M instanceof="java.lang.Object" default="obj2BMarshalled"}.getClass().getPackage().getName());
+                Marshaller marshaller = jaxbCtx.createMarshaller();
+                marshaller.marshal(${OBJ2M} , System.out);
+            } catch (JAXBException ex) {
+                // TODO handle exception
+                Logger.getLogger("global").log(Level.SEVERE, null, ex);
+        }</code>
+        <description>Sample template to marshal JAXB objects.</description>
+    </codetemplate>
+    <codetemplate abbreviation="jaxbu" xml:space="preserve">
+        <code>
+            try {
+                JAXBContext jaxbCtx = JAXBContext.newInstance(${UM_OBJ instanceof="java.lang.Object" default="umObj"}.getClass().getPackage().getName());
+                Unmarshaller unmarshaller = jaxbCtx.createUnmarshaller();
+                ${UM_OBJ} = ${TYPE_CAST cast default=""} unmarshaller.unmarshal(new File("File path"));
+            } catch (JAXBException e) {
+                // TODO handle exception
+                Logger.getLogger("global").log(Level.SEVERE, null, ex);
+            }
+        </code>
+        <description>Sample template to unmarshal JAXB objects.</description>
+    </codetemplate>
+</codetemplates>
