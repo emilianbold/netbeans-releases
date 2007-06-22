@@ -780,6 +780,7 @@ public final class Util {
         private final PropertyEvaluator eval;
         private final File basedir;
         private final ChangeSupport changeSupport = new ChangeSupport(this);
+        private final ChangeListener listener = WeakListeners.change(this, null);
         private PropertyProvider delegate;
         public UserPropertiesFileProvider(PropertyEvaluator eval, File basedir) {
             this.eval = eval;
@@ -789,19 +790,18 @@ public final class Util {
         }
         private void computeDelegate() {
             if (delegate != null) {
-                delegate.removeChangeListener(this);
+                delegate.removeChangeListener(listener);
             }
             String buildS = eval.getProperty("user.properties.file"); // NOI18N
             if (buildS != null) {
                 delegate = PropertyUtils.propertiesFilePropertyProvider(PropertyUtils.resolveFile(basedir, buildS));
-                delegate.addChangeListener(this);
             } else {
                 /* XXX what should we do?
                 delegate = null;
                  */
                 delegate = PropertyUtils.globalPropertyProvider();
-                delegate.addChangeListener(this);
             }
+            delegate.addChangeListener(listener);
         }
         public Map<String,String> getProperties() {
             if (delegate != null) {
