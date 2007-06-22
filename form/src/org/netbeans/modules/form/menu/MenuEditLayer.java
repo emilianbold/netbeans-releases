@@ -679,6 +679,9 @@ public class MenuEditLayer extends JPanel {
                 return;
             }
             JComponent payloadParent = getMenuParent(payload);
+            if(payloadParent == null) {
+                payloadParent = (JComponent) payload.getParent();
+            }
             p("payload parent = " + payloadParent);
             RADVisualComponent payloadRad = (RADVisualComponent) formDesigner.getMetaComponent(payload);
             p("payload rad = " + payloadRad);

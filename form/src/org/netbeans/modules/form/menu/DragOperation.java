@@ -193,14 +193,14 @@ class DragOperation {
             
             // if dragging a JMenu over an open spot in the menu bar
             if(rad != null && JMenuBar.class.isAssignableFrom(rad.getBeanClass()) && JMenu.class.isAssignableFrom(dragComponent.getClass())) {
-                p("over the menu bar");
+                //p("over the menu bar");
                 menuEditLayer.dropTargetLayer.setDropTarget(rad, pt);
                 targetComponent = (JComponent) menuEditLayer.formDesigner.getComponent(rad);
             }
             
             // open any relevant top-level menus
             if(rad != null && JMenu.class.isAssignableFrom(rad.getBeanClass())) {
-                p("over a menu: " + rad);
+                //p("over a menu: " + rad);
                 targetComponent = (JComponent) menuEditLayer.formDesigner.getComponent(rad);
                 menuEditLayer.openMenu(rad, targetComponent);
                 if(JMenu.class.isAssignableFrom(dragComponent.getClass())) {
@@ -285,8 +285,8 @@ class DragOperation {
     }
     
     private void completeInterMenuDrag(Point pt) {
-        p("complete inter menu drag: target comp = " + targetComponent);
         p("================\n\n\n\n==========\n\n========");
+        p("complete inter menu drag: target comp = " + targetComponent);
         if(targetComponent == null) return;
         //targetComponent.setBorder(MenuEditLayer.UNSELECTED_BORDER);
         
@@ -318,8 +318,8 @@ class DragOperation {
                     menuEditLayer.moveRadComponentToAfter(payloadComponent, menu);
                     return;
                 } else {  // else must be in the center so just add to the menu instead of next to
-                    menuEditLayer.moveRadComponentInto(payloadComponent, menu);
                     p("doing a center drop");
+                    menuEditLayer.moveRadComponentInto(payloadComponent, menu);
                     return;
                 }
             }
