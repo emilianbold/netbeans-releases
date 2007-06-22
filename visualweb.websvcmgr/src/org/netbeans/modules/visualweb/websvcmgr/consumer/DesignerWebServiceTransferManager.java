@@ -146,6 +146,9 @@ public class DesignerWebServiceTransferManager implements WebServiceTransferMana
         }else if (!isJ2EE_15) {
             ClassPath cp = ClassPath.getClassPath(wm.getDocumentBase(), ClassPath.COMPILE);
             boolean hasJaxRpc = cp.findResource("javax/xml/rpc/Service.class") != null; // NOI18N
+            hasJaxRpc = hasJaxRpc && cp.findResource("com/sun/xml/rpc/spi/tools/SOAPConstants.class") != null; // NOI18N
+            hasJaxRpc = hasJaxRpc && cp.findResource("com/sun/xml/rpc/client/StubBase.class") != null; // NOI18N
+
             return !hasJaxRpc;
         }else {
             ClassPath cp = ClassPath.getClassPath(wm.getDocumentBase(), ClassPath.COMPILE);
