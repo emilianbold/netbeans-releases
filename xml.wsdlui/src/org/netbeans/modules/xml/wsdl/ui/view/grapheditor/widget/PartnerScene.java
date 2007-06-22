@@ -247,6 +247,20 @@ public class PartnerScene extends ObjectScene implements ComponentListener, DnDH
                 }
                 userSelectionSuggested(Collections.singleton(object),
                         invertSelection);
+                //Expand all the widgets before it.
+                Widget parent = widget.getParentWidget();
+                while (parent != null) {
+                    
+
+                    if (parent instanceof ExpandableWidget) {
+                        ExpandableWidget.class.cast(parent).expandWidget(null);
+                        //There are only two expandable widgets, Partnerlinktype and Message widgets.
+                        //so break the loop, once any one is found.
+                        break;
+                    }
+                    parent = parent.getParentWidget();
+                }
+                
                 // Make the widget visible when it is selected.
                 Rectangle bounds = widget.getClientArea();
                 if (bounds != null) {
