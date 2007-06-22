@@ -297,8 +297,8 @@ private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
         public void setValueAt(Object aValue, int row, int column) {
             MethodModel.Variable parameter = parameters.get(row);
             MethodModel.Variable changedParameter = MethodModel.Variable.create(
-                    column == COL_TYPE_INDEX ? (aValue instanceof String ? (String) aValue : "Object") : parameter.getType(),
-                    column == COL_NAME_INDEX ? (String) aValue : parameter.getName(),
+                    column == COL_TYPE_INDEX ? chooseType(aValue, parameter.getType()) : parameter.getType(),
+                    column == COL_NAME_INDEX ? chooseName(aValue, parameter.getName()) : parameter.getName(),
                     column == COL_FINAL_INDEX ? (Boolean) aValue : parameter.getFinalModifier()
                     );
             parameters.set(row, changedParameter);
@@ -344,4 +344,21 @@ private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
         
     }
 
+    private static String chooseType(Object aValue, String typeName) {
+        if (!(aValue instanceof String)) {
+            return "Object";
+        }
+        if (((String)aValue).trim().equals("")) {
+            return typeName;
+        }
+        return (String) aValue;
+    }
+
+    private static String chooseName(Object aValue, String name) {
+        if (((String)aValue).trim().equals("")) {
+            return name;
+        }
+        return (String) aValue;
+    }
+        
 }
