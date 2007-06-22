@@ -96,6 +96,7 @@ public class ProjectHelper {
     private static final String JAXB_LIB_NAME = "jaxb20"; // No I18N
     private static final String XML_BINDING_CONFIG_FILE_NAME = "xml_binding_cfg.xml"; // No I18N
     private static final String XML_BINDING_BUILD_FILE_NAME = "xml_binding_build.xml"; // No I18N
+    private static final String FILE_OBJECT_SEPARATOR = "/" ; // NOI18N
     private static final String NBPROJECT_DIR = "nbproject"; // No I18N
     private static final String XSL_RESOURCE = "org/netbeans/modules/xml/jaxb/resources/JAXBBuild.xsl"; // No I18N
     private static final String BUILD_GEN_JAXB_DIR = "build/generated/addons/jaxb"; // No I18N
@@ -503,7 +504,8 @@ prjType = PROJECT_TYPE_WEB;
             FileObject fo = prj.getProjectDirectory();
 
             try {
-                configFile = fo.getFileObject(NBPROJECT_DIR + File.separator + XML_BINDING_CONFIG_FILE_NAME);
+                configFile = fo.getFileObject(NBPROJECT_DIR 
+                        + FILE_OBJECT_SEPARATOR + XML_BINDING_CONFIG_FILE_NAME);
             } catch (Exception ex) {
                 Exceptions.printStackTrace(ex);
             }
@@ -516,7 +518,8 @@ prjType = PROJECT_TYPE_WEB;
         if (prj != null) {
             FileObject fo = prj.getProjectDirectory();
             try {
-                buildFileFo = fo.getFileObject(NBPROJECT_DIR + File.separator + XML_BINDING_BUILD_FILE_NAME);
+                buildFileFo = fo.getFileObject(NBPROJECT_DIR + 
+                        FILE_OBJECT_SEPARATOR + XML_BINDING_BUILD_FILE_NAME);
             } catch (Exception ex) {
                 Exceptions.printStackTrace(ex);
             }
