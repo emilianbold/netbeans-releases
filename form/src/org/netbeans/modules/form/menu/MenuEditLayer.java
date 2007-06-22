@@ -867,13 +867,14 @@ public class MenuEditLayer extends JPanel {
                             case FormModelEvent.COMPONENT_ADDED: p("COMPONENT_ADDED");break;
                             case FormModelEvent.COMPONENT_REMOVED: p("COMPONENT_REMOVED");break;
                             case FormModelEvent.COMPONENTS_REORDERED: p("COMPONENTS_REORDERED");break;
+                            case FormModelEvent.BINDING_PROPERTY_CHANGED: p("BINDING_PROPERTY_CHANGED");break;
                             default: p("unknown type");
                             }
                             if(evt.getComponent() != null) {
                                 p(" " + evt.getComponent().getName());
                             };
                             
-                            if(evt.getChangeType() == evt.COMPONENT_PROPERTY_CHANGED) {
+                            if(evt.getChangeType() == evt.COMPONENT_PROPERTY_CHANGED || evt.getChangeType() == evt.BINDING_PROPERTY_CHANGED) {
                                 if(evt.getContainer() == metacomp || evt.getComponent() == metacomp) {
                                     rebuildOnScreenMenu(metacomp);
                                 }
