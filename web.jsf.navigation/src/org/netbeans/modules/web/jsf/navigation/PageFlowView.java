@@ -22,7 +22,6 @@ package org.netbeans.modules.web.jsf.navigation;
 
 import java.awt.BorderLayout;
 import java.awt.Image;
-import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -35,6 +34,8 @@ import javax.swing.JComponent;
 import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
 import javax.swing.border.EmptyBorder;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.visual.vmd.VMDNodeWidget;
 import org.netbeans.api.visual.vmd.VMDPinWidget;
 import org.netbeans.api.visual.widget.ConnectionWidget;
@@ -503,13 +504,20 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
     
     //    private File navDataFile = null;
     public final static FileObject getStorageFile( FileObject configFile ){
-         FileObject webFolder = getWebFolder(configFile);
-        if( webFolder == null ) {
-            LOG.warning(("Unable to create the following webfolder: " + webFolder));
-            System.err.println("Unable to create the following webfolder: " + webFolder);
+//        FileObject webFolder = getWebFolder(configFile);
+        
+        Project p = FileOwnerQuery.getOwner(configFile);
+        FileObject projectDirectory = p.getProjectDirectory();
+        FileObject nbprojectFolder = projectDirectory.getFileObject("nbproject", null);
+        if( nbprojectFolder == null ) {
+            LOG.warning(("Unable to create access the follow folder: " + nbprojectFolder));
+            System.err.println("Unable to create access the follow folder:"  + nbprojectFolder);
             return null;
         }
-        FileObject nbprojectFolder = webFolder.getParent().getFileObject("nbproject", null);
+        
+        
+        
+//        FileObject nbprojectFolder = webFolder.getParent().getFileObject("nbproject", null);
         String filename = configFile.getName() + ".NavData";
         FileObject storageFile = nbprojectFolder.getFileObject(filename);
         if( storageFile == null ){
@@ -559,7 +567,7 @@ public class PageFlowView  extends TopComponent implements Lookup.Provider, Expl
     public void layoutNodes() {
         LayoutUtility.LayoutType useLayout = null;
         if( lastUsedLayout.equals(LayoutUtility.LayoutType.GRID_GRAPH )){
-                useLayout = LayoutUtility.LayoutType.FREE_PLACES_NODES;
+            useLayout = LayoutUtility.LayoutType.FREE_PLACES_NODES;
         }else {
             useLayout = LayoutUtility.LayoutType.GRID_GRAPH;
         }
