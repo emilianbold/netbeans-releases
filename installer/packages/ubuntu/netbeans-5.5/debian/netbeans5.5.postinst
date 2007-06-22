@@ -25,14 +25,11 @@ case "$1" in
             /usr/share/netbeans/5.5/nb5.5/netbeans.desktop
 
          if [ -d /usr/lib/jvm/java-6-sun ] ; then
-                sed "s/#netbeans_jdkhome=\"\/path\/to\/jdk\"/netbeans_jdkhome=\"\/usr\/lib\/jvm\/java-6-sun\"/" /usr/share/netbeans/5.5/etc/netbeans.conf.orig > /usr/share/netbeans/5.5/etc/netbeans.conf.orig.new
-                mv /usr/share/netbeans/5.5/etc/netbeans.conf.orig.new /usr/share/netbeans/5.5/etc/netbeans.conf.orig
+                sed "s/#netbeans_jdkhome=\"\/path\/to\/jdk\"/netbeans_jdkhome=\"\/usr\/lib\/jvm\/java-6-sun\"/" /etc/netbeans5.5/netbeans.conf > /etc/netbeans5.5/netbeans.conf.patch
+                mv /etc/netbeans5.5/netbeans.conf.patch /etc/netbeans5.5/netbeans.conf
          elif [ -d /usr/lib/jvm/java-1.5.0-sun ] ; then
-                sed "s/#netbeans_jdkhome=\"\/path\/to\/jdk\"/netbeans_jdkhome=\"\/usr\/lib\/jvm\/java-1.5.0-sun\"/" /usr/share/netbeans/5.5/etc/netbeans.conf.orig > /usr/share/netbeans/5.5/etc/netbeans.conf.orig.new
-                mv /usr/share/netbeans/5.5/etc/netbeans.conf.orig.new /usr/share/netbeans/5.5/etc/netbeans.conf.orig 
-         fi
-         if [ ! -f /etc/netbeans5.5/netbeans.conf ] ; then
-            cp /usr/share/netbeans/5.5/etc/netbeans.conf.orig /etc/netbeans5.5/netbeans.conf
+                sed "s/#netbeans_jdkhome=\"\/path\/to\/jdk\"/netbeans_jdkhome=\"\/usr\/lib\/jvm\/java-1.5.0-sun\"/" /etc/netbeans5.5/netbeans.conf > /etc/netbeans5.5/netbeans.conf.patch
+                mv /etc/netbeans5.5/netbeans.conf.patch /etc/netbeans5.5/netbeans.conf
          fi
 
     ;;

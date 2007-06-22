@@ -230,8 +230,8 @@ install/$(p_doc)::
 clean::
 	-rm -f configure-once update-copyright
 	# NOTE: even though debian/copyright is regenerated, keep old version
-	# -rm -f debian/copyright
+	-rm -f debian/copyright
 	# comment the following to retain file lists per package
-	# -rm -rf $(d_lists)
+	-rm -rf $(d_lists)
 	# these files are left by cdbs (a bug?)
 	-rm -f *.cdbs-config_list
