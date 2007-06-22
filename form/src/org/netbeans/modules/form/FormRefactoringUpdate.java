@@ -247,7 +247,7 @@ public class FormRefactoringUpdate extends SimpleRefactoringElementImplementatio
     // -----
 
     private void renameMetaComponent(String oldName, String newName) {
-        if (formEditor != null) {
+        if (prepareForm(true)) {
             RADComponent metacomp = formEditor.getFormModel().findRADComponent(oldName);
             if (metacomp != null) {
                 saveFormForUndo();
