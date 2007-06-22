@@ -60,6 +60,7 @@ import org.netbeans.modules.j2ee.earproject.EarProject;
 import org.netbeans.modules.j2ee.earproject.UpdateHelper;
 import org.netbeans.modules.j2ee.earproject.ui.actions.AddModuleAction;
 import org.netbeans.modules.j2ee.earproject.ui.customizer.EarProjectProperties;
+import org.netbeans.modules.j2ee.spi.ejbjar.support.J2eeProjectView;
 import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.spi.project.ActionProvider;
@@ -171,11 +172,10 @@ public class J2eeArchiveLogicalViewProvider implements LogicalViewProvider {
             relPath = relPath.substring(0, idx);
         }
         StringTokenizer st = new StringTokenizer(relPath, "/"); //NOI18N
-        Node result = NodeOp.findChild(root,rootfo.getName());
-        while (st.hasMoreTokens()) {
+        Node result = root.getChildren().findChild(J2eeProjectView.CONFIG_FILES_VIEW_NAME);
+        while (result != null && st.hasMoreTokens()) {
             result = NodeOp.findChild(result, st.nextToken());
         }
-        
         return result;
     }
     
