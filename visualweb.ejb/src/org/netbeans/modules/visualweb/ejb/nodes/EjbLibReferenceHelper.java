@@ -166,6 +166,12 @@ public class EjbLibReferenceHelper {
     public static void syncArchiveRefs(Project[] projects) {
 
         for (int i = 0; i < projects.length; i++) {
+            if (!JsfProjectUtils.isJsfProject(projects[i])) {
+                // Skip this project unless this is a JSF Project
+                // 107000 unwanted "lib" folder created for every opened/created project
+                continue;
+            }
+
             try {
                 FileObject ejbSubDir = projects[i].getProjectDirectory().getFileObject(
                         JsfProjectConstants.PATH_LIBRARIES + '/' + EjbDataSourceManager.EJB_DATA_SUB_DIR);
