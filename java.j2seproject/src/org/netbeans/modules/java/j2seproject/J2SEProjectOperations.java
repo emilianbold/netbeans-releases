@@ -78,6 +78,7 @@ public class J2SEProjectOperations implements DeleteOperationImplementation, Cop
         files.addAll(Arrays.asList(project.getSourceRoots().getRoots()));
         files.addAll(Arrays.asList(project.getTestSourceRoots().getRoots()));
         addFile(project.getProjectDirectory(), "manifest.mf", files); // NOI18N
+        addFile(project.getProjectDirectory(), "master.jnlp", files); // NOI18N
         return files;
     }
     
