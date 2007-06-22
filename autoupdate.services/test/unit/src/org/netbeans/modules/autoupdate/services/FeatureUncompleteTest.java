@@ -146,7 +146,7 @@ public class FeatureUncompleteTest extends NbTestCase
         UpdateUnit feature = units.get (0);
         assertNotNull (feature + " is installed.", feature.getInstalled ());
         assertFalse (feature + " has some available updates.", feature.getAvailableUpdates ().isEmpty ());
-        assertTrue ("Some module is missing.", feature.getInstalled ().getDescription ().indexOf ("Missing") != -1);
+        assertTrue ("Some module is missing.", feature.getInstalled ().getDescription ().indexOf ("Not yet") != -1);
         assertTrue ("NBM data/org-yourorghere-independent.nbm exists is missing", feature.getInstalled ().getDescription ().indexOf ("independent") != -1);
     }
     
