@@ -198,6 +198,11 @@ public class MessageDrivenImpl implements MessageDriven {
         initServiceRefs();
         return serviceRefs.length;
     }
+
+    public String getDefaultDisplayName() {
+        return getEjbName();
+    }
+
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Not implemented methods">
@@ -713,10 +718,6 @@ public class MessageDrivenImpl implements MessageDriven {
     }
 
     public String getDisplayName(String locale) throws VersionNotSupportedException {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public String getDefaultDisplayName() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
