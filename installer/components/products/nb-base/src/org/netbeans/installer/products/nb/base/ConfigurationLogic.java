@@ -156,9 +156,23 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             try {
                 progress.setDetail(getString("CL.install.desktop")); // NOI18N
                 
-                SystemUtils.createShortcut(
-                        getDesktopShortcut(installLocation),
-                        LocationType.CURRENT_USER_DESKTOP);
+                if (SystemUtils.isCurrentUserAdmin()) {
+                    SystemUtils.createShortcut(
+                            getDesktopShortcut(installLocation),
+                            LocationType.ALL_USERS_DESKTOP);
+                    
+                    getProduct().setProperty(
+                            "desktop.shortcut.location", 
+                            "all.users");
+                } else {
+                    SystemUtils.createShortcut(
+                            getDesktopShortcut(installLocation),
+                            LocationType.CURRENT_USER_DESKTOP);
+                    
+                    getProduct().setProperty(
+                            "desktop.shortcut.location", 
+                            "current.user");
+                }
             } catch (NativeException e) {
                 throw new InstallationException(
                         getString("CL.install.error.desktop"), // NOI18N
@@ -170,9 +184,23 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         try {
             progress.setDetail(getString("CL.install.start.menu")); // NOI18N
             
-            SystemUtils.createShortcut(
-                    getStartMenuShortcut(installLocation),
-                    LocationType.CURRENT_USER_START_MENU);
+            if (SystemUtils.isCurrentUserAdmin()) {
+                SystemUtils.createShortcut(
+                        getStartMenuShortcut(installLocation),
+                        LocationType.ALL_USERS_START_MENU);
+                
+                getProduct().setProperty(
+                        "start.menu.shortcut.location", 
+                        "all.users");
+            } else {
+                SystemUtils.createShortcut(
+                        getStartMenuShortcut(installLocation),
+                        LocationType.CURRENT_USER_START_MENU);
+                
+                getProduct().setProperty(
+                        "start.menu.shortcut.location", 
+                        "current.user");
+            }
         } catch (NativeException e) {
             throw new InstallationException(
                     getString("CL.install.error.start.menu"), // NOI18N
@@ -239,10 +267,21 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         try {
             progress.setDetail(getString("CL.uninstall.start.menu")); // NOI18N
             
-            SystemUtils.removeShortcut(
-                    getStartMenuShortcut(installLocation),
-                    LocationType.CURRENT_USER_START_MENU,
-                    true);
+            final String shortcutLocation = 
+                    getProduct().getProperty("start.menu.shortcut.location");
+            
+            if ((shortcutLocation == null) || 
+                    shortcutLocation.equals("current.user")) {
+                SystemUtils.removeShortcut(
+                        getStartMenuShortcut(installLocation),
+                        LocationType.CURRENT_USER_START_MENU,
+                        true);
+            } else {
+                SystemUtils.removeShortcut(
+                        getStartMenuShortcut(installLocation),
+                        LocationType.ALL_USERS_START_MENU,
+                        true);
+            }
         } catch (NativeException e) {
             throw new UninstallationException(
                     getString("CL.uninstall.error.start.menu"), // NOI18N
@@ -254,10 +293,21 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             try {
                 progress.setDetail(getString("CL.uninstall.desktop")); // NOI18N
                 
-                SystemUtils.removeShortcut(
-                        getDesktopShortcut(installLocation),
-                        LocationType.CURRENT_USER_DESKTOP,
-                        false);
+                final String shortcutLocation = 
+                        getProduct().getProperty("desktop.shortcut.location");
+            
+                if ((shortcutLocation == null) || 
+                        shortcutLocation.equals("current.user")) {
+                    SystemUtils.removeShortcut(
+                            getDesktopShortcut(installLocation),
+                            LocationType.CURRENT_USER_DESKTOP,
+                            false);
+                } else {
+                    SystemUtils.removeShortcut(
+                            getDesktopShortcut(installLocation),
+                            LocationType.ALL_USERS_DESKTOP,
+                            false);
+                }
             } catch (NativeException e) {
                 throw new UninstallationException(
                         getString("CL.uninstall.error.desktop"), // NOI18N
