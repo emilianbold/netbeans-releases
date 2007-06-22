@@ -206,7 +206,9 @@ public class DatabaseSettingsImporter {
             destPaths = new String [] {"2_0"  + File.separator +  "context.xml", "2_1"  + File.separator +  "context.xml", 
              "5_5"  + File.separator +  "context.xml", "5_5_1"  + File.separator +  "context.xml"};
             contextFile = retrieveMigratedSettingsAtStartup();
-            registerConnections(contextFile);
+            if (contextFile != null) {
+                registerConnections(contextFile);
+            }
         } else {
             for (int i = 0; i < destPaths.length; i++) {
                 File ctxtFile = new File(System.getProperty("netbeans.user") + File.separator + "config" + File.separator + destPaths[i]);
@@ -231,6 +233,9 @@ public class DatabaseSettingsImporter {
         for (int i = 0; i < configDirs.length; i++) {
             File[] contextReleaseDirFiles = configDirs[i].listFiles();
 
+            if (contextReleaseDirFiles == null) {
+                return null;
+            }
             for (File releaseDir : contextReleaseDirFiles) {
                 String fileName = releaseDir.getName();
                 if (fileName.equals("context.xml")) {
