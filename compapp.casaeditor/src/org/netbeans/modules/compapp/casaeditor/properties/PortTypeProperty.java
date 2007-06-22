@@ -18,13 +18,13 @@ package org.netbeans.modules.compapp.casaeditor.properties;
 
 import java.beans.PropertyEditor;
 import java.lang.reflect.InvocationTargetException;
-import java.util.Set;
 import javax.xml.namespace.QName;
 import org.netbeans.modules.compapp.casaeditor.Constants;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaComponent;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaEndpointRef;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaPort;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel;
+import org.netbeans.modules.compapp.casaeditor.model.jbi.impl.JBIAttributes;
 import org.netbeans.modules.compapp.casaeditor.nodes.CasaNode;
 //import org.netbeans.modules.xml.wsdl.model.impl.PortTypeImpl;
 import org.netbeans.modules.xml.wsdl.model.PortType;
@@ -40,26 +40,13 @@ public class PortTypeProperty extends BaseCasaProperty {
                 super(
                 node, 
                 (CasaComponent) node.getData(), 
-                null, 
+                JBIAttributes.INTERFACE_NAME.getName(), 
                 String.class, 
                 "portTypeDefinition", // NOI18N
                 NbBundle.getMessage(PortTypeProperty.class, "PROP_PortTypeDefinition"),  // NOI18N
                 NbBundle.getMessage(PortTypeProperty.class, "PROP_PortTypeDefinition")); // NOI18N
     }
 
-    @Override
-    public boolean canWrite() {
-        boolean bRetValue = false;
-        CasaComponent component = getComponent();
-        if(component instanceof CasaPort) {
-            CasaWrapperModel model = (CasaWrapperModel) component.getModel();
-            if(model != null) {
-                bRetValue = model.isEditable((CasaPort) component);
-            }
-        }
-        return bRetValue;
-    }
-    
     @Override
     public boolean supportsDefaultValue () {
         return false;
