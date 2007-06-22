@@ -24,13 +24,14 @@ import java.util.List;
 import java.util.Map;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.TypeElement;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.*;
 import org.netbeans.modules.j2ee.persistenceapi.metadata.orm.annotation.AttributesHelper.PropertyHandler;
 
 public class AttributesImpl implements Attributes, PropertyHandler {
     
-    private final EntityImpl entity;
+    private final AnnotationModelHelper helper;
     private final AttributesHelper attrHelper;
 
     private EmbeddedId embeddedId;
@@ -43,8 +44,16 @@ public class AttributesImpl implements Attributes, PropertyHandler {
     private final List<ManyToMany> manyToManyList = new ArrayList<ManyToMany>();
 
     public AttributesImpl(EntityImpl entity) {
-        this.entity = entity;
-        attrHelper = new AttributesHelper(entity.getTypeElement(), entity.getRoot().getHelper(), this);
+        this(entity.getRoot().getHelper(), entity.getTypeElement());
+    }
+    
+    public AttributesImpl(MappedSuperclassImpl mappedSuperclass) {
+        this(mappedSuperclass.getRoot().getHelper(), mappedSuperclass.getTypeElement());
+    }
+    
+    private AttributesImpl(AnnotationModelHelper helper, TypeElement typeElement) {
+        this.helper = helper;
+        attrHelper = new AttributesHelper(helper, typeElement, this);
         attrHelper.parse();
     }
     
@@ -53,7 +62,6 @@ public class AttributesImpl implements Attributes, PropertyHandler {
     }
 
     public void handleProperty(Element element, String propertyName) {
-        AnnotationModelHelper helper = entity.getRoot().getHelper();
         Map<String, ? extends AnnotationMirror> annByType = helper.getAnnotationsByType(element.getAnnotationMirrors());
         if (EntityMappingsUtilities.isTransient(annByType, element.getModifiers())) {
             return;

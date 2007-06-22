@@ -37,9 +37,9 @@ public final class AttributesHelper {
     private final PropertyHandler propertyHandler;
     private final boolean fieldAccess;
 
-    public AttributesHelper(TypeElement typeElement, AnnotationModelHelper helper, PropertyHandler propertyHandler) {
-        this.typeElement = typeElement;
+    public AttributesHelper(AnnotationModelHelper helper, TypeElement typeElement, PropertyHandler propertyHandler) {
         this.helper = helper;
+        this.typeElement = typeElement;
         this.propertyHandler = propertyHandler;
         if (typeElement == null) {
             fieldAccess = true;

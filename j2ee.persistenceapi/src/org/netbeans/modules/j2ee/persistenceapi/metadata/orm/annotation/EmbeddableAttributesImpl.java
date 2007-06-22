@@ -37,7 +37,7 @@ public class EmbeddableAttributesImpl implements EmbeddableAttributes, PropertyH
     
     public EmbeddableAttributesImpl(EmbeddableImpl embeddable) {
         this.embeddable = embeddable;
-        attrHelper = new AttributesHelper(embeddable.getTypeElement(), embeddable.getRoot().getHelper(), this);
+        attrHelper = new AttributesHelper(embeddable.getRoot().getHelper(), embeddable.getTypeElement(), this);
         attrHelper.parse();
     }
     

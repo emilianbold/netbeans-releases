@@ -29,6 +29,7 @@ import org.netbeans.modules.j2ee.metadata.model.support.JavaSourceTestCase;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Embeddable;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappingsMetadata;
+import org.netbeans.modules.j2ee.persistence.api.metadata.orm.MappedSuperclass;
 import org.netbeans.modules.java.source.usages.RepositoryUpdater;
 import org.openide.filesystems.FileUtil;
 
@@ -72,11 +73,20 @@ public class EntityMappingsTestCase extends JavaSourceTestCase {
         }
         return null;
     }
-    
+
     protected static Embeddable getEmbeddableByClass(Embeddable[] embeddableList, String clazz) {
         for (Embeddable embeddable : embeddableList) {
             if (clazz.equals(embeddable.getClass2())) {
                 return embeddable;
+            }
+        }
+        return null;
+    }
+
+    protected static MappedSuperclass getMappedSuperclassByClass(MappedSuperclass[] MappedSuperclassList, String clazz) {
+        for (MappedSuperclass mappedSuperclass : MappedSuperclassList) {
+            if (clazz.equals(mappedSuperclass.getClass2())) {
+                return mappedSuperclass;
             }
         }
         return null;

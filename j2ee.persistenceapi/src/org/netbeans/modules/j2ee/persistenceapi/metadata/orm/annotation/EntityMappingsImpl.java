@@ -36,11 +36,13 @@ public class EntityMappingsImpl implements EntityMappings {
     private final AnnotationModelHelper helper;
     private final PersistentObjectManager<EntityImpl> entityManager;
     private final PersistentObjectManager<EmbeddableImpl> embeddableManager;
+    private final PersistentObjectManager<MappedSuperclassImpl> mappedSuperclassManager;
 
     public EntityMappingsImpl(AnnotationModelHelper helper) {
         this.helper = helper;
         entityManager = helper.createPersistentObjectManager(new EntityProvider());
         embeddableManager = helper.createPersistentObjectManager(new EmbeddableProvider());
+        mappedSuperclassManager = helper.createPersistentObjectManager(new MappedSuperclassProvider());
     }
 
     AnnotationModelHelper getHelper() {
@@ -272,7 +274,7 @@ public class EntityMappingsImpl implements EntityMappings {
     }
 
     public MappedSuperclass getMappedSuperclass(int index) {
-        throw new UnsupportedOperationException("This operation is not implemented yet."); // NOI18N
+        return getMappedSuperclass()[index];
     }
 
     public int sizeMappedSuperclass() {
@@ -284,7 +286,8 @@ public class EntityMappingsImpl implements EntityMappings {
     }
 
     public MappedSuperclass[] getMappedSuperclass() {
-        throw new UnsupportedOperationException("This operation is not implemented yet."); // NOI18N
+        Collection<MappedSuperclassImpl> mappedSuperclasses = mappedSuperclassManager.getObjects();
+        return mappedSuperclasses.toArray(new MappedSuperclass[mappedSuperclasses.size()]);
     }
 
     public int addMappedSuperclass(MappedSuperclass value) {
@@ -394,7 +397,7 @@ public class EntityMappingsImpl implements EntityMappings {
             return false;
         }
     }
-    
+
     private final class EmbeddableProvider  implements ObjectProvider<EmbeddableImpl> {
         
         public List<EmbeddableImpl> createInitialObjects() throws InterruptedException {
@@ -423,5 +426,35 @@ public class EntityMappingsImpl implements EntityMappings {
             }
             return false;
         }        
+    }
+
+    private final class MappedSuperclassProvider  implements ObjectProvider<MappedSuperclassImpl> {
+
+        public List<MappedSuperclassImpl> createInitialObjects() throws InterruptedException {
+            final List<MappedSuperclassImpl> result = new ArrayList<MappedSuperclassImpl>();
+            helper.getAnnotationScanner().findAnnotatedTypes("javax.persistence.MappedSuperclass", new TypeAnnotationHandler() { // NOI18N
+                public void typeAnnotation(TypeElement type, AnnotationMirror annotation) {
+                    result.add(new MappedSuperclassImpl(helper, EntityMappingsImpl.this, type));
+                }
+            });
+            return result;
+        }
+
+        public List<MappedSuperclassImpl> createObjects(TypeElement type) {
+            if (helper.hasAnnotation(type.getAnnotationMirrors(), "javax.persistence.MappedSuperclass")) { // NOI18N
+                return Collections.singletonList(new MappedSuperclassImpl(helper, EntityMappingsImpl.this, type));
+            }
+            return Collections.emptyList();
+        }
+
+        public boolean modifyObjects(TypeElement type, List<MappedSuperclassImpl> objects) {
+            assert objects.size() == 1;
+            MappedSuperclassImpl mappedSuperclass = objects.get(0);
+            if (!mappedSuperclass.refresh(type)) {
+                objects.remove(0);
+                return true;
+            }
+            return false;
+        }
     }
 }

@@ -21,30 +21,30 @@ package org.netbeans.modules.j2ee.persistenceapi.metadata.orm.annotation;
 
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.metadata.model.support.TestUtilities;
-import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappingsMetadata;
+import org.netbeans.modules.j2ee.persistence.api.metadata.orm.MappedSuperclass;
 
 /**
  *
  * @author Andrei Badea
  */
-public class EntityImplTest extends EntityMappingsTestCase {
+public class MappedSuperclassTest extends EntityMappingsTestCase {
 
-    public EntityImplTest(String testName) {
+    public MappedSuperclassTest(String testName) {
         super(testName);
     }
 
     public void testBasic() throws Exception {
         TestUtilities.copyStringToFileObject(srcFO, "Customer.java",
                 "import javax.persistence.*;" +
-                "@Entity()" +
+                "@MappedSuperclass()" +
                 "public class Customer {" +
                 "   @Id()" +
                 "   private int id;" +
                 "}");
         TestUtilities.copyStringToFileObject(srcFO, "Employee.java",
                 "import javax.persistence.*;" +
-                "@Entity()" +
+                "@MappedSuperclass()" +
                 "@IdClass(EmployeeId.class)" +
                 "public class Employee {" +
                 "   private int id;" +
@@ -60,13 +60,13 @@ public class EntityImplTest extends EntityMappingsTestCase {
                 "}");
         createModel().runReadAction(new MetadataModelAction<EntityMappingsMetadata, Void>() {
             public Void run(EntityMappingsMetadata metadata) {
-                Entity[] entityList = metadata.getRoot().getEntity();
-                Entity entity = getEntityByName(entityList, "Customer");
-                assertEquals(Entity.FIELD_ACCESS, entity.getAccess());
-                assertNull(entity.getIdClass());
-                entity = getEntityByName(entityList, "Employee");
-                assertEquals(Entity.PROPERTY_ACCESS, entity.getAccess());
-                assertEquals("EmployeeId", entity.getIdClass().getClass2());
+                MappedSuperclass[] entityList = metadata.getRoot().getMappedSuperclass();
+                MappedSuperclass mappedSuperclass = getMappedSuperclassByClass(entityList, "Customer");
+                assertEquals(MappedSuperclass.FIELD_ACCESS, mappedSuperclass.getAccess());
+                assertNull(mappedSuperclass.getIdClass());
+                mappedSuperclass = getMappedSuperclassByClass(entityList, "Employee");
+                assertEquals(MappedSuperclass.PROPERTY_ACCESS, mappedSuperclass.getAccess());
+                assertEquals("EmployeeId", mappedSuperclass.getIdClass().getClass2());
                 return null;
             }
         });

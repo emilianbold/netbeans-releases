@@ -20,8 +20,6 @@
 package org.netbeans.modules.j2ee.persistenceapi.metadata.orm.annotation;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -38,6 +36,7 @@ import javax.lang.model.util.ElementFilter;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.AnnotationParser;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.ArrayValueHandler;
+import org.netbeans.modules.j2ee.persistence.api.metadata.orm.IdClass;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.JoinColumn;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.PrimaryKeyJoinColumn;
 
@@ -156,6 +155,17 @@ public class EntityMappingsUtilities {
         parser.expectEnumConstant("value", helper.resolveType("javax.persistence.TemporalType"), null); // NOI18N
         return parser.parse(temporalAnnotation).get("value", String.class);
         
+    }
+    
+    public static IdClassImpl getIdClass(AnnotationModelHelper helper, TypeElement typeElement) {
+        AnnotationMirror idClassAnn = helper.getAnnotationsByType(typeElement.getAnnotationMirrors()).get("javax.persistence.IdClass"); // NOI18N
+        if (idClassAnn == null) {
+            return null;
+        }
+        AnnotationParser parser = AnnotationParser.create(helper);
+        parser.expectClass("value", null); // NOI18N
+        String class2 = parser.parse(idClassAnn).get("value", String.class); // NOI18N
+        return new IdClassImpl(class2);
     }
 
     // not private because of unit tests

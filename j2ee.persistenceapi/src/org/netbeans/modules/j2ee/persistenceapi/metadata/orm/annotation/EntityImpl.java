@@ -201,7 +201,10 @@ public class EntityImpl extends PersistentObject implements Entity, JavaContextL
 
     public IdClass getIdClass() {
         if (idClass == null) {
-            idClass = new IdClassImpl(this);
+            TypeElement typeElement = getTypeElement();
+            if (typeElement != null) {
+                idClass = EntityMappingsUtilities.getIdClass(getRoot().getHelper(), typeElement);
+            }
         }
         return idClass;
     }

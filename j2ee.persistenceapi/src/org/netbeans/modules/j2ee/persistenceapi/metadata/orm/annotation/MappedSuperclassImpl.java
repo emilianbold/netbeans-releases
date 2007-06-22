@@ -19,16 +19,56 @@
 
 package org.netbeans.modules.j2ee.persistenceapi.metadata.orm.annotation;
 
+import java.util.Map;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.TypeElement;
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.JavaContextListener;
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.PersistentObject;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.*;
 
-public class MappedSuperclassImpl implements MappedSuperclass {
+public class MappedSuperclassImpl extends PersistentObject implements MappedSuperclass, JavaContextListener {
+
+    private final EntityMappingsImpl root;
+
+    // persistent
+    private String class2;
+
+    // transient: set to null in javaContextLeft()
+    private IdClassImpl idClass;
+    private AttributesImpl attributes;
+
+    public MappedSuperclassImpl(AnnotationModelHelper helper, EntityMappingsImpl root, TypeElement typeElement) {
+        super(helper, typeElement);
+        this.root = root;
+        helper.addJavaContextListener(this);
+        boolean valid = refresh(typeElement);
+        assert valid;
+    }
+
+    boolean refresh(TypeElement typeElement) {
+        class2 = typeElement.getQualifiedName().toString();
+        AnnotationModelHelper helper = getHelper();
+        Map<String, ? extends AnnotationMirror> annByType = helper.getAnnotationsByType(typeElement.getAnnotationMirrors());
+        AnnotationMirror embeddableAnn = annByType.get("javax.persistence.MappedSuperclass"); // NOI18N
+        return embeddableAnn != null;
+    }
+
+    EntityMappingsImpl getRoot() {
+        return root;
+    }
+
+    public void javaContextLeft() {
+        attributes = null;
+        idClass = null;
+    }
 
     public void setClass2(String value) {
         throw new UnsupportedOperationException("This operation is not implemented yet."); // NOI18N
     }
 
     public String getClass2() {
-        throw new UnsupportedOperationException("This operation is not implemented yet."); // NOI18N
+        return class2;
     }
 
     public void setAccess(String value) {
@@ -36,7 +76,7 @@ public class MappedSuperclassImpl implements MappedSuperclass {
     }
 
     public String getAccess() {
-        throw new UnsupportedOperationException("This operation is not implemented yet."); // NOI18N
+        return getAttributes().hasFieldAccess() ? FIELD_ACCESS : PROPERTY_ACCESS;
     }
 
     public void setMetadataComplete(boolean value) {
@@ -60,7 +100,13 @@ public class MappedSuperclassImpl implements MappedSuperclass {
     }
 
     public IdClass getIdClass() {
-        throw new UnsupportedOperationException("This operation is not implemented yet."); // NOI18N
+        if (idClass == null) {
+            TypeElement typeElement = getTypeElement();
+            if (typeElement != null) {
+                idClass = EntityMappingsUtilities.getIdClass(getRoot().getHelper(), typeElement);
+            }
+        }
+        return idClass;
     }
 
     public IdClass newIdClass() {
@@ -187,8 +233,11 @@ public class MappedSuperclassImpl implements MappedSuperclass {
         throw new UnsupportedOperationException("This operation is not implemented yet."); // NOI18N
     }
 
-    public Attributes getAttributes() {
-        throw new UnsupportedOperationException("This operation is not implemented yet."); // NOI18N
+    public AttributesImpl getAttributes() {
+        if (attributes == null) {
+            attributes = new AttributesImpl(this);
+        }
+        return attributes;
     }
 
     public Attributes newAttributes() {

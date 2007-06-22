@@ -21,6 +21,9 @@ package org.netbeans.modules.j2ee.persistence.api.metadata.orm;
 
 public interface MappedSuperclass {
     
+    public final String FIELD_ACCESS = "FIELD"; // NOI18N
+    public final String PROPERTY_ACCESS = "PROPERTY"; // NOI18N
+
     public void setClass2(String value);
     
     public String getClass2();
