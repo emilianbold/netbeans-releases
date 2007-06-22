@@ -339,13 +339,13 @@ public class ModuleConfigurationImpl implements DatasourceConfiguration, Deploym
 
     /****************************  EjbResourceConfiguration ************************************/
     public void bindEjbReference(String referenceName, String referencedEjbName) throws ConfigurationException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        getSunConfig().bindEjbReference(referenceName, referencedEjbName);                
     }
 
     public void bindEjbReferenceForEjb(String ejbName, String ejbType,
                                        String referenceName,
                                        String referencedEjbName) throws ConfigurationException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        getSunConfig().bindEjbReferenceForEjb(ejbName, ejbType, referenceName, referencedEjbName);
     }
 
     /****************************  MessageDestinationConfiguration ************************************/

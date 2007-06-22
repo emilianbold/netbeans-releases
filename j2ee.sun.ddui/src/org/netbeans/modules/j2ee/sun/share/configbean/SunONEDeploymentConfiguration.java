@@ -2579,4 +2579,136 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
         ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
                 new UnsupportedOperationException());
     }
+    
+    /** extend the vendor specific descriptor
+     * 
+     * @param referenceName 
+     * @param referencedEjbName 
+     * @throws org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException 
+     */
+    public void bindEjbReference(String referenceName, String referencedEjbName) 
+            throws org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException{
+        // validation
+        if(Utils.strEmpty(referenceName) || Utils.strEmpty(referencedEjbName)) {
+            return;
+        }
+        
+        if (Double.parseDouble(module.getModuleVersion()) > 2.4) {
+            return;
+        }
+
+        try {
+            FileObject primarySunDDFO = getSunDD(configFiles[0], true);
+            if(primarySunDDFO != null) {
+                RootInterface sunDDRoot = DDProvider.getDefault().getDDRoot(primarySunDDFO);
+                org.netbeans.modules.j2ee.sun.dd.api.common.EjbRef ref =
+                        findNamedBean(sunDDRoot, referenceName, SunWebApp.EJB_REF, EjbRef.EJB_REF_NAME);
+                if(ref != null) {
+                    // set jndi name of existing reference.
+                    assert referenceName.equals(ref.getEjbRefName());
+                    ref.setJndiName(referencedEjbName);
+                } else {
+                    // add new ejb-ref
+                    if(sunDDRoot instanceof SunWebApp) {
+                        ref = ((SunWebApp) sunDDRoot).newEjbRef();
+                    } else if(sunDDRoot instanceof SunApplicationClient) {
+                        ref = ((SunApplicationClient) sunDDRoot).newEjbRef();
+                    }
+                    ref.setEjbRefName(referenceName);
+                    ref.setJndiName(referencedEjbName);
+                    sunDDRoot.addValue(SunWebApp.EJB_REF, ref);
+                }
+
+                // if changes, save file.
+                sunDDRoot.write(primarySunDDFO);
+            }
+        } catch(IOException ex) {
+            // This is a legitimate exception that could occur, such as a problem
+            // writing the changed descriptor to disk.
+            String message = NbBundle.getMessage(SunONEDeploymentConfiguration.class, 
+                    "ERR_ExceptionBindingEjbRef", ex.getClass().getSimpleName()); // NOI18N
+            throw new org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException(message, ex);
+        } catch(Exception ex) {
+            // This would probably be a runtime exception due to a bug, but we
+            // must trap it here so it doesn't cause trouble upstream.
+            // We handle it the same as above for now.
+            String message = NbBundle.getMessage(SunONEDeploymentConfiguration.class, 
+                    "ERR_ExceptionBindingEjbRef", ex.getClass().getSimpleName()); // NOI18N
+            throw new org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException(message, ex);
+        }        
+    }
+    
+    /** extend the vendor specific descriptor
+     *
+     * @param ejbName
+     * @param ejbType
+     * @param referenceName 
+     * @param jndiName 
+     * @throws org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException 
+     */
+    public void bindEjbReferenceForEjb(String ejbName, String ejbType, 
+            String referenceName, String jndiName) throws org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException  {
+        // validation
+        if(Utils.strEmpty(ejbName) || Utils.strEmpty(ejbType) || 
+                Utils.strEmpty(referenceName) || Utils.strEmpty(jndiName)) {
+            return;
+        }
+
+        if (Double.parseDouble(module.getModuleVersion()) > 2.1) {
+            return;
+        }
+
+        try {
+            FileObject primarySunDDFO = getSunDD(configFiles[0], true);
+            if(primarySunDDFO != null) {
+                RootInterface sunDDRoot = DDProvider.getDefault().getDDRoot(primarySunDDFO);
+                if(sunDDRoot instanceof SunEjbJar) {
+                    SunEjbJar sunEjbJar = (SunEjbJar) sunDDRoot;
+                    EnterpriseBeans eb = sunEjbJar.getEnterpriseBeans();
+                    if(eb == null) {
+                        eb = sunEjbJar.newEnterpriseBeans();
+                        sunEjbJar.setEnterpriseBeans(eb);
+                    }
+                    
+                    Ejb ejb = findNamedBean(eb, ejbName, EnterpriseBeans.EJB, Ejb.EJB_NAME);
+                    if(ejb == null) {
+                        ejb = eb.newEjb();
+                        ejb.setEjbName(ejbName);
+                        eb.addEjb(ejb);
+                    }
+                    
+                    org.netbeans.modules.j2ee.sun.dd.api.common.EjbRef ref =
+                            findNamedBean(ejb, referenceName, Ejb.EJB_REF, EjbRef.EJB_REF_NAME);
+                    if(ref != null) {
+                        // set jndi name of existing reference.
+                        assert referenceName.equals(ref.getEjbRefName());
+                        ref.setJndiName(jndiName);
+                    } else {
+                        // add new ejb-ref
+                        ref = ejb.newEjbRef();
+                        ref.setEjbRefName(referenceName);
+                        ref.setJndiName(jndiName);
+                        ejb.addValue(Ejb.EJB_REF, ref);
+                    }
+
+                    // if changes, save file.
+                    sunEjbJar.write(primarySunDDFO);
+                }
+            }
+        } catch(IOException ex) {
+            // This is a legitimate exception that could occur, such as a problem
+            // writing the changed descriptor to disk.
+            String message = NbBundle.getMessage(SunONEDeploymentConfiguration.class, 
+                    "ERR_ExceptionBindingEjbRef", ex.getClass().getSimpleName()); // NOI18N
+            throw new org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException(message, ex);
+        } catch(Exception ex) {
+            // This would probably be a runtime exception due to a bug, but we
+            // must trap it here so it doesn't cause trouble upstream.
+            // We handle it the same as above for now.
+            String message = NbBundle.getMessage(SunONEDeploymentConfiguration.class, 
+                    "ERR_ExceptionBindingEjbRef", ex.getClass().getSimpleName()); // NOI18N
+            throw new org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException(message, ex);
+        }
+    }
+    
 }
