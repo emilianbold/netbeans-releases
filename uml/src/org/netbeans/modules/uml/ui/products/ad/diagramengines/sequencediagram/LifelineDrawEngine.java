@@ -1162,8 +1162,7 @@ public class LifelineDrawEngine extends ADNodeDrawEngine
      */
     public void sizeToContents()
     {
-        // disable automatic resizing #90587
-       // handleSizeToContents(-1);
+        handleSizeToContents(-1);
     }
     
     /**
@@ -1495,7 +1494,9 @@ public class LifelineDrawEngine extends ADNodeDrawEngine
                 optimumSize.setWidth((int)Math.max(optimumSize.getWidth(), minWidth));
             }
             
-            if((optimumSize.getWidth() > 0) && (optimumSize.getHeight() > 0))
+            if((optimumSize.getWidth() > 0) && (optimumSize.getHeight() > 0) && 
+             // disable automatic down-sizing #90587, but stretch lifeline when necessary
+                    optimumSize.getHeight() > nodeUI.getHeight())
             {
                 resize(new ETSize(optimumSize.getWidth(), optimumSize.getHeight()), true);
             }
