@@ -19,14 +19,14 @@
 
 package org.netbeans.modules.vmd.api.properties;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignEvent;
 import org.netbeans.modules.vmd.api.model.DesignEventFilter;
 import org.netbeans.modules.vmd.api.model.PresenterEvent;
 import org.netbeans.modules.vmd.properties.DefaultDesignerPropertyDescriptor;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -98,7 +98,7 @@ public final class DefaultPropertiesPresenter extends PropertiesPresenter {
         if (propertyEditor == null)
             throw new IllegalArgumentException(NULL_DEFAULT); 
         
-        descriptors.add(new DefaultDesignerPropertyDescriptor(displayName, displayName, category, propertyEditor, propertyEditor.getClass(), new String[0]));
+        descriptors.add(new DefaultDesignerPropertyDescriptor(displayName, displayName, category, propertyEditor, propertyEditor.getClass()));
         
         return this;
     }
@@ -123,7 +123,7 @@ public final class DefaultPropertiesPresenter extends PropertiesPresenter {
     
     @Deprecated
     public DefaultPropertiesPresenter removeProperty(String name) {
-        if ( name == null && name.trim().length() == 0)
+        if ( name == null || name.trim().length() == 0)
             throw new IllegalArgumentException("Name of removing property cant be null"); //NOI18N
         
         for (DesignPropertyDescriptor designerPropertyDescriptor : descriptors) {
