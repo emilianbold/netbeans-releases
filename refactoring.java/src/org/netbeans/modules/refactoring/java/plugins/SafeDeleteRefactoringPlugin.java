@@ -73,6 +73,7 @@ public class SafeDeleteRefactoringPlugin extends JavaRefactoringPlugin {
     public Problem prepare(RefactoringElementsBag refactoringElements) {
         RefactoringSession inner = RefactoringSession.create("delete"); // NOI18N
         Set refactoredObjects = new HashSet();
+        Collection<? extends FileObject> files = refactoring.getRefactoringSource().lookupAll(FileObject.class);
         fireProgressListenerStart(AbstractRefactoring.PARAMETERS_CHECK, whereUsedQueries.length + 1);
         for(int i = 0;i < whereUsedQueries.length; ++i) {
             Object refactoredObject = whereUsedQueries[i].getRefactoringSource().lookup(Object.class);
@@ -80,10 +81,10 @@ public class SafeDeleteRefactoringPlugin extends JavaRefactoringPlugin {
             
             whereUsedQueries[i].prepare(inner);
             
-            TransformTask task = new TransformTask(new DeleteTransformer(), grips.get(i));
-            createAndAddElements(Collections.singleton(grips.get(i).getFileObject()), task, refactoringElements, refactoring);
-            
-            
+            if (!files.contains(grips.get(i).getFileObject())) {
+                TransformTask task = new TransformTask(new DeleteTransformer(), grips.get(i));
+                createAndAddElements(Collections.singleton(grips.get(i).getFileObject()), task, refactoringElements, refactoring);
+            }
             fireProgressListenerStep();
         }
         
