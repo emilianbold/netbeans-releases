@@ -93,4 +93,5 @@ public interface RequestDetailKind
     public static final int RDT_SIGNATURE_CHANGED = 61;
     public static final int RDT_SOURCE_DIR_CHANGED = 62;
     public static final int RDT_OPERATION_PROPERTY_CHANGED = 63;
+    public static final int RDT_COLLECTION_TYPE_CHANGED = 64;
 }

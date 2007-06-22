@@ -121,126 +121,130 @@ public class ObjectNode extends ActivityNode implements IObjectNode
         addChild("UML:ObjectNode.upperBound", "UML:ObjectNode.upperBound", value);
     }
 
-	//TypedElement methods
-	public void setType(IClassifier classifier)
-	{			
-		m_TypedElementAggregate.setType(classifier);	
-	}
-	
-	public IClassifier getType()
-	{
-		return m_TypedElementAggregate.getType();
-	}
+    //TypedElement methods
+    public void setType(IClassifier classifier)
+    {			
+            m_TypedElementAggregate.setType(classifier);	
+    }
 
-	public IMultiplicity getMultiplicity()
-	{
-	   return m_TypedElementAggregate.getMultiplicity();
-	}
+    public IClassifier getType()
+    {
+            return m_TypedElementAggregate.getType();
+    }
 
-	public void setMultiplicity(  IMultiplicity  newVal)
-	{
-		m_TypedElementAggregate.setMultiplicity(newVal);
-	}
-	
-	public void performDuplicationProcess( ITypedElement dupType )
-	{
-		m_TypedElementAggregate.performDuplicationProcess(dupType);
-	}
-	public String processProposedType(String type)
-	{
-		return m_TypedElementAggregate.processProposedType(type);
-	}
-	public void setIsSet(boolean val)
-	{		
-		m_TypedElementAggregate.setIsSet(val);	
-	}
-	public boolean getIsSet()
-	{
-		return  m_TypedElementAggregate.getIsSet();
-	}
-	public String getTypeID()
-	{
-		return m_TypedElementAggregate.getTypeID();
-	}			
+    public IMultiplicity getMultiplicity()
+    {
+       return m_TypedElementAggregate.getMultiplicity();
+    }
 
-	/* (non-Javadoc)
-	 * @see org.netbeans.modules.uml.core.metamodel.core.foundation.IMultiplicityListener#onPreLowerModified(org.netbeans.modules.uml.core.metamodel.core.foundation.IMultiplicity, org.netbeans.modules.uml.core.metamodel.core.foundation.IMultiplicityRange, java.lang.String)
-	 */
-	public boolean onPreLowerModified(IMultiplicity mult, IMultiplicityRange range, String proposedValue) 
-	{
-		return m_TypedElementAggregate.onPreLowerModified(mult, range, proposedValue);
-	}
+    public void setMultiplicity(  IMultiplicity  newVal)
+    {
+            m_TypedElementAggregate.setMultiplicity(newVal);
+    }
 
-	/* (non-Javadoc)
-	 * @see org.netbeans.modules.uml.core.metamodel.core.foundation.IMultiplicityListener#onLowerModified(org.netbeans.modules.uml.core.metamodel.core.foundation.IMultiplicity, org.netbeans.modules.uml.core.metamodel.core.foundation.IMultiplicityRange)
-	 */
-	public void onLowerModified(IMultiplicity mult, IMultiplicityRange range) 
-	{
-		m_TypedElementAggregate.onLowerModified(mult, range);
-	}
+    public void performDuplicationProcess( ITypedElement dupType )
+    {
+            m_TypedElementAggregate.performDuplicationProcess(dupType);
+    }
+    public String processProposedType(String type)
+    {
+            return m_TypedElementAggregate.processProposedType(type);
+    }
+    public void setIsSet(boolean val)
+    {		
+            m_TypedElementAggregate.setIsSet(val);	
+    }
+    public boolean getIsSet()
+    {
+            return  m_TypedElementAggregate.getIsSet();
+    }
+    public String getTypeID()
+    {
+            return m_TypedElementAggregate.getTypeID();
+    }			
 
-	/* (non-Javadoc)
-	 * @see org.netbeans.modules.uml.core.metamodel.core.foundation.IMultiplicityListener#onPreUpperModified(org.netbeans.modules.uml.core.metamodel.core.foundation.IMultiplicity, org.netbeans.modules.uml.core.metamodel.core.foundation.IMultiplicityRange, java.lang.String)
-	 */
-	public boolean onPreUpperModified(IMultiplicity mult, IMultiplicityRange range, String proposedValue) 
-	{
-		return m_TypedElementAggregate.onPreUpperModified(mult, range, proposedValue);	
-	}
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.uml.core.metamodel.core.foundation.IMultiplicityListener#onPreLowerModified(org.netbeans.modules.uml.core.metamodel.core.foundation.IMultiplicity, org.netbeans.modules.uml.core.metamodel.core.foundation.IMultiplicityRange, java.lang.String)
+     */
+    public boolean onPreLowerModified(IMultiplicity mult, IMultiplicityRange range, String proposedValue) 
+    {
+            return m_TypedElementAggregate.onPreLowerModified(mult, range, proposedValue);
+    }
 
-	/* (non-Javadoc)
-	 * @see org.netbeans.modules.uml.core.metamodel.core.foundation.IMultiplicityListener#onUpperModified(org.netbeans.modules.uml.core.metamodel.core.foundation.IMultiplicity, org.netbeans.modules.uml.core.metamodel.core.foundation.IMultiplicityRange)
-	 */
-	public void onUpperModified(IMultiplicity mult, IMultiplicityRange range) 
-	{
-		m_TypedElementAggregate.onUpperModified(mult, range);
-	}
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.uml.core.metamodel.core.foundation.IMultiplicityListener#onLowerModified(org.netbeans.modules.uml.core.metamodel.core.foundation.IMultiplicity, org.netbeans.modules.uml.core.metamodel.core.foundation.IMultiplicityRange)
+     */
+    public void onLowerModified(IMultiplicity mult, IMultiplicityRange range) 
+    {
+            m_TypedElementAggregate.onLowerModified(mult, range);
+    }
 
-	/* (non-Javadoc)
-	 * @see org.netbeans.modules.uml.core.metamodel.core.foundation.IMultiplicityListener#onPreRangeAdded(org.netbeans.modules.uml.core.metamodel.core.foundation.IMultiplicity, org.netbeans.modules.uml.core.metamodel.core.foundation.IMultiplicityRange)
-	 */
-	public boolean onPreRangeAdded(IMultiplicity mult, IMultiplicityRange range) 
-	{
-		return m_TypedElementAggregate.onPreRangeAdded(mult, range);
-	}
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.uml.core.metamodel.core.foundation.IMultiplicityListener#onPreUpperModified(org.netbeans.modules.uml.core.metamodel.core.foundation.IMultiplicity, org.netbeans.modules.uml.core.metamodel.core.foundation.IMultiplicityRange, java.lang.String)
+     */
+    public boolean onPreUpperModified(IMultiplicity mult, IMultiplicityRange range, String proposedValue) 
+    {
+            return m_TypedElementAggregate.onPreUpperModified(mult, range, proposedValue);	
+    }
 
-	/* (non-Javadoc)
-	 * @see org.netbeans.modules.uml.core.metamodel.core.foundation.IMultiplicityListener#onRangeAdded(org.netbeans.modules.uml.core.metamodel.core.foundation.IMultiplicity, org.netbeans.modules.uml.core.metamodel.core.foundation.IMultiplicityRange)
-	 */
-	public void onRangeAdded(IMultiplicity mult, IMultiplicityRange range) 
-	{
-		m_TypedElementAggregate.onRangeAdded(mult, range);
-	}
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.uml.core.metamodel.core.foundation.IMultiplicityListener#onUpperModified(org.netbeans.modules.uml.core.metamodel.core.foundation.IMultiplicity, org.netbeans.modules.uml.core.metamodel.core.foundation.IMultiplicityRange)
+     */
+    public void onUpperModified(IMultiplicity mult, IMultiplicityRange range) 
+    {
+            m_TypedElementAggregate.onUpperModified(mult, range);
+    }
 
-	/* (non-Javadoc)
-	 * @see org.netbeans.modules.uml.core.metamodel.core.foundation.IMultiplicityListener#onPreRangeRemoved(org.netbeans.modules.uml.core.metamodel.core.foundation.IMultiplicity, org.netbeans.modules.uml.core.metamodel.core.foundation.IMultiplicityRange)
-	 */
-	public boolean onPreRangeRemoved(IMultiplicity mult, IMultiplicityRange range) 
-	{
-		return m_TypedElementAggregate.onPreRangeRemoved(mult, range);
-	}
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.uml.core.metamodel.core.foundation.IMultiplicityListener#onPreRangeAdded(org.netbeans.modules.uml.core.metamodel.core.foundation.IMultiplicity, org.netbeans.modules.uml.core.metamodel.core.foundation.IMultiplicityRange)
+     */
+    public boolean onPreRangeAdded(IMultiplicity mult, IMultiplicityRange range) 
+    {
+            return m_TypedElementAggregate.onPreRangeAdded(mult, range);
+    }
 
-	/* (non-Javadoc)
-	 * @see org.netbeans.modules.uml.core.metamodel.core.foundation.IMultiplicityListener#onRangeRemoved(org.netbeans.modules.uml.core.metamodel.core.foundation.IMultiplicity, org.netbeans.modules.uml.core.metamodel.core.foundation.IMultiplicityRange)
-	 */
-	public void onRangeRemoved(IMultiplicity mult, IMultiplicityRange range) 
-	{
-		m_TypedElementAggregate.onRangeRemoved(mult, range);
-	}
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.uml.core.metamodel.core.foundation.IMultiplicityListener#onRangeAdded(org.netbeans.modules.uml.core.metamodel.core.foundation.IMultiplicity, org.netbeans.modules.uml.core.metamodel.core.foundation.IMultiplicityRange)
+     */
+    public void onRangeAdded(IMultiplicity mult, IMultiplicityRange range) 
+    {
+            m_TypedElementAggregate.onRangeAdded(mult, range);
+    }
 
-	/* (non-Javadoc)
-	 * @see org.netbeans.modules.uml.core.metamodel.core.foundation.IMultiplicityListener#onPreOrderModified(org.netbeans.modules.uml.core.metamodel.core.foundation.IMultiplicity, boolean)
-	 */
-	public boolean onPreOrderModified(IMultiplicity mult, boolean proposedValue)
-	{
-		return m_TypedElementAggregate.onPreOrderModified(mult, proposedValue);
-	}
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.uml.core.metamodel.core.foundation.IMultiplicityListener#onPreRangeRemoved(org.netbeans.modules.uml.core.metamodel.core.foundation.IMultiplicity, org.netbeans.modules.uml.core.metamodel.core.foundation.IMultiplicityRange)
+     */
+    public boolean onPreRangeRemoved(IMultiplicity mult, IMultiplicityRange range) 
+    {
+            return m_TypedElementAggregate.onPreRangeRemoved(mult, range);
+    }
 
-	/* (non-Javadoc)
-	 * @see org.netbeans.modules.uml.core.metamodel.core.foundation.IMultiplicityListener#onOrderModified(org.netbeans.modules.uml.core.metamodel.core.foundation.IMultiplicity)
-	 */
-	public void onOrderModified(IMultiplicity mult) 
-	{
-		m_TypedElementAggregate.onOrderModified(mult);
-	}			
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.uml.core.metamodel.core.foundation.IMultiplicityListener#onRangeRemoved(org.netbeans.modules.uml.core.metamodel.core.foundation.IMultiplicity, org.netbeans.modules.uml.core.metamodel.core.foundation.IMultiplicityRange)
+     */
+    public void onRangeRemoved(IMultiplicity mult, IMultiplicityRange range) 
+    {
+            m_TypedElementAggregate.onRangeRemoved(mult, range);
+    }
 
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.uml.core.metamodel.core.foundation.IMultiplicityListener#onPreOrderModified(org.netbeans.modules.uml.core.metamodel.core.foundation.IMultiplicity, boolean)
+     */
+    public boolean onPreOrderModified(IMultiplicity mult, boolean proposedValue)
+    {
+            return m_TypedElementAggregate.onPreOrderModified(mult, proposedValue);
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.uml.core.metamodel.core.foundation.IMultiplicityListener#onOrderModified(org.netbeans.modules.uml.core.metamodel.core.foundation.IMultiplicity)
+     */
+    public void onOrderModified(IMultiplicity mult) 
+    {
+            m_TypedElementAggregate.onOrderModified(mult);
+    }			
+
+    public void onCollectionTypeModified(IMultiplicity mult, IMultiplicityRange range)
+    {
+        m_TypedElementAggregate.onCollectionTypeModified(mult, range);
+    }
 }

@@ -2274,9 +2274,10 @@ public class Element extends BaseElement implements IElement
         ILanguage lang = getLanguages().get(0);
         List < CollectionType > types = lang.getCollectionTypes();
 
+        retVal.add(NbBundle.getMessage(Element.class, "LBL_AS_ARRAY"));
         for(CollectionType type : types)
         {
-            retVal.add(type.getName());
+            retVal.add(type.getFullName());
         }
 
         return retVal;

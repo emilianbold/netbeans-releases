@@ -903,6 +903,19 @@ public class DrawingAreaEventHandler
       }
    }
 
+   /**
+     * Fired when the collection type property is changed on the passed in
+     * range.
+     * @param element The type that owned the multilicity element
+     * @param mult The multiplicity
+     * @param range The multiplicity range that changed
+     * @param cell The event result.
+     */
+    public void onCollectionTypeModified( ITypedElement element, IMultiplicity mult, IMultiplicityRange range, IResultCell cell )
+    {
+        // This information is not represented on the diagram.
+    }
+    
    /* (non-Javadoc)
     * @see org.netbeans.modules.uml.core.metamodel.core.foundation.IRelationEventsSink#onPreRelationEndModified(org.netbeans.modules.uml.core.metamodel.core.foundation.IRelationProxy, org.netbeans.modules.uml.core.support.umlsupport.IResultCell)
     */

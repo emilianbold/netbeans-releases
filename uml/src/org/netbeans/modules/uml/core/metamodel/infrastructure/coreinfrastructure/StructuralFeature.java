@@ -456,7 +456,12 @@ public class StructuralFeature extends Feature implements IStructuralFeature, IT
 	public void onOrderModified(IMultiplicity mult) 
 	{
 		m_TypedElementAggregate.onOrderModified(mult);
-	}			
+	}
+        
+    public void onCollectionTypeModified(IMultiplicity mult, IMultiplicityRange range)
+    {
+        m_TypedElementAggregate.onCollectionTypeModified(mult, range);
+    }
 
     public String getRangeAsString()
     {

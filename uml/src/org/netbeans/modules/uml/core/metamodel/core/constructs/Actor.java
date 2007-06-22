@@ -20,35 +20,20 @@
 package org.netbeans.modules.uml.core.metamodel.core.constructs;
 
 import org.dom4j.Document;
-import org.dom4j.Element;
 import org.dom4j.Node;
 
-import org.netbeans.modules.uml.core.metamodel.core.foundation.IConstraint;
-import org.netbeans.modules.uml.core.metamodel.core.foundation.IDependency;
-import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
-import org.netbeans.modules.uml.core.metamodel.core.foundation.IFlow;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IMultiplicity;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IMultiplicityRange;
-import org.netbeans.modules.uml.core.metamodel.core.foundation.INamespace;
-import org.netbeans.modules.uml.core.metamodel.core.foundation.IPackage;
-import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
-import org.netbeans.modules.uml.core.metamodel.core.foundation.IRedefinableElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IReference;
-import org.netbeans.modules.uml.core.metamodel.core.foundation.ITaggedValue;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IVersionableElement;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.IConnectorEnd;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.IPart;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.IStructuredClassifier;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.Part;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.Classifier;
-import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IBehavioralFeature;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IClassifier;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IFeature;
-import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IParameterableElement;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IStructuralFeature;
-import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.ITypedElement;
-import org.netbeans.modules.uml.core.metamodel.structure.IProject;
-import org.netbeans.modules.uml.core.reverseengineering.reframework.parsingframework.ILanguage;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
 
 public class Actor extends Classifier implements IActor
@@ -466,6 +451,11 @@ public class Actor extends Classifier implements IActor
 	   getPart().onOrderModified(mult);
    }			
 
+   public void onCollectionTypeModified(IMultiplicity mult, IMultiplicityRange range)
+   {
+       getPart().onCollectionTypeModified(mult, range);
+   }
+   
     public String getRangeAsString()
     {
         return getMultiplicity().getRangeAsString();

@@ -2082,6 +2082,19 @@ public class AddinEventsSink implements IDrawingAreaEventsSink,
 	{
 		addMessage("onOrderModified");
 	}
+        
+        /**
+         * Fired when the collection type property is changed on the passed in
+         * range.
+         * @param element The type that owned the multilicity element
+         * @param mult The multiplicity
+         * @param range The multiplicity range that changed
+         * @param cell The event result.
+         */
+        public void onCollectionTypeModified( ITypedElement element, IMultiplicity mult, IMultiplicityRange range, IResultCell cell )
+        {
+            addMessage("onCollectionTypeModified");
+        }
 
 	/* (non-Javadoc)
 	 * @see org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IAttributeEventsSink#onDefaultPreModified(org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IAttribute, org.netbeans.modules.uml.core.metamodel.core.foundation.IExpression, org.netbeans.modules.uml.core.support.umlsupport.IResultCell)

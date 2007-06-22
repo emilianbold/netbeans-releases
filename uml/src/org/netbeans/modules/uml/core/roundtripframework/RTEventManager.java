@@ -1277,6 +1277,42 @@ public class RTEventManager implements IRTEventManager
         processRequests(element, ChangeKind.CT_MODIFY, null);
     }
 
+    public void onRTCollectionTypeModified( ITypedElement element, 
+                                            IMultiplicity mult, 
+                                            IMultiplicityRange range, 
+                                            IResultCell cell )
+    {
+        RTDispatchHelper helper =
+            new RTDispatchHelper(
+                m_ProcManager,
+                m_DispController,
+                EventDispatchNameKeeper.EDT_CLASSIFIER_KIND);
+        helper.establish(ESTABLISH_NORMAL, ESTABLISH_NOOVERRIDE, element, cell);
+                
+        IClassifierEventDispatcher dispatcher = null;
+        try
+        {
+            dispatcher = (IClassifierEventDispatcher) helper.getDispatcher();
+        }
+        catch (Exception e)
+        {
+        }
+        
+        boolean proceed = false;
+        if (dispatcher != null)
+        {
+            recordRequests(range,
+                           element,
+                           helper.getPayload(),
+                           RequestDetailKind.RDT_COLLECTION_TYPE_CHANGED,
+                           null);
+            completeResultCell(cell, helper.getCellOrigValue(), true);
+        }
+
+        
+        processRequests(element, ChangeKind.CT_MODIFY, null);
+    }
+    
     /* (non-Javadoc)
      * @see org.netbeans.modules.uml.core.roundtripframework.IRTEventManager#onRTParameterAdded(org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IBehavioralFeature, org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IParameter, org.netbeans.modules.uml.core.support.umlsupport.IResultCell)
      */

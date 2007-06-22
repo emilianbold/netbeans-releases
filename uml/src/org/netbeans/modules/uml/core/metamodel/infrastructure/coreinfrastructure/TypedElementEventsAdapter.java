@@ -189,5 +189,18 @@ public class TypedElementEventsAdapter implements ITypedElementEventsSink
    {
       // TODO Auto-generated method stub
    }
+   
+   /**
+    * Fired when the collection type property is changed on the passed in
+    * range.
+    * @param element The type that owned the multilicity element
+    * @param mult The multiplicity
+    * @param range The multiplicity range that changed
+    * @param cell The event result.
+    */
+   public void onCollectionTypeModified( ITypedElement element, IMultiplicity mult, IMultiplicityRange range, IResultCell cell )
+   {
+
+   }
 
 }

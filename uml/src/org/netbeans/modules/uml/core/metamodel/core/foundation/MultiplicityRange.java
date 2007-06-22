@@ -20,11 +20,13 @@
 
 package org.netbeans.modules.uml.core.metamodel.core.foundation;
 
+import java.util.prefs.Preferences;
 import org.dom4j.Document;
 import org.dom4j.Node;
 
 import org.netbeans.modules.uml.common.generics.ETPairT;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 
 /**
  * @author sumitabhk
@@ -401,10 +403,21 @@ public class MultiplicityRange extends Element implements IMultiplicityRange
     {
         String retVal = super.getAttributeValue("collectionType");
         
-        if(((retVal == null) || (retVal.length() == 0)) && 
-           (asArray == true))
+        Preferences prefs = NbPreferences.forModule (MultiplicityRange.class);
+        boolean useCollection = prefs.getBoolean("UML_USE_GENERICS_DEFAULT", false);
+        
+        if((retVal == null) || (retVal.length() == 0))
         {
-            retVal = NbBundle.getMessage(MultiplicityRange.class, "LBL_AS_ARRAY");
+            if(useCollection == true)
+            {
+                String defaultCollection = prefs.get("UML_COLLECTION_OVERRIDE_DEFAULT",
+                                                     "java.util.ArrayList");
+                retVal = defaultCollection.replace(".", "::");
+            }
+            else if(asArray == true)
+            {
+                retVal = NbBundle.getMessage(MultiplicityRange.class, "LBL_AS_ARRAY");
+            }
         }
         
         return retVal;
@@ -426,6 +439,14 @@ public class MultiplicityRange extends Element implements IMultiplicityRange
         else
         {
             super.setAttributeValue("collectionType", "");
+        }
+        
+        IMultiplicity mult = this.getParentMultiplicity();
+        IMultiplicityListener mList = retrieveListener(mult, this);
+        
+        if(mList != null)
+        {
+            mList.onCollectionTypeModified(mult, this);
         }
     }
     

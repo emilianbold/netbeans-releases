@@ -678,6 +678,41 @@ public class ClassifierEventDispatcher extends EventDispatcher
             m_TypeSink.notifyListeners(lowerModified);        
         }
     }
+    
+    /**
+     * Fired whenever the lower property on the passed-in range was modified.
+     *
+     * @param element 
+     * @param mult 
+     * @param range 
+     * @param payload 
+     */
+    public void fireCollectionTypeModified(
+            ITypedElement element,
+            IMultiplicity mult,
+            IMultiplicityRange range,
+            IEventPayload payload)
+    {
+        Vector<Object> vect = new Vector<Object>();
+        vect.add(0,element);
+        vect.add(1,mult);   
+        vect.add(2,range);
+       
+        Object var = prepareVariant(vect);
+
+        if (validateEvent("CollectionTypeModified", var))
+        {
+            IResultCell cell = prepareResultCell( payload );
+            EventFunctor lowerModified = new EventFunctor("org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.ITypedElementEventsSink", 
+                        "onCollectionTypeModified");
+            
+            Object[] params = new Object[2];
+            params[0] = var;
+            params[1] = cell;
+            lowerModified.setParameters(params);
+            m_TypeSink.notifyListeners(lowerModified);        
+        }
+    }
 
     /* (non-Javadoc)
      * @see org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IClassifierEventDispatcher#firePreUpperModified(org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.ITypedElement, org.netbeans.modules.uml.core.metamodel.core.foundation.IMultiplicity, org.netbeans.modules.uml.core.metamodel.core.foundation.IMultiplicityRange, java.lang.String, org.netbeans.modules.uml.core.eventframework.IEventPayload)

@@ -502,6 +502,11 @@ public interface IClassifierEventDispatcher extends IEventDispatcher
 	*/
 	public void fireOrderModified( ITypedElement element, IMultiplicity mult, IEventPayload payload );
 
+        /**
+	 * Fired when the order property is changed on the passed in mulitplicity.
+	*/
+	public void fireCollectionTypeModified( ITypedElement element, IMultiplicity mult, IMultiplicityRange range, IEventPayload payload );
+        
 	/**
 	 * Fired whenever the default value of an IAttribute is about to be modified.
 	*/

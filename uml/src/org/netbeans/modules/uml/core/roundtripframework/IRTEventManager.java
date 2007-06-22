@@ -161,6 +161,7 @@ public interface IRTEventManager
     public void onRTRangeAdded           ( ITypedElement element, IMultiplicity mult, IMultiplicityRange range, IResultCell cell );
     public void onRTRangeRemoved         ( ITypedElement element, IMultiplicity mult, IMultiplicityRange range, IResultCell cell );
     public void onRTOrderModified        ( ITypedElement element, IMultiplicity mult, IResultCell cell );
+    public void onRTCollectionTypeModified( ITypedElement element, IMultiplicity mult, IMultiplicityRange range, IResultCell cell );
 
     public void onRTRelationEndModified ( IRelationProxy proxy, IResultCell cell );
     public void onRTRelationEndAdded    ( IRelationProxy proxy, IResultCell cell );

@@ -878,7 +878,8 @@ public class JavaAttributeChangeHandler extends JavaChangeHandler
             if (cDetail == RequestDetailKind.RDT_RANGE_ADDED ||
                     cDetail == RequestDetailKind.RDT_RANGE_REMOVED ||
                     cDetail == RequestDetailKind.RDT_LOWER_MODIFIED ||
-                    cDetail == RequestDetailKind.RDT_UPPER_MODIFIED)
+                    cDetail == RequestDetailKind.RDT_UPPER_MODIFIED ||
+                    cDetail == RequestDetailKind.RDT_COLLECTION_TYPE_CHANGED)
             {
                 IAttribute pAttribute = null;
                 IClassifier pClass = null;
@@ -1004,13 +1005,14 @@ public class JavaAttributeChangeHandler extends JavaChangeHandler
             if ( pParmMult != null )
             {
                 pParmMult.removeAllRanges();
-                ETList ranges = pMult.getRanges();
+                ETList < IMultiplicityRange > ranges = pMult.getRanges();
                 for (int i=0; i<ranges.size(); i++)
                 {
                     IMultiplicityRange pNewRange = pParmMult.createRange();
                     
                     pNewRange.setRange(((IMultiplicityRange)ranges.get(i)).getLower(),
                             ((IMultiplicityRange)ranges.get(i)).getUpper());
+                    pNewRange.setCollectionType(ranges.get(i).getCollectionType(false));
                     pParmMult.addRange(pNewRange);
                 }
             }

@@ -71,5 +71,11 @@ public interface IMultiplicityListener
 	 * Fired when the order property is changed on the passed in mulitplicity.
 	*/
 	public void onOrderModified( IMultiplicity mult );
+        
+        /**
+         * Fired when the collection type property is changed on the passed in 
+         * range.
+         */
+        public void onCollectionTypeModified(IMultiplicity mult, IMultiplicityRange range);
 
 }

@@ -1877,6 +1877,19 @@ public class JavaRequestProcessor implements IJavaRequestProcessor
     {}
     
     /**
+     * Fired when the collection type property is changed on the passed in
+     * range.
+     * @param element The type that owned the multilicity element
+     * @param mult The multiplicity
+     * @param range The multiplicity range that changed
+     * @param cell The event result.
+     */
+    public void onCollectionTypeModified( ITypedElement element, IMultiplicity mult, IMultiplicityRange range, IResultCell cell )
+    {
+        
+    }
+    
+    /**
      *
      * Determines whether or not the name of the feature about to be added to the
      * passed in classifier is unique. It checks attrs owned by the Classifier and

@@ -364,7 +364,7 @@ public class TypedElement extends Element implements ITypedElement
 		}
 		return proceed;
 	}
-
+        
 	/* (non-Javadoc)
 	 * @see org.netbeans.modules.uml.core.metamodel.core.foundation.IMultiplicityListener#onLowerModified(org.netbeans.modules.uml.core.metamodel.core.foundation.IMultiplicity, org.netbeans.modules.uml.core.metamodel.core.foundation.IMultiplicityRange)
 	 */
@@ -385,6 +385,7 @@ public class TypedElement extends Element implements ITypedElement
 			Log.stackTrace(e);
 		}
 	}
+        
 
 	/* (non-Javadoc)
 	 * @see org.netbeans.modules.uml.core.metamodel.core.foundation.IMultiplicityListener#onPreUpperModified(org.netbeans.modules.uml.core.metamodel.core.foundation.IMultiplicity, org.netbeans.modules.uml.core.metamodel.core.foundation.IMultiplicityRange, java.lang.String)
@@ -566,6 +567,24 @@ public class TypedElement extends Element implements ITypedElement
 			Log.stackTrace(e);
 		}
 	}
+        
+        public void onCollectionTypeModified(IMultiplicity mult, IMultiplicityRange range)
+        {
+            try
+            {
+                EventDispatchRetriever ret = EventDispatchRetriever.instance();
+                IClassifierEventDispatcher disp = ret.getDispatcher(EventDispatchNameKeeper.classifier());
+                if( disp != null )
+                {
+                    IEventPayload  payload =  disp.createPayload( "CollectionType");
+                    disp.fireCollectionTypeModified( (ITypedElement)getAggregator(), mult, range, payload );
+                }
+            }
+            catch( Exception e )
+            {
+                Log.stackTrace(e);
+            }
+        }
 }
 
 

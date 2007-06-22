@@ -1650,6 +1650,19 @@ public class RoundTripController implements IRoundTripController
         m_Manager.onRTPreLowerModified(element, mult, range, proposedValue, cell);
     }
 
+    /**
+     * Fired when the collection type property is changed on the passed in
+     * range.
+     * @param element The type that owned the multilicity element
+     * @param mult The multiplicity
+     * @param range The multiplicity range that changed
+     * @param cell The event result.
+     */
+    public void onCollectionTypeModified( ITypedElement element, IMultiplicity mult, IMultiplicityRange range, IResultCell cell )
+    {
+        m_Manager.onRTCollectionTypeModified(element, mult, range, cell);
+    }
+    
     /* (non-Javadoc)
      * @see org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.ITypedElementEventsSink#onPreMultiplicityModified(org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.ITypedElement, org.netbeans.modules.uml.core.metamodel.core.foundation.IMultiplicity, org.netbeans.modules.uml.core.support.umlsupport.IResultCell)
      */
