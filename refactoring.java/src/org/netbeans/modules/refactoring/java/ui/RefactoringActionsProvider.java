@@ -40,6 +40,7 @@ import javax.swing.Action;
 import javax.swing.JOptionPane;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
@@ -360,6 +361,9 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
         if (fo != null) {
             if (!fo.isFolder())
                 return false;
+            if (!RetoucheUtils.isOnSourceClasspath(fo)) 
+                return false;
+            
             //it is drag and drop
             Set<DataFolder> folders = new HashSet();
             boolean jdoFound = false;
