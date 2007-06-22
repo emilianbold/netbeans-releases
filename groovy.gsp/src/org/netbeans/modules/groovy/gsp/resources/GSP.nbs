@@ -27,6 +27,8 @@ TOKEN:html_end_element_start: ( "</" ):<IN_ELEMENT_START>
 TOKEN:gsp_element_start: ( "<g:" ):<IN_GSP_ELEMENT_START>
 TOKEN:gsp_end_element_start: ( "</g:" ):<IN_GSP_ELEMENT_START>
 
+TOKEN:percent_element_start: ( "<%" ):<IN_PERCENT_ELEMENT_START>
+
 <IN_ELEMENT_START>:TOKEN:html_element_name: ( "SCRIPT" ):<IN_SCRIPT_ELEMENT>
 <IN_ELEMENT_START>:TOKEN:html_element_name: ( "script" ):<IN_SCRIPT_ELEMENT>
 <IN_ELEMENT_START>:TOKEN:html_element_name: ( "STYLE" ):<IN_STYLE_ELEMENT>
@@ -34,6 +36,8 @@ TOKEN:gsp_end_element_start: ( "</g:" ):<IN_GSP_ELEMENT_START>
 <IN_ELEMENT_START>:TOKEN:html_element_name: ( "!"? ["a"-"z" "A"-"Z"]["a"-"z" "A"-"Z" "0"-"9"]* ):<IN_ELEMENT>
 
 <IN_GSP_ELEMENT_START>:TOKEN:gsp_element_name: ( ["a"-"z" "A"-"Z"]["a"-"z" "A"-"Z" "0"-"9"]* ):<IN_GSP_ELEMENT>
+
+<IN_PERCENT_ELEMENT_START>:TOKEN:percent_element_name: ( [" " "@" "!" "=" ]["a"-"z" "A"-"Z" "0"-"9"]* ):<IN_PERCENT_ELEMENT>
 
 <IN_SCRIPT_ELEMENT> {
     TOKEN:html_element_end: ( ">" ):<DEFAULT>
@@ -84,11 +88,18 @@ TOKEN:gsp_end_element_start: ( "</g:" ):<IN_GSP_ELEMENT_START>
 }
 
 <IN_GSP_ELEMENT> {
-    TOKEN:html_attribute_name: ( ["a"-"z" "A"-"Z"]["a"-"z" "A"-"Z" "0"-"9" "-" "_" ":"]* ):<IN_ATTRIBUTE>
+    TOKEN:html_attribute_name: ( ["a"-"z" "A"-"Z"]["a"-"z" "A"-"Z" "0"-"9" "-" "_" ":"]* ):<IN_GSP_ATTRIBUTE>
     TOKEN:html_attribute_value: ( "\"" [^ "\"" "\n" "\r"]* "\"" )
     TOKEN:html_whitespace2: ( [" " "\t" "\n" "\r"]+ )
     TOKEN:gsp_element_end: ( ">" ):<DEFAULT>
     TOKEN:gsp_end_element_end: ( "/>" ):<DEFAULT>
+}
+
+<IN_PERCENT_ELEMENT> {
+    TOKEN:html_attribute_name: ( ["a"-"z" "A"-"Z"]["a"-"z" "A"-"Z" "0"-"9" "-" "_" ]* ):<IN_PERCENT_ATTRIBUTE>
+    TOKEN:html_attribute_value: ( "\"" [^ "\"" "\n" "\r"]* "\"" )
+    TOKEN:html_whitespace2: ( [" " "\t" "\n" "\r"]+ )
+    TOKEN:percent_element_end: ( "%>" ):<DEFAULT>
 }
 
 #attribute + "=" ? ###
@@ -111,16 +122,48 @@ TOKEN:gsp_end_element_start: ( "</g:" ):<IN_GSP_ELEMENT_START>
     TOKEN:html_whitespace2: ( [" " "\t" "\n" "\r"]+ )
 }
 
+<IN_GSP_ATTRIBUTE> {
+    TOKEN:html_operator: ( "=" ):<IN_GSP_ATTRIBUTE2>
+    TOKEN:html_whitespace2: ( [" " "\t" "\n" "\r"]+ )
+    TOKEN:html_element_end: ( ">" ):<DEFAULT>
+    TOKEN:html_end_element_end: ( "/>" ):<DEFAULT>
+    TOKEN:html_attribute_name: ( ["a"-"z" "A"-"Z"]["a"-"z" "A"-"Z" "0"-"9" "-" "_" ":"]* )
+    TOKEN:html_attribute_value: ( "\"" [^ "\"" "\n" "\r"]* "\"" )
+}
+
+<IN_GSP_ATTRIBUTE2> {
+    TOKEN:html_attribute_value: ( "\"" [^ "\"" "\n" "\r"]* "\"" ):<IN_GSP_ELEMENT>
+    TOKEN:html_attribute_value: ( "\'" [^ "\"" "\n" "\r"]* "\'" ):<IN_GSP_ELEMENT>
+    TOKEN:html_attribute_value: ( ["0"-"9" "a"-"z" "A"-"Z" "-" "_"]+ ):<IN_GSP_ELEMENT>
+    TOKEN:html_whitespace2: ( [" " "\t" "\n" "\r"]+ )
+}
+
+<IN_PERCENT_ATTRIBUTE> {
+    TOKEN:html_operator: ( "=" ):<IN_PERCENT_ATTRIBUTE2>
+    TOKEN:html_whitespace2: ( [" " "\t" "\n" "\r"]+ )
+    TOKEN:html_element_end: ( ">" ):<DEFAULT>
+    TOKEN:html_end_element_end: ( "/>" ):<DEFAULT>
+    TOKEN:html_attribute_name: ( ["a"-"z" "A"-"Z"]["a"-"z" "A"-"Z" "0"-"9" "-" "_" ":"]* )
+    TOKEN:html_attribute_value: ( "\"" [^ "\"" "\n" "\r"]* "\"" )
+}
+
+<IN_PERCENT_ATTRIBUTE2> {
+    TOKEN:html_attribute_value: ( "\"" [^ "\"" "\n" "\r"]* "\"" ):<IN_PERCENT_ELEMENT>
+    TOKEN:html_attribute_value: ( "\'" [^ "\"" "\n" "\r"]* "\'" ):<IN_PERCENT_ELEMENT>
+    TOKEN:html_attribute_value: ( ["0"-"9" "a"-"z" "A"-"Z" "-" "_"]+ ):<IN_PERCENT_ELEMENT>
+    TOKEN:html_whitespace2: ( [" " "\t" "\n" "\r"]+ )
+}
+
 #embeded languages ###
 
 TOKEN:javascript: {
     start_state:"JAVASCRIPT";
-#    call:org.netbeans.modules.languages.html.HTML.readJavaScript;
+    call:org.netbeans.modules.groovy.gsp.Gsp.readJavaScript;
     end_state:"DEFAULT";
 }
 TOKEN:css: {
     start_state:"CSS";
-#    call:org.netbeans.modules.languages.html.HTML.readCSS;
+    call:org.netbeans.modules.groovy.gsp.Gsp.readCSS;
     end_state:"DEFAULT";
 }
 
@@ -147,12 +190,14 @@ tags = startTag tags;
 tags = endTag tags;
 tags = gspStartTag tags;
 tags = gspEndTag tags;
+tags = percentStartTag tags;
 tags = etext tags;
 tags = ; 
 startTag = <html_element_start> <html_element_name> attributes ( <html_element_end> | <html_end_element_end> );
 endTag = <html_end_element_start> <html_element_name> attributes <html_element_end>;
 gspStartTag = <gsp_element_start> <gsp_element_name> attributes ( <gsp_element_end> | <gsp_end_element_end> );
 gspEndTag = <gsp_end_element_start> <gsp_element_name> attributes <gsp_element_end>;
+percentStartTag = <percent_element_start> <percent_element_name> attributes <percent_element_end>;
 attributes = attribute attributes1;
 attributes = ;
 attributes1 = attribute attributes1;
@@ -211,27 +256,47 @@ COLOR:html_attribute_value: {
 }
 
 COLOR:gsp_element_start: {
-    foreground_color: "blue";
+    foreground_color: "#00007c";
     font_type: "bold";
 }
 COLOR:gsp_end_element_start: {
-    foreground_color: "blue";
+    foreground_color: "#00007c";
     font_type: "bold";
 }
 COLOR:gsp_element_name: {
-    foreground_color: "blue";
+    foreground_color: "#00007c";
     font_type: "bold";
 }
 COLOR:gsp_element_end: {
-    foreground_color: "blue";
+    foreground_color: "#00007c";
     font_type: "bold";
 }
 COLOR:gsp_end_element_end: {
-    foreground_color: "blue";
+    foreground_color: "#00007c";
     font_type: "bold";
 }
 COLOR:gsp_attribute_value: {
-    default_coloring:"string";
+    default_coloring:"#00007c";
+}
+
+COLOR:percent_element_start: {
+    foreground_color: "#00007c";
+    font_type: "bold";
+}
+COLOR:percent_end_element_start: {
+    foreground_color: "#00007c";
+    font_type: "bold";
+}
+COLOR:percent_element_name: {
+    foreground_color: "#00007c";
+    font_type: "bold";
+}
+COLOR:percent_element_end: {
+    foreground_color: "#00007c";
+    font_type: "bold";
+}
+COLOR:percent_attribute_value: {
+    default_coloring:"#00007c";
 }
 
 ########### code folding #######################################################
