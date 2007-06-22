@@ -123,14 +123,14 @@ public class BuildNumberSjsam extends Task {
      * Pattern for which to look in the input file.
      */
     private static final Pattern PATTERN = Pattern.compile(
-            "b([0-9]+)<A>\\s*([A-Za-z0-9-]+)" + // NOI18N
-            "\\s*[0-9:]+\\s*[0-9]+K\\s*<PRE>", Pattern.MULTILINE); // NOI18N
+            "access_manager-7_1-bin-b([0-9]+)-([A-Za-z0-9_]+).zip", 
+            Pattern.MULTILINE); // NOI18N
     
     /**
      * Date format used in the input file.
      */
     private static final DateFormat FORMAT_IN = 
-            new SimpleDateFormat("dd-MMM-yyyy", Locale.US); // NOI18N
+            new SimpleDateFormat("dd_MMM_yyyy", Locale.US); // NOI18N
     
     /**
      * Date format to use in the output properties.
