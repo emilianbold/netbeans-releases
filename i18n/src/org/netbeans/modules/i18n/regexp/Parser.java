@@ -13,12 +13,16 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 
 package org.netbeans.modules.i18n.regexp;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.StringTokenizer;
 
 /**
  * Parser of regular expressions.
@@ -192,7 +196,7 @@ public class Parser {
 
         String attribs = null;
         if (initialPart || finalPart) {
-            StringBuffer buf = new StringBuffer(2);
+            StringBuilder buf = new StringBuilder(2);
             if (initialPart) {
                 buf.append('^');
             }
@@ -228,7 +232,7 @@ public class Parser {
             return null;
         }
 
-        java.util.List alternatives = new java.util.ArrayList(4);
+        List<TreeNode> alternatives = new ArrayList<TreeNode>(4);
         alternatives.add(regexpSequenceNode);
 
         while (regexpSequenceNode.end != end
@@ -243,14 +247,13 @@ public class Parser {
             }
 
             alternatives.add(regexpSequenceNode);
-        };
+        }
 
         TreeNode result = new TreeNode(TreeNode.MULTI_REGEXP,
                                        start,
                                        regexpSequenceNode.end);
-        java.util.Iterator i;
-        for (i = alternatives.iterator(); i.hasNext(); ) {
-            result.add((TreeNode) i.next());
+        for (TreeNode alt : alternatives) {
+            result.add(alt);
         }
         return result;
     }
@@ -264,7 +267,7 @@ public class Parser {
         }
 
         TreeNode result;
-        java.util.List sequence = null;
+        List<TreeNode> sequence = null;
         TreeNode lastChildNode = null;
 
         int from = start;
@@ -276,7 +279,7 @@ public class Parser {
             }
 
             if (sequence == null) {
-                sequence = new java.util.ArrayList(4);
+                sequence = new ArrayList<TreeNode>(4);
             }
             sequence.add(qRegexpNode);
 
@@ -296,9 +299,8 @@ public class Parser {
         }
 
         result = new TreeNode(TreeNode.SIMPLE_REGEXP, start, lastChildNode.end);
-        java.util.Iterator i;
-        for (i = sequence.iterator(); i.hasNext(); ) {
-            result.add((TreeNode) i.next());
+        for (TreeNode seqPart : sequence) {
+            result.add(seqPart);
         }
         return result;
     }
@@ -919,7 +921,7 @@ public class Parser {
         if (setRegexp.length() < 5) {
             maxIndex = setRegexp.length() - 2;
         }
-        StringBuffer buf = new StringBuffer(maxIndex - index + 1);
+        StringBuilder buf = new StringBuilder(maxIndex - index + 1);
         char ch = setRegexp.charAt(index);
         if (ch == '^') {
             buf.append(ch);
@@ -954,8 +956,8 @@ public class Parser {
 
         String classNames = "alnum alpha blank cntrl digit graph "      //NOI18N
                             + "lower print punct space upper";          //NOI18N
-        java.util.StringTokenizer tokenizer
-                = new java.util.StringTokenizer(classNames, " ");       //NOI18N
+        StringTokenizer tokenizer
+                = new StringTokenizer(classNames, " ");                 //NOI18N
         while (tokenizer.hasMoreTokens()) {
             if (name.equals(tokenizer.nextToken())) {
                 return true;

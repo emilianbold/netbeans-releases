@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -68,7 +68,7 @@ public final class Translator {
      *             if the given expression contained a syntax error
      */
     public static String translateRegexp(String regexp,
-                                         Map tokenReplacements)
+                                         Map<String,String> tokenReplacements)
             throws IllegalArgumentException, ParseException {
 
         if ((tokenReplacements == null) || (tokenReplacements.isEmpty())) {

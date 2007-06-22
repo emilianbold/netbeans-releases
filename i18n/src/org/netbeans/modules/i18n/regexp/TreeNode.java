@@ -13,12 +13,15 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 
 package org.netbeans.modules.i18n.regexp;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Node of a regular expression syntax tree.
@@ -58,7 +61,7 @@ class TreeNode {
     /** this node's parent node */
     private TreeNode parent;
     /** direct subnodes of this node */
-    private java.util.List children;
+    private List<TreeNode> children;
 
     /**
      * Creates a new node representing a given part of a regular expression.
@@ -103,7 +106,7 @@ class TreeNode {
         child.parent = this;
 
         if (children == null) {
-            children = new java.util.ArrayList(4);
+            children = new ArrayList<TreeNode>(4);
         }
         children.add(child);
     }
@@ -154,8 +157,8 @@ class TreeNode {
      * @return  list of this node's direct subnodes;
      *          or <code>null</code> if this node has no subnodes
      */
-    java.util.List getChildren() {
-        return children != null ? new java.util.ArrayList(children)
+    List<TreeNode> getChildren() {
+        return children != null ? new ArrayList<TreeNode>(children)
                                 : null;
     }
 

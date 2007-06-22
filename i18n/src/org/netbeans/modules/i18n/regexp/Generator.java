@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -23,7 +23,6 @@ package org.netbeans.modules.i18n.regexp;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Generator of JDK regular expressions from syntax trees.
@@ -36,10 +35,10 @@ import java.util.Set;
 class Generator {
 
     /** buffer where the regular expression is being built */
-    private StringBuffer buf = new StringBuffer(20);
+    private StringBuilder buf = new StringBuilder(20);
 
     /** string to put in place of tokens */
-    private Map tokenReplacements;
+    private Map<String,String> tokenReplacements;
 
     /** */
     private boolean generatingSetOfChars = false;
@@ -68,7 +67,7 @@ class Generator {
      * @return  generated regular expression;
      *          or <code>null</code> if the argument was <code>null</code>
      */
-    public static String generateRegexp(TreeNode parseTree, Map tokenReplacements) {
+    public static String generateRegexp(TreeNode parseTree, Map<String,String> tokenReplacements) {
         if (parseTree == null) {
             return null;
         }
@@ -86,16 +85,16 @@ class Generator {
             return string;
         }
 
-        StringBuffer buf;
+        StringBuilder buf;
 
         int startIndex = 0;
         int endIndex = string.indexOf('\\');                           //NOI18N
 
         if (endIndex == -1) {
-            buf = new StringBuffer(string.length() + 4);
+            buf = new StringBuilder(string.length() + 4);
             buf.append("\\Q").append(string).append("\\E");             //NOI18N
         } else {
-            buf = new StringBuffer(string.length() + 16);
+            buf = new StringBuilder(string.length() + 16);
             do {
                 if (endIndex != startIndex) {
                     buf.append("\\Q");                                  //NOI18N
@@ -117,7 +116,7 @@ class Generator {
 
 
     /** */
-    private void setTokenReplacements(Map tokenReplacements) {
+    private void setTokenReplacements(Map<String,String> tokenReplacements) {
         if ((tokenReplacements != null) && tokenReplacements.isEmpty()) {
             tokenReplacements = null;
         }
@@ -135,17 +134,15 @@ class Generator {
             return;
         }
 
-        Set replacementEntries = tokenReplacements.entrySet();
-        for (Iterator i = replacementEntries.iterator(); i.hasNext();) {
-            Map.Entry entry = (Map.Entry) i.next();
-            entry.setValue(quoteString((String) entry.getValue()));
+        for (Map.Entry<String,String> entry : tokenReplacements.entrySet()) {
+            entry.setValue(quoteString(entry.getValue()));
         }
     }
 
 
     /** */
     private void generate(TreeNode treeNode) {
-        List children = treeNode.getChildren();
+        List<TreeNode> children = treeNode.getChildren();
         int tokenType = treeNode.getTokenType();
         Object attribs = treeNode.getAttribs();
         char charType;
@@ -199,11 +196,11 @@ class Generator {
                 } else {
                     String type = (String) attribs;
                     buf.append('{');
-                    generate((TreeNode) children.get(0));  //Integer - low limit
+                    generate(children.get(0));             //Integer - low limit
                     if (type.length() > 3) {               //"{n,}" or "{n,n}"
                         buf.append(',');
                         if (type.length() == 5) {          //"{n,n}"
-                            generate((TreeNode) children.get(1)); //- high limit
+                            generate(children.get(1));     //- high limit
                         }
                     }
                     buf.append('}');
@@ -211,16 +208,16 @@ class Generator {
                 break;
 
             case TreeNode.Q_REGEXP:
-                generate((TreeNode) children.get(0));
+                generate(children.get(0));
                 if (children.size() == 2) {
-                    generate((TreeNode) children.get(1));
+                    generate(children.get(1));
                 }
                 break;
 
             case TreeNode.RANGE:
-                generate((TreeNode) children.get(0));
+                generate(children.get(0));
                 buf.append('-');
-                generate((TreeNode) children.get(1));
+                generate(children.get(1));
                 break;
 
             case TreeNode.SET:
@@ -231,10 +228,10 @@ class Generator {
                 if (children != null) {
                     generatingSetOfChars = true;
                     if (children.size() == 1) {
-                        generate((TreeNode) children.get(0));
+                        generate(children.get(0));
                     } else {
-                        for (Iterator i = children.iterator(); i.hasNext(); ) {
-                            generate((TreeNode) i.next());
+                        for (TreeNode child : children) {
+                            generate(child);
                         }
                     }
                     generatingSetOfChars = false;
@@ -245,10 +242,10 @@ class Generator {
             case TreeNode.SIMPLE_REGEXP:
                 if (children != null) {
                     if (children.size() == 1) {
-                        generate((TreeNode) children.get(0));
+                        generate(children.get(0));
                     } else {
-                        for (Iterator i = children.iterator(); i.hasNext(); ) {
-                            generate((TreeNode) i.next());
+                        for (TreeNode child : children) {
+                            generate(child);
                         }
                     }
                 }
@@ -256,18 +253,18 @@ class Generator {
 
             case TreeNode.SUBEXPR:
                 buf.append('(').append('?').append(':');
-                generate((TreeNode) children.get(0));
+                generate(children.get(0));
                 buf.append(')');
                 break;
 
             case TreeNode.MULTI_REGEXP:
-                generate((TreeNode) children.get(0));
+                generate(children.get(0));
                 if (children.size() > 1) {
-                    Iterator i = children.iterator();
+                    Iterator<TreeNode> i = children.iterator();
                     i.next();                               //skip the first one
                     do {
                         buf.append('|');
-                        generate((TreeNode) i.next());
+                        generate(i.next());
                     } while (i.hasNext());
                 }
                 break;
@@ -302,7 +299,7 @@ class Generator {
                     buf.append('^');
                 }
                 if (children != null) {
-                    generate((TreeNode) children.get(0));
+                    generate(children.get(0));
                 }
                 if (attrString != null && (attrString.length() == 2
                                            || attrString.charAt(0) == '$')) {
@@ -312,12 +309,12 @@ class Generator {
 
             case TreeNode.TOKEN:
                 String tokenName = (String) attribs;
-                Object replacement = tokenReplacements != null
+                String replacement = tokenReplacements != null
                                      ? tokenReplacements.get(tokenName)
                                      : null;
                 if (replacement != null) {
                     buf.append('(').append('?').append(':');
-                    buf.append(replacement.toString());
+                    buf.append(replacement);
                     buf.append(')');
                 } else {
                     buf.append('{').append(tokenName).append('}');
