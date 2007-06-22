@@ -78,7 +78,7 @@ public class GenerateConstructorOperator extends JDialogOperator {
      */
     public JButtonOperator btOK() {
         if (_btOK==null) {
-            _btOK = new JButtonOperator(this, "OK");
+            _btOK = new JButtonOperator(this, "Generate");
         }
         return _btOK;
     }
