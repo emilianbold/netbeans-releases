@@ -59,6 +59,12 @@ uninstall() {
 	if [ -d ${J2EE_HOME} -a ! -z ${J2EE_HOME} ]; then
 		rm -rf ${J2EE_HOME}
 	fi
+
+	ERROR_CODE=$?
+	if [ $ERROR_CODE != 0 ]; then
+		echo "ERROR: $ERROR_CODE - Can't install Glassfish"
+		exit $ERROR_CODE;
+	fi
 }
 
 ###################################################################
@@ -67,6 +73,12 @@ create_statefile() {
 	# Creating statefile
 	rm -f ${AS_ROOT}/sunappserver_statefile
 	echo "A" > ${AS_ROOT}/sunappserver_statefile
+
+	ERROR_CODE=$?
+	if [ $ERROR_CODE != 0 ]; then
+		echo "ERROR: $ERROR_CODE - Can't install Glassfish"
+		exit $ERROR_CODE;
+	fi
 }
 
 ###################################################################
@@ -101,6 +113,12 @@ setup_appserver() {
 	# Setup Application Server
 	cd ${J2EE_HOME}
 	ant -f setup.xml -Dinstance.port=28080 -Ddomain.name=visualweb
+
+	ERROR_CODE=$?
+	if [ $ERROR_CODE != 0 ]; then
+		echo "ERROR: $ERROR_CODE - Can't install Glassfish"
+		exit $ERROR_CODE;
+	fi
 }
 
 ###################################################################
@@ -110,7 +128,7 @@ setup_properties() {
 	cp $TEST_ROOT/data/DefaultDeploymentTargets.properties.template $TEST_ROOT/data/tmp.properties
 	MODIFIED_J2EE_HOME=`echo ${J2EE_HOME} | sed 's/\//::/g'`
 	sed -e "s/J2EE_HOME/${MODIFIED_J2EE_HOME}/g" -e "s/::/\//g" -e "s/8080/28080/g" -e "s/domain1/visualweb/g" $TEST_ROOT/data/tmp.properties > $TEST_ROOT/data/DefaultDeploymentTargets.properties
-   
+  
 	ERROR_CODE=$?
 	if [ $ERROR_CODE != 0 ]; then
 		echo "ERROR: $ERROR_CODE - Can't setup Glassfish"
