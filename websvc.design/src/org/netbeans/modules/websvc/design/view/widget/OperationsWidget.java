@@ -20,7 +20,6 @@
 package org.netbeans.modules.websvc.design.view.widget;
 
 import java.awt.Font;
-import java.awt.Image;
 import java.util.HashSet;
 import java.util.Set;
 import javax.swing.Action;
@@ -42,16 +41,12 @@ import org.netbeans.modules.websvc.design.view.DesignViewPopupProvider;
 import org.netbeans.modules.websvc.design.view.actions.AddOperationAction;
 import org.netbeans.modules.websvc.design.view.actions.RemoveOperationAction;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 /**
  *
  * @author Ajit Bhate
  */
 public class OperationsWidget extends AbstractTitledWidget {
-    
-    private static final Image IMAGE  = Utilities.loadImage
-            ("org/netbeans/modules/websvc/design/view/resources/operation.png"); // NOI18N
     
     private transient ServiceModel serviceModel;
     private transient Action addAction;

@@ -20,6 +20,7 @@
 package org.netbeans.modules.websvc.design.view.actions;
 
 import java.awt.Dialog;
+import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -32,6 +33,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import javax.swing.AbstractAction;
+import javax.swing.ImageIcon;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.websvc.api.jaxws.project.WSUtils;
@@ -59,6 +61,7 @@ import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Task;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -66,6 +69,8 @@ import org.openide.util.Task;
  */
 public class AddOperationAction extends AbstractAction {
     
+    private static final Image IMAGE  = Utilities.loadImage
+            ("org/netbeans/modules/websvc/design/view/resources/operation.png"); // NOI18N
     
     private FileObject implementationClass;
     private Service service;
@@ -76,6 +81,7 @@ public class AddOperationAction extends AbstractAction {
      */
     public AddOperationAction(Service service, FileObject implementationClass) {
         super(getName());
+        putValue(SMALL_ICON, new ImageIcon(IMAGE));
         this.service=service;
         this.implementationClass = implementationClass;
         this.wsdlFile = getWSDLFile();

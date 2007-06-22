@@ -255,9 +255,9 @@ public class ButtonWidget extends Widget implements PropertyChangeListener{
     
     private static ImageLabelWidget createImageLabelWidget(Scene scene, Action action) {
         String label = (String)action.getValue(Action.NAME);
-        Object icon = action.getValue(Action.SMALL_ICON);
-        Image image = icon instanceof ImageIcon ? ((ImageIcon)icon).getImage(): null;
-        return new ImageLabelWidget(scene,image,label);
+//        Object icon = action.getValue(Action.SMALL_ICON);
+//        Image image = icon instanceof ImageIcon ? ((ImageIcon)icon).getImage(): null;
+        return new ImageLabelWidget(scene,null,label);
     }
     
     protected static class ButtonBorder implements Border {
