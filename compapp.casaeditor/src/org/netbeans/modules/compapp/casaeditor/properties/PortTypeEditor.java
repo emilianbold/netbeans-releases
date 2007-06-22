@@ -150,7 +150,7 @@ public class PortTypeEditor extends PropertyEditorSupport
 //            boolean bPTFound = false;
             QName qName;
             for(PortType pt : portTypes) {
-                qName = pt == null ? new QName("") : new QName(pt.getModel().getDefinitions().getTargetNamespace(), pt.getName());
+                qName = new QName(pt.getModel().getDefinitions().getTargetNamespace(), pt.getName());
                 mPortTypesComboBox.addItem(qName);
                 mapPTtoQName.put(pt, qName);
 //                if(portType.equals(pt)) {
