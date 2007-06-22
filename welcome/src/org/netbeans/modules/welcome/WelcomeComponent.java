@@ -48,7 +48,7 @@ public class WelcomeComponent extends TopComponent {
         initialized = false;
     }
     
-    protected String preferredID(){
+    @Override protected String preferredID(){
         return "WelcomeComponent";    //NOI18N
     }
     
@@ -103,7 +103,7 @@ public class WelcomeComponent extends TopComponent {
      * WelcomeComponent instance from settings file when method is given. Use <code>findComp</code>
      * to get correctly deserialized instance of WelcomeComponent. */
     public static WelcomeComponent createComp() {
-        WelcomeComponent wc = (WelcomeComponent)component.get();
+        WelcomeComponent wc = component.get();
         if(wc == null) {
             wc = new WelcomeComponent();
             component = new WeakReference<WelcomeComponent>(wc);
@@ -113,7 +113,7 @@ public class WelcomeComponent extends TopComponent {
     
     /** Overriden to explicitely set persistence type of WelcomeComponent
      * to PERSISTENCE_ALWAYS */
-    public int getPersistenceType() {
+    @Override public int getPersistenceType() {
         return TopComponent.PERSISTENCE_NEVER;
     }
     
@@ -124,7 +124,7 @@ public class WelcomeComponent extends TopComponent {
     /**
      * #38900 - lazy addition of GUI components
      */    
-    public void addNotify() {
+    @Override public void addNotify() {
         if (!initialized) {
             initialized = true;
             doInitialize();
@@ -144,7 +144,7 @@ public class WelcomeComponent extends TopComponent {
      * #38900 - lazy addition of GUI components
      *
      */
-    protected void componentShowing() {
+    @Override protected void componentShowing() {
         if (!initialized) {
             initialized = true;
             doInitialize();
@@ -154,7 +154,7 @@ public class WelcomeComponent extends TopComponent {
     }
 
     private static boolean firstTimeOpen = true;
-    protected void componentOpened() {
+    @Override protected void componentOpened() {
         super.componentOpened();
         if( firstTimeOpen ) {
             firstTimeOpen = false;
@@ -164,7 +164,7 @@ public class WelcomeComponent extends TopComponent {
         }
     }
 
-    protected void componentActivated() {
+    @Override protected void componentActivated() {
         super.componentActivated();
         focusAnyContentPanel( content );
     }
