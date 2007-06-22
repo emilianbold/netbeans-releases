@@ -19,6 +19,7 @@ package org.netbeans.modules.java.hints;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.NewClassTree;
@@ -33,15 +34,21 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.ExecutableType;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
@@ -206,7 +213,7 @@ public class ConvertAnonymousToInner extends AbstractHint {
             
             return super.visitIdentifier(node, p);
         }
-        
+
         private boolean isParent(TreePath tp1, TreePath tp2) {
             while (tp2 != null && tp1.getLeaf() != tp2.getLeaf()) {
                 tp2 = tp2.getParentPath();
@@ -227,8 +234,8 @@ public class ConvertAnonymousToInner extends AbstractHint {
         Set<VariableElement> usedElementVariables = new LinkedHashSet<VariableElement>();
         Set<VariableElement> usedFieldsVariables = new LinkedHashSet<VariableElement>();
         
-        new DetectUsedVars(copy, newClassToConvert, true).scan(newClassToConvert, usedElementVariables);
-        new DetectUsedVars(copy, newClassToConvert, false).scan(newClassToConvert, usedFieldsVariables);
+        new DetectUsedVars(copy, newClassToConvert, true).scan(new TreePath(newClassToConvert, nct.getClassBody()), usedElementVariables);
+        new DetectUsedVars(copy, newClassToConvert, false).scan(new TreePath(newClassToConvert, nct.getClassBody()), usedFieldsVariables);
                 
         TreePath tp = newClassToConvert;
         
@@ -240,9 +247,11 @@ public class ConvertAnonymousToInner extends AbstractHint {
         
         TypeMirror superType = copy.getTrees().getTypeMirror(new TreePath(newClassToConvert, nct.getIdentifier()));
         Element superTypeElement = copy.getTrees().getElement(new TreePath(newClassToConvert, nct.getIdentifier()));
-        ExpressionTree superTypeTree = (ExpressionTree) make.Type(superType);
+        Tree superTypeTree = make.Type(superType);
         
         Logger.getLogger(ConvertAnonymousToInner.class.getName()).log(Level.FINE, "usedFieldsVariables = {0}", usedFieldsVariables ); //NOI18N
+        
+        TreePath superConstructorCall = new FindSuperConstructorCall().scan(newClassToConvert, null);
         
         ModifiersTree classModifiers = make.Modifiers(usedFieldsVariables.isEmpty() ? EnumSet.of(Modifier.PRIVATE, Modifier.STATIC) : EnumSet.of(Modifier.PRIVATE));
         
@@ -250,6 +259,37 @@ public class ConvertAnonymousToInner extends AbstractHint {
         List<VariableTree> constrArguments = new ArrayList<VariableTree>();
         List<StatementTree> constrBodyStatements = new ArrayList<StatementTree>();
         List<ExpressionTree> constrRealArguments = new ArrayList<ExpressionTree>();
+        
+        if (superConstructorCall != null) {
+            Element superConstructor = copy.getTrees().getElement(superConstructorCall);
+            
+            if (superConstructor != null && superConstructor.getKind() == ElementKind.CONSTRUCTOR) {
+                ExecutableElement ee = (ExecutableElement) superConstructor;
+                TypeMirror nctTypes = copy.getTrees().getTypeMirror(newClassToConvert);
+                
+                assert nctTypes.getKind() == TypeKind.DECLARED;
+                
+                ExecutableType et = (ExecutableType) copy.getTypes().asMemberOf((DeclaredType) nctTypes, ee);
+                
+                if (!ee.getParameters().isEmpty()) {
+                    List<ExpressionTree> nueSuperConstructorCallRealArguments = new LinkedList<ExpressionTree>();
+                    Iterator<? extends VariableElement> names = ee.getParameters().iterator();
+                    Iterator<? extends TypeMirror> types = et.getParameterTypes().iterator();
+
+                    while (names.hasNext() && types.hasNext()) {
+                        ModifiersTree mt = make.Modifiers(EnumSet.noneOf(Modifier.class));
+                        CharSequence name = names.next().getSimpleName();
+
+                        constrArguments.add(make.Variable(mt, name, make.Type(types.next()), null));
+                        nueSuperConstructorCallRealArguments.add(make.Identifier(name));
+                    }
+
+                    constrBodyStatements.add(make.ExpressionStatement(make.MethodInvocation(Collections.<ExpressionTree>emptyList(), make.Identifier("super"), nueSuperConstructorCallRealArguments)));
+                }
+            }
+        }
+        
+        constrRealArguments.addAll(nct.getArguments());
         
         ModifiersTree privateFinalMods = make.Modifiers(EnumSet.of(Modifier.PRIVATE, Modifier.FINAL));
         ModifiersTree emptyArgs = make.Modifiers(EnumSet.noneOf(Modifier.class));
@@ -275,11 +315,9 @@ public class ConvertAnonymousToInner extends AbstractHint {
         
         String newClassName = superTypeElement.getSimpleName().toString() + "Impl"; //NOI18N
         
-        ClassTree clazz = make.Class(classModifiers, newClassName, Collections.<TypeParameterTree>emptyList(), superTypeElement.getKind().isClass() ? superTypeTree : null, superTypeElement.getKind().isClass() ? Collections.<ExpressionTree>emptyList() : Collections.<ExpressionTree>singletonList(superTypeTree), members);
+        ClassTree clazz = make.Class(classModifiers, newClassName, Collections.<TypeParameterTree>emptyList(), superTypeElement.getKind().isClass() ? superTypeTree : null, superTypeElement.getKind().isClass() ? Collections.<Tree>emptyList() : Collections.<Tree>singletonList(superTypeTree), members);
         
         copy.rewrite(target, make.addClassMember(target, clazz));
-        
-        constrRealArguments.addAll(nct.getArguments());
         
         NewClassTree nueNCT = make.NewClass(/*!!!*/null, Collections.<ExpressionTree>emptyList(), make.Identifier(newClassName), constrRealArguments, null);
         
@@ -287,5 +325,27 @@ public class ConvertAnonymousToInner extends AbstractHint {
     }
 
     public void cancel() {
+    }
+
+    private static final class FindSuperConstructorCall extends TreePathScanner<TreePath, Void> {
+        
+        @Override
+        public TreePath visitMethodInvocation(MethodInvocationTree tree, Void v) {
+            if (tree.getMethodSelect().getKind() == Kind.IDENTIFIER && "super".equals(((IdentifierTree) tree.getMethodSelect()).getName().toString())) {
+                return getCurrentPath();
+            }
+            
+            return null;
+        }
+        
+        @Override
+        public TreePath reduce(TreePath first, TreePath second) {
+            if (first == null) {
+                return second;
+            } else {
+                return first;
+            }
+        }
+        
     }
 }

@@ -183,6 +183,101 @@ public class ConvertAnonymousToInnerTest extends NbTestCase {
                 "}\n");
     }
     
+    public void testConstructorWithParameters1() throws Exception {
+        performTest(
+                "package hierbas.del.litoral;\n\n" +
+                "public class Test {\n" +
+                "    public void taragui() {\n" +
+                "        new java.util.ArrayList(3) {};\n" +
+                "    }\n" +
+                "}\n",
+                "package hierbas.del.litoral;\n\n" +
+                "import java.util.ArrayList;\n" +
+                "public class Test {\n" +
+                "    public void taragui() {\n" +
+                "        new ArrayListImpl(3);\n" +
+                "    }\n" +
+                "    private static class ArrayListImpl extends ArrayList {\n" +
+                "        private ArrayListImpl(int arg0) {\n" + 
+                "            super(arg0);\n" + 
+                "        }\n" + 
+                "    }\n" +
+                "}\n");
+    }
+    
+    public void testConstructorWithParameters2() throws Exception {
+        performTest(
+                "package hierbas.del.litoral;\n\n" +
+                "public class Test {\n" +
+                "    public void taragui() {\n" +
+                "        int i = 3;\n" +
+                "        new java.util.ArrayList(i) {};\n" +
+                "    }\n" +
+                "}\n",
+                "package hierbas.del.litoral;\n\n" +
+                "import java.util.ArrayList;\n" +
+                "public class Test {\n" +
+                "    public void taragui() {\n" +
+                "        int i = 3;\n" +
+                "        new ArrayListImpl(i);\n" +
+                "    }\n" +
+                "    private static class ArrayListImpl extends ArrayList {\n" +
+                "        private ArrayListImpl(int arg0) {\n" + 
+                "            super(arg0);\n" + 
+                "        }\n" + 
+                "    }\n" +
+                "}\n");
+    }
+    
+    public void testConstructorWithParameters3() throws Exception {
+        performTest(
+                "package hierbas.del.litoral;\n\n" +
+                "public class Test {\n" +
+                "    int i = 3;\n" +
+                "    public void taragui() {\n" +
+                "        new java.util.ArrayList(i) {};\n" +
+                "    }\n" +
+                "}\n",
+                "package hierbas.del.litoral;\n\n" +
+                "import java.util.ArrayList;\n" +
+                "public class Test {\n" +
+                "    int i = 3;\n" +
+                "    public void taragui() {\n" +
+                "        new ArrayListImpl(i);\n" +
+                "    }\n" +
+                "    private static class ArrayListImpl extends ArrayList {\n" +
+                "        private ArrayListImpl(int arg0) {\n" + 
+                "            super(arg0);\n" + 
+                "        }\n" + 
+                "    }\n" +
+                "}\n");
+    }
+    
+    public void testConstructorWithParameters4() throws Exception {
+        performTest(
+                "package hierbas.del.litoral;\n\n" +
+                "public class Test {\n" +
+                "    java.util.List<? extends CharSequence> l;\n" +
+                "    public void taragui() {\n" +
+                "        new java.util.ArrayList<CharSequence>(l) {};\n" +
+                "    }\n" +
+                "}\n",
+                "package hierbas.del.litoral;\n\n" +
+                "import java.util.ArrayList;\n" +
+                "import java.util.Collection;\n" +
+                "public class Test {\n" +
+                "    java.util.List<? extends CharSequence> l;\n" +
+                "    public void taragui() {\n" +
+                "        new ArrayListImpl(l);\n" +
+                "    }\n" +
+                "    private static class ArrayListImpl extends ArrayList<CharSequence> {\n" +
+                "        private ArrayListImpl(Collection<? extends CharSequence> arg0) {\n" + 
+                "            super(arg0);\n" + 
+                "        }\n" + 
+                "    }\n" +
+                "}\n");
+    }
+    
     private void performTest(String test, String golden) throws Exception {
         File testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile, test);
