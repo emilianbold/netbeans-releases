@@ -2569,6 +2569,9 @@ public class CasualDiff {
         }
         tokenSequence.move(oldT.pos);
         PositionEstimator.moveToSrcRelevant(tokenSequence, Direction.BACKWARD);
+        if (tokenSequence.token() == null) {
+            return false;
+        }
         if (JavaTokenId.COMMA == tokenSequence.token().id()) {
             return true;
         }
