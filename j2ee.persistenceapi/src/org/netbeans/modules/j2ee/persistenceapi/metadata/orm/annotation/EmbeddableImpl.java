@@ -28,15 +28,15 @@ import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.Persisten
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.*;
 
 public class EmbeddableImpl extends PersistentObject implements Embeddable, JavaContextListener {
-    
+
     private final EntityMappingsImpl root;
-    
+
     // persistent
     private String class2;
-    
+
     // transient: set to null in javaContextLeft()
     private EmbeddableAttributesImpl attributes;
-    
+
     public EmbeddableImpl(AnnotationModelHelper helper, EntityMappingsImpl root, TypeElement typeElement) {
         super(helper, typeElement);
         this.root = root;
@@ -44,7 +44,7 @@ public class EmbeddableImpl extends PersistentObject implements Embeddable, Java
         boolean valid = refresh(typeElement);
         assert valid;
     }
-    
+
     boolean refresh(TypeElement typeElement) {
         class2 = typeElement.getQualifiedName().toString();
         AnnotationModelHelper helper = getHelper();
@@ -52,11 +52,11 @@ public class EmbeddableImpl extends PersistentObject implements Embeddable, Java
         AnnotationMirror embeddableAnn = annByType.get("javax.persistence.Embeddable"); // NOI18N
         return embeddableAnn != null;
     }
-    
+
     EntityMappingsImpl getRoot() {
         return root;
     }
-    
+
     public void javaContextLeft() {
         attributes = null;
     }
@@ -107,7 +107,7 @@ public class EmbeddableImpl extends PersistentObject implements Embeddable, Java
     public EmbeddableAttributes newEmbeddableAttributes() {
         throw new UnsupportedOperationException("This operation is not implemented yet."); // NOI18N
     }
-    
+
     public String toString() {
         return "EmbeddableImpl[class2='" + class2 + "']"; // NOI18N
     }

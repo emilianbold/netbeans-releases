@@ -30,17 +30,17 @@ import org.netbeans.modules.j2ee.persistenceapi.metadata.orm.annotation.Attribut
 
 public class EmbeddableAttributesImpl implements EmbeddableAttributes, PropertyHandler {
 
-    private final EmbeddableImpl embeddable;    
+    private final EmbeddableImpl embeddable;
     private final AttributesHelper attrHelper;
-    
+
     private final List<Basic> basicList = new ArrayList<Basic>();
-    
+
     public EmbeddableAttributesImpl(EmbeddableImpl embeddable) {
         this.embeddable = embeddable;
         attrHelper = new AttributesHelper(embeddable.getRoot().getHelper(), embeddable.getTypeElement(), this);
         attrHelper.parse();
     }
-    
+
     public boolean hasFieldAccess() {
         return attrHelper.hasFieldAccess();
     }

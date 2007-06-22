@@ -2,10 +2,10 @@
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
- * 
+ *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- * 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
@@ -31,7 +31,7 @@ import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.Annotatio
  * @author Andrei Badea
  */
 public final class AttributesHelper {
-    
+
     private final TypeElement typeElement;
     private final AnnotationModelHelper helper;
     private final PropertyHandler propertyHandler;
@@ -48,7 +48,7 @@ public final class AttributesHelper {
         List<? extends Element> elements = typeElement.getEnclosedElements();
         fieldAccess = EntityMappingsUtilities.hasFieldAccess(helper, elements);
     }
-    
+
     public void parse() {
         if (typeElement == null) {
             return;
@@ -66,7 +66,7 @@ public final class AttributesHelper {
             }
         }
     }
-    
+
     private void handleProperty(Element element) {
         String propertyName = element.getSimpleName().toString();
         if (ElementKind.METHOD.equals(element.getKind())) {
@@ -77,16 +77,16 @@ public final class AttributesHelper {
         }
         propertyHandler.handleProperty(element, propertyName);
     }
-    
+
     public boolean hasFieldAccess() {
         return fieldAccess;
     }
-    
+
     public interface PropertyHandler {
         /**
-         * Handle the given property (either a <code>VariableElement</code> for the 
+         * Handle the given property (either a <code>VariableElement</code> for the
          * property field or an <code>ExecutableElement</code> for the property getter method.
-         * 
+         *
          * @param element never null.
          * @param propertyName never null.
          */

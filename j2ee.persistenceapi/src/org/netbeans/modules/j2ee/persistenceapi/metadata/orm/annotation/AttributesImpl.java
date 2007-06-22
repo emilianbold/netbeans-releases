@@ -30,7 +30,7 @@ import org.netbeans.modules.j2ee.persistence.api.metadata.orm.*;
 import org.netbeans.modules.j2ee.persistenceapi.metadata.orm.annotation.AttributesHelper.PropertyHandler;
 
 public class AttributesImpl implements Attributes, PropertyHandler {
-    
+
     private final AnnotationModelHelper helper;
     private final AttributesHelper attrHelper;
 
@@ -46,17 +46,17 @@ public class AttributesImpl implements Attributes, PropertyHandler {
     public AttributesImpl(EntityImpl entity) {
         this(entity.getRoot().getHelper(), entity.getTypeElement());
     }
-    
+
     public AttributesImpl(MappedSuperclassImpl mappedSuperclass) {
         this(mappedSuperclass.getRoot().getHelper(), mappedSuperclass.getTypeElement());
     }
-    
+
     private AttributesImpl(AnnotationModelHelper helper, TypeElement typeElement) {
         this.helper = helper;
         attrHelper = new AttributesHelper(helper, typeElement, this);
         attrHelper.parse();
     }
-    
+
     public boolean hasFieldAccess() {
         return attrHelper.hasFieldAccess();
     }
@@ -66,7 +66,7 @@ public class AttributesImpl implements Attributes, PropertyHandler {
         if (EntityMappingsUtilities.isTransient(annByType, element.getModifiers())) {
             return;
         }
-        
+
         AnnotationMirror oneToOneAnnotation = annByType.get("javax.persistence.OneToOne"); // NOI18N
         AnnotationMirror oneToManyAnnotation = annByType.get("javax.persistence.OneToMany"); // NOI18N
         AnnotationMirror manyToOneAnnotation = annByType.get("javax.persistence.ManyToOne"); // NOI18N

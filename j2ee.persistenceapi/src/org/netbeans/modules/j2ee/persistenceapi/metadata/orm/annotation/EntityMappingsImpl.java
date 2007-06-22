@@ -399,7 +399,7 @@ public class EntityMappingsImpl implements EntityMappings {
     }
 
     private final class EmbeddableProvider  implements ObjectProvider<EmbeddableImpl> {
-        
+
         public List<EmbeddableImpl> createInitialObjects() throws InterruptedException {
             final List<EmbeddableImpl> result = new ArrayList<EmbeddableImpl>();
             helper.getAnnotationScanner().findAnnotatedTypes("javax.persistence.Embeddable", new TypeAnnotationHandler() { // NOI18N
@@ -419,13 +419,13 @@ public class EntityMappingsImpl implements EntityMappings {
 
         public boolean modifyObjects(TypeElement type, List<EmbeddableImpl> objects) {
             assert objects.size() == 1;
-            EmbeddableImpl entity = objects.get(0);
-            if (!entity.refresh(type)) {
+            EmbeddableImpl embeddable = objects.get(0);
+            if (!embeddable.refresh(type)) {
                 objects.remove(0);
                 return true;
             }
             return false;
-        }        
+        }
     }
 
     private final class MappedSuperclassProvider  implements ObjectProvider<MappedSuperclassImpl> {
