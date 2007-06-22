@@ -7,6 +7,7 @@
 package org.netbeans.modules.vmd.game.view;
 
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import javax.swing.JComponent;
@@ -97,12 +98,14 @@ public class GameDesignPreviewComponent extends javax.swing.JPanel implements Mo
     public void mouseEntered(MouseEvent e) {
         jPanel1.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(255, 164, 0), 1, true));
         jLabel1.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(255, 164, 0), 1, true));
+		jLabel1.setFont(jLabel1.getFont().deriveFont(Font.BOLD));
 		jLabel1.setOpaque(true);
     }
 
     public void mouseExited(MouseEvent e) {
 		jPanel1.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(163, 184, 215), 1, true));
 		jLabel1.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(163, 184, 215), 1, true));
+		jLabel1.setFont(jLabel1.getFont().deriveFont(Font.PLAIN));
 		jLabel1.setOpaque(false);
     }
 

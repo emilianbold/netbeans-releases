@@ -18,20 +18,29 @@ package org.netbeans.modules.vmd.game.view;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Font;
 import java.awt.Rectangle;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.List;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.Scrollable;
 import javax.swing.SwingConstants;
+import org.netbeans.modules.vmd.game.dialog.NewSceneDialog;
 import org.netbeans.modules.vmd.game.model.GlobalRepository;
 import org.netbeans.modules.vmd.game.model.Scene;
 import org.netbeans.modules.vmd.game.model.Sprite;
 import org.netbeans.modules.vmd.game.model.TiledLayer;
+import org.netbeans.modules.vmd.game.nbdialog.SpriteDialog;
+import org.netbeans.modules.vmd.game.nbdialog.TiledLayerDialog;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 
 /**
  *
@@ -79,6 +88,29 @@ public class GameDesignOverViewPanel extends ScrollableFlowPanel implements Comp
 			//System.out.println("preview tiledLayer: " + tiledLayer);
 			add(new GameDesignPreviewComponent(gameDesign, tiledLayer.getPreview(), tiledLayer.getName(), tiledLayer));
 		}
+
+		
+		final JLabel lblCreate = new JLabel("Create tiled layer ...");
+		lblCreate.setPreferredSize(new Dimension(lblCreate.getPreferredSize().width + 15, 40));
+        lblCreate.setForeground(new java.awt.Color(100, 123, 156));
+		lblCreate.addMouseListener(new MouseAdapter() {
+            public void mouseEntered(MouseEvent e) {
+				lblCreate.setFont(lblCreate.getFont().deriveFont(Font.BOLD));
+            }
+            public void mouseExited(MouseEvent e) {
+				lblCreate.setFont(lblCreate.getFont().deriveFont(Font.PLAIN));
+            }
+            public void mouseClicked(MouseEvent e) {
+				TiledLayerDialog nld = new TiledLayerDialog(gameDesign);
+				DialogDescriptor dd = new DialogDescriptor(nld, "Create new TiledLayer");
+				dd.setButtonListener(nld);
+				dd.setValid(false);
+				nld.setDialogDescriptor(dd);
+				Dialog d = DialogDisplayer.getDefault().createDialog(dd);
+				d.setVisible(true);
+           }
+		});
+		this.add(lblCreate);
 	}
 
 	private void populateSpritePreviewList() {
@@ -95,6 +127,28 @@ public class GameDesignOverViewPanel extends ScrollableFlowPanel implements Comp
 			imagePreviewComponent.setPreviewable(sprite.getDefaultSequence().getFrame(0));
 			add(new GameDesignPreviewComponent(gameDesign, imagePreviewComponent, sprite.getName(), sprite));
 		}
+		
+		final JLabel lblCreate = new JLabel("Create sprite ...");
+		lblCreate.setPreferredSize(new Dimension(lblCreate.getPreferredSize().width + 15, 40));
+        lblCreate.setForeground(new java.awt.Color(100, 123, 156));
+		lblCreate.addMouseListener(new MouseAdapter() {
+            public void mouseEntered(MouseEvent e) {
+				lblCreate.setFont(lblCreate.getFont().deriveFont(Font.BOLD));
+            }
+            public void mouseExited(MouseEvent e) {
+				lblCreate.setFont(lblCreate.getFont().deriveFont(Font.PLAIN));
+            }
+            public void mouseClicked(MouseEvent e) {
+				SpriteDialog nld = new SpriteDialog(gameDesign);
+				DialogDescriptor dd = new DialogDescriptor(nld, "Create new Sprite");
+				dd.setButtonListener(nld);
+				dd.setValid(false);
+				nld.setDialogDescriptor(dd);
+				Dialog d = DialogDisplayer.getDefault().createDialog(dd);
+				d.setVisible(true);
+            }			
+		});
+		this.add(lblCreate);
 	}
 	
 	private void populateScenePreviewList() {
@@ -109,6 +163,28 @@ public class GameDesignOverViewPanel extends ScrollableFlowPanel implements Comp
 			//System.out.println("preview scene: " + scene);
 			add(new GameDesignPreviewComponent(gameDesign, scene.getPreview(), scene.getName(), scene));
 		}
+		
+		final JLabel lblCreate = new JLabel("Create scene ...");
+		lblCreate.setPreferredSize(new Dimension(lblCreate.getPreferredSize().width + 15, 40));
+        lblCreate.setForeground(new java.awt.Color(100, 123, 156));
+		lblCreate.addMouseListener(new MouseAdapter() {
+            public void mouseEntered(MouseEvent e) {
+				lblCreate.setFont(lblCreate.getFont().deriveFont(Font.BOLD));
+            }
+            public void mouseExited(MouseEvent e) {
+				lblCreate.setFont(lblCreate.getFont().deriveFont(Font.PLAIN));
+            }
+            public void mouseClicked(MouseEvent e) {
+				NewSceneDialog dialog = new NewSceneDialog(gameDesign);
+				DialogDescriptor dd = new DialogDescriptor(dialog, "Create new Scene");
+				dd.setButtonListener(dialog);
+				dd.setValid(false);
+				dialog.setDialogDescriptor(dd);
+				Dialog d = DialogDisplayer.getDefault().createDialog(dd);
+				d.setVisible(true);
+            }			
+		});
+		this.add(lblCreate);
 	}
 
 	private void resizeLabels() {
