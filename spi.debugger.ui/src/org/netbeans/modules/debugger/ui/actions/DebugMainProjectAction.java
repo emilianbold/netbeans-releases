@@ -89,7 +89,8 @@ public class DebugMainProjectAction implements Action, Presenter.Toolbar {
         JPopupMenu menu = new JPopupMenu();
         JButton button = DropDownButtonFactory.createDropDownButton(
                 new ImageIcon(new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB)), menu);
-        JMenuItem item = new JMenuItem(Actions.cutAmpersand((String) getValue(NAME)));
+        JMenuItem item = new JMenuItem(Actions.cutAmpersand((String) getValue(NAME)));//"<html><b>"+Actions.cutAmpersand((String) getValue(NAME))+"</b></html>") {
+        item.setEnabled(delegate.isEnabled());
         menu.add(item);
         item.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
