@@ -725,10 +725,10 @@ introduced by support for multiple source roots. -jglick
                     <classpath><path path="${{j2ee.platform.classpath}}"/></classpath>
                 </taskdef>
             </target>
-            <target name="-rest-pre-compile" depends="-init-rest" if="rest.support.on">
+            <target name="-rest-post-compile" depends="-init-rest" if="rest.support.on">
                 <mkdir dir="${{build.generated.dir}}/rest-gen"/>
-                <restapt fork="true" xEndorsed="true" sourcePath="${{src.dir}}" nocompile="false"
-                         destdir="${{build.classes.dir.real}}" 
+                <restapt fork="true" xEndorsed="true" sourcePath="${{src.dir}}" nocompile="true"
+                         destdir="${{build.generated.dir}}/rest-gen" 
                          sourcedestdir="${{build.generated.dir}}/rest-gen">
                     <classpath>
                         <path path="${{javac.classpath}}"/>
@@ -740,8 +740,9 @@ introduced by support for multiple source roots. -jglick
                         <include name="**/*.java"/>
                     </source>
                 </restapt>
-                <copy todir="${{build.classes.dir}}">
-                    <fileset dir="${{src.dir}}" excludes="**/*.java"/>
+                <webproject2:javac srcdir="${{build.generated.dir}}/rest-gen" destdir="${{build.classes.dir.real}}"/>
+                <copy todir="${{build.classes.dir.real}}">
+                    <fileset dir="${{build.generated.dir}}/rest-gen" includes="**/*.wadl"/>
                 </copy>
             </target>
             
@@ -751,7 +752,7 @@ introduced by support for multiple source roots. -jglick
                 </xsl:if>
             </target>
             <target name="-do-compile">
-                <xsl:attribute name="depends">init, deps-jar, -pre-pre-compile, -pre-compile, -copy-manifest, -copy-persistence-xml, -copy-webdir, library-inclusion-in-archive,library-inclusion-in-manifest,-do-ws-compile,-rest-pre-compile</xsl:attribute>
+                <xsl:attribute name="depends">init, deps-jar, -pre-pre-compile, -pre-compile, -copy-manifest, -copy-persistence-xml, -copy-webdir, library-inclusion-in-archive,library-inclusion-in-manifest,-do-ws-compile</xsl:attribute>
                 <xsl:attribute name="if">have.sources</xsl:attribute>
                 
                 <webproject2:javac destdir="${{build.classes.dir.real}}"/>
@@ -803,7 +804,7 @@ introduced by support for multiple source roots. -jglick
             </target>
             
             <target name="compile">
-                <xsl:attribute name="depends">init,deps-jar,-pre-pre-compile,-pre-compile,-do-compile,-post-compile</xsl:attribute>
+                <xsl:attribute name="depends">init,deps-jar,-pre-pre-compile,-pre-compile,-do-compile,-rest-post-compile,-post-compile</xsl:attribute>
                 <xsl:attribute name="description">Compile project.</xsl:attribute>
             </target>
             
