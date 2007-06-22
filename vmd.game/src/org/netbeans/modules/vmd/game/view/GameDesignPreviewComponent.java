@@ -84,7 +84,7 @@ public class GameDesignPreviewComponent extends javax.swing.JPanel implements Mo
     // End of variables declaration//GEN-END:variables
 	
     public void mouseClicked(MouseEvent e) {
-        System.out.println("Clicked - request editing!");
+        //System.out.println("Clicked - request editing!");
 		this.gameDesign.getMainView().requestEditing(editable);
     }
 

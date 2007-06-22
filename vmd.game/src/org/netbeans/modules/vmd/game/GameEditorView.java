@@ -160,6 +160,9 @@ public class GameEditorView implements DataEditorView, EditorManagerListener {
                         if (DEBUG) System.out.println("Request editing for: " + item);
                         gameDesign.getMainView().requestEditing((Editable) item);
                     }
+					else if (item instanceof String) {
+						gameDesign.getMainView().requestEditing(gameDesign);
+                    }
                 }
             });
 			if (gameDesign != null) {

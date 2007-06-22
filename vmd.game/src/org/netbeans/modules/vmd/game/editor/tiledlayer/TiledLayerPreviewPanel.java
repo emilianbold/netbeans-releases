@@ -68,12 +68,12 @@ public class TiledLayerPreviewPanel extends JComponent implements TiledLayerList
 		if (ratio == ratioW) {
 			double newHeight = this.tiledLayer.getHeight() * ratio;
 			y = (this.getHeight() - newHeight) / 2;
-			System.out.println("new height: " + newHeight + ", offY: " + y);
+			//System.out.println("new height: " + newHeight + ", offY: " + y);
 		}
 		else {
 			double newWidth = this.tiledLayer.getWidth() * ratio;
 			x = (this.getWidth() - newWidth) / 2;
-			System.out.println("new width: " + newWidth + ", offX: " + x);
+			//System.out.println("new width: " + newWidth + ", offX: " + x);
 		}
 		g.translate(x, y);
 		g.scale(ratio, ratio);

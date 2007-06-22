@@ -24,8 +24,6 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import javax.swing.JComponent;
 import org.netbeans.modules.vmd.game.model.Previewable;
 

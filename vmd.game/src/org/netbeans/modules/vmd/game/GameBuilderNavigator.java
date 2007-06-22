@@ -41,7 +41,7 @@ import org.openide.util.Lookup;
  */
 public class GameBuilderNavigator extends JPanel implements NavigatorPanel, EditorManagerListener {
     
-	private GlobalRepository gameDesign;
+	private GlobalRepository gameDesign; 
 	private ADSL listener;
 
 	public GameBuilderNavigator() {

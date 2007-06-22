@@ -35,7 +35,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.event.EventListenerList;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
-import org.netbeans.modules.vmd.game.view.GameDesignEditorPanel;
+import org.netbeans.modules.vmd.game.view.GameDesignOverViewPanel;
 import org.netbeans.modules.vmd.game.view.main.MainView;
 
 public class GlobalRepository implements PropertyChangeListener, Editable {
@@ -384,7 +384,7 @@ public class GlobalRepository implements PropertyChangeListener, Editable {
     public JComponent getEditor() {
 		JPanel top = new JPanel(new BorderLayout());
 		JScrollPane scroll = new JScrollPane();
-		scroll.setViewportView(new GameDesignEditorPanel(this));
+		scroll.setViewportView(new GameDesignOverViewPanel(this));
 		scroll.getViewport().setBackground(Color.WHITE);
 		top.add(scroll, BorderLayout.CENTER);
 		return top;
