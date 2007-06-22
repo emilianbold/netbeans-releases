@@ -162,17 +162,17 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
         return "text/x-java"; // NOI18N
     }
     
+    // this is just a flag for obtaining encoding at first time.
+    private boolean isEncodingRetrieved = false;
+    
     public String getFileEncoding() {
-        //        TagLibParseSupport tlps = (TagLibParseSupport)getCookie(TagLibParseSupport.class);
+        if (!isEncodingRetrieved){
+            updateFileEncoding(false);
+            isEncodingRetrieved = true;
+        }
         String retrievedEncoding = (String)getPrimaryFile().getAttribute(PROP_ENCODING);
-        //        if (tlps != null) {
-        //            boolean doReparse = reparseEncoding;
-        //            boolean useEditor = useEditorForEncoding;
-        //            reparseEncoding = false;
-        //            useEditorForEncoding = false;
-        //            retrievedEncoding = tlps.getCachedOpenInfo(doReparse, useEditor).getEncoding();
-        //        }
         retrievedEncoding = retrievedEncoding != null ? retrievedEncoding : DEFAULT_ENCODING;
+        
         return retrievedEncoding ;
     }
     

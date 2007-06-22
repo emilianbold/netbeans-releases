@@ -206,6 +206,7 @@ class BaseJspEditorSupport extends DataEditorSupport implements EditCookie, Edit
     
     public void open(){
 //        long a = System.currentTimeMillis(); // 
+        ((JspDataObject)getDataObject()).updateFileEncoding(false);
         encoding = ((JspDataObject)getDataObject()).getFileEncoding(); //use encoding from fileobject
         
         if (!isSupportedEncoding(encoding)) {
