@@ -24,6 +24,7 @@ import java.io.Writer;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import javax.swing.text.Position;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Formatter;
 import org.netbeans.editor.GuardedException;
@@ -70,8 +71,9 @@ public final class FormatterImpl extends ExtFormatter {
 
     public int indentLine(Document doc, int offset) {
         try {
+            Position pos = doc.createPosition(offset);
             indentImpl.reindent(offset, offset);
-            return offset;
+            return pos.getOffset();
         } catch (GuardedException e) {
             java.awt.Toolkit.getDefaultToolkit().beep();
         } catch (BadLocationException e) {
