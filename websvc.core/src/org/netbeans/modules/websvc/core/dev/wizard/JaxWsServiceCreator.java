@@ -29,6 +29,7 @@ import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.libraries.Library;
@@ -306,11 +307,21 @@ public class JaxWsServiceCreator implements ServiceCreator {
         FileObject createdFile = dobj.getPrimaryFile();
         
         /* don't rely on annotation listener to notify the service creation */
-        JaxWsModel jaxWsModel = projectInfo.getProject().getLookup().lookup(JaxWsModel.class);
+        final JaxWsModel jaxWsModel = projectInfo.getProject().getLookup().lookup(JaxWsModel.class);
         if ( jaxWsModel!= null) {
             ClassPath classPath = ClassPath.getClassPath(createdFile, ClassPath.SOURCE);
             String serviceImplPath = classPath.getResourceName(createdFile, '.', false);
             Service service = jaxWsModel.addService(wsName, serviceImplPath);
+            ProjectManager.mutex().writeAccess(new Runnable() {
+                public void run() {
+                    try {
+                        jaxWsModel.write();
+                    } catch (IOException ex) {
+                        ErrorManager.getDefault().notify(ex);
+                    }
+                }
+
+            }); 
             jaxWsModel.write();
             JaxWsUtils.openFileInEditor(dobj, service);
         }    
