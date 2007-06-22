@@ -138,10 +138,11 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
                     Collection overridens = getOverriddenMethods(method, info);
                     if (!overridens.isEmpty()) {
                         ExecutableElement el = (ExecutableElement) overridens.iterator().next();                        
+                        assert el!=null;
                         m_isBaseClassText =
                                 new MessageFormat(NbBundle.getMessage(WhereUsedPanel.class, "LBL_UsagesOfBaseClass")).format(
                                 new Object[] {
-                            methodDeclaringSuperClass = getSimpleName(((ExecutableElement) overridens.iterator().next()).getEnclosingElement())
+                            methodDeclaringSuperClass = getSimpleName((el).getEnclosingElement())
                         }
                         );
                         newElement = TreePathHandle.create(el, info);
