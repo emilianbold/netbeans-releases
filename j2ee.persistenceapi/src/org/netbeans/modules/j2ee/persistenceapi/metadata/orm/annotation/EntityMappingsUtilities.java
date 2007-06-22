@@ -36,7 +36,6 @@ import javax.lang.model.util.ElementFilter;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.AnnotationParser;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.ArrayValueHandler;
-import org.netbeans.modules.j2ee.persistence.api.metadata.orm.IdClass;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.JoinColumn;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.PrimaryKeyJoinColumn;
 
@@ -149,14 +148,13 @@ public class EntityMappingsUtilities {
         }
         return result;
     }
-    
+
     public static String getTemporalType(AnnotationModelHelper helper, AnnotationMirror temporalAnnotation) {
         AnnotationParser parser = AnnotationParser.create(helper);
         parser.expectEnumConstant("value", helper.resolveType("javax.persistence.TemporalType"), null); // NOI18N
         return parser.parse(temporalAnnotation).get("value", String.class);
-        
     }
-    
+
     public static IdClassImpl getIdClass(AnnotationModelHelper helper, TypeElement typeElement) {
         AnnotationMirror idClassAnn = helper.getAnnotationsByType(typeElement.getAnnotationMirrors()).get("javax.persistence.IdClass"); // NOI18N
         if (idClassAnn == null) {
