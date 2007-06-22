@@ -16,17 +16,16 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entres;
 
 import java.awt.BorderLayout;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import javax.swing.JPanel;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.nodes.Node;
-
 
 /**
  *
@@ -34,10 +33,8 @@ import org.openide.nodes.Node;
  */
 public class NodeDisplayPanel extends JPanel implements ExplorerManager.Provider {
     
-    private PropertyChangeSupport pcs;
     private final ExplorerManager manager = new ExplorerManager();
     
-    /** Creates a new instance of NodeDisplayPanel */
     public NodeDisplayPanel(Node rootNode) {
         BeanTreeView btv = new BeanTreeView();
         btv.setRootVisible(false);
@@ -50,7 +47,7 @@ public class NodeDisplayPanel extends JPanel implements ExplorerManager.Provider
         manager.addPropertyChangeListener(
         new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent pce) {
-                firePropertyChange();
+                firePropertyChange(ExplorerManager.PROP_NODE_CHANGE, null, null);
             }
         });
         setLayout(new BorderLayout());
@@ -59,31 +56,12 @@ public class NodeDisplayPanel extends JPanel implements ExplorerManager.Provider
         btv.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NodeDisplayPanel.class, "ACSD_NodeTreeView"));
     }
     
-    public void addPropertyChangeListener(PropertyChangeListener listener) {
-        getPropertyChangeSupport().addPropertyChangeListener(listener);
-    }
-    
-    private void firePropertyChange() {
-        getPropertyChangeSupport().firePropertyChange(ExplorerManager.PROP_NODE_CHANGE, null, null);
-    }
-    
     public Node[] getSelectedNodes() {
         return manager.getSelectedNodes();
     }
 
     public ExplorerManager getExplorerManager() {
         return manager;
-    }
-    
-    /**
-     * See issue #101804, addPropertyChangeListener was called by the superclass constructor,
-     * that is, before the pcs field was initialized
-     */
-    private synchronized PropertyChangeSupport getPropertyChangeSupport() {
-        if (pcs == null) {
-            pcs = new PropertyChangeSupport(this);
-        }
-        return pcs;
     }
     
 }
