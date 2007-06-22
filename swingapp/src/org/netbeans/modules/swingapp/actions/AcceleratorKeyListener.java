@@ -101,7 +101,14 @@ public class AcceleratorKeyListener implements KeyListener {
         panel.acceleratorText.setEnabled(enabled);
     }
 
-    
+    public void updateFromModifiers() {
+        int mask = 0;
+        if(panel.shiftCheckbox.isSelected()) { mask = mask | InputEvent.SHIFT_MASK; }
+        if(panel.altCheckbox.isSelected()) { mask = mask | InputEvent.ALT_MASK; }
+        if(panel.controlCheckbox.isSelected()) { mask = mask | InputEvent.CTRL_MASK; }
+        if(panel.metaCheckbox.isSelected()) { mask = mask | InputEvent.META_MASK; }
+        keyStroke = KeyStroke.getKeyStroke(currentKeyCode, mask);
+    }
     
     private void setModifiers(KeyEvent ke) {
         panel.shiftCheckbox.setSelected(ke.isShiftDown());

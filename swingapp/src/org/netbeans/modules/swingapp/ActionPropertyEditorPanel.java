@@ -185,6 +185,16 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel {
         });
         
         updatePropertyCombos(null);
+        
+        ActionListener modifierListener = new ActionListener() {
+            public void actionPerformed(ActionEvent arg0) {
+                acceleratorListener.updateFromModifiers();
+            }
+        };
+        altCheckbox.addActionListener(modifierListener);
+        controlCheckbox.addActionListener(modifierListener);
+        metaCheckbox.addActionListener(modifierListener);
+        shiftCheckbox.addActionListener(modifierListener);
     }
     
     /* update the selected and enabled combos based on the class of the action
