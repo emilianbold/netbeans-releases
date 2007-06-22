@@ -21,9 +21,10 @@ package org.netbeans.modules.visualweb.outline;
 
 import com.sun.rave.designtime.DesignBean;
 import java.util.Collection;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JComponent;
 import org.netbeans.spi.navigator.NavigatorPanelWithUndo;
-import org.openide.ErrorManager;
 import org.openide.awt.UndoRedo;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
@@ -39,10 +40,6 @@ import org.openide.util.NbBundle;
  * @author Peter Zavadsky
  */
 public class OutlinePanelProvider implements NavigatorPanelWithUndo {
-
-    /** Debugging flag. */
-    private static final boolean DEBUG = ErrorManager.getDefault()
-            .getInstance(OutlinePanelProvider.class.getName()).isLoggable(ErrorManager.INFORMATIONAL);
 
 
     /** Current context to work on. */
@@ -72,12 +69,12 @@ public class OutlinePanelProvider implements NavigatorPanelWithUndo {
     public void panelActivated(Lookup lookup) {
         currentContextResult = lookup.lookup(new Lookup.Template<DesignBean>(DesignBean.class));
 
-        if (DEBUG) {
-            debugLog("panelActivated lookup=" + lookup); // NOI18N
+        if (isFine()) {
+            fine("panelActivated lookup=" + lookup); // NOI18N
             if (lookup != null) {
                 java.util.Collection col = lookup.lookup(new Lookup.Template<Object>(Object.class)).allInstances();
                 for (java.util.Iterator it = col.iterator(); it.hasNext(); ) {
-                    debugLog("item=" + it.next()); // NOI18N
+                    fine("item=" + it.next()); // NOI18N
                 }
             }
         }
@@ -88,8 +85,15 @@ public class OutlinePanelProvider implements NavigatorPanelWithUndo {
     }
 
     public void panelDeactivated() {
-        currentContextResult.removeLookupListener(outlineLookupListener);
-        currentContextResult = null;
+        if (currentContextResult == null) {
+            // #105327 There seems to be panelDeactivated called while there was missing panelActivated call before.
+            info(new IllegalStateException(
+                    "Called panelDeactivated method without previous correspondent panelActiavated method call on NavigatorPanel impl, "
+                    + "navigatorPanel=" + this)); // NOI18N
+        } else {
+            currentContextResult.removeLookupListener(outlineLookupListener);
+            currentContextResult = null;
+        }
         
         // XXX #99299 Memory leak. Removing the tree when the panel is deactivated.
         OutlinePanel.getDefault().setActiveBeans(new DesignBean[0]);
@@ -100,18 +104,12 @@ public class OutlinePanelProvider implements NavigatorPanelWithUndo {
     }
 
 
-    /** Logs debug message. Use only after checking <code>DEBUG</code> flag. */
-    private static void debugLog(String message) {
-        ErrorManager.getDefault().getInstance(OutlinePanelProvider.class.getName()).log(message);
-    }
-
-
     /** Listens on retrieved <code>Lookup.Result</code>. */
     private static class OutlineLookupListener implements LookupListener {
         public void resultChanged(LookupEvent evt) {
             Collection<? extends DesignBean> designBeans = ((Lookup.Result<DesignBean>)evt.getSource()).allInstances();
-            if (DEBUG) {
-                debugLog("designBeans=" + designBeans); // NOI18N
+            if (isFine()) {
+                fine("designBeans=" + designBeans); // NOI18N
             }
 
             OutlinePanel.getDefault().setActiveBeans(designBeans.toArray(new DesignBean[designBeans.size()]));
@@ -138,4 +136,20 @@ public class OutlinePanelProvider implements NavigatorPanelWithUndo {
         return UndoRedo.NONE;
     }
 
+    
+    private static Logger getLogger() {
+        return Logger.getLogger(OutlinePanelProvider.class.getName());
+    }
+    
+    private static boolean isFine() {
+        return getLogger().isLoggable(Level.FINE);
+    }
+    
+    private static void fine(String message) {
+        getLogger().fine(message);
+    }
+    
+    private static void info(Exception ex) {
+        getLogger().log(Level.INFO, null, ex);
+    }
 }
