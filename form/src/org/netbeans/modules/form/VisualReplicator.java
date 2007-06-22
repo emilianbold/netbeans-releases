@@ -947,13 +947,11 @@ public class VisualReplicator { //implements VisualMapper
             } else if (root) { // need to enclose in JFrame/Frame for preview
                 if (RootPaneContainer.class.isAssignableFrom(compClass)
                         || JComponent.class.isAssignableFrom(compClass)) { // Swing
-                    if (!JFrame.class.isAssignableFrom(compClass)
-                            && !JDialog.class.isAssignableFrom(compClass)) {
+                    if (!JFrame.class.isAssignableFrom(compClass)) {
                         convClass = JFrame.class;
                     }
                 } else if (Component.class.isAssignableFrom(compClass)) { // AWT
-                    if (!Frame.class.isAssignableFrom(compClass)
-                            || !Dialog.class.isAssignableFrom(compClass)) {
+                    if (!Frame.class.isAssignableFrom(compClass)) {
                         convClass = Frame.class;
                     }
                 }
