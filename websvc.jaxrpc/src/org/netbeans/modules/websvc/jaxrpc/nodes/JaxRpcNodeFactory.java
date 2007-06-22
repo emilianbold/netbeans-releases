@@ -77,9 +77,12 @@ public class JaxRpcNodeFactory implements NodeFactory {
         public List keys() {
             List<String> result = new ArrayList<String>();
             WebServicesClientSupport wscs = WebServicesClientSupport.getWebServicesClientSupport(project.getProjectDirectory());
-            FileObject wsdlFolder = wscs.getWsdlFolder();
-            if (wscs  != null && wsdlFolder != null) {
-                result.add(KEY_SERVICE_REFS);
+            
+            if (wscs  != null ) {
+                FileObject wsdlFolder = wscs.getWsdlFolder();
+                if( wsdlFolder != null){
+                    result.add(KEY_SERVICE_REFS);
+                }
             }
             return result;
         }
