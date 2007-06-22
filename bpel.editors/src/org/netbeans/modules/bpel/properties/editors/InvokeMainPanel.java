@@ -119,18 +119,17 @@ public class InvokeMainPanel extends EditorLifeCycleAdapter {
         fldInputVariable = mcc.getFldInputVariable();
         btnNewInputVariable = mcc.getBtnNewInputVariable();
         btnChooseInputVariable = mcc.getBtnChooseInputVariable();
-        jRadioButton2 = mcc.getRbtnInputToParts();
+        jRadioButton2 = mcc.getRbtnInputParts();
         jScrollPane4 = new javax.swing.JScrollPane();
-        jTable3 = mcc.getTblInputToParts();
+        jTable3 = mcc.getTblInputParts();
         jPanel3 = new javax.swing.JPanel();
         jRadioButton3 = mcc.getRbtnOutputVariable();
         fldOutputVariable = mcc.getFldOutputVariable();
         btnNewOutputVariable = mcc.getBtnNewOutputVariable();
         btnChooseOutputVariable = mcc.getBtnChooseOutputVariable();
-        mcc.getRbtnOutputFromParts();
-        jRadioButton4 = mcc.getRbtnOutputFromParts();
+        jRadioButton4 = mcc.getRbtnOutputParts();
         jScrollPane2 = new javax.swing.JScrollPane();
-        jTable1 = mcc.getTblOutputFromParts();
+        jTable1 = mcc.getTblOutputParts();
 
         lblName.setLabelFor(fldName);
         lblName.setText(org.openide.util.NbBundle.getMessage(FormBundle.class, "LBL_Name"));
@@ -155,7 +154,7 @@ public class InvokeMainPanel extends EditorLifeCycleAdapter {
 
         jPanel1.setLayout(new java.awt.GridLayout(2, 1, 0, 4));
 
-        jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder("Input"));
+        jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder("Send Data"));
         jRadioButton1.setText("Input Variable:");
         jRadioButton1.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         jRadioButton1.setMargin(new java.awt.Insets(0, 0, 0, 0));
@@ -218,7 +217,7 @@ public class InvokeMainPanel extends EditorLifeCycleAdapter {
         );
         jPanel1.add(jPanel2);
 
-        jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder("Output"));
+        jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder("Receive Data"));
         jRadioButton3.setText("Output Variable:");
         jRadioButton3.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         jRadioButton3.setMargin(new java.awt.Insets(0, 0, 0, 0));
@@ -247,9 +246,9 @@ public class InvokeMainPanel extends EditorLifeCycleAdapter {
         jPanel3Layout.setHorizontalGroup(
             jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel3Layout.createSequentialGroup()
+                .addContainerGap()
                 .add(jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                     .add(jPanel3Layout.createSequentialGroup()
-                        .addContainerGap()
                         .add(jRadioButton3)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(fldOutputVariable, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 198, Short.MAX_VALUE)
@@ -258,12 +257,9 @@ public class InvokeMainPanel extends EditorLifeCycleAdapter {
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(btnChooseOutputVariable))
                     .add(org.jdesktop.layout.GroupLayout.LEADING, jPanel3Layout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(jPanel3Layout.createSequentialGroup()
-                                .add(17, 17, 17)
-                                .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 428, Short.MAX_VALUE))
-                            .add(jRadioButton4))))
+                        .add(17, 17, 17)
+                        .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 428, Short.MAX_VALUE))
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, jRadioButton4))
                 .addContainerGap())
         );
         jPanel3Layout.setVerticalGroup(
