@@ -978,6 +978,9 @@ public class MenuEditLayer extends JPanel {
                 if(value instanceof Icon) {
                     icon = (Icon) value;
                 }
+                if(value instanceof NbImageIcon) {
+                    icon = ((NbImageIcon)value).getIcon();
+                }
                 if(value instanceof ResourceValue) {
                     ResourceValue rv = (ResourceValue) value;
                     //p("design value = " + rv.getDesignValue());
@@ -991,6 +994,7 @@ public class MenuEditLayer extends JPanel {
                     }
                 }
                 // do the actual update
+                //p("updating the real icon with the new value of: "+ icon);
                 if(item.getIcon() instanceof WrapperIcon) {
                     ((WrapperIcon)item.getIcon()).setIcon(icon);
                 } else {

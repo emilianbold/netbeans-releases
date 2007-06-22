@@ -288,12 +288,16 @@ public class FormCustomEditor extends JPanel
         // the custom editor provider next time; and also for code generation);
         // it should be set for all properties (of all nodes selected)
         if (currentIndex > -1) {
-            Object[] nodes = editor.getPropertyEnv().getBeans();
-            if (nodes == null || nodes.length <= 1) {
+            if(editor.getPropertyEnv() == null) {
                 value = new FormProperty.ValueWithEditor(value, currentEditor);
-            }
-            else { // there are more nodes selected
-                value = new FormProperty.ValueWithEditor(value, currentIndex);
+            } else {
+                Object[] nodes = editor.getPropertyEnv().getBeans();
+                if (nodes == null || nodes.length <= 1) {
+                    value = new FormProperty.ValueWithEditor(value, currentEditor);
+                }
+                else { // there are more nodes selected
+                    value = new FormProperty.ValueWithEditor(value, currentIndex);
+                }
             }
         }
 
