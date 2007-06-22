@@ -25,20 +25,28 @@ import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.util.Set;
 import javax.swing.AbstractAction;
+import javax.swing.SwingUtilities;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.visual.border.BorderFactory;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.api.visual.model.ObjectScene;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.*;
+import org.netbeans.modules.websvc.core.wseditor.support.EditWSAttributesCookie;
 import org.netbeans.modules.websvc.design.configuration.WSConfiguration;
 import org.netbeans.modules.websvc.design.configuration.WSConfigurationProvider;
 import org.netbeans.modules.websvc.design.configuration.WSConfigurationProviderRegistry;
 import org.netbeans.modules.websvc.design.view.widget.AbstractTitledWidget;
+import org.netbeans.modules.websvc.design.view.widget.ButtonWidget;
 import org.netbeans.modules.websvc.design.view.widget.ImageLabelWidget;
 import org.netbeans.modules.websvc.design.view.widget.CheckBoxWidget;
+import org.netbeans.modules.websvc.jaxws.api.JAXWSView;
 import org.openide.filesystems.FileObject;
+import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -48,6 +56,8 @@ public class WsitWidget extends AbstractTitledWidget {
     
     private transient FileObject implementationClass;
     private transient Widget buttons;
+    private transient Widget configButtons;
+    private transient ButtonWidget advancedButton;
     private transient ImageLabelWidget headerLabelWidget;
     private Service service;
     
@@ -81,9 +91,27 @@ public class WsitWidget extends AbstractTitledWidget {
         buttons.addChild(getExpanderWidget());
         
         getHeaderWidget().addChild(buttons);
+
         getContentWidget().setBorder(BorderFactory.createEmptyBorder(RADIUS));
-        getContentWidget().setLayout(LayoutFactory.createVerticalFlowLayout(
+
+        configButtons = new Widget(getScene());
+        configButtons.setLayout(LayoutFactory.createVerticalFlowLayout(
                 LayoutFactory.SerialAlignment.LEFT_TOP, RADIUS));
+        getContentWidget().addChild(configButtons);
+        populateConfigWidget();
+
+        Widget advancedButtonContainer = new Widget(getScene());
+        advancedButtonContainer.setLayout(LayoutFactory.createVerticalFlowLayout(
+                LayoutFactory.SerialAlignment.RIGHT_BOTTOM, RADIUS));
+        advancedButton = new ButtonWidget(getScene(),
+                new AdvancedAction(service,implementationClass));
+        advancedButton.setOpaque(true);
+        advancedButtonContainer.addChild(advancedButton);
+        getContentWidget().addChild(advancedButtonContainer);
+    }
+    
+    private void populateConfigWidget() {
+        configButtons.removeChildren();
         for(WSConfigurationProvider provider : getConfigProviders()){
             WSConfiguration config = provider.getWSConfiguration(service, implementationClass);
             if(config != null){
@@ -93,9 +121,10 @@ public class WsitWidget extends AbstractTitledWidget {
                 button.getButton().getLabelWidget().setFont(
                         getScene().getFont().deriveFont(Font.BOLD));
                 button.setSelected(config.isSet()); //TODO: need to refresh the widget to reflect state
-                getContentWidget().addChild(button);
+                configButtons.addChild(button);
             }
         }
+        configButtons.setVisible(!configButtons.getChildren().isEmpty());
     }
     
     protected Paint getBodyPaint(Rectangle bounds) {
@@ -121,6 +150,51 @@ public class WsitWidget extends AbstractTitledWidget {
             }else{
                 config.unset();
             }
+        }
+    }
+    
+    class AdvancedAction extends AbstractAction{
+        private transient FileObject implementationClass;
+        private Service service;
+        private EditWSAttributesCookie cookie;
+        public AdvancedAction(Service service, FileObject implementationClass){
+            super(NbBundle.getMessage(WsitWidget.class, "LBL_Wsit_Advanced"));
+            this.implementationClass = implementationClass;
+            this.service = service;
+            setEnabled(false);
+            initializeCookie();
+        }
+        public void actionPerformed(ActionEvent event) {
+            if(cookie==null) return;
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    cookie.openWSAttributesEditor();
+                }
+            }, 10);
+        }
+        private void initializeCookie() {
+            Project project = FileOwnerQuery.getOwner(implementationClass);
+            if (project==null) return;
+            JAXWSView view = JAXWSView.getJAXWSView();
+            if (view==null) return;
+            final Node node = view.createJAXWSView(project);
+            if(node==null) return;
+            final FileObject currentImplBean = implementationClass;
+            final Service currentService = service;
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    for(Node n :node.getChildren().getNodes()) {
+                        Service sv = n.getLookup().lookup(Service.class);
+                        if (sv==null ) continue;
+                        if(n.getLookup().lookup(FileObject.class) == currentImplBean &&
+                                 sv.getName().equals(currentService.getName())) {
+                            cookie = n.getLookup().lookup(EditWSAttributesCookie.class);
+                            setEnabled(cookie!=null);
+                            return;
+                        }
+                    }
+                }
+            });
         }
     }
     
