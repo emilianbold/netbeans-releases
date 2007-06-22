@@ -157,6 +157,9 @@ public class WebRefactoringFactory implements RefactoringPluginFactory{
                 public void run(CompilationController co) throws Exception {
                     co.toPhase(JavaSource.Phase.RESOLVED);
                     CompilationUnitTree cut = co.getCompilationUnit();
+                    if (cut.getTypeDecls().isEmpty()){
+                        return;
+                    }
                     result[0] = TreePathHandle.create(TreePath.getPath(cut, cut.getTypeDecls().get(0)), co);
                 }
                 
