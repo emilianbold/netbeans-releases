@@ -35,7 +35,7 @@ import java.util.Iterator;
  */
 public class MidpDocumentSerializationController extends DocumentSerializationController {
 
-    private static final String VERSION_1 = "1";
+    public static final String VERSION_1 = "1";
 
     public void approveComponents (DataObjectContext context, DesignDocument loadingDocument, String documentVersion, Collection<ComponentElement> componentElements) {
         if (! MidpDocumentSupport.PROJECT_TYPE_MIDP.equals (context.getProjectType ())  ||  ! VERSION_1.equals (documentVersion))

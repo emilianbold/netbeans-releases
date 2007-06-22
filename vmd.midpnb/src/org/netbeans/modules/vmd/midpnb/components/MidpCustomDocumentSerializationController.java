@@ -26,6 +26,7 @@ import org.netbeans.modules.vmd.api.io.serialization.PropertyElement;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.midp.components.MidpDocumentSupport;
+import org.netbeans.modules.vmd.midp.components.MidpDocumentSerializationController;
 import org.netbeans.modules.vmd.midpnb.components.svg.SVGAnimatorWrapperCD;
 
 import java.util.Collection;
@@ -36,11 +37,11 @@ import java.util.Iterator;
  */
 public class MidpCustomDocumentSerializationController extends DocumentSerializationController {
 
-    public void approveComponents (DataObjectContext context, DesignDocument loadingDocument, Collection<ComponentElement> componentElements) {
+    public void approveComponents (DataObjectContext context, DesignDocument loadingDocument, String documentVersion, Collection<ComponentElement> componentElements) {
     }
 
-    public void approveProperties (DataObjectContext context, DesignDocument loadingDocument, DesignComponent component, Collection<PropertyElement> propertyElements) {
-        if (! MidpDocumentSupport.PROJECT_TYPE_MIDP.equals (context.getProjectType ()))
+    public void approveProperties (DataObjectContext context, DesignDocument loadingDocument, String documentVersion, DesignComponent component, Collection<PropertyElement> propertyElements) {
+        if (! MidpDocumentSupport.PROJECT_TYPE_MIDP.equals (context.getProjectType ())  ||  ! MidpDocumentSerializationController.VERSION_1.equals (documentVersion))
             return;
         if (loadingDocument.getDescriptorRegistry ().isInHierarchy (SVGAnimatorWrapperCD.TYPEID, component.getType ())) {
             Iterator<PropertyElement> iterator = propertyElements.iterator ();
