@@ -29,20 +29,15 @@
 
 package org.netbeans.modules.visualweb.palette.api;
 
-import com.sun.org.apache.bcel.internal.generic.DDIV;
 import org.netbeans.modules.visualweb.palette.codeclips.CodeClipItemNode;
 import org.netbeans.modules.visualweb.palette.codeclips.CodeClipUtilities;
 import java.awt.event.ActionEvent;
-import java.awt.event.ItemListener;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.text.JTextComponent;
 import org.netbeans.spi.palette.PaletteActions;
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.actions.NewAction;
 import org.openide.actions.RenameAction;
@@ -57,8 +52,8 @@ import org.openide.filesystems.Repository;
 
 
 public class CodeClipPaletteActions extends PaletteActions {
-    String paletteFolderName;
-    CloneableEditor cloneableEditor;
+    private String paletteFolderName;
+    private CloneableEditor cloneableEditor;
 
 
     /*
