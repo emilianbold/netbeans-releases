@@ -1302,7 +1302,7 @@ public final class Util {
 
         // XXX There was no file found.
         if (fileName == null || "".equals(fileName)) { // NOI18N
-            displayError(message, null);
+            displayError(message, new DummyOutputListener());
         } else {
             File file = new File(fileName);
             FileObject fo = FileUtil.toFileObject(file);
@@ -1350,6 +1350,12 @@ public final class Util {
                 out.reset();
                 clearErrors = false;
             }
+            
+            if (listener == null) {
+                // #107754 Now the null is not accepted as a listener.
+                listener = new DummyOutputListener();
+            }
+            
             // Write the error message to the output tab:
             out.println(message, listener);
         }
@@ -1490,4 +1496,19 @@ public final class Util {
             return null;
         }
     }
+    
+    
+    private static class DummyOutputListener implements OutputListener {
+        public void outputLineSelected(OutputEvent ev) {
+            // No op.
+        }
+
+        public void outputLineAction(OutputEvent ev) {
+            // No op.
+        }
+
+        public void outputLineCleared(OutputEvent ev) {
+            // No op.
+        }
+    } // DummyOutputListener.
 }
