@@ -36,7 +36,7 @@ public class NotificationType {
      * @return type a type of the notification
      *
      */
-    public String getNotificationType() {
+    public String getType() {
         return type;
     }
 }

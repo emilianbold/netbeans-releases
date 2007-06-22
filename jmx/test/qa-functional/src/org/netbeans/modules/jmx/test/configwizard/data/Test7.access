@@ -44,3 +44,4 @@
 # o The "monitorRole" role has readonly access.  
 # o The "controlRole" role has readwrite access.
 
+role readwrite

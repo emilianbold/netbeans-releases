@@ -1,0 +1,10 @@
+package com.foo.bar;
+
+import javax.management.*;
+
+public interface Standard1MBean
+{
+    
+}
+
+

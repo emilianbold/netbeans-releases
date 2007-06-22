@@ -1,0 +1,86 @@
+package com.foo.bar;
+
+import java.util.Date;
+import javax.management.ObjectName;
+
+
+public interface U1AddAttributes1MBean {
+    
+    public String[] getAttr9();
+    
+    public void setAttr9(String[] s);
+    
+    public int getAttr10();
+    
+    public void setAttr11(Date o);
+
+    /**
+     * Get Attr0 Description
+     */
+    public int getAttr0();
+
+    /**
+     * Get Attr1 Description
+     */
+    public boolean isAttr1();
+
+    /**
+     * Get Attr2 Description
+     */
+    public Date getAttr2();
+
+    /**
+     * Get Attr3 Description
+     */
+    public ObjectName getAttr3();
+
+    /**
+     * Set Attr3 Description
+     */
+    public void setAttr3(ObjectName value);
+
+    /**
+     * Get Attr4 Description
+     */
+    public boolean isAttr4();
+
+    /**
+     * Set Attr4 Description
+     */
+    public void setAttr4(boolean value);
+
+    /**
+     * Get Attr5 Description
+     */
+    public String[] getAttr5();
+
+    /**
+     * Set Attr5 Description
+     */
+    public void setAttr5(String[] value);
+
+    /**
+     * Get Attr6 Description
+     */
+    public java.util.List getAttr6();
+
+    /**
+     * Set Attr6 Description
+     */
+    public void setAttr6(java.util.List value);
+
+    /**
+     * Get Attr7 Description
+     */
+    public double getAttr7();
+
+    /**
+     * Get Attr8 Description
+     */
+    public char getAttr8();
+
+    /**
+     * Set Attr8 Description
+     */
+    public void setAttr8(char value);
+}

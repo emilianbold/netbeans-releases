@@ -1,0 +1,15 @@
+package com.foo.bar;
+
+import java.util.Date;
+
+
+public interface AddAttributes1MBean {
+    
+    public String[] getAttr9();
+    
+    public void setAttr9(String[] s);
+    
+    public int getAttr10();
+    
+    public void setAttr11(Date o);
+}

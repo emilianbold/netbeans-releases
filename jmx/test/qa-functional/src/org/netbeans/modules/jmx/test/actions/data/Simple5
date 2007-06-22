@@ -1,0 +1,10 @@
+package com.foo.bar;
+
+public class Simple5 implements Simple5Intf {
+    
+    public Simple5() {
+    }
+    
+    public Simple5(String s) {
+    }
+}

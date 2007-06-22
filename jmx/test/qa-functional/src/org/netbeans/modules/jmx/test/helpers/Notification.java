@@ -44,7 +44,7 @@ public class Notification {
      * @return notificationClass the class of the notification
      *
      */
-    public String getNotificationClass() {
+    public String getClassName() {
         return notificationClass;
     }
     
@@ -53,8 +53,15 @@ public class Notification {
      * @return notificationComment the comment of the notification
      *
      */
-    public String getNotificationComment() {
+    public String getDescription() {
         return notificationComment;
+    }
+    
+    /**
+     * Method which returns the notification types
+     */
+    public ArrayList<NotificationType> getTypes() {
+        return notificationType;
     }
     
     /**
@@ -62,7 +69,7 @@ public class Notification {
      * @return notificationType the type of the notification
      *
      */
-    public NotificationType getNotificationType(int index) {
+    public NotificationType getType(int index) {
         return notificationType.get(index);
     }
     
@@ -71,11 +78,7 @@ public class Notification {
      * @return notificationType the number of types of the notification
      *
      */
-    public int getNotificationTypeCount() {
-        if (notificationType != null)
-            return notificationType.size();
-        else
-            return -1;
+    public int getTypeSize() {
+        return notificationType.size();
     }
-    
 }

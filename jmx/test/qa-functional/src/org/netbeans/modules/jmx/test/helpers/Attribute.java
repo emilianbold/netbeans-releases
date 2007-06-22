@@ -20,54 +20,85 @@
 package org.netbeans.modules.jmx.test.helpers;
 
 /**
- *
- * @author an156382
+ * Used to check MBean attribute wizard values.
  */
 public class Attribute {
 
     private String attrName = "";
     private String attrType = "";
     private String attrAccess = "";
-    private String attrComment = "";
+    private String attrDescription = "";
 
     /** Creates a new instance of Attribute */
     public Attribute(String attrName, String attrType, String attrAccess,
-            String attrComment) {
+            String attrDescription) {
         this.attrName = attrName;
         this.attrType = attrType;
         this.attrAccess = attrAccess;
-        this.attrComment = attrComment;
+        this.attrDescription = attrDescription;
     }
     
     /**
-     * Returns the name of the MBean
-     * @return attrName the name of the MBean
+     * Returns the name of the attribute
+     * @return attrName the name of the attribute
      */
     public String getName() {
         return attrName;
     }
     
     /**
-     * Returns the type of the MBean
-     * @return attrType the type of the MBean
+     * Sets the name of the attribute
+     * @param attrName the name of the attribute
+     */
+    public void setName(String attrName) {
+        this.attrName = attrName;
+    }
+    
+    /**
+     * Returns the type of the attribute
+     * @return attrType the type of the attribute
      */
     public String getType() {
         return attrType;
     }
     
     /**
-     * Returns the access permission for the MBean
-     * @return attrAccess the access permission for the MBean
+     * Sets the type of the attribute
+     * @param attrType the type of the attribute
+     */
+    public void setType(String attrType) {
+        this.attrType = attrType;
+    }
+    
+    /**
+     * Returns the access permission for the attribute
+     * @return attrAccess the access permission for the attribute
      */
     public String getAccess() {
         return attrAccess;
     }
     
     /**
-     * Returns the comment for the MBean
-     * @return attrComment the comment for the MBean
+     * Sets the access permission for the attribute
+     * @param attrAccess the access permission for the attribute
      */
-    public String getComment() {
-        return attrComment;
+    public void setAccess(String attrAccess) {
+        this.attrAccess = attrAccess;
+    }
+    
+    /**
+     * Returns the description for the attribute
+     * @return attrDescription the description for the attribute
+     */
+    public String getDescription() {
+        return attrDescription;
+    }
+
+    /**
+     * Sets the description for the attribute
+     * @param attrDescription the description for the attribute
+     */
+    public void setDescription(String attrDescription) {
+        this.attrDescription = attrDescription;
     }
 }

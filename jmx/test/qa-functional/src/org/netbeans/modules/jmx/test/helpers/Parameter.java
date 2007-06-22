@@ -20,30 +20,37 @@
 package org.netbeans.modules.jmx.test.helpers;
 
 /**
- *
- * @author an156382
+ * Used to check MBean operation parameter wizard values.
  */
 public class Parameter {
-
+    
     private String paramName = "";
     private String paramType = "";
-    private String paramComment = "";
-
+    private String paramDescription = "";
+    
     /** Creates a new instance of Parameter */
-    public Parameter(String paramName, String paramType, String paramComment) {
-
+    public Parameter(String paramName, String paramType, String paramDescription) {
         this.paramName = paramName;
         this.paramType = paramType;
-        this.paramComment = paramComment;
+        this.paramDescription = paramDescription;
     }
-
+    
     /**
      * Method which returns the name of the parameter
      * @return paramName the name of the parameter
      *
      */
-    public String getParamName() {
+    public String getName() {
         return paramName;
+    }
+    
+    /**
+     * Method which sets the name of the parameter
+     * @param paramName the name of the parameter
+     *
+     */
+    public void setName(String paramName) {
+        this.paramName = paramName;
     }
     
     /**
@@ -51,17 +58,34 @@ public class Parameter {
      * @return paramType the type of the parameter
      *
      */
-    public String getParamType() {
+    public String getType() {
         return paramType;
     }
     
     /**
-     * Method which returns the comment of the parameter
-     * @return paramComment the comment of the parameter
+     * Method which sets the type of the parameter
+     * @param paramType the type of the parameter
      *
      */
-    public String getParamComment() {
-        return paramComment;
+    public void setType(String paramType) {
+        this.paramType = paramType;
     }
     
+    /**
+     * Method which returns the description of the parameter
+     * @return paramDescription the description of the parameter
+     *
+     */
+    public String getDescription() {
+        return paramDescription;
+    }
+    
+    /**
+     * Method which sets the description of the parameter
+     * @param paramDescription the description of the parameter
+     *
+     */
+    public void setDescription(String paramDescription) {
+        this.paramDescription = paramDescription;
+    }
 }

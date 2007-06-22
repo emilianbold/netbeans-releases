@@ -4,12 +4,8 @@
  * Created on <current Date and Time>
  */
 
-package jmxtestmanagerfunctionaltest;
+package com.foo.bar;
 
-import java.util.Iterator;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Set;
 import javax.management.MBeanServerConnection;
 import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
@@ -23,37 +19,17 @@ import javax.management.remote.JMXServiceURL;
 public class Test2Manager {
     
     /**
-     * @param args the command line arguments
-     */
-    public static void main(String[] args) throws Exception  {
-
-        //manager instantiation and connection to the remote agent
-        Test2Manager manager = Test2Manager.getDefault();
-        
-        //close connection
-        manager.close();
-        
-        System.out.println("Connection closed.");
-    }
-    
-    /**
      * JMX Agent connection
      * This method is called automatically when <CODE>getDefault()</CODE>
      * is called
      */
-    public void connect() throws Exception  {
-
-        Map env = new HashMap(); 
-        env.put(JMXConnector.CREDENTIALS, new String[]{"name", "password"});
-        
-        //Create JMX Agent URL 
-        JMXServiceURL url = new JMXServiceURL("service:jmx:jmxmp://localhost:2004");
-        
-        //Connect the JMXConnector 
-        connector = JMXConnectorFactory.connect(url, env);
-        
-        //Get the MBeanServerConnection
+    public void connect() throws Exception {        // Create JMX Agent URL
+        JMXServiceURL url = new JMXServiceURL("service:jmx:rmi://server.sun.com:5000/jndi/rmi://server.sun.com:5000/jmxrmi");
+        // Connect the JMXConnector
+        connector = JMXConnectorFactory.connect(url, null);
+        // Get the MBeanServerConnection
         mbsc = connector.getMBeanServerConnection();
+
     }
     
     /**

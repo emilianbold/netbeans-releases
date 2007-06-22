@@ -1,0 +1,77 @@
+package com.foo.bar;
+
+import javax.management.*;
+
+public class U1Standard1 extends javax.management.StandardMBean implements U1Standard1MBean, NotificationEmitter {
+    
+    /* Creates a new instance of U1Standard1 */
+    private NotificationBroadcasterSupport broadcaster = new NotificationBroadcasterSupport();
+    
+    /* Creates a new instance of U1Standard1 */
+    public U1Standard1() throws NotCompliantMBeanException {
+        super(U1Standard1MBean.class);
+    }
+    
+    /**
+     * Next are the methods to compute MBeanInfo.
+     * You shouldn't update these methods.
+     */
+    protected String getDescription(MBeanInfo info)  {
+        return "U1Standard1 Description";
+    }
+    
+    protected String getDescription(MBeanAttributeInfo info)  {
+        String description = null;
+        return description;
+    }
+    
+    protected String getDescription(MBeanOperationInfo op,
+            MBeanParameterInfo param,
+            int sequence)  {
+        return null;
+    }
+    
+    protected String getParameterName(MBeanOperationInfo op,
+            MBeanParameterInfo param,
+            int sequence)  {
+        return null;
+    }
+    
+    protected String getDescription(MBeanOperationInfo info)  {
+        String description = null;
+        return description;
+    }
+    
+    public MBeanInfo getMBeanInfo() {
+        MBeanInfo mbinfo = super.getMBeanInfo();
+        return new MBeanInfo(mbinfo.getClassName(),
+                mbinfo.getDescription(),
+                mbinfo.getAttributes(),
+                mbinfo.getConstructors(),
+                mbinfo.getOperations(),
+                getNotificationInfo());
+    }
+    
+    public void addNotificationListener(NotificationListener listener,NotificationFilter filter,Object handback) throws IllegalArgumentException {
+        broadcaster.addNotificationListener(listener, filter, handback);
+    }
+
+    public MBeanNotificationInfo[] getNotificationInfo() {
+        return new MBeanNotificationInfo[] {
+            new MBeanNotificationInfo(new String[] {
+                AttributeChangeNotification.ATTRIBUTE_CHANGE},
+                javax.management.AttributeChangeNotification.class.getName(),
+                "notif0 Description")
+            };
+    }
+
+    public void removeNotificationListener(NotificationListener listener) throws ListenerNotFoundException {
+        broadcaster.removeNotificationListener(listener);
+    }
+
+    public void removeNotificationListener(NotificationListener listener, NotificationFilter filter, Object handback) throws ListenerNotFoundException {
+        broadcaster.removeNotificationListener(listener, filter, handback);
+    }
+}
+
+

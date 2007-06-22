@@ -19,31 +19,20 @@
 
 package org.netbeans.modules.jmx.test.helpers;
 
-import org.netbeans.jellytools.JellyTestCase;
-import org.netbeans.jellytools.NewFileNameLocationStepOperator;
-import org.netbeans.jellytools.NewProjectWizardOperator;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.jellytools.EditorOperator;
-
 import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
+import org.netbeans.junit.NbTestSuite;
+import static org.netbeans.modules.jmx.test.helpers.JellyConstants.*;
 
 /**
  *
  * @author an156382
  */
-public class SleepDuringScan extends JellyTestCase {
-
+public class SleepDuringScan extends JMXTestCase {
+    
     /** Creates a new instance of CloseAllDocuments */
     public SleepDuringScan(String name) {
         super(name);
-    }
-    public static NbTestSuite suite() {
-        
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new SleepDuringScan("createSampleProject"));
-        suite.addTest(new SleepDuringScan("waitScan"));
-        return suite;
     }
     
     /** Use for execution inside IDE */
@@ -52,23 +41,23 @@ public class SleepDuringScan extends JellyTestCase {
         junit.textui.TestRunner.run(suite());
     }
     
-    public void setUp() {
-        
+    public static NbTestSuite suite() {
+        NbTestSuite suite = new NbTestSuite();
+        suite.addTest(new SleepDuringScan("createSampleProject"));
+        suite.addTest(new SleepDuringScan("waitScan"));
+        return suite;
     }
     
-    public void tearDown() {
-        
-    }
     public void createSampleProject() {
+        
         NewProjectWizardOperator npwo = NewProjectWizardOperator.invoke();
-        npwo.selectCategory("Samples|Management");
-        npwo.selectProject("Anagram Game Managed with JMX");
+        npwo.selectCategory(PROJECT_CATEGORY_SAMPLES_JMX);
+        npwo.selectProject(PROJECT_TYPE_ANAGRAM_GAME);
         npwo.next();
-        NewProjectNameLocationStepOperator npnlso = new NewProjectNameLocationStepOperator();
-        
-        npnlso.txtProjectName().setText("JMXTESTBootstrapMDRScan");
+        NewProjectNameLocationStepOperator npnlso =
+                new NewProjectNameLocationStepOperator();
+        npnlso.txtProjectName().setText(PROJECT_NAME_BOOTSTRAP_MDR_SCAN);
         npwo.finish();
-        
     }
     
     public void waitScan() {
@@ -78,7 +67,7 @@ public class SleepDuringScan extends JellyTestCase {
             System.out.println("Need to sleep " + loop + " minutes");
             try {
                 Thread.sleep(time2wait);
-            }catch(java.lang.Exception e) {}
+            } catch(java.lang.Exception e) {}
             System.out.println("Slept 1 minute, back to sleep");
             loop--;
         }

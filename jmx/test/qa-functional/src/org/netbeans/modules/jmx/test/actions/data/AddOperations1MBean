@@ -1,0 +1,8 @@
+package com.foo.bar;
+
+import java.util.List;
+
+public interface AddOperations1MBean extends AddOperations1SuperMBean {
+    
+    public double op5(String[] s) throws IllegalStateException;
+}

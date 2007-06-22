@@ -19,9 +19,6 @@
 
 package org.netbeans.modules.jmx.test.helpers;
 
-import org.netbeans.jellytools.JellyTestCase;
-import org.netbeans.jellytools.NewFileNameLocationStepOperator;
-import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.jellytools.EditorOperator;
 
@@ -30,17 +27,11 @@ import org.netbeans.jellytools.EditorOperator;
  *
  * @author an156382
  */
-public class CloseAllDocuments extends JellyTestCase {
-
+public class CloseAllDocuments extends JMXTestCase {
+    
     /** Creates a new instance of CloseAllDocuments */
     public CloseAllDocuments(String name) {
         super(name);
-    }
-    public static NbTestSuite suite() {
-        
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new CloseAllDocuments("closeAll"));
-        return suite;
     }
     
     /** Use for execution inside IDE */
@@ -49,12 +40,10 @@ public class CloseAllDocuments extends JellyTestCase {
         junit.textui.TestRunner.run(suite());
     }
     
-    public void setUp() {
-        
-    }
-    
-    public void tearDown() {
-        
+    public static NbTestSuite suite() {
+        NbTestSuite suite = new NbTestSuite();
+        suite.addTest(new CloseAllDocuments("closeAll"));
+        return suite;
     }
     
     public void closeAll() {

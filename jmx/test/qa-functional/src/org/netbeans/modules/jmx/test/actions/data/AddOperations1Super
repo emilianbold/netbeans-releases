@@ -1,0 +1,15 @@
+package com.foo.bar;
+
+import java.util.Date;
+
+public class AddOperations1Super {
+    
+    /** Creates a new instance of AddOperations1Super */
+    public AddOperations1Super() {
+    }
+    
+    public Object op2(Object o, Date d) {
+        return null;
+    }
+    
+}

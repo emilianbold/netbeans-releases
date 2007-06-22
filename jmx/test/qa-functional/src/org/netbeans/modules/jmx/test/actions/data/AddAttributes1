@@ -1,0 +1,62 @@
+package com.foo.bar;
+
+import java.util.Date;
+import java.util.List;
+import javax.management.ObjectName;
+
+
+public class AddAttributes1 extends AddAttributes1Super 
+        implements AddAttributes1MBean {
+    
+    /** Creates a new instance of AddAttributes1 */
+    public AddAttributes1() {
+    }
+    
+    public int getAttr0() {
+        return 0;
+    }
+    
+    public boolean getAttr1() {
+        return true;
+    }
+    
+    public boolean isAttr1() {
+        return true;
+    }
+    
+    public void setAttr2(Date d) {
+        //do nothing
+    }
+    
+    public ObjectName getAttr3() {
+        return null;
+    }
+    
+    public boolean getAttr4() {
+        return true;
+    }
+    
+    public boolean isAttr4() {
+        return true;
+    }
+    
+    public String[] getAttr5() {
+        return null;
+    }
+    
+    public void setAttr5(String[] s) {
+        //do nothing
+    }
+    
+    public void setAttr6(List l) {
+        //do nothing
+    }
+    
+    public String[] getAttr9() {
+        return null;
+    }
+    
+    public void setAttr9(String[] s) {
+        //do nothing
+    }
+}

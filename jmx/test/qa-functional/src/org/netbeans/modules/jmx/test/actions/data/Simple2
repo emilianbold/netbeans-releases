@@ -1,0 +1,11 @@
+package com.foo.bar;
+
+import javax.management.*;
+
+public class Simple2 implements Simple2MBean {
+    
+    /* Creates a new instance of Simple2 */
+    public Simple2()  {
+    }
+}
+

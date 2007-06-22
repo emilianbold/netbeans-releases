@@ -19,61 +19,39 @@
 
 package org.netbeans.modules.jmx.test.mbeanwizard;
 
-import org.netbeans.jellytools.JellyTestCase;
-import org.netbeans.jellytools.NewFileNameLocationStepOperator;
-import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.junit.NbTestSuite;
-import org.netbeans.modules.jmx.test.helpers.JellyConstants;
+import org.netbeans.modules.jmx.test.helpers.JMXTestCase;
+import static org.netbeans.modules.jmx.test.helpers.JellyConstants.*;
 
 /**
- *
- * @author an156382
+ * Create a new Java application project.
  */
-public class CreateMBeanProject extends JellyTestCase {
+public class CreateMBeanProject extends JMXTestCase {
 
     /** Creates a new instance of CreateMBeanProject */
     public CreateMBeanProject(String name) {
         super(name);
     }
 
-    public static NbTestSuite suite() {
-        
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new CreateMBeanProject("createProject"));
-        
-        return suite;
-    }
-    
     /** Use for execution inside IDE */
     public static void main(java.lang.String[] args) {
         // run whole suite
         junit.textui.TestRunner.run(suite());
     }
     
-    public void setUp() {
-        
-    }
-    
-    public void tearDown() {
-        
+    public static NbTestSuite suite() {
+        NbTestSuite suite = new NbTestSuite();
+        suite.addTest(new CreateMBeanProject("createProject"));
+        return suite;
     }
     
     /**
-     * Functional test which creates a project for MBean generation testing called MBeanFunctionalTest
-     *
+     * Functional test which creates a project
      */
-     public static void createProject() {
-        
-        NewProjectWizardOperator project = NewProjectWizardOperator.invoke();
-        project.selectCategory(JellyConstants.PROJECT_CAT); 
-        project.selectProject(JellyConstants.PROJECT_APP); 
-        project.next();
-        NewFileNameLocationStepOperator projectName =
-                new NewFileNameLocationStepOperator();
-         
-        projectName.setObjectName(JellyConstants.PROJECT_NAME);
-         
-        project.finish();
+     public void createProject() {
+        newProject(
+                PROJECT_CATEGORY_JAVA,
+                PROJECT_TYPE_JAVA_APPLICATION,
+                PROJECT_NAME_MBEAN_FUNCTIONAL);
     }
-    
 }

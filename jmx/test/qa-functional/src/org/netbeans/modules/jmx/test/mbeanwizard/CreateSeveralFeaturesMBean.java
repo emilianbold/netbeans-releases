@@ -1,0 +1,238 @@
+/*
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ *
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ *
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 2004-2005 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
+
+package org.netbeans.modules.jmx.test.mbeanwizard;
+
+import java.util.ArrayList;
+import org.netbeans.junit.NbTestSuite;
+import org.netbeans.modules.jmx.test.helpers.Attribute;
+import org.netbeans.modules.jmx.test.helpers.MBean;
+import org.netbeans.modules.jmx.test.helpers.Operation;
+import org.netbeans.modules.jmx.test.helpers.Parameter;
+import org.netbeans.modules.jmx.test.helpers.Exception;
+import java.util.ArrayList;
+import static org.netbeans.modules.jmx.test.helpers.JellyConstants.*;
+
+
+/**
+ * Create new JMX MBean files with several attributes and operations :
+ * - MBean from existing java file
+ * - MBean from existing java file wrapped as MXBean
+ * - Standard MBean with metadata
+ */
+public class CreateSeveralFeaturesMBean extends MBeanWizardTestCase {
+    
+    // MBean names
+    private static final String SEVERAL_FEATURES_MBEAN_NAME_1 = "SeveralFeaturesMBean1";
+    private static final String SEVERAL_FEATURES_MBEAN_NAME_2 = "SeveralFeaturesMBean2";
+    private static final String SEVERAL_FEATURES_MBEAN_NAME_3 = "SeveralFeaturesMBean3";
+    
+    /** Need to be defined because of JUnit */
+    public CreateSeveralFeaturesMBean(String name) {
+        super(name);
+    }
+    
+    /** Use for execution inside IDE */
+    public static void main(java.lang.String[] args) {
+        // run whole suite
+        junit.textui.TestRunner.run(suite());
+    }
+    
+    public static NbTestSuite suite() {
+        NbTestSuite suite = new NbTestSuite();
+        suite.addTest(new CreateSeveralFeaturesMBean("createSeveralFeaturesMBean1"));
+        suite.addTest(new CreateSeveralFeaturesMBean("createSeveralFeaturesMBean2"));
+        suite.addTest(new CreateSeveralFeaturesMBean("createSeveralFeaturesMBean3"));
+        return suite;
+    }
+    
+    public void setUp() {
+        // Select project node
+        selectNode(PROJECT_NAME_MBEAN_FUNCTIONAL);
+        // Initialize the wrapper java class
+        initWrapperJavaClass(
+                PROJECT_NAME_MBEAN_FUNCTIONAL,
+                PACKAGE_COM_FOO_BAR,
+                EMPTY_JAVA_CLASS_NAME);
+    }
+    
+    //========================= JMX CLASS =================================//
+    
+    /**
+     * MBean from existing java class
+     * with several attributes and operations
+     */
+    public void createSeveralFeaturesMBean1() {
+        
+        System.out.println("==========  createSeveralFeaturesMBean1  ==========");
+        
+        String description = "MBean from existing java class " +
+                "with several attributes and operations";
+        MBean myMBean = new MBean(
+                SEVERAL_FEATURES_MBEAN_NAME_1,
+                FILE_TYPE_MBEAN_FROM_EXISTING_JAVA_CLASS,
+                PACKAGE_COM_FOO_BAR,
+                description,
+                PACKAGE_COM_FOO_BAR + "." + EMPTY_JAVA_CLASS_NAME, false,
+                constructMBeanAttributes(), constructMBeanOperations(), null);
+        wizardExecution(FILE_TYPE_MBEAN_FROM_EXISTING_JAVA_CLASS, myMBean);
+    }
+    
+    /**
+     * MBean from existing java class wrapped as MXBean
+     * with several attributes and operations
+     */
+    public void createSeveralFeaturesMBean2() {
+        
+        System.out.println("==========  createSeveralFeaturesMBean2  ==========");
+        
+        String description = "MBean from existing java class wrapped as MXBean " +
+                "with several attributes and operations";
+        MBean myMBean = new MBean(
+                SEVERAL_FEATURES_MBEAN_NAME_2,
+                FILE_TYPE_MBEAN_FROM_EXISTING_JAVA_CLASS,
+                PACKAGE_COM_FOO_BAR,
+                description,
+                PACKAGE_COM_FOO_BAR + "." + EMPTY_JAVA_CLASS_NAME, true,
+                constructMBeanAttributes(), constructMBeanOperations(), null);
+        wizardExecution(FILE_TYPE_MBEAN_FROM_EXISTING_JAVA_CLASS, myMBean);
+    }
+    
+    /**
+     * StandardMBean with metadata
+     * with several attributes and operations
+     */
+    public void createSeveralFeaturesMBean3() {
+        
+        System.out.println("==========  createSeveralFeaturesMBean3  ==========");
+        
+        String description = "StandardMBean with metadata " +
+                "with several attributes and operations";
+        MBean myMBean = new MBean(
+                SEVERAL_FEATURES_MBEAN_NAME_3,
+                FILE_TYPE_STANDARD_MBEAN_WITH_METADATA,
+                PACKAGE_COM_FOO_BAR,
+                description,
+                null, false,
+                constructMBeanAttributes(), constructMBeanOperations(), null);
+        wizardExecution(FILE_TYPE_STANDARD_MBEAN_WITH_METADATA, myMBean);
+    }
+    
+    //========================= MBean generation ===========================//
+    
+    private ArrayList<Attribute> constructMBeanAttributes() {
+        Attribute attribute1 = new Attribute(
+                MBEAN_ATTRIBUTE_NAME_1,
+                "int",
+                READ_ONLY,
+                MBEAN_ATTRIBUTE_DESCRIPTION_1);
+        Attribute attribute2 = new Attribute(
+                MBEAN_ATTRIBUTE_NAME_2,
+                "java.util.Date",
+                READ_WRITE,
+                MBEAN_ATTRIBUTE_DESCRIPTION_2);
+        ArrayList<Attribute> list = new ArrayList<Attribute>();
+        list.add(attribute1);
+        list.add(attribute2);
+        return list;
+    }
+    
+    private ArrayList<Operation> constructMBeanOperations() {
+        
+        // First Parameter construction
+        Parameter parameter1 = new Parameter(
+                MBEAN_PARAMETER_NAME_1,
+                "String",
+                MBEAN_PARAMETER_DESCRIPTION_1);
+        Parameter parameter2 = new Parameter(
+                MBEAN_PARAMETER_NAME_2,
+                "boolean",
+                MBEAN_PARAMETER_DESCRIPTION_2);
+        Parameter parameter3 = new Parameter(
+                MBEAN_PARAMETER_NAME_3,
+                "byte",
+                MBEAN_PARAMETER_DESCRIPTION_3);
+        Parameter parameter4 = new Parameter(
+                MBEAN_PARAMETER_NAME_4,
+                "char",
+                MBEAN_PARAMETER_DESCRIPTION_4);
+        Parameter parameter5 = new Parameter(
+                MBEAN_PARAMETER_NAME_5,
+                "java.util.Date",
+                MBEAN_PARAMETER_DESCRIPTION_5);
+        Parameter parameter6 = new Parameter(
+                MBEAN_PARAMETER_NAME_6,
+                "int",
+                MBEAN_PARAMETER_DESCRIPTION_6);
+        Parameter parameter7 = new Parameter(
+                MBEAN_PARAMETER_NAME_7,
+                "long",
+                MBEAN_PARAMETER_DESCRIPTION_7);
+        Parameter parameter8 = new Parameter(
+                MBEAN_PARAMETER_NAME_8,
+                "javax.management.ObjectName",
+                MBEAN_PARAMETER_DESCRIPTION_8);
+        Parameter parameter9 = new Parameter(
+                MBEAN_PARAMETER_NAME_9,
+                "float",
+                MBEAN_PARAMETER_DESCRIPTION_9);
+        Parameter parameter10 = new Parameter(
+                MBEAN_PARAMETER_NAME_10,
+                "double",
+                MBEAN_PARAMETER_DESCRIPTION_10);
+        
+        ArrayList<Parameter> parameters = new ArrayList<Parameter>();
+        parameters.add(parameter1);
+        parameters.add(parameter2);
+        parameters.add(parameter3);
+        parameters.add(parameter4);
+        parameters.add(parameter5);
+        parameters.add(parameter6);
+        parameters.add(parameter7);
+        parameters.add(parameter8);
+        parameters.add(parameter9);
+        parameters.add(parameter10);
+        
+        // Exception construction
+        Exception exception1 = new Exception(
+                MBEAN_EXCEPTION_CLASS_1, MBEAN_EXCEPTION_DESCRIPTION_1);
+        ArrayList<Exception> exceptions = new ArrayList<Exception>();
+        exceptions.add(exception1);
+        
+        // Operation construction
+        Operation operation1 = new Operation(
+                MBEAN_OPERATION_NAME_1,
+                "void", null, null,
+                MBEAN_OPERATION_DESCRIPTION_1);
+        Operation operation2 = new Operation(
+                MBEAN_OPERATION_NAME_2,
+                "int", null, exceptions,
+                MBEAN_OPERATION_DESCRIPTION_2);
+        Operation operation3 = new Operation(
+                MBEAN_OPERATION_NAME_3,
+                "java.util.Date", parameters, null,
+                MBEAN_OPERATION_DESCRIPTION_3);
+        ArrayList<Operation> list = new ArrayList<Operation>();
+        list.add(operation1);
+        list.add(operation2);
+        list.add(operation3);
+        return list;
+    }
+}
+

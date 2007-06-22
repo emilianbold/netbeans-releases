@@ -1,0 +1,9 @@
+package com.foo.bar;
+
+public class Simple1 {
+    
+    /** Creates a new instance of Simple1 */
+    public Simple1() {
+    }
+    
+}

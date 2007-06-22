@@ -1,0 +1,17 @@
+/*
+ * EmptyMBean5MBean.java
+ *
+ * Created on <current Date and Time>
+ */
+
+package com.foo.bar;
+
+/**
+ * Interface EmptyMBean5MBean
+ * StandardMBean with metadata without attributes and operations
+ * @author <author>
+ */
+public interface EmptyMBean5MBean
+{
+    
+}

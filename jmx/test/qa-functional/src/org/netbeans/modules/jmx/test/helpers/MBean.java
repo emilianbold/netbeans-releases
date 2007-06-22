@@ -22,131 +22,47 @@ package org.netbeans.modules.jmx.test.helpers;
 import java.util.ArrayList;
 
 /**
- *
- * @author an156382
+ * Used to check MBean wizard values.
  */
 public class MBean {
-
-    private String mBeanName = "";
-    private String mBeanType = "";
-    private String mBeanPackage = "";
-    private String mBeanComment = "";
+    
+    private String mBeanName = null;
+    private String mBeanType = null;
+    private String mBeanPackage = null;
+    private String mBeanDescription = null;
     private ArrayList<Attribute> mBeanAttributes = null;
     private ArrayList<Operation> mBeanOperations = null;
     private ArrayList<Notification> mBeanNotifications = null;
-
-    private boolean wrapped = false;
-    private String classToWrap = "";
-
-    /*
-    private boolean mbeanItfImpl = false;
-    private boolean keepPreRegParam = false; 
-    private boolean implemNotifEmitter = false;
-    private boolean genBrdCasterDeleg = false;
-    private boolean genSeqNumber = false;
+    private String classToWrap = null;
+    private boolean objectWrappedAsMXBean = false;
     
-     */
-    /** MBean constructor which is not wrapper **/
-    public MBean(String mBeanName, String mBeanType,
-            String mBeanPackage, String mBeanComment,
+    /** MBean constructor which is wrapper **/
+    public MBean(
+            String mBeanName,
+            String mBeanType,
+            String mBeanPackage,
+            String mBeanDescription,
+            String classToWrap,
+            boolean objectWrappedAsMXBean,
             ArrayList<Attribute> mBeanAttributes,
             ArrayList<Operation> mBeanOperations,
             ArrayList<Notification> mBeanNotifications) {
         this.mBeanName = mBeanName;
         this.mBeanType = mBeanType;
         this.mBeanPackage = mBeanPackage;
-        this.mBeanComment = mBeanComment;
+        this.mBeanDescription = mBeanDescription;
+        this.objectWrappedAsMXBean = objectWrappedAsMXBean;
         this.mBeanAttributes = mBeanAttributes;
         this.mBeanOperations = mBeanOperations;
         this.mBeanNotifications = mBeanNotifications;
+        this.classToWrap = classToWrap;
     }
     
-    /** MBean constructor which is wrapper **/
-    public MBean(String mBeanName, String mBeanPackage, 
-            String mBeanComment, String classToWrap) {
-        this.mBeanName = mBeanName;
-        this.mBeanType = "ExtendedStandardMBean";
-        this.mBeanPackage = mBeanPackage;
-        this.mBeanComment = mBeanComment;
-        this.setWrapped(true);
-        this.setClassToWrap(classToWrap);
-    }
-    
-    /* MBean for mbeans which implement mbean reg itf */
-    /*
-    public MBean(String mBeanName, String mBeanType,
-            String mBeanPackage, String mBeanComment,
-            ArrayList<Attribute> mBeanAttributes,
-            ArrayList<Operation> mBeanOperations,
-            ArrayList<Notification> mBeanNotifications,
-            boolean mbeanItfImpl, boolean keepPreRegParam) {
-        this.mBeanName = mBeanName;
-        this.mBeanType = mBeanType;
-        this.mBeanPackage = mBeanPackage;
-        this.mBeanComment = mBeanComment;
-        this.mBeanAttributes = mBeanAttributes;
-        this.mBeanOperations = mBeanOperations;
-        this.mBeanNotifications = mBeanNotifications;
-        
-        this.mbeanItfImpl = mbeanItfImpl;
-        this.keepPreRegParam = keepPreRegParam;
-    }
-    */
-    /* MBean for mbeans which implements notification emitter itf */
-    /*
-    public MBean(String mBeanName, String mBeanType,
-            String mBeanPackage, String mBeanComment,
-            ArrayList<Attribute> mBeanAttributes,
-            ArrayList<Operation> mBeanOperations,
-            ArrayList<Notification> mBeanNotifications,
-            boolean implemNotifEmitter,
-            boolean genBrdCasterDeleg,
-            boolean genSeqNumber) {
-        this.mBeanName = mBeanName;
-        this.mBeanType = mBeanType;
-        this.mBeanPackage = mBeanPackage;
-        this.mBeanComment = mBeanComment;
-        this.mBeanAttributes = mBeanAttributes;
-        this.mBeanOperations = mBeanOperations;
-        this.mBeanNotifications = mBeanNotifications;
-        
-        this.setImplemNotifEmitter(implemNotifEmitter);
-        this.setGenBrdCasterDeleg(genBrdCasterDeleg);
-        this.setGenSeqNumber(genSeqNumber);
-    }
-    */
-    /* Full featured MBean */
-    /*
-    public MBean(String mBeanName, String mBeanType,
-            String mBeanPackage, String mBeanComment,
-            ArrayList<Attribute> mBeanAttributes,
-            ArrayList<Operation> mBeanOperations,
-            ArrayList<Notification> mBeanNotifications,
-            boolean mbeanItfImpl, boolean keepPreRegParam,
-            boolean implemNotifEmitter,
-            boolean genBrdCasterDeleg,
-            boolean genSeqNumber) {
-        this.mBeanName = mBeanName;
-        this.mBeanType = mBeanType;
-        this.mBeanPackage = mBeanPackage;
-        this.mBeanComment = mBeanComment;
-        this.mBeanAttributes = mBeanAttributes;
-        this.mBeanOperations = mBeanOperations;
-        this.mBeanNotifications = mBeanNotifications;
-        
-        this.mbeanItfImpl = mbeanItfImpl;
-        this.keepPreRegParam = keepPreRegParam;
-        
-        this.setImplemNotifEmitter(implemNotifEmitter);
-        this.setGenBrdCasterDeleg(genBrdCasterDeleg);
-        this.setGenSeqNumber(genSeqNumber);
-    }
-    */
     /**
      * Returns the name of the MBean
      * @return mBeanName the name of the MBean
      */
-    public String getMBeanName() {
+    public String getName() {
         return mBeanName;
     }
     
@@ -154,7 +70,7 @@ public class MBean {
      * Returns the type of the MBean
      * @return mBeanType the type of the MBean
      */
-    public String getMBeanType() {
+    public String getType() {
         return mBeanType;
     }
     
@@ -162,23 +78,47 @@ public class MBean {
      * Returns the package of the MBean
      * @return mBeanPackage the package of the MBean
      */
-    public String getMBeanPackage() {
+    public String getPackage() {
         return mBeanPackage;
     }
     
     /**
-     * Returns the comment for the MBean
-     * @return mBeanComment the comment of the MBean
+     * Returns the description for the MBean
+     * @return mBeanDescription the description of the MBean
      */
-    public String getMBeanComment() {
-        return mBeanComment;
+    public String getDescription() {
+        return mBeanDescription;
+    }
+    
+    /**
+     * Returns the class to wrap for the MBean
+     * @return classToWrap of the MBean
+     */
+    public String getClassToWrap() {
+        return classToWrap;
+    }
+    
+    /**
+     * Returns true if the MBean class to wrap is not null
+     * @return true if the MBean class to wrap is not null
+     */
+    public boolean isWrapped() {
+        return (classToWrap == null ? false : true);
+    }
+    
+    /**
+     * Returns true if the MBean is wrapped as an MXBean
+     * @return true if the MBean is wrapped as an MXBean
+     */
+    public boolean isObjectWrappedAsMXBean() {
+        return objectWrappedAsMXBean;
     }
     
     /**
      * Returns the attribute list for the MBean
      * @return ArrayList<Attribute> the attribute list of the MBean
      */
-    public ArrayList<Attribute> getMBeanAttributeList() {
+    public ArrayList<Attribute> getAttributes() {
         return mBeanAttributes;
     }
     
@@ -187,7 +127,7 @@ public class MBean {
      * @param index index of the attribute to return
      * @return mBeanAttributes the attribute at index of the MBean
      */
-    public Attribute getMBeanAttribute(int index) {
+    public Attribute getAttribute(int index) {
         return mBeanAttributes.get(index);
     }
     
@@ -195,7 +135,7 @@ public class MBean {
      * Returns the operation list for the MBean
      * @return ArrayList<Attribute> the operation list of the MBean
      */
-    public ArrayList<Operation> getMBeanOperationList() {
+    public ArrayList<Operation> getOperations() {
         return mBeanOperations;
     }
     
@@ -204,7 +144,7 @@ public class MBean {
      * @param index index of the operation to return
      * @return mBeanOperations the operation at index of the MBean
      */
-    public Operation getMBeanOperation(int index) {
+    public Operation getOperation(int index) {
         return mBeanOperations.get(index);
     }
     
@@ -212,7 +152,7 @@ public class MBean {
      * Returns the notification list for the MBean
      * @return ArrayList<Notification> the notification list of the MBean
      */
-    public ArrayList<Notification> getMBeanNotificationList() {
+    public ArrayList<Notification> getNotifications() {
         return mBeanNotifications;
     }
     
@@ -221,7 +161,7 @@ public class MBean {
      * @param index index of the notification to return
      * @return mBeanNotifications the notification at index of the MBean
      */
-    public Notification getMBeanNotification(int index) {
+    public Notification getNotification(int index) {
         return mBeanNotifications.get(index);
     }
     
@@ -256,82 +196,5 @@ public class MBean {
             return mBeanNotifications.size();
         else
             return -1;
-    }
-
-    /**
-     * Return true if the class implements the mbean registration itf
-     * @return boolean true if the class implements the mbean registration itf 
-     */
-    /*
-    public boolean isMbeanItfImpl() {
-        return mbeanItfImpl;
-    }
-
-    /**
-     * Sets the caracteristic for this mbean to implement the mbean registration itf
-     * @param mbeanItfImpl true if this mbean to implements the mbean registration itf
-     */
-    /*
-    public void setMbeanItfImpl(boolean mbeanItfImpl) {
-        this.mbeanItfImpl = mbeanItfImpl;
-    }
-
-    /**
-     * Return true if the class keeps the preregistered parameter references
-     * @return boolean true if the class keeps the preregistered parameter references
-     */
-    /*
-    public boolean isKeepPreRegParam() {
-        return keepPreRegParam;
-    }
-    
-    /**
-     * Sets the caracteristic for this mbean to keep the preregistered parameter references
-     * @param keepPreRegParam true if this mbean keeps the preregistered parameter references
-     */
-    /*
-    public void setKeepPreRegParam(boolean keepPreRegParam) {
-        this.keepPreRegParam = keepPreRegParam;
-    }
-
-    public boolean isImplemNotifEmitter() {
-        return implemNotifEmitter;
-    }
-
-    public void setImplemNotifEmitter(boolean implemNotifEmitter) {
-        this.implemNotifEmitter = implemNotifEmitter;
-    }
-
-    public boolean isGenBrdCasterDeleg() {
-        return genBrdCasterDeleg;
-    }
-
-    public void setGenBrdCasterDeleg(boolean genBrdCasterDeleg) {
-        this.genBrdCasterDeleg = genBrdCasterDeleg;
-    }
-
-    public boolean isGenSeqNumber() {
-        return genSeqNumber;
-    }
-
-    public void setGenSeqNumber(boolean genSeqNumber) {
-        this.genSeqNumber = genSeqNumber;
-    }
-*/
-
-    public boolean isWrapped() {
-        return wrapped;
-    }
-
-    public void setWrapped(boolean wrapped) {
-        this.wrapped = wrapped;
-    }
-
-    public String getClassToWrap() {
-        return classToWrap;
-    }
-
-    public void setClassToWrap(String classToWrap) {
-        this.classToWrap = classToWrap;
     }
 }

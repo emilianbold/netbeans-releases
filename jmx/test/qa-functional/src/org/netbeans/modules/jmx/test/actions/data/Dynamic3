@@ -1,0 +1,122 @@
+package com.foo.bar;
+
+import javax.management.*;
+import java.util.*;
+import java.lang.reflect.Constructor;
+
+public class Dynamic3 implements DynamicMBean, NotificationBroadcaster
+{
+    /* Creates a new instance of Dynamic3 */
+    public Dynamic3() {
+        buildDynamicMBeanInfo();
+    }
+    
+    public static MBeanConstructorInfo[] createConstructors(Class clzz) {
+        Constructor[] constructors = clzz.getConstructors();
+        MBeanConstructorInfo[] infos = new MBeanConstructorInfo[
+                constructors.length];
+        for (int i = 0; i < constructors.length; i++) {
+            infos[i] = new MBeanConstructorInfo("Constructs a"
+                    + clzz.getName() + "object", constructors[i]);
+        }
+        return infos;
+    }
+    
+    public AttributeList getAttributes(String[] attributeNames) {
+        AttributeList resultList = new AttributeList();
+        // build the result attribute list
+        for (int i = 0 ; i < attributeNames.length ; i++) {
+            try {
+                Object value = getAttribute((String) attributeNames[i]);
+                resultList.add(new Attribute(attributeNames[i],value));
+            } catch (Exception e) {
+                //e.printStackTrace();
+            }
+        }
+        return resultList;
+    }
+    
+    public AttributeList setAttributes(AttributeList attributes) {
+        AttributeList resultList = new AttributeList();
+        // For each attribute, try to set it and add to the result list
+        // if succesfull
+        for (Iterator i = attributes.iterator(); i.hasNext();) {
+            Attribute attr = (Attribute) i.next();
+            try {
+                setAttribute(attr);
+                String name = attr.getName();
+                Object value = getAttribute(name);
+                resultList.add(new Attribute(name,value));
+            } catch (Exception e) {
+                //e.printStackTrace();
+            }
+        }
+        return resultList;
+    }
+    
+    public Object getAttribute(String attributeName)
+    throws AttributeNotFoundException,
+            MBeanException,
+            ReflectionException  {
+
+        throw new AttributeNotFoundException("Unknown Attribute "
+            + attributeName);
+    }
+ 
+    public void setAttribute(Attribute attribute)
+    throws AttributeNotFoundException,
+            InvalidAttributeValueException,
+            MBeanException,
+            ReflectionException  {
+
+        throw new AttributeNotFoundException("Unknown Attribute "
+            + attribute.getName());
+    }
+
+    public Object invoke(String operationName,
+            Object params[],
+            String signature[])
+            throws MBeanException, ReflectionException  {
+
+        throw new MBeanException(
+            new IllegalArgumentException("Unknown Operation " +
+            operationName));
+    }
+    
+   
+    private MBeanConstructorInfo[] createConstructors() {
+        return createConstructors(getClass());
+    }
+  
+    public MBeanInfo getMBeanInfo() {
+        return dMBeanInfo;
+    }
+    
+    private void buildDynamicMBeanInfo()  {
+        MBeanAttributeInfo[] dAttributes = new MBeanAttributeInfo[] {
+        };
+        MBeanConstructorInfo[] dConstructors = createConstructors();
+        MBeanOperationInfo[] dOperations = new MBeanOperationInfo[] {
+        };
+        dMBeanInfo = new MBeanInfo("Dynamic3",
+            "Dynamic3 Description",
+            dAttributes,
+            dConstructors,
+            dOperations,
+            getNotificationInfo());
+    }
+    
+    public  MBeanNotificationInfo[] getNotificationInfo() {
+        return new MBeanNotificationInfo[] {};
+    }
+    
+    private MBeanInfo dMBeanInfo;
+    
+    public void removeNotificationListener(NotificationListener listener) throws ListenerNotFoundException {
+        //do nothing
+    }
+    
+    public void addNotificationListener(NotificationListener listener, NotificationFilter filter, Object handback) throws IllegalArgumentException {
+        //do nothing
+    }
+}

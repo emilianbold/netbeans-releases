@@ -1,5 +1,3 @@
-
-
 package com.foo.bar;
 
 public class UserException extends Exception {

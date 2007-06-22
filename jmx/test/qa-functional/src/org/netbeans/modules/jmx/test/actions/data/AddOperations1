@@ -1,0 +1,33 @@
+package com.foo.bar;
+
+import java.util.Date;
+import java.util.List;
+
+
+public class AddOperations1 extends AddOperations1Super 
+    implements AddOperations1MBean {
+    
+    /** Creates a new instance of AddOperations1 */
+    public AddOperations1() {
+    }
+    
+    public void op0() {
+        //do nothing
+    }
+    
+    public int op1(String[] s) throws UserException {
+        return 0;
+    }
+    
+    public Boolean op2(List l, Date d) throws UserException {
+        return true;
+    }
+    
+    public void op4() {
+        //do nothing
+    }
+    
+    public double op5(String[] s) throws IllegalStateException {
+        return 0;
+    }
+}

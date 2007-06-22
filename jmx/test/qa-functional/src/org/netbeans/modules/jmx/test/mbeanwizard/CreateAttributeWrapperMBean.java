@@ -18,51 +18,49 @@
  */
 
 package org.netbeans.modules.jmx.test.mbeanwizard;
-import java.io.File;
-import javax.swing.JCheckBox;
-import javax.swing.JTable;
-import javax.swing.JTextField;
-import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jellytools.JellyTestCase;
-import org.netbeans.jellytools.NewFileNameLocationStepOperator;
-import org.netbeans.jellytools.NewFileWizardOperator;
-import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jellytools.nodes.ProjectRootNode;
-import org.netbeans.jemmy.drivers.tables.JTableMouseDriver;
-import org.netbeans.jemmy.operators.JCheckBoxOperator;
-import org.netbeans.jemmy.operators.JTableOperator;
-import org.netbeans.jemmy.operators.JTreeOperator;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.modules.jmx.test.helpers.JellyToolsHelper;
-import org.netbeans.modules.jmx.test.helpers.JellyConstants;
-import org.netbeans.modules.jmx.test.helpers.MBean;
-import java.util.ArrayList;
-import java.util.Properties;
 
+import java.util.ArrayList;
+import org.netbeans.jellytools.EditorOperator;
+import org.netbeans.jellytools.NewFileNameLocationStepOperator;
+import org.netbeans.jemmy.operators.JTableOperator;
+import org.netbeans.junit.NbTestSuite;
+import org.netbeans.modules.jmx.test.helpers.Attribute;
+import org.netbeans.modules.jmx.test.helpers.MBean;
+import static org.netbeans.modules.jmx.test.helpers.JellyConstants.*;
 
 
 /**
- *
- * @author an156382
+ * Create new JMX MBean files :
+ * - MBean from existing java file
+ * - MBean from existing java file wrapped as MXBean
+ * The java file wrapper contains getters and setters.
  */
-public class CreateAttributeWrapperMBean extends JellyTestCase {
+public class CreateAttributeWrapperMBean extends MBeanWizardTestCase {
+    
+    // MBean names
+    private static final String ATTRIBUTE_WRAPPED_MBEAN_NAME_1 = "AttributeWrappedMBean1";
+    private static final String ATTRIBUTE_WRAPPED_MBEAN_NAME_2 = "AttributeWrappedMBean2";
+    private static final String ATTRIBUTE_WRAPPED_MBEAN_NAME_3 = "AttributeWrappedMBean3";
+    private static final String ATTRIBUTE_WRAPPED_MBEAN_NAME_4 = "AttributeWrappedMBean4";
+    private static final String ATTRIBUTE_WRAPPED_MBEAN_NAME_5 = "AttributeWrappedMBean5";
+    private static final String ATTRIBUTE_WRAPPED_MBEAN_NAME_6 = "AttributeWrappedMBean6";
+    
+    // Attributes names used when updating wrapper java class
+    private static String ATTRIBUTE_1 = "Attribute1";
+    private static String ATTRIBUTE_2 = "Attribute2";
+    private static String ATTRIBUTE_3 = "Attribute3";
+    private static String ATTRIBUTE_4 = "Attribute4";
+    private static String ATTRIBUTE_5 = "Attribute5";
+    private static String ATTRIBUTE_6 = "Attribute6";
+    private static String GENERIC_ATTRIBUTE_1 = "GenericAttribute1";
+    private static String GENERIC_ATTRIBUTE_2 = "GenericAttribute2";
+    
+    // Depending on the MBean name, the attributes wizard execution will differ
+    private String mbeanName = null;
     
     /** Need to be defined because of JUnit */
     public CreateAttributeWrapperMBean(String name) {
         super(name);
-    }
-    
-    public static NbTestSuite suite() {
-        
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new CreateAttributeWrapperMBean("createClass"));
-        suite.addTest(new CreateAttributeWrapperMBean("constructTest13MBean"));
-        suite.addTest(new CreateAttributeWrapperMBean("constructTest14MBean"));
-        suite.addTest(new CreateAttributeWrapperMBean("createGenericClass"));
-        suite.addTest(new CreateAttributeWrapperMBean("constructGeneric1MBean"));
-        
-        return suite;
     }
     
     /** Use for execution inside IDE */
@@ -71,427 +69,406 @@ public class CreateAttributeWrapperMBean extends JellyTestCase {
         junit.textui.TestRunner.run(suite());
     }
     
+    public static NbTestSuite suite() {
+        NbTestSuite suite = new NbTestSuite();
+        suite.addTest(new CreateAttributeWrapperMBean("createWrappedMBean1"));
+        suite.addTest(new CreateAttributeWrapperMBean("createWrappedMBean2"));
+        suite.addTest(new CreateAttributeWrapperMBean("createWrappedMBean3"));
+        suite.addTest(new CreateAttributeWrapperMBean("createWrappedMBean4"));
+        suite.addTest(new CreateAttributeWrapperMBean("createWrappedMBean5"));
+        suite.addTest(new CreateAttributeWrapperMBean("createWrappedMBean6"));
+        return suite;
+    }
+    
     public void setUp() {
-        JellyToolsHelper.grabProjectNode(JellyConstants.PROJECT_NAME);
+        // Select project node
+        selectNode(PROJECT_NAME_MBEAN_FUNCTIONAL);
+        // Initialize the wrapper java classes
+        initWrapperJavaClass(
+                PROJECT_NAME_MBEAN_FUNCTIONAL,
+                PACKAGE_COM_FOO_BAR,
+                ATTRIBUTE_WRAPPER_NAME_1);
+        initWrapperJavaClass(
+                PROJECT_NAME_MBEAN_FUNCTIONAL,
+                PACKAGE_COM_FOO_BAR,
+                ATTRIBUTE_WRAPPER_NAME_2);
     }
     
-    public void tearDown() {
+    //========================= JMX CLASS =================================//
+    
+    /**
+     * MBean from existing java class exposing all attributes
+     */
+    public void createWrappedMBean1() {
         
+        System.out.println("============  createWrappedMBean1  ============");
+        
+        String description = "MBean from existing java class with all attributes";
+        mbeanName = ATTRIBUTE_WRAPPED_MBEAN_NAME_1;
+        MBean myMBean = new MBean(
+                mbeanName,
+                FILE_TYPE_MBEAN_FROM_EXISTING_JAVA_CLASS,
+                PACKAGE_COM_FOO_BAR,
+                description,
+                PACKAGE_COM_FOO_BAR + "." + ATTRIBUTE_WRAPPER_NAME_1,
+                false, null, null, null);
+        wizardExecution(FILE_TYPE_MBEAN_FROM_EXISTING_JAVA_CLASS, myMBean);
     }
     
-    public void createClass() {
-        createMissingClass(JellyConstants.PROJECT_NAME, 
-                JellyConstants.ATTRCLASS_TO_WRAP, JellyConstants.PACKAGE_NAME);
-        updateFile(JellyConstants.ATTRCLASS_TO_WRAP);
+    /**
+     * MBean from existing java class exposing minimal attributes
+     */
+    public void createWrappedMBean2() {
+        
+        System.out.println("============  createWrappedMBean2  ============");
+        
+        String description = "MBean from existing java class with minimal attributes";
+        mbeanName = ATTRIBUTE_WRAPPED_MBEAN_NAME_2;
+        MBean myMBean = new MBean(
+                mbeanName,
+                FILE_TYPE_MBEAN_FROM_EXISTING_JAVA_CLASS,
+                PACKAGE_COM_FOO_BAR,
+                description,
+                PACKAGE_COM_FOO_BAR + "." + ATTRIBUTE_WRAPPER_NAME_1,
+                false, null, null, null);
+        wizardExecution(FILE_TYPE_MBEAN_FROM_EXISTING_JAVA_CLASS, myMBean);
     }
     
-    public void createGenericClass() {
-        createMissingClass(JellyConstants.PROJECT_NAME, 
-                JellyConstants.GENERIC_ATTRCLASS_TO_WRAP, JellyConstants.PACKAGE_NAME);
-        updateGenericFile(JellyConstants.GENERIC_ATTRCLASS_TO_WRAP);
+    /**
+     * MBean from existing java class exposing generic attributes
+     */
+    public void createWrappedMBean3() {
+        
+        System.out.println("============  createWrappedMBean3  ============");
+        
+        String description = "MBean from existing java class with generic attributes";
+        mbeanName = ATTRIBUTE_WRAPPED_MBEAN_NAME_3;
+        MBean myMBean = new MBean(
+                mbeanName,
+                FILE_TYPE_MBEAN_FROM_EXISTING_JAVA_CLASS,
+                PACKAGE_COM_FOO_BAR,
+                description,
+                PACKAGE_COM_FOO_BAR + "." + ATTRIBUTE_WRAPPER_NAME_2,
+                false, null, null, null);
+        wizardExecution(FILE_TYPE_MBEAN_FROM_EXISTING_JAVA_CLASS, myMBean);
     }
     
-    public void constructTest13MBean() {
+    /**
+     * MBean from existing java class wrapped as MXBean exposing all attributes
+     */
+    public void createWrappedMBean4() {
         
-        MBean wrapper1 = createFirstWrapperMBean();
-        wizardExecution(wrapper1);  
+        System.out.println("============  createWrappedMBean4  ============");
+        
+        String description = "MBean from existing java class wrapped as MXBean " +
+                "with all attributes";
+        mbeanName = ATTRIBUTE_WRAPPED_MBEAN_NAME_4;
+        MBean myMBean = new MBean(
+                mbeanName,
+                FILE_TYPE_MBEAN_FROM_EXISTING_JAVA_CLASS,
+                PACKAGE_COM_FOO_BAR,
+                description,
+                PACKAGE_COM_FOO_BAR + "." + ATTRIBUTE_WRAPPER_NAME_1,
+                true, null, null, null);
+        wizardExecution(FILE_TYPE_MBEAN_FROM_EXISTING_JAVA_CLASS, myMBean);
     }
     
-    public void constructTest14MBean() {
+    /**
+     * MBean from existing java class wrapped as MXBean exposing minimal attributes
+     */
+    public void createWrappedMBean5() {
         
-        MBean wrapper2 = createSecondWrapperMBean();
-        wizardExecution(wrapper2);
+        System.out.println("============  createWrappedMBean5  ============");
+        
+        String description = "MBean from existing java class wrapped as MXBean " +
+                "with minimal attributes";
+        mbeanName = ATTRIBUTE_WRAPPED_MBEAN_NAME_5;
+        MBean myMBean = new MBean(
+                mbeanName,
+                FILE_TYPE_MBEAN_FROM_EXISTING_JAVA_CLASS,
+                PACKAGE_COM_FOO_BAR,
+                description,
+                PACKAGE_COM_FOO_BAR + "." + ATTRIBUTE_WRAPPER_NAME_1,
+                true, null, null, null);
+        wizardExecution(FILE_TYPE_MBEAN_FROM_EXISTING_JAVA_CLASS, myMBean);
     }
     
-    public void constructGeneric1MBean() {
+    /**
+     * MBean from existing java class wrapped as MXBean exposing generic attributes
+     */
+    public void createWrappedMBean6() {
         
-        MBean genericWrapped = createGenericWrapperMBean();
-        wizardExecution(genericWrapped);
+        System.out.println("============  createWrappedMBean6  ============");
+        
+        String description = "MBean from existing java class wrapped as MXBean " +
+                "with generic attributes";
+        mbeanName = ATTRIBUTE_WRAPPED_MBEAN_NAME_6;
+        MBean myMBean = new MBean(
+                mbeanName,
+                FILE_TYPE_MBEAN_FROM_EXISTING_JAVA_CLASS,
+                PACKAGE_COM_FOO_BAR,
+                description,
+                PACKAGE_COM_FOO_BAR + "." + ATTRIBUTE_WRAPPER_NAME_2,
+                true, null, null, null);
+        wizardExecution(FILE_TYPE_MBEAN_FROM_EXISTING_JAVA_CLASS, myMBean);
     }
     
-  //========================= WizardExecution =================================//
+    //========================= JAVA CLASS generation ===========================//
     
-    private void wizardExecution(MBean mbean) {
+    /**
+     * Wrapper java class
+     */
+    protected void createWrapperJavaClass(String javaClassName) {
         
-        NewFileWizardOperator nfwo = JellyToolsHelper.init(JellyConstants.CATEGORY, 
-                mbean.getMBeanName(), mbean.getMBeanPackage());
-        nfwo.next();
+        super.createWrapperJavaClass(javaClassName);
         
-        ArrayList<String> fileNames = optionStep(nfwo, mbean);
-        nfwo.next();
-        
-        attributeStep(nfwo, mbean);
-        nfwo.next();
-      
-        nfwo.next();
-        nfwo.next();
-      
-        ArrayList<String> unitFileNames = junitStep(nfwo, mbean);
-        nfwo.finish();
-        
-        assertTrue(JellyToolsHelper.diffOK(fileNames, unitFileNames, mbean)); 
-    }
-   
-    //========================= Class Name generation ===========================//
-    
-    private MBean createFirstWrapperMBean() {
-        return new MBean(
-                JellyConstants.MBEAN_THIRTEEN, 
-                JellyConstants.PACKAGE_NAME, 
-                JellyConstants.MBEAN_THIRTEEN_COMMENT,
-                JellyConstants.PACKAGE_NAME+JellyConstants.PT+
-                JellyConstants.ATTRCLASS_TO_WRAP);
+        // Select class node
+        selectNode(PROJECT_NAME_MBEAN_FUNCTIONAL + "|" + SOURCE_PACKAGES + "|" +
+                PACKAGE_COM_FOO_BAR + "|" + javaClassName);
+        // Update the created java file
+        updateWrapperJavaClass(javaClassName);
     }
     
-    private MBean createSecondWrapperMBean() {
-        return new MBean(
-                JellyConstants.MBEAN_FOURTEEN, 
-                JellyConstants.PACKAGE_NAME, 
-                JellyConstants.MBEAN_FOURTEEN_COMMENT,
-                JellyConstants.PACKAGE_NAME+JellyConstants.PT+
-                JellyConstants.ATTRCLASS_TO_WRAP);
-    }
-    
-    private MBean createGenericWrapperMBean() {
-        return new MBean(
-                JellyConstants.MBEAN_GENERIC_1, 
-                JellyConstants.PACKAGE_NAME, 
-                JellyConstants.MBEAN_GENERIC_1_COMMENT,
-                JellyConstants.PACKAGE_NAME+JellyConstants.PT+
-                JellyConstants.GENERIC_ATTRCLASS_TO_WRAP);
-    }
-   
-     //========================= Utility class generation  ===========================//
-     
-     public void createMissingClass(String projectName, String fileName, 
-            String packageName) {
-        //creates a reference on the current wizard
-        NewFileWizardOperator nfwoForFile = NewFileWizardOperator.invoke();
-        
-        //select the config wizard
-        nfwoForFile.selectProject(projectName);
-        nfwoForFile.selectCategory(JellyConstants.JAVA_FILE_CATEG);
-        nfwoForFile.selectFileType(JellyConstants.JAVA_FILE_TYPE);
-        nfwoForFile.next();
-        
-        NewFileNameLocationStepOperator nfnlsoForFile =
-                new NewFileNameLocationStepOperator();
-        
-        //sets the file name
-        nfnlsoForFile.setObjectName(fileName);
-        JTextField folder = JellyToolsHelper.findFolderJTextField(fileName, 
-                nfnlsoForFile.getContentPane());
-        folder.setText(packageName);
-        
-        nfwoForFile.finish();
-        
-        //grabs project node
-        ProjectsTabOperator pto = new ProjectsTabOperator();
-        
-        JTreeOperator tree = pto.tree();
-        ProjectRootNode prn = pto.getProjectRootNode(JellyConstants.PROJECT_NAME);
-        
-        prn.select();
-        Node node = new Node(prn, JellyConstants.SRC_PKG + packageName + 
-                JellyConstants.PIPE + fileName);
-        
-        node.select();
-     }
-     
-     private void updateFile(String fileName) {
+    private void updateWrapperJavaClass(String fileName) {
         EditorOperator eo = new EditorOperator(fileName);
-        eo.deleteLine(16);
-        eo.deleteLine(16);
-        eo.deleteLine(16);
-        eo.deleteLine(16);
-        eo.deleteLine(16);
-        eo.setCaretPositionToLine(17);
-  
-        eo.insert(createWrapperClass(fileName));
-
+        
+        // Update WrapperJavaClass1
+        if (fileName.equals(ATTRIBUTE_WRAPPER_NAME_1)) {
+            // Add extension to the java class
+            eo.setCaretPosition("public class " + fileName + " ", false);
+            eo.insert("extends Super" + fileName + " ");
+            // Add methods to the java class
+            // Set caret position after the first occurence of "}",
+            // that is after the constructor declaration
+            eo.setCaretPosition("}", false);
+            eo.insert(addGetAttribute1() +
+                    addGetAttribute2() +
+                    addIsAttribute2() +
+                    addGetAttribute3() +
+                    addSetAttribute3() +
+                    addGetAttribute4() +
+                    addSetAttribute4() +
+                    addGetAttribute5_Double() +
+                    addSetAttribute5() +
+                    addSetAttribute6_Float() +
+                    addSetAttribute6_Date());
+            // Add inner class declaration
+            eo.insert("}\n\n");
+            eo.insert("class Super" + fileName + " {\n" +
+                    addGetAttribute5_Object() +
+                    addSetAttribute6_Object());
+        }
+        // Update WrapperJavaClass2
+        else if (fileName.equals(ATTRIBUTE_WRAPPER_NAME_2)) {
+            // Add generics to the java class declaration
+            eo.setCaretPosition("public class " + fileName, false);
+            eo.insert("<Z,Q> ");
+            // Add methods to the java class
+            // Set caret position after the first occurence of "}",
+            // that is after the constructor declaration
+            eo.setCaretPosition("}", false);
+            eo.insert(addGetGenericAttribute1() +
+                    addGetGenericAttribute2() +
+                    addGetAttribute1());
+        }
+        
         eo.save();
     }
-     
-    private void updateGenericFile(String fileName) {
-        EditorOperator eo = new EditorOperator(fileName);
-        eo.deleteLine(16);
-        eo.deleteLine(16);
-        eo.deleteLine(16);
-        eo.deleteLine(16);
-        eo.deleteLine(16);
-        eo.deleteLine(16);
-        eo.deleteLine(16);
-        eo.setCaretPositionToLine(16);
-  
-        eo.insert(createGenericWrappedClass(fileName));
-
-        eo.save();
-    }
-     
-    private String createGenericWrappedClass(String fileName) {
-        return "public class " + fileName + "<Z,Q> { \n" +
-                "\t" + attributeGeneric0() +
-                "\t" + attributeGeneric1() +
-                "\t" + attributeGeneric2() +
-                "} \n";
+    
+    private String addGetAttribute1() {
+        return "\n\tpublic String get" + ATTRIBUTE_1 + "() {" +
+                "\n\t\treturn \"\";" +
+                "\n\t}\n";
     }
     
-    private String attributeGeneric0() {
-        return "public Z getGenericAttribute() { \n" +
-                "\t return null; \n " +
-                "\t} \n";
+    private String addGetAttribute2() {
+        return  "\n\tpublic boolean get" + ATTRIBUTE_2 + "() {" +
+                "\n\t\treturn false;" +
+                "\n\t}\n";
     }
     
-    private String attributeGeneric1() {
-        return "public <T> T getGenericAttribute2() { \n" +
-                "\t return null; \n " +
-                "\t} \n";
+    private String addIsAttribute2() {
+        return  "\n\tpublic boolean is" + ATTRIBUTE_2 + "() {" +
+                "\n\t\treturn false;" +
+                "\n\t}\n";
     }
     
-     private String attributeGeneric2() {
-        return " public String getAttribute() { \n" +
-                "\t return null; \n " +
-                "\t} \n";
+    private String addGetAttribute3() {
+        return  "\n\tpublic java.util.List get" + ATTRIBUTE_3 + "() {" +
+                "\n\t\treturn null;" +
+                "\n\t}\n";
     }
     
-    private String createWrapperClass(String fileName) {
-        return "public class " + fileName + " extends Super" +fileName+ " { \n" +
-                "\t" + attribute0() +
-                "\t" + attribute1() +
-                "\t" + attribute2() +
-                "\t" + attribute3() +
-                "\t" + attribute4() +
-                "\t" + attribute5() +
-                "} \n \n" +
-               createWrapperSuperClass("Super"+fileName)+ "\n ";
+    private String addSetAttribute3() {
+        return  "\n\tpublic void set" + ATTRIBUTE_3 + "(java.util.List l) {" +
+                "\n\t}\n";
     }
     
-    private String createWrapperSuperClass(String fileName) {
-        return  "class " +fileName+ " { \n" +
-                "\t public void setAttribute5(Object d) {} \n" +
-                "\n" +
-                "\t public Object getAttribute4() { \n" +
-                "\t return null; \n" +
-                "\t } \n";
+    private String addGetAttribute4() {
+        return  "\n\tpublic String[] get" + ATTRIBUTE_4 + "() {" +
+                "\n\t\treturn null;" +
+                "\n\t}\n";
     }
     
-    private String attribute0() {
-        return "public String getAttribute0() { \n" +
-                "\t return \"\"; \n " +
-                "\t} \n";
+    private String addSetAttribute4() {
+        return  "\n\tpublic void set" + ATTRIBUTE_4 + "(String[] s) {" +
+                "\n\t}\n";
     }
     
-    private String attribute1() {
-        return  "public boolean isAttribute1() { \n " +
-                "\t return false; \n" +
-                "\t} \n \n" +
-                "\t public boolean getAttribute1() {\n " +
-                "\t return false; \n" +
-                "\t} \n";
+    private String addGetAttribute5_Double() {
+        return  "\n\tpublic Double get" + ATTRIBUTE_5 + "() {" +
+                "\n\t\treturn new Double(0);" +
+                "\n\t}\n";
     }
     
-    private String attribute2() {
-        return  "public java.util.List getAttribute2() { \n" +
-                "\t return null; \n" +
-                "\t} \n \n" +
-                "\t public void setAttribute2(java.util.List l) {} \n \n";
+    private String addGetAttribute5_Object() {
+        return  "\n\tpublic Object get" + ATTRIBUTE_5 + "() {" +
+                "\n\t\treturn null;" +
+                "\n\t}\n";
     }
     
-    private String attribute3() {
-        return  "public String[] getAttribute3() { \n" +
-                "\t return null; \n" +
-                "\t} \n \n" +
-                "\t public void setAttribute3(String[] s) {} \n \n";
+    private String addSetAttribute5() {
+        return  "\n\tpublic void set" + ATTRIBUTE_5 + "(Double d) {" +
+                "\n\t}\n";
     }
     
-    private String attribute4() {
-        return  "public Double getAttribute4() { \n " +
-                "\t return new Double(0); \n" +
-                "\t} \n \n" +
-                "\t public void setAttribute4(Double d) {} \n \n";
+    private String addSetAttribute6_Float() {
+        return  "\n\tpublic void set" + ATTRIBUTE_6 + "(float f) {" +
+                "\n\t}\n";
     }
     
-    private String attribute5() {
-        return  "public void setAttribute5(float f) {} \n" +
-                "\t public void setAttribute5(java.util.Date d) {} \n \n";
-    }
-     
-    //========================= Class Name generation ===========================//
-    
-    private String getCompleteGeneratedFileName(NewFileWizardOperator nfwo) {
-        return JellyToolsHelper.getTextFieldContent(JellyConstants.GENFILE_TXT, nfwo);
+    private String addSetAttribute6_Date() {
+        return  "\n\tpublic void set" + ATTRIBUTE_6 + "(java.util.Date d) {" +
+                "\n\t}\n";
     }
     
-    private String getClassName(String completeFileName, String mbeanName) {
-        return JellyToolsHelper.replaceMBeanClassName(completeFileName, 
-                mbeanName+JellyConstants.JAVA_EXT);
+    private String addSetAttribute6_Object() {
+        return  "\n\tpublic void set" + ATTRIBUTE_6 + "(Object o) {" +
+                "\n\t}\n";
     }
     
-    private String getInterfaceName(String completeFileName) {
-        String itfWithExtension = completeFileName.substring(
-                completeFileName.lastIndexOf(File.separatorChar)+1);
-        return itfWithExtension.substring(0, itfWithExtension.lastIndexOf('.'));
+    private String addGetGenericAttribute1() {
+        return "\n\tpublic Z get" + GENERIC_ATTRIBUTE_1 + "() {" +
+                "\n\t\treturn null;" +
+                "\n\t}\n";
+    }
+    
+    private String addGetGenericAttribute2() {
+        return "\n\tpublic <T> T get" + GENERIC_ATTRIBUTE_2 + "() {" +
+                "\n\t\treturn null;" +
+                "\n\t}\n";
     }
     
     //========================= Panel discovery ==================================//
     
-    private ArrayList<String> optionStep(NewFileWizardOperator nfwo, MBean mbean) {
-        ArrayList<String> fileNames = new ArrayList<String>();
+    /**
+     * Overloaded method to select/unselect wrapped attributes
+     * instead of creating new ones.
+     */
+    protected void addMBeanAttributes(
+            NewFileNameLocationStepOperator nfnlso,
+            ArrayList<Attribute> attrList,
+            String fileType) {
         
-        JellyToolsHelper.changeCheckBoxSelection(JellyConstants.EXISTINGCLASS_CBX, nfwo, true);
-        assertTrue(JellyToolsHelper.verifyCheckBoxSelected(JellyConstants.EXISTINGCLASS_CBX, nfwo));
-        assertTrue(JellyToolsHelper.verifyTextFieldEnabled(JellyConstants.EXISTINGCLASS_TXT, nfwo));
-        JellyToolsHelper.tempo(1000);
-        JellyToolsHelper.setTextFieldContent(JellyConstants.EXISTINGCLASS_TXT, nfwo, mbean.getClassToWrap());
-        JellyToolsHelper.tempo(1000);
-        assertEquals(mbean.getClassToWrap(), 
-                JellyToolsHelper.getTextFieldContent(JellyConstants.EXISTINGCLASS_TXT, nfwo));
+        JTableOperator jto = getTableOperator(WRAPPER_ATTRIBUTE_TABLE, nfnlso);
         
-        assertTrue(JellyToolsHelper.verifyRadioButtonSelected(mbean.getMBeanType(), nfwo));
-        assertTrue(checkMBeanTypeButtons(nfwo, mbean));
+        System.out.println("Select/unselect and update MBeans attributes");
         
-        assertTrue(JellyToolsHelper.verifyCheckBoxEnabled(JellyConstants.IMPLEMMBEAN_CBX, nfwo));
-        assertFalse(JellyToolsHelper.verifyCheckBoxSelected(JellyConstants.IMPLEMMBEAN_CBX, nfwo));
-        assertFalse(JellyToolsHelper.verifyCheckBoxEnabled(JellyConstants.PREREGPARAM_CBX, nfwo));
-        JellyToolsHelper.tempo(1000);
-        JellyToolsHelper.setTextFieldContent(JellyConstants.MBEANDESCR_TXT, nfwo,
-                mbean.getMBeanComment());
-        JellyToolsHelper.tempo(1000);
-        assertEquals(mbean.getMBeanComment(), JellyToolsHelper.getTextFieldContent(
-                JellyConstants.MBEANDESCR_TXT, nfwo));
+        // Depending on the MBean, performs the following :
+        // - check/uncheck attributes to keep
+        // - modify access
+        // - modify description
         
-        // get the generated file name for campare with master files
-        String completeGeneratedFileName = getCompleteGeneratedFileName(nfwo);
-        String className = getClassName(completeGeneratedFileName, mbean.getMBeanName());
-        String itfName = getInterfaceName(completeGeneratedFileName);
-        
-        fileNames.add(completeGeneratedFileName);
-        fileNames.add(className);
-        fileNames.add(itfName);
-        
-        return fileNames;
-    }
-    
-    private void attributeStep(NewFileWizardOperator nfwo, MBean mbean) {
-        // attributes
-        assertTrue(JellyToolsHelper.verifyTableEnabled(JellyConstants.W_ATTR_TBL,nfwo));
-        assertFalse(JellyToolsHelper.verifyButtonEnabled(JellyConstants.W_ATTR_REM_BTN,nfwo)); 
-        
-        // check/uncheck attributes to keep
-        JTableOperator jto = JellyToolsHelper.getPanelTableOperator(JellyConstants.W_ATTR_TBL, nfwo);
-        JTableMouseDriver mouseDriver = new JTableMouseDriver();
-        
-        if (mbean.getMBeanName().equals(JellyConstants.MBEAN_THIRTEEN))
-            wrapper13Attributes(nfwo, mouseDriver, jto);
-        else if(mbean.getMBeanName().equals(JellyConstants.MBEAN_GENERIC_1))
-                generic1Attributes(nfwo, mouseDriver, jto);
-            else wrapper14Attributes(nfwo, mouseDriver, jto);
-    }
-    
-    private void generic1Attributes(NewFileWizardOperator nfwo,
-            JTableMouseDriver mouseDriver, JTableOperator jto) {
-        //Nothing to do, we just want to check that generation is successfull
-    }
-    
-    private void wrapper13Attributes(NewFileWizardOperator nfwo,
-            JTableMouseDriver mouseDriver, JTableOperator jto) {
-        //setting attribute 2 to read only
-        int index = jto.findCellRow(JellyConstants.LIST_TYPE_FULL);
-        mouseDriver.selectCell(jto, index, JellyConstants.ACCESS_COL); 
-        JellyToolsHelper.changeTableComboBoxItem(JellyConstants.W_ATTR_ACCESS_CB, 
-                jto, JellyConstants.RO);
-        mouseDriver.selectCell(jto, index, JellyConstants.ACCESS_COL); 
-        assertEquals(JellyConstants.RO,JellyToolsHelper.getTableComboBoxItem(
-                JellyConstants.W_ATTR_ACCESS_CB, 
-                jto));
-        // deselecting attribute 5
-        uncheckAttribute(mouseDriver, jto, JellyConstants.DATE_TYPE_FULL);
-        
-        verifyAttributeChecked(jto, JellyConstants.STR_TYPE_FULL);
-        verifyAttributeChecked(jto, JellyConstants.BOOL_TYPE);
-        verifyAttributeChecked(jto, JellyConstants.LIST_TYPE_FULL);
-        verifyAttributeChecked(jto, JellyConstants.STR_ARRAY_TYPE_FULL);
-        verifyAttributeChecked(jto, JellyConstants.DOUBLE_TYPE_FULL);
-        verifyAttributeChecked(jto, JellyConstants.FLOAT_TYPE);
-    }
-    
-    private void wrapper14Attributes(NewFileWizardOperator nfwo,
-            JTableMouseDriver mouseDriver, JTableOperator jto) {
-        // deselecting attribute 0,2,4 and 6
-        uncheckAttribute(mouseDriver, jto, JellyConstants.STR_TYPE_FULL); 
-        uncheckAttribute(mouseDriver, jto, JellyConstants.LIST_TYPE_FULL); 
-        uncheckAttribute(mouseDriver, jto, JellyConstants.DOUBLE_TYPE_FULL); 
-        uncheckAttribute(mouseDriver, jto, JellyConstants.FLOAT_TYPE); 
-        
-        verifyAttributeChecked(jto, JellyConstants.BOOL_TYPE);
-        verifyAttributeChecked(jto, JellyConstants.STR_ARRAY_TYPE_FULL);
-        verifyAttributeChecked(jto, JellyConstants.DATE_TYPE_FULL);
-    }
-    
-    private void uncheckAttribute(JTableMouseDriver mouseDriver, JTableOperator jto, String name) {
-        int index = jto.findCellRow(name);
-        mouseDriver.selectCell(jto, index, JellyConstants.EXPOSE_COL); 
-        assertFalse(JellyToolsHelper.getTableCheckBoxValue(jto, index, JellyConstants.EXPOSE_COL));
-    }
-    
-    private void verifyAttributeChecked(JTableOperator jto, String name) {
-        int index = jto.findCellRow(name);
-        assertTrue(JellyToolsHelper.getTableCheckBoxValue(jto, index, JellyConstants.EXPOSE_COL));
-    }
-    
-    private ArrayList<String> junitStep(NewFileWizardOperator nfwo, MBean mbean) {
-        
-        ArrayList<String> unitFileNames = new ArrayList<String>();
-        
-        JellyToolsHelper.changeCheckBoxSelection(JellyConstants.JU_CBX, nfwo, true);
-        assertTrue(JellyToolsHelper.verifyCheckBoxEnabled(JellyConstants.JU_CBX, nfwo));
-        assertTrue(JellyToolsHelper.verifyCheckBoxSelected(JellyConstants.JU_CBX, nfwo));
-        
-        assertTrue(JellyToolsHelper.verifyTextFieldEnabled(JellyConstants.CLASSTOTEST_TXT, nfwo));
-        assertFalse(JellyToolsHelper.verifyTextFieldEditable(JellyConstants.CLASSTOTEST_TXT, nfwo));
-        assertTrue(JellyToolsHelper.verifyTextFieldEnabled(JellyConstants.TESTCLASS_TXT, nfwo));
-        assertFalse(JellyToolsHelper.verifyTextFieldEditable(JellyConstants.TESTCLASS_TXT, nfwo));
-        
-        assertTrue(JellyToolsHelper.verifyCheckBoxEnabled(JellyConstants.DEFMETHBODY_CBX, nfwo));
-        assertTrue(JellyToolsHelper.verifyCheckBoxSelected(JellyConstants.DEFMETHBODY_CBX, nfwo));
-        
-        assertTrue(JellyToolsHelper.verifyCheckBoxEnabled(JellyConstants.JAVADOC_CBX, nfwo));
-        assertTrue(JellyToolsHelper.verifyCheckBoxSelected(JellyConstants.JAVADOC_CBX, nfwo));
-        
-        // this txt filed contains the full path of the junit test test file to be created
-        String completeGeneratedTestFileName = JellyToolsHelper.getTextFieldContent(
-                JellyConstants.GENUNITFILE_TXT,nfwo);
-        
-        // this string contains only the junit test file name with extension
-        String junitFileNameWithExtension = completeGeneratedTestFileName.substring(
-                completeGeneratedTestFileName.lastIndexOf(File.separatorChar)+1);
-        
-        // same as junitFileNameWithExtension but without extension .java
-        String junitFileName = junitFileNameWithExtension.substring(0, junitFileNameWithExtension.lastIndexOf('.'));
-        
-        unitFileNames.add(completeGeneratedTestFileName);
-        unitFileNames.add(junitFileName);
-      
-        return unitFileNames;
-    }
-    
-    private boolean checkMBeanTypeButtons(NewFileWizardOperator nfwo, MBean mbean) {
-        String type = mbean.getMBeanType();
-           if (type.equals(JellyConstants.STDMBEAN)) {
-                assertFalse(JellyToolsHelper.verifyRadioButtonSelected(JellyConstants.EXTSTDMBEAN, nfwo));
-                assertFalse(JellyToolsHelper.verifyRadioButtonSelected(JellyConstants.DYNMBEAN, nfwo));
-                return true;
-           } else if (type.equals(JellyConstants.EXTSTDMBEAN)) {
-                assertFalse(JellyToolsHelper.verifyRadioButtonSelected(JellyConstants.STDMBEAN, nfwo));
-                assertFalse(JellyToolsHelper.verifyRadioButtonSelected(JellyConstants.DYNMBEAN, nfwo));
-                return true;
-        } else if (type.equals(JellyConstants.DYNMBEAN)) {
-                assertFalse(JellyToolsHelper.verifyRadioButtonSelected(JellyConstants.STDMBEAN, nfwo));
-                assertFalse(JellyToolsHelper.verifyRadioButtonSelected(JellyConstants.EXTSTDMBEAN, nfwo));
-                return true;
+        // Expose all attributes
+        if (mbeanName.equals(ATTRIBUTE_WRAPPED_MBEAN_NAME_1) ||
+                mbeanName.equals(ATTRIBUTE_WRAPPED_MBEAN_NAME_4)) {
+            
+            // Set ATTRIBUTE_3 access to read only
+            jto.selectCell(jto.findCellRow(ATTRIBUTE_3),
+                    jto.findColumn(ATTRIBUTE_ACCESS_COLUMN_NAME));
+            selectComboBoxItem(WRAPPER_ATTRIBUTE_ACCESS_BOX, jto, READ_ONLY);
+            // Unselect ATTRIBUTE_6 returning java.util.Date
+            // As there is 2 setters defined for ATTRIBUTE_6 (returning float and Date),
+            // we retreive the row index using the returned type value instead
+            // of the attribute name
+            unselectAttribute(jto, "java.util.Date");
         }
-        return false;
+        // Expose minimal attributes
+        else if (mbeanName.equals(ATTRIBUTE_WRAPPED_MBEAN_NAME_2) ||
+                mbeanName.equals(ATTRIBUTE_WRAPPED_MBEAN_NAME_5)) {
+            
+            // Unselect ATTRIBUTE_1, ATTRIBUTE_3 and ATTRIBUTE_5
+            unselectAttribute(jto, ATTRIBUTE_1);
+            unselectAttribute(jto, ATTRIBUTE_3);
+            unselectAttribute(jto, ATTRIBUTE_5);
+            // Unselect ATTRIBUTE_6 returning float
+            // As there is 2 setters defined for ATTRIBUTE_6 (returning float and Date),
+            // we retreive the row index using the returned type value instead
+            // of the attribute name
+            unselectAttribute(jto, "float");
+        }
+        // Expose generic attributes
+        else if(mbeanName.equals(ATTRIBUTE_WRAPPED_MBEAN_NAME_3) ||
+                mbeanName.equals(ATTRIBUTE_WRAPPED_MBEAN_NAME_6)) {
+            // Nothing to do
+            // We just want to check that generation is successfull
+        }
     }
-     
+    
+    /**
+     * Overloaded method to check selected/unselected wrapped attributes
+     */
+    protected void checkMBeanAttributesWizard(
+            NewFileNameLocationStepOperator nfnlso, String fileType) {
+        
+        JTableOperator jto = getTableOperator(WRAPPER_ATTRIBUTE_TABLE, nfnlso);
+        
+        System.out.println("Check selected/unselected MBeans attributes");
+        
+        // Expose all attributes
+        if (mbeanName.equals(ATTRIBUTE_WRAPPED_MBEAN_NAME_1) ||
+                mbeanName.equals(ATTRIBUTE_WRAPPED_MBEAN_NAME_4)) {
+            
+            assertEquals(READ_ONLY, getComboBoxItem(WRAPPER_ATTRIBUTE_ACCESS_BOX, jto));
+            verifyAttributeSelection(jto, ATTRIBUTE_1, true);
+            verifyAttributeSelection(jto, ATTRIBUTE_2, true);
+            verifyAttributeSelection(jto, ATTRIBUTE_3, true);
+            verifyAttributeSelection(jto, ATTRIBUTE_4, true);
+            verifyAttributeSelection(jto, ATTRIBUTE_5, true);
+            verifyAttributeSelection(jto, "float", true);
+            verifyAttributeSelection(jto, "java.util.Date", false);
+        }
+        // Expose minimal attributes
+        else if (mbeanName.equals(ATTRIBUTE_WRAPPED_MBEAN_NAME_2) ||
+                mbeanName.equals(ATTRIBUTE_WRAPPED_MBEAN_NAME_5)) {
+            verifyAttributeSelection(jto, ATTRIBUTE_1, false);
+            verifyAttributeSelection(jto, ATTRIBUTE_2, true);
+            verifyAttributeSelection(jto, ATTRIBUTE_3, false);
+            verifyAttributeSelection(jto, ATTRIBUTE_4, true);
+            verifyAttributeSelection(jto, ATTRIBUTE_5, false);
+            verifyAttributeSelection(jto, "float", false);
+            verifyAttributeSelection(jto, "java.util.Date", true);
+        }
+        super.checkMBeanAttributesWizard(nfnlso, fileType);
+    }
+    
+    
+    private void unselectAttribute(JTableOperator jto, String name) {
+        int rowIndex = jto.findCellRow(name);
+        int columnIndex = jto.findColumn(ATTRIBUTE_EXPOSE_COLUMN_NAME);
+        jto.selectCell(rowIndex, columnIndex);
+    }
+    
+    private void verifyAttributeSelection(
+            JTableOperator jto, String name, boolean selected) {
+        int rowIndex = jto.findCellRow(name);
+        int columnIndex = jto.findColumn(ATTRIBUTE_EXPOSE_COLUMN_NAME);
+        if (selected) {
+            assertTrue((Boolean)getTableCellValue(jto, rowIndex, columnIndex));
+        } else {
+            assertFalse((Boolean)getTableCellValue(jto, rowIndex, columnIndex));
+        }
+    }
 }
+
 

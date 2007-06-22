@@ -22,38 +22,33 @@ package org.netbeans.modules.jmx.test.helpers;
 import java.util.ArrayList;
 
 /**
- *
- * @author an156382
+ * Used to check MBean operation wizard values.
  */
 
 public class Operation {
-
+    
     private String operationName = "";
     private String operationReturnType = "";
     private ArrayList<Parameter> operationParameters = null;
     private ArrayList<Exception> operationExceptions = null;
-    private String operationComment = "";
-
+    private String operationDescription = "";
+    
     public Operation(String operationName, String operationReturnType,
             ArrayList<Parameter> operationParameters,
             ArrayList<Exception> operationExceptions,
-            String operationComment) {
-        
+            String operationDescription) {
         this.operationName = operationName;
         this.operationReturnType = operationReturnType;
         this.operationParameters = operationParameters;
         this.operationExceptions = operationExceptions;
-        this.operationComment = operationComment;
+        this.operationDescription = operationDescription;
     }
     
     public Operation(String operationName, String operationReturnType,
-            String operationComment) {
-        
+            String operationDescription) {
         this.operationName = operationName;
         this.operationReturnType = operationReturnType;
-        this.operationParameters = null;
-        this.operationExceptions = null;
-        this.operationComment = operationComment;
+        this.operationDescription = operationDescription;
     }
     
     /**
@@ -61,7 +56,7 @@ public class Operation {
      * @return operationName the name of the operation
      *
      */
-    public String getOperationName() {
+    public String getName() {
         return operationName;
     }
     
@@ -70,7 +65,7 @@ public class Operation {
      * @param operationName the name of the operation
      *
      */
-    public void setOperationName(String operationName) {
+    public void setName(String operationName) {
         this.operationName = operationName;
     }
     
@@ -79,8 +74,42 @@ public class Operation {
      * @return operationReturnType the return type of the operation
      *
      */
-    public String getOperationReturnType() {
+    public String getReturnType() {
         return operationReturnType;
+    }
+    
+    /**
+     * Method which sets the return the type of the operation
+     * @param operationReturnType the return type of the operation
+     *
+     */
+    public void setReturnType(String operationReturnType) {
+        this.operationReturnType = operationReturnType;
+    }
+    
+    /**
+     * Method which returns an operation description
+     * @return operationDescription the operation description
+     *
+     */
+    public String getDescription() {
+        return operationDescription;
+    }
+    
+    /**
+     * Method which sets an operation description
+     * @return operationDescription the operation description
+     *
+     */
+    public void setDescription(String operationDescription) {
+        this.operationDescription = operationDescription;
+    }
+    
+    /**
+     * Method which returns the operation parameters
+     */
+    public ArrayList<Parameter> getParameters() {
+        return operationParameters;
     }
     
     /**
@@ -89,8 +118,15 @@ public class Operation {
      * @return operationParameters the parameter at index
      *
      */
-    public Parameter getOperationParameter(int index) {
+    public Parameter getParameter(int index) {
         return operationParameters.get(index);
+    }
+    
+    /**
+     * Method which returns the operation exceptions
+     */
+    public ArrayList<Exception> getExceptions() {
+        return operationExceptions;
     }
     
     /**
@@ -99,17 +135,8 @@ public class Operation {
      * @return operationExceptions the exception at index
      *
      */
-    public Exception getOperationException(int index) {
+    public Exception getException(int index) {
         return operationExceptions.get(index);
-    }
-    
-    /**
-     * Method which returns an operation comment
-     * @return operationComment the operation comment
-     *
-     */
-    public String getOperationComment() {
-        return operationComment;
     }
     
     /**
@@ -117,11 +144,8 @@ public class Operation {
      * @return operationParameters the number of parameters
      *
      */
-    public int getOperationParameterSize() {
-        if (operationParameters != null)
-            return operationParameters.size();
-        else
-            return -1;
+    public int getParameterSize() {
+        return operationParameters.size();
     }
     
     /**
@@ -129,10 +153,7 @@ public class Operation {
      * @return operationExceptions the number of exceptions
      *
      */
-    public int getOperationExceptionSize() {
-        if (operationExceptions != null)
-            return operationExceptions.size();
-        else
-            return -1;
+    public int getExceptionSize() {
+        return operationExceptions.size();
     }
 }

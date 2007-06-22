@@ -1,0 +1,27 @@
+package com.foo.bar;
+
+import java.util.Date;
+
+
+public class AddAttributes1Super {
+    
+    /** Creates a new instance of AddAttributes1Super */
+    public AddAttributes1Super() {
+    }
+    
+    public Object getAttr3() {
+        return null;
+    }
+    
+    public void setAttr6(Object l) {
+        //do nothing
+    }
+    
+    public int getAttr10() {
+        return 0;
+    }
+    
+    public void setAttr11(Date d) {
+        //do nothing
+    }
+}

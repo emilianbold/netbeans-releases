@@ -4,12 +4,8 @@
  * Created on <current Date and Time>
  */
 
-package jmxtestmanagerfunctionaltest;
+package com.foo.bar;
 
-import java.util.Iterator;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Set;
 import javax.management.MBeanServerConnection;
 import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
@@ -25,23 +21,20 @@ public class Test1Manager {
     /**
      * @param args the command line arguments
      */
-    public static void main(String[] args) throws Exception  {
-
-        //manager instantiation and connection to the remote agent
+    public static void main(String[] args) throws Exception {
+        
+        //Manager instantiation and connection to the remote agent
         Test1Manager manager = Test1Manager.getDefault();
-        
-        /* *** SAMPLE MBEAN NAME DISCOVERY *** */ 
-        /* 
-         Set resultSet = 
-            manager.getMBeanServerConnection().queryNames(null, null);
-         for(Iterator i = resultSet.iterator(); i.hasNext();) {
-             System.out.println("MBean name: " + i.next());
-         }
-        */
-        
-        //close connection
+        // SAMPLE MBEAN NAME DISCOVERY. Uncomment following code.
+        /*
+         * Set resultSet =
+         * manager.getMBeanServerConnection().queryNames(null, null);
+         * for(Iterator i = resultSet.iterator(); i.hasNext();) {
+         * System.out.println("MBean name: " + i.next());
+         * }
+         */
+        // Close connection
         manager.close();
-        
         System.out.println("Connection closed.");
     }
     
@@ -50,25 +43,22 @@ public class Test1Manager {
      * This method is called automatically when <CODE>getDefault()</CODE>
      * is called
      */
-    public void connect() throws Exception  {
-
-        /* *** SAMPLE CREDENTIALS *** */
-        /* Replace userName and userPassword with your parameters. 
-         * Provide env parameter when calling JMXConnectorFactory.connect(url, env)
-         */       
+    public void connect() throws Exception {        // Create JMX Agent URL
+        JMXServiceURL url = new JMXServiceURL("");
         /*
-        Map env = new HashMap(); 
-        env.put(JMXConnector.CREDENTIALS, new String[]{"userName", "userPassword"});
-        */ 
-        
-        //Create JMX Agent URL 
-        JMXServiceURL url = new JMXServiceURL("service:jmx:rmi://localhost:1099/jndi/rmi://localhost:1099/jmxrmi");
-        
-        //Connect the JMXConnector 
+         * SAMPLE CREDENTIALS. Uncomment following code.
+         * Replace userName and userPassword with your parameters.
+         * Provide env parameter when calling JMXConnectorFactory.connect(url, env)
+         */
+        /*
+         * Map env = new HashMap();
+         * env.put(JMXConnector.CREDENTIALS, new String[]{"userName", "userPassword"});
+         */
+        // Connect the JMXConnector
         connector = JMXConnectorFactory.connect(url, null);
-        
-        //Get the MBeanServerConnection
+        // Get the MBeanServerConnection
         mbsc = connector.getMBeanServerConnection();
+
     }
     
     /**

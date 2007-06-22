@@ -1,0 +1,28 @@
+package com.foo.bar;
+
+import javax.management.*;
+
+public class U1Simple2 implements U1Simple2MBean, NotificationEmitter {
+    
+    /* Creates a new instance of U1Simple2 */
+    public U1Simple2()  {
+    }
+
+    public void addNotificationListener(NotificationListener listener,
+                                        NotificationFilter filter,
+                                        Object handback) throws IllegalArgumentException {
+    }
+
+    public MBeanNotificationInfo[] getNotificationInfo() {
+        return new MBeanNotificationInfo[]{};
+    }
+
+    public void removeNotificationListener(NotificationListener listener) throws ListenerNotFoundException {
+    }
+
+    public void removeNotificationListener(NotificationListener listener,
+                                           NotificationFilter filter,
+                                           Object handback) throws ListenerNotFoundException {
+    }
+}
+

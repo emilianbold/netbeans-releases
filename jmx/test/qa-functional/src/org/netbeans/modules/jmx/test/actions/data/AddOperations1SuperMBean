@@ -1,0 +1,6 @@
+package com.foo.bar;
+
+public interface AddOperations1SuperMBean {
+    
+    public void op4();
+}

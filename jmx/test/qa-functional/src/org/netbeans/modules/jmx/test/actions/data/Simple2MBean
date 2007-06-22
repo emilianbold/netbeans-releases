@@ -1,0 +1,9 @@
+package com.foo.bar;
+
+import javax.management.*;
+
+public interface Simple2MBean
+{
+    
+}
+

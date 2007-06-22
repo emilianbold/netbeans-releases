@@ -20,34 +20,47 @@
 package org.netbeans.modules.jmx.test.helpers;
 
 /**
- *
- * @author an156382
+ * Used to check MBean operation exception wizard values.
  */
 public class Exception {
 
     private String excepClass = "";
-    private String excepComment = "";
+    private String excepDescription = "";
 
-    public Exception(String excepClass, String excepComment) {
-
+    public Exception(String excepClass, String excepDescription) {
         this.excepClass = excepClass;
-        this.excepComment = excepComment;
+        this.excepDescription = excepDescription;
     }
 
     /**
      * Returns the class of the exception
      * @return excepClass the class of the exception
      */
-    public String getExcepClass() {
+    public String getClassName() {
         return excepClass;
     }
 
     /**
-     * Returns the comment of the exception
-     * @return excepComment the comment of the exception
+     * Sets the class of the exception
+     * @param excepClass the class of the exception
      */
-    public String getExepComment() {
-        return excepComment;
+    public void setClassName(String excepClass) {
+        this.excepClass = excepClass;
+    }
+
+    /**
+     * Returns the description of the exception
+     * @return excepDescription the description of the exception
+     */
+    public String getDescription() {
+        return excepDescription;
     }
     
+    /**
+     * Sets the description of the exception
+     * @param excepDescription the description of the exception
+     */
+    public void setDescription(String excepDescription) {
+        this.excepDescription = excepDescription;
+    }
 }

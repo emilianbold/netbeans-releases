@@ -1,0 +1,57 @@
+package com.foo.bar;
+
+import javax.management.*;
+
+public class Standard1 extends javax.management.StandardMBean implements Standard1MBean {
+    
+    /* Creates a new instance of Standard1 */
+    public Standard1() throws NotCompliantMBeanException {
+        super(Standard1MBean.class);
+    }
+    
+    /**
+     * Next are the methods to compute MBeanInfo.
+     * You shouldn't update these methods.
+     */
+    protected String getDescription(MBeanInfo info)  {
+        return "Standard1 Description";
+    }
+    
+    protected String getDescription(MBeanAttributeInfo info)  {
+        String description = null;
+        return description;
+    }
+    
+    protected String getDescription(MBeanOperationInfo op,
+            MBeanParameterInfo param,
+            int sequence)  {
+        return null;
+    }
+    
+    protected String getParameterName(MBeanOperationInfo op,
+            MBeanParameterInfo param,
+            int sequence)  {
+        return null;
+    }
+    
+    protected String getDescription(MBeanOperationInfo info)  {
+        String description = null;
+        return description;
+    }
+    
+    public MBeanInfo getMBeanInfo() {
+        MBeanInfo mbinfo = super.getMBeanInfo();
+        return new MBeanInfo(mbinfo.getClassName(),
+                mbinfo.getDescription(),
+                mbinfo.getAttributes(),
+                mbinfo.getConstructors(),
+                mbinfo.getOperations(),
+                getNotificationInfo());
+    }
+    
+    public MBeanNotificationInfo[] getNotificationInfo() {
+        return new MBeanNotificationInfo[] {};
+    }
+}
+
+
