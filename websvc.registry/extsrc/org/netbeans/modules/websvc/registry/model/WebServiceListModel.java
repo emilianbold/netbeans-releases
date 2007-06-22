@@ -219,7 +219,7 @@ public class WebServiceListModel {
     /** Add a webservice group to the model*/
     public void addWebServiceGroup(WebServiceGroup group){
         //System.out.println("WebServiceNodeModel add group called - " + group.getId());
-
+        if(webserviceGroups == null) return;
         if (!webserviceGroups.containsKey(group.getId())) {
             webserviceGroups.put(group.getId(), group);
             Iterator iter = listeners.iterator();

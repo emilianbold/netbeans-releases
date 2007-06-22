@@ -38,11 +38,11 @@ import org.openide.util.lookup.Lookups;
 public class WebServicesRootNode extends AbstractNode {
     private static Image WEB_SERVICES_BADGE = Utilities.loadImage( "org/netbeans/modules/websvc/core/webservices/ui/resources/webservicegroup.png", true ); // NOI18N
     private static Icon folderIconCache;
-    private static Icon openedFolderIconCache;	
+    private static Icon openedFolderIconCache;
     
     public WebServicesRootNode(FileObject srcRoot) {
-		super((srcRoot != null) ? new WebServicesChildren(new FileObject[]{srcRoot}) : Children.LEAF, createLookup(srcRoot));
-        setDisplayName(NbBundle.getBundle(WebServicesRootNode.class).getString("LBL_WebServices"));
+        super((srcRoot != null) ? new WebServicesChildren(new FileObject[]{srcRoot}) : Children.LEAF, createLookup(srcRoot));
+        setDisplayName(NbBundle.getMessage(WebServicesRootNode.class, "LBL_WebServices"));
     }
     
     public Image getIcon( int type ) {
@@ -58,7 +58,7 @@ public class WebServicesRootNode extends AbstractNode {
      * @param opened should the icon represent opened folder
      * @return the folder icon
      */
-    static synchronized Icon getFolderIcon (boolean opened) {
+    static synchronized Icon getFolderIcon(boolean opened) {
         if (openedFolderIconCache == null) {
             Node n = DataFolder.findFolder(Repository.getDefault().getDefaultFileSystem().getRoot()).getNodeDelegate();
             openedFolderIconCache = new ImageIcon(n.getOpenedIcon(BeanInfo.ICON_COLOR_16x16));
@@ -66,42 +66,41 @@ public class WebServicesRootNode extends AbstractNode {
         }
         if (opened) {
             return openedFolderIconCache;
-        }
-        else {
+        } else {
             return folderIconCache;
         }
     }
-
-    private Image computeIcon( boolean opened, int type ) {        
+    
+    private Image computeIcon( boolean opened, int type ) {
         Icon icon = getFolderIcon(opened);
         Image image = ((ImageIcon)icon).getImage();
         image = Utilities.mergeImages(image, WEB_SERVICES_BADGE, 7, 7 );
-        return image;        
+        return image;
     }
-
+    
     public Action[] getActions(boolean context) {
         return new Action[]{
-			org.netbeans.spi.project.ui.support.CommonProjectActions.newFileAction(),
-			null,
-			org.openide.util.actions.SystemAction.get(org.openide.actions.FindAction.class),
-			null,
-			org.openide.util.actions.SystemAction.get(org.openide.actions.PasteAction.class),
-			null,
-			org.openide.util.actions.SystemAction.get(org.openide.actions.ToolsAction.class)
+            org.netbeans.spi.project.ui.support.CommonProjectActions.newFileAction(),
+            null,
+            org.openide.util.actions.SystemAction.get(org.openide.actions.FindAction.class),
+            null,
+            org.openide.util.actions.SystemAction.get(org.openide.actions.PasteAction.class),
+            null,
+            org.openide.util.actions.SystemAction.get(org.openide.actions.ToolsAction.class)
         };
     }
     
     private static Lookup createLookup(FileObject srcFolder) {
         // !PW FIXME  -- from source -- Remove DataFolder when paste, find and refresh are reimplemented
-		// !PW FIXME implement pathing and add PathFinder to lookup.
-		if(srcFolder != null) {
-	        DataFolder dataFolder = DataFolder.findFolder(srcFolder);        
-		    return Lookups.fixed(new Object[]{ dataFolder /*, new PathFinder( group ) */ });
-		} else {
-		    return Lookups.fixed(new Object[]{ /* new PathFinder( group ) */ });
-		}
+        // !PW FIXME implement pathing and add PathFinder to lookup.
+        if(srcFolder != null) {
+            DataFolder dataFolder = DataFolder.findFolder(srcFolder);
+            return Lookups.fixed(new Object[]{ dataFolder /*, new PathFinder( group ) */ });
+        } else {
+            return Lookups.fixed(new Object[]{ /* new PathFinder( group ) */ });
+        }
     }
-
+    
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }

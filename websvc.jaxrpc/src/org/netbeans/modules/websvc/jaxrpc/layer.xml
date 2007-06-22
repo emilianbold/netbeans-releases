@@ -31,10 +31,13 @@
         </folder>
         <folder name="org-netbeans-modules-web-project">
             <folder name="Nodes">
+                <file name="org-netbeans-modules-websvc-jaxrpc-nodes-JaxRpcNodeFactory.instance">
+                    <attr name="position" intvalue="630"/>
+                </file>
                 <file name="org-netbeans-modules-websvc-jaxrpc-nodes-JaxRpcWebServiceNodeFactory.instance">
                     <attr name="position" intvalue="300"/>
-                </file>
-                </folder>
+                </file>    
+            </folder>
         </folder>
         <folder name="org-netbeans-modules-j2ee-ejbjarproject">
             <folder name="Nodes">
@@ -44,5 +47,5 @@
             </folder>
         </folder>
     </folder>
-
+    
 </filesystem>

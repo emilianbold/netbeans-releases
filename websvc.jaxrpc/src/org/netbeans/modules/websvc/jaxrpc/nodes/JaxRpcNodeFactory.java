@@ -58,7 +58,7 @@ public class JaxRpcNodeFactory implements NodeFactory {
     }
     
     private static class WsNodeList implements NodeList<String> {
-
+        
         // Web service client
         private static final String KEY_SERVICE_REFS = "serviceRefs"; // NOI18N
         private Project project;
@@ -77,7 +77,8 @@ public class JaxRpcNodeFactory implements NodeFactory {
         public List keys() {
             List<String> result = new ArrayList<String>();
             WebServicesClientSupport wscs = WebServicesClientSupport.getWebServicesClientSupport(project.getProjectDirectory());
-            if (wscs  != null) {
+            FileObject wsdlFolder = wscs.getWsdlFolder();
+            if (wscs  != null && wsdlFolder != null) {
                 result.add(KEY_SERVICE_REFS);
             }
             return result;
@@ -104,23 +105,25 @@ public class JaxRpcNodeFactory implements NodeFactory {
         }
         
         public Node node(String key) {
-            FileObject clientRoot = project.getProjectDirectory();
-            WebServicesClientView clientView = WebServicesClientView.getWebServicesClientView(clientRoot);
-            if (clientView != null) {
-                WebServicesClientSupport wss = WebServicesClientSupport.getWebServicesClientSupport(clientRoot);
-                if (wss!=null) {
-                    FileObject wsdlFolder = wss.getWsdlFolder();
-                    if (wsdlFolder!=null) {
-                        FileObject[] children = wsdlFolder.getChildren();
-                        boolean foundWsdl = false;
-                        for (int i=0;i<children.length;i++) {
-                            if (children[i].getExt().equalsIgnoreCase(WSDL_FOLDER)) { //NOI18N
-                                foundWsdl=true;
-                                break;
+            if(key.equals(KEY_SERVICE_REFS)){
+                FileObject clientRoot = project.getProjectDirectory();
+                WebServicesClientView clientView = WebServicesClientView.getWebServicesClientView(clientRoot);
+                if (clientView != null) {
+                    WebServicesClientSupport wss = WebServicesClientSupport.getWebServicesClientSupport(clientRoot);
+                    if (wss!=null) {
+                        FileObject wsdlFolder = wss.getWsdlFolder();
+                        if (wsdlFolder!=null) {
+                            FileObject[] children = wsdlFolder.getChildren();
+                            boolean foundWsdl = false;
+                            for (int i=0;i<children.length;i++) {
+                                if (children[i].getExt().equalsIgnoreCase(WSDL_FOLDER)) { //NOI18N
+                                    foundWsdl=true;
+                                    break;
+                                }
                             }
-                        }
-                        if (foundWsdl) {
-                            return clientView.createWebServiceClientView(wsdlFolder);
+                            if (foundWsdl) {
+                                return clientView.createWebServiceClientView(wsdlFolder);
+                            }
                         }
                     }
                 }
@@ -129,7 +132,7 @@ public class JaxRpcNodeFactory implements NodeFactory {
         }
         
         public void addNotify() {
-
+            
             Sources sources = (Sources)project.getLookup().lookup(Sources.class);
             if (sources!=null) {
                 SourceGroup[] groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
@@ -139,8 +142,14 @@ public class JaxRpcNodeFactory implements NodeFactory {
                     FileObject metaInf = srcDir.getFileObject("META-INF");
                     if (metaInf!=null) metaInf.addFileChangeListener(metaInfListener);
                 }
-                    
+                
             }
+            FileObject projectDir = project.getProjectDirectory();
+            FileObject webInf = projectDir.getFileObject("web/WEB-INF");
+            if(webInf != null){
+                webInf.addFileChangeListener(metaInfListener);
+            }
+            
             //XXX: Not very nice, the wsdlFolder should be hold by this class because it listens on it
             WebServicesClientSupport wsClientSupportImpl = WebServicesClientSupport.getWebServicesClientSupport(project.getProjectDirectory());
             try {
@@ -165,7 +174,7 @@ public class JaxRpcNodeFactory implements NodeFactory {
                     FileObject metaInf = srcDir.getFileObject("META-INF");
                     if (metaInf!=null) metaInf.removeFileChangeListener(metaInfListener);
                 }
-                    
+                
             }
             
             if (wsdlFolder != null) {
@@ -173,7 +182,6 @@ public class JaxRpcNodeFactory implements NodeFactory {
             }
         }
         private final class WsdlCreationListener extends FileChangeAdapter {
-            
             public void fileDataCreated(FileEvent fe) {
                 if (WSDL_FOLDER.equalsIgnoreCase(fe.getFile().getExt())) {
                     SwingUtilities.invokeLater(new Runnable() {
