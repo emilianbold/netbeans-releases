@@ -33,7 +33,6 @@ import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.InplaceEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.explorer.propertysheet.PropertyModel;
-import org.openide.util.NbBundle;
 import javax.xml.namespace.QName;
 
 /**
@@ -61,65 +60,7 @@ public class PortTypeEditor extends PropertyEditorSupport
         mPortType = initialPortType;
         mAllPortTypes = model.getPortTypes();
     }
-    /*
-    public boolean supportsCustomEditor() {
-        return true;
-    }
-    
-    public String getAsText() {
-        //return mPortType == null ? EMPTY : mPortType.getName();
-        Object value = super.getValue();
-        return value == null ? EMPTY : super.getAsText();
-    }
 
-    public void setAsText(String s) {
-        if (EMPTY.equals(s) && getValue() == null) // NOI18N
-            return;
-    }
-
-    
-    public boolean isPaintable() {
-        return false;
-    }
-    
-    protected String getPaintableString() {
-        Object value = getValue();
-        return value == null ? 
-            NbBundle.getMessage(StringEditor.class,"LBL_Null") :        // NOI18N
-            getAsText();
-    }
-
-
-    public Component getCustomEditor() {
-        final PortTypeEditorPanel panel = new PortTypeEditorPanel(
-                mPortType, 
-                mAllPortTypes);
-        final DialogDescriptor descriptor = new DialogDescriptor(
-                panel,
-                NbBundle.getMessage(PortTypeEditorPanel.class, "LBL_PORT_TYPE_Editor"), // NOI18N
-                true, new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                if (evt.getSource().equals(DialogDescriptor.OK_OPTION)) {
-                    try {
-                        setValue(panel.getCurrentSelection());
-                    } catch (IllegalArgumentException iae) {
-                        ErrorManager.getDefault().annotate(
-                                iae, 
-                                ErrorManager.USER,
-                                iae.getMessage(), 
-                                iae.getLocalizedMessage(),
-                                null, 
-                                new java.util.Date());
-                        throw iae;
-                    }
-                }
-            }
-        });
-        Dialog dlg = DialogDisplayer.getDefault().createDialog(descriptor);
-        dlg.setPreferredSize(new Dimension(500, 350));
-        return dlg;
-    }
-*/
     public void attachEnv(PropertyEnv env) {
         env.registerInplaceEditorFactory(this);
     }
@@ -139,31 +80,21 @@ public class PortTypeEditor extends PropertyEditorSupport
         List<PortType> mPortTypes;
         PortType mPortType;
         
-        Map mapPTtoQName = new HashMap<PortType, QName>();
+        Map<PortType, QName> mapPTtoQName = new HashMap<PortType, QName>();
 
         private Inplace(List<PortType> portTypes, PortType portType) {
             mPortTypes = portTypes;
             mPortType = portType;
 
-            
-//            mPortTypesComboBox.addItem(NbBundle.getMessage(PortTypeEditorPanel.class, "CLEAR_INTERFACE_DEFINITION")); // NOI18N
-//            boolean bPTFound = false;
             QName qName;
             for(PortType pt : portTypes) {
                 qName = new QName(pt.getModel().getDefinitions().getTargetNamespace(), pt.getName());
                 mPortTypesComboBox.addItem(qName);
                 mapPTtoQName.put(pt, qName);
-//                if(portType.equals(pt)) {
-//                    bPTFound = true;
-//                }
             }
-//            if(portType != null) {
-//                if(bPTFound) {
-                    mPortTypesComboBox.setSelectedItem(mapPTtoQName.get(portType));
-//                } else {
-//                    mPortTypesComboBox.setSelectedIndex(0);
-//                }
-//            }
+            if(portType != null) {
+                 mPortTypesComboBox.setSelectedItem(mapPTtoQName.get(portType));
+            }
         }
 
         public void connect(PropertyEditor propertyEditor, PropertyEnv env) {
@@ -183,13 +114,7 @@ public class PortTypeEditor extends PropertyEditorSupport
         }
 
         public Object getValue() {
-            PortType retPortType = null;
-            int iIndex = mPortTypesComboBox.getSelectedIndex();
-//            if(iIndex >= 1) {
-//                retPortType = mPortTypes.get(iIndex - 1);
-//            }
-            retPortType = mPortTypes.get(iIndex);
-            return retPortType;
+            return mPortTypes.get(mPortTypesComboBox.getSelectedIndex());
         }
 
         public void setValue(Object object) {
