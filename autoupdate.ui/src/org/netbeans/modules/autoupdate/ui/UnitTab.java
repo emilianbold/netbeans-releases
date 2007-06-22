@@ -1275,13 +1275,12 @@ public class UnitTab extends javax.swing.JPanel {
         }
         
         public void performerImpl (Unit uu) {
-            int count = model.getRowCount ();
             final int row = getSelectedRow();
-            for (int i = 0; i < count; i++) {
-                Unit u = model.getUnitAtRow (i);
+            Collection<Unit> allUnits = model.getUnits();
+            for (Unit u : allUnits) {
                 if (u != null && !u.isMarked () &&  u.canBeMarked ()) {
                     u.setMarked (true);
-                }
+                }                
             }
             model.fireTableDataChanged ();
             restoreSelectedRow(row);
@@ -1300,14 +1299,13 @@ public class UnitTab extends javax.swing.JPanel {
             super ("UnitTab_UncheckAllAction", /*KeyStroke.getKeyStroke (KeyEvent.VK_N, KeyEvent.CTRL_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK), */"Uncheck");
         }
         public void performerImpl (Unit uu) {
-            int count = model.getRowCount ();
-            final int row = getSelectedRow();            
-            for (int i = 0; i < count; i++) {
-                Unit u = model.getUnitAtRow (i);
+            final int row = getSelectedRow();
+            Collection<Unit> markedUnits = model.getMarkedUnits();
+            for (Unit u : markedUnits) {
                 if (u != null && u.isMarked ()  && u.canBeMarked ()) {
                     u.setMarked (false);
-                }
-            }            
+                }                
+            }
             model.fireTableDataChanged ();            
             restoreSelectedRow(row);
         }
