@@ -75,7 +75,7 @@ rm -rf apisupport*
 pack_component $DIST/zip/moduleclusters $BASENAME java "java*"
 rm -rf java*
 
-#pack_component $DIST/zip/moduleclusters $BASENAME cnd "cnd*"
-#rm -rf cnd*
+pack_component $DIST/zip/moduleclusters $BASENAME cnd "cnd*"
+rm -rf cnd*
 
 pack_component $DIST/zip/moduleclusters $BASENAME nb6.0-etc "*"
