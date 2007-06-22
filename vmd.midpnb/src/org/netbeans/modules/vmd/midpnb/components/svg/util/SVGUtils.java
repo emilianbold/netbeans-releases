@@ -74,7 +74,7 @@ public final class SVGUtils {
         
         
         public String[] getFoundElements() {
-            return (String[])foundElements.toArray(new String[foundElements.size()]);
+            return foundElements.toArray(new String[foundElements.size()]);
         }
         
         public final void resetFoundElements() {
