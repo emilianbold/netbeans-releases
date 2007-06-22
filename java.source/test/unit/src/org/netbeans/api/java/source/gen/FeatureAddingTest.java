@@ -50,6 +50,7 @@ public class FeatureAddingTest extends GeneratorTestMDRCompat {
 //        suite.addTest(new FeatureAddingTest("testAddFieldToBeginning"));
 //        suite.addTest(new FeatureAddingTest("testAddFieldToEnd"));
 //        suite.addTest(new FeatureAddingTest("testAddFieldToEmpty"));
+//        suite.addTest(new FeatureAddingTest("testAddNonAbstractMethod"));
         return suite;
     }
 
@@ -102,6 +103,7 @@ public class FeatureAddingTest extends GeneratorTestMDRCompat {
         };
         src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
         assertEquals(golden, res);
     }
 
@@ -196,10 +198,62 @@ public class FeatureAddingTest extends GeneratorTestMDRCompat {
         };
         src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
         assertEquals(golden, res);
     }
 
+    @SuppressWarnings("unchecked")
+    public void testAddNonAbstractMethod() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "import java.io.File;\n" +
+            "\n" +
+            "public interface Test {\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "import java.io.File;\n" +
+            "\n" +
+            "public interface Test {\n\n" +
+            "    public void newlyCreatedMethod() throws java.io.IOException;\n" +
+            "}\n";
 
+        JavaSource src = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        Task task = new Task<WorkingCopy>() {
+            
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                ModifiersTree parMods = make.Modifiers(Collections.<Modifier>emptySet(), Collections.<AnnotationTree>emptyList());
+                MethodTree newMethod = make.Method(
+                    make.Modifiers( 
+                        Collections.singleton(Modifier.PUBLIC), // modifiers
+                        Collections.<AnnotationTree>emptyList() // annotations
+                    ), // modifiers and annotations
+                    "newlyCreatedMethod", // name
+                    make.PrimitiveType(TypeKind.VOID), // return type
+                    Collections.<TypeParameterTree>emptyList(), // type parameters for parameters
+                    Collections.<VariableTree>emptyList(), // parameters
+                    Collections.singletonList(make.Identifier("java.io.IOException")), // throws 
+                    (BlockTree) null, // empty statement block
+                    null // default value - not applicable here, used by annotations
+                );
+                workingCopy.rewrite(clazz, make.addClassMember(clazz, newMethod));
+            }
+            
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
     String getGoldenPckg() {
         return "";
     }
