@@ -343,6 +343,54 @@ public abstract class DocumentBox extends ContainerBox {
 
     protected void layoutContext(FormatContext context) {
         super.relayout(context);
+        
+        // XXX #99918 Ajusting the fixed boxes.
+        adjustFixedBoxesIssue99918();
+    }
+
+    /** XXX #99918 Adjusts the position of fixed boxes,
+     * when it is possible to compute so called 'static box',
+     * that one is not possible to reliably compute in this architecture
+     * at the intended place (getStaticLeft, getStaticTop in CssBox)
+     * when the top or left values are auto, so it is hacked here. */
+    private void adjustFixedBoxesIssue99918() {
+        BoxList fixed = fixedBoxes;
+        if (fixed == null) {
+            return;
+        }
+        int size = fixed.size();
+        if (size == 0) {
+            return;
+        }
+        for (int i = 0; i < size; i++) {
+            CssBox fixedBox = fixed.get(i);
+            adjustFixedBoxLeftIssue99918(fixedBox);
+            adjustFixedBoxTopIssue99918(fixedBox);
+        }
+    }
+    
+    private void adjustFixedBoxLeftIssue99918(CssBox fixedBox) {
+        if (CssProvider.getValueService().isAutoValue(
+                CssProvider.getEngineService().getComputedValueForElement(fixedBox.getElement(), XhtmlCss.LEFT_INDEX))
+        ) {
+            CssBox parentBox = fixedBox.getParent();
+            if (parentBox != null && parentBox != fixedBox.getPositionedBy()) {
+                fixedBox.left += parentBox.getAbsoluteX();
+                fixedBox.setX(fixedBox.left);
+            }
+        }
+    }
+    
+    private void adjustFixedBoxTopIssue99918(CssBox fixedBox) {
+        if (CssProvider.getValueService().isAutoValue(
+                CssProvider.getEngineService().getComputedValueForElement(fixedBox.getElement(), XhtmlCss.TOP_INDEX))
+        ) {
+            CssBox parentBox = fixedBox.getParent();
+            if (parentBox != null && parentBox != fixedBox.getPositionedBy()) {
+                fixedBox.top += parentBox.getAbsoluteY();
+                fixedBox.setY(fixedBox.top);
+            }
+        }
     }
 
     protected void updateSizeInfo() {
