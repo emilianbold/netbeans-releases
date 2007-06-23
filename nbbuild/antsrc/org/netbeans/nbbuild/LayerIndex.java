@@ -108,9 +108,7 @@ public class LayerIndex extends Task {
         }
         int maxlength = 0;
         for (String cnb : files.values()) {
-            if (cnb != null) {
-                maxlength = Math.max(maxlength, cnb.length());
-            }
+            maxlength = Math.max(maxlength, shortenCNB(cnb).length());
         }
         try {
             PrintWriter pw = output != null ? new PrintWriter(output) : null;
@@ -167,23 +165,20 @@ public class LayerIndex extends Task {
             assert remaining.isEmpty() : remaining;
             for (String path : layerPaths) {
                 String cnb = files.get(path);
-                if (cnb == null) {
-                    cnb = "";
+                String line = String.format("%-" + maxlength + "s %s", shortenCNB(cnb), path);
+                Integer pos = positions.get(path);
+                if (pos != null) {
+                    line += String.format(" @%d", pos);
                 }
-                String line = String.format("%-" + maxlength + "s %s", cnb, path);
                 SortedMap<String,String> cnb2Label = labels.get(path);
                 if (cnb2Label != null) {
                     if (cnb2Label.size() == 1 && cnb2Label.keySet().iterator().next().equals(cnb)) {
                         line += String.format(" (\"%s\")", cnb2Label.values().iterator().next());
                     } else {
                         for (Map.Entry<String,String> labelEntry : cnb2Label.entrySet()) {
-                            line += String.format(" (%s: \"%s\")", labelEntry.getKey(), labelEntry.getValue());
+                            line += String.format(" (%s: \"%s\")", shortenCNB(labelEntry.getKey()), labelEntry.getValue());
                         }
                     }
-                }
-                Integer pos = positions.get(path);
-                if (pos != null) {
-                    line += String.format(" (position #%d)", pos);
                 }
                 if (pw != null) {
                     pw.println(line);
@@ -199,6 +194,14 @@ public class LayerIndex extends Task {
         }
         if (output != null) {
             log(output + ": layer index written");
+        }
+    }
+
+    private String shortenCNB(String cnb) {
+        if (cnb != null) {
+            return cnb.replaceFirst("^org\\.netbeans\\.", "o.n.").replaceFirst("^org\\.openide\\.", "o.o.").replaceFirst("\\.modules\\.", ".m.");
+        } else {
+            return "";
         }
     }
 
