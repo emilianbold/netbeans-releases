@@ -21,6 +21,8 @@ package org.netbeans.modules.xml.tools.actions;
 import java.util.*;
 import java.awt.datatransfer.StringSelection;
 import java.io.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.swing.text.*;
 
@@ -153,7 +155,7 @@ public final class CSSStyleAction extends CookieAction implements CollectDTDActi
             emgr.notify(ex);
             
         } catch (TreeException ex) {
-            
+            Logger.getLogger(CSSStyleAction.class.getName()).log(Level.INFO, null, ex);
             GuiUtil.setStatusText(Util.THIS.getString("MSG_CSS_fatal_error"));
             
         }
