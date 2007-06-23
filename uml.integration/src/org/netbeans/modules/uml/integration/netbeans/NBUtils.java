@@ -43,15 +43,17 @@ import javax.swing.SwingUtilities;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeParameterElement;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.*;
 import javax.lang.model.util.ElementFilter;
+import javax.lang.model.util.SimpleTypeVisitor6;
 
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.modules.editor.java.Utilities;
+import org.netbeans.api.java.source.SourceUtils;
 
 //import org.netbeans.modules.projects.CurrentProjectNode;
 import org.openide.filesystems.FileObject;
@@ -835,7 +837,7 @@ methodHunt:
 			while(listIter.hasNext() && tparmIter.hasNext()) {
 			    VariableElement tparm = tparmIter.next();
 			    String listName =  listIter.next();
-			    if ( ! listName.contentEquals(Utilities.getTypeName(tparm.asType(), fullyQualified))) {
+			    if ( ! listName.contentEquals(getTypeName(tparm.asType(), fullyQualified))) {
 				paramsMatch = false;
 				break;
 			    }
@@ -1185,4 +1187,126 @@ methodHunt:
     private static final NBFileUtils fileUtils = new NBFileUtils();
 
   
+    //
+    // original source of getTypeName() can be found 
+    // in org.netbeans.modules.editor.java.Utilities
+    //
+
+    public static CharSequence getTypeName(TypeMirror type, boolean fqn) {
+	if (type == null)
+            return ""; //NOI18N
+        return new TypeNameVisitor(false).visit(type, fqn);
+    }
+    
+    private static final String CAPTURED_WILDCARD = "<captured wildcard>"; //NOI18N
+    private static final String ERROR = "<error>"; //NOI18N
+    private static final String UNKNOWN = "<unknown>"; //NOI18N
+
+    private static class TypeNameVisitor extends SimpleTypeVisitor6<StringBuilder,Boolean> {
+        
+        private boolean varArg;
+        
+        private TypeNameVisitor(boolean varArg) {
+            super(new StringBuilder());
+            this.varArg = varArg;
+        }
+        
+        @Override
+        public StringBuilder defaultAction(TypeMirror t, Boolean p) {
+            return DEFAULT_VALUE.append(t);
+        }
+        
+        @Override
+        public StringBuilder visitDeclared(DeclaredType t, Boolean p) {
+            Element e = t.asElement();
+            if (e instanceof TypeElement) {
+                TypeElement te = (TypeElement)e;
+                DEFAULT_VALUE.append((p ? te.getQualifiedName() : te.getSimpleName()).toString());
+                Iterator<? extends TypeMirror> it = t.getTypeArguments().iterator();
+                if (it.hasNext()) {
+                    DEFAULT_VALUE.append("<"); //NOI18N
+                    while(it.hasNext()) {
+                        visit(it.next(), p);
+                        if (it.hasNext())
+                            DEFAULT_VALUE.append(", "); //NOI18N
+                    }
+                    DEFAULT_VALUE.append(">"); //NOI18N
+                }
+                return DEFAULT_VALUE;                
+            } else {
+                return DEFAULT_VALUE.append(UNKNOWN); //NOI18N
+            }
+        }
+                        
+        @Override
+        public StringBuilder visitArray(ArrayType t, Boolean p) {
+            boolean isVarArg = varArg;
+            varArg = false;
+            visit(t.getComponentType(), p);
+            return DEFAULT_VALUE.append(isVarArg ? "..." : "[]"); //NOI18N
+        }
+
+        @Override
+        public StringBuilder visitTypeVariable(TypeVariable t, Boolean p) {
+            Element e = t.asElement();
+            if (e != null) {
+                String name = e.getSimpleName().toString();
+                if (!CAPTURED_WILDCARD.equals(name))
+                    return DEFAULT_VALUE.append(name);
+            }
+            DEFAULT_VALUE.append("?"); //NOI18N
+            TypeMirror bound = t.getLowerBound();
+            if (bound != null && bound.getKind() != TypeKind.NULL) {
+                DEFAULT_VALUE.append(" super "); //NOI18N
+                visit(bound, p);
+            } else {
+                bound = t.getUpperBound();
+                if (bound != null && bound.getKind() != TypeKind.NULL) {
+                    DEFAULT_VALUE.append(" extends "); //NOI18N
+                    if (bound.getKind() == TypeKind.TYPEVAR)
+                        bound = ((TypeVariable)bound).getLowerBound();
+                    visit(bound, p);
+                }
+            }
+            return DEFAULT_VALUE;
+        }
+
+        @Override
+        public StringBuilder visitWildcard(WildcardType t, Boolean p) {
+            DEFAULT_VALUE.append("?"); //NOI18N
+            TypeMirror bound = t.getSuperBound();
+            if (bound == null) {
+                bound = t.getExtendsBound();
+                if (bound != null) {
+                    DEFAULT_VALUE.append(" extends "); //NOI18N
+                    if (bound.getKind() == TypeKind.WILDCARD)
+                        bound = ((WildcardType)bound).getSuperBound();
+                    visit(bound, p);
+                } else {
+                    bound = SourceUtils.getBound(t);
+                    if (bound != null) {
+                        DEFAULT_VALUE.append(" extends "); //NOI18N
+                        visit(bound, p);
+                    } else {
+                        DEFAULT_VALUE.append(p ? " extends java.lang.Object" : " extends Object"); //NOI18N                        
+                    }
+                }
+            } else {
+                DEFAULT_VALUE.append(" super "); //NOI18N
+                visit(bound, p);
+            }
+            return DEFAULT_VALUE;
+        }
+
+        public StringBuilder visitError(ErrorType t, Boolean p) {
+            Element e = t.asElement();
+            if (e instanceof TypeElement) {
+                TypeElement te = (TypeElement)e;
+                return DEFAULT_VALUE.append((p ? te.getQualifiedName() : te.getSimpleName()).toString());
+            }
+            return DEFAULT_VALUE;
+        }
+    }
+
+
 }
