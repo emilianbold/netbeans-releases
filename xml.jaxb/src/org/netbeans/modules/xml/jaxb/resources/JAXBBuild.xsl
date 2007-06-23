@@ -39,9 +39,9 @@ Microsystems, Inc. All Rights Reserved.
                 <xsl:attribute name="name">jaxb-code-generation</xsl:attribute>
                 <xsl:attribute name="depends">xjc-typedef-target</xsl:attribute>            
                 <mkdir dir="build/generated/addons/jaxb"/>
-                <mkdir dir="build/classes"/>
+                <mkdir dir="${{build.classes.dir}}"/>
                 <xsl:apply-templates select="s:schemas/s:schema"/>
-                <javac destdir="build/classes" srcdir="build/generated/addons/jaxb" source="${{javac.source}}"  target="${{javac.target}}">
+                <javac destdir="${{build.classes.dir}}" srcdir="build/generated/addons/jaxb" source="${{javac.source}}"  target="${{javac.target}}">
                     <classpath path="${{libs.jaxb20.classpath}}"/>
                 </javac>
             </xsl:element> 

@@ -250,12 +250,10 @@ public class ProjectHelper {
     public static int getProjectType(Project prj) {
         String prjClzName = prj.getClass().getName();
         int prjType = PROJECT_TYPE_J2SE;
-        if (prjClzName.indexOf("EjbJarProject") != -1) {
-            // No I18N
-prjType = PROJECT_TYPE_EJB;
-        } else if (prjClzName.indexOf("WebProject") != -1) {
-            // No I18N
-prjType = PROJECT_TYPE_WEB;
+        if (prjClzName.indexOf("EjbJarProject") != -1) {// No I18N
+            prjType = PROJECT_TYPE_EJB;
+        } else if (prjClzName.indexOf("WebProject") != -1) { // No I18N
+            prjType = PROJECT_TYPE_WEB;
         }
 
         return prjType;
@@ -555,14 +553,9 @@ prjType = PROJECT_TYPE_WEB;
 
     private static String getEndorsedDirs(Project prj) {
         // XXX TODO:Find a better portable way to do this.
-        String ret = "\"${netbeans.home}/../java1/modules/ext/jaxws21/api" + File.pathSeparator + "${netbeans.home}/../java1/modules/ext/jaxws21\""; //NOI18N
-//        Library jaxbLib = LibraryManager.getDefault().getLibrary(JAXB_LIB_NAME);
-//        List<URL> classPaths = jaxbLib.getContent("classpath"); // No I18N
-//        Iterator<URL> itr = classPaths.iterator();
-//        while (itr.hasNext()){
-//            URL url = itr.next();
-//            System.out.println("URL:" + url); // URL protocol is jar:nbinst:
-//        }
+        String ret = "\"${netbeans.home}/../java1/modules/ext/jaxws21/api" 
+                + File.pathSeparator 
+                + "${netbeans.home}/../java1/modules/ext/jaxws21\""; //NOI18N
         return ret;
     }
 
