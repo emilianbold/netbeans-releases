@@ -62,6 +62,9 @@ public class Package extends Task {
      */
     private List<FileEntry> entries;
     
+    private long directoriesCount;
+    private long filesCount;
+    
     // constructor //////////////////////////////////////////////////////////////////
     /**
      * Constructs a new instance of the {@link Package} task. It simply sets the
@@ -170,6 +173,9 @@ public class Package extends Task {
             
             output.flush();
             output.close();
+            
+            log("archived " + directoriesCount + // NOI18N
+                    " directories and " + filesCount + " files"); // NOI18N
         } catch (IOException e) {
             throw new BuildException(e);
         }
@@ -204,6 +210,8 @@ public class Package extends Task {
                 entry = new FileEntry(child, name);
                 
                 output.putNextEntry(new JarEntry(name));
+                
+                directoriesCount++;
                 
                 browse(child, output, offset);
             } else {
@@ -291,6 +299,8 @@ public class Package extends Task {
                 fis = new FileInputStream(child);
                 Utils.copy(fis, output);
                 fis.close();
+                
+                filesCount++;
             }
             
             entries.add(entry);
