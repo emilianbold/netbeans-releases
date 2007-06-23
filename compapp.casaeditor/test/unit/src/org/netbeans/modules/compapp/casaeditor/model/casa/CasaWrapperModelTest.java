@@ -36,12 +36,19 @@ public class CasaWrapperModelTest extends TestCase {
     PropertyListener propertyListener;
     TestComponentListener componentListener;
     
+    private static String ADD_PROPERTY_LISTENER_TEST = "AddPropertyListenerTest";
+    private static String REMOVE_PROPERTY_LISTENER_TEST = "RemovePropertyListenerTest";
     
     
     static class PropertyListener implements PropertyChangeListener {
         List<PropertyChangeEvent> events  = new ArrayList<PropertyChangeEvent>();
         public void propertyChange(PropertyChangeEvent evt) {
             events.add(evt);
+            if(evt.getPropertyName().equals(ADD_PROPERTY_LISTENER_TEST)){
+                System.out.println("Add Property Listener Test Passed.");
+            } else if(evt.getPropertyName().equals(REMOVE_PROPERTY_LISTENER_TEST)){
+                fail("Property Listener should not receive event after removal of the property listener");
+            }
         }
         
         public void assertEvent(String propertyName, Object old, Object now) {
@@ -128,14 +135,10 @@ public class CasaWrapperModelTest extends TestCase {
      */
     public void testRemovePropertyChangeListener() {
         System.out.println("removePropertyChangeListener");
-        
-        PropertyChangeListener pcl = null;
-        CasaWrapperModel instance = null;
-        
-        instance.removePropertyChangeListener(pcl);
-        
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
+        casaWrapperModel.removePropertyChangeListener(propertyListener);
+        casaWrapperModel.startTransaction();
+        casaWrapperModel.firePropertyChangeEvent(new PropertyChangeEvent("", REMOVE_PROPERTY_LISTENER_TEST,"Old","New"));
+        casaWrapperModel.endTransaction();
     }
 
     /**
@@ -144,13 +147,10 @@ public class CasaWrapperModelTest extends TestCase {
     public void testAddPropertyChangeListener() {
         System.out.println("addPropertyChangeListener");
         
-        PropertyChangeListener pcl = null;
-        CasaWrapperModel instance = null;
-        
-        instance.addPropertyChangeListener(pcl);
-        
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
+        casaWrapperModel.addPropertyChangeListener(propertyListener);
+        casaWrapperModel.startTransaction();
+        casaWrapperModel.firePropertyChangeEvent(new PropertyChangeEvent("", ADD_PROPERTY_LISTENER_TEST,"Old","New"));
+        casaWrapperModel.endTransaction();
     }
 
     /**
