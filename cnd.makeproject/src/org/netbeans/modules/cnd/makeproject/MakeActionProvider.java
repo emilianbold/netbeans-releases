@@ -402,7 +402,7 @@ public class MakeActionProvider implements ActionProvider {
                     assert false;
                 }
             } else if (targetName.equals("build")) { // NOI18N
-                if (conf.isCompileConfiguration() && !validateProject()) {
+                if (conf.isCompileConfiguration() && !validateProject(conf)) {
                     break;
                 }
                 if (validateBuildSystem(pd, conf, validated)) {
@@ -428,9 +428,9 @@ public class MakeActionProvider implements ActionProvider {
                 }
                 validated = true;
             } else if (targetName.equals("clean")) { // NOI18N
-                if (conf.isCompileConfiguration() && !validateProject()) {
-                    break;
-                }
+//                if (conf.isCompileConfiguration() && !validateProject(conf)) {
+//                    break;
+//                }
                 if (validateBuildSystem(pd, conf, validated)) {
                     MakeArtifact makeArtifact = new MakeArtifact(pd, conf);
                     String buildCommand = makeArtifact.getCleanCommand(CppSettings.getDefault().getMakePath(), ""); // NOI18N
@@ -549,12 +549,27 @@ public class MakeActionProvider implements ActionProvider {
         }
     }
     
-    private boolean validateProject() {
-        boolean ret = true;
+    private boolean validateProject(MakeConfiguration conf) {
+        boolean ret = false;
+        
         if (getProjectDescriptor().getProjectItems().length == 0) {
-            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(getString("ERR_EMPTY_PROJECT"), NotifyDescriptor.ERROR_MESSAGE));
             ret = false;
         }
+        else {
+            for (int i = 0; i < getProjectDescriptor().getProjectItems().length; i++) {
+                Item item = getProjectDescriptor().getProjectItems()[i];
+                ItemConfiguration itemConfiguration = item.getItemConfiguration(conf);
+                if (!itemConfiguration.getExcluded().getValue() &&
+                        (itemConfiguration.getTool() !=  Tool.CustomTool || itemConfiguration.getCustomToolConfiguration().getCommandLine().getValue().length() > 0)) {
+                    ret = true;
+                    break;
+                }
+            }
+        }
+        
+        if (!ret)
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(getString("ERR_EMPTY_PROJECT"), NotifyDescriptor.ERROR_MESSAGE));
+        
         return ret;
     }
     
@@ -681,7 +696,6 @@ public class MakeActionProvider implements ActionProvider {
         if (validated) {
             return lastValidation;
         }
-        
         if (csconf.isValid()) {
             csname = csconf.getOption();
             cs = CompilerSetManager.getDefault().getCompilerSet(csname);
@@ -691,7 +705,7 @@ public class MakeActionProvider implements ActionProvider {
             cs = CompilerSet.getCompilerSet(csconf.getOldName());
             CompilerSetManager.getDefault().add(cs);
             csconf.setValid();
-            csdirs = "";
+            csdirs = cs.getDirectory();
         }
 
         String cName = conf.getCCompilerConfiguration().getTool().getValue();

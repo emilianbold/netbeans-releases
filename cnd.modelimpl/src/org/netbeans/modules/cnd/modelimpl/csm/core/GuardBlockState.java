@@ -20,6 +20,9 @@
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
 import antlr.Token;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 
 /**
@@ -38,29 +41,21 @@ public class GuardBlockState {
     }
     
     public void setGuardBlockState(final APTPreprocHandler preprocHandler, Token guard) {
-        this.guard = guard;
         if (guard != null) {
+            this.guard = new MyToken(guard.getText());
             assert preprocHandler.getMacroMap() != null;
             if (preprocHandler.getMacroMap().isDefined(guard)){
                 if (guardBlockState != SKIPPED) {
-//                    if ("_STDLIB_H".equals(guard.getText())){
-//                        System.out.println("Guard '"+guard.getText()+"' state set to 'defined'");
-//                    }
                     guardBlockState = SKIPPED;
                 }
             } else {
                 if (guardBlockState != PARSED) {
-//                    if ("_STDLIB_H".equals(guard.getText())){
-//                        System.out.println("Guard '"+guard.getText()+"' state set to 'not defined'");
-//                    }
                     guardBlockState = PARSED;
                 }
             }
         } else {
+            this.guard = null;
             if (guardBlockState != NO_GUARD) {
-//                if (guard != null && "_STDLIB_H".equals(guard.getText())){
-//                    System.out.println("Guard '"+guard.getText()+"' state set to 'no guard'");
-//                }
                 guardBlockState = NO_GUARD;
             }
         }
@@ -94,5 +89,66 @@ public class GuardBlockState {
             return guard.getText();
         }
         return null;
+    }
+
+    public void write(DataOutput output) throws IOException {
+        output.writeInt(guardBlockState);
+        output.writeBoolean(guard != null);
+        if (guard != null) {
+            output.writeUTF(guard.getText());
+        }
+    }  
+    
+    public GuardBlockState(DataInput input) throws IOException {
+        guardBlockState = input.readInt();
+        if (input.readBoolean()){
+            guard = new MyToken(input.readUTF());
+        }
+    }       
+
+    private class MyToken implements Token{
+        private final String text;
+        private MyToken(String text){
+            this.text = text;
+        }
+        public int getColumn() {
+            throw new UnsupportedOperationException();
+        }
+
+        public void setColumn(int c) {
+            throw new UnsupportedOperationException();
+        }
+
+        public int getLine() {
+            throw new UnsupportedOperationException();
+        }
+
+        public void setLine(int l) {
+            throw new UnsupportedOperationException();
+        }
+
+        public String getFilename() {
+            throw new UnsupportedOperationException();
+        }
+
+        public void setFilename(String name) {
+            throw new UnsupportedOperationException();
+        }
+
+        public String getText() {
+            return text;
+        }
+
+        public void setText(String t) {
+            throw new UnsupportedOperationException();
+        }
+
+        public int getType() {
+            throw new UnsupportedOperationException();
+        }
+
+        public void setType(int t) {
+            throw new UnsupportedOperationException();
+        }
     }
 }

@@ -89,6 +89,10 @@ public class CsmFinderImpl implements CsmFinder, SettingsChangeListener {
         super();
     }
 
+    public CsmFile getCsmFile() {
+        return this.csmFile;
+    }
+    
     public void settingsChange(SettingsChangeEvent evt) {
         if (evt == null || kitClass != evt.getKitClass()) return;
         

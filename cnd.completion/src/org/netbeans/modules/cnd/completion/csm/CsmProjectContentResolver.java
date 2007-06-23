@@ -47,6 +47,7 @@ import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
+import org.netbeans.modules.cnd.api.model.services.CsmFriendResolver;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 
@@ -561,9 +562,10 @@ public final class CsmProjectContentResolver {
     
     // =============== help methods to get/check content of containers =========
     
-    private static final int NO_INHERITANCE = 0;
-    private static final int EXACT_CLASS = 1;
-    private static final int CHILD_INHERITANCE = 2;
+    private static final int INIT_INHERITANCE_LEVEL = 0;
+    private static final int NO_INHERITANCE = 1;
+    private static final int EXACT_CLASS = 2;
+    private static final int CHILD_INHERITANCE = 3;
     
     private List/*<CsmMember>*/ getClassMembers(CsmClass clazz, CsmOffsetableDeclaration contextDeclaration, CsmDeclaration.Kind kinds[], String strPrefix, boolean staticOnly, boolean match, boolean inspectParentClasses) {
         assert (clazz != null);
@@ -575,21 +577,8 @@ public final class CsmProjectContentResolver {
             minVisibility = CsmInheritanceUtilities.getContextVisibility(clazz, contextDeclaration);
         }
         
-        int inheritanceLevel = NO_INHERITANCE;
-        CsmClass contextClass = CsmBaseUtilities.getContextClass(contextDeclaration);
-        if (contextClass == clazz) {
-            inheritanceLevel = EXACT_CLASS;
-        } else if (contextClass != null) {
-            // check how clazz is visible in context class
-            if (CsmInheritanceUtilities.isAssignableFrom(contextClass, clazz)) {
-                inheritanceLevel = CHILD_INHERITANCE;
-            }
-            // TODO: think about opposite usage C extends B extends A; C is used in A context
-            // what is by spec? Are there additional visibility for A about C?
-        }
-        
-        Map set = getClassMembers(clazz, kinds, strPrefix, staticOnly, match,
-                new HashSet(), minVisibility, inheritanceLevel, inspectParentClasses);
+        Map set = getClassMembers(clazz, contextDeclaration, kinds, strPrefix, staticOnly, match,
+                new HashSet(), minVisibility, INIT_INHERITANCE_LEVEL, inspectParentClasses);
         List res = new ArrayList();
         if (set != null && set.size() > 0) {
             res = new ArrayList(set.values());
@@ -597,17 +586,35 @@ public final class CsmProjectContentResolver {
         return res;
     }
     
-    private Map/*<String, CsmMember>*/ getClassMembers(CsmClass clazz, CsmDeclaration.Kind kinds[],
+    private Map/*<String, CsmMember>*/ getClassMembers(CsmClass clazz, CsmOffsetableDeclaration contextDeclaration, CsmDeclaration.Kind kinds[],
             String strPrefix, boolean staticOnly, boolean match,
             Set handledClasses, CsmVisibility minVisibility, int inheritanceLevel, boolean inspectParentClasses) {
         assert(clazz != null);
         
         if (handledClasses.contains(clazz)) {
             return Collections.EMPTY_MAP;
-        }
+        }       
         
         if (minVisibility == CsmVisibility.NONE) {
             return Collections.EMPTY_MAP;
+        }
+
+        if (inheritanceLevel == INIT_INHERITANCE_LEVEL) {
+            inheritanceLevel = NO_INHERITANCE;
+            CsmClass contextClass = CsmBaseUtilities.getContextClass(contextDeclaration);
+            if (contextClass == clazz) {
+                inheritanceLevel = EXACT_CLASS;
+            } else if (contextClass != null) {
+                // check how clazz is visible in context class
+                if (CsmInheritanceUtilities.isAssignableFrom(contextClass, clazz)) {
+                    inheritanceLevel = CHILD_INHERITANCE;
+                }
+                // TODO: think about opposite usage C extends B extends A; C is used in A context
+                // what is by spec? Are there additional visibility for A about C?
+            }            
+        } else if (contextDeclaration != null) {
+            // min visibility can be changed by context declaration properties
+            minVisibility = CsmInheritanceUtilities.getContextVisibility(clazz, contextDeclaration, minVisibility, inheritanceLevel == CHILD_INHERITANCE);
         }
         
         handledClasses.add(clazz);
@@ -649,7 +656,7 @@ public final class CsmProjectContentResolver {
                         nextInheritanceLevel = CHILD_INHERITANCE;
                     }
                     
-                    Map baseRes = getClassMembers(baseClass, kinds, strPrefix, staticOnly, match,
+                    Map baseRes = getClassMembers(baseClass, contextDeclaration, kinds, strPrefix, staticOnly, match,
                             handledClasses, nextMinVisibility, nextInheritanceLevel, inspectParentClasses);
                     if (baseRes != null && baseRes.size() > 0) {
                         baseRes.putAll(res);

@@ -29,7 +29,7 @@ void ClassC::cPrivFun() {
 }
 
 void ClassD::dPubFun() {
-    ClassA a; 
+    ::ClassA a; 
     ClassB b;
     ClassC c;
     ClassD d;

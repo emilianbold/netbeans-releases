@@ -497,7 +497,7 @@ public final class MakeProject implements Project, AntProjectListener {
                 projectDescriptor = projectDescriptorProvider.getConfigurationDescriptor();
                 if (projectDescriptor == null) {
                     try {
-                        Thread.currentThread().sleep(100);
+                        Thread.sleep(100);
                     } catch (InterruptedException ex) {
                         return;
                     }
@@ -507,88 +507,19 @@ public final class MakeProject implements Project, AntProjectListener {
                 ErrorManager.getDefault().log(ErrorManager.WARNING, "Skipping project open validation"); // NOI18N
                 return;
             }
-            Configuration[] confs = projectDescriptor.getConfs().getConfs();
-            ArrayList<String> errs = new ArrayList();
-            String name = null;
-            String csname = null;
-            ArrayList<MakeConfiguration> mconfs = new ArrayList();
             
+            Configuration[] confs = projectDescriptor.getConfs().getConfs();
             for (int i = 0; i < confs.length; i++) {
 		MakeConfiguration makeConfiguration = (MakeConfiguration) confs[i];
                 CompilerSetConfiguration csconf = makeConfiguration.getCompilerSet();
-                if (csconf.isValid()) {
-                    name = csconf.getOldName();
-                } else {
-                    name = csconf.getOldName();
-                    CompilerSet cs = CompilerSet.getCompilerSet(name);
+                if (!csconf.isValid()) {
+                    CompilerSet cs = CompilerSet.getCompilerSet(csconf.getOldName());
                     CompilerSetManager.getDefault().add(cs);
                     if (cs.isValid()) {
-                        name = cs.getName();
-                        csconf.setValue(name);
-                    } else {
-                        if (makeConfiguration.isDefault()) {
-                            mconfs.add(0, makeConfiguration);
-                            csname = name;
-                        } else {
-                            mconfs.add(makeConfiguration);
-                        }
-                        String msg = NbBundle.getMessage(MakeProject.class, "ERR_MissingCompilerSet", name);
-                        if (!errs.contains(msg)) {
-                            errs.add(msg);
-                        }
+                        csconf.setValue(cs.getName());
                     }
                 }
 	    }
-            if (!errs.isEmpty() && mconfs.size() > 0) {
-                BuildToolsAction bt = (BuildToolsAction) SystemAction.get(BuildToolsAction.class);
-                bt.setTitle(NbBundle.getMessage(BuildToolsAction.class, "LBL_ResolveMissingCompilerSets_Title")); // NOI18N
-                ToolsPanelModel model = new LocalToolsPanelModel();
-                model.setCompilerSetName(csname);
-                model.setGdbEnabled(false);
-                if (bt.initBuildTools(model, errs)) {
-                    for (MakeConfiguration mconf : mconfs) {
-                        mconf.getCompilerSet().setValid();
-                        mconf.getCompilerSet().setValue(model.getCompilerSetName());
-                    }
-                    projectDescriptor.setModified();
-                    projectDescriptor.save();
-                    CompilerSetManager csm = CompilerSetManager.getDefault();
-                    ArrayList<CompilerSet> cslist = new ArrayList();
-                    for (CompilerSet cs : csm.getCompilerSets()) {
-                        if (!cs.isValid()) {
-                            cslist.add(cs);
-                        }
-                    }
-                    for (CompilerSet cs : cslist) {
-                        csm.remove(cs);
-                    }
-                } else {
-                    // Close the project because the user cancelled validation
-                    RequestProcessor.getDefault().post(new Runnable() {
-                        public void run() {
-                            if (OpenProjects.getDefault().getMainProject() == thisMP) {
-                                try {
-                                    OpenProjects.getDefault().setMainProject(null);
-                                } catch (NullPointerException npe) {
-                                    // ignore (always throws this for null)
-                                }
-                            }
-                            if (SwingUtilities.isEventDispatchThread()) {
-                                OpenProjects.getDefault().close(new Project[] { thisMP });
-                            } else {
-                                try {
-                                    SwingUtilities.invokeAndWait(new Runnable() {
-                                        public void run() {
-                                            OpenProjects.getDefault().close(new Project[] { thisMP });
-                                        }
-                                    });
-                                } catch (Exception ie) {
-                                }
-                            }
-                        }
-                    });
-                }
-            }
         }
         
         protected void projectClosed() {

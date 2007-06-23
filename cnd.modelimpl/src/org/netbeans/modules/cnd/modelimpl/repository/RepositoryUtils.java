@@ -195,7 +195,10 @@ public class RepositoryUtils {
     }
 
     public static void closeUnit(CsmUID uid, boolean cleanRepository) {
-        Key key = UIDtoKey(uid);
+        closeUnit(UIDtoKey(uid), cleanRepository);
+    }
+    
+    public static void closeUnit(Key key, boolean cleanRepository) {
         assert key != null;
         String unitName = key.getUnit();
         RepositoryAccessor.getRepository().closeUnit(unitName, cleanRepository);

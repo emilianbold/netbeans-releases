@@ -28,6 +28,8 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.util.WeakList;
 import org.netbeans.modules.cnd.apt.utils.APTIncludeUtils;
@@ -376,13 +378,6 @@ public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startup
             listener.projectOpened(csmProject);
         }
         csmProject.onAddedToModel();
-        if (csmProject.isRestored()){
-            for(CsmFile file : csmProject.getFileList()){
-                if (file instanceof FileImpl) {
-                    ProgressSupport.instance().fireFileParsingFinished((FileImpl)file);
-                }
-            }
-        }
     }
     
     private void fireProjectClosed(CsmProject csmProject) {
@@ -481,14 +476,6 @@ public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startup
         
         if( TraceFlags.TRACE_MODEL_STATE ) System.err.println("ModelImpl.startup");
 
-        if (TraceFlags.PERSISTENT_REPOSITORY) {
-            try {
-                readProjectsIndex();
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
-        }
-        
         setState(CsmModelState.ON);
         
 	if( TraceFlags.CHECK_MEMORY && warningThreshold > 0 ) {
@@ -509,13 +496,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startup
 
 	if( TraceFlags.TRACE_MODEL_STATE ) System.err.println("ModelImpl.shutdown");
 
-        if (TraceFlags.PERSISTENT_REPOSITORY) {
-            try {
-                writeProjectsIndex();
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
-        }
+        writeMasterIndex();
         
         ParserThreadManager.instance().shutdown();
 
@@ -769,32 +750,36 @@ public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startup
         APTSystemStorage.getDefault().dispose();
     }
     
-    private final static String PROJECTS_INDEX_FILE_NAME = System.getProperty("netbeans.user") + File.separator + "cnd-projects-index"; // NOI18N
-
-    private void readProjectsIndex() throws IOException {
-        String projectsIndexFile = PROJECTS_INDEX_FILE_NAME;
-        
-        try {
-            FileInputStream fis = new FileInputStream (projectsIndexFile);
-            BufferedInputStream bis = new BufferedInputStream(fis);
-            DataInputStream dis = new DataInputStream(bis);
-            KeyUtilities.readUnitsCache(dis);
-            dis.close();
-        } catch (FileNotFoundException e) {
+    private final static String MASTER_INDEX_FILE_NAME = System.getProperty("netbeans.user") + File.separator + "cnd-projects-index"; // NOI18N
+    
+    public void readMasterIndex() {
+        if (TraceFlags.PERSISTENT_REPOSITORY) {
+            try {
+                final InputStream fis = new FileInputStream(MASTER_INDEX_FILE_NAME);
+                final InputStream bis = new BufferedInputStream(fis);
+                final DataInputStream dis = new DataInputStream(bis);
+                KeyUtilities.readUnitsCache(dis);
+                dis.close();
+            } catch (FileNotFoundException e) {
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
-    }
+    }    
 
-    private void writeProjectsIndex() throws IOException {
-        String projectsIndexFile = PROJECTS_INDEX_FILE_NAME;
-        
-        try {
-            FileOutputStream fos = new FileOutputStream (projectsIndexFile, false);
-            BufferedOutputStream bos = new BufferedOutputStream(fos);
-            DataOutputStream dos = new DataOutputStream(bos);
-            KeyUtilities.writeUnitsCache(dos);
-            dos.close();
-        } catch (FileNotFoundException e) {
-        }        
+    private void writeMasterIndex() {
+        if (TraceFlags.PERSISTENT_REPOSITORY) {
+            try {
+                final OutputStream fos = new FileOutputStream(MASTER_INDEX_FILE_NAME, false);
+                final OutputStream bos = new BufferedOutputStream(fos);
+                final DataOutputStream dos = new DataOutputStream(bos);
+                KeyUtilities.writeUnitsCache(dos);
+                dos.close();
+            } catch (FileNotFoundException e) {
+            } catch (IOException e)     {
+                e.printStackTrace();
+            }
+        }
     }
     
     private Object lock = new Object();

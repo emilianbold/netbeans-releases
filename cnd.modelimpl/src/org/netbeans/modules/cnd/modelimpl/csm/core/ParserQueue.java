@@ -284,6 +284,7 @@ public class ParserQueue {
                     entry.setPreprocStateIfNeed(ppState);
                 }
             } else {
+		assert (queue.find(file) == null) : "The queue should not contain the file " + file; // NOI18N
                 files.add(file);
             }
             if (entry == null) {
@@ -321,6 +322,7 @@ public class ParserQueue {
                     entry.setPreprocStateIfNeed(ppState);
                 }
             } else {
+		assert (queue.find(file) == null) : "The queue should not contain the file " + file; // NOI18N
                 files.add(file);
             }
             if (entry == null) {

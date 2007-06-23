@@ -18,7 +18,6 @@
  */
 
 package org.netbeans.modules.cnd.completion.cplusplus;
-import javax.swing.text.JTextComponent;
 import org.netbeans.modules.cnd.api.model.CsmEnumerator;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
 import org.netbeans.modules.cnd.api.model.CsmTypedef;
@@ -48,33 +47,39 @@ import org.openide.loaders.DataObject;
  *
  */
 public class NbCsmCompletionQuery extends CsmCompletionQuery {
-
+    private CsmFile csmFile;
+    protected NbCsmCompletionQuery(CsmFile csmFile) {
+        this.csmFile = csmFile;
+    }
+    
     protected CsmFinder getFinder() {
 	CsmFinder finder = null; 
-        BaseDocument bDoc = getBaseDocument();
-	if (bDoc != null) {
-	    DataObject dobj = NbEditorUtilities.getDataObject(bDoc);
-	    CsmFile file = CsmUtilities.getCsmFile(dobj, true);
-	    if (file != null) {
-		finder = new CsmFinderImpl(file, CCKit.class);
-	    }
-	}
+        if (getCsmFile() != null) {
+            finder = new CsmFinderImpl(getCsmFile(), CCKit.class);
+        }
         return finder;
     }
     
+    private CsmFile getCsmFile() {
+        if (this.csmFile == null) {
+            BaseDocument bDoc = getBaseDocument();
+            if (bDoc != null) {
+                DataObject dobj = NbEditorUtilities.getDataObject(bDoc);
+                this.csmFile = CsmUtilities.getCsmFile(dobj, true);
+            }            
+        }
+        return this.csmFile;
+    }
+    
     protected CompletionResolver getCompletionResolver(boolean openingSource, boolean sort) {
-	return getCompletionResolver(getBaseDocument(), openingSource, sort);
+	return getCompletionResolver(getBaseDocument(), getCsmFile(), openingSource, sort);
     }
 
-    private static CompletionResolver getCompletionResolver(BaseDocument bDoc, boolean openingSource, boolean sort) {
+    private static CompletionResolver getCompletionResolver(BaseDocument bDoc, CsmFile csmFile, boolean openingSource, boolean sort) {
 	CompletionResolver resolver = null; 
-	if (bDoc != null) {
-	    DataObject dobj = NbEditorUtilities.getDataObject(bDoc);
-	    CsmFile file = CsmUtilities.getCsmFile(dobj, true);
-	    if (file != null) {
-                Class kit = bDoc.getKitClass();
-		resolver = new CompletionResolverImpl(file, openingSource || isCaseSensitive(kit), sort, isNaturalSort(kit));
-	    }
+        if (csmFile != null) {
+            Class kit = bDoc.getKitClass();
+            resolver = new CompletionResolverImpl(csmFile, openingSource || isCaseSensitive(kit), sort, isNaturalSort(kit));
         }
         return resolver;
     }    
@@ -85,13 +90,9 @@ public class NbCsmCompletionQuery extends CsmCompletionQuery {
 
     protected boolean isProjectBeeingParsed(boolean openingSource) {
         if (!openingSource) {
-            BaseDocument bDoc = getBaseDocument();
-            if (bDoc != null) {
-                DataObject dobj = NbEditorUtilities.getDataObject(bDoc);
-                CsmFile file = CsmUtilities.getCsmFile(dobj, true);
-                if (file != null && file.getProject() != null) {
-                    return !file.getProject().isStable(file);
-                }
+            CsmFile file = getFinder().getCsmFile();
+            if (file != null && file.getProject() != null) {
+                return !file.getProject().isStable(file);
             }
         }
         return false;

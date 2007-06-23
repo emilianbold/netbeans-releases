@@ -236,6 +236,9 @@ public final class CsmInheritanceUtilities {
      *  - context class is not inherited from interested class and not a friend => global context => only public is visible
      */
     public static CsmVisibility getContextVisibility(CsmClass clazz, CsmOffsetableDeclaration contextDeclaration) {
+        return getContextVisibility(clazz, contextDeclaration, CsmVisibility.PUBLIC, false);
+    }
+    public static CsmVisibility getContextVisibility(CsmClass clazz, CsmOffsetableDeclaration contextDeclaration, CsmVisibility defVisibilityValue, boolean checkInheritance) {
         assert (clazz != null);
         CsmClass contextClass = CsmBaseUtilities.getContextClass(contextDeclaration);
         CsmFunction contextFunction = CsmBaseUtilities.getContextFunction(contextDeclaration);
@@ -247,9 +250,10 @@ public final class CsmInheritanceUtilities {
         if (CsmFriendResolver.getDefault().isFriend(contextDeclaration, clazz)) {
             return MAX_VISIBILITY;
         }        
-        // from global context only global members are visible, friend is checked above
-        if (contextClass == null) {
-            return CsmVisibility.PUBLIC;
+        // from global context only public members are visible, friend is checked above
+        // return passed default public visibility
+        if (contextClass == null || !checkInheritance) {
+            return defVisibilityValue;
         }
 
         List<CsmInheritance> chain = findInheritanceChain(contextClass, clazz);
@@ -271,7 +275,8 @@ public final class CsmInheritanceUtilities {
             return mergedVisibility;
         } else {
             // not inherited class see only public, friend was checked above
-            return CsmVisibility.PUBLIC;
+            // return passed default public visibility
+            return defVisibilityValue;
         }
     }
 
@@ -362,6 +367,7 @@ public final class CsmInheritanceUtilities {
         }        
         if (bestChain != null) {
             assert (bestChain.size() > 0);
+            res.add(bestInh);
             res.addAll(bestChain);            
             return true;
         } 

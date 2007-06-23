@@ -24,6 +24,7 @@ import java.util.List;
 
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmClass;
+import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 
 /**
@@ -36,6 +37,8 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 
 public interface CsmFinder {
 
+    public CsmFile getCsmFile();
+    
     /** Get the namespace from the namespace name */
     public CsmNamespace getExactNamespace(String namespaceName);
 

@@ -21,7 +21,9 @@ package org.netbeans.modules.cnd.modelimpl.trace;
 
 import java.io.File;
 import java.io.PrintStream;
+import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmModel;
+import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.test.ModelImplBaseTestCase;
@@ -51,6 +53,10 @@ public class TraceModelTestBase extends ModelImplBaseTestCase {
         return helper.getProject();
     }
 
+    protected final CsmProject getCsmProject(){
+        return helper.getProject();
+    }
+
     protected final CsmModel getModel(){
         return helper.getModel();
     }
@@ -71,6 +77,18 @@ public class TraceModelTestBase extends ModelImplBaseTestCase {
     protected final FileImpl getFileImpl(File file) {
         return helper.getProject().getFile(file);
     }
+
+    protected void reparseFile(CsmFile file) {
+        if (file instanceof FileImpl) {
+            ((FileImpl)file).stateChanged(true);
+            try {
+                ((FileImpl)file).scheduleParsing(true);
+            } catch (InterruptedException ex){
+                ex.printStackTrace();
+            }
+        }
+    }
+
     
     @Override 
     protected void setUp() throws Exception {

@@ -44,19 +44,26 @@ public class StaticMembersTestCase extends CompletionBaseTestCase {
     /////////////////////////////////////////////////////////////////
     // void ClassA::aPubFun() {
 
-    public void testStaticClassAbPubFunVarA() throws Exception {
+    public void testStaticClassAaPubFunVarA() throws Exception {
         performTest("file.cc", 10, 5, "a.");
     }
 
     
-    public void testStaticClassAbPubFunVarC() throws Exception {
+    public void testStaticClassAaPubFunVarC() throws Exception {
         performTest("file.cc", 10, 5, "c.");
     }
     
-    public void testStaticClassAbPubFunVarE() throws Exception {
+    public void testStaticClassAaPubFunVarE() throws Exception {
         performTest("file.cc", 10, 5, "e.");
     }    
+            
+    public void testStaticClassAaPubFunVarB() throws Exception {
+        performTest("file.cc", 10, 5, "b.");
+    }  
     
+    public void testStaticClassAaPubFunVarD() throws Exception {
+        performTest("file.cc", 10, 5, "d.");
+    }      
     /////////////////////////////////////////////////////////////////////
     // FAILS
     
@@ -68,15 +75,10 @@ public class StaticMembersTestCase extends CompletionBaseTestCase {
         public Failed(String testName) {
             super(testName, true);
         }
+
+        public void testOK() {
+            
+        }
         
-        public void testStaticClassAbPubFunVarB() throws Exception {
-            // problems are with inheritance resolving
-            performTest("file.cc", 10, 5, "b.");
-        } 
-        
-        public void testStaticClassAbPubFunVarD() throws Exception {
-            // problems are with inheritance resolving
-            performTest("file.cc", 10, 5, "d.");
-        }          
     }
 }

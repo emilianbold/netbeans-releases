@@ -38,6 +38,7 @@ import org.netbeans.editor.ext.CompletionQuery;
 import org.netbeans.editor.ext.ExtEditorUI;
 import org.netbeans.editor.ext.ExtUtilities;
 import org.netbeans.modules.cnd.api.model.CsmClass;
+import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletionExpression;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletionQuery;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmResultItem;
@@ -81,8 +82,12 @@ public class CsmCompletionProvider implements CompletionProvider {
     }
     
     public static final CsmCompletionQuery getCompletionQuery() {
-        return new NbCsmCompletionQuery();
+        return new NbCsmCompletionQuery(null);
     }
+    
+    public static final CsmCompletionQuery getCompletionQuery(CsmFile csmFile) {
+        return new NbCsmCompletionQuery(csmFile);
+    }    
     
     static final class Query extends AsyncCompletionQuery {
         
@@ -119,7 +124,7 @@ public class CsmCompletionProvider implements CompletionProvider {
 //            if (JavaMetamodel.getManager().isScanInProgress())
 //                resultSet.setWaitText(NbBundle.getMessage(CsmCompletionProvider.class, "scanning-in-progress")); //NOI18N
             CsmSyntaxSupport sup = (CsmSyntaxSupport)Utilities.getSyntaxSupport(component).get(CsmSyntaxSupport.class);
-            NbCsmCompletionQuery query = new NbCsmCompletionQuery();
+            NbCsmCompletionQuery query = (NbCsmCompletionQuery) getCompletionQuery();
             NbCsmCompletionQuery.CsmCompletionResult res = (NbCsmCompletionQuery.CsmCompletionResult)query.query(component, caretOffset, sup);
             if (res != null) {
                 queryCaretOffset = caretOffset;
@@ -331,7 +336,7 @@ public class CsmCompletionProvider implements CompletionProvider {
         protected void query(CompletionResultSet resultSet, Document doc, int caretOffset) {
             Position oldPos = queryMethodParamsStartPos;
             queryMethodParamsStartPos = null;
-            NbCsmCompletionQuery query = new NbCsmCompletionQuery();
+            NbCsmCompletionQuery query = (NbCsmCompletionQuery) getCompletionQuery();
             BaseDocument bdoc = (BaseDocument)doc;
             //NbCsmCompletionQuery.CsmCompletionResult res = null;// (NbCsmCompletionQuery.CsmCompletionResult)query.tipQuery(component, caretOffset, bdoc.getSyntaxSupport(), false);
 //            NbCsmCompletionQuery query = new NbCsmCompletionQuery();

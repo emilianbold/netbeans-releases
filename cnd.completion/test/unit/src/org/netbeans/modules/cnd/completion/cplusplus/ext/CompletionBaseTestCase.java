@@ -45,11 +45,13 @@ public abstract class CompletionBaseTestCase extends ProjectBasedTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
+        System.setProperty("cnd.completion.trace", "true");
     }
     
     @Override
     protected void tearDown() throws Exception {
         super.tearDown();
+        System.setProperty("cnd.completion.trace", "false");
     }
     
     protected void performTest(String source, int lineIndex, int colIndex) throws Exception {

@@ -49,7 +49,7 @@ public class Stats {
     public static final boolean useHardRefRepository = getBoolean("cnd.repository.hardrefs", false); //NOI18N
     public static final boolean queueTiming = getBoolean("cnd.repository.queue.timing", false); //NOI18N
     public static final boolean queueTrace = getBoolean("cnd.repository.queue.trace", false); //NOI18N
-    public static final boolean queueUseTicking = getBoolean("cnd.repository.queue.ticking", false); //NOI18N
+    public static final boolean queueUseTicking = getBoolean("cnd.repository.queue.ticking", true); //NOI18N
     
     public static final int fileStatisticsLevel = getInteger("cnd.repository.file.stat", 0); //NOI18N
     public static final int fileStatisticsRanges = getInteger("cnd.repository.file.stat.ranges", 10); //NOI18N
@@ -57,7 +57,7 @@ public class Stats {
     public static final boolean writeStatistics = getBoolean("cnd.repository.write.stat", false); //NOI18N
     
     public static final boolean dumoFileOnExit = getBoolean("cnd.repository.dump.on.exit", false); //NOI18N
-    public static final int maintenanceInterval = getInteger("cnd.repository.queue.maintenance", 1000); //NOI18N
+    public static final int maintenanceInterval = getInteger("cnd.repository.queue.maintenance", 500); //NOI18N
     public static final boolean allowMaintenance = getBoolean("cnd.repository.defragm", true); //NOI18N
     
     public static final int fileRWAccess = getInteger("cnd.repository.rw", 0); //NOI18N

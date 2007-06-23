@@ -506,7 +506,7 @@ public class CreateTargetsPanel extends MakefileWizardPanel implements FocusList
 		    int min = list.getMinSelectionIndex();
 		    int max = list.getMaxSelectionIndex();
 
-		    if (min >= 0 && max >= 0) {
+		    if (min >= 0 && max >= 0 && list.getModel().getSize() > 0) {
 			if (min == max) {
 			    // Single line selections:
 

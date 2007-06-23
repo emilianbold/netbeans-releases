@@ -225,5 +225,8 @@ public class InheritanceImpl extends OffsetableBase implements CsmInheritance {
             this.resolvedAncestorClassCacheUID = (CsmUID)this.classifierCacheUID;
         }
     }    
-    
+
+    public String toString() {
+        return "INHERITANCE " + visibility + " " + (isVirtual() ? "virtual " : "") + ancestorName + getOffsetString(); // NOI18N
+    }  
 }

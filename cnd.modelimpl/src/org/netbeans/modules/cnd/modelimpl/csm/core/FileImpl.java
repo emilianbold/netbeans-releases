@@ -92,12 +92,14 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     
     private int errorCount = 0;
     
-    private static final int STATE_INITIAL = -1;
-    private static final int STATE_PARSED = 0;
-    private static final int STATE_MODIFIED = 1;
-    private static final int STATE_BEING_PARSED = 2;
+    private enum State { 
+	INITIAL, 
+	PARSED, 
+	MODIFIED, 
+	BEING_PARSED 
+    }
     
-    private int state = STATE_INITIAL;
+    private State state = State.INITIAL;
 
     private int fileType = UNDEFINED_FILE;
     
@@ -110,7 +112,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     
     private final Object fakeLock;
 
-    private final GuardBlockState guardState = new GuardBlockState();
+    private final GuardBlockState guardState;
 
     public FileImpl(FileBuffer fileBuffer, ProjectBase project, int fileType, APTPreprocHandler preprocHandler) {
         setBuffer(fileBuffer);
@@ -124,6 +126,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         this.myPreprocHandler = preprocHandler;
         this.fileType = fileType;
         this.fakeLock = new String("File Lock for " + fileBuffer.getFile().getAbsolutePath()); // NOI18N
+        this.guardState = new GuardBlockState();
         Notificator.instance().registerNewFile(this);
     }    
     
@@ -200,8 +203,8 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
                 this.fileBuffer.removeChangeListener(this);
             }
             this.fileBuffer = fileBuffer;
-            if( state != STATE_INITIAL ) {
-                state = STATE_MODIFIED;
+            if( state != State.INITIAL ) {
+                state = State.MODIFIED;
             }
             this.fileBuffer.addChangeListener(this);
         }
@@ -212,18 +215,20 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     }
     
     public void ensureParsed(APTPreprocHandler preprocHandler) {
-        synchronized( stateLock ) {
-            switch( state ) {
-                case STATE_INITIAL:
-                    parse(preprocHandler);
+	synchronized( stateLock ) {
+	    switch( state ) {
+		case INITIAL:
+		    parse(preprocHandler);
 		    if( TraceFlags.DUMP_PARSE_RESULTS ) new CsmTracer().dumpModel(this);
-                    break;
-                case STATE_MODIFIED:
-                    reparse(preprocHandler);
+		    break;
+		case MODIFIED:
+		    reparse(preprocHandler);
 		    if( TraceFlags.DUMP_PARSE_RESULTS || TraceFlags.DUMP_REPARSE_RESULTS ) new CsmTracer().dumpModel(this);
-                    break;
-            }
-        }
+		    break;
+		case PARSED:
+		    break;
+	    }
+	}
     }   
     
     private Object changeStateLock = new Object();
@@ -233,7 +238,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
 
     public void stateChanged(boolean invalidateCache) {
         synchronized (changeStateLock) {
-            state = STATE_MODIFIED;
+            state = State.MODIFIED;
             if (invalidateCache) {
                 if (TraceFlags.USE_AST_CACHE) {
                     CacheManager.getInstance().invalidate(this);
@@ -262,7 +267,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
      */
     public void reparse(APTPreprocHandler preprocHandler) {
         synchronized( stateLock ) {
-            state = STATE_BEING_PARSED;
+            state = State.BEING_PARSED;
             try {
                 if( preprocHandler != null ) {
                     setPreprocHandler(preprocHandler);
@@ -271,8 +276,8 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             }
             finally {
                 synchronized (changeStateLock) {
-                    if (state != STATE_MODIFIED) {
-                        state = STATE_PARSED;
+                    if (state != State.MODIFIED) {
+                        state = State.PARSED;
                     }
                 }
                 stateLock.notifyAll();
@@ -381,7 +386,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     
     public AST parse(APTPreprocHandler preprocHandler) {
         synchronized( stateLock ) {
-            state = STATE_BEING_PARSED;
+            state = State.BEING_PARSED;
             try {
                 if( preprocHandler != null ) {
                     setPreprocHandler(preprocHandler);
@@ -390,8 +395,8 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             }
             finally {
                 synchronized (changeStateLock) {
-                    if (state != STATE_MODIFIED) {
-                        state = STATE_PARSED;
+                    if (state != State.MODIFIED) {
+                        state = State.PARSED;
                     }
                 }
                 stateLock.notifyAll();
@@ -549,7 +554,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             errorCount = parser.getErrorCount();
             ast = parser.getAST();            
             // save all in cache
-            if (state != STATE_MODIFIED) {
+            if (state != State.MODIFIED) {
                 if (TraceFlags.USE_AST_CACHE) {
                     if (getBuffer().isFileBased() && !TraceFlags.CACHE_SKIP_SAVE) {
                         CacheManager.getInstance().saveCache(this, new FileCacheImpl(aptLight, aptFull, ast));
@@ -852,13 +857,13 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     
     public boolean isParsed() {
         synchronized (changeStateLock) {
-            return state == STATE_PARSED;
+            return state == State.PARSED;
         }
     }
 
     public boolean isParsingOrParsed() {
         synchronized (changeStateLock) {
-            return state == STATE_PARSED || state == STATE_BEING_PARSED;
+            return state == State.PARSED || state == State.BEING_PARSED;
         }
     }
     
@@ -946,12 +951,13 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         factory.writeUIDCollection(this.includes, output, true);
         factory.writeUIDCollection(this.macros, output, true);
         factory.writeUIDCollection(this.fakeRegistrationUIDs, output, false);
-        output.writeInt(state);
+        output.writeUTF(state.toString());
         output.writeInt(fileType);
         
         // not null UID
         assert this.projectUID != null;
         UIDObjectFactory.getDefaultFactory().writeUID(this.projectUID, output);
+        guardState.write(output);
     }
     
     public FileImpl(DataInput input) throws IOException {
@@ -962,7 +968,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         factory.readUIDCollection(this.includes, input);
         factory.readUIDCollection(this.macros, input);
         factory.readUIDCollection(this.fakeRegistrationUIDs, input);
-        state = input.readInt();
+        state = State.valueOf(input.readUTF());
         fileType = input.readInt();
 
         this.projectUID = UIDObjectFactory.getDefaultFactory().readUID(input);
@@ -972,8 +978,9 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         
         assert fileBuffer != null;
         assert fileBuffer.isFileBased();
-        fakeLock = new String("File Lock for " + fileBuffer.getFile().getAbsolutePath()); // NOI18N        
-        
+        fakeLock = new String("File Lock for " + fileBuffer.getFile().getAbsolutePath()); // NOI18N 
+        guardState = new GuardBlockState(input);
+
         assert TraceFlags.USE_REPOSITORY;
     }
 

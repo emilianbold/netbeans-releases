@@ -37,20 +37,31 @@ public class InheritanceTestCase extends CompletionBaseTestCase {
     /////////////////////////////////////////////////////////////////
     // void ClassA::aPubFun() {
     
-    public void testClassAbPubFunVarA() throws Exception {
+    public void testClassAaPubFunVarA() throws Exception {
         performTest("file.cc", 10, 5, "a.");
     }
     
+    public void testClassAaPubFunVarB() throws Exception {
+        performTest("file.cc", 10, 5, "b.");
+    }  
     
-    public void testClassAbPubFunVarC() throws Exception {
+    public void testClassAaPubFunVarC() throws Exception {
         performTest("file.cc", 10, 5, "c.");
+    }       
+    
+    public void testClassAaPubFunVarD() throws Exception {
+        performTest("file.cc", 10, 5, "d.");
     }
-        
-    public void testClassAbPubFunVarE() throws Exception {
+    
+    public void testClassAaPubFunVarE() throws Exception {
         performTest("file.cc", 10, 5, "e.");
     }    
     ///////////////////////////////////////////////////////////////////
     // void ClassB::bProtFun() {
+    
+    public void testClassBbProtFunVarA() throws Exception {
+        performTest("file.cc", 19, 5, "a.");
+    }
     
     public void testClassBbProtFunVarB() throws Exception {
         performTest("file.cc", 19, 5, "b.");
@@ -60,6 +71,10 @@ public class InheritanceTestCase extends CompletionBaseTestCase {
         performTest("file.cc", 19, 5, "c.");
     }
     
+    public void testClassBbProtFunVarD() throws Exception {
+        performTest("file.cc", 19, 5, "d.");
+    }    
+
     public void testClassBbProtFunVarE() throws Exception {
         performTest("file.cc", 19, 5, "e.");
     }
@@ -78,10 +93,29 @@ public class InheritanceTestCase extends CompletionBaseTestCase {
     public void testClassCcPrivFunVarC() throws Exception {
         performTest("file.cc", 28, 5, "c.");
     }
-    
+
+    public void testClassCcPrivFunVarD() throws Exception {
+        performTest("file.cc", 28, 5, "d.");
+    }
+        
+    public void testClassCcPrivFunVarE() throws Exception {
+        performTest("file.cc", 28, 5, "e.");
+    }    
     ////////////////////////////////////////////////////////////////////
     // void ClassD::dPubFun() {
     
+    public void testClassDdPubFunVarA() throws Exception {
+        performTest("file.cc", 37, 5, "a.");
+    }
+
+    public void testClassDdPubFunVarB() throws Exception {
+        performTest("file.cc", 37, 5, "b.");
+    }
+
+    public void testClassDdPubFunVarC() throws Exception {
+        performTest("file.cc", 37, 5, "c.");
+    }
+        
     public void testClassDdPubFunVarD() throws Exception {
         performTest("file.cc", 37, 5, "d.");
     }
@@ -100,7 +134,11 @@ public class InheritanceTestCase extends CompletionBaseTestCase {
     public void testClassEePubFunVarB() throws Exception {
         performTest("file.cc", 46, 5, "b.");
     }
-    
+        
+    public void testClassEePubFunVarC() throws Exception {
+        performTest("file.cc", 46, 5, "c.");
+    }
+        
     public void testClassEePubFunVarD() throws Exception {
         performTest("file.cc", 46, 5, "d.");
     }
@@ -108,7 +146,7 @@ public class InheritanceTestCase extends CompletionBaseTestCase {
     public void testClassEePubFunVarE() throws Exception {
         performTest("file.cc", 46, 5, "e.");
     }
-    
+        
     /////////////////////////////////////////////////////////////////////
     // FAILS
     
@@ -119,84 +157,11 @@ public class InheritanceTestCase extends CompletionBaseTestCase {
         
         public Failed(String testName) {
             super(testName, true);
-        }
-        
-        /////////////////////////////////////////////////////////////////
-        // void ClassA::aPubFun() {
-        
-        // TODO: failed test
-        public void testClassAbPubFunVarB() throws Exception {
-            //failByBug(84592, "IZ#84592 'Code Completion' and class inheritance");
-            performTest("file.cc", 10, 5, "b.");
-        }
-        
-        // TODO: failed test
-        public void testClassAbPubFunVarD() throws Exception {
-            //failByBug(84592, "IZ#84592 'Code Completion' and class inheritance");
-            performTest("file.cc", 10, 5, "d.");
-        }
-        
-        ///////////////////////////////////////////////////////////////////
-        // void ClassB::bProtFun() {
-        
-        // TODO: failed test
-        public void testClassBbProtFunVarA() throws Exception {
-            //failByBug(84592, "IZ#84592 'Code Completion' and class inheritance");
-            performTest("file.cc", 19, 5, "a.");
-        }
-        
-        // TODO: failed test
-        public void testClassBbProtFunVarD() throws Exception {
-            //failByBug(84592, "IZ#84592 'Code Completion' and class inheritance");
-            performTest("file.cc", 19, 5, "d.");
-        }
-        
-        ////////////////////////////////////////////////////////////////////
-        // void ClassC::cPrivFun() {
+        }       
 
-        
-        // TODO: failed test
-        public void testClassCcPrivFunVarD() throws Exception {
-            //failByBug(84592, "IZ#84592 'Code Completion' and class inheritance");
-            performTest("file.cc", 28, 5, "d.");
+        public void testOK() {
+            
         }
-        
-        // TODO: failed test
-        public void testClassCcPrivFunVarE() throws Exception {
-            //failByBug(84592, "IZ#84592 'Code Completion' and class inheritance");
-            performTest("file.cc", 28, 5, "e.");
-        }
-        
-        ////////////////////////////////////////////////////////////////////
-        // void ClassD::dPubFun() {
-        
-        // TODO: failed test
-        public void testClassDdPubFunVarA() throws Exception {
-            //failByBug(84592, "IZ#84592 'Code Completion' and class inheritance");
-            performTest("file.cc", 37, 5, "a.");
-        }
-        
-        // TODO: failed test
-        public void testClassDdPubFunVarB() throws Exception {
-            //failByBug(84592, "IZ#84592 'Code Completion' and class inheritance");
-            performTest("file.cc", 37, 5, "b.");
-        }
-        
-        // TODO: failed test
-        public void testClassDdPubFunVarC() throws Exception {
-            //failByBug(84592, "IZ#84592 'Code Completion' and class inheritance");
-            performTest("file.cc", 37, 5, "c.");
-        }
-                
-        ////////////////////////////////////////////////////////////////////
-        // void ClassE::ePubFun() {
-        
-        // TODO: failed test
-        public void testClassEePubFunVarC() throws Exception {
-            //failByBug(84592, "IZ#84592 'Code Completion' and class inheritance");
-            performTest("file.cc", 46, 5, "c.");
-        }
-        
     }
         
 }

@@ -1,0 +1,16 @@
+aPriv int
+aPrivSt int
+aProt int
+aProtSt int
+aPub int
+aPubSt int
+dEub int
+dEubSt int
+aPrivFun() void
+aPrivFunSt() void
+aProtFun() void
+aProtFunSt() void
+aPubFun() void
+aPubFunSt() void
+dEubFun() void
+dEubFunSt() void

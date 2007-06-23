@@ -19,10 +19,9 @@
 
 package org.netbeans.modules.cnd.repository.disk;
 
-import java.util.Iterator;
+import java.io.IOException;
 import java.util.Set;
 import org.netbeans.modules.cnd.repository.disk.api.RepositoryFilesHelperCacheStrategy;
-import org.netbeans.modules.cnd.repository.impl.*;
 import org.netbeans.modules.cnd.repository.sfs.ConcurrentFileRWAccess;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.util.RepositoryCacheMap;
@@ -38,10 +37,7 @@ class SimpleRepositoryHelperCacheImpl implements RepositoryFilesHelperCacheStrat
         if (removedFiles == null)
             return ;
         
-        Iterator<ConcurrentFileRWAccess> iter = removedFiles.iterator();
-        
-        while (iter.hasNext()) {
-            ConcurrentFileRWAccess fileToRemove = iter.next();
+        for (ConcurrentFileRWAccess fileToRemove: removedFiles) {
             try {
                 fileToRemove.writeLock().lock();
                 
@@ -49,14 +45,15 @@ class SimpleRepositoryHelperCacheImpl implements RepositoryFilesHelperCacheStrat
                     if (fileToRemove.getFD().valid()) {
                         fileToRemove.close();
                     }
-                }  catch (Exception ex) {
+                }  catch (IOException ex) {
                     ex.printStackTrace();
                 }
                 
             } finally {
                 fileToRemove.writeLock().unlock();
-            }
+            }            
         }
+        
     }
     
     SimpleRepositoryHelperCacheImpl (int openFilesLimit) {

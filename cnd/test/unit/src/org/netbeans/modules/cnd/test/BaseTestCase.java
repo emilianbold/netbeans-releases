@@ -42,6 +42,10 @@ import org.openide.filesystems.FileUtil;
  * - Add it and install
  * - close target IDE and reload development IDE to update the information of
  *         available modules in target's platform
+ *
+ * if NBDEV is NB-5.5 based => INSANE module must be installed the same way in target platform
+ *
+ * On Windows cnd must be in the path without spaces for correct resolving golden and data files by junit harness
  */
 
 /**

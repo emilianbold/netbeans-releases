@@ -25,6 +25,7 @@
             </module-dependencies>
             <public-packages>
                 <package>org.netbeans.modules.cnd.api.model.services</package>
+                <package>org.netbeans.modules.cnd.api.model.xref</package>
             </public-packages>
         </data>
     </configuration>

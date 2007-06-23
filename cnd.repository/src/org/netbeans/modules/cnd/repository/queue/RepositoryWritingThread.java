@@ -40,39 +40,42 @@ public class RepositoryWritingThread implements Runnable {
     }
 
     private void waitReady() throws IOException, InterruptedException {
-	if( Stats.maintenanceInterval > 0 ) {
-	    if( Stats.allowMaintenance ) {
-		while( ! queue.isReady() ) {
-		    if( Stats.queueTrace ) System.err.printf("%s: maintenance %n ms...\n", getName(), Stats.maintenanceInterval); // NOI18N
-		    long time = System.currentTimeMillis();
-                    boolean needMoreTimeForMaintenance = false;
-                    
-                    // there should be no maintenance if the writing is blocked 
-                    try {
-                        rwLock.readLock().lock();
-                        needMoreTimeForMaintenance = writer.maintenance(Stats.maintenanceInterval);
-                    } finally {
-                        rwLock.readLock().unlock();
-                    }
-                    
-		    if( ! needMoreTimeForMaintenance ) {
-			time = System.currentTimeMillis() - time;
-			if( time < Stats.maintenanceInterval ) {
-			    Thread.currentThread().sleep(Stats.maintenanceInterval - time);
-			}
-			break;
-		    }
-                    queue.onIdle();
-		}
-	    }
-	    else {
-		if( Stats.queueTrace ) System.err.printf("%s: sleeping %n ms...\n", getName(), Stats.maintenanceInterval); // NOI18N
-		Thread.currentThread().sleep(Stats.maintenanceInterval);
-	    }
-	}
-	if( Stats.queueTrace ) System.err.printf("%s: waiting...\n", getName()); // NOI18N
-	queue.waitReady();
+        if( Stats.maintenanceInterval > 0 ) {
+            if( Stats.allowMaintenance && 
+                (++numOfSpareCycles >= NUM_SPARE_TIMES_TO_ALLOW_MAINTENANCE)
+                && maintenanceIsNeeded) {
+
+                if( Stats.queueTrace ) System.err.printf("%s: maintenance %n ms...\n", getName(), Stats.maintenanceInterval); // NOI18N
+                long time = System.currentTimeMillis();
+                
+                // there should be no maintenance if the writing is blocked
+                try {
+                    rwLock.readLock().lock();
+                    maintenanceIsNeeded = writer.maintenance(Stats.maintenanceInterval);
+                } finally {
+                    rwLock.readLock().unlock();
+                }
+                
+                time = System.currentTimeMillis() - time;
+                if( time < Stats.maintenanceInterval ) {
+                    Thread.currentThread().sleep(Stats.maintenanceInterval - time);
+                }
+
+            } else {
+                if( Stats.queueTrace ) System.err.printf("%s: sleeping %n ms...\n", getName(), Stats.maintenanceInterval); // NOI18N
+                Thread.currentThread().sleep(Stats.maintenanceInterval);
+            }
+            
+            queue.onIdle();
+        } else {
+            if( Stats.queueTrace ) System.err.printf("%s: waiting...\n", getName()); // NOI18N
+                queue.waitReady();
+        }
     }
+    
+    private static final int NUM_SPARE_TIMES_TO_ALLOW_MAINTENANCE = TickingRepositoryQueue.queueTickShift * 3;
+    private int numOfSpareCycles = 0;
+    private boolean maintenanceIsNeeded = true;
     
     public void run() {
         if( Stats.queueTrace ) System.err.printf("%s: started.\n", getName());
@@ -83,22 +86,22 @@ public class RepositoryWritingThread implements Runnable {
                 try {
                     rwLock.readLock().lock();
                     entry = queue.poll();
-                    if (entry != null) {
+                    while (entry != null) {
+                        numOfSpareCycles = 0;
+                        maintenanceIsNeeded = true;
                         if( Stats.queueTrace ) System.err.printf("%s: writing %s\n", getName(), entry.getKey()); // NOI18N
                         writer.write(entry.getKey(), entry.getValue());
-                        
+                        entry = queue.poll();
                     }
                 }  finally {
                     rwLock.readLock().unlock();
                 }
                 
-                if( entry == null ) {
-                    if( RepositoryThreadManager.proceed() ) {
-                        waitReady();
-                    } else {
-                        if( Stats.queueTrace ) System.err.printf("%s: exiting\n", getName()); // NOI18N
-                        break;
-                    }
+                if( RepositoryThreadManager.proceed() ) {
+                    waitReady();
+                } else {
+                    if( Stats.queueTrace ) System.err.printf("%s: exiting\n", getName()); // NOI18N
+                    break;
                 }
                 
             } catch( InterruptedException e ) {

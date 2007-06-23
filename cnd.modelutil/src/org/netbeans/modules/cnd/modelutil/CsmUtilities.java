@@ -116,6 +116,7 @@ public class CsmUtilities {
     public static final int DESTRUCTOR       = 0x00020000;
     public static final int OPERATOR         = 0x00040000;
     public static final int MACRO            = 0x00010000;
+    public static final int EXTERN           = 0x00080000;
 
     public static final boolean DEBUG = Boolean.getBoolean("csm.utilities.trace.summary") || 
                                         Boolean.getBoolean("csm.utilities.trace");
@@ -148,6 +149,9 @@ public class CsmUtilities {
             CsmVariable var = (CsmVariable)obj;
             // parameters could be with null type if it's varagrs "..."
             mod |= (var.getType() != null && var.getType().isConst()) ? CONST_MEMBER_BIT : 0;
+            if (var.isExtern()){
+                mod |= EXTERN;
+            }
         }
         return mod;
     }
@@ -411,15 +415,23 @@ public class CsmUtilities {
      * start offset position
      */
     public static boolean openSource(CsmObject element) {
-        if (CsmKindUtilities.isOffsetable(element)) {
-            return openAtElement((CsmOffsetable)element, false);
-        } 
-        return false;
+        return _openSource(element);
     }
     
     public static boolean openSource(CsmOffsetable element) {
-        return openAtElement(element, false);
+        return _openSource(element);
     }
+    
+    private static boolean _openSource(Object element) {
+        if (CsmKindUtilities.isOffsetable(element)) {
+            return openAtElement((CsmOffsetable)element, false);
+        } else if (CsmKindUtilities.isCsmObject(element) && CsmKindUtilities.isFile((CsmObject)element)) {
+            final CsmFile file = (CsmFile)element;
+            CsmOffsetable fileTarget = new FileTarget(file);
+            return openAtElement(fileTarget, false);
+        }
+        return false;
+    }    
     
 //    private static boolean openAtElement(CsmOffsetable element) {
 //        return openAtElement(element, true);
@@ -556,8 +568,15 @@ public class CsmUtilities {
         return lineSt;
     } 
     
+    public static String getElementJumpName(CsmObject element) {
+        return _getElementJumpName(element);
+    }
     public static String getElementJumpName(CsmOffsetable element) {
-        String text = null;
+        return _getElementJumpName(element);
+    }
+    
+    private static String _getElementJumpName(Object element) {
+        String text = "";
         if (element != null) {
             if (CsmKindUtilities.isNamedElement(element)) {
                 text = ((CsmNamedElement) element).getName();
@@ -565,8 +584,8 @@ public class CsmUtilities {
                 if (CsmKindUtilities.isStatement((CsmObject)element)) {
                     text = ((CsmStatement)element).getText();
                 }
-            } else {
-                text = element.getText();
+            } else if (CsmKindUtilities.isOffsetable(element) ) {
+                text = ((CsmOffsetable)element).getText();
             }
             if (text.length() > 0) {
                 text = "\"" + text + "\""; // NOI18N
@@ -782,5 +801,53 @@ public class CsmUtilities {
 //            return -1;
 //        }
 //    }    
-   
+
+    private static final class FileTarget implements CsmOffsetable {
+        private CsmFile file;
+        
+        public FileTarget(CsmFile file) {
+            this.file = file;
+        }
+        
+        public CsmFile getContainingFile() {
+            return file;
+        }
+        
+        public int getStartOffset() {
+            // start of the file
+            return DUMMY_POSITION.getOffset();
+        }
+        
+        public int getEndOffset() {
+            // start of the file
+            return DUMMY_POSITION.getOffset();
+        }
+        
+        public CsmOffsetable.Position getStartPosition() {
+            return DUMMY_POSITION;
+        }
+        
+        public CsmOffsetable.Position getEndPosition() {
+            return DUMMY_POSITION;
+        }
+        
+        public String getText() {
+            return "";
+        }
+        
+    }
+    
+    private static final CsmOffsetable.Position DUMMY_POSITION = new CsmOffsetable.Position() {
+        public int getOffset() {
+            return -1;
+        }
+
+        public int getLine() {
+            return -1;
+        }
+
+        public int getColumn() {
+            return -1;
+        }
+    };    
 }

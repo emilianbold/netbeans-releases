@@ -93,4 +93,22 @@ public class CCCCompiler extends BasicCompiler {
 	}
 	return false;
     }
+
+    protected void parseUserMacros(final String line, final PersistentList preprocessorList) {
+        int defineIndex = line.indexOf("-D"); // NOI18N
+        while (defineIndex > 0) {
+            String token;
+            int spaceIndex = line.indexOf(" ", defineIndex + 1); // NOI18N
+            if (spaceIndex > 0) {
+                token = line.substring(defineIndex+2, spaceIndex);
+                preprocessorList.add(token);
+                defineIndex = line.indexOf("-D", spaceIndex); // NOI18N
+            } else {
+                token = line.substring(defineIndex+2);
+                preprocessorList.add(token);
+                break;
+            }
+        }
+    }
+
 }

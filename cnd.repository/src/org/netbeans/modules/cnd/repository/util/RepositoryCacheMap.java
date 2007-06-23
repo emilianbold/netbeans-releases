@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -36,12 +37,18 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  */
 
 public class RepositoryCacheMap<K,V> extends TreeMap<K,V> {
+    private final TreeMap<K, RepositoryCacheValue<V>>   keyToValueStorage;
+    private final TreeMap<RepositoryCacheValue<V>, K>   valueToKeyStorage;
+    private AtomicInteger                         capacity;
+    private final ReentrantReadWriteLock          readWriteLock;
+    private static final int                      DEFAULT_CACHE_CAPACITY  = 20;
+    private static AtomicInteger currentBornStamp = new AtomicInteger(0);
     
-    public class CacheEntry<K,V> implements Map.Entry<K,V> {
+    private final class CacheEntry<K,V> implements Map.Entry<K,V> {
         private K key;
         private V value;
         
-        CacheEntry(K key, V value) {
+        CacheEntry(final K key, final V value) {
             this.key   = key;
             this.value = value;
             
@@ -56,7 +63,7 @@ public class RepositoryCacheMap<K,V> extends TreeMap<K,V> {
         }
         
         public V setValue(V value) {
-            V oldValue = this.value;
+            final V oldValue = this.value;
             this.value = value;
             return oldValue;
         }
@@ -64,121 +71,134 @@ public class RepositoryCacheMap<K,V> extends TreeMap<K,V> {
     }
     
     
-    
-    public class RepositoryCacheValue<V>  implements Comparable{
+    private final class RepositoryCacheValue<V>  implements Comparable{
         
         public AtomicInteger       frequency;
         public V                   value;
+        public AtomicBoolean       newBorn;
+        public final int           bornStamp;
         
-        RepositoryCacheValue(V value) {
+        RepositoryCacheValue(final V value) {
             frequency = new AtomicInteger(1);
+            newBorn   = new AtomicBoolean(true);
+            bornStamp = currentBornStamp.incrementAndGet();
             this.value = value;
         }
         
-        public int compareTo(Object o) {
-            RepositoryCacheValue<V> elemToCompare = (RepositoryCacheValue<V>) o;
+        private int compareAdults(final RepositoryCacheValue<V> elemToCompare) {
             int ownValue = frequency.intValue();
             int objValue = elemToCompare.frequency.intValue();
             
-            if (ownValue < objValue)
+            if (ownValue < objValue) {
                 return -1;
-            else if (ownValue == objValue)
-                return 0;
-            else
+            } else if (ownValue == objValue){
+                ownValue = bornStamp;
+                objValue = elemToCompare.bornStamp;
+                
+                if (ownValue < objValue)
+                    return -1;
+                else if (ownValue > objValue)
+                    return 1;
+                else
+                    return 0;
+            } else {
                 return 1;
+            }
         }
         
+        private int compareNewBorns(final RepositoryCacheValue<V> elemToCompare) {
+            final int ownValue = bornStamp;
+            final int objValue = elemToCompare.bornStamp;
+            
+            if (ownValue < objValue)
+                return -1;
+            else if (ownValue > objValue)
+                return 1;
+            else
+                return 0;
+        }
+        
+        public int compareTo(final Object o) {
+            final RepositoryCacheValue<V> elemToCompare = (RepositoryCacheValue<V>) o;
+            final boolean ownChildhood = newBorn.get();
+            final boolean objChildhood = elemToCompare.newBorn.get();
+            
+            if (ownChildhood && objChildhood) {
+                return compareNewBorns(elemToCompare);
+            } else if (ownChildhood && !objChildhood) {
+                return 1;
+            } else if (!ownChildhood && objChildhood) {
+                return -1;
+            } else {
+                return compareAdults(elemToCompare);
+            }
+        }
     }
     
-    private TreeMap<K, RepositoryCacheValue<V>>   storage;
-    private AtomicInteger                         capacity;
-    private ReentrantReadWriteLock                readWriteLock;
-    static public int                             defaultCapacity  = 20;
     
     /**
      * Creates a new instance of RepositoryCacheMap
      */
-    public RepositoryCacheMap(int capacity) {
+    public RepositoryCacheMap(final int capacity) {
         readWriteLock   = new ReentrantReadWriteLock(true);
-        
-        try {
-            readWriteLock.writeLock().lock();
-            storage         = new TreeMap<K, RepositoryCacheValue<V>>();
-            this.capacity   = new AtomicInteger((capacity >0)?capacity:defaultCapacity);
-            
-        }  catch (Exception ex) {
-            ex.printStackTrace();
-        } finally {
-            readWriteLock.writeLock().unlock();
-        }
-        
+        keyToValueStorage         = new TreeMap<K, RepositoryCacheValue<V>>();
+        valueToKeyStorage         = new TreeMap<RepositoryCacheValue<V>, K>();
+        this.capacity   = new AtomicInteger((capacity >0)?capacity:DEFAULT_CACHE_CAPACITY);
     }
     
     public int size() {
-        int size = 0;
-        
         try {
             readWriteLock.readLock().lock();
-            size = storage.size();
-        } catch (Exception ex) {
-            ex.printStackTrace();
+            return keyToValueStorage.size();
         } finally {
             readWriteLock.readLock().unlock();
         }
-        
-        return size;
     }
     
     public boolean isEmpty() {
-        boolean isEmpty = true;
-        
         try {
             readWriteLock.readLock().lock();
-            isEmpty = storage.isEmpty();
-        } catch (Exception ex) {
-            ex.printStackTrace();
+            return keyToValueStorage.isEmpty();
         } finally {
             readWriteLock.readLock().unlock();
         }
-        
-        return isEmpty;
     }
     
-    public boolean containsKey(Object key) {
-        boolean contKey = false;
-        
+    public boolean containsKey(final Object key) {
         try {
             readWriteLock.readLock().lock();
-            contKey = storage.containsKey(key);
-        } catch (Exception ex) {
-            ex.printStackTrace();
+            return keyToValueStorage.containsKey(key);
         } finally {
             readWriteLock.readLock().unlock();
         }
-        
-        return contKey;
     }
     
-    public boolean containsValue(Object value) {
-        return false;
+    public boolean containsValue(final Object value) {
+        try {
+            readWriteLock.readLock().lock();
+            return valueToKeyStorage.containsKey(value);
+        } finally {
+            readWriteLock.readLock().unlock();
+        }
     }
     
-    public V get(Object key) {
+    public V get(final Object key) {
         V retValue = null;
         
         try {
-            readWriteLock.readLock().lock();
+            readWriteLock.writeLock().lock();
             
-            RepositoryCacheValue<V> entry = (RepositoryCacheValue<V>)storage.get(key);
+            RepositoryCacheValue<V> entry = (RepositoryCacheValue<V>)keyToValueStorage.get(key);
             
             if (entry != null) {
+                valueToKeyStorage.remove(entry);
                 entry.frequency.incrementAndGet();
+                entry.newBorn.set(false);
+                valueToKeyStorage.put(entry, (K)key);
                 retValue= entry.value;
             }
-        } catch (Exception ex) {
-            ex.printStackTrace();
         } finally {
-            readWriteLock.readLock().unlock();
+            readWriteLock.writeLock().unlock();
         }
         
         return retValue;
@@ -191,36 +211,21 @@ public class RepositoryCacheMap<K,V> extends TreeMap<K,V> {
             readWriteLock.writeLock().lock();
             RepositoryCacheValue<V> entry = new RepositoryCacheValue<V> (value);
             
-            if (storage.size() < capacity.intValue()) {
-                storage.put(key, entry);
+            if (keyToValueStorage.size() < capacity.intValue()) {
+                keyToValueStorage.put(key, entry);
+                valueToKeyStorage.put(entry, key);
             } else {
-                Set<Map.Entry<K, RepositoryCacheValue<V>>> aSet = storage.entrySet();
-                Iterator<Map.Entry<K, RepositoryCacheValue<V>>> iter = aSet.iterator();
-                Map.Entry<K, RepositoryCacheValue<V>> elem = iter.next();
+                RepositoryCacheValue<V>   minValue = valueToKeyStorage.firstKey();
+                K   minKey   = valueToKeyStorage.get(minValue);
                 
-                int minFreq = elem.getValue().frequency.intValue();
-                K   minKey    = elem.getKey();
-                V   minValue  = elem.getValue().value;
+                keyToValueStorage.remove(minKey);
+                valueToKeyStorage.remove(minValue);
                 
-                while (iter.hasNext()) {
-                    
-                    if (minFreq == 1)
-                        break;
-                    
-                    elem = iter.next();
-                    if (elem.getValue().frequency.intValue() < minFreq){
-                        minFreq = elem.getValue().frequency.intValue();
-                        minKey  = elem.getKey();
-                        minValue  = elem.getValue().value;
-                    }
-                }
+                keyToValueStorage.put(key, entry);
+                valueToKeyStorage.put(entry, key);
                 
-                storage.remove(minKey);
-                storage.put(key, entry);
-                retValue =  minValue;
+                retValue =  minValue.value;
             }
-        } catch (Exception ex) {
-            ex.printStackTrace();
         } finally {
             readWriteLock.writeLock().unlock();
         }
@@ -234,13 +239,12 @@ public class RepositoryCacheMap<K,V> extends TreeMap<K,V> {
         try {
             
             readWriteLock.writeLock().lock();
-            RepositoryCacheValue<V> entry = (RepositoryCacheValue<V> )storage.remove(key);
+            RepositoryCacheValue<V> entry = (RepositoryCacheValue<V> )keyToValueStorage.remove(key);
+            valueToKeyStorage.remove(entry);
             
             if (entry != null)
                 retValue = entry.value;
             
-        } catch (Exception ex) {
-            ex.printStackTrace();
         } finally {
             readWriteLock.writeLock().unlock();
         }
@@ -253,41 +257,31 @@ public class RepositoryCacheMap<K,V> extends TreeMap<K,V> {
     }
     
     public void clear() {
-        // storage.clear();
+        // keyToValueStorage.clear();
     }
     
     public Set<K> keySet() {
-        Set<K> keySet = null;
-        
         try {
             readWriteLock.readLock().lock();
-            keySet = storage.keySet();
-            
-        } catch (Exception ex) {
-            ex.printStackTrace();
+            return keyToValueStorage.keySet();
         } finally {
             readWriteLock.readLock().unlock();
         }
-        
-        return keySet;
     }
     
     public Collection<V> values() {
-        Collection<V>                       newCollection = new ArrayList<V>();
-        Collection<RepositoryCacheValue<V>> origCollection;
-        Iterator<RepositoryCacheValue<V>> iter;
+        final Collection<V> newCollection = new ArrayList<V>();
         
         try {
             readWriteLock.readLock().lock();
-            origCollection = storage.values();
-            iter = origCollection.iterator();
+            
+            final Collection<RepositoryCacheValue<V>> origCollection = keyToValueStorage.values();
+            final Iterator<RepositoryCacheValue<V>> iter = origCollection.iterator();
             
             while ( iter.hasNext()) {
                 newCollection.add(iter.next().value);
             }
             
-        } catch (Exception ex) {
-            ex.printStackTrace();
         } finally {
             readWriteLock.readLock().unlock();
         }
@@ -296,23 +290,19 @@ public class RepositoryCacheMap<K,V> extends TreeMap<K,V> {
     }
     
     public Set<Map.Entry<K,V>> entrySet() {
-        TreeSet<Map.Entry<K,V>>                         resultSet = new TreeSet<Map.Entry<K,V>>();
-        Set<Map.Entry<K, RepositoryCacheValue<V>>>      aSet;
-        Iterator<Map.Entry<K, RepositoryCacheValue<V>>> iter;
-        Map.Entry<K, RepositoryCacheValue<V>>           elem;
+        final TreeSet<Map.Entry<K,V>>   resultSet = new TreeSet<Map.Entry<K,V>>();
         
         try {
             readWriteLock.readLock().lock();
-            aSet = storage.entrySet();
-            iter = aSet.iterator();
+            
+            final Set<Map.Entry<K, RepositoryCacheValue<V>>>      aSet = keyToValueStorage.entrySet();
+            final Iterator<Map.Entry<K, RepositoryCacheValue<V>>> iter = aSet.iterator();
             
             while (iter.hasNext()) {
-                elem = iter.next();
+                final Map.Entry<K, RepositoryCacheValue<V>> elem = iter.next();
                 resultSet.add(new CacheEntry<K,V> (elem.getKey(), elem.getValue().value));
             }
 
-        } catch (Exception ex) {
-            ex.printStackTrace();
         } finally {
             readWriteLock.readLock().unlock();
         }
@@ -320,16 +310,9 @@ public class RepositoryCacheMap<K,V> extends TreeMap<K,V> {
         return resultSet;
     }
     
-    public Set<V> adjustCapacity(int newCapacity) {
-        
-        Set<V>                                          retSet = new HashSet<V>();
-        TreeSet<RepositoryCacheValue<V>>                sortedFreqFiles;
-        Set<Map.Entry<K, RepositoryCacheValue<V>>>      aSet;
-        Iterator<Map.Entry<K, RepositoryCacheValue<V>>> iter;
-        int                                             numToRemove;
-        Iterator<RepositoryCacheValue<V>>               sortedInter;
-        
-        newCapacity = (newCapacity >0)?newCapacity:defaultCapacity;
+    public Set<V> adjustCapacity(final int newCapacity) {
+
+        Set<V>  retSet = new HashSet<V>();
         
         try {
             readWriteLock.writeLock().lock();
@@ -337,31 +320,22 @@ public class RepositoryCacheMap<K,V> extends TreeMap<K,V> {
             if (newCapacity >= capacity.intValue()) {
                 capacity.set(newCapacity);
                 
-            } else if (newCapacity >= storage.size()) {
+            } else if (newCapacity >= keyToValueStorage.size()) {
                 capacity.set(newCapacity);
                 
             } else {
-                sortedFreqFiles = new TreeSet<RepositoryCacheValue<V>> ();
-                aSet = storage.entrySet();
-                iter = aSet.iterator();
-                
-                while (iter.hasNext()) {
-                    sortedFreqFiles.add( iter.next().getValue() );
+                final int numToRemove = keyToValueStorage.size() - newCapacity;
+                capacity.set(newCapacity);                
+
+                for (int i = 0; i < numToRemove; i++) {
+                    final RepositoryCacheValue<V> elem = valueToKeyStorage.firstKey();
+                    final K removedKey = valueToKeyStorage.get(elem);
+                    
+                    retSet.add(elem.value);
+                    valueToKeyStorage.remove(elem);
+                    keyToValueStorage.remove(removedKey);
                 }
-                
-                numToRemove = storage.size() - newCapacity;
-                sortedInter = sortedFreqFiles.iterator();
-                
-                for (int i=0; i < numToRemove; i++) {
-                    if (sortedInter.hasNext())
-                        retSet.add(sortedInter.next().value);
-                }
-                
-                capacity.set(newCapacity);
             }
-            
-        } catch (Exception ex) {
-            ex.printStackTrace();
         } finally {
             readWriteLock.writeLock().unlock();
         }

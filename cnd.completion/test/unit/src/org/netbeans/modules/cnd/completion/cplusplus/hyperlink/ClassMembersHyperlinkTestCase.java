@@ -105,8 +105,8 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
     
     public void testIncludes() throws Exception {
         // check #include "ClassA.h" hyperlinks
-        performTest("main.cc", 2, 12, "ClassA.h", 1, 1); // start of file ClassA.h
-        performTest("ClassA.cc", 2, 12, "ClassA.h", 1, 1); // start of file ClassA.h
+        performTest("main.cc", 2, 12, "ClassA.h", -1, -1); // start of file ClassA.h
+        performTest("ClassA.cc", 2, 12, "ClassA.h", -1, -1); // start of file ClassA.h
     }
     
     public void testOperators() throws Exception {

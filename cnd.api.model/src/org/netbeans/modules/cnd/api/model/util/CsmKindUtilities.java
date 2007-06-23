@@ -125,7 +125,7 @@ public class CsmKindUtilities {
         }          
     }
     
-    public static boolean isOffsetable(CsmObject obj) {
+    public static boolean isOffsetable(Object obj) {
         if (obj instanceof CsmOffsetable) {
             return true;
         } else {

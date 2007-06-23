@@ -221,19 +221,13 @@ public class SunCCompiler extends CCCCompiler {
                         token = line.substring(includeIndex+2, spaceIndex);
                         systemIncludeDirectoriesList.add(token);
                         includeIndex = line.indexOf("-I", spaceIndex); // NOI18N
+                    } else {
+                        token = line.substring(includeIndex+2);
+                        systemIncludeDirectoriesList.add(token);
+                        break;
                     }
                 }
-                
-                int defineIndex = line.indexOf("-D"); // NOI18N
-                while (defineIndex > 0) {
-                    String token;
-                    int spaceIndex = line.indexOf(" ", defineIndex + 1); // NOI18N
-                    if (spaceIndex > 0) {
-                        token = line.substring(defineIndex+2, spaceIndex);
-                        systemPreprocessorSymbolsList.add(token);
-                        defineIndex = line.indexOf("-D", spaceIndex); // NOI18N
-                    }
-                }
+                parseUserMacros(line, systemPreprocessorSymbolsList);
             }
             // Adding "__STDC__=0". It's missing from dryrun output
             systemPreprocessorSymbolsList.add("__STDC__=0"); // NOI18N

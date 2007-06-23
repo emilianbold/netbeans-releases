@@ -45,6 +45,8 @@ import org.openide.util.RequestProcessor;
  */
 abstract public class HostKeyArray extends Children.Keys implements UpdatebleHost{
     private static final boolean traceEvents = Boolean.getBoolean("cnd.classview.key-events"); // NOI18N
+    // for testing only
+    private static final boolean noLoadinNode = Boolean.getBoolean("cnd.classview.no-loading-node"); // NOI18N
     private static Comparator<java.util.Map.Entry<PersistentKey, SortedName>> COMARATOR = new MyComparator();
     
     private ChildrenUpdater childrenUpdater;
@@ -92,7 +94,7 @@ abstract public class HostKeyArray extends Children.Keys implements UpdatebleHos
         }
         setKeys(res);
     }
-    
+
     abstract protected java.util.Map<PersistentKey,SortedName> getMembers();
     abstract protected CsmOffsetableDeclaration findDeclaration(PersistentKey key);
     abstract protected boolean canCreateNode(CsmOffsetableDeclaration d);
@@ -409,7 +411,7 @@ abstract public class HostKeyArray extends Children.Keys implements UpdatebleHos
     
     protected void addNotify() {
         synchronized (childrenUpdater.getLock(getProject())) {
-            if (isNamespace()){ //isGlobalNamespace()) {
+            if (isNamespace() && !noLoadinNode){ //isGlobalNamespace()) {
                 myKeys = new HashMap<PersistentKey,SortedName>();
                 myKeys.put(PersistentKey.createKey(getProject()), new SortedName(0,"",0)); // NOI18N
             } else {
@@ -420,7 +422,7 @@ abstract public class HostKeyArray extends Children.Keys implements UpdatebleHos
             resetKeys();
         }
         super.addNotify();
-        if (isNamespace()){ //isGlobalNamespace()) {
+        if (isNamespace() && !noLoadinNode){ //isGlobalNamespace()) {
             RequestProcessor.getDefault().post(new Runnable(){
                 public void run() {
                     synchronized (childrenUpdater.getLock(getProject())) {

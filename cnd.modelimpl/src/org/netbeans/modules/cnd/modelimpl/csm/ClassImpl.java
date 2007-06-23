@@ -471,6 +471,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
         output.writeInt(this.leftBracketPos);
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
         factory.writeUIDCollection(this.members, output, true);
+        factory.writeUIDCollection(this.friends, output, true);
         PersistentUtils.writeInheritances(this.inheritances, output);
     }
     
@@ -481,6 +482,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
         this.leftBracketPos = input.readInt();
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
         factory.readUIDCollection(this.members, input);
+        factory.readUIDCollection(this.friends, input);
         PersistentUtils.readInheritances(this.inheritances, input);        
     }    
     

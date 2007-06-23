@@ -49,7 +49,15 @@ public final class ProjectImpl extends ProjectBase {
     public static ProjectImpl createInstance(ModelImpl model, Object platformProject, String name) {
 	ProjectBase instance = null;
 	if( TraceFlags.PERSISTENT_REPOSITORY ) {
-	    instance = readInstance(model, platformProject, name);
+	    try {
+		instance = readInstance(model, platformProject, name);
+	    }
+	    catch( Exception e ) {
+		// just report to console;
+		// the code below will create project "from scratch"
+		cleanRepository(platformProject, name);
+		e.printStackTrace(System.err);
+	    }
 	}
 	if( instance == null ) {
 	   instance = new ProjectImpl(model, platformProject, name); 
@@ -64,40 +72,8 @@ public final class ProjectImpl extends ProjectBase {
         }
         File file = nativeFile.getFile();
         APTPreprocHandler preprocHandler = createPreprocHandler(nativeFile);
-        if (isSourceFile) {
-            findFile(file, getFileType(nativeFile), preprocHandler, true, preprocHandler.getState());
-        } else {
-            findFile(file, FileImpl.HEADER_FILE, preprocHandler, true, preprocHandler.getState());
-        }
-    }
-    
-    protected FileImpl findFile(File file, int fileType, APTPreprocHandler preprocHandler,
-            boolean scheduleParseIfNeed, APTPreprocHandler.State initial) {
-        FileImpl impl = getFile(file);
-        if( impl == null ) {
-            synchronized( fileContainer ) {
-                impl = getFile(file);
-                if( impl == null ) {
-                    preprocHandler = preprocHandler == null ? getPreprocHandler(file) : preprocHandler;
-                    impl = new FileImpl(ModelSupport.instance().getFileBuffer(file), this, fileType, preprocHandler);
-                    putFile(file, impl, initial);
-                    // NB: parse only after putting into a map
-                    if( scheduleParseIfNeed ) {
-                        APTPreprocHandler.State ppState = preprocHandler == null ? null : preprocHandler.getState();
-                        ParserQueue.instance().addLast(impl, ppState);
-                    }
-                }
-            }
-        }
-        if (fileType == FileImpl.SOURCE_FILE && !impl.isSourceFile()){
-            impl.setSourceFile();
-        } else if (fileType == FileImpl.HEADER_FILE && !impl.isHeaderFile()){
-            impl.setHeaderFile();
-        }
-        if (initial != null && getPreprocState(file)==null){
-            putPreprocState(file, initial);
-        }
-        return impl;
+	int fileType = isSourceFile ? getFileType(nativeFile) : FileImpl.HEADER_FILE;
+	findFile(file, fileType, preprocHandler, true, preprocHandler.getState());
     }
     
     protected void scheduleIncludedFileParsing(FileImpl csmFile, APTPreprocHandler.State state) {

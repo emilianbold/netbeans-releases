@@ -33,6 +33,7 @@ public class CCCompletionTestFailed extends BaseTestSuite {
         super("C/C++ Failed Completion");
         
         this.addTestSuite(InheritanceTestCase.Failed.class);
+        this.addTestSuite(FriendTestCase.Failed.class);
         this.addTestSuite(EnumTestCase.Failed.class);
         this.addTestSuite(StaticMembersTestCase.Failed.class);
     }

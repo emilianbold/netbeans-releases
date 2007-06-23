@@ -248,7 +248,7 @@ public class CsmTracer {
 //        CsmOffsetable.Position start = obj.getStartPosition();
 //        CsmOffsetable.Position end = obj.getEndPosition();
         if (obj == null) {
-            return "null"; // NOI18N
+            return ""; // NOI18N
         }
 	return " [" + obj.getStartPosition() + '-' + obj.getEndPosition() + ']'; // NOI18N
     }

@@ -34,10 +34,6 @@ import org.netbeans.modules.cnd.repository.testbench.Stats;
  */
 public class RepositoryQueue extends KeyValueQueue<Key, Persistent> {
     
-    public Object getLockObject() {
-        return lock;
-    }
-    
     /** Overrides parent to allow timing by flag */
     protected boolean needsTiming() {
         return Stats.queueTiming;

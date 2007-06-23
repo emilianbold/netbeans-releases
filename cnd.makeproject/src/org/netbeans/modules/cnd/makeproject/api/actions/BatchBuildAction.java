@@ -5,7 +5,7 @@
  *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
-
+ 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
@@ -23,7 +23,10 @@ import java.awt.event.ActionEvent;
 import java.util.ResourceBundle;
 import javax.swing.Action;
 import javax.swing.JButton;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.cnd.makeproject.MakeActionProvider;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.spi.project.ui.support.MainProjectSensitiveActions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -31,29 +34,37 @@ import org.openide.util.actions.CallableSystemAction;
 
 public class BatchBuildAction extends CallableSystemAction {
     public String getName() {
-	return getString("BatchBuildActionName"); // NOI18N
+        return getString("BatchBuildActionName"); // NOI18N
     }
     
     public void actionPerformed(ActionEvent ev) {
-	performAction();
+        performAction();
     }
-
+    
+    public boolean isEnabled() {
+        boolean ret = false;
+        Project mainProject = OpenProjects.getDefault().getMainProject();
+        if (mainProject != null)
+            ret = mainProject.getLookup().lookup(ConfigurationDescriptorProvider.class) != null;
+        return ret;
+    }
+    
     public void performAction() {
-	Action action = MainProjectSensitiveActions.mainProjectCommandAction(MakeActionProvider.COMMAND_BATCH_BUILD, getString("BatchBuildActionName"), null);
-	JButton jButton = new JButton(action);
-	jButton.doClick();
+        Action action = MainProjectSensitiveActions.mainProjectCommandAction(MakeActionProvider.COMMAND_BATCH_BUILD, getString("BatchBuildActionName"), null);
+        JButton jButton = new JButton(action);
+        jButton.doClick();
     }
-
+    
     public HelpCtx getHelpCtx() {
-	return null;
+        return null;
     }
     
     /** Look up i18n strings here */
     private static ResourceBundle bundle;
     private static String getString(String s) {
-	if (bundle == null) {
-	    bundle = NbBundle.getBundle(BatchBuildAction.class);
-	}
-	return bundle.getString(s);
+        if (bundle == null) {
+            bundle = NbBundle.getBundle(BatchBuildAction.class);
+        }
+        return bundle.getString(s);
     }
 }

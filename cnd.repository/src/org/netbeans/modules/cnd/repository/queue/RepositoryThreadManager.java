@@ -41,7 +41,6 @@ public class RepositoryThreadManager {
     private boolean finished = false;
     
     private int currThread = 0;
-    private boolean standalone;
     private RepositoryWriter writer;
     private RepositoryQueue queue;
     private static boolean proceed = true;
@@ -81,7 +80,6 @@ public class RepositoryThreadManager {
     public RepositoryThreadManager(RepositoryWriter writer, ReadWriteLock rwLock) {
 	this.writer = writer;
         this.rwLock = rwLock;
-	standalone = ! RepositoryThreadManager.class.getClassLoader().getClass().getName().startsWith("org.netbeans."); // NOI18N
     }
 
     public RepositoryQueue startup() {
@@ -90,18 +88,12 @@ public class RepositoryThreadManager {
         if (threadCount < 1) {
             threadCount = 1;
         }
-        if( ! standalone ) {
-            processor = new RequestProcessor(threadNameBase, threadCount);
-        }
-	queue = Stats.queueUseTicking ? new TickingRepositoryQueue() : new RepositoryQueue();
+
+        processor = new RequestProcessor(threadNameBase, threadCount);
+        queue = Stats.queueUseTicking ? new TickingRepositoryQueue() : new RepositoryQueue();
         for (int i = 0; i < threadCount; i++) {
             Runnable r = new Wrapper(new RepositoryWritingThread(writer, queue, rwLock));
-            if( standalone ) {
-                new Thread(r).start();
-            }
-            else {
                 processor.post(r);
-            }
         }
 	return queue;
     }
@@ -114,11 +106,8 @@ public class RepositoryThreadManager {
 	if( Stats.queueTrace ) System.err.printf("RepositoryThreadManager.shutdown\n"); // NOI18N
 	proceed = false;
 	queue.shutdown();
-//        for (Iterator it = new ArrayList(threads).iterator(); it.hasNext();) {
-//            Thread thread = (Thread) it.next();
-//            thread.interrupt();
-//        }
-	if( Stats.queueTrace ) System.err.printf("RepositoryThreadManager waiting for threads to finish...\n"); // NOI18N
+
+        if( Stats.queueTrace ) System.err.printf("RepositoryThreadManager waiting for threads to finish...\n"); // NOI18N
 	waitFinished();
 	if( Stats.queueTrace ) System.err.printf("RepositoryThreadManager threads have finished.\n"); // NOI18N
     }

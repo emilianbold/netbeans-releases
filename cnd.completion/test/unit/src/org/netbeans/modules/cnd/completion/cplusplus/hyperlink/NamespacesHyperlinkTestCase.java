@@ -27,7 +27,7 @@ public class NamespacesHyperlinkTestCase extends HyperlinkBaseTestCase {
     
     public NamespacesHyperlinkTestCase(String testName) {
         super(testName);
-        System.setProperty("cnd.modelimpl.trace.registration", "true");
+        //System.setProperty("cnd.modelimpl.trace.registration", "true");
     }
     
     public void testS1FooDefFQN() throws Exception {

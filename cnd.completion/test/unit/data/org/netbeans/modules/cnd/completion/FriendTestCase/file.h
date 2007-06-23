@@ -9,7 +9,7 @@ class ClassA {
     public:
     int aPub;
     int static aPubSt;
-    void aPubFun() {};
+    void aPubFun();
     void static aPubFunSt() {};
     protected:
     int aProt;
@@ -44,7 +44,44 @@ class ClassB : private ClassA {
 
 class ClassC {
     public:
-    void cPubFun() {}
+    void cPubFun();
+    protected:
+    void cProtFun();    
 };
 
+class ClassD : public ClassB {
+    public:
+    int dPub;  
+    int static dPubSt;
+    void dPubFun();
+    void static dPubFunSt() {};
+    protected:
+    int dProt;
+    int static dProtSt;
+    void dProtFun() {};
+    void static dProtFunSt() {};
+    private:
+    int dPriv;
+    int static dPrivSt;
+    void dPrivFun() {}
+    void static dPrivFunSt() {};
+};
+
+class ClassE : public ClassA {
+    public:
+    int dEub;  
+    int static dEubSt;
+    void dEubFun() {};
+    void static dEubFunSt() {};
+    protected:
+    int dErot;
+    int static dErotSt;
+    void dErotFun() {};
+    void static dErotFunSt() {};
+    private:
+    int dEriv;
+    int static dErivSt;
+    void dErivFun() {}
+    void static dErivFunSt() {};
+};
 #endif

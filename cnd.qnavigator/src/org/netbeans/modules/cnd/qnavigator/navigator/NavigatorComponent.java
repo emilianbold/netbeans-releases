@@ -73,7 +73,7 @@ public class NavigatorComponent implements NavigatorPanel, LookupListener {
      *
      * @param context Lookup instance representing current context
      */
-    public void panelActivated(Lookup context) {
+    public synchronized void panelActivated(Lookup context) {
         CContext = context.lookup(CTemplate);
         CCContext = context.lookup(CCTemplate);
         HContext = context.lookup(HTemplate);
@@ -104,7 +104,7 @@ public class NavigatorComponent implements NavigatorPanel, LookupListener {
     /** Called when this panel's component is about to being hidden.
      * Right place to detach, remove listeners from data context.
      */
-    public void panelDeactivated() {
+    public synchronized void panelDeactivated() {
         CContext.removeLookupListener(this);
         CCContext.removeLookupListener(this);
         HContext.removeLookupListener(this);
@@ -117,7 +117,7 @@ public class NavigatorComponent implements NavigatorPanel, LookupListener {
     }
     
     /** Impl of LookupListener, reacts to changes of context */
-    public void resultChanged(LookupEvent ev) {
+    public synchronized void resultChanged(LookupEvent ev) {
         Collection data = ((Lookup.Result)ev.getSource()).allInstances();
         if (!data.isEmpty()) {
             CndDataObject cdo = (CndDataObject)data.iterator().next();
@@ -193,10 +193,10 @@ public class NavigatorComponent implements NavigatorPanel, LookupListener {
     }
     
     private void detachFromModel(NavigatorModel model) {
-        model.removeBusyListener(this);
-        model.removeNotify();
         CsmModelAccessor.getModel().removeProgressListener(model);
         CsmModelAccessor.getModel().removeModelListener(model);
+        model.removeBusyListener(this);
+        model.removeNotify();
     }
     
     private NavigatorPanelUI getPanelUI() {

@@ -89,6 +89,7 @@ public interface CsmImageName {
     static final String OPERATOR_ST_GLOBAL = RESOURCE_BASE+"global_operator_static.png"; // NOI18N
 
     static final String VARIABLE_GLOBAL = RESOURCE_BASE+"global_variable.png"; // NOI18N
+    static final String VARIABLE_EX_GLOBAL = RESOURCE_BASE+"extern_variable_16.png"; // NOI18N
     static final String VARIABLE_ST_GLOBAL = RESOURCE_BASE+"global_variable.png"; // NOI18N
 
     static final String VARIABLE_CONST_GLOBAL = RESOURCE_BASE+"global_constant.png"; // NOI18N

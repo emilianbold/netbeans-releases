@@ -111,16 +111,20 @@ public class SimpleRepFilesAccessStrategyImpl implements RepFilesAccessStrategy 
     protected String resolveFileName(Key id) {
         assert id != null;
         int size = id.getDepth();
-        assert size != 0;
         
         String fileName = theCache.lookupInCacheName(id);
         
         if (fileName == null) {
             StringBuffer    nameBuffer = new StringBuffer(""); //NOI18N
 
-            for (int i = 0 ; i < size; ++i) {
-                nameBuffer.append(id.getAt(i) + SEPARATOR_CHAR);
-            }
+	    if( size == 0 ) {
+		nameBuffer.append(id.getUnit());
+	    }
+	    else {
+		for (int i = 0 ; i < size; ++i) {
+		    nameBuffer.append(id.getAt(i) + SEPARATOR_CHAR);
+		}
+	    }
             
             for (int j = 0 ; j < id.getSecondaryDepth(); ++j) {
                 nameBuffer.append(id.getSecondaryAt(j)  + SEPARATOR_CHAR);

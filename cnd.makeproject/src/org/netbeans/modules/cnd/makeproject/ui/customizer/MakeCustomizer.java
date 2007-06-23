@@ -36,6 +36,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.tree.TreeSelectionModel;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
@@ -915,8 +916,9 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
     // C Compiler Node
     private CustomizerNode createCCompilerDescription(Project project, int compilerSetIdx,
             Item item, Folder folder, boolean isCompilerConfiguration) {
-        String compilerName = CompilerSetManager.getDefault().getCompilerSet(compilerSetIdx).getTool(BasicCompiler.CCompiler).getName();
-        String compilerDisplayName = CompilerSetManager.getDefault().getCompilerSet(compilerSetIdx).getTool(BasicCompiler.CCompiler).getDisplayName();
+        CompilerSet csm = CompilerSetManager.getDefault().getCompilerSet(compilerSetIdx);
+        String compilerName = csm.getTool(BasicCompiler.CCompiler).getName();
+        String compilerDisplayName = csm.getTool(BasicCompiler.CCompiler).getDisplayName();
         ResourceBundle bundle = NbBundle.getBundle(MakeCustomizer.class);
         CustomizerNode cCompilerCustomizerNode = new CCompilerCustomizerNode(
                 "GeneralCCompiler", // NOI18N

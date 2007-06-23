@@ -100,8 +100,13 @@ public class DoubleFileStorage extends FileStorage {
     }
     
     public void close() throws IOException {
-        cache_0_dataFile.close();
-        cache_1_dataFile.close();
+        try {
+            rwLock.writeLock().lock();
+            cache_0_dataFile.close();
+            cache_1_dataFile.close();
+        } finally {
+            rwLock.writeLock().unlock();
+        }
     }
     
     public Persistent get(final Key key) throws IOException {
@@ -161,45 +166,44 @@ public class DoubleFileStorage extends FileStorage {
         boolean needMoreTime = false;
         
         WriteStatistics.instance().update(0);
-        try {
-            writeLock().lock();
-            
-            if( Stats.traceDefragmentation ) {
-                System.out.printf(">>> Defragmenting %s; timeout %d ms total fragmentation %d%%\n", basePath.getAbsolutePath(), timeout, getFragmentationPercentage()); // NOI18N
-                System.out.printf("\tActive:  %s\n", getActive().getTraceString()); // NOI18N
-                System.out.printf("\tPassive: %s\n", getPassive().getTraceString()); // NOI18N
-            }
-            
-            if( timeout > 0 ) {
-                if( ! defragmenting ) {
-                    if( getFragmentationPercentage() < Stats.defragmentationThreashold ) {
-                        if( Stats.traceDefragmentation ) System.out.printf("\tFragmentation is too low\n"); // NOI18N
-                        return needMoreTime;
-                    }
+        
+        if( Stats.traceDefragmentation ) {
+            System.out.printf(">>> Defragmenting %s; timeout %d ms total fragmentation %d%%\n", basePath.getAbsolutePath(), timeout, getFragmentationPercentage()); // NOI18N
+            System.out.printf("\tActive:  %s\n", getActive().getTraceString()); // NOI18N
+            System.out.printf("\tPassive: %s\n", getPassive().getTraceString()); // NOI18N
+        }
+        
+        if( timeout > 0 ) {
+            if( ! defragmenting ) {
+                if( getFragmentationPercentage() < Stats.defragmentationThreashold ) {
+                    if( Stats.traceDefragmentation ) System.out.printf("\tFragmentation is too low\n"); // NOI18N
+                    return needMoreTime;
                 }
             }
+        }
+        
+        try {
+            writeLock().lock();
             
             if( ! defragmenting ) {
                 defragmenting = true;
                 cache_1_dataFileIsActive = !cache_1_dataFileIsActive;
             }
             
-            
             needMoreTime = _defragment(timeout);
-            
             
             if( getPassive().getObjectsCount() == 0 ) {
                 defragmenting = false;
             }
-
-            if( Stats.traceDefragmentation ) {
-                System.out.printf("<<< Defragmenting %s; timeout %d ms total fragmentation %d%%\n", basePath.getAbsolutePath(), timeout, getFragmentationPercentage()); // NOI18N
-                System.out.printf("\tActive:  %s\n", getActive().getTraceString()); // NOI18N
-                System.out.printf("\tPassive: %s\n", getPassive().getTraceString()); // NOI18N
-            }
             
         } finally {
             writeLock().unlock();
+        }
+        
+        if( Stats.traceDefragmentation ) {
+            System.out.printf("<<< Defragmenting %s; timeout %d ms total fragmentation %d%%\n", basePath.getAbsolutePath(), timeout, getFragmentationPercentage()); // NOI18N
+            System.out.printf("\tActive:  %s\n", getActive().getTraceString()); // NOI18N
+            System.out.printf("\tPassive: %s\n", getPassive().getTraceString()); // NOI18N
         }
         
         return needMoreTime;

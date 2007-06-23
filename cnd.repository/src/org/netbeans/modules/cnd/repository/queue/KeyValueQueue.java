@@ -117,12 +117,16 @@ public class KeyValueQueue<K, V> extends BaseQueue {
     public Entry poll() throws InterruptedException {
 	if( needsTrace() ) System.err.printf("%s: Polling...\n", getTraceName());
 	synchronized( lock ) {
-            Entry e = (Entry) queue.poll(); // TODO: find out more elegant solution than a stupid cast!
-            if( e != null ) {
-                doPostPoll(e);
-		if( needsTrace() ) System.err.printf("    %s: polling -> %s\n", getTraceName(), e.getKey());
-	    }
-	    return e;
+            try {
+                Entry e = (Entry) queue.poll(); // TODO: find out more elegant solution than a stupid cast!
+                if( e != null ) {
+                    doPostPoll(e);
+                    if( needsTrace() ) System.err.printf("    %s: polling -> %s\n", getTraceName(), e.getKey());
+                }
+                return e;
+            } finally {
+                lock.notifyAll();
+            }
 	}
     }
     
@@ -141,6 +145,7 @@ public class KeyValueQueue<K, V> extends BaseQueue {
 	    if( e != null ) {
 		queue.remove(e);
 	    }
+            lock.notifyAll();
 	}
     }
     

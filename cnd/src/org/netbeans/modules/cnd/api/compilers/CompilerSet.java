@@ -132,6 +132,13 @@ public class CompilerSet {
     private String libraryOption;
     private CompilerProvider compilerProvider;
     
+    private String[] noCompDNames = {
+        NbBundle.getMessage(CompilerSet.class, "LBL_NoCCompiler"), // NOI18N
+        NbBundle.getMessage(CompilerSet.class, "LBL_NoCppCompiler"), // NOI18N
+        NbBundle.getMessage(CompilerSet.class, "LBL_NoFortranCompiler"), // NOI18N
+        NbBundle.getMessage(CompilerSet.class, "LBL_NoCustomBuildTool") // NOI18N
+    };
+    
     /** Creates a new instance of CompilerSet */
     protected CompilerSet(CompilerFlavor flavor, String directory) {
         addDirectory(directory);
@@ -179,6 +186,11 @@ public class CompilerSet {
         this.name = None;
         this.flavor = CompilerFlavor.Unknown;
         this.displayName = NbBundle.getMessage(CompilerSet.class, "LBL_EmptyCompilerSetDisplayName"); // NOI18N
+        
+        compilerProvider = (CompilerProvider) Lookup.getDefault().lookup(CompilerProvider.class);
+        if (compilerProvider == null) {
+            compilerProvider = new DefaultCompilerProvider();
+        }
     }
     
     /**
@@ -480,7 +492,7 @@ public class CompilerSet {
                 return tool;
             }
         }
-        return null;
+        return compilerProvider.createCompiler(CompilerFlavor.Unknown, kind, "", noCompDNames[kind], "");
     }
     
     /**
@@ -494,7 +506,7 @@ public class CompilerSet {
             if (tool.getKind() == kind)
                 return tool;
         }
-        return null;
+        return compilerProvider.createCompiler(CompilerFlavor.Unknown, kind, "", noCompDNames[kind], "");
     }
     
     public boolean isValid() {

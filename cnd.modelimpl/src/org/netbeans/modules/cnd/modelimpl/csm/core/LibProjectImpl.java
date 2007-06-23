@@ -45,7 +45,15 @@ public final class LibProjectImpl extends ProjectBase {
     public static LibProjectImpl createInstance(ModelImpl model, String includePathName) {
 	ProjectBase instance = null;
 	if( TraceFlags.PERSISTENT_REPOSITORY ) {
-	    instance = readInstance(model, includePathName, includePathName);
+	    try {
+		instance = readInstance(model, includePathName, includePathName);
+	    }
+	    catch( Exception e ) {
+		// just report to console;
+		// the code below will create project "from scratch"
+		cleanRepository(includePathName, includePathName);
+		e.printStackTrace(System.err);
+	    }
 	}
 	if( instance == null ) {
 	   instance = new LibProjectImpl(model, includePathName);
@@ -65,28 +73,6 @@ public final class LibProjectImpl extends ProjectBase {
 	// NB: for those who decide to implement this: don't forget to check the language
     }
     
-    public FileImpl findFile(File srcFile, int fileType, APTPreprocHandler preprocHandler,
-            boolean scheduleParseIfNeed, APTPreprocHandler.State initial) {
-        FileImpl impl = getFile(srcFile);
-        if( impl == null ) {
-            synchronized( fileContainer ) {
-                impl = getFile(srcFile);
-                if( impl == null ) {
-                    impl = new FileImpl(ModelSupport.instance().getFileBuffer(srcFile), this, fileType, preprocHandler);
-                    putFile(srcFile, impl, initial);
-                    //impl.parse();
-                    if( scheduleParseIfNeed ) {
-                        APTPreprocHandler.State ppState = preprocHandler == null ? null : preprocHandler.getState();
-                        ParserQueue.instance().addLast(impl, ppState);
-                    }
-                }
-            }
-        }
-        if (initial != null && getPreprocState(srcFile)==null){
-            putPreprocState(srcFile, initial);
-        }
-        return impl;
-    }
     
     /** override parent to avoid inifinite recursion */
     public Collection<CsmProject> getLibraries() {

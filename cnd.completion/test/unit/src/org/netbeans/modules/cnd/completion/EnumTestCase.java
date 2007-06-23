@@ -65,5 +65,8 @@ public class EnumTestCase extends CompletionBaseTestCase {
             super(testName, true);
         }
 
+        public void testOK() {
+            
+        }
     }    
 }

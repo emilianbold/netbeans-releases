@@ -26,8 +26,6 @@ import java.util.ResourceBundle;
 import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.cnd.api.compilers.CompilerSet;
-import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.makeproject.ui.wizards.NewMakeProjectWizardIterator.Name;
 import org.openide.WizardDescriptor;
 import org.openide.loaders.TemplateWizard;
@@ -77,12 +75,7 @@ public class MakeSampleProjectIterator implements TemplateWizard.Iterator {
 	String wizardTitle = getString("SAMPLE_PROJECT") + name; // NOI18N
 	String wizardTitleACSD = getString("SAMPLE_PROJECT_ACSD"); // NOI18N
         
-        if (CompilerSetManager.getDefault().getCompilerSet(0).getName() == CompilerSet.None) {
-            panels = new WizardDescriptor.Panel[2];
-            panels[i++] = new BuildToolsDescriptorPanel();
-        } else {
-            panels = new WizardDescriptor.Panel[1];
-        }
+        panels = new WizardDescriptor.Panel[1];
         panels[i] = new PanelConfigureProject(name, -1, wizardTitle, wizardTitleACSD, false);
         String[] steps = new String[panels.length];
         for (i = 0; i < panels.length; i++) {

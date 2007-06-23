@@ -20,10 +20,13 @@
 package  org.netbeans.modules.cnd.makewizard;
 
 import java.awt.GridBagConstraints;
+import javax.swing.BorderFactory;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.border.Border;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 
 /**
@@ -124,7 +127,12 @@ public class StandardLibsPanel extends MakefileWizardPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        add(panel, gridBagConstraints);
+        
+        JScrollPane scrollPane = new JScrollPane();
+        scrollPane.setViewportView(panel);
+        scrollPane.setBorder(BorderFactory.createEmptyBorder());
+                
+        add(scrollPane, gridBagConstraints);
     }
 
     /**

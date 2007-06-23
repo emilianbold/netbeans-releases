@@ -160,7 +160,7 @@ public class RunProfile implements ConfigurationAuxObject {
                 ":/usr/X11/bin:/usr/X/bin:/usr/X11R6/bin:/opt/gnome/bin" + // NOI18N
                 ":/usr/gnome/bin:/opt/kde/bin:/opt/kde3/bin/usr/kde/bin:/usr/openwin/bin"; // NOI18N
             
-            termPath = searchPath(path, "gnome-terminal"); // NOI18N
+            termPath = searchPath(path, "gnome-terminal", "/usr/bin"); // NOI18N
             if (termPath != null) {
                 name = getString("TerminalType_GNOME"); // NOI18N
                 list.add(name); 
@@ -182,7 +182,8 @@ public class RunProfile implements ConfigurationAuxObject {
                     termOptions.put(def, "-e \"" + dorun + "\" \"" + getString("LBL_RunPrompt") + " \" {0} {1}"); // NOI18N
                 }
             }
-            termPath = searchPath(path, "xterm"); // NOI18N
+            termPath = searchPath(path, "xterm", Utilities.getOperatingSystem() == Utilities.OS_SOLARIS ? // NOI18N
+                        "/usr/openwin/bin" : "/usr/bin"); // NOI18N
             if (termPath != null) {
                 name = getString("TerminalType_XTerm"); // NOI18N
                 list.add(name); 
@@ -203,17 +204,56 @@ public class RunProfile implements ConfigurationAuxObject {
     /**
      * Search an augmented $PATH (the user's $PATH plus various standard locations
      * for a specific terminal emulater.
+     *
+     * @param path The path to search for program "term"
+     * @param term The terminal program we're searching for
+     * @returns Either a path to the specified term or null
      */
     private String searchPath(String path, String term) {
-        StringTokenizer st = new StringTokenizer(path, ":"); // NOI18N
+        return searchPath(path, term, null);
+    }
+    
+    /**
+     * Search an augmented $PATH (the user's $PATH plus various standard locations
+     * for a specific terminal emulater.
+     *
+     * @param path The path to search for program "term"
+     * @param term The terminal program we're searching for
+     * @defaultPath A possible default path to check before searching the entire path
+     * @returns Either a path to the specified term or null
+     */
+    private String searchPath(final String path, final String term, String defaultPath) {
         
-        while (st.hasMoreTokens()) {
-            File file = new File(st.nextToken(), term);
+        if (defaultPath != null) {
+            File file = new File(defaultPath, term);
             if (file.exists()) {
                 return file.getAbsolutePath();
             }
         }
-        return null;
+//        System.err.println("RP.searchPath: Doing PATH search for " + term);
+        final String[] patharray = new String[1];
+        patharray[0] = null;
+        
+        Thread thread = new Thread(new Runnable() {
+            public void run() {
+                StringTokenizer st = new StringTokenizer(path, ":");
+
+                while (st.hasMoreTokens()) {
+                    String dir = st.nextToken();
+                    File file = new File(dir, term);
+                    if (file.exists()) {
+                        patharray[0] = file.getAbsolutePath();
+                        break;
+                    }
+                }
+            }
+        });
+        thread.start();
+        try {
+            thread.join(5000);
+        } catch (InterruptedException ex) {
+        }
+        return patharray[0];
     }
     
     public String getTerminalPath() {

@@ -45,10 +45,6 @@ public final class DiskRepositoryManager extends AbstractDiskRepository {
         return instance;
     }
     
-    public RepositoryQueue getQueue() {
-        return queue;
-    }
-    
     private DiskRepositoryManager() {
         defBehRepository = new FilePerUnitDiskRepositoryImpl();
         BaseDiskRepositoryImpl bdri = new BaseDiskRepositoryImpl();
@@ -80,18 +76,18 @@ public final class DiskRepositoryManager extends AbstractDiskRepository {
         }
     }
     
-    public void shutdown(final boolean clean) {
+    public void shutdown(final boolean clean) throws IOException {
 	if( threadManager != null ) {
 	    threadManager.shutdown();
 	}
         iterateWith(new Visitor() {
-            public void visit(AbstractDiskRepository repository) {
+            public void visit(AbstractDiskRepository repository) throws IOException {
                 repository.shutdown(clean);
             }
         });
     }
     
-    private void iterateWith(Visitor visitor) {
+    private void iterateWith(Visitor visitor) throws IOException{
         visitor.visit(defBehRepository);
         visitor.visit(nonDefBehRepository);
     }
@@ -123,7 +119,7 @@ public final class DiskRepositoryManager extends AbstractDiskRepository {
         return mv.unfulfilled;
     }
 
-    public Persistent get(Key key) {
+    public Persistent get(Key key) throws IOException {
         return getRepository(key).get(key);
     }
     
@@ -135,7 +131,7 @@ public final class DiskRepositoryManager extends AbstractDiskRepository {
 //        getRepository(key).remove(key);
     }
 
-    public void closeUnit(final String unitName, final boolean cleanRepository) {
+    public void closeUnit(final String unitName, final boolean cleanRepository) throws IOException {
         
         try {
             rwLock.writeLock().lock();
@@ -167,7 +163,7 @@ public final class DiskRepositoryManager extends AbstractDiskRepository {
             }
             
             iterateWith(new Visitor() {
-                public void visit(AbstractDiskRepository repository) {
+                public void visit(AbstractDiskRepository repository) throws IOException {
                     repository.closeUnit(unitName, cleanRepository);
                 }
             });
@@ -189,6 +185,6 @@ public final class DiskRepositoryManager extends AbstractDiskRepository {
     }
 
     private interface Visitor {
-        void visit(AbstractDiskRepository repository) ;
+        void visit(AbstractDiskRepository repository) throws IOException ;
     }
 }

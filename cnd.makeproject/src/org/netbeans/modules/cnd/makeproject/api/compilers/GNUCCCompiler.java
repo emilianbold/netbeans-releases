@@ -207,18 +207,7 @@ public class GNUCCCompiler extends CCCCompiler {
                         systemIncludeDirectoriesList.add(includePrefix + line.substring(4));
                     continue;
                 }
-                
-                int defineIndex = line.indexOf("-D"); // NOI18N
-                while (defineIndex > 0) {
-                    String token;
-                    int spaceIndex = line.indexOf(" ", defineIndex + 1); // NOI18N
-                    if (spaceIndex > 0) {
-                        token = line.substring(defineIndex+2, spaceIndex);
-                        systemPreprocessorSymbolsList.add(token);
-                        defineIndex = line.indexOf("-D", spaceIndex); // NOI18N
-                    }
-                }
-                
+                parseUserMacros(line, systemPreprocessorSymbolsList);
                 if (line.startsWith("#define ")) { // NOI18N
                     int i = line.indexOf(' ', 8);
                     if (i > 0) {

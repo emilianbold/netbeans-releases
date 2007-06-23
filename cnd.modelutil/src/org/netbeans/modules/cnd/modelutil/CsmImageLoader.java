@@ -69,7 +69,7 @@ public class CsmImageLoader implements CsmImageName {
         return icon;
     }
     
-    private static String getImagePath(CsmObject o) {
+    public static String getImagePath(CsmObject o) {
         CsmDeclaration.Kind kind = CsmDeclaration.Kind.BUILT_IN;
         int modifiers = CsmUtilities.getModifiers(o);
         if (CsmKindUtilities.isEnumerator(o)) {
@@ -132,6 +132,7 @@ public class CsmImageLoader implements CsmImageName {
             boolean isField = (modifiers & CsmUtilities.MEMBER) != 0;
             boolean isStatic = (modifiers & CsmUtilities.STATIC) != 0;
             boolean isConst = (modifiers & CsmUtilities.CONST_MEMBER_BIT) != 0;
+            boolean isExtern = (modifiers & CsmUtilities.EXTERN) != 0;
             if (isGlobal) {
                 iconPath = VARIABLE_GLOBAL;
                 if (isStatic) {
@@ -142,9 +143,17 @@ public class CsmImageLoader implements CsmImageName {
                     }
                 } else {
                     if (isConst) {
-                        iconPath = VARIABLE_CONST_GLOBAL;
+                        if (isExtern) {
+                            iconPath = VARIABLE_EX_GLOBAL;
+                        } else {
+                            iconPath = VARIABLE_CONST_GLOBAL;
+                        }
                     } else {
-                        iconPath = VARIABLE_GLOBAL;
+                        if (isExtern) {
+                            iconPath = VARIABLE_EX_GLOBAL;
+                        } else {
+                            iconPath = VARIABLE_GLOBAL;
+                        }
                     }
                 }
             }

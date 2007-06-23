@@ -19,13 +19,13 @@
 
 package org.netbeans.modules.cnd.completion.cplusplus.hyperlink;
 
-import java.util.Iterator;
 import javax.swing.text.JTextComponent;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.completion.cplusplus.utils.Token;
+import org.netbeans.modules.cnd.completion.impl.xref.ReferencesSupport;
 import org.netbeans.modules.cnd.editor.cplusplus.CCTokenContext;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 
@@ -85,13 +85,7 @@ public class CsmIncludeHyperlinkProvider extends CsmAbstractHyperlinkProvider {
     private CsmInclude findInclude(BaseDocument doc, int offset) {
         CsmFile csmFile = CsmUtilities.getCsmFile(doc, true);
         if (csmFile != null) {
-            for (Iterator it = csmFile.getIncludes().iterator(); it.hasNext();) {
-                CsmInclude incl = (CsmInclude) it.next();
-                if (incl.getStartOffset() <= offset && 
-                        offset <= incl.getEndOffset()) {
-                    return incl;
-                }
-            }
+            return ReferencesSupport.findInclude(csmFile, offset);
         }
         return null;
     }
@@ -117,20 +111,20 @@ public class CsmIncludeHyperlinkProvider extends CsmAbstractHyperlinkProvider {
         
         public int getStartOffset() {
             // start of the file
-            return 0;
+            return DUMMY_POSITION.getOffset();
         }
         
         public int getEndOffset() {
-            // start of the file
-            return 1;
+            // DUMMY of the file
+            return DUMMY_POSITION.getOffset();
         }
         
         public CsmOffsetable.Position getStartPosition() {
-            return START_POSITION;
+            return DUMMY_POSITION;
         }
         
         public CsmOffsetable.Position getEndPosition() {
-            return START_POSITION;
+            return DUMMY_POSITION;
         }
         
         public String getText() {
@@ -139,17 +133,17 @@ public class CsmIncludeHyperlinkProvider extends CsmAbstractHyperlinkProvider {
         
     }
     
-    private static final CsmOffsetable.Position START_POSITION = new CsmOffsetable.Position() {
+    private static final CsmOffsetable.Position DUMMY_POSITION = new CsmOffsetable.Position() {
         public int getOffset() {
-            return 1;
+            return -1;
         }
 
         public int getLine() {
-            return 1;
+            return -1;
         }
 
         public int getColumn() {
-            return 1;
+            return -1;
         }
     };
 }

@@ -233,33 +233,28 @@ public class SunCCCompiler extends CCCCompiler {
                     int spaceIndex = line.indexOf(" ", includeIndex + 1); // NOI18N
                     if (spaceIndex > 0) {
                         token = line.substring(includeIndex+2, spaceIndex);
-			if ( ! token.equals("-xbuiltin")) { //NOI18N
-			    systemIncludeDirectoriesList.add(token);
-			}
-                        if (token.endsWith("Cstd")) { // NOI18N
-                            // See 89872 "Parser Settings" for Sun Compilers Collection are incorrect
-                            systemIncludeDirectoriesList.add(token.substring(0, token.length()-4) + "std"); // NOI18N
-                        }
-                        // Hack to handle -compat flag. If this flag is added,
-                        // the compiler looks in in CC4 and not in CC. Just adding CC4 doesn't
-                        // fix this problem but it may work for some include files
-//                        if (token.endsWith("include/CC")) // NOI18N
-//                            systemIncludeDirectoriesList.add(token + "4"); // NOI18N
-                        includeIndex = line.indexOf("-I", spaceIndex); // NOI18N
+                    } else {
+                        token = line.substring(includeIndex+2);
                     }
-                }
-                
-                int defineIndex = line.indexOf("-D"); // NOI18N
-                while (defineIndex > 0) {
-                    String token;
-                    int spaceIndex = line.indexOf(" ", defineIndex + 1); // NOI18N
+                    if ( ! token.equals("-xbuiltin")) { //NOI18N
+                        systemIncludeDirectoriesList.add(token);
+                    }
+                    if (token.endsWith("Cstd")) { // NOI18N
+                        // See 89872 "Parser Settings" for Sun Compilers Collection are incorrect
+                        systemIncludeDirectoriesList.add(token.substring(0, token.length()-4) + "std"); // NOI18N
+                    }
+                    // Hack to handle -compat flag. If this flag is added,
+                    // the compiler looks in in CC4 and not in CC. Just adding CC4 doesn't
+                    // fix this problem but it may work for some include files
+//                  if (token.endsWith("include/CC")) // NOI18N
+//                      systemIncludeDirectoriesList.add(token + "4"); // NOI18N
                     if (spaceIndex > 0) {
-                        token = line.substring(defineIndex+2, spaceIndex);
-                        systemPreprocessorSymbolsList.add(token);
-                        defineIndex = line.indexOf("-D", spaceIndex); // NOI18N
+                        includeIndex = line.indexOf("-I", spaceIndex); // NOI18N
+                    } else {
+                        break;
                     }
                 }
-                
+                parseUserMacros(line, systemPreprocessorSymbolsList);
                 if (line.startsWith("#define ")) { // NOI18N
                     int i = line.indexOf(' ', 8);
                     if (i > 0) {

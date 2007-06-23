@@ -29,8 +29,14 @@ import org.netbeans.modules.cnd.modelimpl.debug.Diagnostic;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.BufferedInputStream;
+import java.io.DataInputStream;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -44,6 +50,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.memory.LowMemoryEvent;
 import org.netbeans.modules.cnd.modelimpl.options.CodeAssistanceOptions;
+import org.netbeans.modules.cnd.modelimpl.repository.KeyUtilities;
 import org.netbeans.modules.cnd.modelimpl.spi.LowMemoryAlerter;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
@@ -74,6 +81,7 @@ public class ModelSupport implements PropertyChangeListener {
 
     private static final boolean TRACE_STARTUP = false;
     private volatile boolean postponeParse = false;
+    private volatile boolean masterIndexIsLoaded = false;
     
     private ModelSupport() {
         modifiedListener = new FileChangeListener();
@@ -143,9 +151,15 @@ public class ModelSupport implements PropertyChangeListener {
             });
         }
     }
-
+    
     private void openProjects() {
         Project[] projects = OpenProjects.getDefault().getOpenProjects();
+        
+        if (!masterIndexIsLoaded) {
+            masterIndexIsLoaded = true;
+            model.readMasterIndex();
+        }
+        
         synchronized (openedProjects){
             Set nowOpened = new HashSet();
             for( int i = 0; i < projects.length; i++ ) {

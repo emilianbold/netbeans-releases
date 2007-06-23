@@ -32,21 +32,37 @@ public class FriendTestCase extends CompletionBaseTestCase {
     }
     
     public void testInFriendFuncVarA() throws Exception {
-        super.performTest("file.cc", 13, 5, "a.");
+        super.performTest("file.cc", 14, 5, "a.");
     }
     
     public void testInFriendFuncVarB() throws Exception {
-        super.performTest("file.cc", 13, 5, "b.");
+        super.performTest("file.cc", 14, 5, "b.");
     }
     
+    public void testInFriendFuncVarD() throws Exception {
+        super.performTest("file.cc", 14, 5, "d.");
+    }     
+        
     public void testInFriendFuncVarASt() throws Exception {
-        super.performTest("file.cc", 13, 5, "ClassA::");
+        super.performTest("file.cc", 14, 5, "ClassA::");
     }
     
     public void testInFriendFuncVarBSt() throws Exception {
-        super.performTest("file.cc", 13, 5, "ClassB::");
+        super.performTest("file.cc", 14, 5, "ClassB::");
     }
-    
+
+    public void testInFriendFuncVarDSt() throws Exception {
+        super.performTest("file.cc", 14, 5, "ClassD::");
+    }
+        
+    public void testInFriendCClassVarE() throws Exception {
+        super.performTest("file.cc", 19, 5, "e.");
+    }
+            
+    public void testInFriendCClassVarESt() throws Exception {
+        super.performTest("file.cc", 19, 5, "ClassE::");
+    }
+
     public void testInFriendCClassVarA() throws Exception {
         super.performTest("file.cc", 7, 5, "a.");
     }
@@ -74,6 +90,10 @@ public class FriendTestCase extends CompletionBaseTestCase {
         public Failed(String testName) {
             super(testName, true);
         }
-        
+
+        public void testOK() {
+            
+        }
+    
     }    
 }

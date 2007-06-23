@@ -31,7 +31,7 @@ public class TickingRepositoryQueue extends RepositoryQueue {
     protected int currentTick = 0;
     protected final int tickShift;
     
-    public static final int queueTickShift = Stats.getInteger("cnd.repository.queue.tickshift", 5); //NOI18N
+    public static final int queueTickShift = Stats.getInteger("cnd.repository.queue.tickshift", 8); //NOI18N
 //    public static final int queueTickDelay = Stats.getInteger("cnd.repository.queue.tickdelay", 20); //NOI18N
     
     

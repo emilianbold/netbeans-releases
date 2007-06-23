@@ -36,6 +36,11 @@ public final class Path {
     
     static {
         String path = System.getenv("PATH"); // NOI18N
+        if (Boolean.getBoolean("cnd.debug.use_altpath")) { // NOI18N
+            // Its very hard to debug path problems on Windows because changing PATH is so hard. So these
+            // properties let me do it without changing my real path
+            path = System.getProperty("cnd.debug.altpath", path); // NOI18N
+        }
         if (path != null) {
             StringTokenizer st = new StringTokenizer(path, File.pathSeparator); // NOI18N
 

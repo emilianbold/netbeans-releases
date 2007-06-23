@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.cnd.repository.disk;
 
+import java.io.IOException;
 import org.netbeans.modules.cnd.repository.queue.RepositoryWriter;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
@@ -29,15 +30,11 @@ import org.netbeans.modules.cnd.repository.spi.Persistent;
  */
 public abstract class AbstractDiskRepository implements RepositoryWriter {
     
-    public abstract Persistent get(Key key);
+    public abstract Persistent get(Key key) throws IOException;
     
-    public abstract void remove(Key id);
+    public abstract void remove(Key id) throws IOException;
     
-    public abstract void closeUnit(String unitName, boolean cleanRepository);
+    public abstract void closeUnit(String unitName, boolean cleanRepository) throws IOException;
     
-    
-    //public abstract void put(Key id, Persistent obj);
-    
-    public abstract void shutdown(boolean clean);
-    
+    public abstract void shutdown(boolean clean) throws IOException;
 }
