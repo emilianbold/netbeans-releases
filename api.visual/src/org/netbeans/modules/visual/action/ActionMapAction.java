@@ -54,6 +54,8 @@ public class ActionMapAction extends WidgetAction.Adapter {
     }
 
     private State handleKeyEvent (Widget widget, WidgetKeyEvent event, KeyStroke keyStroke) {
+        if (keyStroke == null)
+            return State.REJECTED;
         ActionListener action;
         if (actionMap != null && inputMap != null) {
             Object o = inputMap.get (keyStroke);
