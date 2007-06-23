@@ -58,11 +58,13 @@ public class DesignView extends JPanel  {
     private ObjectScene scene;
     /** Manages the zoom level. */
     private ZoomManager zoomer;
-    private Widget mMainLayer;
-    private Widget messageLayer;
+    private Widget mainLayer;
+    private Widget messageWidget;
+    private Widget headerWidget;
     private Widget contentWidget;
+    private Widget mainWidget;
+    private Widget separatorWidget;
     private OperationsWidget operationsWidget;
-    private boolean initialized = false;
     
     /**
      * Creates a new instance of GraphView.
@@ -77,45 +79,44 @@ public class DesignView extends JPanel  {
         this.serviceModel = ServiceModel.getServiceModel(implementationClass);
         
         scene = new ObjectScene();
-        JComponent sceneView = scene.createView();
+        final JComponent sceneView = scene.createView();
         zoomer = new ZoomManager(scene);
         // add actions
         //        scene.getActions().addAction(ActionFactory.createZoomAction());
         //        scene.getActions().addAction(ActionFactory.createPanAction());
         scene.getActions().addAction(ButtonAction.DEFAULT);
-        mMainLayer = new LayerWidget(scene);
-        mMainLayer.setPreferredLocation(new Point(0, 0));
-        mMainLayer.setLayout(LayoutFactory.createVerticalFlowLayout(
+        mainLayer = new LayerWidget(scene);
+        mainLayer.setPreferredLocation(new Point(0, 0));
+        mainLayer.setLayout(LayoutFactory.createVerticalFlowLayout(
                 LayoutFactory.SerialAlignment.JUSTIFY, 12));
+        scene.addChild(mainLayer);
+        
+        mainWidget = new Widget(scene);
+        mainWidget.setLayout(LayoutFactory.createVerticalFlowLayout(
+                LayoutFactory.SerialAlignment.JUSTIFY, 12));
+        
         String serviceName = service.getName();
         if (service.getWsdlUrl()!=null)
             serviceName = service.getServiceName()+" ["+service.getPortName()+"]";
-        LabelWidget serviceWidget = new LabelWidget(scene,serviceName);
-        serviceWidget.setFont(scene.getFont().deriveFont(Font.BOLD));
-        serviceWidget.setForeground(Color.GRAY);
-        serviceWidget.setBorder(BorderFactory.createEmptyBorder(6,28,0,0));
-        SeparatorWidget lineWidget = new SeparatorWidget(scene, 
-                SeparatorWidget.Orientation.HORIZONTAL);
-        lineWidget.setForeground(Color.ORANGE);
-        Widget headerWidget = new Widget(scene);
-        headerWidget.setLayout(LayoutFactory.createVerticalFlowLayout(
-                LayoutFactory.SerialAlignment.JUSTIFY, 6));
-        headerWidget.setOpaque(true);
-        headerWidget.addChild(serviceWidget);
-        headerWidget.addChild(lineWidget);
         
-        mMainLayer.addChild(headerWidget);
-        scene.addChild(mMainLayer);
-        messageLayer = new LayerWidget(scene);
-        messageLayer.setPreferredLocation(new Point(0, 0));
-        scene.addChild(messageLayer);
-        scene.addObject(messageLayerKey, messageLayer);
+        headerWidget = new LabelWidget(scene,serviceName);
+        headerWidget.setFont(scene.getFont().deriveFont(Font.BOLD));
+        headerWidget.setForeground(Color.GRAY);
+        headerWidget.setBorder(BorderFactory.createEmptyBorder(6,28,0,0));
+        mainWidget.addChild(headerWidget);
+        
+        separatorWidget = new SeparatorWidget(scene,
+                SeparatorWidget.Orientation.HORIZONTAL);
+        separatorWidget.setForeground(Color.ORANGE);
+        mainWidget.addChild(separatorWidget);
+        
         
         contentWidget = new Widget(scene);
         contentWidget.setBorder(BorderFactory.createEmptyBorder(0, 20, 0, 20));
         contentWidget.setLayout(LayoutFactory.createVerticalFlowLayout(
                 LayoutFactory.SerialAlignment.JUSTIFY, 16));
-        mMainLayer.addChild(contentWidget);
+        mainWidget.addChild(contentWidget);
+        
         //add operations widget
         operationsWidget = new OperationsWidget(scene,service, serviceModel);
         contentWidget.addChild(operationsWidget);
@@ -128,21 +129,25 @@ public class DesignView extends JPanel  {
         panel.getVerticalScrollBar().setUnitIncrement(16);
         panel.getHorizontalScrollBar().setUnitIncrement(16);
         panel.setBorder(null);
-        add(panel, BorderLayout.CENTER);
+        add(panel);
+        mainLayer.addChild(mainWidget);
+
+        messageWidget = new Widget(scene);
+        messageWidget.setLayout(LayoutFactory.createVerticalFlowLayout(
+                LayoutFactory.SerialAlignment.JUSTIFY, 4));
+        mainLayer.addChild(messageWidget);
+        scene.addObject(messageLayerKey, messageWidget);
+        
         scene.addSceneListener(new ObjectScene.SceneListener() {
             public void sceneRepaint() {
             }
             public void sceneValidating() {
-                
+
             }
             public void sceneValidated() {
-                if(!initialized) {
-                    int width = panel.getViewport().getWidth();
-                    if (width <= scene.getBounds().width) {
-                        contentWidget.setMinimumSize(new Dimension(width, 0));
-                    }
-                } else {
-                    scene.removeSceneListener(this);
+                int width = panel.getViewport().getWidth();
+                if (width <= scene.getBounds().width) {
+                    mainWidget.setMinimumSize(new Dimension(width, 0));
                 }
             }
         });

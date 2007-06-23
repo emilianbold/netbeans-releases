@@ -151,12 +151,10 @@ public class OperationWidget extends AbstractTitledWidget {
             final ButtonWidget sampleButton = new ButtonWidget(getScene(), type.getIcon());
             sampleButton.setAction(new AbstractAction() {
                 public void actionPerformed(ActionEvent arg0) {
-                    Widget messageLayer = (getObjectScene()).findWidget(DesignView.messageLayerKey);
+                    Widget messageLayer = getObjectScene().findWidget(DesignView.messageLayerKey);
                     messageLayer.removeChildren();
                     SampleMessageWidget messageWidget = new SampleMessageWidget(
-                            getScene(), operation, type);
-                    messageWidget.setPreferredLocation(getScene().convertSceneToView(
-                            sampleButton.convertLocalToScene(sampleButton.getLocation())));
+                            getObjectScene(), operation, type);
                     messageLayer.addChild(messageWidget);
                 }
             });
