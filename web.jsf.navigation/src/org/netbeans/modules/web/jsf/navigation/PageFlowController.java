@@ -58,12 +58,15 @@ import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileObject;
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.prefs.Preferences;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigComponent;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.web.jsf.navigation.PageFlowUtilities.Scope;
+import org.openide.NotifyDescriptor;
+import org.openide.util.NbPreferences;
 /**
  *
  * @author joelle lam
@@ -103,23 +106,55 @@ public class PageFlowController {
         
         webFolder = PageFlowView.getWebFolder(configFile);
         if ( webFolder == null ){
-            DialogDescriptor desc = new DialogDescriptor(
-                    NbBundle.getMessage(PageFlowController.class, "MSG_NoWebFolder"),
-                    NbBundle.getMessage(PageFlowController.class, "TLE_NoWebFolder"),
-                    false,
-                    DialogDescriptor.WARNING_MESSAGE,
-                    DialogDescriptor.NO_OPTION,
-                    null);
+            //            DialogDescriptor desc = new DialogDescriptor(
+            //                    NbBundle.getMessage(PageFlowController.class, "NotWebFolder"),
+            //                    NbBundle.getMessage(PageFlowController.class, "TLE_NoWebFolder"),
+            //                    false,
+            //                    DialogDescriptor.WARNING_MESSAGE,
+            //                    DialogDescriptor.NO_OPTION,
+            //                    null);
+            //
+            //            Dialog d = DialogDisplayer.getDefault().createDialog(desc);
+            //            d.setVisible(true);
+            if( isShowNoWebFolderDialog() ) {
+                
+                final NotWebFolder panel = new NotWebFolder(NO_WEB_FOLDER_WARNING);
+                DialogDescriptor descriptor = new DialogDescriptor(
+                        panel,
+                        NO_WEB_FOLDER_TITLE,
+                        true,
+                        NotifyDescriptor.PLAIN_MESSAGE,
+                        NotifyDescriptor.YES_OPTION,
+                        null
+                        );
+                descriptor.setMessageType(NotifyDescriptor.PLAIN_MESSAGE);
+                descriptor.setClosingOptions(new Object[]{NotifyDescriptor.OK_OPTION});
+                descriptor.setOptionsAlign(DialogDescriptor.BOTTOM_ALIGN);
+                final Dialog d  = DialogDisplayer.getDefault().createDialog(descriptor);
+                d.setSize(380, 180);
+                d.setVisible(true);
+                
+                setShowNoWebFolderDialog(panel.getShowDialog());
+                
+            }
             
-            Dialog d = DialogDisplayer.getDefault().createDialog(desc);
-            d.setVisible(true);
+            
             webFiles = new HashSet<FileObject>();
         } else {
             webFiles = getAllProjectRelevantFilesObjects();
         }
         
     }
-    
+    private static final String PROP_SHOW_NO_WEB_FOLDER  = "showNoWebFolder"; // NOI18N
+    public void setShowNoWebFolderDialog(boolean show) {
+        getPreferences().putBoolean(PROP_SHOW_NO_WEB_FOLDER,show);
+    }
+    private  static Preferences getPreferences() {
+        return NbPreferences.forModule(PageFlowController.class);
+    }
+    public boolean isShowNoWebFolderDialog() {
+        return getPreferences().getBoolean(PROP_SHOW_NO_WEB_FOLDER, true);
+    }
     
     private PropertyChangeListener pcl;
     private FileChangeListener fcl;
@@ -708,7 +743,7 @@ public class PageFlowController {
      * @return FileObject webfolder
      */
     public FileObject getWebFolder() {
-//        assert webFolder.isValid();
+        //        assert webFolder.isValid();
         
         return webFolder;
     }
