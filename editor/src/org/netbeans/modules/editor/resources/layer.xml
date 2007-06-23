@@ -93,6 +93,10 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="position" intvalue="1100"/>
             </file>
             
+            <file name="org-netbeans-modules-editor-impl-actions-NavigationHistoryLastEditAction$MainMenu.instance">
+                <attr name="position" intvalue="1150"/>
+            </file>
+            
             <file name="org-netbeans-modules-editor-MainMenuAction$JumpBackAction.instance">
                 <attr name="position" intvalue="1200"/>
             </file>
@@ -193,9 +197,6 @@ Microsystems, Inc. All Rights Reserved.
         <file name="org-netbeans-modules-editor-impl-highlighting-HLFactory.instance"/>
 
         <folder name="Popup">
-            <file name="org-netbeans-modules-editor-NbSelectInPopupAction.instance">
-                <attr name="position" intvalue="1000"/>
-            </file>
             <file name="org-openide-actions-CutAction.instance">
                 <attr name="position" intvalue="2000"/>
             </file>
@@ -204,6 +205,9 @@ Microsystems, Inc. All Rights Reserved.
             </file>
             <file name="org-openide-actions-PasteAction.instance">
                 <attr name="position" intvalue="4000"/>
+            </file>
+            <file name="org-netbeans-modules-editor-NbSelectInPopupAction.instance">
+                <attr name="position" intvalue="9000"/>
             </file>
         </folder>
 

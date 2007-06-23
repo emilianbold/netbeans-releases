@@ -63,7 +63,7 @@ Contributor(s): Andrei Badea, Leon Chiver
         </file>        
     </folder>
 
-    <folder name="Editors">
+    <!-- folder name="Editors">
       <folder name="text">
           <folder name="x-java">
               <folder name="Popup">
@@ -77,7 +77,7 @@ Contributor(s): Andrei Badea, Leon Chiver
               </folder>
           </folder>
       </folder>
-    </folder>
+    </folder -->
 
     <folder name="OptionsDialog">
         <!-- This is highly suspicious, but it was this way in java/source - Hrebejk, can you check this? -->

@@ -38,8 +38,7 @@ public final class InspectMembersAction extends AbstractNavigationAction {
     }
     
     protected void performAction(Node[] activatedNodes) {
-        DataObject dataObject = (DataObject) activatedNodes[0].getLookup()
-                                                              .lookup(DataObject.class);
+        DataObject dataObject = activatedNodes[0].getLookup().lookup(DataObject.class);
 
         if (dataObject != null) {
             final FileObject fileObject = dataObject.getPrimaryFile();

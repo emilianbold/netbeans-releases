@@ -24,9 +24,12 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.List;
 import java.util.logging.Logger;
+import javax.swing.JMenuItem;
+import javax.swing.KeyStroke;
 import javax.swing.text.JTextComponent;
 import org.netbeans.editor.BaseAction;
 import org.netbeans.editor.BaseKit;
+import org.netbeans.modules.editor.MainMenuAction;
 import org.netbeans.modules.editor.lib.NavigationHistory;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
@@ -83,4 +86,36 @@ public final class NavigationHistoryLastEditAction extends BaseAction implements
     private boolean isStandingThere(JTextComponent target, NavigationHistory.Waypoint wpt) {
         return target == wpt.getComponent() && target.getCaret().getDot() == wpt.getOffset();
     }
+    
+    /** Back action in Go To main menu, wrapper for BaseKit.jumpListPrevAction
+     */ 
+    public static final class MainMenu extends MainMenuAction {
+        
+        private JMenuItem jumpLastEditItem;
+
+        public MainMenu () {
+            super();
+            jumpLastEditItem = new JMenuItem(getMenuItemText());
+            setMenu();
+        }
+        
+        protected String getMenuItemText () {
+            return NbBundle.getBundle(NavigationHistoryLastEditAction.class).getString(
+                "jump_back_main_menu_item-main-menu"); //NOI18N
+        }
+
+        public JMenuItem getMenuPresenter () {
+            return jumpLastEditItem;
+        }
+
+        protected String getActionName () {
+            return "jump-list-last-edit"; //NOI18N
+        }
+        
+//        protected KeyStroke getDefaultAccelerator () {
+//            return KeyStroke.getKeyStroke(KeyEvent.VK_K, InputEvent.ALT_MASK);
+//        }
+        
+    } // end of JumpBackAction
+    
 }

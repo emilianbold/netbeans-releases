@@ -132,7 +132,7 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
     </folder>
 
     <!-- editors -->
-    <folder name="Editors">
+    <!-- folder name="Editors">
         <folder name="text">
             <folder name="x-java">
                 <folder name="Popup">
@@ -145,7 +145,7 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
                 </folder>
             </folder>
         </folder>
-    </folder>
+    </folder -->
 
     <!-- actions -->
     <folder name="Actions">

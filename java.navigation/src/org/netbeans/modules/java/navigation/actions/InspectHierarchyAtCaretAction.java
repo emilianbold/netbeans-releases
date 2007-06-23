@@ -63,6 +63,8 @@ import javax.swing.text.JTextComponent;
 public final class InspectHierarchyAtCaretAction extends BaseAction {
 
     private static final String INSPECT_HIERARCHY_AT_CARET = "inspect-hierarchy-at-caret"; // NOI18N
+    private static final String INSPECT_HIERARCHY_AT_CARET_POPUP = 
+            INSPECT_HIERARCHY_AT_CARET + "-popup"; // NOI18N
 
     /**
      *
@@ -73,7 +75,8 @@ public final class InspectHierarchyAtCaretAction extends BaseAction {
         putValue(ACTION_COMMAND_KEY, INSPECT_HIERARCHY_AT_CARET);
         putValue(SHORT_DESCRIPTION, getValue(NAME));
         putValue(ExtKit.TRIMMED_TEXT,getValue(NAME));
-        putValue(POPUP_MENU_TEXT, getValue(NAME));
+        putValue(POPUP_MENU_TEXT, NbBundle.getMessage(InspectMembersAtCaretAction.class, 
+                                                      INSPECT_HIERARCHY_AT_CARET_POPUP));
 
         putValue("noIconInMenu", Boolean.TRUE); // NOI18N
     }
