@@ -881,6 +881,9 @@ public class CasualDiff {
                 localPointer = diffTree(oldT.def, newT.def, getBounds(oldT.def));
                 anonClass = false;
             } else {
+                if (endPos(oldT.args) > localPointer) {
+                    copyTo(localPointer, endPos(oldT.args));
+                }
                 printer.print(")");
                 localPointer = endPos(oldT.def);
             }
