@@ -16,6 +16,7 @@
  */
 package org.netbeans.api.java.source.ui;
 
+import java.lang.ref.WeakReference;
 import java.util.Collections;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
@@ -64,9 +65,14 @@ public final class DialogBinding {
             throw new IllegalArgumentException("A JavaSource is already attached to the given component.");
         }
         
-        JavaSource js = JavaSourceAccessor.INSTANCE.create(ClasspathInfo.create(fileObject), JavaSourceAccessor.INSTANCE.create(fileObject, offset, length, component), Collections.singletonList(fileObject));
+        final JavaSource js = JavaSourceAccessor.INSTANCE.create(ClasspathInfo.create(fileObject), JavaSourceAccessor.INSTANCE.create(fileObject, offset, length, component), Collections.singletonList(fileObject));
         
-        doc.putProperty(JavaSource.class, js);
+        doc.putProperty(JavaSource.class, new WeakReference<JavaSource>(null) {
+            @Override
+            public JavaSource get() {
+                return js;
+            }
+        });
         
         if (doc.getProperty(Language.class) == null) {
             doc.putProperty(Language.class, JavaTokenId.language());
