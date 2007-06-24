@@ -70,7 +70,7 @@ public class HideField extends AbstractHint {
         if (el == null || el.getKind() != ElementKind.FIELD) {
             return null;
         }
-        if (el.getSimpleName().contentEquals("<error>")) {
+        if (el.getSimpleName().contentEquals("<error>")) { //NOI18N
             return null;
         }
         

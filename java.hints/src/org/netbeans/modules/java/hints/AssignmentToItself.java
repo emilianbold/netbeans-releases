@@ -137,7 +137,7 @@ public class AssignmentToItself extends AbstractHint {
                     return NbBundle.getMessage(AssignmentToItself.class, "LBL_ATI_NewField_FIX"); // NOI18N
             } 
             
-            throw new UnsupportedOperationException("Not supported yet.");
+            throw new UnsupportedOperationException("Not supported yet."); // NOI18N
         }
 
         public ChangeInfo implement() throws Exception {

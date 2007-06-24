@@ -18,10 +18,8 @@
  */
 package org.netbeans.modules.java.hints;
 
-//import org.netbeans.modules.javahints.*;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
-import com.sun.source.tree.Scope;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
@@ -37,14 +35,12 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeMirror;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Position;
 import javax.swing.text.Position.Bias;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.api.java.source.ElementUtilities.ElementAcceptor;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.ModificationResult;
@@ -62,6 +58,7 @@ import org.netbeans.spi.editor.hints.Fix;
 import org.openide.filesystems.FileObject;
 import org.openide.text.NbDocument;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -106,8 +103,9 @@ public class AssignResultToVariable extends AbstractHint {
             }
             
             List<Fix> fixes = Collections.<Fix>singletonList(new FixImpl(info.getFileObject(), info.getDocument(), TreePathHandle.create(treePath, info)));
+            String description = NbBundle.getMessage(AssignResultToVariable.class, "HINT_AssignResultToVariable");
             
-            return Collections.singletonList(ErrorDescriptionFactory.createErrorDescription(getSeverity().toEditorSeverity(), "Assign Return Value To New Variable", fixes, info.getFileObject(), (int) start, (int) end));
+            return Collections.singletonList(ErrorDescriptionFactory.createErrorDescription(getSeverity().toEditorSeverity(), description, fixes, info.getFileObject(), (int) start, (int) end));
         } catch (IOException e) {
             Exceptions.printStackTrace(e);
             return null;
@@ -125,11 +123,11 @@ public class AssignResultToVariable extends AbstractHint {
     }
 
     public String getDisplayName() {
-        return "AssignResultToVariable";
+        return NbBundle.getMessage(AssignResultToVariable.class, "DN_AssignResultToVariable");
     }
 
     public String getDescription() {
-        return "AssignResultToVariable";
+        return NbBundle.getMessage(AssignResultToVariable.class, "DESC_AssignResultToVariable");
     }
 
     private static final class FixImpl implements Fix {
@@ -145,7 +143,7 @@ public class AssignResultToVariable extends AbstractHint {
         }
 
         public String getText() {
-            return "Assign Return Value To New Variable";
+            return NbBundle.getMessage(AssignResultToVariable.class, "FIX_AssignResultToVariable");
         }
 
         public ChangeInfo implement() {
@@ -159,7 +157,7 @@ public class AssignResultToVariable extends AbstractHint {
                         TreePath tp = tph.resolve(copy);
                         
                         if (tp == null) {
-                            Logger.getLogger(AssignResultToVariable.class.getName()).info("tp=null");
+                            Logger.getLogger(AssignResultToVariable.class.getName()).info("tp=null"); // NOI18N
                             return ;
                         }
                         
@@ -172,7 +170,7 @@ public class AssignResultToVariable extends AbstractHint {
                         ExecutableElement ee = (ExecutableElement) el;
                         TreeMaker make = copy.getTreeMaker();
                         
-                        name[0] = guessName(copy, tp);
+                        name[0] = Utilities.guessName(copy, tp);
                         
                         VariableTree var = make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), name[0], make.Type(ee.getReturnType()), (ExpressionTree) tp.getLeaf());
                         
@@ -183,7 +181,7 @@ public class AssignResultToVariable extends AbstractHint {
                 List<? extends Difference> differences = result.getDifferences(file);
                 
                 if (differences == null) {
-                    Logger.getLogger(AssignResultToVariable.class.getName()).log(Level.INFO, "No differences.");
+                    Logger.getLogger(AssignResultToVariable.class.getName()).log(Level.INFO, "No differences."); // NOI18N
                     return null;
                 }
                 
@@ -209,7 +207,7 @@ public class AssignResultToVariable extends AbstractHint {
                 }
                 
                 if (found == null) {
-                    Logger.getLogger(AssignResultToVariable.class.getName()).log(Level.INFO, "Cannot find the difference: {0}", differences);
+                    Logger.getLogger(AssignResultToVariable.class.getName()).log(Level.INFO, "Cannot find the difference: {0}", differences); // NOI18N
                     result.commit();
                     return null;
                 }
@@ -225,10 +223,10 @@ public class AssignResultToVariable extends AbstractHint {
                     public void run() {
                         try {
                             String text = doc.getText(start.getOffset(), length);
-                            Logger.getLogger(AssignResultToVariable.class.getName()).log(Level.FINE, "text after commit: {0}", text);
+                            Logger.getLogger(AssignResultToVariable.class.getName()).log(Level.FINE, "text after commit: {0}", text); // NOI18N
                             int    relPos = text.lastIndexOf(name[0]);
                             
-                            Logger.getLogger(AssignResultToVariable.class.getName()).log(Level.FINE, "relPos: {0}", relPos);
+                            Logger.getLogger(AssignResultToVariable.class.getName()).log(Level.FINE, "relPos: {0}", relPos); // NOI18N
                             if (relPos != (-1)) {
                                 int startPos = start.getOffset() + relPos;
                                 
@@ -251,63 +249,4 @@ public class AssignResultToVariable extends AbstractHint {
         }
     }
 
-    static String guessName(CompilationInfo info, TreePath tp) {
-        String name = Utilities.getName((ExpressionTree) tp.getLeaf());
-        
-        if (name == null) {
-            return "name";
-        }
-        
-        Scope s = info.getTrees().getScope(tp);
-        int counter = 0;
-        boolean cont = true;
-        String proposedName = name;
-        
-        while (cont) {
-            proposedName = name + (counter != 0 ? String.valueOf(counter) : "");
-            
-            cont = false;
-            
-            for (Element e : info.getElementUtilities().getLocalMembersAndVars(s, new VariablesFilter())) {
-                if (proposedName.equals(e.getSimpleName().toString())) {
-                    counter++;
-                    cont = true;
-                    break;
-                }
-            }
-        }
-        
-        return proposedName;
-    }
-    
-    private static String adjustName(String name) {
-        if (name == null)
-            return null;
-        
-        String shortName = null;
-        
-        if (name.startsWith("get") && name.length() > 3) {
-            shortName = name.substring(3);
-        }
-        
-        if (name.startsWith("is") && name.length() > 2) {
-            shortName = name.substring(2);
-        }
-        
-        if (shortName != null) {
-            return Character.toLowerCase(shortName.charAt(0)) + shortName.substring(1);
-        }
-        
-        return name;
-    }
-    
-    private static final class VariablesFilter implements ElementAcceptor {
-        
-        private static final Set<ElementKind> ACCEPTABLE_KINDS = EnumSet.of(ElementKind.ENUM_CONSTANT, ElementKind.EXCEPTION_PARAMETER, ElementKind.FIELD, ElementKind.LOCAL_VARIABLE, ElementKind.PARAMETER);
-        
-        public boolean accept(Element e, TypeMirror type) {
-            return ACCEPTABLE_KINDS.contains(e.getKind());
-        }
-        
-    }
 }

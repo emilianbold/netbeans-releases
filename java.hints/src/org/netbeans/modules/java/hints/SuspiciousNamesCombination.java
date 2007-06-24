@@ -26,7 +26,6 @@ import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
-import java.awt.BorderLayout;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -37,19 +36,16 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.prefs.Preferences;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
-import javax.swing.JCheckBox;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.java.editor.semantic.Utilities;
 import org.netbeans.modules.java.hints.spi.AbstractHint;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
+import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -153,10 +149,12 @@ public class SuspiciousNamesCombination extends AbstractHint {
                 int[] span = Utilities.findIdentifierSpan(treePath, info, info.getDocument());
                 
                 if (span != null && span[0] != (-1) && span[1] != (-1)) {
-                    return Collections.singletonList(ErrorDescriptionFactory.createErrorDescription(getSeverity().toEditorSeverity(), "Suspicious names combination", info.getFileObject(), span[0], span[1]));
+                    String description = NbBundle.getMessage(SuspiciousNamesCombination.class, "HINT_SuspiciousNamesCombination");
+                    
+                    return Collections.singletonList(ErrorDescriptionFactory.createErrorDescription(getSeverity().toEditorSeverity(), description, info.getFileObject(), span[0], span[1]));
                 }
             } catch (IOException ex) {
-                Logger.getLogger("global").log(Level.INFO, null, ex);
+                Exceptions.printStackTrace(ex);
             }
         }
         
@@ -241,8 +239,8 @@ public class SuspiciousNamesCombination extends AbstractHint {
     }
     
     private List<List<String>> NAME_CATEGORIES = Arrays.asList(
-            Arrays.asList("x", "width"),
-            Arrays.asList("y", "height")
+            Arrays.asList("x", "width"), //NOI18N
+            Arrays.asList("y", "height") //NOI18N
     );
     
     
@@ -251,29 +249,11 @@ public class SuspiciousNamesCombination extends AbstractHint {
     }
 
     public String getDisplayName() {
-        return "Suspicious Names Combination";
+        return NbBundle.getMessage(SuspiciousNamesCombination.class, "DN_SuspiciousNamesCombination");
     }
 
     public String getDescription() {
-        return "Suspicious Names Combination by Jan Lahoda";
+        return NbBundle.getMessage(SuspiciousNamesCombination.class, "DESC_SuspiciousNamesCombination");
     }
-    
-    public Preferences getPreferences() {
-        return null;
-    }
-    
-    private JPanel panel; // For debugging purposes only 
-            
-    public synchronized JComponent getCustomizer(Preferences node) {
-        
-        if ( panel == null ) {
-            panel = new JPanel();
-            panel.setLayout(new BorderLayout());
-            panel.add( new JLabel( "Some options"), BorderLayout.NORTH );
-            panel.add( new JCheckBox( "Ignore somethig"), BorderLayout.CENTER );
-        }
-        
-        return panel;
-    }    
     
 }

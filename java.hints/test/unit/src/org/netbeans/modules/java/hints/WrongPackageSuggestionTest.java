@@ -77,15 +77,15 @@ public class WrongPackageSuggestionTest extends NbTestCase {
     }
     
     public void testEvaluate1() throws Exception {
-        performAnalysisTest("test/Test.java", "package other; public class Test{}", Collections.singletonList("0:8-0:13:verifier:Incorrect package"));
+        performAnalysisTest("test/Test.java", "package other; public class Test{}", Collections.singletonList("0:8-0:13:verifier:Incorrect Package"));
     }
     
     public void testEvaluate2() throws Exception {
-        performAnalysisTest("Test.java", "package other; public class Test{}", Collections.singletonList("0:8-0:13:verifier:Incorrect package"));
+        performAnalysisTest("Test.java", "package other; public class Test{}", Collections.singletonList("0:8-0:13:verifier:Incorrect Package"));
     }
     
     public void testEvaluate3() throws Exception {
-        performAnalysisTest("test/Test.java", "public class Test{}", Collections.singletonList("0:0-0:1:verifier:Incorrect package"));
+        performAnalysisTest("test/Test.java", "public class Test{}", Collections.singletonList("0:0-0:1:verifier:Incorrect Package"));
     }
     
     public void testEvaluate4() throws Exception {

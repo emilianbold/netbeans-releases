@@ -65,30 +65,6 @@ public class AssignResultToVariableTest extends NbTestCase {
         super.setUp();
     }
     
-    public void testNameGuess1() throws Exception {
-        performNameGuessTest("package test; public class Test {public void t() {toString();}}", 54, "toString");
-    }
-
-    public void testNameGuess2() throws Exception {
-        performNameGuessTest("package test; public class Test {public void t() {getX();} public int getX() {return 0;}}", 54, "x");
-    }
-    
-    public void testNameGuess3() throws Exception {
-        performNameGuessTest("package test; public class Test {public void t() {getData();} public int getData() {return 0;}}", 54, "data");
-    }
-    
-    public void testNameGuess4() throws Exception {
-        performNameGuessTest("package test; public class Test {public void t() {getProcessedData();} public int getProcessedData() {return 0;}}", 54, "processedData");
-    }
-    
-    public void testNameGuess5() throws Exception {
-        performNameGuessTest("package test; public class Test {public void t() {isEnabled();} public boolean isEnabled() {return true;}}", 54, "enabled");
-    }
-    
-    public void testNameGuess6() throws Exception {
-        performNameGuessTest("package test; public class Test {public void t() {get();} public int get() {return 0;}}", 52, "get");
-    }
-    
     public void testDoNothingForVoidReturnType() throws Exception {
         performTestAnalysisTest("package test; public class Test {public void t() {get();} public void get() {}}", 51, Collections.<String>emptyList());
     }
@@ -131,16 +107,6 @@ public class AssignResultToVariableTest extends NbTestCase {
     }
     
     private CompilationInfo info;
-    
-    private void performNameGuessTest(String code, int position, String desiredName) throws Exception {
-        prepareTest(code);
-        
-        TreePath tp = info.getTreeUtilities().pathFor(position);
-        
-        String name = AssignResultToVariable.guessName(info, tp);
-        
-        assertEquals(desiredName, name);
-    }
     
     private void performTestAnalysisTest(String code, int offset, List<String> golden) throws Exception {
         prepareTest(code);

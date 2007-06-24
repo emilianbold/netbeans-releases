@@ -57,7 +57,7 @@ import org.openide.util.NbBundle;
  */
 public class Imports extends AbstractHint implements  PreferenceChangeListener {
   
-    private static final String DEFAULT_PACKAGE = "java.lang";
+    private static final String DEFAULT_PACKAGE = "java.lang"; // NOI18N
     private static final List<Fix> NO_FIXES = Collections.<Fix>emptyList();
     
     private static Imports delegate; // Always of kind null

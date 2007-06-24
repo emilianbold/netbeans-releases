@@ -97,7 +97,7 @@ public class WrongStringComparison extends AbstractHint {
     }
     
     public String getId() {
-        return "Wrong_String_Comparison";
+        return "Wrong_String_Comparison"; // NOI18N
     }
 
     public String getDisplayName() {

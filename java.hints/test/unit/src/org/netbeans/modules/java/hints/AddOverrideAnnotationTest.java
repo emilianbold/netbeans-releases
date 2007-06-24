@@ -39,7 +39,7 @@ public class AddOverrideAnnotationTest extends TreeRuleTestBase {
     }
     
     public void testAddOverride1() throws Exception {
-        performAnalysisTest("test/Test.java", "package test; public class Test extends java.util.ArrayList {public int size() {return 0;}}", 121-48, "0:72-0:76:verifier:Add Override Annotation");
+        performAnalysisTest("test/Test.java", "package test; public class Test extends java.util.ArrayList {public int size() {return 0;}}", 121-48, "0:72-0:76:verifier:Add @Override Annotation");
     }
 
     public void testAddOverride2() throws Exception {
@@ -48,7 +48,7 @@ public class AddOverrideAnnotationTest extends TreeRuleTestBase {
     
     public void testAddOverride3() throws Exception {
         sourceLevel = "1.6";
-        performAnalysisTest("test/Test.java", "package test; public class Test implements Runnable {public void run() {}}", 115-48, "0:65-0:68:verifier:Add Override Annotation");
+        performAnalysisTest("test/Test.java", "package test; public class Test implements Runnable {public void run() {}}", 115-48, "0:65-0:68:verifier:Add @Override Annotation");
     }
     
     public void testAddOverride4() throws Exception {

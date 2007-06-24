@@ -56,6 +56,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -105,7 +106,7 @@ public class WrongPackageSuggestion extends AbstractHint {
         ClassPath cp = info.getClasspathInfo().getClassPath(PathKind.SOURCE);
         
         if (cp == null || !cp.isResourceVisible(info.getFileObject())) {
-            Logger.getLogger(WrongPackageSuggestion.class.getName()).log(Level.INFO, "source cp is either null or does not contain the compiled source cp={0}", cp);
+            Logger.getLogger(WrongPackageSuggestion.class.getName()).log(Level.INFO, "source cp is either null or does not contain the compiled source cp={0}", cp); // NOI18N
             return null;
         }
         
@@ -130,7 +131,9 @@ public class WrongPackageSuggestion extends AbstractHint {
             return null;
         
         List<Fix> fixes = Arrays.<Fix>asList(/*new MoveToCorrectPlace(info.getFileObject(), cp, packageName), */new CorrectPackageDeclarationFix(info.getFileObject(), packageLocation));
-        return Collections.singletonList(ErrorDescriptionFactory.createErrorDescription(getSeverity().toEditorSeverity(), "Incorrect package", fixes, info.getFileObject(), (int) startPos, (int) endPos));
+        String description = NbBundle.getMessage(WrongPackageSuggestion.class, "HINT_WrongPackage");
+        
+        return Collections.singletonList(ErrorDescriptionFactory.createErrorDescription(getSeverity().toEditorSeverity(), description, fixes, info.getFileObject(), (int) startPos, (int) endPos));
     }
 
     public void cancel() {
@@ -142,11 +145,11 @@ public class WrongPackageSuggestion extends AbstractHint {
     }
 
     public String getDisplayName() {
-        return "Wrong Package";
+        return NbBundle.getMessage(WrongPackageSuggestion.class, "DN_WrongPackage");
     }
 
     public String getDescription() {
-        return "Wrong Package by Jan Lahoda";
+        return NbBundle.getMessage(WrongPackageSuggestion.class, "DESC_WrongPackage");
     }
     
     public Preferences getPreferences() {
@@ -175,7 +178,7 @@ public class WrongPackageSuggestion extends AbstractHint {
         }
         
         public String getText() {
-            return "Move class to correct folder";
+            return NbBundle.getMessage(WrongPackageSuggestion.class, "FIX_WrongPackageMove");
         }
         
         public ChangeInfo implement() {
@@ -186,7 +189,7 @@ public class WrongPackageSuggestion extends AbstractHint {
                 FileObject packFile = root.getFileObject(path);
                 
                 if (packFile != null && !packFile.isFolder()) {
-                    NotifyDescriptor nd = new NotifyDescriptor.Message("Cannot move the source, the target path already exists and is not a folder.", NotifyDescriptor.Message.ERROR_MESSAGE);
+                    NotifyDescriptor nd = new NotifyDescriptor.Message(NbBundle.getMessage(WrongPackageSuggestion.class, "ERR_CannotMoveAlreadyExists"), NotifyDescriptor.Message.ERROR_MESSAGE);
                     
                     DialogDisplayer.getDefault().notifyLater(nd);
                     
@@ -200,11 +203,11 @@ public class WrongPackageSuggestion extends AbstractHint {
                 
                 fileDO.move(folder);
             } catch (IllegalArgumentException e) {
-                Exceptions.attachLocalizedMessage(e, "Cannot move the source.");
+                Exceptions.attachLocalizedMessage(e, NbBundle.getMessage(WrongPackageSuggestion.class, "ERR_CannotMove"));
                 ErrorManager.getDefault().notify(ErrorManager.USER, e);
                 Logger.getLogger(WrongPackageSuggestion.class.getName()).log(Level.INFO, null, e);
             } catch (IOException e ) {
-                Exceptions.attachLocalizedMessage(e, "Cannot move the source.");
+                Exceptions.attachLocalizedMessage(e, NbBundle.getMessage(WrongPackageSuggestion.class, "ERR_CannotMove"));
                 ErrorManager.getDefault().notify(ErrorManager.USER, e);
                 Logger.getLogger(WrongPackageSuggestion.class.getName()).log(Level.INFO, null, e);
             }
@@ -224,7 +227,7 @@ public class WrongPackageSuggestion extends AbstractHint {
         }
         
         public String getText() {
-            return packageName.length() == 0 ? "Remove package declaration" : "Change package declaration to " + packageName;
+            return NbBundle.getMessage(WrongPackageSuggestion.class, "FIX_WrongPackageFix", packageName.length() == 0 ? 0 : 1, packageName);
         }
         
         public ChangeInfo implement() {
