@@ -25,6 +25,7 @@ import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Insets;
 import java.awt.Paint;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.geom.Area;
@@ -33,9 +34,12 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import javax.swing.Action;
 import javax.swing.ImageIcon;
+import org.netbeans.api.visual.action.ActionFactory;
+import org.netbeans.api.visual.action.SelectProvider;
 import org.netbeans.api.visual.border.Border;
 import org.netbeans.api.visual.border.BorderFactory;
 import org.netbeans.api.visual.layout.LayoutFactory;
+import org.netbeans.api.visual.model.ObjectState;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 
@@ -103,7 +107,8 @@ public class ButtonWidget extends Widget implements PropertyChangeListener{
         button.setBorder(BorderFactory.createEmptyBorder(4));
         setLayout(LayoutFactory.createHorizontalFlowLayout(
                 LayoutFactory.SerialAlignment.CENTER, 4));
-        getActions().addAction(DefaultButtonActionProvider.DEFAULT_BUTTON_ACTION);
+        getActions().addAction(ActionFactory.createSelectAction(ButtonSelectProvider.DEFAULT));
+        getActions().addAction(scene.createWidgetHoverAction());
     }
     
     
@@ -213,10 +218,24 @@ public class ButtonWidget extends Widget implements PropertyChangeListener{
         return (String)action.getValue(Action.ACTION_COMMAND_KEY);
     }
     
+    protected void notifyStateChanged(ObjectState previousState, ObjectState state) {
+        if (previousState.isWidgetAimed() != state.isWidgetAimed() ||
+                previousState.isWidgetHovered() != state.isWidgetHovered())
+            revalidate(true);
+    }
+    
+    /**
+     * Subclasses may override this.
+     * @see SelectProvider.isAimingAllowed
+     */
+    protected boolean isAimingAllowed() {
+        return true;
+    }
+    
     private static ImageLabelWidget createImageLabelWidget(Scene scene, Action action) {
         String label = (String)action.getValue(Action.NAME);
-//        Object icon = action.getValue(Action.SMALL_ICON);
-//        Image image = icon instanceof ImageIcon ? ((ImageIcon)icon).getImage(): null;
+        //        Object icon = action.getValue(Action.SMALL_ICON);
+        //        Image image = icon instanceof ImageIcon ? ((ImageIcon)icon).getImage(): null;
         return new ImageLabelWidget(scene,null,label);
     }
     
@@ -299,26 +318,25 @@ public class ButtonWidget extends Widget implements PropertyChangeListener{
     private static final Color BACKGROUND_COLOR_PRESSED = new Color(0xCCCCCC);
     private static final Color BACKGROUND_COLOR_DISABLED = new Color(0xE4E4E4);
     
-    final static class DefaultButtonActionProvider implements ButtonProvider {
-
-        public static ButtonAction DEFAULT_BUTTON_ACTION = 
-                new ButtonAction(new DefaultButtonActionProvider());
+    private final static class ButtonSelectProvider implements SelectProvider {
         
-        public DefaultButtonActionProvider() {
+        public static ButtonSelectProvider DEFAULT = new ButtonSelectProvider();
+        
+        public ButtonSelectProvider() {
         }
-
-        public void performAction(Widget widget) {
-            if(widget instanceof ButtonWidget) {
+        
+        public boolean isAimingAllowed(Widget widget, Point localLocation, boolean invertSelection) {
+            return widget instanceof ButtonWidget && ((ButtonWidget)widget).
+                    isAimingAllowed() && widget.isHitAt(localLocation);
+        }
+        
+        public boolean isSelectionAllowed(Widget widget, Point localLocation, boolean invertSelection) {
+            return widget instanceof ButtonWidget && widget.isHitAt(localLocation);
+        }
+        
+        public void select(Widget widget, Point localLocation, boolean invertSelection) {
+            if(widget instanceof ButtonWidget && widget.isHitAt(localLocation))
                 ((ButtonWidget)widget).performAction();
-            }
-        }
-
-        public boolean isAimingAllowed(Widget widget) {
-            return widget instanceof ButtonWidget;
-        }
-
-        public boolean isHoveringAllowed(Widget widget) {
-            return widget instanceof ButtonWidget;
         }
         
     }
