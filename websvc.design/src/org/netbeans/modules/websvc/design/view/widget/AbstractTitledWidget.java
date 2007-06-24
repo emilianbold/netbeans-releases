@@ -29,12 +29,8 @@ import java.awt.geom.RoundRectangle2D;
 import org.netbeans.api.visual.border.BorderFactory;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.model.ObjectScene;
-import org.netbeans.api.visual.model.ObjectSceneEvent;
-import org.netbeans.api.visual.model.ObjectSceneEventType;
-import org.netbeans.api.visual.model.ObjectSceneListener;
 import org.netbeans.api.visual.model.ObjectState;
 import org.netbeans.api.visual.widget.Widget;
-import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.SeparatorWidget;
 import org.netbeans.modules.websvc.design.view.layout.LeftRightLayout;
 
@@ -60,7 +56,6 @@ public abstract class AbstractTitledWidget extends Widget implements ExpandableW
     private int depth = radius/3;
     
     private boolean expanded;
-    private ObjectSceneListener objectSceneListener;
     private transient HeaderWidget headerWidget;
     private transient Widget seperatorWidget;
     private transient Widget contentWidget;
@@ -93,7 +88,7 @@ public abstract class AbstractTitledWidget extends Widget implements ExpandableW
         this.cgap = cgap;
         depth = radius/3;
         setLayout(LayoutFactory.createVerticalFlowLayout(LayoutFactory.SerialAlignment.JUSTIFY, 0));
-        setBorder(new RoundedBorder3D(radius, depth, 0, 0, borderColor));
+        setBorder(new RoundedBorder3D(this,radius, depth, 0, 0, borderColor));
         headerWidget = new HeaderWidget(getScene(), this);
         headerWidget.setBorder(BorderFactory.createEmptyBorder(hgap, hgap/2));
         headerWidget.setLayout(new LeftRightLayout(32));
@@ -218,20 +213,6 @@ public abstract class AbstractTitledWidget extends Widget implements ExpandableW
         final Object key = hashKey();
         if(key!=null) {
             getObjectScene().addObject(key, this);
-            objectSceneListener = new ObjectSceneAdapter() {
-                public void objectStateChanged(ObjectSceneEvent event, 
-                        Object changedObject, ObjectState previousState, 
-                        ObjectState newState) {
-                    if(changedObject==key && 
-                            previousState.isSelected()!=newState.isSelected() &&
-                            getBorder() instanceof Selectable) {
-                        ((Selectable)getBorder()).setSelected(newState.isSelected());
-                        repaint();
-                    }
-                }
-            };
-            getObjectScene().addObjectSceneListener(objectSceneListener, 
-                    ObjectSceneEventType.OBJECT_STATE_CHANGED);
         }
     }
     
@@ -240,11 +221,12 @@ public abstract class AbstractTitledWidget extends Widget implements ExpandableW
         Object key = hashKey();
         if(key!=null&&getObjectScene().isObject(key)) {
             getObjectScene().removeObject(key);
-            if(objectSceneListener!=null) {
-                getObjectScene().removeObjectSceneListener(objectSceneListener, 
-                    ObjectSceneEventType.OBJECT_STATE_CHANGED);
-            }
         }
+    }
+    
+    protected void notifyStateChanged(ObjectState previousState, ObjectState state) {
+        if (previousState.isSelected() != state.isSelected())
+            revalidate(true);
     }
     
     protected ObjectScene getObjectScene() {

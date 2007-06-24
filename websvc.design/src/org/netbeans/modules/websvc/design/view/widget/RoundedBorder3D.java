@@ -18,10 +18,15 @@
  */
 package org.netbeans.modules.websvc.design.view.widget;
 
+import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.Insets;
+import java.awt.Paint;
+import java.awt.Rectangle;
 import org.netbeans.api.visual.border.Border;
-import java.awt.*;
 import java.awt.geom.Area;
 import java.awt.geom.RoundRectangle2D;
+import org.netbeans.api.visual.widget.Widget;
 
 /**
  * @author David Kaspar
@@ -31,6 +36,7 @@ public class RoundedBorder3D implements Border, Selectable {
     private static final Color SHADOW_COLOR = new Color(208,208,208);
     private static final Color SELECTED_BORDER_COLOR = new Color(255,153,0);
    
+    private Widget widget;
     private int radius;
     private int insetWidth;
     private int insetHeight;
@@ -46,7 +52,8 @@ public class RoundedBorder3D implements Border, Selectable {
      * @param insetHeight
      * @param drawColor
      */
-    public RoundedBorder3D(int radius, int depth, int insetWidth, int insetHeight, Color drawColor) {
+    public RoundedBorder3D(Widget widget, int radius, int depth, int insetWidth, int insetHeight, Color drawColor) {
+        this.widget = widget;
         this.radius = radius;
         this.depth = depth;
         this.insetWidth = insetWidth;
@@ -74,7 +81,7 @@ public class RoundedBorder3D implements Border, Selectable {
             gr.setPaint(drawColor);
             gr.draw(rect);
         }
-        if(selected) {
+        if(widget.getState().isSelected()) {
             gr.setPaint(SELECTED_BORDER_COLOR);
             gr.draw(rect);
         }
