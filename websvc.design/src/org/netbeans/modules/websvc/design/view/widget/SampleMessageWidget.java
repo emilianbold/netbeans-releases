@@ -139,8 +139,9 @@ public class SampleMessageWidget extends AbstractTitledWidget {
         getHeaderWidget().setLayout(new CenterRightLayout(32));
         getHeaderWidget().setBorder(BorderFactory.createEmptyBorder(12, 6));
 
-        headerLabelWidget = new ImageLabelWidget(scene, null, operation.getOperationName()+":"+type.getTitle());
+        headerLabelWidget = new ImageLabelWidget(scene, null, operation.getOperationName()+": ",type.getTitle());
         headerLabelWidget.getLabelWidget().setFont(scene.getFont().deriveFont(Font.BOLD));
+        headerLabelWidget.getCommentWidget().setPaintAsDisabled(false);
         headerLabelWidget.setLabelForeground(type.getBorderColor());
         getHeaderWidget().addChild(headerLabelWidget);
         buttons = new Widget(getScene());
@@ -149,6 +150,7 @@ public class SampleMessageWidget extends AbstractTitledWidget {
         getHeaderWidget().addChild(buttons);
         final ButtonWidget closeButton = new ButtonWidget(getScene(), "X");
         closeButton.getButton().setLabelForeground(type.getBorderColor());
+        closeButton.getButton().setBorder(BorderFactory.createEmptyBorder(2,0));
         closeButton.setAction(new AbstractAction() {
             public void actionPerformed(ActionEvent arg0) {
                 SampleMessageWidget.this.removeFromParent();

@@ -77,6 +77,8 @@ public class TabbedPaneWidget extends Widget {
         tab.setAction(new AbstractAction() {
             public void actionPerformed(ActionEvent arg0) {
                 if(LayoutFactory.getActiveCard(contentWidget) != tabComponent) {
+                    if(selectedTab!=null)
+                        selectedTab.getButton().getLabelWidget().setFont(getScene().getFont());
                     selectedTab = tab;
                     selectedTab.getButton().getLabelWidget().setFont(getScene().getFont().deriveFont(Font.BOLD));
                     LayoutFactory.setActiveCard(contentWidget, tabComponent);

@@ -38,7 +38,6 @@ import org.netbeans.api.visual.widget.SeparatorWidget;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.modules.websvc.design.javamodel.ServiceModel;
-import org.netbeans.modules.websvc.design.view.widget.ButtonAction;
 import org.netbeans.modules.websvc.design.view.widget.OperationsWidget;
 import org.openide.filesystems.FileObject;
 
@@ -81,10 +80,7 @@ public class DesignView extends JPanel  {
         scene = new ObjectScene();
         final JComponent sceneView = scene.createView();
         zoomer = new ZoomManager(scene);
-        // add actions
-        //        scene.getActions().addAction(ActionFactory.createZoomAction());
-        //        scene.getActions().addAction(ActionFactory.createPanAction());
-        scene.getActions().addAction(ButtonAction.DEFAULT);
+
         mainLayer = new LayerWidget(scene);
         mainLayer.setPreferredLocation(new Point(0, 0));
         mainLayer.setLayout(LayoutFactory.createVerticalFlowLayout(

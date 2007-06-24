@@ -20,16 +20,13 @@
 package org.netbeans.modules.websvc.design.view.widget;
 
 import java.awt.Color;
-import java.awt.Graphics2D;
-import java.awt.Image;
-import java.awt.Insets;
-import java.awt.RenderingHints;
+import java.awt.Font;
 import java.awt.event.ActionEvent;
-import java.awt.geom.GeneralPath;
-import java.awt.image.BufferedImage;
 import java.util.Map;
 import java.util.WeakHashMap;
 import javax.swing.AbstractAction;
+import org.netbeans.api.visual.border.BorderFactory;
+import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.Scene;
 
 /**
@@ -47,11 +44,9 @@ import org.netbeans.api.visual.widget.Scene;
  */
 public class ExpanderWidget extends ButtonWidget {
     /** The expand button image. */
-    private static final Image IMAGE_EXPAND = new BufferedImage(12, 12,
-            BufferedImage.TYPE_INT_ARGB);
+    private static final String IMAGE_EXPAND = ">";
     /** The collapse button image. */
-    private static final Image IMAGE_COLLAPSE = new BufferedImage(12, 12,
-            BufferedImage.TYPE_INT_ARGB);
+    private static final String IMAGE_COLLAPSE = "<";
     /** Cache of the expanded state of ExpandableWidget instances. This
      * is used to restore the original state of an expandable if it is
      * created again, say as a result of an undo/redo operation. */
@@ -61,44 +56,6 @@ public class ExpanderWidget extends ButtonWidget {
 
     static {
         expandedCache = new WeakHashMap<Object, Boolean>();
-
-        // Create the expand image.
-        Graphics2D g2 = ((BufferedImage) IMAGE_EXPAND).createGraphics();
-        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-                RenderingHints.VALUE_ANTIALIAS_ON);
-        float w = IMAGE_EXPAND.getWidth(null);
-        float h = IMAGE_EXPAND.getHeight(null);
-        float r = Math.min(w, h) * 0.5f * 0.75f;
-        GeneralPath gp = new GeneralPath();
-        float dx = (float) (r * Math.cos(Math.toRadians(-30)));
-        float dy = (float) (r * Math.sin(Math.toRadians(-30)));
-        gp.moveTo(dx, dy);
-        gp.lineTo(0, r);
-        gp.lineTo(-dx, dy);
-        gp.lineTo(dx, dy);
-        gp.closePath();
-        g2.translate(w / 2, h / 2);
-        g2.setPaint(new Color(0x888888));
-        g2.fill(gp);
-
-        // Create the collapse image.
-        g2 = ((BufferedImage) IMAGE_COLLAPSE).createGraphics();
-        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-                RenderingHints.VALUE_ANTIALIAS_ON);
-        w = IMAGE_COLLAPSE.getWidth(null);
-        h = IMAGE_COLLAPSE.getHeight(null);
-        r = Math.min(w, h) * 0.5f * 0.75f;
-        gp = new GeneralPath();
-        dx = (float) (r * Math.cos(Math.toRadians(30)));
-        dy = (float) (r * Math.sin(Math.toRadians(30)));
-        gp.moveTo(dx, dy);
-        gp.lineTo(0, -r);
-        gp.lineTo(-dx, dy);
-        gp.lineTo(dx, dy);
-        gp.closePath();
-        g2.translate(w / 2, h / 2);
-        g2.setPaint(new Color(0x888888));
-        g2.fill(gp);
     }
 
     /**
@@ -112,6 +69,12 @@ public class ExpanderWidget extends ButtonWidget {
             boolean expanded) {
         super(scene, expanded ? IMAGE_COLLAPSE : IMAGE_EXPAND);
         this.expandable = expandable;
+        getButton().setBorder(BorderFactory.createEmptyBorder(0, 4));
+        LabelWidget lbl = getButton().getLabelWidget();
+        lbl.setOrientation(LabelWidget.Orientation.ROTATE_90);
+        lbl.setFont(scene.getFont().deriveFont(Font.BOLD,
+                scene.getFont().getSize2D()*1.5f));
+        lbl.setForeground(Color.GRAY);
         setAction(new AbstractAction() {
             public void actionPerformed(ActionEvent arg0) {
                 ExpanderWidget.this.expandable.setExpanded(
@@ -144,7 +107,7 @@ public class ExpanderWidget extends ButtonWidget {
     public void setExpanded(boolean expanded) {
         // Save the state of the expandable in case it gets recreated later.
         expandedCache.put(expandable.hashKey(), Boolean.valueOf(expanded));
-        setImage(expanded ? IMAGE_COLLAPSE : IMAGE_EXPAND);
+        getButton().setLabel(expanded?IMAGE_COLLAPSE:IMAGE_EXPAND);
     }
 
 }

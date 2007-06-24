@@ -86,9 +86,9 @@ public class CheckBoxWidget extends ButtonWidget {
         }
     }
     
-    public void actionPerformed() {
+    public void performAction() {
         setSelected(!isSelected());
-        super.actionPerformed();
+        super.performAction();
     }
     
     public String getActionCommand() {

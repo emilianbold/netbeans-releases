@@ -27,6 +27,7 @@ import java.awt.Insets;
 import java.awt.Paint;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
+import java.awt.geom.Area;
 import java.awt.geom.RoundRectangle2D;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -45,9 +46,7 @@ public class ButtonWidget extends Widget implements PropertyChangeListener{
     
     private ImageLabelWidget button;
     private Action action;
-    private Insets margin = new Insets(2, 2, 2, 2);
-    private boolean rollover = false;
-    private boolean pressed = false;
+    private Insets margin = new Insets(3, 3, 3, 3);
     
     /**
      *
@@ -104,7 +103,7 @@ public class ButtonWidget extends Widget implements PropertyChangeListener{
         button.setBorder(BorderFactory.createEmptyBorder(4));
         setLayout(LayoutFactory.createHorizontalFlowLayout(
                 LayoutFactory.SerialAlignment.CENTER, 4));
-        getActions().addAction(ButtonAction.DEFAULT);
+        getActions().addAction(DefaultButtonActionProvider.DEFAULT_BUTTON_ACTION);
     }
     
     
@@ -198,49 +197,10 @@ public class ButtonWidget extends Widget implements PropertyChangeListener{
         return getButton().isEnabled();
     }
     
-    protected boolean isPressed() {
-        return pressed;
-    }
-    
-    protected  void setPressed(boolean flag) {
-        if(flag!=pressed) {
-            pressed = flag;
-            repaint();
-        }
-    }
-    
-    protected boolean isRolledOver() {
-        return rollover;
-    }
-    
-    protected  void setRolledOver(boolean flag) {
-        if(flag!=rollover) {
-            rollover = flag;
-            repaint();
-        }
-    }
-    
-    public void updateState(ButtonAction.ButtonState state, boolean buttonClicked) {
-        switch (state) {
-        case FOCUS_GAINED:
-            if(!isRolledOver()) setRolledOver(true);
-            break;
-        case FOCUS_LOST:
-            if(isRolledOver()) setRolledOver(false);
-            break;
-        case PRESSED:
-            if(!isPressed()) setPressed(true);
-            break;
-        case RELEASED:
-            if(isPressed()) setPressed(false);
-            if(buttonClicked) actionPerformed();
-            break;
-        }
-    }
     /**
      * Called when mouse is clicked on the widget.
      */
-    public void actionPerformed() {
+    public void performAction() {
         //simply delegate to swing action
         if(isButtonEnabled() && action!=null) {
             action.actionPerformed(new ActionEvent(this,0, getActionCommand()));
@@ -277,11 +237,11 @@ public class ButtonWidget extends Widget implements PropertyChangeListener{
             Paint oldPaint = g2.getPaint();
             
             RoundRectangle2D buttonRect = new RoundRectangle2D.Double
-                    (rect.x+0.5, rect.y+0.5, rect.width-1, rect.height-1, 6, 6);
+                    (rect.x+0.5f, rect.y+0.5f, rect.width-1f, rect.height-1f, 6, 6);
             if (button.isButtonEnabled()) {
                 
-                if (button.isPressed()) {
-                    g2.setPaint(new Color(0xCCCCCC));
+                if (button.getState().isWidgetAimed()) {
+                    g2.setPaint(BACKGROUND_COLOR_PRESSED);
                     g2.fill(buttonRect);
                 } else if (button.isOpaque()){
                     g2.setPaint(new GradientPaint(
@@ -292,17 +252,18 @@ public class ButtonWidget extends Widget implements PropertyChangeListener{
                 }
                 
                 g2.setPaint(BORDER_COLOR);
-                if (button.isRolledOver()) {
+                if (button.getState().isHovered()) {
                     g2.setPaint(BORDER_COLOR);
-                    g2.draw(new RoundRectangle2D.Double(rect.x + 1.5, rect.y + 1.5,
-                            rect.width - 3, rect.height - 3, 3, 3));
+                    Area s = new Area(buttonRect);
+                    s.subtract(new Area(new RoundRectangle2D.Double(rect.x + 1.75f, rect.y + 1.75f,
+                            rect.width - 3f, rect.height - 3f, 6, 6)));
+                    g2.fill(s);
                 }
                 g2.draw(buttonRect);
             } else {
                 if(button.isOpaque()) {
                     g2.setPaint(BACKGROUND_COLOR_DISABLED);
                     g2.fill(buttonRect);
-                    
                 }
                 g2.setPaint(grayFilter(BORDER_COLOR));
                 g2.draw(buttonRect);
@@ -335,6 +296,30 @@ public class ButtonWidget extends Widget implements PropertyChangeListener{
     private static final Color BORDER_COLOR = new Color(0x7F9DB9);
     private static final Color BACKGROUND_COLOR_1 = new Color(0xD2D2DD);
     private static final Color BACKGROUND_COLOR_2 = new Color(0xF8F8F8);
+    private static final Color BACKGROUND_COLOR_PRESSED = new Color(0xCCCCCC);
     private static final Color BACKGROUND_COLOR_DISABLED = new Color(0xE4E4E4);
     
+    final static class DefaultButtonActionProvider implements ButtonProvider {
+
+        public static ButtonAction DEFAULT_BUTTON_ACTION = 
+                new ButtonAction(new DefaultButtonActionProvider());
+        
+        public DefaultButtonActionProvider() {
+        }
+
+        public void performAction(Widget widget) {
+            if(widget instanceof ButtonWidget) {
+                ((ButtonWidget)widget).performAction();
+            }
+        }
+
+        public boolean isAimingAllowed(Widget widget) {
+            return widget instanceof ButtonWidget;
+        }
+
+        public boolean isHoveringAllowed(Widget widget) {
+            return widget instanceof ButtonWidget;
+        }
+        
+    }
 }

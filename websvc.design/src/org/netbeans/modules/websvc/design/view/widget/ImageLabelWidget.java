@@ -94,6 +94,9 @@ public class ImageLabelWidget extends Widget {
         if(labelWidget!=null) {
             labelWidget.setForeground(forground);
         }
+        if(commentWidget!=null) {
+            commentWidget.setForeground(forground);
+        }
     }
     
     public void setLabel(String label) {
@@ -118,6 +121,10 @@ public class ImageLabelWidget extends Widget {
     
     public LabelWidget getLabelWidget() {
         return labelWidget;
+    }
+    
+    public LabelWidget getCommentWidget() {
+        return commentWidget;
     }
     
     public void setImage(Image image) {
