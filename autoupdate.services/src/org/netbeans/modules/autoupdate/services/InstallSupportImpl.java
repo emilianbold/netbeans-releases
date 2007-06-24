@@ -81,6 +81,7 @@ public class InstallSupportImpl {
     public static final String NBM_EXTENTSION = ".nbm";
     private Map<UpdateElementImpl, File> element2Clusters;
     private boolean isGlobal;
+    private int wasDownloaded = 0;
     
     private static enum STEP {
         NOTSTARTED,
@@ -148,6 +149,7 @@ public class InstallSupportImpl {
                 }
                 
                 assert size == aggregateDownload : "Was downloaded " + aggregateDownload + ", planned was " + size;
+                wasDownloaded = aggregateDownload;
                 return true;
             }
         };
@@ -181,10 +183,10 @@ public class InstallSupportImpl {
                 
                 // start progress
                 if (progress != null) {
-                    progress.start();
+                    progress.start (wasDownloaded);
                 }
                 
-                int aggregateDownload = 0;
+                int aggregateVerified = 0;
                 
                 try {
                     for (OperationInfo info : infos) {
@@ -197,7 +199,7 @@ public class InstallSupportImpl {
                             // XXX: validation of custom installed
                             assert false : "InstallSupportImpl cannot support CustomInstaller!";
                         } else {
-                            doValidate(info, progress, aggregateDownload);
+                            aggregateVerified += doValidate (info, progress, aggregateVerified);
                         }
                     }
                 } finally {
@@ -235,6 +237,8 @@ public class InstallSupportImpl {
                 Set<ModuleUpdateElementImpl> moduleImpls = new HashSet<ModuleUpdateElementImpl> ();
                 Set<FeatureUpdateElementImpl> affectedFeatureImpls = new HashSet<FeatureUpdateElementImpl> ();
                 
+                if (progress != null) progress.start();
+                
                 for (OperationInfo info : infos) {
                     UpdateElementImpl toUpdateImpl = Trampoline.API.impl (info.getUpdateElement ());
                     switch (toUpdateImpl.getType ()) {
@@ -252,12 +256,13 @@ public class InstallSupportImpl {
                     }
                 }
                 
-                if (progress != null) progress.start();
-                
                 boolean needsRestart = false;
                 for (ModuleUpdateElementImpl moduleImpl : moduleImpls) {
                     synchronized(this) {
-                        if (currentStep == STEP.CANCEL) return false;
+                        if (currentStep == STEP.CANCEL) {
+                            if (progress != null) progress.finish ();
+                            return false;
+                        }
                     }
                     
                     // skip installed element
@@ -284,15 +289,22 @@ public class InstallSupportImpl {
                 
                 if (! needsRestart) {
                     synchronized(this) {
-                        if (currentStep == STEP.CANCEL) return false;
+                        if (currentStep == STEP.CANCEL) {
+                            if (progress != null) progress.finish ();
+                            return false;
+                        }
                     }
+                    
                     List<File> filesInstallNow = getFileForInstall(infos);
+                    
+                    if (progress != null) progress.switchToDeterminate (moduleImpls.size ());
+
                     if (! filesInstallNow.isEmpty()) {
                         
                         // XXX: should run in single Thread
                         Thread th = org.netbeans.updater.UpdaterFrame.startFromIDE(
                                 filesInstallNow.toArray(new File [0]),
-                                refreshModulesListener,
+                                new RefreshModulesListener (progress),
                                 NbBundle.getBranding());
                         
                         try {
@@ -516,32 +528,37 @@ public class InstallSupportImpl {
         return c;
     }
 
-    private void doValidate (OperationInfo info, ProgressHandle progress, final int verified) throws OperationException {
+    private int doValidate (OperationInfo info, ProgressHandle progress, final int verified) throws OperationException {
         UpdateElement toUpdateElement = info.getUpdateElement();
         UpdateElementImpl toUpdateImpl = Trampoline.API.impl (toUpdateElement);
+        int increment = 0;
         switch (toUpdateImpl.getType ()) {
         case MODULE :
-            doValidate (toUpdateImpl, progress, verified);
+            increment = doValidate (toUpdateImpl, progress, verified);
             break;
         case STANDALONE_MODULE :
         case FEATURE :
             FeatureUpdateElementImpl toUpdateFeatureImpl = (FeatureUpdateElementImpl) toUpdateImpl;
             Set<ModuleUpdateElementImpl> moduleImpls = toUpdateFeatureImpl.getContainedModuleElements ();
+            int nestedVerified = verified;
             for (ModuleUpdateElementImpl moduleImpl : moduleImpls) {
                 // skip installed element
                 if (Utilities.isElementInstalled (moduleImpl.getUpdateElement ())) {
                     continue;
                 }
-                doValidate (moduleImpl, progress, verified);
+                int singleIncrement = doValidate (moduleImpl, progress, nestedVerified);
+                nestedVerified += singleIncrement;
+                increment += singleIncrement;
             }
             break;
         default:
             // XXX: what other types
             assert false : "Unsupported type " + toUpdateImpl;
         }
+        return increment;
     }
     
-    private void doValidate (UpdateElementImpl toUpdateImpl, ProgressHandle progress, final int verified) throws OperationException {
+    private int doValidate (UpdateElementImpl toUpdateImpl, ProgressHandle progress, final int verified) throws OperationException {
         UpdateElement installed = toUpdateImpl.getUpdateUnit ().getInstalled ();
         String status = null;
         
@@ -550,14 +567,17 @@ public class InstallSupportImpl {
 
         File dest = getDestination (targetCluster, toUpdateImpl.getCodeName());
         assert dest.exists () : dest.getAbsolutePath();        
+        
+        int wasVerified = 0;
 
         // verify
         try {
-            String label = toUpdateImpl.getDisplayName ();
-            verifyNbm (toUpdateImpl.getUpdateElement (), dest, progress, verified, label);
+            wasVerified = verifyNbm (toUpdateImpl.getUpdateElement (), dest, progress, verified);
         } catch (Exception x) {
             err.log (Level.INFO, x.getMessage (), x);
         }
+        
+        return wasVerified;
     }
     
     private File getDestination (ModuleUpdateElementImpl impl) {
@@ -644,10 +664,14 @@ public class InstallSupportImpl {
         return estimatedSize;
     }
     
-    private void verifyNbm (UpdateElement el, File nbmFile, ProgressHandle progress, int verified, String label) {
+    private int verifyNbm (UpdateElement el, File nbmFile, ProgressHandle progress, int verified) {
         String res = null;
         try {
-            Collection<Certificate> nbmCerts = getNbmCertificates (nbmFile, progress, verified, label);
+            verified += el.getDownloadSize ();
+            if (progress != null) {
+                progress.progress (el.getDisplayName (), verified < wasDownloaded ? verified : wasDownloaded);
+            }
+            Collection<Certificate> nbmCerts = getNbmCertificates (nbmFile);
             assert nbmCerts != null;
             if (nbmCerts.size () > 0) {
                 certs.put (el, nbmCerts);
@@ -678,6 +702,7 @@ public class InstallSupportImpl {
         }
         
         err.log (Level.FINE, "NBM " + nbmFile + " was verified as " + res);
+        return el.getDownloadSize ();
     }
     
     private static Collection<Certificate> getCertificates (KeyStore keyStore) throws KeyStoreException {
@@ -688,16 +713,13 @@ public class InstallSupportImpl {
         return certs;
     }
     
-    private static Collection<Certificate> getNbmCertificates (File nbmFile,
-            ProgressHandle progress,
-            int verified,
-            String label) throws IOException {
+    private static Collection<Certificate> getNbmCertificates (File nbmFile) throws IOException {
         
         JarFile jf = new JarFile (nbmFile);
         
         Set<Certificate> certs = new HashSet<Certificate> ();
         for (JarEntry entry : Collections.list (jf.entries ())) {
-            verifyEntry (jf, entry, progress, verified, label);
+            verifyEntry (jf, entry);
             if (entry.getCertificates () != null) {
                 certs.addAll (Arrays.asList(entry.getCertificates ()));
             }
@@ -709,26 +731,19 @@ public class InstallSupportImpl {
     /**
      * @throws SecurityException
      */
-    private static int verifyEntry (JarFile jf, JarEntry je, ProgressHandle progress, int verified, String label) throws IOException {
+    private static void verifyEntry (JarFile jf, JarEntry je) throws IOException {
         InputStream is = null;
         try {
             is = jf.getInputStream (je);
             byte[] buffer = new byte[8192];
             int n;
-            // we just read. this will throw a SecurityException
             int c = 0;
-            while ((n = is.read (buffer, 0, buffer.length)) != -1) {
-                c += n;
-                if (c > 1024) {
-                    verified += c;
-                    if (progress != null) progress.progress (label);
-                }
-            }
+            while ((n = is.read (buffer, 0, buffer.length)) != -1);
         } finally {
             if (is != null) is.close ();
         }
         
-        return verified;
+        return;
     }
     
     private boolean needsRestart (boolean isUpdate, UpdateElementImpl toUpdateImpl, File dest) {
@@ -764,16 +779,32 @@ public class InstallSupportImpl {
         return res;
     }
     
-    private static final PropertyChangeListener refreshModulesListener = new PropertyChangeListener() {
+    private static final class RefreshModulesListener implements PropertyChangeListener  {
+        private ProgressHandle handle;
+        private int i;
+        
+        public RefreshModulesListener (ProgressHandle handle) {
+            this.handle = handle;
+            this.i = 0;
+        }
+        
         public void propertyChange(PropertyChangeEvent arg0) {
-            // XXX: the modules list should be refresh automatically when config/Modules/ changes
-            FileObject modulesRoot = Repository.getDefault().getDefaultFileSystem().findResource("Modules"); // NOI18N
-            err.log(Level.FINE,
-                    "It\'s a hack: Call refresh on " + modulesRoot +
-                    " file object.");
-            if (modulesRoot != null) {
-                modulesRoot.getParent().refresh();
-                modulesRoot.refresh();
+            if (org.netbeans.updater.UpdaterFrame.RUNNING.equals (arg0.getPropertyName ())) {
+                if (handle != null) {
+                    handle.progress (i++);
+                }
+            } else if (org.netbeans.updater.UpdaterFrame.FINISHED.equals (arg0.getPropertyName ())){
+                // XXX: the modules list should be refresh automatically when config/Modules/ changes
+                FileObject modulesRoot = Repository.getDefault().getDefaultFileSystem().findResource("Modules"); // NOI18N
+                err.log(Level.FINE,
+                        "It\'s a hack: Call refresh on " + modulesRoot +
+                        " file object.");
+                if (modulesRoot != null) {
+                    modulesRoot.getParent().refresh();
+                    modulesRoot.refresh();
+                }
+            } else {
+                assert false : "Unknown property " + arg0.getPropertyName ();
             }
         }
     };

@@ -21,6 +21,7 @@ package org.netbeans.modules.autoupdate.updateprovider;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -49,7 +50,7 @@ public class InstalledModuleProvider implements InstalledUpdateProvider {
     private Map<String, ModuleInfo> getModuleInfos (boolean force) {
         if (moduleInfos == null || force) {
             moduleInfos = new HashMap<String, ModuleInfo> ();
-            Collection<? extends ModuleInfo> infos = result.allInstances ();
+            Collection<? extends ModuleInfo> infos = Collections.unmodifiableCollection (result.allInstances ());
             for (ModuleInfo info: infos) {
                 moduleInfos.put (info.getCodeNameBase (), info);
             }

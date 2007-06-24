@@ -24,6 +24,7 @@ import java.util.Locale;
 import javax.swing.*;
 import java.io.*;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.net.URL;
 
 
@@ -64,6 +65,9 @@ public class UpdaterFrame extends javax.swing.JPanel {
     
     /** For external running Updater without GUI */
     private static boolean noSplash = false;
+    
+    public static final String FINISHED = "FINISHED"; // NOI18N
+    public static final String RUNNING = "RUNNING"; // NOI18N
     
     /** Creates new form UpdaterFrame */
     public UpdaterFrame() {
@@ -240,6 +244,12 @@ public class UpdaterFrame extends javax.swing.JPanel {
         return mu;
     }
     
+    void unpackingIsRunning () {
+        if (fromIDE) {
+            firePropertyChange (RUNNING, null, null);
+        }
+    }
+    
     void unpackingFinished() {
         runningFinished();
         /*
@@ -249,8 +259,8 @@ public class UpdaterFrame extends javax.swing.JPanel {
     }
 
     void runningFinished() {
-        if ( fromIDE ) {
-            firePropertyChange("FINISHED", null, null);
+        if (fromIDE) {
+            firePropertyChange (FINISHED, null, null);
             if (splashWindow != null) splashWindow.dispose();
         }
         else

@@ -272,6 +272,8 @@ public final class ModuleUpdater extends Thread {
                 UpdateTracking.Version version;
                 UpdateTracking.Module modtrack;
                 
+                UpdaterFrame.getUpdaterFrame ().unpackingIsRunning ();
+                
                 ModuleUpdate mu = null;
                 try {
                     mu = new ModuleUpdate( nbmFiles[i], fromInstall );
@@ -299,7 +301,7 @@ public final class ModuleUpdater extends Thread {
                     version = modtrack.addNewVersion (mu.getSpecification_version (), origin);
                 }
                 // input streams should be released, but following is needed
-                System.gc();
+                //System.gc();
 
                 hasMainClass = false;
                 UpdaterFrame.setLabel( Localization.getBrandedString("CTL_UnpackingFile") + "  " + nbmFiles[i].getName() ); //NOI18N

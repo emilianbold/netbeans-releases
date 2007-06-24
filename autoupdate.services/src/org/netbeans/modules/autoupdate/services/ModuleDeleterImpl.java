@@ -31,6 +31,7 @@ import java.io.InputStream;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
+import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.updater.UpdateTracking;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -84,21 +85,34 @@ public final class ModuleDeleterImpl  {
         return ! (Utilities.isFixed (m));
     }
     
-    public void delete (final ModuleInfo[] modules) throws IOException {
+    public void delete (final ModuleInfo[] modules, ProgressHandle handle) throws IOException {
         if (modules == null) {
             throw new IllegalArgumentException ("ModuleInfo argument cannot be null.");
         }
         
+        if (handle != null) {
+            handle.switchToDeterminate (modules.length + 1);
+        }
+        int i = 0;
+        
         for (ModuleInfo moduleInfo : modules) {
-            err.log(Level.FINE,"Locate and remove config file of " + moduleInfo.getCodeNameBase ());           
+            err.log(Level.FINE,"Locate and remove config file of " + moduleInfo.getCodeNameBase ());
             removeControlModuleFile(moduleInfo);
         }
 
+        if (handle != null) {
+            handle.progress (++i);
+        }
+        
         refreshModuleList ();
+        
         
         int rerunWaitCount = 0;
         for (ModuleInfo moduleInfo : modules) {
             err.log(Level.FINE, "Locate and remove config file of " + moduleInfo.getCodeNameBase ());                       
+            if (handle != null) {
+                handle.progress (moduleInfo.getDisplayName (), ++i);
+            }
             for (; rerunWaitCount < 100 && !isModuleUninstalled(moduleInfo); rerunWaitCount++) {
                 try {
                     Thread.currentThread().sleep(100);

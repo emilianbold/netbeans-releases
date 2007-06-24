@@ -194,7 +194,7 @@ public abstract class OperationSupportImpl {
                     }
                 }
                 try {
-                    deleter.delete (moduleInfos.toArray (new ModuleInfo[0]));
+                    deleter.delete (moduleInfos.toArray (new ModuleInfo[0]), progress);
                 } catch(IOException iex) {
                     throw new OperationException(OperationException.ERROR_TYPE.UNINSTALL, iex);
                 }
