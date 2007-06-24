@@ -165,7 +165,7 @@ public class LayerIndex extends Task {
             assert remaining.isEmpty() : remaining;
             for (String path : layerPaths) {
                 String cnb = files.get(path);
-                String line = String.format("%-" + maxlength + "s %s", shortenCNB(cnb), path);
+                String line = String.format("%-" + maxlength + "s %s", shortenCNB(cnb), shortenPath(path));
                 Integer pos = positions.get(path);
                 if (pos != null) {
                     line += String.format(" @%d", pos);
@@ -203,6 +203,10 @@ public class LayerIndex extends Task {
         } else {
             return "";
         }
+    }
+
+    private String shortenPath(String path) {
+        return path.replaceAll("/org-netbeans-", "/o-n-").replaceAll("/org-openide-", "/o-o-").replaceAll("-modules-", "-m-");
     }
 
     private void parse(InputStream is, final Map<String,String> files, final SortedMap<String,SortedMap<String,String>> labels,
