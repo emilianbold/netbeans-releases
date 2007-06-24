@@ -47,7 +47,6 @@ import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectUtils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.NotifyDescriptor;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.NbBundle;
 
@@ -198,6 +197,7 @@ public class ImportDataSource {
     
     /**
      * Determine if project is a legacy (Creator 2, Creator 2, NB 5.5, NB 5.5.1 project) and
+     * @param project 
      * @return return true if project is a legacy project
      */
     public static boolean isLegacyProject(Project project) {
@@ -268,29 +268,13 @@ public class ImportDataSource {
     
     
     /**
-     * Show OK/Cancel dialog that starts the migration of user settings and updating the project's data
-     * sources.  After clicking ok the progress bar will show the progress.
+     * Show OK dialog that starts the migration of user settings and updates the project's data
+     * sources.  
      * @param project  Project from which the Update action occurred
      */
     public static synchronized void showUpdate(final Project project) {
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                try {
-                    UpdateDataSourcesDialog dialog = new UpdateDataSourcesDialog(new javax.swing.JFrame(), project, true);
-                    dialog.addWindowListener(new java.awt.event.WindowAdapter() {
-                        public void windowClosing(java.awt.event.WindowEvent e) {
-                            System.exit(0);
-                        }
-                    });
-                    dialog.setVisible(true);
-                } finally {
-                    synchronized (MissingConnectionsAlertPanel.class) {
-                        brokenAlertLastTime = System.currentTimeMillis();
-                        brokenAlertShown = false;
-                    }
-                }
-            }
-        });
+         UpdateDataSourcesDialog.updateDatasources(
+                NbBundle.getMessage(ImportDataSource.class,"LBL_UpdateDatasources_Title"),org.openide.util.NbBundle.getMessage(ImportDataSource.class, "ACSD_UpdateDatasources"), project); //  NOI18N
     }
     
     /**
@@ -303,7 +287,7 @@ public class ImportDataSource {
             public void run() {
                 try {
                     WaitForUpdatePanel pleaseWait = new WaitForUpdatePanel(project);                    
-                    NotifyDescriptor nd = new NotifyDescriptor.Message(NbBundle.getMessage(WaitForUpdatePanel.class, "MSG_WaitForUpdate"), NotifyDescriptor.OK_CANCEL_OPTION); //NOI18N                    
+                    NotifyDescriptor nd = new NotifyDescriptor.Message(NbBundle.getMessage(WaitForUpdatePanel.class, "MSG_WaitForUpdate"), NotifyDescriptor.INFORMATION_MESSAGE); //NOI18N                    
                     
                     if (DialogDisplayer.getDefault().notify(nd) == NotifyDescriptor.CANCEL_OPTION) {
                         pleaseWait.setVisible(true);
