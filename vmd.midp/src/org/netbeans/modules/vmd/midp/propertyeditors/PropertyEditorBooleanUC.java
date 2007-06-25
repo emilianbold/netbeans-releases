@@ -27,16 +27,19 @@ import org.openide.awt.Mnemonics;
 import org.openide.explorer.propertysheet.InplaceEditor;
 import org.openide.util.NbBundle;
 
-import javax.swing.*;
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Graphics;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Collection;
+import javax.swing.*;
 
 /**
  *
  * @author Anton Chechel
+ * @author Karol Harezlak
  */
 public class PropertyEditorBooleanUC extends PropertyEditorUserCode implements PropertyEditorElement {
     
@@ -45,11 +48,11 @@ public class PropertyEditorBooleanUC extends PropertyEditorUserCode implements P
     private static final String TRUE_TEXT = String.valueOf(MidpTypes.getBoolean(TRUE_VALUE));
     private static final String FALSE_TEXT = String.valueOf(MidpTypes.getBoolean(FALSE_VALUE));
     
-    private String[] tags = {TRUE_TEXT, FALSE_TEXT};
+    private final String[] tags = {TRUE_TEXT, FALSE_TEXT};
     private CustomEditor customEditor;
     private JRadioButton radioButton;
     
-    private InplaceEditor inplaceEditor;
+    private BooleanInplaceEditor inplaceEditor;
     
     private PropertyEditorBooleanUC() {
         super();
@@ -58,8 +61,9 @@ public class PropertyEditorBooleanUC extends PropertyEditorUserCode implements P
         Collection<PropertyEditorElement> elements = new ArrayList<PropertyEditorElement>(1);
         elements.add(this);
         initElements(elements);
+        inplaceEditor = new BooleanInplaceEditor(this);
     }
-    
+
     public static PropertyEditorBooleanUC createInstance() {
         return new PropertyEditorBooleanUC();
     }
@@ -70,12 +74,35 @@ public class PropertyEditorBooleanUC extends PropertyEditorUserCode implements P
         customEditor = new CustomEditor();
     }
     
+    @Override
+    public InplaceEditor getInplaceEditor() {
+        return inplaceEditor;
+    }
+    
+    @Override
+    public void paintValue(Graphics gfx, Rectangle box) {
+        JComponent component = inplaceEditor.getComponent();
+        component.setSize(box.width,box.height);
+        component.doLayout();
+        component.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        Graphics g = gfx.create(box.x, box.y, box.width, box.height);
+        component.setOpaque(false);
+        component.paint(g);
+        g.dispose();
+    }
+
     public JComponent getCustomEditorComponent() {
         return customEditor;
     }
     
     public JRadioButton getRadioButton() {
         return radioButton;
+    }
+
+    @Override
+    public boolean isPaintable() {
+        PropertyValue propertyValue = (PropertyValue) getValue();
+        return propertyValue.getKind() == PropertyValue.Kind.VALUE;
     }
     
     public boolean isVerticallyResizable() {
@@ -87,9 +114,7 @@ public class PropertyEditorBooleanUC extends PropertyEditorUserCode implements P
     }
     
     public Boolean canEditAsText() {
-        if (getTags() == null)
-            return super.canEditAsText();
-        return null;
+       return super.canEditAsText();
     }
     
     public String getAsText() {
@@ -98,7 +123,6 @@ public class PropertyEditorBooleanUC extends PropertyEditorUserCode implements P
         } else if (isCurrentValueANull()) {
             return FALSE_TEXT;
         }
-        
         return MidpTypes.getBoolean((PropertyValue) super.getValue()) ? TRUE_TEXT : FALSE_TEXT;
     }
     
@@ -125,15 +149,8 @@ public class PropertyEditorBooleanUC extends PropertyEditorUserCode implements P
         }
     }
     
-    public String[] getTags() {
-        return isCurrentValueAUserCodeType() ? null : tags;
-    }
-    
     public boolean canWrite() {
-        if (!MidpPropertyEditorSupport.singleSelectionEditAsTextOnly()) {
-            return false;
-        }
-        return true;
+        return MidpPropertyEditorSupport.singleSelectionEditAsTextOnly();
     }
     
     private class CustomEditor extends JPanel implements ActionListener {
@@ -166,4 +183,6 @@ public class PropertyEditorBooleanUC extends PropertyEditorUserCode implements P
             radioButton.setSelected(true);
         }
     }
+    
+    
 }
