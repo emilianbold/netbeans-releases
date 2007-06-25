@@ -69,7 +69,7 @@ public class ManageComponentLibrariesDialog  extends org.netbeans.performance.te
     public void prepare() {
         log("::prepare");
         openNode.callPopup().pushMenuNoBlock(org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.visualweb.complib.ui.Bundle", "ComplibsRootNode.addComplibAction"));
-        parent = new NbDialogOperator(org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.visualweb.complib.ui.Bundle", "ComplibsRootNode.addComplib"));
+        parent = new NbDialogOperator(org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.visualweb.complib.ui.Bundle", "ComplibsRootNode.addComplibTitle"));
         manageComponentLibsButton = new JButtonOperator(parent,"Manage Component Libraries..."); // NOI18N
     }
 
