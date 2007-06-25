@@ -72,6 +72,7 @@ public class ValidationWarningPanel extends javax.swing.JPanel {
         taHead.setWrapStyleWord(true);
         taHead.setOpaque(false);
 
+        tpPlugins.setEditable(false);
         spPlugins.setViewportView(tpPlugins);
 
         taWarning.setEditable(false);
@@ -100,7 +101,7 @@ public class ValidationWarningPanel extends javax.swing.JPanel {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(spPlugins, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 196, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(taWarning, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 58, Short.MAX_VALUE)
+                .add(taWarning, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 58, Short.MAX_VALUE)
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
