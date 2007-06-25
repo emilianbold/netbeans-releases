@@ -13,14 +13,13 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.api.java.source.gen;
 
 import com.sun.source.tree.*;
 import java.io.File;
-import java.io.IOException;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.*;
@@ -35,7 +34,7 @@ import org.openide.filesystems.FileUtil;
  * 
  * @author Pavel Flaska
  */
-public class TryTest extends GeneratorTest {
+public class TryTest extends GeneratorTestMDRCompat {
     
     /** Creates a new instance of TryTest */
     public TryTest(String name) {
@@ -51,11 +50,14 @@ public class TryTest extends GeneratorTest {
     /**
      * Renames variable in try body.
      */ 
+    @SuppressWarnings("unchecked")
     public void testRenameInTryBody() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile, 
-            "package hierbas.del.litoral;\n\n" +
-            "import java.io.*;\n\n" +
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "import java.io.*;\n" +
+            "\n" +
             "public class Test {\n" +
             "    public void taragui() {\n" +
             "        try {\n" +
@@ -68,8 +70,10 @@ public class TryTest extends GeneratorTest {
             "}\n"
             );
         String golden = 
-            "package hierbas.del.litoral;\n\n" +
-            "import java.io.*;\n\n" +
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "import java.io.*;\n" +
+            "\n" +
             "public class Test {\n" +
             "    public void taragui() {\n" +
             "        try {\n" +
