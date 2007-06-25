@@ -1039,7 +1039,7 @@ public class Breakpoints extends JellyTestCase {
             new JTextFieldOperator(dialog, 0).setText("java.lang.ClassNotFoundException");
             new JComboBoxOperator(dialog, 2).selectItem(Bundle.getString("org.netbeans.modules.debugger.jpda.ui.breakpoints.Bundle", "LBL_Exception_Breakpoint_Type_Catched"));
             new JCheckBoxOperator(dialog, 0).changeSelection(true);
-            new JTextFieldOperator(dialog, 2).setText("java.net.URLClassLoader");
+            new JTextFieldOperator(dialog, 2).setText("java.net.URLClassLoader*");
             dialog.ok();
             Utilities.startDebugger();
             int lines = Utilities.waitDebuggerConsole("Thread main stopped at ClassLoader.java", 0);
