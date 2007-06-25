@@ -11,10 +11,14 @@ package org.netbeans.modules.xml.wsdl.refactoring;
 
 import java.awt.event.ActionEvent;
 import javax.swing.Action;
+import javax.swing.text.Document;
+import javax.swing.text.Position.Bias;
 import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
 import org.netbeans.modules.refactoring.spi.ui.TreeElement;
 import org.netbeans.modules.refactoring.spi.ui.TreeElementFactory;
 import org.netbeans.modules.xml.refactoring.XMLRefactoringTransaction;
+import org.netbeans.modules.xml.refactoring.spi.SharedUtils;
+import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.ui.netbeans.module.WSDLDataObject;
 import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.NodesFactory;
@@ -23,17 +27,23 @@ import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.Referenceable;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentModel;
+import org.netbeans.modules.xml.xam.dom.DocumentComponent;
+import org.netbeans.modules.xml.xam.dom.DocumentModelAccess;
 import org.netbeans.modules.xml.xam.ui.actions.ShowSourceAction;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.text.CloneableEditorSupport;
 import org.openide.text.PositionBounds;
+import org.openide.text.PositionRef;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
+import org.w3c.dom.Element;
 
 /**
  *
@@ -112,7 +122,39 @@ public class WSDLRefactoringElement extends SimpleRefactoringElementImplementati
     }
 
    public PositionBounds getPosition() {
-        return null;
+      if(comp.getModel() instanceof AbstractDocumentModel ) {
+          DocumentModelAccess docAcc =null;
+          Element elem = null;
+          int startPos = 0;
+          if(comp instanceof SchemaComponent)
+              docAcc = ((AbstractDocumentModel)model).getAccess();
+          else
+              docAcc  = ((AbstractDocumentModel)comp.getModel()).getAccess();
+             
+          elem = ((DocumentComponent)comp).getPeer();
+          startPos = ((DocumentComponent)comp).findPosition();
+           
+          String txt = docAcc.getXmlFragmentInclusive(elem);
+          int endPos = startPos + txt.length();
+          DataObject dob = null;
+          try {
+              FileObject source = (FileObject)comp.getModel().getModelSource().getLookup().lookup(FileObject.class);
+              dob = DataObject.find(source);
+           } catch (DataObjectNotFoundException ex) {
+              ex.printStackTrace();
+           }
+           CloneableEditorSupport ces = SharedUtils.findCloneableEditorSupport(dob);
+           if(ces == null)
+                return null;
+        
+           PositionRef ref1 = ces.createPositionRef(startPos, Bias.Forward);
+           PositionRef ref2 = ces.createPositionRef(endPos, Bias.Forward);
+           PositionBounds bounds = new PositionBounds(ref1, ref2);
+       
+           return bounds;
+       }else 
+           return null;
+       
     }
     
     public void openInEditor(){

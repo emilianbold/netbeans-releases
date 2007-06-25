@@ -44,6 +44,7 @@ import org.netbeans.modules.refactoring.spi.Transaction;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
 import org.netbeans.modules.refactoring.spi.ui.UI;
 import org.netbeans.modules.xml.refactoring.ErrorItem;
+import org.netbeans.modules.xml.refactoring.FauxRefactoringElement;
 import org.netbeans.modules.xml.refactoring.XMLRefactoringPlugin;
 import org.netbeans.modules.xml.refactoring.XMLRefactoringTransaction;
 import org.netbeans.modules.xml.refactoring.spi.RefactoringUtil;
@@ -61,6 +62,8 @@ import org.netbeans.modules.xml.xam.Referenceable;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
@@ -191,7 +194,14 @@ public class SchemaSafeDeleteRefactoringPlugin extends SchemaRefactoringPlugin i
              refactoringElements.add(delete, element);
              fireProgressListenerStep();
          }
-                 
+       
+        //add a faux refactoring element to represent the target/object being refactored
+        //this element is to be added to the bag only as it will not participate in actual refactoring
+        Model mod = SharedUtils.getModel(obj);
+        FileObject fo = mod.getModelSource().getLookup().lookup(FileObject.class);
+        if ( XSD_MIME_TYPE.equals(FileUtil.getMIMEType(fo))) {
+           refactoringElements.add(delete, new FauxRefactoringElement(obj, "Delete"));
+       }
         if(allErrors.size() > 0) {
             Problem problem = processErrors(allErrors, ui, inner);
             fireProgressListenerStop();

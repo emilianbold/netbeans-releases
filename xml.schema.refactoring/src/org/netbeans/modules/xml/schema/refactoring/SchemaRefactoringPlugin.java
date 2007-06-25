@@ -52,6 +52,7 @@ public abstract class SchemaRefactoringPlugin extends ProgressProviderAdapter im
     
     /** Creates a new instance of SchemaRefactoringPlugin */
     List<ErrorItem> findErrors;
+    public static final String XSD_MIME_TYPE = "application/x-schema+xml";
         
     public SchemaRefactoringPlugin() {
     }

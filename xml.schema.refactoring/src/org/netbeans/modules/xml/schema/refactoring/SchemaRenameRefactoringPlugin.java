@@ -57,6 +57,7 @@ import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 
 
@@ -68,7 +69,7 @@ public class SchemaRenameRefactoringPlugin extends SchemaRefactoringPlugin  impl
     
     private RenameRefactoring request;
   //  List<RefactoringElementImplementation> elements;
-   
+        
     public void cancelRequest() {
         
     }
@@ -198,7 +199,13 @@ public class SchemaRenameRefactoringPlugin extends SchemaRefactoringPlugin  impl
             fireProgressListenerStep();
          }
         
-        
+        //add a faux refactoring element to represent the target/object being refactored
+        //this element is to be added to the bag only as it will not participate in actual refactoring
+        Model mod = SharedUtils.getModel(obj);
+        FileObject fo = mod.getModelSource().getLookup().lookup(FileObject.class);
+       if ( XSD_MIME_TYPE.equals(FileUtil.getMIMEType(fo))) {
+           refactoringElements.add(request, new FauxRefactoringElement(obj, "Rename"));
+       }
               
         fireProgressListenerStop();
         return null;

@@ -639,5 +639,17 @@ public class SharedUtils {
         srcGroups.add(SOURCES_TYPE_XML);
         return srcGroups;
     }
+     
+     public static CloneableEditorSupport findCloneableEditorSupport(DataObject dob) {
+        Object obj = dob.getCookie(org.openide.cookies.OpenCookie.class);
+        if (obj instanceof CloneableEditorSupport) {
+            return (CloneableEditorSupport)obj;
+        }
+        obj = dob.getCookie(org.openide.cookies.EditorCookie.class);
+        if (obj instanceof CloneableEditorSupport) {
+            return (CloneableEditorSupport)obj;
+        }
+        return null;
+    }
 
    }

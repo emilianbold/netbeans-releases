@@ -36,6 +36,7 @@ import org.netbeans.modules.refactoring.spi.ProgressProviderAdapter;
 import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.xml.refactoring.ErrorItem;
+import org.netbeans.modules.xml.refactoring.FauxRefactoringElement;
 import org.netbeans.modules.xml.refactoring.XMLRefactoringPlugin;
 import org.netbeans.modules.xml.refactoring.XMLRefactoringTransaction;
 import org.netbeans.modules.xml.refactoring.spi.RefactoringUtil;
@@ -51,6 +52,8 @@ import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.Nameable;
 import org.netbeans.modules.xml.xam.Named;
 import org.netbeans.modules.xml.xam.Referenceable;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 
 
@@ -62,7 +65,7 @@ import org.netbeans.modules.xml.xam.Referenceable;
 public class WSDLRenameRefactoringPlugin extends WSDLRefactoringPlugin implements XMLRefactoringPlugin {
     
     private RenameRefactoring rename;
-      
+          
     public void cancelRequest() {
         
     }
@@ -195,7 +198,14 @@ public class WSDLRenameRefactoringPlugin extends WSDLRefactoringPlugin implement
              fireProgressListenerStep();
          }
        
-        
+        //add a faux refactoring element to represent the target/object being refactored
+        //this element is to be added to the bag only as it will not participate in actual refactoring
+        Model mod = SharedUtils.getModel(obj);
+        FileObject fo = mod.getModelSource().getLookup().lookup(FileObject.class);
+       if ( WSDL_MIME_TYPE.equals(FileUtil.getMIMEType(fo))) {
+           refactoringElements.add(rename, new FauxRefactoringElement(obj, "Rename"));
+       }
+         
               
         fireProgressListenerStop();
         return null;

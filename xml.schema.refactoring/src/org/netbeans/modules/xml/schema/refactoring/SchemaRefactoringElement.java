@@ -10,33 +10,30 @@ package org.netbeans.modules.xml.schema.refactoring;
  */
 
 import java.awt.event.ActionEvent;
-import java.io.IOException;
-import java.io.Reader;
-import java.io.StringReader;
 import javax.swing.Action;
-import org.netbeans.api.diff.Diff;
-import org.netbeans.api.diff.DiffView;
-import org.netbeans.api.diff.StreamSource;
+import javax.swing.text.Document;
+import javax.swing.text.Position;
+import javax.swing.text.Position.Bias;
 import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
-import org.netbeans.modules.refactoring.spi.ui.UI;
-import org.netbeans.modules.xml.refactoring.XMLRefactoringElement;
 import org.netbeans.modules.xml.refactoring.XMLRefactoringTransaction;
-import org.netbeans.modules.xml.refactoring.spi.RefactoringEngine;
-import org.netbeans.modules.xml.refactoring.spi.UIHelper;
+import org.netbeans.modules.xml.refactoring.spi.SharedUtils;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.schema.ui.nodes.categorized.CategorizedSchemaNodeFactory;
-import org.netbeans.modules.xml.xam.Component;
-import org.netbeans.modules.xml.xam.Model;
-import org.netbeans.modules.xml.xam.Referenceable;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentModel;
+import org.netbeans.modules.xml.xam.dom.DocumentModelAccess;
 import org.netbeans.modules.xml.xam.ui.actions.ShowSourceAction;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
+import org.openide.text.CloneableEditorSupport;
 import org.openide.text.PositionBounds;
+import org.openide.text.PositionRef;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.actions.SystemAction;
+import org.w3c.dom.Element;
 /**
  *
  * @author Sonali
@@ -83,11 +80,37 @@ public class SchemaRefactoringElement  extends SimpleRefactoringElementImplement
     }
 
    public PositionBounds getPosition() {
-       return null;
+       if(comp.getModel() instanceof AbstractDocumentModel ) {
+           Document doc = ((AbstractDocumentModel) comp.getModel()).getBaseDocument();
+           DocumentModelAccess docAcc = ((AbstractDocumentModel)comp.getModel()).getAccess();
+           Element elem = comp.getPeer();
+           String txt = docAcc.getXmlFragmentInclusive(elem);
+           int startPos = comp.findPosition();
+           int endPos = startPos + txt.length();
+           DataObject dob = null;
+           try {
+                FileObject source = (FileObject)comp.getModel().getModelSource().getLookup().lookup(FileObject.class);
+                dob = DataObject.find(source);
+            } catch (DataObjectNotFoundException ex) {
+             ex.printStackTrace();
+           }
+           CloneableEditorSupport ces = SharedUtils.findCloneableEditorSupport(dob);
+           if(ces == null)
+                return null;
+        
+           PositionRef ref1 = ces.createPositionRef(startPos, Bias.Forward);
+           PositionRef ref2 = ces.createPositionRef(endPos, Bias.Forward);
+           PositionBounds bounds = new PositionBounds(ref1, ref2);
+       
+           return bounds;
+       }else {
+           return null;
+       }
+           
+       
     }
-    
-         
-     public void openInEditor(){
+   
+   public void openInEditor(){
          //System.out.println("SchemaRefactoringElement:: openInEditor called");
          Action preferredAction = SystemAction.get(ShowSourceAction.class);
          String command = (String)preferredAction.getValue(Action.ACTION_COMMAND_KEY);
@@ -95,7 +118,7 @@ public class SchemaRefactoringElement  extends SimpleRefactoringElementImplement
 	 preferredAction.actionPerformed(ae);
      
      }
-
+       
     void addTransactionObject(XMLRefactoringTransaction transaction) {
         this.transaction = transaction;
     }

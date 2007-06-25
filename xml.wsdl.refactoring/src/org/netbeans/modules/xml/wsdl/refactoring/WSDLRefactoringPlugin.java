@@ -53,6 +53,7 @@ public abstract class WSDLRefactoringPlugin extends ProgressProviderAdapter impl
     List<ErrorItem> findErrors;
     RefactoringSession session;
     XMLRefactoringTransaction transaction;
+    public static final String WSDL_MIME_TYPE = "text/x-wsdl+xml";
     
     public WSDLRefactoringPlugin() {
     }

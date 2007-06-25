@@ -11,17 +11,26 @@ package org.netbeans.modules.xml.refactoring;
 
 import java.awt.event.ActionEvent;
 import javax.swing.Action;
+import javax.swing.text.Document;
+import javax.swing.text.Position;
+import javax.swing.text.Position.Bias;
 import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
 import org.netbeans.modules.refactoring.spi.ui.UI;
 import org.netbeans.modules.xml.refactoring.spi.SharedUtils;
 import org.netbeans.modules.xml.refactoring.spi.UIHelper;
 import org.netbeans.modules.xml.refactoring.spi.AnalysisUtilities;
 import org.netbeans.modules.xml.xam.Component;
+import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.Referenceable;
+import org.netbeans.modules.xml.xam.dom.AbstractDocumentModel;
 import org.netbeans.modules.xml.xam.dom.DocumentModel;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
+import org.openide.text.CloneableEditorSupport;
 import org.openide.text.PositionBounds;
+import org.openide.text.PositionRef;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 
@@ -48,9 +57,6 @@ public class FauxRefactoringElement extends SimpleRefactoringElementImplementati
         label = " <b>" + refactoringType + " " + name + "</b>";
     }
     
-    public FauxRefactoringElement(Referenceable ref){
-        this(ref, "");
-    }
         
 
     public String getText() {
@@ -77,7 +83,24 @@ public class FauxRefactoringElement extends SimpleRefactoringElementImplementati
     
 
     public PositionBounds getPosition() {
-        return null;
+        Model mod= SharedUtils.getModel(ref);
+        Document doc=    ((AbstractDocumentModel)mod).getBaseDocument();    
+            Position start = doc.getStartPosition();
+            Position end = doc.getEndPosition();
+            DataObject dob = null;
+        try {
+            FileObject source = mod.getModelSource().getLookup().lookup(FileObject.class);
+            
+               dob = DataObject.find(source);
+        } catch (DataObjectNotFoundException ex) {
+            ex.printStackTrace();
+        }
+            
+       CloneableEditorSupport ces = SharedUtils.findCloneableEditorSupport(dob);
+       PositionRef ref1 = ces.createPositionRef(start.getOffset(), Bias.Forward);
+       PositionRef ref2 = ces.createPositionRef(end.getOffset(), Bias.Forward);
+       PositionBounds bounds = new PositionBounds(ref1, ref2);
+       return bounds; 
     }
     
      public void showPreview() {
@@ -89,8 +112,7 @@ public class FauxRefactoringElement extends SimpleRefactoringElementImplementati
      }
      
      public void setEnabled(boolean enabled){
-       //  usage.setIncludedInRefactoring(enabled);
-         //System.out.println("setEnabled called with " + enabled);
+      
      }
          
      public String getRefactoringType() {
@@ -101,5 +123,6 @@ public class FauxRefactoringElement extends SimpleRefactoringElementImplementati
          return ref;
          
      }
+    
     
 }
