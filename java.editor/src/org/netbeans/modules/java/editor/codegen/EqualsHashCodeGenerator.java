@@ -401,9 +401,10 @@ public class EqualsHashCodeGenerator implements CodeGenerator {
                     variableRead = make.ConditionalExpression(make.MemberSelect(make.Identifier("this"), ve.getSimpleName()), make.Literal(1), make.Literal(0)); //NOI18N
                     break;
                 default:
-                    variableRead = make.ConditionalExpression(make.Binary(Tree.Kind.NOT_EQUAL_TO, make.MemberSelect(make.Identifier("this"), ve.getSimpleName()), make.Identifier("null")), //NOI18N
+                    variableRead = make.Parenthesized(
+                            make.ConditionalExpression(make.Binary(Tree.Kind.NOT_EQUAL_TO, make.MemberSelect(make.Identifier("this"), ve.getSimpleName()), make.Identifier("null")), //NOI18N
                             make.MethodInvocation(Collections.<ExpressionTree>emptyList(), make.MemberSelect(make.MemberSelect(make.Identifier("this"), ve.getSimpleName()), "hashCode"), Collections.<ExpressionTree>emptyList()), //NOI18N
-                            make.Literal(0));
+                            make.Literal(0)));
             }
             statements.add(make.ExpressionStatement(make.Assignment(make.Identifier("hash"), make.Binary(Tree.Kind.PLUS, make.Binary(Tree.Kind.MULTIPLY, make.Literal(multiplyNumber), make.Identifier("hash")), variableRead)))); //NOI18N
         }
