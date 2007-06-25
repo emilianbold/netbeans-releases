@@ -20,11 +20,8 @@
 
 package org.netbeans.modules.uml.propertysupport.options.panels;
 
-import java.util.Hashtable;
 import java.util.prefs.Preferences;
 import javax.swing.JComboBox;
-import javax.swing.JComponent;
-import org.netbeans.modules.uml.propertysupport.options.api.UMLOptionsPanel;
 import org.netbeans.modules.uml.ui.support.drawingproperties.FontColorDialogs.ApplicationColorsAndFonts;
 import org.netbeans.modules.uml.util.DummyCorePreference;
 import org.openide.util.NbBundle;
@@ -84,7 +81,7 @@ public class GeneralOptionsPanelForm extends javax.swing.JPanel {
         prefs.putBoolean("UML_Reconnect_to_Presentation_Boundary", reconnect.isSelected()) ;
         prefs.putBoolean("UML_Resize_with_Show_Aliases_Mode", resizeCB.isSelected()) ;
         prefs.putBoolean("UML_Show_Stereotype_Icons", showStereotype.isSelected()) ;
-        
+        prefs.putBoolean("UML_Ask_Before_Layout", askLayoutCB.isSelected()) ;
         
     }
     
@@ -118,6 +115,9 @@ public class GeneralOptionsPanelForm extends javax.swing.JPanel {
         
         if (prefs.getBoolean("UML_Show_Stereotype_Icons", true))
             showStereotype.setSelected(true);
+        
+        if (prefs.getBoolean("UML_Ask_Before_Layout", true))
+            askLayoutCB.setSelected(true);
         
         String autoResizeValue = prefs.get("UML_Automatically_Size_Elements", null) ;
         String displayCompartmentValue = prefs.get("UML_Display_Compartment_Titles", null) ;
@@ -169,6 +169,7 @@ public class GeneralOptionsPanelForm extends javax.swing.JPanel {
         resizeCB = new javax.swing.JCheckBox();
         showStereotype = new javax.swing.JCheckBox();
         gradient = new javax.swing.JCheckBox();
+        askLayoutCB = new javax.swing.JCheckBox();
         jPanel1 = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
         autoResizeElementsComboBox = new JComboBox(resizeDisplayChoices);
@@ -232,6 +233,10 @@ public class GeneralOptionsPanelForm extends javax.swing.JPanel {
         gradient.setText(org.openide.util.NbBundle.getMessage(GeneralOptionsPanelForm.class, "GeneralOptionsPanel.gradient.text")); // NOI18N
         gradient.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
+        askLayoutCB.setSelected(true);
+        askLayoutCB.setText(org.openide.util.NbBundle.getMessage(GeneralOptionsPanelForm.class, "GeneralOptionsPanelForm.askLayoutCB.text")); // NOI18N
+        askLayoutCB.setMargin(new java.awt.Insets(0, 0, 0, 0));
+
         org.jdesktop.layout.GroupLayout jPanel4Layout = new org.jdesktop.layout.GroupLayout(jPanel4);
         jPanel4.setLayout(jPanel4Layout);
         jPanel4Layout.setHorizontalGroup(
@@ -242,7 +247,8 @@ public class GeneralOptionsPanelForm extends javax.swing.JPanel {
                     .add(resizeCB)
                     .add(showStereotype)
                     .add(gradient)
-                    .add(displayEmpty))
+                    .add(displayEmpty)
+                    .add(askLayoutCB))
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel4Layout.setVerticalGroup(
@@ -257,6 +263,8 @@ public class GeneralOptionsPanelForm extends javax.swing.JPanel {
                 .add(showStereotype)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(gradient)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(askLayoutCB)
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -320,13 +328,13 @@ public class GeneralOptionsPanelForm extends javax.swing.JPanel {
                         .add(jLabel4)
                         .add(2, 2, 2)
                         .add(jSeparator1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 589, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 553, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(layout.createSequentialGroup()
                         .add(jLabel5)
                         .add(106, 106, 106)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(jButton1)
-                            .add(jPanel4, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 256, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                    .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 553, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                            .add(jPanel4, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 256, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                            .add(jButton1))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -341,21 +349,18 @@ public class GeneralOptionsPanelForm extends javax.swing.JPanel {
                         .add(advancedPropsPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                    .add(layout.createSequentialGroup()
-                        .add(10, 10, 10)
-                        .add(jSeparator1))
-                    .add(jLabel4))
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(jLabel4)
+                    .add(jSeparator1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 6, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(jPanel4, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jButton1))
-                    .add(jLabel5))
-                .addContainerGap(27, Short.MAX_VALUE))
+                    .add(jLabel5)
+                    .add(jPanel4, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jButton1)
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
     
@@ -366,6 +371,7 @@ private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRS
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel advancedPropsPanel;
+    private javax.swing.JCheckBox askLayoutCB;
     private javax.swing.JComboBox autoResizeElementsComboBox;
     private javax.swing.JComboBox displayCompartmentTitlesComboBox;
     private javax.swing.JCheckBox displayEmpty;

@@ -77,9 +77,6 @@ import javax.swing.JTextField;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
-import javax.swing.border.BevelBorder;
-import javax.swing.border.EmptyBorder;
-import javax.swing.border.SoftBevelBorder;
 import javax.swing.plaf.basic.BasicFileChooserUI;
 import com.tomsawyer.drawing.TSDGraphManager;
 import com.tomsawyer.drawing.geometry.TSConstPoint;
@@ -332,6 +329,7 @@ import org.netbeans.modules.uml.ui.swing.drawingarea.diagramtools.ADReconnectEdg
 import org.netbeans.modules.uml.ui.swing.testbed.addin.menu.Separator;
 import org.netbeans.modules.uml.ui.swing.testbed.addin.menu.TestBedMenuManager;
 import org.netbeans.modules.uml.ui.swing.trackbar.JTrackBar;
+import org.netbeans.modules.uml.util.DummyCorePreference;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
@@ -6877,7 +6875,7 @@ public class ADDrawingAreaControl extends ApplicationView
       
       // get preference for displaying a small amount of empty lists
       //kris richards - "AskBeforeLayout" pref expuged. Set to true.
-      Preferences prefs = NbPreferences.forModule (ADDrawingAreaControl.class) ;
+      Preferences prefs = NbPreferences.forModule (DummyCorePreference.class) ;
       
       if (prefs.getBoolean ("UML_Ask_Before_Layout", true))
       {
