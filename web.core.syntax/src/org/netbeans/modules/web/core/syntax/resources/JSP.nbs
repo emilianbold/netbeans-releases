@@ -93,11 +93,11 @@ NAVIGATOR:scriptlet: {
 
 ########### code folding #######################################################
 
-#FOLD:tag: {
-#    fold_display_name:"<$startTag.TAG$>...</$startTag.TAG$>";
-#    expand_type_action_name:"Expand JSP Tag";
-#    collapse_type_action_name:"Collapse JSP Tag";
-#}
+FOLD:tag: {
+    fold_display_name:"<$startTag.TAG_OPEN$>...</$startTag.TAG_OPEN$>";
+    expand_type_action_name:"Expand HTML Tag";
+    collapse_type_action_name:"Collapse HTML Tag";
+}
 
 #PROPERTIES {
 #    printFirst: "true";
