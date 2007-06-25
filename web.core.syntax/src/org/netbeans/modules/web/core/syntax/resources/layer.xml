@@ -100,14 +100,6 @@ Microsystems, Inc. All Rights Reserved.
                         <attr name="position" intvalue="4400"/>
                     </file>
                     
-                    <file name="dump-tokens">
-                        <attr name="position" intvalue="4500"/>
-                    </file>
-                    
-                    
-                    
-                    
-                    
                 </folder>
                 <folder name="HyperlinkProviders">
                     <file name="JSPHyperlinkProvider.instance">

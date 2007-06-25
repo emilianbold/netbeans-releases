@@ -158,8 +158,7 @@ public class JSPKit extends LanguagesEditorKit implements org.openide.util.HelpC
             new ExpandAllScriptingFolds(),
             new JspInsertBreakAction(),
             new JspDefaultKeyTypedAction(),
-            new JspDeleteCharAction(deletePrevCharAction, false),
-            new DumpTokensAction()
+            new JspDeleteCharAction(deletePrevCharAction, false)
         };
         
         return TextAction.augmentList(super.createActions(), javaActions);
@@ -323,45 +322,6 @@ public class JSPKit extends LanguagesEditorKit implements org.openide.util.HelpC
         return new org.openide.util.HelpCtx(JSPKit.class);
     }
 
-    public static class DumpTokensAction extends BaseAction {
-        public DumpTokensAction(){
-            super("dump-tokens");
-            putValue(SHORT_DESCRIPTION, "Dumps lexer tokens."); //NOI18N
-            putValue(BaseAction.POPUP_MENU_TEXT, "Dump Lexer Tokens"); //NOI18N
-        }
-        
-        public void actionPerformed(ActionEvent evt, JTextComponent target) {
-            TokenHierarchy th = TokenHierarchy.get(target.getDocument());
-            TokenSequence ts = th.tokenSequence();
-            System.out.println("========================================================");
-            dumpTokens(th, ts, "");
-            System.out.println("========================================================");
-        }
-        
-        private void dumpTokens(TokenHierarchy th, TokenSequence ts, String indent) {
-            System.out.println("Tokens of language " + ts.language().mimeType() + ":");
-            while(ts.moveNext()) {
-                Token t = ts.token();
-                System.out.println(indent + "[" + t.offset(th) + " - " + (t.offset(th) + t.length()) + "; '" + removeEOLs(t.text().toString()) + "'; id=" + t.id().name() + "]");
-                TokenSequence embedded = ts.embedded();
-                if(embedded != null) {
-                    dumpTokens(th, embedded, indent + "\t");
-                }
-            }
-        }
-        
-        private String removeEOLs(String s) {
-            StringBuffer sb = new StringBuffer(s);
-            for(int i = 0; i < sb.length(); i++) {
-                if(sb.charAt(i) == '\n') {
-                    sb.setCharAt(i, '#');
-                }
-            }
-            return sb.toString();
-        }
-    }
-    
-    
     /** Implementation of MatchBraceAction, whic move the cursor in the matched block.
      */
     public static class MatchBraceAction extends ExtKit.MatchBraceAction {
@@ -447,7 +407,6 @@ public class JSPKit extends LanguagesEditorKit implements org.openide.util.HelpC
             FoldHierarchy hierarchy = FoldHierarchy.get(target);
             // Hierarchy locking done in the utility method
             FoldUtilities.expand(hierarchy, JspFoldTypes.COMMENT);
-            FoldUtilities.expand(hierarchy, JspFoldTypes.HTML_COMMENT);
             
         }
     }
@@ -463,7 +422,6 @@ public class JSPKit extends LanguagesEditorKit implements org.openide.util.HelpC
             FoldHierarchy hierarchy = FoldHierarchy.get(target);
             // Hierarchy locking done in the utility method
             FoldUtilities.collapse(hierarchy, JspFoldTypes.COMMENT);
-            FoldUtilities.collapse(hierarchy, JspFoldTypes.HTML_COMMENT);
         }
     }
     
