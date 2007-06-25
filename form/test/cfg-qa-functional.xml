@@ -28,6 +28,7 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="org/netbeans/qa/form/issues/*.class"/>             
                 <include name="org/netbeans/qa/form/binding/AdvancedBeansBinding.class"/>
                 <include name="org/netbeans/test/editor/formatting/BasicTest.*"/>
+                <include name="org/netbeans/qa/form/refactoring/RenameComponentVariableTest.class"/>
             </patternset>
         </testset>
     </testbag>
@@ -40,13 +41,13 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
     
-    <testbag testattribs="almoststable, validation" executor="ide" name="testbag_refactoring">
+ <!--   <testbag testattribs="almoststable, validation" executor="ide" name="testbag_refactoring">
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="org/netbeans/qa/form/refactoring/RenameComponentVariableTest.class"/>
             </patternset>
         </testset>
-    </testbag>
+    </testbag> -->
     
     <testbag testattribs="validation" executor="ide" name="testbag_binding">
         <testset dir="qa-functional/src">
