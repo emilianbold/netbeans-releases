@@ -1169,10 +1169,17 @@ final class NbInstaller extends ModuleInstaller {
     
     /** Cache of known JAR manifests.
      * Initially null. If the cache is read, it may be used to quickly serve JAR manifests.
-     * Each JAR file is mapped to a two-element array consisting of
-     * its modification date when last read; and the manifest itself.
      */
-    private Map<File,/*[Date,Manifest]*/Object[]> manifestCache = null;
+    private Map<File,DateAndManifest> manifestCache = null;
+    private static final class DateAndManifest {
+        /** modification date when last read */
+        public final long date;
+        public final Manifest manifest;
+        public DateAndManifest(long date, Manifest manifest) {
+            this.date = date;
+            this.manifest = manifest;
+        }
+    }
     
     /** If true, at least one manifest has had to be read explicitly.
      * This might be because the cache did not initially exist;
@@ -1193,12 +1200,12 @@ final class NbInstaller extends ModuleInstaller {
         if (manifestCache == null) {
             manifestCache = loadManifestCache(manifestCacheFile);
         }
-        Object[] entry = manifestCache.get(jar);
+        DateAndManifest entry = manifestCache.get(jar);
         if (entry != null) {
-            if (((Date)entry[0]).getTime() == jar.lastModified()) {
+            if (entry.date == jar.lastModified()) {
                 // Cache hit.
                 Util.err.fine("Found manifest for " + jar + " in cache");
-                return (Manifest)entry[1];
+                return entry.manifest;
             } else {
                 Util.err.fine("Wrong timestamp for " + jar + " in manifest cache");
             }
@@ -1208,7 +1215,7 @@ final class NbInstaller extends ModuleInstaller {
         // Cache miss.
         Manifest m = super.loadManifest(jar);
         // (If that threw IOException, we leave it out of the cache.)
-        manifestCache.put(jar, new Object[] {new Date(jar.lastModified()), m});
+        manifestCache.put(jar, new DateAndManifest(jar.lastModified(), m));
         manifestCacheDirty = true;
         return m;
     }
@@ -1232,24 +1239,22 @@ final class NbInstaller extends ModuleInstaller {
     /** Really save the cache.
      * @see #manifestCacheFile
      */
-    private void saveManifestCache(Map<File,Object[]> manifestCache, File manifestCacheFile) throws IOException {
+    private void saveManifestCache(Map<File,DateAndManifest> manifestCache, File manifestCacheFile) throws IOException {
         Util.err.fine("Saving manifest cache");
         manifestCacheFile.getParentFile().mkdirs();
         OutputStream os = new FileOutputStream(manifestCacheFile);
         try {
             try {
                 os = new BufferedOutputStream(os);
-                for (Map.Entry<File,Object[]> entry : manifestCache.entrySet()) {
+                for (Map.Entry<File,DateAndManifest> entry : manifestCache.entrySet()) {
                     File jar = entry.getKey();
-                    Object[] v = entry.getValue();
-                    long time = ((Date)v[0]).getTime();
-                    Manifest m = (Manifest)v[1];
                     os.write(jar.getAbsolutePath().getBytes("UTF-8")); // NOI18N
                     os.write(0);
+                    long time = entry.getValue().date;
                     for (int i = 7; i >= 0; i--) {
                         os.write((int)((time >> (i * 8)) & 0xFF));
                     }
-                    m.write(os);
+                    entry.getValue().manifest.write(os);
                     os.write(0);
                 }
             } finally {
@@ -1267,17 +1272,17 @@ final class NbInstaller extends ModuleInstaller {
      * just create an empty cache.
      * @see #manifestCacheFile
      */
-    private Map<File,Object[]> loadManifestCache(File manifestCacheFile) {
+    private Map<File,DateAndManifest> loadManifestCache(File manifestCacheFile) {
         if (!manifestCacheFile.canRead()) {
             Util.err.fine("No manifest cache found at " + manifestCacheFile);
-            return new HashMap<File,Object[]>(200);
+            return new HashMap<File,DateAndManifest>(200);
         }
         ev.log(Events.PERF_START, "NbInstaller - loadManifestCache"); // NOI18N
         try {
             InputStream is = new FileInputStream(manifestCacheFile);
             try {
                 BufferedInputStream bis = new BufferedInputStream(is);
-                Map<File,Object[]> m = new HashMap<File,Object[]>(200);
+                Map<File,DateAndManifest> m = new HashMap<File,DateAndManifest>(200);
                 ByteArrayOutputStream baos = new ByteArrayOutputStream((int)manifestCacheFile.length());
                 FileUtil.copy(bis, baos);
                 byte[] data = baos.toByteArray();
@@ -1289,7 +1294,7 @@ final class NbInstaller extends ModuleInstaller {
             }
         } catch (IOException ioe) {
             Util.err.log(Level.WARNING, "While reading: " + manifestCacheFile, ioe); // NOI18N
-            return new HashMap<File,Object[]>(200);
+            return new HashMap<File,DateAndManifest>(200);
         }
     }
     
@@ -1303,7 +1308,7 @@ final class NbInstaller extends ModuleInstaller {
         return -1;
     }
     
-    private static void readManifestCacheEntries(byte[] data, Map<File,Object[]> m) throws IOException {
+    private static void readManifestCacheEntries(byte[] data, Map<File,DateAndManifest> m) throws IOException {
         int pos = 0;
         while (true) {
             if (pos == data.length) {
@@ -1332,7 +1337,7 @@ final class NbInstaller extends ModuleInstaller {
                 Exceptions.attachMessage(ioe, "While in entry for " + jar);
                 throw ioe;
             }
-            m.put(jar, new Object[] {new Date(time), mani});
+            m.put(jar, new DateAndManifest(time, mani));
             if (Util.err.isLoggable(Level.FINE)) {
                 Util.err.fine("Manifest cache entry: jar=" + jar + " date=" + new Date(time) + " codename=" + mani.getMainAttributes().getValue("OpenIDE-Module"));
             }
