@@ -55,9 +55,8 @@ public class LocalHistoryFileView implements PropertyChangeListener {
            
     private FileTablePanel tablePanel;             
     private File[] files;
-        
-    private RequestProcessor.Task refreshTask;        
-    private RefreshTable refreshTable;
+
+    private RequestProcessor rp = new RequestProcessor("LocalHistoryView", 1, true);    
     
     public LocalHistoryFileView() {                       
         tablePanel = new FileTablePanel();        
@@ -142,42 +141,25 @@ public class LocalHistoryFileView implements PropertyChangeListener {
         return false;
     }                
     
-    private void refreshTablePanel(long toSelect) {       
-        if(refreshTask == null) {
-            refreshTable = new RefreshTable();
-            RequestProcessor rp = new RequestProcessor();
-            refreshTask = rp.create(refreshTable);            
-        }
-        refreshTable.setup(toSelect);
+    private void refreshTablePanel(long toSelect) {                  
+        RequestProcessor.Task refreshTask = rp.create(new RefreshTable(toSelect));                    
         refreshTask.schedule(100);
     }    
-    
-    private void selectNodes(final Node[] nodes) {
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                try {
-                    tablePanel.getExplorerManager().setSelectedNodes(nodes);
-                } catch (PropertyVetoException ex) {
-                    // ignore
-                }                                     
-            }
-        });                                             
-    }                     
-
+                     
     /**
      * Selects a node with the timestamp = toSelect, otherwise the selection stays.
      * If there wasn't a selection set yet then the first node will be selected.
      */ 
     private class RefreshTable implements Runnable {        
         private long toSelect;
-        void setup(long toSelect) {
+        RefreshTable(long toSelect) {
             this.toSelect = toSelect;
         }
         public void run() {                        
             Node oldExploredContext = getExplorerManager().getExploredContext();
             Node root = LocalHistoryRootNode.createRootNode(files);
             
-            Node[] oldSelection = getExplorerManager().getSelectedNodes();
+            Node[] oldSelection = getExplorerManager().getSelectedNodes();            
             tablePanel.getExplorerManager().setRootContext(root);
 
             if(root.getChildren().getNodesCount() > 0) {                
@@ -191,12 +173,12 @@ public class LocalHistoryFileView implements PropertyChangeListener {
                 if (oldSelection != null && oldSelection.length > 0) {                        
                     Node[] newSelection = getEqualNodes(root, oldSelection);                        
                     if(newSelection.length > 0) {
-                        selectNodes(newSelection);
+                        setNodes(root, newSelection);
                     } else {
                         if(oldExploredContext != null) {
                             Node[] newExploredContext = getEqualNodes(root, new Node[] { oldExploredContext });                           
                             if(newExploredContext.length > 0) {
-                                selectFirstNeighborNode(newExploredContext[0], oldSelection[0]);                                    
+                                selectFirstNeighborNode(root, newExploredContext[0], oldSelection[0]);                                    
                             }                                
                         }                       
                     }
@@ -204,7 +186,7 @@ public class LocalHistoryFileView implements PropertyChangeListener {
                     selectFirstNode(root);
                 }
             } else {
-                selectNodes(new Node[]{});
+                setNodes(root, new Node[]{});
             }   
             tablePanel.revalidate();
             tablePanel.repaint();
@@ -240,13 +222,12 @@ public class LocalHistoryFileView implements PropertyChangeListener {
             if (dateFolders != null && dateFolders.length > 0) {
                 final Node[] nodes = dateFolders[0].getChildren().getNodes();
                 if (nodes != null && nodes.length > 0) {                
-                    selectNodes(new Node[]{ nodes[0] });
+                    setNodes(root, new Node[]{ nodes[0] });
                 }
             }        
         }
 
-        private void selectFirstNeighborNode(Node context, Node oldSelection) {
-            tablePanel.getExplorerManager().setExploredContext(context);
+        private void selectFirstNeighborNode(Node root, Node context, Node oldSelection) {            
             Node[] children = context.getChildren().getNodes();
             if(children.length > 0 && children[0] instanceof Comparable) {
                 Node[] newSelection = new Node[] { children[0] } ;
@@ -256,12 +237,25 @@ public class LocalHistoryFileView implements PropertyChangeListener {
                        newSelection[0] = children[i]; 
                     }                                            
                 }    
-                selectNodes(newSelection);
+                setNodes(root, newSelection);
+                tablePanel.getExplorerManager().setExploredContext(context);                                
             }        
         }   
+        
+        private void setNodes(final Node root, final Node[] nodes) {
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    try {
+                        tablePanel.getExplorerManager().setRootContext(root);
+                        tablePanel.getExplorerManager().setSelectedNodes(nodes);
+                    } catch (PropertyVetoException ex) {
+                        // ignore
+                    }
+                }
+            });                                             
+        }            
     } 
     
-    // XXX reuse in folder view
     private class FileTablePanel extends JPanel implements ExplorerManager.Provider {
 
         private final BrowserTreeTableView treeView;    
@@ -297,7 +291,6 @@ public class LocalHistoryFileView implements PropertyChangeListener {
                 DefaultTreeCellRenderer renderer = new DefaultTreeCellRenderer();
                 renderer.setLeafIcon(null);
                 tree.setCellRenderer(renderer);
-
             }
 
             JTree getTree() {            
