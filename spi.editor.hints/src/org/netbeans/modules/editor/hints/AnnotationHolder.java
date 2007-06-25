@@ -323,27 +323,31 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener,
             public void run() {
                 final List<int[]> visibleRanges = new ArrayList<int[]>();
                 
-                synchronized(AnnotationHolder.this) {
-                    for (JEditorPane pane : openedComponents) {
-                        Container parent = pane.getParent();
-                        
-                        if (parent instanceof JViewport) {
-                            JViewport viewport = (JViewport) parent;
-                            Point start = viewport.getViewPosition();
-                            Dimension size = viewport.getExtentSize();
-                            Point end = new Point(start.x + size.width, start.y + size.height);
-                            
-                            int startPosition = pane.viewToModel(start);
-                            int endPosition = pane.viewToModel(end);
-                            int startLine = NbDocument.findLineNumber((StyledDocument) pane.getDocument(), startPosition);
-                            int endLine = NbDocument.findLineNumber((StyledDocument) pane.getDocument(), endPosition);
-                            //TODO: check differences against last:
-                            
-                            visibleRanges.add(new int[] {startLine, endLine});
+                doc.render(new Runnable() {
+                    public void run() {
+                        synchronized(AnnotationHolder.this) {
+                            for (JEditorPane pane : openedComponents) {
+                                Container parent = pane.getParent();
+                                
+                                if (parent instanceof JViewport) {
+                                    JViewport viewport = (JViewport) parent;
+                                    Point start = viewport.getViewPosition();
+                                    Dimension size = viewport.getExtentSize();
+                                    Point end = new Point(start.x + size.width, start.y + size.height);
+                                    
+                                    int startPosition = pane.viewToModel(start);
+                                    int endPosition = pane.viewToModel(end);
+                                    int startLine = NbDocument.findLineNumber((StyledDocument) pane.getDocument(), startPosition);
+                                    int endLine = NbDocument.findLineNumber((StyledDocument) pane.getDocument(), endPosition);
+                                    //TODO: check differences against last:
+                                    
+                                    visibleRanges.add(new int[] {startLine, endLine});
+                                }
+                            }
                         }
                     }
-                }
-                
+                });
+
                 INSTANCE.post(new Runnable() {
                     public void run() {
                         for (int[] span : visibleRanges) {
