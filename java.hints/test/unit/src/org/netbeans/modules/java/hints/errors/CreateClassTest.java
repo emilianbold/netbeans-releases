@@ -53,7 +53,7 @@ public class CreateClassTest extends ErrorHintsTestBase {
     }
     
     public void testPerformCreateClassParams() throws Exception {
-        performFixTest("test/Test.java", "package test; public class Test {public static void test() {new NonExisting(1, \"\");}}", 112 - 48, "CreateClass:test.NonExisting:[]:CLASS", "test/NonExisting.java", "package test; class NonExisting { public NonExisting(int i,String string) { } } ");
+        performFixTest("test/Test.java", "package test; public class Test {public static void test() {new NonExisting(1, \"\");}}", 112 - 48, "CreateClass:test.NonExisting:[]:CLASS", "test/NonExisting.java", "package test; class NonExisting { public NonExisting(int i, String string) { } } ");
     }
     
     public void disabledtestPerformCreateClassInPackage() throws Exception {
