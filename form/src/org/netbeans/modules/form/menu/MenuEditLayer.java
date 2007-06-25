@@ -94,7 +94,6 @@ public class MenuEditLayer extends JPanel {
     /* === private fields === */
     private Map<JComponent,MouseInputAdapter> menuitemListenerMap;
     private Map<JMenu, PopupMenuUI> menuPopupUIMap;
-    private Map<JComponent,JComponent> menuParentMap;
     
     private RADComponent selectedRADComponent = null;
     private JComponent selectedComponent;
@@ -113,7 +112,6 @@ public class MenuEditLayer extends JPanel {
         this.formDesigner = formDesigner;
         menuitemListenerMap = new HashMap<JComponent,MouseInputAdapter>();
         menuPopupUIMap = new HashMap<JMenu, PopupMenuUI>();
-        menuParentMap = new HashMap<JComponent, JComponent>();
         formModelListeners = new HashMap<RADVisualContainer,FormModelListener>();
         
         
@@ -409,7 +407,6 @@ public class MenuEditLayer extends JPanel {
         }
         
         // configure the maps and popups
-        menuParentMap.put(menu, parent);
         JPopupMenu popup = menu.getPopupMenu();
         menuPopupUIMap.put(menu, popup.getUI());
         popup.setUI(new VisualDesignerPopupMenuUI(this, popup.getUI()));
@@ -465,12 +462,11 @@ public class MenuEditLayer extends JPanel {
     }
     
     private boolean isConfigured(JComponent c) {
-        return menuParentMap.containsKey(c);
+        return menuPopupUIMap.containsKey(c);
     }
     
     
     void configureMenuItem(final JMenu parent, final JComponent c) {
-        menuParentMap.put(c,parent);
         if(c instanceof JMenuItem) {
             JMenuItem item = (JMenuItem) c;
             if(!(item.getIcon() instanceof WrapperIcon)) {
@@ -480,7 +476,6 @@ public class MenuEditLayer extends JPanel {
     }
     
     void unconfigureMenuItem(JComponent c) {
-        menuParentMap.remove(c);
     }
     
     
@@ -493,8 +488,10 @@ public class MenuEditLayer extends JPanel {
     
     // returns true if parent really is an ancestor of target
     boolean isAncestor(JMenu target, JMenu parent) {
-        Object possibleParent = menuParentMap.get(target);
-        //check if this is the target's parent from the map
+        
+        RADComponent targetRad = formDesigner.getMetaComponent(target);
+        RADComponent parentRad = targetRad.getParentComponent();
+        Object possibleParent = formDesigner.getComponent(parentRad);
         if(parent == possibleParent) {
             return true;
         } else {
@@ -507,7 +504,15 @@ public class MenuEditLayer extends JPanel {
     }
     
     JComponent getMenuParent(JComponent menu) {
-        return menuParentMap.get(menu);
+        RADComponent targetRad = formDesigner.getMetaComponent(menu);
+        RADComponent parentRad = targetRad.getParentComponent();
+        Object possibleParent = formDesigner.getComponent(parentRad);
+        p("possible parent = " + possibleParent);
+        if(possibleParent instanceof JComponent) {
+            return (JComponent) possibleParent;
+        } else {
+            return null;
+        }
     }
     
     

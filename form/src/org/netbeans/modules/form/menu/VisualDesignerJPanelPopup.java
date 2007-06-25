@@ -54,10 +54,6 @@ class VisualDesignerJPanelPopup extends Popup {
         p("hiding");
     }
     
-    private boolean isAncestor(JMenu menu) {
-        return fact.canvas.isAncestor(this.menu, menu);
-    }
-    
     private void p(String string) {
         if(DEBUG) {
             System.out.println(string);
