@@ -45,6 +45,7 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
@@ -2339,7 +2340,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
             if ((classSym.asType() instanceof ErrorType) && ((FileObjects.FileBase)fobj).getFile().exists()) {
                 return;
             }
-            final PrintWriter out = new PrintWriter (new OutputStreamWriter(fobj.openOutputStream()));
+            final PrintWriter out = new PrintWriter (new OutputStreamWriter(fobj.openOutputStream(),"UTF-8"));
             try {               
                 SymbolDumper.dump(out,types,classSym,null);
             } finally {
@@ -2360,7 +2361,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 final String rsName = (index == -1 ? sourceName : sourceName.substring(index+1)) + '.' + FileObjects.RS;    //NOI18N
                 javax.tools.FileObject fo = fileManager.getFileForOutput(StandardLocation.CLASS_OUTPUT, pkg, rsName, source);
                 assert fo != null;
-                PrintWriter rsOut = new PrintWriter(fo.openWriter());
+                PrintWriter rsOut = new PrintWriter(new OutputStreamWriter (fo.openOutputStream(), "UTF-8"));
                 try {
                     for (String sig : rsList) {
                         rsOut.println(sig);                    
@@ -2379,7 +2380,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
             ClassFileUtil.encodeClassName(classSym, classNameBuilder, '.');  //NOI18N
             final String binaryName = classNameBuilder.toString();
             final JavaFileObject fobj = fileManager.getJavaFileForOutput(StandardLocation.CLASS_OUTPUT, binaryName, JavaFileObject.Kind.CLASS, source);
-            final PrintWriter out = new PrintWriter (new OutputStreamWriter(fobj.openOutputStream()));
+            final PrintWriter out = new PrintWriter (new OutputStreamWriter(fobj.openOutputStream(),"UTF-8"));
             try {               
                 SymbolDumper.dump(out,types,classSym,null);
             } finally {
@@ -2475,7 +2476,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
     }
         
     private static void readRSFile (final File f, final File root, final List<? super File> files) throws IOException {
-        BufferedReader in = new BufferedReader (new FileReader (f));
+        BufferedReader in = new BufferedReader (new InputStreamReader ( new FileInputStream (f), "UTF-8"));
         try {
             String binaryName;
             while ((binaryName=in.readLine())!=null) {

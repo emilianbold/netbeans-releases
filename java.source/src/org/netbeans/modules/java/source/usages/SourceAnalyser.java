@@ -40,6 +40,7 @@ import com.sun.tools.javac.util.Name;
 import com.sun.tools.javac.util.Name;
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.PrintWriter;
@@ -115,7 +116,7 @@ public class SourceAnalyser {
                 final String rsName = (index == -1 ? uv.sourceName : uv.sourceName.substring(index+1)) + '.' + FileObjects.RS;    //NOI18N
                 javax.tools.FileObject fo = manager.getFileForOutput(StandardLocation.CLASS_OUTPUT, pkg, rsName, sibling);
                 assert fo != null;
-                BufferedReader in = new BufferedReader (fo.openReader(false));
+                BufferedReader in = new BufferedReader ( new InputStreamReader (fo.openInputStream(), "UTF-8"));
                 try {
                     String line;
                     while ((line = in.readLine())!=null) {
@@ -124,7 +125,7 @@ public class SourceAnalyser {
                 } finally {
                     in.close();
                 }
-                PrintWriter rsOut = new PrintWriter(fo.openWriter());
+                PrintWriter rsOut = new PrintWriter( new OutputStreamWriter (fo.openOutputStream(), "UTF-8"));
                 try {
                     for (String sig : uv.rsList) {
                         rsOut.println(sig);
