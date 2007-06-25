@@ -22,6 +22,7 @@ import java.awt.geom.GeneralPath;
 import javax.swing.AbstractAction;
 import org.netbeans.api.visual.border.Border;
 import org.netbeans.api.visual.layout.LayoutFactory;
+import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.websvc.design.view.layout.TableLayout;
@@ -72,7 +73,13 @@ public class TabbedPaneWidget extends Widget {
      */
     public void addTab(String tabTitle, Image tabIcon, final Widget tabComponent) {
         contentWidget.addChild(tabComponent);
-        final ButtonWidget tab = new ButtonWidget(getScene(), tabIcon, tabTitle);
+        final ButtonWidget tab = new ButtonWidget(getScene(), tabIcon, tabTitle) {
+            protected boolean isAimingAllowed() {
+                return false;
+            }
+        };
+        tab.setLayout(LayoutFactory.createOverlayLayout());
+        tab.getLabelWidget().setAlignment(LabelWidget.Alignment.CENTER);
         tab.setBorder(new TabBorder(this,tab));
         tab.setAction(new AbstractAction() {
             public void actionPerformed(ActionEvent arg0) {
