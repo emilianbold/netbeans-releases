@@ -166,10 +166,14 @@ public final class InfoPresenter extends DynamicPresenter {
     }
 
     public static InfoPresenter createStatic (final String displayName, final String typeName, String iconResource) {
-        return createStatic (displayName, typeName, Utilities.loadImage (iconResource));
+        return createStatic (displayName, typeName, null, iconResource);
     }
 
-    public static InfoPresenter createStatic (final String displayName, final String typeName, final Image icon) {
+    public static InfoPresenter createStatic (final String displayName, final String typeName, final String toolTip, String iconResource) {
+        return createStatic (displayName, typeName, toolTip, Utilities.loadImage (iconResource));
+    }
+
+    public static InfoPresenter createStatic (final String displayName, final String typeName, final String toolTip, final Image icon) {
         return new InfoPresenter (new Resolver() {
             public DesignEventFilter getEventFilter (DesignComponent component) {
                 return null;
@@ -182,7 +186,7 @@ public final class InfoPresenter extends DynamicPresenter {
                     case SECONDARY:
                         return typeName;
                     case TERTIARY:
-                        return null;
+                        return toolTip;
                     default:
                         throw Debug.illegalState ();
                 }
@@ -209,7 +213,7 @@ public final class InfoPresenter extends DynamicPresenter {
     public static String getHtmlDisplayName (DesignComponent component) {
         InfoPresenter presenter = component.getPresenter (InfoPresenter.class);
         if (presenter == null) {
-            Debug.warning ("Missing InfoPresenter for", component);
+            Debug.warning ("Missing InfoPresenter for: ", component);
             return null;
         }
         String primary = presenter.getDisplayName (InfoPresenter.NameType.PRIMARY);
@@ -220,12 +224,28 @@ public final class InfoPresenter extends DynamicPresenter {
     public static String getDisplayName (DesignComponent component) {
         InfoPresenter presenter = component.getPresenter (InfoPresenter.class);
         if (presenter == null) {
-            Debug.warning ("Missing InfoPresenter for", component);
+            Debug.warning ("Missing InfoPresenter for: ", component);
             return null;
         }
         String primary = presenter.getDisplayName (InfoPresenter.NameType.PRIMARY);
         String secondary = presenter.getDisplayName (InfoPresenter.NameType.SECONDARY);
         return secondary != null ? primary +" [" + secondary + "]" : primary; //NOI18N
+    }
+
+    public static String getToolTip (DesignComponent component) {
+        InfoPresenter presenter = component.getPresenter (InfoPresenter.class);
+        if (presenter == null) {
+            Debug.warning ("Missing InfoPresenter for: ", component);
+            return null;
+        }
+        return getToolTip (presenter);
+    }
+
+    public static String getToolTip (InfoPresenter presenter) {
+        String text = presenter.getDisplayName (NameType.TERTIARY);
+        if (text != null)
+            return text;
+        return presenter.getDisplayName (NameType.SECONDARY);
     }
 
     public interface Resolver {

@@ -59,7 +59,7 @@ public final class FormCD extends ComponentDescriptor {
     public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "javax.microedition.lcdui.Form"); // NOI18N
     
     public static final String ICON_PATH = "org/netbeans/modules/vmd/midp/resources/components/form_16.png"; // NOI18N
-    public static final String ICON_LARGE_PATH = "org/netbeans/modules/vmd/midp/resources/components/form_64.png"; // NOI18N
+    public static final String ICON_LARGE_PATH = "org/netbeans/modules/vmd/midp/resources/components/form_32.png"; // NOI18N
     
     public static final String PROP_ITEMS = "items"; //NOI18N
     public static final String PROP_ITEM_STATE_LISTENER = "itemStateListener"; //NOI18N

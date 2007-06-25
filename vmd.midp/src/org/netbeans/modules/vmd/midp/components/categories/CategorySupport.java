@@ -32,7 +32,7 @@ public interface CategorySupport {
     String ICON_PATH_CATEGORY_RESOURCES = "org/netbeans/modules/vmd/midp/resources/components/category_resources_16.png"; // NOI18N
     String ICON_PATH_CATEGORY_ELEMENTS = "org/netbeans/modules/vmd/midp/resources/components/category_elements_16.png"; // NOI18N
     String ICON_PATH_CATEGORY_ITEMS = "org/netbeans/modules/vmd/midp/resources/components/category_items_16.png"; // NOI18N
-    String ICON_PATH_CATEGORY_FLOW = "org/netbeans/modules/vmd/midp/resources/components/category_resources_16.png"; // NOI18N
-    String ICON_PATH_CATEGORY_CUSTOM = "org/netbeans/modules/vmd/midp/resources/components/category_resources_16.png"; // NOI18N
+    String ICON_PATH_CATEGORY_FLOW = "org/netbeans/modules/vmd/midp/resources/components/category_flow_16.png"; // NOI18N
+    String ICON_PATH_CATEGORY_CUSTOM = "org/netbeans/modules/vmd/midp/resources/components/category_custom_16.png"; // NOI18N
     
 }

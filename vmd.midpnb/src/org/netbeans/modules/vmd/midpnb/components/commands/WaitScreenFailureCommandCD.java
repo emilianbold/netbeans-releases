@@ -69,7 +69,7 @@ public final class WaitScreenFailureCommandCD extends ComponentDescriptor {
     protected List<? extends Presenter> createPresenters () {
         return Arrays.asList (
             // general
-            InfoPresenter.createStatic("WaitScreen.FAILURE_COMMAND", "Command", CommandCD.ICON_PATH), // NOI18N
+            InfoPresenter.createStatic("FAILURE_COMMAND", "Command", "WaitScreen.FAILURE_COMMAND", CommandCD.ICON_PATH), // NOI18N
             // code
             new CodeReferencePresenter() {
                 protected String generateAccessCode() { return generateDirectAccessCode (); }

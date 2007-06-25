@@ -18,21 +18,21 @@
  */
 package org.netbeans.modules.vmd.midp.components.resources;
 
-import java.util.ArrayList;
+import org.netbeans.modules.vmd.api.inspector.InspectorFolderComponentPresenter;
 import org.netbeans.modules.vmd.api.inspector.InspectorPositionPresenter;
 import org.netbeans.modules.vmd.api.inspector.common.FolderPositionControllerFactory;
 import org.netbeans.modules.vmd.api.model.*;
+import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
+import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.general.ClassCD;
 import org.netbeans.modules.vmd.midp.inspector.controllers.ResourcePC;
 import org.netbeans.modules.vmd.midp.screen.ResourceSRItemPresenter;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import org.netbeans.modules.vmd.api.inspector.InspectorFolderComponentPresenter;
-import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
-import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter;
 
 /**
  * @author David Kaspar
@@ -43,6 +43,7 @@ public final class ResourceCD extends ComponentDescriptor {
     public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "#Resource"); // NOI18N
     
     public static final String ICON_PATH = "org/netbeans/modules/vmd/midp/resources/components/resource_16.png"; // NOI18N
+    public static final String LARGE_ICON_PATH = "org/netbeans/modules/vmd/midp/resources/components/resource_32.png"; // NOI18N
     
     static {
         MidpTypes.registerIconResource(TYPEID, ICON_PATH);

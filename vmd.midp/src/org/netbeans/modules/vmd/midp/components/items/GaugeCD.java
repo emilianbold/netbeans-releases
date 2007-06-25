@@ -50,8 +50,6 @@ public class GaugeCD extends ComponentDescriptor {
     
     public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "javax.microedition.lcdui.Gauge"); // NOI18N
     
-    public static final String ICON_PATH = "org/netbeans/modules/vmd/midp/resources/components/item_16.png"; // NOI18N
-    
     public static final int VALUE_INDEFINITE = -1;
     
     public static final int VALUE_CONTINUOUS_IDLE = 0;

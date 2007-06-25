@@ -68,7 +68,7 @@ public class SVGSplashScreenDismissCommandCD extends ComponentDescriptor {
     protected List<? extends Presenter> createPresenters() {
         return Arrays.asList(
             // general
-            InfoPresenter.createStatic("SVGSplashScreen.DISMISS_COMMAND", "Command", CommandCD.ICON_PATH), // NOI18N
+            InfoPresenter.createStatic("DISMISS_COMMAND", "Command", "SVGSplashScreen.DISMISS_COMMAND", CommandCD.ICON_PATH), // NOI18N
             // code
             new CodeReferencePresenter() {
                 protected String generateAccessCode() { return generateDirectAccessCode(); }

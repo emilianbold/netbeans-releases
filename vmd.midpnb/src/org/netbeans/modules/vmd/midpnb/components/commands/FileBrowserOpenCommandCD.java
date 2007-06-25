@@ -68,7 +68,7 @@ public final class FileBrowserOpenCommandCD extends ComponentDescriptor {
     protected List<? extends Presenter> createPresenters() {
         return Arrays.asList(
             // general
-            InfoPresenter.createStatic("FileBrowser.SELECT_FILE_COMMAND", "Command", CommandCD.ICON_PATH), // NOI18N
+            InfoPresenter.createStatic("SELECT_FILE_COMMAND", "Command", "FileBrowser.SELECT_FILE_COMMAND", CommandCD.ICON_PATH), // NOI18N
             // code
             new CodeReferencePresenter() {
                 protected String generateAccessCode() { return generateDirectAccessCode(); }

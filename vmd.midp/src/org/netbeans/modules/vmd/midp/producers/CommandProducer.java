@@ -48,7 +48,7 @@ public abstract class CommandProducer extends ComponentProducer {
     private int type;
 
     private CommandProducer(String lower, String upper, int type) {
-        super("#" + upper + "Command", CommandCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_COMMANDS, upper + " Command", upper + " Command", CommandCD.ICON_PATH, null));
+        super("#" + upper + "Command", CommandCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_COMMANDS, upper + " Command", upper + " Command", CommandCD.ICON_PATH, CommandCD.LARGE_ICON_PATH));
         this.lower = lower;
         this.upper = upper;
         this.type = type;

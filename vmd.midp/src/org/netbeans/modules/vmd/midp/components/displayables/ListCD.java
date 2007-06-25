@@ -59,7 +59,7 @@ public final class ListCD extends ComponentDescriptor {
     public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "javax.microedition.lcdui.List"); // NOI18N
 
     public static final String ICON_PATH = "org/netbeans/modules/vmd/midp/resources/components/list_16.png"; // NOI18N
-    public static final String ICON_LARGE_PATH = "org/netbeans/modules/vmd/midp/resources/components/list_64.png"; // NOI18N
+    public static final String ICON_LARGE_PATH = "org/netbeans/modules/vmd/midp/resources/components/list_32.png"; // NOI18N
 
     public static final String PROP_ELEMENTS = "elements"; // NOI18N
     public static final String PROP_LIST_TYPE = "listType"; // NOI18N

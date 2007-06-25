@@ -37,7 +37,7 @@ import java.awt.*;
  */
 public class AbstractInfoDisplayPresenter extends DisplayableDisplayPresenter {
     
-    private static final String ICON_BROKEN_PATH = "org/netbeans/modules/vmd/midpnb/resources/broken.png"; // NOI18N
+    private static final String ICON_BROKEN_PATH = "org/netbeans/modules/vmd/midpnb/resources/image-broken.png"; // NOI18N
     private static final Icon ICON_BROKEN = new ImageIcon(Utilities.loadImage(ICON_BROKEN_PATH));
     
     private JLabel imageLabel;

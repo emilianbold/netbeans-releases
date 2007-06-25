@@ -21,7 +21,10 @@ package org.netbeans.modules.vmd.midp.screen.display;
 
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
+import org.netbeans.modules.vmd.api.model.common.AcceptSuggestion;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfo;
+import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayDataFlavorSupport;
+import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayDataFlavorSupport.Position;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayPresenter;
 import org.netbeans.modules.vmd.api.screen.display.ScreenPropertyDescriptor;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
@@ -30,8 +33,10 @@ import org.netbeans.modules.vmd.midp.components.elements.ChoiceElementCD;
 import org.netbeans.modules.vmd.midp.components.items.ChoiceGroupCD;
 import org.netbeans.modules.vmd.midp.components.items.ChoiceSupport;
 import org.netbeans.modules.vmd.midp.components.resources.ImageCD;
+import org.netbeans.modules.vmd.midp.general.MoveArrayAcceptSuggestion;
 import org.netbeans.modules.vmd.midp.screen.display.property.ScreenBooleanPropertyEditor;
 import org.netbeans.modules.vmd.midp.screen.display.property.ScreenStringPropertyEditor;
+import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 
 import javax.swing.*;
@@ -42,11 +47,6 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import org.netbeans.modules.vmd.api.model.common.AcceptSuggestion;
-import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayDataFlavorSupport;
-import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayDataFlavorSupport.Position;
-import org.netbeans.modules.vmd.midp.general.MoveArrayAcceptSuggestion;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -55,12 +55,12 @@ import org.openide.util.Exceptions;
  */
 public class ChoiceElementDisplayPresenter extends ScreenDisplayPresenter {
     
-    public static final String ICON_EMPTY_CHECKBOX_PATH = "org/netbeans/modules/vmd/midp/resources/components/empty_element_16.png"; // NOI18N
-    public static final String ICON_CHECKBOX_PATH = "org/netbeans/modules/vmd/midp/resources/components/element_16.png"; // NOI18N
-    public static final String ICON_EMPTY_RADIOBUTTON_PATH = "org/netbeans/modules/vmd/midp/resources/components/empty_radio_16.png"; // NOI18N
-    public static final String ICON_RADIOBUTTON_PATH = "org/netbeans/modules/vmd/midp/resources/components/radio_16.png"; // NOI18N
-    public static final String ICON_POPUP_PATH = "org/netbeans/modules/vmd/midp/resources/components/down.png"; // NOI18N
-    public static final String ICON_BROKEN_PATH = "org/netbeans/modules/vmd/midp/resources/components/broken.png"; // NOI18N
+    public static final String ICON_EMPTY_CHECKBOX_PATH = "org/netbeans/modules/vmd/midp/resources/screen/unchecked.png"; // NOI18N
+    public static final String ICON_CHECKBOX_PATH = "org/netbeans/modules/vmd/midp/resources/screen/checked.png"; // NOI18N
+    public static final String ICON_EMPTY_RADIOBUTTON_PATH = "org/netbeans/modules/vmd/midp/resources/screen/radio-unchecked.png"; // NOI18N
+    public static final String ICON_RADIOBUTTON_PATH = "org/netbeans/modules/vmd/midp/resources/screen/radio-checked.png"; // NOI18N
+    public static final String ICON_POPUP_PATH = "org/netbeans/modules/vmd/midp/resources/screen/drop-down.png"; // NOI18N
+    public static final String ICON_BROKEN_PATH = "org/netbeans/modules/vmd/midp/resources/screen/broken-image.png"; // NOI18N
     
     public static final Icon ICON_EMPTY_CHECKBOX = new ImageIcon(Utilities.loadImage(ICON_EMPTY_CHECKBOX_PATH));
     public static final Icon ICON_CHECKBOX = new ImageIcon(Utilities.loadImage(ICON_CHECKBOX_PATH));

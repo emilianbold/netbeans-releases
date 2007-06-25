@@ -54,6 +54,7 @@ public class SwitchPointCD extends ComponentDescriptor {
     public static final TypeID TYPEID = new TypeID (TypeID.Kind.COMPONENT, "#SwitchPoint"); // NOI18N
 
     public static final String ICON_PATH = "org/netbeans/modules/vmd/midp/resources/components/switch_16.png"; // NOI18N
+    public static final String LARGE_ICON_PATH = "org/netbeans/modules/vmd/midp/resources/components/switch_32.png"; // NOI18N
 
     public static final String PROP_OPERAND = "operand"; // NOI18N
     public static final String PROP_CASES = "cases"; // NOI18N
@@ -78,7 +79,7 @@ public class SwitchPointCD extends ComponentDescriptor {
     }
 
     public PaletteDescriptor getPaletteDescriptor () {
-        return new PaletteDescriptor (MidpPaletteProvider.CATEGORY_PROCESS_FLOW, "Switch", "Switch", ICON_PATH, null);
+        return new PaletteDescriptor (MidpPaletteProvider.CATEGORY_PROCESS_FLOW, "Switch", "Switch", ICON_PATH, LARGE_ICON_PATH);
     }
 
     public DefaultPropertiesPresenter createPropertiesPresenter () {

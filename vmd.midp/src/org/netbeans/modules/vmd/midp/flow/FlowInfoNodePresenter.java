@@ -21,6 +21,7 @@ package org.netbeans.modules.vmd.midp.flow;
 import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.anchor.Anchor;
 import org.netbeans.api.visual.vmd.VMDNodeWidget;
+import org.netbeans.api.visual.vmd.VMDFactory;
 import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.vmd.api.flow.FlowNodePresenter;
@@ -84,7 +85,7 @@ public final class FlowInfoNodePresenter extends FlowNodePresenter {
     private class InfoNodeDecoratorBehaviour implements FlowNodeDescriptor.NodeDecorator, FlowNodeDescriptor.NodeBehaviour, FlowDescriptor.AcceptActionBehaviour, FlowDescriptor.RenameActionBehaviour, FlowDescriptor.EditActionBehaviour {
 
         public Widget createWidget (FlowNodeDescriptor descriptor, FlowScene scene) {
-            VMDNodeWidget widget = new VMDNodeWidget (scene);
+            VMDNodeWidget widget = new VMDNodeWidget (scene, VMDFactory.getNetBeans60Scheme ());
             scene.addNodeCommonActions (widget);
             LabelWidget nodeNameWidget = widget.getNodeNameWidget ();
             widget.getActions ().addAction (ActionFactory.createForwardKeyEventsAction (nodeNameWidget, null));
@@ -99,7 +100,7 @@ public final class FlowInfoNodePresenter extends FlowNodePresenter {
             VMDNodeWidget widget = (VMDNodeWidget) scene.findWidget (descriptor);
             widget.setNodeImage (presenter.getIcon (InfoPresenter.IconType.COLOR_16x16));
             widget.setNodeName (presenter.getDisplayName (InfoPresenter.NameType.PRIMARY));
-            widget.setNodeType (presenter.getDisplayName (InfoPresenter.NameType.SECONDARY));
+            widget.setToolTipText (InfoPresenter.getToolTip (presenter));
             scene.scheduleNodeDescriptorForOrdering (descriptor);
         }
 

@@ -21,23 +21,25 @@ package org.netbeans.modules.vmd.midp.components.sources;
 import org.netbeans.modules.vmd.api.inspector.InspectorPositionPresenter;
 import org.netbeans.modules.vmd.api.inspector.common.RenameAction;
 import org.netbeans.modules.vmd.api.model.*;
-import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
 import org.netbeans.modules.vmd.api.model.common.AcceptPresenter;
+import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
 import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter;
 import org.netbeans.modules.vmd.api.model.presenters.actions.*;
 import org.netbeans.modules.vmd.api.model.support.ArraySupport;
 import org.netbeans.modules.vmd.api.properties.DefaultPropertiesPresenter;
 import org.netbeans.modules.vmd.midp.actions.MidpActionsSupport;
 import org.netbeans.modules.vmd.midp.components.*;
-import org.netbeans.modules.vmd.midp.components.handlers.EventHandlerCD;
-import org.netbeans.modules.vmd.midp.components.handlers.ListEventHandlerCD;
 import org.netbeans.modules.vmd.midp.components.displayables.ListCD;
 import org.netbeans.modules.vmd.midp.components.elements.ElementSupport;
+import org.netbeans.modules.vmd.midp.components.handlers.EventHandlerCD;
+import org.netbeans.modules.vmd.midp.components.handlers.ListEventHandlerCD;
 import org.netbeans.modules.vmd.midp.components.resources.FontCD;
 import org.netbeans.modules.vmd.midp.components.resources.ImageCD;
+import org.netbeans.modules.vmd.midp.components.resources.ImageFileAcceptPresenter;
 import org.netbeans.modules.vmd.midp.flow.FlowEventSourcePinPresenter;
 import org.netbeans.modules.vmd.midp.flow.FlowListElementPinOrderPresenter;
 import org.netbeans.modules.vmd.midp.general.AcceptTypePresenter;
+import org.netbeans.modules.vmd.midp.general.MoveArrayAcceptPresenter;
 import org.netbeans.modules.vmd.midp.inspector.controllers.ComponentsCategoryPC;
 import org.netbeans.modules.vmd.midp.inspector.folders.MidpInspectorSupport;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertiesCategories;
@@ -49,8 +51,6 @@ import org.netbeans.modules.vmd.midp.screen.display.ListElementEventSourceDispla
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import org.netbeans.modules.vmd.midp.components.resources.ImageFileAcceptPresenter;
-import org.netbeans.modules.vmd.midp.general.MoveArrayAcceptPresenter;
 
 /**
  * @author David Kaspar
@@ -64,8 +64,6 @@ public final class ListElementEventSourceCD extends ComponentDescriptor {
     public static final String PROP_IMAGE = ImageCD.PROP_IMAGE;
     public static final String PROP_FONT = "font";  // NOI18N
     public static final String PROP_SELECTED = "selected"; // NOI18N
-
-    public static final String ICON_PATH = "org/netbeans/modules/vmd/midp/resources/components/item_16.png"; // NOI18N
 
     public TypeDescriptor getTypeDescriptor () {
         return new TypeDescriptor (EventSourceCD.TYPEID, TYPEID, true, false);

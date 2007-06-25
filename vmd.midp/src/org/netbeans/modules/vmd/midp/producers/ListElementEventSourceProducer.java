@@ -23,6 +23,7 @@ import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.PaletteDescriptor;
 import org.netbeans.modules.vmd.midp.components.MidpJavaSupport;
+import org.netbeans.modules.vmd.midp.components.elements.ChoiceElementCD;
 import org.netbeans.modules.vmd.midp.components.sources.ListElementEventSourceCD;
 import org.netbeans.modules.vmd.midp.palette.MidpPaletteProvider;
 
@@ -34,7 +35,7 @@ public class ListElementEventSourceProducer extends ComponentProducer {
     private static final String PRODUCER_ID = "#ListElementEventSourceProducer"; // NOI18N
 
     public ListElementEventSourceProducer () {
-        super (PRODUCER_ID, ListElementEventSourceCD.TYPEID, new PaletteDescriptor (MidpPaletteProvider.CATEGORY_ELEMENTS, "List Element", "List Element", ListElementEventSourceCD.ICON_PATH, null));
+        super (PRODUCER_ID, ListElementEventSourceCD.TYPEID, new PaletteDescriptor (MidpPaletteProvider.CATEGORY_ELEMENTS, "List Element", "List Element", ChoiceElementCD.ICON_PATH, ChoiceElementCD.LARGE_ICON_PATH));
     }
 
     public Result createComponent (DesignDocument document) {

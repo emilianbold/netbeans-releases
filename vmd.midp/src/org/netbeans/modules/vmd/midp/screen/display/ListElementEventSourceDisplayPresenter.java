@@ -19,11 +19,12 @@
 
 package org.netbeans.modules.vmd.midp.screen.display;
 
-import java.awt.datatransfer.Transferable;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.api.model.common.AcceptSuggestion;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfo;
+import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayDataFlavorSupport;
+import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayDataFlavorSupport.Position;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayPresenter;
 import org.netbeans.modules.vmd.api.screen.display.ScreenPropertyDescriptor;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
@@ -33,21 +34,20 @@ import org.netbeans.modules.vmd.midp.components.elements.ChoiceElementCD;
 import org.netbeans.modules.vmd.midp.components.items.ChoiceSupport;
 import org.netbeans.modules.vmd.midp.components.resources.ImageCD;
 import org.netbeans.modules.vmd.midp.components.sources.ListElementEventSourceCD;
+import org.netbeans.modules.vmd.midp.general.MoveArrayAcceptSuggestion;
 import org.netbeans.modules.vmd.midp.screen.display.property.ScreenBooleanPropertyEditor;
 import org.netbeans.modules.vmd.midp.screen.display.property.ScreenStringPropertyEditor;
+import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayDataFlavorSupport;
-import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayDataFlavorSupport.Position;
-import org.netbeans.modules.vmd.midp.general.MoveArrayAcceptSuggestion;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -55,7 +55,7 @@ import org.openide.util.Exceptions;
  */
 public class ListElementEventSourceDisplayPresenter extends ScreenDisplayPresenter {
     
-    private static final String ICON_BROKEN_PATH = "org/netbeans/modules/vmd/midp/resources/components/broken.png"; // NOI18N
+    private static final String ICON_BROKEN_PATH = "org/netbeans/modules/vmd/midp/resources/screen/broken-image.png"; // NOI18N
     private static final Icon ICON_BROKEN = new ImageIcon(Utilities.loadImage(ICON_BROKEN_PATH));
     
     private JPanel view;

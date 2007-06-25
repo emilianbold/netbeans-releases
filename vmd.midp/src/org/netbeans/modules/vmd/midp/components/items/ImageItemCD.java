@@ -53,8 +53,6 @@ public class ImageItemCD extends ComponentDescriptor {
     
     public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "javax.microedition.lcdui.ImageItem"); // NOI18N
     
-    public static final String ICON_PATH = "org/netbeans/modules/vmd/midp/resources/components/item_16.png"; // NOI18N
-    
     public static final String PROP_ALT_TEXT = "altText"; // NOI18N
     public static final String PROP_IMAGE = ImageCD.PROP_IMAGE; // NOI18N
     

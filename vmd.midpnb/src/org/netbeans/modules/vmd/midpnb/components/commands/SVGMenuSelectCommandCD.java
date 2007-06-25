@@ -67,7 +67,7 @@ public class SVGMenuSelectCommandCD extends ComponentDescriptor {
     protected List<? extends Presenter> createPresenters() {
         return Arrays.asList(
             // general
-            InfoPresenter.createStatic("SVGMenu.SELECT_COMMAND", "Command", CommandCD.ICON_PATH), // NOI18N
+            InfoPresenter.createStatic("SELECT_COMMAND", "Command", "SVGMenu.SELECT_COMMAND", CommandCD.ICON_PATH), // NOI18N
             // code
             new CodeReferencePresenter() {
                 protected String generateAccessCode() { return generateDirectAccessCode(); }

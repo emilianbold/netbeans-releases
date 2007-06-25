@@ -19,20 +19,15 @@
 
 package org.netbeans.modules.vmd.midp.components.items;
 
-import java.util.Arrays;
-import java.util.List;
 import org.netbeans.modules.vmd.api.codegen.CodeSetterPresenter;
-import org.netbeans.modules.vmd.api.model.ComponentDescriptor;
-import org.netbeans.modules.vmd.api.model.Presenter;
-import org.netbeans.modules.vmd.api.model.PropertyDescriptor;
-import org.netbeans.modules.vmd.api.model.TypeDescriptor;
-import org.netbeans.modules.vmd.api.model.TypeID;
-import org.netbeans.modules.vmd.api.model.VersionDescriptor;
+import org.netbeans.modules.vmd.api.model.*;
 import org.netbeans.modules.vmd.midp.codegen.MidpParameter;
 import org.netbeans.modules.vmd.midp.codegen.MidpSetter;
-import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.MidpVersionable;
+
+import java.util.Arrays;
+import java.util.List;
 
 /**
  *
@@ -41,11 +36,6 @@ import org.netbeans.modules.vmd.midp.components.MidpVersionable;
 public class CustomItemCD extends ComponentDescriptor {
     
     public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "javax.microedition.lcdui.CustomItem"); // NOI18N
-    public static final String ICON_PATH = "org/netbeans/modules/vmd/midp/resources/components/item_16.png"; // NOI18N
-
-    static {
-        MidpTypes.registerIconResource(TYPEID, ICON_PATH);
-    }
 
     public TypeDescriptor getTypeDescriptor() {
         return new TypeDescriptor(ItemCD.TYPEID, TYPEID, true, true);

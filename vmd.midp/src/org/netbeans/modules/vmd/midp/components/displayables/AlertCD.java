@@ -26,24 +26,24 @@ import org.netbeans.modules.vmd.api.model.*;
 import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
 import org.netbeans.modules.vmd.api.model.presenters.actions.DeleteDependencyPresenter;
 import org.netbeans.modules.vmd.api.properties.DefaultPropertiesPresenter;
+import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayPresenter;
 import org.netbeans.modules.vmd.midp.codegen.MidpParameter;
 import org.netbeans.modules.vmd.midp.codegen.MidpSetter;
+import org.netbeans.modules.vmd.midp.components.MidpAcceptTrensferableKindPresenter;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.MidpVersionable;
 import org.netbeans.modules.vmd.midp.components.handlers.SwitchDisplayableEventHandlerCD;
 import org.netbeans.modules.vmd.midp.components.items.GaugeCD;
 import org.netbeans.modules.vmd.midp.components.resources.ImageCD;
+import org.netbeans.modules.vmd.midp.components.resources.ImageFileAcceptPresenter;
+import org.netbeans.modules.vmd.midp.flow.FlowAlertViaPinOrderPresenter;
 import org.netbeans.modules.vmd.midp.general.AbstractEventHandlerCreatorPresenter;
 import org.netbeans.modules.vmd.midp.inspector.controllers.DisplayablePC;
 import org.netbeans.modules.vmd.midp.propertyeditors.*;
-import org.netbeans.modules.vmd.midp.flow.FlowAlertViaPinOrderPresenter;
+import org.netbeans.modules.vmd.midp.screen.display.AlertDisplayPresenter;
 
 import java.util.*;
-import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayPresenter;
-import org.netbeans.modules.vmd.midp.components.MidpAcceptTrensferableKindPresenter;
-import org.netbeans.modules.vmd.midp.components.resources.ImageFileAcceptPresenter;
-import org.netbeans.modules.vmd.midp.screen.display.AlertDisplayPresenter;
 
 /**
  * @author Karol Harezlak
@@ -54,7 +54,7 @@ public final class AlertCD extends ComponentDescriptor {
     public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "javax.microedition.lcdui.Alert"); // NOI18N
 
     public static final String ICON_PATH = "org/netbeans/modules/vmd/midp/resources/components/alert_16.png"; // NOI18N
-    public static final String ICON_LARGE_PATH = "org/netbeans/modules/vmd/midp/resources/components/alert_64.png"; // NOI18N
+    public static final String ICON_LARGE_PATH = "org/netbeans/modules/vmd/midp/resources/components/alert_32.png"; // NOI18N
 
     public static final PropertyValue FOREVER_VALUE = MidpTypes.createIntegerValue(-2);
 

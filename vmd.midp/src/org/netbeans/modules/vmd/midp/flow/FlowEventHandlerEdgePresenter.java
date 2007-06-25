@@ -22,6 +22,7 @@ import org.netbeans.api.visual.anchor.Anchor;
 import org.netbeans.api.visual.widget.ConnectionWidget;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.api.visual.vmd.VMDConnectionWidget;
+import org.netbeans.api.visual.vmd.VMDFactory;
 import org.netbeans.modules.vmd.api.flow.FlowEdgePresenter;
 import org.netbeans.modules.vmd.api.flow.visual.*;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
@@ -170,7 +171,8 @@ public abstract class FlowEventHandlerEdgePresenter extends FlowEdgePresenter {
     public class EventHandlerEdgeDecoratorBehaviour implements FlowEdgeDescriptor.EdgeDecorator, FlowEdgeDescriptor.EdgeBehaviour {
 
         public Widget create (FlowEdgeDescriptor descriptor, FlowScene scene) {
-            VMDConnectionWidget widget = new VMDConnectionWidget (scene, scene.createEdgeRouter ());
+            VMDConnectionWidget widget = new VMDConnectionWidget (scene, VMDFactory.getNetBeans60Scheme ());
+            widget.setRouter (scene.createEdgeRouter ());
             scene.addEdgeCommonActions (widget);
             widget.getActions ().addAction (scene.createMoveControlPointAction ());
             return widget;

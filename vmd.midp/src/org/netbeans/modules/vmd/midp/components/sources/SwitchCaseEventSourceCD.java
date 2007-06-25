@@ -49,6 +49,7 @@ public final class SwitchCaseEventSourceCD extends ComponentDescriptor {
     public static final TypeID TYPEID = new TypeID (TypeID.Kind.COMPONENT, "#SwitchCaseEventSource"); // NOI18N
 
     public static final String ICON_PATH = "org/netbeans/modules/vmd/midp/resources/components/switch_case_16.png"; // NOI18N
+    public static final String LARGE_ICON_PATH = "org/netbeans/modules/vmd/midp/resources/components/switch_case_32.png"; // NOI18N
 
     public static final String PROP_OPTION = "option"; // NOI18N
 
@@ -67,7 +68,7 @@ public final class SwitchCaseEventSourceCD extends ComponentDescriptor {
     }
 
     public PaletteDescriptor getPaletteDescriptor () {
-        return new PaletteDescriptor (MidpPaletteProvider.CATEGORY_PROCESS_FLOW, "Switch Case", "Switch Case", ICON_PATH, null);
+        return new PaletteDescriptor (MidpPaletteProvider.CATEGORY_PROCESS_FLOW, "Switch Case", "Switch Case", ICON_PATH, LARGE_ICON_PATH);
     }
 
     public static DesignComponent getSwitchPointComponent (DesignComponent switchCaseEventSourceComponent) {

@@ -38,7 +38,7 @@ import java.awt.*;
  */
 public final class ElementSupport {
 
-    private static final Resolver LIST_ELEMENT_RESOLVER = new ElementResolver (ListElementEventSourceCD.PROP_STRING, ListElementEventSourceCD.ICON_PATH);
+    private static final Resolver LIST_ELEMENT_RESOLVER = new ElementResolver (ListElementEventSourceCD.PROP_STRING, ChoiceElementCD.ICON_PATH);
     private static final Resolver CHOICE_ELEMENT_RESOLVER = new ElementResolver (ChoiceElementCD.PROP_STRING, ChoiceElementCD.ICON_PATH);
 
     public static Resolver createListElementInfoResolver() {

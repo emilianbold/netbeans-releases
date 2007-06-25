@@ -38,7 +38,8 @@ public class ListEventHandlerCD extends ComponentDescriptor {
 
     public static final TypeID TYPEID = new TypeID (TypeID.Kind.COMPONENT, "#ListEventHandler"); // NOI18N
 
-    public static final String ICON_PATH = "org/netbeans/modules/vmd/midp/resources/components/list_16.png"; // NOI18N
+    public static final String ICON_PATH = "org/netbeans/modules/vmd/midp/resources/components/list_action_16.png"; // NOI18N
+    public static final String LARGE_ICON_PATH = "org/netbeans/modules/vmd/midp/resources/components/list_action_32.png"; // NOI18N
 
     public static final String PROP_LIST = "list"; // NOI18N
 
@@ -55,7 +56,7 @@ public class ListEventHandlerCD extends ComponentDescriptor {
     }
 
     public PaletteDescriptor getPaletteDescriptor () {
-        return new PaletteDescriptor (MidpPaletteProvider.CATEGORY_PROCESS_FLOW, "List Action", "List Action", ICON_PATH, null);
+        return new PaletteDescriptor (MidpPaletteProvider.CATEGORY_PROCESS_FLOW, "List Action", "List Action", ICON_PATH, LARGE_ICON_PATH);
     }
 
     protected List<? extends Presenter> createPresenters () {

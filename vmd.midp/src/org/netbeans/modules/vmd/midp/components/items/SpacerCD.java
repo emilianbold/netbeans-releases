@@ -54,8 +54,6 @@ public class SpacerCD extends ComponentDescriptor {
     
     public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "javax.microedition.lcdui.Spacer"); // NOI18N
     
-    public static final String ICON_PATH = "org/netbeans/modules/vmd/midp/resources/components/item_16.png"; // NOI18N
-    
     public static final String PROP_MIN_WIDTH = "minWidth" ;  // NOI18N
     public static final String PROP_MIN_HEIGHT = "minHeight" ;  // NOI18N
     

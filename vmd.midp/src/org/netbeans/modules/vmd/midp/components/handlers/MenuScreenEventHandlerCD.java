@@ -36,6 +36,7 @@ public class MenuScreenEventHandlerCD extends ComponentDescriptor {
     public static final TypeID TYPEID = new TypeID (TypeID.Kind.COMPONENT, "#MenuScreenEventHandler"); // NOI18N
 
     public static final String ICON_PATH = "org/netbeans/modules/vmd/midp/resources/components/menu_screen_16.png"; // NOI18N
+    public static final String LARGE_ICON_PATH = "org/netbeans/modules/vmd/midp/resources/components/menu_screen_32.png"; // NOI18N
 
     public TypeDescriptor getTypeDescriptor () {
         return new TypeDescriptor (EventHandlerCD.TYPEID, MenuScreenEventHandlerCD.TYPEID, true, false);
@@ -50,7 +51,7 @@ public class MenuScreenEventHandlerCD extends ComponentDescriptor {
     }
 
     public PaletteDescriptor getPaletteDescriptor () {
-        return new PaletteDescriptor (MidpPaletteProvider.CATEGORY_PROCESS_FLOW, "Menu Screen Action", "Menu Screen Action", MenuScreenEventHandlerCD.ICON_PATH, null);
+        return new PaletteDescriptor (MidpPaletteProvider.CATEGORY_PROCESS_FLOW, "Menu Screen Action", "Menu Screen Action", MenuScreenEventHandlerCD.ICON_PATH, MenuScreenEventHandlerCD.LARGE_ICON_PATH);
     }
 
     protected List<? extends Presenter> createPresenters () {

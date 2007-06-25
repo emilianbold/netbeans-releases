@@ -38,8 +38,6 @@ public final class ListSelectCommandCD extends ComponentDescriptor {
 
     public static final TypeID TYPEID = new TypeID (TypeID.Kind.COMPONENT, "#ListSelectCommand"); // NOI18N
 
-    public static final String ICON_PATH = "org/netbeans/modules/vmd/midp/resources/components/command_16.png"; // NOI18N
-
     public TypeDescriptor getTypeDescriptor () {
         return new TypeDescriptor (CommandCD.TYPEID, ListSelectCommandCD.TYPEID, true, true);
     }
@@ -68,7 +66,7 @@ public final class ListSelectCommandCD extends ComponentDescriptor {
     protected List<? extends Presenter> createPresenters () {
         return Arrays.asList (
             // general
-            InfoPresenter.createStatic ("List.SELECT_COMMAND", "Command", CommandCD.ICON_PATH),
+            InfoPresenter.createStatic ("SELECT_COMMAND", "Command", "List.SELECT_COMMAND", CommandCD.ICON_PATH),
             // code
             new CodeReferencePresenter () {
                 protected String generateAccessCode () { return generateDirectAccessCode (); }

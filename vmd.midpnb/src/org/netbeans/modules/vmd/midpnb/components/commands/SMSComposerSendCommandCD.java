@@ -68,7 +68,7 @@ public final class SMSComposerSendCommandCD extends ComponentDescriptor {
     protected List<? extends Presenter> createPresenters() {
         return Arrays.asList(
             // general
-            InfoPresenter.createStatic("SMSComposer.SEND_COMMAND", "Command", CommandCD.ICON_PATH), // NOI18N
+            InfoPresenter.createStatic("SEND_COMMAND", "Command", "SMSComposer.SEND_COMMAND", CommandCD.ICON_PATH), // NOI18N
             // code
             new CodeReferencePresenter() {
                 protected String generateAccessCode() { return generateDirectAccessCode(); }

@@ -68,7 +68,7 @@ public final class PIMBrowserOpenCommandCD extends ComponentDescriptor {
     protected List<? extends Presenter> createPresenters() {
         return Arrays.asList(
             // general
-            InfoPresenter.createStatic("PIMBrowser.SELECT_PIM_ITEM ", "Command", CommandCD.ICON_PATH), // NOI18N
+            InfoPresenter.createStatic("SELECT_PIM_ITEM", "Command", "PIMBrowser.SELECT_PIM_ITEM", CommandCD.ICON_PATH), // NOI18N
             // code
             new CodeReferencePresenter() {
                 protected String generateAccessCode() { return generateDirectAccessCode(); }

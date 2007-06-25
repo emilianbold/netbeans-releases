@@ -54,8 +54,6 @@ public class ChoiceGroupCD extends ComponentDescriptor {
     
     public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "javax.microedition.lcdui.ChoiceGroup"); // NOI18N
     
-    public static final String ICON_PATH = "org/netbeans/modules/vmd/midp/resources/components/item_16.png"; // NOI18N
-    
     public static final String PROP_CHOICE_TYPE = "choiceType"; // NOI18N
     public static final String PROP_FIT_POLICY = "fitPolicy"; // NOI18N
     public static final String PROP_ELEMENTS = "elements"; // NOI18N

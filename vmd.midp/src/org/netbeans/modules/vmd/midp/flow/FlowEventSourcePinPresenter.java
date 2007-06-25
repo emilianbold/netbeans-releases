@@ -22,6 +22,7 @@ import org.netbeans.api.visual.anchor.Anchor;
 import org.netbeans.api.visual.anchor.AnchorFactory;
 import org.netbeans.api.visual.vmd.VMDNodeWidget;
 import org.netbeans.api.visual.vmd.VMDPinWidget;
+import org.netbeans.api.visual.vmd.VMDFactory;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.vmd.api.flow.FlowPinPresenter;
 import org.netbeans.modules.vmd.api.flow.visual.*;
@@ -115,7 +116,7 @@ public abstract class FlowEventSourcePinPresenter extends FlowPinPresenter {
     protected class EventSourcePinDecoratorBehaviour implements FlowPinDescriptor.PinDecorator, FlowPinDescriptor.PinBehaviour, FlowDescriptor.BadgeDecorator, FlowDescriptor.AcceptActionBehaviour, FlowDescriptor.RenameActionBehaviour {
 
         public Widget createWidget (FlowPinDescriptor descriptor, FlowScene scene) {
-            VMDPinWidget vmdPinWidget = new VMDPinWidget (scene);
+            VMDPinWidget vmdPinWidget = new VMDPinWidget (scene, VMDFactory.getNetBeans60Scheme ());
             scene.addPinCommonActions (vmdPinWidget);
             vmdPinWidget.getActions ().addAction (0, scene.createRenameAction ());
             return vmdPinWidget;

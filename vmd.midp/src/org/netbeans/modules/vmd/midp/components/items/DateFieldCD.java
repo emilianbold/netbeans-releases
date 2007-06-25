@@ -50,8 +50,6 @@ public class DateFieldCD extends ComponentDescriptor {
 
     public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "javax.microedition.lcdui.DateField"); // NOI18N
 
-    public static final String ICON_PATH = "org/netbeans/modules/vmd/midp/resources/components/item_16.png"; // NOI18N
-
     public static final int VALUE_DATE = 1;
     public static final int VALUE_TIME = 2;
     public static final int VALUE_DATE_TIME = 3;

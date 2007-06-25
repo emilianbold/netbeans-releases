@@ -43,6 +43,7 @@ public class EntryPointCD extends ComponentDescriptor {
     public static final TypeID TYPEID = new TypeID (TypeID.Kind.COMPONENT, "#EntryPoint"); // NOI18N
 
     public static final String ICON_PATH = "org/netbeans/modules/vmd/midp/resources/components/entry_point_16.png"; // NOI18N
+    public static final String LARGE_ICON_PATH = "org/netbeans/modules/vmd/midp/resources/components/entry_point_32.png"; // NOI18N
 
     public static final String PROP_START = "start"; // NOI18N
 

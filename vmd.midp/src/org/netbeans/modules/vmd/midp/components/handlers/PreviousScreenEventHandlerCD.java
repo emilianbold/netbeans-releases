@@ -28,7 +28,6 @@ import org.netbeans.modules.vmd.midp.flow.FlowEventHandlerPinBadgePresenter;
 import org.netbeans.modules.vmd.midp.palette.MidpPaletteProvider;
 import org.openide.util.Utilities;
 
-import java.awt.*;
 import java.util.Arrays;
 import java.util.List;
 
@@ -40,7 +39,7 @@ public class PreviousScreenEventHandlerCD extends ComponentDescriptor {
     public static final TypeID TYPEID = new TypeID (TypeID.Kind.COMPONENT, "#PreviousScreenEventHandler"); // NOI18N
 
     public static final String ICON_PATH = "org/netbeans/modules/vmd/midp/resources/components/previous_screen_16.png"; // NOI18N
-    private static final Image ICON_SMALL = Utilities.loadImage (ICON_PATH);
+    public static final String LARGE_ICON_PATH = "org/netbeans/modules/vmd/midp/resources/components/previous_screen_32.png"; // NOI18N
 
     public TypeDescriptor getTypeDescriptor () {
         return new TypeDescriptor (EventHandlerCD.TYPEID, TYPEID, true, false);
@@ -55,7 +54,7 @@ public class PreviousScreenEventHandlerCD extends ComponentDescriptor {
     }
 
     public PaletteDescriptor getPaletteDescriptor () {
-        return new PaletteDescriptor (MidpPaletteProvider.CATEGORY_PROCESS_FLOW, "Previous Screen Action", "Previous Screen Action", ICON_PATH, null);
+        return new PaletteDescriptor (MidpPaletteProvider.CATEGORY_PROCESS_FLOW, "Previous Screen Action", "Previous Screen Action", ICON_PATH, LARGE_ICON_PATH);
     }
 
     protected List<? extends Presenter> createPresenters () {
@@ -63,7 +62,7 @@ public class PreviousScreenEventHandlerCD extends ComponentDescriptor {
             // info
             InfoPresenter.createStatic ("Go to Previous Displayable", "Action", DisplayableCD.ICON_PATH),
             // flow
-            new FlowEventHandlerPinBadgePresenter (ICON_SMALL, 0),
+            new FlowEventHandlerPinBadgePresenter (Utilities.loadImage (ICON_PATH), 0),
             // code
             new CodeMultiGuardedLevelPresenter () {
                 protected void generateMultiGuardedSectionCode (MultiGuardedSection section) {

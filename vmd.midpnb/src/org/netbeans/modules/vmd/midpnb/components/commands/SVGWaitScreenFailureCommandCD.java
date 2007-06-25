@@ -68,7 +68,7 @@ public class SVGWaitScreenFailureCommandCD extends ComponentDescriptor {
     protected List<? extends Presenter> createPresenters () {
         return Arrays.asList (
             // general
-            InfoPresenter.createStatic("SVGWaitScreen.FAILURE_COMMAND", "Command", CommandCD.ICON_PATH), // NOI18N
+            InfoPresenter.createStatic("FAILURE_COMMAND", "Command", "SVGWaitScreen.FAILURE_COMMAND", CommandCD.ICON_PATH), // NOI18N
             // code
             new CodeReferencePresenter() {
                 protected String generateAccessCode() { return generateDirectAccessCode (); }

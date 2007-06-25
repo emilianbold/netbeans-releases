@@ -66,6 +66,9 @@ public class ItemCD extends ComponentDescriptor {
 
     public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "javax.microedition.lcdui.Item"); // NOI18N
 
+    public static final String ICON_PATH = "org/netbeans/modules/vmd/midp/resources/components/item_16.png"; // NOI18N
+    public static final String LARGE_ICON_PATH = "org/netbeans/modules/vmd/midp/resources/components/item_32.png"; // NOI18N
+
     public static final int VALUE_PLAIN = 0;
     public static final int VALUE_HYPERLINK = 1;
     public static final int VALUE_BUTTON = 2;
@@ -96,8 +99,6 @@ public class ItemCD extends ComponentDescriptor {
     public static final String PROP_APPEARANCE_MODE = "appearanceMode"; // NOI18N
 
     public static final String PROP_OLD_ITEM_COMMAND_LISTENER = "itemCommandlistener"; //NOI18N
-
-    private static final String ICON_PATH = "org/netbeans/modules/vmd/midp/resources/components/item_16.png"; // NOI18N
 
     static {
         MidpTypes.registerIconResource(TYPEID, ICON_PATH);

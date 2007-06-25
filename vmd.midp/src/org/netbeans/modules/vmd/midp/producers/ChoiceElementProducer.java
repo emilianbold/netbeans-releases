@@ -33,7 +33,7 @@ public class ChoiceElementProducer extends ComponentProducer {
     private static final String PRODUCER_ID = "#ChoiceElementProducer"; // NOI18N
 
     public ChoiceElementProducer() {
-        super(PRODUCER_ID, ChoiceElementCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_ELEMENTS, "Choice Element", "Choice Element", ChoiceElementCD.ICON_PATH, null));
+        super(PRODUCER_ID, ChoiceElementCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_ELEMENTS, "Choice Element", "Choice Element", ChoiceElementCD.ICON_PATH, ChoiceElementCD.LARGE_ICON_PATH));
     }
 
     public boolean checkValidity(DesignDocument document) {

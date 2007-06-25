@@ -18,10 +18,6 @@
  */
 package org.netbeans.modules.vmd.midp.components.points;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
 import org.netbeans.modules.vmd.api.codegen.CodeNamePresenter;
 import org.netbeans.modules.vmd.api.inspector.InspectorFolder;
 import org.netbeans.modules.vmd.api.inspector.InspectorOrderingController;
@@ -36,8 +32,7 @@ import org.netbeans.modules.vmd.midp.components.sources.MobileDeviceStartEventSo
 import org.netbeans.modules.vmd.midp.flow.FlowInfoNodePresenter;
 import org.netbeans.modules.vmd.midp.flow.FlowMobileDevicePinOrderPresenter;
 
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 /**
  * @author Karol Harezlak
@@ -47,7 +42,8 @@ public final class MobileDeviceCD extends ComponentDescriptor {
     public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "#MobileDevice"); // NOI18N
     
     public static final String ICON_PATH = "org/netbeans/modules/vmd/midp/resources/components/mobile_device_16.png"; // NOI18N
-    
+//    public static final String LARGE_ICON_PATH = "org/netbeans/modules/vmd/midp/resources/components/mobile_device_32.png"; // NOI18N
+
     public static final String PROP_START = "start"; // NOI18N
     public static final String PROP_RESUME = "resume"; // NOI18N
     

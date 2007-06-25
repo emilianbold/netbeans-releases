@@ -28,10 +28,10 @@ import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.handlers.MethodPointEventHandlerCD;
 import org.netbeans.modules.vmd.midp.flow.FlowInfoNodePresenter;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertiesCategories;
+import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorInstanceName;
 
 import java.util.Arrays;
 import java.util.List;
-import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorInstanceName;
 
 /**
  * @author David Kaspar
@@ -41,6 +41,7 @@ public class MethodPointCD extends ComponentDescriptor {
     public static final TypeID TYPEID = new TypeID (TypeID.Kind.COMPONENT, "#MethodPoint"); // NOI18N
 
     public static final String ICON_PATH = "org/netbeans/modules/vmd/midp/resources/components/method_point_16.png"; // NOI18N
+//    public static final String LARGE_ICON_PATH = "org/netbeans/modules/vmd/midp/resources/components/method_point_32.png"; // NOI18N
 
     public static final String PROP_METHOD_NAME = "methodName"; // NOI18N
 

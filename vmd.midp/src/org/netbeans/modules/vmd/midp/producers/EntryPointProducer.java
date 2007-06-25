@@ -31,7 +31,7 @@ public class EntryPointProducer extends ComponentProducer {
     private static final String PRODUCER_ID = "#EntryPointProducer"; // NOI18N
 
     public EntryPointProducer () {
-        super (EntryPointProducer.PRODUCER_ID, EntryPointCD.TYPEID, new PaletteDescriptor (MidpPaletteProvider.CATEGORY_PROCESS_FLOW, "Entry Point", "Entry Point", EntryPointCD.ICON_PATH, null));
+        super (EntryPointProducer.PRODUCER_ID, EntryPointCD.TYPEID, new PaletteDescriptor (MidpPaletteProvider.CATEGORY_PROCESS_FLOW, "Entry Point", "Entry Point", EntryPointCD.ICON_PATH, EntryPointCD.LARGE_ICON_PATH));
     }
 
     public Result createComponent (DesignDocument document) {

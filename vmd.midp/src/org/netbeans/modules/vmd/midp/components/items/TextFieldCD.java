@@ -19,27 +19,24 @@
 
 package org.netbeans.modules.vmd.midp.components.items;
 
-import java.util.ArrayList;
 import org.netbeans.modules.vmd.api.codegen.CodeSetterPresenter;
 import org.netbeans.modules.vmd.api.codegen.CodeWriter;
 import org.netbeans.modules.vmd.api.codegen.MultiGuardedSection;
 import org.netbeans.modules.vmd.api.model.*;
+import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
 import org.netbeans.modules.vmd.api.properties.DefaultPropertiesPresenter;
+import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayPresenter;
 import org.netbeans.modules.vmd.midp.codegen.MidpParameter;
 import org.netbeans.modules.vmd.midp.codegen.MidpSetter;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.MidpVersionable;
-import org.netbeans.modules.vmd.midp.propertyeditors.PropertiesCategories;
-import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorConstraints;
-import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorString;
+import org.netbeans.modules.vmd.midp.propertyeditors.*;
+import org.netbeans.modules.vmd.midp.screen.display.TextFieldDisplayPresenter;
+
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
-import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayPresenter;
-import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorInputMode;
-import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorNumber;
-import org.netbeans.modules.vmd.midp.screen.display.TextFieldDisplayPresenter;
 
 /**
  *
@@ -49,8 +46,6 @@ import org.netbeans.modules.vmd.midp.screen.display.TextFieldDisplayPresenter;
 public class TextFieldCD extends ComponentDescriptor {
     
     public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "javax.microedition.lcdui.TextField"); // NOI18N
-
-    public static final String ICON_PATH = "org/netbeans/modules/vmd/midp/resources/components/item_16.png"; // NOI18N
 
     public static final int VALUE_ANY = 0;
     public static final int VALUE_EMAILADDR = 1;

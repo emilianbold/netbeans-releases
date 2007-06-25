@@ -80,7 +80,14 @@ public class EventHandlerSupport {
         }
 
         public Image getIcon (DesignComponent component, InfoPresenter.IconType iconType) {
-            return iconType == InfoPresenter.IconType.COLOR_16x16 ? Utilities.loadImage (DisplayableCD.ICON_PATH) : null;
+            switch (iconType) {
+                case COLOR_16x16:
+                    return Utilities.loadImage (DisplayableCD.ICON_PATH);
+                case COLOR_32x32:
+                    return Utilities.loadImage (DisplayableCD.LARGE_ICON_PATH);
+                default:
+                    return null;
+            }
         }
 
     }

@@ -19,11 +19,12 @@
 
 package org.netbeans.modules.vmd.midp.components.displayables;
 
-import java.util.ArrayList;
 import org.netbeans.modules.vmd.api.codegen.CodeSetterPresenter;
 import org.netbeans.modules.vmd.api.inspector.InspectorPositionPresenter;
 import org.netbeans.modules.vmd.api.model.*;
+import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
 import org.netbeans.modules.vmd.api.properties.DefaultPropertiesPresenter;
+import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayPresenter;
 import org.netbeans.modules.vmd.midp.codegen.MidpParameter;
 import org.netbeans.modules.vmd.midp.codegen.MidpSetter;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
@@ -31,16 +32,12 @@ import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.MidpVersionable;
 import org.netbeans.modules.vmd.midp.components.items.TextFieldCD;
 import org.netbeans.modules.vmd.midp.inspector.controllers.DisplayablePC;
-import org.netbeans.modules.vmd.midp.propertyeditors.PropertiesCategories;
-import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorConstraints;
-import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorString;
+import org.netbeans.modules.vmd.midp.propertyeditors.*;
+import org.netbeans.modules.vmd.midp.screen.display.TextBoxDisplayPresenter;
+
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
-import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayPresenter;
-import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorInputMode;
-import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorNumber;
-import org.netbeans.modules.vmd.midp.screen.display.TextBoxDisplayPresenter;
 
 /**
  *
@@ -51,7 +48,7 @@ public class TextBoxCD extends ComponentDescriptor{
     public static final TypeID TYPEID = new TypeID (TypeID.Kind.COMPONENT, "javax.microedition.lcdui.TextBox"); // NOI18N
 
     public static final String ICON_PATH = "org/netbeans/modules/vmd/midp/resources/components/textbox_16.png"; // NOI18N
-    public static final String ICON_LARGE_PATH = "org/netbeans/modules/vmd/midp/resources/components/textbox_64.png"; // NOI18N
+    public static final String ICON_LARGE_PATH = "org/netbeans/modules/vmd/midp/resources/components/textbox_32.png"; // NOI18N
 
     public static final String PROP_STRING = "string"; // NOI18N
     public static final String PROP_MAX_SIZE = "maxSize"; // NOI18N

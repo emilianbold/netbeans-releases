@@ -19,6 +19,7 @@
 package org.netbeans.modules.vmd.midp.components.displayables;
 
 import org.netbeans.modules.vmd.api.codegen.CodeSetterPresenter;
+import org.netbeans.modules.vmd.api.inspector.InspectorFolderComponentPresenter;
 import org.netbeans.modules.vmd.api.inspector.InspectorOrderingController;
 import org.netbeans.modules.vmd.api.inspector.common.ArrayPropertyOrderingController;
 import org.netbeans.modules.vmd.api.model.*;
@@ -48,8 +49,6 @@ import org.netbeans.modules.vmd.midp.screen.display.DisplayableDisplayPresenter;
 import org.netbeans.modules.vmd.midp.screen.display.injector.TickerInjectorPresenter;
 
 import java.util.*;
-import org.netbeans.modules.vmd.api.inspector.InspectorFolderComponentPresenter;
-import org.netbeans.modules.vmd.midp.components.MidpAcceptTrensferableKindPresenter;
 
 /**
  * @author David Kaspar
@@ -60,6 +59,7 @@ public final class DisplayableCD extends ComponentDescriptor {
     public static final TypeID TYPEID = new TypeID (TypeID.Kind.COMPONENT, "javax.microedition.lcdui.Displayable"); // NOI18N
 
     public static final String ICON_PATH = "org/netbeans/modules/vmd/midp/resources/components/displayable_16.png"; // NOI18N
+    public static final String LARGE_ICON_PATH = "org/netbeans/modules/vmd/midp/resources/components/displayable_32.png"; // NOI18N
 
     public static final String PROP_COMMANDS = "commands" ; // NOI18N
     public static final String PROP_TITLE = "title"; // NOI18N

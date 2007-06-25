@@ -34,11 +34,12 @@ import org.netbeans.modules.vmd.midp.components.sources.IfFalseEventSourceCD;
 import org.netbeans.modules.vmd.midp.components.sources.IfTrueEventSourceCD;
 import org.netbeans.modules.vmd.midp.flow.FlowIfPointPinOrderPresenter;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertiesCategories;
+import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorJavaString;
 import org.openide.util.Utilities;
+
 import javax.swing.text.StyledDocument;
 import java.util.ArrayList;
 import java.util.Arrays;
-import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorJavaString;
 
 /**
  * @author David Kaspar
@@ -48,6 +49,7 @@ public class IfPointCD extends ComponentDescriptor {
     public static final TypeID TYPEID = new TypeID (TypeID.Kind.COMPONENT, "#IfPoint"); // NOI18N
 
     public static final String ICON_PATH = "org/netbeans/modules/vmd/midp/resources/components/if_16.png"; // NOI18N
+    public static final String LARGE_ICON_PATH = "org/netbeans/modules/vmd/midp/resources/components/if_32.png"; // NOI18N
 
     public static final String PROP_CONDITION = "condition"; // NOI18N
     public static final String PROP_TRUE = "true"; // NOI18N

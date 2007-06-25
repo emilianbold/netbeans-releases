@@ -67,67 +67,67 @@ public abstract class MidpComponentProducer extends ComponentProducer {
 
     public static final class ChoiceGroup extends MidpComponentProducer {
         public ChoiceGroup() {
-            super(ChoiceGroupCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_ITEMS, "Choice Group", "Choice Group", ChoiceGroupCD.ICON_PATH, null)); // NOI18N
+            super(ChoiceGroupCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_ITEMS, "Choice Group", "Choice Group", ItemCD.ICON_PATH, ItemCD.LARGE_ICON_PATH)); // NOI18N
         }
     }
 
     public static final class Gauge extends MidpComponentProducer {
         public Gauge() {
-            super(GaugeCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_ITEMS, "Gauge", "Gauge", GaugeCD.ICON_PATH, null)); // NOI18N
+            super(GaugeCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_ITEMS, "Gauge", "Gauge", ItemCD.ICON_PATH, ItemCD.LARGE_ICON_PATH)); // NOI18N
         }
     }
 
     public static final class Spacer extends MidpComponentProducer {
         public Spacer() {
-            super(SpacerCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_ITEMS, "Spacer", "Spacer", SpacerCD.ICON_PATH, null)); // NOI18N
+            super(SpacerCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_ITEMS, "Spacer", "Spacer", ItemCD.ICON_PATH, ItemCD.LARGE_ICON_PATH)); // NOI18N
         }
     }
 
     public static final class DateField extends MidpComponentProducer {
         public DateField() {
-            super(DateFieldCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_ITEMS, "Date Field", "Date Field", DateFieldCD.ICON_PATH, null)); // NOI18N
+            super(DateFieldCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_ITEMS, "Date Field", "Date Field", ItemCD.ICON_PATH, ItemCD.LARGE_ICON_PATH)); // NOI18N
         }
     }
 
     public static final class ImageItem extends MidpComponentProducer {
         public ImageItem() {
-            super(ImageItemCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_ITEMS, "Image Item", "Image Item", ImageItemCD.ICON_PATH, null)); // NOI18N
+            super(ImageItemCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_ITEMS, "Image Item", "Image Item", ItemCD.ICON_PATH, ItemCD.LARGE_ICON_PATH)); // NOI18N
         }
     }
 
     public static final class StringItem extends MidpComponentProducer {
         public StringItem() {
-            super(StringItemCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_ITEMS, "String Item", "String Item", StringItemCD.ICON_PATH, null)); // NOI18N
+            super(StringItemCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_ITEMS, "String Item", "String Item", ItemCD.ICON_PATH, ItemCD.LARGE_ICON_PATH)); // NOI18N
         }
     }
 
     public static final class CustomItem extends MidpComponentProducer {
         public CustomItem() {
-            super(CustomItemCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_ITEMS, "Custom Item", "Custom Item", CustomItemCD.ICON_PATH, null)); // NOI18N
+            super(CustomItemCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_ITEMS, "Custom Item", "Custom Item", ItemCD.ICON_PATH, ItemCD.LARGE_ICON_PATH)); // NOI18N
         }
     }
 
     public static final class Font extends MidpComponentProducer {
         public Font() {
-            super(FontCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_RESOURCES, "Font", "Font", ResourceCD.ICON_PATH, null)); // NOI18N
+            super(FontCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_RESOURCES, "Font", "Font", ResourceCD.ICON_PATH, ResourceCD.LARGE_ICON_PATH)); // NOI18N
         }
     }
 
     public static final class Image extends MidpComponentProducer {
         public Image() {
-            super(ImageCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_RESOURCES, "Image", "Image", ResourceCD.ICON_PATH, null)); // NOI18N
+            super(ImageCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_RESOURCES, "Image", "Image", ResourceCD.ICON_PATH, ResourceCD.LARGE_ICON_PATH)); // NOI18N
         }
     }
 
     public static final class Ticker extends MidpComponentProducer {
         public Ticker() {
-            super(TickerCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_RESOURCES, "Ticker", "Ticker", ResourceCD.ICON_PATH, null)); // NOI18N
+            super(TickerCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_RESOURCES, "Ticker", "Ticker", ResourceCD.ICON_PATH, ResourceCD.LARGE_ICON_PATH)); // NOI18N
         }
     }
 
     public static final class TextField extends MidpComponentProducer {
         public TextField() {
-            super(TextFieldCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_ITEMS, "Text Field", "Text Field", TextFieldCD.ICON_PATH, null)); // NOI18N
+            super(TextFieldCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_ITEMS, "Text Field", "Text Field", ItemCD.ICON_PATH, ItemCD.LARGE_ICON_PATH)); // NOI18N
         }
     }
    

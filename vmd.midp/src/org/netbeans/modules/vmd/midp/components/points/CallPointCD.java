@@ -44,6 +44,7 @@ public class CallPointCD extends ComponentDescriptor {
     public static final String PROP_ACCESS_CODE = "accessCode"; // NOI18N
 
     public static final String ICON_PATH = "org/netbeans/modules/vmd/midp/resources/components/call_point_16.png"; // NOI18N
+    public static final String LARGE_ICON_PATH = "org/netbeans/modules/vmd/midp/resources/components/call_point_32.png"; // NOI18N
 
     public TypeDescriptor getTypeDescriptor () {
         return new TypeDescriptor (PointCD.TYPEID, CallPointCD.TYPEID, true, true);
@@ -64,7 +65,7 @@ public class CallPointCD extends ComponentDescriptor {
     }
 
     public PaletteDescriptor getPaletteDescriptor () {
-        return new PaletteDescriptor (MidpPaletteProvider.CATEGORY_PROCESS_FLOW, "Call Point", "Call Point", ICON_PATH, null);
+        return new PaletteDescriptor (MidpPaletteProvider.CATEGORY_PROCESS_FLOW, "Call Point", "Call Point", ICON_PATH, LARGE_ICON_PATH);
     }
 
     public DefaultPropertiesPresenter createPropertiesPresenter () {
