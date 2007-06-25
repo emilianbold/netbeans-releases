@@ -88,9 +88,7 @@ public class PageFragmentBoxDialog extends org.netbeans.performance.test.utiliti
         return new NbDialogOperator(dlgName);
     }
     private Node selectFragmentNodeInNavigatorTree() {
-        navigator = new TopComponentOperator("Navigator"); // NOI18N
-        JComboBoxOperator modeCombo = new JComboBoxOperator(navigator);
-        modeCombo.selectItem("Outline");        
+        navigator = new TopComponentOperator("Navigator"); // NOI18N  
         
         JTreeOperator tree =  new JTreeOperator(navigator);
         
