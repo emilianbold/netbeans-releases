@@ -137,26 +137,58 @@ final class ResourceValueImpl implements ResourceValue {
 
     // ResourceValue implementation
     public String getJavaInitializationCode() {
-        // */\n\\1 is a special code mark for line comment
-        // */\n\\0 is a special code mark to indicate that a real code follows
-        String commentMarker = "*/\n\\1NOI18N*/\n\\0"; // NOI18N
+        String pre = null;
         String resMapCode = AppFrameworkSupport.getResourceMapCode(sourceFile);
-        // there are different methods in ResourceMap based on the value type
         String methodCode;
-        if (valueType == String.class)
+        String param = "\"" + key + "\""; // NOI18N
+        String[] paramCode = null;
+        // there are different methods in ResourceMap based on the value type
+        if (valueType == String.class) {
             methodCode = ".getString"; // NOI18N
-        else if (valueType == Color.class)
+        } else if (valueType == Color.class) {
             methodCode = ".getColor"; // NOI18N
-        else if (valueType == Font.class)
+        } else if (valueType == Font.class) {
             methodCode = ".getFont"; // NOI18N
-        else if (valueType == Icon.class)
+        } else if (valueType == Icon.class) {
             methodCode = ".getIcon"; // NOI18N
-        else // unknown type
-            return commentMarker + "(" + valueType.getName() + ")" + resMapCode // NOI18N
-                    + ".getObject(\"" + key + "\", " + valueType.getName() + ".class)"; // NOI18N
+        } else {// unknown type
+            pre = "(" + valueType.getName() + ")"; // NOI18N
+            methodCode = ".getObject"; // NOI18N
+            paramCode = new String[] { param, valueType.getName() + ".class" }; // NOI18N
+        }
+        if (paramCode == null) {
+            paramCode = new String[] { param };
+        }
 
-        return commentMarker + resMapCode + methodCode + "(\"" + key + "\")"; // NOI18N
+        StringBuilder buf = new StringBuilder();
+        if (pre != null) {
+            buf.append(pre);
+        }
+        // The code for getting the resource map is quite long - worth "caching"
+        // in a variable. Using special code mark to encode 3 data elements:
+        // - the code to replace
+        // - the type of variable to declare for the code
+        // - suggested variable name
+        buf.append(CODE_MARK_VARIABLE_SUBST).append(resMapCode);
+        buf.append(CODE_MARK_VARIABLE_SUBST).append(application.ResourceMap.class.getName());
+        buf.append(CODE_MARK_VARIABLE_SUBST).append("resourceMap"); // NOI18N
+        buf.append(CODE_MARK_LINE_COMMENT + "NOI18N"); // NOI18N
+        buf.append(CODE_MARK_END); // indicates that a normal code follows
+        buf.append(methodCode).append("("); // NOI18N
+        for (int i=0; i < paramCode.length; i++) {
+            buf.append(paramCode[i]);
+            if (i+1 < paramCode.length) {
+                buf.append(", "); // NOI18N
+            }
+        }
+        buf.append(")"); // NOI18N
+        return buf.toString();
     }
+
+    // special code marks recognized by form editor:
+    private static final String CODE_MARK_END = "*/\n\\0"; // NOI18N
+    private static final String CODE_MARK_LINE_COMMENT = "*/\n\\1"; // NOI18N
+    private static final String CODE_MARK_VARIABLE_SUBST = "*/\n\\2"; // NOI18N
 
     // FormDesignValue implementation
     public Object getDesignValue() {

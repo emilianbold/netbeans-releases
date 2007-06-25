@@ -99,9 +99,23 @@ public class ActionEditor extends PropertyEditorSupport implements FormAwareEdit
         if(!isAppFramework()) {
             return super.getJavaInitializationString();
         }
-        return AppFrameworkSupport.getActionMapCode(getSourceFile())
+        // The code for getting the action map is quite long - worth "caching"
+        // in a variable. Using special code mark to encode 3 data elements:
+        // - the code to replace
+        // - the type of variable to declare for the code
+        // - suggested variable name
+        return  CODE_MARK_VARIABLE_SUBST + AppFrameworkSupport.getActionMapCode(getSourceFile())
+                + CODE_MARK_VARIABLE_SUBST + javax.swing.ActionMap.class.getName()
+                + CODE_MARK_VARIABLE_SUBST + "actionMap" // NOI18N
+                + CODE_MARK_LINE_COMMENT + "NOI18N" // NOI18N
+                + CODE_MARK_END
                 + ".get(\"" + action.getId()+ "\")"; // NOI18N
     }
+
+    // special code marks recognized by form editor:
+    private static final String CODE_MARK_END = "*/\n\\0"; // NOI18N
+    private static final String CODE_MARK_LINE_COMMENT = "*/\n\\1"; // NOI18N
+    private static final String CODE_MARK_VARIABLE_SUBST = "*/\n\\2"; // NOI18N
 
     // property editor impl
     public void setContext(FormModel formModel, FormProperty property) {

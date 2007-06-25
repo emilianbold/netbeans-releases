@@ -147,12 +147,11 @@ class JavaCodeGenerator extends CodeGenerator {
 
     static final String CUSTOM_CODE_MARK = "\u001F"; // NOI18N
     private static final String CODE_MARK = "*/\n\\"; // NOI18N
-    private static final String MARKED_PROPERTY_CODE = "*/\n\\0"; // NOI18N
-    private static final String PROPERTY_LINE_COMMENT = "*/\n\\1"; // NOI18N
+    private static final String CODE_MARK_END = "*/\n\\0"; // NOI18N
+    private static final String CODE_MARK_LINE_COMMENT = "*/\n\\1"; // NOI18N
+    private static final String CODE_MARK_VARIABLE_SUBST = "*/\n\\2"; // NOI18N
 
-    private static final String RESOURCE_BUNDLE_OPENING_CODE = "java.util.ResourceBundle.getBundle("; // NOI18N
-    private static final String RESOURCE_BUNDLE_CLOSING_CODE = ")."; // NOI18N
-    private Map<String,String> bundleVariables;
+    private Map<String,String> repeatedCodeVariables;
 
     private static Class bindingContextClass = javax.beans.binding.BindingContext.class;
     private String bindingContextVariable;
@@ -938,7 +937,7 @@ class JavaCodeGenerator extends CodeGenerator {
         if (childrenDependentProperties != null)
             childrenDependentProperties.clear();
         formModel.getCodeStructure().clearExternalVariableNames();
-        bundleVariables = null;
+        repeatedCodeVariables = null;
         // preventive cleanup
         if (bindingContextVariable != null) { // we need to keep this variable registered
             bindingContextVariable = formModel.getCodeStructure().getExternalVariableName(
@@ -3558,38 +3557,17 @@ class JavaCodeGenerator extends CodeGenerator {
         return buffer.toString();
     }
 
-    private String replaceCode(String code, Writer initWriter) throws IOException {
-        int idx = code.indexOf(RESOURCE_BUNDLE_OPENING_CODE);
-        if (idx >= 0) {
-            int endIdx = code.indexOf(RESOURCE_BUNDLE_CLOSING_CODE,
-                                      idx + RESOURCE_BUNDLE_OPENING_CODE.length());
-            if (endIdx >= 0) {
-                String bundleLocation = code.substring(idx + RESOURCE_BUNDLE_OPENING_CODE.length(), endIdx);
-                if (bundleVariables == null) {
-                    bundleVariables = new HashMap();
-                }
-                String varName = bundleVariables.get(bundleLocation);
-                if (varName == null) {
-                    varName = formModel.getCodeStructure().getExternalVariableName(ResourceBundle.class, "bundle", true); // NOI18N
-                    bundleVariables.put(bundleLocation, varName);
-                    initWriter.write("java.util.ResourceBundle " + varName + " = " // NOI18N
-                            + code.substring(idx, endIdx + 1) + "; // NOI18N\n"); // NOI18N
-                }
-                code = code.substring(0, idx) + varName + code.substring(endIdx + 1);
-            }
-        }
-        return code;
-    }
-
     /**
      * Class for filtering generated code - processing special marks in the code
-     * (provided by properties/property editors). This way e.g. code for
-     * ResourceBundle.getBundle is optimized (caching the bundle in a variable)
-     * or line comments for property setters are placed correctly.
+     * (provided by properties/property editors).
+     * This way (e.g.) code for ResourceBundle.getBundle can be optimized
+     * (caching the bundle in a variable) or line comments for property setters
+     * placed correctly.
      * [In future pre-init and post-init code could be done this way as well
      *  (and it would work also for nested properties or layout constraints).]
-     * To work correctly, this class requires to be given complete statements
-     * (so it can add a preceding or following statement).
+     * To work correctly, the write method requires to be given complete
+     * statements as they appear in initComponents(), so it can add a preceding
+     * or following statement).
      */
     private class CodeWriter {
         private Writer writer;
@@ -3608,28 +3586,48 @@ class JavaCodeGenerator extends CodeGenerator {
                     buf.append(str.substring(0, idx));
                 }
                 String lineComment = null;
+                String codeToSubst = null;
+                String varType = null;
 
                 do {
                     String part;
-                    if (str.startsWith(MARKED_PROPERTY_CODE, idx)) {
-                        int sub = idx + MARKED_PROPERTY_CODE.length();
-                        idx = str.indexOf(CODE_MARK, sub);
-                        part = idx < 0 ? str.substring(sub) : str.substring(sub, idx);
-                        if (inMethod) {
-                            part = replaceCode(part, writer);
-                        } // can't replace in field variable init
-                    }
-                    else if (str.startsWith(PROPERTY_LINE_COMMENT, idx)) {
-                        int sub = idx + PROPERTY_LINE_COMMENT.length();
+                    if (str.startsWith(CODE_MARK_LINE_COMMENT, idx)) {
+                        // line comment to be added at the end of the line
+                        int sub = idx + CODE_MARK_LINE_COMMENT.length();
                         idx = str.indexOf(CODE_MARK, sub);
                         String lc = idx < 0 ? str.substring(sub) : str.substring(sub, idx);
-                        if (lineComment == null)
+                        if (lineComment == null) {
                             lineComment = lc;
-                        else if (!lineComment.equals(lc))
+                        } else if (!lineComment.equals(lc)) {
                             lineComment = lineComment + " " + lc; // NOI18N
+                        }
                         continue;
-                    }
-                    else {
+                    } else if (str.startsWith(CODE_MARK_VARIABLE_SUBST, idx)) {
+                        // there is a code that can be cached in a local varaible to
+                        // avoid calling it multiple times (e.g. ResourceBundle.getBundle)
+                        int sub = idx + CODE_MARK_VARIABLE_SUBST.length();
+                        idx = str.indexOf(CODE_MARK, sub);
+                        String s = idx < 0 ? str.substring(sub) : str.substring(sub, idx);
+                        part = null;
+                        if (codeToSubst == null) {
+                            codeToSubst = s;
+                            if (!inMethod) { // can't replace when in member field variable init
+                                part = s;
+                            }
+                        } else if (varType == null) {
+                            varType = s;
+                        } else {
+                            part = replaceCodeWithVariable(codeToSubst, varType, s, lineComment, writer);
+                            codeToSubst = varType = null;
+                        }
+                        if (part == null) { // no real code in this fragment
+                            continue;
+                        }
+                    } else if (str.startsWith(CODE_MARK_END, idx)) { // plain code follows
+                        int sub = idx + CODE_MARK_END.length();
+                        idx = str.indexOf(CODE_MARK, sub);
+                        part = idx < 0 ? str.substring(sub) : str.substring(sub, idx);
+                    } else {
                         int sub = idx;
                         idx = str.indexOf(CODE_MARK, sub);
                         part = idx < 0 ? str.substring(sub) : str.substring(sub, idx);
@@ -3675,6 +3673,47 @@ class JavaCodeGenerator extends CodeGenerator {
             clearBuffer();
             return str;
         }
+    }
+
+    private String replaceCodeWithVariable(String codeToSubst, String varType, String varName,
+                                           String lineComment,
+                                           Writer writer)
+        throws IOException 
+    {
+        String variable;
+        if (repeatedCodeVariables != null) {
+            variable = repeatedCodeVariables.get(codeToSubst);
+        } else {
+            repeatedCodeVariables = new HashMap<String,String>();
+            variable = null;
+        }
+        if (variable == null) {
+            Class type;
+            try {
+                type = FormUtils.loadClass(varType, formModel);
+            } catch (Exception ex) { // should not happen - load things like ResourceBundle or ResourceMap
+                Logger.getLogger(getClass().getName()).log(Level.INFO, "", ex); // NOI18N
+                return codeToSubst;
+            } catch (LinkageError ex) {
+                Logger.getLogger(getClass().getName()).log(Level.INFO, "", ex); // NOI18N
+                return codeToSubst;
+            }
+            variable = formModel.getCodeStructure().getExternalVariableName(type, varName, true);
+            repeatedCodeVariables.put(codeToSubst, variable);
+            // add varaible declaration
+            writer.write(varType);
+            writer.write(" "); // NOI18N
+            writer.write(variable);
+            writer.write(" = "); // NOI18N
+            writer.write(codeToSubst);
+            writer.write(";"); // NOI18N
+            if (lineComment != null) {
+                writer.write(" // "); // NOI18N
+                writer.write(lineComment);
+            }
+            writer.write("\n"); // NOI18N
+        }
+        return variable;
     }
 
     //

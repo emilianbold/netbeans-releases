@@ -148,10 +148,38 @@ public class FormI18nStringEditor extends PropertyEditorSupport implements FormA
         if (javaString == null) { // some problem, return plain string (better than null)
             return "\"" + FormI18nSupport.toAscii(i18nString.getValue()) + "\""; // NOI18N
         }
-        return "*/\n\\1NOI18N*/\n\\0" + javaString; // NOI18N
-        // */\n\\1 is a special code mark for line comment
-        // */\n\\0 is a special code mark to indicate that a real code follows
+
+        // calls of ResourceBundle.getBundle should be "cached" in a variable by form editor
+        StringBuilder buf = new StringBuilder();
+        buf.append(CODE_MARK_LINE_COMMENT + "NOI18N"); // NOI18N
+        if (javaString.startsWith("java.util.ResourceBundle.getBundle(")) { // NOI18N
+            int end = javaString.indexOf(").") + 1; // NOI18N
+            if (end > 0) {
+                // use special code marks (*/\n\\2) to encode 3 data elements:
+                // - the code to replace
+                // - the type of variable to declare for the code
+                // - suggested variable name
+                buf.append(CODE_MARK_VARIABLE_SUBST);
+                buf.append(javaString.substring(0, end)); // the code to substitute
+                buf.append(CODE_MARK_VARIABLE_SUBST);
+                buf.append("java.util.ResourceBundle"); // NOI18N
+                buf.append(CODE_MARK_VARIABLE_SUBST);
+                buf.append("bundle"); // NOI18N
+                buf.append(CODE_MARK_END); // indicates that real code follows
+                buf.append(javaString.substring(end));
+            } else {
+                buf.append(javaString);
+            }
+        } else {
+            buf.append(javaString);
+        }
+        return buf.toString();
     }
+
+    // special code marks recognized by form editor:
+    private static final String CODE_MARK_END = "*/\n\\0"; // NOI18N
+    private static final String CODE_MARK_LINE_COMMENT = "*/\n\\1"; // NOI18N
+    private static final String CODE_MARK_VARIABLE_SUBST = "*/\n\\2"; // NOI18N
 
     /** Overrides superclass method.
      * @return <code>ResourceBundlePanel</code> fed with <code>FormI18nString</code> value. */
