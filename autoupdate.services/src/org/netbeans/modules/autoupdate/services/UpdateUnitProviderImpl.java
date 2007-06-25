@@ -46,6 +46,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
+import org.openide.util.Cancellable;
 
 
 /** XXX <code>UpdateProvider</code> providers items for Autoupdate infrastructure. The items
@@ -113,7 +114,9 @@ public final class UpdateUnitProviderImpl {
         boolean res = false;
         ProgressHandle ownHandle = handle;
         if (ownHandle == null) {
-            ownHandle = ProgressHandleFactory.createHandle (NbBundle.getMessage (UpdateUnitProviderImpl.class, "UpdateUnitProviderImpl_CheckingForUpdates"));
+            CancellableProgress cancelProgress = new CancellableProgress();
+            ownHandle = ProgressHandleFactory.createHandle (NbBundle.getMessage (UpdateUnitProviderImpl.class, "UpdateUnitProviderImpl_CheckingForUpdates"), cancelProgress);
+            cancelProgress.setHandle(ownHandle);
             ownHandle.setInitialDelay (0);
             ownHandle.start ();
         }
@@ -404,5 +407,17 @@ public final class UpdateUnitProviderImpl {
             }
         }
     }
-
+    
+    private static class CancellableProgress implements Cancellable {
+        private ProgressHandle handle;        
+        public boolean cancel() {
+            assert handle != null;
+            handle.finish();
+            return true;
+        }
+        
+        private void setHandle(ProgressHandle handle) {
+            this.handle = handle;
+        }        
+    }    
 }
