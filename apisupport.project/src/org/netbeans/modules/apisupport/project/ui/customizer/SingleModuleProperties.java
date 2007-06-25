@@ -632,18 +632,18 @@ public final class SingleModuleProperties extends ModuleProperties {
         
         // Store project.xml changes
         // store module dependencies
-        DependencyListModel dependencyListModel = getDependenciesListModel();
-        if (dependencyListModel.isChanged()) {
-            Set<ModuleDependency> depsToSave = new TreeSet<ModuleDependency>(dependencyListModel.getDependencies());
+        DependencyListModel dependencyModel = getDependenciesListModel();
+        if (dependencyModel.isChanged()) {
+            Set<ModuleDependency> depsToSave = new TreeSet<ModuleDependency>(dependencyModel.getDependencies());
             
             // process removed modules
-            depsToSave.removeAll(dependencyListModel.getRemovedDependencies());
+            depsToSave.removeAll(dependencyModel.getRemovedDependencies());
             
             // process added modules
-            depsToSave.addAll(dependencyListModel.getAddedDependencies());
+            depsToSave.addAll(dependencyModel.getAddedDependencies());
             
             // process edited modules
-            for (Map.Entry<ModuleDependency,ModuleDependency> entry : dependencyListModel.getEditedDependencies().entrySet()) {
+            for (Map.Entry<ModuleDependency,ModuleDependency> entry : dependencyModel.getEditedDependencies().entrySet()) {
                 depsToSave.remove(entry.getKey());
                 depsToSave.add(entry.getValue());
             }
