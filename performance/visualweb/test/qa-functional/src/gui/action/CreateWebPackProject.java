@@ -112,6 +112,7 @@ public class CreateWebPackProject extends org.netbeans.performance.test.utilitie
         log("::open");
         PerformanceCounters.addPerformanceCounter("Wait Wizard closed");
         wizard_location.finish();
+        wizard_location.waitClosed();
         
         PerformanceCounters.endPerformanceCounter("Wait Wizard closed");
         PerformanceCounters.addPerformanceCounter("Wait document");
