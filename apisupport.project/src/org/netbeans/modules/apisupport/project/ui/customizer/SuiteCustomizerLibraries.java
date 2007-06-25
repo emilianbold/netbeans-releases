@@ -76,7 +76,7 @@ import org.w3c.dom.Element;
  */
 final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         implements Comparator<Node>, ExplorerManager.Provider, ChangeListener {
-    private ExplorerManager manager;
+    private final ExplorerManager manager;
     private ModuleEntry[] platformModules;
     private ProjectCustomizer.Category cat;
     static boolean TEST = false;
@@ -724,14 +724,14 @@ final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
     }
     
     static Set<UniverseModule> loadUniverseModules(ModuleEntry[] platformModules, Set<NbModuleProject> suiteModules) throws IOException {
-        Set<UniverseModule> universe = new LinkedHashSet<UniverseModule>();
+        Set<UniverseModule> universeModules = new LinkedHashSet<UniverseModule>();
         for (NbModuleProject p : suiteModules) {
-            universe.add(new SuiteModule(p));
+            universeModules.add(new SuiteModule(p));
         }
         for (ModuleEntry e : platformModules) {
-            universe.add(new PlatformModule(e));
+            universeModules.add(new PlatformModule(e));
         }
-        return universe;
+        return universeModules;
     }
     
     static String[] findWarning(Set<UniverseModule> universeModules, Set<String> enabledClusters, Set<String> disabledModules) {
