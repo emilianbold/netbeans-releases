@@ -23,6 +23,7 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.text.JTextComponent;
 import org.netbeans.editor.ImplementationProvider;
+import org.openide.awt.StatusDisplayer;
 import org.openide.util.NbBundle;
 
 /**
@@ -38,7 +39,14 @@ public class FixAction extends AbstractAction {
     
     public void actionPerformed(ActionEvent e) {
         if (!HintsUI.getDefault().invokeDefaultAction()) {
-            Action actions[] = ImplementationProvider.getDefault().getGlyphGutterActions((JTextComponent) e.getSource());
+            Object source = e.getSource();
+            
+            if (!(source instanceof JTextComponent)) {
+                StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(FixAction.class, "ERR_NoFixableError"));
+                return ; //probably right click, Fixable Error -> Fix Action
+            }
+            
+            Action actions[] = ImplementationProvider.getDefault().getGlyphGutterActions((JTextComponent) source);
             
             if (actions == null)
                 return ;
