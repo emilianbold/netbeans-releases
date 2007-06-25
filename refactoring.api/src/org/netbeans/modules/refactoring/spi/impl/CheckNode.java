@@ -52,9 +52,9 @@ public class CheckNode extends DefaultMutableTreeNode {
         setSelectionMode(DIG_IN_SELECTION);
         this.nodeLabel = nodeLabel;
         this.icon = icon;
-        if (userObject instanceof RefactoringTreeElement) {
-            if (((RefactoringTreeElement)userObject).getUserObject() instanceof RefactoringElement) {
-                RefactoringElement ree = (RefactoringElement) ((RefactoringTreeElement)userObject).getUserObject();
+        if (userObject instanceof TreeElement) {
+            if (((TreeElement)userObject).getUserObject() instanceof RefactoringElement) {
+                RefactoringElement ree = (RefactoringElement) ((TreeElement)userObject).getUserObject();
                 int s = ree.getStatus();
                 if (s==RefactoringElement.GUARDED || s==RefactoringElement.READ_ONLY) {
                     isSelected = false;

@@ -411,11 +411,7 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
         String displayName = representedObject.getText(isLogical);
         Icon icon = representedObject.getIcon();
         
-        boolean cannotEnable = false;
-        
         node = new CheckNode(representedObject, displayName, icon);
-        if (cannotEnable)
-            node.setDisabled();
         CheckNode parentNode = parent == null ? root : createNode(parent, nodes, root);
         parentNode.add(node);
         

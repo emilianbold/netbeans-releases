@@ -88,7 +88,7 @@ class CheckNodeListener implements MouseListener, KeyListener {
                 Rectangle chRect = CheckRenderer.getCheckBoxRectangle();
                 Rectangle rowRect = tree.getPathBounds(path);
                 chRect.setLocation(chRect.x + rowRect.x, chRect.y + rowRect.y);
-                if (e.getClickCount() == 1 && chRect.contains(p)) {
+                if (e.getClickCount() == 1 && chRect.contains(p) && !node.isDisabled()) {
                     boolean isSelected = !(node.isSelected());
                     node.setSelected(isSelected);
                     if (node.getSelectionMode() == CheckNode.DIG_IN_SELECTION) {
