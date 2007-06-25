@@ -30,8 +30,11 @@ import javax.swing.*;
 
 import org.netbeans.api.diff.*;
 import org.netbeans.api.queries.FileEncodingQuery;
+import org.netbeans.modules.localhistory.LocalHistory;
 import org.netbeans.modules.localhistory.store.StoreEntry;
 import org.netbeans.modules.versioning.util.NoContentPanel;
+import org.netbeans.modules.versioning.util.VersioningEvent;
+import org.netbeans.modules.versioning.util.VersioningListener;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -48,19 +51,21 @@ import org.openide.util.lookup.Lookups;
  *
  * @author Tomas Stupka
  */
-public class LocalHistoryDiffView implements PropertyChangeListener, ActionListener {
+public class LocalHistoryDiffView implements PropertyChangeListener, ActionListener, VersioningListener {
            
     private final LocalHistoryTopComponent master;
     private DiffPanel panel;
     private Component diffComponent;
-    private DiffController diffView;            
-    
+    private DiffController diffView;                
+    private DiffPrepareTask prepareTask = null;
+        
     /** Creates a new instance of LocalHistoryView */
     public LocalHistoryDiffView(LocalHistoryTopComponent master) {
         this.master = master;
         panel = new DiffPanel();                                                              
         panel.nextButton.addActionListener(this);
         panel.prevButton.addActionListener(this);
+        LocalHistory.getInstance().addVersioningListener(this);
         showNoContent(NbBundle.getMessage(LocalHistoryDiffView.class, "MSG_DiffPanel_NoVersion"));                
     }    
         
@@ -72,6 +77,17 @@ public class LocalHistoryDiffView implements PropertyChangeListener, ActionListe
         }
     }
       
+    public void versioningEvent(VersioningEvent event) {
+        if(event.getId() != LocalHistory.EVENT_FILE_CREATED) {
+            return;
+        }
+        File file = (File) event.getParams()[0];
+        if(file == null || prepareTask == null || !file.equals(prepareTask.entry.getFile())) {
+            return;
+        }        
+        scheduleTask(prepareTask);
+    }
+    
     JPanel getPanel() {
         return panel;
     }    
@@ -92,12 +108,16 @@ public class LocalHistoryDiffView implements PropertyChangeListener, ActionListe
         refreshDiffPanel(se);                
     }           
     
-    private void refreshDiffPanel(StoreEntry se) {       
-        DiffPrepareTask prepareTask = new DiffPrepareTask(se);
-        RequestProcessor.Task task = RequestProcessor.getDefault().create(prepareTask);        
-        task.schedule(0);        
+    private void refreshDiffPanel(StoreEntry se) {  
+        prepareTask = new DiffPrepareTask(se);
+        scheduleTask(prepareTask);
     }        
 
+    private static void scheduleTask(Runnable runnable) {          
+        RequestProcessor.Task task = RequestProcessor.getDefault().create(runnable);        
+        task.schedule(0);        
+    }        
+    
     private class DiffPrepareTask implements Runnable {
         
         private final StoreEntry entry;
@@ -114,7 +134,7 @@ public class LocalHistoryDiffView implements PropertyChangeListener, ActionListe
                     try {   
                         
                         FileObject fo = FileUtil.toFileObject(entry.getFile());
-                        Charset cs = fo != null || !fo.isFolder() ? cs = FileEncodingQuery.getEncoding(fo) : null;
+                        Charset cs = fo != null && !fo.isFolder() ? cs = FileEncodingQuery.getEncoding(fo) : null;
                         InputStreamReader storeReader = cs != null ? 
                                     new InputStreamReader(entry.getStoreFileInputStream(), cs) :
                                     new InputStreamReader(entry.getStoreFileInputStream());
@@ -267,4 +287,5 @@ public class LocalHistoryDiffView implements PropertyChangeListener, ActionListe
             return null;
         }
     }
+
 }

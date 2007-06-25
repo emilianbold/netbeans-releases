@@ -23,6 +23,8 @@ import org.netbeans.modules.localhistory.store.LocalHistoryStore;
 import org.netbeans.modules.localhistory.store.LocalHistoryStoreFactory;
 import org.netbeans.modules.versioning.spi.VCSAnnotator;
 import org.netbeans.modules.versioning.spi.VCSInterceptor;
+import org.netbeans.modules.versioning.util.ListenersSupport;
+import org.netbeans.modules.versioning.util.VersioningListener;
 
 /** 
  * 
@@ -38,6 +40,8 @@ public class LocalHistory {
     private LocalHistoryStore store;
 
     private static String userDir;    
+    
+    public final static Object EVENT_FILE_CREATED = new Object();
     
     public static synchronized LocalHistory getInstance() {
         if(instance == null) {
@@ -95,5 +99,18 @@ public class LocalHistory {
         }
         return true;
     }
+
+    private ListenersSupport listenerSupport = new ListenersSupport(this);
     
+    public void addVersioningListener(VersioningListener listener) {
+        listenerSupport.addListener(listener);
+    }
+
+    public void removeVersioningListener(VersioningListener listener) {
+        listenerSupport.removeListener(listener);
+    }
+
+    void fireFileEvent(Object id, File file) {
+        listenerSupport.fireVersioningEvent(id, new Object[]{file});
+    }    
 }

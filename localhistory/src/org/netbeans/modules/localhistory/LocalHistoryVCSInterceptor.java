@@ -19,59 +19,59 @@
 package org.netbeans.modules.localhistory;
 
 import java.util.HashMap;
-import java.io.File;  
-import java.io.IOException;       
+import java.io.File;
+import java.io.IOException;
 import java.util.HashSet;
-import java.util.Map;        
+import java.util.Map;
 import java.util.Set;
 import org.netbeans.modules.localhistory.store.LocalHistoryStore;
 import org.netbeans.modules.versioning.spi.VCSInterceptor;
 
-/**       
- * 
+/**
+ *
  * Listens to file system operations from the IDE and eventually handles them synchronously
- * 
+ *
  * @author Tomas Stupka
  */
 class LocalHistoryVCSInterceptor extends VCSInterceptor {
-        
+
     private class StorageMoveHandler {
         private long ts = -1;
-        
+
         private final File from;
         private final File to;
-        
+
         StorageMoveHandler(File from, File to) {
             this.from = from;
-            this.to = to;            
+            this.to = to;
         }
-        
-        public void delete() {            
+
+        public void delete() {
             getStore().fileDeleteFromMove(from, to, ts);
         }
-        
+
         public void create() {
-            ts = to.lastModified(); 
-            getStore().fileCreateFromMove(from, to, ts);            
-        }         
+            ts = to.lastModified();
+            getStore().fileCreateFromMove(from, to, ts);
+        }
     }; 
-    
+
     private LocalHistoryStore getStore() {
         return LocalHistory.getInstance().getLocalHistoryStore();
     }
-    
+
     private Map<String, StorageMoveHandler> moveHandlerMap;
 
     // XXX reconsider this. is there realy no other way? is it robust enough?
-    private Set<File> toBeDeleted = new HashSet<File>(); 
-    private Set<File> toBeCreated = new HashSet<File>(); 
-    private Set<File> wasJustCreated = new HashSet<File>(); 
-        
+    private Set<File> toBeDeleted = new HashSet<File>();
+    private Set<File> toBeCreated = new HashSet<File>();
+    private Set<File> wasJustCreated = new HashSet<File>();
+
     /** Creates a new instance of LocalHistoryVCSInterceptor */
     public LocalHistoryVCSInterceptor() {
         
-    }    
-    
+    }
+
     // ==================================================================================================
     // DELETE
     // ==================================================================================================
@@ -80,21 +80,21 @@ class LocalHistoryVCSInterceptor extends VCSInterceptor {
             return false;
         }
         toBeDeleted.add(file); // XXX do this with a hanlder, get the correct ts
-        storeFile(file); // will be stored in the history if there is no actuall entry yet        
+        storeFile(file); // will be stored in the history if there is no actuall entry yet
         return false;
     }
-    
+
     public void doDelete(File file) throws IOException {
         // do nothing
     }
 
-    public void afterDelete(File file) {      
+    public void afterDelete(File file) {
         if(!toBeDeleted.remove(file)) {
-            // do nothing if the file wasn't marked 
+            // do nothing if the file wasn't marked
             // as to be deleted
             return;
-        }                 
-        
+        }
+
         String key = file.getAbsolutePath();
         if(getMoveHandlerMap().containsKey(key)) {
             StorageMoveHandler handler = getMoveHandlerMap().get(key);
@@ -102,12 +102,12 @@ class LocalHistoryVCSInterceptor extends VCSInterceptor {
                 handler.delete();
             } finally {
                 getMoveHandlerMap().remove(key);
-            }                            
-        } else {            
-            getStore().fileDelete(file, System.currentTimeMillis());                        
-        }        
+            }
+        } else {
+            getStore().fileDelete(file, System.currentTimeMillis());
+        }
     }
-    
+
     // ==================================================================================================
     // MOVE
     // ==================================================================================================
@@ -116,21 +116,21 @@ class LocalHistoryVCSInterceptor extends VCSInterceptor {
         if(!accept(from)) {
             return false;
         }
-                
-        // moving a package comes either like  
+
+        // moving a package comes either like
         // - create(to) and delete(from)
         // - or the files from the package come like move(from, to)
         StorageMoveHandler handler = new StorageMoveHandler(from, to);
-        getMoveHandlerMap().put(to.getAbsolutePath(), handler);        
-        getMoveHandlerMap().put(from.getAbsolutePath(), handler);                    
-        return false;    
+        getMoveHandlerMap().put(to.getAbsolutePath(), handler);
+        getMoveHandlerMap().put(from.getAbsolutePath(), handler);
+        return false;
     }
 
     public void doMove(File from, File to) throws IOException {
         // do nothing
     }
 
-    public void afterMove(File from, File to) {               
+    public void afterMove(File from, File to) {
         String key = to.getAbsolutePath();
         if(getMoveHandlerMap().containsKey(key)) {
             StorageMoveHandler handler = getMoveHandlerMap().get(key);
@@ -138,32 +138,33 @@ class LocalHistoryVCSInterceptor extends VCSInterceptor {
                 handler.create();
                 handler.delete();
             } finally {
-                getMoveHandlerMap().remove(key);    
-                getMoveHandlerMap().remove(from.getAbsolutePath());    
-            }            
-        }   
+                getMoveHandlerMap().remove(key);
+                getMoveHandlerMap().remove(from.getAbsolutePath());
+            }
+        }
     }
-    
+
     // ==================================================================================================
     // CREATE
     // ==================================================================================================
 
-    public boolean beforeCreate(File file, boolean isDirectory) {          
+    public boolean beforeCreate(File file, boolean isDirectory) {
         toBeCreated.add(file);
-        return false;                
+        return false;
     }
 
     public void doCreate(File file, boolean isDirectory) throws IOException {
-        // do nothing  
+        // do nothing
     }
 
-    public void afterCreate(File file) {             
+    public void afterCreate(File file) {
+        LocalHistory.getInstance().fireFileEvent(LocalHistory.EVENT_FILE_CREATED, file);
         toBeCreated.remove(file);
         if(file.isFile()) {
             // no change events for folders seen yet
             wasJustCreated.add(file);
-        }                        
-        
+        }
+
         String key = file.getAbsolutePath();
         if(getMoveHandlerMap().containsKey(key)) {                                
             StorageMoveHandler handler = getMoveHandlerMap().get(key);
@@ -171,57 +172,57 @@ class LocalHistoryVCSInterceptor extends VCSInterceptor {
                 handler.create();
             } finally {
                 getMoveHandlerMap().remove(key);
-            }            
-        }               
+            }
+        }
     }
-    
+
     // ==================================================================================================
     // CHANGE
     // ==================================================================================================
     
-    public void beforeChange(File file) {                    
+    public void beforeChange(File file) {
         if(toBeCreated.contains(file) || 
            wasJustCreated.remove(file)) 
         {
-            // ignore change events 
+            // ignore change events
             // if they happen in scope of a create
             // or just after a create
             return;
-        }        
+        }
         if(!accept(file)) {
             return;
-        }        
+        }
         storeFile(file);
     }
-    
-    public void afterChange(File file) {  
+
+    public void afterChange(File file) {
         // just in case
         wasJustCreated.remove(file);
     }
-    
-    private void storeFile(File file) {        
+
+    private void storeFile(File file) {
         getStore().fileChange(file, file.lastModified());
     }
-        
+
     private Map<String, StorageMoveHandler> getMoveHandlerMap() {
         if(moveHandlerMap == null) {
             moveHandlerMap = new HashMap<String, StorageMoveHandler>();
         }
         return moveHandlerMap;
     }
-    
+
     /**
-     * 
+     *
      * Decides if a file has to be stored in the Local History or not.
-     * 
+     *
      * @param file the file to be stored
-     * @return true if the file has to be stored in the Local History, otherwise false 
+     * @return true if the file has to be stored in the Local History, otherwise false
      */
-    private boolean accept(File file) {                       
+    private boolean accept(File file) {
         if(!LocalHistory.getInstance().isManaged(file)) {
             return false;
-        }                                     
+        }
         return true;
-    }    
-    
+    }
+
 }
