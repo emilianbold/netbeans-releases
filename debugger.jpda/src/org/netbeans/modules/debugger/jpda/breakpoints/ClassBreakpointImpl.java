@@ -22,6 +22,7 @@ package org.netbeans.modules.debugger.jpda.breakpoints;
 import com.sun.jdi.event.ClassPrepareEvent;
 import com.sun.jdi.event.Event;
 import com.sun.jdi.request.ClassPrepareRequest;
+import com.sun.jdi.request.ClassUnloadRequest;
 import com.sun.jdi.request.EventRequest;
 
 import org.netbeans.api.debugger.Session;
@@ -52,15 +53,41 @@ public class ClassBreakpointImpl extends ClassBasedBreakpoint {
         setClassRequests (
             breakpoint.getClassFilters (), 
             breakpoint.getClassExclusionFilters (), 
-            breakpoint.getBreakpointType ()
+            breakpoint.getBreakpointType (),
+            false
         );
     }
     
     protected EventRequest createEventRequest(EventRequest oldRequest) {
-        ClassPrepareRequest classRequest = (ClassPrepareRequest) oldRequest;
-        ClassPrepareRequest cpr = getEventRequestManager ().createClassPrepareRequest ();
-        // TODO: set filters
-        return cpr;
+        if (oldRequest instanceof ClassPrepareRequest) {
+            ClassPrepareRequest cpr = getEventRequestManager ().createClassPrepareRequest ();
+            String[] classFilters = breakpoint.getClassFilters ();
+            int i, k = classFilters.length;
+            for (i = 0; i < k; i++) {
+                cpr.addClassFilter (classFilters [i]);
+            }
+            String[] classExclusionFilters = breakpoint.getClassExclusionFilters ();
+            k = classExclusionFilters.length;
+            for (i = 0; i < k; i++) {
+                cpr.addClassExclusionFilter (classExclusionFilters [i]);
+            }
+            return cpr;
+        }
+        if (oldRequest instanceof ClassUnloadRequest) {
+            ClassUnloadRequest cur = getEventRequestManager().createClassUnloadRequest();
+            String[] classFilters = breakpoint.getClassFilters ();
+            int i, k = classFilters.length;
+            for (i = 0; i < k; i++) {
+                cur.addClassFilter (classFilters [i]);
+            }
+            String[] classExclusionFilters = breakpoint.getClassExclusionFilters ();
+            k = classExclusionFilters.length;
+            for (i = 0; i < k; i++) {
+                cur.addClassExclusionFilter (classExclusionFilters [i]);
+            }
+            return cur;
+        }
+        return null;
     }
 
     public boolean exec (Event event) {

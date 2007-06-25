@@ -118,6 +118,15 @@ public abstract class ClassBasedBreakpoint extends BreakpointImpl {
         String[] classExclusionFilters,
         int breakpointType
     ) {
+        setClassRequests(classFilters, classExclusionFilters, breakpointType, true);
+    }
+    
+    protected void setClassRequests (
+        String[] classFilters,
+        String[] classExclusionFilters,
+        int breakpointType,
+        boolean ignoreHitCountOnClassLoad
+    ) {
         try {
             if ((breakpointType & ClassLoadUnloadBreakpoint.TYPE_CLASS_LOADED) != 0
             ) {
@@ -132,7 +141,7 @@ public abstract class ClassBasedBreakpoint extends BreakpointImpl {
                     cpr.addClassExclusionFilter (classExclusionFilters [i]);
                     logger.fine("Set class load exclusion request: " + classExclusionFilters [i]);
                 }
-                addEventRequest (cpr, true);
+                addEventRequest (cpr, ignoreHitCountOnClassLoad);
             }
             if ((breakpointType & ClassLoadUnloadBreakpoint.TYPE_CLASS_UNLOADED) != 0
             ) {

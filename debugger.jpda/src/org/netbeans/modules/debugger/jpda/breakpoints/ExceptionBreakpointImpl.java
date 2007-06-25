@@ -66,16 +66,7 @@ public class ExceptionBreakpointImpl extends ClassBasedBreakpoint {
                 (breakpoint.getCatchType () & 
                     ExceptionBreakpoint.TYPE_EXCEPTION_UNCATCHED) != 0
             );
-            String[] classFilters = breakpoint.getClassFilters();
-            int i, k = classFilters.length;
-            for (i = 0; i < k; i++) {
-                er.addClassFilter (classFilters [i]);
-            }
-            String[] classExclusionFilters = breakpoint.getClassExclusionFilters();
-            k = classExclusionFilters.length;
-            for (i = 0; i < k; i++) {
-                er.addClassExclusionFilter (classExclusionFilters [i]);
-            }
+            addFilters(er, breakpoint.getClassFilters(), breakpoint.getClassExclusionFilters());
             addEventRequest (er);
         } catch (VMDisconnectedException e) {
         }
@@ -83,11 +74,24 @@ public class ExceptionBreakpointImpl extends ClassBasedBreakpoint {
     
     protected ExceptionRequest createEventRequest(EventRequest oldRequest) {
         ExceptionRequest excRequest = (ExceptionRequest) oldRequest;
-        return getEventRequestManager ().createExceptionRequest (
+        ExceptionRequest er = getEventRequestManager ().createExceptionRequest (
                 excRequest.exception(),
                 excRequest.notifyCaught(),
                 excRequest.notifyUncaught()
             );
+        addFilters(er, breakpoint.getClassFilters(), breakpoint.getClassExclusionFilters());
+        return er;
+    }
+    
+    private void addFilters(ExceptionRequest er, String[] classFilters, String[] classExclusionFilters) {
+        int i, k = classFilters.length;
+        for (i = 0; i < k; i++) {
+            er.addClassFilter (classFilters [i]);
+        }
+        k = classExclusionFilters.length;
+        for (i = 0; i < k; i++) {
+            er.addClassExclusionFilter (classExclusionFilters [i]);
+        }
     }
 
     public boolean exec (Event event) {
