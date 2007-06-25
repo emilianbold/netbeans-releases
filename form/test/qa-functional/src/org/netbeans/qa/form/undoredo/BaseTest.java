@@ -98,7 +98,7 @@ public class BaseTest extends JellyTestCase {
         formnode.select();
         log("Form node selected.");
         
-        formDesigner = new FormDesignerOperator(FILE_NAME);
+        //formDesigner = new FormDesignerOperator(FILE_NAME);
         
         EditAction editAction = new EditAction();
         editAction.perform(formnode);
@@ -311,20 +311,21 @@ public class BaseTest extends JellyTestCase {
         log("redo 9");
         redo(1);
         //check if buttons order was changed
-        assertTrue("check in Editor 9b",checkEditor("jPanel2.add(jButton1),jPanel2.add(jButton2)"));
+        assertTrue("check in Editor R09b",checkEditor("jPanel2.add(jButton1),jPanel2.add(jButton2)"));
 
         log("redo 10");
-        redo(1);
+        redo(2);
         //check if string aaa, bbb was added in editor
-        assertTrue("check in Editor 10b",checkEditor("aaa,bbb"));
+        assertTrue("check in Editor R010b",checkEditor("aaa,bbb"));
 
         log("redo 11");
         redo(1);
         //check if action "myAction" was added in editor
-        assertTrue("check in Editor 11b",checkEditor("private void myAction"));
+        assertTrue("check in Editor R011b",checkEditor("private void myAction"));
+        
 
-        log("undo 11");
-        undo(11);
+        log("undo 12");
+        undo(12);
 
         Action saveAction;
         saveAction = new Action("File|Save", null);
@@ -418,6 +419,7 @@ public class BaseTest extends JellyTestCase {
 //        editor = ewo.getEditor();
         sleep(300);
 //        String editortext = editor.getText();
+        formDesigner = new FormDesignerOperator(FILE_NAME);
          String editortext = formDesigner.editor().getText(); 
         formDesigner.design();
         // text without escape characters
