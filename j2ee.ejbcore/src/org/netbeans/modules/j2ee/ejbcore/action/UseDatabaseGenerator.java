@@ -46,6 +46,7 @@ import org.netbeans.modules.j2ee.dd.api.ejb.MessageDriven;
 import org.netbeans.modules.j2ee.dd.api.ejb.Session;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
+import org.netbeans.modules.j2ee.deployment.common.api.DatasourceAlreadyExistsException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.ejbcore.Utils;
@@ -54,6 +55,7 @@ import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entres.ServiceLocatorStr
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -77,18 +79,30 @@ public final class UseDatabaseGenerator {
         if (Utils.isJavaEE5orHigher(project) && serviceLocatorStrategy == null &&
                 InjectionTargetQuery.isInjectionTarget(fileObject, className)) {
             boolean isStatic = InjectionTargetQuery.isStaticReferenceRequired(fileObject, className);
-            String jndiName = datasource.getJndiName();
-            String fieldName = Utils.jndiNameToCamelCase(jndiName, true, null);
-            _RetoucheUtil.generateAnnotatedField(fileObject, className, "javax.annotation.Resource", fieldName, 
-                    "javax.sql.DataSource", Collections.singletonMap("name", jndiName), isStatic);
+            String fieldName = Utils.jndiNameToCamelCase(datasourceReferenceName, true, null);
+            _RetoucheUtil.generateAnnotatedField(fileObject, className, "javax.annotation.Resource", fieldName, // NOI18N
+                    "javax.sql.DataSource", Collections.singletonMap("name", datasourceReferenceName), isStatic); // NOI18N
         } else {
-            String jndiName = generateJNDILookup(datasourceReferenceName, erc, 
-                    fileObject, className, datasource.getUrl(), createServerResources);
+            String jndiName = generateJNDILookup(datasourceReferenceName, erc, fileObject, className, datasource.getUrl());
             if (jndiName != null) {
                 generateLookupMethod(fileObject, className, datasourceReferenceName, serviceLocatorStrategy);
             }
         }
         
+        if (createServerResources) {
+            try {            
+                j2eeModuleProvider.getConfigSupport().createDatasource(
+                    datasource.getJndiName(),
+                    datasource.getUrl(),
+                    datasource.getUsername(),
+                    datasource.getPassword(),
+                    datasource.getDriverClassName()
+                    );
+            } catch (DatasourceAlreadyExistsException daee) {
+                Exceptions.printStackTrace(daee);
+            }
+        }
+
         J2eeModule module = j2eeModuleProvider.getJ2eeModule();
         if (isWebModule(module)) {
             bindDataSourceReference(j2eeModuleProvider, datasourceReferenceName, datasource);
@@ -144,7 +158,7 @@ public final class UseDatabaseGenerator {
     }
     
     private String generateJNDILookup(String datasourceReferenceName, EnterpriseReferenceContainer enterpriseReferenceContainer, 
-            FileObject fileObject, String className, String nodeName, boolean createServerResources) throws IOException {
+            FileObject fileObject, String className, String nodeName) throws IOException {
         ResourceReference resourceReference = ResourceReference.create(
                 datasourceReferenceName,
                 javax.sql.DataSource.class.getName(),

@@ -55,6 +55,7 @@ public class SelectDatabasePanel extends javax.swing.JPanel {
     private final Map<String, Datasource> references;
     private final Set<Datasource> moduleDatasources;
     private final Set<Datasource> serverDatasources;
+    private boolean copyDataSourceToProject = false;
     
     public SelectDatabasePanel(J2eeModuleProvider provider, String lastLocator, Map<String, Datasource> references,
             Set<Datasource> moduleDatasources, Set<Datasource> serverDatasources) {
@@ -72,20 +73,6 @@ public class SelectDatabasePanel extends javax.swing.JPanel {
         
         slPanel = new ServiceLocatorStrategyPanel(lastLocator);
         serviceLocatorPanel.add(slPanel, BorderLayout.CENTER);
-        createResourcesCheckBox.setSelected(ejbPreferences.isAgreedCreateServerResources());
-        slPanel.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                if (evt.getPropertyName().equals(ServiceLocatorStrategyPanel.IS_VALID)) {
-                    Object newvalue = evt.getNewValue();
-                    if (newvalue instanceof Boolean) {
-                        boolean isServiceLocatorOk = ((Boolean)newvalue).booleanValue();
-                        if (!isServiceLocatorOk) {
-                            firePropertyChange(IS_VALID, true, false);
-                        }
-                    }
-                }
-            }
-        });
     }
     
     public String getDatasourceReference() {
@@ -97,7 +84,7 @@ public class SelectDatabasePanel extends javax.swing.JPanel {
     }
     
     public boolean createServerResources() {
-        return createResourcesCheckBox.isSelected();
+        return copyDataSourceToProject;
     }
     
     public Datasource getDatasource() {
@@ -114,7 +101,6 @@ public class SelectDatabasePanel extends javax.swing.JPanel {
 
         dsRefLabel = new javax.swing.JLabel();
         serviceLocatorPanel = new javax.swing.JPanel();
-        createResourcesCheckBox = new javax.swing.JCheckBox();
         errorLabel = new javax.swing.JLabel();
         dsRefCombo = new javax.swing.JComboBox();
         buttonAdd = new javax.swing.JButton();
@@ -125,16 +111,6 @@ public class SelectDatabasePanel extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(dsRefLabel, bundle.getString("LBL_DsReference")); // NOI18N
 
         serviceLocatorPanel.setLayout(new java.awt.BorderLayout());
-
-        org.openide.awt.Mnemonics.setLocalizedText(createResourcesCheckBox, org.openide.util.NbBundle.getBundle(SelectDatabasePanel.class).getString("LBL_CreateServerResources")); // NOI18N
-        createResourcesCheckBox.setToolTipText(org.openide.util.NbBundle.getBundle(SelectDatabasePanel.class).getString("ToolTip_CreateServerResources")); // NOI18N
-        createResourcesCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        createResourcesCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        createResourcesCheckBox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                createResourcesCheckBoxActionPerformed(evt);
-            }
-        });
 
         org.openide.awt.Mnemonics.setLocalizedText(errorLabel, " ");
 
@@ -163,8 +139,7 @@ public class SelectDatabasePanel extends javax.swing.JPanel {
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(buttonAdd))))
                     .add(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(createResourcesCheckBox))
+                        .addContainerGap())
                     .add(layout.createSequentialGroup()
                         .addContainerGap()
                         .add(serviceLocatorPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 490, Short.MAX_VALUE)))
@@ -178,8 +153,6 @@ public class SelectDatabasePanel extends javax.swing.JPanel {
                     .add(dsRefLabel)
                     .add(dsRefCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(buttonAdd))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(createResourcesCheckBox)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(serviceLocatorPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 114, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .add(25, 25, 25)
@@ -228,6 +201,8 @@ public class SelectDatabasePanel extends javax.swing.JPanel {
                 // TODO how to copy it?
             }
             
+            copyDataSourceToProject = referencePanel.copyDataSourceToProject();
+            
             // update gui (needed because of sorting)
             populateReferences();
             // Ensure that the correct item is selected before listeners like FocusListener are called.
@@ -249,15 +224,10 @@ public class SelectDatabasePanel extends javax.swing.JPanel {
     }//GEN-LAST:event_buttonAddActionPerformed
     
     
-        
-    private void createResourcesCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_createResourcesCheckBoxActionPerformed
-        ejbPreferences.setAgreedCreateServerResources(createResourcesCheckBox.isSelected());
-    }//GEN-LAST:event_createResourcesCheckBoxActionPerformed
-    
+            
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton buttonAdd;
-    private javax.swing.JCheckBox createResourcesCheckBox;
     private javax.swing.JComboBox dsRefCombo;
     private javax.swing.JLabel dsRefLabel;
     private javax.swing.JLabel errorLabel;

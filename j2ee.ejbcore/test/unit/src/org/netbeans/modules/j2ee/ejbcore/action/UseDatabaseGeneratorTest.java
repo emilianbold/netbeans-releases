@@ -67,7 +67,7 @@ public class UseDatabaseGeneratorTest extends TestBase {
         final ElementHandle<TypeElement> elementHandle = _RetoucheUtil.getJavaClassFromNode(node);
         Datasource datasource = new DatasourceImpl();
         J2eeModuleProvider j2eeModuleProvider = testModule.getProject().getLookup().lookup(J2eeModuleProvider.class);
-        generator.generate(beanClass, elementHandle, j2eeModuleProvider, "testJndiName", datasource, false, null);
+        generator.generate(beanClass, elementHandle, j2eeModuleProvider, "referenceName", datasource, false, null);
         
         JavaSource javaSource = JavaSource.forFileObject(beanClass);
         javaSource.runModificationTask(new AbstractTask<WorkingCopy>() {
@@ -75,7 +75,7 @@ public class UseDatabaseGeneratorTest extends TestBase {
                 workingCopy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                 TypeElement typeElement = elementHandle.resolve(workingCopy);
                 MethodModel methodModel = MethodModel.create(
-                        "getTestJndiName",
+                        "getReferenceName",
                         javax.sql.DataSource.class.getName(),
                         null,
                         Collections.<MethodModel.Variable>emptyList(),
@@ -93,23 +93,23 @@ public class UseDatabaseGeneratorTest extends TestBase {
         final ElementHandle<TypeElement> elementHandle2 = _RetoucheUtil.getJavaClassFromNode(node);
         datasource = new DatasourceImpl();
         j2eeModuleProvider = testModule.getProject().getLookup().lookup(J2eeModuleProvider.class);
-        generator.generate(beanClass, elementHandle2, j2eeModuleProvider, "testJndiName", datasource, false, null);
+        generator.generate(beanClass, elementHandle2, j2eeModuleProvider, "referenceName", datasource, false, null);
         
         javaSource = JavaSource.forFileObject(beanClass);
         javaSource.runModificationTask(new AbstractTask<WorkingCopy>() {
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                 TypeElement typeElement = elementHandle2.resolve(workingCopy);
-                checkDatasourceField(workingCopy, typeElement, "testJndiName", "testJndiName");
+                checkDatasourceField(typeElement, "referenceName");
             }
         });
     }
     
     // private helpers =========================================================
     
-    private static void checkDatasourceField(WorkingCopy workingCopy, TypeElement typeElement, String name, String jndiName) {
+    private static void checkDatasourceField(TypeElement typeElement, String name) {
         List<VariableElement> elements = ElementFilter.fieldsIn(typeElement.getEnclosedElements());
-        VariableElement variableElement = (VariableElement) elements.get(0);
+        VariableElement variableElement = elements.get(0);
         assertTrue(variableElement.getSimpleName().contentEquals(name)); // field name
         DeclaredType declaredType = (DeclaredType) variableElement.asType();
         TypeElement returnTypeElement = (TypeElement) declaredType.asElement();
@@ -122,7 +122,7 @@ public class UseDatabaseGeneratorTest extends TestBase {
         String attributeName = entry.getKey().getSimpleName().toString();
         String attributeValue = (String) entry.getValue().getValue();
         assertEquals("name", attributeName); // attributes
-        assertEquals(jndiName, attributeValue);
+        assertEquals(name, attributeValue);
     }
 
     private static class DatasourceImpl implements Datasource {
