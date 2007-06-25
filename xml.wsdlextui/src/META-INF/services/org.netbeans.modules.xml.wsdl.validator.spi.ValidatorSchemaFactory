@@ -1,1 +1,2 @@
 org.netbeans.modules.xml.wsdlextui.property.SOAPValidatorSchemaFactory
+org.netbeans.modules.xml.wsdlextui.property.http.HTTPValidatorSchemaFactory

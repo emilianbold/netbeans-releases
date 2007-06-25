@@ -20,3 +20,8 @@ org.netbeans.modules.xml.wsdl.model.extensions.soap.impl.SOAPElementFactoryProvi
 org.netbeans.modules.xml.wsdl.model.extensions.soap.impl.SOAPElementFactoryProvider$HeaderFactory
 org.netbeans.modules.xml.wsdl.model.extensions.soap.impl.SOAPElementFactoryProvider$HeaderFaultFactory
 org.netbeans.modules.xml.wsdl.model.extensions.soap.impl.SOAPElementFactoryProvider$OperationFactory
+org.netbeans.modules.xml.wsdl.model.extensions.http.impl.HTTPElementFactoryProvider$AddressFactory
+org.netbeans.modules.xml.wsdl.model.extensions.http.impl.HTTPElementFactoryProvider$BindingFactory
+org.netbeans.modules.xml.wsdl.model.extensions.http.impl.HTTPElementFactoryProvider$OperationFactory
+org.netbeans.modules.xml.wsdl.model.extensions.http.impl.HTTPElementFactoryProvider$UrlEncodedFactory
+org.netbeans.modules.xml.wsdl.model.extensions.http.impl.HTTPElementFactoryProvider$UrlReplacementFactory
