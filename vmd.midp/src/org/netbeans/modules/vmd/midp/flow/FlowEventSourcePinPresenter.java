@@ -125,7 +125,7 @@ public abstract class FlowEventSourcePinPresenter extends FlowPinPresenter {
         public Anchor createAnchor (FlowPinDescriptor descriptor, FlowScene scene) {
             FlowNodeDescriptor node = scene.getPinNode (descriptor);
             Widget nodeWidget = scene.findWidget (node);
-            Anchor anchor = AnchorFactory.createDirectionalAnchor (scene.findWidget (descriptor), AnchorFactory.DirectionalAnchorKind.HORIZONTAL, 8);
+            Anchor anchor = AnchorFactory.createDirectionalAnchor (scene.findWidget (descriptor), AnchorFactory.DirectionalAnchorKind.HORIZONTAL, 6);
             return ((VMDNodeWidget) nodeWidget).createAnchorPin (anchor);
         }
 
