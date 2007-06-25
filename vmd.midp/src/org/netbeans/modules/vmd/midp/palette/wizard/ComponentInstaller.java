@@ -84,9 +84,8 @@ public final class ComponentInstaller {
                     HashSet<TypeElement> elements = new HashSet<TypeElement> ();
                     for (ElementHandle<TypeElement> handle : allHandles) {
                         TypeElement element = handle.resolve (parameter);
-                        if (element != null  &&  element.getKind () != ElementKind.CLASS)
-                            continue;
-                        elements.add (element);
+                        if (element != null  &&  element.getKind () == ElementKind.CLASS)
+                            elements.add (element);
                     }
 
                     for (;;) {
