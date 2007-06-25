@@ -31,6 +31,8 @@ import org.netbeans.modules.bpel.model.api.references.WSDLReference;
 import org.netbeans.modules.bpel.model.api.support.Roles;
 import org.netbeans.modules.bpel.properties.Constants;
 import org.netbeans.modules.bpel.editors.api.nodes.NodeType;
+import org.netbeans.modules.bpel.model.api.BpelEntity;
+import org.netbeans.modules.bpel.model.api.events.ChangeEvent;
 import org.netbeans.modules.bpel.properties.props.PropertyUtils;
 import org.openide.nodes.Sheet;
 import static org.netbeans.modules.bpel.properties.PropertyType.*;
@@ -72,6 +74,29 @@ public class CopyNode extends BpelNode<Copy> {
         return sheet;
     }
     
+    @Override
+    protected boolean isEventRequreUpdate(ChangeEvent event) {
+        assert event != null;
+        
+        boolean isUpdate = false;
+        isUpdate = super.isEventRequreUpdate(event);
+        if (isUpdate) {
+            return isUpdate;
+        }
+        
+        BpelEntity entity = event.getParent();
+        if (entity == null) {
+            return false;
+        }
+        Copy ref = getReference();
+        return  
+                ref != null && ref == entity.getParent() && (
+                entity.getElementType() == From.class
+// TODO r issue 84631                || entity.getElementType() == FaultHandlers.class
+                || entity.getElementType() == To.class
+                );
+    }
+
     // TODO Need to be corrected!!!
     public static String serializeFrom(From from) {
         if (from == null) {

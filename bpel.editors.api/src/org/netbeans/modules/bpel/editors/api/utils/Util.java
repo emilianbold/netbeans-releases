@@ -214,6 +214,8 @@ public class Util {
         switch (nodeType) {
         case UNKNOWN_TYPE:
         case DEFAULT_BPEL_ENTITY_NODE:
+        case FROM:
+        case TO:
         case BOOLEAN_EXPR:
             isShowable = false;
             break;
