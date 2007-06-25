@@ -48,7 +48,7 @@ public class BuildNBMSTest extends TestBase {
     }
 
     public @Override boolean canRun() {
-        return !Utilities.isWindows(); // #107995: path name too long
+        return super.canRun() && !Utilities.isWindows(); // #107995: path name too long
     }
 
     private SuiteProject suite;
