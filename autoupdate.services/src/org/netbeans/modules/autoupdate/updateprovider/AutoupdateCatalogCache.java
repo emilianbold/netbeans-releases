@@ -24,6 +24,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.SocketException;
 import java.net.URL;
 import java.net.URL;
 import java.util.logging.Level;
@@ -109,6 +110,11 @@ public class AutoupdateCatalogCache {
     
     private void copy (URL sourceUrl, File dest) throws IOException {
         err.log(Level.INFO, "Processing URL: " + sourceUrl); // NOI18N
+        File cache = dest;
+        String prefix = "";
+        while(prefix.length() < 3) {prefix += cache.getName();}
+        dest = File.createTempFile(prefix, null, cache.getParentFile());//NOI18N
+        dest.deleteOnExit();
 
         URL urlToGZip = null;
         BufferedInputStream is = null;
@@ -121,7 +127,7 @@ public class AutoupdateCatalogCache {
             }
             urlToGZip = new URL (sourceUrl.getProtocol (), sourceUrl.getHost (), sourceUrl.getPort (), gzipFile);
             
-            is = new BufferedInputStream (new GZIPInputStream (urlToGZip.openStream ()));
+            is = new BufferedInputStream (new GZIPInputStream (urlToGZip.openStream ()));            
             err.log(Level.FINE, "Successfully read URL " + urlToGZip); // NOI18N
             
         } catch (IOException ioe) {
@@ -146,6 +152,10 @@ public class AutoupdateCatalogCache {
             os = new FileOutputStream (dest);
             while ((read = is.read ()) != -1) {
                 os.write (read);
+            }   
+            cache.delete();
+            if (!dest.renameTo(cache)) {
+                throw new IOException();
             }
         } catch (IOException ioe) {
             err.log (Level.INFO, "Writing content of URL " + sourceUrl + " failed.", ioe);
