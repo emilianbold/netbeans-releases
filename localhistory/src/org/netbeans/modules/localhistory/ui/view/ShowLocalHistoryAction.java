@@ -20,11 +20,9 @@ package org.netbeans.modules.localhistory.ui.view;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import org.netbeans.modules.localhistory.ui.view.LocalHistoryDiffView;
 import java.io.File;
 import java.util.Set;
 import javax.swing.SwingUtilities;
-import org.netbeans.modules.localhistory.ui.view.LocalHistoryTopComponent;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.Node;
