@@ -53,6 +53,7 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementUtilities;
+import org.netbeans.api.java.source.TreeUtilities;
 
 import org.netbeans.spi.debugger.jpda.EditorContext;
 
@@ -115,89 +116,91 @@ class AST2Bytecode {
                     }
                 } while (true);
                 if (from < to) { // We have the method call
-                    int pos = (int) sp.getStartPosition(cu, node);
-                    EditorContext.Position startPosition =
-                            opCreationDelegate.createPosition(
-                                    pos,
-                                    (int) lineMap.getLineNumber(pos),
-                                    (int) lineMap.getColumnNumber(pos)
-                            );
-                    pos = (int) sp.getEndPosition(cu, node);
-                    EditorContext.Position endPosition =
-                            opCreationDelegate.createPosition(
-                                    pos,
-                                    (int) lineMap.getLineNumber(pos),
-                                    (int) lineMap.getColumnNumber(pos)
-                            );
-                    Tree identifier;
-                    String methodName;
-                    String methodClassType;
-                    boolean getStartPosFromMethodLength = false;
-                    if (kind.equals(Tree.Kind.NEW_CLASS)) {
-                        identifier = ((NewClassTree) node).getIdentifier();
-                        methodName = "<init>";
-                        TreePath iPath = TreePath.getPath(cu, identifier);
-                        TypeMirror type = trees.getTypeMirror(iPath);
-                        assert type.getKind() == TypeKind.DECLARED;
-                        TypeElement te = (TypeElement) types.asElement(type);
-                        methodClassType = ElementUtilities.getBinaryName(te);
-                    } else {
-                        //identifier = ((MemberSelectTree) ((MethodInvocationTree) node).getMethodSelect()).getIdentifier();
-                        identifier = ((MethodInvocationTree) node).getMethodSelect();
-                        if (identifier.getKind() == Tree.Kind.IDENTIFIER) {
-                            methodName = ((IdentifierTree) identifier).getName().toString();
+                    if (!ci.getTreeUtilities().isSynthetic(ci.getTrees().getPath(cu, node))) {
+                        int pos = (int) sp.getStartPosition(cu, node);
+                        EditorContext.Position startPosition =
+                                opCreationDelegate.createPosition(
+                                        pos,
+                                        (int) lineMap.getLineNumber(pos),
+                                        (int) lineMap.getColumnNumber(pos)
+                                );
+                        pos = (int) sp.getEndPosition(cu, node);
+                        EditorContext.Position endPosition =
+                                opCreationDelegate.createPosition(
+                                        pos,
+                                        (int) lineMap.getLineNumber(pos),
+                                        (int) lineMap.getColumnNumber(pos)
+                                );
+                        Tree identifier;
+                        String methodName;
+                        String methodClassType;
+                        boolean getStartPosFromMethodLength = false;
+                        if (kind.equals(Tree.Kind.NEW_CLASS)) {
+                            identifier = ((NewClassTree) node).getIdentifier();
+                            methodName = "<init>";
                             TreePath iPath = TreePath.getPath(cu, identifier);
-                            TypeElement te = trees.getScope(iPath).getEnclosingClass();
-                            methodClassType = ElementUtilities.getBinaryName(te);
-                        } else {
-                            methodName = ((MemberSelectTree) identifier).getIdentifier().toString();
-                            getStartPosFromMethodLength = true;
-                            ExpressionTree exp = ((MemberSelectTree) identifier).getExpression();
-                            TreePath expPath = TreePath.getPath(cu, exp);
-                            TypeMirror type = trees.getTypeMirror(expPath);
+                            TypeMirror type = trees.getTypeMirror(iPath);
                             assert type.getKind() == TypeKind.DECLARED;
                             TypeElement te = (TypeElement) types.asElement(type);
                             methodClassType = ElementUtilities.getBinaryName(te);
+                        } else {
+                            //identifier = ((MemberSelectTree) ((MethodInvocationTree) node).getMethodSelect()).getIdentifier();
+                            identifier = ((MethodInvocationTree) node).getMethodSelect();
+                            if (identifier.getKind() == Tree.Kind.IDENTIFIER) {
+                                methodName = ((IdentifierTree) identifier).getName().toString();
+                                TreePath iPath = TreePath.getPath(cu, identifier);
+                                TypeElement te = trees.getScope(iPath).getEnclosingClass();
+                                methodClassType = ElementUtilities.getBinaryName(te);
+                            } else {
+                                methodName = ((MemberSelectTree) identifier).getIdentifier().toString();
+                                getStartPosFromMethodLength = true;
+                                ExpressionTree exp = ((MemberSelectTree) identifier).getExpression();
+                                TreePath expPath = TreePath.getPath(cu, exp);
+                                TypeMirror type = trees.getTypeMirror(expPath);
+                                assert type.getKind() == TypeKind.DECLARED;
+                                TypeElement te = (TypeElement) types.asElement(type);
+                                methodClassType = ElementUtilities.getBinaryName(te);
+                            }
                         }
+                        pos = (int) sp.getEndPosition(cu, identifier);
+                        EditorContext.Position methodEndPosition =
+                                opCreationDelegate.createPosition(
+                                        pos,
+                                        (int) lineMap.getLineNumber(pos),
+                                        (int) lineMap.getColumnNumber(pos)
+                                );
+                        if (getStartPosFromMethodLength) {
+                            pos = pos - methodName.length();
+                        } else {
+                            pos = (int) sp.getStartPosition(cu, identifier);
+                        }
+                        EditorContext.Position methodStartPosition =
+                                opCreationDelegate.createPosition(
+                                        pos,
+                                        (int) lineMap.getLineNumber(pos),
+                                        (int) lineMap.getColumnNumber(pos)
+                                );
+                        /*
+                        EditorContext.Operation op =
+                                opCreationDelegate.createOperation(
+                                        startPosition,
+                                        endPosition,
+                                        from
+                                );
+                         */
+                        op = opCreationDelegate.createMethodOperation(
+                                        startPosition,
+                                        endPosition,
+                                        methodStartPosition,
+                                        methodEndPosition,
+                                        methodName,
+                                        methodClassType,
+                                        from
+                                );
+                        //treeNodes.get(treeIndex).setCodeIndex(from);
+                        operations.add(op);
                     }
-                    pos = (int) sp.getEndPosition(cu, identifier);
-                    EditorContext.Position methodEndPosition =
-                            opCreationDelegate.createPosition(
-                                    pos,
-                                    (int) lineMap.getLineNumber(pos),
-                                    (int) lineMap.getColumnNumber(pos)
-                            );
-                    if (getStartPosFromMethodLength) {
-                        pos = pos - methodName.length();
-                    } else {
-                        pos = (int) sp.getStartPosition(cu, identifier);
-                    }
-                    EditorContext.Position methodStartPosition =
-                            opCreationDelegate.createPosition(
-                                    pos,
-                                    (int) lineMap.getLineNumber(pos),
-                                    (int) lineMap.getColumnNumber(pos)
-                            );
-                    /*
-                    EditorContext.Operation op =
-                            opCreationDelegate.createOperation(
-                                    startPosition,
-                                    endPosition,
-                                    from
-                            );
-                     */
-                    op = opCreationDelegate.createMethodOperation(
-                                    startPosition,
-                                    endPosition,
-                                    methodStartPosition,
-                                    methodEndPosition,
-                                    methodName,
-                                    methodClassType,
-                                    from
-                            );
-                    //treeNodes.get(treeIndex).setCodeIndex(from);
                     from += getInstrSize(opcode, bytecodes, from);
-                    operations.add(op);
                 } else {
                     return null; // Mismatch
                 }
