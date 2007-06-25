@@ -92,6 +92,7 @@ public class MVInnerComponentGetLookupTest extends org.openide.windows.TopCompon
         MultiViewDescription[] descs = new MultiViewDescription[] { desc1, desc2, desc3 };
         TopComponent mvtop = MultiViewFactory.createMultiView(descs, desc1);
         top = (TopComponent)elem1;
+        get = top;
         top2 = (TopComponent)elem2;
         top3 = (TopComponent)elem3;
         lookup = mvtop.getLookup();
