@@ -256,7 +256,9 @@ abstract class ContentModel {
         /**
          * Reset all models upto (inclusive) current one.
          */
-        protected void reset() {            
+        protected void reset() {
+            if(models == null)
+                return;
             for (int i = 0; i<models.length; i++) {
                 models[i].reset();
             }
@@ -449,6 +451,8 @@ abstract class ContentModel {
          * Reset all models upto (inclusive) current one.
          */
         protected void reset() {
+            if(models == null)
+                return;
             for (int i = 0; i<models.length; i++) {
                 models[i].reset();
                 modelsThatNotAcceptedAtLeastOne[i] = false;
