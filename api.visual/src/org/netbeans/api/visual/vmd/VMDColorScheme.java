@@ -21,6 +21,8 @@ package org.netbeans.api.visual.vmd;
 import org.netbeans.api.visual.model.ObjectState;
 import org.netbeans.api.visual.widget.Widget;
 
+import java.awt.*;
+
 /**
  * This class specifies look and feel of vmd widgets. There are predefined schemes in VMDFactory class.
  *
@@ -59,6 +61,14 @@ public abstract class VMDColorScheme {
      * @since 2.5
      */
     public abstract boolean isNodeMinimizeButtonOnRight (VMDNodeWidget widget);
+
+    /**
+     * Returns an minimize-widget image for a specific node widget.
+     * @param widget the node widget
+     * @return the minimize-widget image
+     * @since 2.5
+     */
+    public abstract Image getMinimizeWidgetImage (VMDNodeWidget widget);
 
     /**
      * Called to create a pin-category widget.

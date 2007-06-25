@@ -25,7 +25,6 @@ import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.model.ObjectState;
 import org.netbeans.api.visual.model.StateModel;
 import org.netbeans.api.visual.widget.*;
-import org.openide.util.Utilities;
 
 import java.awt.*;
 import java.awt.event.MouseEvent;
@@ -86,7 +85,7 @@ public class VMDNodeWidget extends Widget implements StateModel.Listener, VMDMin
 
         boolean right = scheme.isNodeMinimizeButtonOnRight (this);
 
-        minimizeWidget = new ImageWidget (scene, Utilities.loadImage ("org/netbeans/modules/visual/resources/vmd-collapse.png")); // NOI18N
+        minimizeWidget = new ImageWidget (scene, scheme.getMinimizeWidgetImage (this));
         minimizeWidget.setCursor (Cursor.getPredefinedCursor (Cursor.HAND_CURSOR));
         minimizeWidget.getActions ().addAction (new ToggleMinimizedAction ());
         if (! right)
@@ -173,7 +172,7 @@ public class VMDNodeWidget extends Widget implements StateModel.Listener, VMDMin
             if (widget != header  &&  widget != pinsSeparator) {
                 getScene ().getSceneAnimator ().animatePreferredBounds (widget, minimized  && isMinimizableWidget (widget) ? rectangle : null);
             }
-        minimizeWidget.setImage (minimized ? Utilities.loadImage ("org/netbeans/modules/visual/resources/vmd-expand.png") : Utilities.loadImage ("org/netbeans/modules/visual/resources/vmd-collapse.png")); // NOI18N
+        minimizeWidget.setImage (scheme.getMinimizeWidgetImage (this));
     }
 
     /**

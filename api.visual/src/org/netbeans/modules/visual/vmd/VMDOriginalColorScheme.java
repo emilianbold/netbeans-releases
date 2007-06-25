@@ -94,6 +94,12 @@ public class VMDOriginalColorScheme extends VMDColorScheme {
         return false;
     }
 
+    public Image getMinimizeWidgetImage (VMDNodeWidget widget) {
+        return widget.isMinimized ()
+                ? Utilities.loadImage ("org/netbeans/modules/visual/resources/vmd-expand.png") // NOI18N
+                : Utilities.loadImage ("org/netbeans/modules/visual/resources/vmd-collapse.png"); // NOI18N
+    }
+
     public Widget createPinCategoryWidget (VMDNodeWidget widget, String categoryDisplayName) {
         Scene scene = widget.getScene ();
         LabelWidget label = new LabelWidget (scene, categoryDisplayName);

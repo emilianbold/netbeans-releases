@@ -25,6 +25,7 @@ import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.api.visual.model.ObjectState;
 import org.netbeans.api.visual.anchor.AnchorShape;
 import org.netbeans.api.visual.anchor.PointShape;
+import org.openide.util.Utilities;
 
 import java.awt.*;
 
@@ -36,9 +37,6 @@ public class VMDNetBeans60ColorScheme extends VMDColorScheme {
     public static final Color COLOR60_SELECT = new Color (0xFF8500);
     public static final Color COLOR60_HOVER = new Color (0x5B67B0);
     public static final Color COLOR60_HOVER_BACKGROUND = new Color (0xB0C3E1);
-
-    private static final Border BORDER_MINIMIZE = BorderFactory.createRoundedBorder (2, 2, null, VMDOriginalColorScheme.COLOR_NORMAL);
-    private static final Border BORDER_MINIMIZE_HOVER = BorderFactory.createRoundedBorder (2, 2, null, COLOR60_HOVER);
 
     private static final Border BORDER60 = VMDFactory.createVMDNodeBorder (VMDOriginalColorScheme.COLOR_NORMAL, 2, VMDOriginalColorScheme.COLOR1, VMDOriginalColorScheme.COLOR2, VMDOriginalColorScheme.COLOR3, VMDOriginalColorScheme.COLOR4, VMDOriginalColorScheme.COLOR5);
     private static final Border BORDER60_SELECT = VMDFactory.createVMDNodeBorder (COLOR60_SELECT, 2, VMDOriginalColorScheme.COLOR1, VMDOriginalColorScheme.COLOR2, VMDOriginalColorScheme.COLOR3, VMDOriginalColorScheme.COLOR4, VMDOriginalColorScheme.COLOR5);
@@ -73,9 +71,6 @@ public class VMDNetBeans60ColorScheme extends VMDColorScheme {
             widget.setBorder (BORDER60_HOVER);
         else
             widget.setBorder (BORDER60);
-
-        Widget minimize = widget.getMinimizeButton ();
-        minimize.setBorder (hover ? BORDER_MINIMIZE_HOVER : BORDER_MINIMIZE);
     }
 
     public void installUI (VMDConnectionWidget widget) {
@@ -120,6 +115,12 @@ public class VMDNetBeans60ColorScheme extends VMDColorScheme {
 
     public boolean isNodeMinimizeButtonOnRight (VMDNodeWidget widget) {
         return true;
+    }
+
+    public Image getMinimizeWidgetImage (VMDNodeWidget widget) {
+        return widget.isMinimized ()
+                ? Utilities.loadImage ("org/netbeans/modules/visual/resources/vmd-expand-60.png") // NOI18N
+                : Utilities.loadImage ("org/netbeans/modules/visual/resources/vmd-collapse-60.png"); // NOI18N
     }
 
     public Widget createPinCategoryWidget (VMDNodeWidget widget, String categoryDisplayName) {
