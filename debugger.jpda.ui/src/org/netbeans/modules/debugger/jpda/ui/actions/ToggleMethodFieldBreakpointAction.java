@@ -223,9 +223,11 @@ public class ToggleMethodFieldBreakpointAction extends AbstractAction {//impleme
         if (fieldName != null) {
             b = ToggleBreakpointActionProvider.getBreakpointAnnotationListener().
                 findBreakpoint (className, fieldName);
-        } else {
+        } else if (methodName != null) {
             b = ToggleBreakpointActionProvider.getBreakpointAnnotationListener().
                 findBreakpoint (className, methodName, methodSignature);
+        } else {
+            return false;
         }
         DebuggerManager d = DebuggerManager.getDebuggerManager();
         if (b != null) {
