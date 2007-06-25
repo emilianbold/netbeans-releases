@@ -19,13 +19,14 @@
 
 package org.netbeans.modules.websvc.design.view.widget;
 
+import org.netbeans.modules.websvc.design.javamodel.FaultModel;
 import org.netbeans.modules.websvc.design.javamodel.MethodModel;
 
 /**
  *
  * @author Ajit
  */
-public class FaultsTableModel implements TableModel{
+public class FaultsTableModel implements TableModel<FaultModel>{
     
     private transient MethodModel method;
     
@@ -73,9 +74,9 @@ public class FaultsTableModel implements TableModel{
         if (rowIndex>=0 && rowIndex<getRowCount()) {
             switch(columnIndex) {
             case 0:
-                return method.getFaults().get(rowIndex).getName();
+                return getUserObject(rowIndex).getName();
             case 1:
-                return method.getFaults().get(rowIndex).getFaultType();
+                return getUserObject(rowIndex).getFaultType();
             default:
                 throw new IllegalArgumentException("");
             }
@@ -94,6 +95,10 @@ public class FaultsTableModel implements TableModel{
                 throw new IllegalArgumentException("");
             }
         }
+    }
+    
+    public FaultModel getUserObject(int rowIndex) {
+        return method.getFaults().get(rowIndex);
     }
     
 }

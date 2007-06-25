@@ -20,12 +20,13 @@
 package org.netbeans.modules.websvc.design.view.widget;
 
 import org.netbeans.modules.websvc.design.javamodel.MethodModel;
+import org.netbeans.modules.websvc.design.javamodel.ParamModel;
 
 /**
  *
  * @author Ajit
  */
-public class ParametersTableModel implements TableModel{
+public class ParametersTableModel implements TableModel<ParamModel>{
     
     private transient MethodModel method;
     
@@ -73,9 +74,9 @@ public class ParametersTableModel implements TableModel{
         if (rowIndex>=0 && rowIndex<getRowCount()) {
             switch(columnIndex) {
             case 0:
-                return method.getParams().get(rowIndex).getName();
+                return getUserObject(rowIndex).getName();
             case 1:
-                return method.getParams().get(rowIndex).getParamType();
+                return getUserObject(rowIndex).getParamType();
             default:
                 throw new IllegalArgumentException("");
             }
@@ -88,7 +89,7 @@ public class ParametersTableModel implements TableModel{
             switch(columnIndex) {
             case 0:
                 //validate aValue
-                method.getParams().get(rowIndex).setName(aValue);
+                getUserObject(rowIndex).setName(aValue);
                 break;
             case 1:
                 throw new IllegalArgumentException("");
@@ -96,6 +97,10 @@ public class ParametersTableModel implements TableModel{
                 throw new IllegalArgumentException("");
             }
         }
+    }
+
+    public ParamModel getUserObject(int rowIndex) {
+        return method.getParams().get(rowIndex);
     }
     
 }

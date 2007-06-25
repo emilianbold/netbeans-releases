@@ -23,7 +23,7 @@ package org.netbeans.modules.websvc.design.view.widget;
  *
  * @author Ajit Bhate
  */
-public interface TableModel {
+public interface TableModel<T> {
     /**
      * Returns the number of rows in the model.
      * @return the number of rows in the model
@@ -82,4 +82,13 @@ public interface TableModel {
      * @see #isCellEditable
      */
     public void setValueAt(String aValue, int rowIndex, int columnIndex);
+    
+    /**
+     * Returns the user object if any, for the row at <code>columnIndex</code>.
+     *
+     * @param	rowIndex	the row whose value is to be queried
+     * @return	the user Object at the specified row
+     */
+    public T getUserObject(int rowIndex);
+    
 }
