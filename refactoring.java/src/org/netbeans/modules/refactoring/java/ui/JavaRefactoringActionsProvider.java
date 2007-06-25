@@ -22,18 +22,15 @@ package org.netbeans.modules.refactoring.java.ui;
 import java.util.Collection;
 import java.util.Dictionary;
 import javax.lang.model.element.Element;
-import javax.swing.Action;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.netbeans.modules.refactoring.java.api.ui.JavaRefactoringActionsFactory;
 import org.netbeans.modules.refactoring.java.spi.ui.JavaActionsImplementationProvider;
-import org.netbeans.modules.refactoring.java.ui.ExtractInterfaceRefactoringUI;
 import org.netbeans.modules.refactoring.java.ui.RefactoringActionsProvider.NodeToFileObjectTask;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
@@ -66,7 +63,7 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
                 }
             };
         }
-        RetoucheUtils.invokeAfterScanFinished(task, (String) JavaRefactoringActionsFactory.extractInterfaceAction().getValue(Action.NAME));
+        RetoucheUtils.invokeAfterScanFinished(task, RefactoringActionsProvider.getActionName(JavaRefactoringActionsFactory.extractInterfaceAction()));
     }
 
     @Override
@@ -107,7 +104,7 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
                 }
             };
         }
-        RetoucheUtils.invokeAfterScanFinished(task, (String) JavaRefactoringActionsFactory.extractSuperclassAction().getValue(Action.NAME));
+        RetoucheUtils.invokeAfterScanFinished(task, RefactoringActionsProvider.getActionName(JavaRefactoringActionsFactory.extractSuperclassAction()));
     }
 
     @Override
@@ -149,7 +146,7 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
                 }
             };
         }
-        RetoucheUtils.invokeAfterScanFinished(task, (String) JavaRefactoringActionsFactory.pushDownAction().getValue(Action.NAME));
+        RetoucheUtils.invokeAfterScanFinished(task, RefactoringActionsProvider.getActionName(JavaRefactoringActionsFactory.pushDownAction()));
     }
 
     @Override
@@ -191,7 +188,7 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
                 }
             };
         }
-        RetoucheUtils.invokeAfterScanFinished(task, (String) JavaRefactoringActionsFactory.pullUpAction().getValue(Action.NAME));
+        RetoucheUtils.invokeAfterScanFinished(task, RefactoringActionsProvider.getActionName(JavaRefactoringActionsFactory.pullUpAction()));
     }
 
     @Override
@@ -243,7 +240,7 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
                     return new UseSuperTypeRefactoringUI(selectedElement);
                 }
             };
-        RetoucheUtils.invokeAfterScanFinished(task, (String) JavaRefactoringActionsFactory.useSuperTypeAction().getValue(Action.NAME));
+        RetoucheUtils.invokeAfterScanFinished(task, RefactoringActionsProvider.getActionName(JavaRefactoringActionsFactory.useSuperTypeAction()));
         }
     }
     
@@ -280,7 +277,7 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
                 return new ChangeParametersUI(selectedElement, info);
             }
         };
-        RetoucheUtils.invokeAfterScanFinished(task, (String) JavaRefactoringActionsFactory.changeParametersAction().getValue(Action.NAME));
+        RetoucheUtils.invokeAfterScanFinished(task, RefactoringActionsProvider.getActionName(JavaRefactoringActionsFactory.changeParametersAction()));
     }
     
     @Override
@@ -315,6 +312,6 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
                 return new InnerToOuterRefactoringUI(selectedElement, info);
             }
         };
-        RetoucheUtils.invokeAfterScanFinished(task, (String) JavaRefactoringActionsFactory.innerToOuterAction().getValue(Action.NAME));
+        RetoucheUtils.invokeAfterScanFinished(task, RefactoringActionsProvider.getActionName(JavaRefactoringActionsFactory.innerToOuterAction()));
     }    
 }

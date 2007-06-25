@@ -40,7 +40,6 @@ import javax.swing.Action;
 import javax.swing.JOptionPane;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
-import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
@@ -63,7 +62,6 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
 import org.openide.text.CloneableEditorSupport;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.datatransfer.PasteType;
@@ -132,8 +130,15 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                 }
             };
         }
-        RetoucheUtils.invokeAfterScanFinished(task, (String) RefactoringActionsFactory.renameAction().getValue(Action.NAME));
+        RetoucheUtils.invokeAfterScanFinished(task, getActionName(RefactoringActionsFactory.renameAction()));
     }
+    
+    static String getActionName(Action action) {
+        String arg = (String) action.getValue(Action.NAME);
+        arg = org.openide.util.Utilities.replaceString(arg, "&", ""); // NOI18N
+        return org.openide.util.Utilities.replaceString(arg, "...", ""); // NOI18N
+    }
+
 
     /**
      * returns true if exactly one refactorable file is selected
@@ -187,7 +192,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                 }
             };
 //        }
-        RetoucheUtils.invokeAfterScanFinished(task, (String) RefactoringActionsFactory.copyAction().getValue(Action.NAME));
+        RetoucheUtils.invokeAfterScanFinished(task, getActionName(RefactoringActionsFactory.copyAction()));
     }
 
     /**
@@ -263,7 +268,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                 }
             };
         }
-        RetoucheUtils.invokeAfterScanFinished(task, (String) RefactoringActionsFactory.whereUsedAction().getValue(Action.NAME));
+        RetoucheUtils.invokeAfterScanFinished(task, getActionName(RefactoringActionsFactory.whereUsedAction()));
     }
 
     /**
@@ -312,7 +317,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                 
             };
         }
-        RetoucheUtils.invokeAfterScanFinished(task, (String) RefactoringActionsFactory.safeDeleteAction().getValue(Action.NAME));
+        RetoucheUtils.invokeAfterScanFinished(task, getActionName(RefactoringActionsFactory.safeDeleteAction()));
     }
     
     private FileObject getTarget(Dictionary dict) {
@@ -476,7 +481,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                 
             };
         }
-        RetoucheUtils.invokeAfterScanFinished(task, (String) RefactoringActionsFactory.renameAction().getValue(Action.NAME));
+        RetoucheUtils.invokeAfterScanFinished(task, getActionName(RefactoringActionsFactory.renameAction()));
     }    
 
     
