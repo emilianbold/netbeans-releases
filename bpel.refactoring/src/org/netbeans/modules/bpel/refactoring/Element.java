@@ -22,6 +22,8 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
 import javax.swing.Icon;
+import javax.swing.text.Document;
+import javax.swing.text.Position.Bias;
 import org.netbeans.modules.refactoring.spi.ui.UI;
 import org.openide.filesystems.FileObject;
 import org.openide.text.PositionBounds;
@@ -36,8 +38,15 @@ import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.bpel.editors.api.utils.RefactorUtil;
 import org.netbeans.modules.bpel.editors.api.utils.Util;
 import org.netbeans.modules.xml.refactoring.XMLRefactoringTransaction;
+import org.netbeans.modules.xml.refactoring.spi.SharedUtils;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentModel;
+import org.netbeans.modules.xml.xam.dom.DocumentComponent;
+import org.netbeans.modules.xml.xam.dom.DocumentModelAccess;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.text.PositionRef;
 import org.openide.util.Exceptions;
+import org.openide.text.CloneableEditorSupport;
 
 
 /**
@@ -84,8 +93,33 @@ final class Element
   }
 
   public PositionBounds getPosition() {
-    return null;
-  }
+       if(myComponent.getModel() instanceof AbstractDocumentModel ) {
+           Document doc = ((AbstractDocumentModel) myComponent.getModel()).getBaseDocument();
+           DocumentModelAccess docAcc = ((AbstractDocumentModel)myComponent.getModel()).getAccess();
+           
+           org.w3c.dom.Element elem = ((DocumentComponent)myComponent).getPeer();
+           String txt = docAcc.getXmlFragmentInclusive(elem);
+           int startPos = ((DocumentComponent)myComponent).findPosition();
+           int endPos = startPos + txt.length();
+           DataObject dob = null;
+           try {
+                FileObject source = (FileObject)myComponent.getModel().getModelSource().getLookup().lookup(FileObject.class);
+                dob = DataObject.find(source);
+            } catch (DataObjectNotFoundException ex) {
+             ex.printStackTrace();
+           }
+           CloneableEditorSupport ces = SharedUtils.findCloneableEditorSupport(dob);
+           if (ces == null)
+               return null;
+           PositionRef ref1 = ces.createPositionRef(startPos, Bias.Forward);
+           PositionRef ref2 = ces.createPositionRef(endPos, Bias.Forward);
+           PositionBounds bounds = new PositionBounds(ref1, ref2);
+       
+           return bounds;
+       }else 
+           return null;
+       
+    }
        
   public void openInEditor() {
     Util.goToSource(myComponent);
