@@ -104,7 +104,7 @@ public class ConditionsPanel extends javax.swing.JPanel {
     public void setClassMatchFilter(String[] filter) {
         String filterStr = getFilterStr(filter);
         classIncludeFilterTextField.setText(filterStr);
-        classFilterCheckBox.setSelected(filterStr.length() > 0);
+        classFilterCheckBox.setSelected(filterStr.length() > 0 || classExcludeFilterTextField.getText().length() > 0);
         classFilterCheckBoxActionPerformed(null);
     }
     
@@ -112,7 +112,7 @@ public class ConditionsPanel extends javax.swing.JPanel {
         String filterStr = getFilterStr(filter);
         classExcludeFilterTextField.setText(filterStr);
         if (classFilterCheckBox.isVisible()) {
-            classFilterCheckBox.setSelected(filterStr.length() > 0);
+            classFilterCheckBox.setSelected(filterStr.length() > 0 || classIncludeFilterTextField.getText().length() > 0);
             classFilterCheckBoxActionPerformed(null);
         }
         if (classExcludeFilterCheckBox.isVisible()) {
