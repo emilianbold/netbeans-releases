@@ -106,26 +106,28 @@ public class JSFRenamePlugin implements RefactoringPlugin {
                     JSFRefactoringUtils.renamePackage(refactoring, refactoringElements, fileObject, oldName, newName, true);
                 }
                 else {
-                    JavaSource source = JavaSource.forFileObject(fileObject);
-                    // Can be null, if it is just folder. 
-                    if (source != null){
-                        try {
-                            source.runUserActionTask(new AbstractTask<CompilationController>() {
-                                @Override
-                                public void cancel() {
-                                }
+                    if (JSFRefactoringUtils.isJavaFile(fileObject)){
+                        JavaSource source = JavaSource.forFileObject(fileObject);
+                        // Can be null, if it is just folder. 
+                        if (source != null){
+                            try {
+                                source.runUserActionTask(new AbstractTask<CompilationController>() {
+                                    @Override
+                                    public void cancel() {
+                                    }
 
-                                public void run(CompilationController co) throws Exception {
-                                    co.toPhase(JavaSource.Phase.RESOLVED);
-                                    CompilationUnitTree cut = co.getCompilationUnit();
-                                    treePathHandle = TreePathHandle.create(TreePath.getPath(cut, cut.getTypeDecls().get(0)), co);
-                                    refactoring.getContext().add(co);
-                                }
-                            }, false);
-                        } catch (IllegalArgumentException ex) {
-                            LOGGER.log(Level.WARNING, "Exception in JSFRenamePlugin", ex);  //NOI18N
-                        } catch (IOException ex) {
-                            LOGGER.log(Level.WARNING, "Exception in JSFRenamePlugin", ex);  //NOI18N
+                                    public void run(CompilationController co) throws Exception {
+                                        co.toPhase(JavaSource.Phase.RESOLVED);
+                                        CompilationUnitTree cut = co.getCompilationUnit();
+                                        treePathHandle = TreePathHandle.create(TreePath.getPath(cut, cut.getTypeDecls().get(0)), co);
+                                        refactoring.getContext().add(co);
+                                    }
+                                }, false);
+                            } catch (IllegalArgumentException ex) {
+                                LOGGER.log(Level.WARNING, "Exception in JSFRenamePlugin", ex);  //NOI18N
+                            } catch (IOException ex) {
+                                LOGGER.log(Level.WARNING, "Exception in JSFRenamePlugin", ex);  //NOI18N
+                            }
                         }
                     }
                 }
