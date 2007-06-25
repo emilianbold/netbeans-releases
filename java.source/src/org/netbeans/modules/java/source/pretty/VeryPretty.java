@@ -1133,7 +1133,7 @@ public final class VeryPretty extends JCTree.Visitor {
 	} else {
 	    printExpr(tree.selected, treeinfo.postfixPrec);
 	    print('.');
-	    print(tree.sym==null ? tree.name : tree.sym.name);
+	    print(tree.name);
 	}
     }
 
