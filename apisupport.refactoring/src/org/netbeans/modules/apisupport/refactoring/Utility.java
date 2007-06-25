@@ -132,7 +132,14 @@ public class Utility {
     
     public static final FileObject findMetaInfServices(Project project) {
         Sources srcs = ProjectUtils.getSources(project);
-        SourceGroup[] grps = srcs.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        SourceGroup[] grps = srcs.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_RESOURCES);
+        for (int i = 0; i < grps.length; i++) {
+            FileObject fo = grps[i].getRootFolder().getFileObject("META-INF/services"); //NOI18N
+            if (fo != null) {
+                return fo;
+            }
+        }
+        grps = srcs.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
         for (int i = 0; i < grps.length; i++) {
             FileObject fo = grps[i].getRootFolder().getFileObject("META-INF/services"); //NOI18N
             if (fo != null) {

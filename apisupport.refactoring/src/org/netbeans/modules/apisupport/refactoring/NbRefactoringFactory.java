@@ -21,6 +21,9 @@ package org.netbeans.modules.apisupport.refactoring;
 
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 //import org.netbeans.modules.refactoring.api.MoveClassRefactoring;
 import org.netbeans.modules.refactoring.api.MoveRefactoring;
@@ -56,6 +59,14 @@ ould operate on.
         FileObject file = look.lookup(FileObject.class);
         NonRecursiveFolder folder = look.lookup(NonRecursiveFolder.class);
         TreePathHandle handle = look.lookup(TreePathHandle.class);
+        if (file != null) {
+            //#107638
+            Project project = FileOwnerQuery.getOwner(file);
+            if (project == null || project.getLookup().lookup(NbModuleProvider.class) == null) {
+                // take just netbeans module development into account..
+                return null;
+            }
+        }
         
         if (refactoring instanceof WhereUsedQuery) {
             if (handle != null) {

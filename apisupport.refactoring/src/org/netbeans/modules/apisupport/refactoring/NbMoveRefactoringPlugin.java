@@ -170,7 +170,7 @@ public class NbMoveRefactoringPlugin extends AbstractRefactoringPlugin {
             if (handle != null) {
                 InfoHolder infoholder = examineLookup(lkp);
                 Project project = FileOwnerQuery.getOwner(handle.getFileObject());
-                if (project.getLookup().lookup(NbModuleProvider.class) == null) {
+                if (project == null || project.getLookup().lookup(NbModuleProvider.class) == null) {
                     // take just netbeans module development into account..
                     return null;
                 }
