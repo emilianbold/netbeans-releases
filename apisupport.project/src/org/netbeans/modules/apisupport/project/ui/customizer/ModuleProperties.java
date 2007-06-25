@@ -109,7 +109,7 @@ public abstract class ModuleProperties {
     
     final String getProperty(String key) {
         String value = getProjectProperties().getProperty(key);
-        return value != null ? value : (String) getDefaultValues().get(key);
+        return value != null ? value : getDefaultValues().get(key);
     }
     
     final boolean getBooleanProperty(String key) {
@@ -119,11 +119,11 @@ public abstract class ModuleProperties {
     }
     
     final String removeProperty(String key) {
-        return (String) getProjectProperties().remove(key);
+        return getProjectProperties().remove(key);
     }
     
     final String removePrivateProperty(String key) {
-        return (String) getPrivateProperties().remove(key);
+        return getPrivateProperties().remove(key);
     }
     
     /**
@@ -132,7 +132,7 @@ public abstract class ModuleProperties {
      * properties.
      */
     final void setProperty(String key, String value) {
-        String def = (String) getDefaultValues().get(key);
+        String def = getDefaultValues().get(key);
         if (def == null) {
             def = ""; // NOI18N
         }
@@ -150,7 +150,7 @@ public abstract class ModuleProperties {
      * properties.
      */
     final void setPrivateProperty(String key, String value) {
-        String def = (String) getDefaultValues().get(key);
+        String def = getDefaultValues().get(key);
         if (def == null) {
             def = ""; // NOI18N
         }
@@ -244,7 +244,7 @@ public abstract class ModuleProperties {
     
     static String getPlatformID(JavaPlatform platform) {
         // XXX why isn't there a real API for this??
-        String id = (String) platform.getProperties().get("platform.ant.name"); // NOI18N
+        String id = platform.getProperties().get("platform.ant.name"); // NOI18N
         // Handle case that a platform is not an Ant platform:
         return id != null ? id : "default"; // NOI18N
     }
@@ -270,8 +270,8 @@ public abstract class ModuleProperties {
                 final FileObject nbbuild = helper.resolveFileObject(eval.evaluate("${nb_all}/nbbuild")); // NOI18N
                 if (nbbuild != null) {
                     try {
-                        ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
-                            public Object run() throws IOException {
+                        ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+                            public Void run() throws IOException {
                                 FileObject userBuildProperties = nbbuild.getFileObject("user.build.properties"); // NOI18N
                                 if (userBuildProperties == null) {
                                     userBuildProperties = nbbuild.createData("user.build.properties"); // NOI18N
@@ -309,7 +309,7 @@ public abstract class ModuleProperties {
     private static File getPlatformLocation(JavaPlatform platform) {
         Collection<FileObject> installs = platform.getInstallFolders();
         if (installs.size() == 1) {
-            return FileUtil.toFile((FileObject) installs.iterator().next());
+            return FileUtil.toFile(installs.iterator().next());
         } else {
             return null;
         }
