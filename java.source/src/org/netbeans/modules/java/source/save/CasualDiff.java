@@ -130,9 +130,9 @@ public class CasualDiff {
         // diffList(oldT.packageAnnotations, newT.packageAnnotations, LineInsertionType.NONE, 0);
         localPointer = diffPackageStatement(oldT, newT, localPointer);
         PositionEstimator est = EstimatorFactory.imports(((CompilationUnitTree) oldT).getImports(), ((CompilationUnitTree) newT).getImports(), workingCopy);
-        localPointer = diffListImports(oldT.getImports(), newT.getImports(), localPointer, est, Measure.DEFAULT, printer);
+        localPointer = diffList(oldT.getImports(), newT.getImports(), localPointer, est, Measure.DEFAULT, printer);
         est = EstimatorFactory.toplevel(((CompilationUnitTree) oldT).getTypeDecls(), ((CompilationUnitTree) newT).getTypeDecls(), workingCopy);
-        localPointer = diffListImports(oldT.getTypeDecls(), newT.getTypeDecls(), localPointer, est, Measure.MEMBER, printer);
+        localPointer = diffList(oldT.getTypeDecls(), newT.getTypeDecls(), localPointer, est, Measure.MEMBER, printer);
         printer.print(origText.substring(localPointer));
     }
     
@@ -313,7 +313,7 @@ public class CasualDiff {
         PositionEstimator est = EstimatorFactory.members(filterHidden(oldT.defs), filterHidden(newT.defs), workingCopy);
         if (localPointer < insertHint)
             copyTo(localPointer, insertHint);
-        localPointer = diffListImports(filterHidden(oldT.defs), filterHidden(newT.defs), insertHint, est, Measure.MEMBER, printer);
+        localPointer = diffList(filterHidden(oldT.defs), filterHidden(newT.defs), insertHint, est, Measure.MEMBER, printer);
         printer.enclClassName = origName;
         // the reference is no longer needed.
         origClassName = null;
@@ -536,7 +536,7 @@ public class CasualDiff {
         int old = printer.indent();
         Name oldEnclosing = printer.enclClassName;
         printer.enclClassName = null;
-        localPointer = diffListImports(oldT.stats, newT.stats, oldT.pos + 1, est, Measure.MEMBER, printer);
+        localPointer = diffList(oldT.stats, newT.stats, oldT.pos + 1, est, Measure.MEMBER, printer);
         printer.enclClassName = oldEnclosing;
         if (localPointer < endPos(oldT)) {
             copyTo(localPointer, localPointer = endPos(oldT));
@@ -641,7 +641,7 @@ public class CasualDiff {
         int castListHint = oldT.cases.size() > 0 ? oldT.cases.head.pos : Query.NOPOS;
         PositionEstimator est = EstimatorFactory.deprecated(oldT.getCases(), newT.getCases(), workingCopy);
         copyTo(localPointer, castListHint);
-        localPointer = diffListImports(oldT.cases, newT.cases, castListHint, est, Measure.DEFAULT, printer);
+        localPointer = diffList(oldT.cases, newT.cases, castListHint, est, Measure.DEFAULT, printer);
         
         copyTo(localPointer, bounds[1]);
         return bounds[1];
@@ -654,13 +654,11 @@ public class CasualDiff {
             copyTo(localPointer, patBounds[0]);
             localPointer = diffTree(oldT.pat, newT.pat, patBounds);
         }
-        int pos = oldT.stats.head.pos;
+        copyTo(localPointer, localPointer = oldT.stats.head.pos);
         PositionEstimator est = EstimatorFactory.deprecated(oldT.getStatements(), newT.getStatements(), workingCopy);
-        VeryPretty localPrinter = new VeryPretty(workingCopy);
-        int[] stmtPos = diffList(oldT.stats, newT.stats, pos, est, Measure.DEFAULT, localPrinter);
-        if (localPointer < stmtPos[0]) copyTo(localPointer, stmtPos[0]);
-        printer.print(localPrinter.toString());
-        copyTo(stmtPos[1], bounds[1]);
+        localPointer = diffList(oldT.stats, newT.stats, localPointer, est, Measure.DEFAULT, printer);
+        
+        copyTo(localPointer, bounds[1]);
         
         return bounds[1];
     }
@@ -688,7 +686,7 @@ public class CasualDiff {
         localPointer = diffTree(oldT.body, newT.body, bodyPos);
         
         PositionEstimator est = EstimatorFactory.deprecated(((TryTree) oldT).getCatches(), ((TryTree) newT).getCatches(), workingCopy);
-        localPointer = diffListImports(oldT.catchers, newT.catchers, localPointer, est, Measure.DEFAULT, printer);
+        localPointer = diffList(oldT.catchers, newT.catchers, localPointer, est, Measure.DEFAULT, printer);
         
         if (oldT.finalizer != null) {
             int[] finalBounds = getBounds(oldT.finalizer);
@@ -1211,7 +1209,7 @@ public class CasualDiff {
         } else {
             copyTo(localPointer, startPos);
             PositionEstimator est = EstimatorFactory.annotations(((ModifiersTree) oldT).getAnnotations(), ((ModifiersTree) newT).getAnnotations(), workingCopy);
-            localPointer = diffListImports(oldT.annotations, newT.annotations, startPos, est, Measure.DEFAULT, printer);
+            localPointer = diffList(oldT.annotations, newT.annotations, startPos, est, Measure.DEFAULT, printer);
         }
         if (oldT.flags != newT.flags) {
             if (localPointer == startPos) {
@@ -1660,141 +1658,6 @@ public class CasualDiff {
         return false;
     }
     
-    /**
-     * Used for diffing lists which does not contain any separator.
-     * (Currently for imports and members diffing.)
-     */
-    private int[] diffList(
-            java.util.List<? extends JCTree> oldList, 
-            java.util.List<? extends JCTree> newList,
-            int initialPos, 
-            PositionEstimator estimator,
-            Measure measure, 
-            VeryPretty printer)
-    {
-        int[] ret = new int[] { -1, -1 };
-        if (oldList == newList) {
-            return ret;
-        }
-        assert oldList != null && newList != null;
-        
-        ListMatcher<JCTree> matcher = ListMatcher.instance(
-                oldList, 
-                newList,
-                measure
-        );
-        if (!matcher.match()) {
-            return ret;
-        }
-        JCTree lastdel = null; // last deleted element
-        ResultItem<JCTree>[] result = matcher.getResult();
-        int posHint = initialPos;
-        int i = 0;
-        for (int j = 0; j < result.length; j++) {
-            ResultItem<JCTree> item = result[j];
-            switch (item.operation) {
-                case MODIFY: {
-                    assert true : "Modify is no longer operated!";
-                    break;
-                }
-                case INSERT: {
-                    int pos = estimator.getInsertPos(i);
-                    // estimator couldn't compute the position - probably
-                    // first element is inserted to the collection
-                    String head = "", tail = "";
-                    if (pos < 0 && oldList.isEmpty() && i == 0) {
-                        pos = initialPos;
-                        StringBuilder aHead = new StringBuilder(), aTail = new StringBuilder();
-                        pos = estimator.prepare(initialPos, aHead, aTail);
-                        if (j+1 == result.length) {
-                            tail = aTail.toString();
-                        }
-                        head = aHead.toString();
-                        posHint = pos;
-                        if (ret[0] < 0) ret[0] = posHint;
-                        if (ret[1] < 0) ret[1] = posHint;
-                    } else {
-                        if (ret[0] < 0) ret[0] = posHint;
-                        if (ret[1] < 0) ret[1] = posHint;
-                    }
-                    int oldPos = item.element.getKind() != Kind.VARIABLE ? getOldPos(item.element) : item.element.pos;
-                    boolean found = false;
-                    if (oldPos > 0) {
-                        for (JCTree oldT : oldList) {
-                            int oldNodePos = oldT.getKind() != Kind.VARIABLE ? getOldPos(oldT) : oldT.pos;
-                            if (oldPos == oldNodePos) {
-                                found = true;
-                                VeryPretty oldPrinter = this.printer;
-                                int old = oldPrinter.indent();
-                                this.printer = new VeryPretty(workingCopy);
-                                this.printer.reset(old);
-                                int index = oldList.indexOf(oldT);
-                                int[] poss = estimator.getPositions(index);
-                                diffTree(oldT, item.element, poss);
-                                printer.print(this.printer.toString());
-//                                if (pointer < poss[1])
-//                                    printer.print(origText.substring(pointer, pointer = poss[1]));
-                                this.printer = oldPrinter;
-                                this.printer.undent(old);
-                                break;
-                            }
-                        }
-                    }
-                    if (!found) {
-                        if (lastdel != null && treesMatch(item.element, lastdel, false)) {
-                            VeryPretty oldPrinter = this.printer;
-                            int old = oldPrinter.indent();
-                            this.printer = new VeryPretty(workingCopy);
-                            this.printer.reset(old);
-                            int index = oldList.indexOf(lastdel);
-                            int[] poss = estimator.getPositions(index);
-                            diffTree(lastdel, item.element, poss);
-                            printer.print(this.printer.toString());
-                            this.printer = oldPrinter;
-                            this.printer.undent(old);
-                            break;
-                        }
-                        if (j == 0 && !oldList.isEmpty()) {
-                            posHint = estimator.getPositions(0)[0];
-                        }
-                        printer.print(head);
-                        printer.print(item.element);
-                        printer.newline();
-                    }
-                    break;
-                }
-                case DELETE: {
-                    int[] pos = estimator.getPositions(i);
-                    lastdel = oldList.get(i);
-                    if (ret[0] < 0) {
-                        ret[0] = pos[0];
-                    }
-                     ++i;
-                    ret[1] = pos[1];
-                    posHint = pos[1];
-                    break;
-                }
-                case NOCHANGE: {
-                    int[] pos = estimator.getPositions(i);
-                    if (ret[0] < 0) {
-                        ret[0] = pos[0];
-                    }
-                    copyTo(pos[0], pos[1], printer);
-                    ret[1] = pos[1];
-                    ++i;
-                    break;
-                }
-            }
-        }
-        if (!oldList.isEmpty()) {
-            Iterator<? extends JCTree> it = oldList.iterator();
-            for (i = 0; it.hasNext(); i++, it.next()) ;
-            int[] pos = estimator.getPositions(i);
-            ret[1] = pos[1];
-        }
-        return ret;
-    }
-    
     private List<JCTree> filterHidden(List<JCTree> list) {
         List<JCTree> result = new ArrayList<JCTree>(); // todo (#pf): capacity?
         List<JCVariableDecl> fieldGroup = new ArrayList<JCVariableDecl>();
@@ -1827,7 +1690,7 @@ public class CasualDiff {
         return result;
     }
     
-    private int diffListImports(
+    private int diffList(
             List<? extends JCTree> oldList, 
             List<? extends JCTree> newList,
             int localPointer, 
