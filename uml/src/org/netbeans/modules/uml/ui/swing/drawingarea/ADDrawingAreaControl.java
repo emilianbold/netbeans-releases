@@ -8092,17 +8092,7 @@ public class ADDrawingAreaControl extends ApplicationView
          
          registerAllSinks(false);
          m_DrawingAreaEventsSink = null;
-         
-         // Tell the product that this drawing area no longer exists
-         if(m_Diagram != null)
-         {
-            IProduct product = getProduct();
-            if(product != null)
-            {
-               product.removeDiagram(m_Diagram);
-            }
-         }
-         
+                  
          m_Namespace = null;
          modelElement = null;
          m_drawingAreaDispatcher = null;
