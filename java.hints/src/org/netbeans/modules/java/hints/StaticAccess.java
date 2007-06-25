@@ -71,10 +71,8 @@ public class StaticAccess extends AbstractHint {
             return null;
         }
         MemberSelectTree mst = (MemberSelectTree)treePath.getLeaf();
-        TreePath expr = info.getTrees().getPath(info.getCompilationUnit(), mst.getExpression());
-        if (expr == null) {
-            return null;
-        }
+        Tree expression = mst.getExpression();
+        TreePath expr = new TreePath(treePath, expression);
         
         TypeMirror tm = info.getTrees().getTypeMirror(expr);
         if (tm == null) {
@@ -88,14 +86,13 @@ public class StaticAccess extends AbstractHint {
         
         Name idName = null;
         
-        Tree expression = mst.getExpression();
         if (expression.getKind() == Kind.MEMBER_SELECT) {
             MemberSelectTree exprSelect = (MemberSelectTree)expression;
             idName = exprSelect.getIdentifier();
         }
         
-        if (mst.getExpression().getKind() == Kind.IDENTIFIER) {
-            IdentifierTree idt = (IdentifierTree)mst.getExpression();
+        if (expression.getKind() == Kind.IDENTIFIER) {
+            IdentifierTree idt = (IdentifierTree)expression;
             idName = idt.getName();
         }
         
@@ -124,14 +121,12 @@ public class StaticAccess extends AbstractHint {
             return null;
         }
         
-        TreePath exprPath = info.getTrees().getPath(info.getCompilationUnit(), mst.getExpression());
-        
         int[] span = {
-            (int)info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), mst.getExpression()),
-            (int)info.getTrees().getSourcePositions().getEndPosition(info.getCompilationUnit(), mst.getExpression()),
+            (int)info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), expression),
+            (int)info.getTrees().getSourcePositions().getEndPosition(info.getCompilationUnit(), expression),
         };
         List<Fix> fixes = Collections.<Fix>singletonList(new FixImpl(
-            TreePathHandle.create(exprPath, info),
+            TreePathHandle.create(expr, info),
             TreePathHandle.create(type, info),
             info.getFileObject()
         ));
