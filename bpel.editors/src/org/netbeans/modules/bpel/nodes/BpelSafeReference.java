@@ -43,7 +43,7 @@ public class BpelSafeReference<T extends BpelEntity> {
     
 
     public T getBpelObject() {
-        BpelEntity bpelEntity = model.getEntity(myId);
+        BpelEntity bpelEntity = myId == null ? null : model.getEntity(myId);
         return (T)bpelEntity;
     }
 
