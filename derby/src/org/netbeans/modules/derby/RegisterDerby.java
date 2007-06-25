@@ -32,7 +32,9 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.derby.api.DerbyDatabases;
 import org.netbeans.spi.db.explorer.DatabaseRuntime;
+import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
+import org.openide.NotifyDescriptor;
 import org.openide.execution.NbProcessDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -52,6 +54,8 @@ public class RegisterDerby implements DatabaseRuntime {
     
     private static final ErrorManager LOGGER = ErrorManager.getDefault().getInstance(RegisterDerby.class.getName());
     private static final boolean LOG = LOGGER.isLoggable(ErrorManager.INFORMATIONAL);
+    
+    private static final int START_TIMEOUT = 5; // seconds
     
     private static RegisterDerby reg=null;
     
@@ -108,7 +112,14 @@ public class RegisterDerby implements DatabaseRuntime {
      * Start the database server.
      */
     public void start(){
-        start(5000);//wait 5 seconds
+        start(START_TIMEOUT); // wait for Derby to start
+    }
+    
+    /**
+     * Starts the database server and does not wait until it has started.
+     */
+    public void startNoWait() {
+        start(0);
     }
 
     private String getNetworkServerClasspath() {
@@ -259,15 +270,38 @@ public class RegisterDerby implements DatabaseRuntime {
             );
 
             ee.displayProcessOutputs(process,NbBundle.getMessage(StartAction.class, "LBL_outputtab"));
-            if (waitTime > 0){
-                boolean result = ee.waitForMessage(NbBundle.getMessage(RegisterDerby.class, "MSG_StartingDerby"), waitTime); // to make sure the server is up and running
-                if (!result) {
-                    LOGGER.log(ErrorManager.WARNING, "Derby server failed to start in " + waitTime + " ms"); // NOI18N
-                }
+            if (waitTime > 0) {
+                // to make sure the server is up and running
+                waitStart(ee, waitTime);
             }
             
         } catch (Exception e) {
             Util.showInformation(e.getLocalizedMessage());
+        }
+    }
+    
+    private void waitStart(ExecSupport execSupport, int waitTime) {
+        String waitMessage = NbBundle.getMessage(RegisterDerby.class, "MSG_StartingDerby");
+        ProgressHandle progress = ProgressHandleFactory.createHandle(waitMessage);
+        progress.start();
+        try {
+            boolean started = false;
+            while (!started) {
+                started = execSupport.waitForMessage(waitTime * 1000);
+                if (!started) {
+                    String title = NbBundle.getMessage(RegisterDerby.class, "LBL_DerbyDatabase");
+                    String message = NbBundle.getMessage(RegisterDerby.class, "MSG_WaitStart", waitTime);
+                    NotifyDescriptor waitConfirmation = new NotifyDescriptor.Confirmation(message, title, NotifyDescriptor.YES_NO_OPTION);
+                    if (DialogDisplayer.getDefault().notify(waitConfirmation) != NotifyDescriptor.YES_OPTION) {
+                        break;
+                    }
+                }
+            }
+            if (!started) {
+                LOGGER.log(ErrorManager.WARNING, "Derby server failed to start"); // NOI18N
+            }
+        } finally {
+            progress.finish();
         }
     }
     

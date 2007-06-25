@@ -170,31 +170,20 @@ public class ExecSupport {
      *  @param timeout timeout
      *  @return true if the connection was successfully established, false if timed out
      */ 
-    public boolean waitForMessage(String progressMessage, int timeout) {
+    public boolean waitForMessage(int timeout) {
         int retryTime = 10;
-        ProgressHandle ph = null;
-        if (progressMessage != null) {
-            ph = ProgressHandleFactory.createHandle(progressMessage);
-            ph.start();
-        }
+        Connect connect = new Connect(retryTime); 
+        Thread t = new Thread(connect);
+        t.start();
         try {
-            Connect connect = new Connect(retryTime); 
-            Thread t = new Thread(connect);
-            t.start();
-            try {
-                t.join(timeout);
-            } catch(InterruptedException ie) {
-            }
-            if (t.isAlive()) {
-                connect.finishLoop();
-                t.interrupt();//for thread deadlock
-            }
-            return connect.getStatus();
+            t.join(timeout);
+        } catch(InterruptedException ie) {
         }
-        finally {
-            if (ph != null)
-                ph.finish();
+        if (t.isAlive()) {
+            connect.finishLoop();
+            t.interrupt();//for thread deadlock
         }
+        return connect.getStatus();
     }
     
     private class Connect implements Runnable  {

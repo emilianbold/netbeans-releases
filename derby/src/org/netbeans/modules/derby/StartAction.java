@@ -51,7 +51,7 @@ public class StartAction extends CallableSystemAction {
             return;
         }
         if (Util.ensureSystemHome()) {
-            RegisterDerby.getDefault().start();
+            RegisterDerby.getDefault().startNoWait();
         }
     }
     
