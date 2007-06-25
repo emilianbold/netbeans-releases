@@ -193,8 +193,7 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
         buttonsPanel.add(back);
         back.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_Back")); // NOI18N
 
-        previewButton.setMnemonic(org.openide.util.NbBundle.getMessage(ParametersPanel.class, "MNEM_Preview").charAt(0));
-        previewButton.setLabel(org.openide.util.NbBundle.getMessage(ParametersPanel.class, "CTL_PreviewAll")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(previewButton, org.openide.util.NbBundle.getMessage(ParametersPanel.class, "CTL_PreviewAll")); // NOI18N
         previewButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 preview(evt);
