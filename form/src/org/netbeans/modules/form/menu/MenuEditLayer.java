@@ -347,20 +347,36 @@ public class MenuEditLayer extends JPanel {
     }
 
     void showMenuPopup(final JMenu menu) {
+        p("showing menu popup: " + menu);
         // if already created then just make it visible
         if(hackedPopupFactory.containerMap.containsKey(menu)) {
             hackedPopupFactory.containerMap.get(menu).setVisible(true);
         } else {
+            p("is configed: " + isConfigured(menu));
             if(!isConfigured(menu)) {
                 configureMenu(null, menu);
             }
+            final JPopupMenu popup = menu.getPopupMenu();
+            if(!(popup.getUI() instanceof VisualDesignerPopupMenuUI)) {
+                p("the incorrect popup is here for some reason. resetting");
+                popup.setUI(new VisualDesignerPopupMenuUI(this, popup.getUI()));
+            }
+            p("is visible: " + menu.isVisible());
+            p("component = " + menu.hashCode() + " popup = " + menu.getPopupMenu().hashCode());
+            p("popup ui = " + menu.getPopupMenu().getUI());
             if(menu.isVisible()) {
-                try {
-                    JPopupMenu popup = menu.getPopupMenu();
-                    popup.show(menu,0,menu.getHeight());
-                } catch (Exception ex) {
-                    //ignore anyexceptions caused by showing the popups
-                }
+                // do later so that the component will definitely be on screen by then
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        try {
+                            popup.show(menu,0,menu.getHeight());
+                        } catch (Exception ex) {
+                            ex.printStackTrace();
+                            //ignore anyexceptions caused by showing the popups
+                        }
+                        
+                    }
+                });
             }
         }
         this.validate();
@@ -382,9 +398,10 @@ public class MenuEditLayer extends JPanel {
     
     
     void configureMenu(final JComponent parent, final JMenu menu) {
+        p("configureMenu for: " + menu);
         // make sure it will draw it's border so we can have rollovers and selection
         menu.setBorderPainted(true);
-        //install the wrapper icon if not a toplevel
+        //install the wrapper icon if not a toplevel JMenu
         if(!(menu.getParent() instanceof JMenuBar)) {
             if(!(menu.getIcon() instanceof WrapperIcon)) {
                 menu.setIcon(new WrapperIcon(menu.getIcon()));
@@ -611,14 +628,6 @@ public class MenuEditLayer extends JPanel {
     
     private void showContextMenu(Point popupPos) {
         ComponentInspector inspector = ComponentInspector.getInstance();
-        /*josh: i don't know what this does. i copied it from the HandleLayer
-        TopComponent activated = TopComponent.getRegistry().getActivated();
-        if (activated != formDesigner.multiViewObserver.getTopComponent()
-                && activated != inspector)
-            return;*/
-
-        //formDesigner.componentActivated(); // just for sure...
-
         Node[] selectedNodes = inspector.getSelectedNodes();
         JPopupMenu popup = NodeOp.findContextMenu(selectedNodes);
         if (popup != null) {
@@ -858,6 +867,7 @@ public class MenuEditLayer extends JPanel {
         if(!formModelListeners.containsKey(metacomp)) {
             FormModelListener fml = new FormModelListener() {
                 public void formChanged(FormModelEvent[] events) {
+                    p("form changed starting");
                     if (events != null) {
                         for(FormModelEvent evt : events) {
                             
@@ -915,6 +925,7 @@ public class MenuEditLayer extends JPanel {
                             }
                         }
                     }
+                    p("form changed ending");
                 }
             };
             formModelListeners.put(metacomp,fml);
@@ -923,7 +934,7 @@ public class MenuEditLayer extends JPanel {
     }
     
     private void rebuildOnScreenMenu(RADVisualContainer menuRAD) {
-        p("** rebuildOnScreenMenu() called");
+        p("** rebuildOnScreenMenu() called on: " + menuRAD.getName());
         JMenu menu = (JMenu) formDesigner.getComponent(menuRAD);
         if(hackedPopupFactory.containerMap.containsKey(menu)) {
             JPanel popupContainer = hackedPopupFactory.containerMap.get(menu);
