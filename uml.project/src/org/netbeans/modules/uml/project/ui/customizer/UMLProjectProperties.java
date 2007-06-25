@@ -74,7 +74,7 @@ public class UMLProjectProperties
     public static final String CODE_GEN_TEMPLATES = "code.gen.templates"; // NOI18N
     
     public static final String DEFAULT_JAVA_TEMPLATES = 
-        "Java:Class|Java:Interface|Java:Enumeration"; // NOI18N
+        "Java:Basic Class|Java:Basic Interface|Java:Basic Enumeration"; // NOI18N
         
     // MODELS FOR VISUAL CONTROLS
     
