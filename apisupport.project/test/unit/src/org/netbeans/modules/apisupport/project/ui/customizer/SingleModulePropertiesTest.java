@@ -28,7 +28,6 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.jar.Manifest;
@@ -169,15 +168,15 @@ public class SingleModulePropertiesTest extends TestBase {
         FileUtil.createData(p.getSourceDirectory(), "org/example/module1/resources/Two.java");
         
         // apply and save project
-        Boolean result = (Boolean) ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
-            public Object run() throws IOException {
+        boolean result = ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Boolean>() {
+            public Boolean run() throws IOException {
                 ProjectXMLManager pxm = new ProjectXMLManager(p);
                 String[] newPP = new String[] { "org.example.module1" };
                 pxm.replacePublicPackages(newPP);
-                return Boolean.TRUE;
+                return true;
             }
         });
-        assertTrue("replace public packages", result.booleanValue());
+        assertTrue("replace public packages", result);
         ProjectManager.getDefault().saveProject(p);
         
         SingleModuleProperties props = loadProperties(p);
@@ -267,7 +266,7 @@ public class SingleModulePropertiesTest extends TestBase {
     }
     
     public void testAvailablePublicPackages() throws Exception {
-        Map/*<String,String>*/ contents = new HashMap();
+        Map<String,String> contents = new HashMap<String,String>();
         contents.put("lib/pkg/Clazz3.class", "");
         contents.put("lib/pkg2/Clazz4.class", "");
         contents.put("1.0/oldlib/Clazz5.class", ""); // #72669
@@ -287,8 +286,8 @@ public class SingleModulePropertiesTest extends TestBase {
         FileUtil.createData(srcDir, "pkg2/deeper/Clazz1.java");
         FileUtil.createData(srcDir, "pkg2/deeper/and/deeper/Clazz1.java");
         FileUtil.createData(srcDir, ".broken/Clazz.java"); // #72669
-        assertEquals(Arrays.asList(new String[] {"lib.pkg", "lib.pkg2", "pkg1", "pkg2", "pkg2.deeper", "pkg2.deeper.and.deeper"}),
-                new ArrayList(SingleModuleProperties.getInstance(p).getAvailablePublicPackages()));
+        assertEquals(Arrays.asList("lib.pkg", "lib.pkg2", "pkg1", "pkg2", "pkg2.deeper", "pkg2.deeper.and.deeper"),
+                new ArrayList<String>(SingleModuleProperties.getInstance(p).getAvailablePublicPackages()));
     }
     
     public void testPublicPackagesAreUpToDate_63561() throws Exception {
@@ -302,15 +301,15 @@ public class SingleModulePropertiesTest extends TestBase {
         assertEquals("no public packages in the ModuleEntry", 0, props.getModuleList().getEntry("org.example.module1a").getPublicPackages().length);
         
         // apply and save project
-        Boolean result = (Boolean) ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
-            public Object run() throws IOException {
+        boolean result = ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Boolean>() {
+            public Boolean run() throws IOException {
                 ProjectXMLManager pxm = new ProjectXMLManager(p);
                 String[] newPP = new String[] { "org.example.module1a" };
                 pxm.replacePublicPackages(newPP);
-                return Boolean.TRUE;
+                return true;
             }
         });
-        assertTrue("replace public packages", result.booleanValue());
+        assertTrue("replace public packages", result);
         ProjectManager.getDefault().saveProject(p);
         
         simulatePropertiesOpening(props, p);
@@ -325,9 +324,7 @@ public class SingleModulePropertiesTest extends TestBase {
     public void testThatTheModuleDoesNotOfferItself_61232() throws Exception {
         NbModuleProject p = generateStandaloneModule("module1");
         SingleModuleProperties props = loadProperties(p);
-        Set set =  props.getUniverseDependencies(true);
-        for (Iterator it = set.iterator() ; it.hasNext() ; ) {
-            ModuleDependency dependency = (ModuleDependency) it.next();
+        for (ModuleDependency dependency : props.getUniverseDependencies(true)) {
             ModuleEntry me = dependency.getModuleEntry();
             assertFalse("module doesn't offer itself in its dependency list: " + p.getCodeNameBase(),
                     p.getCodeNameBase().equals(me.getCodeNameBase()));
@@ -539,16 +536,15 @@ public class SingleModulePropertiesTest extends TestBase {
     static SingleModuleProperties loadProperties(NbModuleProject project) throws IOException {
         return new SingleModuleProperties(project.getHelper(), project.evaluator(),
                 getSuiteProvider(project), getModuleType(project),
-                (LocalizedBundleInfo.Provider) project.getLookup().lookup(LocalizedBundleInfo.Provider.class));
+                project.getLookup().lookup(LocalizedBundleInfo.Provider.class));
     }
     
     private static NbModuleProvider.NbModuleType getModuleType(Project p) {
-        NbModuleProvider nmtp = (NbModuleProvider) p.getLookup().lookup(NbModuleProvider.class);
-        return nmtp.getModuleType();
+        return p.getLookup().lookup(NbModuleProvider.class).getModuleType();
     }
     
     private static SuiteProvider getSuiteProvider(Project p) {
-        return (SuiteProvider) p.getLookup().lookup(SuiteProvider.class);
+        return p.getLookup().lookup(SuiteProvider.class);
     }
     
     private static void simulatePropertiesOpening(
