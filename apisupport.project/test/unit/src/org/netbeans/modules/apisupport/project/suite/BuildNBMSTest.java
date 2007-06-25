@@ -33,6 +33,7 @@ import org.netbeans.spi.project.ActionProvider;
 import org.openide.DialogDescriptor;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Utilities;
 
 /**
  * Checks building of NBM files.
@@ -45,7 +46,11 @@ public class BuildNBMSTest extends TestBase {
         System.setProperty("org.netbeans.core.startup.ModuleSystem.CULPRIT", "true");
         LayerTestBase.Lkp.setLookup(new Object[0]);
     }
-    
+
+    public @Override boolean canRun() {
+        return !Utilities.isWindows(); // #107995: path name too long
+    }
+
     private SuiteProject suite;
     
     public BuildNBMSTest(String name) {
