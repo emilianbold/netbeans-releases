@@ -42,6 +42,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Future;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -451,8 +452,18 @@ public class EditorContextImpl extends EditorContext {
      * @return signature of method currently selected in editor or null
      */
     public String getCurrentMethodSignature () {
-        Element[] elementPtr = new Element[] { null };
-        getCurrentElement(ElementKind.METHOD, elementPtr);
+        final Element[] elementPtr = new Element[] { null };
+        try {
+            getCurrentElement(ElementKind.METHOD, elementPtr);
+        } catch (final java.awt.IllegalComponentStateException icse) {
+            throw new java.awt.IllegalComponentStateException() {
+                @Override
+                public String getMessage() {
+                    icse.getMessage();
+                    return createSignature((ExecutableElement) elementPtr[0]);
+                }
+            };
+        }
         if (elementPtr[0] != null) {
             return createSignature((ExecutableElement) elementPtr[0]);
         } else {
@@ -763,10 +774,13 @@ public class EditorContextImpl extends EditorContext {
         JavaSource js = JavaSource.forFileObject(dataObject.getPrimaryFile());
         if (js == null) return null;
         // TODO: Can be called outside of AWT? Probably need invokeAndWait()
-        final int currentOffset = org.netbeans.editor.Registry.getMostActiveComponent().getCaretPosition();
+        EditorCookie ec = nodes[0].getCookie(EditorCookie.class);
+        final int currentOffset = (ec == null) ? 0 : ec.getOpenedPanes()[0].getCaretPosition();
+        //final int currentOffset = org.netbeans.editor.Registry.getMostActiveComponent().getCaretPosition();
         final String[] currentMethodPtr = new String[] { null, null };
+        final Future<Void> scanFinished;
         try {
-            js.runUserActionTask(new CancellableTask<CompilationController>() {
+            scanFinished = js.runWhenScanFinished(new CancellableTask<CompilationController>() {
                 public void cancel() {
                 }
                 public void run(CompilationController ci) throws Exception {
@@ -799,6 +813,43 @@ public class EditorContextImpl extends EditorContext {
                     }
                 }
             }, true);
+            if (!scanFinished.isDone()) {
+                if (java.awt.EventQueue.isDispatchThread()) {
+                    // Hack: We should not wait for the scan in AWT!
+                    //       Thus we throw IllegalComponentStateException,
+                    //       which returns the data upon call to getMessage()
+                    throw new java.awt.IllegalComponentStateException() {
+                        
+                        private void waitScanFinished() {
+                            try {
+                                scanFinished.get();
+                            } catch (InterruptedException iex) {
+                            } catch (java.util.concurrent.ExecutionException eex) {
+                                ErrorManager.getDefault().notify(eex);
+                            }
+                        }
+                        
+                        public String getMessage() {
+                            waitScanFinished();
+                            return currentMethodPtr[0];
+                        }
+                        
+                        public String getLocalizedMessage() {
+                            waitScanFinished();
+                            return currentMethodPtr[1];
+                        }
+                    };
+                } else {
+                    try {
+                        scanFinished.get();
+                    } catch (InterruptedException iex) {
+                        return null;
+                    } catch (java.util.concurrent.ExecutionException eex) {
+                        ErrorManager.getDefault().notify(eex);
+                        return null;
+                    }
+                }
+            }
         } catch (IOException ioex) {
             ErrorManager.getDefault().notify(ioex);
             return null;
@@ -1284,7 +1335,9 @@ public class EditorContextImpl extends EditorContext {
         return getCurrentElement(kind, null);
     }
     
-    private String getCurrentElement(final ElementKind kind, final Element[] elementPtr) {
+    /** throws IllegalComponentStateException when can not return the data in AWT. */
+    private String getCurrentElement(final ElementKind kind, final Element[] elementPtr)
+            throws java.awt.IllegalComponentStateException {
         Node[] nodes = TopComponent.getRegistry ().getCurrentNodes ();
         if (nodes == null) return null;
         if (nodes.length != 1) return null;
@@ -1297,8 +1350,9 @@ public class EditorContextImpl extends EditorContext {
         final int currentOffset = (ec == null) ? 0 : ec.getOpenedPanes()[0].getCaretPosition();
         //final int currentOffset = org.netbeans.editor.Registry.getMostActiveComponent().getCaretPosition();
         final String[] currentElementPtr = new String[] { null };
+        final Future<Void> scanFinished;
         try {
-            js.runUserActionTask(new CancellableTask<CompilationController>() {
+            scanFinished = js.runWhenScanFinished(new CancellableTask<CompilationController>() {
                 public void cancel() {
                 }
                 public void run(CompilationController ci) throws Exception {
@@ -1365,6 +1419,39 @@ public class EditorContextImpl extends EditorContext {
                     }
                 }
             }, true);
+            if (!scanFinished.isDone()) {
+                if (java.awt.EventQueue.isDispatchThread()) {
+                    // Hack: We should not wait for the scan in AWT!
+                    //       Thus we throw IllegalComponentStateException,
+                    //       which returns the data upon call to getMessage()
+                    throw new java.awt.IllegalComponentStateException() {
+                        
+                        private void waitScanFinished() {
+                            try {
+                                scanFinished.get();
+                            } catch (InterruptedException iex) {
+                            } catch (java.util.concurrent.ExecutionException eex) {
+                                ErrorManager.getDefault().notify(eex);
+                            }
+                        }
+                        
+                        public String getMessage() {
+                            waitScanFinished();
+                            return currentElementPtr[0];
+                        }
+                        
+                    };
+                } else {
+                    try {
+                        scanFinished.get();
+                    } catch (InterruptedException iex) {
+                        return null;
+                    } catch (java.util.concurrent.ExecutionException eex) {
+                        ErrorManager.getDefault().notify(eex);
+                        return null;
+                    }
+                }
+            }
         } catch (IOException ioex) {
             ErrorManager.getDefault().notify(ioex);
             return null;

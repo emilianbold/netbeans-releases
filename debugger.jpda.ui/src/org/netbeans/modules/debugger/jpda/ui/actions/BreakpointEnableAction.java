@@ -39,7 +39,9 @@ public class BreakpointEnableAction extends BooleanStateAction {
     public boolean isEnabled() {
         JPDABreakpoint b = BreakpointCustomizeAction.getCurrentLineBreakpoint();
         if (b == null) {
-            b = ToggleMethodFieldBreakpointAction.getCurrentFieldMethodBreakpoint();
+            try {
+                b = ToggleMethodFieldBreakpointAction.getCurrentFieldMethodBreakpoint();
+            } catch (java.awt.IllegalComponentStateException icsex) {}
         }
         if (b != null) {
             boolean value = b.isEnabled();
@@ -56,7 +58,9 @@ public class BreakpointEnableAction extends BooleanStateAction {
     public void setBooleanState(boolean value) {
         JPDABreakpoint b = BreakpointCustomizeAction.getCurrentLineBreakpoint();
         if (b == null) {
-            b = ToggleMethodFieldBreakpointAction.getCurrentFieldMethodBreakpoint();
+            try {
+                b = ToggleMethodFieldBreakpointAction.getCurrentFieldMethodBreakpoint();
+            } catch (java.awt.IllegalComponentStateException icsex) {}
         }
         if (value) {
             b.enable();

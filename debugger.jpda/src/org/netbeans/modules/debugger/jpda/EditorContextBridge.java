@@ -320,33 +320,6 @@ public class EditorContextBridge {
         );
     }
 
-    public static String getDefaultType () {
-        String id = getSelectedIdentifier ();
-        if (id != null) {
-            if (id.equals(getCurrentMethodName())) return METHOD;
-            String s = getCurrentClassName();
-            int i = s.lastIndexOf ('.');
-            if (i >= 0)
-                s = s.substring (i + 1);
-            if (id.equals (s))
-                return CLASS;
-            return FIELD;
-        } else {
-            String s = getCurrentFieldName ();
-            if (s != null && s.length () > 0)
-                return FIELD;
-            s = getCurrentMethodName();
-            if (s != null && s.length () > 0)
-                return METHOD;
-            if (s != null && s.length () < 1) {
-                s = getCurrentClassName ();
-                if (s.length () > 0)
-                    return CLASS;
-            }
-        }
-        return CLASS;
-    }
-
     public static String getRelativePath (
         JPDAThread thread,
         String stratumn

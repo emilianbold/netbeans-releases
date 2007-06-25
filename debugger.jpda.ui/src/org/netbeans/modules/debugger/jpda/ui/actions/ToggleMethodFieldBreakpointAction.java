@@ -35,6 +35,7 @@ import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
 import org.netbeans.api.debugger.jpda.FieldBreakpoint;
 import org.netbeans.api.debugger.jpda.JPDABreakpoint;
+import org.netbeans.api.debugger.jpda.LineBreakpoint;
 import org.netbeans.api.debugger.jpda.MethodBreakpoint;
 
 import org.netbeans.modules.debugger.jpda.ui.EditorContextBridge;
@@ -44,6 +45,7 @@ import org.netbeans.modules.debugger.jpda.ui.breakpoints.MethodBreakpointPanel;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 
 
@@ -113,8 +115,91 @@ public class ToggleMethodFieldBreakpointAction extends AbstractAction {//impleme
     
     private boolean submitFieldOrMethodBreakpoint() {
         // 1) get class name & element info
-        String className = EditorContextBridge.getCurrentClassName();
-        String fieldName = EditorContextBridge.getCurrentFieldName();
+        final String[] className = new String[] { null };
+        java.awt.IllegalComponentStateException cex;
+        try {
+            className[0] = EditorContextBridge.getCurrentClassName();
+            cex = null;
+        } catch (java.awt.IllegalComponentStateException icsex) {
+            cex = icsex;
+        }
+        final String[] fieldName = new String[] { null };
+        java.awt.IllegalComponentStateException fex;
+        try {
+            fieldName[0] = EditorContextBridge.getCurrentFieldName();
+            fex = null;
+        } catch (java.awt.IllegalComponentStateException icsex) {
+            fex = icsex;
+        }
+        final String methodName;
+        final String methodSignature;
+        java.awt.IllegalComponentStateException mex;
+        if (fex != null || fieldName[0] == null || fieldName[0].length() == 0) {
+            fieldName[0] = null;
+            String[] methodInfo;
+            try {
+                methodInfo = EditorContextBridge.getCurrentMethodDeclaration();
+                mex = null;
+            } catch (java.awt.IllegalComponentStateException icsex) {
+                mex = icsex;
+                methodInfo = null;
+            }
+            if (methodInfo != null) {
+                methodName = methodInfo[0];
+                methodSignature = methodInfo[1];
+            } else if (mex == null) {
+                return false;
+            } else {
+                methodName = null;
+                methodSignature = null;
+            }
+        } else {
+            mex = null;
+            methodName = null;
+            methodSignature = null;
+        }
+        if (cex != null || fex != null || mex != null) {
+            final int ln = EditorContextBridge.getCurrentLineNumber ();
+            final String url = EditorContextBridge.getCurrentURL ();
+            final java.awt.IllegalComponentStateException[] exs = new java.awt.IllegalComponentStateException[]
+                    { cex, fex, mex };
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    // Re-try to submit the field or method breakpoint again
+                    String cn = (exs[0] != null) ? exs[0].getMessage() : className[0];
+                    String fn = (exs[1] != null) ? exs[1].getMessage() : fieldName[0];
+                    String mn = (exs[2] != null) ? exs[2].getMessage() : methodName;
+                    String ms = (exs[2] != null) ? exs[2].getLocalizedMessage() : methodSignature;
+                    if (fn != null && fn.length() == 0) fn = null;
+                    if (submitFieldOrMethodBreakpoint(cn, fn, mn, ms)) {
+                        // We've submitted a field or method breakpoint, so delete the line one:
+                        LineBreakpoint lb = ToggleBreakpointActionProvider.getBreakpointAnnotationListener ().findBreakpoint (
+                            url, ln
+                        );
+                        if (lb != null) {
+                            DebuggerManager.getDebuggerManager().removeBreakpoint (lb);
+                        }
+                    }
+                }
+            });
+            return false;
+        } else {
+            return submitFieldOrMethodBreakpoint(className[0], fieldName[0], methodName, methodSignature);
+        }
+        
+        /*
+        // 1) get class name & element info
+        String className;
+        String fieldName;
+        try {
+            className = EditorContextBridge.getCurrentClassName();
+            fieldName = EditorContextBridge.getCurrentFieldName();
+        } catch (java.awt.IllegalComponentStateException icsex) {
+            final int ln = EditorContextBridge.getCurrentLineNumber ();
+            final String url = EditorContextBridge.getCurrentURL ();
+            
+            return false;
+        }
         String methodName = null;
         String methodSignature = null;
         if (fieldName == null || fieldName.length() == 0) {
@@ -127,7 +212,12 @@ public class ToggleMethodFieldBreakpointAction extends AbstractAction {//impleme
                 return false;
             }
         }
+        return submitFieldOrMethodBreakpoint(className[0], fieldName[0], methodName, methodSignature);
+         */
+    }
         
+    private boolean submitFieldOrMethodBreakpoint(String className, String fieldName,
+                                                  String methodName, String methodSignature) {
         // 2) find and remove existing line breakpoint
         JPDABreakpoint b;
         if (fieldName != null) {

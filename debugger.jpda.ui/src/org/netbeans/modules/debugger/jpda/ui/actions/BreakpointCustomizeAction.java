@@ -81,7 +81,9 @@ public class BreakpointCustomizeAction extends NodeAction {
     protected boolean enable(org.openide.nodes.Node[] activatedNodes) {
         JPDABreakpoint b = getCurrentLineBreakpoint();
         if (b == null) {
-            b = ToggleMethodFieldBreakpointAction.getCurrentFieldMethodBreakpoint();
+            try {
+                b = ToggleMethodFieldBreakpointAction.getCurrentFieldMethodBreakpoint();
+            } catch (java.awt.IllegalComponentStateException icsex) {}
         }
         return b != null;
     }
@@ -93,7 +95,9 @@ public class BreakpointCustomizeAction extends NodeAction {
     protected void performAction(org.openide.nodes.Node[] activatedNodes) {
         JPDABreakpoint b = getCurrentLineBreakpoint();
         if (b == null) {
-            b = ToggleMethodFieldBreakpointAction.getCurrentFieldMethodBreakpoint();
+            try {
+                b = ToggleMethodFieldBreakpointAction.getCurrentFieldMethodBreakpoint();
+            } catch (java.awt.IllegalComponentStateException icsex) {}
         }
         if (b == null) return ;
         BreakpointsActionsProvider.customize(b);

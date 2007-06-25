@@ -21,6 +21,7 @@ package org.netbeans.modules.debugger.jpda.ui;
 import com.sun.jdi.AbsentInformationException;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -208,6 +209,14 @@ public class EditorContextBridge {
         try {
         return (String) getContext ().getClass().getMethod("getCurrentMethodSignature", new Class[] {}).
                 invoke(getContext(), new Object[] {});
+        } catch (java.lang.reflect.InvocationTargetException itex) {
+            Throwable tex = itex.getTargetException();
+            if (tex instanceof RuntimeException) {
+                throw (RuntimeException) tex;
+            } else {
+                ErrorManager.getDefault().notify(tex);
+                return "";
+            }
         } catch (Exception ex) {
             ErrorManager.getDefault().notify(ex);
             return "";
@@ -350,28 +359,30 @@ public class EditorContextBridge {
 
     public static String getDefaultType () {
         String id = getSelectedIdentifier ();
-        if (id != null) {
-            if (id.equals(getCurrentMethodName())) return METHOD;
-            String s = getCurrentClassName();
-            int i = s.lastIndexOf ('.');
-            if (i >= 0)
-                s = s.substring (i + 1);
-            if (id.equals (s))
-                return CLASS;
-            return FIELD;
-        } else {
-            String s = getCurrentFieldName ();
-            if (s != null && s.length () > 0)
-                return FIELD;
-            s = getCurrentMethodName();
-            if (s != null && s.length () > 0)
-                return METHOD;
-            if (s != null && s.length () < 1) {
-                s = getCurrentClassName ();
-                if (s.length () > 0)
+        try {
+            if (id != null) {
+                if (id.equals(getCurrentMethodName())) return METHOD;
+                String s = getCurrentClassName();
+                int i = s.lastIndexOf ('.');
+                if (i >= 0)
+                    s = s.substring (i + 1);
+                if (id.equals (s))
                     return CLASS;
+                return FIELD;
+            } else {
+                String s = getCurrentFieldName ();
+                if (s != null && s.length () > 0)
+                    return FIELD;
+                s = getCurrentMethodName();
+                if (s != null && s.length () > 0)
+                    return METHOD;
+                if (s != null && s.length () < 1) {
+                    s = getCurrentClassName ();
+                    if (s.length () > 0)
+                        return CLASS;
+                }
             }
-        }
+        } catch (java.awt.IllegalComponentStateException icsex) {}
         return CLASS;
     }
 

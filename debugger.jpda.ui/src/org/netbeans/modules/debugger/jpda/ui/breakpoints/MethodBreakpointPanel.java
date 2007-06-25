@@ -51,11 +51,25 @@ public class MethodBreakpointPanel extends JPanel implements Controller, org.ope
     
     
     private static MethodBreakpoint createBreakpoint () {
+        String className;
+        try {
+            className = EditorContextBridge.getCurrentClassName();
+        } catch (java.awt.IllegalComponentStateException icsex) {
+            className = "";
+        }
+        String methodName;
+        try {
+            methodName = EditorContextBridge.getCurrentMethodName();
+        } catch (java.awt.IllegalComponentStateException icsex) {
+            methodName = "";
+        }
         MethodBreakpoint mb = MethodBreakpoint.create (
-            EditorContextBridge.getCurrentClassName (),
-            EditorContextBridge.getCurrentMethodName ()
+            className,
+            methodName
         );
-        mb.setMethodSignature(EditorContextBridge.getCurrentMethodSignature());
+        try {
+            mb.setMethodSignature(EditorContextBridge.getCurrentMethodSignature());
+        } catch (java.awt.IllegalComponentStateException icsex) {}
         mb.setPrintText (
             NbBundle.getBundle (MethodBreakpointPanel.class).getString 
                 ("CTL_Method_Breakpoint_Print_Text")
