@@ -35,6 +35,7 @@ import org.netbeans.modules.xml.xam.AbstractModel;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.ComponentEvent;
 import org.netbeans.modules.xml.xam.ComponentUpdater;
+import org.netbeans.modules.xml.xam.EmbeddableRoot;
 import org.netbeans.modules.xml.xam.Model.State;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.spi.DocumentModelAccessProvider;
@@ -405,6 +406,17 @@ public abstract class AbstractDocumentModel<T extends DocumentComponent<T>>
                 return found;
             }
         }
+        if (searchRoot instanceof EmbeddableRoot.ForeignParent) {
+           for (EmbeddableRoot child : ((EmbeddableRoot.ForeignParent)searchRoot).getAdoptedChildren()) {
+               if (child instanceof DocumentComponent) {
+                   DocumentComponent found = findComponent((DocumentComponent) child, e);
+                   if (found != null) {
+                       return found;
+                   }
+               }
+           }
+       }
+       
         return null;
     }
     
