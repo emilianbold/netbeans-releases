@@ -141,11 +141,20 @@ public class BreakpointsNodeModel implements NodeModel {
                         b.getFieldName ()
                     )
                 );
-            else
+            else if (b.getBreakpointType() == b.TYPE_MODIFICATION)
                 return bold (b,
                     NbBundle.getMessage (
                         BreakpointsNodeModel.class,
                         "CTL_Field_Modification_Breakpoint",
+                        getShort (b.getClassName ()),
+                        b.getFieldName ()
+                    )
+                );
+            else
+                return bold (b,
+                    NbBundle.getMessage (
+                        BreakpointsNodeModel.class,
+                        "CTL_Field_Access_or_Modification_Breakpoint",
                         getShort (b.getClassName ()),
                         b.getFieldName ()
                     )
@@ -305,11 +314,19 @@ public class BreakpointsNodeModel implements NodeModel {
                         b.getClassName (),
                         b.getFieldName ()
                     );
-            else
+            else if (b.getBreakpointType() == b.TYPE_MODIFICATION)
                 description = 
                     NbBundle.getMessage (
                         BreakpointsNodeModel.class,
                         "CTL_Field_Modification_Breakpoint",
+                        b.getClassName (),
+                        b.getFieldName ()
+                    );
+            else
+                description = 
+                    NbBundle.getMessage (
+                        BreakpointsNodeModel.class,
+                        "CTL_Field_Access_or_Modification_Breakpoint",
                         b.getClassName (),
                         b.getFieldName ()
                     );

@@ -225,7 +225,8 @@ public class FieldBreakpoint extends JPDABreakpoint {
     public void setBreakpointType (int type) {
         if (this.type == type) return;
         if ( (type != TYPE_MODIFICATION) &&
-                (type != TYPE_ACCESS)
+                (type != TYPE_ACCESS) &&
+                (type != (TYPE_MODIFICATION | TYPE_ACCESS))
            ) throw new IllegalArgumentException  ();
         int old = this.type;
         this.type = type;
