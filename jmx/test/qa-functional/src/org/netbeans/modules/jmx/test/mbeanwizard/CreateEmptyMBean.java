@@ -53,7 +53,6 @@ public class CreateEmptyMBean extends MBeanWizardTestCase {
     
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new CreateEmptyMBean("init"));
         suite.addTest(new CreateEmptyMBean("createEmptyMBean1"));
         suite.addTest(new CreateEmptyMBean("createEmptyMBean2"));
         suite.addTest(new CreateEmptyMBean("createEmptyMBean3"));
