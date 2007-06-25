@@ -30,6 +30,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
 import org.openide.util.Utilities;
+import org.openide.util.test.RestrictThreadCreation;
 
 /** Checks the behaviour of enabled module list.
  *
@@ -39,6 +40,8 @@ public class SuiteCustomizerModuleListTest extends TestBase {
 
     static {
         SuiteCustomizerLibraries.TEST = true;
+        RestrictThreadCreation.permitStandard();
+        RestrictThreadCreation.forbidNewThreads(true);
     }
 
     private FileObject suiteRepoFO;

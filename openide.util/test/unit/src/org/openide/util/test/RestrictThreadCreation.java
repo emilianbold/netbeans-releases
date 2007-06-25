@@ -1,0 +1,107 @@
+/*
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ *
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ *
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * Portions Copyrighted 2007 Sun Microsystems, Inc.
+ */
+
+package org.openide.util.test;
+
+import java.security.Permission;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+
+/**
+ * Permits unit tests to limit creation of threads.
+ * Unexpected thread creation can make tests fail randomly, which makes debugging difficult.
+ * <p>Start off calling {@link #permitStandard} and {@link #forbidNewThreads}.
+ * To determine which methods to permit, just try running the test;
+ * if you see any {@link SecurityException}s which look like harmless thread creation
+ * activities, just copy the appropriate part of the stack trace and pass to {@link #permit}.
+ * <p>Use non-strict mode for {@link #forbidNewThreads} if you suspect some code
+ * might be catching and not reporting {@link SecurityException}s; or you may prefer
+ * to simply use non-strict mode while developing the test and then switch to strict
+ * mode once it begins passing.
+ * <p>Place calls to this class early in your test's initialization, e.g. in a static block.
+ * (Not suitable for use from {@link junit.framework.TestCase#setUp}.)
+ */
+public class RestrictThreadCreation {
+
+    private RestrictThreadCreation() {}
+
+    private static Set<String> currentlyPermitted = new HashSet<String>();
+
+    /**
+     * Explicitly permits one or more thread creation idioms.
+     * Each entry is of the form <samp>fully.qualified.Clazz.methodName</samp>
+     * and if such a method can be found on the call stack the thread creation
+     * is permitted.
+     * @param permitted one or more fully qualified method names to accept
+     */
+    public static void permit(String... permitted) {
+        currentlyPermitted.addAll(Arrays.asList(permitted));
+    }
+
+    /**
+     * Permits a standard set of thread creation idioms which are normally harmless to unit tests.
+     * Feel free to add to this list if it seems appropriate.
+     */
+    public static void permitStandard() {
+        permit(// Found experimentally:
+                "sun.java2d.Disposer.<clinit>",
+                "java.awt.Toolkit.getDefaultToolkit",
+                "org.netbeans.core.startup.Splash$SplashComponent.setText",
+                "org.openide.loaders.FolderInstance.waitFinished",
+                "org.openide.loaders.FolderInstance.postCreationTask",
+                "org.netbeans.modules.java.source.usages.RepositoryUpdater.getDefault",
+                "org.netbeans.api.java.source.JavaSource.<clinit>",
+                "org.netbeans.api.java.source.JavaSourceTaskFactory.fileObjectsChanged",
+                "org.netbeans.progress.module.Controller.resetTimer",
+                "org.netbeans.modules.timers.InstanceWatcher$FinalizingToken.finalize",
+                "javax.swing.JComponent.revalidate",
+                "javax.swing.ImageIcon.<init>");
+    }
+
+    /**
+     * Install a security manager which prevents new threads from being created
+     * unless they were explicitly permitted.
+     * @param strict if true, throw a security exception; if false, just print stack traces
+     */
+    public static void forbidNewThreads(final boolean strict) {
+        System.setSecurityManager(new SecurityManager() {
+            public @Override void checkAccess(ThreadGroup g) {
+                boolean inThreadInit = false;
+                for (StackTraceElement line : Thread.currentThread().getStackTrace()) {
+                    String id = line.getClassName() + "." + line.getMethodName();
+                    if (currentlyPermitted.contains(id)) {
+                        return;
+                    } else if (id.equals("java.lang.Thread.init")) {
+                        inThreadInit = true;
+                    }
+                }
+                if (inThreadInit) {
+                    SecurityException x = new SecurityException("Unauthorized thread creation");
+                    if (strict) {
+                        throw x;
+                    } else {
+                        x.printStackTrace();
+                    }
+                }
+            }
+            public @Override void checkPermission(Permission perm) {}
+            public @Override void checkPermission(Permission perm, Object context) {}
+        });
+    }
+
+}

@@ -712,6 +712,9 @@ final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
 
     private RequestProcessor.Task updateDependencyWarningsTask;
     private void updateDependencyWarnings() {
+        if (TEST) {
+            return;
+        }
         // XXX avoid running unless and until we become visible, perhaps
         if (updateDependencyWarningsTask == null) {
             updateDependencyWarningsTask = RequestProcessor.getDefault().create(new Runnable() {
