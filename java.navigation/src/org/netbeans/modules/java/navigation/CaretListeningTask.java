@@ -115,7 +115,8 @@ public class CaretListeningTask implements CancellableTask<CompilationInfo> {
                 setJavadoc(null); // NOI18N
                 break;
             case PARAMETER:
-                lastEh = null; // ElementHandle not supported 
+                element = element.getEnclosingElement(); // Take the enclosing method
+                lastEh = ElementHandle.create(element);
                 setDeclaration(""); // NOI18N
                 setJavadoc(null); // NOI18N
                 break;
@@ -193,7 +194,6 @@ public class CaretListeningTask implements CancellableTask<CompilationInfo> {
         if (isCancelled()) {
             return;
         }
-                
         setJavadoc(ElementJavadoc.create(compilationInfo, element));
     }
     
