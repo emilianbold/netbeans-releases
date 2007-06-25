@@ -111,14 +111,17 @@ public final class TestPlatformProvider implements JavaPlatformProvider {
             return null;
         }
 
+        @SuppressWarnings("unchecked")
         public Map getProperties() {
             return this.properties;
         }
 
+        @SuppressWarnings("unchecked")
         public List getJavadocFolders() {
             return null;
         }
 
+        @SuppressWarnings("unchecked")
         public Collection getInstallFolders() {
             return null;
         }

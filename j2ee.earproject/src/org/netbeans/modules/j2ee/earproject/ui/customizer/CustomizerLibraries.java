@@ -25,6 +25,7 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 public final class CustomizerLibraries extends JPanel implements ArchiveCustomizerPanel, HelpCtx.Provider {
+    private static final long serialVersionUID = 1L;
     
     // Helper for storing properties
     private final VisualPropertySupport vps;

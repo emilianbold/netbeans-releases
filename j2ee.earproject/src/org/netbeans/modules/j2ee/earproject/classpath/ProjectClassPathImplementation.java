@@ -46,7 +46,7 @@ final class ProjectClassPathImplementation implements ClassPathImplementation, P
     private String expression;
     private boolean isProperty;
     private String resolved;
-    private List resources;
+    private List<PathResourceImplementation> resources;
     private final PropertyEvaluator evaluator;
 
     /**
@@ -78,9 +78,9 @@ final class ProjectClassPathImplementation implements ClassPathImplementation, P
         this (helper, propertyName, evaluator, true);
     }
 
-    public synchronized List /*<PathResourceImplementation>*/ getResources() {
+    public synchronized List<PathResourceImplementation> getResources() {
         if (this.resources == null) {
-            this.resources = this.getPath ();
+            this.resources = this.getPath();
         }
         return this.resources;
     }

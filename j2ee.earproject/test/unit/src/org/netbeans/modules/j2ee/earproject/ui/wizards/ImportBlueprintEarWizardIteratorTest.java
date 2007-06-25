@@ -90,6 +90,7 @@ public class ImportBlueprintEarWizardIteratorTest extends NbTestCase {
         sourceLevel = "1.5";
     }
     
+    @Override
     protected void setUp() throws Exception {
         setDefaultValues();
         clearWorkDir();
@@ -295,6 +296,7 @@ public class ImportBlueprintEarWizardIteratorTest extends NbTestCase {
             return ClassPathSupport.createClassPath(new URL[0]);
         }
         
+        @SuppressWarnings("unchecked")
         public Collection getInstallFolders() {
             return null;
         }
@@ -315,10 +317,12 @@ public class ImportBlueprintEarWizardIteratorTest extends NbTestCase {
             return null;
         }
         
+        @SuppressWarnings("unchecked")
         public List getJavadocFolders() {
             return null;
         }
         
+        @SuppressWarnings("unchecked")
         public Map getProperties() {
             return Collections.singletonMap("platform.ant.name","default_platform");
         }

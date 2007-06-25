@@ -32,6 +32,7 @@ import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.WizardDescriptor;
 
 final class PanelProjectLocationVisual extends SettingsPanel implements DocumentListener {
+    private static final long serialVersionUID = 1L;
     
     private final PanelConfigureProject panel;
     private final String propNameIndex;

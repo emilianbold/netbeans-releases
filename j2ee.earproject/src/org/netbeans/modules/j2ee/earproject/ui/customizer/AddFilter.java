@@ -22,6 +22,7 @@ package org.netbeans.modules.j2ee.earproject.ui.customizer;
 import org.openide.util.NbBundle;
 
 public class AddFilter extends javax.swing.JPanel {
+    private static final long serialVersionUID = 1L;
 
     /** Creates new form AddFilter */
     public AddFilter() {

@@ -47,6 +47,7 @@ public class BrokenProjectSupportTest extends NbTestCase {
         super(testName);
     }
     
+    @Override
     protected void setUp() throws Exception {
         super.setUp();
         TestUtil.makeScratchDir(this);
@@ -72,12 +73,13 @@ public class BrokenProjectSupportTest extends NbTestCase {
         TestUtil.storeProjectProperties(prjDirFO, ep);
         
         Project project = ProjectManager.getDefault().findProject(prjDirFO);
-        this.earProject = (EarProject) project.getLookup().lookup(EarProject.class);
+        this.earProject = project.getLookup().lookup(EarProject.class);
         assertNotNull("project successfully created", this.earProject);
-        this.bps = (BrokenProjectSupport) this.earProject.getLookup().lookup(BrokenProjectSupport.class);
+        this.bps = this.earProject.getLookup().lookup(BrokenProjectSupport.class);
         assertNotNull("has BrokenProjectSupport in the lookup", bps);
     }
     
+    @Override
     protected void tearDown() throws Exception {
         super.tearDown();
         

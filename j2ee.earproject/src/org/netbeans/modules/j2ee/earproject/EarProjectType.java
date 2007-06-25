@@ -44,8 +44,9 @@ public final class EarProjectType implements AntBasedProjectType {
     }
     
     public Project createProject(AntProjectHelper helper) throws IOException {
-        if (null == helper)
+        if (null == helper) {
             throw new IllegalArgumentException("helper");
+        }
         return new EarProject(helper, this);
     }
 

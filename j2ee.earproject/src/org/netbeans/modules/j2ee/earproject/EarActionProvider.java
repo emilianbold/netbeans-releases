@@ -194,14 +194,14 @@ public class EarActionProvider implements ActionProvider {
                 p.setProperty("is.debugged", "true"); // NOI18N
             }
 
-            SubprojectProvider spp = (SubprojectProvider) project.getLookup().lookup(SubprojectProvider.class);
+            SubprojectProvider spp = project.getLookup().lookup(SubprojectProvider.class);
             if (null != spp) {
                 StringBuilder edbd = new StringBuilder();
                 final Set s = spp.getSubprojects();
                 Iterator iter = s.iterator();
                 while (iter.hasNext()) {
                     Project proj = (Project) iter.next();
-                    WebModuleProvider wmp = (WebModuleProvider) proj.getLookup().lookup(WebModuleProvider.class);
+                    WebModuleProvider wmp = proj.getLookup().lookup(WebModuleProvider.class);
                     if (null != wmp) {
                         WebModule wm = wmp.findWebModule(proj.getProjectDirectory());
                         if (null != wm) {
@@ -229,7 +229,7 @@ public class EarActionProvider implements ActionProvider {
             return false;
         }
         if ( command.equals( COMMAND_VERIFY ) ) {
-            J2eeModuleProvider provider = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
+            J2eeModuleProvider provider = project.getLookup().lookup(J2eeModuleProvider.class);
             return provider != null && provider.hasVerifierSupport();
         }
         // other actions are global
@@ -238,7 +238,7 @@ public class EarActionProvider implements ActionProvider {
     
     private boolean isDebugged() {
         
-        J2eeModuleProvider jmp = (J2eeModuleProvider)project.getLookup().lookup(J2eeModuleProvider.class);
+        J2eeModuleProvider jmp = project.getLookup().lookup(J2eeModuleProvider.class);
         if (null == jmp) {
             // XXX this is a bug that I don't know about fixing yet
             return false;

@@ -25,6 +25,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.j2ee.earproject.test.TestUtil;
 import org.netbeans.modules.j2ee.earproject.ui.wizards.NewEarProjectWizardIteratorTest;
+import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
@@ -45,6 +46,7 @@ public class ModuleNodeTest extends NbTestCase {
         super(testName);
     }
     
+    @Override
     protected void setUp() throws Exception {
         clearWorkDir();
         serverInstanceID = TestUtil.registerSunAppServer(this);
@@ -62,7 +64,7 @@ public class ModuleNodeTest extends NbTestCase {
         
         Project earProject = ProjectManager.getDefault().findProject(FileUtil.toFileObject(prjDirF));
         
-        LogicalViewProvider lvp = (LogicalViewProvider) earProject.getLookup().lookup(LogicalViewProvider.class);
+        LogicalViewProvider lvp = earProject.getLookup().lookup(LogicalViewProvider.class);
         assertNotNull("have a LogicalViewProvider", lvp);
         Node root = lvp.createLogicalView();
         LogicalViewNode j2eeModules = (LogicalViewNode) root.getChildren().findChild(LogicalViewNode.J2EE_MODULES_NAME);
@@ -88,7 +90,7 @@ public class ModuleNodeTest extends NbTestCase {
         FileObject prjDirFO = FileUtil.toFileObject(prjDirF);
         Project earProject = ProjectManager.getDefault().findProject(prjDirFO);
         
-        LogicalViewProvider lvp = (LogicalViewProvider) earProject.getLookup().lookup(LogicalViewProvider.class);
+        LogicalViewProvider lvp = earProject.getLookup().lookup(LogicalViewProvider.class);
         assertNotNull("have a LogicalViewProvider", lvp);
         Node root = lvp.createLogicalView();
         LogicalViewNode j2eeModules = (LogicalViewNode) root.getChildren().findChild(LogicalViewNode.J2EE_MODULES_NAME);

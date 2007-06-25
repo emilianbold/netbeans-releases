@@ -65,6 +65,7 @@ public final class ModuleNode extends AbstractNode implements Node.Cookie {
     }
     
     // Create the popup menu:
+    @Override
     public Action[] getActions(boolean context) {
         if (null == actions) {
             actions = new Action[] {
@@ -76,10 +77,12 @@ public final class ModuleNode extends AbstractNode implements Node.Cookie {
         return actions;
     }
     
+    @Override
     public Action getPreferredAction() {
         return SystemAction.get(OpenModuleProjectAction.class);
     }
     
+    @Override
     public Image getIcon(int type) {
         // XXX the "algorithm" based on the ant property name - in the case of
         // application client; is little odd. Also the rest is rather unclear.
@@ -92,10 +95,12 @@ public final class ModuleNode extends AbstractNode implements Node.Cookie {
         }
     }
     
+    @Override
     public Image getOpenedIcon(int type){
         return getIcon( type);
     }
     
+    @Override
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
@@ -103,8 +108,7 @@ public final class ModuleNode extends AbstractNode implements Node.Cookie {
     void removeFromJarContent() {
         List<VisualClassPathItem> newList = new ArrayList<VisualClassPathItem>();
         Project p = FileOwnerQuery.getOwner(projectDirectory);
-        ProjectPropertyProvider ppp =
-                (ProjectPropertyProvider) p.getLookup().lookup(ProjectPropertyProvider.class);
+        ProjectPropertyProvider ppp = p.getLookup().lookup(ProjectPropertyProvider.class);
         EarProjectProperties epp = ppp.getProjectProperties();
         newList.addAll(epp.getJarContentAdditional());
         newList.remove(key);
@@ -117,6 +121,7 @@ public final class ModuleNode extends AbstractNode implements Node.Cookie {
     }
     
     // Handle copying and cutting specially:
+    @Override
     public boolean canCopy() {
         return false;
     }

@@ -173,6 +173,7 @@ public final class VisualClassPathItem {
         
     }
     
+    @Override
     public String toString() {
         switch ( getType() ) {
             case JAR:
@@ -217,6 +218,7 @@ public final class VisualClassPathItem {
         return id.substring(17, id.length()-1);
     }
     
+    @Override
     public int hashCode() {
         int hash = getType().ordinal();
         switch ( getType() ) {
@@ -241,6 +243,7 @@ public final class VisualClassPathItem {
         return hash;
     }
     
+    @Override
     public boolean equals( Object object ) {
         if ( !( object instanceof VisualClassPathItem ) ) {
             return false;

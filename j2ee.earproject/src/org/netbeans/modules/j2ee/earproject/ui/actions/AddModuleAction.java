@@ -24,8 +24,6 @@ import java.util.List;
 import java.util.Set;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeApplication;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeApplicationProvider;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
@@ -54,6 +52,7 @@ import org.netbeans.api.project.FileOwnerQuery;
  * @author vince kraemer
  */
 public class AddModuleAction extends CookieAction {
+    private static final long serialVersionUID = 1L;
     
     private static final String FOLDER_ICON = "org/netbeans/modules/j2ee/earproject/ui/resources/folder.gif";
     
@@ -70,14 +69,13 @@ public class AddModuleAction extends CookieAction {
     
     public void performAction(Node[] activeNodes) {
         try {
-            AntProjectHelper aph = 
-                (AntProjectHelper) activeNodes[0].getLookup().lookup(AntProjectHelper.class);
+            AntProjectHelper aph = activeNodes[0].getLookup().lookup(AntProjectHelper.class);
             Project[] moduleProjects = getSelectedProjects(aph);
             // XXX Vince add code here to add to application.xml and
             // build script
             Project p = FileOwnerQuery.getOwner(aph.getProjectDirectory());
-            EarProject ep = (EarProject) p.getLookup().lookup(EarProject.class);
-            EarProjectProperties epp = (EarProjectProperties) ep.getProjectProperties();
+            EarProject ep = p.getLookup().lookup(EarProject.class);
+            EarProjectProperties epp = ep.getProjectProperties();
             epp.addJ2eeSubprojects(moduleProjects);
         } catch (UserCancelException uce) {
             // this action has been cancelled
@@ -92,6 +90,7 @@ public class AddModuleAction extends CookieAction {
         return HelpCtx.DEFAULT_HELP;
     }
     
+    @Override
     protected boolean asynchronous() {
         return false;
     }
@@ -102,8 +101,7 @@ public class AddModuleAction extends CookieAction {
         for (int i = 0; i < allProjects.length; i++) {
             if (allProjects[i].getLookup().lookup(J2eeModuleProvider.class) != null &&
                 allProjects[i].getLookup().lookup(J2eeApplicationProvider.class) == null) {
-                LogicalViewProvider lvp =
-                    (LogicalViewProvider) allProjects[i].getLookup().lookup(LogicalViewProvider.class);
+                LogicalViewProvider lvp = allProjects[i].getLookup().lookup(LogicalViewProvider.class);
                 Node mn = lvp.createLogicalView();
                 Node n = new FilterNode(mn, new FilterNode.Children(mn), Lookups.singleton(allProjects[i]));
                 moduleProjectNodes.add(n);
@@ -115,7 +113,7 @@ public class AddModuleAction extends CookieAction {
         String moduleSelector = NbBundle.getMessage(AddModuleAction.class, "LBL_ModuleSelectorTitle");
         
         Project parent = FileOwnerQuery.getOwner(epp.getProjectDirectory());
-        SubprojectProvider spp = (SubprojectProvider) parent.getLookup().lookup(SubprojectProvider.class);
+        SubprojectProvider spp = parent.getLookup().lookup(SubprojectProvider.class);
         if (null != spp) {
             final Set s = spp.getSubprojects();
             NodeAcceptor na = new NodeAcceptor() {
@@ -125,10 +123,13 @@ public class AddModuleAction extends CookieAction {
                             return false;
                         }
                         // do not put this test befor the root test...
-                        Project p = (Project) nodes[i].getLookup().lookup(Project.class);
-                        if (null == p)
+                        Project p = nodes[i].getLookup().lookup(Project.class);
+                        if (null == p) {
                             return false;
-                        if (s.contains(p)) return false;
+                        }
+                        if (s.contains(p)) {
+                            return false;
+                        }
                     }
                     return nodes.length > 0;
                 }
@@ -138,7 +139,7 @@ public class AddModuleAction extends CookieAction {
             Node[] selected = NodeOperation.getDefault().select(moduleSelector, root.getDisplayName(), root, na);
             Project[] modules = new Project[selected.length];
             for (int i = 0; i < modules.length; i++) {
-                modules[i] = (Project) selected[i].getLookup().lookup(Project.class);
+                modules[i] = selected[i].getLookup().lookup(Project.class);
             }
             return modules;
       }

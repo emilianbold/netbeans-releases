@@ -143,7 +143,7 @@ public final class EarProjectGenerator {
         
         Project p = ProjectManager.getDefault().findProject(h.getProjectDirectory());
         ProjectManager.getDefault().saveProject(p);
-        EarProject earProject = (EarProject) p.getLookup().lookup(EarProject.class);
+        EarProject earProject = p.getLookup().lookup(EarProject.class);
         assert earProject != null;
         setupDD(j2eeLevel, docBase, earProject);
         
@@ -169,8 +169,7 @@ public final class EarProjectGenerator {
         earHelper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
         
         FileObject earDirFO = earHelper.getProjectDirectory();
-        EarProject earProject = (EarProject) ProjectManager.getDefault().
-                findProject(earDirFO).getLookup().lookup(EarProject.class);
+        EarProject earProject = ProjectManager.getDefault().findProject(earDirFO).getLookup().lookup(EarProject.class);
         
         if (null != earProject) {
             Application app = null;
@@ -287,8 +286,7 @@ public final class EarProjectGenerator {
                 if (project == null) {
                     continue;
                 }
-                ProjectClassPathExtender pcpe = (ProjectClassPathExtender)
-                        project.getLookup().lookup(ProjectClassPathExtender.class);
+                ProjectClassPathExtender pcpe = project.getLookup().lookup(ProjectClassPathExtender.class);
                 URI[] locations = artifact.getArtifactLocations();
                 if (pcpe != null && locations.length > 0) { // sanity check
                     pcpe.addAntArtifact(artifact, locations[0].normalize());

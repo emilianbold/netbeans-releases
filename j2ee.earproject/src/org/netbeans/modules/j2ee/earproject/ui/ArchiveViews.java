@@ -56,7 +56,7 @@ class ArchiveViews {
     private ArchiveViews() {
     }
     
-    static final class LogicalViewChildren extends Children.Keys/*<FileObject>*/  implements FileChangeListener {
+    static final class LogicalViewChildren extends Children.Keys<String>  implements FileChangeListener {
         
         // XXX does not react correctly to addition or removal of src/ subdir
 
@@ -77,6 +77,7 @@ class ArchiveViews {
             this.evaluator = evaluator;
         }
         
+        @Override
         protected void addNotify() {
             super.addNotify();
             projectDir.addFileChangeListener(FileUtil.weakFileChangeListener(this, projectDir));
@@ -95,13 +96,14 @@ class ArchiveViews {
             setKeys(keys);
         }
         
+        @Override
         protected void removeNotify() {
-            setKeys(Collections.EMPTY_SET);
+            setKeys(Collections.<String>emptySet());
             projectDir.removeFileChangeListener(this);
             super.removeNotify();
         }
         
-        protected Node[] createNodes(Object key) {
+        protected Node[] createNodes(String key) {
             Node n = null;
             if (key == KEY_DOC_BASE) {
                 n = new DocBaseNode (getFolder(EarProjectProperties.META_INF));
@@ -150,6 +152,7 @@ class ArchiveViews {
     }
     
     private static final class VisibilityQueryDataFilter implements ChangeListener, ChangeableDataFilter {
+        private static final long serialVersionUID = 1L;
         
         final ChangeSupport changeSupport = new ChangeSupport (this );
         
@@ -185,10 +188,12 @@ class ArchiveViews {
             super(folder.getNodeDelegate(), folder.createNodeChildren(VISIBILITY_QUERY_FILTER));
         }
         
+        @Override
         public Image getIcon( int type ) {
             return computeIcon( false, type );
         }
         
+        @Override
         public Image getOpenedIcon( int type ) {
             return computeIcon( true, type );
         }
@@ -199,22 +204,27 @@ class ArchiveViews {
             return Utilities.mergeImages( image, CONFIGURATION_FILES_BADGE, 7, 7 );
         }
         
+        @Override
         public boolean canCopy() {
             return false;
         }
         
+        @Override
         public boolean canCut() {
             return false;
         }
         
+        @Override
         public boolean canRename() {
             return false;
         }
         
+        @Override
         public boolean canDestroy() {
             return false;
         }
         
+        @Override
         public Action[] getActions( boolean context ) {
             return new Action[] {
 //                CommonProjectActions.newFileAction(),
@@ -229,6 +239,7 @@ class ArchiveViews {
             };
         }
         
+        @Override
         public String getDisplayName() {
             return NbBundle.getMessage(ArchiveViews.class, "LBL_Node_DocBase"); //NOI18N
         }

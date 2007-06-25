@@ -52,6 +52,7 @@ import org.openide.util.NbBundle;
  * @author Martin Krauskopf
  */
 public class PanelModuleDetectionVisual extends JPanel {
+    private static final long serialVersionUID = 1L;
     
     private final Vector<Vector<String>> modules = new Vector<Vector<String>>();
     private static final int REL_PATH_INDEX = 0;
@@ -288,8 +289,8 @@ public class PanelModuleDetectionVisual extends JPanel {
     private javax.swing.JButton removeModuleButton;
     // End of variables declaration//GEN-END:variables
     
-    private static final class ModuleTypeRenderer extends JComboBox
-            implements TableCellRenderer {
+    private static final class ModuleTypeRenderer extends JComboBox implements TableCellRenderer {
+        private static final long serialVersionUID = 1L;
         
         ModuleTypeRenderer() {
             for (ModuleType type : ModuleType.values()) {
@@ -316,6 +317,7 @@ public class PanelModuleDetectionVisual extends JPanel {
     }
     
     private class ModuleTypeEditor extends JComboBox implements TableCellEditor {
+        private static final long serialVersionUID = 1L;
         
         protected EventListenerList listenerList = new EventListenerList();
         protected ChangeEvent changeEvent = new ChangeEvent(this);

@@ -301,9 +301,9 @@ public final class EarProjectProperties {
     void updateContentDependency(Set<VisualClassPathItem> oldContent, Set<VisualClassPathItem> newContent) {
         Application app = earProject.getAppModule().getApplication();
         
-        Set<VisualClassPathItem> deleted = new HashSet(oldContent);
+        Set<VisualClassPathItem> deleted = new HashSet<VisualClassPathItem>(oldContent);
         deleted.removeAll(newContent);
-        Set<VisualClassPathItem> added = new HashSet(newContent);
+        Set<VisualClassPathItem> added = new HashSet<VisualClassPathItem>(newContent);
         added.removeAll(oldContent);
         
         //do not update the file if there is no change
@@ -366,7 +366,7 @@ public final class EarProjectProperties {
             if (obj instanceof AntArtifact) {
                 AntArtifact aa = (AntArtifact) obj;
                 Project p = aa.getProject();
-                J2eeModuleProvider jmp = (J2eeModuleProvider) p.getLookup().lookup(J2eeModuleProvider.class);
+                J2eeModuleProvider jmp = p.getLookup().lookup(J2eeModuleProvider.class);
                 if (null != jmp) {
                     J2eeModule jm = jmp.getJ2eeModule();
                     if (null != jm) {
@@ -431,7 +431,7 @@ public final class EarProjectProperties {
         Project p = aa.getProject();
         Module mod = null;
         try {
-            J2eeModuleProvider jmp = (J2eeModuleProvider) p.getLookup().lookup(J2eeModuleProvider.class);
+            J2eeModuleProvider jmp = p.getLookup().lookup(J2eeModuleProvider.class);
             if (null != jmp) {
                 jmp.setServerInstanceID(earProject.getServerInstanceID());
                 J2eeModule jm = jmp.getJ2eeModule();
@@ -444,7 +444,7 @@ public final class EarProjectProperties {
                 if (jm.getModuleType() == J2eeModule.EJB) {
                     mod.setEjb(path); // NOI18N
                 } else if (jm.getModuleType() == J2eeModule.WAR) {
-                    Web w = (Web) mod.newWeb(); // createBean("Web");
+                    Web w = mod.newWeb(); // createBean("Web");
                     w.setWebUri(path);
                     FileObject tmp = aa.getScriptFile();
                     if (null != tmp) {
@@ -452,7 +452,7 @@ public final class EarProjectProperties {
                     }
                     WebModule wm = null;
                     if (null != tmp) {
-                        wm = (WebModule) WebModule.getWebModule(tmp);
+                        wm = WebModule.getWebModule(tmp);
                     }
                     String contextPath = null;
                     if (null != wm) {
@@ -499,7 +499,7 @@ public final class EarProjectProperties {
             JarFile jar = null;
             Module mod = null;
             try {
-                jar= new JarFile((File) f);
+                jar= new JarFile(f);
                 JarEntry ddf = jar.getJarEntry("META-INF/ejb-jar.xml"); // NOI18N
                 if (null != ddf) {
                     mod = (Module) dd.createBean(Application.MODULE);
@@ -522,7 +522,7 @@ public final class EarProjectProperties {
                 ddf = jar.getJarEntry("WEB-INF/web.xml"); //NOI18N
                 if (null != ddf && null == mod) {
                     mod = (Module) dd.createBean(Application.MODULE);
-                    Web w = (Web) mod.newWeb(); 
+                    Web w = mod.newWeb(); 
                     w.setWebUri(path);
                         int endex = path.length() - 4;
                         if (endex < 1) {
@@ -611,7 +611,7 @@ public final class EarProjectProperties {
             } else {
                 continue;
             }
-            J2eeModuleProvider jmp = (J2eeModuleProvider) p.getLookup().lookup(J2eeModuleProvider.class);
+            J2eeModuleProvider jmp = p.getLookup().lookup(J2eeModuleProvider.class);
             if (null != jmp) {
                 J2eeModule jm = jmp.getJ2eeModule();
                 if (null != jm) {
@@ -636,7 +636,7 @@ public final class EarProjectProperties {
         }
         // create the vcpis
         List<VisualClassPathItem> newVCPIs = new ArrayList<VisualClassPathItem>();
-        BrokenProjectSupport bps = (BrokenProjectSupport) earProject.getLookup().lookup(BrokenProjectSupport.class);
+        BrokenProjectSupport bps = earProject.getLookup().lookup(BrokenProjectSupport.class);
         for (AntArtifact art : artifactList) {
             VisualClassPathItem vcpi = VisualClassPathItem.createArtifact(art);
             vcpi.setRaw(EarProjectProperties.JAR_CONTENT_ADDITIONAL);
@@ -729,7 +729,7 @@ public final class EarProjectProperties {
     
    public void put( String propertyName, Object value ) {
         assert propertyName != null : "Unknown property " + propertyName; // NOI18N
-        PropertyInfo pi = (PropertyInfo)properties.get( propertyName );
+        PropertyInfo pi = properties.get( propertyName );
         pi.setValue( value );
         if (J2EE_SERVER_INSTANCE.equals (propertyName)) {
             put (J2EE_SERVER_TYPE, Deployment.getDefault ().getServerID ((String) value));
@@ -738,12 +738,12 @@ public final class EarProjectProperties {
     
     public Object get(String propertyName) {
         assert propertyName != null : "Unknown property " + propertyName; // NOI18N
-        PropertyInfo pi = (PropertyInfo) properties.get(propertyName);
+        PropertyInfo pi = properties.get(propertyName);
         return pi == null ? null : pi.getValue();
     }
     
     public boolean isModified( String propertyName ) {
-        PropertyInfo pi = (PropertyInfo)properties.get( propertyName );
+        PropertyInfo pi = properties.get( propertyName );
         assert propertyName != null : "Unknown property " + propertyName; // NOI18N
         return pi.isModified();
     }
@@ -769,7 +769,7 @@ public final class EarProjectProperties {
     /** Gets all subprojects recursively
      */
     private void addSubprojects( Project project, List<Project> result ) {
-        SubprojectProvider spp = (SubprojectProvider)project.getLookup().lookup( SubprojectProvider.class );
+        SubprojectProvider spp = project.getLookup().lookup( SubprojectProvider.class );
         
         if ( spp == null ) {
             return;
@@ -806,7 +806,7 @@ public final class EarProjectProperties {
                 // Specially handled properties
                 if ( WEB_PROJECT_NAME.equals( propertyName ) ) {
                     String projectName = ProjectUtils.getInformation(earProject).getDisplayName();
-                    PropertyInfo pi = (PropertyInfo) properties.get(propertyName);
+                    PropertyInfo pi = properties.get(propertyName);
                     if (null == pi) {
                         properties.put(propertyName, new PropertyInfo(pd, projectName, projectName));
                     } else {
@@ -817,7 +817,7 @@ public final class EarProjectProperties {
                 // Standard properties
                 String raw = eProps.get( pd.dest ).getProperty( propertyName );
                 String eval = antProjectHelper.getStandardPropertyEvaluator ().getProperty ( propertyName );
-                PropertyInfo pi = (PropertyInfo) properties.get(propertyName);
+                PropertyInfo pi = properties.get(propertyName);
                 if (null == pi) {
                     PropertyInfo propertyInfo = new PropertyInfo(pd, raw, eval);
                     properties.put(propertyName, propertyInfo);
@@ -839,8 +839,8 @@ public final class EarProjectProperties {
     public void store() {
         try {
             // Store properties
-            Boolean result = (Boolean) ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
-                public Object run() throws IOException {
+            Boolean result = ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Boolean>() {
+                public Boolean run() throws IOException {
                     URL buildImplXSL = EarProject.class.getResource("resources/build-impl.xsl");
                     int state = genFilesHelper.getBuildScriptState(
                             GeneratedFilesHelper.BUILD_IMPL_XML_PATH, buildImplXSL);
@@ -1005,7 +1005,7 @@ public final class EarProjectProperties {
     }
     
     String getClientModuleUriForAppClient() {
-        PropertyInfo earNamePI = (PropertyInfo) properties.get(JAR_NAME);
+        PropertyInfo earNamePI = properties.get(JAR_NAME);
         assert earNamePI != null;
         String earName = (String) earNamePI.getValue();
         assert earName != null;
@@ -1260,7 +1260,7 @@ public final class EarProjectProperties {
         Set<VisualClassPathItem> oldArtifacts = new HashSet<VisualClassPathItem>();
         Set<VisualClassPathItem> newArtifacts = new HashSet<VisualClassPathItem>();
         for ( int i = 0; i < allPaths.length; i++ ) {            
-            PropertyInfo pi = (PropertyInfo)properties.get( allPaths[i] );
+            PropertyInfo pi = properties.get( allPaths[i] );
 
             // Get original artifacts
             @SuppressWarnings("unchecked")
@@ -1286,10 +1286,10 @@ public final class EarProjectProperties {
         
         @SuppressWarnings("unchecked")
         Set<VisualClassPathItem> oldContent = new HashSet<VisualClassPathItem>(
-                (List)((PropertyInfo) properties.get(JAR_CONTENT_ADDITIONAL)).getOldValue());
+                (List) properties.get(JAR_CONTENT_ADDITIONAL).getOldValue());
         @SuppressWarnings("unchecked")
         Set<VisualClassPathItem> newContent = new HashSet<VisualClassPathItem>(
-                (List) ((PropertyInfo) properties.get(JAR_CONTENT_ADDITIONAL)).getValue());
+                (List) properties.get(JAR_CONTENT_ADDITIONAL).getValue());
         
         updateContentDependency(oldContent, newContent);
         
@@ -1300,7 +1300,7 @@ public final class EarProjectProperties {
                     vcpi.getType() == VisualClassPathItem.Type.JAR ) {
                 boolean used = false; // now check if the file reference isn't used anymore
                 for (int i=0; i < allPaths.length; i++) {
-                    PropertyInfo pi = (PropertyInfo)properties.get( allPaths[i] );
+                    PropertyInfo pi = properties.get( allPaths[i] );
                     @SuppressWarnings("unchecked")
                     List<VisualClassPathItem> values = (List) pi.getValue();
                     if (values == null) {
@@ -1518,10 +1518,12 @@ public final class EarProjectProperties {
     
     private static class InverseBooleanParser extends BooleanParser {
         
+        @Override
         public Object decode(String raw, AntProjectHelper antProjectHelper, ReferenceHelper refHelper ) {                    
             return ((Boolean)super.decode( raw, antProjectHelper, refHelper )).booleanValue() ? Boolean.FALSE : Boolean.TRUE;           
         }
         
+        @Override
         public String encode(Object value, AntProjectHelper antProjectHelper, ReferenceHelper refHelper ) {
             return super.encode( ((Boolean)value).booleanValue() ? Boolean.FALSE : Boolean.TRUE, antProjectHelper, refHelper );
         }
@@ -1714,7 +1716,7 @@ public final class EarProjectProperties {
                 case ARTIFACT:
                     if (vcpi.getObject() != null) {
                         AntArtifact aa = (AntArtifact) vcpi.getObject();
-                        return (String) refHelper.addReference(aa, aa.getArtifactLocations()[0]);
+                        return refHelper.addReference(aa, aa.getArtifactLocations()[0]);
                     } else {
                         return vcpi.getRaw();
                     }
@@ -1749,7 +1751,7 @@ public final class EarProjectProperties {
     private static JavaPlatform findPlatform(String platformAntID) {
         JavaPlatform[] platforms = JavaPlatformManager.getDefault().getInstalledPlatforms();            
         for(int i = 0; i < platforms.length; i++) {
-            String normalizedName = (String)platforms[i].getProperties().get("platform.ant.name"); // NOI18N
+            String normalizedName = platforms[i].getProperties().get("platform.ant.name"); // NOI18N
             if (normalizedName != null && normalizedName.equals(platformAntID)) {
                 return platforms[i];
             }
@@ -1776,7 +1778,7 @@ public final class EarProjectProperties {
                 // correspond to platform ID. so just return it:
                 return (String)value;
             } else {
-                return (String) platforms[0].getProperties().get("platform.ant.name");  //NOI18N
+                return platforms[0].getProperties().get("platform.ant.name");  //NOI18N
             }
         }
     }
@@ -1828,7 +1830,7 @@ public final class EarProjectProperties {
                     break;
                 case ARTIFACT:
                     AntArtifact aa = (AntArtifact) vcpi.getObject();
-                    String reference = (String) refHelper.addReference(aa, aa.getArtifactLocations()[0]);
+                    String reference = refHelper.addReference(aa, aa.getArtifactLocations()[0]);
                     library_tag_value = reference;
                     break;
                 case CLASSPATH:

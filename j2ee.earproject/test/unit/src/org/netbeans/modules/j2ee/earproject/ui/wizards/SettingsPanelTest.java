@@ -31,7 +31,6 @@ public final class SettingsPanelTest extends NbTestCase {
     }
 
     public void testIsValidProjectName() {
-        boolean expResult = true;
         assertFalse("invalid name", SettingsPanel.isValidProjectName("hi asterix *"));
         assertFalse("invalid name", SettingsPanel.isValidProjectName("hi slash /"));
         assertFalse("invalid name", SettingsPanel.isValidProjectName("*"));

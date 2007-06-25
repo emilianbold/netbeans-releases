@@ -141,10 +141,12 @@ public final class BrokenProjectSupport {
     
     private class ArtifactListener extends FileChangeAdapter {
         
+        @Override
         public void fileDeleted(FileEvent fe) {
             fireChangeEvent();
         }
         
+        @Override
         public void fileRenamed(FileRenameEvent fe) {
             fireChangeEvent();
         }

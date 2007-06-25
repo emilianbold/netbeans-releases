@@ -80,7 +80,9 @@ public class UpdateHelper  {
      * @param notifier used to ask user about project update
      */
     UpdateHelper (Project project, AntProjectHelper helper, AuxiliaryConfiguration cfg, GeneratedFilesHelper genFileHelper, Notifier notifier) {
-        if(!( project != null && helper != null && cfg != null && genFileHelper != null && notifier != null)) throw new IllegalArgumentException("Constructor argument(s) is(are) null");
+        if(!( project != null && helper != null && cfg != null && genFileHelper != null && notifier != null)) {
+            throw new IllegalArgumentException("Constructor argument(s) is(are) null");
+        }
         this.project = project;
         this.helper = helper;
         this.cfg = cfg;
@@ -109,13 +111,12 @@ public class UpdateHelper  {
     public void putProperties (final String path, final EditableProperties props) {
         ProjectManager.mutex().writeAccess(new Runnable() {
             public void run() {
-                    if (isCurrent() || !AntProjectHelper.PROJECT_PROPERTIES_PATH.equals(path)) {  //Only project props should cause update
-                        helper.putProperties(path,props);
-                    }
-                    else if (canUpdate()) {
+                if (isCurrent() || !AntProjectHelper.PROJECT_PROPERTIES_PATH.equals(path)) {  //Only project props should cause update
+                    helper.putProperties(path,props);
+                } else if (canUpdate()) {
                     try {
-                            saveUpdate (props);
-                            helper.putProperties(path,props);
+                        saveUpdate (props);
+                        helper.putProperties(path,props);
                     } catch (IOException ioe) {
                         Exceptions.printStackTrace(ioe);
                     }
@@ -133,8 +134,8 @@ public class UpdateHelper  {
      * @return the configuration data that is available
      */
     public Element getPrimaryConfigurationData (final boolean shared) {
-        return (Element) ProjectManager.mutex().readAccess(new Mutex.Action (){
-            public Object run() {
+        return ProjectManager.mutex().readAccess(new Mutex.Action<Element>(){
+            public Element run() {
                 if (!shared || isCurrent()) { //Only shared props should cause update
                     return helper.getPrimaryConfigurationData(shared);
                 }

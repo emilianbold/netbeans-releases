@@ -101,8 +101,9 @@ public class ImportBlueprintEarWizardIterator implements WizardDescriptor.Progre
         
         EarProjectGenerator.importProject(dirF, srcF, name, j2eeLevel,
                 serverInstanceID, platformName, sourceLevel, userModules);
-        if (handle != null)
+        if (handle != null) {
             handle.progress(2);
+        }
 
         FileObject dir = FileUtil.toFileObject(FileUtil.normalizeFile(dirF));
         
@@ -113,8 +114,9 @@ public class ImportBlueprintEarWizardIterator implements WizardDescriptor.Progre
         
         NewEarProjectWizardIterator.setProjectChooserFolder(dirF);
         
-        if (handle != null)
+        if (handle != null) {
             handle.progress(NbBundle.getMessage(ImportBlueprintEarWizardIterator.class, "LBL_NewEarProjectWizardIterator_WizardProgress_PreparingToOpen"), 3);
+        }
 
         // Returning set of FileObject of project diretory.
         // Project will be open and set as main

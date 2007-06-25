@@ -59,10 +59,12 @@ public final class LogicalViewNode extends AbstractNode {
         setShortDescription(NbBundle.getMessage(LogicalViewNode.class, "HINT_LogicalViewNode"));
     }
     
+    @Override
     public Image getIcon( int type ) {
         return computeIcon( false, type );
     }
     
+    @Override
     public Image getOpenedIcon( int type ) {
         return computeIcon( true, type );
     }
@@ -93,12 +95,14 @@ public final class LogicalViewNode extends AbstractNode {
     }
 
     // Create the popup menu:
+    @Override
     public Action[] getActions(boolean context) {
         return new Action[] {
             SystemAction.get(AddModuleAction.class),
         };
     }
     
+    @Override
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
         // When you have help, change to:
@@ -106,6 +110,7 @@ public final class LogicalViewNode extends AbstractNode {
     }
     
     // Handle copying and cutting specially:
+    @Override
     public boolean canCopy() {
         return false;
     }

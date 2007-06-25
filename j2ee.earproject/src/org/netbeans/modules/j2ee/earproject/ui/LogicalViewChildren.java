@@ -44,7 +44,7 @@ import org.openide.util.RequestProcessor;
  * Edit this template to work with the classes and logic of your data model.
  * @author vkraemer
  */
-public class LogicalViewChildren extends Children.Keys  implements AntProjectListener {
+public class LogicalViewChildren extends Children.Keys<String>  implements AntProjectListener {
     
     private final AntProjectHelper model;
     private java.util.Map<String, VisualClassPathItem> vcpItems;
@@ -56,6 +56,7 @@ public class LogicalViewChildren extends Children.Keys  implements AntProjectLis
         this.model = model;
     }
     
+    @Override
     protected void addNotify() {
         super.addNotify();
         // set the children to use:
@@ -93,14 +94,15 @@ public class LogicalViewChildren extends Children.Keys  implements AntProjectLis
         setKeys(vcpItems.keySet());
     }
     
+    @Override
     protected void removeNotify() {
         model.removeAntProjectListener(this);
-        setKeys(Collections.EMPTY_SET);
+        setKeys(Collections.<String>emptySet());
         super.removeNotify();
     }
     
-    protected Node[] createNodes(Object key) {
-        VisualClassPathItem vcpItem = vcpItems.get((String) key);
+    protected Node[] createNodes(String key) {
+        VisualClassPathItem vcpItem = vcpItems.get(key);
         return new Node[] { new ModuleNode(vcpItem, model.getProjectDirectory() ) };
     }
     
@@ -128,5 +130,4 @@ public class LogicalViewChildren extends Children.Keys  implements AntProjectLis
             }
         });
     }
-
 }

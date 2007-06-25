@@ -365,7 +365,7 @@ public class J2eeArchiveLogicalViewProvider implements LogicalViewProvider {
             
             if (files != null && files.iterator().hasNext()) {
                 try {
-                    FileObject fo = (FileObject) files.iterator().next();
+                    FileObject fo = files.iterator().next();
                     img = fo.getFileSystem().getStatus().annotateIcon(img, type, files);
                 } catch (FileStateInvalidException e) {
                     Logger.getLogger("global").log(Level.INFO, null, e);
@@ -380,7 +380,7 @@ public class J2eeArchiveLogicalViewProvider implements LogicalViewProvider {
             
             if (files != null && files.iterator().hasNext()) {
                 try {
-                    FileObject fo = (FileObject) files.iterator().next();
+                    FileObject fo = files.iterator().next();
                     img = fo.getFileSystem().getStatus().annotateIcon(img, type, files);
                 } catch (FileStateInvalidException e) {
                     Logger.getLogger("global").log(Level.INFO, null, e);
@@ -473,7 +473,7 @@ public class J2eeArchiveLogicalViewProvider implements LogicalViewProvider {
             
             ResourceBundle bundle = NbBundle.getBundle(J2eeArchiveLogicalViewProvider.class);
             
-            J2eeModuleProvider provider = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
+            J2eeModuleProvider provider = project.getLookup().lookup(J2eeModuleProvider.class);
             List<Action> actions = new ArrayList<Action>();
             actions.addAll(specialActions);
             actions.add(CommonProjectActions.newFileAction());
@@ -512,9 +512,9 @@ public class J2eeArchiveLogicalViewProvider implements LogicalViewProvider {
                 if (fo != null) {
                     DataObject dobj = DataObject.find(fo);
                     FolderLookup actionRegistry = new FolderLookup((DataFolder)dobj);
-                    Lookup.Template query = new Lookup.Template(Object.class);
+                    Lookup.Template<Object> query = new Lookup.Template<Object>(Object.class);
                     Lookup lookup = actionRegistry.getLookup();
-                    Iterator it = lookup.lookup(query).allInstances().iterator();
+                    Iterator<? extends Object> it = lookup.lookup(query).allInstances().iterator();
                     while (it.hasNext()) {
                         Object next = it.next();
                         if (next instanceof Action) {
@@ -538,13 +538,14 @@ public class J2eeArchiveLogicalViewProvider implements LogicalViewProvider {
                 actions.add(brokenServerAction);
             }
             actions.add(CommonProjectActions.customizeProjectAction());
-            return (Action[])actions.toArray(new Action[actions.size()]);
+            return actions.toArray(new Action[actions.size()]);
         }
         
         /** This action is created only when project has broken references.
          * Once these are resolved the action is disabled.
          */
         private class BrokenLinksAction extends AbstractAction implements PropertyChangeListener, Runnable {
+            private static final long serialVersionUID = 1L;
             
             private RequestProcessor.Task task = null;
             private final PropertyChangeListener weakPCL;
@@ -578,8 +579,8 @@ public class J2eeArchiveLogicalViewProvider implements LogicalViewProvider {
             
         }
         
-        private class BrokenServerAction extends AbstractAction implements
-                InstanceListener, PropertyChangeListener {
+        private class BrokenServerAction extends AbstractAction implements InstanceListener, PropertyChangeListener {
+            private static final long serialVersionUID = 1L;
             
             private boolean brokenServer;
             
@@ -647,6 +648,7 @@ public class J2eeArchiveLogicalViewProvider implements LogicalViewProvider {
         }
         
         private static class ActionImpl extends AbstractAction implements ContextAwareAction {
+            private static final long serialVersionUID = 1L;
             
             Lookup context;
             String name;
@@ -661,11 +663,10 @@ public class J2eeArchiveLogicalViewProvider implements LogicalViewProvider {
             
             public void actionPerformed( ActionEvent e ) {
                 
-                Project project = (Project)context.lookup( Project.class );
-                ActionProvider ap = (ActionProvider)project.getLookup().lookup( ActionProvider.class);
+                Project project = context.lookup( Project.class );
+                ActionProvider ap = project.getLookup().lookup( ActionProvider.class);
                 
                 ap.invokeAction( command, context );
-                
             }
             
             public Action createContextAwareInstance( Lookup lookup ) {

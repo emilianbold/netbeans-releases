@@ -44,6 +44,7 @@ import org.openide.NotifyDescriptor;
  * @author  phrebejk
  */
 public class AntArtifactChooser extends javax.swing.JPanel implements PropertyChangeListener {
+    private static final long serialVersionUID = 1L;
     
     // XXX to become an array later
     private String[] artifactType;

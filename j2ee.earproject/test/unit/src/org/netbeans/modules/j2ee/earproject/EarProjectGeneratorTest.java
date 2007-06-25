@@ -206,8 +206,8 @@ public class EarProjectGeneratorTest extends NbTestCase {
                 J2eeModule.JAVA_EE_5, serverID, "1.5");
         // test also build
         final File buildXML = new File(prjDirF, "build.xml");
-        String projectName = (String) ProjectManager.mutex().readAccess(new Mutex.ExceptionAction() {
-            public Object run() throws Exception {
+        String projectName = ProjectManager.mutex().readAccess(new Mutex.ExceptionAction<String>() {
+            public String run() throws Exception {
                 Document doc = XMLUtil.parse(new InputSource(buildXML.toURI().toString()),
                         false, true, null, null);
                 Element project = doc.getDocumentElement();
@@ -222,8 +222,8 @@ public class EarProjectGeneratorTest extends NbTestCase {
         EarProjectGenerator.createProject(prjDirF, "test project",
                 J2eeModule.JAVA_EE_5, serverID, "1.5");
         // test build.xml
-        String buildXmlProjectName = (String) ProjectManager.mutex().readAccess(new Mutex.ExceptionAction() {
-            public Object run() throws Exception {
+        String buildXmlProjectName = ProjectManager.mutex().readAccess(new Mutex.ExceptionAction<String>() {
+            public String run() throws Exception {
                 Document doc = XMLUtil.parse(new InputSource(new File(prjDirF, "build.xml").toURI().toString()),
                         false, true, null, null);
                 Element project = doc.getDocumentElement();
@@ -232,8 +232,8 @@ public class EarProjectGeneratorTest extends NbTestCase {
         });
         assertEquals("project name is escaped in build.xml", "test_project", buildXmlProjectName);
         // test build-impl.xml
-        String buildImplXmlProjectName = (String) ProjectManager.mutex().readAccess(new Mutex.ExceptionAction() {
-            public Object run() throws Exception {
+        String buildImplXmlProjectName = ProjectManager.mutex().readAccess(new Mutex.ExceptionAction<String>() {
+            public String run() throws Exception {
                 Document doc = XMLUtil.parse(new InputSource(new File(prjDirF, "nbproject/build-impl.xml").toURI().toString()),
                         false, true, null, null);
                 Element project = doc.getDocumentElement();

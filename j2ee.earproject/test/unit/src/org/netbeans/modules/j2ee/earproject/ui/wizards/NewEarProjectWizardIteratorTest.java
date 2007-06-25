@@ -198,14 +198,12 @@ public class NewEarProjectWizardIteratorTest extends NbTestCase {
             final FileObject testEAWebFO, final FileObject testEAClientFO) throws IOException {
         
         Project testEAClientProject = ProjectManager.getDefault().findProject(testEAClientFO);
-        SubprojectProvider acSubProjects = (SubprojectProvider)
-                testEAClientProject.getLookup().lookup(SubprojectProvider.class);
+        SubprojectProvider acSubProjects = testEAClientProject.getLookup().lookup(SubprojectProvider.class);
         assertNotNull("application client has SubprojectProvider in its lookup", acSubProjects);
         assertEquals("ejb added to application client's", 1, acSubProjects.getSubprojects().size());
         
         Project testEAWebProject = ProjectManager.getDefault().findProject(testEAWebFO);
-        SubprojectProvider webSubProjects = (SubprojectProvider)
-                testEAWebProject.getLookup().lookup(SubprojectProvider.class);
+        SubprojectProvider webSubProjects = testEAWebProject.getLookup().lookup(SubprojectProvider.class);
         assertNotNull("web project has SubprojectProvider in its lookup", webSubProjects);
         assertEquals("ejb added to web project's", 1, webSubProjects.getSubprojects().size());
     }

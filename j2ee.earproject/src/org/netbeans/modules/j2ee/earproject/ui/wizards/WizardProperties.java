@@ -21,6 +21,9 @@ package org.netbeans.modules.j2ee.earproject.ui.wizards;
 
 public class WizardProperties {
     
+    private WizardProperties() {
+    }
+    
     public static final String PROJECT_DIR = "projdir"; //NOI18N
     public static final String NAME = "name"; //NOI18N
     public static final String SOURCE_ROOT = "sourceRoot"; //NOI18N
@@ -44,5 +47,4 @@ public class WizardProperties {
     public static final String MAIN_CLASS = "mainClass"; // NOI18N
     
     public static final String USER_MODULES = "userModules"; // NOI18N
-    
 }

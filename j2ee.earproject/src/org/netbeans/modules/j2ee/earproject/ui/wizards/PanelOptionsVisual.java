@@ -40,6 +40,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 public class PanelOptionsVisual extends JPanel implements PropertyChangeListener {
+    private static final long serialVersionUID = 1L;
     
     private final PanelConfigureProject panel;
     private final DefaultComboBoxModel serversModel = new DefaultComboBoxModel();

@@ -102,7 +102,7 @@ public class ApplicationMetadataModelImpl implements MetadataModelImplementation
     }
     
     public <R> Future<R> runReadActionWhenReady(final MetadataModelAction<ApplicationMetadata, R> action) throws IOException {
-        return new SimpleFuture(runReadAction(action));
+        return new SimpleFuture<R>(runReadAction(action));
     }
     
     private FileObject getDeploymentDescriptor(final EarProject earProject) {

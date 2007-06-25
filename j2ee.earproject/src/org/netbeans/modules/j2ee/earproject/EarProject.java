@@ -134,6 +134,7 @@ public final class EarProject implements Project, AntProjectListener, FileChange
         return helper.getProjectDirectory();
     }
     
+    @Override
     public String toString() {
         return "EarProject[" + getProjectDirectory() + "]"; // NOI18N
     }
@@ -245,8 +246,8 @@ public final class EarProject implements Project, AntProjectListener, FileChange
     
     /** Return configured project name. */
     public String getName() {
-        return (String) ProjectManager.mutex().readAccess(new Mutex.Action() {
-            public Object run() {
+        return ProjectManager.mutex().readAccess(new Mutex.Action<String>() {
+            public String run() {
                 Element data = updateHelper.getPrimaryConfigurationData(true);
                 // XXX replace by XMLUtil when that has findElement, findText, etc.
                 NodeList nl = data.getElementsByTagNameNS(EarProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name"); // NOI18N
@@ -263,8 +264,8 @@ public final class EarProject implements Project, AntProjectListener, FileChange
     
     /** Store configured project name. */
     public void setName(final String name) {
-        ProjectManager.mutex().writeAccess(new Mutex.Action() {
-            public Object run() {
+        ProjectManager.mutex().writeAccess(new Mutex.Action<Void>() {
+            public Void run() {
                 Element data = helper.getPrimaryConfigurationData(true);
                 // XXX replace by XMLUtil when that has findElement, findText, etc.
                 NodeList nl = data.getElementsByTagNameNS(EarProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name"); // NOI18N
@@ -415,8 +416,8 @@ public final class EarProject implements Project, AntProjectListener, FileChange
             pwm.getConfigSupport().ensureConfigurationReady();
             
             // Make it easier to run headless builds on the same machine at least.
-            ProjectManager.mutex().writeAccess(new Mutex.Action() {
-                public Object run() {
+            ProjectManager.mutex().writeAccess(new Mutex.Action<Void>() {
+                public Void run() {
                     EditableProperties ep = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
                     ep.setProperty("netbeans.user", System.getProperty("netbeans.user"));
                     helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);

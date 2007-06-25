@@ -31,6 +31,7 @@ import org.netbeans.modules.j2ee.earproject.EarProjectTest;
 import org.netbeans.modules.j2ee.earproject.test.TestUtil;
 import org.netbeans.modules.j2ee.earproject.ui.J2eeArchiveLogicalViewProvider.ArchiveLogicalViewRootNode;
 import org.netbeans.modules.j2ee.earproject.ui.wizards.NewEarProjectWizardIteratorTest;
+import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -47,6 +48,7 @@ public class J2eeArchiveLogicalViewProviderTest extends NbTestCase {
         super(testName);
     }
     
+    @Override
     protected void setUp() throws Exception {
         clearWorkDir();
         serverInstanceID = TestUtil.registerSunAppServer(this);
@@ -63,8 +65,8 @@ public class J2eeArchiveLogicalViewProviderTest extends NbTestCase {
                 serverInstanceID, null, null, jarName, null, null, null);
         Project earProject = ProjectManager.getDefault().findProject(FileUtil.toFileObject(prjDirF));
         EarProjectTest.openProject((EarProject) earProject);
-        J2eeArchiveLogicalViewProvider.ArchiveLogicalViewRootNode rootNode = (ArchiveLogicalViewRootNode)
-                ((LogicalViewProvider) earProject.getLookup().lookup(LogicalViewProvider.class)).createLogicalView();
+        J2eeArchiveLogicalViewProvider.ArchiveLogicalViewRootNode rootNode =
+                (ArchiveLogicalViewRootNode) (earProject.getLookup().lookup(LogicalViewProvider.class)).createLogicalView();
         Set<FileObject> expected = new HashSet<FileObject>(Arrays.asList(
                 new FileObject[] {
             earProject.getProjectDirectory().getFileObject("nbproject"),

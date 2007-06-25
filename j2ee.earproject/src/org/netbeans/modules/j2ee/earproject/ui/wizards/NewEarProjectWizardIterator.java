@@ -133,7 +133,7 @@ public class NewEarProjectWizardIterator implements WizardDescriptor.ProgressIns
             handle.progress(2);
         FileObject dir = FileUtil.toFileObject(FileUtil.normalizeFile(dirF));
         Project p = ProjectManager.getDefault().findProject(dir);
-        EarProject earProject = (EarProject) p.getLookup().lookup(EarProject.class);
+        EarProject earProject =  p.getLookup().lookup(EarProject.class);
         if (null != earProject) {
             Application app = null;
             try {

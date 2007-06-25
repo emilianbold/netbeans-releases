@@ -82,6 +82,7 @@ final class VisualArchiveIncludesSupport {
         this.classpathTable.getColumnModel().getColumn(1).setHeaderValue(NbBundle.getMessage(VisualArchiveIncludesSupport.class, "TXT_Archive_PathInArchive"));
         this.classpathTable.getColumnModel().getColumn(0).setCellRenderer(new ClassPathCellRenderer());
         this.classpathTable.getColumnModel().getColumn(1).setCellRenderer(new DefaultTableCellRenderer() {
+            private static final long serialVersionUID = 1L;
             public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
                     boolean hasFocus, int row, int column) {
                 if (value != null) {
@@ -366,6 +367,8 @@ final class VisualArchiveIncludesSupport {
     }
     
     private static class ClassPathCellRenderer extends DefaultTableCellRenderer {
+        private static final long serialVersionUID = 1L;
+        
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             if (value instanceof VisualClassPathItem) {
                 final VisualClassPathItem item = (VisualClassPathItem) value;
@@ -379,6 +382,8 @@ final class VisualArchiveIncludesSupport {
     }
 
     class ClasspathTableModel extends AbstractTableModel {
+        private static final long serialVersionUID = 1L;
+        
         public int getColumnCount() {
             return 2; //classpath item name, item location within WAR
         }

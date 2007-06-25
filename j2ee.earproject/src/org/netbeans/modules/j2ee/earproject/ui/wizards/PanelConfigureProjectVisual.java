@@ -26,6 +26,7 @@ import javax.swing.JPanel;
 import org.openide.WizardDescriptor;
 
 public class PanelConfigureProjectVisual extends JPanel {
+    private static final long serialVersionUID = 1L;
 
     private final SettingsPanel projectLocationPanel;
     private final PanelOptionsVisual optionsPanel;

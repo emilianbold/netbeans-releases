@@ -28,6 +28,7 @@ import org.openide.util.actions.NodeAction;
  * @author  vkraemer
  */
 public class RemoveAction extends NodeAction {
+    private static final long serialVersionUID = 1L;
 
     public String getName() {
         return NbBundle.getMessage(this.getClass(), "LBL_RemoveAction");
@@ -37,6 +38,7 @@ public class RemoveAction extends NodeAction {
         return HelpCtx.DEFAULT_HELP;
     }
 
+    @Override
     protected boolean asynchronous() {
         return false;
     }
@@ -48,7 +50,7 @@ public class RemoveAction extends NodeAction {
     protected void performAction(org.openide.nodes.Node[] activatedNodes) {
         ModuleNode n = null;
         for (int i = 0; i < activatedNodes.length; i++) {
-            n = (ModuleNode) activatedNodes[i].getCookie(ModuleNode.class);
+            n = activatedNodes[i].getCookie(ModuleNode.class);
             n.removeFromJarContent();
         }
     }

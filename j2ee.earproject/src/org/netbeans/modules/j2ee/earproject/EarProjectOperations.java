@@ -58,7 +58,7 @@ public class EarProjectOperations implements DeleteOperationImplementation, Copy
         }
     }
     
-    public List/*<FileObject>*/ getMetadataFiles() {
+    public List<FileObject> getMetadataFiles() {
         FileObject projectDirectory = project.getProjectDirectory();
         List<FileObject> files = new ArrayList<FileObject>();
         
@@ -75,7 +75,7 @@ public class EarProjectOperations implements DeleteOperationImplementation, Copy
     }
     
     public void notifyDeleting() throws IOException {
-        EarActionProvider ap = (EarActionProvider) project.getLookup().lookup(EarActionProvider.class);
+        EarActionProvider ap = project.getLookup().lookup(EarActionProvider.class);
         
         assert ap != null;
         
@@ -126,10 +126,11 @@ public class EarProjectOperations implements DeleteOperationImplementation, Copy
 		AntProjectHelper helper = project.getAntProjectHelper();
 		EditableProperties projectProps = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
 
-		String earName = (String) projectProps.get(EarProjectProperties.JAR_NAME);
+		String earName = projectProps.get(EarProjectProperties.JAR_NAME);
 		String oldName = earName.substring(0, earName.length() - 4);
-		if (earName.endsWith(".ear") && oldName.equals(oldProjectName)) //NOI18N
-		    projectProps.put(EarProjectProperties.JAR_NAME, newName + ".ear"); //NOI18N
+		if (earName.endsWith(".ear") && oldName.equals(oldProjectName)) { //NOI18N
+                    projectProps.put(EarProjectProperties.JAR_NAME, newName + ".ear"); //NOI18N
+                }
 
 		helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProps);
             }

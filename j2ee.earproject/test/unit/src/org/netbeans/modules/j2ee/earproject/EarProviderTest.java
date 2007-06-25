@@ -23,6 +23,7 @@ import java.io.File;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.j2ee.dd.api.application.ApplicationMetadata;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -68,7 +69,7 @@ public class EarProviderTest extends NbTestCase {
         
         J2eeModuleProvider jmp = project.getLookup().lookup(J2eeModuleProvider.class);
         J2eeModule j2eeModule = jmp.getJ2eeModule();
-        assertNotNull(j2eeModule.getDeploymentDescriptor(J2eeModule.APP_XML));
+        assertNotNull(j2eeModule.getMetadataModel(ApplicationMetadata.class));
     }
     
 }

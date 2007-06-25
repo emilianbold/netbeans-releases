@@ -34,6 +34,7 @@ import org.openide.modules.SpecificationVersion;
  * @author Andrei Badea
  */
 public final class J2eeVersionWarningPanel extends JPanel {
+    private static final long serialVersionUID = 1L;
     
     /**
      * Display a warning that the target platform will be downgraded to JDK 1.4

@@ -61,6 +61,7 @@ public class EarProjectTest extends NbTestCase {
         super(testName);
     }
 
+    @Override
     protected void setUp() throws Exception {
         super.setUp();
         TestUtil.makeScratchDir(this);
@@ -170,7 +171,7 @@ public class EarProjectTest extends NbTestCase {
                 serverID, null, null, null, null, null, null);
         Project earProject = ProjectManager.getDefault().findProject(FileUtil.toFileObject(prjDirF));
         EarProjectTest.openProject((EarProject) earProject);
-        Node rootNode = ((LogicalViewProvider) earProject.getLookup().lookup(LogicalViewProvider.class)).createLogicalView();
+        Node rootNode = (earProject.getLookup().lookup(LogicalViewProvider.class)).createLogicalView();
         rootNode.getChildren().getNodes(true); // ping
         Reference<Project> wr = new WeakReference<Project>(earProject);
         OpenProjects.getDefault().close(new Project[] { earProject });
@@ -207,7 +208,7 @@ public class EarProjectTest extends NbTestCase {
         while (name.length() < 3) {
             name = name + "x";
         }
-        File todir = workdir.createTempFile(name, null, workdir);
+        File todir = File.createTempFile(name, null, workdir);
         todir.delete();
         doCopy(d, todir);
         return todir;
@@ -274,12 +275,15 @@ public class EarProjectTest extends NbTestCase {
     }
 
     private static final class Handler extends DefaultHandler {
+        @Override
         public void warning(SAXParseException e) throws SAXException {
             throw e;
         }
+        @Override
         public void error(SAXParseException e) throws SAXException {
             throw e;
         }
+        @Override
         public void fatalError(SAXParseException e) throws SAXException {
             throw e;
         }

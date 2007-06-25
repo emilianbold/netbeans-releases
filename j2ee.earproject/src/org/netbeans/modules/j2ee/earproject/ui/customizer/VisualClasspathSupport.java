@@ -494,6 +494,8 @@ public final class VisualClasspathSupport {
     }
 
     private static class LibraryCellRenderer extends DefaultTableCellRenderer {
+        private static final long serialVersionUID = 1L;
+        
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
                 boolean hasFocus, int row, int column) {
             final Object o;
@@ -528,6 +530,8 @@ public final class VisualClasspathSupport {
     }
 
     class ClasspathTableModel extends AbstractTableModel {
+        private static final long serialVersionUID = 1L;
+        
         int columnCount = 2;
         
         ClasspathTableModel(boolean singleColumn) {

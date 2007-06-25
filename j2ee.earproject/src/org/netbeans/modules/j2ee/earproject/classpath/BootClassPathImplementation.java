@@ -95,7 +95,7 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
             JavaPlatform[] installedPlatforms = this.platformManager.getInstalledPlatforms();
             for (int i = 0; i< installedPlatforms.length; i++) {
                 Specification spec = installedPlatforms[i].getSpecification();
-                String antName = (String) installedPlatforms[i].getProperties().get (ANT_NAME);
+                String antName = installedPlatforms[i].getProperties().get (ANT_NAME);
                 if (J2SE.equalsIgnoreCase(spec.getName())
                     && activePlatformName.equals(antName)) {
                         this.isActivePlatformValid = true;
@@ -123,7 +123,7 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
                 JavaPlatform[] j2sePlatforms = this.platformManager.getPlatforms(null,new Specification("j2se",null)); //NOI18N
                 boolean found = false;
                 for (int i=0; i< j2sePlatforms.length; i++) {
-                    String antName = (String) j2sePlatforms[i].getProperties().get("platform.ant.name");        //NOI18N
+                    String antName = j2sePlatforms[i].getProperties().get("platform.ant.name");        //NOI18N
                     if (antName != null && antName.equals(this.activePlatformName)) {
                         found = true;
                     }
@@ -136,7 +136,7 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
             else {
                 JavaPlatform[] j2sePlatforms = this.platformManager.getPlatforms(null,new Specification("j2se",null)); //NOI18N
                 for (int i=0; i< j2sePlatforms.length; i++) {
-                    String antName = (String) j2sePlatforms[i].getProperties().get("platform.ant.name");        //NOI18N
+                    String antName = j2sePlatforms[i].getProperties().get("platform.ant.name");        //NOI18N
                     if (antName != null && antName.equals(this.activePlatformName)) {
                         this.resetCache();
                         break;

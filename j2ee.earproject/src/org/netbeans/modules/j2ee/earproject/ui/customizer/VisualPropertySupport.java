@@ -98,7 +98,7 @@ public final class VisualPropertySupport {
      * Registers JList containing VisualClassPath items and accompanying
      * buttons for handling the class path.
      */
-    public void register(VisualArchiveIncludesSupport component, String propertyName) {
+    void register(VisualArchiveIncludesSupport component, String propertyName) {
         @SuppressWarnings("unchecked")
         List<VisualClassPathItem> value = getAsType(earProperties, propertyName, List.class);
         component2property.put(component, propertyName);

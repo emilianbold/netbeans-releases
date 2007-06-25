@@ -40,6 +40,7 @@ import org.openide.util.NbBundle;
  * @author  phrebejk
  */
 public class CustomizerGeneral extends JPanel implements ArchiveCustomizerPanel, HelpCtx.Provider {
+    private static final long serialVersionUID = 1L;
     
     private EarProjectProperties projProperties;
     private VisualPropertySupport vps;

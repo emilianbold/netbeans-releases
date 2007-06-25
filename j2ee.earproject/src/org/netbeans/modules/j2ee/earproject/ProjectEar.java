@@ -67,7 +67,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.util.Exceptions;
-import org.openide.util.NotImplementedException;
 import org.openide.util.WeakListeners;
 
 /**
@@ -126,7 +125,7 @@ public final class ProjectEar extends J2eeApplicationProvider
     }
 
     public ClassPathProvider getClassPathProvider () {
-        return (ClassPathProvider) project.getLookup ().lookup (ClassPathProvider.class);
+        return project.getLookup().lookup(ClassPathProvider.class);
     }
     
     public FileObject getArchive () {
@@ -144,10 +143,12 @@ public final class ProjectEar extends J2eeApplicationProvider
         return this;
     }
     
+    @Override
     public boolean useDefaultServer () {
         return false;
     }
     
+    @Override
     public String getServerID () {
         return project.getServerID(); //helper.getStandardPropertyEvaluator ().getProperty (EarProjectProperties.J2EE_SERVER_TYPE);
     }
@@ -156,6 +157,7 @@ public final class ProjectEar extends J2eeApplicationProvider
         // TODO: implement when needed
     }
 
+    @Override
     public String getServerInstanceID () {
         return project.getServerInstanceID(); //helper.getStandardPropertyEvaluator ().getProperty (EarProjectProperties.J2EE_SERVER_INSTANCE);
     }
@@ -320,6 +322,7 @@ public final class ProjectEar extends J2eeApplicationProvider
         return project.getJ2eePlatformVersion(); // helper.getStandardPropertyEvaluator ().getProperty (EarProjectProperties.J2EE_PLATFORM);
     }
     
+    @Override
     public FileObject[] getSourceRoots() {
         Sources sources = ProjectUtils.getSources(project);
         SourceGroup[] groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
@@ -453,7 +456,7 @@ public final class ProjectEar extends J2eeApplicationProvider
      * @return array of J2eeModuleProvider objects.
      */
     public  J2eeModuleProvider[] getChildModuleProviders() {
-        return (J2eeModuleProvider[]) mods.values().toArray(new J2eeModuleProvider[mods.size()]);
+        return mods.values().toArray(new J2eeModuleProvider[mods.size()]);
     }
     
     public File getDeploymentConfigurationFile(String name) {
@@ -500,7 +503,7 @@ public final class ProjectEar extends J2eeApplicationProvider
             Logger.getLogger("global").log(Level.INFO,
                                            "Unable to add module to the Enterpise Application. Owner project not found."); // NOI18N
         } else {
-            ((EarProjectProperties)project.getProjectProperties()).addJ2eeSubprojects(new Project [] {owner});
+            project.getProjectProperties().addJ2eeSubprojects(new Project [] {owner});
         }
     }
 
@@ -518,13 +521,13 @@ public final class ProjectEar extends J2eeApplicationProvider
     }
     
     private PropertyChangeSupport getPropertyChangeSupport() {
-        Application application = getApplication();
+        Application app = getApplication();
         synchronized (this) {
             if (propertyChangeSupport == null) {
                 propertyChangeSupport = new PropertyChangeSupport(this);
-                if (application != null) {
-                    PropertyChangeListener l = (PropertyChangeListener) WeakListeners.create(PropertyChangeListener.class, this, application);
-                    application.addPropertyChangeListener(l);
+                if (app != null) {
+                    PropertyChangeListener l = WeakListeners.create(PropertyChangeListener.class, this, app);
+                    app.addPropertyChangeListener(l);
                 }
             }
             return propertyChangeSupport;

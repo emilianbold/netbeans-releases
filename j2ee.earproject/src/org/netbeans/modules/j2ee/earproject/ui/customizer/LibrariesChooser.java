@@ -46,6 +46,7 @@ import org.openide.util.WeakListeners;
  * @author  tz97951
  */
 public class LibrariesChooser extends javax.swing.JPanel implements HelpCtx.Provider {
+    private static final long serialVersionUID = 1L;
 
     private final Collection incompatibleLibs;
 
@@ -182,6 +183,7 @@ public class LibrariesChooser extends javax.swing.JPanel implements HelpCtx.Prov
 
 
     private static final class LibrariesListModel extends AbstractListModel implements PropertyChangeListener {
+        private static final long serialVersionUID = 1L;
 
         private Library[] cache;
         /** Number of libraries in the LibraryManager when last refreshed. */
@@ -255,6 +257,7 @@ public class LibrariesChooser extends javax.swing.JPanel implements HelpCtx.Prov
 
 
     private static final class LibraryRenderer extends DefaultListCellRenderer {
+        private static final long serialVersionUID = 1L;
 
         private static final String LIBRARY_ICON = "org/netbeans/modules/j2ee/earproject/ui/resources/libraries.gif";  //NOI18N
         private Icon cachedIcon;

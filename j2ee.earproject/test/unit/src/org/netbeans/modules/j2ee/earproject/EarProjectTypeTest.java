@@ -37,6 +37,7 @@ public final class EarProjectTypeTest extends NbTestCase {
         super(testName);
     }
     
+    @Override
     protected void setUp() throws Exception {
         clearWorkDir();
         prjType = new EarProjectType();

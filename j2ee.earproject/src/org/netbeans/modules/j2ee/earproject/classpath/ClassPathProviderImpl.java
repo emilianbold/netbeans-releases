@@ -122,7 +122,9 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
             // Not a source file.
             return null;
         }
-        if (type == TYPE_BUILT_UNPACKED) type = TYPE_NORMAL;
+        if (type == TYPE_BUILT_UNPACKED) {
+            type = TYPE_NORMAL;
+        }
         ClassPath cp = null;
         if (cache[TYPE_BUILT_JAR + type] == null || (cp = cache[TYPE_BUILT_JAR + type].get()) == null) {
             if (type == TYPE_NORMAL) {

@@ -33,6 +33,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.actions.CookieAction;
 
 public class OpenModuleProjectAction extends CookieAction {
+    private static final long serialVersionUID = 1L;
     
     protected Class[] cookieClasses() {
         return new Class[] { ModuleNode.class };
@@ -45,7 +46,7 @@ public class OpenModuleProjectAction extends CookieAction {
     public void performAction(Node[] nodes) {
         Project projects[] = new Project[nodes.length];
         for (int i = 0; i < nodes.length; i++) {
-            VisualClassPathItem vcpi = ((ModuleNode)nodes[i].getCookie(ModuleNode.class)).getVCPI();
+            VisualClassPathItem vcpi = nodes[i].getCookie(ModuleNode.class).getVCPI();
             if (VisualClassPathItem.Type.ARTIFACT == vcpi.getType()) {
                 projects[i] = ((AntArtifact) vcpi.getObject()).getProject();
             } else {
@@ -71,6 +72,7 @@ public class OpenModuleProjectAction extends CookieAction {
         return NbBundle.getMessage(OpenModuleProjectAction.class, "LBL_OpenProject");
     }
     
+    @Override
     protected boolean asynchronous() {
         return false;
     }
