@@ -113,20 +113,20 @@ public class UseSuperTypePanel extends JPanel implements CustomRefactoringPanel 
         listScrollPane = new javax.swing.JScrollPane();
         superTypeList = new javax.swing.JList();
 
-        setLayout(new java.awt.GridBagLayout());
-
         setMaximumSize(new java.awt.Dimension(600, 500));
         setPreferredSize(new java.awt.Dimension(300, 200));
+        setLayout(new java.awt.GridBagLayout());
+
         label.setLabelFor(superTypeList);
-        org.openide.awt.Mnemonics.setLocalizedText(label, org.openide.util.NbBundle.getBundle(UseSuperTypePanel.class).getString("DSC_UseSuperType"));
+        org.openide.awt.Mnemonics.setLocalizedText(label, org.openide.util.NbBundle.getBundle(UseSuperTypePanel.class).getString("LBL_UseSuperType")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         add(label, gridBagConstraints);
 
         superTypeList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         listScrollPane.setViewportView(superTypeList);
-        superTypeList.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(UseSuperTypePanel.class, "ACSD_SupertypeToUse"));
-        superTypeList.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(UseSuperTypePanel.class, "ACSD_SupertypeToUseDescription"));
+        superTypeList.getAccessibleContext().setAccessibleName(null);
+        superTypeList.getAccessibleContext().setAccessibleDescription(null);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -135,9 +135,7 @@ public class UseSuperTypePanel extends JPanel implements CustomRefactoringPanel 
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         add(listScrollPane, gridBagConstraints);
-
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
