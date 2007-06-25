@@ -113,7 +113,11 @@ public class ComponentStyleDialog extends JSFComponentOptionsDialog {
     
     protected void shutdown() {
         super.shutdown();
-        pto.close();
+        try {
+            pto.close();
+        } catch (Exception ex) {
+            System.out.println("Catched exception at shutdown: "+ex.getMessage());
+        }
     }
     
     public static void main(java.lang.String[] args) {
