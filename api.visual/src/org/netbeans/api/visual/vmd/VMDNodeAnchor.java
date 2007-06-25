@@ -36,12 +36,11 @@ import java.util.Set;
  */
 public class VMDNodeAnchor extends Anchor {
 
-    private static final int PIN_GAP = 8;
-
     private boolean requiresRecalculation = true;
 
     private HashMap<Entry, Result> results = new HashMap<Entry, Result> ();
     private final boolean vertical;
+    private VMDColorScheme scheme;
 
     /**
      * Creates a node anchor with vertical direction.
@@ -57,9 +56,22 @@ public class VMDNodeAnchor extends Anchor {
      * @param vertical if true, then anchors are placed vertically; if false, then anchors are placed horizontally
      */
     public VMDNodeAnchor (Widget widget, boolean vertical) {
+        this (widget, vertical, VMDFactory.getOriginalScheme ());
+    }
+
+    /**
+     * Creates a node anchor.
+     * @param widget the node widget where the anchor is attached to
+     * @param vertical if true, then anchors are placed vertically; if false, then anchors are placed horizontally
+     * @param scheme color scheme
+     * @since 2.5
+     */
+    public VMDNodeAnchor (Widget widget, boolean vertical, VMDColorScheme scheme) {
         super (widget);
         assert widget != null;
+        assert scheme != null;
         this.vertical = vertical;
+        this.scheme = scheme;
     }
 
     /**
@@ -121,8 +133,9 @@ public class VMDNodeAnchor extends Anchor {
         Entry[] topList = toArray (topmap);
         Entry[] bottomList = toArray (bottommap);
 
-        int y = bounds.y - PIN_GAP;
-        int x = bounds.x - PIN_GAP;
+        int pinGap = scheme.getNodeAnchorGap (this);
+        int y = bounds.y - pinGap;
+        int x = bounds.x - pinGap;
         int len = topList.length;
 
         for (int a = 0; a < len; a ++) {
@@ -134,8 +147,8 @@ public class VMDNodeAnchor extends Anchor {
             results.put (entry, new Result (new Point (x, y), vertical ? Direction.TOP : Direction.LEFT));
         }
 
-        y = bounds.y + bounds.height + PIN_GAP;
-        x = bounds.x + bounds.width + PIN_GAP;
+        y = bounds.y + bounds.height + pinGap;
+        x = bounds.x + bounds.width + pinGap;
         len = bottomList.length;
 
         for (int a = 0; a < len; a ++) {

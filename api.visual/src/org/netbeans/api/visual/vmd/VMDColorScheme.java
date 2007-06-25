@@ -111,4 +111,12 @@ public abstract class VMDColorScheme {
      */
     public abstract void updateUI (VMDPinWidget widget, ObjectState previousState, ObjectState state);
 
+    /**
+     * Returns a gap size of a node-anchor from a node-widget.
+     * @param anchor the node anchor
+     * @return the gap size
+     * @since 2.5
+     */
+    public abstract int getNodeAnchorGap (VMDNodeAnchor anchor);
+
 }

@@ -154,4 +154,8 @@ public class VMDOriginalColorScheme extends VMDColorScheme {
 //        setForeground (lookFeel.getForeground (state));
     }
 
+    public int getNodeAnchorGap (VMDNodeAnchor anchor) {
+        return 8;
+    }
+
 }

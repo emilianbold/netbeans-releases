@@ -113,6 +113,10 @@ public class VMDNetBeans60ColorScheme extends VMDColorScheme {
             widget.setBorder (VMDOriginalColorScheme.BORDER_PIN);
     }
 
+    public int getNodeAnchorGap (VMDNodeAnchor anchor) {
+        return 4;
+    }
+
     public boolean isNodeMinimizeButtonOnRight (VMDNodeWidget widget) {
         return true;
     }

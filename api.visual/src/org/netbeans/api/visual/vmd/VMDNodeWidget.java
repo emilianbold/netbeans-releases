@@ -55,7 +55,7 @@ public class VMDNodeWidget extends Widget implements StateModel.Listener, VMDMin
     private HashMap<String, Widget> pinCategoryWidgets = new HashMap<String, Widget> ();
 
     private StateModel stateModel = new StateModel (2);
-    private Anchor nodeAnchor = new VMDNodeAnchor (this);
+    private Anchor nodeAnchor;
     private VMDColorScheme scheme;
 
     /**
@@ -76,6 +76,8 @@ public class VMDNodeWidget extends Widget implements StateModel.Listener, VMDMin
         assert scheme != null;
         this.scheme = scheme;
 
+        nodeAnchor = new VMDNodeAnchor (this, true, scheme);
+        
         setLayout (LayoutFactory.createVerticalFlowLayout ());
         setMinimumSize (new Dimension (128, 8));
 
