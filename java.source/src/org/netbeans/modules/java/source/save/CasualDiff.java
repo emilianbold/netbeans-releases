@@ -1207,6 +1207,15 @@ public class CasualDiff {
         if (listsMatch(oldT.annotations, newT.annotations)) {
             copyTo(localPointer, localPointer = (annotationsEnd != localPointer ? annotationsEnd : startPos));
         } else {
+            tokenSequence.move(startPos);
+            tokenSequence.movePrevious();
+            if (JavaTokenId.WHITESPACE == tokenSequence.token().id()) {
+                String text = tokenSequence.token().text().toString();
+                int index = text.lastIndexOf('\n');
+                if (index > -1) {
+                    startPos = tokenSequence.offset() + index + 1;
+                }
+            }
             copyTo(localPointer, startPos);
             PositionEstimator est = EstimatorFactory.annotations(((ModifiersTree) oldT).getAnnotations(), ((ModifiersTree) newT).getAnnotations(), workingCopy);
             localPointer = diffList(oldT.annotations, newT.annotations, startPos, est, Measure.DEFAULT, printer);
