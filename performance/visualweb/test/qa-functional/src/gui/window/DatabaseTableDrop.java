@@ -149,9 +149,6 @@ public class DatabaseTableDrop extends org.netbeans.performance.test.utilities.P
     private void clearBindingArtefacts() {
         String title = Bundle.getStringTrimmed("org.openide.explorer.Bundle","MSG_ConfirmDeleteObjectTitle"); //Confirm Object Deletion
         
-        TopComponentOperator navigator = new TopComponentOperator("Navigator"); // NOI18N
-        
-        JTreeOperator tree =  new JTreeOperator(navigator);
                 
         Node table = new Node(tree,"Page1|page1|html1|body1|form1|table1");
         new DeleteAction().perform(table);
