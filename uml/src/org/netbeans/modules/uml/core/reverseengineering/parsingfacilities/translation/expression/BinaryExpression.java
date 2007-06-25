@@ -48,7 +48,7 @@ public class BinaryExpression  extends ExpressionStateHandler
     private ITokenDescriptor   m_precedenceEnd = null;
     private ITokenDescriptor   m_rightSidePrecedence = null;
     private ITokenDescriptor   m_rightSidePrecedenceEnd = null;
-    private boolean            m_leftSideFound = false;
+    protected boolean          m_leftSideFound = false;
     private boolean            m_precedenceEndAfterLeft = false;
     
     public void clear()
@@ -147,13 +147,6 @@ public class BinaryExpression  extends ExpressionStateHandler
         return m_rightSidePrecedenceEnd;
     }    
     
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.uml.core.reverseengineering.parsingfacilities.translation.expression.IBinaryExpression#initialize()
-     */
-    public void initialize()
-    {
-//		Not Any Code In C++
-    }
     
         /* (non-Javadoc)
          * @see org.netbeans.modules.uml.core.reverseengineering.parsingfacilities.translation.expression.IBinaryExpression#processToken(org.netbeans.modules.uml.core.reverseengineering.reframework.parsingframework.ITokenDescriptor, java.lang.String)
@@ -183,7 +176,13 @@ public class BinaryExpression  extends ExpressionStateHandler
         }
         else if("Precedence End".equals(value))
         {
-            if(m_precedenceStart == null)
+            
+            if((m_rightSidePrecedence != null) && (m_rightSidePrecedenceEnd == null))
+            {
+                m_rightSidePrecedenceEnd = pToken;
+            }
+            
+            else if(m_precedenceStart == null)
             {
                 // The Precedence End token will alway appear after the expression.
                 if(getExpressionCount() > 0)
@@ -194,11 +193,8 @@ public class BinaryExpression  extends ExpressionStateHandler
                         proxy.processToken(pToken, language);
                     }
                 }
-            }
-            else if((m_rightSidePrecedence != null) && (m_rightSidePrecedenceEnd == null))
-            {
-                m_rightSidePrecedenceEnd = pToken;
-            }
+            }   
+            
             else if((m_precedenceStart != null) && (m_precedenceEnd != null))
             {
                 // The Precedence End token will alway appear after the expression.

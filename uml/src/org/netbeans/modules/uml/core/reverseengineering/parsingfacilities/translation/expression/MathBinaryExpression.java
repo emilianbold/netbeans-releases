@@ -30,14 +30,6 @@ import org.netbeans.modules.uml.core.reverseengineering.reframework.parsingframe
 
 public class MathBinaryExpression extends BinaryExpression
 {
-    private ITokenDescriptor  m_pPrecedenceStart = null;
-    private ITokenDescriptor  m_pPrecedenceEnd = null;
-
-    public void clear()
-    {
-        m_pPrecedenceStart = null;
-        m_pPrecedenceEnd = null;
-    }
     
     public MathBinaryExpression()
     {
@@ -65,7 +57,7 @@ public class MathBinaryExpression extends BinaryExpression
         
         if(getRightHandPrecedenceTokenStart() != null)
         {
-            String value = getLeftHandPrecedenceTokenStart().getValue();
+            String value = getRightHandPrecedenceTokenStart().getValue();
             retVal += value;
         }
         
@@ -73,7 +65,7 @@ public class MathBinaryExpression extends BinaryExpression
         
         if(getRightHandPrecedenceTokenEnd() != null)
         {
-            String value =  getLeftHandPrecedenceTokenEnd().getValue();
+            String value =  getRightHandPrecedenceTokenEnd().getValue();
             retVal += value;
         }
         return retVal;
