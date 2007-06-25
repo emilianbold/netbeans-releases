@@ -299,6 +299,22 @@
             <class package="org.netbeans.api.visual.layout" name="LayoutFactory" link="yes"/>
             <issue number="105390"/>
         </change>
+
+        <change>
+            <api name="general"/>
+            <summary>ConnectionWidget.controlPointCutDistance property introduced to render smoother corners of the path</summary>
+            <version major="2" minor="5"/>
+            <date day="25" month="6" year="2007"/>
+            <author login="dkaspar"/>
+            <compatibility addition="yes"/>
+            <description>
+                ConnectionWidget.controlPointCutDistance property allows you to specify a distance where the path should be cut
+                at each control point.
+		See test.widget.ConnectionWidgetCutDistanceTest for example.
+            </description>
+            <class package="org.netbeans.api.visual.widget" name="ConnectionWidget" link="yes"/>
+            <issue number="106508"/>
+        </change>
     </changes>
 
     <htmlcontents>

@@ -1145,6 +1145,9 @@ A connection can have assigned a source and a target <code>AnchorShape</code> an
 <p>
 There is a <code>controlPointsCursor</code> property which defines a mouse cursor when the mouse is over a visible control point.
 
+<p>
+There is a <code>controlPointCutDistance</code> property. If set to positive number (by default 0), then the connection path is cut at each control point to make smoother corners. The smooth corners are not used during calculation whether a mouse-cursor hits the path.
+
 <h3><a name="Router">Router</a></h3>
 
 <p>
@@ -1198,6 +1201,9 @@ See <code>test.connectionlabels.ConnectionLabelsTest</code> for details.
 <tr>
 <td>getEndPointShape<br>setEndPointShape
 <td>Controls a shape of end points (source and target). Shape is defined by <code>PointShape</code> interface. The end points are painted only if <code>isPaintControlPoints</code> returns true.
+<tr>
+<td>getControlPointCutDistance<br>setControlPointCutDistance
+<td>Controls a cut distance where the line cut with half-angle line at every control point. See <code>test.widget.ConnectionWidgetCutDistanceTest</code> example.
 <tr>
 <td>getRouter<br>setRouter
 <td>Controls a router assigned to the connection widget. The routers is calculating a path and sets a new one using <code>setControlPoints</code> method.

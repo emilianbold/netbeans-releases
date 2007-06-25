@@ -76,6 +76,7 @@ public class ConnectionWidget extends Widget {
     private boolean paintControlPoints;
     private Color lineColor;
     private Cursor controlPointsCursor;
+    private int controlPointCutDistance;
 
     private Anchor.Entry sourceEntry;
     private Anchor.Entry targetEntry;
@@ -96,6 +97,7 @@ public class ConnectionWidget extends Widget {
         setLayout (connectionWidgetLayout);
         stroke = STROKE_DEFAULT;
         paintControlPoints = false;
+        controlPointCutDistance = 0;
         sourceEntry = new ConnectionEntry (true);
         targetEntry = new ConnectionEntry (false);
     }
@@ -179,6 +181,26 @@ public class ConnectionWidget extends Widget {
      */
     public final void setControlPointsCursor (Cursor controlPointsCursor) {
         this.controlPointsCursor = controlPointsCursor;
+    }
+
+    /**
+     * Returns the cut distance at control points.
+     * @return the cut distance
+     * @since 2.5
+     */
+    public int getControlPointCutDistance () {
+        return controlPointCutDistance;
+    }
+
+    /**
+     * Sets the cut distance at control points.
+     * @param controlPointCutDistance if positive number, then the path is cut to render smooth corners;
+     *     otherwise the path is rendered using control points only
+     * @since 2.5
+     */
+    public void setControlPointCutDistance (int controlPointCutDistance) {
+        this.controlPointCutDistance = controlPointCutDistance;
+        repaint ();
     }
 
     /**
@@ -648,14 +670,55 @@ public class ConnectionWidget extends Widget {
             points = controlPoints;
         }
 
+        if (controlPointCutDistance > 0) {
+            for (int a = 0; a < points.size () - 1; a ++) {
+                Point p1 = points.get (a);
+                Point p2 = points.get (a + 1);
+                double len = p1.distance (p2);
 
-        for (Point point : points) {
-            if (path == null) {
-                path = new GeneralPath ();
-                path.moveTo (point.x, point.y);
-            } else {
-                path.lineTo (point.x, point.y);
+                if (a > 0) {
+                    Point p0 = points.get (a - 1);
+                    double ll = p0.distance (p1);
+                    if (len < ll)
+                        ll = len;
+                    ll /= 2;
+                    double cll = controlPointCutDistance;
+                    if (cll > ll)
+                        cll = ll;
+                    double direction = Math.atan2 (p2.y - p1.y, p2.x - p1.x);
+                    if (!Double.isNaN (direction)) {
+                        path = addToPath (path,
+                                p1.x + (int) (cll * Math.cos (direction)),
+                                p1.y + (int) (cll * Math.sin (direction))
+                        );
+                    }
+                } else {
+                    path = addToPath (path, p1.x, p1.y);
+                }
+
+                if (a < points.size () - 2) {
+                    Point p3 = points.get (a + 2);
+                    double ll = p2.distance (p3);
+                    if (len < ll)
+                        ll = len;
+                    ll /= 2;
+                    double cll = controlPointCutDistance;
+                    if (cll > ll)
+                        cll = ll;
+                    double direction = Math.atan2 (p2.y - p1.y, p2.x - p1.x);
+                    if (!Double.isNaN (direction)) {
+                        path = addToPath (path,
+                                p2.x - (int) (cll * Math.cos (direction)),
+                                p2.y - (int) (cll * Math.sin (direction))
+                        );
+                    }
+                } else {
+                    path = addToPath (path, p2.x, p2.y);
+                }
             }
+        } else {
+            for (Point point : points)
+                path = addToPath (path, point.x, point.y);
         }
         if (path != null) {
             Stroke previousStroke = gr.getStroke ();
@@ -699,6 +762,16 @@ public class ConnectionWidget extends Widget {
                 gr.setTransform (previousTransform);
             }
         }
+    }
+
+    private GeneralPath addToPath (GeneralPath path, int x, int y) {
+        if (path == null) {
+            path = new GeneralPath ();
+            path.moveTo (x, y);
+        } else {
+            path.lineTo (x, y);
+        }
+        return path;
     }
 
     private class ConnectionEntry implements Anchor.Entry {
