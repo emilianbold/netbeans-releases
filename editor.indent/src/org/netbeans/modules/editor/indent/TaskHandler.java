@@ -20,14 +20,14 @@
 package org.netbeans.modules.editor.indent;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Position;
@@ -136,7 +136,7 @@ public final class TaskHandler {
                 // Also add the embedded ones
                 TokenHierarchy<?> hi = TokenHierarchy.get(document());
                 if (hi != null) {
-                    Set<LanguagePath> languagePaths = hi.languagePaths();
+                    LanguagePath[] languagePaths = sort(hi.languagePaths());
                     for (LanguagePath lp : languagePaths) {
                         mimePath = MimePath.parse(lp.mimePath());
                         addItem(mimePath);
@@ -145,6 +145,13 @@ public final class TaskHandler {
             }
         }
         return (items != null);
+    }
+    
+    private LanguagePath[] sort(Set<LanguagePath> lps) {
+        LanguagePath[] arr = new LanguagePath[lps.size()];
+        lps.toArray(arr);
+        Arrays.sort(arr, LanguagePathSizeComparator.INSTANCE);
+        return arr;
     }
 
     void lock() {
@@ -174,78 +181,8 @@ public final class TaskHandler {
             return;
 
         // Start with the doc's mime type's task
-        item(0).runTask();
-        
-        TokenHierarchy hi = TokenHierarchy.get(doc);
-        if (hi == null)
-            return;
-        TokenHierarchyL listener = new TokenHierarchyL();
-        hi.addTokenHierarchyListener(listener);
-        try {
-
-            // Continue by reformatting the embedded sections from top-level to embedded
-            if (items.size() > 1) {
-                // Walk over the top-level token sequence and go into embedded section
-                // as deep as possible
-                endPos = startPos;
-                int lastLevel = 0; // Which nesting level was last processed
-                List<TokenSequence<?>> tsStack = new ArrayList<TokenSequence<?>>(4);
-                while (true) {
-                    int nextOffset = endPos.getOffset();
-                    if (nextOffset >= globalEndPos.getOffset())
-                        break;
-                    TokenSequence<?> ts = hi.tokenSequence();
-                    ts.move(endPos.getOffset());
-                    if (!ts.moveNext())
-                        break;
-                    // Position to the appropriate nesting
-                    while (tsStack.size() < lastLevel) {
-                        TokenSequence<?> eTS = ts.embedded();
-                        if (eTS == null)
-                            break;
-                        eTS.move(nextOffset);
-                        if (!eTS.moveNext())
-                            break;
-                        tsStack.add(ts);
-                        ts = eTS;
-                    }
-                    // Check if the nextOffset does not point into middle of token
-                    // If so move to next token
-                    if (ts.offset() != nextOffset) {
-                        if (!ts.moveNext())
-                            break;
-                        nextOffset = ts.offset();
-                        if (nextOffset >= globalEndPos.getOffset())
-                            break;
-                    }
-
-                    // Go through tokens and check whether there are any tokens
-                    // with embedding that have registered reformatter
-                    while (true) {
-                        TokenSequence eTS = ts.embedded();
-                        if (eTS != null) {
-                            MimePath mimePath = MimePath.parse(eTS.languagePath().mimePath());
-                            MimeItem item = mime2Item.get(mimePath);
-                            if (item != null) {
-                                startPos = doc.createPosition(eTS.offset());
-                                nextOffset = eTS.offset() + eTS.token().length();
-                                endPos = doc.createPosition(nextOffset);
-                                listener.modified = false;
-                                item.runTask();
-                                if (listener.modified) {
-                                    tsStack.clear();
-                                    break; // Need to restore token sequences stack
-                                } else { // No reformatting done by the task
-                                    nextOffset = endPos.getOffset();
-                                }
-                            }
-                        }
-
-                    }
-                }
-            }
-        } finally {
-            hi.removeTokenHierarchyListener(listener);
+        for (MimeItem item : items) {
+            item.runTask();
         }
     }
 
@@ -271,10 +208,6 @@ public final class TaskHandler {
             return true;
         }
         return false;
-    }
-
-    private MimeItem item(int index) {
-        return items.get(index);
     }
 
     private String docMimeType() {
@@ -366,6 +299,17 @@ public final class TaskHandler {
         public void tokenHierarchyChanged(TokenHierarchyEvent evt) {
             modified = true;
         }
+        
+    }
+    
+    private static final class LanguagePathSizeComparator implements Comparator<LanguagePath> {
+        
+        static final LanguagePathSizeComparator INSTANCE = new LanguagePathSizeComparator();
+
+        public int compare(LanguagePath o1, LanguagePath o2) {
+            return o1.size() - o2.size();
+        }
+        
         
     }
     
