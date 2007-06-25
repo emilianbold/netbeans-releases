@@ -114,6 +114,7 @@ import org.netbeans.modules.websvc.spi.webservices.WebServicesSupportFactory;
 import org.netbeans.spi.project.support.LookupProviderSupport;
 import org.netbeans.spi.project.ui.support.UILookupMergerSupport;
 import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileSystem.AtomicAction;
 import org.openide.util.Exceptions;
 
 /**
@@ -810,60 +811,72 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
             // EJB DDProvider (used here) needs classpath set correctly when resolving Java Extents for annotations
             ejbModule.getConfigSupport().ensureConfigurationReady();
 
-            // Make it easier to run headless builds on the same machine at least.
-            ProjectManager.mutex().writeAccess(new Mutex.Action() {
-                public Object run() {
-                    EditableProperties ep = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-                    ep.setProperty("netbeans.user", System.getProperty("netbeans.user"));
-                    
-                    // set jaxws.endorsed.dir property (for endorsed mechanism to be used with wsimport, wsgen)
-                    WSUtils.setJaxWsEndorsedDirProperty(ep);
-                    
-                    helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
-                    // update a dual build directory project to use a single build directory
-                    ep = updateHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                    String earBuildDir = ep.getProperty(EjbJarProjectProperties.BUILD_EAR_CLASSES_DIR);
-                    if (null != earBuildDir) {
-                        // there is an BUILD_EAR_CLASSES_DIR property... we may 
-                        //  need to change its value
-                        String buildDir = ep.getProperty(EjbJarProjectProperties.BUILD_CLASSES_DIR);
-                        if (null != buildDir) {
-                            // there is a value that we may need to change the 
-                            // BUILD_EAR_CLASSES_DIR property value to match.
-                            if (!buildDir.equals(earBuildDir)) {
-                                // the values do not match... update the property and save it
-                                ep.setProperty(EjbJarProjectProperties.BUILD_EAR_CLASSES_DIR,
-                                        buildDir);
-                                updateHelper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH,
-                                        ep);
+            try {
+                getProjectDirectory().getFileSystem().runAtomicAction(new AtomicAction() {
+                    public void run() throws IOException {
+                        ProjectManager.mutex().writeAccess(new Runnable() {
+                            public void run() {
+                                updateProject();
                             }
-                            // else {
-                            //   the values match and we don't need to do anything
-                            // }
-                        }
-                        // else {
-                        //   the project doesn't have a BUILD_CLASSES_DIR property
-                        //   ** This is not an expected state, but if the project 
-                        //      properties evolve, this property may go away...
-                        // }
+                        });
                     }
-                    // else {
-                    //   there isn't a BUILD_EAR_CLASSES_DIR in this project...
-                    //     so we should not create one, by setting it.
-                    // }
-
-                    try {
-                        ProjectManager.getDefault().saveProject(EjbJarProject.this);
-                    } catch (IOException e) {
-                        Exceptions.printStackTrace(e);
-                    }
-                    return null;
-                }
-            });
+                });
+            } catch (IOException e) {
+                Logger.getLogger("global").log(Level.INFO, null, e);
+            }
+            
             EjbJarLogicalViewProvider physicalViewProvider = (EjbJarLogicalViewProvider)
                 EjbJarProject.this.getLookup().lookup (EjbJarLogicalViewProvider.class);
             if (physicalViewProvider != null &&  physicalViewProvider.hasBrokenLinks()) {   
                 BrokenReferencesSupport.showAlert();
+            }
+        }
+        
+        private void updateProject() {
+            // Make it easier to run headless builds on the same machine at least.
+            EditableProperties ep = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+            ep.setProperty("netbeans.user", System.getProperty("netbeans.user"));
+
+            // set jaxws.endorsed.dir property (for endorsed mechanism to be used with wsimport, wsgen)
+            WSUtils.setJaxWsEndorsedDirProperty(ep);
+
+            helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
+            // update a dual build directory project to use a single build directory
+            ep = updateHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+            String earBuildDir = ep.getProperty(EjbJarProjectProperties.BUILD_EAR_CLASSES_DIR);
+            if (null != earBuildDir) {
+                // there is an BUILD_EAR_CLASSES_DIR property... we may 
+                //  need to change its value
+                String buildDir = ep.getProperty(EjbJarProjectProperties.BUILD_CLASSES_DIR);
+                if (null != buildDir) {
+                    // there is a value that we may need to change the 
+                    // BUILD_EAR_CLASSES_DIR property value to match.
+                    if (!buildDir.equals(earBuildDir)) {
+                        // the values do not match... update the property and save it
+                        ep.setProperty(EjbJarProjectProperties.BUILD_EAR_CLASSES_DIR,
+                                buildDir);
+                        updateHelper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH,
+                                ep);
+                    }
+                    // else {
+                    //   the values match and we don't need to do anything
+                    // }
+                }
+                // else {
+                //   the project doesn't have a BUILD_CLASSES_DIR property
+                //   ** This is not an expected state, but if the project 
+                //      properties evolve, this property may go away...
+                // }
+            }
+            // else {
+            //   there isn't a BUILD_EAR_CLASSES_DIR in this project...
+            //     so we should not create one, by setting it.
+            // }
+
+            try {
+                ProjectManager.getDefault().saveProject(EjbJarProject.this);
+            } catch (IOException e) {
+                Exceptions.printStackTrace(e);
             }
         }
         

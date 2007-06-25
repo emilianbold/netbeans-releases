@@ -74,6 +74,8 @@ import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileSystem.AtomicAction;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -415,24 +417,36 @@ public final class EarProject implements Project, AntProjectListener, FileChange
             J2eeModuleProvider pwm = EarProject.this.getLookup().lookup(J2eeModuleProvider.class);
             pwm.getConfigSupport().ensureConfigurationReady();
             
-            // Make it easier to run headless builds on the same machine at least.
-            ProjectManager.mutex().writeAccess(new Mutex.Action<Void>() {
-                public Void run() {
-                    EditableProperties ep = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-                    ep.setProperty("netbeans.user", System.getProperty("netbeans.user"));
-                    helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
-                    try {
-                        ProjectManager.getDefault().saveProject(EarProject.this);
-                    } catch (IOException e) {
-                        Exceptions.printStackTrace(e);
+            try {
+                getProjectDirectory().getFileSystem().runAtomicAction(new AtomicAction() {
+                    public void run() throws IOException {
+                        ProjectManager.mutex().writeAccess(new Runnable() {
+                            public void run() {
+                                updateProject();
+                            }
+                        });
                     }
-                    return null;
-                }
-            });
+                });
+                
+            } catch (IOException e ) {
+                Exceptions.printStackTrace(e);
+            }
+            
             if (J2eeArchiveLogicalViewProvider.hasBrokenLinks(helper, refHelper)) {
                 BrokenReferencesSupport.showAlert();
             }
-            
+        }
+        
+        private void updateProject() {
+            // Make it easier to run headless builds on the same machine at least.
+            EditableProperties ep = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+            ep.setProperty("netbeans.user", System.getProperty("netbeans.user"));
+            helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
+            try {
+                ProjectManager.getDefault().saveProject(EarProject.this);
+            } catch (IOException e) {
+                Exceptions.printStackTrace(e);
+            }
         }
         
         protected void projectClosed() {

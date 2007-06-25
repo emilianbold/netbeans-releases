@@ -107,6 +107,7 @@ import org.netbeans.modules.websvc.api.webservices.WebServicesSupport;
 import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
 import org.netbeans.modules.websvc.api.jaxws.project.WSUtils;
 import org.netbeans.modules.websvc.spi.webservices.WebServicesSupportFactory;
+import org.openide.filesystems.FileSystem.AtomicAction;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
@@ -654,72 +655,20 @@ public final class WebProject implements Project, AntProjectListener, FileChange
         ProjectOpenedHookImpl() {}
         
         protected void projectOpened() {
-            // Make it easier to run headless builds on the same machine at least.
-            ProjectManager.mutex().writeAccess(new Mutex.Action() {
-                public Object run() {
-                    EditableProperties ep = updateHelper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-                    File buildProperties = new File(System.getProperty("netbeans.user"), "build.properties"); // NOI18N
-                    ep.setProperty("user.properties.file", buildProperties.getAbsolutePath()); //NOI18N
-                    
-                    // set jaxws.endorsed.dir property (for endorsed mechanism to be used with wsimport, wsgen)
-                    WSUtils.setJaxWsEndorsedDirProperty(ep);
-                    
-                    EditableProperties props = updateHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);    //Reread the properties, PathParser changes them
-                    if (props.getProperty(WebProjectProperties.WAR_PACKAGE) == null)
-                        props.setProperty(WebProjectProperties.WAR_PACKAGE, "true"); //NOI18N
-                    //update lib references in private properties
-                    ArrayList l = new ArrayList();
-                    l.addAll(cpMod.getClassPathSupport().itemsList(props.getProperty(WebProjectProperties.JAVAC_CLASSPATH),  WebProjectProperties.TAG_WEB_MODULE_LIBRARIES));
-                    l.addAll(cpMod.getClassPathSupport().itemsList(props.getProperty(WebProjectProperties.WAR_CONTENT_ADDITIONAL),  WebProjectProperties.TAG_WEB_MODULE__ADDITIONAL_LIBRARIES));
-                    WebProjectProperties.storeLibrariesLocations(l.iterator(), ep);
-                    
-                    //add webinf.dir required by 6.0 projects
-                    if (props.getProperty(WebProjectProperties.WEBINF_DIR) == null) {
-                        //we can do this because in previous versions WEB-INF was expected under docbase
-                        props.setProperty(WebProjectProperties.WEBINF_DIR, "${" + WebProjectProperties.WEB_DOCBASE_DIR + "}/WEB-INF"); //NOI18N
-                    }
-                    
-                    updateHelper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
-                    
-                    // update a dual build directory project to use a single directory
-                    String earBuildDir = props.getProperty(WebProjectProperties.BUILD_EAR_WEB_DIR);
-                    if (null != earBuildDir) {
-                        // there is an BUILD_EAR_WEB_DIR property... we may
-                        //  need to change its value
-                        String buildDir = props.getProperty(WebProjectProperties.BUILD_WEB_DIR);
-                        if (null != buildDir) {
-                            // there is a value that we may need to change the
-                            // BUILD_EAR_WEB_DIR property value to match.
-                            if (!buildDir.equals(earBuildDir)) {
-                                // the values do not match... update the property
-                                props.setProperty(WebProjectProperties.BUILD_EAR_WEB_DIR,
-                                        buildDir);
+            try {
+                getProjectDirectory().getFileSystem().runAtomicAction(new AtomicAction() {
+                    public void run() throws IOException {
+                        ProjectManager.mutex().writeAccess(new Runnable() {
+                            public void run()  {
+                                updateProject();
                             }
-                            // else {
-                            //   the values match and we don't need to do anything
-                            // }
-                        }
-                        // else {
-                        //   the project doesn't have a BUILD_WEB_DIR property
-                        //   ** This is not an expected state, but if the project
-                        //      properties evolve, this property may go away...
-                        // }
+                        });
                     }
-                    // else {
-                    //   there isn't a BUILD_EAR_WEB_DIR in this project...
-                    //     so we should not create one, by setting it.
-                    // }
-                    
-                    updateHelper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
-                    
-                    try {
-                        ProjectManager.getDefault().saveProject(WebProject.this);
-                    } catch (IOException e) {
-                        Exceptions.printStackTrace(e);
-                    }
-                    return null;
-                }
-            });
+                });
+            } catch (IOException e) {
+                Logger.getLogger("global").log(Level.INFO, null, e);
+            }
+            
             try {
                 //DDDataObject initialization to be ready to listen on changes (#45771)
                 try {
@@ -819,7 +768,71 @@ public final class WebProject implements Project, AntProjectListener, FileChange
             webPagesFileWatch.init();
             fixRecommendedAndPrivilegedTemplates();
         }
+        
+        private void updateProject() {
+            // Make it easier to run headless builds on the same machine at least.
+            EditableProperties ep = updateHelper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+            File buildProperties = new File(System.getProperty("netbeans.user"), "build.properties"); // NOI18N
+            ep.setProperty("user.properties.file", buildProperties.getAbsolutePath()); //NOI18N
 
+            // set jaxws.endorsed.dir property (for endorsed mechanism to be used with wsimport, wsgen)
+            WSUtils.setJaxWsEndorsedDirProperty(ep);
+
+            EditableProperties props = updateHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);    //Reread the properties, PathParser changes them
+            if (props.getProperty(WebProjectProperties.WAR_PACKAGE) == null)
+                props.setProperty(WebProjectProperties.WAR_PACKAGE, "true"); //NOI18N
+            //update lib references in private properties
+            ArrayList l = new ArrayList();
+            l.addAll(cpMod.getClassPathSupport().itemsList(props.getProperty(WebProjectProperties.JAVAC_CLASSPATH),  WebProjectProperties.TAG_WEB_MODULE_LIBRARIES));
+            l.addAll(cpMod.getClassPathSupport().itemsList(props.getProperty(WebProjectProperties.WAR_CONTENT_ADDITIONAL),  WebProjectProperties.TAG_WEB_MODULE__ADDITIONAL_LIBRARIES));
+            WebProjectProperties.storeLibrariesLocations(l.iterator(), ep);
+
+            //add webinf.dir required by 6.0 projects
+            if (props.getProperty(WebProjectProperties.WEBINF_DIR) == null) {
+                //we can do this because in previous versions WEB-INF was expected under docbase
+                props.setProperty(WebProjectProperties.WEBINF_DIR, "${" + WebProjectProperties.WEB_DOCBASE_DIR + "}/WEB-INF"); //NOI18N
+            }
+
+            updateHelper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
+
+            // update a dual build directory project to use a single directory
+            String earBuildDir = props.getProperty(WebProjectProperties.BUILD_EAR_WEB_DIR);
+            if (null != earBuildDir) {
+                // there is an BUILD_EAR_WEB_DIR property... we may
+                //  need to change its value
+                String buildDir = props.getProperty(WebProjectProperties.BUILD_WEB_DIR);
+                if (null != buildDir) {
+                    // there is a value that we may need to change the
+                    // BUILD_EAR_WEB_DIR property value to match.
+                    if (!buildDir.equals(earBuildDir)) {
+                        // the values do not match... update the property
+                        props.setProperty(WebProjectProperties.BUILD_EAR_WEB_DIR,
+                                buildDir);
+                    }
+                    // else {
+                    //   the values match and we don't need to do anything
+                    // }
+                }
+                // else {
+                //   the project doesn't have a BUILD_WEB_DIR property
+                //   ** This is not an expected state, but if the project
+                //      properties evolve, this property may go away...
+                // }
+            }
+            // else {
+            //   there isn't a BUILD_EAR_WEB_DIR in this project...
+            //     so we should not create one, by setting it.
+            // }
+
+            updateHelper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
+
+            try {
+                ProjectManager.getDefault().saveProject(WebProject.this);
+            } catch (IOException e) {
+                Exceptions.printStackTrace(e);
+            }
+        }
+        
         protected void projectClosed() {
             webPagesFileWatch.reset();
 
