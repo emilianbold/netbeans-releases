@@ -26,7 +26,6 @@ import java.lang.ref.*;
 import java.lang.reflect.*;
 import javax.beans.binding.*;
 import javax.beans.binding.ext.PropertyDelegateProvider;
-import javax.swing.binding.SwingBindingSupport;
 import java.util.*;
 import java.beans.*;
 import java.io.IOException;
@@ -34,6 +33,8 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
+import javax.swing.binding.ParameterKeys;
+import javax.swing.binding.TextChangeStrategy;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
@@ -60,7 +61,7 @@ public class BindingDesignSupport {
 
     private static Map<Class,Object> classToInstance = new WeakHashMap<Class,Object>();
     private static Object NO_INSTANCE = new Object();
-    private static Binding.Parameter<ModifiableBoolean> INVALID_BINDING = new Binding.Parameter<ModifiableBoolean>(""); // NOI18N
+    private static Binding.ParameterKey<ModifiableBoolean> INVALID_BINDING = new Binding.ParameterKey<ModifiableBoolean>(""); // NOI18N
 
     /**
      * Create binding design support for the given form model.
@@ -695,16 +696,16 @@ public class BindingDesignSupport {
         Binding binding = new Binding(source, bindingDef.getSourcePath(), target, bindingDef.getTargetPath());
         String changeStrategy = bindingDef.getParameter(MetaBinding.TEXT_CHANGE_STRATEGY);
         if (changeStrategy != null) {
-            SwingBindingSupport.TextChangeStrategy value = null;
+            TextChangeStrategy value = null;
             if (MetaBinding.TEXT_CHANGE_ON_ACTION_OR_FOCUS_LOST.equals(changeStrategy)) {
-                value = SwingBindingSupport.TextChangeStrategy.CHANGE_ON_ACTION_OR_FOCUS_LOST;
+                value = TextChangeStrategy.ON_ACTION_OR_FOCUS_LOST;
             } else if (MetaBinding.TEXT_CHANGE_ON_FOCUS_LOST.equals(changeStrategy)) {
-                value = SwingBindingSupport.TextChangeStrategy.CHANGE_ON_FOCUS_LOST;
+                value = TextChangeStrategy.ON_FOCUS_LOST;
             } else if (MetaBinding.TEXT_CHANGE_ON_TYPE.equals(changeStrategy)) {
-                value = SwingBindingSupport.TextChangeStrategy.CHANGE_ON_TYPE;
+                value = TextChangeStrategy.ON_TYPE;
             }
             if (value != null) {
-                binding.setValue(SwingBindingSupport.TextChangeStrategyParameter, value);
+                binding.putParameter(ParameterKeys.TEXT_CHANGE_STRATEGY, value);
             }
         }
         Binding.UpdateStrategy updateStrategy = null;
@@ -712,8 +713,8 @@ public class BindingDesignSupport {
             case MetaBinding.UPDATE_STRATEGY_READ_WRITE:
                 updateStrategy = Binding.UpdateStrategy.READ_WRITE;
                 break;
-            case MetaBinding.UPDATE_STRATEGY_READ_FROM_SOURCE:
-                updateStrategy = Binding.UpdateStrategy.READ_FROM_SOURCE;
+            case MetaBinding.UPDATE_STRATEGY_READ:
+                updateStrategy = Binding.UpdateStrategy.READ;
                 break;
             case MetaBinding.UPDATE_STRATEGY_READ_ONCE:
                 updateStrategy = Binding.UpdateStrategy.READ_ONCE;
@@ -785,7 +786,7 @@ public class BindingDesignSupport {
                 if (tableColumn != null) {
                     try {
                         int column = Integer.parseInt(tableColumn);
-                        subBinding.setValue(SwingBindingSupport.TableColumnParameter, column);
+                        subBinding.putParameter(ParameterKeys.COLUMN, column);
                     } catch (NumberFormatException nfex) {
                         nfex.printStackTrace();
                     }
@@ -801,7 +802,7 @@ public class BindingDesignSupport {
                             columnClass = "java.lang." + columnClass; // NOI18N
                         }
                         Class clazz = FormUtils.loadClass(columnClass, bindingDef.getSource().getFormModel());
-                        subBinding.setValue(SwingBindingSupport.TableColumnClassParameter, clazz);
+                        subBinding.putParameter(ParameterKeys.COLUMN_CLASS, clazz);
                     } catch (ClassNotFoundException cnfex) {
                         cnfex.printStackTrace();
                     }
@@ -809,12 +810,12 @@ public class BindingDesignSupport {
                 String editable = sub.getParameter(MetaBinding.EDITABLE_PARAMETER);
                 if (editable != null) {
                     Boolean value = "false".equals(editable) ? Boolean.FALSE : Boolean.TRUE; // NOI18N
-                    subBinding.setValue(SwingBindingSupport.EditableParameter, value);
+                    subBinding.putParameter(ParameterKeys.EDITABLE, value);
                 }
                 
             }
         }
-        binding.setValue(INVALID_BINDING, new ModifiableBoolean());
+        binding.putParameter(INVALID_BINDING, new ModifiableBoolean());
         context.addBinding(binding);
 
         // Checking for name duplicates is performed only when binding is already in context
@@ -848,7 +849,7 @@ public class BindingDesignSupport {
                 message = message.substring(0, index+1) + bindingDef.getTarget().getName() + message.substring(message.lastIndexOf(']')+1);
             }
             System.err.println(message);
-            ModifiableBoolean invalid = binding.getValue(INVALID_BINDING, null);
+            ModifiableBoolean invalid = binding.getParameter(INVALID_BINDING, null);
             invalid.value = true;
         }
         return binding;
@@ -867,7 +868,7 @@ public class BindingDesignSupport {
 
     private static void removeBinding(Binding binding) {
         BindingContext context = binding.getContext();
-        if (!(binding.getValue(INVALID_BINDING, null).value)) { // Issue 104960
+        if (!(binding.getParameter(INVALID_BINDING, null).value)) { // Issue 104960
             binding.unbind();
             context.removeBinding(binding);
         } else {
@@ -895,7 +896,7 @@ public class BindingDesignSupport {
             } catch (Exception ex) {
                 instance = NO_INSTANCE;
             }
-            classToInstance.put(clazz, (instance == NO_INSTANCE) ? instance : new WeakReference(instance));
+            classToInstance.put(clazz, (instance == NO_INSTANCE) ? instance : new WeakReference<Object>(instance));
         }
         return instance;
     }

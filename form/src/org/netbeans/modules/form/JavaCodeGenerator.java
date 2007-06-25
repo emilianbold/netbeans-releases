@@ -1514,8 +1514,8 @@ class JavaCodeGenerator extends CodeGenerator {
 
                 if (updateStrategy != MetaBinding.UPDATE_STRATEGY_READ_WRITE) {
                     initCodeWriter.write(variable + ".setUpdateStrategy(javax.beans.binding.Binding.UpdateStrategy."); // NOI18N
-                    if (updateStrategy == MetaBinding.UPDATE_STRATEGY_READ_FROM_SOURCE) {
-                        initCodeWriter.write("READ_FROM_SOURCE);\n"); // NOI18N
+                    if (updateStrategy == MetaBinding.UPDATE_STRATEGY_READ) {
+                        initCodeWriter.write("READ);\n"); // NOI18N
                     } else {
                         assert (updateStrategy == MetaBinding.UPDATE_STRATEGY_READ_ONCE);
                         initCodeWriter.write("READ_ONCE);\n"); // NOI18N
@@ -1585,7 +1585,7 @@ class JavaCodeGenerator extends CodeGenerator {
         while (iter.hasNext()) {
             Map.Entry entry = iter.next();
             buf.append(variable);
-            buf.append(".setValue("); // NOI18N
+            buf.append(".putParameter("); // NOI18N
             buf.append(entry.getKey());
             buf.append(", "); // NOI18N
             buf.append(entry.getValue());

@@ -23,15 +23,15 @@ import java.util.*;
 
 public class MetaBinding {
     public static final int UPDATE_STRATEGY_READ_WRITE = 0;
-    public static final int UPDATE_STRATEGY_READ_FROM_SOURCE = 1;
+    public static final int UPDATE_STRATEGY_READ = 1;
     public static final int UPDATE_STRATEGY_READ_ONCE = 2;
-    public static final String TABLE_COLUMN_PARAMETER = "javax.swing.binding.SwingBindingSupport.TableColumnParameter"; // NOI18N
-    public static final String TABLE_COLUMN_CLASS_PARAMETER = "javax.swing.binding.SwingBindingSupport.TableColumnClassParameter"; // NOI18N
-    public static final String EDITABLE_PARAMETER = "javax.swing.binding.SwingBindingSupport.EditableParameter"; // NOI18N
-    public static final String TEXT_CHANGE_STRATEGY = "javax.swing.binding.SwingBindingSupport.TextChangeStrategyParameter"; // NOI18N
-    public static final String TEXT_CHANGE_ON_TYPE = "javax.swing.binding.SwingBindingSupport.TextChangeStrategy.CHANGE_ON_TYPE"; // NOI18N
-    public static final String TEXT_CHANGE_ON_ACTION_OR_FOCUS_LOST = "javax.swing.binding.SwingBindingSupport.TextChangeStrategy.CHANGE_ON_ACTION_OR_FOCUS_LOST"; // NOI18N;
-    public static final String TEXT_CHANGE_ON_FOCUS_LOST = "javax.swing.binding.SwingBindingSupport.TextChangeStrategy.CHANGE_ON_FOCUS_LOST"; // NOI18N;
+    public static final String TABLE_COLUMN_PARAMETER = "javax.swing.binding.ParameterKeys.COLUMN"; // NOI18N
+    public static final String TABLE_COLUMN_CLASS_PARAMETER = "javax.swing.binding.ParameterKeys.COLUMN_CLASS"; // NOI18N
+    public static final String EDITABLE_PARAMETER = "javax.swing.binding.ParameterKeys.EDITABLE"; // NOI18N
+    public static final String TEXT_CHANGE_STRATEGY = "javax.swing.binding.ParameterKeys.TEXT_CHANGE_STRATEGY"; // NOI18N
+    public static final String TEXT_CHANGE_ON_TYPE = "javax.swing.binding.TextChangeStrategy.ON_TYPE"; // NOI18N
+    public static final String TEXT_CHANGE_ON_ACTION_OR_FOCUS_LOST = "javax.swing.binding.TextChangeStrategy.ON_ACTION_OR_FOCUS_LOST"; // NOI18N;
+    public static final String TEXT_CHANGE_ON_FOCUS_LOST = "javax.swing.binding.TextChangeStrategy.ON_FOCUS_LOST"; // NOI18N;
     private RADComponent source;
     private RADComponent target;
     private String sourcePath;
@@ -137,8 +137,38 @@ public class MetaBinding {
         if (value == null) {
             parameters.remove(name);
         } else {
+            name = changeObsoleteName(name);
+            if (name.equals(MetaBinding.TEXT_CHANGE_STRATEGY)) {
+                value = changeObsoleteValue(value);
+            }
             parameters.put(name, value);
         }
+    }
+
+    private static String changeObsoleteName(String name) {
+        if (name.startsWith("javax.swing.binding.SwingBindingSupport")) { // NOI18N
+            if (name.equals("javax.swing.binding.SwingBindingSupport.TableColumnParameter")) { // NOI18N
+                name = MetaBinding.TABLE_COLUMN_PARAMETER;
+            } else if (name.startsWith("javax.swing.binding.SwingBindingSupport.TableColumnClassParameter")) { // NOI18N
+                name = MetaBinding.TABLE_COLUMN_CLASS_PARAMETER;
+            } else if (name.startsWith("javax.swing.binding.SwingBindingSupport.EditableParameter")) { // NOI18N
+                name = MetaBinding.EDITABLE_PARAMETER;
+            } else if (name.startsWith("javax.swing.binding.SwingBindingSupport.TextChangeStrategyParameter")) { // NOI18N
+                name = MetaBinding.TEXT_CHANGE_STRATEGY;
+            }
+        }
+        return name;
+    }
+
+    private static String changeObsoleteValue(String value) {
+        if (value.equals("javax.swing.binding.SwingBindingSupport.TextChangeStrategy.CHANGE_ON_TYPE")) { // NOI18N
+            value = MetaBinding.TEXT_CHANGE_ON_TYPE;
+        } else if (value.equals("javax.swing.binding.SwingBindingSupport.TextChangeStrategy.CHANGE_ON_ACTION_OR_FOCUS_LOST")) { // NOI18N
+            value = MetaBinding.TEXT_CHANGE_ON_ACTION_OR_FOCUS_LOST;
+        } else if (value.equals("javax.swing.binding.SwingBindingSupport.TextChangeStrategy.CHANGE_ON_FOCUS_LOST")) { // NOI18N
+            value = MetaBinding.TEXT_CHANGE_ON_FOCUS_LOST;
+        }
+        return value;
     }
 
     public String getParameter(String name) {
