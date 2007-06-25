@@ -62,14 +62,14 @@ public class ProjectDataSourceNodeChildren extends Children.Keys implements Node
          ProjectDataSourceTracker.addListener( nbProject,this);
                 
                 
-        // make sure insync has done it's stuff so that we know the datasources.
-//		if (Boolean.getBoolean("vwp.designer.jsf.loadModelSync")) { // NOI18N
-//			FacesModelSet.getInstance(nbProject);			
-//		} else {
-//			FacesModelSet.startModeling(nbProject);
-//		}
-		
-//        ProjectDataSourceTracker.addListener( nbProject,this);
+         // make sure insync has done it's stuff so that we know the datasources.
+//         if (Boolean.getBoolean("vwp.designer.jsf.loadModelSync")) { // NOI18N
+//             FacesModelSet.getInstance(nbProject);
+//         } else {
+//             FacesModelSet.startModeling(nbProject);
+//         }
+
+        ProjectDataSourceTracker.addListener( nbProject,this);
 
     }
 
