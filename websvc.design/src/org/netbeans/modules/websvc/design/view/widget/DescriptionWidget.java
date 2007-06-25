@@ -53,7 +53,7 @@ public class DescriptionWidget extends AbstractTitledWidget implements TabWidget
      * @param method
      */
     public DescriptionWidget(ObjectScene scene, MethodModel method) {
-        super(scene,0,RADIUS,0,null);
+        super(scene,0,RADIUS,1,BORDER_COLOR);
         this.method = method;
         model = method.getJavadoc();
         createContent();
@@ -65,7 +65,6 @@ public class DescriptionWidget extends AbstractTitledWidget implements TabWidget
     
     private void createContent() {
         populateContentWidget(getContentWidget());
-        getContentWidget().setBorder(BorderFactory.createEmptyBorder(1));
         getHeaderWidget().setLayout(new CenterRightLayout(8));
         headerLabelWidget = new ImageLabelWidget(getScene(), getIcon(), getTitle());
         headerLabelWidget.getLabelWidget().setFont(getScene().getFont().deriveFont(Font.BOLD));
@@ -99,7 +98,6 @@ public class DescriptionWidget extends AbstractTitledWidget implements TabWidget
     public Widget getComponentWidget() {
         if(tabComponent==null) {
             tabComponent = createContentWidget();
-            tabComponent.setBorder(BorderFactory.createEmptyBorder());
             populateContentWidget(tabComponent);
         }
         return tabComponent;

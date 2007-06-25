@@ -106,6 +106,7 @@ public class WsitWidget extends AbstractTitledWidget {
         advancedButton = new ButtonWidget(getScene(),
                 new AdvancedAction(service,implementationClass));
         advancedButton.setOpaque(true);
+        advancedButton.setRoundedBorder(advancedButton.BORDER_RADIUS, 4, 0, null);
         advancedButtonContainer.addChild(advancedButton);
         getContentWidget().addChild(advancedButtonContainer);
     }
@@ -118,7 +119,7 @@ public class WsitWidget extends AbstractTitledWidget {
                 CheckBoxWidget button = new CheckBoxWidget(getScene(), config.getDisplayName());
                 button.setAction(new ConfigWidgetAction(config));
                 button.setToolTipText(config.getDescription());
-                button.getButton().getLabelWidget().setFont(
+                button.getLabelWidget().setFont(
                         getScene().getFont().deriveFont(Font.BOLD));
                 button.setSelected(config.isSet()); //TODO: need to refresh the widget to reflect state
                 configButtons.addChild(button);

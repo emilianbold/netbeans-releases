@@ -58,7 +58,7 @@ public class ParametersWidget extends AbstractTitledWidget implements TabWidget 
      * @param method 
      */
     public ParametersWidget(ObjectScene scene, MethodModel method) {
-        super(scene,0,RADIUS,1,null);
+        super(scene,0,RADIUS,0,BORDER_COLOR);
         this.method = method;
         createContent();
     }
@@ -70,7 +70,7 @@ public class ParametersWidget extends AbstractTitledWidget implements TabWidget 
     private void createContent() {
         model = new ParametersTableModel(method);
         populateContentWidget(getContentWidget());
-        getContentWidget().setBorder(BorderFactory.createEmptyBorder(1));
+        getContentWidget().setBorder(BorderFactory.createEmptyBorder(0,1,1,1));
         getHeaderWidget().setLayout(new CenterRightLayout(8));
         headerLabelWidget = new ImageLabelWidget(getScene(), getIcon(), getTitle(), 
                 "("+method.getParams().size()+")");
@@ -117,7 +117,6 @@ public class ParametersWidget extends AbstractTitledWidget implements TabWidget 
     public Widget getComponentWidget() {
         if(tabComponent==null) {
             tabComponent = createContentWidget();
-            tabComponent.setBorder(BorderFactory.createEmptyBorder());
             populateContentWidget(tabComponent);
         }
         return tabComponent;

@@ -52,7 +52,7 @@ public class OutputWidget extends AbstractTitledWidget implements TabWidget{
      * @param method
      */
     public OutputWidget(ObjectScene scene, MethodModel method) {
-        super(scene,0,RADIUS,1,null);
+        super(scene,0,RADIUS,0,BORDER_COLOR);
         this.method = method;
         createContent();
     }
@@ -96,11 +96,12 @@ public class OutputWidget extends AbstractTitledWidget implements TabWidget{
     
     public Widget getComponentWidget() {
         if(tabComponent==null) {
+            tabComponent = createContentWidget();
             LabelWidget returnWidget = new LabelWidget(getScene(), method.isOneWay()?
                 NbBundle.getMessage(OperationWidget.class, "LBL_ReturnTypeNone"):
                 NbBundle.getMessage(OperationWidget.class, "LBL_ReturnType", method.getResult().getResultType()));
             returnWidget.setAlignment(LabelWidget.Alignment.CENTER);
-            tabComponent = returnWidget;
+            tabComponent.addChild(returnWidget);
         }
         return tabComponent;
     }

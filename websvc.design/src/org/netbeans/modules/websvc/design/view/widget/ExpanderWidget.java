@@ -25,7 +25,6 @@ import java.awt.event.ActionEvent;
 import java.util.Map;
 import java.util.WeakHashMap;
 import javax.swing.AbstractAction;
-import org.netbeans.api.visual.border.BorderFactory;
 import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.Scene;
 
@@ -69,8 +68,8 @@ public class ExpanderWidget extends ButtonWidget {
             boolean expanded) {
         super(scene, expanded ? IMAGE_COLLAPSE : IMAGE_EXPAND);
         this.expandable = expandable;
-        getButton().setBorder(BorderFactory.createEmptyBorder(0, 4));
-        LabelWidget lbl = getButton().getLabelWidget();
+        setRoundedBorder(0, 0, 4, null);
+        LabelWidget lbl = getLabelWidget();
         lbl.setOrientation(LabelWidget.Orientation.ROTATE_90);
         lbl.setFont(scene.getFont().deriveFont(Font.BOLD,
                 scene.getFont().getSize2D()*1.5f));
@@ -107,7 +106,7 @@ public class ExpanderWidget extends ButtonWidget {
     public void setExpanded(boolean expanded) {
         // Save the state of the expandable in case it gets recreated later.
         expandedCache.put(expandable.hashKey(), Boolean.valueOf(expanded));
-        getButton().setLabel(expanded?IMAGE_COLLAPSE:IMAGE_EXPAND);
+        setLabel(expanded?IMAGE_COLLAPSE:IMAGE_EXPAND);
     }
 
 }

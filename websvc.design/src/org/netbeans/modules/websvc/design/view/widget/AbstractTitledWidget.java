@@ -116,6 +116,7 @@ public abstract class AbstractTitledWidget extends Widget implements ExpandableW
         Widget widget = new Widget(getScene());
         widget.setLayout(LayoutFactory.createVerticalFlowLayout(
                 LayoutFactory.SerialAlignment.JUSTIFY, cgap));
+        widget.setBorder(BorderFactory.createEmptyBorder(cgap));
         return widget;
     }
 

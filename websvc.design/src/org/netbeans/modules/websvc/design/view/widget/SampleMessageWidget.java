@@ -148,9 +148,10 @@ public class SampleMessageWidget extends AbstractTitledWidget {
         buttons.setLayout(LayoutFactory.createHorizontalFlowLayout(
                 LayoutFactory.SerialAlignment.JUSTIFY, 8));
         getHeaderWidget().addChild(buttons);
-        final ButtonWidget closeButton = new ButtonWidget(getScene(), "X");
-        closeButton.getButton().setLabelForeground(type.getBorderColor());
-        closeButton.getButton().setBorder(BorderFactory.createEmptyBorder(2,0));
+        final ButtonWidget closeButton = new ButtonWidget(getScene(), "x");
+        closeButton.setLabelForeground(new Color(255,95,95));
+        closeButton.getLabelWidget().setFont(scene.getFont().deriveFont(Font.BOLD));
+        closeButton.setRoundedBorder(0, 4, 0,type.getBorderColor());
         closeButton.setAction(new AbstractAction() {
             public void actionPerformed(ActionEvent arg0) {
                 SampleMessageWidget.this.removeFromParent();

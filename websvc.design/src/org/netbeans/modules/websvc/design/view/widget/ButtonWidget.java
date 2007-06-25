@@ -37,7 +37,6 @@ import javax.swing.ImageIcon;
 import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.action.SelectProvider;
 import org.netbeans.api.visual.border.Border;
-import org.netbeans.api.visual.border.BorderFactory;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.model.ObjectState;
 import org.netbeans.api.visual.widget.Scene;
@@ -46,11 +45,10 @@ import org.netbeans.api.visual.widget.Widget;
 /**
  * @author Ajit Bhate
  */
-public class ButtonWidget extends Widget implements PropertyChangeListener{
+public class ButtonWidget extends ImageLabelWidget implements PropertyChangeListener{
     
-    private ImageLabelWidget button;
     private Action action;
-    private Insets margin = new Insets(3, 3, 3, 3);
+    public static int BORDER_RADIUS = 3;
     
     /**
      *
@@ -79,7 +77,12 @@ public class ButtonWidget extends Widget implements PropertyChangeListener{
      * @param text
      */
     public ButtonWidget(Scene scene, Image image, String text) {
-        this(scene, new ImageLabelWidget(scene,image,text));
+        super(scene, image ,text);
+        setRoundedBorder(BORDER_RADIUS,0,0,null);
+        setLayout(LayoutFactory.createHorizontalFlowLayout(
+                LayoutFactory.SerialAlignment.CENTER, 4));
+        getActions().addAction(ActionFactory.createSelectAction(ButtonSelectProvider.DEFAULT));
+        getActions().addAction(scene.createWidgetHoverAction());
     }
     
     
@@ -89,41 +92,23 @@ public class ButtonWidget extends Widget implements PropertyChangeListener{
      * @param action
      */
     public ButtonWidget(Scene scene, Action action) {
-        this(scene, createImageLabelWidget(scene,action));
+        this(scene, null, getActionName(action));
         setAction(action);
     }
     
-    
     /**
-     *
-     * @param scene
-     * @param button
+     * Sets the button border as rounded border.
+     * @param radius radius of the rounded border. 
+     *          If radius is &lt;=0 then rectangular border will be created.
+     * @param hgap horizontal gap
+     * @param vgap vertical gap
+     * @param borderColor color of for the border. If null default color will be used.
      */
-    private ButtonWidget(Scene scene, ImageLabelWidget button) {
-        super(scene);
-        this.button = button;
-        addChild(button);
-        setBorder(new ButtonBorder(this,margin));
-        button.setBorder(BorderFactory.createEmptyBorder(4));
-        setLayout(LayoutFactory.createHorizontalFlowLayout(
-                LayoutFactory.SerialAlignment.CENTER, 4));
-        getActions().addAction(ActionFactory.createSelectAction(ButtonSelectProvider.DEFAULT));
-        getActions().addAction(scene.createWidgetHoverAction());
+    public void setRoundedBorder(int radius, int hgap, int vgap, Color borderColor) {
+        setBorder(new ButtonBorder(this,new Insets(radius+vgap,radius+hgap,
+                radius+vgap,radius+hgap),radius,borderColor));
     }
-    
-    
-    protected Insets getMargin() {
-        return margin;
-    }
-    
-    /**
-     *
-     * @return
-     */
-    public ImageLabelWidget getButton() {
-        return button;
-    }
-    
+
     /**
      *
      * @param action
@@ -146,47 +131,12 @@ public class ButtonWidget extends Widget implements PropertyChangeListener{
     }
     
     /**
-     *
-     * @return
-     */
-    public String getText() {
-        return getButton().getLabel();
-    }
-    
-    
-    /**
-     *
-     * @return
-     */
-    public Image getIcon() {
-        return getButton().getImage();
-    }
-    
-    
-    /**
-     *
-     * @param text
-     */
-    public void setText(String text) {
-        getButton().setLabel(text);
-    }
-    
-    
-    /**
-     *
-     * @param image
-     */
-    public void setImage(Image image) {
-        getButton().setImage(image);
-    }
-    
-    /**
      * Changed method name so that it doesnt clash with Widget.setEnabled.
      * @param v
      */
     public void setButtonEnabled(boolean v) {
-        getButton().setEnabled(v);
-        getButton().setPaintAsDisabled(!v);
+        setEnabled(v);
+        setPaintAsDisabled(!v);
         revalidate();
         repaint();
     }
@@ -199,7 +149,7 @@ public class ButtonWidget extends Widget implements PropertyChangeListener{
      * @return
      */
     public boolean isButtonEnabled() {
-        return getButton().isEnabled();
+        return isEnabled();
     }
     
     /**
@@ -232,20 +182,25 @@ public class ButtonWidget extends Widget implements PropertyChangeListener{
         return true;
     }
     
-    private static ImageLabelWidget createImageLabelWidget(Scene scene, Action action) {
-        String label = (String)action.getValue(Action.NAME);
-        //        Object icon = action.getValue(Action.SMALL_ICON);
-        //        Image image = icon instanceof ImageIcon ? ((ImageIcon)icon).getImage(): null;
-        return new ImageLabelWidget(scene,null,label);
+    private static String getActionName(Action action) {
+        return (String)action.getValue(Action.NAME);
     }
     
+    private static Image getActionIcon(Action action) {
+        Object icon = action.getValue(Action.SMALL_ICON);
+        return (icon instanceof ImageIcon ? ((ImageIcon)icon).getImage(): null);
+    }
     protected static class ButtonBorder implements Border {
         private ButtonWidget button;
+        private Color borderColor;
         private Insets insets;
+        private int radius;
         
-        public ButtonBorder(ButtonWidget button, Insets insets) {
+        public ButtonBorder(ButtonWidget button, Insets insets, int radius, Color borderColor) {
             this.button = button;
             this.insets = insets;
+            this.radius = radius;
+            this.borderColor = borderColor!=null?borderColor:BORDER_COLOR;
         }
         
         public Insets getInsets() {
@@ -256,7 +211,7 @@ public class ButtonWidget extends Widget implements PropertyChangeListener{
             Paint oldPaint = g2.getPaint();
             
             RoundRectangle2D buttonRect = new RoundRectangle2D.Double
-                    (rect.x+0.5f, rect.y+0.5f, rect.width-1f, rect.height-1f, 6, 6);
+                    (rect.x+0.5f, rect.y+0.5f, rect.width-1f, rect.height-1f, radius*2, radius*2);
             if (button.isButtonEnabled()) {
                 
                 if (button.getState().isWidgetAimed()) {
@@ -272,10 +227,9 @@ public class ButtonWidget extends Widget implements PropertyChangeListener{
                 
                 g2.setPaint(BORDER_COLOR);
                 if (button.getState().isHovered()) {
-                    g2.setPaint(BORDER_COLOR);
                     Area s = new Area(buttonRect);
                     s.subtract(new Area(new RoundRectangle2D.Double(rect.x + 1.75f, rect.y + 1.75f,
-                            rect.width - 3f, rect.height - 3f, 6, 6)));
+                            rect.width - 3f, rect.height - 3f, radius*2, radius*2)));
                     g2.fill(s);
                 }
                 g2.draw(buttonRect);

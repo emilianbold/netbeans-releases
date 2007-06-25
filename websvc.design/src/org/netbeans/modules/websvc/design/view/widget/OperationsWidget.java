@@ -120,10 +120,12 @@ public class OperationsWidget extends AbstractTitledWidget {
         
         ButtonWidget addButton = new ButtonWidget(getScene(), addAction);
         addButton.setOpaque(true);
+        addButton.setRoundedBorder(addButton.BORDER_RADIUS, 4, 0, null);
         
         removeAction = new RemoveOperationAction(service);
         ButtonWidget removeButton = new ButtonWidget(getScene(), removeAction);
         removeButton.setOpaque(true);
+        removeButton.setRoundedBorder(removeButton.BORDER_RADIUS, 4, 0, null);
         
         buttons.addChild(addButton);
         buttons.addChild(removeButton);

@@ -32,11 +32,9 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.action.TextFieldInplaceEditor;
-import org.netbeans.api.visual.border.BorderFactory;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.model.ObjectScene;
 import org.netbeans.api.visual.widget.LabelWidget;
-import org.netbeans.api.visual.widget.SeparatorWidget;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.modules.websvc.design.javamodel.MethodModel;
@@ -86,7 +84,7 @@ public class OperationWidget extends AbstractTitledWidget {
      * @param operation
      */
     public OperationWidget(ObjectScene scene, ServiceModel serviceModel, Service service, MethodModel operation) {
-        super(scene,RADIUS,BORDER_COLOR);
+        super(scene,RADIUS,RADIUS,RADIUS/2,BORDER_COLOR);
         this.service = service;
         this.operation=operation;
         this.serviceModel = serviceModel;
@@ -166,25 +164,19 @@ public class OperationWidget extends AbstractTitledWidget {
         getHeaderWidget().addChild(buttons);
 
         getContentWidget().setLayout(LayoutFactory.createCardLayout(getContentWidget()));
-        getContentWidget().setBorder(BorderFactory.createEmptyBorder(0,0,RADIUS,0));
 
         listWidget = new Widget(getScene());
-        listWidget.setLayout(LayoutFactory.createVerticalFlowLayout(LayoutFactory.SerialAlignment.JUSTIFY, 0));
-        listWidget.setBorder(BorderFactory.createLineBorder(1, BORDER_COLOR_BLACK));
+        listWidget.setLayout(LayoutFactory.createVerticalFlowLayout(LayoutFactory.SerialAlignment.JUSTIFY, RADIUS/2));
         inputWidget = new ParametersWidget(getObjectScene(),operation);
         outputWidget = new OutputWidget(getObjectScene(),operation);
         faultWidget = new FaultsWidget(getObjectScene(),operation);
         descriptionWidget = new DescriptionWidget(getObjectScene(),operation);
         listWidget.addChild(inputWidget);
-        listWidget.addChild(new SeparatorWidget(getScene(),SeparatorWidget.Orientation.HORIZONTAL));
         listWidget.addChild(outputWidget);
-        listWidget.addChild(new SeparatorWidget(getScene(),SeparatorWidget.Orientation.HORIZONTAL));
         listWidget.addChild(faultWidget);
-        listWidget.addChild(new SeparatorWidget(getScene(),SeparatorWidget.Orientation.HORIZONTAL));
         listWidget.addChild(descriptionWidget);
 
         tabbedWidget = new TabbedPaneWidget(getScene());
-        tabbedWidget.setBorder(BorderFactory.createEmptyBorder(RADIUS,0,0,0));
         tabbedWidget.addTab(inputWidget);
         tabbedWidget.addTab(outputWidget);
         tabbedWidget.addTab(faultWidget);

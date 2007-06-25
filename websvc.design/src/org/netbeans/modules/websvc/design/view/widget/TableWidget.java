@@ -37,7 +37,7 @@ public class TableWidget extends Widget{
     
     private static final Color HEADER_COLOR =  new Color(217,235,255);
     private static final Color CELL_COLOR =  Color.WHITE;
-    public static final Color BORDER_COLOR =  Color.BLACK;
+    public static final Color BORDER_COLOR =  new Color(169, 197, 235);
     private TableModel model;
     private final static int COLUMN_WIDTH = 100;
 

@@ -32,7 +32,7 @@ import org.netbeans.modules.websvc.design.view.layout.TableLayout;
  */
 public class TabbedPaneWidget extends Widget {
     
-    private static final Color TAB_BORDER_COLOR = Color.BLACK;
+    private static final Color TAB_BORDER_COLOR = new Color(169, 197, 235);
     private static final Color SELECTED_TAB_COLOR = Color.WHITE;
     private static final Color TAB_COLOR = new Color(232,232,232);
         
@@ -78,9 +78,9 @@ public class TabbedPaneWidget extends Widget {
             public void actionPerformed(ActionEvent arg0) {
                 if(LayoutFactory.getActiveCard(contentWidget) != tabComponent) {
                     if(selectedTab!=null)
-                        selectedTab.getButton().getLabelWidget().setFont(getScene().getFont());
+                        selectedTab.getLabelWidget().setFont(getScene().getFont());
                     selectedTab = tab;
-                    selectedTab.getButton().getLabelWidget().setFont(getScene().getFont().deriveFont(Font.BOLD));
+                    selectedTab.getLabelWidget().setFont(getScene().getFont().deriveFont(Font.BOLD));
                     LayoutFactory.setActiveCard(contentWidget, tabComponent);
                     getScene().validate();
                 }
@@ -90,7 +90,7 @@ public class TabbedPaneWidget extends Widget {
         tabs.setLayout(new TableLayout(tabs.getChildren().size(), 0, 0, 20));
         if(selectedTab==null) {
             selectedTab = tab;
-            selectedTab.getButton().getLabelWidget().setFont(getScene().getFont().deriveFont(Font.BOLD));
+            selectedTab.getLabelWidget().setFont(getScene().getFont().deriveFont(Font.BOLD));
             LayoutFactory.setActiveCard(contentWidget, tabComponent);
         }
     }
