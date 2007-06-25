@@ -31,6 +31,8 @@ import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.web.jsf.JSFUtils;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -414,6 +416,45 @@ private void jtFolderKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_
           wizardDescriptor.putProperty("WizardPanel_errorMessage",                                  // NOI18N
                 NbBundle.getMessage(JSFConfigurationPanelVisual.class, "MSG_URLPatternIsNotValid"));
           return false;
+        }
+        
+        if (rbNewLibrary.isSelected()) {
+            String folder = jtFolder.getText().trim();
+            String version = jtVersion.getText().trim();
+            if (folder.length() <= 0) {
+                wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(JSFConfigurationPanelVisual.class, "LBL_EmptyJSFFolder")); //NOI18N
+                return false;
+            }
+            File jsfFolder = new File(folder);
+            if (!jsfFolder.exists()) {
+                wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(JSFConfigurationPanelVisual.class, "LBL_NonExistingJSFFolder")); //NOI18N
+                return false;
+            }
+            if (!jsfFolder.isDirectory()) {
+                wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(JSFConfigurationPanelVisual.class, "LBL_NotJSFFolder")); //NOI18N
+                return false;
+            }
+            FileObject fo = FileUtil.toFileObject(jsfFolder);
+            FileObject[] ch = fo.getChildren();
+            int counter = 0;
+            for (int i = 0; i < ch.length; i++) {
+                FileObject child = ch[i];
+                if (child.getName().equalsIgnoreCase("jsf-api") || child.getName().equalsIgnoreCase("jsf-impl")) //NOI18N
+                    counter++;
+            }
+            if (counter != 2) {
+                wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(JSFConfigurationPanelVisual.class, "LBL_NotValidJSFFolder")); //NOI18N
+                return false;
+            }
+            if (version.length() <= 0) {
+                wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(JSFConfigurationPanelVisual.class, "LBL_EmptyJSFVersion")); //NOI18N
+                return false;
+            }
+            Library lib = JSFUtils.getJSFLibrary(version);
+            if (lib != null) {
+                wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(JSFConfigurationPanelVisual.class, "LBL_AlreadyExists")); //NOI18N
+                return false;
+            }
         }
         
         if (!webModule25Version && jsfLibraries.size() <= 0) {
