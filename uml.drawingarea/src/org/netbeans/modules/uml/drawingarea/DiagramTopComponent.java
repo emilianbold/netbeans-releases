@@ -483,7 +483,9 @@ public class DiagramTopComponent extends CloneableTopComponent
     
     public boolean canClose()
     {
-        if (!getDrawingAreaControl().getIsDirty())
+        // 106147, no need to popup save dialog in case the diagram is to be deleted
+        if (!getDrawingAreaControl().getIsDirty() || 
+             getDrawingAreaControl().getGraphWindow() == null)
             return true;
         
         DiagramDataObject obj = getDiagramDO();
