@@ -20,8 +20,14 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.event.UndoableEditEvent;
+import javax.swing.event.UndoableEditListener;
+import javax.swing.undo.AbstractUndoableEdit;
+import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoManager;
+import javax.swing.undo.UndoableEdit;
+import javax.swing.undo.UndoableEditSupport;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.MoveRefactoring;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
@@ -68,7 +74,9 @@ public class XMLRefactoringTransaction implements Transaction {
     boolean isLocal = false;
     ModelSource movedTargetModelSource;
     Map<Model, Set<RefactoringElementImplementation>> modelsInRefactoring;
-    
+    private boolean commited = false;
+    private UndoManager genericChangeUndoManager;
+        
     
     
     /**
@@ -88,10 +96,17 @@ public class XMLRefactoringTransaction implements Transaction {
      * Commits the refactoring changes for all the models
      */   
     public void commit() {
-        //System.out.println("COMMIT called");
+        //when commit is called, there is no way of knowing if its for refactoring or a redo
+        //since for rename redo, we use undoManagers, keep a flag and call redo when appropriate
+      //  System.out.println("COMMIT called");
         try {
-           process();
-           } catch (IOException ioe) {
+            if(commited){
+               redo();
+            }  else{
+               commited=true;
+               process();
+             } 
+        }catch (IOException ioe) {
             String msg = ioe.getMessage();
             NotifyDescriptor nd = new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE);
             DialogDisplayer.getDefault().notify(nd);
@@ -107,8 +122,8 @@ public class XMLRefactoringTransaction implements Transaction {
         UndoRedoProgress progress = new UndoRedoProgress();
 	progress.start();
 	try {
-	    if(modelsInRefactoring == null)
-                modelsInRefactoring = getModels();
+	  if(modelsInRefactoring == null)
+              modelsInRefactoring = getModels();
             Set<Model> models = modelsInRefactoring.keySet();
             
             Set<Model> excludedFromSave = RefactoringUtil.getDirtyModels(models, targetModel);
@@ -120,19 +135,13 @@ public class XMLRefactoringTransaction implements Transaction {
                }
             }
             
-            //is it undo of FileRenameRefactoring??
-            if (target instanceof Model && ( (request instanceof RenameRefactoring) || (request instanceof MoveRefactoring) ) ){
-                undoRenameFile();
+           if (genericChangeUndoManager != null && genericChangeUndoManager.canUndo()) {
+                genericChangeUndoManager.undo();
             }
             
             if(! isLocal)
                 RefactoringUtil.save(models, targetModel, excludedFromSave);
-          
-            
-      } catch (IOException ioe) {
-            String msg = ioe.getMessage();
-            NotifyDescriptor nd = new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE);
-            DialogDisplayer.getDefault().notify(nd);
+         
       } finally {
 	   progress.stop();
 	}
@@ -152,24 +161,27 @@ public class XMLRefactoringTransaction implements Transaction {
     
     private synchronized void process() throws IOException {
         
-         if(modelsInRefactoring == null)
-             modelsInRefactoring = getModels();
+       if(modelsInRefactoring == null)
+           modelsInRefactoring = getModels();
         Set<Model> models = modelsInRefactoring.keySet();
         //put this code in shared utils
         Set<Model> excludedFromSave = RefactoringUtil.getDirtyModels(models, targetModel);
+        GeneralChangeExecutor ce = new GeneralChangeExecutor();
         
         try {            
             if (! isLocal) {
-                if (target instanceof Model &&  ( (request instanceof RenameRefactoring) || (request instanceof MoveRefactoring)) ) {
+                if(ce.canChange(request.getClass(), target)) {
+                //if (target instanceof Model &&  ( (request instanceof RenameRefactoring) || (request instanceof MoveRefactoring)) ) {
                     //file refactoring
-                    refactorFile(models);
+                    addUndoableListener(ce);
+                    ce.doChange(request);
                 }else {
                     addUndoableRefactorListener(targetModel);
                 }
               doRefactorTarget();
                
                for (Model model:models) {
-                    addUndoableRefactorListener(model);
+                   addUndoableRefactorListener(model);
                 }
                 
                 for (XMLRefactoringPlugin plugin : plugins) {
@@ -208,6 +220,7 @@ public class XMLRefactoringTransaction implements Transaction {
         } finally {
             if (! isLocal) {
                 removeRefactorUndoEventListeners();
+                removeUndoableListener(ce);
                 
             }
         }
@@ -239,11 +252,11 @@ public class XMLRefactoringTransaction implements Transaction {
     
      private synchronized void removeRefactorUndoEventListeners() {
         if (undoManagers == null) return;
-        for(Model model : undoManagers.keySet()) {
+        for(Model model : undoManagers.keySet()) {            
             model.removeUndoableRefactorListener(undoManagers.get(model));
         }
-       
-            
+        
+                  
     }
      
       public void doRefactorTarget() throws IOException {
@@ -289,7 +302,10 @@ public class XMLRefactoringTransaction implements Transaction {
         return true;
     }
        
-       private void refactorFile(Set<Model> all) throws IOException {
+       private void refactorFile() throws IOException {
+           if(modelsInRefactoring == null)
+               modelsInRefactoring = getModels();
+           Set<Model> all = modelsInRefactoring.keySet();
            FileObject referencedFO = (FileObject) ((Model)target).getModelSource().getLookup().lookup(FileObject.class);
            assert referencedFO != null : "Failed to lookup for file object in model source"; //NOI18N
            RefactoringUtil.saveTargetFile((Model)target, all);
@@ -312,7 +328,7 @@ public class XMLRefactoringTransaction implements Transaction {
        private void refreshCatalogModel( FileObject referencedFO) {
         //   Map<Model, Set<RefactoringElementImplementation>> modelsInRefactoring = SharedUtils.getModelMap(elements);
            if(modelsInRefactoring == null) 
-               modelsInRefactoring = getModels();
+                modelsInRefactoring = getModels();
            Set<Model> models = modelsInRefactoring.keySet();
            for (Model ug : models) {
             FileObject referencingFO = ug.getModelSource().getLookup().lookup(FileObject.class);
@@ -452,6 +468,137 @@ public class XMLRefactoringTransaction implements Transaction {
         }
         return results;
     }
-       
+     
+     
+     public synchronized void redo() throws CannotRedoException {
+             
+            if(modelsInRefactoring == null)
+              modelsInRefactoring = getModels();
+            Set<Model> models = modelsInRefactoring.keySet();
+            
+            Set<Model> excludedFromSave = RefactoringUtil.getDirtyModels(models, targetModel);
+            if(undoManagers != null ){
+                for (UndoManager um : undoManagers.values()) {
+                    while (um.canRedo()) {
+                        um.redo();
+                    }
+                }
+            }
+            if (genericChangeUndoManager != null && genericChangeUndoManager.canRedo()) {
+                genericChangeUndoManager.redo();
+            }
+
+            if (!isLocal) {
+                RefactoringUtil.save(models, targetModel, excludedFromSave);
+            }
+        
+    }
+     
+     public synchronized boolean canRedo() {
+        if (undoManagers == null || undoManagers.isEmpty()) {
+            return false;
+        }
+        for (UndoManager um : undoManagers.values()) {
+            if (! um.canRedo()) {
+                return false; 
+            }
+        }
+        if (genericChangeUndoManager != null && ! genericChangeUndoManager.canRedo()) {
+            return false;
+        }
+        return true;
+    }
+     
+    private synchronized void addUndoableListener(GeneralChangeExecutor executor) {
+        genericChangeUndoManager = new UndoManager();
+        executor.addUndoableEditListener(genericChangeUndoManager);
+    }
+    
+    private synchronized void removeUndoableListener(GeneralChangeExecutor exec) {
+        if (! (exec instanceof GeneralChangeExecutor) || 
+            genericChangeUndoManager == null || exec == null) {
+            return;
+        }
+        
+        exec.removeUndoableEditListener(genericChangeUndoManager);
+    } 
+     
+   class GeneralChangeExecutor  {
+    private UndoableEditSupport ues;
+    
+    /** Creates a new instance of GenericChangeExecutor */
+    public GeneralChangeExecutor() {
+        ues = new UndoableEditSupport(this);
+    }
+    
+    public <T extends AbstractRefactoring> boolean canChange(Class<T> changeType, Referenceable target) {
+        if ( (changeType == RenameRefactoring.class || changeType == MoveRefactoring.class) && target instanceof Model) {
+            return true;
+        }
+        return false;
+    }
+    
+    /**
+     * Perform the change specified by the refactor request.  Any errors that would
+     * fail the overall refactoring should be reported throught #RefactoringRequest.addError
+     * Implementation should quietly ignore unsupported refactoring type.
+     */
+    public void doChange(AbstractRefactoring request) throws IOException {
+        if ((request instanceof RenameRefactoring) || (request instanceof MoveRefactoring) ) {
+            refactorFile();
+            FileRenameUndoable ue = new FileRenameUndoable(request);
+            fireUndoEvent(ue);
+        }
+    }
+    
+    
+    
+    public synchronized void addUndoableEditListener(UndoableEditListener l) {
+        ues.addUndoableEditListener(l);
+    }
+    
+    public synchronized void removeUndoableEditListener(UndoableEditListener l) {
+        ues.removeUndoableEditListener(l);
+    }
+    
+    protected void fireUndoEvent(UndoableEdit edit) {
+	    UndoableEditEvent ue = new UndoableEditEvent(this, edit);
+	    for (UndoableEditListener l:ues.getUndoableEditListeners()) {
+            l.undoableEditHappened(ue);
+	    }
+    }
+    
+     class FileRenameUndoable extends AbstractUndoableEdit {
+        private static final long serialVersionUID = -1L;
+        private AbstractRefactoring request;
+        
+        public FileRenameUndoable(AbstractRefactoring request) {
+            this.request = request;
+        }
+        
+        public void undo() throws CannotUndoException {
+            try {
+                undoRenameFile();
+                super.undo();
+            } catch(IOException ioe) {
+                CannotUndoException cue = new CannotUndoException();
+                cue.initCause(ioe);
+                throw cue;
+            }
+        }
+        
+        public void redo() throws CannotRedoException {
+            try {
+                refactorFile();
+                super.redo();
+            } catch(IOException ioe) {
+                CannotUndoException cue = new CannotUndoException();
+                cue.initCause(ioe);
+                throw cue;
+            }
+        }
+    }
+}
+
        
   }
