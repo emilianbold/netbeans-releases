@@ -44,10 +44,10 @@ public class MethodTest4 extends GeneratorTestMDRCompat {
         suite.addTest(new MethodTest4("testAddFirstThrows"));
         suite.addTest(new MethodTest4("testAddSecondThrows"));
         suite.addTest(new MethodTest4("testAddThirdThrows"));
-        suite.addTest(new MethodTest4("testRemoveFirstThrows"));
+        /*suite.addTest(new MethodTest4("testRemoveFirstThrows"));
         suite.addTest(new MethodTest4("testRemoveLastThrows"));
         suite.addTest(new MethodTest4("testRemoveAllThrows"));
-/*        suite.addTest(new MethodTest4("testAnnotationAndThrows"));
+        suite.addTest(new MethodTest4("testAnnotationAndThrows"));
         suite.addTest(new MethodTest4("testRemoveAnnAndAddThrows"));
         suite.addTest(new MethodTest4("testAddTypeParam"));*/
         return suite;
