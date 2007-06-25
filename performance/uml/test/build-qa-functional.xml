@@ -146,6 +146,7 @@
     <!-- Copy and unzip all UML test projects from close source path, will be used for Performance tests -->
     <target name="copy_unzip_uml_test_projects">
         <unzip src="${nbextra.dir}/qa/projectized/jEdit-Model.zip" dest="${xtest.tmpdir}/"/>
+        <unzip src="${nbextra.dir}/qa/projectized/jEdit-Model-open.zip" dest="${xtest.tmpdir}/"/>
     </target>
 
 </project>
