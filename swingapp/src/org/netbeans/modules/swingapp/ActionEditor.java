@@ -164,6 +164,7 @@ public class ActionEditor extends PropertyEditorSupport implements FormAwareEdit
             ActionManager.initActionFromSource(action, sourceFile);
         }
         panel.updatePanel(actionMap, action, scopeMap, getComponentName(), srcFile);
+        panel.setMode(ActionPropertyEditorPanel.Mode.Form);
         return panel;
     }
     
