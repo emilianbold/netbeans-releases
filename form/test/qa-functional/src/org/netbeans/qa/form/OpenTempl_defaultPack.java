@@ -255,7 +255,7 @@ public class OpenTempl_defaultPack extends JellyTestCase {
         testFormFile("NewBeanForm");
         //Bug in generating of new Bean Form template 95403
         //testJavaFile("NewBeanForm");
-        
+        Thread.sleep(1000);
         deleteProject();
     }
     
@@ -266,7 +266,7 @@ public class OpenTempl_defaultPack extends JellyTestCase {
                     getWorkDir().getParentFile().getAbsolutePath() + File.separatorChar + DATA_PROJECT_NAME +  File.separatorChar + "src" + File.separatorChar + formfile + ".form")
                     );
             // System.out.println("reffile: " + this.getName()+".ref");
-            
+           
         } catch (Exception e) {
             fail("Fail during create reffile: " + e.getMessage());
         }
@@ -291,7 +291,8 @@ public class OpenTempl_defaultPack extends JellyTestCase {
             pokus = pokus.substring(0, start )+ pokus.substring(end +2);
             getRef().print(pokus);
             // System.out.println("reffile: " + this.getName()+".ref");
-            
+            log("Java reference file was created");
+        
         } catch (Exception e) {
             fail("Fail during create reffile: " + e.getMessage());
         }
