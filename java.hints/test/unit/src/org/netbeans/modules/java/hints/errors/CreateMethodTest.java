@@ -96,6 +96,14 @@ public class CreateMethodTest extends ErrorHintsTestBase {
                        "package test; import java.util.Collection; public class Test {public static void test() {fff(getStrings());} private static void fff(Collection<String> strings) { throw new UnsupportedOperationException(\"Not yet implemented\"); } private static Collection<String> getStrings() {return null;}}");
     }
     
+    public void testCreateMethod74129() throws Exception {
+        performFixTest("test/Test.java",
+                       "package test; public class Test {public void test() {TopLevel.fff();}} class TopLevel {}",
+                       89 - 25,
+                       "CreateMethodFix:fff()void:test.TopLevel",
+                       "package test; public class Test {public void test() {TopLevel.fff();}} class TopLevel { static void fff() { throw new UnsupportedOperationException(\"Not yet implemented\"); } }");
+    }
+    
     protected List<Fix> computeFixes(CompilationInfo info, int pos, TreePath path) throws IOException {
         List<Fix> fixes = new CreateElement().analyze(info, pos);
         List<Fix> result=  new LinkedList<Fix>();
