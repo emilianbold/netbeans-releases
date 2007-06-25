@@ -77,6 +77,8 @@ public class NetworkProblemPanel extends javax.swing.JPanel {
         spMessage = new javax.swing.JScrollPane();
         taMessage = new javax.swing.JTextArea();
 
+        setMinimumSize(new java.awt.Dimension(250, 200));
+
         spTitle.setBorder(null);
 
         taTitle.setEditable(false);
@@ -84,7 +86,7 @@ public class NetworkProblemPanel extends javax.swing.JPanel {
         taTitle.setRows(2);
         taTitle.setText(org.openide.util.NbBundle.getMessage(NetworkProblemPanel.class, "NetworkProblemPanel_taTitle_Text")); // NOI18N
         taTitle.setWrapStyleWord(true);
-        taTitle.setBorder(null);
+        taTitle.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
         spTitle.setViewportView(taTitle);
 
         spMessage.setBorder(null);
@@ -94,23 +96,22 @@ public class NetworkProblemPanel extends javax.swing.JPanel {
         taMessage.setRows(3);
         taMessage.setText(org.openide.util.NbBundle.getMessage(NetworkProblemPanel.class, "NetworkProblemPanel_taMessage_Text")); // NOI18N
         taMessage.setWrapStyleWord(true);
-        taMessage.setBorder(null);
+        taMessage.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
         spMessage.setViewportView(taMessage);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(spMessage, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 246, Short.MAX_VALUE)
-            .add(spTitle, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 246, Short.MAX_VALUE)
+            .add(spTitle)
+            .add(spMessage, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 250, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(spTitle, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 36, Short.MAX_VALUE)
+                .add(spTitle, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 41, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(spMessage)
-                .addContainerGap())
+                .add(spMessage, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 153, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
     
@@ -161,7 +162,7 @@ public class NetworkProblemPanel extends javax.swing.JPanel {
 
         DialogDescriptor descriptor = new DialogDescriptor(
              new NetworkProblemPanel (ex),
-             getBundle ("CTL_Error"),
+             getBundle ("CTL_Warning"),
              true,                                  // Modal
              new Object [] {continueButton, cancelButton}, // Option list
              continueButton,                         // Default
@@ -177,7 +178,7 @@ public class NetworkProblemPanel extends javax.swing.JPanel {
             }
         });
         
-        descriptor.setMessageType (NotifyDescriptor.ERROR_MESSAGE);
+        descriptor.setMessageType (NotifyDescriptor.WARNING_MESSAGE);
         descriptor.setAdditionalOptions (new Object [] {showProxyOptions});
         descriptor.setClosingOptions (new Object [] {continueButton, cancelButton});
         return descriptor;
