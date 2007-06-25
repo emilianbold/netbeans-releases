@@ -24,7 +24,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.net.SocketException;
 import java.net.URL;
 import java.net.URL;
 import java.util.logging.Level;
@@ -112,6 +111,7 @@ public class AutoupdateCatalogCache {
     
     private void copy (URL sourceUrl, File dest) throws IOException {
         err.log(Level.INFO, "Processing URL: " + sourceUrl); // NOI18N
+        boolean rename = false;
         File cache = dest;
         String prefix = "";
         while(prefix.length() < 3) {prefix += cache.getName();}
@@ -160,12 +160,7 @@ public class AutoupdateCatalogCache {
             while ((read = is.read ()) != -1) {
                 os.write (read);
             }   
-            synchronized(this) {
-                cache.delete();
-                if (!dest.renameTo(cache)) {
-                    throw new IOException();
-                }
-            }
+            rename = true;
         } catch (IOException ioe) {
             err.log (Level.INFO, "Writing content of URL " + sourceUrl + " failed.", ioe);
         } finally {
@@ -173,6 +168,14 @@ public class AutoupdateCatalogCache {
                 if (is != null) is.close ();
                 if (os != null) os.flush ();
                 if (os != null) os.close ();
+                if (rename) {
+                    synchronized(this) {
+                        cache.delete();
+                        if (!dest.renameTo(cache)) {
+                            throw new IOException();
+                        }
+                    }                    
+                }
             } catch (IOException ioe) {
                 err.log (Level.INFO, "Closing streams failed.", ioe);
             }
