@@ -105,8 +105,11 @@ public class CasaPaletteAcceptProvider extends CasaCommonAcceptProvider {
             curState = ConnectorState.REJECT;
             if (dfo instanceof Node) {
                 region = getScene().getEngineRegion();
-                DataObject obj = (DataObject) ((Node) dfo).getCookie(DataObject.class);
-                Project p = getProjectFromDataObject(obj); // ProjectManager.getDefault().findProject(obj.getPrimaryFile());
+                Project p = ((Node) dfo).getLookup().lookup(Project.class);
+                if (p == null) {
+                    DataObject obj = (DataObject) ((Node) dfo).getCookie(DataObject.class);
+                    p = getProjectFromDataObject(obj); // ProjectManager.getDefault().findProject(obj.getPrimaryFile());
+                }
                 if (mModel.getJbiProjectType(p) != null) {
                     String pname = p.getProjectDirectory().getName();
                     // todo: 01/24/07 needs to check for duplicates...
@@ -212,8 +215,11 @@ public class CasaPaletteAcceptProvider extends CasaCommonAcceptProvider {
     throws Exception {
         for(Object dfo : getTransferableObjects(transferable)) {
             if (dfo instanceof Node) {
-                DataObject obj = (DataObject) ((Node) dfo).getCookie(DataObject.class);
-                Project p = getProjectFromDataObject(obj); // ProjectManager.getDefault().findProject(obj.getPrimaryFile());
+                Project p = ((Node) dfo).getLookup().lookup(Project.class);
+                if (p == null) {
+                    DataObject obj = (DataObject) ((Node) dfo).getCookie(DataObject.class);
+                    p = getProjectFromDataObject(obj); // ProjectManager.getDefault().findProject(obj.getPrimaryFile());
+                }
                 String type = mModel.getJbiProjectType(p);
                 point = getScene().getEngineRegion().convertSceneToLocal(point);
                 mModel.addInternalJBIModule(p, type, point.x, point.y);
