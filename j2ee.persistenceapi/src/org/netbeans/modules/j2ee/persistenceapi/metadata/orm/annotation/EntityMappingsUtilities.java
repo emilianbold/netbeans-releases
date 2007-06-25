@@ -53,7 +53,7 @@ public class EntityMappingsUtilities {
         for (Element element : ElementFilter.methodsIn(elements)) {
             for (AnnotationMirror annotation : element.getAnnotationMirrors()) {
                 String annTypeName = helper.getAnnotationTypeName(annotation.getAnnotationType());
-                if (annTypeName.startsWith("javax.persistence.")) { // NOI18N
+                if (annTypeName != null && annTypeName.startsWith("javax.persistence.")) { // NOI18N
                     return false;
                 }
             }
