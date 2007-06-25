@@ -62,14 +62,14 @@ public class SuitePropertiesTest extends TestBase {
     
     public static SuiteProperties getSuiteProperties(SuiteProject suite) throws IOException {
         SubprojectProvider spp = getSubProjectProvider(suite);
-        Set/*<Project>*/ subModules = spp.getSubprojects();
+        Set<NbModuleProject> subModules = NbCollections.checkedSetByCopy(spp.getSubprojects(), NbModuleProject.class, true);
         SuiteProperties suiteProps = new SuiteProperties(suite, suite.getHelper(),
                 suite.getEvaluator(), subModules);
         return suiteProps;
     }
     
     static SubprojectProvider getSubProjectProvider(Project project) throws IOException {
-        return (SubprojectProvider) project.getLookup().lookup(SubprojectProvider.class);
+        return project.getLookup().lookup(SubprojectProvider.class);
     }
     
     public void testPropertiesAreLoaded() throws Exception {
@@ -126,7 +126,7 @@ public class SuitePropertiesTest extends TestBase {
         
         NbModuleProject module2ToAdd = generateStandaloneModule("module2");
         NbModuleProject module3ToAdd = generateStandaloneModule("module3");
-        SuiteProvider suiteProvider = (SuiteProvider) module2ToAdd.getLookup().lookup(SuiteProvider.class);
+        SuiteProvider suiteProvider = module2ToAdd.getLookup().lookup(SuiteProvider.class);
         assertNull("module2ToAdd is standalone module - doesn't have valid SuiteProvider", suiteProvider.getSuiteDirectory());
         model.addModule(module2ToAdd);
         model.addModule(module3ToAdd);
@@ -161,14 +161,12 @@ public class SuitePropertiesTest extends TestBase {
         assertEquals("one module should be left", 1, spp.getSubprojects().size());
         NbModuleProject project = (NbModuleProject) spp.getSubprojects().toArray()[0];
         assertEquals("module1b should be the one", "org.example.module1b", project.getCodeNameBase());
-        NbModuleProvider libProjectNmtp = (NbModuleProvider) project.
-                getLookup().lookup(NbModuleProvider.class);
+        NbModuleProvider libProjectNmtp = project.getLookup().lookup(NbModuleProvider.class);
         assertSame("module1b module is still suite component module", NbModuleProvider.SUITE_COMPONENT,
                 libProjectNmtp.getModuleType());
         
         // assert that the remove module (module1a) is standalone
-        NbModuleProvider module1aNmtp = (NbModuleProvider) module1a.
-                getLookup().lookup(NbModuleProvider.class);
+        NbModuleProvider module1aNmtp = module1a.getLookup().lookup(NbModuleProvider.class);
         assertNotNull(module1aNmtp);
         assertSame("module1a module is standalone module now", NbModuleProvider.STANDALONE,
                 module1aNmtp.getModuleType());
@@ -196,7 +194,7 @@ public class SuitePropertiesTest extends TestBase {
         assertTrue("module2a has moved to suite1", suite1spp.getSubprojects().contains(module2a));
         
         // ....and as such has correctly set suite provider
-        SuiteProvider sp = (SuiteProvider) module2a.getLookup().lookup(SuiteProvider.class);
+        SuiteProvider sp = module2a.getLookup().lookup(SuiteProvider.class);
         assertNotNull(sp);
         assertNotNull(sp.getSuiteDirectory());
         assertEquals("module2a has suite1 as a SuiteProvider", suite1.getProjectDirectoryFile(), sp.getSuiteDirectory());
@@ -260,8 +258,8 @@ public class SuitePropertiesTest extends TestBase {
         SuiteSubModulesListModel model = suiteProps.getModulesListModel();
         assertEquals("three module suite components", 3, model.getSize());
         
-        ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
-            public Object run() throws Exception {
+        ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+            public Void run() throws Exception {
                 // choose another way to store submodules
                 EditableProperties edProps = suiteProps.getProjectProperties();
                 edProps.setProperty("moddir", ".");
@@ -296,8 +294,8 @@ public class SuitePropertiesTest extends TestBase {
     private void saveProperties(final SuiteProperties props) throws IOException {
         try {
             // Store properties
-            ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
-                public Object run() throws IOException {
+            ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+                public Void run() throws IOException {
                     props.storeProperties();
                     return null;
                 }
