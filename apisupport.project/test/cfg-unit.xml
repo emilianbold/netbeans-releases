@@ -25,6 +25,8 @@ Microsystems, Inc. All Rights Reserved.
                 <!-- Elaborate. Very slow, sometime seems to end in endless
                 wait-for-condition cycle. Also read through #87973. -->
                 <exclude name="**/ServiceNodeHandlerTest.class"/>
+                <!-- XXX #108023: gets OOME on tester machines: -->
+                <exclude name="**/SuitePropertiesTest.class/testSuitePropertiesWithAnonymousPlatform"/>
                 <!-- XXX Following test might need CVS repository. Double check them: -->
                 <exclude name="**/BrandingSupportTest.class"/>
                 <exclude name="**/GlobalSourceForBinaryImplTest.class"/>
