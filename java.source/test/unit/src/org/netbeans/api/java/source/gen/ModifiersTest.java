@@ -77,6 +77,8 @@ public class ModifiersTest extends GeneratorTestMDRCompat {
 //        suite.addTest(new ModifiersTest("test106543"));
 //        suite.addTest(new ModifiersTest("test106403"));
 //        suite.addTest(new ModifiersTest("test106403_2"));
+//        suite.addTest(new ModifiersTest("testAddMethodAnnotation"));
+//        suite.addTest(new ModifiersTest("testAddMethodAnnotation2"));
         return suite;
     }
 
@@ -819,6 +821,106 @@ public class ModifiersTest extends GeneratorTestMDRCompat {
                 workingCopy.rewrite(annotationTree, modified);
             }
             
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    // #105018 - bad formatting when adding annotation
+    public void testAddMethodAnnotation() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+                "package flaska;\n" +
+                "\n" +
+                "import java.io.*;\n" +
+                "\n" +
+                "public class Test {\n" +
+                "    public void alois() {\n" +
+                "    }\n" +
+                "    \n" +
+                "}\n"
+                );
+        String golden =
+                "package flaska;\n" +
+                "\n" +
+                "import java.io.*;\n" +
+                "\n" +
+                "public class Test {\n" +
+                "    @Annotation\n" +
+                "    public void alois() {\n" +
+                "    }\n" +
+                "    \n" +
+                "}\n";
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        Task task = new Task<WorkingCopy>() {
+            
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                ModifiersTree mods = ((MethodTree) clazz.getMembers().get(1)).getModifiers();
+                AnnotationTree annotationTree = make.Annotation(
+                        make.Identifier("Annotation"),
+                        Collections.<ExpressionTree>emptyList()
+                );
+                ModifiersTree modified = make.addModifiersAnnotation(
+                        mods,
+                        annotationTree
+                );
+                workingCopy.rewrite(mods, modified);
+            }
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    // #105018 - bad formatting when adding annotation
+    public void testAddMethodAnnotation2() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+                "package flaska;\n" +
+                "\n" +
+                "import java.io.*;\n" +
+                "\n" +
+                "public class Test {\n" +
+                "    void alois() {\n" +
+                "    }\n" +
+                "    \n" +
+                "}\n"
+                );
+        String golden =
+                "package flaska;\n" +
+                "\n" +
+                "import java.io.*;\n" +
+                "\n" +
+                "public class Test {\n" +
+                "    @Annotation\n" +
+                "    void alois() {\n" +
+                "    }\n" +
+                "    \n" +
+                "}\n";
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        Task task = new Task<WorkingCopy>() {
+            
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                ModifiersTree mods = ((MethodTree) clazz.getMembers().get(1)).getModifiers();
+                AnnotationTree annotationTree = make.Annotation(
+                        make.Identifier("Annotation"),
+                        Collections.<ExpressionTree>emptyList()
+                );
+                ModifiersTree modified = make.addModifiersAnnotation(
+                        mods,
+                        annotationTree
+                );
+                workingCopy.rewrite(mods, modified);
+            }
         };
         testSource.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
