@@ -31,6 +31,7 @@ import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 
 /**
@@ -76,7 +77,7 @@ public class SuiteUtilsTest extends TestBase {
         assertNull("user.properites.file property doesn't exist", module1.evaluator().getProperty("user.properties.file"));
         SuiteUtils.removeModuleFromSuite(module1);
         assertEquals("user.properties.file resolved for standalone module",
-                getWorkDirPath() + File.separatorChar + "build.properties",
+                FileUtil.normalizeFile(new File(getWorkDirPath(), "build.properties")).getAbsolutePath(),
                 module1.evaluator().getProperty("user.properties.file"));
         spp = SuitePropertiesTest.getSubProjectProvider(suite1);
         assertEquals("doesn't have suite component", 0, spp.getSubprojects().size());
