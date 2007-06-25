@@ -21,6 +21,7 @@ package org.netbeans.modules.apisupport.project.universe;
 
 import java.io.File;
 import org.netbeans.modules.apisupport.project.ManifestManager;
+import org.openide.filesystems.FileUtil;
 
 final class NetBeansOrgEntry extends AbstractEntryWithSources {
 
@@ -54,7 +55,7 @@ final class NetBeansOrgEntry extends AbstractEntryWithSources {
     }
     
     public File getSourceLocation() {
-        return new File(nball, path.replace('/', File.separatorChar));
+        return FileUtil.normalizeFile(new File(nball, path.replace('/', File.separatorChar)));
     }
     
     public String getNetBeansOrgPath() {

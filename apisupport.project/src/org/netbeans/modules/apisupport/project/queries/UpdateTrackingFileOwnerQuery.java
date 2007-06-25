@@ -22,8 +22,6 @@ package org.netbeans.modules.apisupport.project.queries;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
-import java.util.Iterator;
-import java.util.Set;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.Util;
@@ -68,12 +66,10 @@ public final class UpdateTrackingFileOwnerQuery implements FileOwnerQueryImpleme
     }
     
     private Project getOwner(File file) {
-        Set<ModuleEntry> entries = ModuleList.getKnownEntries(file);
-        Iterator it = entries.iterator();
-        while (it.hasNext()) {
-            File sourcedir = ((ModuleEntry) it.next()).getSourceLocation();
+        for (ModuleEntry entry : ModuleList.getKnownEntries(file)) {
+            File sourcedir = entry.getSourceLocation();
             if (sourcedir != null) {
-                FileObject sourcedirFO = FileUtil.toFileObject(FileUtil.normalizeFile(sourcedir));
+                FileObject sourcedirFO = FileUtil.toFileObject(sourcedir);
                 if (sourcedirFO != null) {
                     try {
                         Project p = ProjectManager.getDefault().findProject(sourcedirFO);
