@@ -183,6 +183,9 @@
       <Properties>
         <Property name="traversalAllowed" type="boolean" value="false"/>
       </Properties>
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new TemplatesListView();"/>
+      </AuxValues>
     </Component>
     <Component class="org.openide.awt.HtmlBrowser" name="descBrowser">
       <Properties>

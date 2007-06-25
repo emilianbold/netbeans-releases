@@ -19,18 +19,24 @@
 
 package org.netbeans.modules.swingapp.templates;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.io.File;
 import java.net.URL;
 import javax.swing.JFileChooser;
+import javax.swing.KeyStroke;
+import javax.swing.ToolTipManager;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.openide.ErrorManager;
 import org.openide.explorer.ExplorerManager;
+import org.openide.explorer.view.ListView;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
@@ -215,7 +221,7 @@ public class ConfigureProjectVisualPanel extends javax.swing.JPanel
         appNameTextField = new javax.swing.JTextField();
         jSeparator1 = new javax.swing.JSeparator();
         shellListLabel = new javax.swing.JLabel();
-        shellList = new org.openide.explorer.view.ListView();
+        shellList = new TemplatesListView();
         descBrowser = new org.openide.awt.HtmlBrowser();
 
         setName(org.openide.util.NbBundle.getMessage(ConfigureProjectVisualPanel.class, "ConfigureProjectVisualPanel.name")); // NOI18N
@@ -336,7 +342,23 @@ public class ConfigureProjectVisualPanel extends javax.swing.JPanel
         wizardPanel.visualPanelChanged(false);
     }//GEN-LAST:event_browseButtonActionPerformed
     
-    
+    /**
+     * Taken from org.netbeans.modules.project.ui.TemplatesPanelGUI (i.e. the
+     * first panel of New Project wizard). It makes the enter key work for the
+     * default button in the window (bug 102364).
+     */
+    private static class TemplatesListView extends ListView implements ActionListener {
+        public TemplatesListView() {
+            super();
+            // bugfix #44717, Enter key must work regardless if TemplatesPanels is focused
+            list.unregisterKeyboardAction(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0, false));
+            setDefaultProcessor(this);
+        }
+        public void actionPerformed(ActionEvent e) {
+            // Do nothing
+        }
+    }
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextField appNameTextField;
     private javax.swing.JButton browseButton;
