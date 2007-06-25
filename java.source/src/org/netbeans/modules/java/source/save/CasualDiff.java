@@ -60,7 +60,7 @@ public class CasualDiff {
     private static final Logger LOG = Logger.getLogger(CasualDiff.class.getName());
 
     private Map<Integer, String> diffInfo = new HashMap<Integer, String>();
-    
+     
     /** provided for test only */
     public CasualDiff() {
     }
@@ -641,9 +641,9 @@ public class CasualDiff {
         int castListHint = oldT.cases.size() > 0 ? oldT.cases.head.pos : Query.NOPOS;
         PositionEstimator est = EstimatorFactory.deprecated(oldT.getCases(), newT.getCases(), workingCopy);
         copyTo(localPointer, castListHint);
-        int[] pos = diffList(oldT.cases, newT.cases, castListHint, est, Measure.DEFAULT, printer);
+        localPointer = diffListImports(oldT.cases, newT.cases, castListHint, est, Measure.DEFAULT, printer);
         
-        copyTo(pos[1], bounds[1]);
+        copyTo(localPointer, bounds[1]);
         return bounds[1];
     }
 
@@ -682,26 +682,21 @@ public class CasualDiff {
 
     protected int diffTry(JCTry oldT, JCTry newT, int[] bounds) {
         int localPointer = bounds[0];
+        
         int[] bodyPos = getBounds(oldT.body);
         copyTo(localPointer, bodyPos[0]);
         localPointer = diffTree(oldT.body, newT.body, bodyPos);
-        int pos = oldT.catchers.head != null ? getOldPos(oldT.catchers.head) : oldT.body.endpos + 1;
-        VeryPretty locPrint = new VeryPretty(workingCopy);
+        
         PositionEstimator est = EstimatorFactory.deprecated(((TryTree) oldT).getCatches(), ((TryTree) newT).getCatches(), workingCopy);
-        int[] retPos = diffList(oldT.catchers, newT.catchers, pos, est, Measure.DEFAULT, locPrint);
-        if (localPointer < retPos[0]) {
-            copyTo(localPointer, retPos[0]);
-        }
-        printer.print(locPrint.toString());
-        localPointer = oldT.catchers.head != null ? endPos(oldT.catchers) : pos;
+        localPointer = diffListImports(oldT.catchers, newT.catchers, localPointer, est, Measure.DEFAULT, printer);
+        
         if (oldT.finalizer != null) {
             int[] finalBounds = getBounds(oldT.finalizer);
             copyTo(localPointer, finalBounds[0]);
             localPointer = diffTree(oldT.finalizer, newT.finalizer, finalBounds);
-            copyTo(localPointer, bounds[1]);
-        } else if (retPos[1] < bounds[1]) {
-            copyTo(localPointer, bounds[1]);
         }
+        copyTo(localPointer, bounds[1]);
+
         return bounds[1];
     }
 
@@ -1216,8 +1211,7 @@ public class CasualDiff {
         } else {
             copyTo(localPointer, startPos);
             PositionEstimator est = EstimatorFactory.annotations(((ModifiersTree) oldT).getAnnotations(), ((ModifiersTree) newT).getAnnotations(), workingCopy);
-            int[] res = diffList(oldT.annotations, newT.annotations, startPos, est, Measure.DEFAULT, printer);
-            localPointer = res[1];
+            localPointer = diffListImports(oldT.annotations, newT.annotations, startPos, est, Measure.DEFAULT, printer);
         }
         if (oldT.flags != newT.flags) {
             if (localPointer == startPos) {
