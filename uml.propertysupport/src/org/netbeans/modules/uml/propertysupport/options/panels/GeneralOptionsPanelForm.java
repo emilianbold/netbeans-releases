@@ -118,6 +118,9 @@ public class GeneralOptionsPanelForm extends javax.swing.JPanel {
         
         if (prefs.getBoolean("UML_Ask_Before_Layout", true))
             askLayoutCB.setSelected(true);
+        else 
+            askLayoutCB.setSelected(false);
+            
         
         String autoResizeValue = prefs.get("UML_Automatically_Size_Elements", null) ;
         String displayCompartmentValue = prefs.get("UML_Display_Compartment_Titles", null) ;
