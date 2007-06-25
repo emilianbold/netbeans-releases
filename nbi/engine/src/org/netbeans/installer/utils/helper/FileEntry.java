@@ -27,24 +27,24 @@ import org.netbeans.installer.utils.FileUtils;
 import org.netbeans.installer.utils.StringUtils;
 
 public class FileEntry {
-    private File    file          = null;
-    private String  name          = null;
+    private File file;
+    private String name;
     
-    private boolean metaDataReady = false;
+    private boolean metaDataReady;
     
-    private boolean directory     = false;
-    private boolean empty         = false;
+    private boolean directory;
+    private boolean empty;
     
-    private long    size          = 0;
-    private String  md5           = null;
+    private long size;
+    private String md5;
     
-    private boolean jar           = false;
-    private boolean packed        = false;
-    private boolean signed        = false;
+    private boolean jar;
+    private boolean packed;
+    private boolean signed;
     
-    private long    modified  = 0;
+    private long modified;
     
-    private int     permissions   = 0;
+    private int permissions;
     
     // constructors /////////////////////////////////////////////////////////////////
     public FileEntry(

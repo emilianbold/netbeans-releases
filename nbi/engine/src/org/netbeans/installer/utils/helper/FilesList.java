@@ -59,12 +59,12 @@ import org.xml.sax.helpers.DefaultHandler;
 public class FilesList implements Iterable<FileEntry> {
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
-    private File            listFile    = null;
-    private File            tempFile    = null;
+    private File listFile;
+    private File tempFile;
     
-    private List<FileEntry> entries     = null;
+    private List<FileEntry> entries;
     
-    private int             size        = 0;
+    private int size;
     
     // constructors /////////////////////////////////////////////////////////////////
     public FilesList() {
@@ -200,7 +200,7 @@ public class FilesList implements Iterable<FileEntry> {
     
     // list <-> list :) /////////////////////////////////////////////////////////////
     public List<File> toList() {
-        List<File> files = new ArrayList<File>(size);
+        final List<File> files = new ArrayList<File>(size);
         
         for (FileEntry entry: this) {
             files.add(entry.getFile());
@@ -240,7 +240,7 @@ public class FilesList implements Iterable<FileEntry> {
                     new GZIPOutputStream(
                     new FileOutputStream(tempFile))));
             
-            int       index = 0;
+            int index = 0;
             FileEntry saved = readEntry(reader);
             
             while ((index < entries.size()) && (saved != null)) {
@@ -292,13 +292,13 @@ public class FilesList implements Iterable<FileEntry> {
         final String name = reader.readLine();
         
         if (name != null) {
-            final File    file      = new File(name);
+            final File file = new File(name);
             final boolean directory = Boolean.parseBoolean(reader.readLine());
             
             if (directory) {
-                final boolean empty       = Boolean.parseBoolean(reader.readLine());
-                final long    modified    = Long.parseLong(reader.readLine());
-                final int     permissions = Integer.parseInt(reader.readLine());
+                final boolean empty = Boolean.parseBoolean(reader.readLine());
+                final long modified = Long.parseLong(reader.readLine());
+                final int permissions = Integer.parseInt(reader.readLine());
                 
                 return new FileEntry(
                         file,
@@ -306,13 +306,13 @@ public class FilesList implements Iterable<FileEntry> {
                         modified,
                         permissions);
             } else {
-                final long    size        = Long.parseLong(reader.readLine());
-                final String  md5         = reader.readLine();
-                final boolean jarFile     = Boolean.parseBoolean(reader.readLine());
-                final boolean packed      = Boolean.parseBoolean(reader.readLine());
-                final boolean signed      = Boolean.parseBoolean(reader.readLine());
-                final long    modified    = Long.parseLong(reader.readLine());
-                final int     permissions = Integer.parseInt(reader.readLine());
+                final long size = Long.parseLong(reader.readLine());
+                final String md5 = reader.readLine();
+                final boolean jarFile = Boolean.parseBoolean(reader.readLine());
+                final boolean packed = Boolean.parseBoolean(reader.readLine());
+                final boolean signed = Boolean.parseBoolean(reader.readLine());
+                final long modified = Long.parseLong(reader.readLine());
+                final int permissions = Integer.parseInt(reader.readLine());
                 
                 return new FileEntry(
                         file,
@@ -332,13 +332,11 @@ public class FilesList implements Iterable<FileEntry> {
     private void writeEntry(
             final FileEntry entry,
             final Writer writer) throws IOException {
-        if (entry.getFile().exists()) {
-            if (!entry.isMetaDataReady()) {
-                entry.calculateMetaData();
-            }
-            
-            writer.write(entry.toString());
+        if (entry.getFile().exists() && !entry.isMetaDataReady()) {
+            entry.calculateMetaData();
         }
+        
+        writer.write(entry.toString());
     }
     
     private void saveXml(
@@ -350,13 +348,11 @@ public class FilesList implements Iterable<FileEntry> {
         writer.println("<files-list>");
         
         for (FileEntry entry: this) {
-            if (entry.getFile().exists()) {
-                if (!entry.isMetaDataReady()) {
-                    entry.calculateMetaData();
-                }
-                
-                writer.println("    " + entry.toXml());
+            if (entry.getFile().exists() && !entry.isMetaDataReady()) {
+                entry.calculateMetaData();
             }
+            
+            writer.println("    " + entry.toXml());
         }
         
         writer.println("</files-list>");
@@ -367,8 +363,9 @@ public class FilesList implements Iterable<FileEntry> {
     private void loadXml(
             final InputStream in,
             final File root) throws IOException, XMLException {
-        SAXParserFactory factory = SAXParserFactory.newInstance();
-        SAXParser parser;
+        final SAXParserFactory factory = SAXParserFactory.newInstance();
+        final SAXParser parser;
+        
         try {
             parser = factory.newSAXParser();
             
@@ -383,22 +380,22 @@ public class FilesList implements Iterable<FileEntry> {
     /////////////////////////////////////////////////////////////////////////////////
     // Inner Classes
     private class FilesListHandler extends DefaultHandler {
-        private boolean entryElement = false;
+        private boolean entryElement;
         
-        private File    root         = null;
+        private File root;
         
-        private String  name         = null;
+        private String name;
         
-        private boolean directory    = false;
-        private boolean empty        = false;
+        private boolean directory;
+        private boolean empty;
         
-        private long    size         = 0;
-        private String  md5          = null;
-        private boolean jarFile      = false;
-        private boolean packed       = false;
-        private boolean signed       = false;
-        private long    modified     = 0;
-        private int     permissions  = 0;
+        private long size;
+        private String md5;
+        private boolean jarFile;
+        private boolean packed;
+        private boolean signed;
+        private long modified;
+        private int permissions;
         
         public FilesListHandler(File root) {
             this.root = root;
@@ -502,13 +499,13 @@ public class FilesList implements Iterable<FileEntry> {
     }
     
     private class FilesListIterator implements Iterator<FileEntry> {
-        private int            sizeAtConstruction = 0;
-        private boolean        listInMemory       = false;
+        private int sizeAtConstruction;
+        private boolean listInMemory;
         
-        private int            index              = 0;
-        private BufferedReader reader             = null;
+        private int index;
+        private BufferedReader reader;
         
-        private FileEntry      next               = null;
+        private FileEntry next;
         
         public FilesListIterator() {
             // if the list size is already bigger than can be reposited in memory -
@@ -533,7 +530,7 @@ public class FilesList implements Iterable<FileEntry> {
                 }
             } else {
                 listInMemory = true;
-                index        = 0;
+                index = 0;
             }
             
             sizeAtConstruction = FilesList.this.size;
