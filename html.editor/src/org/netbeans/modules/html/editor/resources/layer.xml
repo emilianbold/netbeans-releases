@@ -160,14 +160,6 @@ Microsystems, Inc. All Rights Reserved.
                         <attr name="position" intvalue="4300"/>
                     </file>
                     
-                    <file name="dump-tokens">
-                        <attr name="position" intvalue="4400"/>
-                    </file>
-                    
-                    
-                    
-                    
-                    
                 </folder>
             </folder>
         </folder>
