@@ -74,11 +74,11 @@ public class AutoupdateCatalogProvider implements UpdateProvider {
 
     public Map<String, UpdateItem> getUpdateItems () throws IOException {
         URL toParse = cache.getCatalogURL (codeName);
-        if (toParse == null && !firstRefreshDone) {
+        /*if (toParse == null && !firstRefreshDone) {
             firstRefreshDone = true;
             refresh(true);
             toParse = cache.getCatalogURL (codeName);
-        }
+        }*/
         if (toParse == null) {
             log.log (Level.INFO, "No content in cache for " + codeName + " provider. Returns EMPTY_MAP");
             return Collections.emptyMap ();

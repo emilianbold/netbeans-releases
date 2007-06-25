@@ -72,22 +72,24 @@ public class AutoupdateCatalogCache {
         return;
     }
     
-    public synchronized URL writeCatalogToCache (String codeName, URL original) throws IOException {
-        URL url = null;
-        File dir = getCatalogCache ();
-        assert dir != null && dir.exists () : "Cache directory must exist.";
-        File cache = new File (dir, codeName);
+    public URL writeCatalogToCache (String codeName, URL original) throws IOException {
+        synchronized(AutoupdateCatalogCache.class) {
+            URL url = null;
+            File dir = getCatalogCache ();
+            assert dir != null && dir.exists () : "Cache directory must exist.";
+            File cache = new File (dir, codeName);
 
-        copy (original, cache);
+            copy (original, cache);
 
-        try {
-            url = cache.toURI ().toURL ();
-        } catch (MalformedURLException ex) {
-            assert false : ex;
+            try {
+                url = cache.toURI ().toURL ();
+            } catch (MalformedURLException ex) {
+                assert false : ex;
+            }
+            assert new File (dir, codeName).exists () : "Cache " + cache + " exists.";
+            err.log (Level.FINER, "Cache file " + cache + " was wrote from original URL " + original);
+            return url;
         }
-        assert new File (dir, codeName).exists () : "Cache " + cache + " exists.";
-        err.log (Level.FINER, "Cache file " + cache + " was wrote from original URL " + original);
-        return url;
     }
     
     public synchronized URL getCatalogURL (String codeName) {
@@ -118,6 +120,7 @@ public class AutoupdateCatalogCache {
 
         URL urlToGZip = null;
         BufferedInputStream is = null;
+        long connectionTimeout = 0;
         try {
             
             String gzipFile = sourceUrl.getPath () + GZIP_EXTENSION;
@@ -126,11 +129,15 @@ public class AutoupdateCatalogCache {
                 gzipFile = gzipFile + '?' + query; // NOI18N
             }
             urlToGZip = new URL (sourceUrl.getProtocol (), sourceUrl.getHost (), sourceUrl.getPort (), gzipFile);
-            
+            connectionTimeout = System.currentTimeMillis();
             is = new BufferedInputStream (new GZIPInputStream (urlToGZip.openStream ()));            
             err.log(Level.FINE, "Successfully read URL " + urlToGZip); // NOI18N
             
         } catch (IOException ioe) {
+            connectionTimeout = System.currentTimeMillis() - connectionTimeout;
+            if (connectionTimeout > 30000) {                
+                throw ioe;
+            }
             try {
                 err.log(Level.FINE,
                         "Reading GZIP URL " + urlToGZip + " failed (" + ioe +
@@ -153,9 +160,11 @@ public class AutoupdateCatalogCache {
             while ((read = is.read ()) != -1) {
                 os.write (read);
             }   
-            cache.delete();
-            if (!dest.renameTo(cache)) {
-                throw new IOException();
+            synchronized(this) {
+                cache.delete();
+                if (!dest.renameTo(cache)) {
+                    throw new IOException();
+                }
             }
         } catch (IOException ioe) {
             err.log (Level.INFO, "Writing content of URL " + sourceUrl + " failed.", ioe);

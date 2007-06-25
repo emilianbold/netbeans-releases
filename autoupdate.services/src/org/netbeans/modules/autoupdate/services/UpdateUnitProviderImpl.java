@@ -111,8 +111,8 @@ public final class UpdateUnitProviderImpl {
      */
     public boolean refresh (ProgressHandle handle, boolean force) throws IOException {
         boolean res = false;
-        ProgressHandle ownHandle = null;
-        if (handle == null) {
+        ProgressHandle ownHandle = handle;
+        if (ownHandle == null) {
             ownHandle = ProgressHandleFactory.createHandle (NbBundle.getMessage (UpdateUnitProviderImpl.class, "UpdateUnitProviderImpl_CheckingForUpdates"));
             ownHandle.setInitialDelay (0);
             ownHandle.start ();
