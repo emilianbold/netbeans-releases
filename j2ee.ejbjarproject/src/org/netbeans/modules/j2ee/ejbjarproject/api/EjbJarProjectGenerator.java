@@ -23,11 +23,13 @@ import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.charset.Charset;
+import java.nio.charset.Charset;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.AntDeploymentHelper;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.ejbjarproject.*;
@@ -102,6 +104,8 @@ public class EjbJarProjectGenerator {
         ep.setProperty(EjbJarProjectProperties.META_INF, "${"+EjbJarProjectProperties.SOURCE_ROOT+"}/"+DEFAULT_DOC_BASE_FOLDER); //NOI18N
         ep.setProperty(EjbJarProjectProperties.SRC_DIR, "${"+EjbJarProjectProperties.SOURCE_ROOT+"}/"+DEFAULT_JAVA_FOLDER); //NOI18N
         ep.setProperty(EjbJarProjectProperties.META_INF_EXCLUDES, "sun-cmp-mappings.xml"); // NOI18N
+        Charset enc = FileEncodingQuery.getDefaultEncoding();
+        ep.setProperty(EjbJarProjectProperties.SOURCE_ENCODING, enc.name());
         h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
         
         Project p = ProjectManager.getDefault().findProject(h.getProjectDirectory());

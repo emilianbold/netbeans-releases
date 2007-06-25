@@ -25,6 +25,8 @@ import java.math.BigDecimal;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+import java.nio.charset.Charset;
+import java.nio.charset.UnsupportedCharsetException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -41,6 +43,7 @@ import javax.swing.ListCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.text.Document;
 import org.netbeans.api.queries.CollocationQuery;
+import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.AntDeploymentHelper;
 import org.netbeans.modules.j2ee.ejbjarproject.SourceRoots;
 import org.netbeans.modules.j2ee.ejbjarproject.UpdateHelper;
@@ -408,6 +411,14 @@ public class EjbJarProjectProperties {
         updateHelper.putProperties( AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties );
         updateHelper.putProperties( AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProperties );        
         
+        String value = (String)additionalProperties.get(SOURCE_ENCODING);
+        if (value != null) {
+            try {
+                FileEncodingQuery.setDefaultEncoding(Charset.forName(value));
+            } catch (UnsupportedCharsetException e) {
+                //When the encoding is not supported by JVM do not set it as default
+            }
+        }
     }
     
     private void storeAdditionalProperties(EditableProperties projectProperties) {
