@@ -198,8 +198,8 @@ public final class SingleModuleProperties extends ModuleProperties {
         specificationVersion = manifestManager.getSpecificationVersion();
         implementationVersion = manifestManager.getImplementationVersion();
         provTokensString = manifestManager.getProvidedTokensString();
-        originalPlatform = activePlatform = NbPlatform.getPlatformByID(
-                getEvaluator().getProperty("nbplatform.active")); // NOI18N
+        originalPlatform = activePlatform = NbPlatform.getPlatformByDestDir(
+                getHelper().resolveFile(getEvaluator().getProperty("netbeans.dest.dir"))); // NOI18N
         String activeJdk = getEvaluator().getProperty("nbjdk.active"); // NOI18N
         if (activeJdk != null) {
             activeJavaPlatform = ModuleProperties.findJavaPlatformByID(activeJdk); // NOI18N
@@ -279,8 +279,7 @@ public final class SingleModuleProperties extends ModuleProperties {
      * NetBeans.org modules.
      */
     NbPlatform getActivePlatform() {
-        if (moduleType != NbModuleProvider.NETBEANS_ORG
-                && (activePlatform == null || !NbPlatform.getPlatforms().contains(activePlatform))) {
+        if (moduleType != NbModuleProvider.NETBEANS_ORG && activePlatform == null) {
             ModuleProperties.reportLostPlatform(activePlatform);
             activePlatform = NbPlatform.getDefaultPlatform();
         }

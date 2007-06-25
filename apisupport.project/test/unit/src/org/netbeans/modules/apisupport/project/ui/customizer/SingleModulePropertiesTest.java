@@ -48,6 +48,7 @@ import org.netbeans.modules.apisupport.project.ui.customizer.CustomizerComponent
 import org.netbeans.modules.apisupport.project.universe.LocalizedBundleInfo;
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
 import org.netbeans.modules.apisupport.project.universe.ModuleList;
+import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -533,6 +534,21 @@ public class SingleModulePropertiesTest extends TestBase {
 //        System.err.println("Total time: " + (System.currentTimeMillis() - startTotal) + "msec");
 //    }
     
+    public void testGetActivePlatform() throws Exception {
+        SuiteProject suite = generateSuite("suite");
+        NbModuleProject module = generateSuiteComponent(suite, "module");
+        File plaf = new File(getWorkDir(), "plaf");
+        makePlatform(plaf);
+        FileObject platformPropertiesFO = suite.getProjectDirectory().getFileObject("nbproject/platform.properties");
+        EditableProperties platformProperties = Util.loadProperties(platformPropertiesFO);
+        platformProperties.put("suite.dir", "${basedir}");
+        platformProperties.put("netbeans.dest.dir", "${suite.dir}/../plaf");
+        Util.storeProperties(platformPropertiesFO, platformProperties);
+        SingleModuleProperties props = loadProperties(module);
+        NbPlatform platform = props.getActivePlatform();
+        assertEquals(plaf, platform.getDestDir());
+    }
+
     static SingleModuleProperties loadProperties(NbModuleProject project) throws IOException {
         return new SingleModuleProperties(project.getHelper(), project.evaluator(),
                 getSuiteProvider(project), getModuleType(project),
