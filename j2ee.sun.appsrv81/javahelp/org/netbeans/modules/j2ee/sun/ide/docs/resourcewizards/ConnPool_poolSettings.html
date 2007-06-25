@@ -70,7 +70,7 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
         refer to the documentation of the database vendor.</p>        
         <ul>
             <li><b>Transaction Isolation.</b> Select one of the following 
-            from the combobox: read-uncommitted, read-committed, 
+            from the dropdown list: JDBC Driver Default, read-uncommitted, read-committed, 
             repeatable-read, serializable.</li>
             <li><b>Guarantee Isolation Level.</b> Set to true or false.
             If you set to true, all connections taken from the pool have 
@@ -116,6 +116,15 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
             true, if a single connection fails, the application server closes all
             connections in the pool and then reestablishes them. When set to
             false, only individual connections are reestablished.</li>
+            <li><b>Non Transactional Connections.</b> Set to true or false.
+            When set to true, connections are not automatically enlisted and delisted in transaction contexts.
+            A non-transactional connection can be used to query the database while a transaction is in still progress (before the transaction commits). 
+            Non-transactional connections are not automatically returned to the pool and need to be explicitly closed by the application.
+            The default is false.</li>
+            <li><b>Allow Non Component Callers.</b> Set to true or false. 
+            When set to true, the connection pool can be accessed remotely by non-Java-EE components (components other than EJBs and servlets). 
+            The returned connection is automatically enlisted with the transaction context obtained from the transaction manager.
+            The default is false.</li>
         </ul>
 
         <dl>
