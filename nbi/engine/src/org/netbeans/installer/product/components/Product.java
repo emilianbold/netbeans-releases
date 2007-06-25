@@ -161,7 +161,7 @@ public final class Product extends RegistryNode {
         // check for cancel status
         if (progress.isCanceled()) return;
         
-        // extraction phase ////////////////////////////////////////////////////
+        // extraction phase /////////////////////////////////////////////////////////
         installationPhase = InstallationPhase.EXTRACTION;
         
         totalProgress.setTitle("Installing " + getDisplayName());
