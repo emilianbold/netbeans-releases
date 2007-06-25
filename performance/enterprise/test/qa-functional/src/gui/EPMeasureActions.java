@@ -40,19 +40,19 @@ public class EPMeasureActions  {
         suite.addTest(new AddNewXMLDocument("measureTime", "Add New XML Document"));
         suite.addTest(new AddNewBpelProcess("measureTime", "Add New Bpel Process")); 
 
-//TODO disbale temporary - there is huge memory leak!- IZ 98405        suite.addTest(new OpenSchemaView("testOpenSchemaView", "Open Schema View")); 
-//TODO disbale temporary - there is huge memory leak!- IZ 98405        suite.addTest(new OpenSchemaView("testOpenComplexSchemaView", "Open Complex Schema View"));
+        suite.addTest(new OpenSchemaView("testOpenSchemaView", "Open Schema View")); 
+        suite.addTest(new OpenSchemaView("testOpenComplexSchemaView", "Open Complex Schema View"));
 //TODO it's the same as SwitchSchemaView, isn't it ?                                     suite.addTest(new SchemaViewSwitchTest("measureTime", "Schema View Switch"));
         
         suite.addTest(new BuildComplexProject("measureTime", "Build Complex Project"));
         
-//TODO disbale temporary - there is huge memory leak!- IZ 98405        suite.addTest(new SwitchToDesignView("measureTime", "Schema | Switch to Design View"));
-//TODO disbale temporary - there is huge memory leak!- IZ 98405        suite.addTest(new SwitchToSchemaView("measureTime", "Schema | Switch to Schema View"));
+        suite.addTest(new SwitchToDesignView("measureTime", "Schema | Switch to Design View"));
+        suite.addTest(new SwitchToSchemaView("measureTime", "Schema | Switch to Schema View"));
         suite.addTest(new SchemaNavigatorDesignView("measureTime", "Schema Navigator Design View"));
         suite.addTest(new SchemaNavigatorSchemaView("measureTime", "Schema Navigator Schema View"));
         suite.addTest(new NavigatorSchemaViewMode("measureTime","Schema Navigator Schema View mode"));
         
-//TODO disbale temporary - there is huge memory leak!- IZ 98405        suite.addTest(new ValidateSchema("measureTime","Validate Schema"));
+       suite.addTest(new ValidateSchema("measureTime","Validate Schema"));
 //TODO there is an password dialog solve before enable to run again        suite.addTest(new DeployProject("measureTime","Deploy Project"));
          suite.addTest(new OpenComplexDiagram("measureTime","Open Complex Diagram"));         
          suite.addTest(new OpenBPELproject("measureTime","OpenBPELproject"));
