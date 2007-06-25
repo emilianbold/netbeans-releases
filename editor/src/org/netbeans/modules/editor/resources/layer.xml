@@ -108,42 +108,41 @@ Microsystems, Inc. All Rights Reserved.
         
         <folder name="Source">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
-
             <attr name="position" intvalue="500"/>
-            <file name="SeparatorBeforeWordMatchInsert.instance">
-                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+
+            <file name="org-netbeans-modules-editor-MainMenuAction$FormatAction.instance">
                 <attr name="position" intvalue="300"/>
             </file>
 
-            <file name="org-netbeans-modules-editor-MainMenuAction$WordMatchNextAction.instance">
+            <file name="org-netbeans-modules-editor-MainMenuAction$RemoveTrailingSpacesAction.instance">
                 <attr name="position" intvalue="400"/>
             </file>
             
-            <file name="org-netbeans-modules-editor-MainMenuAction$WordMatchPrevAction.instance">
-                <attr name="position" intvalue="500"/>
-            </file>
-            
-            <file name="SeparatorBeforeReformat.instance">
-                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                <attr name="position" intvalue="600"/>
-            </file>
-
-            <file name="org-netbeans-modules-editor-MainMenuAction$FormatAction.instance">
-                <attr name="position" intvalue="700"/>
-            </file>
-
-            <file name="org-netbeans-modules-editor-MainMenuAction$RemoveTrailingSpacesAction.instance">
-                <attr name="position" intvalue="800"/>
-            </file>
-            
             <file name="org-netbeans-modules-editor-MainMenuAction$ShiftLineLeftAction.instance">
-                <attr name="position" intvalue="900"/>
+                <attr name="position" intvalue="500"/>
             </file>
         
             <file name="org-netbeans-modules-editor-MainMenuAction$ShiftLineRightAction.instance">
-                <attr name="position" intvalue="1000"/>
+                <attr name="position" intvalue="600"/>
             </file>
 
+            <file name="org-netbeans-modules-editor-impl-actions-LineActionsMainMenu$MoveUp.instance">
+                <attr name="position" intvalue="700"/>
+            </file>
+            
+            <file name="org-netbeans-modules-editor-impl-actions-LineActionsMainMenu$MoveDown.instance">
+                <attr name="position" intvalue="800"/>
+            </file>
+            
+            <file name="org-netbeans-modules-editor-impl-actions-LineActionsMainMenu$DuplicateUp.instance">
+                <attr name="position" intvalue="900"/>
+            </file>
+            
+            <file name="org-netbeans-modules-editor-impl-actions-LineActionsMainMenu$DuplicateDown.instance">
+                <attr name="position" intvalue="1000"/>
+            </file>
+        
+            
             <file name="org-netbeans-modules-editor-MainMenuAction$CommentAction.instance">
                 <attr name="position" intvalue="1100"/>
             </file>
@@ -152,10 +151,20 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="position" intvalue="1200"/>
             </file>
 
-            <file name="SeparatorAfterUncomment.instance">
+            <file name="SeparatorBeforeWordMatchInsert.instance">
                 <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                <attr name="position" intvalue="1300"/>
+                <attr name="position" intvalue="3000"/>
             </file>
+
+            <file name="org-netbeans-modules-editor-MainMenuAction$WordMatchNextAction.instance">
+                <attr name="position" intvalue="3100"/>
+            </file>
+            
+            <file name="org-netbeans-modules-editor-MainMenuAction$WordMatchPrevAction.instance">
+                <attr name="position" intvalue="3200"/>
+            </file>
+                      
+            
         </folder>
                 
     </folder>
