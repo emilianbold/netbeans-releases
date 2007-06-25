@@ -25,9 +25,11 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.*;
+import java.nio.charset.Charset;
 import javax.swing.*;
 
 import org.netbeans.api.diff.*;
+import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.localhistory.store.StoreEntry;
 import org.netbeans.modules.versioning.util.NoContentPanel;
 import org.openide.ErrorManager;
@@ -111,7 +113,13 @@ public class LocalHistoryDiffView implements PropertyChangeListener, ActionListe
                 public void run() {            
                     try {   
                         
-                        StreamSource ss1 = StreamSource.createSource("historyfile", entry.getFile().getName() + " " + StoreEntryNode.getFormatedDate(entry), entry.getMIMEType(), new InputStreamReader(entry.getStoreFileInputStream()));
+                        FileObject fo = FileUtil.toFileObject(entry.getFile());
+                        Charset cs = fo != null || !fo.isFolder() ? cs = FileEncodingQuery.getEncoding(fo) : null;
+                        InputStreamReader storeReader = cs != null ? 
+                                    new InputStreamReader(entry.getStoreFileInputStream(), cs) :
+                                    new InputStreamReader(entry.getStoreFileInputStream());
+                                                                        
+                        StreamSource ss1 = StreamSource.createSource("historyfile", entry.getFile().getName() + " " + StoreEntryNode.getFormatedDate(entry), entry.getMIMEType(), storeReader);
                         
                         String title;
                         StreamSource ss2;
