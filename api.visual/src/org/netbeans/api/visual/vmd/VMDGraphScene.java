@@ -58,11 +58,21 @@ public class VMDGraphScene extends GraphPinScene<String, String, String> {
     private WidgetAction moveAction = ActionFactory.createMoveAction ();
 
     private SceneLayout sceneLayout;
+    private VMDColorScheme scheme;
 
     /**
      * Creates a VMD graph scene.
      */
     public VMDGraphScene () {
+        this (VMDFactory.getOriginalScheme ());
+    }
+
+    /**
+     * Creates a VMD graph scene with a specific color scheme.
+     * @param scheme the color scheme
+     */
+    public VMDGraphScene (VMDColorScheme scheme) {
+        this.scheme = scheme;
         setKeyEventProcessingType (EventProcessingType.FOCUSED_WIDGET_AND_ITS_PARENTS);
 
         addChild (backgroundLayer);
@@ -85,7 +95,7 @@ public class VMDGraphScene extends GraphPinScene<String, String, String> {
      * @return the widget attached to the node
      */
     protected Widget attachNodeWidget (String node) {
-        VMDNodeWidget widget = new VMDNodeWidget (this);
+        VMDNodeWidget widget = new VMDNodeWidget (this, scheme);
         mainLayer.addChild (widget);
 
         widget.getHeader ().getActions ().addAction (createObjectHoverAction ());
@@ -106,7 +116,7 @@ public class VMDGraphScene extends GraphPinScene<String, String, String> {
         if (pin.endsWith (PIN_ID_DEFAULT_SUFFIX))
             return null;
 
-        VMDPinWidget widget = new VMDPinWidget (this);
+        VMDPinWidget widget = new VMDPinWidget (this, scheme);
         ((VMDNodeWidget) findWidget (node)).attachPinWidget (widget);
         widget.getActions ().addAction (createObjectHoverAction ());
         widget.getActions ().addAction (createSelectAction ());
@@ -120,7 +130,8 @@ public class VMDGraphScene extends GraphPinScene<String, String, String> {
      * @return the widget attached to the edge
      */
     protected Widget attachEdgeWidget (String edge) {
-        VMDConnectionWidget connectionWidget = new VMDConnectionWidget (this, router);
+        VMDConnectionWidget connectionWidget = new VMDConnectionWidget (this, scheme);
+        connectionWidget.setRouter (router);
         connectionLayer.addChild (connectionWidget);
 
         connectionWidget.getActions ().addAction (createObjectHoverAction ());

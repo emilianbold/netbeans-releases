@@ -21,8 +21,6 @@ package org.netbeans.api.visual.vmd;
 import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.anchor.Anchor;
 import org.netbeans.api.visual.anchor.AnchorFactory;
-import org.netbeans.api.visual.border.Border;
-import org.netbeans.api.visual.border.BorderFactory;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.model.ObjectState;
 import org.netbeans.api.visual.model.StateModel;
@@ -46,12 +44,6 @@ import java.util.List;
  */
 public class VMDNodeWidget extends Widget implements StateModel.Listener, VMDMinimizeAbility {
 
-    private static final Color BORDER_CATEGORY_BACKGROUND = new Color (0xCDDDF8);
-    private static final Border BORDER_MINIMIZE = BorderFactory.createRoundedBorder (2, 2, null, VMDNodeBorder.COLOR_BORDER);
-    static final Color COLOR_SELECTED = new Color (0x748CC0);
-    static final Border BORDER = BorderFactory.createOpaqueBorder (2, 8, 2, 8);
-    static final Border BORDER_HOVERED = BorderFactory.createLineBorder (2, 8, 2, 8, Color.BLACK);
-
     private Widget header;
     private ImageWidget minimizeWidget;
     private ImageWidget imageWidget;
@@ -62,35 +54,43 @@ public class VMDNodeWidget extends Widget implements StateModel.Listener, VMDMin
     private SeparatorWidget pinsSeparator;
 
     private HashMap<String, Widget> pinCategoryWidgets = new HashMap<String, Widget> ();
-    private Font fontPinCategory = getScene ().getFont ().deriveFont (10.0f);
 
     private StateModel stateModel = new StateModel (2);
     private Anchor nodeAnchor = new VMDNodeAnchor (this);
+    private VMDColorScheme scheme;
 
     /**
      * Creates a node widget.
      * @param scene the scene
      */
     public VMDNodeWidget (Scene scene) {
-        super (scene);
+        this (scene, VMDFactory.getOriginalScheme ());
+    }
 
-        setOpaque (false);
-        setBorder (VMDFactory.createVMDNodeBorder ());
+    /**
+     * Creates a node widget with a specific color scheme.
+     * @param scene the scene
+     * @param scheme the color scheme
+     */
+    public VMDNodeWidget (Scene scene, VMDColorScheme scheme) {
+        super (scene);
+        assert scheme != null;
+        this.scheme = scheme;
+
         setLayout (LayoutFactory.createVerticalFlowLayout ());
         setMinimumSize (new Dimension (128, 8));
 
         header = new Widget (scene);
-        header.setBorder (BORDER);
-        header.setBackground (COLOR_SELECTED);
-        header.setOpaque (false);
         header.setLayout (LayoutFactory.createHorizontalFlowLayout (LayoutFactory.SerialAlignment.CENTER, 8));
         addChild (header);
 
-        minimizeWidget = new ImageWidget (scene, Utilities.loadImage ("org/netbeans/modules/visual/resources/vmd-collapse.png"));
+        boolean right = scheme.isNodeMinimizeButtonOnRight (this);
+
+        minimizeWidget = new ImageWidget (scene, Utilities.loadImage ("org/netbeans/modules/visual/resources/vmd-collapse.png")); // NOI18N
         minimizeWidget.setCursor (Cursor.getPredefinedCursor (Cursor.HAND_CURSOR));
-        minimizeWidget.setBorder (BORDER_MINIMIZE);
         minimizeWidget.getActions ().addAction (new ToggleMinimizedAction ());
-        header.addChild (minimizeWidget);
+        if (! right)
+            header.addChild (minimizeWidget);
 
         imageWidget = new ImageWidget (scene);
         header.addChild (imageWidget);
@@ -106,8 +106,14 @@ public class VMDNodeWidget extends Widget implements StateModel.Listener, VMDMin
         glyphSetWidget = new VMDGlyphSetWidget (scene);
         header.addChild (glyphSetWidget);
 
+        if (right) {
+            Widget widget = new Widget (scene);
+            widget.setOpaque (false);
+            header.addChild (widget, 1000);
+            header.addChild (minimizeWidget);
+        }
+
         pinsSeparator = new SeparatorWidget (scene, SeparatorWidget.Orientation.HORIZONTAL);
-        pinsSeparator.setForeground (BORDER_CATEGORY_BACKGROUND);
         addChild (pinsSeparator);
 
         Widget topLayer = new Widget (scene);
@@ -116,6 +122,7 @@ public class VMDNodeWidget extends Widget implements StateModel.Listener, VMDMin
         stateModel = new StateModel ();
         stateModel.addListener (this);
 
+        scheme.installUI (this);
         notifyStateChanged (ObjectState.createNormal (), ObjectState.createNormal ());
     }
 
@@ -175,13 +182,7 @@ public class VMDNodeWidget extends Widget implements StateModel.Listener, VMDMin
      * @param state the new state
      */
     protected void notifyStateChanged (ObjectState previousState, ObjectState state) {
-        if (! previousState.isSelected ()  &&  state.isSelected ())
-            bringToFront ();
-        else if (! previousState.isHovered ()  &&  state.isHovered ())
-            bringToFront ();
-
-        header.setOpaque (state.isSelected ());
-        header.setBorder (state.isFocused () || state.isHovered () ? VMDNodeWidget.BORDER_HOVERED : VMDNodeWidget.BORDER);
+        scheme.updateUI (this, previousState, state);
     }
 
     /**
@@ -331,13 +332,7 @@ public class VMDNodeWidget extends Widget implements StateModel.Listener, VMDMin
         Widget w = pinCategoryWidgets.get (categoryDisplayName);
         if (w != null)
             return w;
-        LabelWidget label = new LabelWidget (getScene (), categoryDisplayName);
-        label.setOpaque (true);
-        label.setBackground (BORDER_CATEGORY_BACKGROUND);
-        label.setForeground (Color.GRAY);
-        label.setFont (fontPinCategory);
-        label.setAlignment (LabelWidget.Alignment.CENTER);
-        label.setCheckClipping (true);
+        Widget label = scheme.createPinCategoryWidget (this, categoryDisplayName);
         if (stateModel.getBooleanState ())
             label.setPreferredBounds (new Rectangle ());
         pinCategoryWidgets.put (categoryDisplayName, label); 
@@ -364,6 +359,22 @@ public class VMDNodeWidget extends Widget implements StateModel.Listener, VMDMin
      */
     public Widget getHeader () {
         return header;
+    }
+
+    /**
+     * Returns a minimize button widget.
+     * @return the miminize button widget
+     */
+    public Widget getMinimizeButton () {
+        return minimizeWidget;
+    }
+
+    /**
+     * Returns a pins separator.
+     * @return the pins separator
+     */
+    public Widget getPinsSeparator () {
+        return pinsSeparator;
     }
 
     private final class ToggleMinimizedAction extends WidgetAction.Adapter {

@@ -18,16 +18,10 @@
  */
 package org.netbeans.api.visual.vmd;
 
-import org.netbeans.api.visual.anchor.AnchorShape;
-import org.netbeans.api.visual.anchor.PointShape;
-import org.netbeans.api.visual.anchor.PointShapeFactory;
 import org.netbeans.api.visual.model.ObjectState;
 import org.netbeans.api.visual.router.Router;
 import org.netbeans.api.visual.widget.ConnectionWidget;
 import org.netbeans.api.visual.widget.Scene;
-import org.openide.util.Utilities;
-
-import java.awt.*;
 
 /**
  * This class represents a connection widget in the VMD visualization style. Can be combined with any other widget.
@@ -36,23 +30,29 @@ import java.awt.*;
  */
 public class VMDConnectionWidget extends ConnectionWidget {
 
-    private static final PointShape POINT_SHAPE_IMAGE = PointShapeFactory.createImagePointShape (Utilities.loadImage ("org/netbeans/modules/visual/resources/vmd-pin.png")); // NOI18N
-
-    private static final Color COLOR_NORMAL = VMDNodeBorder.COLOR_BORDER;
-    private static final Color COLOR_HOVERED = Color.BLACK;
-    private static final Color COLOR_HIGHLIGHTED = new Color (49, 106, 197);
+    private VMDColorScheme scheme;
 
     /**
-     * Creates a connection widget.
+     * Creates a connection widget with a specific router.
      * @param scene the scene
-     * @param router
+     * @param router the router
      */
     public VMDConnectionWidget (Scene scene, Router router) {
+        this (scene, VMDFactory.getOriginalScheme ());
+        if (router != null)
+            setRouter (router);
+    }
+
+    /**
+     * Creates a connection widget with a specific color scheme.
+     * @param scene the scene
+     * @param scheme the color scheme
+     */
+    public VMDConnectionWidget (Scene scene, VMDColorScheme scheme) {
         super (scene);
-        setRouter (router);
-        setSourceAnchorShape (AnchorShape.NONE);
-        setTargetAnchorShape (AnchorShape.TRIANGLE_FILLED);
-        setPaintControlPoints (true);
+        assert scheme != null;
+        this.scheme = scheme;
+        scheme.installUI (this);
         setState (ObjectState.createNormal ());
     }
 
@@ -62,24 +62,7 @@ public class VMDConnectionWidget extends ConnectionWidget {
      * @param state the new state
      */
     public void notifyStateChanged (ObjectState previousState, ObjectState state) {
-        if (state.isHovered ())
-            setForeground (COLOR_HOVERED);
-        else if (state.isSelected ())
-            setForeground (VMDNodeWidget.COLOR_SELECTED);
-        else if (state.isHighlighted ())
-            setForeground (COLOR_HIGHLIGHTED);
-        else if (state.isFocused ())
-            setForeground (COLOR_HOVERED);
-        else
-            setForeground (COLOR_NORMAL);
-
-        if (state.isSelected ()) {
-            setControlPointShape (PointShape.SQUARE_FILLED_SMALL);
-            setEndPointShape (PointShape.SQUARE_FILLED_BIG);
-        } else {
-            setControlPointShape (PointShape.NONE);
-            setEndPointShape (POINT_SHAPE_IMAGE);
-        }
+        scheme.updateUI (this, previousState, state);
     }
 
 }

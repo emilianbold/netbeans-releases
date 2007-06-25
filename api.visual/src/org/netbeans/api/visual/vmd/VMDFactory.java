@@ -19,6 +19,10 @@
 package org.netbeans.api.visual.vmd;
 
 import org.netbeans.api.visual.border.Border;
+import org.netbeans.modules.visual.vmd.VMDNetBeans60ColorScheme;
+import org.netbeans.modules.visual.vmd.VMDOriginalColorScheme;
+
+import java.awt.*;
 
 /**
  * Used as a factory class for objects defined in VMD visualization style.
@@ -27,9 +31,28 @@ import org.netbeans.api.visual.border.Border;
  */
 public final class VMDFactory {
 
-    private static final Border BORDER_NODE = new VMDNodeBorder ();
+    private static VMDColorScheme SCHEME_ORIGINAL = new VMDOriginalColorScheme ();
+    private static VMDColorScheme SCHEME_NB60 = new VMDNetBeans60ColorScheme ();
 
     private VMDFactory () {
+    }
+
+    /**
+     * Creates the original vmd color scheme. Used by default.
+     * @return the color scheme
+     * @since 2.5
+     */
+    public static VMDColorScheme getOriginalScheme () {
+        return SCHEME_ORIGINAL;
+    }
+
+    /**
+     * Creates the NetBeans 6.0 vmd color scheme.
+     * @return the color scheme
+     * @since 2.5
+     */
+    public static VMDColorScheme getNetBeans60Scheme () {
+        return SCHEME_NB60;
     }
 
     /**
@@ -37,7 +60,23 @@ public final class VMDFactory {
      * @return the VMD node border
      */
     public static Border createVMDNodeBorder () {
-        return BORDER_NODE;
+        return VMDOriginalColorScheme.BORDER_NODE;
+    }
+
+    /**
+     * Creates a border used by VMD node with a specific colors.
+     * @return the VMD node border
+     * @param borderColor the border color
+     * @param borderThickness the border thickness
+     * @param color1 1. color of gradient background
+     * @param color2 2. color of gradient background
+     * @param color3 3. color of gradient background
+     * @param color4 4. color of gradient background
+     * @param color5 5. color of gradient background
+     * @since 2.5
+     */
+    public static Border createVMDNodeBorder (Color borderColor, int borderThickness, Color color1, Color color2, Color color3, Color color4, Color color5) {
+        return new VMDNodeBorder (borderColor, borderThickness, color1, color2, color3, color4, color5);
     }
 
 }

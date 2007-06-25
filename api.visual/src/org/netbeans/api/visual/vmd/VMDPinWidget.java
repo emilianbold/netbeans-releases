@@ -36,6 +36,8 @@ import java.util.List;
  */
 public class VMDPinWidget extends Widget {
 
+    private VMDColorScheme scheme;
+
     private LabelWidget nameWidget;
     private VMDGlyphSetWidget glyphsWidget;
     private VMDNodeAnchor anchor;
@@ -45,15 +47,24 @@ public class VMDPinWidget extends Widget {
      * @param scene the scene
      */
     public VMDPinWidget (Scene scene) {
-        super (scene);
+        this (scene, VMDFactory.getOriginalScheme ());
+    }
 
-        setBorder (VMDNodeWidget.BORDER);
-        setBackground (VMDNodeWidget.COLOR_SELECTED);
-        setOpaque (false);
+    /**
+     * Creates a pin widget with a specific color scheme.
+     * @param scene the scene
+     * @param scheme the color scheme
+     */
+    public VMDPinWidget (Scene scene, VMDColorScheme scheme) {
+        super (scene);
+        assert scheme != null;
+        this.scheme = scheme;
+
         setLayout (LayoutFactory.createHorizontalFlowLayout (LayoutFactory.SerialAlignment.CENTER, 8));
         addChild (nameWidget = new LabelWidget (scene));
         addChild (glyphsWidget = new VMDGlyphSetWidget (scene));
 
+        scheme.installUI (this);
         notifyStateChanged (ObjectState.createNormal (), ObjectState.createNormal ());
     }
 
@@ -63,11 +74,7 @@ public class VMDPinWidget extends Widget {
      * @param state the new state
      */
     protected void notifyStateChanged (ObjectState previousState, ObjectState state) {
-        setOpaque (state.isSelected ());
-        setBorder (state.isFocused () || state.isHovered () ? VMDNodeWidget.BORDER_HOVERED : VMDNodeWidget.BORDER);
-//        LookFeel lookFeel = getScene ().getLookFeel ();
-//        setBorder (BorderFactory.createCompositeBorder (BorderFactory.createEmptyBorder (8, 2), lookFeel.getMiniBorder (state)));
-//        setForeground (lookFeel.getForeground (state));
+        scheme.updateUI (this, previousState, state);
     }
 
     /**

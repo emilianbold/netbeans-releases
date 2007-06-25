@@ -350,6 +350,7 @@ public class ConnectionWidget extends Widget {
      * @param router the path router
      */
     public final void setRouter (Router router) {
+        assert router != null;
         this.router = router;
         reroute ();
     }

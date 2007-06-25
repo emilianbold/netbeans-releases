@@ -2105,6 +2105,9 @@ The <code>VMDNodeWidget</code> allows to specify the order and categories of pin
 <p>
 The <code>VMDGraphScene.layoutGraph</code> method layouts nodes on a scene using <code>GridGraphLayout</code> class. After calling the method, you have to call <code>Scene.validate</code> method manually to trigger the scene validation and therefore graph-oriented layout of a scene.
 
+<p>
+The VMDColorScheme class defines a UI of VMD widgets. There are two implementations available using <code>VMDFactory.createOriginalColorScheme</code>, <code>VMDFactory.createNetBeans60ColorScheme</code> method calls. The color scheme can be used as a parameter in widget constructors.
+
 <h3><a name="MinimizeAbility">Minimize Ability</a></h3>
 
 <p>

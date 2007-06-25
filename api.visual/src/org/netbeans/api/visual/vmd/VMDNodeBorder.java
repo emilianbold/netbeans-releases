@@ -28,33 +28,44 @@ import java.awt.geom.RoundRectangle2D;
  */
 class VMDNodeBorder implements Border {
 
-    static final Color COLOR_BORDER = new Color (0xBACDF0);
-    private static final Insets INSETS = new Insets (1, 1, 1, 1);
-//    private static final Color COLOR0 = new Color (169, 197, 235);
-    private static final Color COLOR1 = new Color (221, 235, 246);
-    private static final Color COLOR2 = new Color (255, 255, 255);
-    private static final Color COLOR3 = new Color (214, 235, 255);
-    private static final Color COLOR4 = new Color (241, 249, 253);
-    private static final Color COLOR5 = new Color (255, 255, 255);
+    private Color colorBorder;
+    private Insets insets;
+    private Stroke stroke;
+    private Color color1;
+    private Color color2;
+    private Color color3;
+    private Color color4;
+    private Color color5;
 
-    VMDNodeBorder () {
+    VMDNodeBorder (Color colorBorder, int thickness, Color color1, Color color2, Color color3, Color color4, Color color5) {
+        this.colorBorder = colorBorder;
+        this.insets = new Insets (thickness, thickness, thickness, thickness);
+        this.stroke = new BasicStroke (thickness);
+        this.color1 = color1;
+        this.color2 = color2;
+        this.color3 = color3;
+        this.color4 = color4;
+        this.color5 = color5;
     }
 
     public Insets getInsets () {
-        return INSETS;
+        return insets;
     }
 
     public void paint (Graphics2D gr, Rectangle bounds) {
         Shape previousClip = gr.getClip ();
         gr.clip (new RoundRectangle2D.Float (bounds.x, bounds.y, bounds.width, bounds.height, 4, 4));
 
-        drawGradient (gr, bounds, COLOR1, COLOR2, 0f, 0.3f);
-        drawGradient (gr, bounds, COLOR2, COLOR3, 0.3f, 0.764f);
-        drawGradient (gr, bounds, COLOR3, COLOR4, 0.764f, 0.927f);
-        drawGradient (gr, bounds, COLOR4, COLOR5, 0.927f, 1f);
+        drawGradient (gr, bounds, color1, color2, 0f, 0.3f);
+        drawGradient (gr, bounds, color2, color3, 0.3f, 0.764f);
+        drawGradient (gr, bounds, color3, color4, 0.764f, 0.927f);
+        drawGradient (gr, bounds, color4, color5, 0.927f, 1f);
 
-        gr.setColor (COLOR_BORDER);
+        gr.setColor (colorBorder);
+        Stroke previousStroke = gr.getStroke ();
+        gr.setStroke (stroke);
         gr.draw (new RoundRectangle2D.Float (bounds.x + 0.5f, bounds.y + 0.5f, bounds.width - 1, bounds.height - 1, 4, 4));
+        gr.setStroke (previousStroke);
 
         gr.setClip (previousClip);
     }
@@ -69,4 +80,5 @@ class VMDNodeBorder implements Border {
     public boolean isOpaque () {
         return true;
     }
+
 }

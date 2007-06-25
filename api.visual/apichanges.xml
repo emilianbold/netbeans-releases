@@ -315,6 +315,21 @@
             <class package="org.netbeans.api.visual.widget" name="ConnectionWidget" link="yes"/>
             <issue number="106508"/>
         </change>
+
+        <change>
+            <api name="general"/>
+            <summary>VMDColorScheme introduced</summary>
+            <version major="2" minor="5"/>
+            <date day="25" month="6" year="2007"/>
+            <author login="dkaspar"/>
+            <compatibility addition="yes"/>
+            <description>
+                VMDColorScheme abstract class has been introduced to define a UI of VMD widget.
+                There are two predefined schemes available in VMDFactory class. Use them as a paratemer in widget constructors.
+            </description>
+            <class package="org.netbeans.api.visual.vmd" name="VMDColorScheme" link="yes"/>
+            <issue number="105929"/>
+        </change>
     </changes>
 
     <htmlcontents>
