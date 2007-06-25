@@ -60,10 +60,10 @@ import static org.netbeans.installer.utils.system.windows.WindowsRegistry.*;
 public class WindowsNativeUtils extends NativeUtils {
     /////////////////////////////////////////////////////////////////////////////////
     // Constants
-    public static final String LIBRARY_PATH =
-            NATIVE_JNILIB_RESOURCE_SUFFIX +
-            "windows/" + //NOI18N
-            "windows.dll"; //NOI18N
+    public static final String LIBRARY_PATH_X86 = 
+            NATIVE_JNILIB_RESOURCE_SUFFIX + "windows/windows-x86.dll"; //NOI18N
+    public static final String LIBRARY_PATH_X64 = 
+            NATIVE_JNILIB_RESOURCE_SUFFIX + "windows/windows-x64.dll"; //NOI18N
     
     private static final String CLEANER_RESOURCE =
             NATIVE_CLEANER_RESOURCE_SUFFIX +
@@ -192,7 +192,11 @@ public class WindowsNativeUtils extends NativeUtils {
     
     // constructor //////////////////////////////////////////////////////////////////
     WindowsNativeUtils() {
-        loadNativeLibrary(LIBRARY_PATH);
+        if (SystemUtils.isCurrentJava64Bit()) {
+            loadNativeLibrary(LIBRARY_PATH_X64);
+        } else {
+            loadNativeLibrary(LIBRARY_PATH_X86);
+        }
         //initializeForbiddenFiles(FORBIDDEN_DELETING_FILES_WINDOWS);
         initializeForbiddenFiles();
         initializeRegistryKeys();
