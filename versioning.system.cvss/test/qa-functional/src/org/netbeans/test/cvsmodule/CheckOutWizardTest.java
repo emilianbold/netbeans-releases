@@ -934,85 +934,89 @@ public class CheckOutWizardTest extends JellyTestCase {
     public void testCheckWizardFinish() throws Exception {
         //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 36000);
         //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 36000);
-        TestKit.closeProject(projectName);
-        new ProjectsTabOperator().tree().clearSelection();
-        String sessionCVSroot;
-        OutputOperator oo = OutputOperator.invoke();
-        comOperator = new Operator.DefaultStringComparator(true, true);
-        oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
-        Operator.setDefaultStringComparator(comOperator);
-        CheckoutWizardOperator cwo = CheckoutWizardOperator.invoke();
-        Operator.setDefaultStringComparator(oldOperator);
-        CVSRootStepOperator crso = new CVSRootStepOperator();
-        
-        crso.setCVSRoot(":pserver:anoncvs@localhost:/cvs");
-        //crso.setPassword("");
-        //crso.setPassword("test");
-        
-        //prepare stream for successful authentification and run PseudoCVSServer
-        InputStream in = TestKit.getStream(getDataDir().getCanonicalFile().toString() + File.separator + PROTOCOL_FOLDER, "authorized.in");
-        if (in == null) {
-            System.err.println(getClass().getProtectionDomain().getCodeSource().getLocation().toExternalForm());
-            in.markSupported();
-        }
-        
-        PseudoCvsServer cvss = new PseudoCvsServer(in);
-        new Thread(cvss).start();
-        cvss.ignoreProbe();
-        String CVSroot = cvss.getCvsRoot();
-        crso.setCVSRoot(CVSroot);
-        sessionCVSroot = CVSroot;
-        System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", CVSroot);
-        crso.next();
-              
         try {
-           JProgressBarOperator progress = new JProgressBarOperator(crso);
-           JButtonOperator btnStop = new JButtonOperator(crso);
-        } catch (TimeoutExpiredException e) {
-            throw e;
+            TestKit.closeProject(projectName);
+            new ProjectsTabOperator().tree().clearSelection();
+            String sessionCVSroot;
+            OutputOperator oo = OutputOperator.invoke();
+            comOperator = new Operator.DefaultStringComparator(true, true);
+            oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
+            Operator.setDefaultStringComparator(comOperator);
+            CheckoutWizardOperator cwo = CheckoutWizardOperator.invoke();
+            Operator.setDefaultStringComparator(oldOperator);
+            CVSRootStepOperator crso = new CVSRootStepOperator();
+        
+            crso.setCVSRoot(":pserver:anoncvs@localhost:/cvs");
+            //crso.setPassword("");
+            //crso.setPassword("test");
+        
+            //prepare stream for successful authentification and run PseudoCVSServer
+            InputStream in = TestKit.getStream(getDataDir().getCanonicalFile().toString() + File.separator + PROTOCOL_FOLDER, "authorized.in");
+            if (in == null) {
+                System.err.println(getClass().getProtectionDomain().getCodeSource().getLocation().toExternalForm());
+                in.markSupported();
+            }
+        
+            PseudoCvsServer cvss = new PseudoCvsServer(in);
+            new Thread(cvss).start();
+            cvss.ignoreProbe();
+            String CVSroot = cvss.getCvsRoot();
+            crso.setCVSRoot(CVSroot);
+            sessionCVSroot = CVSroot;
+            System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", CVSroot);
+            crso.next();
+              
+            try {
+                JProgressBarOperator progress = new JProgressBarOperator(crso);
+                JButtonOperator btnStop = new JButtonOperator(crso);
+            } catch (TimeoutExpiredException e) {
+                throw e;
+            }
+        
+            //second step of checkoutwizard
+            //2nd step of CheckOutWizard
+        
+            File tmp = new File("/tmp"); // NOI18N
+            File work = new File(tmp, "" + File.separator + System.currentTimeMillis());
+            tmp.mkdirs();
+            work.mkdirs();
+            tmp.deleteOnExit();
+            ModuleToCheckoutStepOperator moduleCheck = new ModuleToCheckoutStepOperator();
+            cvss.stop();
+            in.close();
+            moduleCheck.setModule("ForImport");        
+            moduleCheck.setLocalFolder(work.getAbsolutePath()); // NOI18N
+        
+            //Pseudo CVS server for finishing check out wizard
+            in = TestKit.getStream(getDataDir().getCanonicalFile().toString() + File.separator + PROTOCOL_FOLDER, "checkout_finish_2.in");
+            cvss = new PseudoCvsServer(in);
+            new Thread(cvss).start();
+            CVSroot = cvss.getCvsRoot();
+            //cvss.ignoreProbe();
+        
+            //crso.setCVSRoot(CVSroot);
+            System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", CVSroot);
+            cwo.finish();
+        
+        
+            //System.out.println(CVSroot);
+            OutputTabOperator oto = new OutputTabOperator(sessionCVSroot); 
+            oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
+            oto.waitText("Checking out finished");
+            cvss.stop();
+            in.close();
+            NbDialogOperator nbdialog = new NbDialogOperator("Checkout Completed");
+            JButtonOperator open = new JButtonOperator(nbdialog, "Open Project");
+            open.push();
+        
+            ProjectSupport.waitScanFinished();
+            new QueueTool().waitEmpty(1000);
+            ProjectSupport.waitScanFinished();
+        } catch (Exception e) {
+            throw new Exception("Test failed: " + e);
+        } finally {
+            TestKit.closeProject(projectName);
+            System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", "");
         }
-        
-        //second step of checkoutwizard
-        //2nd step of CheckOutWizard
-        
-        File tmp = new File("/tmp"); // NOI18N
-        File work = new File(tmp, "" + File.separator + System.currentTimeMillis());
-        tmp.mkdirs();
-        work.mkdirs();
-        tmp.deleteOnExit();
-        ModuleToCheckoutStepOperator moduleCheck = new ModuleToCheckoutStepOperator();
-        cvss.stop();
-        in.close();
-        moduleCheck.setModule("ForImport");        
-        moduleCheck.setLocalFolder(work.getAbsolutePath()); // NOI18N
-        
-        //Pseudo CVS server for finishing check out wizard
-        in = TestKit.getStream(getDataDir().getCanonicalFile().toString() + File.separator + PROTOCOL_FOLDER, "checkout_finish_2.in");
-        cvss = new PseudoCvsServer(in);
-        new Thread(cvss).start();
-        CVSroot = cvss.getCvsRoot();
-        //cvss.ignoreProbe();
-        
-        //crso.setCVSRoot(CVSroot);
-        System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", CVSroot);
-        cwo.finish();
-        
-        
-        //System.out.println(CVSroot);
-        OutputTabOperator oto = new OutputTabOperator(sessionCVSroot); 
-        oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-        oto.waitText("Checking out finished");
-        cvss.stop();
-        in.close();
-        NbDialogOperator nbdialog = new NbDialogOperator("Checkout Completed");
-        JButtonOperator open = new JButtonOperator(nbdialog, "Open Project");
-        open.push();
-        
-        ProjectSupport.waitScanFinished();
-        new QueueTool().waitEmpty(1000);
-        ProjectSupport.waitScanFinished();
-        
-        TestKit.closeProject(projectName);
-        System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", "");
     }
 }

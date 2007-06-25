@@ -151,7 +151,7 @@ public class TestKit {
         
         NewFileWizardOperator nfwo = NewFileWizardOperator.invoke();
         nfwo.selectProject(projectName);
-        nfwo.selectCategory("Java Classes");
+        nfwo.selectCategory("Java");
         nfwo.selectFileType("Java Package");
         nfwo.next();
         NewFileNameLocationStepOperator nfnlso = new NewFileNameLocationStepOperator();
@@ -161,7 +161,7 @@ public class TestKit {
         //
         nfwo = NewFileWizardOperator.invoke();
         nfwo.selectProject(projectName);
-        nfwo.selectCategory("Java Classes");
+        nfwo.selectCategory("Java");
         nfwo.selectFileType("Java Class");
         nfwo.next();
         nfnlso = new NewFileNameLocationStepOperator();
@@ -187,7 +187,7 @@ public class TestKit {
         
         NewFileWizardOperator nfwo = NewFileWizardOperator.invoke();
         nfwo.selectProject(projectName);
-        nfwo.selectCategory("Java Classes");
+        nfwo.selectCategory("Java");
         nfwo.selectFileType("Java Package");
         nfwo.next();
         NewFileNameLocationStepOperator nfnlso = new NewFileNameLocationStepOperator();
@@ -197,7 +197,7 @@ public class TestKit {
         //
         nfwo = NewFileWizardOperator.invoke();
         nfwo.selectProject(projectName);
-        nfwo.selectCategory("Java Classes");
+        nfwo.selectCategory("Java");
         nfwo.selectFileType("Java Class");
         nfwo.next();
         nfnlso = new NewFileNameLocationStepOperator();
@@ -208,7 +208,7 @@ public class TestKit {
         //
         nfwo = NewFileWizardOperator.invoke();
         nfwo.selectProject(projectName);
-        nfwo.selectCategory("Java Classes");
+        nfwo.selectCategory("Java");
         nfwo.selectFileType("Java Class");
         nfwo.next();
         nfnlso = new NewFileNameLocationStepOperator();
@@ -219,7 +219,7 @@ public class TestKit {
         //
         nfwo = NewFileWizardOperator.invoke();
         nfwo.selectProject(projectName);
-        nfwo.selectCategory("Java Classes");
+        nfwo.selectCategory("Java");
         nfwo.selectFileType("Java Class");
         nfwo.next();
         nfnlso = new NewFileNameLocationStepOperator();
@@ -230,7 +230,7 @@ public class TestKit {
         //
         nfwo = NewFileWizardOperator.invoke();
         nfwo.selectProject(projectName);
-        nfwo.selectCategory("Java Classes");
+        nfwo.selectCategory("Java");
         nfwo.selectFileType("Java Class");
         nfwo.next();
         nfnlso = new NewFileNameLocationStepOperator();
@@ -245,7 +245,7 @@ public class TestKit {
         
         NewFileWizardOperator nfwo = NewFileWizardOperator.invoke();
         nfwo.selectProject(projectName);
-        nfwo.selectCategory("Java Classes");
+        nfwo.selectCategory("Java");
         nfwo.selectFileType("Java Package");
         nfwo.next();
         NewFileNameLocationStepOperator nfnlso = new NewFileNameLocationStepOperator();
@@ -256,7 +256,7 @@ public class TestKit {
         //
         nfwo = NewFileWizardOperator.invoke();
         nfwo.selectProject(projectName);
-        nfwo.selectCategory("Java Classes");
+        nfwo.selectCategory("Java");
         nfwo.selectFileType("Java Package");
         nfwo.next();
         nfnlso = new NewFileNameLocationStepOperator();
@@ -266,7 +266,7 @@ public class TestKit {
         //
         nfwo = NewFileWizardOperator.invoke();
         nfwo.selectProject(projectName);
-        nfwo.selectCategory("Java Classes");
+        nfwo.selectCategory("Java");
         nfwo.selectFileType("Java Class");
         nfwo.next();
         nfnlso = new NewFileNameLocationStepOperator();
@@ -278,7 +278,7 @@ public class TestKit {
         //
         nfwo = NewFileWizardOperator.invoke();
         nfwo.selectProject(projectName);
-        nfwo.selectCategory("Java Classes");
+        nfwo.selectCategory("Java");
         nfwo.selectFileType("Java Class");
         nfwo.next();
         nfnlso = new NewFileNameLocationStepOperator();
@@ -289,7 +289,7 @@ public class TestKit {
         //
         nfwo = NewFileWizardOperator.invoke();
         nfwo.selectProject(projectName);
-        nfwo.selectCategory("Java Classes");
+        nfwo.selectCategory("Java");
         nfwo.selectFileType("Java Class");
         nfwo.next();
         nfnlso = new NewFileNameLocationStepOperator();
@@ -300,7 +300,7 @@ public class TestKit {
         //
         nfwo = NewFileWizardOperator.invoke();
         nfwo.selectProject(projectName);
-        nfwo.selectCategory("Java Classes");
+        nfwo.selectCategory("Java");
         nfwo.selectFileType("Java Class");
         nfwo.next();
         nfnlso = new NewFileNameLocationStepOperator();
