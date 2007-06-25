@@ -1,8 +1,8 @@
-Deprecated#java.lang.Deprecated
-Override#java.lang.Override
-SuppressWarnings#java.lang.SuppressWarnings
-com#com
 interface
+Deprecated
+Override
+SuppressWarnings
+com#com
 java#java
 javax#javax
 org#org

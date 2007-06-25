@@ -1,3 +1,4 @@
+static
 accesscontroltest#accesscontroltest
 arraystest#arraystest
 com#com
@@ -7,7 +8,6 @@ java#java
 javax#javax
 localvarstest#localvarstest
 org#org
-static
 sun#sun
 sunw#sunw
 test1#test1

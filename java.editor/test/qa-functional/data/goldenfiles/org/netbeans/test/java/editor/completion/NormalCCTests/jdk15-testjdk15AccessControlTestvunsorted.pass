@@ -1,3 +1,5 @@
+x
+y
 clone#00#()
 delta#01#(Point)
 delta3d#01#(Point3d)
@@ -12,5 +14,3 @@ toString#00#()
 wait#00#()
 wait#01#(long)
 wait#02#(long,int)
-x
-y
