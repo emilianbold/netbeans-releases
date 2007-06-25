@@ -88,6 +88,14 @@ public class CreateMethodTest extends ErrorHintsTestBase {
         performAnalysisTest("test/Test.java", "package test; public class Test {public void test() {int i = 0; switch (i) {case 1: fff(); break;}}}", 134 - 48, "CreateMethodFix:fff()void:test.Test");
     }
     
+    public void testCreateMethod82931() throws Exception {
+        performFixTest("test/Test.java",
+                       "package test; import java.util.Collection; public class Test {public static void test() {fff(getStrings());} private static Collection<String> getStrings() {return null;}}",
+                       116 - 25,
+                       "CreateMethodFix:fff(java.util.Collection<java.lang.String> strings)void:test.Test",
+                       "package test; import java.util.Collection; public class Test {public static void test() {fff(getStrings());} private static void fff(Collection<String> strings) { throw new UnsupportedOperationException(\"Not yet implemented\"); } private static Collection<String> getStrings() {return null;}}");
+    }
+    
     protected List<Fix> computeFixes(CompilationInfo info, int pos, TreePath path) throws IOException {
         List<Fix> fixes = new CreateElement().analyze(info, pos);
         List<Fix> result=  new LinkedList<Fix>();
