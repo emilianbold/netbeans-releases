@@ -41,6 +41,7 @@ import org.netbeans.api.languages.SyntaxContext;
 import org.netbeans.api.editor.fold.Fold;
 import org.netbeans.api.editor.fold.FoldHierarchy;
 import org.netbeans.api.editor.fold.FoldType;
+import org.netbeans.api.editor.fold.FoldUtilities;
 import org.netbeans.api.languages.SyntaxContext;
 import org.netbeans.api.languages.ASTNode;
 import org.netbeans.api.languages.ASTItem;
@@ -214,7 +215,7 @@ public class LanguagesFoldManager extends ASTEvaluator implements FoldManager {
 
     public void afterEvaluation (State state, ASTNode root) {
         SwingUtilities.invokeLater (new Runnable () {
-            public void run () {
+            public void run () { 
                 if (operation == null) {
                     evalState = STOPPED;
                     return;
@@ -225,9 +226,19 @@ public class LanguagesFoldManager extends ASTEvaluator implements FoldManager {
                     Fold fold = operation.getHierarchy ().getRootFold ();
                     List<Fold> l = new ArrayList<Fold> (fold.getFoldCount ());
                     int i, k = fold.getFoldCount ();
-                    for (i = 0; i < k; i++)
-                        l.add (fold.getFold (i));
-                    for (i = 0; i < k; i++)
+                    for (i = 0; i < k; i++) {
+                        Fold f = fold.getFold (i);
+                        //hacky fix - we need to find a better solution
+                        //how to check if the fold was created by me
+                        try {
+                            operation.getExtraInfo(f);
+                            //no ISE thrown - my fold
+                            l.add (f);
+                        } catch (IllegalStateException e) {
+                            //not my fold
+                        }
+                    }
+                    for (i = 0; i < l.size(); i++)
                         operation.removeFromHierarchy (l.get (i), transaction);
                     Iterator<FoldItem> it = folds.iterator ();
                     while (it.hasNext ()) {
