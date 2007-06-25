@@ -30,7 +30,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -38,7 +37,6 @@ import java.util.StringTokenizer;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
-import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.modules.apisupport.project.NbModuleProjectType;
@@ -150,13 +148,12 @@ public final class GlobalSourceForBinaryImpl implements SourceForBinaryQueryImpl
         }
         
         public FileObject[] getRoots() {
-            final List<FileObject> candidates = new ArrayList();
-            URL[] roots = platform.getSourceRoots();
+            final List<FileObject> candidates = new ArrayList<FileObject>();
             try {
-                for (int i = 0; i < roots.length; i++) {
-                    if (roots[i].getProtocol().equals("jar")) { // NOI18N
+                for (URL root : platform.getSourceRoots()) {
+                    if (root.getProtocol().equals("jar")) { // NOI18N
                         // suppose zipped sources
-                        File nbSrcF = archiveURLToFile(roots[i]);
+                        File nbSrcF = archiveURLToFile(root);
                         if (!nbSrcF.exists()) {
                             continue;
                         }
@@ -177,7 +174,7 @@ public final class GlobalSourceForBinaryImpl implements SourceForBinaryQueryImpl
                         if (pathInZip == null) {
                             continue;
                         }
-                        URL u = new URL(roots[i], pathInZip);
+                        URL u = new URL(root, pathInZip);
                         FileObject entryFO = URLMapper.findFileObject(u);
                         if (entryFO != null) {
                             candidates.add(entryFO);
@@ -190,7 +187,7 @@ public final class GlobalSourceForBinaryImpl implements SourceForBinaryQueryImpl
                         if (relPath == null) {
                             continue;
                         }
-                        URL url = new URL(roots[i], relPath);
+                        URL url = new URL(root, relPath);
                         FileObject dir = URLMapper.findFileObject(url);
                         if (dir != null) {
                             candidates.add(dir);
@@ -200,7 +197,7 @@ public final class GlobalSourceForBinaryImpl implements SourceForBinaryQueryImpl
             } catch (IOException ex) {
                 throw new AssertionError(ex);
             }
-            return (FileObject[]) candidates.toArray(new FileObject[candidates.size()]);
+            return candidates.toArray(new FileObject[candidates.size()]);
         }
         
         public void addChangeListener(ChangeListener l) {
@@ -221,7 +218,7 @@ public final class GlobalSourceForBinaryImpl implements SourceForBinaryQueryImpl
         }
         
         public void propertyChange(PropertyChangeEvent evt) {
-            if (evt.getPropertyName() == NbPlatform.PROP_SOURCE_ROOTS) {
+            if (NbPlatform.PROP_SOURCE_ROOTS.equals(evt.getPropertyName())) {
                 changeSupport.fireChange();
             }
         }
@@ -252,7 +249,7 @@ public final class GlobalSourceForBinaryImpl implements SourceForBinaryQueryImpl
     public static final class NetBeansSourcesParser {
         
         /** Zip file to instance map. */
-        private static final Map<File, NetBeansSourcesParser> instances = new HashMap();
+        private static final Map<File,NetBeansSourcesParser> instances = new HashMap<File,NetBeansSourcesParser>();
         
         private static final String NBBUILD_ENTRY = "nbbuild/"; // NOI18N
         
@@ -265,7 +262,7 @@ public final class GlobalSourceForBinaryImpl implements SourceForBinaryQueryImpl
          * NetBeans sources zip.
          */
         public static NetBeansSourcesParser getInstance(File nbSrcZip) throws ZipException, IOException {
-            NetBeansSourcesParser nbsp = (NetBeansSourcesParser) instances.get(nbSrcZip);
+            NetBeansSourcesParser nbsp = instances.get(nbSrcZip);
             if (nbsp == null) {
                 ZipFile nbSrcZipFile = new ZipFile(nbSrcZip);
                 String zipNBCVSRoot = NetBeansSourcesParser.findNBCVSRoot(nbSrcZipFile);
@@ -290,7 +287,7 @@ public final class GlobalSourceForBinaryImpl implements SourceForBinaryQueryImpl
                     Util.err.notify(ErrorManager.WARNING, ex);
                 }
             }
-            return (String) cnbToPrjDir.get(cnb);
+            return cnbToPrjDir.get(cnb);
         }
         
         private static String findNBCVSRoot(final ZipFile nbSrcZip) {
@@ -315,7 +312,7 @@ public final class GlobalSourceForBinaryImpl implements SourceForBinaryQueryImpl
         }
         
         private void doScanZippedNetBeansOrgSources() throws IOException {
-            cnbToPrjDir = new HashMap();
+            cnbToPrjDir = new HashMap<String,String>();
             for (Enumeration<? extends ZipEntry> en = nbSrcZip.entries(); en.hasMoreElements(); ) {
                 ZipEntry entry = (ZipEntry) en.nextElement();
                 if (!entry.isDirectory()) {
