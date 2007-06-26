@@ -175,7 +175,7 @@ final class StandardModule extends Module {
             }
             if (!usingLoader) {
                 if (localizedProps == null) {
-                    Util.err.fine("Trying to get localized attr " + attr + " from disabled module " + getCodeNameBase());
+                    Util.err.log(Level.FINE, "Trying to get localized attr {0} from disabled module {1}", new Object[] {attr, getCodeNameBase()});
                     try {
                         // check if the jar file still exists (see issue 82480)
                         if (jar != null && jar.isFile ()) {
@@ -186,18 +186,17 @@ final class StandardModule extends Module {
                                 jarFile.close();
                             }
                         } else {
-                            throw new IllegalStateException();
+                            Util.err.log(Level.FINE, "Cannot get localized attr {0} from module {1} (missing or deleted JAR file: {2})", new Object[] {attr, getCodeNameBase(), jar});
                         }
                     } catch (IOException ioe) {
                         Util.err.log(Level.WARNING, jar.getAbsolutePath(), ioe);
-                        if (localizedProps == null) {
-                            localizedProps = new Properties();
-                        }
                     }
                 }
-                String val = localizedProps.getProperty(attr);
-                if (val != null) {
-                    return val;
+                if (localizedProps != null) {
+                    String val = localizedProps.getProperty(attr);
+                    if (val != null) {
+                        return val;
+                    }
                 }
             }
         }
