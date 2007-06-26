@@ -132,8 +132,8 @@
             <BindingProperty name="elements" source="list" target="masterTable" targetPath="elements">
               <!-- MASTER_SUBBINDING_TEMPLATE -->
               <Subbinding sourcePath="${_fieldName_}">
-                <BindingParameter name="javax.swing.binding.SwingBindingSupport.TableColumnParameter" value="_index_"/>
-                <BindingParameter name="javax.swing.binding.SwingBindingSupport.TableColumnClassParameter" value="_fieldType_"/>
+                <BindingParameter name="javax.swing.binding.ParameterKeys.COLUMN" value="_index_"/>
+                <BindingParameter name="javax.swing.binding.ParameterKeys.COLUMN_CLASS" value="_fieldType_"/>
               </Subbinding><!-- MASTER_SUBBINDING_TEMPLATE -->
             </BindingProperty>
           </BindingProperties>
@@ -198,8 +198,8 @@
             <BindingProperty name="elements" source="masterTable" sourcePath="${selectedElement._joinCollection_}" target="detailTable" targetPath="elements">
               <!-- DETAIL_SUBBINDING_TEMPLATE -->
               <Subbinding sourcePath="${_fieldName_}">
-                <BindingParameter name="javax.swing.binding.SwingBindingSupport.TableColumnParameter" value="_index_"/>
-                <BindingParameter name="javax.swing.binding.SwingBindingSupport.TableColumnClassParameter" value="_fieldType_"/>
+                <BindingParameter name="javax.swing.binding.ParameterKeys.COLUMN" value="_index_"/>
+                <BindingParameter name="javax.swing.binding.ParameterKeys.COLUMN_CLASS" value="_fieldType_"/>
               </Subbinding><!-- DETAIL_SUBBINDING_TEMPLATE -->
             </BindingProperty>
           </BindingProperties>
