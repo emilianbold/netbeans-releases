@@ -212,16 +212,16 @@ class ProjectNode extends AbstractNode {
         protected void performAction(Node[] activatedNodes) {
             Project[] projects = new Project[activatedNodes.length];
             for (int i=0; i<projects.length;i++) {
-                projects[i] = (Project) activatedNodes[i].getLookup().lookup(Project.class);
+                projects[i] = activatedNodes[i].getLookup().lookup(org.netbeans.api.project.Project.class);
             }
             OpenProjects.getDefault().open(projects, false);
         }
 
         protected boolean enable(Node[] activatedNodes) {
-            final Collection/*<Project>*/ openedProjects =Arrays.asList(OpenProjects.getDefault().getOpenProjects());
+            final Collection<Project> openedProjects =Arrays.asList(OpenProjects.getDefault().getOpenProjects());
             for (int i=0; i<activatedNodes.length; i++) {
                 Project p;
-                if ((p = (Project) activatedNodes[i].getLookup().lookup(Project.class)) == null) {
+                if ((p = activatedNodes[i].getLookup().lookup(org.netbeans.api.project.Project.class)) == null) {
                     return false;
                 }
                 if (openedProjects.contains(p)) {
