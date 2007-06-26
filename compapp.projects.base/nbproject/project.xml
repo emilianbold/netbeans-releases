@@ -220,6 +220,7 @@
                 <friend>org.netbeans.modules.aspect.project</friend>
                 <friend>org.netbeans.modules.sql.project</friend>
                 <friend>org.netbeans.modules.workflow.project</friend>
+                <friend>com.sun.eview.project</friend>
                 <package>org.netbeans.modules.compapp.projects.base</package>
                 <package>org.netbeans.modules.compapp.projects.base.queries</package>
                 <package>org.netbeans.modules.compapp.projects.base.spi</package>
