@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -37,7 +38,6 @@ import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenHierarchyEvent;
 import org.netbeans.api.lexer.TokenHierarchyListener;
-import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.spi.editor.indent.Context;
 import org.netbeans.spi.editor.indent.ExtraLock;
 import org.netbeans.spi.editor.indent.IndentTask;
@@ -86,7 +86,8 @@ public final class TaskHandler {
      */
     private Position endPos;
     
-    private boolean docModified;
+    private Set<Object> existingFactories = new HashSet<Object>();
+    
 
     TaskHandler(boolean indent, Document doc) {
         this.indent = indent;
@@ -189,7 +190,7 @@ public final class TaskHandler {
     private boolean addItem(MimePath mimePath) {
         maxMimePathSize = Math.max(maxMimePathSize, mimePath.size());
         MimeItem item = new MimeItem(this, mimePath);
-        if (item.createTask()) {
+        if (item.createTask(existingFactories)) {
             if (items == null) {
                 items = new ArrayList<MimeItem>();
                 mime2Item = new HashMap<MimePath,MimeItem>();
@@ -244,20 +245,24 @@ public final class TaskHandler {
                 || (lookup.lookup(ReformatTask.Factory.class) != null);
         }
         
-        boolean createTask() {
+        boolean createTask(Set<Object> existingFactories) {
             Lookup lookup = MimeLookup.getLookup(mimePath);
             if (!handler.isIndent()) { // Attempt reformat task first
                 ReformatTask.Factory factory = lookup.lookup(ReformatTask.Factory.class);
-                if (factory != null && (reformatTask = factory.createTask(handler.context())) != null) {
+                if (factory != null && (reformatTask = factory.createTask(handler.context())) != null
+                && !existingFactories.contains(factory)) {
                     extraLock = reformatTask.reformatLock();
+                    existingFactories.add(factory);
                     return true;
                 }
             }
             
             if (handler.isIndent() || reformatTask == null) { // Possibly fallback to reindent for reformatting
                 IndentTask.Factory factory = lookup.lookup(IndentTask.Factory.class);
-                if (factory != null && (indentTask = factory.createTask(handler.context())) != null) {
+                if (factory != null && (indentTask = factory.createTask(handler.context())) != null
+                && !existingFactories.contains(factory)) {
                     extraLock = indentTask.indentLock();
+                    existingFactories.add(factory);
                     return true;
                 }
             }
