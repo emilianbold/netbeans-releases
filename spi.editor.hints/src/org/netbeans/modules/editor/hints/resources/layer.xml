@@ -60,6 +60,31 @@ Microsystems, Inc. All Rights Reserved.
             </file>
         </folder>
     </folder>-->
+    
+    <folder name="Menu">
+        <folder name="Source">
+            <file name="FixCode.shadow">
+                <attr name="position" intvalue="2300"/>
+                <attr name="originalFile" stringvalue="Actions/Source/org-netbeans-modules-editor-hints-FixAction.instance"/>                
+            </file>
+        </folder>
+    </folder>
+    
+    
+    <folder name="Shortcuts">
+
+        <file name="O-Enter.shadow">
+           <attr name="originalFile" stringvalue="Actions/Source/org-netbeans-modules-editor-hints-FixAction.instance"/>
+        </file>   
+        
+    </folder>
+    
+    <folder name="Actions">
+        <folder name="Source">
+            <file name="org-netbeans-modules-editor-hints-FixAction.instance"/>
+        </folder>
+    </folder>
+    
     <folder name="OptionsDialog">
      <folder name="Advanced">
          <file name="ErrorProviders.instance">
