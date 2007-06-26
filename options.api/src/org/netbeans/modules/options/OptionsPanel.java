@@ -65,7 +65,6 @@ import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 
 import org.openide.util.Utilities;
-import org.openide.windows.WindowManager;
 
 public class OptionsPanel extends JPanel {
     private CategoryModel model = CategoryModel.getInstance();
@@ -118,7 +117,11 @@ public class OptionsPanel extends JPanel {
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {
                             // change cursor                            
-                            final Frame frame = WindowManager.getDefault().getMainWindow();
+                            Frame[] all = Frame.getFrames();
+                            if (all == null || all.length == 0) {
+                                return;
+                            }
+                            final Frame frame = all[0];
                             final Cursor cursor = frame.getCursor();
                             frame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                             setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
