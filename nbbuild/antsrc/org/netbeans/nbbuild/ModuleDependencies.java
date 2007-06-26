@@ -40,6 +40,7 @@ import java.util.TreeSet;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
+import java.util.regex.Pattern;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.Project;
@@ -56,8 +57,13 @@ public class ModuleDependencies extends Task {
     private List<Output> outputs = new ArrayList<Output>();
     private Set<ModuleInfo> modules;
     private Set<File> external;
+    private Pattern regexp;
     
     public ModuleDependencies () {
+    }
+    
+    public void setGenerate(String regexpList) {
+        regexp = Pattern.compile(regexpList);
     }
     
     public Input createInput() throws BuildException {
@@ -273,6 +279,9 @@ public class ModuleDependencies extends Task {
                         continue;
                     }
                 }
+                if (regexp != null && !regexp.matcher(m.group).matches()) {
+                    continue;
+                }
 
                 String s = m.publicPackages;
                 HashMap<String,Boolean> pkgs = null;
@@ -431,6 +440,9 @@ public class ModuleDependencies extends Task {
     private void generateListOfModules (File output) throws BuildException, IOException {
         PrintWriter w = new PrintWriter (new FileWriter (output));
         for (ModuleInfo m : modules) {
+            if (regexp != null && !regexp.matcher(m.group).matches()) {
+                continue;
+            }
             w.print ("MODULE ");
             w.print (m.getName ());
             w.println ();
@@ -501,10 +513,16 @@ public class ModuleDependencies extends Task {
             String out = entry.getKey();
             List<ModuleInfo> cnt = entry.getValue();
             if (cnt.size() > 1) {
-                w.println (out.replace ('/', '.'));
                 log("Package " + out + " is shared between:", org.apache.tools.ant.Project.MSG_VERBOSE);
+                boolean doPrint = regexp == null;
                 for (ModuleInfo m : cnt) {
                     log ("   " + m.codebasename, org.apache.tools.ant.Project.MSG_VERBOSE);
+                    if (regexp != null && regexp.matcher(m.group).matches()) {
+                        doPrint = true;
+                    }
+                }
+                if (doPrint) {
+                    w.println (out.replace ('/', '.'));
                 }
             }
         }
@@ -559,6 +577,10 @@ public class ModuleDependencies extends Task {
                         continue;
                     }
                 }
+                if (regexp != null && !regexp.matcher(m.group).matches()) {
+                    continue;
+                }
+                
                 if (first) {
                     w.print ("MODULE ");
                     w.print (m.getName ());
@@ -583,6 +605,9 @@ public class ModuleDependencies extends Task {
         
         TreeMap<String, Set<Dependency>> groups = new TreeMap<String, Set<Dependency>>();
         for (ModuleInfo m : modules) {
+            if (regexp != null && !regexp.matcher(m.group).matches()) {
+                continue;
+            }
             Set<Dependency> l = groups.get(m.group);
             if (l == null) {
                 l = new TreeSet<Dependency>();

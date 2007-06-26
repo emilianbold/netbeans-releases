@@ -531,6 +531,110 @@ public class ModuleDependenciesTest extends NbTestCase {
         assertTrue ("is/cp is there as well as the withoutPkgs module depends on notAModule: " + res, res.indexOf ("is.cp\n") >= 0);
     }
     
+    public void testPublicPackagesForOneCluster() throws Exception {
+        Manifest m1 = createManifest ();
+        m1.getMainAttributes ().putValue ("OpenIDE-Module", "my.ignored.module/3");
+        File ignoreModule = generateJar (new String[] { "DefaultPkg.class", "is2/X.class", "is2/too/MyClass.class", "not/as/it/is/resource/X.xml" }, m1);
+        
+        Manifest m = createManifest ();
+        m.getMainAttributes ().putValue ("OpenIDE-Module", "my.module/3");
+        File withoutPkgs = generateJar (new String[] { "DefaultPkg.class", "is/X.class", "is/too/MyClass.class", "not/as/it/is/resource/X.xml" }, m);
+        
+        File parent = ignoreModule.getParentFile ();
+        assertEquals ("All parents are the same 1", parent, withoutPkgs.getParentFile ());
+        
+        
+        File output = PublicPackagesInProjectizedXMLTest.extractString ("");
+        output.delete ();
+        assertFalse ("Is gone", output.exists ());
+        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+            "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
+            "  <taskdef name=\"deps\" classname=\"org.netbeans.nbbuild.ModuleDependencies\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
+            "<target name=\"all\" >" +
+            "  <deps generate='ahoj'>" +
+            "    <input name=\"ignore\" >" +
+            "      <jars dir='" + parent + "' > " +
+            "        <include name='" + ignoreModule.getName () + "' />" +
+            "      </jars>" +
+            "    </input>" +
+            "    <input name=\"ahoj\" >" +
+            "      <jars dir='" + parent + "' > " +
+            "        <include name='" + withoutPkgs.getName () + "' />" +
+            "      </jars>" +
+            "    </input>" +
+            "    <output type=\"public-packages\" file=\"" + output + "\" />" +
+            "  </deps >" +
+            "</target>" +
+            "</project>"
+        );
+        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { "-verbose" });
+        
+        assertTrue ("Result generated", output.exists ());
+        
+        String res = readFile (output);
+        
+        assertEquals ("No not package", -1, res.indexOf ("not"));
+        assertEquals ("No is2 package", -1, res.indexOf ("is2"));
+        assertTrue ("Some of is pkgs: " + res, res.indexOf ("is\n") >= 0);
+        assertTrue ("is/too pkgs: " + res, res.indexOf ("is.too\n") >= 0);
+        assertEquals ("No default pkg", -1, res.indexOf ("\n\n"));
+    }
+
+    public void testSharedPackagesForOneCluster() throws Exception {
+        Manifest m0 = createManifest ();
+        m0.getMainAttributes ().putValue ("OpenIDE-Module", "my.huge.module/3");
+        File hugeModule = generateJar (new String[] { "not/X.class", "is/too/MyClass.class", }, m0);
+        
+        
+        Manifest m1 = createManifest ();
+        m1.getMainAttributes ().putValue ("OpenIDE-Module", "my.ignored.module/3");
+        File ignoreModule = generateJar (new String[] { "not/X.class" }, m1);
+        
+        Manifest m = createManifest ();
+        m.getMainAttributes ().putValue ("OpenIDE-Module", "my.module/3");
+        File withoutPkgs = generateJar (new String[] { "is/too/MyClass.class" }, m);
+        
+        File parent = ignoreModule.getParentFile ();
+        assertEquals ("All parents are the same 1", parent, withoutPkgs.getParentFile ());
+        
+        
+        File output = PublicPackagesInProjectizedXMLTest.extractString ("");
+        output.delete ();
+        assertFalse ("Is gone", output.exists ());
+        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+            "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
+            "  <taskdef name=\"deps\" classname=\"org.netbeans.nbbuild.ModuleDependencies\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
+            "<target name=\"all\" >" +
+            "  <deps generate='ahoj'>" +
+            "    <input name=\"ignore\" >" +
+            "      <jars dir='" + parent + "' > " +
+            "        <include name='" + ignoreModule.getName () + "' />" +
+            "        <include name='" + hugeModule.getName () + "' />" +
+            "      </jars>" +
+            "    </input>" +
+            "    <input name=\"ahoj\" >" +
+            "      <jars dir='" + parent + "' > " +
+            "        <include name='" + withoutPkgs.getName () + "' />" +
+            "      </jars>" +
+            "    </input>" +
+            "    <output type=\"shared-packages\" file=\"" + output + "\" />" +
+            "  </deps >" +
+            "</target>" +
+            "</project>"
+        );
+        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { "-verbose" });
+        
+        assertTrue ("Result generated", output.exists ());
+        
+        String res = readFile (output);
+        
+        assertEquals ("No not package:\n" + res, -1, res.indexOf ("not"));
+        assertTrue ("is/too pkgs: " + res, res.indexOf ("is.too\n") >= 0);
+        assertEquals ("No default pkg:\n" + res, -1, res.indexOf ("\n\n"));
+    }
+    
     public void testNameOfModuleWithoutMajorVersionDoesNotContainSlash () throws Exception {
         Manifest m = createManifest ();
         m.getMainAttributes ().putValue ("OpenIDE-Module", "my.module");
@@ -621,6 +725,57 @@ public class ModuleDependenciesTest extends NbTestCase {
         assertFalse ("No next tokens", tok.hasMoreElements ());
     }
     
+    public void testGenerateListOfForOneCluster () throws Exception {
+        File notAModule = generateJar (new String[] { "not/X.class", "not/resource/X.html" }, createManifest ());
+        
+        Manifest m = createManifest ();
+        m.getMainAttributes ().putValue ("OpenIDE-Module", "my.module/3");
+        File withoutPkgs = generateJar (new String[] { "DefaultPkg.class", "is/X.class", "is/too/MyClass.class", "not/as/it/is/resource/X.xml" }, m);
+        
+        m = createManifest ();
+        m.getMainAttributes ().putValue ("OpenIDE-Module", "my.another.module/3");
+        m.getMainAttributes ().putValue ("OpenIDE-Module-Public-Packages", "is.there.*, is.recursive.**");
+        File withPkgs = generateJar (new String[] { "is/there/A.class", "not/there/B.class", "is/recursive/Root.class", "is/recursive/sub/Under.class", "not/res/X.jpg"}, m);
+        
+        File parent = notAModule.getParentFile ();
+        assertEquals ("All parents are the same 1", parent, withoutPkgs.getParentFile ());
+        assertEquals ("All parents are the same 2", parent, withPkgs.getParentFile ());
+        
+        
+        File output = PublicPackagesInProjectizedXMLTest.extractString ("");
+        output.delete ();
+        assertFalse ("Is gone", output.exists ());
+        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+            "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
+            "  <taskdef name=\"deps\" classname=\"org.netbeans.nbbuild.ModuleDependencies\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
+            "<target name=\"all\" >" +
+            "  <deps generate='ahoj'>" +
+            "    <input name=\"ignore\" >" +
+            "      <jars dir=\"" + parent + "\" > " +
+            "        <include name=\"" + withoutPkgs.getName () + "\" />" +
+            "        <include name=\"" + withPkgs.getName () + "\" />" +
+            "      </jars>" +
+            "    </input>" +
+            "    <input name=\"ahoj\" >" +
+            "      <jars dir=\"" + parent + "\" > " +
+            "        <include name=\"" + notAModule.getName () + "\" />" +
+            "      </jars>" +
+            "    </input>" +
+            "    <output type=\"modules\" file=\"" + output + "\" />" +
+            "  </deps >" +
+            "</target>" +
+            "</project>"
+        );
+        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { "-verbose" });
+        
+        assertTrue ("Result generated", output.exists ());
+        
+        String res = readFile (output);
+        StringTokenizer tok = new StringTokenizer(res, "\n\r");
+        assertEquals("Should be empty:\n" + res, 0, tok.countTokens());
+    }
+    
     public void testGenerateModuleDependencies () throws Exception {
         Manifest openideManifest = createManifest ();
         openideManifest.getMainAttributes ().putValue ("OpenIDE-Module", "org.openide/1");
@@ -686,6 +841,75 @@ public class ModuleDependenciesTest extends NbTestCase {
         String dep1 = f1.nextToken ();
         assertTrue (dep1, dep1.startsWith ("  REQUIRES"));
         assertTrue ("on " + dep1, dep1.indexOf ("org.openide/1") >= 0);
+        
+        assertEquals ("One line + two dep for f2", 3, f2.countTokens ());
+        f2.nextToken ();
+        String dep2 = f2.nextToken ();
+        assertTrue (dep2, dep2.startsWith ("  REQUIRES"));
+        assertTrue ("on my " + dep2, dep2.indexOf ("my.module/3") >= 0);
+        dep2 = f2.nextToken ();
+        assertTrue (dep2, dep2.startsWith ("  REQUIRES"));
+        assertTrue ("on " + dep2, dep2.indexOf ("org.openide/1") >= 0);
+        
+    }
+    
+    public void testGenerateModuleDependenciesInOneClusterOnly() throws Exception {
+        Manifest openideManifest = createManifest ();
+        openideManifest.getMainAttributes ().putValue ("OpenIDE-Module", "org.openide/1");
+        File openide = generateJar (new String[] { "notneeded" }, openideManifest);
+        
+        Manifest m = createManifest ();
+        m.getMainAttributes ().putValue ("OpenIDE-Module", "my.module/3");
+        m.getMainAttributes ().putValue ("OpenIDE-Module-Module-Dependencies", "org.openide/1 > 4.17");
+        File withoutPkgs = generateJar (new String[] { "notneeded" }, m);
+        
+        m = createManifest ();
+        m.getMainAttributes ().putValue ("OpenIDE-Module", "my.another.module/3");
+        m.getMainAttributes ().putValue ("OpenIDE-Module-Module-Dependencies", "my.module/3, org.openide/1 > 4.17");
+        File withPkgs = generateJar (new String[] { "some content"}, m);
+        
+        File parent = openide.getParentFile ();
+        assertEquals ("All parents are the same 1", parent, withoutPkgs.getParentFile ());
+        assertEquals ("All parents are the same 2", parent, withPkgs.getParentFile ());
+        
+        
+        File output = PublicPackagesInProjectizedXMLTest.extractString ("");
+        output.delete ();
+        assertFalse ("Is gone", output.exists ());
+        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+            "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
+            "  <taskdef name=\"deps\" classname=\"org.netbeans.nbbuild.ModuleDependencies\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
+            "<target name=\"all\" >" +
+            "  <deps generate='ahoj'>" +
+            "    <input name=\"platform\" >" +
+            "      <jars dir=\"" + parent + "\" > " +
+            "        <include name=\"" + openide.getName () + "\" />" +
+            "        <include name=\"" + withoutPkgs.getName () + "\" />" +
+            "      </jars>" +
+            "    </input>" +
+            "    <input name=\"ahoj\" >" +
+            "      <jars dir=\"" + parent + "\" > " +
+            "        <include name=\"" + withPkgs.getName () + "\" />" +
+            "      </jars>" +
+            "    </input>" +
+            "    <output type=\"dependencies\" file=\"" + output + "\" />" +
+            "  </deps >" +
+            "</target>" +
+            "</project>"
+        );
+        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { "-verbose" });
+        
+        assertTrue ("Result generated", output.exists ());
+        
+        String res = readFile (output);
+        int y = res.indexOf ("MODULE");
+        if (y < 0) {
+            fail ("There is one module: " + y + " res: " + res);
+        }
+        assertEquals ("No other", -1, res.indexOf ("MODULE", y + 1));
+
+        StringTokenizer f2 = new StringTokenizer (res, "\r\n");
         
         assertEquals ("One line + two dep for f2", 3, f2.countTokens ());
         f2.nextToken ();
@@ -899,6 +1123,77 @@ public class ModuleDependenciesTest extends NbTestCase {
         assertTrue ("on openide module" + dep1, dep1.indexOf ("org.openide/1") >= 0);
     }
     
+    public void testCanOutputJustDependenciesBetweenClustersForOneCluster() throws Exception {
+        Manifest m = createManifest ();
+        m.getMainAttributes ().putValue ("OpenIDE-Module", "org.openide/1");
+        File openide = generateJar (new String[] { "notneeded" }, m);
+        
+        m = createManifest ();
+        m.getMainAttributes ().putValue ("OpenIDE-Module", "my.module/3");
+        m.getMainAttributes ().putValue ("OpenIDE-Module-Module-Dependencies", "org.openide/1 > 4.17");
+        File withoutPkgs = generateJar (new String[] { "notneeded" }, m);
+        
+        m = createManifest ();
+        m.getMainAttributes ().putValue ("OpenIDE-Module", "my.another.module/3");
+        m.getMainAttributes ().putValue ("OpenIDE-Module-Module-Dependencies", "my.module/3 = Ahoj, org.openide/1 > 4.17");
+        File withPkgs = generateJar (new String[] { "some content"}, m);
+        
+        File parent = withoutPkgs.getParentFile ();
+        assertEquals ("All parents are the same 1", parent, withoutPkgs.getParentFile ());
+        assertEquals ("All parents are the same 2", parent, withPkgs.getParentFile ());
+        
+        
+        File output = PublicPackagesInProjectizedXMLTest.extractString ("");
+        output.delete ();
+        assertFalse ("Is gone", output.exists ());
+        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+            "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
+            "  <taskdef name=\"deps\" classname=\"org.netbeans.nbbuild.ModuleDependencies\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
+            "<target name=\"all\" >" +
+            "  <deps generate='others'>" +
+            "    <input name=\"platform\" >" +
+            "      <jars dir=\"" + parent + "\" > " +
+            "        <include name=\"" + openide.getName () + "\" />" +
+            "      </jars>" +
+            "    </input>" +
+            "    <input name=\"ide\" >" +
+            "      <jars dir=\"" + parent + "\" > " +
+            "        <include name=\"" + withoutPkgs.getName () + "\" />" +
+            "      </jars>" +
+            "    </input>" +
+            "    <input name=\"others\" >" +
+            "      <jars dir=\"" + parent + "\" > " +
+            "        <include name=\"" + withPkgs.getName () + "\" />" +
+            "      </jars>" +
+            "    </input>" +
+            "    <output type=\"group-dependencies\" file=\"" + output + "\" />" +
+            "  </deps >" +
+            "</target>" +
+            "</project>"
+        );
+        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { "-verbose" });
+        
+        assertTrue ("Result generated", output.exists ());
+        
+        String res = readFile (output);
+        int x = res.indexOf ("GROUP");
+        assertEquals ("The file starts with GROUP", 0, x);
+        int y = res.indexOf ("GROUP", 1);
+        assertEquals ("No other:\n" + res, -1, y);
+
+        StringTokenizer f1 = new StringTokenizer (res, "\r\n");
+        
+        assertEquals ("One line + dep on openide and the other module\n" + res, 3, f1.countTokens ());
+        String groupname = f1.nextToken ();
+        assertTrue ("group is " + res, groupname.indexOf ("others") >= 0);
+        String dep1 = f1.nextToken ();
+        assertTrue (dep1, dep1.startsWith ("  REQUIRES"));
+        assertTrue ("on my module" + dep1, dep1.indexOf ("my.module/3") >= 0);
+        String dep2 = f1.nextToken ();
+        assertTrue (dep2, dep2.startsWith ("  REQUIRES"));
+        assertTrue ("on openide module" + dep2, dep2.indexOf ("org.openide/1") >= 0);
+    }
     
 
     public void testCanOutputJustImplDependenciesBetweenClusters () throws Exception {
