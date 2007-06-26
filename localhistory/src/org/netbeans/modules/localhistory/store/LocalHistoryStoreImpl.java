@@ -429,9 +429,11 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         }
         
         Map<String, StoreEntry> deleted = new HashMap<String, StoreEntry>();
-        List<HistoryEntry> entries = readHistoryForFile(root);
-        
-        for(HistoryEntry he : entries) {
+                                  
+        // first of all find files which are tagged as deleted in the given folder
+        // as this is what we know for sure
+        List<HistoryEntry> historyEntries = readHistoryForFile(root);
+        for(HistoryEntry he : historyEntries) {
             if(he.getStatus() == DELETED) {
                 String filePath = he.getTo();
                 if(!deleted.containsKey(filePath)) {
@@ -439,15 +441,63 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
                     if(data != null && data.getStatus() == DELETED) {
                         File storeFile = data.isFile ? 
                                             getStoreFile(new File(data.getAbsolutePath()), Long.toString(data.getLastModified()), false) :
-                                            getStoreFolder(root); // XXX why returning the root???
+                                            getStoreFolder(root); 
                         deleted.put(filePath, StoreEntry.createStoreEntry(new File(data.getAbsolutePath()), storeFile, data.getLastModified(), ""));
                     }
                 }
             }             
         }       
+        
+        // the problem is that some files might got deleted outside of netbeans, 
+        // so they aren't tagged as deleted, but we still may have their previous versions stored.  
+        // It woudln't be very userfriendly to ignore them just because they don't meet all the byrocratic expectations
+        List<File> lostFiles = getLostFiles();
+        for(File lostFile : lostFiles) {
+            if(!deleted.containsKey(lostFile.getAbsolutePath())) {
+                if(lostFile.getParentFile().equals(root)) {                    
+                    StoreEntry[] storeEntries = getStoreEntriesImpl(lostFile);
+                    if(storeEntries == null || storeEntries.length == 0) {
+                        continue;
+                    }
+                    StoreEntry storeEntry = storeEntries[0];
+                    for(int i = 1; i < storeEntries.length; i++) {
+                        if(storeEntry.getTimestamp() < storeEntries[i].getTimestamp()) {
+                            storeEntry = storeEntries[i];
+                        }
+                    }
+                    deleted.put(lostFile.getAbsolutePath(), storeEntry);
+                }
+            }            
+        }
+        
         return deleted.values().toArray(new StoreEntry[deleted.size()]);
     }
 
+    private List<File> getLostFiles() {
+        List<File> files = new ArrayList<File>();
+        File[] topLevelFiles = storage.listFiles();                
+        if(topLevelFiles == null || topLevelFiles.length == 0) {
+            return files;
+        }        
+        for(File topLevelFile : topLevelFiles) {                        
+            File[] secondLevelFiles = topLevelFile.listFiles();
+            if(secondLevelFiles == null || secondLevelFiles.length == 0) {                
+                continue; 
+            }                                    
+            for(File storeFile : secondLevelFiles) {
+                StoreDataFile data = readStoreData(new File(storeFile, DATA_FILE), false);
+                if(data == null) {
+                    continue;
+                }                
+                File file = new File(data.getAbsolutePath());
+                if(!file.exists()) {
+                    files.add(file);
+                }                
+            }                        
+        }         
+        return files;
+    }
+    
     public synchronized void setLabel(File file, long ts, String label) {
         File labelsFile = getLabelsFile(file);
         File parent = labelsFile.getParentFile();
