@@ -247,7 +247,7 @@ public class AddWsOperationHelper {
             else body = "return null"; //NOI18N
         } else
             body = "return null"; //NOI18N
-        return "{\n"+NbBundle.getMessage(AddWsOperationHelper.class, "TXT_TodoComment")+"\n"+body+"\n}";
+        return "{\n\t\t"+NbBundle.getMessage(AddWsOperationHelper.class, "TXT_TodoComment")+"\n"+body+"\n}";
     }
     /*
     protected static MethodsNode getMethodsNode() {
