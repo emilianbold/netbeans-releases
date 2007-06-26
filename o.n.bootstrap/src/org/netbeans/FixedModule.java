@@ -48,12 +48,18 @@ final class FixedModule extends Module {
     
     /** localized properties, only non-null if requested from disabled module */
     private Properties localizedProps;
+    private final Manifest manifest;
 
     /** Create a special-purpose "fixed" JAR. */
     public FixedModule(ModuleManager mgr, Events ev, Manifest manifest, Object history, ClassLoader classloader) throws InvalidException {
-        super(mgr, ev, manifest, history, classloader);
+        super(mgr, ev, history, classloader);
+        this.manifest = manifest;
         loadLocalizedPropsClasspath();
         parseManifest();
+    }
+
+    public @Override Manifest getManifest() {
+        return manifest;
     }
     
     /** Get a localized attribute.

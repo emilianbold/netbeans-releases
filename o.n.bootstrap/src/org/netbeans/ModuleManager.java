@@ -174,6 +174,17 @@ public final class ModuleManager {
     /** True while firer is firing changes.
      */
     private boolean readOnly = false;
+
+    /**
+     * Release storage for all module manifests.
+     * @see Module#releaseManifest
+     */
+    public void releaseModuleManifests() {
+        for (Module m : modules) {
+            m.releaseManifest();
+        }
+    }
+    
     /** Sets the r/o flag. Access from ChangeFirer.
      * @param ro if true, cannot make any changes until set to false again
      */
@@ -1556,9 +1567,9 @@ public final class ModuleManager {
         assertWritable();
         Set<Module> unorderedModules = getEnabledModules();
         Map<Module,List<Module>> deps = Util.moduleDependencies(unorderedModules, modulesByName, providersOf);
-        List<Module> modules;
+        List<Module> sortedModules;
         try {
-            modules = Utilities.topologicalSort(unorderedModules, deps);
+            sortedModules = Utilities.topologicalSort(unorderedModules, deps);
         } catch (TopologicalSortException ex) {
             // Once again, weird situation.
             if (PRINT_TOPOLOGICAL_EXCEPTION_STACK_TRACES) {
@@ -1567,7 +1578,7 @@ public final class ModuleManager {
             Util.err.warning("Cyclic module dependencies, will not shut down cleanly: " + deps); // NOI18N
             return true;
         }
-        if (! installer.closing(modules)) {
+        if (! installer.closing(sortedModules)) {
             return false;
         }
         if (midHook != null) {
@@ -1579,7 +1590,7 @@ public final class ModuleManager {
                 Util.err.log(Level.WARNING, null, e);
             }
         }
-        installer.close(modules);
+        installer.close(sortedModules);
         return true;
     }
 }

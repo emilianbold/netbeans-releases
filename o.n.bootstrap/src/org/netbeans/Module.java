@@ -55,8 +55,6 @@ public abstract class Module extends ModuleInfo {
     public static final String PROP_VALID = "valid"; // NOI18N
     public static final String PROP_PROBLEMS = "problems"; // NOI18N
     
-    /** module manifest */
-    protected Manifest manifest;
     /** manager which owns this module */
     protected final ModuleManager mgr;
     /** event logging (should not be much here) */
@@ -105,10 +103,9 @@ public abstract class Module extends ModuleInfo {
     }
     
     /** Create a special-purpose "fixed" JAR. */
-    protected Module(ModuleManager mgr, Events ev, Manifest manifest, Object history, ClassLoader classloader) throws InvalidException {
+    protected Module(ModuleManager mgr, Events ev, Object history, ClassLoader classloader) throws InvalidException {
         this.mgr = mgr;
         this.events = ev;
-        this.manifest = manifest;
         this.history = history;
         this.classloader = classloader;
         reloadable = false;
@@ -250,7 +247,7 @@ public abstract class Module extends ModuleInfo {
      * some kind of description of the problem.
      */
     protected void parseManifest() throws InvalidException {
-        Attributes attr = manifest.getMainAttributes();
+        Attributes attr = getManifest().getMainAttributes();
         // Code name
         codeName = attr.getValue("OpenIDE-Module"); // NOI18N
         if (codeName == null) {
@@ -492,9 +489,12 @@ public abstract class Module extends ModuleInfo {
      * It is not guaranteed that change events will be fired
      * for changes in this property.
      */
-    public Manifest getManifest() {
-        return manifest;
-    }
+    public abstract Manifest getManifest();
+
+    /**
+     * Release memory storage for the JAR manifest, if applicable.
+     */
+    public void releaseManifest() {}
     
     /** Get a set of {@link org.openide.modules.Dependency} objects representing missed dependencies.
      * This module is examined to see

@@ -69,6 +69,7 @@ final class StandardModule extends Module {
     private final File jar;
     /** if reloadable, temporary JAR file actually loaded from */
     private File physicalJar = null;
+    private Manifest manifest;
     
     /** Map from extension JARs to sets of JAR that load them via Class-Path.
      * Used only for debugging purposes, so that a warning is printed if two
@@ -118,6 +119,22 @@ final class StandardModule extends Module {
         }
         moduleJARs.add(jar);
     }
+
+    public @Override Manifest getManifest() {
+        if (manifest == null) {
+            try {
+                loadManifest();
+            } catch (IOException x) {
+                Util.err.log(Level.WARNING, "While loading manifest for " + this, x);
+                manifest = new Manifest();
+            }
+        }
+        return manifest;
+    }
+
+    public @Override void releaseManifest() {
+        manifest = null;
+    }
     
     /** Get a localized attribute.
      * First, if OpenIDE-Module-Localizing-Bundle was given, the specified
@@ -164,7 +181,7 @@ final class StandardModule extends Module {
                         if (jar != null && jar.isFile ()) {
                             JarFile jarFile = new JarFile(jar, false);
                             try {
-                                loadLocalizedProps(jarFile, manifest);
+                                loadLocalizedProps(jarFile, getManifest());
                             } finally {
                                 jarFile.close();
                             }
@@ -370,11 +387,11 @@ final class StandardModule extends Module {
         }
         File[] jars = patchdir.listFiles(Util.jarFilter());
         if (jars != null) {
-            for (File jar : jars) {
+            for (File patchJar : jars) {
                 if (patches == null) {
                     patches = new HashSet<File>(5);
                 }
-                patches.add(jar);
+                patches.add(patchJar);
             }
         } else {
             Util.err.warning("Could not search for patches in " + patchdir);

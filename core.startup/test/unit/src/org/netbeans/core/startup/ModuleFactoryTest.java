@@ -190,6 +190,7 @@ public class ModuleFactoryTest extends ModuleManagerTest {
     }
     
     private static final class DummyModule extends Module {
+        private final Manifest manifest;
         public DummyModule(ModuleManager mgr, Events ev, Object history, boolean reloadable, boolean autoload, boolean eager) throws IOException {
             super(mgr, ev, history, reloadable, autoload, eager);
             manifest = new Manifest();
@@ -226,6 +227,9 @@ public class ModuleFactoryTest extends ModuleManagerTest {
         @Override
         public Object getLocalizedAttribute(String attr) {
             return null;
+        }
+        public @Override Manifest getManifest() {
+            return manifest;
         }
     }
     

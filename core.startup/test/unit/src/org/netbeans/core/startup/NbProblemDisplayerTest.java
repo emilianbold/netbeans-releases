@@ -190,11 +190,13 @@ public class NbProblemDisplayerTest extends NbTestCase {
         private static final Inst INST = new Inst();
         private static final ModuleManager MGR = new ModuleManager(INST, new NbEvents());
 
-        private Map attrs = new HashMap();
+        private Map<String,String> attrs = new HashMap<String,String>();
         private Set<Dependency> problems = new HashSet<Dependency>();
+        private final Manifest manifest;
 
         public ProblemModule(Manifest m) throws IOException {
-            super(MGR, null, m, null, ProblemModule.class.getClassLoader());
+            super(MGR, null, null, ProblemModule.class.getClassLoader());
+            manifest = m;
             parseManifest();
         }
 
@@ -241,8 +243,12 @@ public class NbProblemDisplayerTest extends NbTestCase {
             return attrs.get(attr);
         }
 
-        public Set getProblems() {
-            return problems;
+        public Set<Object> getProblems() {
+            return new HashSet<Object>(problems);
+        }
+
+        public @Override Manifest getManifest() {
+            return manifest;
         }
 
     } // end of ProblemModule

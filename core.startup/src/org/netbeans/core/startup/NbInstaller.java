@@ -45,6 +45,7 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.Events;
 import org.netbeans.InvalidException;
 import org.netbeans.Module;
@@ -1128,7 +1129,9 @@ final class NbInstaller extends ModuleInstaller {
     }
     
     // Manifest caching: #26786.
-    
+
+    private static final Logger MANIFEST_LOG = Logger.getLogger(NbInstaller.class.getName() + ".manifestCache");
+
     /** The actual file where the manifest cache is stored,
      * or null if it will not be used.
      * Binary format:
@@ -1156,14 +1159,14 @@ final class NbInstaller extends ModuleInstaller {
             String userdir = System.getProperty("netbeans.user");
             if (userdir != null) {
                 manifestCacheFile = new File(new File(new File(new File (userdir), "var"), "cache"), "all-manifests.dat"); // NOI18N
-                Util.err.fine("Using manifest cache in " + manifestCacheFile);
+                MANIFEST_LOG.fine("Using manifest cache in " + manifestCacheFile);
             } else {
                 // Some special startup mode, e.g. with Plain.
                 usingManifestCache = false;
-                Util.err.fine("Not using any manifest cache; no user directory");
+                MANIFEST_LOG.fine("Not using any manifest cache; no user directory");
             }
         } else {
-            Util.err.fine("Manifest cache disabled");
+            MANIFEST_LOG.fine("Manifest cache disabled");
         }
     }
     
@@ -1204,13 +1207,13 @@ final class NbInstaller extends ModuleInstaller {
         if (entry != null) {
             if (entry.date == jar.lastModified()) {
                 // Cache hit.
-                Util.err.fine("Found manifest for " + jar + " in cache");
+                MANIFEST_LOG.fine("Found manifest for " + jar + " in cache");
                 return entry.manifest;
             } else {
-                Util.err.fine("Wrong timestamp for " + jar + " in manifest cache");
+                MANIFEST_LOG.fine("Wrong timestamp for " + jar + " in manifest cache");
             }
         } else {
-            Util.err.fine("No entry for " + jar + " in manifest cache");
+            MANIFEST_LOG.fine("No entry for " + jar + " in manifest cache");
         }
         // Cache miss.
         Manifest m = super.loadManifest(jar);
@@ -1227,20 +1230,20 @@ final class NbInstaller extends ModuleInstaller {
             try {
                 saveManifestCache(manifestCache, manifestCacheFile);
             } catch (IOException ioe) {
-                Util.err.log(Level.WARNING, null, ioe);
+                MANIFEST_LOG.log(Level.WARNING, null, ioe);
             }
             usingManifestCache = false;
             manifestCacheDirty = false;
-            manifestCache = null;
             manifestCacheFile = null;
         }
+        manifestCache = null;
     }
     
     /** Really save the cache.
      * @see #manifestCacheFile
      */
     private void saveManifestCache(Map<File,DateAndManifest> manifestCache, File manifestCacheFile) throws IOException {
-        Util.err.fine("Saving manifest cache");
+        MANIFEST_LOG.fine("Saving manifest cache");
         manifestCacheFile.getParentFile().mkdirs();
         OutputStream os = new FileOutputStream(manifestCacheFile);
         try {
@@ -1274,7 +1277,7 @@ final class NbInstaller extends ModuleInstaller {
      */
     private Map<File,DateAndManifest> loadManifestCache(File manifestCacheFile) {
         if (!manifestCacheFile.canRead()) {
-            Util.err.fine("No manifest cache found at " + manifestCacheFile);
+            MANIFEST_LOG.fine("No manifest cache found at " + manifestCacheFile);
             return new HashMap<File,DateAndManifest>(200);
         }
         ev.log(Events.PERF_START, "NbInstaller - loadManifestCache"); // NOI18N
@@ -1293,7 +1296,7 @@ final class NbInstaller extends ModuleInstaller {
                 ev.log(Events.PERF_END, "NbInstaller - loadManifestCache"); // NOI18N
             }
         } catch (IOException ioe) {
-            Util.err.log(Level.WARNING, "While reading: " + manifestCacheFile, ioe); // NOI18N
+            MANIFEST_LOG.log(Level.WARNING, "While reading: " + manifestCacheFile, ioe); // NOI18N
             return new HashMap<File,DateAndManifest>(200);
         }
     }
@@ -1338,8 +1341,8 @@ final class NbInstaller extends ModuleInstaller {
                 throw ioe;
             }
             m.put(jar, new DateAndManifest(time, mani));
-            if (Util.err.isLoggable(Level.FINE)) {
-                Util.err.fine("Manifest cache entry: jar=" + jar + " date=" + new Date(time) + " codename=" + mani.getMainAttributes().getValue("OpenIDE-Module"));
+            if (MANIFEST_LOG.isLoggable(Level.FINE)) {
+                MANIFEST_LOG.fine("Manifest cache entry: jar=" + jar + " date=" + new Date(time) + " codename=" + mani.getMainAttributes().getValue("OpenIDE-Module"));
             }
             pos = end + 1;
         }

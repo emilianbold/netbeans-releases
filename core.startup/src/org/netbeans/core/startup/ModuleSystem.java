@@ -258,6 +258,7 @@ public final class ModuleSystem {
         try {
             Set<Module> toTrigger = new HashSet<Module>(bootModules/*Collections.EMPTY_SET*/);
             list.trigger(toTrigger);
+            mgr.releaseModuleManifests();
         } finally {
             mgr.mutexPrivileged().exitWriteAccess();
         }
