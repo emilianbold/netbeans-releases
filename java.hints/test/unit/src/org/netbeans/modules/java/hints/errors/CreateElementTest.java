@@ -298,6 +298,24 @@ public class CreateElementTest extends HintsTestBase {
         )));
     }
     
+    public void testArrayInitializer() throws Exception {
+        performTestAnalysisTest("org.netbeans.test.java.hints.ArrayInitializer", 210, new HashSet<String>(Arrays.asList(
+                "AddParameterOrLocalFix:f:java.io.File:false",
+                "AddParameterOrLocalFix:f:java.io.File:true",
+                "CreateFieldFix:f:org.netbeans.test.java.hints.ArrayInitializer:java.io.File:[private]"
+        )));
+        performTestAnalysisTest("org.netbeans.test.java.hints.ArrayInitializer", 248, new HashSet<String>(Arrays.asList(
+                "AddParameterOrLocalFix:f:java.io.File:false",
+                "AddParameterOrLocalFix:f:java.io.File:true",
+                "CreateFieldFix:f:org.netbeans.test.java.hints.ArrayInitializer:java.io.File:[private]"
+        )));
+        performTestAnalysisTest("org.netbeans.test.java.hints.ArrayInitializer", 281, new HashSet<String>(Arrays.asList(
+                "AddParameterOrLocalFix:i:int:false",
+                "AddParameterOrLocalFix:i:int:true",
+                "CreateFieldFix:i:org.netbeans.test.java.hints.ArrayInitializer:int:[private]"
+        )));
+    }
+    
     protected void performTestAnalysisTest(String className, int offset, Set<String> golden) throws Exception {
         prepareTest(className);
         

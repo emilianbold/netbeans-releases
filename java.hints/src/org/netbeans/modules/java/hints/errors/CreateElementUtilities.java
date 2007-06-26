@@ -31,6 +31,7 @@ import com.sun.source.tree.IfTree;
 import com.sun.source.tree.InstanceOfTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.ParameterizedTypeTree;
 import com.sun.source.tree.ParenthesizedTree;
 import com.sun.source.tree.ReturnTree;
@@ -56,6 +57,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
@@ -124,6 +126,9 @@ public final class CreateElementUtilities {
                 
             case CONDITIONAL_EXPRESSION:
                 return computeConditionalExpression(types, info, currentPath, unresolved, offset);
+                
+            case NEW_ARRAY:
+                return computeNewArray(types, info, currentPath, unresolved, offset);
                 
             case POSTFIX_INCREMENT:
             case POSTFIX_DECREMENT:
@@ -199,7 +204,6 @@ public final class CreateElementUtilities {
                 
             case CASE:
             case ANNOTATION:
-            case NEW_ARRAY:
             case NEW_CLASS:
             case UNBOUNDED_WILDCARD:
             case EXTENDS_WILDCARD:
@@ -595,6 +599,45 @@ public final class CreateElementUtilities {
         }
         
         //XXX: annotation types...
+        
+        return null;
+    }
+    
+    private static List<? extends TypeMirror> computeNewArray(Set<ElementKind> types, CompilationInfo info, TreePath parent, Tree error, int offset) {
+        NewArrayTree nat = (NewArrayTree) parent.getLeaf();
+        
+        if (nat.getType() == error) {
+            types.add(ElementKind.CLASS);
+            types.add(ElementKind.ENUM);
+            types.add(ElementKind.INTERFACE);
+            
+            return null;
+        }
+        
+        for (Tree dimension : nat.getDimensions()) {
+            if (dimension == error) {
+                types.add(ElementKind.PARAMETER);
+                types.add(ElementKind.LOCAL_VARIABLE);
+                types.add(ElementKind.FIELD);
+                
+                return Collections.singletonList(info.getTypes().getPrimitiveType(TypeKind.INT));
+            }
+        }
+        
+        for (Tree init : nat.getInitializers()) {
+            if (init == error) {
+                TypeMirror whole = info.getTrees().getTypeMirror(parent);
+                
+                if (whole == null || whole.getKind() != TypeKind.ARRAY)
+                    return null;
+                
+                types.add(ElementKind.PARAMETER);
+                types.add(ElementKind.LOCAL_VARIABLE);
+                types.add(ElementKind.FIELD);
+                
+                return Collections.singletonList(((ArrayType) whole).getComponentType());
+            }
+        }
         
         return null;
     }
