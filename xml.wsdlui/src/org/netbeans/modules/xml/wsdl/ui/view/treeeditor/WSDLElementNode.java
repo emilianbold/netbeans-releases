@@ -506,18 +506,21 @@ public abstract class WSDLElementNode<T extends WSDLComponent> extends AbstractN
         }
     }
 
+    
+    /*
+     * Recursively finds prefixes used by child extensibility elements and tries to clean them.
+     */
     private void cleanupPrefixes(WSDLComponent comp, ExtensibilityElementPrefixCleanupVisitor visitor, WSDLModel model) {
-        for (WSDLComponent child : comp.getChildren()) {
-            if (child instanceof ExtensibilityElement) {
-                QName qname = ((ExtensibilityElement) child).getQName();
-                if (!visitor.containsPrefix(qname.getPrefix())) {
-                    ((AbstractDocumentComponent) model.getDefinitions()).removePrefix(qname.getPrefix());
-                }
+        if (comp instanceof ExtensibilityElement) {
+            QName qname = ((ExtensibilityElement) comp).getQName();
+            if (!visitor.containsPrefix(qname.getPrefix())) {
+                ((AbstractDocumentComponent) model.getDefinitions()).removePrefix(qname.getPrefix());
             }
+        }
+        //look for deleted children to clean up
+        for (WSDLComponent child : comp.getChildren()) {
             cleanupPrefixes(child, visitor, model);
         }
-        
-        
     }
     
     private void updateDocumentation() {

@@ -25,7 +25,6 @@ import java.util.Map;
 
 import javax.xml.namespace.QName;
 
-import org.netbeans.modules.xml.wsdl.model.Definitions;
 import org.netbeans.modules.xml.wsdl.model.ExtensibilityElement;
 import org.netbeans.modules.xml.wsdl.model.visitor.ChildVisitor;
 import org.netbeans.modules.xml.wsdl.model.visitor.WSDLVisitor;
@@ -37,11 +36,6 @@ public class ExtensibilityElementPrefixCleanupVisitor extends ChildVisitor
 
     public ExtensibilityElementPrefixCleanupVisitor() {
         prefixesMapAfterTraversal = new HashMap<String, String>();
-    }
-    
-    @Override
-    public void visit(Definitions definition) {
-        super.visit(definition);
     }
     
     @Override
