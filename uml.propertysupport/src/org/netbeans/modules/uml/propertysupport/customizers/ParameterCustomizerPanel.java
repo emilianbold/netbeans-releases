@@ -977,7 +977,8 @@ public class ParameterCustomizerPanel extends javax.swing.JPanel {
                     if (valid = validateUpper(row, column+1, model, message)) {
                         lowerVal = Integer.parseInt((String) model.getValueAt(row, column));
                         upperVal = Integer.parseInt((String) model.getValueAt(row, column+1));
-                        if (lowerVal >= upperVal) {
+                        // fixed issue 108024: Lower value must be smaller or equal to upper value
+                        if (lowerVal > upperVal) {   
                             valid = false;
                             message.append(bundle.getString("MSG_LOWER_MUST_BE_SMALLER"));
                         }
@@ -989,7 +990,8 @@ public class ParameterCustomizerPanel extends javax.swing.JPanel {
                     if (valid = validateLower(row, column-1, model, message)) {
                          upperVal = Integer.parseInt((String) model.getValueAt(row, column));
                          lowerVal = Integer.parseInt((String) model.getValueAt(row, column-1));
-                         if (upperVal <= lowerVal) {
+                         // fixed issue 108024: Upper value must be greater or equal to upper value
+                         if (upperVal < lowerVal) {   
                              valid = false;
                              message.append(bundle.getString("MSG_UPPER_MUST_BE_GREATER"));
                          }
