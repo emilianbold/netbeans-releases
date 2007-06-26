@@ -313,7 +313,9 @@ class TaskResult {
         ret = ret.append(": ("); // NOI18N
         ret = ret.append(getLocToken());
         ret = ret.append(") ");  // NOI18N
-        ret = ret.append(getLocMessage());
+        ret = ret.append(
+                getLocMessage().replaceAll("\n", "<br>") // NOI18N  // See IZ #108114
+                .replaceAll("\t", "&nbsp;&nbsp;&nbsp;&nbsp;")); // NOI18N
         
         return ret.toString();
     }
