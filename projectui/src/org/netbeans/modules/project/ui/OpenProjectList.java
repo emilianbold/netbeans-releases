@@ -98,7 +98,9 @@ public final class OpenProjectList {
     // number of templates in LRU list
     private static final int NUM_TEMPLATES = 15;
     
-    private static final ErrorManager ERR = ErrorManager.getDefault().getInstance(OpenProjectList.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(OpenProjectList.class.getName());
+    private static final Level LOG_LEVEL = Level.FINE;
+    
     private static final RequestProcessor OPENING_RP = new RequestProcessor("Opening projects", 1);
     
     /** List which holds the open projects */
@@ -257,8 +259,8 @@ public final class OpenProjectList {
         
         long end = System.currentTimeMillis();
         
-        if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
-            ERR.log(ErrorManager.INFORMATIONAL, "opening projects took: " + (end - start) + "ms");
+        if (LOGGER.isLoggable(LOG_LEVEL)) {
+            LOGGER.log(LOG_LEVEL, "opening projects took: " + (end - start) + "ms");
         }
     }
     
@@ -378,7 +380,7 @@ public final class OpenProjectList {
         if (!ProjectUtilities.closeAllDocuments (projects, notifyUI )) {
             return;
         }
-        
+        logProjects("close(): closing project: ", projects);
         boolean mainClosed = false;
         boolean someClosed = false;
         List<Project> oldprjs = new ArrayList<Project>();
@@ -413,6 +415,7 @@ public final class OpenProjectList {
                 recentProjects.save();
             }
         }
+        logProjects("close(): openProjects == ", openProjects.toArray(new Project[0])); // NOI18N
         if ( someClosed ) {
             pchSupport.firePropertyChange( PROPERTY_OPEN_PROJECTS, 
                             oldprjs.toArray(new Project[oldprjs.size()]), newprjs.toArray(new Project[newprjs.size()]) );
@@ -469,8 +472,11 @@ public final class OpenProjectList {
     }
     
     public void setMainProject( Project mainProject ) {
+        LOGGER.finer("Setting main project: " + mainProject.toString()); // NOI18N
+        logProjects("setMainProject(): openProjects == ", openProjects.toArray(new Project[0])); // NOI18N
         synchronized ( this ) {
             if (mainProject != null && !openProjects.contains(mainProject)) {
+                logProjects("setMainProject(): openProjects == ", openProjects.toArray(new Project[0])); // NOI18N
                 throw new IllegalArgumentException("Project " + ProjectUtils.getInformation(mainProject).getDisplayName() + " is not open and cannot be set as main.");
             }
         
@@ -667,7 +673,7 @@ public final class OpenProjectList {
     
     private boolean doOpenProject(final Project p) {
         boolean recentProjectsChanged;
-        
+        LOGGER.finer("doOpenProject(): opening project " + p.toString());
         synchronized (this) {
             if (openProjects.contains(p)) {
                 return false;
@@ -678,7 +684,7 @@ public final class OpenProjectList {
             p.getProjectDirectory().addFileChangeListener(deleteListener);
             recentProjectsChanged = recentProjects.remove(p);
         }
-        
+        logProjects("doOpenProject(): openProjects == ", openProjects.toArray(new Project[0])); // NOI18N
         // Notify projects opened
         notifyOpened(p);
         
@@ -698,7 +704,7 @@ public final class OpenProjectList {
         List<URL> URLs = OpenProjectListSettings.getInstance().getOpenProjectsURLs();
         List<Project> projects = URLs2Projects( URLs );
         
-        return projects;        
+        return projects;
     }
     
   
@@ -818,8 +824,8 @@ public final class OpenProjectList {
             this.size = size;
             recentProjects = new ArrayList<ProjectReference>( size );
             recentProjectsInfos = new ArrayList<UnloadedProjectInformation>(size);
-            if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
-                ERR.log("created a RecentProjectList: size=" + size);
+            if (LOGGER.isLoggable(LOG_LEVEL)) {
+                LOGGER.log(LOG_LEVEL, "created a RecentProjectList: size=" + size);
             }
         }
         
@@ -828,8 +834,8 @@ public final class OpenProjectList {
             
             if ( index == -1 ) {
                 // Project not in list
-                if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
-                    ERR.log("add new recent project: " + p);
+                if (LOGGER.isLoggable(LOG_LEVEL)) {
+                    LOGGER.log(LOG_LEVEL, "add new recent project: " + p);
                 }
                 if ( recentProjects.size() == size ) {
                     // Need some space for the newly added project
@@ -847,8 +853,8 @@ public final class OpenProjectList {
                 }
             }
             else {
-                if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
-                    ERR.log("re-add recent project: " + p);
+                if (LOGGER.isLoggable(LOG_LEVEL)) {
+                    LOGGER.log(LOG_LEVEL, "re-add recent project: " + p);
                 }
                 // Project is in list => just move it to first place
                 recentProjects.remove( index );
@@ -868,8 +874,8 @@ public final class OpenProjectList {
         public boolean remove( Project p ) {
             int index = getIndex( p );
             if ( index != -1 ) {
-                if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
-                    ERR.log("remove recent project: " + p);
+                if (LOGGER.isLoggable(LOG_LEVEL)) {
+                    LOGGER.log(LOG_LEVEL, "remove recent project: " + p);
                 }
                 recentProjects.remove( index );
                 recentProjectsInfos.remove(index);
@@ -877,7 +883,6 @@ public final class OpenProjectList {
             }
             return false;
         }
-        
         
         public List<Project> getProjects() {
             List<Project> result = new ArrayList<Project>( recentProjects.size() );
@@ -888,25 +893,24 @@ public final class OpenProjectList {
                 Project p = pRef.getProject();
                 if ( p == null || !p.getProjectDirectory().isValid() ) {
                     remove( p );        // Folder does not exist any more => remove from
-                    if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
-                        ERR.log("removing dead recent project: " + p);
+                    if (LOGGER.isLoggable(LOG_LEVEL)) {
+                        LOGGER.log(LOG_LEVEL, "removing dead recent project: " + p);
                     }
                 }
                 else {
                     result.add( p );
                 }
             }
-            if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
-                ERR.log("recent projects: " + result);
+            if (LOGGER.isLoggable(LOG_LEVEL)) {
+                LOGGER.log(LOG_LEVEL, "recent projects: " + result);
             }
             return result;
         }
         
-        
         public boolean isEmpty() {
             boolean empty = recentProjects.isEmpty();
-            if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
-                ERR.log("recent projects empty? " + empty);
+            if (LOGGER.isLoggable(LOG_LEVEL)) {
+                LOGGER.log(LOG_LEVEL, "recent projects empty? " + empty);
             }
             return empty;
         }
@@ -915,8 +919,8 @@ public final class OpenProjectList {
             List<URL> URLs = OpenProjectListSettings.getInstance().getRecentProjectsURLs();
             List<String> names = OpenProjectListSettings.getInstance().getRecentProjectsDisplayNames();
             List<ExtIcon> icons = OpenProjectListSettings.getInstance().getRecentProjectsIcons();
-            if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
-                ERR.log("recent project list load: " + URLs);
+            if (LOGGER.isLoggable(LOG_LEVEL)) {
+                LOGGER.log(LOG_LEVEL, "recent project list load: " + URLs);
             }
             recentProjects.clear();
             for ( Iterator it = URLs.iterator(); it.hasNext(); ) {
@@ -947,8 +951,8 @@ public final class OpenProjectList {
                     URLs.add( pURL );
                 }
             }
-            if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
-                ERR.log("recent project list save: " + URLs);
+            if (LOGGER.isLoggable(LOG_LEVEL)) {
+                LOGGER.log(LOG_LEVEL, "recent project list save: " + URLs);
             }
             OpenProjectListSettings.getInstance().setRecentProjectsURLs( URLs );
             int listSize = recentProjectsInfos.size();
@@ -1009,8 +1013,8 @@ public final class OpenProjectList {
                     projectURL = p.getProjectDirectory().getURL();                
                 }
                 catch( FileStateInvalidException e ) {
-                    if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
-                        ERR.log("FSIE getting URL for project: " + p.getProjectDirectory());
+                    if (LOGGER.isLoggable(LOG_LEVEL)) {
+                        LOGGER.log(LOG_LEVEL, "FSIE getting URL for project: " + p.getProjectDirectory());
                     }
                 }
             }
@@ -1030,8 +1034,8 @@ public final class OpenProjectList {
                     }
                 }
                 
-                if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
-                    ERR.log("no active project reference for " + projectURL);
+                if (LOGGER.isLoggable(LOG_LEVEL)) {
+                    LOGGER.log(LOG_LEVEL, "no active project reference for " + projectURL);
                 }
                 if ( projectURL != null ) {                    
                     FileObject dir = URLMapper.findFileObject( projectURL );
@@ -1040,23 +1044,23 @@ public final class OpenProjectList {
                             p = ProjectManager.getDefault().findProject( dir );
                             if ( p != null ) {
                                 projectReference = new WeakReference<Project>( p ); 
-                                if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
-                                    ERR.log("found " + p);
+                                if (LOGGER.isLoggable(LOG_LEVEL)) {
+                                    LOGGER.log(LOG_LEVEL, "found " + p);
                                 }
                                 return p;
                             }
                         }       
                         catch ( IOException e ) {
                             // Ignore invalid folders
-                            if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
-                                ERR.log("could not load recent project from " + projectURL);
+                            if (LOGGER.isLoggable(LOG_LEVEL)) {
+                                LOGGER.log(LOG_LEVEL, "could not load recent project from " + projectURL);
                             }
                         }
                     }
                 }
                 
-                if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
-                    ERR.log("no recent project in " + projectURL);
+                if (LOGGER.isLoggable(LOG_LEVEL)) {
+                    LOGGER.log(LOG_LEVEL, "no recent project in " + projectURL);
                 }
                 return null; // Empty reference                
             }
@@ -1089,10 +1093,10 @@ public final class OpenProjectList {
             if (n1 != null && n2 != null) {
                 return COLLATOR.compare(n1, n2);
             } else if (n1 == null && n2 != null) {
-                ERR.log(ErrorManager.WARNING, p1 + ": ProjectInformation.getDisplayName() should not return null!");
+                LOGGER.log(Level.WARNING, p1 + ": ProjectInformation.getDisplayName() should not return null!");
                 return -1;
             } else if (n1 != null && n2 == null) {
-                ERR.log(ErrorManager.WARNING, p2 + ": ProjectInformation.getDisplayName() should not return null!");
+                LOGGER.log(Level.WARNING, p2 + ": ProjectInformation.getDisplayName() should not return null!");
                 return 1;
             }
             return 0; // both null
@@ -1223,6 +1227,7 @@ public final class OpenProjectList {
             logger.log(r);
         }
     }
+    
     private static String afterLastDot(String s) {
         int index = s.lastIndexOf('.');
         if (index == -1) {
@@ -1231,4 +1236,13 @@ public final class OpenProjectList {
         return s.substring(index + 1);
     }
     
-}    
+    private static void logProjects(String message, Project[] projects) {
+        if (projects.length == 0) {
+            return;
+        }
+        for (Project p : projects) {
+            LOGGER.finer(message + p.toString());
+        }
+    }
+    
+}
