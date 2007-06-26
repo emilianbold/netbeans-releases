@@ -621,6 +621,8 @@ public final class FlowScene extends GraphPinScene<FlowNodeDescriptor, FlowEdgeD
                 public void run () {
                     if (widget == FlowScene.this) {
                         DesignComponent rootComponent = document.getRootComponent ();
+                        if (rootComponent == null)
+                            return;
                         FlowDescriptor rootDescriptor = new FlowDescriptor(rootComponent, "select") {}; // NOI18N
                         Collection<? extends FlowScenePresenter> presenters = rootComponent.getPresenters (FlowScenePresenter.class);
                         for (FlowScenePresenter presenter : presenters) {
