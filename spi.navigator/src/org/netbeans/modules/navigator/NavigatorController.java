@@ -230,6 +230,12 @@ public final class NavigatorController implements LookupListener, ActionListener
      * @force if true that update is forced even if it means clearing navigator content
      */
     private void updateContext (boolean force) {
+        // #67599,108066: Some updates runs delayed, so it's possible that
+        // navigator was already closed, that's why the check
+        if (curNodes == null) {
+            return;
+        }
+        
         // #80155: don't empty navigator for Properties window and similar
         // which don't define activated nodes
         Node node = obtainFirstCurNode();
@@ -535,11 +541,7 @@ public final class NavigatorController implements LookupListener, ActionListener
                 SwingUtilities.invokeLater(this);
             } else {
                 // AWT thread
-                // #67599: This task runs delayed, so it's possible that
-                // navigator was already closed, that's why the check
-                if (curNodes != null) {
-                    updateContext();
-                }
+                updateContext();
             }
         }
         
