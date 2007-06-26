@@ -95,7 +95,7 @@ public final class WhereUsedQuery extends AbstractRefactoring {
      * @see WhereUsedQuery#FIND_REFERENCES
      */
     public final void putValue(Object key, Object value) {
-        hash.put(key, (Boolean) value);
+        hash.put(key, value);
     }
 }
 
