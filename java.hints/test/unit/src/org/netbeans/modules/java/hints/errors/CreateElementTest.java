@@ -316,6 +316,10 @@ public class CreateElementTest extends HintsTestBase {
         )));
     }
     
+    public void test105415() throws Exception {
+        performTestAnalysisTest("org.netbeans.test.java.hints.Bug105415", 138, Collections.<String>emptySet());
+    }
+
     protected void performTestAnalysisTest(String className, int offset, Set<String> golden) throws Exception {
         prepareTest(className);
         

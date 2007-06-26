@@ -358,8 +358,21 @@ public final class CreateElementUtilities {
             List<TypeMirror> arrayTypes = new ArrayList<TypeMirror>();
             
             for (TypeMirror tm : upperTypes) {
+                if (tm == null)
+                    continue;
+                switch (tm.getKind()) {
+                    case VOID:
+                    case EXECUTABLE:
+                    case WILDCARD:
+                    case PACKAGE:
+                        continue;
+                }
+                
                 arrayTypes.add(info.getTypes().getArrayType(tm));
             }
+            
+            if (arrayTypes.isEmpty())
+                return null;
             
             return arrayTypes;
         }
