@@ -60,7 +60,7 @@ public class CasualDiff {
     private static final Logger LOG = Logger.getLogger(CasualDiff.class.getName());
 
     private Map<Integer, String> diffInfo = new HashMap<Integer, String>();
-     
+    
     /** provided for test only */
     public CasualDiff() {
     }
@@ -566,9 +566,8 @@ public class CasualDiff {
         copyTo(localPointer, condPos[0]);
         localPointer = diffTree(oldT.cond, newT.cond, condPos);
         // body
-        int[] bodyPos = getBounds(oldT.body);
-        copyTo(localPointer, bodyPos[0]);
-        localPointer = diffTree(oldT.body, newT.body, bodyPos);
+        int[] bodyPos = new int[] { localPointer, endPos(oldT.body) };
+        localPointer = diffTree(oldT.body, newT.body, bodyPos, oldT.getKind());
         
         copyTo(localPointer, bounds[1]);
         return bounds[1];
@@ -588,8 +587,9 @@ public class CasualDiff {
             copyTo(localPointer, localPointer = stepListHint);
         }
         localPointer = diffParameterList(oldT.step, newT.step, null, localPointer, Measure.ARGUMENT);
-        copyTo(localPointer, getOldPos(oldT.body));
-        localPointer = diffTree(oldT.body, newT.body, getBounds(oldT.body));
+        // body
+        int[] bodyBounds = new int[] { localPointer, endPos(oldT.body) };
+        localPointer = diffTree(oldT.body, newT.body, bodyBounds, oldT.getKind());
         
         copyTo(localPointer, bounds[1]);
         return bounds[1];
@@ -606,9 +606,8 @@ public class CasualDiff {
         copyTo(localPointer, exprBounds[0]);
         localPointer = diffTree(oldT.expr, newT.expr, exprBounds);
         // body
-        int[] bodyBounds = getBounds(oldT.body);
-        copyTo(localPointer, bodyBounds[0]);
-        localPointer = diffTree(oldT.body, newT.body, bodyBounds);
+        int[] bodyBounds = new int[] { localPointer, endPos(oldT.body) };
+        localPointer = diffTree(oldT.body, newT.body, bodyBounds, oldT.getKind());
         copyTo(localPointer, bounds[1]);
         
         return bounds[1];
@@ -2012,7 +2011,7 @@ public class CasualDiff {
                 ((binaries.contains(oldT.getKind()) && binaries.contains(newT.getKind())) == false) &&
                 ((unaries.contains(oldT.getKind()) && unaries.contains(newT.getKind())) == false)) {
                 // different kind of trees found, print the whole new one.
-                printer.print(newT);
+                    printer.print(newT);
                 return endPos(oldT);
             }
         }
@@ -2487,6 +2486,20 @@ public class CasualDiff {
             throw new IllegalArgumentException("Copying to " + to + " is greater then its size (" + origText.length() + ").");
         }
         loc.print(origText.substring(from, to));
+    }
+    
+    // temporary method
+    private int diffTree(JCTree oldT, JCTree newT, int[] elementBounds, Kind parentKind) {
+        if (oldT.getKind() != newT.getKind() && newT.getKind() == Kind.BLOCK) {
+            tokenSequence.move(getOldPos(oldT));
+            PositionEstimator.moveToSrcRelevant(tokenSequence, Direction.BACKWARD);
+            tokenSequence.moveNext();
+            copyTo(elementBounds[0], tokenSequence.offset());
+            printer.printBlock(oldT, newT, parentKind);
+            return endPos(oldT);
+        } else {
+            return diffTree(oldT, newT, elementBounds);
+        }
     }
     
     protected static class FieldGroupTree extends JCTree implements Tree {

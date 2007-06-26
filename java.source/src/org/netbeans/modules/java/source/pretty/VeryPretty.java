@@ -1393,6 +1393,19 @@ public final class VeryPretty extends JCTree.Visitor {
 	        needSpace();
         }
     }
+    
+    public void printBlock(JCTree oldT, JCTree newT, Kind parentKind) {
+        switch (parentKind) {
+            case ENHANCED_FOR_LOOP:
+            case FOR_LOOP:
+                printIndentedStat(newT, cs.redundantForBraces(), cs.spaceBeforeForLeftBrace(), cs.wrapForStatement());
+                break;
+            case WHILE_LOOP:
+                printIndentedStat(newT, cs.redundantWhileBraces(), cs.spaceBeforeWhileLeftBrace(), cs.wrapWhileStatement());
+                break;
+        }
+    }
+    
 
     private void printExpr(JCTree tree) {
 	printExpr(tree, treeinfo.noPrec);
