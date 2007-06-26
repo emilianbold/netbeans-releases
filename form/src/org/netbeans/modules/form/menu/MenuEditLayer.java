@@ -33,6 +33,7 @@ import java.awt.dnd.DropTargetEvent;
 import java.awt.dnd.DropTargetListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -92,7 +93,6 @@ public class MenuEditLayer extends JPanel {
     boolean showMenubarWarning = false;
     
     /* === private fields === */
-    private Map<JComponent,MouseInputAdapter> menuitemListenerMap;
     private Map<JMenu, PopupMenuUI> menuPopupUIMap;
     
     private RADComponent selectedRADComponent = null;
@@ -110,7 +110,6 @@ public class MenuEditLayer extends JPanel {
     /** Creates a new instance of MenuEditLayer */
     public MenuEditLayer(final FormDesigner formDesigner) {
         this.formDesigner = formDesigner;
-        menuitemListenerMap = new HashMap<JComponent,MouseInputAdapter>();
         menuPopupUIMap = new HashMap<JMenu, PopupMenuUI>();
         formModelListeners = new HashMap<RADVisualContainer,FormModelListener>();
         
@@ -139,10 +138,19 @@ public class MenuEditLayer extends JPanel {
         layers.add(dropTargetLayer, new Integer(JLayeredPane.DRAG_LAYER-5)); // put the drop target layer just above the drag layer
         
         // make the extra layers resize to the main component
-        this.addComponentListener(new ComponentAdapter() {
+        this.addComponentListener(new ComponentListener() {
             public void componentResized(ComponentEvent e) {
                 glassLayer.setSize(MenuEditLayer.this.getSize());
                 dropTargetLayer.setSize(MenuEditLayer.this.getSize());
+            }
+
+            public void componentMoved(ComponentEvent arg0) {
+            }
+
+            public void componentShown(ComponentEvent arg0) {
+            }
+
+            public void componentHidden(ComponentEvent arg0) {
             }
         });
         
@@ -259,7 +267,6 @@ public class MenuEditLayer extends JPanel {
             dragop.fastEnd();
         }
         menuPopupUIMap.clear();
-        menuitemListenerMap.clear();
         // close all popup frames
         this.setVisible(false);
         if(keyboardMenuNavigator != null) {
@@ -267,6 +274,7 @@ public class MenuEditLayer extends JPanel {
             keyboardMenuNavigator.unconfigure();
             keyboardMenuNavigator = null;
         }
+        //hackedPopupFactory.containerMap.clear();
     }
     
     //josh: all this key listener stuff should go into a separate class
@@ -396,7 +404,7 @@ public class MenuEditLayer extends JPanel {
     
     
     void configureMenu(final JComponent parent, final JMenu menu) {
-        p("configureMenu for: " + menu);
+        System.out.println("configureMenu for: " + menu);
         // make sure it will draw it's border so we can have rollovers and selection
         menu.setBorderPainted(true);
         //install the wrapper icon if not a toplevel JMenu
@@ -440,7 +448,6 @@ public class MenuEditLayer extends JPanel {
         // restore the UI
         menu.getPopupMenu().setUI(menuPopupUIMap.get(menu));
         
-        
         // restore all children
         JPanel popup = hackedPopupFactory.containerMap.get(menu);
         if(popup != null) {
@@ -459,6 +466,12 @@ public class MenuEditLayer extends JPanel {
             popup.setVisible(false);
             //layers.remove(popup);
         }
+        VisualDesignerJPanelPopup pop = hackedPopupFactory.getPopup(menu);
+        //System.out.println("pop = " + pop);
+        if(pop != null) {
+            pop.hide();
+        }
+        //this breaks stuff hackedPopupFactory.containerMap.remove(menu);
     }
     
     private boolean isConfigured(JComponent c) {

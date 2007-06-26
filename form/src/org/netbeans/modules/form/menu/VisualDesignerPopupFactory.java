@@ -42,21 +42,21 @@ class VisualDesignerPopupFactory extends PopupFactory {
     private static final boolean DEBUG = false;
     
     public Map<JMenu, JPanel> containerMap;
-    public Map<JMenu, Popup> popupMap;
+    private Map<JMenu, VisualDesignerJPanelPopup> popupMap;
     
     public MenuEditLayer canvas;
     
     public VisualDesignerPopupFactory(MenuEditLayer canvas) {
         containerMap = new HashMap<JMenu, JPanel>();
-        popupMap = new HashMap<JMenu, Popup>();
+        popupMap = new HashMap<JMenu, VisualDesignerJPanelPopup>();
         this.canvas = canvas;
     }
     
     public Popup getPopup(Component owner, Component contents, int x, int y) throws IllegalArgumentException {
         //p("getting a popup factory: " + owner + " " + contents + " " + x + " " + y);
         
-        JMenu menu = (JMenu) owner;
-        //p("creating a popup for: " + menu.getText());
+        final JMenu menu = (JMenu) owner;
+        p("creating a popup for: " + menu.getText());
         JComponent parent = canvas.getMenuParent(menu);
         //p("menu's parent = " + parent);
         JPanel cont = containerMap.get(menu);
@@ -73,16 +73,16 @@ class VisualDesignerPopupFactory extends PopupFactory {
         }
         
         // if the parent is a menu then this is a submenu
-        if(parent instanceof JMenu) {
-            setLocationFromMenu(menu, cont);
+        //if(parent instanceof JMenu) {
+            /*
         } else {
             // x/y are in abs screen coords. must convert to local
             Point pt = new Point(x,y);
-            //        p("original point = " + pt);
+            p("original point = " + pt);
             SwingUtilities.convertPointFromScreen(pt,canvas);
-            //        p("converted poitn = " + pt);
+            p("converted poitn = " + pt);
             cont.setLocation(pt);
-        }
+        }*/
         
         
         //p("size = " + cont.getSize());
@@ -90,13 +90,23 @@ class VisualDesignerPopupFactory extends PopupFactory {
         cont.setSize(cont.getLayout().preferredLayoutSize(cont));
         //p("size = " + cont.getSize());
         canvas.validate();
+        canvas.setVisible(true);
+        final JPanel fcont = cont;
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                setLocationFromMenu(menu, fcont);
+            }
+        });
+        
+        canvas.validate();
         canvas.repaint();
-        //canvas.setBorder(BorderFactory.createLineBorder(Color.BLUE));
-        //        p("returning a new jpanel popup at: " + cont.getLocation());
-        Popup popup = new VisualDesignerJPanelPopup(cont, menu, this);
+        VisualDesignerJPanelPopup popup = new VisualDesignerJPanelPopup(cont, menu, this);
         popupMap.put(menu,popup);
         return popup;
-        //return PopupFactory.getSharedInstance().getPopup(owner, contents, x, y);
+    }
+    
+    VisualDesignerJPanelPopup getPopup(JMenu menu) {
+        return popupMap.get(menu);
     }
     
     private void setLocationFromMenu(final JMenu menu, final JPanel cont) {
@@ -132,6 +142,7 @@ class VisualDesignerPopupFactory extends PopupFactory {
             }
         }
     }
+    
     private boolean isAncestor(JMenu m, JMenu menu) {
         return canvas.isAncestor(menu, m);
     }

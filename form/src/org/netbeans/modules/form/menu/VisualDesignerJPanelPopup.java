@@ -45,6 +45,7 @@ class VisualDesignerJPanelPopup extends Popup {
     // when this menu is shown hide all of the other menus
     public void show() {
         p("VisualDesignerJPanelPopup.show(): hiding other menus");
+        p("fact = " + fact.hashCode());
         // hide all menus except this one
         fact.hideOtherMenus(menu);
         cont.setVisible(true);
