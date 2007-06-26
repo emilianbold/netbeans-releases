@@ -125,11 +125,16 @@ public class PreUnaryExpression extends PostUnaryExpression
            else if("Precedence End".equals(type))
            {
                m_pPrecedenceEnd = pToken;
-           }           
-           else
-           {
+           }     
+           
+           //kris richards - removed the 'else' in order for the 'precedence' token 
+           // to be processed upstream. This is because they are never really used since
+           // the 'toString()' method here is not called. So this forces the 'precedence'
+           // tokens to be processed in the BinaryExpression super class.
+//           else
+//           {
                super.processToken(pToken, language);
-           }
+//           }
        }
    }
 
@@ -137,7 +142,8 @@ public class PreUnaryExpression extends PostUnaryExpression
     * Converts the expression data into a string representation.  The operator 
     * will be placed before the expression.
     */
-   public String toString()
+    @Override
+public String toString()
    {
       String retVal = "";
       
