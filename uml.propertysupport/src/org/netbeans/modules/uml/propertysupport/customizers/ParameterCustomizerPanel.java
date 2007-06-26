@@ -5,7 +5,7 @@
  *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
-
+ 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
@@ -143,36 +143,34 @@ public class ParameterCustomizerPanel extends javax.swing.JPanel {
      */
     private void initColumnSizes(final JTable table) {
         
-        SwingUtilities.invokeLater(new Runnable()
-        {
-            public void run()
-            {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
                 MultiplicityTableModel model = (MultiplicityTableModel)table.getModel();
                 TableColumn column = null;
                 Component comp = null;
                 int headerWidth = 0;
                 int cellWidth = 0;
-        //        Object[] longValues = model.longValues;
+                //        Object[] longValues = model.longValues;
                 TableCellRenderer headerRenderer =
-                    table.getTableHeader().getDefaultRenderer();
-
+                      table.getTableHeader().getDefaultRenderer();
+                
                 for (int i = 0; i < 2; i++) {
                     column = table.getColumnModel().getColumn(i);
-
+                    
                     comp = headerRenderer.getTableCellRendererComponent(
-                                         null, column.getHeaderValue(),
-                                         false, false, 0, 0);
+                          null, column.getHeaderValue(),
+                          false, false, 0, 0);
                     headerWidth = comp.getPreferredSize().width;
-
-        //            comp = table.getDefaultRenderer(model.getColumnClass(i)).
-        //                             getTableCellRendererComponent(
-        //                                 table, longValues[i],
-        //                                 false, false, 0, i);
-        //            cellWidth = comp.getPreferredSize().width;
-
-        //            column.setPreferredWidth(Math.max(headerWidth, cellWidth));
+                    
+                    //            comp = table.getDefaultRenderer(model.getColumnClass(i)).
+                    //                             getTableCellRendererComponent(
+                    //                                 table, longValues[i],
+                    //                                 false, false, 0, i);
+                    //            cellWidth = comp.getPreferredSize().width;
+                    
+                    //            column.setPreferredWidth(Math.max(headerWidth, cellWidth));
                     column.setPreferredWidth(headerWidth + 10);
-        //            column.setMaxWidth(headerWidth + 10);
+                    //            column.setMaxWidth(headerWidth + 10);
                 }
             }
         });
@@ -212,7 +210,7 @@ public class ParameterCustomizerPanel extends javax.swing.JPanel {
     
     public void setTypeList(Object[] typeList) {
         if (typeList != null) {
-            ComboBoxModel model = new DefaultComboBoxModel(typeList); 
+            ComboBoxModel model = new DefaultComboBoxModel(typeList);
             typesCombo.setModel(model);
         }
     }
@@ -686,7 +684,7 @@ public class ParameterCustomizerPanel extends javax.swing.JPanel {
                 moveUpDownHandler(actionCmd);
                 
             } else if ("MOVEDOWN".equals(actionCmd)) {
-                moveUpDownHandler(actionCmd);   
+                moveUpDownHandler(actionCmd);
                 
             } else if ("ADD_MULTI".equals(actionCmd)) {
                 ((MultiplicityTableModel)multiplicityTable.getModel()).addRow();
@@ -819,9 +817,9 @@ public class ParameterCustomizerPanel extends javax.swing.JPanel {
         
         String name = (String) paramName.getText();
         String type = (String) typesCombo.getSelectedItem();
-//        if (!isDataValid(name, type, selectedIndex)) {
-//            return;
-//        }
+        //        if (!isDataValid(name, type, selectedIndex)) {
+        //            return;
+        //        }
         
         ElementData targetElem = (ElementData) listModel.get(selectedIndex);
         if (targetElem != null) {
@@ -850,7 +848,7 @@ public class ParameterCustomizerPanel extends javax.swing.JPanel {
         //create "New Parameter" dialog and display it
         NewParameterPanel innerPane = new NewParameterPanel(typeModel, listModel.toArray());
         DialogDescriptor dd = new DialogDescriptor(innerPane, bundle.getString("LBL_NEWPARAM"),
-                true, DialogDescriptor.OK_CANCEL_OPTION, null, null);
+              true, DialogDescriptor.OK_CANCEL_OPTION, null, null);
         innerPane.setDialogDescriptor(dd);
         dd.setValid(false);
         dlg = DialogDisplayer.getDefault().createDialog(dd);
@@ -885,7 +883,7 @@ public class ParameterCustomizerPanel extends javax.swing.JPanel {
     // This method is not used for now.
     public boolean isDataValid(String name, String type, int selIndex) {
         if ((name == null || name.trim().length() == 0) ||
-                (type == null || type.trim().length() == 0)) {
+              (type == null || type.trim().length() == 0)) {
             messageArea.setText(bundle.getString("MSG_EMTPY_FIELD"));
             return false;
         }
@@ -969,33 +967,38 @@ public class ParameterCustomizerPanel extends javax.swing.JPanel {
         int column = e.getColumn();
         int lowerVal = 0;
         int upperVal = 0;
+        String upper = null;
         TableModel model = (TableModel)e.getSource();
         if (row != -1 && column != 2) {
             if (column == 0 ) {         // lower column
-                valid = validateLower(row, column, model, message);
-                if (valid) {
+                if (valid = validateLower(row, column, model, message)) {
                     if (valid = validateUpper(row, column+1, model, message)) {
-                        lowerVal = Integer.parseInt((String) model.getValueAt(row, column));
-                        upperVal = Integer.parseInt((String) model.getValueAt(row, column+1));
-                        // fixed issue 108024: Lower value must be smaller or equal to upper value
-                        if (lowerVal > upperVal) {   
-                            valid = false;
-                            message.append(bundle.getString("MSG_LOWER_MUST_BE_SMALLER"));
+                        upper = (String) model.getValueAt(row, column+1);
+                        if (!"*".equals(upper)) {  // upper is infinite, no need to check
+                            lowerVal = Integer.parseInt((String) model.getValueAt(row, column));
+                            upperVal = Integer.parseInt((String) model.getValueAt(row, column+1));
+                            // fixed issue 108024: Lower value must be smaller or equal to upper value
+                            if (lowerVal > upperVal) {
+                                valid = false;
+                                message.append(bundle.getString("MSG_LOWER_MUST_BE_SMALLER"));
+                            }
                         }
                     }
                 }
             } else if (column == 1) {   // upper column
-                valid = validateUpper(row, column, model, message);
-                if (valid) {
+                if (valid = validateUpper(row, column, model, message)) {
                     if (valid = validateLower(row, column-1, model, message)) {
-                         upperVal = Integer.parseInt((String) model.getValueAt(row, column));
-                         lowerVal = Integer.parseInt((String) model.getValueAt(row, column-1));
-                         // fixed issue 108024: Upper value must be greater or equal to upper value
-                         if (upperVal < lowerVal) {   
-                             valid = false;
-                             message.append(bundle.getString("MSG_UPPER_MUST_BE_GREATER"));
-                         }
-                     }
+                        upper = (String) model.getValueAt(row, column);
+                        if (!"*".equals(upper)) {  // upper is infinite, no need to check
+                            upperVal = Integer.parseInt((String) model.getValueAt(row, column));
+                            lowerVal = Integer.parseInt((String) model.getValueAt(row, column-1));
+                            // fixed issue 108024: Upper value must be greater or equal to upper value
+                            if (upperVal < lowerVal) {
+                                valid = false;
+                                message.append(bundle.getString("MSG_UPPER_MUST_BE_GREATER"));
+                            }
+                        }
+                    }
                 }
             }
             messageArea.setText(message.toString());
@@ -1004,46 +1007,47 @@ public class ParameterCustomizerPanel extends javax.swing.JPanel {
     }
     
     private boolean validateLower(int row, int column, TableModel model, StringBuffer message){
-         boolean valid = true;
-         String lower = (String) model.getValueAt(row, column);
-         try {
-             if (lower == null || lower.length() == 0) {
-                 valid = false;
-                 message.append(bundle.getString("MSG_EMTPY_LOWER"));
-             } else {
-                 int lowerVal = Integer.parseInt(lower);
-                 if (lowerVal < 0) {
-                     valid = false;
-                     message.append(bundle.getString("MSG_INVALID_LOWER"));
-                 } 
-             }
-         } catch (NumberFormatException nfe) {
-             valid = false;
-             message.append(bundle.getString("MSG_INVALID_LOWER"));
-         }
-         return valid;
-     }
+        boolean valid = true;
+        String lower = (String) model.getValueAt(row, column);
+        try {
+            if (lower == null || lower.length() == 0) {
+                valid = false;
+                message.append(bundle.getString("MSG_EMTPY_LOWER"));
+            } else {
+                int lowerVal = Integer.parseInt(lower);
+                if (lowerVal < 0) {
+                    valid = false;
+                    message.append(bundle.getString("MSG_INVALID_LOWER"));
+                }
+            }
+        } catch (NumberFormatException nfe) {
+            valid = false;
+            message.append(bundle.getString("MSG_INVALID_LOWER"));
+        }
+        return valid;
+    }
     
-     private boolean validateUpper(int row, int column, TableModel model, StringBuffer message){
-         boolean valid = true;
-         String upper = (String) model.getValueAt(row, column);
-         try {
-             if (upper == null || upper.length() == 0) {
-                 valid = false;
-                 message.append(bundle.getString("MSG_EMTPY_UPPER"));
-             } else {
-                 int upperVal = Integer.parseInt(upper);
-                 if (upperVal < 0) {
-                     valid = false;
-                     message.append(bundle.getString("MSG_INVALID_UPPER"));
-                 } 
-             }
-         } catch (NumberFormatException nfe) {
-             valid = false;
-             message.append(bundle.getString("MSG_INVALID_UPPER"));
-         }
-         return valid;
-     }
+    private boolean validateUpper(int row, int column, TableModel model, StringBuffer message){
+        boolean valid = true;
+        String upper = (String) model.getValueAt(row, column);
+        
+        if (upper == null || upper.length() == 0) {
+            valid = false;
+            message.append(bundle.getString("MSG_EMTPY_UPPER"));
+        } else if (!upper.equals("*")){  // fix issue 108025: allowed * for infinite value
+            try {
+                int upperVal = Integer.parseInt(upper);
+                if (upperVal < 0) {
+                    valid = false;
+                    message.append(bundle.getString("MSG_INVALID_UPPER"));
+                }
+            } catch (NumberFormatException nfe) {
+                valid = false;
+                message.append(bundle.getString("MSG_INVALID_UPPER"));
+            }
+        }
+        return valid;
+    }
     
     //Swap two elements in the list.
     private void swap(int indx1, int indx2) {
@@ -1082,12 +1086,12 @@ public class ParameterCustomizerPanel extends javax.swing.JPanel {
         if (editingRow < 0 || editingCol < 0)
             return;
         javax.swing.DefaultCellEditor cellEditor =
-                (javax.swing.DefaultCellEditor) multiplicityTable.getCellEditor(editingRow, editingCol);
+              (javax.swing.DefaultCellEditor) multiplicityTable.getCellEditor(editingRow, editingCol);
         java.awt.Component editorComponent = cellEditor.getComponent();
         if (editorComponent instanceof javax.swing.JTextField) {
             String lastEditedText = ((javax.swing.JTextField)editorComponent).getText();
             ((MultiplicityTableModel)multiplicityTable.getModel()).setValueAt(
-                    lastEditedText, editingRow, editingCol);
+                  lastEditedText, editingRow, editingCol);
             cellEditor.stopCellEditing();
         }
         editorComponent.transferFocus();
@@ -1115,7 +1119,7 @@ public class ParameterCustomizerPanel extends javax.swing.JPanel {
         public Vector <ElementData> getRemovedMultiElemVec() {
             return removedMultiElemVec;
         }
-
+        
         @Override
         public String getColumnName(int arg0) {
             return super.getColumnName(arg0);
@@ -1216,30 +1220,25 @@ public class ParameterCustomizerPanel extends javax.swing.JPanel {
     /**
      * The table cell editor used to render the collection type property.
      */
-    public class CollectionTypeEditor extends DefaultCellEditor
-    {
-        public CollectionTypeEditor()
-        {
+    public class CollectionTypeEditor extends DefaultCellEditor {
+        public CollectionTypeEditor() {
             super(new JComboBox());
         }
         
         public Component getTableCellEditorComponent(JTable table,
-                                                     Object value,
-                                                     boolean isSelected,
-                                                     int row,
-                                                     int column)
-        {
-            JComboBox retVal = (JComboBox) super.getTableCellEditorComponent(table, 
-                                                                             value,
-                                                                             isSelected, 
-                                                                             row,
-                                                                             column);
+              Object value,
+              boolean isSelected,
+              int row,
+              int column) {
+            JComboBox retVal = (JComboBox) super.getTableCellEditorComponent(table,
+                  value,
+                  isSelected,
+                  row,
+                  column);
             
-            if(value instanceof ElementData)
-            {
+            if(value instanceof ElementData) {
                 ElementData data = (ElementData)value;
-                for(String curType : data.getValidCollectionTypes())
-                {
+                for(String curType : data.getValidCollectionTypes()) {
                     String s = PropertyDataFormatter.translateFullyQualifiedName(curType);
                     retVal.addItem(s);
                 }
@@ -1255,19 +1254,15 @@ public class ParameterCustomizerPanel extends javax.swing.JPanel {
     /**
      * The cell render used to correctly render the collection type information.
      */
-    public class CollectionTypeRender extends DefaultTableCellRenderer
-    {
-        protected void setValue(Object value)
-        {
+    public class CollectionTypeRender extends DefaultTableCellRenderer {
+        protected void setValue(Object value) {
             Object realValue = value;
             
-            if(value instanceof ElementData)
-            {
+            if(value instanceof ElementData) {
                 ElementData data = (ElementData)value;
                 realValue = data.getCollectionType();
                 
-                if(realValue instanceof String)
-                {
+                if(realValue instanceof String) {
                     String s = (String)realValue;
                     realValue = PropertyDataFormatter.translateFullyQualifiedName(s);
                 }
