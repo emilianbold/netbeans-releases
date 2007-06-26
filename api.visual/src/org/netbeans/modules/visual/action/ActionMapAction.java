@@ -85,7 +85,7 @@ public class ActionMapAction extends WidgetAction.Adapter {
             if (view != null) {
                 ActionMap map = actionMap != null ? actionMap : view.getActionMap ();
                 Object[] objects = map.allKeys (); // HINT - the popup menu items order is defined by result of ActionMap.allKeys method
-                if (objects != null) {
+                if (objects != null  &&  objects.length > 0) {
                     Action[] actions = new Action[objects.length];
                     for (int i = 0; i < objects.length; i ++)
                         actions[i] = map.get (objects[i]);
