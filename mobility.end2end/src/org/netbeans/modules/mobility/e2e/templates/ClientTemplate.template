@@ -145,7 +145,7 @@ public class ${service.getClassName()} {
             out.writeShort(-1);
         <#assign arrayTypeID = 0/>
         <#assign hasArrays = false/>
-        <#list utils.getRetunTypeInstances( service ) as type>
+        <#list utils.getParameterTypeInstances( service ) as type>
             <#assign serializer = mapping.getRegistry().getTypeSerializer( type )/>
             <#if type.getName() != "void" && !type.isArray()>                
                 } else if(o instanceof ${serializer.instanceOf( type )}) {
@@ -165,7 +165,7 @@ public class ${service.getClassName()} {
         <#if hasArrays>
             } else if(o.getClass().isArray()) {
             out.writeShort(${arrayTypeID});
-            <#list service.getReturnTypes() as type>
+            <#list service.getParameterTypes() as type>
                 <#if type.isArray() && type.getName() != "void">
                     if( o instanceof ${type.getName()}) {
                         ${type.getName()} array = (${type.getName()}) o;
@@ -191,7 +191,7 @@ public class ${service.getClassName()} {
         switch (type) {
         <#assign arrayTypeID = 0/>
         <#assign hasArrays = false/>
-        <#list utils.getParameterTypeInstances( service ) as type>
+        <#list utils.getReturnTypeInstances( service ) as type>
             <#assign serializer = mapping.getRegistry().getTypeSerializer( type )/>
             <#if type.getName() != "void" && !type.isArray()>
                 case ${registry.getRegisteredTypeId( type )}:

@@ -50,13 +50,13 @@ public class WebToMobileServlet extends HttpServlet {
      *  This member contains the method abstractions that can be invoked by the
      *  servlet.
      */
-    private final static Map<Integer, InvocationAbstraction> METHODS;
+    private final static Map METHODS;
 
     static {
-        METHODS = new HashMap<Integer, InvocationAbstraction>();
+        METHODS = new HashMap();
         <#list mapping.getServiceMappings() as service>
             <#list service.getMethods() as method>
-        METHODS.put( ${method.getRequestID()}, new JavonGateways.${packageName?replace( ".", "_" )}_${service.getClassName()}${method.getName()}${method.getRequestID()}Gateway());
+        METHODS.put( new Integer(${method.getRequestID()}), new JavonGateways.${packageName?replace( ".", "_" )}_${service.getClassName()}${method.getName()}${method.getRequestID()}Gateway());
             </#list>
         </#list>
     }
@@ -173,7 +173,7 @@ public class WebToMobileServlet extends HttpServlet {
      * @throws IOException  Thrown when a protocol/response error occurs
      */
     private Object invokeMethod(HttpSession session, int requestID, DataInput input) throws Exception {        
-        return METHODS.get( requestID ).invoke(session, input);
+        return ((InvocationAbstraction)METHODS.get( new Integer(requestID))).invoke(session, input);
     }
 }
 //GEN-END:Client

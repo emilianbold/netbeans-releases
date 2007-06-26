@@ -30,20 +30,6 @@ public class Utility {
     /** Marker for void return types. */
     public final static Object VOID_VALUE = new Object();
     
-    /** 
-     * Compute the type value for a given class
-     *
-     * @param clazz An object to be send to the client
-     * @return a type value to identify the object
-     */
-    private static short getType(Class clazz) {
-        String className = clazz.getName();
-        if (className.equals("java.lang.String")) {
-            return STRING_TYPE;
-        }        
-        throw new IllegalArgumentException("Unsupported type (" + className + ")");
-    }
-
     /**
      * Sends return values to the client output stream.
      *

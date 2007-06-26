@@ -48,7 +48,7 @@ public class Utils {
      * @param service 
      * @return filtered instances
      */
-    public Set<ClassData> getRetunTypeInstances( JavonMappingImpl.Service service ) {
+    public Set<ClassData> getReturnTypeInstances( JavonMappingImpl.Service service ) {
         return filterInstances( service.getReturnTypes());
     }
     
