@@ -1174,7 +1174,8 @@ private void templatesTableFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST
         if (event.getPath().length == 0)
         {
             ((DefaultMutableTreeNode)event.getChildren()[0])
-                .setUserObject("Template Families");
+                .setUserObject(NbBundle.getMessage(
+                DomainTemplatesManagerPanel.class, "LBL_TemplateFamilies")); // NOI18N
         }
         
         // Family node rename
