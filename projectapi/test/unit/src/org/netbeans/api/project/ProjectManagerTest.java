@@ -26,14 +26,11 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Level;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.projectapi.TimedWeakReference;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Lookup;
-
-// To debug tests add to nbproject/private/private.properties:
 import org.openide.util.test.MockLookup;
-// test-unit-sys-prop.org.netbeans.api.project.ProjectManager.LOG_WARN=true
 
 /* XXX tests needed:
  * - testModifiedProjectsNotGCd
@@ -65,6 +62,10 @@ public class ProjectManagerTest extends NbTestCase {
     private FileObject badproject;
     private FileObject mysteryproject;
     private ProjectManager pm;
+
+    protected @Override Level logLevel() {
+        return Level.FINE;
+    }
     
     protected void setUp() throws Exception {
         super.setUp();
@@ -80,7 +81,6 @@ public class ProjectManagerTest extends NbTestCase {
         pm = ProjectManager.getDefault();
         pm.reset();
         TestUtil.BROKEN_PROJECT_LOAD_LOCK = null;
-        ProjectManager.quiet = true;
     }
     
     protected void tearDown() throws Exception {

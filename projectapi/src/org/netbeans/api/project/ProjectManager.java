@@ -29,11 +29,9 @@ import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import org.netbeans.modules.projectapi.TimedWeakReference;
 import org.netbeans.spi.project.ProjectFactory;
 import org.netbeans.spi.project.ProjectState;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -61,10 +59,7 @@ public final class ProjectManager {
     
     // XXX change listeners?
     
-    private static final Logger ERR = Logger.getLogger(ProjectManager.class.getName());
-    // for unit testing purposes:
-    private static final Level ERR_LVL = Boolean.getBoolean(ProjectManager.class.getName() + ".LOG_WARN") ? 
-        Level.INFO : Level.FINE;
+    private static final Logger LOG = Logger.getLogger(ProjectManager.class.getName());
     
     private static final Lookup.Result<ProjectFactory> factories =
         Lookup.getDefault().lookupResult(ProjectFactory.class);
@@ -166,9 +161,6 @@ public final class ProjectManager {
         proj2Factory.clear();
     }
     
-    /** For use from unit tests. */
-    static boolean quiet = false;
-    
     /**
      * Find an open project corresponding to a given project directory.
      * Will be created in memory if necessary.
@@ -216,48 +208,36 @@ public final class ProjectManager {
                                     if (Thread.currentThread() == loadingThread) {
                                         throw new IllegalStateException("Attempt to call ProjectManager.findProject within the body of ProjectFactory.loadProject (hint: try using ProjectManager.mutex().postWriteRequest(...) within the body of your Project's constructor to prevent this)"); // NOI18N
                                     }
-                                    if (ERR.isLoggable(ERR_LVL)) {
-                                        ERR.log(ERR_LVL, "findProject(" + projectDirectory + ") in " + Thread.currentThread().getName() + ": waiting for LOADING_PROJECT...");
-                                    }
+                                    LOG.log(Level.FINE, "findProject({0}) in {1}: waiting for LOADING_PROJECT...", new Object[] {projectDirectory, Thread.currentThread().getName()});
                                     dir2Proj.wait();
-                                    if (ERR.isLoggable(ERR_LVL)) {
-                                        ERR.log(ERR_LVL, "findProject(" + projectDirectory + ") in " + Thread.currentThread().getName() + ": ...done waiting for LOADING_PROJECT");
-                                    }
+                                    LOG.log(Level.FINE, "findProject({0}) in {1}: ...done waiting for LOADING_PROJECT", new Object[] {projectDirectory, Thread.currentThread().getName()});
                                 } catch (InterruptedException e) {
-                                    e.printStackTrace();
+                                    LOG.log(Level.WARNING, null, e);
                                 }
                             }
                         } while (LoadStatus.LOADING_PROJECT.is(o));
                         assert !LoadStatus.LOADING_PROJECT.is(o);
                         wasSomeSuchProject = LoadStatus.SOME_SUCH_PROJECT.is(o);
                         if (LoadStatus.NO_SUCH_PROJECT.is(o)) {
-                            if (ERR.isLoggable(ERR_LVL)) {
-                                ERR.log(ERR_LVL, "findProject(" + projectDirectory + ") in " + Thread.currentThread().getName() + ": NO_SUCH_PROJECT");
-                            }
+                            LOG.log(Level.FINE, "findProject({0}) in {1}: NO_SUCH_PROJECT", new Object[] {projectDirectory, Thread.currentThread().getName()});
                             return null;
                         } else if (o != null && !LoadStatus.SOME_SUCH_PROJECT.is(o)) {
                             Project p = o.first().get();
                             if (p != null) {
-                                if (ERR.isLoggable(ERR_LVL)) {
-                                    ERR.log(ERR_LVL, "findProject(" + projectDirectory + ") in " + Thread.currentThread().getName() + ": cached project");
-                                }
+                                LOG.log(Level.FINE, "findProject({0}) in {1}: cached project", new Object[] {projectDirectory, Thread.currentThread().getName()});
                                 return p;
                             }
                         }
                         // not in cache
                         dir2Proj.put(projectDirectory, LoadStatus.LOADING_PROJECT.wrap());
                         loadingThread = Thread.currentThread();
-                        if (ERR.isLoggable(ERR_LVL)) {
-                            ERR.log(ERR_LVL, "findProject(" + projectDirectory + ") in " + Thread.currentThread().getName() + ": will load new project...");
-                        }
+                        LOG.log(Level.FINE, "findProject({0}) in {1}: will load new project...", new Object[] {projectDirectory, Thread.currentThread().getName()});
                     }
                     boolean resetLP = false;
                     try {
                         Project p = createProject(projectDirectory);
-                        if (ERR.isLoggable(ERR_LVL)) {
-                            ERR.log(ERR_LVL, "findProject(" + projectDirectory + ") in " + Thread.currentThread().getName() + ": created new project");
-                            //Thread.dumpStack();
-                        }
+                        LOG.log(Level.FINE, "findProject({0}) in {1}: created new project", new Object[] {projectDirectory, Thread.currentThread().getName()});
+                        //Thread.dumpStack();
                         synchronized (dir2Proj) {
                             dir2Proj.notifyAll();
                             projectDirectory.addFileChangeListener(projectDeletionListener);
@@ -269,15 +249,13 @@ public final class ProjectManager {
                                 dir2Proj.put(projectDirectory, LoadStatus.NO_SUCH_PROJECT.wrap());
                                 resetLP = true;
                                 if (wasSomeSuchProject) {
-                                    ERR.log(Level.WARNING, "Directory " + FileUtil.getFileDisplayName(projectDirectory) + " was initially claimed to be a project folder but really was not");
+                                    LOG.log(Level.WARNING, "Directory {0} was initially claimed to be a project folder but really was not", FileUtil.getFileDisplayName(projectDirectory));
                                 }
                                 return null;
                             }
                         }
                     } catch (IOException e) {
-                        if (ERR.isLoggable(ERR_LVL)) {
-                            ERR.log(ERR_LVL, "findProject(" + projectDirectory + ") in " + Thread.currentThread().getName() + ": error loading project: " + e);
-                        }
+                        LOG.log(Level.FINE, "findProject({0}) in {1}: error loading project: {2}", new Object[] {projectDirectory, Thread.currentThread().getName(), e});
                         // Do not cache the exception. Might be useful in some cases
                         // but would also cause problems if there were a project that was
                         // temporarily corrupted, fP is called, then it is fixed, then fP is
@@ -287,9 +265,7 @@ public final class ProjectManager {
                         loadingThread = null;
                         if (!resetLP) {
                             // IOException or a runtime exception interrupted.
-                            if (ERR.isLoggable(ERR_LVL)) {
-                                ERR.log(ERR_LVL, "findProject(" + projectDirectory + ") in " + Thread.currentThread().getName() + ": cleaning up after error");
-                            }
+                            LOG.log(Level.FINE, "findProject({0}) in {1}: cleaning up after error", new Object[] {projectDirectory, Thread.currentThread().getName()});
                             synchronized (dir2Proj) {
                                 assert LoadStatus.LOADING_PROJECT.is(dir2Proj.get(projectDirectory));
                                 dir2Proj.remove(projectDirectory);
@@ -309,16 +285,16 @@ public final class ProjectManager {
     // AntBasedProjectFactorySingleton.getProjectFor() will not find project in
     // its helperRef cache) then only this second fail is logged, but the cause - 
     // the failure to create project - is never logged. So, better log it here:
-                } catch (Error e) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-                    throw e;
-                } catch (RuntimeException e) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-                    throw e;
-                } catch (IOException e) {
-                    if (!quiet) ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-                    throw e;
-                }
+                    } catch (Error e) {
+                        LOG.log(Level.INFO, null, e);
+                        throw e;
+                    } catch (RuntimeException e) {
+                        LOG.log(Level.INFO, null, e);
+                        throw e;
+                    } catch (IOException e) {
+                        LOG.log(Level.INFO, null, e);
+                        throw e;
+                    }
                 }
             });
         } catch (MutexException e) {
@@ -340,7 +316,7 @@ public final class ProjectManager {
         for (ProjectFactory factory : factories.allInstances()) {
             Project p = factory.loadProject(dir, state);
             if (p != null) {
-                Logger.getLogger("TIMER").log(Level.FINE, "Project", p);
+                Logger.getLogger("TIMER").log(Level.FINE, "Project: {0}", p);
                 proj2Factory.put(p, factory);
                 state.attach(p);
                 return p;
@@ -477,9 +453,7 @@ public final class ProjectManager {
         
         public void markModified() {
             assert p != null;
-            if (ERR.isLoggable(ERR_LVL)) {
-                ERR.log(ERR_LVL, "markModified(" + p.getProjectDirectory()+ ")");
-            }
+            LOG.log(Level.FINE, "markModified({0})", p.getProjectDirectory());
             mutex().writeAccess(new Mutex.Action<Void>() {
                 public Void run() {
                     if (!proj2Factory.containsKey(p)) {
@@ -573,9 +547,7 @@ public final class ProjectManager {
                     if (modifiedProjects.contains(p)) {
                         ProjectFactory f = proj2Factory.get(p);
                         f.saveProject(p);
-                        if (ERR.isLoggable(ERR_LVL)) {
-                            ERR.log(ERR_LVL, "saveProject(" + p.getProjectDirectory()+ ")");
-                        }
+                        LOG.log(Level.FINE, "saveProject({0})", p.getProjectDirectory());
                         modifiedProjects.remove(p);
                     }
                     return null;
@@ -606,9 +578,7 @@ public final class ProjectManager {
                         ProjectFactory f = proj2Factory.get(p);
                         assert f != null : p;
                         f.saveProject(p);
-                        if (ERR.isLoggable(ERR_LVL)) {
-                            ERR.log(ERR_LVL, "saveProject(" + p.getProjectDirectory()+ ")");
-                        }
+                        LOG.log(Level.FINE, "saveProject({0})", p.getProjectDirectory());
                         it.remove();
                     }
                     return null;
