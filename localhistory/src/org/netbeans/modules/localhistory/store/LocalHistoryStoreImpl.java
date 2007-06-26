@@ -98,7 +98,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
                         return providers.iterator();
                     }
                 }, 
-                20, -1);        // XXX why -1, isn't in such a case a weakhashmap enough?                          
+                20, -1);
     }    
 
     public synchronized void fileCreate(File file, long ts) {
@@ -116,8 +116,8 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         String tsString = Long.toString(ts);
         File storeFile = null;
         if(file.isFile()) {
-            storeFile = getStoreFile(file, tsString, true);  // XXX let's call it a lack of inspiration            
-            FileUtils.copy(file, StoreEntry.createStoreFileOutputSteam(storeFile));                                 
+            storeFile = getStoreFile(file, tsString, true); 
+            FileUtils.copy(file, StoreEntry.createStoreFileOutputStream(storeFile));                                 
             
             if(Diagnostics.ON) {
                 Diagnostics.logCreate(file, storeFile, ts, from, to);
@@ -141,7 +141,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         if(file.isFile()) { 
             try {
                 File storeFile = getStoreFile(file, Long.toString(ts), true);
-                FileUtils.copy(file, StoreEntry.createStoreFileOutputSteam(storeFile));                    
+                FileUtils.copy(file, StoreEntry.createStoreFileOutputStream(storeFile));                    
                 
                 if(Diagnostics.ON) {
                     Diagnostics.logChange(file, storeFile, ts);
@@ -228,7 +228,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         return getStoreEntriesImpl(file);
     }
     
-    private StoreEntry[] getStoreEntriesImpl(File file) {
+    private StoreEntry[] getStoreEntriesImpl(File file) { 
         File storeFolder = getStoreFolder(file);
         File[] storeFiles = storeFolder.listFiles(fileEntriesFilter);
         if(storeFiles != null && storeFiles.length > 0) {
@@ -430,7 +430,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         
         Map<String, StoreEntry> deleted = new HashMap<String, StoreEntry>();
         List<HistoryEntry> entries = readHistoryForFile(root);
-                
+        
         for(HistoryEntry he : entries) {
             if(he.getStatus() == DELETED) {
                 String filePath = he.getTo();
@@ -444,7 +444,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
                     }
                 }
             }             
-        }        
+        }       
         return deleted.values().toArray(new StoreEntry[deleted.size()]);
     }
 
@@ -623,7 +623,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
             if(ts < now - ttl) {
                 if(labels.size() > 0) {
                     labels.remove(ts);
-                }                                
+                }                         
                 f.delete(); 
             } else {
                 skipped = true;
@@ -675,7 +675,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         boolean historyObsolete = !historyFile.exists() || historyFile.lastModified() < now - ttl;
                                
         if(!historyObsolete) {
-            List<HistoryEntry> entries = readHistory(historyFile);
+            List<HistoryEntry> entries = readHistory(historyFile);                  
             historyFile.delete();            
             List<HistoryEntry> newEntries = new ArrayList<HistoryEntry>();            
             for(HistoryEntry entry : entries) {

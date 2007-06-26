@@ -107,7 +107,7 @@ public abstract class StoreEntry {
         return mimeType;
     }    
     
-    static OutputStream createStoreFileOutputSteam(File storeFile) throws FileNotFoundException, IOException {
+    static OutputStream createStoreFileOutputStream(File storeFile) throws FileNotFoundException, IOException {
         ZipOutputStream zos = new ZipOutputStream(new BufferedOutputStream(new FileOutputStream(storeFile)));
         ZipEntry entry = new ZipEntry(storeFile.getName());
         zos.putNextEntry(entry);
@@ -124,7 +124,7 @@ public abstract class StoreEntry {
         }    
         
         OutputStream getStoreFileOutputStream() throws FileNotFoundException, IOException {
-            return createStoreFileOutputSteam(getStoreFile());
+            return createStoreFileOutputStream(getStoreFile());
         }
 
         public InputStream getStoreFileInputStream() throws FileNotFoundException, IOException {
