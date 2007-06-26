@@ -61,9 +61,10 @@ public final class ProjectManager {
     
     // XXX change listeners?
     
-    private static final ErrorManager ERR = ErrorManager.getDefault().getInstance(ProjectManager.class.getName());
+    private static final Logger ERR = Logger.getLogger(ProjectManager.class.getName());
     // for unit testing purposes:
-    private static final int ERR_LVL = Boolean.getBoolean(ProjectManager.class.getName() + ".LOG_WARN") ? ErrorManager.WARNING : ErrorManager.INFORMATIONAL; // NOI18N
+    private static final Level ERR_LVL = Boolean.getBoolean(ProjectManager.class.getName() + ".LOG_WARN") ? 
+        Level.INFO : Level.FINE;
     
     private static final Lookup.Result<ProjectFactory> factories =
         Lookup.getDefault().lookupResult(ProjectFactory.class);
@@ -268,7 +269,7 @@ public final class ProjectManager {
                                 dir2Proj.put(projectDirectory, LoadStatus.NO_SUCH_PROJECT.wrap());
                                 resetLP = true;
                                 if (wasSomeSuchProject) {
-                                    ERR.log(ErrorManager.WARNING, "Directory " + FileUtil.getFileDisplayName(projectDirectory) + " was initially claimed to be a project folder but really was not");
+                                    ERR.log(Level.WARNING, "Directory " + FileUtil.getFileDisplayName(projectDirectory) + " was initially claimed to be a project folder but really was not");
                                 }
                                 return null;
                             }
