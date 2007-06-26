@@ -10,7 +10,7 @@
 package org.netbeans.modules.wsdlextensions.file.validator;
 
 /**
- *
+ * added for cleaner file name pattern validation
  * @author jfu
  */
 public enum FileNamePatternType {
