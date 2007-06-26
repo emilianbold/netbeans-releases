@@ -38,7 +38,7 @@ import org.netbeans.junit.ide.ProjectSupport;
  */
 public class OpenUMLDiagram extends org.netbeans.performance.test.utilities.PerformanceTestCase {
     
-    private static String testProjectName = "jEdit-Model-open";
+    private static String testProjectName = "jEdit-Model";
     private static String testDiagramName = "ClassDiagram";    
    
     /** Creates a new instance of OpenUMLDiagram */

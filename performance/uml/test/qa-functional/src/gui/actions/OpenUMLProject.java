@@ -37,7 +37,7 @@ import org.netbeans.junit.ide.ProjectSupport;
  */
 public class OpenUMLProject extends org.netbeans.performance.test.utilities.PerformanceTestCase {
     
-    private static String projectName = "jEdit-Model";
+    private static String projectName = "jEdit-Model-open";
     private JButtonOperator openButton;
     
     /**
