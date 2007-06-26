@@ -184,10 +184,14 @@ public class J2MEDataObject extends MultiDataObject {
         }
         
         public J2MEEditorSupport(J2MEDataObject dataObject) {
-            super(dataObject, new Environment(dataObject));
-            setMIMEType("text/x-java"); // NOI18N
+            this (dataObject, new Environment(dataObject));
         }
         
+        public J2MEEditorSupport (J2MEDataObject dataObject, CloneableEditorSupport.Env env) {
+            super(dataObject, env);
+            setMIMEType("text/x-java"); // NOI18N
+        }
+
         protected void saveFromKitToStream(final StyledDocument doc, final EditorKit kit, final OutputStream stream) throws IOException, BadLocationException {
             if (pch == null) {
                 Project p = FileOwnerQuery.getOwner(getDataObject().getPrimaryFile());
