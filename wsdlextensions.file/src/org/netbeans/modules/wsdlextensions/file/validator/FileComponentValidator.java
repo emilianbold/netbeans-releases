@@ -25,6 +25,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.netbeans.modules.xml.wsdl.model.Binding;
 import org.netbeans.modules.xml.wsdl.model.BindingInput;
@@ -62,6 +64,22 @@ import org.netbeans.modules.wsdlextensions.file.model.FileOperation;
 public class FileComponentValidator
         implements Validator, FileComponent.Visitor {
         	
+    public static final String NUMBER_MARKER = "%d"; // transient sequence
+    public static final String TIMESTAMP_MARKER = "%t";
+    public static final String GUID_MARKER = "%u";
+    public static final String SEQ_REF_EXP = "%\\{([0-9_\\-\\.a-zA-Z]+)\\}"; // named sequence
+    public static final String UUID_REGEX="[0-9[abcdef]]{8}-[0-9[abcdef]]{4}-[0-9[abcdef]]{4}-[0-9[abcdef]]{4}-[0-9[abcdef]]{12}";
+    public static final Pattern SEQ_REF_EXP_PATT = Pattern.compile(SEQ_REF_EXP);
+
+    /** Utility to get the regular expression to match
+     * the date format.
+     * Reason this is in its own method is that we can
+     * localize the date format recognition pattern in
+     * this method only.
+     * The pattern we currently support is UTC
+     */
+    public static final String TIMESTAMP_REGEX = "[0-9]{4,4}(0[1-9]|1[0-2])([0-2][0-9]|3[0-1])(\\-(1[0-9]|2[0-3])\\-[0-5][0-9]\\-[0-5][0-9]\\-[0-9]{0,3})?";
+
     private static final ResourceBundle mMessages =
             ResourceBundle.getBundle("org.netbeans.modules.wsdlextensions.file.validator.Bundle");
     
@@ -264,12 +282,21 @@ public class FileComponentValidator
                         getMessage("FileAddressValidation.missing_root_path"))); 
             } else if (!target.getPathRelativeTo().equals("User Home") &&
                        !target.getPathRelativeTo().equals("Current Working Dir") &&
-                       !target.getPathRelativeTo().equals("Default System Temp Dir") &&
-                       !isToken(target.getPathRelativeTo())) {
-                results.add(new Validator.ResultItem(this,
-                        Validator.ResultType.ERROR,
-                        target,
-                        getMessage("FileAddressValidation.invalid_root_path", target.getPathRelativeTo()))); 
+                       !target.getPathRelativeTo().equals("Default System Temp Dir") ) {
+                try {
+                    if ( !Utils.hasMigrationEnvVarRef(target.getPathRelativeTo()) ) {
+                            results.add(new Validator.ResultItem(this,
+                                    Validator.ResultType.ERROR,
+                                    target,
+                                    getMessage("FileAddressValidation.invalid_root_path", target.getPathRelativeTo()))); 
+                       }
+                }
+                catch (Exception ex) {
+                    results.add(new Validator.ResultItem(this,
+                            Validator.ResultType.ERROR,
+                            target,
+                            getMessage("FileAddressValidation.Exception_when_searching_varref_in_root_path", new Object[] {target.getPathRelativeTo(), ex}))); 
+                }
             }
         } else {
             if ( target.getFileDirectory() == null|| 
@@ -315,10 +342,19 @@ public class FileComponentValidator
         
         // validating: if fileNameIsPattern="true", fileName must be a valid pattern
         if ( target.getFileNameIsPattern()) {
-            if ( target.getFileName().indexOf("%t") < 0 &&
-                 target.getFileName().indexOf("%d") < 0 &&
-                 target.getFileName().indexOf("%u") < 0 &&
-                 !isToken(target.getFileName()) ) {
+            boolean hasVarRef = false;
+            try {
+                hasVarRef = Utils.hasMigrationEnvVarRef(target.getFileName());
+            }
+            catch (Exception ex) {
+                results.add(new Validator.ResultItem(this,
+                        Validator.ResultType.ERROR,
+                        target,
+                        getMessage("FileMessageValidation.Exception_searching_varref_in_file_name_pattern", new Object[] {target.getFileName(), ex})));
+            }
+            String[] decomposed = new String[3];
+            FileNamePatternType type = validatePattern(target.getFileName(), decomposed, results, target);
+            if ( type == FileNamePatternType.NAME_INVALID && !hasVarRef ) {
                 results.add(new Validator.ResultItem(this,
                         Validator.ResultType.ERROR,
                         target,
@@ -328,9 +364,20 @@ public class FileComponentValidator
         
         // validating: fileType is "text"
          if ( target.getFileType() != null) {
+             String fileType = target.getFileType();
+             boolean hasVarRef = false;
+             try {
+                 hasVarRef = Utils.hasMigrationEnvVarRef(fileType);
+             }
+             catch (Exception ex) {
+                results.add(new Validator.ResultItem(this,
+                        Validator.ResultType.ERROR,
+                        target,
+                        getMessage("FileMessageValidation.Exception_when_searching_varref_in_file_type", new Object[] {target.getFileType(), ex})));
+             }
              if (!target.getFileType().equals("text")   &&
                  !target.getFileType().equals("binary") &&
-                 !isToken(target.getFileType())) {
+                 !hasVarRef ) {
                 results.add(new Validator.ResultItem(this,
                         Validator.ResultType.ERROR,
                         target,
@@ -424,11 +471,139 @@ public class FileComponentValidator
         return isValid;
     }
     
-    private boolean isToken(String value) {
-        if (value.startsWith("${") && value.endsWith("}")) {
-            return true;
+    private FileNamePatternType validatePattern(String pattern, String[] decomposed, Collection<ResultItem> results, FileMessage target) {
+        // decomposed array must be a 3 element string array
+        // with:
+        // decomposed[0] as string before the pattern
+        // decomposed[1] as the pattern it self
+        // decomposed[2] as string after the pattern
+        if(pattern == null || pattern.trim().length() == 0 ) {
+            results.add(new Validator.ResultItem(this,
+                    Validator.ResultType.ERROR,
+                    target,
+                    getMessage("FileMessageValidation.Invalid_pattern_blank")));
+        }
+
+        FileNamePatternType type = FileNamePatternType.NAME_INVALID;
+        int index1 = 0;
+        int index2 = 0;
+        int pcnt = 0;
+        String prefix = "";
+        String suffix = "";
+        String patternFound = null;
+
+        if ( (index1 = pattern.indexOf(NUMBER_MARKER)) >= 0 ) {
+            // has at least 1 %d
+            index2 = pattern.lastIndexOf(NUMBER_MARKER);
+            if ( index1 < index2 ) {
+                // more than one occurrence
+                results.add(new Validator.ResultItem(this,
+                        Validator.ResultType.ERROR,
+                        target,
+                        getMessage("FileMessageValidation.Invalid_pattern_only_1_seq_allowed", pattern)));
+            }
+            pcnt++;
+            type = FileNamePatternType.NAME_WITH_SEQ;
+            patternFound = NUMBER_MARKER;
+            prefix = index1 == 0 ? "" : pattern.substring(0, index1);
+            suffix = index1 + 2 >= pattern.length() ? "" : pattern.substring(index1 + 2);
         }
         
-        return false;
+        if ( (index1 = pattern.indexOf(GUID_MARKER)) >= 0 ) {
+            // has at least 1 %u
+            index2 = pattern.lastIndexOf(GUID_MARKER);
+            if ( index1 < index2 ) {
+                // more than one occurrence
+                results.add(new Validator.ResultItem(this,
+                        Validator.ResultType.ERROR,
+                        target,
+                        getMessage("FileMessageValidation.Invalid_pattern_only_1_uuid_allowed", pattern)));
+            }
+            if ( pcnt > 0 ) {
+                // more than one pattern mark
+                results.add(new Validator.ResultItem(this,
+                        Validator.ResultType.ERROR,
+                        target,
+                        getMessage("FileMessageValidation.Invalid_pattern_only_1_pattern_allowed", pattern)));
+            }
+            pcnt++;
+            type = FileNamePatternType.NAME_WITH_UUID;
+            patternFound = GUID_MARKER;
+            prefix = index1 == 0 ? "" : pattern.substring(0, index1);
+            suffix = index1 + 2 >= pattern.length() ? "" : pattern.substring(index1 + 2);
+        }
+
+        if ( (index1 = pattern.indexOf(TIMESTAMP_MARKER)) >= 0 ) {
+            // has at least 1 %t
+            index2 = pattern.lastIndexOf(TIMESTAMP_MARKER);
+            if ( index1 < index2 ) {
+                // more than one occurrence
+                results.add(new Validator.ResultItem(this,
+                        Validator.ResultType.ERROR,
+                        target,
+                        getMessage("FileMessageValidation.Invalid_pattern_only_1_timestamp_allowed", pattern)));
+            }
+            if ( pcnt > 0 ) {
+                // more than one pattern mark
+                results.add(new Validator.ResultItem(this,
+                        Validator.ResultType.ERROR,
+                        target,
+                        getMessage("FileMessageValidation.Invalid_pattern_only_1_pattern_allowed", pattern)));
+            }
+            pcnt++;
+            type = FileNamePatternType.NAME_WITH_TIMESTAMP;
+            patternFound = TIMESTAMP_MARKER;
+            prefix = index1 == 0 ? "" : pattern.substring(0, index1);
+            suffix = index1 + 2 >= pattern.length() ? "" : pattern.substring(index1 + 2);
+        }
+
+        // added for named sequence (persisted sequence)
+        if ( (index1 = pattern.indexOf("%{")) >= 0 ) {
+            Matcher m = SEQ_REF_EXP_PATT.matcher(pattern);
+            if ( m.find() ) {
+                patternFound = m.group(1);
+                String wholeMatch = m.group();
+                if ( pcnt > 0 || m.find() ) {
+                    // more than one pattern detected
+                    results.add(new Validator.ResultItem(this,
+                            Validator.ResultType.ERROR,
+                            target,
+                            getMessage("FileMessageValidation.Invalid_pattern_only_1_pattern_allowed", pattern)));
+                }
+                index1 = pattern.indexOf(wholeMatch);
+                pcnt++;
+                type = FileNamePatternType.NAME_WITH_PERSISTED_SEQ;
+                prefix = index1 == 0 ? "" : pattern.substring(0, index1);
+                suffix = index1 + wholeMatch.length() >= pattern.length() ? "" : pattern.substring(index1 + wholeMatch.length());
+            }
+        }
+
+        if ( pcnt == 0 ) {
+            // note, if there is env var reference, then it is too early to say
+            // the file name does not have marker 
+            // postpone to runtime
+            boolean hasVarRef = false;
+            try {
+                hasVarRef = Utils.hasMigrationEnvVarRef(pattern);
+            }
+            catch (Exception ex) {
+                results.add(new Validator.ResultItem(this,
+                        Validator.ResultType.ERROR,
+                        target,
+                        getMessage("FileMessageValidation.Exception_when_searching_varref_in_pattern", new Object[] {pattern, ex})));
+            }
+            if ( !hasVarRef ) {
+                results.add(new Validator.ResultItem(this,
+                        Validator.ResultType.ERROR,
+                        target,
+                        getMessage("FileMessageValidation.Invalid_pattern_no_marker_found", pattern)));
+            }
+        }
+        
+        decomposed[0] = prefix;
+        decomposed[1] = patternFound;
+        decomposed[2] = suffix;
+        
+        return type;
     }
 }
