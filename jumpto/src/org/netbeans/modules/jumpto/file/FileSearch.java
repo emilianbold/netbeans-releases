@@ -65,7 +65,7 @@ public class FileSearch {
         worker = new SearchWorker( panel, prefix );        
         searchTask = RP.post(worker, 300);
         isSearchWorker = true;
-        // System.out.println("Worker scheduled " + prefix );
+        //System.out.println("Worker scheduled " + prefix );
         this.prefix = prefix;
                   
     }
@@ -75,7 +75,7 @@ public class FileSearch {
         searchTask = null;
     }
     
-    private boolean cancel( boolean hard ) {
+    boolean cancel( boolean hard ) {
         
         if ( searchTask != null && searchTask.cancel() ) {
             searchTask = null;
@@ -100,6 +100,7 @@ public class FileSearch {
     }
 
     public synchronized void setCurrentPrefix(String currentPrefix) {
+        // System.out.println("New prefix " + currentPrefix);
         this.currentPrefix = currentPrefix;
         if ( currentPrefix != null ) {
             cancel( true );
@@ -115,7 +116,7 @@ public class FileSearch {
     public synchronized boolean isNewSearchNeeded( String newPrefix ) {
        
         if ( cancel( false ) ) {
-            // System.out.println("Canceled in shced in favor of " + newPrefix );
+            //System.out.println("Canceled in shced in favor of " + newPrefix );
             return isSearchWorker;
         }
                
@@ -138,7 +139,7 @@ public class FileSearch {
         // long time = System.currentTimeMillis();
         
         if ( files == null || files.isEmpty() ) {
-            // System.out.println("MODEL " + (System.currentTimeMillis() - time) );
+            //System.out.println("MODEL " + (System.currentTimeMillis() - time) );
             return EMPTY_MODEL; // Nothing to show
         }
         

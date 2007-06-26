@@ -52,6 +52,7 @@ public class FileSearchAction extends AbstractAction {
     
     private Dialog dialog;
     private JButton openBtn;
+    private FileSearchPanel panel;
     
     public FileSearchAction() {
         super( NbBundle.getMessage(FileSearchAction.class, "CTL_FileSearchAction") );
@@ -71,7 +72,7 @@ public class FileSearchAction extends AbstractAction {
         buttons = new Object[] { openBtn, DialogDescriptor.CANCEL_OPTION};
         
         String title = NbBundle.getMessage(FileSearchAction.class, "MSG_FileSearchDlgTitle");
-        FileSearchPanel panel = new FileSearchPanel(this);
+        panel = new FileSearchPanel(this);
         DialogDescriptor d = new DialogDescriptor(panel, title, true, buttons, openBtn, DialogDescriptor.DEFAULT_ALIGN, null, new DialogButtonListener(panel));
         d.setClosingOptions(new Object[] {openBtn, DialogDescriptor.CANCEL_OPTION});
         dialog = DialogDisplayer.getDefault().createDialog(d);
@@ -134,11 +135,17 @@ public class FileSearchAction extends AbstractAction {
     }
 
     private void cleanup() {
+        
         FileSearchOptions.flush();
         
-        if (FileSearchAction.this.dialog != null ) { // Closing event for some reson sent twice
-            FileSearchAction.this.dialog.dispose();
-            FileSearchAction.this.dialog = null;
+        if (panel != null ) { // Closing event for some reson sent twice
+            panel.cleanup();
+            panel = null;
+        }
+        
+        if (dialog != null ) { // Closing event for some reson sent twice
+            dialog.dispose();
+            dialog = null;
             
         }
     }
