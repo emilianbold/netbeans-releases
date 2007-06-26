@@ -372,7 +372,8 @@ abstract class ContentModel {
 
         protected void reset() {
             current = 0;
-            peer.reset();
+            if(peer != null)
+                peer.reset();
         }
 
         protected boolean eat(Food food) {
