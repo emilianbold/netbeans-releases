@@ -29,7 +29,7 @@
                 <attr name="position" intvalue="400"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:org/netbeans/modules/vmd/midp/resources/templates/emptyvisualmidlet.html"/>
                 <attr name="template" boolvalue="true"/>
-        		<attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.mobility.project.ui.wizard.FileWizardIterator.singleton"/>
                 <attr name="isMIDletTemplate" boolvalue="true"/>
                 <attr name="MIDP" boolvalue="true"/>
@@ -46,7 +46,7 @@
                 <attr name="position" intvalue="500"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:org/netbeans/modules/vmd/midp/resources/templates/emptyvisualdesign.html"/>
                 <attr name="template" boolvalue="true"/>
-        		<attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.mobility.project.ui.wizard.FileWizardIterator.singleton"/>
                 <attr name="isMIDletTemplate" boolvalue="false"/>
                 <attr name="MIDP" boolvalue="true"/>
