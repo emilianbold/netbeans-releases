@@ -105,7 +105,6 @@ public class SyncUpdateVisitor implements ComponentUpdater<TMapComponent>, TMapV
         } else if (isRemove()) {
             operation.removeTransforms(transform);
         }
-        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     public void visit(Param param) {

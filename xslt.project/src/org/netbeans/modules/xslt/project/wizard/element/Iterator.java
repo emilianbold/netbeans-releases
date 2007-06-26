@@ -19,8 +19,10 @@
 package org.netbeans.modules.xslt.project.wizard.element;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 import javax.swing.event.ChangeListener;
 
@@ -31,17 +33,22 @@ import org.openide.loaders.TemplateWizard;
 
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.xml.wsdl.model.Message;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.netbeans.modules.xml.wsdl.model.Operation;
+import org.netbeans.modules.xml.wsdl.model.OperationParameter;
+import org.netbeans.modules.xml.wsdl.model.Part;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.PartnerLinkType;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.Role;
-import org.netbeans.modules.xslt.tmap.model.api.BooleanType;
+import org.netbeans.modules.xml.xam.Reference;
+import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import org.netbeans.modules.xslt.tmap.model.api.Invokes;
 import org.netbeans.modules.xslt.tmap.model.api.Service;
 import org.netbeans.modules.xslt.tmap.model.api.TMapComponentFactory;
 import org.netbeans.modules.xslt.tmap.model.api.TMapModel;
 import org.netbeans.modules.xslt.tmap.model.api.Transform;
 import org.netbeans.modules.xslt.tmap.model.api.TransformMap;
+import org.netbeans.modules.xslt.tmap.model.api.VariableDeclarator;
 import org.netbeans.modules.xslt.tmap.model.api.WSDLReference;
 
 import static org.netbeans.modules.print.ui.PrintUI.*;
@@ -107,6 +114,110 @@ public final class Iterator implements TemplateWizard.Iterator {
 
   /**{@inheritDoc}*/
   public void removeChangeListener(ChangeListener listener) {}
+
+    private Service createTMapService(TMapComponentFactory componentFactory,
+            TMapModel tMapModel, 
+            PartnerLinkType wizardInPlt, 
+            Role wizardInRole) 
+    {
+        assert componentFactory != null && tMapModel != null 
+                && wizardInPlt != null && wizardInRole != null;
+        Service tMapService = null;
+
+        TransformMap root = tMapModel.getTransformMap();
+
+        // TODO m
+        if (root == null) {
+            root = componentFactory.createTransformMap();
+            tMapModel.addChildComponent(null, root, -1);
+        }
+
+        if (root == null) {
+            return null;
+        }
+
+        tMapService = componentFactory.createService();
+        tMapService.setPartnerLinkType(tMapService.createWSDLReference(wizardInPlt, PartnerLinkType.class));
+        tMapService.setRole(tMapService.createWSDLReference(wizardInRole, Role.class));
+
+        root.addService(tMapService);
+          
+        return tMapService;
+    }
+
+    private Service getTMapService(
+            TMapModel model, 
+            PartnerLinkType wizardInPlt, 
+            Role wizardInRole) 
+    {
+        if (model == null || wizardInPlt == null || wizardInRole == null) 
+        {
+            return null;
+        }
+        
+        Service service = null;
+        TransformMap root = model.getTransformMap();
+        if (root == null) {
+            return service;
+        }
+        
+        List<Service> services = root.getServices();
+        if (services == null || services.size() < 1) {
+            return service;
+        }
+        
+        for (Service serviceElem : services) {
+            WSDLReference<PartnerLinkType> pltRef = serviceElem.getPartnerLinkType();
+            WSDLReference<Role> roleRef = serviceElem.getRole();
+            
+            if (roleRef != null && pltRef != null 
+                    && wizardInPlt.equals(pltRef.get()) 
+                    && wizardInRole.equals(roleRef.get())) 
+            {
+                service = serviceElem;
+                break;
+            }
+        }
+        
+        return service;
+    }
+
+    private org.netbeans.modules.xslt.tmap.model.api.Operation getTMapOperation(
+            Service tMapService, 
+            Operation wizardInputOperation) 
+    {
+        org.netbeans.modules.xslt.tmap.model.api.Operation tMapOp = null;
+        
+        if (tMapService == null) {
+            return tMapOp;
+        }
+        
+        List<org.netbeans.modules.xslt.tmap.model.api.Operation> operations 
+                = tMapService.getOperations();
+        if (operations == null || operations.size() < 1) {
+            return tMapOp;
+        }
+        
+        for (org.netbeans.modules.xslt.tmap.model.api.Operation operationElem : operations) {
+            Reference<Operation> opRef = operationElem.getOperation();
+            
+            if (opRef != null && wizardInputOperation.equals(opRef.get())) {
+                tMapOp = operationElem;
+                break;
+            }
+        }
+
+        return tMapOp;
+    }
+
+    private org.netbeans.modules.xslt.tmap.model.api.Operation getTMapOperation(
+            TMapModel model, 
+            PartnerLinkType wizardInPlt, 
+            Role wizardInRole, 
+            Operation wizardInputOperation) 
+    {
+        return getTMapOperation(getTMapService(model, wizardInPlt, wizardInRole), wizardInputOperation);
+    }
 
   private boolean isRequestTransform(TemplateWizard wizard) {
     String inputFileStr = (String) wizard.getProperty(Panel.INPUT_FILE);
@@ -200,60 +311,50 @@ public final class Iterator implements TemplateWizard.Iterator {
           return null;
       }
       
-      TransformMap root = tMapModel.getTransformMap();
-      // TODO m
-      if (root == null) {
-          root = componentFactory.createTransformMap();
-          tMapModel.addChildComponent(null, root, -1);
+      Service tMapService = getTMapService(tMapModel, wizardInPlt, wizardInRole);
+      if (tMapService == null) {
+          tMapService = createTMapService(componentFactory, 
+                  tMapModel, wizardInPlt, wizardInRole);
       }
-      
-      if (root == null) {
+
+      // TODO m
+      if (tMapService == null) {
           return null;
       }
       
-      Service reqService = null;
-      Collection<Service> services = root.getServices();
-      // search for approprite service
-      if (services != null) {
-          for (Service serviceElem : services) {
-              WSDLReference<PartnerLinkType> pltRef = serviceElem.getPartnerLinkType();
-              PartnerLinkType plt = pltRef == null ? null : pltRef.get();
-              
-              WSDLReference<Role> roleRef = serviceElem.getRole();
-              Role role = roleRef == null ? null : roleRef.get();
-              
-              if (plt != null && role != null
-                      && plt.equals(wizardInPlt) && role.equals(wizardInRole)) {
-                  reqService = serviceElem;
-                  break;
-              }
-          }
-      }
+      org.netbeans.modules.xslt.tmap.model.api.Operation tMapOp = null;
+      tMapOp = getTMapOperation(tMapService, wizardInputOperation); 
       
-      if (reqService == null) {
-          reqService = componentFactory.createService();
-          reqService.setPartnerLinkType(reqService.createWSDLReference(wizardInPlt, PartnerLinkType.class));
-          reqService.setRole(reqService.createWSDLReference(wizardInRole, Role.class));
-          
-          root.addService(reqService);
-      }
-      
-      org.netbeans.modules.xslt.tmap.model.api.Operation tMapOp =
-              componentFactory.createOperation();
-      tMapOp.setOperation(tMapOp.createWSDLReference(wizardInputOperation, Operation.class));
+      if (tMapOp == null) {
+          tMapOp =
+                  componentFactory.createOperation();
+          tMapOp.setOperation(tMapOp.createWSDLReference(wizardInputOperation, Operation.class));
 
-// TODO r
-//      if (isRequestTransform(wizard)) {
-//          if (inputFileStr != null && ! "".equals(inputFileStr)) {
-//              tMapOp.setFile(inputFileStr);
-//          }
-//          tMapOp.setTransformJbi(BooleanType.parseBooleanType(wizardInputIsTransformJBI));
-//      }
+          tMapService.addOperation(tMapOp);  
+          tMapOp.setInputVariable(
+                  getVariableName(INPUT_OPERATION_VARIABLE_PREFIX,1));
+          
+          tMapOp.setOutputVariable(
+                  getVariableName(OUTPUT_OPERATION_VARIABLE_PREFIX,1)); 
+      }
+     
+      Transform transform = createTransform(
+              componentFactory, 
+              inputFileStr, 
+              wizardInputOperation, 
+              tMapOp);
       
-     reqService.addOperation(tMapOp);      
-     
-     
-     
+      tMapOp.addTransform(transform);
+
+     return tMapOp;
+  }
+  
+  private Transform createTransform(
+          TMapComponentFactory componentFactory,
+          String inputFileStr,
+          Operation wizardOperation,
+          VariableDeclarator variableHolder) 
+  {
       Transform transform =
               componentFactory.createTransform();
       if (inputFileStr != null && ! "".equals(inputFileStr)) {
@@ -261,13 +362,49 @@ public final class Iterator implements TemplateWizard.Iterator {
       }
       
       // TODO m
-      transform.setSource("sourceVal");
-      transform.setResult("resultVal");
-      
-      tMapOp.addTransform(transform);
+      String sourcePartName = getFirstPartName(wizardOperation.getInput());
+      transform.setSource(
+              getTMapVarRef(variableHolder.getInputVariable(), sourcePartName));
 
-     return tMapOp;
-}
+      String resultPartName = getFirstPartName(wizardOperation.getOutput());
+      transform.setResult(
+              getTMapVarRef(variableHolder.getOutputVariable(), resultPartName));
+      return transform;
+  }
+  
+  private String  getTMapVarRef(String varName, String partName) {
+      if (partName == null || varName == null) {
+          return null;
+      }
+      return varName+"."+partName;
+  }
+  
+  private String getFirstPartName(OperationParameter opParam) {
+      String partName = null;
+      if (opParam == null) {
+          return partName;
+      }
+      
+      NamedComponentReference<Message> messageRef = opParam.getMessage();
+      Message message = messageRef == null ? null : messageRef.get();
+      
+      Collection<Part> parts = null;
+      if (message != null) {
+          parts = message.getParts();
+      }
+      
+      Part part = null;
+      if (parts != null && parts.size() > 0) {
+          java.util.Iterator<Part> partIter = parts.iterator();
+          part = partIter.next();
+      }
+      
+      if (part != null) {
+          partName = part.getName();
+      }
+      
+      return partName;
+  }
   
 // TODO m | r
     private void setAdditionalTransformation(
@@ -302,19 +439,20 @@ public final class Iterator implements TemplateWizard.Iterator {
                     createWSDLReference(wizardOutputOperation, Operation.class));
 
             // TODO m
-            invokes.setInputVariable("inputVar");
-            invokes.setOutputVariable("outputVar");
+            invokes.setInputVariable(
+                  getVariableName(INPUT_INVOKE_VARIABLE_PREFIX, 
+                  getVariableNumber(tMapOp, INPUT_INVOKE_VARIABLE_PREFIX, 1)));
+            invokes.setOutputVariable(
+                  getVariableName(OUTPUT_INVOKE_VARIABLE_PREFIX, 
+                  getVariableNumber(tMapOp, OUTPUT_INVOKE_VARIABLE_PREFIX, 1)));
 
 
             if (isFilterRequestReply) {
-                transform = componentFactory.createTransform();
-
-                // TODO m
-                transform.setSource("sourceVal2");
-                transform.setResult("resultVal2");
-                if (outputFileStr != null && !"".equals(outputFileStr)) {
-                    transform.setFile(outputFileStr);
-                }
+                transform = createTransform(
+                        componentFactory, 
+                        outputFileStr, 
+                        wizardOutputOperation, 
+                        invokes);
             }
         }
 
@@ -396,9 +534,66 @@ public final class Iterator implements TemplateWizard.Iterator {
             file, XSL);
   }
 
+  private int getVariableNumber(
+          org.netbeans.modules.xslt.tmap.model.api.Operation operation, 
+          String varNamePrefix,
+          int startNumber) 
+  {
+      if (operation == null || varNamePrefix == null) {
+          return startNumber;
+      }
+      
+      int count = startNumber;
+      List<String> varNames = new ArrayList<String>();
+      
+      String tmpCurVar = operation.getInputVariable();
+      if (tmpCurVar != null) {
+        varNames.add(tmpCurVar);
+      }
+      tmpCurVar = operation.getOutputVariable();
+      if (tmpCurVar != null) {
+        varNames.add(tmpCurVar);
+      }
+      List<Invokes> invokess = operation.getInvokess();
+      if (invokess != null && invokess.size() > 0) {
+          for (Invokes elem : invokess) {
+              tmpCurVar = elem.getInputVariable();
+              if (tmpCurVar != null) {
+                varNames.add(tmpCurVar);
+              }
+              tmpCurVar = elem.getOutputVariable();
+              if (tmpCurVar != null) {
+                varNames.add(tmpCurVar);
+              }
+          }
+      }
+          
+      
+      while (true) {
+          if (!varNames.contains(varNamePrefix+count)) {
+              break;
+          } 
+          count++;
+      }
+
+      return count;
+  }
+  
+  private String getVariableName(String varPrefix, int varNumber) {
+      varPrefix = varPrefix == null ? DEFAULT_VARIABLE_PREFIX 
+              : varPrefix;
+      return varPrefix+varNumber;
+  }
   
   private static String TEMPLATES_PATH = "Templates/SOA/"; // NOI18N
   private static String XSLT_SERVICE = "xslt.service"; // NOI18N
   private static String XSL = "xsl"; // NOI18N
+  
+  private static final String DEFAULT_VARIABLE_PREFIX = "var"; // NOI18N
+  private static final String INPUT_OPERATION_VARIABLE_PREFIX = "inOpVar"; // NOI18N
+  private static final String OUTPUT_OPERATION_VARIABLE_PREFIX = "outOpVar"; // NOI18N
+  private static final String INPUT_INVOKE_VARIABLE_PREFIX = "inInvokeVar"; // NOI18N
+  private static final String OUTPUT_INVOKE_VARIABLE_PREFIX = "outInvokeVar"; // NOI18N
+
   private Panel<WizardDescriptor> myPanel;
 }

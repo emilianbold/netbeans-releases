@@ -44,8 +44,7 @@ public interface TMapModelFactory {
     class TMapModelFactoryAccess {
         
         public static  TMapModelFactory getFactory() {
-            return (TMapModelFactory) Lookup.getDefault().lookup( 
-                    TMapModelFactory.class );
+            return Lookup.getDefault().lookup(TMapModelFactory.class );
         }
     }
 

@@ -30,6 +30,7 @@ import org.netbeans.modules.xml.axi.AXIModel;
 import org.netbeans.modules.xml.axi.AXIModelFactory;
 import org.netbeans.modules.xml.schema.model.ReferenceableSchemaComponent;
 import org.netbeans.modules.xml.wsdl.model.Message;
+import org.netbeans.modules.xml.wsdl.model.OperationParameter;
 import org.netbeans.modules.xml.wsdl.model.Part;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.xam.Reference;
@@ -44,6 +45,7 @@ import org.netbeans.modules.xslt.tmap.model.api.TransformerDescriptor;
 import org.netbeans.modules.xslt.tmap.util.Util;
 import org.netbeans.modules.xslt.mapper.model.MapperContext;
 import org.netbeans.modules.xslt.model.XslModel;
+import org.netbeans.modules.xslt.tmap.model.api.OperationReference;
 import org.netbeans.modules.xslt.tmap.model.api.Transform;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -176,14 +178,16 @@ public class MapperContextFactory {
     // TODO m
     private AXIComponent getSourceComponent(Transform transform) {
         AXIComponent source = null;
-        source = getAXIComponent(getSourceType(transform));
+//        source = getAXIComponent(getSourceType(transform));
+        source = getAXIComponent(getSchemaComponent(transform, true));
         return source;
     }
     
     // TODO m
     private AXIComponent getTargetComponent(Transform transform) {
         AXIComponent target = null;
-        target = getAXIComponent(getTargetType(transform));
+//        target = getAXIComponent(getTargetType(transform));
+        target = getAXIComponent(getSchemaComponent(transform, false));
         return target;
     }
     
@@ -203,6 +207,23 @@ public class MapperContextFactory {
         return axiComponent;
     }
 
+    public ReferenceableSchemaComponent getSchemaComponent(Transform transform, boolean isInput) {
+        assert transform != null;
+        
+        ReferenceableSchemaComponent schemaComponent = null;
+
+        String usedVariable = isInput ? transform.getSource() : transform.getResult();
+        
+        Message message = 
+                getVariableMessage(usedVariable, transform);
+
+        if (message != null) {
+            schemaComponent = getMessageSchemaType(usedVariable, message);
+        }
+        
+        return schemaComponent;
+    }
+    
     // TODO m
     public ReferenceableSchemaComponent getSourceType(Transform transform) {
         assert transform != null;
@@ -299,5 +320,131 @@ public class MapperContextFactory {
         return schemaComponent;
     }
 
+    /**
+     * returns first message part type with partName
+     */
+    private ReferenceableSchemaComponent getMessageSchemaType(String usedVariable, Message message) {
+        if (message == null || usedVariable == null) {
+            return null;
+        }
+        
+        String partName = getVarPartName(usedVariable);
+        if (partName == null) {
+            return null;
+        }
+        
+        ReferenceableSchemaComponent schemaComponent = null;
+        
+        // look at parts
+        String elNamespace = null;
+        Class<? extends ReferenceableSchemaComponent> elType = null; 
+        Collection<Part> parts = message.getParts();
+        Part part = null;
+        if (parts != null && parts.size() > 0) {
+            for (Part partElem : parts) {
+                if (partElem != null && partName.equals(partElem.getName())) {
+                    part = partElem;
+                    break;
+                }
+            }
+        }
+        
+        NamedComponentReference<? extends ReferenceableSchemaComponent> element = part.getElement();
+        if (element == null) {
+            element = part.getType();
+        }
+        
+        schemaComponent = element.get();
+        
+        return schemaComponent;
+    }
+    
+    private Message getVariableMessage(String usedVariable, Transform transform) {
+        if (usedVariable == null || transform == null) {
+            return null;
+        }
+        String varName = getVarLocalName(usedVariable);
+        if (varName == null) {
+            return null;
+        }
+        
+        TMapComponent operation = transform.getParent();
+        if (operation == null) {
+            return null;
+        }
+        assert operation instanceof Operation;        
+        
+        Message message = null;
+        
+        if (varName.equals(((Operation)operation).getInputVariable())) {
+            message = getMessage((Operation)operation, true);
+        } else if (varName.equals(((Operation)operation).getOutputVariable())) {
+            message = getMessage((Operation)operation, false);
+        } else {
+            List<Invokes> invokess = ((Operation)operation).getInvokess();
+            if (invokess != null && invokess.size() > 0) {
+                for (Invokes elem : invokess) {
+                    org.netbeans.modules.xml.wsdl.model.Operation tmpOp = null;
+                    if (elem != null) {
+                        if (varName.equals(elem.getInputVariable())) {
+                            message = getMessage(elem, true);
+                            break;
+                        } else if (varName.equals(elem.getOutputVariable())) {
+                            message = getMessage(elem, false);
+                            break;
+                        }                        
+                    }
+                }
+            }
+        }
+        
+        return message;
+        
+    }
+    
+    private Message getMessage(OperationReference tMapOpRef, boolean isInput) {
+        if (tMapOpRef == null) {
+            return null;
+        }
+        
+        Message message = null;
+        Reference<org.netbeans.modules.xml.wsdl.model.Operation> opRef = 
+                tMapOpRef.getOperation();
+        org.netbeans.modules.xml.wsdl.model.Operation wsdlOp = 
+                opRef == null ? null : opRef.get();
+        if (wsdlOp != null) {
+            OperationParameter opParam = isInput 
+                    ? wsdlOp.getInput() : wsdlOp.getOutput();
+            Reference<Message> messageRef = opParam == null 
+                    ? null : opParam.getMessage();
+            message = messageRef == null ? null : messageRef.get();
+        }
+        
+        return message;
+    }
+    
+    private String getVarLocalName(String varWithPart) {
+        if (varWithPart == null) {
+            return null;
+        }
+        int dotIndex = varWithPart.lastIndexOf("."); // NOI18N
+        String varName = varWithPart;
+        if (dotIndex > 0) {
+            varName = varWithPart.substring(0, dotIndex);
+        }
+        return varName;
+    }
+    
+    private String getVarPartName(String varWithPart) {
+         if (varWithPart == null) {
+            return null;
+        }
+        int dotIndex = varWithPart.lastIndexOf("."); // NOI18N
+        String varName = "";
+        if (dotIndex > 0) {
+            varName = varWithPart.substring(dotIndex+1);
+        }
+        return varName;
+    }
     
 }
