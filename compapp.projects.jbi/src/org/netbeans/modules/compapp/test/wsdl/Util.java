@@ -20,6 +20,7 @@ package org.netbeans.modules.compapp.test.wsdl;
 
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -30,6 +31,10 @@ import org.netbeans.modules.xml.wsdl.model.Binding;
 import org.netbeans.modules.xml.wsdl.model.BindingOperation;
 import org.netbeans.modules.xml.wsdl.model.Definitions;
 import org.netbeans.modules.xml.wsdl.model.ExtensibilityElement;
+import org.netbeans.modules.xml.wsdl.model.Import;
+import org.netbeans.modules.xml.wsdl.model.WSDLModel;
+import org.netbeans.modules.xml.xam.locator.CatalogModelException;
+import org.openide.util.Exceptions;
 
 /**
  * Util.java
@@ -73,9 +78,28 @@ public class Util {
         return writer.toString();
     }
     
-    public static List<Binding> getSortedBindings(Definitions definitions) {
-        List<Binding> bindings = 
-                new ArrayList<Binding>(definitions.getBindings());
+    private static void getBindings(WSDLModel wsdlModel, boolean recursive, 
+            Collection<Binding> bindings) {
+        
+        Definitions definitions = wsdlModel.getDefinitions();
+        bindings.addAll(definitions.getBindings());
+        
+        if (recursive) {
+            for (Import imp : definitions.getImports()) {
+                try {
+                    WSDLModel importedWsdlModel = imp.getImportedWSDLModel();
+                    getBindings(importedWsdlModel, recursive, bindings);
+                } catch (CatalogModelException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
+    }
+    
+    public static List<Binding> getSortedBindings(WSDLModel wsdlModel) {
+        List<Binding> bindings = new ArrayList<Binding>();
+        
+        getBindings(wsdlModel, true, bindings); 
         
         Collections.sort(bindings, new Comparator() {
             public int compare(Object o1, Object o2) {
