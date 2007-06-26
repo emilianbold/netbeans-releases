@@ -20,8 +20,13 @@ package org.netbeans.modules.vmd.io;
 
 import org.netbeans.modules.vmd.api.io.*;
 import org.netbeans.modules.vmd.api.io.providers.DocumentSerializer;
+import org.netbeans.modules.vmd.api.io.providers.IOSupport;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.openide.util.Lookup;
+import org.openide.NotifyDescriptor;
+import org.openide.DialogDisplayer;
+
+import javax.swing.*;
 
 /**
  * @author David Kaspar
@@ -80,6 +85,24 @@ public class CodeResolver implements DesignDocumentAwareness {
             boolean switchedFromModelToCode = kind != null && kind.equals (DataEditorView.Kind.CODE) && viewKind != null && viewKind.equals (DataEditorView.Kind.MODEL);
             final boolean switchedFromCodeToModel = kind != null && kind.equals (DataEditorView.Kind.MODEL) && viewKind != null && viewKind.equals (DataEditorView.Kind.CODE);
             final boolean regenerateSourceCode = modelModified  &&  (switchedFromModelToCode  ||  kind == null);
+
+            if (! IOSupport.isDocumentUpdatingEnabled (context.getDataObject ())) {
+                if (regenerateSourceCode)
+                    SwingUtilities.invokeLater (new Runnable () {
+                        public void run () {
+                            String lckFile = ".LCK" + context.getDataObject ().getPrimaryFile ().getNameExt () + "~";
+                            DialogDisplayer.getDefault ().notifyLater (new NotifyDescriptor.Message (
+                                    "<html>Cannot update the source code. Please, checked whether the file is write-able and unlocked.<br>" +
+                                    "<i>If <b>" + lckFile + "</b> file still exists even after the IDE is closed, then the file is locked.<br>" +
+                                    "Deleting this <b>" + lckFile + "</b> file unlocks the source file.</i><br>" +
+                                    "Then you can start the IDE and continue your work again."
+                            ));
+                        }
+                    });
+                if (kind != null)
+                    CodeResolver.this.viewKind = kind;
+                return;
+            }
 
             final long eventID = document.getTransactionManager ().writeAccess (new Runnable() {
                 public void run () {

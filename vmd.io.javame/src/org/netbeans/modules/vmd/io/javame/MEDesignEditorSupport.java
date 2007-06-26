@@ -26,6 +26,7 @@ import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.core.spi.multiview.MultiViewDescription;
 import org.netbeans.core.spi.multiview.MultiViewFactory;
 import org.netbeans.modules.mobility.editor.pub.J2MEDataObject.J2MEEditorSupport;
+import org.netbeans.modules.mobility.editor.pub.J2MEDataObject;
 import org.netbeans.modules.vmd.api.io.DataEditorView;
 import org.netbeans.modules.vmd.api.io.IOUtils;
 import org.netbeans.modules.vmd.api.io.ProjectTypeInfo;
@@ -44,6 +45,7 @@ import org.openide.windows.CloneableTopComponent;
 import org.openide.windows.TopComponent;
 import org.openide.awt.UndoRedo;
 import org.openide.util.Utilities;
+import org.openide.filesystems.FileLock;
 
 import javax.swing.text.BadLocationException;
 import javax.swing.text.EditorKit;
@@ -68,7 +70,7 @@ public final class MEDesignEditorSupport extends J2MEEditorSupport implements Ed
     private UndoRedo.Manager undoRedoManager;
 
     public MEDesignEditorSupport(MEDesignDataObject dataObject) {
-        super(dataObject);
+        super(dataObject, new Env (dataObject));
         this.dataObject = dataObject;
         closeHandler = new CloseHandler (dataObject);
     }
@@ -244,6 +246,27 @@ public final class MEDesignEditorSupport extends J2MEEditorSupport implements Ed
         } else {
             super.saveFromKitToStream (doc, kit, stream);
         }
+    }
+
+    protected static class Env extends J2MEEditorSupport.Environment {
+
+        public Env (J2MEDataObject obj) {
+            super (obj);
+        }
+
+
+        protected FileLock takeLock () throws IOException {
+            FileLock l;
+            try {
+                l = super.takeLock ();
+                IOSupport.setDocumentUpdatingEnabled (getDataObject (), true);
+                return l;
+            } catch (IOException e) {
+                IOSupport.setDocumentUpdatingEnabled (getDataObject (), false);
+                throw e;
+            }
+        }
+
     }
 
     private static class CloseHandler implements CloseOperationHandler, Serializable {

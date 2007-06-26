@@ -64,9 +64,6 @@ public final class JavaCodeGenerator {
     }
 
     public void generateCode (final StyledDocument document, final DesignDocument designDocument) {
-//        if (! checkCodeGenerationAvailability (designDocument))
-//            return;
-
         final Collection<CodePresenter> presenters = DocumentSupport.gatherAllPresentersOfClass (designDocument, CodePresenter.class);
         try {
             NbDocument.runAtomic (document, new Runnable() {
@@ -82,24 +79,6 @@ public final class JavaCodeGenerator {
         for (CodeGlobalLevelPresenter presenter : globalLevel)
             presenter.performGlobalGeneration (document);
     }
-
-//    private boolean checkCodeGenerationAvailability (DesignDocument designDocument) {
-//        DataObjectContext context = IOSupport.getDataObjectForDocument (designDocument);
-//        FileObject primaryFile = context.getDataObject ().getPrimaryFile ();
-//        try {
-//            FileLock lock = primaryFile.lock ();
-//            lock.releaseLock ();
-//            return true;
-//        } catch (IOException e) {
-//            DialogDisplayer.getDefault ().notifyLater (new NotifyDescriptor.Message (
-//                    "<html>The file is unexpectedly locked therefore the source code cannot be updated.<br>" +
-//                    "Please, save your files and close the IDE. Then using external file manager<br>" +
-//                    "delete following file <b>.LCK" + primaryFile.getNameExt () + "~</b> file which is placed next to the edited .vmd design file.<br>" +
-//                    "Then you can start the IDE and continue your work again."
-//            ));
-//            return false;
-//        }
-//    }
 
     private void generateCodeCore (Collection<CodePresenter> presenters, StyledDocument document) {
         Collection<CodeClassLevelPresenter> classLevel = DocumentSupport.filterPresentersForClass (presenters, CodeClassLevelPresenter.class);

@@ -56,6 +56,7 @@ public final class IOSupport {
     private static final WeakHashMap<DataObject, DataObjectContext> contexts = new WeakHashMap<DataObject, DataObjectContext> ();
     private static final WeakHashMap<DataObject, DocumentSerializer> serializers = new WeakHashMap<DataObject, DocumentSerializer> ();
     private static final WeakHashMap<DataObject, CodeResolver> resolvers = new WeakHashMap<DataObject, CodeResolver> ();
+    private static final WeakHashMap<DataObject, Boolean> documentUpdating = new WeakHashMap<DataObject, Boolean> ();
     
     /**
      * Returns a data object context representing specified data object.
@@ -102,9 +103,10 @@ public final class IOSupport {
     
     /**
      * Call this method to free all objects related to the data object that very assigned by the class.
-     * @param dataObject
+     * @param dataObject the data object
      */
     public synchronized static void notifyDataObjectClosed(DataObject dataObject) {
+        documentUpdating.remove (dataObject);
         CodeResolver resolver = resolvers.remove(dataObject);
         if (resolver != null)
             resolver.notifyDataObjectClosed();
@@ -151,6 +153,7 @@ public final class IOSupport {
     /**
      * Creates an array of multi view descriptions for editor support for a specified context.
      * @param context the data object context
+     * @return the arra of multi view descriptions
      */
     public static MultiViewDescription[] createEditorSupportPane(DataObjectContext context) {
         Collection<DataEditorView> views = EditorViewFactorySupport.createEditorViews(context);
@@ -206,6 +209,25 @@ public final class IOSupport {
     static void resetCodeResolver (DataObject dataObject, DesignDocument document) {
         CodeResolver resolver = resolvers.get (dataObject);
         resolver.resetModelModifiedStatus (document);
+    }
+
+    /**
+     * Returns whether a document updating is enabled.
+     * @param dataObject the data object
+     * @return true, if enabled
+     */
+    public static boolean isDocumentUpdatingEnabled (DataObject dataObject) {
+        Boolean enabled = documentUpdating.get (dataObject);
+        return enabled != null  &&  enabled;
+    }
+
+    /**
+     * Sets whether a document updating is enabled.
+     * @param dataObject the data object
+     * @param enabled if true, then enabled
+     */
+    public static void setDocumentUpdatingEnabled (DataObject dataObject, boolean enabled) {
+        documentUpdating.put (dataObject, enabled);
     }
 
 }
