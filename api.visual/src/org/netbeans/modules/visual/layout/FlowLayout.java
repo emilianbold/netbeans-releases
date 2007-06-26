@@ -177,9 +177,9 @@ public final class FlowLayout implements Layout {
                 if (totalWeight > 0  &&  child.isVisible ()) {
                     childLocation.y += gapAdd;
                     int weight = resolveWeight (widget, child);
-                    int gap = (weightAdd + weight) * totalGap / totalWeight - gapAdd;
-                    childBounds.height += gap;
-                    gapAdd += gap;
+                    int gap = (weightAdd + weight) * totalGap / totalWeight;
+                    childBounds.height += gap - gapAdd;
+                    gapAdd = gap;
                     weightAdd += weight;
                 }
                 childLocation.x -= childBounds.x;
@@ -204,8 +204,8 @@ public final class FlowLayout implements Layout {
                     childLocation.x += gapAdd;
                     int weight = resolveWeight (widget, child);
                     int gap = (weightAdd + weight) * totalGap / totalWeight;
-                    childBounds.width += gap;
-                    gapAdd += gap;
+                    childBounds.width += gap - gapAdd;
+                    gapAdd = gap;
                     weightAdd += weight;
                 }
                 childLocation.y -= childBounds.y;
