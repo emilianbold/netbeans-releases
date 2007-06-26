@@ -34,7 +34,7 @@ public class GameProjectTypeInfo extends ProjectTypeInfo {
     }
 
     public String getIconResource () {
-        return "org/netbeans/modules/vmd/game/integration/res/canvas_16.png"; // NOI18N
+        return "org/netbeans/modules/vmd/game/integration/res/gamer_16.png"; // NOI18N
     }
 
     public TypeID getRootCDTypeID () {
