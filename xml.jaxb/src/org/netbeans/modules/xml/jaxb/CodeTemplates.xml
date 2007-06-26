@@ -18,7 +18,7 @@
                 JAXBContext jaxbCtx = JAXBContext.newInstance(${UM_OBJ instanceof="java.lang.Object" default="umObj"}.getClass().getPackage().getName());
                 Unmarshaller unmarshaller = jaxbCtx.createUnmarshaller();
                 ${UM_OBJ} = ${TYPE_CAST cast default=""} unmarshaller.unmarshal(new File("File path"));
-            } catch (JAXBException e) {
+            } catch (JAXBException ex) {
                 // TODO handle exception
                 Logger.getLogger("global").log(Level.SEVERE, null, ex);
             }
