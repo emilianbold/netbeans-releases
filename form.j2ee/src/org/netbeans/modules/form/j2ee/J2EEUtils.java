@@ -29,6 +29,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.util.Arrays;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
@@ -343,19 +344,27 @@ public class J2EEUtils {
      * or <code>null</code> if such an entity doesn't exist.
      */
     public static String[] findEntity(MetadataModel<EntityMappingsMetadata> mappings, final String tableName) throws IOException {
-        return mappings.runReadAction(new MetadataModelAction<EntityMappingsMetadata, String[]>() {
-            public String[] run(EntityMappingsMetadata metadata) {
-                Entity[] entity = metadata.getRoot().getEntity();
-                for (int i=0; i<entity.length; i++) {
-                    String name = entity[i].getTable().getName();
-                    name = unquote(name);
-                    if (tableName.equals(name)) {
-                        return new String[] {entity[i].getName(), entity[i].getClass2()};
+        String[] entity = null;
+        try {
+            entity = mappings.runReadActionWhenReady(new MetadataModelAction<EntityMappingsMetadata, String[]>() {
+                public String[] run(EntityMappingsMetadata metadata) {
+                    Entity[] entity = metadata.getRoot().getEntity();
+                    for (int i=0; i<entity.length; i++) {
+                        String name = entity[i].getTable().getName();
+                        name = unquote(name);
+                        if (tableName.equals(name)) {
+                            return new String[] {entity[i].getName(), entity[i].getClass2()};
+                        }
                     }
+                    return null;
                 }
-                return null;
-            }
-        });
+            }).get();
+        } catch (InterruptedException iex) {
+            iex.printStackTrace();
+        } catch (ExecutionException eex) {
+            eex.printStackTrace();
+        }
+        return entity;
     }
 
     public static String unquote(String name) {
@@ -913,59 +922,67 @@ public class J2EEUtils {
      */
     public static List<String> propertiesForColumns(MetadataModel<EntityMappingsMetadata> mappings,
             final String entityName, final List<String> columns) throws IOException {
-        return mappings.runReadAction(new MetadataModelAction<EntityMappingsMetadata, List<String>>() {
-            public List<String> run(EntityMappingsMetadata metadata) {
-                Entity[] entities = metadata.getRoot().getEntity();
-                Entity entity = null;
-                for (int i=0; i<entities.length; i++) {
-                    if (entityName.equals(entities[i].getName())) {
-                        entity = entities[i];
-                        break;
-                    }
-                }
-                if (entity == null) {
-                    return Collections.EMPTY_LIST;
-                }
-                boolean all = (columns == null);
-                List<String> props = new LinkedList<String>();
-                Map<String,String> columnToProperty = all ? null : new HashMap<String,String>();
-                Attributes attrs = entity.getAttributes();
-                for (Id id : attrs.getId()) {
-                    String propName = J2EEUtils.fieldToProperty(id.getName());
-                    if (all) {
-                        props.add(propName);
-                    } else {
-                        String columnName = id.getColumn().getName();
-                        columnName = unquote(columnName);
-                        columnToProperty.put(columnName, propName);
-                    }
-                }
-                for (Basic basic : attrs.getBasic()) {
-                    String propName = J2EEUtils.fieldToProperty(basic.getName());
-                    if ("<error>".equals(propName)) { // NOI18N
-                        continue;
-                    }
-                    if (all) {
-                        props.add(propName);
-                    } else {
-                        String columnName = basic.getColumn().getName();
-                        columnName = unquote(columnName);
-                        columnToProperty.put(columnName, propName);                        
-                    }
-                }
-                if (!all) {
-                    for (String column : columns) {
-                        String propName = columnToProperty.get(column);
-                        if (propName == null) {
-                            System.err.println("WARNING: Cannot find property for column " + column); // NOI18N
-                        } else {
-                            props.add(propName);
+        List<String> properties = Collections.emptyList();
+        try {
+            properties = mappings.runReadActionWhenReady(new MetadataModelAction<EntityMappingsMetadata, List<String>>() {
+                public List<String> run(EntityMappingsMetadata metadata) {
+                    Entity[] entities = metadata.getRoot().getEntity();
+                    Entity entity = null;
+                    for (int i=0; i<entities.length; i++) {
+                        if (entityName.equals(entities[i].getName())) {
+                            entity = entities[i];
+                            break;
                         }
                     }
+                    if (entity == null) {
+                        return Collections.emptyList();
+                    }
+                    boolean all = (columns == null);
+                    List<String> props = new LinkedList<String>();
+                    Map<String,String> columnToProperty = all ? null : new HashMap<String,String>();
+                    Attributes attrs = entity.getAttributes();
+                    for (Id id : attrs.getId()) {
+                        String propName = J2EEUtils.fieldToProperty(id.getName());
+                        if (all) {
+                            props.add(propName);
+                        } else {
+                            String columnName = id.getColumn().getName();
+                            columnName = unquote(columnName);
+                            columnToProperty.put(columnName, propName);
+                        }
+                    }
+                    for (Basic basic : attrs.getBasic()) {
+                        String propName = J2EEUtils.fieldToProperty(basic.getName());
+                        if ("<error>".equals(propName)) { // NOI18N
+                            continue;
+                        }
+                        if (all) {
+                            props.add(propName);
+                        } else {
+                            String columnName = basic.getColumn().getName();
+                            columnName = unquote(columnName);
+                            columnToProperty.put(columnName, propName);                        
+                        }
+                    }
+                    if (!all) {
+                        for (String column : columns) {
+                            String propName = columnToProperty.get(column);
+                            if (propName == null) {
+                                System.err.println("WARNING: Cannot find property for column " + column); // NOI18N
+                            } else {
+                                props.add(propName);
+                            }
+                        }
+                    }
+                    return props;
                 }
-                return props;
-            }
-        });
+            }).get();
+        } catch (InterruptedException iex) {
+            iex.printStackTrace();
+        } catch (ExecutionException eex) {
+            eex.printStackTrace();
+        }
+        return properties;
     }
 
 }

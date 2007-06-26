@@ -27,6 +27,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.db.explorer.DatabaseConnection;
@@ -466,46 +467,54 @@ public class MasterDetailWizard implements WizardDescriptor.InstantiatingIterato
 
     private static String[] findOneToManyRelationProperties(MetadataModel<EntityMappingsMetadata> mappings,
             final String masterEntityName, final String detailEntityName, final String relationColumn) throws IOException {
-        return mappings.runReadAction(new MetadataModelAction<EntityMappingsMetadata, String[]>() {
-            public String[] run(EntityMappingsMetadata metadata) {
-                Entity[] entities = metadata.getRoot().getEntity();
-                Entity masterEntity = null;
-                Entity detailEntity = null;
-                for (int i=0; i<entities.length; i++) {
-                    String entityName = entities[i].getName();
-                    if (masterEntityName.equals(entityName)) {
-                        masterEntity = entities[i];
+        String[] properties = null;
+        try {
+            properties = mappings.runReadActionWhenReady(new MetadataModelAction<EntityMappingsMetadata, String[]>() {
+                public String[] run(EntityMappingsMetadata metadata) {
+                    Entity[] entities = metadata.getRoot().getEntity();
+                    Entity masterEntity = null;
+                    Entity detailEntity = null;
+                    for (int i=0; i<entities.length; i++) {
+                        String entityName = entities[i].getName();
+                        if (masterEntityName.equals(entityName)) {
+                            masterEntity = entities[i];
+                        }
+                        if (detailEntityName.equals(entityName)) {
+                            detailEntity = entities[i];
+                        }
                     }
-                    if (detailEntityName.equals(entityName)) {
-                        detailEntity = entities[i];
+                    String relationField = null;
+                    for (ManyToOne manyToOne : detailEntity.getAttributes().getManyToOne()) {
+                        // PENDING when there can be more JoinColumns?
+                        String columnName = manyToOne.getJoinColumn()[0].getName();
+                        if (relationColumn.equals(columnName)) {
+                            relationField = manyToOne.getName();
+                            break;
+                        }
                     }
+                    for (OneToMany oneToMany : masterEntity.getAttributes().getOneToMany()) {
+                        String targetEntity = oneToMany.getTargetEntity();
+                        int index = targetEntity.lastIndexOf('.');
+                        if (index != -1) {
+                            targetEntity = targetEntity.substring(index+1);
+                        }
+                        if (detailEntityName.equals(targetEntity)
+                                && relationField.equals(oneToMany.getMappedBy())) {
+                            return new String[] {
+                                J2EEUtils.fieldToProperty(relationField),
+                                J2EEUtils.fieldToProperty(oneToMany.getName())
+                            };
+                        }
+                    }
+                    return null;
                 }
-                String relationField = null;
-                for (ManyToOne manyToOne : detailEntity.getAttributes().getManyToOne()) {
-                    // PENDING when there can be more JoinColumns?
-                    String columnName = manyToOne.getJoinColumn()[0].getName();
-                    if (relationColumn.equals(columnName)) {
-                        relationField = manyToOne.getName();
-                        break;
-                    }
-                }
-                for (OneToMany oneToMany : masterEntity.getAttributes().getOneToMany()) {
-                    String targetEntity = oneToMany.getTargetEntity();
-                    int index = targetEntity.lastIndexOf('.');
-                    if (index != -1) {
-                        targetEntity = targetEntity.substring(index+1);
-                    }
-                    if (detailEntityName.equals(targetEntity)
-                            && relationField.equals(oneToMany.getMappedBy())) {
-                        return new String[] {
-                            J2EEUtils.fieldToProperty(relationField),
-                            J2EEUtils.fieldToProperty(oneToMany.getName())
-                        };
-                    }
-                }
-                return null;
-            }
-        });
+            }).get();
+        } catch (InterruptedException iex) {
+            iex.printStackTrace();
+        } catch (ExecutionException eex) {
+            eex.printStackTrace();
+        }
+        return properties;
     }
 
 }
