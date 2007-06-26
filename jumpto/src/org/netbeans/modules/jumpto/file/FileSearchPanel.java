@@ -239,7 +239,7 @@ public class FileSearchPanel extends javax.swing.JPanel implements ActionListene
         else {            
             if ( search.isNewSearchNeeded(fieldText) ) {
                 // We have to do the search again
-                search.setCurrentPrefix( null );
+                // search.setCurrentPrefix( null );
                 setListPanelContent(NbBundle.getMessage(FileSearchPanel.class, "TXT_Searching"), true); // NOI18N            
                 search.search(fieldText, false);
             }

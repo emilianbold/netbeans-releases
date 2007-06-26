@@ -100,16 +100,19 @@ public class FileSearch {
     }
 
     public synchronized void setCurrentPrefix(String currentPrefix) {
-        // System.out.println("New prefix " + currentPrefix);
+        //System.out.println("New prefix " + currentPrefix);
+        
         this.currentPrefix = currentPrefix;
         if ( currentPrefix != null ) {
-            cancel( true );
-            isSearchWorker = false;
-            searchTask = RP.post(new Runnable() {
-                public void run() {
-                    panel.setModel(false, false);
-                }
-            }, 250);
+            if ( worker == null ) {
+                //cancel( true );
+                isSearchWorker = false;
+                searchTask = RP.post(new Runnable() {
+                    public void run() {
+                        panel.setModel(false, false);
+                    }
+                }, 100);
+            }
         }
     }
     
@@ -139,7 +142,7 @@ public class FileSearch {
         // long time = System.currentTimeMillis();
         
         if ( files == null || files.isEmpty() ) {
-            //System.out.println("MODEL " + (System.currentTimeMillis() - time) );
+            // System.out.println("MODEL " + (System.currentTimeMillis() - time) );
             return EMPTY_MODEL; // Nothing to show
         }
         
