@@ -23,6 +23,7 @@ import com.sun.source.tree.AssertTree;
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.ConditionalExpressionTree;
 import com.sun.source.tree.DoWhileLoopTree;
 import com.sun.source.tree.EnhancedForLoopTree;
 import com.sun.source.tree.ForLoopTree;
@@ -121,6 +122,9 @@ public final class CreateElementUtilities {
             case CLASS:
                 return computeClass(types, info, currentPath, unresolved, offset);
                 
+            case CONDITIONAL_EXPRESSION:
+                return computeConditionalExpression(types, info, currentPath, unresolved, offset);
+                
             case POSTFIX_INCREMENT:
             case POSTFIX_DECREMENT:
             case PREFIX_INCREMENT:
@@ -195,7 +199,6 @@ public final class CreateElementUtilities {
                 
             case CASE:
             case ANNOTATION:
-            case CONDITIONAL_EXPRESSION:
             case NEW_ARRAY:
             case NEW_CLASS:
             case UNBOUNDED_WILDCARD:
@@ -421,6 +424,28 @@ public final class CreateElementUtilities {
         }
         
         return upperTypes;
+    }
+    
+    private static List<? extends TypeMirror> computeConditionalExpression(Set<ElementKind> types, CompilationInfo info, TreePath parent, Tree error, int offset) {
+        ConditionalExpressionTree cet = (ConditionalExpressionTree) parent.getLeaf();
+        
+        if (cet.getCondition() == error) {
+            types.add(ElementKind.PARAMETER);
+            types.add(ElementKind.LOCAL_VARIABLE);
+            types.add(ElementKind.FIELD);
+            
+            return Collections.singletonList(info.getTypes().getPrimitiveType(TypeKind.BOOLEAN));
+        }
+        
+        if (cet.getTrueExpression() == error || cet.getFalseExpression() == error) {
+            types.add(ElementKind.PARAMETER);
+            types.add(ElementKind.LOCAL_VARIABLE);
+            types.add(ElementKind.FIELD);
+            
+            return resolveType(types, info, parent.getParentPath(), cet, offset, null, null);
+        }
+        
+        return null;
     }
     
     private static List<? extends TypeMirror> computePrimitiveType(Set<ElementKind> types, CompilationInfo info, Tree expression, Tree error, TypeKind kind) {

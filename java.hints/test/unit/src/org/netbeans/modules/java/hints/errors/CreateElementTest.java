@@ -275,6 +275,29 @@ public class CreateElementTest extends HintsTestBase {
         performTestAnalysisTest("org.netbeans.test.java.hints.Bug92419", 123, Collections.<String>emptySet());
     }
     
+    public void testConditionalExpression() throws Exception {
+        performTestAnalysisTest("org.netbeans.test.java.hints.CondExpression", 203, new HashSet<String>(Arrays.asList(
+                "AddParameterOrLocalFix:b:boolean:false",
+                "AddParameterOrLocalFix:b:boolean:true",
+                "CreateFieldFix:b:org.netbeans.test.java.hints.CondExpression:boolean:[private]"
+        )));
+        performTestAnalysisTest("org.netbeans.test.java.hints.CondExpression", 235, new HashSet<String>(Arrays.asList(
+                "AddParameterOrLocalFix:b:boolean:false",
+                "AddParameterOrLocalFix:b:boolean:true",
+                "CreateFieldFix:b:org.netbeans.test.java.hints.CondExpression:boolean:[private]"
+        )));
+        performTestAnalysisTest("org.netbeans.test.java.hints.CondExpression", 207, new HashSet<String>(Arrays.asList(
+                "AddParameterOrLocalFix:d:java.lang.CharSequence:false",
+                "AddParameterOrLocalFix:d:java.lang.CharSequence:true",
+                "CreateFieldFix:d:org.netbeans.test.java.hints.CondExpression:java.lang.CharSequence:[private]"
+        )));
+        performTestAnalysisTest("org.netbeans.test.java.hints.CondExpression", 243, new HashSet<String>(Arrays.asList(
+                "AddParameterOrLocalFix:d:java.lang.CharSequence:false",
+                "AddParameterOrLocalFix:d:java.lang.CharSequence:true",
+                "CreateFieldFix:d:org.netbeans.test.java.hints.CondExpression:java.lang.CharSequence:[private]"
+        )));
+    }
+    
     protected void performTestAnalysisTest(String className, int offset, Set<String> golden) throws Exception {
         prepareTest(className);
         

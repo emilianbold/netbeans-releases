@@ -84,6 +84,13 @@ public class CreateMethodTest extends ErrorHintsTestBase {
                        "package test; public class Test {public void test() {test2(null);} private void test2(Object object) { throw new UnsupportedOperationException(\"Not yet implemented\"); } }");
     }
     
+    public void testCreateMethod77038() throws Exception {
+        performFixTest("test/Test.java",
+                       "package test; public class Test {public void test() {b(test2() ? true : false);} void t(boolean b){}}", 82 - 25,
+                       "CreateMethodFix:test2()boolean:test.Test",
+                       "package test; public class Test {public void test() {b(test2() ? true : false);} void t(boolean b){} private boolean test2() { throw new UnsupportedOperationException(\"Not yet implemented\"); } }");
+    }
+    
     public void testCreateMethod82923() throws Exception {
         performAnalysisTest("test/Test.java", "package test; public class Test {public void test() {int i = 0; switch (i) {case 1: fff(); break;}}}", 134 - 48, "CreateMethodFix:fff()void:test.Test");
     }
