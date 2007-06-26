@@ -34,14 +34,12 @@ import org.netbeans.modules.j2ee.sun.bridge.apis.RefreshAction;
 import org.netbeans.modules.sun.manager.jbi.GenericConstants;
 import org.netbeans.modules.sun.manager.jbi.management.JBIMBeanTaskResultHandler;
 import org.netbeans.modules.sun.manager.jbi.util.ArchiveFileFilter;
-import org.netbeans.modules.sun.manager.jbi.util.JarFileFilter;
 import org.netbeans.modules.sun.manager.jbi.util.ProgressUI;
 import org.netbeans.modules.sun.manager.jbi.actions.DeployAction;
 import org.netbeans.modules.sun.manager.jbi.management.AdministrationService;
 import org.netbeans.modules.sun.manager.jbi.util.AppserverJBIMgmtController;
 import org.netbeans.modules.sun.manager.jbi.util.NodeTypes;
 import org.netbeans.modules.sun.manager.jbi.util.Utils;
-import org.netbeans.modules.sun.manager.jbi.util.ZipFileFilter;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.HelpCtx;
@@ -96,6 +94,15 @@ public class JBIServiceAssembliesNode extends AppserverJBIMgmtContainerNode
      */
     public Image getOpenedIcon(int type) {
         return getIcon(type);
+    }
+    
+    public void refresh() {
+        // clear the cache first
+        AdministrationService adminService = 
+                getAppserverJBIMgmtController().getJBIAdministrationService();
+        adminService.clearServiceAssemblyStatusCache();
+        
+        super.refresh();
     }
     
     /**

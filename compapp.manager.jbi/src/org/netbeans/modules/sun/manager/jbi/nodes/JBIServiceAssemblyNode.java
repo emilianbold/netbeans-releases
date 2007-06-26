@@ -58,8 +58,6 @@ public class JBIServiceAssemblyNode extends AppserverJBIMgmtContainerNode
     
     private boolean busy;
     
-    private JBIServiceAssemblyStatus cachedAssemblyStatus;
-    
     /** Creates a new instance of ServiceAssemblyNode */
     public JBIServiceAssemblyNode(final AppserverJBIMgmtController controller,
             String name,
@@ -71,16 +69,16 @@ public class JBIServiceAssemblyNode extends AppserverJBIMgmtContainerNode
     }
     
     public JBIServiceAssemblyStatus getAssembly() {
-        return getAssembly(false);  // non-cached by default
+        return getAdminService().getServiceAssemblyStatus(getName());
     }
-    
-    private JBIServiceAssemblyStatus getAssembly(boolean cached) {
-        if (cachedAssemblyStatus == null || !cached) {
-            cachedAssemblyStatus =
-                    getAdminService().getServiceAssemblyStatus(getName());
-        }
         
-        return cachedAssemblyStatus;
+    private String getAssemblyStatus() {
+        JBIServiceAssemblyStatus assembly = getAssembly();
+        return assembly != null ? assembly.getStatus() : null;
+    }
+      
+    private void clearServiceAssemblyStatusCache() {
+        getAdminService().clearServiceAssemblyStatusCache();
     }
     
     /**
@@ -90,7 +88,7 @@ public class JBIServiceAssemblyNode extends AppserverJBIMgmtContainerNode
         
         String baseIconName = IconConstants.SERVICE_ASSEMBLY_ICON;
         
-        String status = getAssemblyStatus(false);
+        String status = getAssemblyStatus();
         
         String externalBadgeIconName = null;
         if (busy) {
@@ -157,16 +155,7 @@ public class JBIServiceAssemblyNode extends AppserverJBIMgmtContainerNode
         this.busy = busy;
         fireIconChange();
     }
-    
-    private String getAssemblyStatus(boolean cached) {
-        JBIServiceAssemblyStatus assembly = getAssembly(cached);
-        if (assembly != null) {
-            return assembly.getStatus();
-        } else {
-            return null;
-        }
-    }
-    
+              
     private void updatePropertySheet() {
         Sheet sheet = createSheet();
         setSheet(sheet);
@@ -175,7 +164,7 @@ public class JBIServiceAssemblyNode extends AppserverJBIMgmtContainerNode
     
     private AdministrationService getAdminService() {
         return getAppserverJBIMgmtController().getJBIAdministrationService();
-    }
+    }    
     
     //========================== Startable =====================================
     
@@ -184,7 +173,7 @@ public class JBIServiceAssemblyNode extends AppserverJBIMgmtContainerNode
         boolean ret = false;
         
         if (!busy) {
-            JBIServiceAssemblyStatus assembly = getAssembly(false);
+            JBIServiceAssemblyStatus assembly = getAssembly();
             String assemblyStatus = (assembly != null) ? assembly.getStatus() : null;
             
             if (JBIServiceAssemblyStatus.STOP_STATUS.equals(assemblyStatus)) {
@@ -233,11 +222,12 @@ public class JBIServiceAssemblyNode extends AppserverJBIMgmtContainerNode
             
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    progressUI.finish();
+                    clearServiceAssemblyStatusCache();
+                    progressUI.finish();                    
+                    setBusy(false);
                     JBIMBeanTaskResultHandler.showRemoteInvokationResult(
                             GenericConstants.START_SERVICE_ASSEMBLY_OPERATION_NAME,
                             assemblyName, result);
-                    setBusy(false);
                     updatePropertySheet();
                 }
             });            
@@ -251,7 +241,7 @@ public class JBIServiceAssemblyNode extends AppserverJBIMgmtContainerNode
         boolean ret = false;
         
         if (!busy) {
-            JBIServiceAssemblyStatus assembly = getAssembly(true);  // cached
+            JBIServiceAssemblyStatus assembly = getAssembly();  
             String assemblyStatus = (assembly != null) ? assembly.getStatus() : null;
             
             if (JBIServiceAssemblyStatus.START_STATUS.equals(assemblyStatus)) {
@@ -297,11 +287,12 @@ public class JBIServiceAssemblyNode extends AppserverJBIMgmtContainerNode
             
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
+                    clearServiceAssemblyStatusCache();
                     progressUI.finish();
+                    setBusy(false);
                     JBIMBeanTaskResultHandler.showRemoteInvokationResult(
                             GenericConstants.STOP_SERVICE_ASSEMBLY_OPERATION_NAME,
                             assemblyName, result);
-                    setBusy(false);
                     updatePropertySheet();
                 }
             });            
@@ -315,7 +306,7 @@ public class JBIServiceAssemblyNode extends AppserverJBIMgmtContainerNode
         boolean ret = canStop();
         
         if (!ret && !busy) {
-            JBIServiceAssemblyStatus assembly = getAssembly(true);  // cached
+            JBIServiceAssemblyStatus assembly = getAssembly();  
             String assemblyStatus = (assembly != null) ? assembly.getStatus() : null;
             
             if (JBIServiceAssemblyStatus.STOP_STATUS.equals(assemblyStatus)) {
@@ -367,13 +358,14 @@ public class JBIServiceAssemblyNode extends AppserverJBIMgmtContainerNode
                     adminService.shutdownServiceAssembly(assemblyName, force);
             
             SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
+                public void run() {                    
+                    clearServiceAssemblyStatusCache();
                     progressUI.finish();
+                    setBusy(false);
                     JBIMBeanTaskResultHandler.showRemoteInvokationResult(
                             GenericConstants.SHUTDOWN_SERVICE_ASSEMBLY_OPERATION_NAME,
                             assemblyName, result);
-                    setBusy(false);
-                    updatePropertySheet();
+                    updatePropertySheet();                
                 }
             });            
         }
@@ -382,7 +374,7 @@ public class JBIServiceAssemblyNode extends AppserverJBIMgmtContainerNode
     //========================== Undeployable =================================
     
     public boolean canUndeploy() {
-        String assemblyStatus = getAssemblyStatus(true); // cached
+        String assemblyStatus = getAssemblyStatus(); 
         return canShutdown() ||
                 !busy && JBIServiceAssemblyStatus.SHUTDOWN_STATUS.equals(assemblyStatus);
     }
@@ -416,11 +408,12 @@ public class JBIServiceAssemblyNode extends AppserverJBIMgmtContainerNode
             
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
+                    clearServiceAssemblyStatusCache();
                     progressUI.finish();
+                    setBusy(false);
                     JBIMBeanTaskResultHandler.showRemoteInvokationResult(
                             GenericConstants.UNDEPLOY_SERVICE_ASSEMBLY_OPERATION_NAME,
                             assemblyName, result);
-                    setBusy(false);
                     //updatePropertySheet();
                 }
             });            

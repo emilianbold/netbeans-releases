@@ -45,6 +45,7 @@ import org.netbeans.modules.sun.manager.jbi.management.JBIMBeanTaskResultHandler
 import org.netbeans.modules.sun.manager.jbi.util.ProgressUI;
 import org.netbeans.modules.sun.manager.jbi.actions.InstallAction;
 import org.netbeans.modules.sun.manager.jbi.management.AdministrationService;
+import org.netbeans.modules.sun.manager.jbi.management.model.JBIComponentStatus;
 import org.netbeans.modules.sun.manager.jbi.util.AppserverJBIMgmtController;
 import org.netbeans.modules.sun.manager.jbi.util.ArchiveFileFilter;
 import org.netbeans.modules.sun.manager.jbi.util.NodeTypes;
@@ -108,6 +109,15 @@ public abstract class JBIComponentContainerNode extends AppserverJBIMgmtContaine
         return getIcon(type);
     }
     
+    public void refresh() {
+        // clear the cache first
+        AdministrationService adminService = 
+                getAppserverJBIMgmtController().getJBIAdministrationService();
+        adminService.clearJBIComponentStatusCache(getComponentType());
+        
+        super.refresh();
+    }
+    
     /**
      *
      * @param busy
@@ -124,7 +134,7 @@ public abstract class JBIComponentContainerNode extends AppserverJBIMgmtContaine
     public Attribute setSheetProperty(String attrName, Object value) {
         return null;
     }
-    
+        
     /**
      * Installs new JBI Component(s).
      */
@@ -294,6 +304,8 @@ public abstract class JBIComponentContainerNode extends AppserverJBIMgmtContaine
     
     protected abstract String getComponentTypeLabel();
     
+    protected abstract String getComponentType();
+    
     //==========================================================================
     
     
@@ -343,6 +355,10 @@ public abstract class JBIComponentContainerNode extends AppserverJBIMgmtContaine
         
         protected String getComponentTypeLabel() {
             return "SERVICE_ENGINE";    // NOI18N
+        }
+        
+        protected String getComponentType() {
+            return JBIComponentStatus.ENGINE_TYPE;    
         }
         
         public HelpCtx getHelpCtx() {
@@ -399,6 +415,10 @@ public abstract class JBIComponentContainerNode extends AppserverJBIMgmtContaine
             return "BINDING_COMPONENT";    // NOI18N
         }
         
+        protected String getComponentType() {
+            return JBIComponentStatus.BINDING_TYPE;    
+        }
+        
         public HelpCtx getHelpCtx() {
             return new HelpCtx(this.getClass());
         }
@@ -444,6 +464,10 @@ public abstract class JBIComponentContainerNode extends AppserverJBIMgmtContaine
         
         protected String getComponentTypeLabel() {
             return "SHARED_LIBRARY";    // NOI18N
+        }
+        
+        protected String getComponentType() {
+            return JBIComponentStatus.NAMESPACE_TYPE;    
         }
         
         public HelpCtx getHelpCtx() {

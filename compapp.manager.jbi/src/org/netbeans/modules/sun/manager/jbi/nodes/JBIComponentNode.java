@@ -20,7 +20,6 @@
 package org.netbeans.modules.sun.manager.jbi.nodes;
 
 import java.awt.Image;
-import java.util.HashMap;
 import java.util.Map;
 
 import javax.management.Attribute;
@@ -28,7 +27,6 @@ import javax.management.MBeanAttributeInfo;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.sun.manager.jbi.management.JBIMBeanTaskResultHandler;
-import org.netbeans.modules.sun.manager.jbi.management.model.JBIServiceAssemblyStatus;
 
 import org.netbeans.modules.sun.manager.jbi.util.ProgressUI;
 import org.netbeans.modules.sun.manager.jbi.GenericConstants;
@@ -58,7 +56,6 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
     
     private boolean busy;
     
-    private JBIComponentStatus cachedComponentStatus;
     private String compType;
     
     public JBIComponentNode(final AppserverJBIMgmtController controller,
@@ -177,8 +174,7 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
         
         try {
             AppserverJBIMgmtController controller = getAppserverJBIMgmtController();
-            controller.setJBIComponentLoggerProperty(getName(), attrName, value);
-            
+            controller.setJBIComponentLoggerProperty(getName(), attrName, value);            
             
 //            // Get the new value
 //            Object newValue = controller.getJBIComponentConfigPropertyValue(
@@ -200,7 +196,7 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
      *
      */
     public Image getIcon(int type) {
-        String state = getState(false);
+        String state = getState();
         String iconName = getIconName(state);
         
         String externalBadgeIconName = null;
@@ -245,32 +241,24 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
      * @return
      */
     private JBIComponentStatus getJBIComponentStatus() {
-        return getJBIComponentStatus(false); // non-cached by default
+        return getAdminService().getJBIComponentStatus(compType, getName());
     }
-    
-    private JBIComponentStatus getJBIComponentStatus(boolean cached) {
-        if (cachedComponentStatus == null || !cached) {
-            cachedComponentStatus =
-                    getAppserverJBIMgmtController().getJBIAdministrationService().
-                    getJBIComponentStatus(compType, getName());
-        }
         
-        return cachedComponentStatus;
+    private void clearJBIComponentStatusCache(String compType) {
+        getAdminService().clearJBIComponentStatusCache(compType);
     }
     
     /**
      *
      * @return
      */
-    private String getState(boolean cached) {
-        String ret = null;
-        
-        JBIComponentStatus status = getJBIComponentStatus(cached);
+    private String getState() {
+        JBIComponentStatus status = getJBIComponentStatus();
         if (status != null) {
-            ret = status.getState();
+            return status.getState();
+        } else {
+            return null;
         }
-        
-        return ret;
     }
     
     private void updatePropertySheet() {
@@ -279,13 +267,17 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
         firePropertySetsChange(null, null);
     }
     
+    private AdministrationService getAdminService() {
+        return getAppserverJBIMgmtController().getJBIAdministrationService();
+    }
+    
     //========================== Startable =====================================
     
     /**
      *
      */
     public boolean canStart() {
-        String state = getState(false);
+        String state = getState();
         return !busy &&
                 (JBIComponentStatus.STOPPED_STATE.equals(state) ||
                 JBIComponentStatus.INSTALLED_STATE.equals(state));
@@ -295,8 +287,7 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
      *
      */
     public void start() {
-        final AdministrationService adminService =
-                getAppserverJBIMgmtController().getJBIAdministrationService();
+        final AdministrationService adminService = getAdminService();
         
         if (adminService != null) {
             
@@ -318,12 +309,13 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
             
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
+                    clearJBIComponentStatusCache(compType);
                     progressUI.finish();
+                    setBusy(false);
                     JBIMBeanTaskResultHandler.showRemoteInvokationResult(
                             GenericConstants.START_COMPONENT_OPERATION_NAME,
                             componentName, result);
-                    setBusy(false);
-                    updatePropertySheet();
+                    updatePropertySheet();                    
                 }
             });
         }
@@ -335,15 +327,14 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
      *
      */
     public boolean canStop() {
-        return !busy && JBIComponentStatus.STARTED_STATE.equals(getState(true)); // cached
+        return !busy && JBIComponentStatus.STARTED_STATE.equals(getState()); 
     }
     
     /**
      *
      */
     public void stop() {
-        AdministrationService adminService =
-                getAppserverJBIMgmtController().getJBIAdministrationService();
+        AdministrationService adminService = getAdminService();
         
         if (adminService != null) {
             
@@ -365,11 +356,12 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
             
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
+                    clearJBIComponentStatusCache(compType);
                     progressUI.finish();
+                    setBusy(false);
                     JBIMBeanTaskResultHandler.showRemoteInvokationResult(
                             GenericConstants.STOP_COMPONENT_OPERATION_NAME,
                             componentName, result);
-                    setBusy(false);
                     updatePropertySheet();
                 }
             });
@@ -383,7 +375,7 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
      */
     public boolean canShutdown() {
         return canStop() ||
-                !busy && JBIComponentStatus.STOPPED_STATE.equals(getState(true)); // cached
+                !busy && JBIComponentStatus.STOPPED_STATE.equals(getState()); 
     }
     
     /**
@@ -394,8 +386,7 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
             stop();
         }
         
-        AdministrationService adminService =
-                getAppserverJBIMgmtController().getJBIAdministrationService();
+        AdministrationService adminService = getAdminService();
         
         if (adminService != null) {
             
@@ -417,11 +408,12 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
             
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
+                    clearJBIComponentStatusCache(compType);
                     progressUI.finish();
+                    setBusy(false);
                     JBIMBeanTaskResultHandler.showRemoteInvokationResult(
                             GenericConstants.SHUTDOWN_COMPONENT_OPERATION_NAME,
                             componentName, result);
-                    setBusy(false);
                     updatePropertySheet();
                 }
             });
@@ -435,7 +427,7 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
      */
     public boolean canUninstall() {
         return canShutdown() ||
-                !busy && JBIComponentStatus.INSTALLED_STATE.equals(getState(true)); // cached
+                !busy && JBIComponentStatus.INSTALLED_STATE.equals(getState()); 
     }
     
     /**
@@ -446,8 +438,7 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
             shutdown(force);
         }
         
-        AdministrationService adminService =
-                getAppserverJBIMgmtController().getJBIAdministrationService();
+        AdministrationService adminService = getAdminService();
         
         if (adminService != null) {
             
@@ -476,6 +467,7 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
             
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
+                    clearJBIComponentStatusCache(compType);
                     progressUI.finish();
                     JBIMBeanTaskResultHandler.showRemoteInvokationResult(
                             GenericConstants.UNINSTALL_COMPONENT_OPERATION_NAME,
