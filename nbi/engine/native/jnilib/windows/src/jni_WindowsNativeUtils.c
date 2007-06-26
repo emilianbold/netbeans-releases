@@ -47,14 +47,26 @@ typedef struct int64s {
 // Functions
 
 JNIEXPORT jboolean JNICALL Java_org_netbeans_installer_utils_system_WindowsNativeUtils_isCurrentUserAdmin0(JNIEnv* jEnv, jobject jObject) {
-    BOOL                 result          = FALSE;
+    BOOL result = FALSE;
     
-    PACL                 pACL            = NULL;
-    PSID                 psidAdmin       = NULL;
-    HANDLE               token           = NULL;
-    HANDLE               duplToken       = NULL;
+    PACL pACL = NULL;
+    PSID psidAdmin = NULL;
+    HANDLE token = NULL;
+    HANDLE duplToken = NULL;
     PSECURITY_DESCRIPTOR adminDescriptor = NULL;
+
+	SID_IDENTIFIER_AUTHORITY SystemSidAuthority = SECURITY_NT_AUTHORITY;
+	DWORD aclSize;
     
+    const DWORD ACCESS_READ  = 1;
+    const DWORD ACCESS_WRITE = 2;
+	
+	GENERIC_MAPPING mapping;
+	
+    PRIVILEGE_SET ps;
+    DWORD status;
+    DWORD structSize = sizeof(PRIVILEGE_SET);
+	
     // MS KB 118626
     while (TRUE) {
         if (!OpenThreadToken(GetCurrentThread(), TOKEN_DUPLICATE | TOKEN_QUERY, TRUE, &token)) {
@@ -74,7 +86,6 @@ JNIEXPORT jboolean JNICALL Java_org_netbeans_installer_utils_system_WindowsNativ
             break;
         }
         
-        SID_IDENTIFIER_AUTHORITY SystemSidAuthority = SECURITY_NT_AUTHORITY;
         if (!AllocateAndInitializeSid(&SystemSidAuthority, 2, SECURITY_BUILTIN_DOMAIN_RID, DOMAIN_ALIAS_RID_ADMINS, 0, 0, 0, 0, 0, 0, &psidAdmin)) {
             throwException(jEnv, "Native error");
             break;
@@ -90,7 +101,7 @@ JNIEXPORT jboolean JNICALL Java_org_netbeans_installer_utils_system_WindowsNativ
             break;
         }
         
-        DWORD aclSize = sizeof(ACL) + sizeof(ACCESS_ALLOWED_ACE) + GetLengthSid(psidAdmin) - sizeof(DWORD);
+        aclSize = sizeof(ACL) + sizeof(ACCESS_ALLOWED_ACE) + GetLengthSid(psidAdmin) - sizeof(DWORD);
         
         pACL = (PACL) LocalAlloc(LPTR, aclSize);
         if (pACL == NULL) {
@@ -101,9 +112,6 @@ JNIEXPORT jboolean JNICALL Java_org_netbeans_installer_utils_system_WindowsNativ
             throwException(jEnv, "Native error");
             break;
         }
-        
-        const DWORD ACCESS_READ  = 1;
-        const DWORD ACCESS_WRITE = 2;
         
         if (!AddAccessAllowedAce(pACL, ACL_REVISION2, ACCESS_READ | ACCESS_WRITE , psidAdmin)) {
             throwException(jEnv, "Native error");
@@ -122,15 +130,11 @@ JNIEXPORT jboolean JNICALL Java_org_netbeans_installer_utils_system_WindowsNativ
             break;
         }
         
-        GENERIC_MAPPING mapping;
         mapping.GenericRead    = ACCESS_READ;
         mapping.GenericWrite   = ACCESS_WRITE;
         mapping.GenericExecute = 0;
         mapping.GenericAll     = ACCESS_READ | ACCESS_WRITE;
         
-        PRIVILEGE_SET ps;
-        DWORD         status;
-        DWORD         structSize = sizeof(PRIVILEGE_SET);
         if (!AccessCheck(adminDescriptor, duplToken, ACCESS_READ, &mapping, &ps, &structSize, &status, &result)) {
             throwException(jEnv, "Native error");
             break;
@@ -202,9 +206,10 @@ JNIEXPORT void JNICALL Java_org_netbeans_installer_utils_system_WindowsNativeUti
     IShellLinkW* shell;
     
     HRESULT comStart = CoInitialize(NULL);
+	int errorCode = 0;
+	
     tempResult = CoCreateInstance(&CLSID_ShellLink, NULL, CLSCTX_INPROC_SERVER, &IID_IShellLinkW, (void **) &shell);
-    
-    int errorCode = 0;
+	
     if (SUCCEEDED(tempResult)) {
         IPersistFile *persistFile;
         // we will save the shell link in persistent storage
@@ -317,7 +322,7 @@ JNIEXPORT void JNICALL Java_org_netbeans_installer_utils_system_WindowsNativeUti
     FREE(path);
 }
 
-JNIEXPORT jboolean JNICALL Java_org_netbeans_installer_utils_system_WindowsNativeUtils_notifyAssociationChanged0(JNIEnv *jEnv, jobject jObj) {
+JNIEXPORT void JNICALL Java_org_netbeans_installer_utils_system_WindowsNativeUtils_notifyAssociationChanged0(JNIEnv *jEnv, jobject jObj) {
     SHChangeNotify(SHCNE_ASSOCCHANGED, SHCNF_IDLIST, 0, 0);
 }
 
@@ -337,6 +342,14 @@ JNIEXPORT jint JNICALL Java_org_netbeans_installer_utils_system_WindowsNativeUti
     PRIVILEGE_SET PrivilegeSet;
     DWORD PrivSetSize = sizeof (PRIVILEGE_SET);
     
+    HANDLE hToken;
+	
+    GENERIC_MAPPING GenericMapping;
+    DWORD DesiredAccess = (DWORD) jLevel ;
+	
+    BOOL bAccessGranted;
+    DWORD GrantedAccess;
+	
     // create memory for storing user's security descriptor
     GetFileSecurityW(path, OWNER_SECURITY_INFORMATION | GROUP_SECURITY_INFORMATION | DACL_SECURITY_INFORMATION, NULL, 0, &nLength);
     
@@ -353,6 +366,7 @@ JNIEXPORT jint JNICALL Java_org_netbeans_installer_utils_system_WindowsNativeUti
         return (-3);
     }
     free(path);
+
     /* Perform security impersonation of the user and open */
     /* the resulting thread token. */
     if (!ImpersonateSelf(SecurityImpersonation)) {
@@ -361,7 +375,6 @@ JNIEXPORT jint JNICALL Java_org_netbeans_installer_utils_system_WindowsNativeUti
         return (-4);
     }
     
-    HANDLE hToken;
     if (!OpenThreadToken(GetCurrentThread(), TOKEN_DUPLICATE | TOKEN_QUERY, FALSE, &hToken)) {
         throwException(jEnv, "Unable to get current thread's token.\n");
         HeapFree(GetProcessHeap(), 0, pSD);
@@ -369,10 +382,8 @@ JNIEXPORT jint JNICALL Java_org_netbeans_installer_utils_system_WindowsNativeUti
     }
     RevertToSelf();
     
-    GENERIC_MAPPING GenericMapping;
     memset(&GenericMapping, 0x00, sizeof (GENERIC_MAPPING));
     
-    DWORD DesiredAccess = (DWORD) jLevel ;
     DesiredAccess = DesiredAccess | STANDARD_RIGHTS_READ;
     GenericMapping.GenericRead = FILE_GENERIC_READ;
     
@@ -382,8 +393,6 @@ JNIEXPORT jint JNICALL Java_org_netbeans_installer_utils_system_WindowsNativeUti
     
     MapGenericMask(&DesiredAccess, &GenericMapping);
     
-    BOOL bAccessGranted;
-    DWORD GrantedAccess;
     /* Perform access check using the token. */
     if (!AccessCheck(pSD, hToken, DesiredAccess, &GenericMapping, &PrivilegeSet, &PrivSetSize, &GrantedAccess, &bAccessGranted)) {
         throwException(jEnv, "Unable to perform access check.\n");

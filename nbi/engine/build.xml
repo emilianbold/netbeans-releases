@@ -109,7 +109,9 @@
 	<mkdir dir="${build.classes.dir}/${native.dirname}/${native.jnilib.dir.solaris-x86}"/>
 	<mkdir dir="${build.classes.dir}/${native.dirname}/${native.jnilib.dir.macosx}"/>
 
-        <copy file="${native.dirname}/${native.jnilib.dir.windows}/${native.dist.dir}/${native.jnilib.file.windows}" 
+        <copy file="${native.dirname}/${native.jnilib.dir.windows}/${native.dist.dir}/${native.jnilib.file.windows.i386}" 
+              todir="${build.classes.dir}/${native.dirname}/${native.jnilib.dir.windows}"/>
+        <copy file="${native.dirname}/${native.jnilib.dir.windows}/${native.dist.dir}/${native.jnilib.file.windows.amd64}" 
               todir="${build.classes.dir}/${native.dirname}/${native.jnilib.dir.windows}"/>
         <copy file="${native.dirname}/${native.jnilib.dir.linux}/${native.dist.dir}/${native.jnilib.file.linux.i386}" 
               todir="${build.classes.dir}/${native.dirname}/${native.jnilib.dir.linux}"/>

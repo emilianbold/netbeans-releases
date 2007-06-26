@@ -89,11 +89,11 @@ jstring newStringFromJCharArray(JNIEnv* jEnv, jcharArray jCharArray, int length)
 }
 
 jstring getString(JNIEnv* jEnv, const char* chars) {
-    return (jstring) getStringWithLength(jEnv, chars, strlen(chars));
+    return (jstring) getStringWithLength(jEnv, chars, (int) strlen(chars));
 }
 
 jstring getStringW(JNIEnv* jEnv, const wchar_t * chars) {
-    return (jstring) getStringWithLengthW(jEnv, chars, wcslen(chars));
+    return (jstring) getStringWithLengthW(jEnv, chars, (int) wcslen(chars));
 }
 
 jstring getStringWithLength(JNIEnv* jEnv, const char* chars, int length) {
@@ -147,7 +147,7 @@ char* getChars(JNIEnv* jEnv, jstring jString) {
         
         long index = 0;
         if (jBytes != NULL) {
-            int length = strlen((char*) jBytes);
+            int length = (int) strlen((char*) jBytes);
             
             result = (char*) malloc(sizeof(char) * (length + 1));
             if (result != NULL) {
@@ -215,7 +215,7 @@ jboolean isInstanceOf(JNIEnv* jEnv, jobject object, const char* className) {
 }
 
 jint getIntFromMethod(JNIEnv* jEnv, jobject object, const char* methodName) {
-    jlong value = 0;
+    jint value = 0;
     
     jclass clazz = (*jEnv)->GetObjectClass(jEnv, object);
     if (clazz != NULL) {
@@ -325,10 +325,10 @@ unsigned char* getByteFromMultiString(JNIEnv *jEnv, jobjectArray jObjectArray, u
     unsigned short * result = NULL;
     
     int     totalLength = 0;
-    int     arrayLength = (*jEnv)->GetArrayLength(jEnv, jObjectArray);
+    unsigned int arrayLength = (*jEnv)->GetArrayLength(jEnv, jObjectArray);
     jstring jString     = NULL;
     
-    int     i, j; // just counters
+    unsigned int i, j; // just counters
     
     for (i = 0; i < arrayLength; i++) {
         jString = (jstring) (*jEnv)->GetObjectArrayElement(jEnv, jObjectArray, i);
@@ -345,7 +345,7 @@ unsigned char* getByteFromMultiString(JNIEnv *jEnv, jobjectArray jObjectArray, u
             
             if (jString != NULL) {
                 wchar_t * chars = getWideChars(jEnv, jString);
-               if (chars != NULL) {
+                if (chars != NULL) {
                     for (j = 0; j < wcslen(chars); j++) {
                         result[index++] = chars[j];
                     }

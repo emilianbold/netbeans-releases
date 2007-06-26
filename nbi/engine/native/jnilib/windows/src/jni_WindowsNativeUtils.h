@@ -70,9 +70,9 @@ JNIEXPORT void JNICALL Java_org_netbeans_installer_utils_system_WindowsNativeUti
 /*
  * Class:     org_netbeans_installer_utils_system_WindowsNativeUtils
  * Method:    notifyAssociationChanged0
- * Signature: ()Z
+ * Signature: ()V
  */
-JNIEXPORT jboolean JNICALL Java_org_netbeans_installer_utils_system_WindowsNativeUtils_notifyAssociationChanged0
+JNIEXPORT void JNICALL Java_org_netbeans_installer_utils_system_WindowsNativeUtils_notifyAssociationChanged0
   (JNIEnv *, jobject);
 
 

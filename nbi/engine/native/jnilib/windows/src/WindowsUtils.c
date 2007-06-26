@@ -53,12 +53,12 @@ HKEY getHKEY(jint jSection) {
 }
 
 int queryValue(HKEY section, const unsigned short* key, const unsigned short* name, DWORD* type, DWORD* size, byte** value, int expand) {
-    int   result     = 1;
+    int result = 1;
     
-    HKEY   hkey      = 0;
-    DWORD  tempType  = 0;
-    DWORD  tempSize  = 0;
-    byte*  tempValue = NULL;
+    HKEY hkey = 0;
+    int tempType = 0;
+    int tempSize = 0;
+    byte* tempValue = NULL;
     
     if (RegOpenKeyExW(section, key, 0, KEY_QUERY_VALUE, &hkey) == ERROR_SUCCESS) {
         if (RegQueryValueExW(hkey, name, NULL, &tempType, NULL, &tempSize) == ERROR_SUCCESS) {
@@ -69,9 +69,9 @@ int queryValue(HKEY section, const unsigned short* key, const unsigned short* na
                 
                 if (RegQueryValueExW(hkey, name, NULL, &tempType, tempValue, &tempSize) == ERROR_SUCCESS) {
                     if (expand && (tempType == REG_EXPAND_SZ)) {
-                        int   expandedSize        = wcslen((unsigned short*) tempValue) + 2;
-                        byte* expandedValue       = (byte*) malloc(expandedSize);
-                        int   expandedCharsNumber = ExpandEnvironmentStringsW((unsigned short*) tempValue, (unsigned short*) expandedValue, tempSize);
+                        int expandedSize = (int) wcslen((unsigned short*) tempValue) + 2;
+                        byte* expandedValue = (byte*) malloc(expandedSize);
+                        int expandedCharsNumber = ExpandEnvironmentStringsW((unsigned short*) tempValue, (unsigned short*) expandedValue, tempSize);
                         
                         if (expandedCharsNumber > tempSize) {
                             expandedValue       = (byte*) realloc(expandedValue, expandedCharsNumber * sizeof(byte));

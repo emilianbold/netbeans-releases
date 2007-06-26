@@ -364,7 +364,7 @@ JNIEXPORT void JNICALL Java_org_netbeans_installer_utils_system_windows_WindowsR
     unsigned short* name  = getWideChars(jEnv, jName);
     unsigned short* value = getWideChars(jEnv, jValue);
     
-    if (!setValue(getHKEY(jSection), key, name, jExpand ? REG_EXPAND_SZ : REG_SZ, (byte*) value, wcslen(value) * sizeof(unsigned short), 0)) {
+    if (!setValue(getHKEY(jSection), key, name, jExpand ? REG_EXPAND_SZ : REG_SZ, (byte*) value, ((int) wcslen(value)) * sizeof(unsigned short), 0)) {
         throwException(jEnv, "Could not set value");
     }
     
@@ -426,7 +426,7 @@ JNIEXPORT jobjectArray JNICALL Java_org_netbeans_installer_utils_system_windows_
     unsigned short* key   = getWideChars(jEnv, jKey);
     unsigned short* value = getWideChars(jEnv, jName);
     
-    int	i, start, sLen, count, cnt;
+    int	i, start, count, cnt;
     LONG regErr = 0;
     unsigned short* data = 0;
     jstring string;
