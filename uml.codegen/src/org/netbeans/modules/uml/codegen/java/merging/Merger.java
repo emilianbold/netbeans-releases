@@ -320,7 +320,7 @@ public class Merger implements IUMLParserEventsSink {
 
 	List<IEnumerationLiteral> newLits = getEnumLiterals(newClass);
 	List<IEnumerationLiteral> oldLits = getEnumLiterals(oldClass);
-	merge(newClass, oldClass, newLits, oldLits);
+	mergeLiterals(newClass, oldClass, newLits, oldLits);
 	mergelLiteralSectionTerminators(newClass, oldClass);
 
 	List<IAttribute> newAttrs = getAttributes(newClass);
@@ -443,6 +443,182 @@ public class Merger implements IUMLParserEventsSink {
 	    }
 	}
     }
+
+
+
+    class Mapping {
+
+	INamedElement ne;
+	INamedElement oe;
+	int pr = 0;
+
+	Mapping(INamedElement ne, INamedElement oe) {
+	    this.ne = ne;
+	    this.oe = oe;
+	}
+
+    }
+
+
+    /**
+     *  
+     *  
+     */
+    private void mergeLiterals(IClassifier newClass,
+			       IClassifier oldClass,
+			       List<IEnumerationLiteral> newElems, 
+			       List<IEnumerationLiteral> oldElems) 
+    { 
+	
+	Mapping map[] = new Mapping[newElems.size()];
+	int i = 0;
+	// marker ID based matching	
+	for(INamedElement newElem : newElems) 
+	{
+	    INamedElement elem = matcher.findElementMatch(newElem, oldElems, ElementMatcher.ID_MARKER_MATCH);
+	    if (elem != null)
+	    {
+		if (! matchedOld.contains(elem)) 
+		{
+		    map[i] = new Mapping(newElem, elem);
+		    addToMatched(matchedNew, newElem);
+		    addToMatched(matchedOld, elem);		    
+		} 
+		else 
+		{		    
+		    // TBD we've already matched that element
+		    // need to at least log the error
+		}
+	    }
+	    i++;
+	}
+	
+	i = 0;
+	// base matching, ie. name (signature for operations) based
+	for(INamedElement newElem : newElems) 
+	{
+	    if (! matchedNew.contains(newElem)) 
+	    {
+		INamedElement elem = matcher.findElementMatch(newElem, oldElems, ElementMatcher.BASE_MATCH);
+		if (elem != null)
+		{
+		    if (! matchedOld.contains(elem)) 
+		    { 
+			map[i] = new Mapping(newElem, elem);
+			addToMatched(matchedNew, newElem);
+			addToMatched(matchedOld, elem);		    
+		    }		    
+		    else 
+		    {
+			// TBD we've already matched that element
+			// need to at least log the error
+		    }
+		
+		}
+	    }
+	    i++;
+	}
+
+	int pnt = 0;
+	INamedElement lastProcessed = null;
+	for(i = 0; i < map.length; i++) 
+	{
+	    boolean processed = false;
+	    if (map[i] == null) 
+	    {
+		;
+	    } 
+	    else 
+	    {
+		Mapping m = map[i];
+		if (lastProcessed == null || isOrdered(lastProcessed, m.oe)) 
+		{
+		    for( int j = pnt; j < i; j++) 
+		    {
+			if (map[j] != null) 
+			{
+			    if (ElementMatcher.isMarked(map[j].oe)) 
+			    {
+				fileBuilder.remove(new ElementDescriptor(map[j].oe.getNode()));
+			    } 
+			    else 
+			    {
+				continue;
+			    }
+			}				
+			fileBuilder.insert(new ElementDescriptor(newElems.get(j).getNode()),
+					   new ElementDescriptor(m.oe.getNode()),
+					   false,
+					   j - i);
+		    }
+		    if (ElementMatcher.isMarked(m.oe)) 
+		    {
+			fileBuilder.replace(new ElementDescriptor(m.ne.getNode()), 
+					    new ElementDescriptor(m.oe.getNode()),
+					    ElementMatcher.isRegenBody(m.oe) 
+					        ? FileBuilder.HEADER_AND_BODY
+					        : FileBuilder.HEADER_ONLY);
+		    }
+		    lastProcessed = m.oe;
+		    pnt = i + 1;
+		    processed = true;
+		}
+	    }
+	    if (! processed && i == map.length - 1) 
+	    {
+		INamedElement anchor = null;
+		if (oldElems != null && oldElems.size() > 0) 
+		{ 
+		    sortElementsByPosition(oldElems);
+		    anchor = oldElems.get(oldElems.size() - 1);
+		} 
+		for( int j = pnt; j < map.length; j++) 
+		{
+		    if (map[j] != null) 
+		    {
+			if (ElementMatcher.isMarked(map[j].oe)) 
+			{
+			    fileBuilder.remove(new ElementDescriptor(map[j].oe.getNode()));
+			} 
+			else 
+			{
+			    continue;			    
+			}
+		    }	
+		    if (anchor != null) 
+		    {
+			fileBuilder.insert(new ElementDescriptor(newElems.get(j).getNode()),
+					   new ElementDescriptor(anchor.getNode()),
+					   true,
+					   j - map.length);
+		    } 
+		    else 
+		    {
+			fileBuilder.add(new ElementDescriptor(newElems.get(j).getNode()),
+					new ElementDescriptor(oldClass.getNode()),
+					j - map.length);
+		    }
+		}
+	    }
+	}
+       
+	    
+	// removing all un-matched regenerateable old elements
+	for(INamedElement oldElem : oldElems) {
+	    if (matchedOld.contains(oldElem)) {
+		// has been already matched using ID marker
+		continue;
+	    }
+	    if (ElementMatcher.isMarked(oldElem)) 
+	    {
+		// the element is regenerateable, 
+		// ie. not having been matched means to be deleted
+		fileBuilder.remove(new ElementDescriptor(oldElem.getNode()));
+	    }
+	}
+	
+    }
+
 
     private void mergelLiteralSectionTerminators(IClassifier newClass, IClassifier oldClass) 
     { 
@@ -978,6 +1154,14 @@ public class Merger implements IUMLParserEventsSink {
 	    }
 	});
     }
+
+
+    public boolean isOrdered(IElement c1, IElement c2) 
+    {
+	return (new ElementDescriptor(c1.getNode()).getStartPos() 
+		- new ElementDescriptor(c2.getNode()).getStartPos()) < 0 ;
+    }
+
   
     public static class ParsedInfo {
 	ArrayList<Node> pack;

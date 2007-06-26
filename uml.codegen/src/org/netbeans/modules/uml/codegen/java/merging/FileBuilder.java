@@ -125,6 +125,16 @@ public class FileBuilder
     */
    public void add(ElementDescriptor newElem, ElementDescriptor oldParentElem)
    {
+       add(newElem, oldParentElem, 0);
+   }
+
+   /**
+    *  client calls this method to indicate that text fragment representing
+    *  newElem in new file should be added to the old file
+    * @param newElem
+    */
+   public void add(ElementDescriptor newElem, ElementDescriptor oldParentElem, int pr)
+   {
       String modelElemType = newElem.getModelElemType();
       long insertPos = -1;
       List<ElementDescriptor> c = getElementsSorted(oldParentElem, true);
@@ -141,14 +151,8 @@ public class FileBuilder
       }
       else if ("EnumerationLiteral".equals(modelElemType))
       {
-	  List<ElementDescriptor> literals = getElementsSorted(oldParentElem, false);
-	  if ( !( literals == null || literals.size() == 0)) {
-	      oldElem = literals.get(0);
-	      mods.add(new ModDesc(ModDesc.INSERT_BEFORE, newElem, oldElem, insertPos, HEADER_AND_BODY, -2));
-	  } else {
-	      insertPos = getSrcTopPosition(oldParentElem, false);
-	      mods.add(new ModDesc(ModDesc.INSERT_AFTER, newElem, oldElem, insertPos, HEADER_AND_BODY, -2));
-	  }
+	  insertPos = getSrcTopPosition(oldParentElem, false);
+	  mods.add(new ModDesc(ModDesc.INSERT_AFTER, newElem, oldElem, insertPos, HEADER_AND_BODY, -2 + pr));	  
       }
       else  //if ("Operation".equals(modelElemType))
       {
