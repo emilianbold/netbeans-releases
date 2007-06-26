@@ -29,6 +29,7 @@ import javax.management.MBeanAttributeInfo;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.sun.manager.jbi.GenericConstants;
+import org.netbeans.modules.sun.manager.jbi.actions.RefreshAction;
 import org.netbeans.modules.sun.manager.jbi.management.JBIMBeanTaskResultHandler;
 
 import org.netbeans.modules.sun.manager.jbi.util.ProgressUI;
@@ -129,9 +130,21 @@ public class JBIServiceAssemblyNode extends AppserverJBIMgmtContainerNode
             SystemAction.get(UndeployAction.Force.class),
             null,
             SystemAction.get(PropertiesAction.class),
+            SystemAction.get(RefreshAction.class),
         };
     }
     
+    public void refresh() {
+        // clear the cache first
+        AdministrationService adminService = 
+                getAppserverJBIMgmtController().getJBIAdministrationService();
+        adminService.clearServiceAssemblyStatusCache();
+        
+        super.refresh();
+        
+        fireIconChange(); // necessary for the SA node to refresh
+    }
+     
     /**
      * Return the SheetProperties to be displayed for this JVM.
      *

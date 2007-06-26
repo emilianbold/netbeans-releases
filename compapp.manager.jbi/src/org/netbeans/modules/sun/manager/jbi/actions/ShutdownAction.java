@@ -19,9 +19,6 @@
 
 package org.netbeans.modules.sun.manager.jbi.actions;
 
-import javax.swing.JComponent;
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
 import javax.swing.SwingUtilities;
 
 import org.netbeans.modules.j2ee.sun.bridge.apis.RefreshCookie;
@@ -32,10 +29,10 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.actions.NodeAction;
-import org.openide.util.actions.SystemAction;
 
 /**
- *
+ * Action to shutdown one or more JBI Components and/or Service Assemblies.
+ * 
  * @author jqian
  */
 public abstract class ShutdownAction extends NodeAction {
@@ -45,27 +42,25 @@ public abstract class ShutdownAction extends NodeAction {
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
                 try {
-                    for (int i = 0; i < activatedNodes.length; i++) {
-                        Node node = activatedNodes[i];
+                    for (Node node : activatedNodes) {
                         Lookup lookup = node.getLookup();
-                        Object obj = lookup.lookup(Shutdownable.class);
+                        Shutdownable shutdownable = lookup.lookup(Shutdownable.class);
                         
-                        if (obj instanceof Shutdownable) {
-                            Shutdownable shutdownable = (Shutdownable)obj;
+                        if (shutdownable != null) {
                             shutdownable.shutdown(isForceAction());
                             
-                            final RefreshCookie refreshAction =
-                                    (RefreshCookie) node.getCookie(RefreshCookie.class);
-                            if (refreshAction != null){
+                            final RefreshCookie refreshCookie =
+                                    lookup.lookup(RefreshCookie.class);
+                            if (refreshCookie != null){
                                 SwingUtilities.invokeLater(new Runnable() {
                                     public void run() {
-                                        refreshAction.refresh();
+                                        refreshCookie.refresh();
                                     }
                                 });
                             }
                         }
                     }
-                } catch(RuntimeException rex) {
+                } catch (RuntimeException rex) {
                     //gobble up exception
                 }
             }
@@ -76,22 +71,16 @@ public abstract class ShutdownAction extends NodeAction {
         boolean ret = false;
         
         if (nodes != null && nodes.length > 0) {
-            
             ret = true;
-            
-            for (int i = 0; i < nodes.length; i++) {
-                Lookup lookup = nodes[i].getLookup();
-                Object obj = lookup.lookup(Shutdownable.class);
-                
+            for (Node node : nodes) {
+                Lookup lookup = node.getLookup();
+                Shutdownable shutdownable = lookup.lookup(Shutdownable.class);                
                 try {
-                    if(obj instanceof Shutdownable) {
-                        Shutdownable shutdownable = (Shutdownable)obj;
-                        if (!shutdownable.canShutdown()) {
-                            ret = false;
-                            break;
-                        }
+                    if (shutdownable != null && !shutdownable.canShutdown()) {
+                        ret = false;
+                        break;
                     }
-                } catch(RuntimeException rex) {
+                } catch (RuntimeException rex) {
                     //gobble up exception
                 }
             }
@@ -138,11 +127,11 @@ public abstract class ShutdownAction extends NodeAction {
         public JComponent[] getMenuPresenters() {
             return new JComponent [] { createMenu() };
         }
-        
+         
         public JComponent[] synchMenuPresenters(JComponent[] items) {
             return new JComponent [] { createMenu() };
         }
-        
+         
         private JMenu createMenu() {
             JMenu result = new JMenu(
                     NbBundle.getMessage(ShutdownAction.class, "LBL_Advanced"));  // NOI18N
@@ -150,7 +139,7 @@ public abstract class ShutdownAction extends NodeAction {
             result.add(new JMenuItem(SystemAction.get(UninstallAction.Force.class)));
             return result;
         }
-        */
+         */
         
         protected boolean isForceAction() {
             return true;

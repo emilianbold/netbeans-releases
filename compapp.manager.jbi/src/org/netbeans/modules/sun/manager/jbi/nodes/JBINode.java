@@ -20,18 +20,12 @@
 package org.netbeans.modules.sun.manager.jbi.nodes;
 
 import java.awt.Image;
-import java.lang.reflect.Method;
 import java.util.Map;
-
 import javax.management.Attribute;
-import javax.management.IntrospectionException;
 import javax.management.MBeanAttributeInfo;
 import javax.swing.Action;
 import javax.swing.ImageIcon;
-import javax.swing.SwingUtilities;
-
-import org.netbeans.modules.j2ee.sun.bridge.apis.AppserverMgmtController;
-import org.netbeans.modules.j2ee.sun.bridge.apis.RefreshAction;
+import org.netbeans.modules.sun.manager.jbi.actions.RefreshAction;
 import org.netbeans.modules.sun.manager.jbi.management.JBIFrameworkService;
 import org.netbeans.modules.sun.manager.jbi.util.AppserverJBIMgmtController;
 import org.netbeans.modules.sun.manager.jbi.util.NodeTypes;

@@ -2,16 +2,16 @@
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
- * 
+ *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- * 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -37,39 +37,39 @@ import org.openide.util.actions.Presenter;
 import org.openide.util.actions.SystemAction;
 
 /**
- *
+ * Action to undeploy one or more JBI Service Assemblies.
+ * 
  * @author jqian
  */
 public abstract class UndeployAction extends NodeAction {
-
+    
     protected void performAction(final Node[] activatedNodes) {
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
                 try {
                     Node parentNode = null; // the node that needs refreshing
-                    for (int i = 0; i < activatedNodes.length; i++) {
-                        Node node = activatedNodes[i];
+                    
+                    for (Node node : activatedNodes) {
                         Lookup lookup = node.getLookup();
-                        Object obj = lookup.lookup(Undeployable.class);
+                        Undeployable undeployable = lookup.lookup(Undeployable.class);
                         
-                        if (obj instanceof Undeployable) {
+                        if (undeployable != null) {
                             // There will be at most one parent node that
                             // needs refreshing
                             if (parentNode == null) {
                                 parentNode = node.getParentNode();
                             }
-                            Undeployable undeployable = (Undeployable)obj;
                             undeployable.undeploy(isForceAction());
                         }
                     }
                     
                     if (parentNode != null) {
-                        final RefreshCookie refreshAction =
-                                (RefreshCookie) parentNode.getCookie(RefreshCookie.class);
-                        if (refreshAction != null){
+                        final RefreshCookie refreshCookie =
+                                parentNode.getLookup().lookup(RefreshCookie.class);
+                        if (refreshCookie != null){
                             SwingUtilities.invokeLater(new Runnable() {
                                 public void run() {
-                                    refreshAction.refresh();
+                                    refreshCookie.refresh();
                                 }
                             });
                         }
@@ -78,30 +78,23 @@ public abstract class UndeployAction extends NodeAction {
                     //gobble up exception
                 }
             }
-        });        
+        });
     }
     
     protected boolean enable(Node[] nodes) {
         boolean ret = false;
         
         if (nodes != null && nodes.length > 0) {
-            
             ret = true;
-            
-            for (int i = 0; i < nodes.length; i++) {
-                Node node = nodes[i];
-                Lookup lookup = node.getLookup();
-                Object obj = lookup.lookup(Undeployable.class);
-                
+            for (Node node : nodes) {
+                Undeployable undeployable = 
+                        node.getLookup().lookup(Undeployable.class);                
                 try {
-                    if(obj instanceof Undeployable) {
-                        Undeployable undeployable = (Undeployable)obj;
-                        if (!undeployable.canUndeploy()) {
-                            ret = false;
-                            break;
-                        }
+                    if (undeployable != null && !undeployable.canUndeploy()) {
+                        ret = false;
+                        break;
                     }
-                } catch(java.lang.RuntimeException rex) {
+                } catch(RuntimeException rex) {
                     //gobble up exception
                 }
             }
@@ -117,7 +110,7 @@ public abstract class UndeployAction extends NodeAction {
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
-        
+    
     protected abstract boolean isForceAction();
     
     
@@ -147,8 +140,8 @@ public abstract class UndeployAction extends NodeAction {
         public JMenuItem getPopupPresenter() {
             JMenu result = new JMenu(
                     NbBundle.getMessage(ShutdownAction.class, "LBL_Advanced"));  // NOI18N
-                        
-            //result.add(new JMenuItem(SystemAction.get(ShutdownAction.Force.class)));            
+            
+            //result.add(new JMenuItem(SystemAction.get(ShutdownAction.Force.class)));
             Action forceShutdownAction = SystemAction.get(ShutdownAction.Force.class);
             JMenuItem forceShutdownMenuItem = new JMenuItem();
             Actions.connect(forceShutdownMenuItem, forceShutdownAction, false);
@@ -161,11 +154,11 @@ public abstract class UndeployAction extends NodeAction {
             result.add(forceUndeployMenuItem);
             
             return result;
-        }        
-                  
+        }
+        
         protected boolean isForceAction() {
             return true;
-        }        
+        }
     }
     
 }

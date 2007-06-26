@@ -24,8 +24,8 @@ import java.util.logging.Level;
 
 import javax.swing.Action;
 
-import org.netbeans.modules.j2ee.sun.bridge.apis.RefreshAction;
 import org.netbeans.modules.j2ee.sun.bridge.apis.RefreshCookie;
+import org.netbeans.modules.sun.manager.jbi.actions.RefreshAction;
 import org.netbeans.modules.sun.manager.jbi.util.AppserverJBIMgmtController;
 import org.netbeans.modules.sun.manager.jbi.util.JBIContainerChildFactory;
 import org.openide.nodes.Children;

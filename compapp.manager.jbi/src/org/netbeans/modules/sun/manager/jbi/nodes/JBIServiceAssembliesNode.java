@@ -30,12 +30,12 @@ import javax.swing.Action;
 import javax.swing.JFileChooser;
 import javax.swing.SwingUtilities;
 
-import org.netbeans.modules.j2ee.sun.bridge.apis.RefreshAction;
 import org.netbeans.modules.sun.manager.jbi.GenericConstants;
 import org.netbeans.modules.sun.manager.jbi.management.JBIMBeanTaskResultHandler;
 import org.netbeans.modules.sun.manager.jbi.util.ArchiveFileFilter;
 import org.netbeans.modules.sun.manager.jbi.util.ProgressUI;
 import org.netbeans.modules.sun.manager.jbi.actions.DeployAction;
+import org.netbeans.modules.sun.manager.jbi.actions.RefreshAction;
 import org.netbeans.modules.sun.manager.jbi.management.AdministrationService;
 import org.netbeans.modules.sun.manager.jbi.util.AppserverJBIMgmtController;
 import org.netbeans.modules.sun.manager.jbi.util.NodeTypes;
