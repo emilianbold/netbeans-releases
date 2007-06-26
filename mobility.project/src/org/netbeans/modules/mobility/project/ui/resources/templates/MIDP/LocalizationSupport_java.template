@@ -1,26 +1,21 @@
-/*
+<#assign licenseFirst = "/*">
+<#assign licensePrefix = " * ">
+<#assign licenseLast = " */">
+<#include "../Licenses/license-${project.license}.txt">
 
- * Localization Support Class
- * __NAME__.java
- *
- * Created on __DATE__, __TIME__
- */
+<#if package?? && package != "">
+package ${package};
 
-package Templates.MIDP;
-
+</#if>
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Hashtable;
 
 /**
- * This class contains a localization support for MIDP applications
- * Feel free to modify.
- *
- * @author  __USER__
- * @version 
+ * @author ${user}
  */
-public class LocalizationSupport  {
+public class ${name}  {
 
 
 
@@ -88,7 +83,7 @@ public class LocalizationSupport  {
         // need access to a class object - cannot use Object.class, because of MIDP1 bug
         Class clazz = Runtime.getRuntime().getClass();
         try {         
-            // try to find localized resource first (in format ${name}_locale.${suffix})
+            // try to find localized resource first (in format <name>_locale.<suffix>)
             if ((locale != null) && (locale.length() > 1)) {
                 int lastIndex = _MESSAGES_BUNDLE.lastIndexOf('.');
                 String prefix = _MESSAGES_BUNDLE.substring(0,lastIndex);

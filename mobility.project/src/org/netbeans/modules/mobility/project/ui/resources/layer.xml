@@ -120,6 +120,7 @@ Microsystems, Inc. All Rights Reserved.
                 <attr boolvalue="true" name="isMIDletTemplate"/>
                 <attr name="MIDP" boolvalue="true"/>
                 <attr name="templateCategory" stringvalue="MIDP"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
             </file>
 
             <file name="MIDPCanvas.java" url="templates/MIDP/MIDPCanvas_java.template">
@@ -130,6 +131,7 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.mobility.project.ui.wizard.FileWizardIterator.singleton"/>
                 <attr name="MIDP" boolvalue="true"/>
                 <attr name="templateCategory" stringvalue="MIDP"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
             </file>
 
             <file name="LocalizationSupport.java" url="templates/MIDP/LocalizationSupport_java.template">
@@ -140,6 +142,7 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.mobility.project.ui.wizard.i18n.LocalizationSupportIterator.singleton"/>
                 <attr name="MIDP" boolvalue="true"/>
                 <attr name="templateCategory" stringvalue="MIDP"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
              </file>
             <file name="LocalizationSupport.properties" url="templates/MIDP/LocalizationSupport_properties.template">
                 <!--
