@@ -78,7 +78,7 @@ public class DeleteTest extends JellyTestCase {
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
         suite.addTest(new DeleteTest("testDeleteRevert"));
-        //suite.addTest(new DeleteTest("testDeleteCommit"));
+        suite.addTest(new DeleteTest("testDeleteCommit"));
         return suite;
     }
     
