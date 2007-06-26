@@ -61,6 +61,14 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
     
+    <testbag testattribs="smartcompletion" name="Completion-Validation" compiler="qa-functional-compiler-completion" >
+        <testset dir="qa-functional/src">
+            <patternset>
+                <include name="org/netbeans/test/java/editor/completion/SmartCCTests.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+    
     <testbag testattribs="completiongui,all" name="Completion GUI tests" compiler="qa-functional-compiler-completion" >
         <testset dir="qa-functional/src">
             <patternset>
@@ -77,7 +85,7 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
     
-    <testbag testattribs="mark" name="Mark Occurrences" executor="ide-cl"> 
+    <testbag testattribs="mark,all" name="Mark Occurrences" executor="ide-cl"> 
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="org/netbeans/modules/java/editor/semantic/*.class"/>		                               
