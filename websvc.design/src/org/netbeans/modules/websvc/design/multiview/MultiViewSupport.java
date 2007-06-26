@@ -23,6 +23,7 @@ import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collections;
 import javax.swing.Action;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -99,6 +100,14 @@ public class MultiViewSupport implements MultiViewCookie, Serializable {
     public void edit() {
         view(View.SOURCE);
     }
+
+    public boolean close() {
+        boolean retValue = false;
+        for(TopComponent tc:getOpenedMultiViews()) {
+            retValue&=tc.close();
+        }
+        return retValue;
+    }
     
     public DataObject getDataObject() {
         return dataObject;
@@ -139,6 +148,27 @@ public class MultiViewSupport implements MultiViewCookie, Serializable {
         CloneableTopComponent tc = createMultiView();
         tc.requestActive();
         return tc;
+    }
+
+    /**
+     * Finds all the opened multiviews.
+     */
+    private ArrayList<TopComponent> getOpenedMultiViews() {
+        ArrayList<TopComponent> tcs = new ArrayList<TopComponent>();
+        Mode editorMode = WindowManager.getDefault().findMode(
+                DataEditorSupport.EDITOR_MODE);
+        if (editorMode != null && editorMode.getSelectedTopComponent() != null) {
+            TopComponent activeTC = editorMode.getSelectedTopComponent();
+            if(equals(activeTC.getLookup().lookup(MultiViewSupport.class))) {
+                tcs.add(activeTC);
+            }
+            for(TopComponent openedTC:editorMode.getTopComponents()) {
+                if(equals(openedTC.getLookup().lookup(MultiViewSupport.class))) {
+                    tcs.add(openedTC);
+                }
+            }
+        }
+        return tcs;
     }
 
     /**
