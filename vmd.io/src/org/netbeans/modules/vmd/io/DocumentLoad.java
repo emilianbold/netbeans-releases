@@ -69,11 +69,6 @@ public class DocumentLoad {
     private static boolean loadVersion1 (DataObjectContext context, DesignDocument loadingDocument, Node rootNode) {
         final Node documentNode = findDocumentNode (rootNode);
 
-        if (! DocumentSave.VERSION_VALUE_1.equals (getAttributeValue (documentNode, DocumentSave.VERSION_ATTR))) {
-            Debug.warning ("Invalid version of VisualDesign");
-            return false;
-        }
-
         loadDocumentVersion1 (context, loadingDocument, documentNode);
 
         Collection<? extends DataSerializer> serializers = DocumentSave.customDataSerializers.allInstances ();
