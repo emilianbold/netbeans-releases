@@ -70,7 +70,9 @@ public class Midp1CompliantAnalyzer implements Analyzer {
             public void run () {
                 DefaultListModel model = (DefaultListModel) list.getModel ();
                 model.removeAllElements ();
-                analyze (model, document.getRootComponent ());
+                DesignComponent rootComponent = document.getRootComponent ();
+                if (rootComponent != null)
+                    analyze (model, rootComponent);
             }
         });
     }
