@@ -58,7 +58,7 @@ public class PrimitiveTypeSerializer implements JavonSerializer {
     
     private final static ClassData stringClassData      = new ClassData( "java.lang", "String", false, false );
     
-    private final static Set<String> supportedDeclaredTypes = new HashSet();
+    private final static Set<String> supportedDeclaredTypes = new HashSet<String>();
     
     /** Creates a new instance of PrimitiveTypeSerializer */
     public PrimitiveTypeSerializer() {        
@@ -280,6 +280,8 @@ public class PrimitiveTypeSerializer implements JavonSerializer {
             result += toObject( longClassData, stream + ".readLong()" );
         } else if( ShortClassData.equals( type ) || shortClassData.equals( type)) {
             result += toObject( shortClassData, stream + ".readShort()" );
+        } else if( stringClassData.equals( type )) {
+            result += stream + ".readUTF()";
         }
         if( "".equals( result ))
             throw new IllegalArgumentException( "Invalid type: " + type.getName());
