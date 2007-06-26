@@ -168,6 +168,7 @@ Microsystems, Inc. All Rights Reserved.
      </folder>
      </folder>
    </folder>  
+    <!--
     <folder name="Templates">
         <folder name="Other">
             <file name="SVGFileTemplate.svg" url="SVGFileTemplate.svg">
@@ -176,4 +177,5 @@ Microsystems, Inc. All Rights Reserved.
             </file>
         </folder>
     </folder>
+    -->
 </filesystem>
