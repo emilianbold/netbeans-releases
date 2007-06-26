@@ -33,7 +33,6 @@ import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import javax.swing.DefaultComboBoxModel;
-import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
@@ -587,7 +586,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
                     label = config;
                 }
             } else {
-                label = NbBundle.getMessage(CustomizerRun.class, "CustomizerRun.default");
+                label = NbBundle.getBundle("org.netbeans.modules.java.j2seproject.Bundle").getString("J2SEConfigurationProvider.default.label");
             }
             setText(label);
             
