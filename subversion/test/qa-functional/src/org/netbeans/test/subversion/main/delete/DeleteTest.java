@@ -78,7 +78,7 @@ public class DeleteTest extends JellyTestCase {
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
         suite.addTest(new DeleteTest("testDeleteRevert"));
-        suite.addTest(new DeleteTest("testDeleteCommit"));
+        //suite.addTest(new DeleteTest("testDeleteCommit"));
         return suite;
     }
     
@@ -131,8 +131,8 @@ public class DeleteTest extends JellyTestCase {
             node.performPopupAction("Subversion|Show Changes");
             oto.waitText("Refreshing... finished.");
             node.performPopupActionNoBlock("Delete");
-            NbDialogOperator dialog = new NbDialogOperator("Safe Delete");
-            JButtonOperator btn = new JButtonOperator(dialog, "Refactor");
+            NbDialogOperator dialog = new NbDialogOperator("Confirm Object Deletion");
+            JButtonOperator btn = new JButtonOperator(dialog, "Yes");
             btn.push();
             
             Thread.sleep(1000);

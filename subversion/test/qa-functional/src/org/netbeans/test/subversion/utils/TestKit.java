@@ -178,7 +178,7 @@ public final class TestKit {
     public static void createNewElements(String projectName, String packageName, String name) {
         NewFileWizardOperator nfwo = NewFileWizardOperator.invoke();
         nfwo.selectProject(projectName);
-        nfwo.selectCategory("Java Classes");
+        nfwo.selectCategory("Java");
         nfwo.selectFileType("Java Package");
         nfwo.next();
         NewFileNameLocationStepOperator nfnlso = new NewFileNameLocationStepOperator();
@@ -188,7 +188,7 @@ public final class TestKit {
         
         nfwo = NewFileWizardOperator.invoke();
         nfwo.selectProject(projectName);
-        nfwo.selectCategory("Java Classes");
+        nfwo.selectCategory("Java");
         nfwo.selectFileType("Java Class");
         nfwo.next();
         nfnlso = new NewFileNameLocationStepOperator();
@@ -201,7 +201,7 @@ public final class TestKit {
     public static void createNewPackage(String projectName, String packageName) {
         NewFileWizardOperator nfwo = NewFileWizardOperator.invoke();
         nfwo.selectProject(projectName);
-        nfwo.selectCategory("Java Classes");
+        nfwo.selectCategory("Java");
         nfwo.selectFileType("Java Package");
         nfwo.next();
         NewFileNameLocationStepOperator nfnlso = new NewFileNameLocationStepOperator();
@@ -213,7 +213,7 @@ public final class TestKit {
     public static void createNewElement(String projectName, String packageName, String name) {
         NewFileWizardOperator nfwo = NewFileWizardOperator.invoke();
         nfwo.selectProject(projectName);
-        nfwo.selectCategory("Java Classes");
+        nfwo.selectCategory("Java");
         nfwo.selectFileType("Java Class");
         nfwo.next();
         NewFileNameLocationStepOperator nfnlso = new NewFileNameLocationStepOperator();
