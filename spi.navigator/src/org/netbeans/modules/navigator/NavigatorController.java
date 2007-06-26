@@ -111,6 +111,9 @@ public final class NavigatorController implements LookupListener, ActionListener
 
     /** Listen to possible destroy of asociated curNode */
     private NodeListener weakNodeL;
+
+    /** boolean flag to indicate whether updateContext is currently running */
+    private boolean inUpdate;
     
     /** Creates a new instance of NavigatorController */
     public NavigatorController(NavigatorTC navigatorTC) {
@@ -230,9 +233,16 @@ public final class NavigatorController implements LookupListener, ActionListener
      * @force if true that update is forced even if it means clearing navigator content
      */
     private void updateContext (boolean force) {
+        // #105327: don't allow reentrancy, may happen due to listening to node changes
+        if (inUpdate) {
+            return;
+        }
+        inUpdate = true;
+        
         // #67599,108066: Some updates runs delayed, so it's possible that
         // navigator was already closed, that's why the check
         if (curNodes == null) {
+            inUpdate = false;
             return;
         }
         
@@ -240,6 +250,7 @@ public final class NavigatorController implements LookupListener, ActionListener
         // which don't define activated nodes
         Node node = obtainFirstCurNode();
         if (node == null && !shouldUpdate() && !force) {
+            inUpdate = false;
             return;
         }
         
@@ -265,6 +276,7 @@ public final class NavigatorController implements LookupListener, ActionListener
         
         // navigator remains empty, do nothing
         if (oldProviders == null && providers == null) {
+            inUpdate = false;
             return;
         }
         
@@ -289,12 +301,15 @@ public final class NavigatorController implements LookupListener, ActionListener
             // #100122: update activated nodes of Navigator TC
             navigatorTC.setActivatedNodes(obtainActivatedNodes());
             updateTCTitle(areNewProviders ? node : null);
+            
+            inUpdate = false;
             return;
         }
         
         if (selPanel != null) {
             // #61334: don't deactivate previous providers if there are no new ones
             if (!areNewProviders && !force) {
+                inUpdate = false;
                 return;
             }
             selPanel.panelDeactivated();
@@ -312,6 +327,8 @@ public final class NavigatorController implements LookupListener, ActionListener
         
         navigatorTC.setActivatedNodes(obtainActivatedNodes());
         updateTCTitle(areNewProviders ? node : null);
+        
+        inUpdate = false;
     }
 
     /** Sets navigator title according to active context */
