@@ -216,11 +216,11 @@ public class DefinitionsNode extends WSDLExtensibilityElementNode<Definitions> {
     @Override
     public void propertyChange(PropertyChangeEvent event) {
         if (isValid() && event.getSource() == getWSDLComponent()) {
-            if (event.getPropertyName().equals("xmlns")) {
+            String propName = event.getPropertyName();
+            if (propName.equals("xmlns")) {
                 firePropertyChange("defaultNamespace", event.getOldValue(), event.getNewValue());
-            } else if (event.getPropertyName().startsWith("xmlns")) {
-                refreshPrefixesSheetSet(getSheet());
             } else {
+                refreshPrefixesSheetSet(getSheet());
                 super.propertyChange(event);
             }
         }

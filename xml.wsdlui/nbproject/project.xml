@@ -367,6 +367,17 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
                     </run-dependency>
                 </dependency>
             </module-dependencies>
+            <test-dependencies>
+                <test-type>
+                    <name>unit</name>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.xml.text</code-name-base>
+                        <recursive/>
+                        <compile-dependency/>
+                        <test/>
+                    </test-dependency>
+                </test-type>
+            </test-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.bpel.editors.api</friend>
                 <friend>org.netbeans.modules.compapp.casaeditor</friend>
@@ -383,5 +394,6 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
                 <package>org.netbeans.modules.xml.wsdl.ui.wizard</package>
             </friend-packages>
         </data>
+        <junit-version xmlns="http://www.netbeans.org/ns/junit/1" value="junit4"/>
     </configuration>
 </project>

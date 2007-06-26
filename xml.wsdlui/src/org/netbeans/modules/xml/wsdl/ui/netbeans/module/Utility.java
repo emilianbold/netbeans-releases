@@ -324,8 +324,7 @@ public class Utility {
     }
     
     public static boolean startTransaction(WSDLModel model) {
-        boolean isInTransaction = model.isIntransaction();
-        if (isInTransaction) return true;
+        if (model.isIntransaction()) return true;
         model.startTransaction();
         return false;
     }

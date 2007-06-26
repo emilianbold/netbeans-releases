@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -43,9 +44,11 @@ import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
 import org.netbeans.modules.xml.refactoring.ui.ReferenceableProvider;
 import org.netbeans.modules.xml.wsdl.model.Definitions;
 import org.netbeans.modules.xml.wsdl.model.Documentation;
+import org.netbeans.modules.xml.wsdl.model.ExtensibilityElement;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.ui.actions.ActionHelper;
+import org.netbeans.modules.xml.wsdl.ui.actions.ExtensibilityElementPrefixCleanupVisitor;
 import org.netbeans.modules.xml.wsdl.ui.commands.CommonAttributePropertyAdapter;
 import org.netbeans.modules.xml.wsdl.ui.commands.OtherAttributePropertyAdapter;
 import org.netbeans.modules.xml.wsdl.ui.commands.XMLAttributePropertyAdapter;
@@ -298,11 +301,12 @@ public abstract class WSDLElementNode<T extends WSDLComponent> extends AbstractN
                 }
             }
 
+            boolean inTransaction= false;
             try {
-                model.startTransaction();
+                inTransaction = Utility.startTransaction(model);
                 model.removeChildComponent(getWSDLComponent());
             } finally {
-                model.endTransaction();
+                Utility.endTransaction(model, inTransaction);
             }
             ActionHelper.selectNode(nextSelection);
         }
@@ -460,6 +464,26 @@ public abstract class WSDLElementNode<T extends WSDLComponent> extends AbstractN
         if (event.getSource() == mElement && isValid()) {
             updateDisplayName();
             String propName = event.getPropertyName();
+            
+            //mLogger.log(Level.WARNING, "propertyName" + propName + "\t element name" + getName()); 
+            if (event.getOldValue() != null && event.getNewValue() == null && 
+                    WSDLComponent.class.isInstance(event.getOldValue())) {
+                ExtensibilityElementPrefixCleanupVisitor visitor = 
+                    new ExtensibilityElementPrefixCleanupVisitor();
+                
+                WSDLModel model = getWSDLComponent().getModel();
+                model.getDefinitions().accept(visitor);
+                
+                WSDLComponent comp = (WSDLComponent) event.getOldValue();
+                boolean isInTransaction = false;
+                try {
+                    isInTransaction = Utility.startTransaction(model);
+                    cleanupPrefixes(comp, visitor, model);
+                } finally {
+                    Utility.endTransaction(model, isInTransaction);
+                }
+            }
+
             QName qname = null;
             try {
                 qname = QName.valueOf(propName);
@@ -482,6 +506,20 @@ public abstract class WSDLElementNode<T extends WSDLComponent> extends AbstractN
         }
     }
 
+    private void cleanupPrefixes(WSDLComponent comp, ExtensibilityElementPrefixCleanupVisitor visitor, WSDLModel model) {
+        for (WSDLComponent child : comp.getChildren()) {
+            if (child instanceof ExtensibilityElement) {
+                QName qname = ((ExtensibilityElement) child).getQName();
+                if (!visitor.containsPrefix(qname.getPrefix())) {
+                    ((AbstractDocumentComponent) model.getDefinitions()).removePrefix(qname.getPrefix());
+                }
+            }
+            cleanupPrefixes(child, visitor, model);
+        }
+        
+        
+    }
+    
     private void updateDocumentation() {
         Documentation doc = mElement.getDocumentation();
         if (doc != null) {

@@ -73,7 +73,7 @@ public class RemoveAttributesAction extends CommonNodeAction {
     }
 
     @Override
-    protected Class[] cookieClasses() {
+    protected Class<?>[] cookieClasses() {
         return new Class[] {WSDLAttributeCookie.class, WSDLOtherAttributeCookie.class};
     }
 
@@ -87,8 +87,8 @@ public class RemoveAttributesAction extends CommonNodeAction {
         if(activatedNodes.length != 0) {
             for(int i = 0; i < activatedNodes.length; i++) {
                 final Node node = activatedNodes[i];
-                WSDLAttributeCookie cookie = (WSDLAttributeCookie) node.getCookie(WSDLAttributeCookie.class);
-                WSDLOtherAttributeCookie woaCookie = (WSDLOtherAttributeCookie) node.getCookie(WSDLOtherAttributeCookie.class);
+                WSDLAttributeCookie cookie = node.getCookie(WSDLAttributeCookie.class);
+                WSDLOtherAttributeCookie woaCookie = node.getCookie(WSDLOtherAttributeCookie.class);
                 final List<QName> list = new ArrayList<QName>();
                 final WSDLComponent comp = (cookie != null) ? cookie.getWSDLComponent() : ((woaCookie != null) ? woaCookie.getWSDLComponent() : null);
                 if(cookie != null) {
