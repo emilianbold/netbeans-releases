@@ -218,13 +218,24 @@ public class MultiFileSystem extends FileSystem {
      * @return the root of the filesystem
      */
     private MultiFileObject getMultiRoot() {
+        MultiFileObject retval = null;
+        synchronized (MultiFileSystem.class) {
+            if (root != null) {
+                retval = root;
+            }            
+        }
+        
+        if (retval == null) {
+            retval = new MultiFileObject(this);
+        }
+        
         synchronized (MultiFileSystem.class) {
             if (root == null) {
-                root = new MultiFileObject(this);
-            }
-
-            return root;
+                root = retval;
+            }            
         }
+                
+        return root;
     }
 
     /** Merge actions from all delegates.
