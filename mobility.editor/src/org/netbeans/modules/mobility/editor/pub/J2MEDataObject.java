@@ -134,7 +134,7 @@ public class J2MEDataObject extends MultiDataObject {
             } catch (Exception e) {}
         }
         
-        private static final class Environment extends DataEditorSupport.Env {
+        protected static class Environment extends DataEditorSupport.Env {
             
             private static final long serialVersionUID = -1;
             
