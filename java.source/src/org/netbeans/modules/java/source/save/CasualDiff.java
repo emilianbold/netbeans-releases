@@ -1223,8 +1223,16 @@ public class CasualDiff {
         if (oldT.flags != newT.flags) {
             if (localPointer == startPos) {
                 // no annotation printed, do modifiers print immediately
-                printer.printFlags(newT.flags, oldT.getFlags().isEmpty() ? true : false);
-                localPointer = endPos(oldT) > 0 ? endPos(oldT) : localPointer;
+                if ((newT.flags & ~Flags.INTERFACE) != 0) {
+                    printer.printFlags(newT.flags & ~Flags.INTERFACE, oldT.getFlags().isEmpty() ? true : false);
+                    localPointer = endPos(oldT) > 0 ? endPos(oldT) : localPointer;
+                } else {
+                    if (endPos(oldT) > 0) {
+                        tokenSequence.move(endPos(oldT));
+                        while (tokenSequence.moveNext() && JavaTokenId.WHITESPACE == tokenSequence.token().id()) ;
+                        localPointer = tokenSequence.offset();
+                    }
+                }
             } else {
                 if (!oldT.getFlags().isEmpty()) localPointer = endPos(oldT);
                 tokenSequence.move(localPointer);
