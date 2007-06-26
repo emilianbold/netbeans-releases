@@ -156,7 +156,7 @@ public class JavaElementFoldManager extends JavaFoldManager {
     static final class JavaElementFoldTask extends ScanningCancellableTask<CompilationInfo> {
         
         //XXX: this will hold JavaElementFoldTask as long as the FileObject exists:
-        private static Map<FileObject, JavaElementFoldTask> file2Task = new WeakHashMap();
+        private static Map<FileObject, JavaElementFoldTask> file2Task = new WeakHashMap<FileObject, JavaElementFoldTask>();
         
         static JavaElementFoldTask getTask(FileObject file) {
             JavaElementFoldTask task = file2Task.get(file);
@@ -171,7 +171,7 @@ public class JavaElementFoldManager extends JavaFoldManager {
         private Reference<JavaElementFoldManager> manager;
         
         synchronized void setJavaElementFoldManager(JavaElementFoldManager manager) {
-            this.manager = new WeakReference(manager);
+            this.manager = new WeakReference<JavaElementFoldManager>(manager);
         }
         
         public void run(final CompilationInfo info) {
@@ -244,7 +244,7 @@ public class JavaElementFoldManager extends JavaFoldManager {
                     if (currentFolds == null)
                         return ;
                     
-                    Map<FoldInfo, Fold> added   = new TreeMap();
+                    Map<FoldInfo, Fold> added   = new TreeMap<FoldInfo, Fold>();
                     List<FoldInfo>      removed = new ArrayList<FoldInfo>(currentFolds.keySet());
                     
                     for (FoldInfo i : infos) {
@@ -312,9 +312,9 @@ public class JavaElementFoldManager extends JavaFoldManager {
     private Fold initialCommentFold;
     private Fold importsFold;
     
-    private final class JavaElementFoldVisitor extends CancellableTreePathScanner {
+    private final class JavaElementFoldVisitor extends CancellableTreePathScanner<Object, Object> {
         
-        private List<FoldInfo> folds = new ArrayList();
+        private List<FoldInfo> folds = new ArrayList<JavaElementFoldManager.FoldInfo>();
         private CompilationInfo info;
         private CompilationUnitTree cu;
         private SourcePositions sp;
@@ -328,7 +328,7 @@ public class JavaElementFoldManager extends JavaFoldManager {
         
         public void checkInitialFold() {
             try {
-                TokenHierarchy th = info.getTokenHierarchy();
+                TokenHierarchy<Void> th = info.getTokenHierarchy();
                 TokenSequence<JavaTokenId>  ts = th.tokenSequence(JavaTokenId.language());
                 
                 while (ts.moveNext()) {
@@ -364,7 +364,7 @@ public class JavaElementFoldManager extends JavaFoldManager {
             if (start == (-1))
                 return ;
             
-            TokenHierarchy th = info.getTokenHierarchy();
+            TokenHierarchy<Void> th = info.getTokenHierarchy();
             TokenSequence<JavaTokenId>  ts = th.tokenSequence(JavaTokenId.language());
             
             if (ts.move(start) == Integer.MAX_VALUE) {
@@ -513,10 +513,12 @@ public class JavaElementFoldManager extends JavaFoldManager {
             this.collapseByDefault = collapseByDefault;
         }
         
+        @Override
         public int hashCode() {
             return 1;
         }
         
+        @Override
         public boolean equals(Object o) {
             if (!(o instanceof FoldInfo))
                 return false;
