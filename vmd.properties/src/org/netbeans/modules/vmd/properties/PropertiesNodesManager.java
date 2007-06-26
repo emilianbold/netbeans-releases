@@ -102,6 +102,13 @@ public final class PropertiesNodesManager {
             nodesToRemove.clear();
         }
         
+        if (components.isEmpty()) {
+            for (InstanceContent ic : tempIcs) {
+                ic.add(new Object());
+            }
+            return;
+        }
+        
         for (InstanceContent ic : tempIcs) {
             for(DesignComponent component : components) {
                 Set<Node> nodesToRemove = nodesToRemoveMap.get(ic);
@@ -180,7 +187,7 @@ public final class PropertiesNodesManager {
     }
     
     public void updateSheet(Collection<DesignComponent> components) {
-        if (components == null)
+        if (components == null || components.isEmpty())
             return;
         for (DesignComponent component : components) {
             Sheet sheet = sheetMap.get(component);
@@ -222,8 +229,6 @@ public final class PropertiesNodesManager {
             }
         }
     }
-    
-    
     
 }
 
