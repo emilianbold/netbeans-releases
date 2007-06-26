@@ -91,6 +91,9 @@ import org.netbeans.modules.mobility.svgcore.model.SVGFileModel;
 import org.netbeans.modules.mobility.svgcore.navigator.SVGNavigatorContent;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.nodes.FilterNode;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.ProxyLookup;
 import org.w3c.dom.svg.SVGLocatableElement;
 
 /**
@@ -230,16 +233,15 @@ final public class SVGViewTopComponent extends CloneableTopComponent {
         return m_sceneMgr.getPerseusController();
     }
         
-    private Lookup createLookup() {
-        
-        //Lookup elementLookup = new AbstractLookup(content);
+    private Lookup createLookup() {        
+        Lookup elementLookup = new AbstractLookup(content);
 
         Lookup _lookup = Lookups.fixed( new Object[]{ 
-            /*new FilterNode( svgDataObject.getNodeDelegate(), 
+            new FilterNode( svgDataObject.getNodeDelegate(), 
                             null, 
                             new ProxyLookup(new Lookup[]{new SVGElementNode(elementLookup).getLookup(),
                                                          svgDataObject.getNodeDelegate().getLookup()
-                                                         })),*/
+                                                         })),
             new SVGCookie()
         });
         return _lookup;
