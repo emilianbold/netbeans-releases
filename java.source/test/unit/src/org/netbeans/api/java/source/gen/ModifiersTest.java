@@ -28,6 +28,8 @@ import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.NewArrayTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
 import java.io.File;
 import java.util.ArrayList;
@@ -39,7 +41,7 @@ import java.util.Set;
 import javax.lang.model.element.Modifier;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.JavaSource.Phase;
+import static org.netbeans.api.java.source.JavaSource.*;
 import org.netbeans.api.java.source.TestUtilities;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
@@ -79,12 +81,14 @@ public class ModifiersTest extends GeneratorTestMDRCompat {
 //        suite.addTest(new ModifiersTest("test106403_2"));
 //        suite.addTest(new ModifiersTest("testAddMethodAnnotation"));
 //        suite.addTest(new ModifiersTest("testAddMethodAnnotation2"));
+//        suite.addTest(new ModifiersTest("testChangeInterfaceModifier"));
         return suite;
     }
 
     /**
      * Tests the change of modifier in local variable
      */
+    @SuppressWarnings("unchecked")
     public void testChangeToFinalLocVar() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile,
@@ -130,6 +134,7 @@ public class ModifiersTest extends GeneratorTestMDRCompat {
     /**
      * Update top-level class modifiers.
      */
+    @SuppressWarnings("unchecked")
     public void testAddClassAbstract() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile,
@@ -178,6 +183,7 @@ public class ModifiersTest extends GeneratorTestMDRCompat {
      * public static void method() {
      * }
      */
+    @SuppressWarnings("unchecked")
     public void testMethodMods1() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile,
@@ -227,6 +233,7 @@ public class ModifiersTest extends GeneratorTestMDRCompat {
      * void method() {
      * }
      */
+    @SuppressWarnings("unchecked")
     public void testMethodMods2() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile,
@@ -276,6 +283,7 @@ public class ModifiersTest extends GeneratorTestMDRCompat {
      * public Test() {
      * }
      */
+    @SuppressWarnings("unchecked")
     public void testMethodMods3() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile,
@@ -325,6 +333,7 @@ public class ModifiersTest extends GeneratorTestMDRCompat {
      * Test() {
      * }
      */
+    @SuppressWarnings("unchecked")
     public void testMethodMods4() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile,
@@ -362,6 +371,7 @@ public class ModifiersTest extends GeneratorTestMDRCompat {
         System.err.println(res);
         assertEquals(golden, res);
     }
+    
     /**
      * Original:
      * 
@@ -373,7 +383,7 @@ public class ModifiersTest extends GeneratorTestMDRCompat {
      * static void method() {
      * }
      */
-    
+    @SuppressWarnings("unchecked")
     public void testMethodMods5() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile,
@@ -423,6 +433,7 @@ public class ModifiersTest extends GeneratorTestMDRCompat {
      * protected Test() {
      * }
      */
+    @SuppressWarnings("unchecked")
     public void testMethodMods6() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile,
@@ -474,6 +485,7 @@ public class ModifiersTest extends GeneratorTestMDRCompat {
      * protected Test() {
      * }
      */
+    @SuppressWarnings("unchecked")
     public void testAnnRename() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile,
@@ -532,6 +544,7 @@ public class ModifiersTest extends GeneratorTestMDRCompat {
      * ...
      * 
      */
+    @SuppressWarnings("unchecked")
     public void testAddArrayValue() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile,
@@ -581,6 +594,7 @@ public class ModifiersTest extends GeneratorTestMDRCompat {
     /*
      * Test rename annotation attribute, regression test for #99162
      */
+    @SuppressWarnings("unchecked")
     public void testRenameAnnotationAttribute() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile,
@@ -627,6 +641,7 @@ public class ModifiersTest extends GeneratorTestMDRCompat {
     }
     
     // #95354
+    @SuppressWarnings("unchecked")
     public void testMakeClassAbstract() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile,
@@ -685,6 +700,7 @@ public class ModifiersTest extends GeneratorTestMDRCompat {
     }
     
     // #106543 - Positions broken when removing annotation attribute value.
+    @SuppressWarnings("unchecked")
     public void test106543() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile,
@@ -731,6 +747,7 @@ public class ModifiersTest extends GeneratorTestMDRCompat {
     }
     
     // #106403
+    @SuppressWarnings("unchecked")
     public void test106403() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile,
@@ -780,6 +797,7 @@ public class ModifiersTest extends GeneratorTestMDRCompat {
     }
     
     // #106403 -2-
+    @SuppressWarnings("unchecked")
     public void test106403_2() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile,
@@ -829,6 +847,7 @@ public class ModifiersTest extends GeneratorTestMDRCompat {
     }
     
     // #105018 - bad formatting when adding annotation
+    @SuppressWarnings("unchecked")
     public void testAddMethodAnnotation() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile,
@@ -879,6 +898,7 @@ public class ModifiersTest extends GeneratorTestMDRCompat {
     }
     
     // #105018 - bad formatting when adding annotation
+    @SuppressWarnings("unchecked")
     public void testAddMethodAnnotation2() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile,
@@ -920,6 +940,49 @@ public class ModifiersTest extends GeneratorTestMDRCompat {
                         annotationTree
                 );
                 workingCopy.rewrite(mods, modified);
+            }
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    // #106252 - interface keyword doubled
+    @SuppressWarnings("unchecked")
+    public void testChangeInterfaceModifier() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+                "package flaska;\n" +
+                "\n" +
+                "public interface Test {\n" +
+                "}\n"
+                );
+        String golden =
+                "package flaska;\n" +
+                "\n" +
+                "interface Test {\n" +
+                "}\n";
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        Task task = new Task<WorkingCopy>() {
+            
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                ModifiersTree mods = clazz.getModifiers();
+                Set<Modifier> flags = new HashSet<Modifier>(mods.getFlags());
+                flags.remove(Modifier.PUBLIC);
+                ModifiersTree modified = make.Modifiers(flags);
+                
+                ClassTree copy = make.Interface(
+                        modified,
+                        clazz.getSimpleName(),
+                        Collections.<TypeParameterTree>emptyList(),
+                        Collections.<Tree>emptyList(),
+                        clazz.getMembers()
+                );
+                workingCopy.rewrite(clazz, copy);
             }
         };
         testSource.runModificationTask(task).commit();
