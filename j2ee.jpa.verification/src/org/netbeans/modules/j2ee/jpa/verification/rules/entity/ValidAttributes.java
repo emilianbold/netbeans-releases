@@ -40,8 +40,10 @@ import org.netbeans.modules.j2ee.jpa.verification.rules.attribute.ValidColumnNam
 import org.netbeans.modules.j2ee.jpa.verification.rules.attribute.ValidModifiers;
 import org.netbeans.modules.j2ee.jpa.verification.rules.attribute.ValidVersionType;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Basic;
+import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Embeddable;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Id;
+import org.netbeans.modules.j2ee.persistence.api.metadata.orm.MappedSuperclass;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Version;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 
@@ -83,8 +85,17 @@ public class ValidAttributes extends JPAClassRule {
             idFields = entity.getAttributes().getId();
             versionFields = entity.getAttributes().getVersion();
         }
-        
-        //TODO: handle MappedSuperClass etc.
+        else if (ctx.getModelElement() instanceof Embeddable){
+            Embeddable embeddable = (Embeddable)ctx.getModelElement();
+            basicFields = embeddable.getAttributes().getBasic();
+            
+        } else if (ctx.getModelElement() instanceof MappedSuperclass){
+            MappedSuperclass mappedSuperclass = (MappedSuperclass)ctx.getModelElement();
+            basicFields = mappedSuperclass.getAttributes().getBasic();
+            
+            idFields = mappedSuperclass.getAttributes().getId();
+            versionFields = mappedSuperclass.getAttributes().getVersion();
+        }
         
         if (basicFields != null){
             for (Basic basic: basicFields){

@@ -48,7 +48,10 @@ import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScopes;
+import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappingsMetadata;
+import org.netbeans.modules.j2ee.persistence.api.metadata.orm.IdClass;
+import org.netbeans.modules.j2ee.persistence.api.metadata.orm.MappedSuperclass;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.HintsController;
 import org.openide.filesystems.FileAttributeEvent;
@@ -83,7 +86,7 @@ public abstract class JPAProblemFinder {
         if (!"text/x-java".equals(file.getMIMEType())){ //NOI18N
             return;
         }
-
+        
         if (runningInstance != null){
             runningInstance.cancel();
         }
@@ -108,16 +111,17 @@ public abstract class JPAProblemFinder {
                         }
                         
                         if (tree.getKind() == Tree.Kind.CLASS){
-                            long startTime = Calendar.getInstance().getTimeInMillis();                            
+                            long startTime = Calendar.getInstance().getTimeInMillis();
                             TreePath path = info.getTrees().getPath(info.getCompilationUnit(), tree);
                             TypeElement javaClass = (TypeElement) info.getTrees().getElement(path);
-                                                      
+                            
                             context = findProblemContext(info, javaClass, metadata, false);
                             JPARulesEngine rulesEngine = new JPARulesEngine();
                             javaClass.accept(rulesEngine, context);
                             problemsFound.addAll(rulesEngine.getProblemsFound());
                             
-                            problemsFound.addAll(processIdClassAnnotation(info, javaClass, metadata));
+                            // signal locally errors found in the IdClass
+                            problemsFound.addAll(processIdClass(info, javaClass, metadata, context.getModelElement()));
                             
                             if (LOG.isLoggable(Level.FINE)){
                                 long timeElapsed = Calendar.getInstance().getTimeInMillis() - startTime;
@@ -143,25 +147,38 @@ public abstract class JPAProblemFinder {
     }
     
     /**
-     * If there is IdClassAnotation present run the rules on the pointed class and show
-     * found errors locally
+     * If there is IdClass annotation present run the rules on the referenced class
+     * and show problems found in the referencing class
      */
-    private List<ErrorDescription> processIdClassAnnotation(CompilationInfo info, TypeElement javaClass,
-            EntityMappingsMetadata metadata){
+    private List<ErrorDescription> processIdClass(CompilationInfo info, TypeElement javaClass,
+            EntityMappingsMetadata metadata, Object modelElement){
         
-        //TODO: use model
-        AnnotationMirror annIdClass = Utilities.findAnnotation(javaClass, JPAAnnotations.ID_CLASS);
+        IdClass idClassElem = null;
         
-        if (annIdClass != null){
-            AnnotationValue annValue = Utilities.getAnnotationAttrValue(annIdClass, JPAAnnotations.VALUE_ATTR);
+        if (modelElement instanceof Entity){
+            idClassElem = ((Entity)modelElement).getIdClass();
+        }
+        else if (modelElement instanceof MappedSuperclass){
+            idClassElem = ((MappedSuperclass)modelElement).getIdClass();
+        }
+        
+        if (idClassElem != null){
+            String idClassName = idClassElem.getClass2();
             
-            if (annValue != null){
-                Object rawIdClass = annValue.getValue();
-                TypeElement idClass = info.getElements().getTypeElement(rawIdClass.toString());
+            if (idClassName != null){
+                TypeElement idClass = info.getElements().getTypeElement(idClassName);
                 
                 if (idClass != null){
                     JPAProblemContext context = findProblemContext(info, idClass, metadata, true);
-                    context.setElementToAnnotate(info.getTrees().getTree(javaClass, annIdClass, annValue));
+                    AnnotationMirror annIdClass = Utilities.findAnnotation(javaClass, JPAAnnotations.ID_CLASS);
+                    
+                    // By default underline the @IdClass annotation. 
+                    // If IdClass is defined in orm.xml underline the class name 
+                    // (of the entity using IdClass)
+                    Tree treeToAnnotate = annIdClass != null ? 
+                        info.getTrees().getTree(javaClass, annIdClass) : info.getTrees().getTree(javaClass);
+                    
+                    context.setElementToAnnotate(treeToAnnotate);
                     JPARulesEngine rulesEngine = new JPARulesEngine();
                     idClass.accept(rulesEngine, context);
                     return rulesEngine.getProblemsFound();
@@ -185,8 +202,7 @@ public abstract class JPAProblemFinder {
             if (modelElement != null){
                 context.setEntity(true);
             } else{
-                //TODO: uncomment when #103058 is fixed
-                //modelElement = ModelUtils.getEmbeddable(metadata, javaClass);
+                modelElement = ModelUtils.getEmbeddable(metadata, javaClass);
                 
                 if (modelElement != null){
                     context.setEmbeddable(true);
