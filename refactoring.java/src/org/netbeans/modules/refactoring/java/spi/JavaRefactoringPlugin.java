@@ -20,7 +20,6 @@ package org.netbeans.modules.refactoring.java.spi;
 
 import org.netbeans.api.java.source.ModificationResult.Difference;
 import org.netbeans.modules.refactoring.java.api.DiffElement;
-import org.netbeans.modules.refactoring.java.spi.RefactoringVisitor;
 import org.netbeans.modules.refactoring.java.plugins.*;
 import com.sun.source.tree.CompilationUnitTree;
 import java.io.IOException;

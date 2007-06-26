@@ -26,7 +26,8 @@ import org.openide.util.Lookup;
 /**
  * Push Down Refactoring implementation class.
  *
- * @author Jan Becicka, Pavel Flaska
+ * @author Jan Becicka
+ * @author Pavel Flaska
  */
 public class PushDownRefactoring extends AbstractRefactoring {
     

@@ -20,6 +20,8 @@
 package org.netbeans.modules.refactoring.java.plugins;
 
 import com.sun.source.tree.*;
+import com.sun.source.util.TreePath;
+import com.sun.source.util.Trees;
 import java.util.List;
 import javax.lang.model.element.*;
 import javax.lang.model.type.TypeMirror;
@@ -66,6 +68,12 @@ public class FindSubtypesVisitor extends FindVisitor {
             };
         }
         return false;
+    }
+    
+    protected boolean isSubtype(TreePath t1, Element t2) {
+        Types types = workingCopy.getTypes();
+        Trees trees = workingCopy.getTrees();
+        return types.isSubtype(types.erasure(trees.getTypeMirror(t1)), types.erasure(t2.asType()));
     }
 
 }

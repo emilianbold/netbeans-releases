@@ -25,6 +25,11 @@ import org.openide.util.lookup.Lookups;
 /** 
  * Convert Inner to Top-Level refactoring implementation class. This refactoring
  * is capable of converting an inner class into a top-level class.
+ * 
+ * @see org.netbeans.modules.refactoring.spi.RefactoringPlugin
+ * @see org.netbeans.modules.refactoring.spi.RefactoringPluginFactory
+ * @see org.netbeans.modules.refactoring.api.AbstractRefactoring
+ * @see org.netbeans.modules.refactoring.api.RefactoringSession
  *
  * @author Martin Matula
  * @author Jan Becicka

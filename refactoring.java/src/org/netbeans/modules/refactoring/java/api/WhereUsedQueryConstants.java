@@ -20,10 +20,24 @@ package org.netbeans.modules.refactoring.java.api;
 
 /**
  * @author Jan Becicka
+ * @see WhereUsedQuery#putValue
+ * @see WhereUsedQuery#getBooleanValue
  */
 public enum WhereUsedQueryConstants {
+    /**
+     * Find overriding methods
+     */
     FIND_OVERRIDING_METHODS,
+    /**
+     * Find All Sublcasses recursively
+     */
     FIND_SUBCLASSES,
+    /**
+     * Find only direct subclasses
+     */
     FIND_DIRECT_SUBCLASSES,
+    /**
+     * Search from base class
+     */
     SEARCH_FROM_BASECLASS;
 }

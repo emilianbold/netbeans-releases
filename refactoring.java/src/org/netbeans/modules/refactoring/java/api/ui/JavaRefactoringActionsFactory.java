@@ -71,7 +71,7 @@ public final class JavaRefactoringActionsFactory {
      * @return an instance of PullUpAction
      */
     public static ContextAwareAction pullUpAction() {
-        return (PullUpAction) PullUpAction.findObject(PullUpAction.class, true);
+        return PullUpAction.findObject(PullUpAction.class, true);
     }
     
     /**
@@ -79,7 +79,7 @@ public final class JavaRefactoringActionsFactory {
      * @return an instance of PushDownAction
      */
     public static ContextAwareAction pushDownAction() {
-        return (PushDownAction) PushDownAction.findObject(PushDownAction.class, true);
+        return PushDownAction.findObject(PushDownAction.class, true);
     }
     
     /**
@@ -87,7 +87,7 @@ public final class JavaRefactoringActionsFactory {
      * @return an instance of InnerToOuterAction
      */
     public static ContextAwareAction innerToOuterAction() {
-        return (InnerToOuterAction) InnerToOuterAction.findObject(InnerToOuterAction.class, true);
+        return InnerToOuterAction.findObject(InnerToOuterAction.class, true);
     }
 
     /**
@@ -95,7 +95,7 @@ public final class JavaRefactoringActionsFactory {
      * @return an instance of UseSuperTypeAction
      */
     public static ContextAwareAction useSuperTypeAction() {
-        return (UseSuperTypeAction) UseSuperTypeAction.findObject(UseSuperTypeAction.class, true);
+        return UseSuperTypeAction.findObject(UseSuperTypeAction.class, true);
     }
     
     public static ContextAwareAction extractSuperclassAction() {
@@ -103,6 +103,6 @@ public final class JavaRefactoringActionsFactory {
     }
     
     public static ContextAwareAction extractInterfaceAction() {
-        return (ExtractInterfaceAction) ExtractInterfaceAction.findObject(ExtractInterfaceAction.class, true);
+        return ExtractInterfaceAction.findObject(ExtractInterfaceAction.class, true);
     }
 }

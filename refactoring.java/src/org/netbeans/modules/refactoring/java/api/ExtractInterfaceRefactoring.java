@@ -31,7 +31,12 @@ import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.openide.util.lookup.Lookups;
 
 /** 
- * Extract Interface Refactoring implementation class.
+ * Extract Interface Refactoring.
+ * 
+ * @see org.netbeans.modules.refactoring.spi.RefactoringPlugin
+ * @see org.netbeans.modules.refactoring.spi.RefactoringPluginFactory
+ * @see org.netbeans.modules.refactoring.api.AbstractRefactoring
+ * @see org.netbeans.modules.refactoring.api.RefactoringSession
  *
  * @author Martin Matula
  * @author Jan Becicka

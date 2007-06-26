@@ -37,9 +37,20 @@ import org.openide.ErrorManager;
  * @author Jan Becicka
  */
 public class RefactoringVisitor extends TreePathScanner<Tree, Element> {
+    /**
+     * 
+     */
     protected WorkingCopy workingCopy;
+    /**
+     * 
+     */
     protected TreeMaker make;
     
+    /**
+     * 
+     * @param workingCopy 
+     * @throws org.netbeans.modules.refactoring.java.spi.ToPhaseException 
+     */
     public void setWorkingCopy(WorkingCopy workingCopy) throws ToPhaseException {
         this.workingCopy = workingCopy;
         try {
@@ -52,6 +63,11 @@ public class RefactoringVisitor extends TreePathScanner<Tree, Element> {
         this.make = workingCopy.getTreeMaker();
     }
     
+    /**
+     * 
+     * @param oldTree 
+     * @param newTree 
+     */
     protected void rewrite(Tree oldTree, Tree newTree) {
         workingCopy.rewrite(oldTree, newTree);
         TreePath current = getCurrentPath();
@@ -63,9 +79,4 @@ public class RefactoringVisitor extends TreePathScanner<Tree, Element> {
         }
     }
     
-    protected boolean isSubtype(TreePath t1, Element t2) {
-        Types types = workingCopy.getTypes();
-        Trees trees = workingCopy.getTrees();
-        return types.isSubtype(types.erasure(trees.getTypeMirror(t1)), types.erasure(t2.asType()));
-    }
 }

@@ -28,6 +28,11 @@ import org.openide.util.lookup.Lookups;
  * Refactoring used for changing method signature. It changes method declaration
  * and also all its references (callers).
  *
+ * @see org.netbeans.modules.refactoring.spi.RefactoringPlugin
+ * @see org.netbeans.modules.refactoring.spi.RefactoringPluginFactory
+ * @see org.netbeans.modules.refactoring.api.AbstractRefactoring
+ * @see org.netbeans.modules.refactoring.api.RefactoringSession
+ *
  * @author  Pavel Flaska
  * @author  Tomas Hurka
  * @author  Jan Becicka

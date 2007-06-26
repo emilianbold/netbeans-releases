@@ -23,9 +23,16 @@ import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.openide.util.Lookup;
 
-/** Pull Up Refactoring implementation class.
+/** 
+ * Pull Up Refactoring
+ * 
+ * @see org.netbeans.modules.refactoring.spi.RefactoringPlugin
+ * @see org.netbeans.modules.refactoring.spi.RefactoringPluginFactory
+ * @see AbstractRefactoring
+ * @see RefactoringSession
  *
- * @author Jan Becicka, Martin Matula
+ * @author Jan Becicka
+ * @author Martin Matula
  */
 public final class PullUpRefactoring extends AbstractRefactoring {
     private static final MemberInfo[] EMPTY_MEMBERS = new MemberInfo[0];

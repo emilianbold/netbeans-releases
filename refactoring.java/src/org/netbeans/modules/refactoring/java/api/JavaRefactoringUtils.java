@@ -16,35 +16,24 @@
  */
 package org.netbeans.modules.refactoring.java.api;
 
-import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.TreeVisitor;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
-import com.sun.source.util.TreeScanner;
 import java.io.IOException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
-import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Types;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.classpath.GlobalPathRegistry;
-import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.source.CancellableTask;
-import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.api.java.source.ClassIndex.SearchKind;
 import org.netbeans.api.java.source.ClassIndex.SearchScope;
 import org.netbeans.api.java.source.ClasspathInfo;
@@ -56,43 +45,62 @@ import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.TypeMirrorHandle;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.netbeans.modules.refactoring.java.ui.tree.ElementGripFactory;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.URLMapper;
 
 /**
  *
  * @author Tim Boudreau
+ * @author Jan Becicka
  */
 public final class JavaRefactoringUtils {
     private JavaRefactoringUtils() {}
 
-    public static Collection<ExecutableElement> getOverriddenMethods(ExecutableElement e, CompilationInfo info) {
-        return RetoucheUtils.getOverridenMethods (e, info);
+    /**
+     * @param method 
+     * @param info 
+     * @return collection of ExecutableElements which are overidden by 'method'
+     */
+    public static Collection<ExecutableElement> getOverriddenMethods(ExecutableElement method, CompilationInfo info) {
+        return RetoucheUtils.getOverridenMethods (method, info);
     }
 
-    public static Collection<ExecutableElement> getOverridingMethods(ExecutableElement e, CompilationInfo info) {
-        return RetoucheUtils.getOverridingMethods(e, info);
+    /**
+     * @param method 
+     * @param info 
+     * @return collection of ExecutableElements which overrides 'method'
+     */
+    public static Collection<ExecutableElement> getOverridingMethods(ExecutableElement method, CompilationInfo info) {
+        return RetoucheUtils.getOverridingMethods(method, info);
     }
 
-    public static boolean isValidPackageName(String name) {
-        return RetoucheUtils.isValidPackageName(name);
-    }
-
+    /**
+     * Returns true if file is on known source path.
+     *
+     * @param fo 
+     * @return 
+     */
     public static boolean isOnSourceClasspath(FileObject fo) {
         return RetoucheUtils.isOnSourceClasspath(fo);
     }
 
+    /**
+     * returns true if file's mime type is text/x-java and file is on know source path
+     * @param file 
+     * @return 
+     */
     public static boolean isRefactorable(FileObject file) {
         return RetoucheUtils.isRefactorable(file) && file.canWrite() && file.canRead();
     }
 
+    /**
+     * Returns all supertypes of given type.
+     * @param type 
+     * @param info 
+     * @param sourceOnly library classes ignored if true
+     * @return 
+     */
     public static Collection<Element> getSuperTypes(TypeElement type, CompilationInfo info, boolean sourceOnly) {
         return RetoucheUtils.getSuperTypes(type, info);
     }
@@ -117,83 +125,29 @@ public final class JavaRefactoringUtils {
         return RetoucheUtils.findEnclosingClass(javac, path, isClass, isInterface, isEnum, isAnnotation, isAnonymous);
     }
 
-    public static List<TypeMirror> resolveTypeParamsAsTypes(List<? extends Element> typeParams) {
+    public static List<TypeMirror> elementsToTypes(List<? extends Element> typeParams) {
         return RetoucheUtils.resolveTypeParamsAsTypes(typeParams);
     }
 
-    /**
-     * Finds type parameters from <code>typeArgs</code> list that are referenced
-     * by <code>tm</code> type.
-     * @param utils compilation type utils
-     * @param typeArgs modifiable list of type parameters to search; found types will be removed (performance reasons).
-     * @param result modifiable list that will contain referenced type parameters
-     * @param tm parametrized type to analyze
-     */
-    public static void findUsedGenericTypes(Types utils, List<TypeMirror> typeArgs, List<TypeMirror> result, TypeMirror tm) {
-        RetoucheUtils.findUsedGenericTypes(utils, typeArgs, result, tm);
-    }
+//    /**
+//     * Finds type parameters from <code>typeArgs</code> list that are referenced
+//     * by <code>tm</code> type.
+//     * @param utils compilation type utils
+//     * @param typeArgs modifiable list of type parameters to search; found types will be removed (performance reasons).
+//     * @param result modifiable list that will contain referenced type parameters
+//     * @param tm parametrized type to analyze
+//     */
+//    public static void findUsedGenericTypes(Types utils, List<TypeMirror> typeArgs, List<TypeMirror> result, TypeMirror tm) {
+//        RetoucheUtils.findUsedGenericTypes(utils, typeArgs, result, tm);
+//    }
 
     public static ClasspathInfo getClasspathInfoFor(FileObject ... files) {
-        assert files.length >0;
-        Set<URL> dependentRoots = new HashSet <URL> ();
-        for (FileObject fo: files) {
-            Project p = null;
-            if (fo!=null)
-                p=FileOwnerQuery.getOwner(fo);
-            if (p!=null) {
-                URL sourceRoot = URLMapper.findURL(ClassPath.getClassPath(fo, ClassPath.SOURCE).findOwnerRoot(fo), URLMapper.INTERNAL);
-                dependentRoots.addAll(SourceUtils.getDependentRoots(sourceRoot));
-                for (SourceGroup root:ProjectUtils.getSources(p).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
-                    dependentRoots.add(URLMapper.findURL(root.getRootFolder(), URLMapper.INTERNAL));
-                }
-            } else {
-                for(ClassPath cp: GlobalPathRegistry.getDefault().getPaths(ClassPath.SOURCE)) {
-                    for (FileObject root:cp.getRoots()) {
-                        dependentRoots.add(URLMapper.findURL(root, URLMapper.INTERNAL));
-                    }
-                }
-            }
-        }
-
-        ClassPath rcp = ClassPathSupport.createClassPath(dependentRoots.toArray(new URL[dependentRoots.size()]));
-        ClassPath nullPath = ClassPathSupport.createClassPath(new FileObject[0]);
-        ClassPath boot = files[0]!=null?ClassPath.getClassPath(files[0], ClassPath.BOOT):nullPath;
-        ClassPath compile = files[0]!=null?ClassPath.getClassPath(files[0], ClassPath.COMPILE):nullPath;
-        ClasspathInfo cpInfo = ClasspathInfo.create(boot, compile, rcp);
-        return cpInfo;
+        return RetoucheUtils.getClasspathInfoFor(files);
     }
 
     //From here down is useful stuff from contrib/refactorings
 
-    public static <T extends Tree> T resolveTreePathHandle (final TreePathHandle handle) throws IOException {
-        FileObject fob = handle.getFileObject();
-        JavaSource src = JavaSource.forFileObject(fob);
-        TreeFinder<T> finder = new TreeFinder<T>(handle);
-        src.runUserActionTask(finder, true);
-        return finder.tree;
-    }
-
-    private static class TreeFinder <T extends Tree> implements CancellableTask <CompilationController> {
-        T tree;
-        private final TreePathHandle handle;
-        boolean cancelled;
-        TreeFinder (TreePathHandle handle) {
-            this.handle = handle;
-        }
-        public void cancel() {
-            cancelled = true;
-        }
-
-        @SuppressWarnings("unchecked")
-        public void run(CompilationController cc) throws Exception {
-            cc.toPhase (Phase.RESOLVED);
-            TreePath path = handle.resolve(cc);
-            assert path != null : "Null path for " + handle; //NOI18N
-            tree = (T) path.getLeaf();
-        }
-    }
-
-    public static List <TreePathHandle> toHandles (TreePath parent, Iterable <? extends Tree> trees, CompilationInfo info) {
+    public static List <TreePathHandle> treesToHandles (TreePath parent, Iterable <? extends Tree> trees, CompilationInfo info) {
         List <TreePathHandle> result = new ArrayList <TreePathHandle> (
                 trees instanceof Collection ? ((Collection)trees).size() : 11);
         for (Tree tree : trees) {
@@ -206,7 +160,7 @@ public final class JavaRefactoringUtils {
         return result;
     }
 
-    public static List <TreePathHandle> toHandles (Iterable <? extends Tree> trees, CompilationInfo info) {
+    public static List <TreePathHandle> treesToHandles (Iterable <? extends Tree> trees, CompilationInfo info) {
         List <TreePathHandle> result = new ArrayList <TreePathHandle> (trees instanceof Collection ?
             ((Collection)trees).size() : 11);
         for (Tree tree : trees) {
@@ -223,7 +177,7 @@ public final class JavaRefactoringUtils {
         return result;
     }
 
-    public static <T extends Element> List <T> toElements (Iterable <ElementHandle<T>> handles, CompilationInfo info) {
+    public static <T extends Element> List <T> handlesToElements (Iterable <ElementHandle<T>> handles, CompilationInfo info) {
         List <T> result = new ArrayList <T> (handles instanceof Collection ? ((Collection)handles).size() : 0);
         for (ElementHandle<? extends T> h : handles) {
             T element = h.resolve(info);
@@ -234,7 +188,7 @@ public final class JavaRefactoringUtils {
     }
 
 
-    public static List <TypeMirror> toTypeMirrors (Iterable <? extends TypeMirrorHandle> types, CompilationInfo info) {
+    public static List <TypeMirror> handlesToTypes (Iterable <? extends TypeMirrorHandle> types, CompilationInfo info) {
         List <TypeMirror> result = new ArrayList <TypeMirror> ();
         for (TypeMirrorHandle h : types) {
             result.add (h.resolve(info));
@@ -242,7 +196,7 @@ public final class JavaRefactoringUtils {
         return result;
     }
 
-    public static List <TypeMirrorHandle> toTypeMirrorHandles (Iterable <? extends TypeMirror> types) {
+    public static List <TypeMirrorHandle> typesToHandles (Iterable <? extends TypeMirror> types) {
         List <TypeMirrorHandle> result = new ArrayList <TypeMirrorHandle> ();
         for (TypeMirror h : types) {
             result.add (TypeMirrorHandle.create(h));
@@ -250,7 +204,7 @@ public final class JavaRefactoringUtils {
         return result;
     }
 
-    public static <T extends Element> List <ElementHandle<T>> toHandles (Iterable <? extends T> elements) {
+    public static <T extends Element> List <ElementHandle<T>> elementsToHandles (Iterable <? extends T> elements) {
         List <ElementHandle<T>> result = new ArrayList <ElementHandle<T>> (elements instanceof
                 Collection ? ((Collection)elements).size() : 11);
         for (T element : elements) {
@@ -261,85 +215,13 @@ public final class JavaRefactoringUtils {
         return result;
     }
 
-    public static Collection<ElementHandle<ExecutableElement>> getOverridingMethodHandles(ExecutableElement e, CompilationInfo info) {
-        //Copied from RetoucheUtils
-        Collection<ElementHandle<ExecutableElement>> result = new ArrayList <ElementHandle<ExecutableElement>> ();
-        TypeElement parentType = (TypeElement) e.getEnclosingElement();
-        //XXX: Fixme IMPLEMENTORS_RECURSIVE were removed
-        Set<ElementHandle<TypeElement>> subTypes = info.getClasspathInfo().getClassIndex().getElements(ElementHandle.create(parentType),  EnumSet.of(ClassIndex.SearchKind.IMPLEMENTORS),EnumSet.of(ClassIndex.SearchScope.SOURCE));
-        for (ElementHandle<TypeElement> subTypeHandle: subTypes){
-            TypeElement type = subTypeHandle.resolve(info);
-            for (ExecutableElement method: ElementFilter.methodsIn(type.getEnclosedElements())) {
-                if (info.getElements().overrides(method, e, type)) {
-                    result.add(ElementHandle.<ExecutableElement>create(method));
-                }
-            }
-        }
-        return result;
-    }
-
-    public static Collection<TreePathHandle> getOverridingMethodTreeHandles (ExecutableElement e, CompilationController cc) throws IOException {
-        Collection <ElementHandle<ExecutableElement>> mtds = getOverridingMethodHandles (e, cc);
-        Set <TreePathHandle> result = new HashSet <TreePathHandle> ();
-        ElementHandle<ExecutableElement> toFind = ElementHandle.<ExecutableElement>create(e);
-        for (ElementHandle<ExecutableElement> element : mtds) {
-            FileObject fob = SourceUtils.getFile(element, cc.getClasspathInfo());
-            JavaSource src = JavaSource.forFileObject(fob);
-            assert src.getFileObjects().contains(fob);
-            TreeFromElementFinder finder = new TreeFromElementFinder (element);
-            src.runUserActionTask(finder, false);
-            if (finder.handle != null) {
-                result.add (finder.handle);
-            }
-        }
-        return result;
-    }
-
-    public static Collection<ElementHandle<ExecutableElement>> getOverridingMethodHandle(ExecutableElement e, CompilationInfo info) {
-        //Copied from RetoucheUtils
-        Collection<ElementHandle<ExecutableElement>> result = new ArrayList <ElementHandle<ExecutableElement>> ();
-        TypeElement parentType = (TypeElement) e.getEnclosingElement();
-        //XXX: Fixme IMPLEMENTORS_RECURSIVE were removed
-        Set<ElementHandle<TypeElement>> subTypes = info.getClasspathInfo().getClassIndex().getElements(ElementHandle.create(parentType),  EnumSet.of(ClassIndex.SearchKind.IMPLEMENTORS),EnumSet.of(ClassIndex.SearchScope.SOURCE));
-        for (ElementHandle<TypeElement> subTypeHandle: subTypes){
-            TypeElement type = subTypeHandle.resolve(info);
-            for (ExecutableElement method: ElementFilter.methodsIn(type.getEnclosedElements())) {
-                if (info.getElements().overrides(method, e, type)) {
-                    result.add(ElementHandle.<ExecutableElement>create(method));
-                }
-            }
-        }
-        return result;
-    }
-
-    private static class TreeFromElementFinder implements CancellableTask <CompilationController> {
-        private volatile boolean cancelled;
-        Tree tree;
-        TreePathHandle handle;
-        private final ElementHandle element;
-        TreeFromElementFinder (ElementHandle element) {
-            this.element = element;
-        }
-
-        public void cancel() {
-            cancelled = true;
-        }
-
-        @SuppressWarnings("unchecked")
-        public void run(CompilationController cc) throws Exception {
-            if (cancelled) return;
-            cc.toPhase(Phase.RESOLVED);
-            Element e = element.resolve(cc);
-            tree = cc.getTrees().getTree(e);
-            assert tree != null : "Got null tree for " + element + " on " + cc.getFileObject().getPath();
-            if (cancelled) return;
-            CompilationUnitTree unit = cc.getCompilationUnit();
-            TreePath path = TreePath.getPath(unit, tree);
-            assert path != null : "Got null tree path for " + cc.getFileObject().getPath() + " tree is " + tree;
-            handle = TreePathHandle.create(path, cc);
-        }
-    }
-
+    /**
+     * 
+     * @param e 
+     * @param wc 
+     * @return 
+     * @throws java.io.IOException 
+     */
     public static Collection <TreePathHandle> getInvocationsOf(ElementHandle e, CompilationController wc) throws IOException {
         assert e != null;
         assert wc != null;
@@ -428,100 +310,9 @@ public final class JavaRefactoringUtils {
         }
     }
 
-    public static <R, D> Map <TreePathHandle, Map<TreeVisitor<R,D>, R>> runAgainstSources (Iterable<TreePathHandle> handles, D arg, TreeVisitor<R,D>... visitors) throws IOException {
-        Map <TreePathHandle, Map<TreeVisitor<R,D>, R>> results = new HashMap<TreePathHandle, Map<TreeVisitor<R, D>, R>>();
-        for (TreePathHandle handle : handles) {
-            FileObject fob = handle.getFileObject();
-            JavaSource src = JavaSource.forFileObject(fob);
-            MultiVisitorRunner<R, D> runner = new MultiVisitorRunner <R, D> (handle, arg, visitors);
-            src.runUserActionTask(runner, true);
-            results.put (handle, runner.results);
-        }
-        return results;
-    }
-
-    public static void runAgainstSources (Iterable <TreePathHandle> handles, CancellableTask<CompilationController> c) throws IOException {
-        for (TreePathHandle handle : handles) {
-            FileObject fob = handle.getFileObject();
-            JavaSource src = JavaSource.forFileObject(fob);
-            src.runUserActionTask(c, true);
-        }
-    }
     
     public static void cacheTreePathInfo(TreePath tp, CompilationInfo info) {
         ElementGripFactory.getDefault().put(info.getFileObject(), tp, info);
     }
 
-    public static <T> void runAgainstSources (Iterable <TreePathHandle> handles,TreePathHandleTask<T> t, T arg) throws IOException {
-        for (TreePathHandle handle : handles) {
-            FileObject file = handle.getFileObject();
-            t.handle = handle;
-            t.arg = arg;
-            t.file = file;
-            JavaSource src = JavaSource.forFileObject(file);
-            src.runUserActionTask(t, true);
-        }
-        t.handle = null;
-        t.arg = null;
-        t.file = null;
-    }
-
-    public abstract static class TreePathHandleTask<T> implements CancellableTask <CompilationController> {
-        protected boolean cancelled;
-        private TreePathHandle handle;
-        private T arg;
-        private FileObject file;
-        public void cancel() {
-            cancelled = true;
-        }
-
-        public final void run(CompilationController cc) throws Exception {
-            cc.toPhase (Phase.RESOLVED);
-            run (cc, handle, file, arg);
-        }
-
-        public abstract void run (CompilationController cc, TreePathHandle handle, FileObject file, T arg);
-    }
-
-    private static class MultiVisitorRunner <R, D> implements CancellableTask <CompilationController> {
-        private final Map <TreeVisitor<R,D>, R> results = new HashMap <TreeVisitor<R,D>, R> ();
-        private final TreeVisitor<R,D>[] visitors;
-        private final D arg;
-        private TreePathHandle handle;
-        MultiVisitorRunner (TreePathHandle handle, D arg, TreeVisitor<R, D>... visitors) {
-            this.visitors = visitors;
-            this.handle = handle;
-            this.arg = arg;
-        }
-
-        R getResult (TreeVisitor visitor) {
-            return results.get(visitor);
-        }
-
-        volatile boolean cancelled;
-        public void cancel() {
-            cancelled = true;
-        }
-
-        public void run(CompilationController cc) throws Exception {
-            if (cancelled) return;
-            TreePath path = handle.resolve(cc);
-            for (TreeVisitor<R,D> v : visitors) {
-                if (cancelled) return;
-                R result;
-                if (v instanceof TreePathScanner) {
-                    @SuppressWarnings("unchecked") //NOI18N
-                    TreePathScanner<R,D> scanner = (TreePathScanner<R,D>) v;
-                    result = scanner.scan(path, arg);
-                } else if (v instanceof TreeScanner) {
-                    @SuppressWarnings("unchecked") //NOI18N
-                    TreeScanner<R,D> scanner = (TreeScanner<R,D>) v;
-                    result = scanner.scan(path.getLeaf(), arg);
-                } else {
-                    result = path.getLeaf().accept(v, arg);
-                }
-                results.put (v, result);
-            }
-        }
-    }
 }

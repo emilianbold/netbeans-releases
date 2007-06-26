@@ -32,7 +32,6 @@ import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.TypeMirrorHandle;
 import org.netbeans.api.java.source.TypeMirrorHandle;
 import org.netbeans.api.java.source.UiUtils;
-import org.netbeans.api.java.source.UiUtils;
 import org.netbeans.api.java.source.UiUtils.PrintPart;
 
 /**
