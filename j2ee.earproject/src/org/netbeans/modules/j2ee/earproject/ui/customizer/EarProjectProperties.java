@@ -337,7 +337,8 @@ public final class EarProjectProperties {
             saveNeeded = true;
         }
         for (VisualClassPathItem vcpi : newContent) { // #76008
-            if (!vcpi.getPathInEAR().equals(vcpi.getOrigPathInEAR())) {
+            if (vcpi.getPathInEAR() != null // #103898
+                    && !vcpi.getPathInEAR().equals(vcpi.getOrigPathInEAR())) {
                 removeItemFromAppDD(app, vcpi, vcpi.getCompletePathInArchive(true));
                 addItemToAppDD(app, vcpi);
                 saveNeeded = true;
