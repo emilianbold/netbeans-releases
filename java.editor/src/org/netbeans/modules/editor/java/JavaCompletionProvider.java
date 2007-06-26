@@ -1158,6 +1158,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                     case WHITESPACE:
                     case LINE_COMMENT:
                     case BLOCK_COMMENT:
+                    case JAVADOC_COMMENT:
                         break;
                     default:
                         lastNonWhitespaceTokenId = ts.token().id();
@@ -3511,6 +3512,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                     case WHITESPACE:
                     case LINE_COMMENT:
                     case BLOCK_COMMENT:
+                    case JAVADOC_COMMENT:
                         break;
                     default:
                         return ts;

@@ -2487,6 +2487,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
             case WHITESPACE:
             case LINE_COMMENT:
             case BLOCK_COMMENT:
+            case JAVADOC_COMMENT:
                 break;
             default:
                 return ts;
