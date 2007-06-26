@@ -58,13 +58,14 @@ public class PortTypeNewType extends NewType {
     }
 
 
+    @SuppressWarnings("unused")
     @Override
     public void create() throws IOException {
         WSDLModel model = mDef.getModel();
         
 
         ModelSource modelSource = model.getModelSource();
-        FileObject wsdlFile = (FileObject) modelSource.getLookup().lookup(FileObject.class);
+        FileObject wsdlFile = modelSource.getLookup().lookup(FileObject.class);
         if(wsdlFile != null) {
             Project project = FileOwnerQuery.getOwner(wsdlFile);
             if(project != null) {

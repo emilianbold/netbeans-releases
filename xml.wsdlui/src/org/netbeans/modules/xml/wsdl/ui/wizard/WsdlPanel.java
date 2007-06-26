@@ -223,7 +223,7 @@ final class WsdlPanel implements WizardDescriptor.FinishablePanel {
         FileObject template = Templates.getTemplate(templateWizard);
         DataObject dTemplate = DataObject.find(template);
         if (dTemplate != null) {
-            EditorCookie editorCookie = (EditorCookie) DataObject.find(
+            EditorCookie editorCookie = DataObject.find(
                     dTemplate.getPrimaryFile()).getCookie(EditorCookie.class);
             editorCookie.openDocument();
             Document doc = editorCookie.getDocument();

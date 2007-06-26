@@ -23,20 +23,15 @@ import java.awt.Component;
 import java.awt.Container;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
-import java.io.StringReader;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
@@ -57,8 +52,6 @@ import org.netbeans.modules.xml.wsdl.model.Types;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.model.WSDLModelFactory;
 import org.netbeans.modules.xml.wsdl.model.extensions.xsd.WSDLSchema;
-import org.netbeans.modules.xml.wsdl.ui.netbeans.module.WSDLDataObject;
-import org.netbeans.modules.xml.wsdl.ui.view.PartAndElementOrTypeTableModel;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
 import org.netbeans.modules.xml.xam.locator.CatalogModelException;
@@ -66,7 +59,6 @@ import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
-import org.openide.cookies.EditCookie;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
@@ -74,7 +66,6 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
-import org.openide.util.NbBundle;
 
 public final class NewWSDLWizardIterator implements TemplateWizard.Iterator {
     
@@ -92,9 +83,9 @@ public final class NewWSDLWizardIterator implements TemplateWizard.Iterator {
      * various properties for them influencing wizard appearance.
      */
     private Panel[] createPanels(Project project) {
-        Sources sources = (Sources) project.getLookup().lookup(org.netbeans.api.project.Sources.class);
+        Sources sources = project.getLookup().lookup(org.netbeans.api.project.Sources.class);
         sourceGroups = sources.getSourceGroups(Sources.TYPE_GENERIC);
-        folderPanel=new WsdlPanel(project,sourceGroups);
+        folderPanel = new WsdlPanel(project,sourceGroups);
         // creates simple wizard panel with bottom panel
         WizardDescriptor.Panel firstPanel = new WizardNewWSDLStep(Templates.createSimpleTargetChooser(project,sourceGroups,folderPanel));
         JComponent c = (JComponent)firstPanel.getComponent();
@@ -111,7 +102,7 @@ public final class NewWSDLWizardIterator implements TemplateWizard.Iterator {
         };
     }
     
-    public Set instantiate(TemplateWizard wiz) throws IOException {
+    public Set<DataObject> instantiate(TemplateWizard wiz) throws IOException {
 //      Here is the default plain behavior. Simply takes the selected
         // template (you need to have included the standard second panel
         // in createPanels(), or at least set the properties targetName and
@@ -135,7 +126,7 @@ public final class NewWSDLWizardIterator implements TemplateWizard.Iterator {
         DataObject dTemplate = DataObject.find( template );
         DataObject dobj = dTemplate.createFromTemplate( df, Templates.getTargetName( wiz )  );
         //create new data object
-        if (dobj!=null) {
+        if (dobj != null) {
             
             catalogSupport = DefaultProjectCatalogSupport.getInstance(dobj.getPrimaryFile());
             WSDLModel model = null;
@@ -150,13 +141,13 @@ public final class NewWSDLWizardIterator implements TemplateWizard.Iterator {
                     ErrorManager.getDefault().notify(ex);
                 }
                 
-            	FileObject tmpWsdlFileObject = (FileObject) tempModel.getModelSource().getLookup().lookup(FileObject.class);
+            	FileObject tmpWsdlFileObject = tempModel.getModelSource().getLookup().lookup(FileObject.class);
                 if(tmpWsdlFileObject != null) {
                 	File wsdlFile = FileUtil.toFile(dobj.getPrimaryFile());
                 	long lastMod = wsdlFile.lastModified();
                 	
                     DataObject wsdlDataObj = DataObject.find(tmpWsdlFileObject);
-                    EditorCookie editorCookie = (EditorCookie)wsdlDataObj.getCookie(EditorCookie.class);
+                    EditorCookie editorCookie = wsdlDataObj.getCookie(EditorCookie.class);
                     editorCookie.openDocument();
                     javax.swing.text.Document doc = editorCookie.getDocument();
 
@@ -188,7 +179,9 @@ public final class NewWSDLWizardIterator implements TemplateWizard.Iterator {
                 ModelSource modelSource = org.netbeans.modules.xml.retriever.catalog.Utilities.getModelSource(wsdlFile, 
                     wsdlFile.canWrite());
                 model  = WSDLModelFactory.getDefault().getModel(modelSource);
-                
+            }
+            
+            if (model != null) {
                 String definitionName = Templates.getTargetName(wizard);
                 String targetNamespace = panel.getNS();
                 model.startTransaction();
@@ -201,13 +194,14 @@ public final class NewWSDLWizardIterator implements TemplateWizard.Iterator {
                 }
                 
                 model.endTransaction();
+                
+                if (importSchemas) {
+                    addSchemaImport(model, dobj);
+                }
             }
             
-            if (model != null && importSchemas) {
-                addSchemaImport(model, dobj);
-            }
             
-            SaveCookie save = (SaveCookie)dobj.getCookie(SaveCookie.class);
+            SaveCookie save = dobj.getCookie(SaveCookie.class);
             if (save!=null) save.save();
         }
         
@@ -249,7 +243,7 @@ public final class NewWSDLWizardIterator implements TemplateWizard.Iterator {
         while(it.hasNext()) {
             Schema schema = it.next();
             SchemaModel sModel = schema.getModel();
-            FileObject schemaFileObj = (FileObject) sModel.getModelSource().getLookup().lookup(FileObject.class);
+            FileObject schemaFileObj = sModel.getModelSource().getLookup().lookup(FileObject.class);
             String location = getRelativePathOfSchema(dobj, schemaFileObj.getURL().toString());
             imp.setSchemaLocation(location);
         }
