@@ -42,6 +42,13 @@ public class CodeResolver implements DesignDocumentAwareness {
         this.serializer.addDesignDocumentAwareness (this);
     }
 
+    public void resetModelModifiedStatus (DesignDocument document) {
+        if (this.document == null  &&  document != null) {
+            this.document = document;
+            this.documentState = document.getListenerManager ().getDocumentState ();
+        }
+    }
+
     public void setDesignDocument (final DesignDocument designDocument) {
         DataEditorView activeView = ActiveViewSupport.getDefault ().getActiveView ();
         if (activeView == null)
@@ -107,5 +114,6 @@ public class CodeResolver implements DesignDocumentAwareness {
         serializer = null;
         context = null;
     }
+
 
 }

@@ -42,7 +42,7 @@ public final class ListenerManager {
 
     private static final boolean INVOKE_VALIDATORS = true;
 
-    private long eventID = 0;
+    private volatile long eventID = 0;
 
     /**
      * Returns a document state. The state is a non-negative number that is increased each time a document is modified.

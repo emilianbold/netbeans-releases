@@ -203,4 +203,9 @@ public final class IOSupport {
         return DocumentLoad.loadProjectType (context);
     }
 
+    static void resetCodeResolver (DataObject dataObject, DesignDocument document) {
+        CodeResolver resolver = resolvers.get (dataObject);
+        resolver.resetModelModifiedStatus (document);
+    }
+
 }

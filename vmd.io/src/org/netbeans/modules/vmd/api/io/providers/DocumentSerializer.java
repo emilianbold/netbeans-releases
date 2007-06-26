@@ -51,6 +51,7 @@ public final class DocumentSerializer {
             DocumentInterfaceImpl loadingDocumentInterface = new DocumentInterfaceImpl (context, undoRedoManager);
             final DesignDocument loadingDocument = new DesignDocument (loadingDocumentInterface);
             DocumentLoad.load (context, loadingDocument);
+            IOSupport.resetCodeResolver (context.getDataObject (), loadingDocument); // HINT - if a new document is created which should update source code then do not call this method 
             loadingDocumentInterface.enable ();
             synchronized (DocumentSerializer.this) {
                 document = loadingDocument;
