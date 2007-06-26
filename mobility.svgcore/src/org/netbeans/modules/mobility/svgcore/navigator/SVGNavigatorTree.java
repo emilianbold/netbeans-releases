@@ -40,7 +40,7 @@ public class SVGNavigatorTree extends JTree {
     static boolean showAnimationsOnly = false;  
     
     private final SVGDataObject         dObj;
-    private final DefaultTreeModel      treeModel;
+    private       DefaultTreeModel      treeModel;
     
     private boolean firstPaint;
 
@@ -49,15 +49,19 @@ public class SVGNavigatorTree extends JTree {
         this.dObj = dObj;
         
         firstPaint = true;
+        setShowsRootHandles(true);
+        setRootVisible(false);
+        setCellRenderer(new SVGNavigatorTreeCellRenderer());
+        putClientProperty("JTree.lineStyle", "Angled");        
+        initialize();
+    }
+    
+    void initialize() throws Exception {
         treeModel = new DefaultTreeModel(null);
         setModel(treeModel);         
         DocumentElement rootElement = dObj.getModel()._getModel().getRootElement();
         SVGNavigatorNode rootTna = new SVGNavigatorNode(rootElement, this, null, VISIBILITY_DIRECT);
         treeModel.setRoot(rootTna);  
-        setShowsRootHandles(true);
-        setRootVisible(false);
-        setCellRenderer(new SVGNavigatorTreeCellRenderer());
-        putClientProperty("JTree.lineStyle", "Angled");        
     }
 
     public DefaultTreeModel getTreeModel() {

@@ -168,15 +168,12 @@ Microsystems, Inc. All Rights Reserved.
      </folder>
      </folder>
    </folder>  
-
-<!--
     <folder name="Templates">
         <folder name="Other">
-            <file name="SVGTemplate.svg" url="SVGTemplate.svg">
+            <file name="SVGFileTemplate.svg" url="SVGFileTemplate.svg">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.svgcore.Bundle"/>
                 <attr name="template" boolvalue="true"/>
             </file>
         </folder>
     </folder>
- -->   
 </filesystem>

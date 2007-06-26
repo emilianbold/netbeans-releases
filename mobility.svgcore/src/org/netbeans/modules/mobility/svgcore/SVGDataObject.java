@@ -40,11 +40,13 @@ import org.openide.windows.TopComponent;
 public class SVGDataObject extends XmlMultiViewDataObject {
     public static final int XML_VIEW_INDEX      = 0;
     public static final int SVG_VIEW_INDEX      = 1;
-    
+   
     public static final String PROP_SVG_VIEW_CHANGED = "svg_view_changed";
     
     private static final Image SVGFILE_ICON = org.openide.util.Utilities.loadImage ("org/netbeans/modules/mobility/svgcore/resources/svg.png"); // NOI18N        
 
+    private transient final SVGFileModel model;
+   
     private static class VisualView extends DesignMultiViewDesc {
         private static final long serialVersionUID = 7526471457562776148L;        
 
@@ -66,7 +68,8 @@ public class SVGDataObject extends XmlMultiViewDataObject {
         }
 
         public int getPersistenceType() {
-            return TopComponent.PERSISTENCE_ONLY_OPENED;
+            //return TopComponent.PERSISTENCE_ONLY_OPENED;
+            return TopComponent.PERSISTENCE_NEVER;
         }        
     }
 
@@ -90,15 +93,15 @@ public class SVGDataObject extends XmlMultiViewDataObject {
         }
         
         public int getPersistenceType() {
-            return TopComponent.PERSISTENCE_ONLY_OPENED;
+            //return TopComponent.PERSISTENCE_ONLY_OPENED;
+            return TopComponent.PERSISTENCE_NEVER;
+
         }        
     }
-    
-    private final SVGFileModel model;
-    
+   
     public SVGDataObject(FileObject pf, SVGDataLoader loader) throws DataObjectExistsException, IOException {
         super(pf, loader);
-        //modelSynchronizer = new ModelSynchronizer(this);
+        //System.out.println("> SVGDataObject()");
         org.xml.sax.InputSource in = DataObjectAdapters.inputSource(this);
         CheckXMLCookie checkCookie = new CheckXMLSupport(in);
         getCookieSet().add(checkCookie);
@@ -112,6 +115,7 @@ public class SVGDataObject extends XmlMultiViewDataObject {
         //XML view has been suppressed.
         edSup.getMultiViewDescriptions();
         model = new SVGFileModel(edSup);
+        //System.out.println("< SVGDataObject()");
     }
     
     public TopComponent getMTVC() {

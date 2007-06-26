@@ -26,8 +26,8 @@ import org.openide.util.lookup.ProxyLookup;
 public class SVGViewMultiViewElement extends AbstractMultiViewElement {
     private static final long serialVersionUID = 7526471457562007148L;        
     
-    private final SVGViewTopComponent svgView;
-    private final int                 index;
+    private transient final SVGViewTopComponent svgView;
+    private transient final int                 index;
 
     public SVGViewMultiViewElement(SVGDataObject obj, int index) {
         super(obj);

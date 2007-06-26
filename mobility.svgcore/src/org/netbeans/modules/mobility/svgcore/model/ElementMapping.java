@@ -41,41 +41,44 @@ public class ElementMapping {
     private Map<String, Runnable>       m_scheduledTasks = new HashMap<String, Runnable>();
    
     @SuppressWarnings({"deprecation"})
-    public synchronized SVGImage parseDocument(SVGFileModel fileModel, DocumentModel docModel) throws BadLocationException, IOException {
-        m_ids.clear();
-        m_scheduledTasks.clear();
-        m_serial     = 0;
-        Document doc = docModel.getDocument();
+    public SVGImage parseDocument(SVGFileModel fileModel, DocumentModel docModel) throws BadLocationException, IOException {
         
         //TODO use a better way for module synchronisation
         while(fileModel != null && !fileModel.isModelStable()) {
             System.out.println("Waiting for model synchronisation");
             try {
-                Thread.sleep(100);
+                Thread.sleep(50);
             } catch (InterruptedException ex) {
                 Exceptions.printStackTrace(ex);
             }
         }
-        
-        //TODO wait until the DocumentModel is stable
-        StringBuilder sb;
-        try {
-            docModel.readLock();
-            DocumentElement root = docModel.getRootElement();
-            sb = new StringBuilder(doc.getText(0, doc.getLength()));
-            m_docModel   = docModel;
-            decorateElement(root, sb);
-        } finally {
-            docModel.readUnlock();
+
+        synchronized(this) {
+            m_ids.clear();
+            m_scheduledTasks.clear();
+            m_serial     = 0;
+            Document doc = docModel.getDocument();
+
+            //TODO wait until the DocumentModel is stable
+            StringBuilder sb;
+            try {
+                docModel.readLock();
+                DocumentElement root = docModel.getRootElement();
+                sb = new StringBuilder(doc.getText(0, doc.getLength()));
+                m_docModel   = docModel;
+                decorateElement(root, sb);
+            } finally {
+                docModel.readUnlock();
+            }
+
+            InputStream in = new java.io.StringBufferInputStream(sb.toString());
+            try {
+                SVGImage svgImage = (SVGImage) PerseusController.createImage( in);
+                return svgImage;
+            } finally {
+                in.close();
+            }        
         }
-        
-        InputStream in = new java.io.StringBufferInputStream(sb.toString());
-        try {
-            SVGImage svgImage = (SVGImage) PerseusController.createImage( in);
-            return svgImage;
-        } finally {
-            in.close();
-        }        
     }
     
     public synchronized void add(String id, DocumentElement de) {

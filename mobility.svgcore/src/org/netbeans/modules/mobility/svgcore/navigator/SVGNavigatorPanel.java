@@ -32,10 +32,11 @@ public class SVGNavigatorPanel implements NavigatorPanel {
     private SVGNavigatorContent navigator = SVGNavigatorContent.getDefault();
     
     private Lookup.Result dataObjectSelection;
-    //private Lookup.Result elementSelection;
+    //private Lookup.Result testSelection;
     
     private final LookupListener dataObjectListener = new LookupListener() {
         public void resultChanged(LookupEvent ev) {
+            //System.out.println("Lookup changed: " + ev);
             navigate(dataObjectSelection.allInstances());
         }
     };
@@ -50,6 +51,41 @@ public class SVGNavigatorPanel implements NavigatorPanel {
     
     /** public no arg constructor needed for system to instantiate the provider. */
     public SVGNavigatorPanel() {
+        /*
+        Thread th = new Thread( new Runnable() {
+            public void run() {
+                while(true) {
+                    try {
+                        Thread.sleep(5000);
+
+                        if (dataObjectSelection != null) {
+                            System.out.println("################################################");
+                            System.out.print("Lookup content: ");
+                            Collection col = dataObjectSelection.allInstances();
+                            for (Object o : col) {
+                                System.out.print( o + ",");
+                            }
+                            System.out.println("");
+                        }
+                        if (testSelection != null) {
+                            System.out.println("################################################");
+                            System.out.print("SVG cookies: ");
+                            Collection col = testSelection.allInstances();
+                            for (Object o : col) {
+                                System.out.print( o + ",");
+                            }
+                            System.out.println("");
+                        }
+
+                    } catch (InterruptedException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            }            
+        });
+        th.setDaemon(true);
+        th.start();
+         */
     }
     
     public String getDisplayHint() {
@@ -68,11 +104,16 @@ public class SVGNavigatorPanel implements NavigatorPanel {
         return null;
     }
     
+    
     public void panelActivated(Lookup context) {
         dataObjectSelection = context.lookup(new Lookup.Template<SVGDataObject>(SVGDataObject.class));
         dataObjectSelection.addLookupListener(dataObjectListener);
         dataObjectSelection.allItems();
         dataObjectListener.resultChanged(null);
+
+        //testSelection = context.lookup(new Lookup.Template<SVGViewTopComponent.SVGCookie>(SVGViewTopComponent.SVGCookie.class));
+        //testSelection.allItems();
+        
 /*
         elementSelection = context.lookup(new Lookup.Template(SelectionPathBean.class));
         elementSelection.addLookupListener(elementSelectionListener);
@@ -91,16 +132,17 @@ public class SVGNavigatorPanel implements NavigatorPanel {
         navigator.release(); //hide the UI
     }
         
-    public void navigate(Collection/*<DataObject>*/ selectedFiles) {
-        if (selectedFiles.size() == 1) {
-            final SVGDataObject d = (SVGDataObject) selectedFiles.iterator().next();
-            //TODO Potential memory leak, use weak reference or something
-            d.getModel().addSelectionListener( new SVGFileModel.SelectionListener() {
-                public void selectionChanged(String selectedId) {
-                    navigator.select(selectedId);
-                }
-            });
-            navigator.navigate(d);        
+    public void navigate(Collection selectedFiles) {
+        switch( selectedFiles.size()) {
+            default:
+                System.err.println("Multiple selection not allowed; using first node ...");
+            case 1:
+                final SVGDataObject d = (SVGDataObject) selectedFiles.iterator().next();
+                navigator.navigate(d);        
+                break;
+            case 0:
+                navigator.navigate(null);
+                break;
         }
     }    
     

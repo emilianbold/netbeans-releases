@@ -43,10 +43,10 @@ public class SVGFileModel {
     protected static final String XML_EMPTY_TAG = "empty_tag";
     protected static final String XML_ERROR_TAG = "error";
     protected static String [] ANIMATION_TAGS = { "animate", "animateTransform", "animateMotion", "animateColor"};
-    
-    
+        
     public interface ModelListener {
         public void modelChanged();
+        public void modelSwitched();
     }
 
     public interface SelectionListener {
@@ -171,7 +171,7 @@ public class SVGFileModel {
     }
     
     public boolean isModelStable() {
-        return System.currentTimeMillis() - m_changedTime > 2000;
+        return System.currentTimeMillis() - m_changedTime > 2100;
     }
     
     public boolean containsAnimations() {
@@ -252,12 +252,17 @@ public class SVGFileModel {
     }
 
     private void createModel( BaseDocument doc, boolean addListener) throws DocumentModelException {
+        boolean modelChanged = m_model != null;
         bDoc  = doc;
         m_model = DocumentModel.getDocumentModel(bDoc);
         
         if (addListener) {
             bDoc.addDocumentListener(docListener);
             m_model.addDocumentModelListener(modelListener);
+        }
+        
+        if (modelChanged) {
+            fireModelSwitched();
         }
     }
     
@@ -404,7 +409,15 @@ public class SVGFileModel {
             eventInProgress = true;
         }
     }
-
+    
+    protected void fireModelSwitched() {
+        synchronized( modelListeners) {
+            for (int i = 0; i < modelListeners.size(); i++) {
+                ((ModelListener) modelListeners.get(i)).modelSwitched();
+            }
+        }
+    }
+    
     public static String describeElement( DocumentElement el, boolean showTag, boolean showAttributes, String lineSep) {
         StringBuilder sb = new StringBuilder();
         
@@ -575,25 +588,40 @@ public class SVGFileModel {
      * Move the selected element one position to the beginning of a list of its siblings.
      */
     public void moveBackward(String id) throws BadLocationException {
-        DocumentElement de = checkIntegrity(id);
+        DocumentElement de            = checkIntegrity(id);
+        DocumentElement previousChild = getPreviousTagElement(de);
         
-        DocumentElement parent = de.getParentElement();
-        DocumentElement firstChild = parent.getElement(0);
-        if (de != firstChild) {
+        if (previousChild != null) {
             //TODO lock document??
             int startOffset = de.getStartOffset();
             int length      = de.getEndOffset() - startOffset + 1;
             String elemText = bDoc.getText(startOffset, length);
             
-            int index = getDocumentElementIndex(de);
-            DocumentElement previousChild = parent.getElement(index-1);
-                        
             int insertOffset = previousChild.getStartOffset();
             assert startOffset > insertOffset;
             
             bDoc.remove(startOffset, length);
             bDoc.insertString(insertOffset, elemText, null);
         }
+    }
+    
+    private static DocumentElement getPreviousTagElement( DocumentElement elem) {
+        DocumentElement parent   = elem.getParentElement();
+        int             childNum = parent.getElementCount();
+        
+        DocumentElement previous = null;
+        
+        for (int i = 0; i < childNum; i++) {
+            DocumentElement de = parent.getElement(i);
+            if (de == elem) {
+                return previous;
+            } else {
+                if ( isTagElement(de)) {
+                    previous = de;
+                }
+            }
+        }
+        throw new RuntimeException("The document element " + elem + " is no longer part of the document");
     }
     
     private static int getDocumentElementIndex(DocumentElement de) {

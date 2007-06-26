@@ -21,8 +21,6 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.lang.ref.WeakReference;
-import java.util.WeakHashMap;
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
@@ -57,15 +55,13 @@ import org.openide.windows.TopComponent;
  *
  * @author Pavel Benes (based on the class NavigatorContent by Marek Fukala)
  */
-public class SVGNavigatorContent extends JPanel {
+public class SVGNavigatorContent extends JPanel implements SVGFileModel.SelectionListener {
     public static final String ATTRIBUTES_FILTER = "attrs";
     public static final String ID_FILTER         = "id";
     public static final String ANIMATION_FILTER  = "anim";
     
-    private static final boolean DEBUG = false;
+    //private static final boolean DEBUG = false;
     private static SVGNavigatorContent navigatorContentInstance = null;
-    
-    private WeakHashMap<SVGDataObject, WeakReference> uiCache = new WeakHashMap<SVGDataObject, WeakReference>();
     
     public static synchronized SVGNavigatorContent getDefault() {
         if(navigatorContentInstance == null) {
@@ -74,9 +70,10 @@ public class SVGNavigatorContent extends JPanel {
         return navigatorContentInstance;
     }
     
-    private final JPanel emptyPanel;    
-    private final JLabel msgLabel;    
-    private SVGDataObject peerDO = null;
+    private final JPanel        emptyPanel;    
+    private final JLabel        msgLabel;    
+    private       SVGDataObject peerDO = null;
+    private       NavigatorContentPanel  navigatorPanel = null; 
         
     private SVGNavigatorContent() {
         setLayout(new BorderLayout());
@@ -88,91 +85,63 @@ public class SVGNavigatorContent extends JPanel {
         msgLabel = new JLabel();
         emptyPanel.add(msgLabel, BorderLayout.CENTER);
     }
-    
-    public void navigate(final SVGDataObject d) { 
-        //TODO refactor
-        peerDO = d;
-        RequestProcessor.getDefault().post(new Runnable() {
-            public void run() {
-                showWaitPanel();
-/*                
-                Document bdoc;
-                
-                try {
-                    bdoc = d.getModel().getDocument();
-                } catch( Exception e) {
-                    showCannotNavigate();
-                    return;
-                }                
-*/                
-                //TODO fix bug in caching; DocumentElement instances comes from
-                //different document
-                final JPanel cachedPanel = null;
-                /*
-                WeakReference panelWR = (WeakReference)uiCache.get(d);
-                if(panelWR != null) {
-                    NavigatorContentPanel cp = (NavigatorContentPanel)panelWR.get();
-                    if(cp != null) {
-                        if(DEBUG) System.out.println("panel is cached");
-                        //test if the document associated with the panel is the same we got now
-                        cachedPanel = cp;
-//                        cachedPanel = bdoc == cp.getDocument() ? cp : null;
-//                        if(cachedPanel == null) {
-//                            if(DEBUG) System.out.println("but the document is different - creating a new UI...");
-//                            if(DEBUG) System.out.println("the cached document : " + cp.getDocument());
-//
-//                            //remove the old mapping from the cache
-//                            uiCache.remove(d);
-//                        }
-                    } else
-                        cachedPanel = null;
-                } else
-                    cachedPanel = null;
-*/
-                JPanel panel = null;
-                if(cachedPanel == null) {
-                    try {
-                        //cache the newly created panel
-                        panel = new NavigatorContentPanel(d);
-                    } catch (Exception ex) {
-                        ex.printStackTrace();
-                        showCannotNavigate();
-                        return;
-                    }
-                    //use the document dataobject as a key since the document itself is very easily discarded and hence
-                    //harly usable as a key of the WeakHashMap
-                    uiCache.put(d, new WeakReference<JPanel>(panel));
-                    if(DEBUG) System.out.println("[xml navigator] panel created");                    
-                } else {
-                    panel = cachedPanel;
-                    if(DEBUG) System.out.println("[xml navigator] panel gotten from cache");
-                }
-                final JPanel p = panel;
-                SwingUtilities.invokeLater(new Runnable() {
-                    public void run() {
-                        SVGNavigatorContent.this.removeAll();
-                        SVGNavigatorContent.this.add(p, BorderLayout.CENTER);                                
-                        SVGNavigatorContent.this.validate();                                
-                        SVGNavigatorContent.this.repaint();                                
-                    }
-                });
-                
-            }
-        });        
+
+    public void selectionChanged(String id) {
+        select(id);
     }
     
-    void select(String selectedId) {
-//        try {
-            WeakReference panelWR = (WeakReference)uiCache.get(peerDO);
-            if(panelWR != null) {
-                NavigatorContentPanel cp = (NavigatorContentPanel)panelWR.get();
-                if(cp != null) {
-                    cp.tree.selectNode(selectedId);
-                }
+    public synchronized void navigate(final SVGDataObject d) {   
+        if (d != peerDO) {
+            if (peerDO != null) {
+                peerDO.getModel().removeSelectionListener(this);
             }
-//        } catch (PropertyVetoException ex){
-//            ex.printStackTrace();
-//        }
+            peerDO = d;
+            
+            if (d != null) {
+                d.getModel().addSelectionListener( this);
+                
+                RequestProcessor.getDefault().post(new Runnable() {
+                    public void run() {
+                        showWaitPanel();
+                        final NavigatorContentPanel panel;
+                        try {
+                            //cache the newly created panel
+                            panel = new NavigatorContentPanel(d);
+                        } catch (Exception ex) {
+                            ex.printStackTrace();
+                            showCannotNavigate();
+                            return;
+                        }
+                        SwingUtilities.invokeLater(new Runnable() {
+                            public void run() {
+                                setContent(d, panel);
+                            }
+                        });
+
+                    }
+                });        
+            } else {
+                setContent(null, null);
+            }
+        }
+    }
+
+    public synchronized void setContent( final SVGDataObject obj, final NavigatorContentPanel panel) {
+        //peerDO         = obj;
+        navigatorPanel = panel;
+                
+        SVGNavigatorContent.this.removeAll();
+        if (panel != null) {
+            SVGNavigatorContent.this.add(panel, BorderLayout.CENTER);                                
+        }
+        SVGNavigatorContent.this.validate();                                
+        SVGNavigatorContent.this.repaint();                                
+    }
+    
+    synchronized void select(String selectedId) {
+        if (navigatorPanel != null) {
+            navigatorPanel.tree.selectNode(selectedId);
+        }
     }
 
     public void release() {
@@ -214,6 +183,19 @@ public class SVGNavigatorContent extends JPanel {
             public void modelChanged() {
                 tree.repaint();
             }
+
+            public void modelSwitched() {
+                SwingUtilities.invokeLater(new Runnable() {
+                   public void run() {
+                       try {
+                        tree.initialize();
+                        tree.repaint();
+                       } catch( Exception e) {
+                           e.printStackTrace();
+                       }
+                   } 
+                });
+            }            
         };       
         
         public NavigatorContentPanel(SVGDataObject doj) throws Exception {
