@@ -451,6 +451,8 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         // the problem is that some files might got deleted outside of netbeans, 
         // so they aren't tagged as deleted, but we still may have their previous versions stored.  
         // It woudln't be very userfriendly to ignore them just because they don't meet all the byrocratic expectations
+        // WARNING! don't see this as a bruteforce substitution for the previous block as it is impossible to 
+        // recover deleted folders this way
         List<File> lostFiles = getLostFiles();
         for(File lostFile : lostFiles) {
             if(!deleted.containsKey(lostFile.getAbsolutePath())) {
