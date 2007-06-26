@@ -101,6 +101,7 @@ public final class PropertyEditorDefaultCommand extends PropertyEditorUserCode i
         return false;
     }
 
+    @Override
     public String getAsText() {
         if (isCurrentValueAUserCodeType()) {
             return USER_CODE_TEXT;
@@ -112,6 +113,7 @@ public final class PropertyEditorDefaultCommand extends PropertyEditorUserCode i
         return getDecodeValue(value);
     }
 
+    @Override
     public Boolean canEditAsText() {
         return null;
     }
@@ -139,17 +141,25 @@ public final class PropertyEditorDefaultCommand extends PropertyEditorUserCode i
             if (NONE_ITEM.equals(text)) {
                 super.setValue(NULL_VALUE);
             } else {
-                super.setValue(PropertyValue.createComponentReference(getItemCommandEvenSource(text)));
+                DesignComponent itemCommandSource = getItemCommandEvenSource(text);
+                if (itemCommandSource == null) {
+                    DesignComponent command = values.get(text);
+                    DesignComponent item = ActiveDocumentSupport.getDefault().getActiveDocument().getComponentByUID(componentID);
+                    itemCommandSource = MidpDocumentSupport.attachCommandToItem(item, command);
+                }
+                super.setValue(PropertyValue.createComponentReference(itemCommandSource));
             }
         }
     }
 
+    @Override
     public void customEditorOKButtonPressed() {
         if (radioButton.isSelected()) {
             saveValue(customEditor.getText());
         }
     }
 
+    @Override
     public String[] getTags() {
         if (isCurrentValueAUserCodeType()) {
             return null;
@@ -171,7 +181,7 @@ public final class PropertyEditorDefaultCommand extends PropertyEditorUserCode i
                         if (parent != null) {
                             List<PropertyValue> formCmdESValues = parent.readProperty(DisplayableCD.PROP_COMMANDS).getArray();
                             List<DesignComponent> formCommands = new ArrayList<DesignComponent>(formCmdESValues.size());
-                            
+
                             for (PropertyValue esValue : formCmdESValues) {
                                 DesignComponent command = esValue.getComponent().readProperty(CommandEventSourceCD.PROP_COMMAND).getComponent();
                                 if (command != null) {
@@ -206,6 +216,7 @@ public final class PropertyEditorDefaultCommand extends PropertyEditorUserCode i
         return tags.toArray(new String[tags.size()]);
     }
 
+    @Override
     public void init(DesignComponent component) {
         super.init(component);
         componentID = component.getComponentID();
@@ -234,7 +245,7 @@ public final class PropertyEditorDefaultCommand extends PropertyEditorUserCode i
         final DesignComponent[] itemCommandEvenSource = new DesignComponent[1];
         final DesignDocument document = ActiveDocumentSupport.getDefault().getActiveDocument();
         if (document != null) {
-            document.getTransactionManager().writeAccess(new Runnable() {
+            document.getTransactionManager().readAccess(new Runnable() {
 
                 public void run() {
                     DesignComponent command = values.get(name);
@@ -246,11 +257,6 @@ public final class PropertyEditorDefaultCommand extends PropertyEditorUserCode i
                             itemCommandEvenSource[0] = existingES;
                             break;
                         }
-                    }
-
-                    if (itemCommandEvenSource[0] == null) {
-                        // create new ItemCommandEvenSource
-                        itemCommandEvenSource[0] = MidpDocumentSupport.attachCommandToItem(item, command);
                     }
                 }
             });
