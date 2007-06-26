@@ -19,13 +19,27 @@
 
 package org.netbeans.modules.websvc.core.dev.wizard;
 
+import com.sun.source.tree.AnnotationTree;
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.ModifiersTree;
+import com.sun.source.tree.VariableTree;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import javax.lang.model.element.Modifier;
+import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.Comment;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.TreeMaker;
+import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.Project;
@@ -34,8 +48,12 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.modules.j2ee.api.ejbjar.EjbReference;
+import org.netbeans.modules.j2ee.common.Util;
+import org.netbeans.modules.j2ee.common.source.SourceUtils;
 import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
+import org.netbeans.modules.websvc.api.jaxws.project.config.ServiceAlreadyExistsExeption;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModel;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModelListener;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModeler;
@@ -50,12 +68,11 @@ import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
-import org.openide.cookies.EditorCookie;
-import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
+import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -164,134 +181,23 @@ public class JaxWsServiceCreator implements ServiceCreator {
                 generateJaxWSImplFromTemplate(pkg, wsName, projectType);
                 handle.finish();
                 return;
-//            } else if (!Util.isJavaEE5orHigher(project) && (projectType == WEB_PROJECT_TYPE ||projectType == EJB_PROJECT_TYPE) || (wsitSupported)) { //NOI18N
-//                if ((!jsr109Supported && projectType == WEB_PROJECT_TYPE && !jsr109oldSupported) || (wsitSupported)) {  //if the platform is not jsr 109
-//                    
-//                    JAXWSSupport jaxWsSupport = JAXWSSupport.getJAXWSSupport(project.getProjectDirectory());
-//                    wsName = getUniqueJaxwsName(jaxWsSupport, wsName);
-//                    handle.progress(NbBundle.getMessage(WebServiceCreator.class, "MSG_GEN_WS"), 50); //NOI18N
-//                    //add the JAXWS 2.0 library, if not already added
-//                    addJaxws20Library(project);
-//                    generateJaxWSImplFromTemplate(pkg);
-//                    
-//                    handle.finish();
-//                    
-//                } else {  //it's not J2ee 1.5 but it is JSR 109
-//                    WebServicesSupport wsSupport = WebServicesSupport.getWebServicesSupport(pkg);
-//                    assert wsSupport != null;
-//                    wsName = getUniqueJaxrpcName(wsSupport, wsName);
-//                    WebServiceGenerator generator = new WebServiceGenerator(wsSupport, wsName, pkg, project);
-//                    handle.progress(NbBundle.getMessage(WebServiceCreator.class, "MSG_GEN_SEI_AND_IMPL"), 50); //NOI18N
-//                    generator.generateWebService();
-//                    
-//                    URI targetNS = null;
-//                    URI typeNS = null;
-//                    try {
-//                        targetNS = generator.getTargetNS();
-//                        typeNS = generator.getDefaultTypeNS(wsName); //Need to get from user
-//                    } catch(java.net.URISyntaxException e) {
-//                        String mes = NbBundle.getMessage(WebServiceCreator.class, "MSG_INVALID_URL_SYNTAX"); //NOI18N
-//                        throw new Exception(mes);
-//                    }
-//                    //Create config file
-//                    handle.progress(NbBundle.getMessage(WebServiceCreator.class, "MSG_CREATING_WSCOMPILE_ARTIFACTS")); //NOI18N
-//                    String servantClassName = generator.getServantClassName();
-//                    String seiClassName = generator.getSEIClassName();
-//                    FileObject configFile = null;
-//                    configFile = generator.generateConfigFile(seiClassName, servantClassName, targetNS, typeNS);
-//                    handle.progress(70);
-//                    
-//                    //Add web service entries to the project's property file, project file
-//                    wsSupport.addServiceImpl(wsName, configFile, false);
-//                    handle.progress(90);
-//                    
-//                    //Add web service entries to the module's DD
-//                    wsSupport.addServiceEntriesToDD(wsName, seiClassName, servantClassName);
-//                    
-//                    //Add webservice entry in webservices.xml
-//                    handle.progress(NbBundle.getMessage(NewWebServiceWizardIterator.class, "MSG_ADDING_DD_ENTRIES")); //NOI18N
-//                    String portTypeName = null;
-//                    generator.addWebServiceEntry(seiClassName, portTypeName, targetNS);
-//                    
-//                    handle.finish();
-//                    
-//                    return;
-//                }
-//            }
         }
-//        if (serviceType == WizardProperties.ENCAPSULATE_SESSION_BEAN) {
-//            if ((projectType == JSE_PROJECT_TYPE && Util.isSourceLevel16orHigher(project)) ||
-//                    (Util.isJavaEE5orHigher(project) && (projectType == WEB_PROJECT_TYPE
-//                    ||projectType == EJB_PROJECT_TYPE)) //NOI18N
-//                    ) {
-//                
-//                JAXWSSupport jaxWsSupport = JAXWSSupport.getJAXWSSupport(project.getProjectDirectory());
-//                wsName = getUniqueJaxwsName(jaxWsSupport, wsName);
-//                // PENDING : the part below need to be simplified
-//                // (the SEI class doesn't need to be generated)
-//                WebServicesSupport wsSupport = WebServicesSupport.getWebServicesSupport(pkg);
-//                assert wsSupport != null;
-//                WebServiceGenerator generator = new WebServiceGenerator(wsSupport, wsName, pkg, project);
-//                handle.progress(NbBundle.getMessage(WebServiceCreator.class, "MSG_GEN_SEI_AND_IMPL"), 50); //NOI18N
-//                Node[] nodes = (Node[]) wiz.getProperty(WizardProperties.DELEGATE_TO_SESSION_BEAN);
-//                generator.generateWebServiceJavaEE5(nodes);
-//                
-//                handle.progress(70);
-//                
-//                String servantClassName = generator.getServantClassName();
-//                generator.addReferences(servantClassName, nodes);
-//                
-//                
-//                jaxWsSupport.addService(wsName,servantClassName, jsr109Supported);
-//                
-//                handle.finish();
-//                
-//                return;
-//            } else if (projectType == WEB_PROJECT_TYPE ||projectType == EJB_PROJECT_TYPE) {
-//                WebServicesSupport wsSupport = WebServicesSupport.getWebServicesSupport(pkg);
-//                assert wsSupport != null;
-//                wsName = getUniqueJaxrpcName(wsSupport, wsName);
-//                WebServiceGenerator generator = new WebServiceGenerator(wsSupport, wsName, pkg, project);
-//                handle.progress(NbBundle.getMessage(WebServiceCreator.class, "MSG_GEN_SEI_AND_IMPL"), 50); //NOI18N
-//                Node[] nodes = (Node[]) wiz.getProperty(WizardProperties.DELEGATE_TO_SESSION_BEAN);
-//                generator.generateWebService(nodes);
-//                
-//                URI targetNS = null;
-//                URI typeNS = null;
-//                try {
-//                    targetNS = generator.getTargetNS();
-//                    typeNS = generator.getDefaultTypeNS(wsName); //Need to get from user
-//                } catch(java.net.URISyntaxException e) {
-//                    String mes = NbBundle.getMessage(WebServiceCreator.class, "MSG_INVALID_URL_SYNTAX"); //NOI18N
-//                    throw new Exception(mes);
-//                }
-//                //Create config file
-//                handle.progress(NbBundle.getMessage(WebServiceCreator.class, "MSG_CREATING_WSCOMPILE_ARTIFACTS")); //NOI18N
-//                String servantClassName = generator.getServantClassName();
-//                String seiClassName = generator.getSEIClassName();
-//                FileObject configFile = null;
-//                configFile = generator.generateConfigFile(seiClassName, servantClassName, targetNS, typeNS);
-//                handle.progress(70);
-//                
-//                //Add web service entries to the project's property file, project file
-//                wsSupport.addServiceImpl(wsName, configFile, false);
-//                handle.progress(90);
-//                
-//                //Add web service entries to the module's DD
-//                wsSupport.addServiceEntriesToDD(wsName, seiClassName, servantClassName);
-//                
-//                //Add webservice entry in webservices.xml
-//                handle.progress(NbBundle.getMessage(NewWebServiceWizardIterator.class, "MSG_ADDING_DD_ENTRIES")); //NOI18N
-//                String portTypeName = null;
-//                generator.addWebServiceEntry(seiClassName, portTypeName, targetNS);
-//                
-//                generator.addReferences(servantClassName, nodes);
-//                
-//                handle.finish();
-//            }
-//            
-//            return;
-//        }
+        if (serviceType == WizardProperties.ENCAPSULATE_SESSION_BEAN) {
+            if (/*(projectType == JSE_PROJECT_TYPE && Util.isSourceLevel16orHigher(project)) ||*/
+                    (Util.isJavaEE5orHigher(projectInfo.getProject()) && (projectType == ProjectInfo.WEB_PROJECT_TYPE
+                    || projectType == ProjectInfo.EJB_PROJECT_TYPE)) //NOI18N
+                    ) {
+                
+                JAXWSSupport jaxWsSupport = JAXWSSupport.getJAXWSSupport(projectInfo.getProject().getProjectDirectory());
+                wsName = getUniqueJaxwsName(jaxWsSupport, wsName);
+                handle.progress(NbBundle.getMessage(JaxWsServiceCreator.class, "MSG_GEN_SEI_AND_IMPL"), 50); //NOI18N
+                Node[] nodes = (Node[]) wiz.getProperty(WizardProperties.DELEGATE_TO_SESSION_BEAN);
+                generateWebServiceFromEJB(wsName, pkg, projectInfo, nodes);
+                
+                handle.progress(70);
+                handle.finish();
+            }
+        }
     }
     
     private FileObject generateJaxWSImplFromTemplate(FileObject pkg, String wsName, int projectType) throws Exception {
@@ -428,5 +334,109 @@ public class JaxWsServiceCreator implements ServiceCreator {
                 }
             });
         }
+    }
+    
+    private void generateWebServiceFromEJB(String wsName, FileObject pkg, ProjectInfo projectInfo, Node[] nodes) throws IOException, ServiceAlreadyExistsExeption {
+        DataFolder df = DataFolder.findFolder(pkg);
+        FileObject template = Templates.getTemplate(wiz);
+        
+        if (projectType==ProjectInfo.EJB_PROJECT_TYPE) { //EJB Web Service
+            FileObject templateParent = template.getParent();
+            template = templateParent.getFileObject("EjbWebService","java"); //NOI18N
+        }        
+        DataObject dTemplate = DataObject.find(template);
+        DataObject dobj = dTemplate.createFromTemplate(df, wsName);
+        FileObject createdFile = dobj.getPrimaryFile();
+        
+        /* don't rely on annotation listener to notify the service creation */
+        final JaxWsModel jaxWsModel = projectInfo.getProject().getLookup().lookup(JaxWsModel.class);
+        if ( jaxWsModel!= null) {
+            ClassPath classPath = ClassPath.getClassPath(createdFile, ClassPath.SOURCE);
+            String serviceImplPath = classPath.getResourceName(createdFile, '.', false);
+            addReferences(createdFile, serviceImplPath, nodes);
+            Service service = jaxWsModel.addService(wsName, serviceImplPath);
+            ProjectManager.mutex().writeAccess(new Runnable() {
+                public void run() {
+                    try {
+                        jaxWsModel.write();
+                    } catch (IOException ex) {
+                        ErrorManager.getDefault().notify(ex);
+                    }
+                }
+
+            });
+            jaxWsModel.write();
+            JaxWsUtils.openFileInEditor(dobj, service);      }           
+    }
+    
+    public void addReferences(FileObject targetFo, String beanClassName, Node[] nodes) throws IOException {
+        final int[] num = new int[1];
+        for(int i = 0; i < nodes.length; i++) {
+            Node node = nodes[i];
+         
+            
+            final EjbReference ref = node.getLookup().lookup(EjbReference.class);
+
+            JavaSource targetSource = JavaSource.forFileObject(targetFo);
+            CancellableTask<WorkingCopy> modificationTask = new CancellableTask<WorkingCopy>() {
+                public void run(WorkingCopy workingCopy) throws IOException {
+                    workingCopy.toPhase(Phase.RESOLVED);
+
+                    TreeMaker make = workingCopy.getTreeMaker();
+
+                    SourceUtils srcUtils = SourceUtils.newInstance(workingCopy);
+                    if (srcUtils!=null) {
+                        ClassTree javaClass = srcUtils.getClassTree();
+                        VariableTree ejbRefInjection=null;
+                        String local = ref.getLocal();
+                        if (local!=null) {
+                            ejbRefInjection = generateEjbInjection(workingCopy, make, local, num[0]);
+                            num[0]++;
+                        } else {
+                            String remote = ref.getRemote();
+                            if (remote!=null) {
+                                ejbRefInjection = generateEjbInjection(workingCopy, make, remote, num[0]);
+                                num[0]++;
+                            }
+                        }
+                        if (ejbRefInjection != null) {
+                            
+                            String comment1 = "Add business logic below. (Right-click in editor and choose"; //NOI18N
+                            String comment2 = "\"Web Service > Add Operation\""; //NOI18N                        
+                            make.addComment(ejbRefInjection, Comment.create(Comment.Style.LINE, 0, 0, 4, comment1), false);
+                            make.addComment(ejbRefInjection, Comment.create(Comment.Style.LINE, 0, 0, 4, comment2), false);
+                            
+                            ClassTree modifiedClass = make.insertClassMember(javaClass, 0, ejbRefInjection);
+                            workingCopy.rewrite(javaClass, modifiedClass);
+                        }
+                    }
+                }
+                public void cancel() {}
+            };
+            targetSource.runModificationTask(modificationTask).commit();       
+
+        }
+    }
+    
+    private VariableTree generateEjbInjection(WorkingCopy workingCopy, TreeMaker make, String beanInterface, int num) {
+        
+        TypeElement ejbAnElement = workingCopy.getElements().getTypeElement("javax.ejb.EJB"); //NOI18N
+        TypeElement interfaceElement = workingCopy.getElements().getTypeElement(beanInterface); //NOI18N
+
+        AnnotationTree ejbAnnotation = make.Annotation(
+                make.QualIdent(ejbAnElement), 
+                Collections.<ExpressionTree>emptyList()
+        );
+        // create method modifier: public and no annotation
+        ModifiersTree methodModifiers = make.Modifiers(
+            Collections.<Modifier>singleton(Modifier.PRIVATE),
+            Collections.<AnnotationTree>singletonList(ejbAnnotation)
+        );
+        
+        return make.Variable(
+            methodModifiers,
+            num == 0? "ejbRef": "ejbRef"+String.valueOf(num), //NOI18N
+            make.Type(interfaceElement.asType()),
+            null);
     }
 }
