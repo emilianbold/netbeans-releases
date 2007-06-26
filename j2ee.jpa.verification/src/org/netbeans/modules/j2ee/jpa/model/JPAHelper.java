@@ -28,6 +28,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.ElementFilter;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Attributes;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity;
+import org.netbeans.modules.j2ee.persistence.api.metadata.orm.MappedSuperclass;
 
 /**
  * Utility methods for discovering various facts
@@ -51,6 +52,8 @@ public class JPAHelper {
         
         if (modelObject instanceof Entity){
             attrs = ((Entity)modelObject).getAttributes();
+        } else if (modelObject instanceof MappedSuperclass){
+            attrs = ((MappedSuperclass)modelObject).getAttributes();
         }
         
         if (attrs != null){

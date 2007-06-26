@@ -191,8 +191,7 @@ public abstract class JPAProblemFinder {
                 if (modelElement != null){
                     context.setEmbeddable(true);
                 } else{
-                    //TODO: uncomment when #103059 is fixed
-                    //modelElement = ModelUtils.getMappedSuperclass(metadata, javaClass);
+                    modelElement = ModelUtils.getMappedSuperclass(metadata, javaClass);
                     
                     if (modelElement != null){
                         context.setMappedSuperClass(true);
