@@ -134,9 +134,10 @@ public class StoreEntryNode extends AbstractNode implements Comparable {
         }    
         public void setValue(String value) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException 
         {        
+            value = value.trim();
             List<StoreEntry> newEntries = new ArrayList<StoreEntry>(entries.size());
             for(StoreEntry se : entries) {
-                LocalHistory.getInstance().getLocalHistoryStore().setLabel(se.getFile(), se.getTimestamp(), value);    
+                LocalHistory.getInstance().getLocalHistoryStore().setLabel(se.getFile(), se.getTimestamp(), !value.equals("") ? value : null);    
                 newEntries.add(StoreEntry.createStoreEntry(se.getFile(), se.getStoreFile(), se.getTimestamp(), value));
             }            
             entries = newEntries;

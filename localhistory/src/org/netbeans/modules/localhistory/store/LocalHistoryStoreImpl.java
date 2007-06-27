@@ -525,13 +525,18 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
                 try {
                     while(true) {   
                         readTs = dis.readLong();
-                        if(readTs == ts) {
-                            oos.writeLong(readTs);
-                            writeString(oos, label);
-                            int len = dis.readInt();
-                            skip(dis, len * 2);
-                            copyStreams(oos, dis);
-                            break;
+                        if(readTs == ts) {        
+                            foundLabel = true;
+                            if(label != null) {
+                                oos.writeLong(readTs);
+                                writeString(oos, label);
+                                int len = dis.readInt();
+                                skip(dis, len * 2);
+                                copyStreams(oos, dis);    
+                            } else {
+                                int len = dis.readInt();
+                                skip(dis, len * 2);
+                            }                                                         
                         } else {
                             oos.writeLong(readTs);
                             String l = readString(dis);
@@ -539,7 +544,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
                         }
                     }    
                 } catch (EOFException e) {
-                    if(!foundLabel) {
+                    if(!foundLabel && label != null) {
                         oos.writeLong(ts);
                         writeString(oos, label);
                     }                
