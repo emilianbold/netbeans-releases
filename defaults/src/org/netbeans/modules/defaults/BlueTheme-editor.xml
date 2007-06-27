@@ -37,6 +37,6 @@ Microsystems, Inc. All Rights Reserved.
     <fontcolor name="selection" bgColor="38566F"/>
     <fontcolor name="status-bar" foreColor="FFFFFF" bgColor="121E31"/>
     <fontcolor name="status-bar-bold" bgColor="red"/>
-    <fontcolor name="caret-color-insert-mode" foreColor="white" bgColor="white"/>
+    <fontcolor name="caret-color-insert-mode" foreColor="yellow" />
     <fontcolor name="text-limit-line-color" foreColor="253E5A"/>
 </fontscolors>
