@@ -335,6 +335,18 @@ class DragOperation {
             return;
         }
         
+        if(tcomp instanceof JMenuBar) {
+            p("dragging to the menubar itself");
+            if(payloadComponent instanceof JMenu) {
+                p("adding menu to the end of the menubar");
+                menuEditLayer.moveRadComponentInto(payloadComponent, targetComponent);
+                return;
+            } else {
+                p("can't drag a non-JMenu to the menubar");
+                return;
+            }
+        }
+        
         menuEditLayer.moveRadComponentToBefore(payloadComponent, targetComponent);
     }
     

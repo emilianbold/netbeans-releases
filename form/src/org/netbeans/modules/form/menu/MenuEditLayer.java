@@ -741,7 +741,7 @@ public class MenuEditLayer extends JPanel {
         
     }
     
-    void moveRadComponentInto(JComponent payload, JMenu targetMenu) {
+    void moveRadComponentInto(JComponent payload, JComponent targetMenu) {
         try {
             if(payload == targetMenu) {
                 p("can't move onto self");
