@@ -105,19 +105,9 @@ public class StaticAccess extends AbstractHint {
             }
         }
         
-        boolean foundStatic = false;
-        for (Element member : type.getEnclosedElements()) {
-            if (stop) {
-                return null;
-            }
-            if (member.getSimpleName().equals(mst.getIdentifier())) {
-                if (member.getModifiers().contains(Modifier.STATIC)) {
-                    foundStatic = true;
-                }
-                break;
-            }
-        }
-        if (!foundStatic) {
+        Element used = info.getTrees().getElement(treePath);
+        
+        if (used == null || !used.getModifiers().contains(Modifier.STATIC)) {
             return null;
         }
         

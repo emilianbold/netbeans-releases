@@ -151,6 +151,22 @@ public class StaticAccessTest extends TreeRuleTestBase {
         performAnalysisTest("test/Test.java", before + after, before.length());
     }
 
+    public void testCorrectResolution() throws Exception {
+        String before = "package test; class Test {" +
+            "public void run() {\n" +
+            "Test t = null;\n" +
+            "t.t";
+        String after =         "est(2);\n" +
+            "}\n" +
+            "public void test() {}\n" + 
+            "public static void test(int i) {}\n" +
+            "}";
+        
+        performAnalysisTest("test/Test.java", before + after, before.length(),
+                "2:0-2:1:verifier:Accessing static field"
+        );
+    }
+    
     protected List<ErrorDescription> computeErrors(CompilationInfo info, TreePath path) {
         SourceUtilsTestUtil.setSourceLevel(info.getFileObject(), sourceLevel);
         return new StaticAccess().run(info, path);
