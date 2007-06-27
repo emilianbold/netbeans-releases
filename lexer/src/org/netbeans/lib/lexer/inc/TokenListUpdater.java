@@ -167,7 +167,7 @@ public final class TokenListUpdater {
                     if (midStartOffset < modOffset) {
                         low = mid + 1;
                     } else if (midStartOffset > modOffset) {
-                        index = mid - 1 < 0 ? 0 : mid - 1;
+                        index = mid - 1;
                     } else {
                         // Token starting exactly at modOffset found
                         index = mid;
