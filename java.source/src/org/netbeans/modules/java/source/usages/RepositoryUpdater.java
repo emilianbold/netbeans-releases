@@ -231,16 +231,14 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
             if (evt.getSource() == this.cp) {
                 submitBatch();
             } else {
-                if (TasklistSettings.isTasklistEnabled()) {
-                    ClassPath changedCp = (ClassPath) evt.getSource();
-                    assert changedCp != null;
-                    LOGGER.log(Level.FINER, "modified roots changedCp={0}", changedCp);
-                    
-                    URL root = classPath2Root.get(changedCp);
-                    
-                    if (root != null) {
-                        scheduleCompilation(root,root, true);
-                    }
+                ClassPath changedCp = (ClassPath) evt.getSource();
+                assert changedCp != null;
+                LOGGER.log(Level.FINER, "modified roots changedCp={0}", changedCp);
+
+                URL root = classPath2Root.get(changedCp);
+
+                if (root != null) {
+                    scheduleCompilation(root,root, true);
                 }
             }
             return ;
@@ -1305,16 +1303,11 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 
                 clean |= ensureAttributeValue(root, EXTRA_COMPILER_OPTIONS, extraCompilerOptions, true);
                 
-                if (TasklistSettings.isTasklistEnabled()) {
-                    clean |= ensureAttributeValue(root, CLASSPATH_ATTRIBUTE, classPathToString(ClasspathInfo.create(bootPath, compilePath, sourcePath)), true);
-                    
-                    if (TasklistSettings.isDependencyTrackingEnabled()) {
+                clean |= ensureAttributeValue(root, CLASSPATH_ATTRIBUTE, classPathToString(ClasspathInfo.create(bootPath, compilePath, sourcePath)), true);
+
+                if (TasklistSettings.isTasklistEnabled() && TasklistSettings.isDependencyTrackingEnabled()) {
                     clean |= ensureAttributeValue(root, CONTAINS_TASKLIST_DATA, "true", true);
                     clean |= ensureAttributeValue(root, CONTAINS_TASKLIST_DEPENDENCY_DATA, "true", true);
-                    }
-                } else {
-                    ensureAttributeValue(root, CONTAINS_TASKLIST_DATA, null, false);
-                    ensureAttributeValue(root, CONTAINS_TASKLIST_DEPENDENCY_DATA, null, false);
                 }
             }
 

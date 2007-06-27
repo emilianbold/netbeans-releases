@@ -92,13 +92,10 @@ import javax.tools.JavaCompiler;
 import javax.tools.JavaFileObject;
 import javax.tools.ToolProvider;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.java.source.ClasspathInfo.PathKind;
 import org.netbeans.api.java.source.ModificationResult.Difference;
-import org.netbeans.api.lexer.Language;
-import org.netbeans.api.timers.TimesCollector;
 import org.netbeans.editor.Registry;
 import org.netbeans.modules.java.source.JavaFileFilterQuery;
 import org.netbeans.modules.java.source.builder.ASTService;
@@ -1038,7 +1035,8 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
             options.add("-XDbackgroundCompilation");    //NOI18N
             options.add("-XDcompilePolicy=byfile");     //NOI18N
         }
-        options.add("-g:"); // NOI18N, Enable some debug info
+        options.add("-XDide");   // NOI18N, javac runs inside the IDE
+        options.add("-g:");      // NOI18N, Enable some debug info
         options.add("-g:lines"); // NOI18N, Make the compiler to maintain line table
         options.add("-g:vars");  // NOI18N, Make the compiler to maintain local variables table
         options.add("-source");  // NOI18N
@@ -1174,7 +1172,7 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
             }
             if (currentPhase == Phase.RESOLVED && phase.compareTo(Phase.UP_TO_DATE)>=0) {
                 currentPhase = Phase.UP_TO_DATE;
-            }          
+            }
         } catch (CouplingAbort a) {
             RepositoryUpdater.couplingAbort(a, currentInfo.jfo);
             currentInfo.needsRestart = true;
@@ -1194,12 +1192,13 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
         } catch (RuntimeException ex) {
             currentPhase = Phase.MODIFIED;
             dumpSource(currentInfo, ex);
-            throw ex;
+            throw ex;        
         } catch (Error ex) {
             currentPhase = Phase.MODIFIED;
             dumpSource(currentInfo, ex);
             throw ex;
         }
+
         finally {
             if (isMultiFiles) {
                 assert lm != null;
