@@ -213,12 +213,10 @@ Microsystems, Inc. All Rights Reserved.
             <folder name="x-jsp">
                 <folder name="Popup">
                     <!-- WebServiceActionGroup -->
-                    <!--
                     <file name="SeparatoBeforeWSClient.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="9600"/>
                     </file>
-                    -->
                     <file name="org-netbeans-modules-websvc-core-webservices-action-WebServiceClientActionGroup.instance">
                         <attr name="position" intvalue="9610"/>
                     </file>
