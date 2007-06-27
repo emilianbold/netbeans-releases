@@ -276,32 +276,6 @@ public final class ProjectWebModule extends J2eeModuleProvider
         return this;
     }
 
-    //is this method somewhere used???
-    public FileObject findDeploymentConfigurationFile(String name) {
-        if (name == null) {
-            return null;
-        }
-        name = getConfigSupport().getContentRelativePath(name);
-        if (name == null) {
-            return null;
-        }
-      
-        if (name.startsWith("WEB-INF/")) { //NOI18N
-            name = name.substring(8); //removing "WEB-INF/"            
-            FileObject webInf = getWebInf();
-            if (webInf == null) {
-                return null;
-            }
-            return webInf.getFileObject(name);
-        } else {
-            FileObject documentBase = getDocumentBase();
-            if (documentBase == null) {
-                return null;
-            }
-            return documentBase.getFileObject(name);
-        }
-    }
-
     public File getDeploymentConfigurationFile(String name) {
         assert name != null : "File name of the deployement configuration file can't be null"; //NOI18N
         

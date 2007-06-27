@@ -137,14 +137,6 @@ public final class EjbJarProvider extends J2eeModuleProvider
     public File getResourceDirectory() {
         return getFile(EjbJarProjectProperties.RESOURCE_DIR);
     }
-
-    public FileObject findDeploymentConfigurationFile(String name) {
-        FileObject metaInf = getMetaInf();
-        if (metaInf == null) {
-            return null;
-        }
-        return metaInf.getFileObject(name);
-    }
     
     public File getDeploymentConfigurationFile(String name) {
         return new File(getMetaInfAsFile(), name);

@@ -464,11 +464,6 @@ public final class ProjectEar extends J2eeApplicationProvider
         File configFolder = FileUtil.toFile(moduleFolder);
         return new File(configFolder, name);
     }
-
-    public FileObject findDeploymentConfigurationFile (String name) {
-        FileObject moduleFolder = getMetaInf();
-        return moduleFolder == null ? null : moduleFolder.getFileObject(name);
-    }
     
     public void addEjbJarModule(EjbJar module) {
         FileObject childFO = module.getDeploymentDescriptor();

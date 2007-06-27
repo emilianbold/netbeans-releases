@@ -137,14 +137,6 @@ public final class AppClientProvider extends J2eeModuleProvider
         return getFile(AppClientProjectProperties.RESOURCE_DIR);
     }
     
-    public FileObject findDeploymentConfigurationFile(String name) {
-        FileObject metaInf = getMetaInf();
-        if (metaInf == null) {
-            return null;
-        }
-        return metaInf.getFileObject(name);
-    }
-    
     public File getDeploymentConfigurationFile(String name) {
         return new File(getMetaInfAsFile(), name);
     }
