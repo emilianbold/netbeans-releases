@@ -2,6 +2,7 @@ netbeans5.5 (5.5.1-2) gutsy; urgency=low
 
   * Fix logic in postinstall step for IDE package. It patches netbeans.conf 
     with netbeans_jdkhome pointing to Sun JDK 6 or 5.
+  * debian/rules 'clean' target delete auxiliary files generated during package build
 
  -- Marek Slama <marek.slama@sun.com>  Mon, 22 Jun 2007 14:11:22 +0200
 
