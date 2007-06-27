@@ -519,6 +519,12 @@ public class JaxWsChildren extends Children.Keys/* implements MDRChangeListener 
                                         JaxWsChildren.this.implClass=newImplClass;
                                     }
                                     parent.refreshImplClass();
+                                    if(wsdlPort.isProvider()){
+                                        parent.closeMultiView();
+                                        parent.replaceMultiViewCookie();
+                                    }else{
+                                        parent.addMultiViewCookie();
+                                    }
                                     
                                 }
                             }

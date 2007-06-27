@@ -23,6 +23,7 @@ import java.awt.Image;
 import java.awt.datatransfer.Transferable;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.InvocationTargetException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
@@ -36,6 +37,7 @@ import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.swing.Action;
+import javax.swing.SwingUtilities;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
@@ -89,6 +91,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.AbstractNode;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
@@ -102,7 +105,9 @@ import org.netbeans.modules.websvc.core.wseditor.support.EditWSAttributesCookieI
 import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
 import org.openide.NotifyDescriptor;
 import org.openide.actions.EditAction;
+import org.openide.cookies.EditCookie;
 import org.openide.filesystems.FileLock;
+import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 
 public class JaxWsNode extends AbstractNode implements JaxWsWsdlCookie, JaxWsTesterCookie, JaxWsRefreshCookie,
@@ -146,9 +151,53 @@ public class JaxWsNode extends AbstractNode implements JaxWsWsdlCookie, JaxWsTes
     }
     
     private static final Lookup.Result<MultiViewCookieProvider> multiviewCookieProviders =
-        Lookup.getDefault().lookup(new Lookup.Template<MultiViewCookieProvider>(MultiViewCookieProvider.class));
+            Lookup.getDefault().lookup(new Lookup.Template<MultiViewCookieProvider>(MultiViewCookieProvider.class));
     
-    /** 
+    public void replaceMultiViewCookie(){
+        MultiViewCookie mvCookie = getCookie(MultiViewCookie.class);
+        if(mvCookie != null){
+            content.remove(mvCookie);
+            content.add(getCookieFromImplBean(OpenCookie.class));
+            content.add(getCookieFromImplBean(EditCookie.class));
+        }
+    }
+    
+    public void closeMultiView(){
+        final MultiViewCookie mvCookie = getCookie(MultiViewCookie.class);
+        if(mvCookie != null){
+            try {
+                javax.swing.SwingUtilities.invokeAndWait(new java.lang.Runnable() {
+                    public void run() {
+                        mvCookie.close();
+                    }
+                });
+            } catch (InterruptedException ex) {
+                ErrorManager.getDefault().notify(ex);
+            } catch (InvocationTargetException ex) {
+                 ErrorManager.getDefault().notify(ex);
+            }
+        }
+    }
+    
+    public void addMultiViewCookie(){
+        MultiViewCookie mvCookie = getCookie(MultiViewCookie.class);
+        if(mvCookie == null){
+            OpenCookie open = getCookie(OpenCookie.class);
+            if(open != null){
+                content.remove(open);
+            }
+            EditCookie edit = getCookie(EditCookie.class);
+            if(edit != null){
+                content.remove(edit);
+            }
+            mvCookie = getMultiViewCookie(service, getDataObject());
+            content.add(mvCookie);
+        }
+    }
+    
+    
+    
+    /**
      * Find MultiViewCookie for given this node
      */
     public static MultiViewCookie getMultiViewCookie(Service service, DataObject dataObject) {
@@ -204,7 +253,7 @@ public class JaxWsNode extends AbstractNode implements JaxWsWsdlCookie, JaxWsTes
     public Image getOpenedIcon(int type){
         return getIcon( type);
     }
-
+    
     private DataObject getDataObject() {
         FileObject f = getImplBean();
         if (f != null) {
@@ -216,21 +265,36 @@ public class JaxWsNode extends AbstractNode implements JaxWsWsdlCookie, JaxWsTes
         }
         return null;
     }
-
+    
+    private <T extends Node.Cookie> T getCookieFromImplBean(Class<T> type){
+        T oc = null;
+        FileObject f = getImplBean();
+        if (f != null) {
+            try {
+                DataObject d = DataObject.find(f);
+                oc = (T)d.getCookie(type);
+            } catch (DataObjectNotFoundException de) {
+                ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, de.toString());
+            }
+        }
+        return oc;
+    }
+    
     private OpenCookie getOpenCookie() {
         OpenCookie oc = null;
         FileObject f = getImplBean();
-            if (f != null) {
-                try {
-                    DataObject d = DataObject.find(f);
-                    oc = (OpenCookie)d.getCookie(OpenCookie.class);
-                } catch (DataObjectNotFoundException de) {
-                    ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, de.toString());
-                }
+        if (f != null) {
+            try {
+                DataObject d = DataObject.find(f);
+                oc = (OpenCookie)d.getCookie(OpenCookie.class);
+            } catch (DataObjectNotFoundException de) {
+                ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, de.toString());
             }
-        //}
+        }
         return oc;
     }
+    
+    
     
     public Action getPreferredAction() {
         return SystemAction.get(OpenAction.class);
@@ -313,11 +377,11 @@ public class JaxWsNode extends AbstractNode implements JaxWsWsdlCookie, JaxWsTes
         }
         if(J2eeModule.WAR.equals(moduleType)) {
             J2eeModuleProvider.ConfigSupport configSupport = provider.getConfigSupport();
-	    try {
-		contextRoot = configSupport.getWebContextRoot();
-	    } catch (ConfigurationException e) {
-		// TODO the context root value could not be read, let the user know about it
-	    }
+            try {
+                contextRoot = configSupport.getWebContextRoot();
+            } catch (ConfigurationException e) {
+                // TODO the context root value could not be read, let the user know about it
+            }
             if(contextRoot != null && contextRoot.startsWith("/")) { //NOI18N
                 contextRoot = contextRoot.substring(1);
             }
@@ -376,12 +440,12 @@ public class JaxWsNode extends AbstractNode implements JaxWsWsdlCookie, JaxWsTes
                     SourceUtils srcUtils = SourceUtils.newInstance(controller);
                     TypeElement wsElement = controller.getElements().getTypeElement("javax.jws.WebService"); //NOI18N
                     if (srcUtils!=null && wsElement!=null) {
-                        boolean foundWsAnnotation = resolveServiceUrl(  moduleType, 
-                                                                        controller, 
-                                                                        srcUtils, 
-                                                                        wsElement, 
-                                                                        serviceName, 
-                                                                        name);
+                        boolean foundWsAnnotation = resolveServiceUrl(  moduleType,
+                                controller,
+                                srcUtils,
+                                wsElement,
+                                serviceName,
+                                name);
                         if (!foundWsAnnotation) {
                             TypeElement wsProviderElement = controller.getElements().getTypeElement("javax.xml.ws.WebServiceProvider"); //NOI18N
                             List<? extends AnnotationMirror> annotations = srcUtils.getTypeElement().getAnnotationMirrors();
@@ -393,7 +457,7 @@ public class JaxWsNode extends AbstractNode implements JaxWsWsdlCookie, JaxWsTes
                         }
                     }
                 }
-
+                
                 public void cancel() {}
             };
             try {
@@ -404,13 +468,13 @@ public class JaxWsNode extends AbstractNode implements JaxWsWsdlCookie, JaxWsTes
         }
         
         String qualifiedImplClassName = service.getImplementationClass();
-        String implClassName = getNameFromPackageName(qualifiedImplClassName);        
+        String implClassName = getNameFromPackageName(qualifiedImplClassName);
         if (serviceName[0]==null) {
             serviceName[0]=URLEncoder.encode(implClassName+"Service","UTF-8"); //NOI18N
         }
         if (J2eeModule.WAR.equals(moduleType)) {
             return serviceName[0];
-        } else if (J2eeModule.EJB.equals(moduleType)) {      
+        } else if (J2eeModule.EJB.equals(moduleType)) {
             if (name[0]==null){
                 if(isProvider[0]){
                     //per JSR 109, use qualified impl class name for EJB
@@ -421,16 +485,16 @@ public class JaxWsNode extends AbstractNode implements JaxWsWsdlCookie, JaxWsTes
                 name[0] = URLEncoder.encode(name[0],"UTF-8"); //NOI18N
             }
             return serviceName[0]+"/"+ name[0];
-        } else 
+        } else
             return serviceName[0];
     }
     
-    private boolean resolveServiceUrl(  Object moduleType, 
-                                        CompilationController controller, 
-                                        SourceUtils srcUtils, 
-                                        TypeElement wsElement, 
-                                        String[] serviceName, 
-                                        String[] name) throws IOException {
+    private boolean resolveServiceUrl(  Object moduleType,
+            CompilationController controller,
+            SourceUtils srcUtils,
+            TypeElement wsElement,
+            String[] serviceName,
+            String[] name) throws IOException {
         boolean foundWsAnnotation = false;
         List<? extends AnnotationMirror> annotations = srcUtils.getTypeElement().getAnnotationMirrors();
         for (AnnotationMirror anMirror : annotations) {
@@ -438,7 +502,7 @@ public class JaxWsNode extends AbstractNode implements JaxWsWsdlCookie, JaxWsTes
                 foundWsAnnotation=true;
                 Map<? extends ExecutableElement, ? extends AnnotationValue> expressions = anMirror.getElementValues();
                 for(ExecutableElement ex:expressions.keySet()) {
-                    if (ex.getSimpleName().contentEquals("serviceName")) { 
+                    if (ex.getSimpleName().contentEquals("serviceName")) {
                         serviceName[0] = (String)expressions.get(ex).getValue();
                         if (serviceName[0]!=null) serviceName[0] = URLEncoder.encode(serviceName[0],"UTF-8"); //NOI18N
                     } else if (ex.getSimpleName().contentEquals("name")) {
@@ -448,7 +512,7 @@ public class JaxWsNode extends AbstractNode implements JaxWsWsdlCookie, JaxWsTes
                     if (serviceName[0]!=null && name[0]!=null) break;
                 }
                 break;
-            } // end if 
+            } // end if
         } // end for
         return foundWsAnnotation;
     }
@@ -614,7 +678,7 @@ public class JaxWsNode extends AbstractNode implements JaxWsWsdlCookie, JaxWsTes
                     isNew[0] = false;
                     Map<? extends ExecutableElement, ? extends AnnotationValue> expressions = handlerAnnotation.getElementValues();
                     for(ExecutableElement ex:expressions.keySet()) {
-                        if (ex.getSimpleName().contentEquals("file")) { 
+                        if (ex.getSimpleName().contentEquals("file")) {
                             handlerFileName[0] = (String)expressions.get(ex).getValue();
                             break;
                         }
@@ -655,7 +719,7 @@ public class JaxWsNode extends AbstractNode implements JaxWsWsdlCookie, JaxWsTes
             }
         }
         final MessageHandlerPanel panel = new MessageHandlerPanel(project,
-               handlerClasses, true, service.getName());
+                handlerClasses, true, service.getName());
         String title = NbBundle.getMessage(JaxWsNode.class,"TTL_MessageHandlerPanel");
         DialogDescriptor dialogDesc = new DialogDescriptor(panel, title);
         dialogDesc.setButtonListener(new HandlerButtonListener( panel,
@@ -663,7 +727,7 @@ public class JaxWsNode extends AbstractNode implements JaxWsWsdlCookie, JaxWsTes
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDesc);
         dialog.setVisible(true);
     }
-  
+    
     static AnnotationMirror getAnnotation(CompilationController controller, SourceUtils srcUtils, String annotationType) {
         TypeElement anElement = controller.getElements().getTypeElement(annotationType);
         if (anElement!=null) {

@@ -86,6 +86,7 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import java.util.Iterator;
+import org.openide.cookies.EditCookie;
 
 /**
  *
@@ -142,57 +143,125 @@ public class JaxWsUtils {
     
     
     public static void generateProviderImplClass(Project project, FileObject targetFolder,
-            String targetName, WsdlService service, WsdlPort port, String serviceID) throws Exception{
-        // Retouche
-        //        initProjectInfo(project);
-        //        JAXWSSupport jaxWsSupport = JAXWSSupport.getJAXWSSupport(project.getProjectDirectory());
-        //        String wsdlLocation = jaxWsSupport.getWsdlLocation(serviceID);
-        //        JavaClass javaClass = null;
-        //        JavaModel.getJavaRepository().beginTrans(true);
-        //
-        //        try{
-        //            javaClass = JMIGenerationUtil.createClass(targetFolder, targetName);
-        //            //Initially, Provider<Source> will be implemented. The user can then change the Provider type if he/she wishes
-        //            JMIUtils.addInterface(javaClass, "javax.xml.ws.Provider<Source>"); //NOI18N
-        //
-        //            if (projectType == EJB_PROJECT_TYPE) {//EJB project
-        //                Annotation statelessAnnotation = JMIGenerationUtil.createAnnotation(javaClass, "javax.ejb.Stateless", Collections.EMPTY_LIST); //NOI18N
-        //                javaClass.getAnnotations().add(statelessAnnotation);
-        //            }
-        //
-        //            //Initially, set mode to PAYLOAD. The user can then change if he/she wishes
-        //            AttributeValue serviceModeValue = JMIGenerationUtil.createAttributeValue(javaClass, "value", "javax.xml.ws.Service.Mode", "PAYLOAD"); //NOI18N
-        //            ArrayList attrList = new ArrayList();
-        //            attrList.add(serviceModeValue);
-        //            Annotation serviceModeAnnotation = JMIGenerationUtil.createAnnotation(javaClass, "javax.xml.ws.ServiceMode", attrList); //NOI18N
-        //            javaClass.getAnnotations().add(serviceModeAnnotation);
-        //
-        //            AttributeValue wsdlLocationValue = JMIGenerationUtil.createAttributeValue(javaClass, "wsdlLocation", wsdlLocation );
-        //            AttributeValue serviceNameAttibuteValue = JMIGenerationUtil.createAttributeValue(javaClass, "serviceName", service.getName()); //NOI18N
-        //            AttributeValue targetNamespaceAttibuteValue = JMIGenerationUtil.createAttributeValue(javaClass, "targetNamespace", port.getNamespaceURI()); //NOI18N
-        //            AttributeValue portNameAttibuteValue = JMIGenerationUtil.createAttributeValue(javaClass, "portName", port.getName()); //NOI18N
-        //            attrList = new ArrayList();
-        //            attrList.add(wsdlLocationValue);
-        //            attrList.add(serviceNameAttibuteValue);
-        //            attrList.add(targetNamespaceAttibuteValue);
-        //            attrList.add(portNameAttibuteValue);
-        //            Annotation serviceProviderAnnotation = JMIGenerationUtil.createAnnotation(javaClass, "javax.xml.ws.WebServiceProvider", attrList); //NOI18N
-        //            javaClass.getAnnotations().add(serviceProviderAnnotation);
-        //            String returnType = "javax.xml.transform.Source";  //NOI18N
-        //            String operationName = "invoke";   //NOI18N
-        //            Method op = JMIGenerationUtil.createMethod(javaClass, operationName, Modifier.PUBLIC, returnType);
-        //            Parameter param = JMIGenerationUtil.createParameter(javaClass, "source", returnType);  //NOI18N
-        //            op.getParameters().add(param);
-        //            op.setBodyText("//TODO implement this method\nreturn null;");  //NOI18N
-        //            javaClass.getFeatures().add(op);
-        //        }finally{
-        //            JavaModel.getJavaRepository().endTrans();
-        //        }
-        //
-        //        FileObject fo = JavaModel.getFileObject(javaClass.getResource());
-        //        //open in the editor
-        //        DataObject dobj = DataObject.find(fo);
-        //        openFileInEditor(dobj);
+            String targetName, final WsdlService service, final WsdlPort port, String serviceID) throws Exception{
+        
+        JAXWSSupport jaxWsSupport = JAXWSSupport.getJAXWSSupport(project.getProjectDirectory());
+        
+        FileObject implClassFo = GenerationUtils.createClass(targetFolder, targetName, null);
+        
+        ClassPath classPath = ClassPath.getClassPath(implClassFo, ClassPath.SOURCE);
+        String serviceImplPath = classPath.getResourceName(implClassFo, '.', false);
+        String portJavaName = port.getJavaName();
+        String artifactsPckg = portJavaName.substring(0, portJavaName.lastIndexOf("."));
+        
+        final String wsdlLocation = jaxWsSupport.getWsdlLocation(serviceID);
+        JavaSource targetSource = JavaSource.forFileObject(implClassFo);
+        CancellableTask<WorkingCopy> task = new CancellableTask<WorkingCopy>() {
+            
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                GenerationUtils genUtils = GenerationUtils.newInstance(workingCopy);
+                if (genUtils!=null) {
+                    TreeMaker make = workingCopy.getTreeMaker();
+                    ClassTree javaClass = genUtils.getClassTree();
+                    
+                    // add implementation clause
+                    ExpressionTree implClause = make.Identifier("javax.xml.ws.Provider<javax.xml.transform.Source>"); //NOI18N
+                    ClassTree modifiedClass = make.addClassImplementsClause(javaClass, implClause);
+                    
+                    // add @Stateless annotation
+                    if (projectType == EJB_PROJECT_TYPE) {//EJB project
+                        TypeElement StatelessAn = workingCopy.getElements().getTypeElement("javax.ejb.Stateless"); //NOI18N
+                        AnnotationTree StatelessAnnotation = make.Annotation(
+                                make.QualIdent(StatelessAn),
+                                Collections.<ExpressionTree>emptyList()
+                                );
+                        modifiedClass = genUtils.addAnnotation(modifiedClass, StatelessAnnotation);
+                    }
+                    TypeElement serviceModeAn = workingCopy.getElements().getTypeElement("javax.xml.ws.ServiceMode"); //NOI18N
+                    List<ExpressionTree> attrs = new ArrayList<ExpressionTree>();
+                    IdentifierTree idTree = make.Identifier("javax.xml.ws.Service.Mode.PAYLOAD");
+                    attrs.add(
+                            make.Assignment(make.Identifier("value"), idTree));
+                    AnnotationTree serviceModeAnnotation = make.Annotation(
+                            make.QualIdent(serviceModeAn),
+                            attrs
+                            );
+                    modifiedClass = genUtils.addAnnotation(modifiedClass, serviceModeAnnotation);
+                    
+                    TypeElement wsProviderAn = workingCopy.getElements().getTypeElement("javax.xml.ws.WebServiceProvider"); //NOI18N
+                    attrs = new ArrayList<ExpressionTree>();
+                    attrs.add(
+                            make.Assignment(make.Identifier("serviceName"), make.Literal(service.getName()))); //NOI18N
+                    attrs.add(
+                            make.Assignment(make.Identifier("portName"), make.Literal(port.getName()))); //NOI18N
+                    attrs.add(
+                            make.Assignment(make.Identifier("targetNamespace"), make.Literal(port.getNamespaceURI()))); //NOI18N
+                    attrs.add(
+                            make.Assignment(make.Identifier("wsdlLocation"), make.Literal(wsdlLocation))); //NOI18N
+                    
+                    AnnotationTree providerAnnotation = make.Annotation(
+                            make.QualIdent(wsProviderAn),
+                            attrs
+                            );
+                    modifiedClass = genUtils.addAnnotation(modifiedClass, providerAnnotation);
+                    
+                    String type= "javax.xml.transform.Source";
+                    List<VariableTree> params = new ArrayList<VariableTree>();
+                    params.add(make.Variable(
+                            make.Modifiers(
+                            Collections.<Modifier>emptySet(),
+                            Collections.<AnnotationTree>emptyList()
+                            ),
+                            "source", // name
+                            make.Identifier(type), // parameter type
+                            null // initializer - does not make sense in parameters.
+                            ));//);
+                    // create method
+                    ModifiersTree methodModifiers = make.Modifiers(
+                            Collections.<Modifier>singleton(Modifier.PUBLIC),
+                            Collections.<AnnotationTree>emptyList()
+                            );
+                    MethodTree method = make.Method(
+                            methodModifiers, // public
+                            "invoke", // operation name
+                            make.Identifier(type), // return type
+                            Collections.<TypeParameterTree>emptyList(), // type parameters - none
+                            params,
+                            Collections.<ExpressionTree>emptyList(), // throws
+                            "{ //TODO implement this method\nthrow new UnsupportedOperationException(\"Not implemented yet.\") }", // body text
+                            null // default value - not applicable here, used by annotations
+                            );
+                    
+                    modifiedClass =  make.addClassMember(modifiedClass, method);
+                    workingCopy.rewrite(javaClass, modifiedClass);
+                }
+            }
+            
+            public void cancel() {
+            }
+        };
+        targetSource.runModificationTask(task).commit();
+        //open in editor
+        
+        DataObject dobj = DataObject.find(implClassFo);
+        List<Service> services = jaxWsSupport.getServices();
+        if (serviceID!=null) {
+            for (Service serv:services) {
+                if (serviceID.equals(serv.getName())) {
+                    
+                    final EditCookie editCookie = dobj.getCookie(EditCookie.class);
+                    if (editCookie!=null) {
+                        RequestProcessor.getDefault().post(new Runnable(){
+                            public void run(){
+                                editCookie.edit();
+                            }
+                        }, 1000);
+                        break;
+                    }
+                }
+            }
+        }
     }
     
     private static void generateJaxWsImplClass(Project project, FileObject targetFolder, String targetName, URL wsdlURL, final WsdlService service, final WsdlPort port, boolean addService, String serviceID) throws Exception {
@@ -212,7 +281,7 @@ public class JaxWsUtils {
         if (addService) {
             serviceID = jaxWsSupport.addService(targetName, serviceImplPath, wsdlURL.toString(), service.getName(), port.getName(), artifactsPckg, jsr109Supported && Util.isJavaEE5orHigher(project));
         }
- 
+        
         final String wsdlLocation = jaxWsSupport.getWsdlLocation(serviceID);
         JavaSource targetSource = JavaSource.forFileObject(implClassFo);
         CancellableTask<WorkingCopy> task = new CancellableTask<WorkingCopy>() {
@@ -480,7 +549,7 @@ public class JaxWsUtils {
         return packageName;
     }
     
- 
+    
     private static void initProjectInfo(Project project) {
         JAXWSSupport wss = JAXWSSupport.getJAXWSSupport(project.getProjectDirectory());
         if (wss != null) {
