@@ -32,6 +32,9 @@ import javax.swing.JPanel;
 import javax.swing.Popup;
 import javax.swing.PopupFactory;
 import javax.swing.SwingUtilities;
+import org.netbeans.modules.form.RADComponent;
+import org.netbeans.modules.form.RADContainer;
+import org.netbeans.modules.form.RADVisualContainer;
 import org.netbeans.modules.form.menu.VisualDesignerJPanelPopup;
 
 /** A PopupFactory which returns VisualDesignerJPanelPopup's
@@ -44,7 +47,7 @@ class VisualDesignerPopupFactory extends PopupFactory {
     public Map<JMenu, JPanel> containerMap;
     private Map<JMenu, VisualDesignerJPanelPopup> popupMap;
     
-    public MenuEditLayer canvas;
+    private MenuEditLayer canvas;
     
     public VisualDesignerPopupFactory(MenuEditLayer canvas) {
         containerMap = new HashMap<JMenu, JPanel>();
@@ -53,7 +56,6 @@ class VisualDesignerPopupFactory extends PopupFactory {
     }
     
     public Popup getPopup(Component owner, Component contents, int x, int y) throws IllegalArgumentException {
-        //p("getting a popup factory: " + owner + " " + contents + " " + x + " " + y);
         
         final JMenu menu = (JMenu) owner;
         p("creating a popup for: " + menu.getText());
@@ -62,11 +64,16 @@ class VisualDesignerPopupFactory extends PopupFactory {
         JPanel cont = containerMap.get(menu);
         
         if (cont == null) {
-            cont = new VisualDesignerJPanelContainer(menu);
+            cont = new VisualDesignerJPanelContainer(menu,this);
             cont.setLayout(new BoxLayout(cont, BoxLayout.Y_AXIS));//GridLayout(10,1));
-            for(Component c : menu.getMenuComponents()) {
-                cont.add(c);
+            
+            
+            RADVisualContainer menuRAD = (RADVisualContainer) canvas.formDesigner.getMetaComponent(menu);
+            for(RADComponent c : menuRAD.getSubBeans()) {
+                JComponent comp = (JComponent) canvas.formDesigner.getComponent(c);
+                cont.add(comp);
             }
+            
             cont.setBorder(BorderFactory.createLineBorder(Color.BLACK));
             containerMap.put(menu,cont);
             canvas.layers.add(cont, JLayeredPane.DEFAULT_LAYER);
@@ -125,7 +132,7 @@ class VisualDesignerPopupFactory extends PopupFactory {
         cont.setLocation(pt);
     }
     
-    private void p(String string) {
+    private static void p(String string) {
         if(DEBUG) {
             System.out.println(string);
         }
@@ -147,18 +154,20 @@ class VisualDesignerPopupFactory extends PopupFactory {
         return canvas.isAncestor(menu, m);
     }
     
-    private class VisualDesignerJPanelContainer extends JPanel {
-        JMenu menu;
-        VisualDesignerJPanelContainer(JMenu menu) {
+    private static class VisualDesignerJPanelContainer extends JPanel {
+        private JMenu menu;
+        private VisualDesignerPopupFactory fact;
+        VisualDesignerJPanelContainer(JMenu menu, VisualDesignerPopupFactory fact) {
             this.menu = menu;
+            this.fact = fact;
         }
         public void setVisible(boolean visible) {
             // if making visible
             if(visible) {
                 // make sure the other menus are hidden
-                hideOtherMenus(menu);
+                fact.hideOtherMenus(menu);
                 // make sure this menu popup is at the right place
-                setLocationFromMenu(menu,this);
+                fact.setLocationFromMenu(menu,this);
                 // repack?
             }
             super.setVisible(visible);
