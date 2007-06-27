@@ -24,6 +24,7 @@ import gui.window.WebFormDesignerOperator;
 import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
+import org.netbeans.jemmy.JemmyProperties;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JTableOperator;
@@ -110,9 +111,13 @@ public class CreateWebPackProject extends org.netbeans.performance.test.utilitie
     
     public ComponentOperator open(){
         log("::open");
-        PerformanceCounters.addPerformanceCounter("Wait Wizard closed");
+        PerformanceCounters.addPerformanceCounter("Wait Wizard closed");        
         wizard_location.finish();
+        
+        long oldTimeout = JemmyProperties.getCurrentTimeouts().getTimeout("ComponentOperator.WaitStateTimeout");
+        JemmyProperties.getCurrentTimeouts().setTimeout("ComponentOperator.WaitStateTimeout",120000);        
         wizard_location.waitClosed();
+        JemmyProperties.getCurrentTimeouts().setTimeout("ComponentOperator.WaitStateTimeout",oldTimeout);        
         
         PerformanceCounters.endPerformanceCounter("Wait Wizard closed");
         PerformanceCounters.addPerformanceCounter("Wait document");
