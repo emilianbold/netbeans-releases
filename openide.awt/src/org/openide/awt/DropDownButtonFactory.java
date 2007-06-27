@@ -47,7 +47,7 @@ public final class DropDownButtonFactory {
     /**
      * Creates JButton with a small arrow that shows the provided popup menu when clicked.
      * 
-     * @param icon The default icon, can be null
+     * @param icon The default icon, cannot be null
      * @param dropDownMenu Popup menu to display when the arrow is clicked. If this parameter is null
      * then the button doesn't show any arrow and behaves like a regular JButton. It is possible to add
      * the popup menu later using PROP_DROP_DOWN_MENU client property.
@@ -60,7 +60,7 @@ public final class DropDownButtonFactory {
     /**
      * Creates JToggleButton with a small arrow that shows the provided popup menu when clicked.
      * 
-     * @param icon The default icon, can be null
+     * @param icon The default icon, cannot be null
      * @param dropDownMenu Popup menu to display when the arrow is clicked. If this parameter is null
      * then the button doesn't show any arrow and behaves like a regular JToggleButton. It is possible to add
      * the popup menu later using PROP_DROP_DOWN_MENU client property.
