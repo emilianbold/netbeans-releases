@@ -176,7 +176,7 @@ public class Installer extends ModuleInstall {
     static boolean isHintsMode() {
         return prefs.getBoolean("autoSubmitWhenFull", false);
     }
-
+    
     static int timesSubmitted() {
         return prefs.getInt("submitted", 0);
     }
@@ -313,7 +313,7 @@ public class Installer extends ModuleInstall {
             }
             f.delete();
         }
-    
+        
         logsSize = 0;
         prefs.putInt("count", 0);
         UIHandler.SUPPORT.firePropertyChange(null, null, null);
@@ -492,7 +492,7 @@ public class Installer extends ModuleInstall {
     private static URL uLogs(ProgressHandle h, URL postURL, String id, Map<String,String> attrs, List<LogRecord> recs) throws IOException {
         h.start(100 + recs.size());
         h.progress(NbBundle.getMessage(Installer.class, "MSG_UploadConnecting")); // NOI18N
-    
+        
         LOG.log(Level.FINE, "uploadLogs, postURL = {0}", postURL); // NOI18N
         URLConnection conn = postURL.openConnection();
         
@@ -612,7 +612,7 @@ public class Installer extends ModuleInstall {
         protected boolean okToExit;
         private URL url;
         private boolean dialogCreated;
-
+        
         public Submit(String msg) {
             this.msg = msg;
             if ("ERROR_URL".equals(msg)) report = true; // NOI18N
@@ -626,9 +626,9 @@ public class Installer extends ModuleInstall {
         protected abstract void viewData();
         protected abstract void assignInternalURL(URL u);
         protected abstract void saveUserName();
-        protected abstract void addMoreLogs(List<? super String> params);
+        protected abstract void addMoreLogs(List<? super String> params, boolean openPasswd);
         protected abstract void showURL(URL externalURL);
-
+        
         
         public void doShow() {
             Logger log = Logger.getLogger("org.netbeans.ui"); // NOI18N
@@ -644,6 +644,10 @@ public class Installer extends ModuleInstall {
             exitMsg = NbBundle.getMessage(Installer.class, "MSG_" + msg + "_EXIT"); // NOI18N
             
             String defaultURI = NbBundle.getMessage(Installer.class, msg);
+            String replace = System.getProperty("org.netbeans.modules.uihandler.LoadURI"); // NOI18N
+            if (replace != null) {
+                defaultURI = replace;
+            }
             LOG.log(Level.FINE, "doShow, exitMsg = {0}, defaultURI = {1}", new Object[] { exitMsg, defaultURI }); // NOI18N
             if (defaultURI == null || defaultURI.length() == 0) {
                 okToExit = true;
@@ -706,7 +710,7 @@ public class Installer extends ModuleInstall {
                 }
                 break;
             }
-
+            
             LOG.log(Level.FINE, "doShow, assignInternalURL = {0}", url);
             assignInternalURL(url);
             
@@ -752,7 +756,7 @@ public class Installer extends ModuleInstall {
                 // dialog created let the code go on
                 notifyAll();
             }
-
+            
             LOG.log(Level.FINE, "run, showDialogAndGetValue");
             Object res = showDialogAndGetValue(dd);
             LOG.log(Level.FINE, "run, showDialogAndGetValue, res = {0}", res);
@@ -779,8 +783,8 @@ public class Installer extends ModuleInstall {
             if (submit) { // NOI18N
                 final List<LogRecord> recs = getLogs();
                 saveUserName();
-                recs.add(getUserData());
-                RP.post (new Runnable() {
+                recs.add(getUserData(true));
+                RP.post(new Runnable() {
                     public void run() {
                         uploadAndPost(recs, url[0]);
                     }
@@ -856,7 +860,7 @@ public class Installer extends ModuleInstall {
         }
         
         
-        protected final LogRecord getUserData() {
+        protected final LogRecord getUserData(boolean openPasswd) {
             LogRecord userData;
             ExceptionsSettings settings = new ExceptionsSettings();
             ArrayList<String> params = new ArrayList<String>(6);
@@ -865,7 +869,7 @@ public class Installer extends ModuleInstall {
             params.add(getVersion());
             saveUserName();
             params.add(settings.getUserName());
-            addMoreLogs(params);
+            addMoreLogs(params, openPasswd);
             userData = new LogRecord(Level.CONFIG, USER_CONFIGURATION);
             userData.setResourceBundle(NbBundle.getBundle(Installer.class));
             userData.setResourceBundleName(Installer.class.getPackage().getName()+".Bundle");
@@ -882,11 +886,11 @@ public class Installer extends ModuleInstall {
         }
         
         private String getVersion(){
-            String str = "";
+            String str = ""; // NOI18N
             try {
                 str = MessageFormat.format(
-                    NbBundle.getBundle("org.netbeans.core.startup.Bundle").getString("currentVersion"), // NOI18N
-                    new Object[] {System.getProperty("netbeans.buildnumber")} // NOI18N
+                        NbBundle.getBundle("org.netbeans.core.startup.Bundle").getString("currentVersion"), // NOI18N
+                        new Object[] {System.getProperty("netbeans.buildnumber")} // NOI18N
                 );
             } catch (MissingResourceException ex) {
                 LOG.log(Level.FINE, ex.getMessage(), ex);
@@ -959,14 +963,14 @@ public class Installer extends ModuleInstall {
             d.setVisible(false);
             d = null;
         }
-
+        
         protected void viewData() {
             if (panel == null) {
                 panel = new SubmitPanel();
                 AbstractNode root = new AbstractNode(new Children.Array());
                 root.setName("root"); // NOI18N
                 List<LogRecord> recs = getLogs();
-                recs.add(getUserData());
+                recs.add(getUserData(false));
                 root.setDisplayName(NbBundle.getMessage(Installer.class, "MSG_RootDisplayName", recs.size(), new Date()));
                 root.setIconBaseWithExtension("org/netbeans/modules/uihandler/logs.gif");
                 LinkedList<Node> reverted = new LinkedList<Node>();
@@ -998,18 +1002,20 @@ public class Installer extends ModuleInstall {
             }
         }
         protected void showURL(URL u) {
-            HtmlBrowser.URLDisplayer.getDefault().showURL(u);            
+            HtmlBrowser.URLDisplayer.getDefault().showURL(u);
         }
         protected void saveUserName() {
             if (reportPanel != null && report) {
                 reportPanel.saveUserName();
             }
         }
-        protected void addMoreLogs(List<? super String> params) {
+        
+        protected void addMoreLogs(List<? super String> params, boolean openPasswd) {
             if ((reportPanel != null)&&(report)){
                 params.add(reportPanel.getSummary());
                 params.add(reportPanel.getComment());
-                params.add(new ExceptionsSettings().getPasswd());
+                if (openPasswd) params.add(new ExceptionsSettings().getPasswd());
+                else params.add("*********");
             }
         }
         protected Object showDialogAndGetValue(DialogDescriptor dd) {
@@ -1042,7 +1048,7 @@ public class Installer extends ModuleInstall {
         
         protected void closeDialog() {
         }
-
+        
         protected void viewData() {
             assert false;
         }
@@ -1055,7 +1061,7 @@ public class Installer extends ModuleInstall {
         }
         protected void saveUserName() {
         }
-        protected void addMoreLogs(List<? super String> params) {
+        protected void addMoreLogs(List<? super String> params, boolean openPasswd) {
         }
         protected Object showDialogAndGetValue(DialogDescriptor dd) {
             while (!urlComputed) {
@@ -1082,7 +1088,7 @@ public class Installer extends ModuleInstall {
         }
     } // end SubmitAutomatic
     
-
+    
     private static enum Button {
         EXIT("exit"),
         NEVER_AGAIN("never-again"),
