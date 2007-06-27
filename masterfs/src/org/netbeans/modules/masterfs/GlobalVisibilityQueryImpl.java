@@ -24,7 +24,6 @@ import java.util.prefs.PreferenceChangeListener;
 import org.netbeans.spi.queries.VisibilityQueryImplementation;
 import org.openide.filesystems.FileObject;
 import javax.swing.event.ChangeListener;
-import java.lang.reflect.Method;
 import java.util.prefs.Preferences;
 import java.util.regex.Pattern;
 import org.openide.util.ChangeSupport;
@@ -49,7 +48,6 @@ public class GlobalVisibilityQueryImpl implements VisibilityQueryImplementation 
      * Keep it synchronized with IDESettings.PROP_IGNORED_FILES
      */ 
     private static final String PROP_IGNORED_FILES = "IgnoredFiles"; // NOI18N
-    private static Method mIgnoredFiles;
     private Pattern ignoreFilesPattern = null;
 
     /** Default instance for lookup. */
@@ -66,8 +64,8 @@ public class GlobalVisibilityQueryImpl implements VisibilityQueryImplementation 
     }
 
     boolean isVisible(final String fileName) {
-        Pattern ignoreFilesPattern = getIgnoreFilesPattern();
-        return (ignoreFilesPattern != null) ? !(ignoreFilesPattern.matcher(fileName).find()) : true;
+        Pattern pattern = getIgnoreFilesPattern();
+        return (pattern != null) ? !(pattern.matcher(fileName).find()) : true;
     }
 
     /**
