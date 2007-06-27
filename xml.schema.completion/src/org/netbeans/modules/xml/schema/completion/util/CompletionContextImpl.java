@@ -184,6 +184,10 @@ public class CompletionContextImpl extends CompletionContext {
 
                 //start tag of an element
                 case XMLDefaultTokenContext.TAG_ID:
+                    if(element instanceof EndTag) {
+                        completionType = CompletionType.COMPLETION_TYPE_UNKNOWN;
+                        break;
+                    }
                     if(lastTypedChar == '>') {
                         completionType = CompletionType.COMPLETION_TYPE_UNKNOWN;
                         break;

@@ -38,11 +38,13 @@ public class BasicCompletionTest extends AbstractTestCase {
         TestSuite suite = new TestSuite();
         suite.addTest(new BasicCompletionTest("testPurchaseOrder"));
         suite.addTest(new BasicCompletionTest("testEmptyTag"));
+        suite.addTest(new BasicCompletionTest("testEndtagCompletion"));
+        suite.addTest(new BasicCompletionTest("testSchemaFromRuntimeCatalog"));
+        //suite.addTest(new BasicCompletionTest("testCompletionUsingSchemaFromCatalog"));
         suite.addTest(new BasicCompletionTest("testWildcard1"));
         suite.addTest(new BasicCompletionTest("testWildcard2"));
         suite.addTest(new BasicCompletionTest("testWildcard3"));
         suite.addTest(new BasicCompletionTest("testWildcard4"));
-        suite.addTest(new BasicCompletionTest("testSchemaFromRuntimeCatalog"));
         suite.addTest(new BasicCompletionTest("testChildren1"));
         suite.addTest(new BasicCompletionTest("testChildren2"));
         return suite;
@@ -52,7 +54,7 @@ public class BasicCompletionTest extends AbstractTestCase {
      * Queries elements.
      */
     public void testPurchaseOrder() throws Exception {
-        StringBuffer buffer = new StringBuffer();        
+        StringBuffer buffer = new StringBuffer();
         buffer.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"); //offset=39
         buffer.append("<po:purchaseOrder xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"); //offset=72
         buffer.append("  xmlns:po=\"http://xml.netbeans.org/schema/PO\"\n"); //offset=47
@@ -62,6 +64,23 @@ public class BasicCompletionTest extends AbstractTestCase {
         setupCompletion(PO_INSTANCE_DOCUMENT, buffer);
         List<CompletionResultItem> items = query(227);
         String[] expectedResult = {"po:shipTo", "po:billTo", "po:comment", "po:items"};
+        assertResult(items, expectedResult);
+    }
+    
+    /**
+     * Queries elements.
+     */
+    public void testEndtagCompletion() throws Exception {
+        StringBuffer buffer = new StringBuffer();
+        buffer.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"); //offset=39
+        buffer.append("<po:purchaseOrder xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"); //offset=72
+        buffer.append("  xmlns:po=\"http://xml.netbeans.org/schema/PO\"\n"); //offset=47
+        buffer.append("  xsi:schemaLocation=\"http://xml.netbeans.org/schema/PO PO.xsd\">\n"); //offset=65
+        buffer.append("  <po:billTo></p\n"); //offset=16
+        buffer.append("</po:purchaseOrder>\n");
+        setupCompletion(PO_INSTANCE_DOCUMENT, buffer);
+        List<CompletionResultItem> items = query(239);
+        String[] expectedResult = null;
         assertResult(items, expectedResult);
     }
     
@@ -82,16 +101,48 @@ public class BasicCompletionTest extends AbstractTestCase {
         assertResult(items, expectedResult);
     }
     
+    public void testSchemaFromRuntimeCatalog() throws Exception {
+        StringBuffer buffer = new StringBuffer();
+        buffer.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"); //offset=39
+        buffer.append("<persistence xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"); //offset=67
+        buffer.append("  xmlns=\"http://java.sun.com/xml/ns/persistence\"\n"); //offset=49
+        buffer.append("  xsi:schemaLocation=\"http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_1_0.xsd\">\n"); //offset=122
+        buffer.append("  <persistence-unit>\n"); //offset=21
+        buffer.append("  <\n"); //offset=06
+        buffer.append("  <persistence-unit>\n"); //offset=21
+        buffer.append("</persistence>");
+        setupCompletion(TEST_INSTANCE_DOCUMENT, buffer);
+        List<CompletionResultItem> items = query(304);
+//        String[] expectedResult = {"C:rootC1", "C:rootC1","B:rootB1", "B:rootB2", "A:rootA1",
+//            "A:rootA2", "A:rootA3", "A:rootA3", "A:A21", "A:A22"};
+//        assertResult(items, expectedResult);
+    }
+    
+    public void testCompletionUsingSchemaFromCatalog() throws Exception {
+        StringBuffer buffer = new StringBuffer();
+        buffer.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"); //offset=39
+        buffer.append("<web-app version=\"2.5\"\n"); //offset=23
+        buffer.append("    xmlns=\"http://java.sun.com/xml/ns/javaee\"\n"); //offset=46
+        buffer.append("    xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"); //offset=58
+        buffer.append("    xsi:schemaLocation=\"http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd\">\n"); //offset=110
+        buffer.append("    <\n"); //offset=6
+        buffer.append("</web-app>");
+        setupCompletion(TEST_INSTANCE_DOCUMENT, buffer);
+        List<CompletionResultItem> items = query(280);
+//        String[] expectedResult = {"A:rootA1", "A:rootA2", "A:rootA3", "A:A11", "A:A12"};
+//        assertResult(items, expectedResult);
+    }
+    
     public void testWildcard1() throws Exception {
         StringBuffer buffer = new StringBuffer();
         buffer.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"); //offset=39
         buffer.append("<A:rootA1 xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"); //offset=64
         buffer.append("  xmlns:A=\"http://xml.netbeans.org/schema/TNSA\"\n"); //offset=48
-        buffer.append("  xsi:schemaLocation=\"http://xml.netbeans.org/schema/TNSA A.xsd\">\n");
-        buffer.append("  <\n");
+        buffer.append("  xsi:schemaLocation=\"http://xml.netbeans.org/schema/TNSA A.xsd\">\n"); //offset=66
+        buffer.append("  <\n"); //offset=4
         buffer.append("</A:rootA1>\n");
         setupCompletion(TEST_INSTANCE_DOCUMENT, buffer);
-        List<CompletionResultItem> items = query(222);
+        List<CompletionResultItem> items = query(221);
         String[] expectedResult = {"A:rootA1", "A:rootA2", "A:rootA3", "A:A11", "A:A12"};
         assertResult(items, expectedResult);
     }
@@ -101,8 +152,8 @@ public class BasicCompletionTest extends AbstractTestCase {
         buffer.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"); //offset=39
         buffer.append("<A:rootA1 xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"); //offset=64
         buffer.append("  xmlns:A=\"http://xml.netbeans.org/schema/TNSA\"\n"); //offset=48
-        buffer.append("  xsi:schemaLocation=\"http://xml.netbeans.org/schema/TNSA A.xsd\n");
-        buffer.append("  http://xml.netbeans.org/schema/TNSB B.xsd\">\n");
+        buffer.append("  xsi:schemaLocation=\"http://xml.netbeans.org/schema/TNSA A.xsd\n"); //offset=64
+        buffer.append("  http://xml.netbeans.org/schema/TNSB B.xsd\">\n"); //offset=46
         buffer.append("  <\n");
         buffer.append("</A:rootA1>\n");
         setupCompletion(TEST_INSTANCE_DOCUMENT, buffer);
@@ -149,36 +200,19 @@ public class BasicCompletionTest extends AbstractTestCase {
             "A:rootA2", "A:rootA3", "A:rootA3", "A:A21", "A:A22"};
         assertResult(items, expectedResult);
     }
-        
-    public void testSchemaFromRuntimeCatalog() throws Exception {
-        StringBuffer buffer = new StringBuffer();
-        buffer.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"); //offset=39
-        buffer.append("<persistence xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"); //offset=67
-        buffer.append("  xmlns=\"http://java.sun.com/xml/ns/persistence\"\n"); //offset=49
-        buffer.append("  xsi:schemaLocation=\"http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_1_0.xsd\">\n"); //offset=122
-        buffer.append("  <persistence-unit>\n"); //offset=21
-        buffer.append("  <\n"); //offset=06
-        buffer.append("  <persistence-unit>\n"); //offset=21
-        buffer.append("</persistence>");
-        setupCompletion(TEST_INSTANCE_DOCUMENT, buffer);
-        List<CompletionResultItem> items = query(304);
-//        String[] expectedResult = {"C:rootC1", "C:rootC1","B:rootB1", "B:rootB2", "A:rootA1",
-//            "A:rootA2", "A:rootA3", "A:rootA3", "A:A21", "A:A22"};
-//        assertResult(items, expectedResult);
-    }
-    
+            
     public void testChildren1() throws Exception {
         StringBuffer buffer = new StringBuffer();
         buffer.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"); //offset=39
-        buffer.append("<ns0:component xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"); //offset=70
-        buffer.append("  xmlns:ns0=\"http://xml.netbeans.org/schema/newXMLSchema\"\n"); //offset=59
-        buffer.append("  xsi:schemaLocation=\"http://xml.netbeans.org/schema/newXMLSchema Test.xsd\">\n"); //offset=78
-        buffer.append("  <ns0:uninstallList>\n"); //offset 23
-        buffer.append("  <\n"); //offset 9
+        buffer.append("<ns0:component xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"); //offset=69
+        buffer.append("  xmlns:ns0=\"http://xml.netbeans.org/schema/newXMLSchema\"\n"); //offset=58
+        buffer.append("  xsi:schemaLocation=\"http://xml.netbeans.org/schema/newXMLSchema Test.xsd\">\n"); //offset=77
+        buffer.append("  <ns0:uninstallList>\n"); //offset 22
+        buffer.append("  <\n"); //offset 4
         buffer.append("  </ns0:uninstallList>\n");
         buffer.append("</ns0:component>\n");
         setupCompletion(TEST_INSTANCE_DOCUMENT, buffer);
-        List<CompletionResultItem> items = query(278);
+        List<CompletionResultItem> items = query(269);
         String[] expectedResult = {"ns0:uninstallSteps"};
         assertResult(items, expectedResult);
     }
@@ -186,14 +220,14 @@ public class BasicCompletionTest extends AbstractTestCase {
     public void testChildren2() throws Exception {
         StringBuffer buffer = new StringBuffer();
         buffer.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"); //offset=39
-        buffer.append("<ns0:component xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"); //offset=70
-        buffer.append("  xmlns:ns0=\"http://xml.netbeans.org/schema/newXMLSchema\"\n"); //offset=59
-        buffer.append("  xsi:schemaLocation=\"http://xml.netbeans.org/schema/newXMLSchema Test.xsd\">\n"); //offset=78
-        buffer.append("  <ns0:installList/>\n"); //offset 21
-        buffer.append("  <\n"); //offset 9
+        buffer.append("<ns0:component xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"); //offset=69
+        buffer.append("  xmlns:ns0=\"http://xml.netbeans.org/schema/newXMLSchema\"\n"); //offset=58
+        buffer.append("  xsi:schemaLocation=\"http://xml.netbeans.org/schema/newXMLSchema Test.xsd\">\n"); //offset=77
+        buffer.append("  <ns0:installList/>\n"); //offset 20
+        buffer.append("  <\n"); //offset 4
         buffer.append("</ns0:component>\n");
         setupCompletion(TEST_INSTANCE_DOCUMENT, buffer);
-        List<CompletionResultItem> items = query(276);
+        List<CompletionResultItem> items = query(267);
         String[] expectedResult = {"ns0:installList","ns0:uninstallList"};
         assertResult(items, expectedResult);
     }

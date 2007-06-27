@@ -63,10 +63,13 @@ public class RuntimeCatalogModel implements CatalogModel{
         try {
             isrc = UserCatalog.getDefault().getEntityResolver().
                     resolveEntity(null, locationURI.toString());
+            if(isrc == null)
+                return null;
             InputStream is = new URL(isrc.getSystemId()).openStream();
             if(is != null)
                 return createModelSource(is);
         } catch (Exception ex) {
+            //ex.printStackTrace();
             throw new CatalogModelException(ex);
         }
         

@@ -65,6 +65,10 @@ public abstract class AbstractTestCase extends TestCase {
     
     protected void assertResult(List<CompletionResultItem> result,
             String[] expectedResult) {
+        if(result == null && expectedResult == null) {
+            assert(true);
+            return;
+        }
         assert(result.size() == expectedResult.length);
         for(int i=0; i<expectedResult.length; i++) {
             boolean found = false;
