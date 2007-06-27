@@ -265,27 +265,21 @@
                       <Group type="102" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <Group type="102" attributes="0">
-                                  <Group type="103" groupAlignment="0" attributes="0">
-                                      <Component id="controlCheckbox" min="-2" max="-2" attributes="0"/>
-                                      <Component id="altCheckbox" alignment="1" pref="45" max="32767" attributes="1"/>
-                                  </Group>
-                                  <EmptySpace type="separate" max="-2" attributes="0"/>
-                                  <Group type="103" groupAlignment="0" attributes="0">
-                                      <Component id="metaCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
-                                      <Component id="shiftCheckbox" min="-2" max="-2" attributes="0"/>
-                                  </Group>
-                                  <EmptySpace max="-2" attributes="0"/>
-                              </Group>
+                              <Component id="controlCheckbox" min="-2" max="-2" attributes="0"/>
+                              <Component id="altCheckbox" alignment="1" pref="45" max="32767" attributes="1"/>
+                              <Component id="jLabel13" alignment="0" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Component id="metaCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
+                              <Component id="shiftCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
                               <Group type="102" alignment="0" attributes="0">
-                                  <Component id="acceleratorText" pref="49" max="32767" attributes="3"/>
-                                  <EmptySpace max="-2" attributes="0"/>
-                                  <Component id="jLabel13" min="-2" max="-2" attributes="0"/>
+                                  <Component id="acceleratorText" min="-2" pref="47" max="-2" attributes="3"/>
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Component id="clearAccelButton" min="-2" max="-2" attributes="0"/>
-                                  <EmptySpace min="-2" pref="16" max="-2" attributes="0"/>
                               </Group>
                           </Group>
+                          <EmptySpace min="-2" max="-2" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -304,9 +298,9 @@
                           </Group>
                           <EmptySpace type="unrelated" max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="3" attributes="0">
-                              <Component id="clearAccelButton" alignment="3" min="-2" max="-2" attributes="0"/>
-                              <Component id="acceleratorText" alignment="3" min="-2" max="-2" attributes="0"/>
                               <Component id="jLabel13" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="acceleratorText" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="clearAccelButton" alignment="3" min="-2" max="-2" attributes="0"/>
                           </Group>
                           <EmptySpace min="-2" pref="12" max="-2" attributes="0"/>
                       </Group>
