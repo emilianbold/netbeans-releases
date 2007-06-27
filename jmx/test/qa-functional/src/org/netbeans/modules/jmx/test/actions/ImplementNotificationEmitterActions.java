@@ -24,6 +24,7 @@ import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.jemmy.operators.JMenuItemOperator;
 import org.netbeans.jellytools.NbDialogOperator;
+import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.modules.jmx.test.helpers.Notification;
 import org.netbeans.modules.jmx.test.helpers.NotificationType;
@@ -31,6 +32,8 @@ import static org.netbeans.modules.jmx.test.helpers.JellyConstants.*;
 
 /**
  * Call menu actions "Implement NotificationEmitter interface".
+ * This action is activable either when selecting the class node or
+ * when clicking directly in the java file editor.
  * Check components and created files.
  */
 public class ImplementNotificationEmitterActions extends ActionsTestCase {
@@ -114,6 +117,10 @@ public class ImplementNotificationEmitterActions extends ActionsTestCase {
         System.out.println("Create new java class " + name);
         createJavaFile(name, DYNAMIC_4);
     }
+    
+    //=========================================================================
+    // CALL IMPLEMENT NOTIFICATION EMITTER ACTION FROM NODE
+    //=========================================================================
     
     public void test1() {
         
@@ -215,20 +222,59 @@ public class ImplementNotificationEmitterActions extends ActionsTestCase {
         content = content.replaceAll(PACKAGE_COM_FOO_BAR, packageName);
         assertTrue(compareFileContents(eo.getText(), content));
     }
+
+
+    //=========================================================================
+    // CALL ADD ATTRIBUTES ACTION FROM EDITOR
+    //=========================================================================
     
     public void test5() {
+        
+        System.out.println("====================  test5  ====================");
+        
+        System.out.println("Check action menu components for " + SIMPLE_1);
+        Node node = selectNode(PROJECT_NAME_ACTION_FUNCTIONAL + "|" +
+                SOURCE_PACKAGES + "|" + packageName + "|" + SIMPLE_1);
+        System.out.println("Open java file " + SIMPLE_1);
+        new Action(null, "Open").perform(node);
+        // Check menu item
+        EditorOperator eo = new EditorOperator(SIMPLE_1);
+        JMenuItemOperator jmio = showMenuItem(eo, popupPath);
+        assertFalse(jmio.isEnabled());
+    }
+    
+    public void test6() {
+        
+        System.out.println("====================  test6  ====================");
+        
+        System.out.println("Check action menu components for " + DYNAMIC_3);
+        Node node = selectNode(PROJECT_NAME_ACTION_FUNCTIONAL + "|" +
+                SOURCE_PACKAGES + "|" + packageName + "|" + DYNAMIC_3);
+        System.out.println("Open java file " + DYNAMIC_3);
+        new Action(null, "Open").perform(node);
+        // Check menu item
+        EditorOperator eo = new EditorOperator(DYNAMIC_3);
+        JMenuItemOperator jmio = showMenuItem(eo, popupPath);
+        assertFalse(jmio.isEnabled());
+    }
+    
+    
+    public void test7() {
         
         String className = "U1" + DYNAMIC_4;
         ArrayList<Notification> notifList = null;
         ArrayList<NotificationType> types = null;
         
-        System.out.println("====================  test5  ====================");
+        System.out.println("====================  test7  ====================");
         
         System.out.println("Check action menu components for " + className);
         Node node = selectNode(PROJECT_NAME_ACTION_FUNCTIONAL + "|" +
                 SOURCE_PACKAGES + "|" + packageName + "|" + className);
+        System.out.println("Open java file " + className);
+        new Action(null, "Open").perform(node);
         // Check menu item
-        JMenuItemOperator jmio = showMenuItem(node, popupPath);
+        EditorOperator eo = new EditorOperator(className);
+        JMenuItemOperator jmio = showMenuItem(eo, popupPath);
         assertTrue(jmio.isEnabled());
         
         // Call menu item
@@ -271,7 +317,7 @@ public class ImplementNotificationEmitterActions extends ActionsTestCase {
         // Save updated java class file
         selectNode(PROJECT_NAME_ACTION_FUNCTIONAL + "|" +
                 SOURCE_PACKAGES + "|" + packageName + "|" + className);
-        EditorOperator eo = new EditorOperator(className);
+        eo = new EditorOperator(className);
         eo.save();
         System.out.println("Check updated java class file");
         String content = getFileContent(getGoldenFile(className));
