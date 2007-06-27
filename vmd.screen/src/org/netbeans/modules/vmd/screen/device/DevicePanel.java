@@ -21,15 +21,15 @@
 package org.netbeans.modules.vmd.screen.device;
 
 import org.netbeans.modules.vmd.api.model.DesignComponent;
+import org.netbeans.modules.vmd.api.model.DesignDocument;
+import org.netbeans.modules.vmd.api.screen.display.DeviceTheme;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfo;
+import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfoPresenter;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayPresenter;
 import org.netbeans.modules.vmd.screen.ScreenAccessController;
 
 import javax.swing.*;
 import java.awt.*;
-import org.netbeans.modules.vmd.api.model.DesignDocument;
-import org.netbeans.modules.vmd.api.screen.display.DeviceTheme;
-import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfoPresenter;
 
 /**
  * @author David Kaspar
@@ -66,8 +66,8 @@ public class DevicePanel extends JPanel {
             return null;
         document.getTransactionManager().readAccess(new Runnable() {
             public void run() {
-                DesignComponent rootComponet = document.getRootComponent();
-                ScreenDeviceInfoPresenter presenter = rootComponet.getPresenter(ScreenDeviceInfoPresenter.class);
+                DesignComponent rootComponent = document.getRootComponent();
+                ScreenDeviceInfoPresenter presenter = rootComponent.getPresenter(ScreenDeviceInfoPresenter.class);
                 assert (presenter != null) : "No ScreenDevice attached to the root component"; //NOI18N
                 screenDevice[0] = presenter.getScreenDeviceInfo();
             }  
