@@ -175,7 +175,7 @@ public class PackageView {
             }
             else {
                 if (fo.isValid()) {
-                    children.add( fo, !hasFiles );
+                    children.add(fo, !hasFiles, false);
                 }
             }
         }

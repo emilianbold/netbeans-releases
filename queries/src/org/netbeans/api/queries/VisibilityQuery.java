@@ -19,8 +19,9 @@
 
 package org.netbeans.api.queries;
 
+import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -48,7 +49,7 @@ public final class VisibilityQuery {
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     private Lookup.Result<VisibilityQueryImplementation> vqiResult = null;
-    private Set<VisibilityQueryImplementation> cachedVqiInstances = null;
+    private List<VisibilityQueryImplementation> cachedVqiInstances = null;
 
     /**
      * Get default instance of VisibilityQuery.
@@ -69,16 +70,12 @@ public final class VisibilityQuery {
      * @return true if it is recommended to show this file
      */
     public boolean isVisible(FileObject file) {
-        boolean retVal = true;
-
         for (VisibilityQueryImplementation vqi : getVqiInstances()) {
-            retVal = vqi.isVisible(file);
-            if (!retVal) {
-                break;
+            if (!vqi.isVisible(file)) {
+                return false;
             }
         }
-
-        return retVal;
+        return true;
     }
 
     /**
@@ -97,16 +94,16 @@ public final class VisibilityQuery {
         changeSupport.removeChangeListener(l);
     }
 
-    private synchronized Set<VisibilityQueryImplementation> getVqiInstances() {
+    private synchronized List<VisibilityQueryImplementation> getVqiInstances() {
         if (cachedVqiInstances == null) {
             vqiResult = Lookup.getDefault().lookupResult(VisibilityQueryImplementation.class);
             vqiResult.addLookupListener(resultListener);
-            setupChangeListeners(cachedVqiInstances, new LinkedHashSet<VisibilityQueryImplementation>(vqiResult.allInstances()));
+            setupChangeListeners(null, new ArrayList<VisibilityQueryImplementation>(vqiResult.allInstances()));
         }
         return cachedVqiInstances;
     }
 
-    private synchronized void setupChangeListeners(final Set<VisibilityQueryImplementation> oldVqiInstances, final Set<VisibilityQueryImplementation> newVqiInstances) {
+    private synchronized void setupChangeListeners(final List<VisibilityQueryImplementation> oldVqiInstances, final List<VisibilityQueryImplementation> newVqiInstances) {
         if (oldVqiInstances != null) {
             Set<VisibilityQueryImplementation> removed = new HashSet<VisibilityQueryImplementation>(oldVqiInstances);
             removed.removeAll(newVqiInstances);
@@ -128,7 +125,7 @@ public final class VisibilityQuery {
 
     private class ResultListener implements LookupListener {
         public void resultChanged(LookupEvent ev) {
-            setupChangeListeners(cachedVqiInstances, new LinkedHashSet<VisibilityQueryImplementation>(vqiResult.allInstances()));
+            setupChangeListeners(cachedVqiInstances, new ArrayList<VisibilityQueryImplementation>(vqiResult.allInstances()));
             changeSupport.fireChange();
         }
     }

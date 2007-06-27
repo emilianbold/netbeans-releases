@@ -165,9 +165,12 @@ public final class SourcesHelper {
                     // #67450: avoid actually loading the nested project.
                     return false;
                 }
-                Project owner = FileOwnerQuery.getOwner(file);
-                if (owner != null && owner != p) {
-                    return false;
+                if (!(SourceRoot.this instanceof TypedSourceRoot)) {
+                    // XXX disabled for typed source roots; difficult to make fast (#97215)
+                    Project owner = FileOwnerQuery.getOwner(file);
+                    if (owner != null && owner != p) {
+                        return false;
+                    }
                 }
                 File f = FileUtil.toFile(file);
                 if (f != null && SharabilityQuery.getSharability(f) == SharabilityQuery.NOT_SHARABLE) {

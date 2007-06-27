@@ -67,9 +67,20 @@ public class SimpleFileOwnerQueryImplementation implements FileOwnerQueryImpleme
     
     private final Set<FileObject> warnedAboutBrokenProjects = new WeakSet<FileObject>();
         
+    private Reference<FileObject> lastFoundKey = null;
+    private Reference<Project> lastFoundValue = null;
     public Project getOwner(FileObject f) {
         while (f != null) {
-            if (f.isFolder()) {
+            synchronized (this) {
+                if (lastFoundKey != null && lastFoundKey.get() == f) {
+                    Project p = lastFoundValue.get();
+                    if (p != null) {
+                        return p;
+                    }
+                }
+            }
+            boolean folder = f.isFolder();
+            if (folder) {
                 Project p;
                 try {
                     p = ProjectManager.getDefault().findProject(f);
@@ -81,11 +92,15 @@ public class SimpleFileOwnerQueryImplementation implements FileOwnerQueryImpleme
                     return null;
                 }
                 if (p != null) {
+                    synchronized (this) {
+                        lastFoundKey = new WeakReference<FileObject>(f);
+                        lastFoundValue = new WeakReference<Project>(p);
+                    }
                     return p;
                 }
             }
             
-            if (!externalOwners.isEmpty()) {
+            if (!externalOwners.isEmpty() && (folder || externalRootsIncludeNonFolders)) {
                 Reference<FileObject> externalOwnersReference = externalOwners.get(fileObject2URI(f));
 
                 if (externalOwnersReference != null) {
@@ -94,7 +109,12 @@ public class SimpleFileOwnerQueryImplementation implements FileOwnerQueryImpleme
                     if (externalOwner != null) {
                         try {
                             // Note: will be null if there is no such project.
-                            return ProjectManager.getDefault().findProject(externalOwner);
+                            Project p = ProjectManager.getDefault().findProject(externalOwner);
+                            synchronized (this) {
+                                lastFoundKey = new WeakReference<FileObject>(f);
+                                lastFoundValue = new WeakReference<Project>(p);
+                            }
+                            return p;
                         } catch (IOException e) {
                             // There is a project there, but we cannot load it...
                             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
@@ -113,6 +133,7 @@ public class SimpleFileOwnerQueryImplementation implements FileOwnerQueryImpleme
      */
     private static final Map<URI,Reference<FileObject>> externalOwners =
         Collections.synchronizedMap(new WeakHashMap<URI,Reference<FileObject>>());
+    private static boolean externalRootsIncludeNonFolders = false;
     private static final Map<FileObject,Collection<URI>> project2External =
         Collections.synchronizedMap(new WeakHashMap<FileObject,Collection<URI>>());
     
@@ -136,6 +157,7 @@ public class SimpleFileOwnerQueryImplementation implements FileOwnerQueryImpleme
     
     /** @see FileOwnerQuery#markExternalOwner */
     public static void markExternalOwnerTransient(URI root, Project owner) {
+        externalRootsIncludeNonFolders |= !root.getPath().endsWith("/");
         if (owner != null) {
             externalOwners.put(root, new WeakReference<FileObject>(owner.getProjectDirectory()));            
             synchronized (project2External) {
@@ -210,7 +232,7 @@ public class SimpleFileOwnerQueryImplementation implements FileOwnerQueryImpleme
         } catch (URISyntaxException e) {
             throw new AssertionError(e);
         }
-        if (Utilities.isWindows()) {
+        if (WINDOWS) {
             String pth = nue.getPath();
             // check that path is not "/C:" or "/"
             if ((pth.length() == 3 && pth.endsWith(":")) ||
@@ -222,5 +244,6 @@ public class SimpleFileOwnerQueryImplementation implements FileOwnerQueryImpleme
         assert u.toString().startsWith(nue.toString()) : "not a parent: " + nue + " of " + u;
         return nue;
     }
+    private static final boolean WINDOWS = Utilities.isWindows();
     
 }

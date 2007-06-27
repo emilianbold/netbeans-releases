@@ -236,7 +236,7 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
             }
          });
     }
-    
+
     private void computeKeys() {
         // XXX this is not going to perform too well for a huge source root...
         // However we have to go through the whole hierarchy in order to find
@@ -282,14 +282,30 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
     
     // Non private only to be able to have the findNonExcludedPackages impl
     // in on place (PackageView) 
-    void add( FileObject fo, boolean empty ) {
+    void add(FileObject fo, boolean empty, boolean refreshImmediately) {
         String path = FileUtil.getRelativePath( root, fo );
         assert path != null : "Adding wrong folder " + fo +"(valid="+fo.isValid()+")"+ "under root" + this.root + "(valid="+this.root.isValid()+")";
         if ( get( fo ) == null ) { 
             names2nodes.put( path, empty ? NODE_NOT_CREATED_EMPTY : NODE_NOT_CREATED );
-            refreshKeysAsync();
+            if (refreshImmediately) {
+                refreshKeysAsync();
+            } else {
+                synchronized (this) {
+                    if (refreshLazilyTask == null) {
+                        refreshLazilyTask = RequestProcessor.getDefault().post(new Runnable() {
+                            public void run() {
+                                synchronized (PackageViewChildren.this) {
+                                    refreshLazilyTask = null;
+                                    refreshKeysAsync();
+                                }
+                            }
+                        }, 2500);
+                    }
+                }
+            }
         }
     }
+    private RequestProcessor.Task refreshLazilyTask;
 
     private void remove( FileObject fo ) {
         String path = FileUtil.getRelativePath( root, fo );        
@@ -373,7 +389,7 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
             }
             PackageNode n = get( parent );
             if ( n == null && !contains( parent ) ) {                
-                add( parent, false );
+                add(parent, false, true);
                 refreshKeys();
             }
             else if ( n != null ) {
@@ -400,7 +416,7 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
                     // Candidate for adding
                     if ( !toBeRemoved( parent ) ) {
                         // System.out.println("ADDING PARENT " + parent );
-                        add( parent, true );
+                        add(parent, true, true);
                     }
                 }
                 refreshKeysAsync();
