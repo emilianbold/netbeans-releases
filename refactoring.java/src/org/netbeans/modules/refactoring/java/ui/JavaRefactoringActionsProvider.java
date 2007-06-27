@@ -237,7 +237,11 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
                                                             int endOffset,
                                                             CompilationInfo info) {
                     Element selected = selectedElement.resolveElement(info);
-                    return new UseSuperTypeRefactoringUI(selectedElement);
+                    TreePathHandle s = selectedElement;
+                    if (!(selected.getKind().isClass() || selected.getKind().isInterface())) {
+                        s = TreePathHandle.create(RetoucheUtils.findEnclosingClass(info, selectedElement.resolve(info), true, true, true, true, true), info);
+                    }
+                    return new UseSuperTypeRefactoringUI(s);
                 }
             };
         RetoucheUtils.invokeAfterScanFinished(task, RefactoringActionsProvider.getActionName(JavaRefactoringActionsFactory.useSuperTypeAction()));
