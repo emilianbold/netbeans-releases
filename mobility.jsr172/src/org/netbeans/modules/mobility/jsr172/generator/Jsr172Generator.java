@@ -104,7 +104,7 @@ public class Jsr172Generator {
                                      
             WSDL2Java.Configuration config = new WSDL2Java.Configuration();
             config.setWSDLFileName( wsdlUrl );
-            config.setOutputDirectory( sg.getRootFolder().getPath());
+            config.setOutputDirectory( FileUtil.toFile( sg.getRootFolder()).getAbsolutePath());
             config.setPackageName( cd.getPackageName());
             WSDL2Java wsdl2java = WSDL2JavaFactory.getWSDL2Java( config );
             
