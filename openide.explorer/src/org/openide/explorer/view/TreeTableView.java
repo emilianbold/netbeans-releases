@@ -710,6 +710,16 @@ public class TreeTableView extends BeanTreeView {
         }
 
         super.addNotify();
+        if( tableModel.getRowCount() == 0 ) {
+            //re-attach node listeners
+            Node[] nodes = new Node[tree.getRowCount()];
+
+            for (int i = 0; i < tree.getRowCount(); i++) {
+                nodes[i] = Visualizer.findNode(tree.getPathForRow(i).getLastPathComponent());
+            }
+
+            tableModel.setNodes(nodes);
+        }
         listener.revalidateScrollBar();
     }
 
