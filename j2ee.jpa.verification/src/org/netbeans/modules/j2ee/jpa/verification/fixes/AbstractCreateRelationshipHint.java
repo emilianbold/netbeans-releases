@@ -24,7 +24,6 @@ import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
-import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import java.awt.Dialog;
 import java.io.IOException;
@@ -49,9 +48,9 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.jpa.model.AccessType;
 import org.netbeans.modules.j2ee.jpa.model.JPAAnnotations;
+import org.netbeans.modules.j2ee.jpa.model.JPAHelper;
 import org.netbeans.modules.j2ee.jpa.model.ModelUtils;
 import org.netbeans.modules.j2ee.jpa.verification.JPAProblemFinder;
 import org.netbeans.modules.j2ee.jpa.verification.common.Utilities;
@@ -389,8 +388,9 @@ public abstract class AbstractCreateRelationshipHint implements Fix {
         }
         
         AnnotationTree targetAnn = genUtils.createAnnotation(complimentaryAnnotationClassName, targetAnnArgs);
+        AccessType targetEntityAccessType = findTargetEntityAccessType(targetClass);
         
-        if (accessType == AccessType.FIELD){ // TODO: Use accessType for target entity
+        if (targetEntityAccessType == AccessType.FIELD){
             VariableTree modifiedTree = genUtils.addAnnotation(targetField, targetAnn);
             workingCopy.rewrite(targetField, modifiedTree);
         } else { // accessType == AccessType.PROPERTY
@@ -399,6 +399,27 @@ public abstract class AbstractCreateRelationshipHint implements Fix {
         }
     }
     
+    private AccessType findTargetEntityAccessType(final TypeElement targetEntityClass){
+        AccessType accessType = AccessType.INDETERMINED;
+        try {
+            MetadataModel<EntityMappingsMetadata> emModel = ModelUtils.getModel(fileObject);
+            accessType = emModel.runReadAction(new MetadataModelAction<EntityMappingsMetadata, AccessType>() {
+                
+                public AccessType run(EntityMappingsMetadata metadata) {
+                    Entity remoteEntity = ModelUtils.getEntity(metadata, targetEntityClassName);
+                    assert remoteEntity != null;
+                    
+                    return JPAHelper.findAccessType(targetEntityClass, remoteEntity);
+                }
+            });
+        } catch (MetadataModelException ex) {
+            JPAProblemFinder.LOG.log(Level.SEVERE, ex.getMessage(), ex);
+        } catch (IOException ex) {
+            JPAProblemFinder.LOG.log(Level.SEVERE, ex.getMessage(), ex);
+        }
+        
+        return accessType;
+    }
     
     protected String genDefaultFieldName() {
         String defaultFieldNameBase = Utilities.getShortClassName(classHandle.getQualifiedName());
