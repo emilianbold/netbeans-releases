@@ -151,88 +151,6 @@ public class StoreTest extends NbTestCase {
         assertFile(file, store, ts, storefile.lastModified(), 2, 1, "data", DELETED);
     }
 
-    private void assertFile(File file, LocalHistoryTestStore store, long ts, long storeFileLastModified, int siblings, int parentChildren, String data, int action) throws Exception {
-
-        File storeFolder = store.getStoreFolder(file);
-        String[] files = storeFolder.list();
-        if (files == null || files.length == 0) {
-            fail("no files in store folder for file " + file.getAbsolutePath() + " store folder " + storeFolder.getAbsolutePath());
-        }
-        if (files.length != siblings) {
-            fail("wrong files amount of files in store folder for file " + file.getAbsolutePath() + " store folder " + storeFolder.getAbsolutePath());
-        }
-
-        File storeParent = store.getStoreFolder(file.getParentFile());
-        files = storeParent.list();
-        if (files == null || files.length == 0) {
-            fail("no files in store parent for file " + file.getAbsolutePath() + " store parent " + storeParent.getAbsolutePath());
-        }
-        if (files.length != parentChildren) {
-            fail("wrong files amount of files in store parent for file " + file.getAbsolutePath() + " store parent " + storeParent.getAbsolutePath());
-        }
-
-        if (file.isFile()) {
-            File storeFile = store.getStoreFile(file, ts);
-            if (!storeFile.exists()) {
-                fail("store file doesn't exist for file");
-            }
-            if (data != null) {
-                ZipInputStream zis = new ZipInputStream(new BufferedInputStream(new FileInputStream(storeFile)));
-                        
-                ZipEntry entry;
-                while ( (entry = zis.getNextEntry()) != null ) {
-                    if( entry.getName().equals(storeFile.getName()) ) {
-                        break;
-                    }
-                }   
-                assertNotNull(entry);
-                assertDataInStream(zis, data.getBytes());
-            }
-        }
-
-        File dataFile = store.getDataFile(file);
-        assertTrue(dataFile.exists());
-        assertValuesInFile(dataFile, file.isFile(), action, ts, file.getAbsolutePath());
-        if (storeFileLastModified != -1) {
-            assertTrue(storeFileLastModified == storeFolder.lastModified());
-        }
-    }
-
-    private void assertValuesInFile(File file, boolean isFile, int action, long modified, String filePath) throws Exception {
-        DataInputStream dis = null;
-        try {
-            dis = new DataInputStream(new FileInputStream(file));
-            boolean f = dis.readBoolean();
-            int i = dis.readInt();
-            long l = dis.readLong();
-            int len = dis.readInt();
-            StringBuffer fileName = new StringBuffer();
-            while (len-- > 0) {
-                char c = dis.readChar();
-                fileName.append(c);
-            }
-            if (f != isFile) {
-                fail("storeDataFile.isFile value in file " + file.getAbsolutePath() + " is " + f + " instead of " + isFile);
-            }
-            if (modified != l) {
-                fail("storeDataFile.modified value in file " + file.getAbsolutePath() + " is " + l + " instead of " + modified);
-            }
-            if (action != i) {
-                fail("storeDataFile.action value in file " + file.getAbsolutePath() + " is " + i + " instead of " + action);
-            }
-            if (!fileName.toString().equals(filePath)) {
-                fail("storeDataFile.fileName value in file " + file.getAbsolutePath() + " is " + fileName + " instead of " + filePath);
-            }
-        } catch (Exception e) {
-            throw e;
-        } finally {
-            if (dis != null) {
-                dis.close();
-            }
-            ;
-        }
-    }
-    
     public void testGetDeletedFiles() throws Exception {
         LocalHistoryTestStore store = createStore();
         store.cleanUp(1); 
@@ -300,8 +218,6 @@ public class StoreTest extends NbTestCase {
         assertNotNull(entry);
         assertDataInStream(entry.getStoreFileInputStream(), "data1".getBytes());        
     }   
-    
-    
     
     public void testGetFolderState() throws Exception {        
         LocalHistoryTestStore store = createStore();
@@ -398,108 +314,12 @@ public class StoreTest extends NbTestCase {
         assertNotSame(strFile, strStore);
     }     
     
-    private long setupFirstFolderToRevert(LocalHistoryStore store, File folder) throws Exception {
-        
-        File fileNotInStorage = new File(folder, "fileNotInStorage");
-        File fileUnchanged = new File(folder, "fileUnchanged");        
-        File fileChangedAfterRevert = new File(folder, "fileChangedAfterRevert");        
-        File fileDeletedAfterRevert = new File(folder, "fileDeletedAfterRevert");
-        File fileDeletedBeforeRevert = new File(folder, "fileDeletedBeforeRevert");
-        File fileUndeletedBeforeRevert = new File(folder, "fileUndeletedBeforeRevert");
-        File fileCreatedAfterRevert = new File(folder, "fileCreatedAfterRevert");
-        
-        File folderDeletedAfterRevert = new File(folder, "folderDeletedAfterRevert");
-        File folderCreatedAfterRevert = new File(folder, "folderCreatedAfterRevert");        
-        
-        createFile(store, folder, System.currentTimeMillis(), null);        
-        write(fileNotInStorage, "fileNotInStorage".getBytes());        
-        createFile(store, fileUnchanged, System.currentTimeMillis(), "fileUnchanged");
-        createFile(store, fileChangedAfterRevert, System.currentTimeMillis(), "fileChangedAfterRevert BEFORE change");
-        createFile(store, fileDeletedAfterRevert, System.currentTimeMillis(), "fileDeletedAfterRevert BEFORE delete");
-        createFile(store, fileDeletedBeforeRevert, System.currentTimeMillis(), "fileDeletedBeforeRevert BEFORE delete");
-        createFile(store, fileUndeletedBeforeRevert, System.currentTimeMillis(), "fileUndeletedBeforeRevert");
-        
-        createFile(store, folderDeletedAfterRevert, System.currentTimeMillis(), null);
-        
-                
-        
-        fileDeletedBeforeRevert.delete();
-        store.fileDelete(fileDeletedBeforeRevert, System.currentTimeMillis());                                
-        
-        fileUndeletedBeforeRevert.delete();
-        store.fileDelete(fileUndeletedBeforeRevert, System.currentTimeMillis());
-        createFile(store, fileUndeletedBeforeRevert, System.currentTimeMillis(), "fileUndeletedBeforeRevert BEFORE revert");
-        
-        // REVERT
-        Thread.sleep(1000); // give me some time
-        long revertToTS = System.currentTimeMillis();
-        Thread.sleep(1000); // give me some time
-        // REVERT
-        
-        changeFile(store, fileChangedAfterRevert, System.currentTimeMillis(), "fileChanged AFTER change");
-                
-        fileDeletedAfterRevert.delete();
-        store.fileDelete(fileDeletedAfterRevert, System.currentTimeMillis());        
-        
-        createFile(store, fileDeletedBeforeRevert, System.currentTimeMillis(), "fileDeletedBeforeRevert after delete");
-        
-        createFile(store, fileCreatedAfterRevert, System.currentTimeMillis(), "fileCreatedAfterRevert");
-        
-        folderDeletedAfterRevert.delete();
-        store.fileDelete(folderDeletedAfterRevert, System.currentTimeMillis());
-        
-        createFile(store, folderCreatedAfterRevert, System.currentTimeMillis(), null);
-        
-                
-        // check datadir
-        assertTrue(folder.exists());
-        assertTrue(fileNotInStorage.exists());
-        assertTrue(fileUnchanged.exists());
-        assertTrue(fileChangedAfterRevert.exists());
-        assertTrue(!fileDeletedAfterRevert.exists());
-        assertTrue(fileDeletedBeforeRevert.exists());
-        assertTrue(fileCreatedAfterRevert.exists());
-        assertTrue(!folderDeletedAfterRevert.exists());
-        assertTrue(folderCreatedAfterRevert.exists());
-        
-        File[] files = folder.listFiles();              
-        assertEquals(files.length, 7);  //   fileNotInStorage 
-                                        //   fileUnchanged 
-                                        //   fileChangedAfterRevert 
-                                        // X fileDeletedAfterRevert 
-                                        //   fileDeletedBeforeRevert     
-                                        //   fileUndeletedBeforeRevert 
-                                        //   fileCreatedAfterRevert 
-                                        //   folderCreatedAfterRevert    
-        
-        return revertToTS;
-    }     
-   
-    private void assertEntries(StoreEntry[] entries, File[] files, String[] data) throws Exception {
-        assertEquals(entries.length, files.length);
-        for(int i = 0; i < files.length; i++) {                        
-            boolean blContinue = false;
-            for(StoreEntry entry : entries) {
-                if(entry.getFile().equals(files[i])) {
-                    assertDataInStream(entry.getStoreFileInputStream(), data[i].getBytes());
-                    blContinue = true;                    
-                    break;
-                }
-            }
-            if(!blContinue) {
-                fail("no store entry for file " + files[i]);
-            }            
-        }
-    }
-
     public void testCleanUp() throws Exception { 
         LocalHistoryTestStore store = createStore();
         store.cleanUp(1); 
             
         cleanUpDataFolder();
         
-        // XXX 
-
     }   
     
     public void testGetStoreEntries() throws Exception { 
@@ -590,8 +410,182 @@ public class StoreTest extends NbTestCase {
     private void cleanUpDataFolder() {
         FileUtils.deleteRecursively(getDataDir());
     }
- 
 
+    private long setupFirstFolderToRevert(LocalHistoryStore store, File folder) throws Exception {
+        
+        File fileNotInStorage = new File(folder, "fileNotInStorage");
+        File fileUnchanged = new File(folder, "fileUnchanged");        
+        File fileChangedAfterRevert = new File(folder, "fileChangedAfterRevert");        
+        File fileDeletedAfterRevert = new File(folder, "fileDeletedAfterRevert");
+        File fileDeletedBeforeRevert = new File(folder, "fileDeletedBeforeRevert");
+        File fileUndeletedBeforeRevert = new File(folder, "fileUndeletedBeforeRevert");
+        File fileCreatedAfterRevert = new File(folder, "fileCreatedAfterRevert");
+        
+        File folderDeletedAfterRevert = new File(folder, "folderDeletedAfterRevert");
+        File folderCreatedAfterRevert = new File(folder, "folderCreatedAfterRevert");        
+        
+        createFile(store, folder, System.currentTimeMillis(), null);        
+        write(fileNotInStorage, "fileNotInStorage".getBytes());        
+        createFile(store, fileUnchanged, System.currentTimeMillis(), "fileUnchanged");
+        createFile(store, fileChangedAfterRevert, System.currentTimeMillis(), "fileChangedAfterRevert BEFORE change");
+        createFile(store, fileDeletedAfterRevert, System.currentTimeMillis(), "fileDeletedAfterRevert BEFORE delete");
+        createFile(store, fileDeletedBeforeRevert, System.currentTimeMillis(), "fileDeletedBeforeRevert BEFORE delete");
+        createFile(store, fileUndeletedBeforeRevert, System.currentTimeMillis(), "fileUndeletedBeforeRevert");
+        
+        createFile(store, folderDeletedAfterRevert, System.currentTimeMillis(), null);
+        
+                
+        
+        fileDeletedBeforeRevert.delete();
+        store.fileDelete(fileDeletedBeforeRevert, System.currentTimeMillis());                                
+        
+        fileUndeletedBeforeRevert.delete();
+        store.fileDelete(fileUndeletedBeforeRevert, System.currentTimeMillis());
+        createFile(store, fileUndeletedBeforeRevert, System.currentTimeMillis(), "fileUndeletedBeforeRevert BEFORE revert");
+        
+        // REVERT
+        Thread.sleep(1000); // give me some time
+        long revertToTS = System.currentTimeMillis();
+        Thread.sleep(1000); // give me some time
+        // REVERT
+        
+        changeFile(store, fileChangedAfterRevert, System.currentTimeMillis(), "fileChanged AFTER change");
+                
+        fileDeletedAfterRevert.delete();
+        store.fileDelete(fileDeletedAfterRevert, System.currentTimeMillis());        
+        
+        createFile(store, fileDeletedBeforeRevert, System.currentTimeMillis(), "fileDeletedBeforeRevert after delete");
+        
+        createFile(store, fileCreatedAfterRevert, System.currentTimeMillis(), "fileCreatedAfterRevert");
+        
+        folderDeletedAfterRevert.delete();
+        store.fileDelete(folderDeletedAfterRevert, System.currentTimeMillis());
+        
+        createFile(store, folderCreatedAfterRevert, System.currentTimeMillis(), null);
+        
+                
+        // check datadir
+        assertTrue(folder.exists());
+        assertTrue(fileNotInStorage.exists());
+        assertTrue(fileUnchanged.exists());
+        assertTrue(fileChangedAfterRevert.exists());
+        assertTrue(!fileDeletedAfterRevert.exists());
+        assertTrue(fileDeletedBeforeRevert.exists());
+        assertTrue(fileCreatedAfterRevert.exists());
+        assertTrue(!folderDeletedAfterRevert.exists());
+        assertTrue(folderCreatedAfterRevert.exists());
+        
+        File[] files = folder.listFiles();              
+        assertEquals(files.length, 7);  //   fileNotInStorage 
+                                        //   fileUnchanged 
+                                        //   fileChangedAfterRevert 
+                                        // X fileDeletedAfterRevert 
+                                        //   fileDeletedBeforeRevert     
+                                        //   fileUndeletedBeforeRevert 
+                                        //   fileCreatedAfterRevert 
+                                        //   folderCreatedAfterRevert    
+        
+        return revertToTS;
+    }     
+
+    private void assertFile(File file, LocalHistoryTestStore store, long ts, long storeFileLastModified, int siblings, int parentChildren, String data, int action) throws Exception {
+
+        File storeFolder = store.getStoreFolder(file);
+        String[] files = storeFolder.list();
+        if (files == null || files.length == 0) {
+            fail("no files in store folder for file " + file.getAbsolutePath() + " store folder " + storeFolder.getAbsolutePath());
+        }
+        if (files.length != siblings) {
+            fail("wrong files amount of files in store folder for file " + file.getAbsolutePath() + " store folder " + storeFolder.getAbsolutePath());
+        }
+
+        File storeParent = store.getStoreFolder(file.getParentFile());
+        files = storeParent.list();
+        if (files == null || files.length == 0) {
+            fail("no files in store parent for file " + file.getAbsolutePath() + " store parent " + storeParent.getAbsolutePath());
+        }
+        if (files.length != parentChildren) {
+            fail("wrong files amount of files in store parent for file " + file.getAbsolutePath() + " store parent " + storeParent.getAbsolutePath());
+        }
+
+        if (file.isFile()) {
+            File storeFile = store.getStoreFile(file, ts);
+            if (!storeFile.exists()) {
+                fail("store file doesn't exist for file");
+            }
+            if (data != null) {
+                ZipInputStream zis = new ZipInputStream(new BufferedInputStream(new FileInputStream(storeFile)));
+                        
+                ZipEntry entry;
+                while ( (entry = zis.getNextEntry()) != null ) {
+                    if( entry.getName().equals(storeFile.getName()) ) {
+                        break;
+                    }
+                }   
+                assertNotNull(entry);
+                assertDataInStream(zis, data.getBytes());
+            }
+        }
+
+        File dataFile = store.getDataFile(file);
+        assertTrue(dataFile.exists());
+        assertValuesInFile(dataFile, file.isFile(), action, ts, file.getAbsolutePath());
+        if (storeFileLastModified != -1) {
+            assertTrue(storeFileLastModified == storeFolder.lastModified());
+        }
+    }
+
+    private void assertValuesInFile(File file, boolean isFile, int action, long modified, String filePath) throws Exception {
+        DataInputStream dis = null;
+        try {
+            dis = new DataInputStream(new FileInputStream(file));
+            boolean f = dis.readBoolean();
+            int i = dis.readInt();
+            long l = dis.readLong();
+            int len = dis.readInt();
+            StringBuffer fileName = new StringBuffer();
+            while (len-- > 0) {
+                char c = dis.readChar();
+                fileName.append(c);
+            }
+            if (f != isFile) {
+                fail("storeDataFile.isFile value in file " + file.getAbsolutePath() + " is " + f + " instead of " + isFile);
+            }
+            if (modified != l) {
+                fail("storeDataFile.modified value in file " + file.getAbsolutePath() + " is " + l + " instead of " + modified);
+            }
+            if (action != i) {
+                fail("storeDataFile.action value in file " + file.getAbsolutePath() + " is " + i + " instead of " + action);
+            }
+            if (!fileName.toString().equals(filePath)) {
+                fail("storeDataFile.fileName value in file " + file.getAbsolutePath() + " is " + fileName + " instead of " + filePath);
+            }
+        } catch (Exception e) {
+            throw e;
+        } finally {
+            if (dis != null) {
+                dis.close();
+            }
+        }
+    }
+        
+    private void assertEntries(StoreEntry[] entries, File[] files, String[] data) throws Exception {
+        assertEquals(entries.length, files.length);
+        for(int i = 0; i < files.length; i++) {                        
+            boolean blContinue = false;
+            for(StoreEntry entry : entries) {
+                if(entry.getFile().equals(files[i])) {
+                    assertDataInStream(entry.getStoreFileInputStream(), data[i].getBytes());
+                    blContinue = true;                    
+                    break;
+                }
+            }
+            if(!blContinue) {
+                fail("no store entry for file " + files[i]);
+            }            
+        }
+    }
+    
     private void createFile(LocalHistoryStore store, File file, long ts, String data) throws Exception {        
         if(data != null) {
             write(file, data.getBytes());
